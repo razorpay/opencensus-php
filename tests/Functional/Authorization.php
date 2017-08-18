@@ -27,6 +27,7 @@ class Authorization
 
     protected $defaultToken = 'SecretTokenForRazorpayAdminAuthentication';
     protected $defaultOrgId = 'org_100000Razorpay';
+    protected $defaultDashboardHostname = 'dashboard.razorpay.dev';
 
     protected $defaultAccountId = 'acc_10000000000001';
 
@@ -244,7 +245,11 @@ class Authorization
         $this->setToken($adminToken);
         $this->setOrganisation($orgId);
 
-        $this->adminHeaders = ['X-Org-Id' => $orgId, 'X-Admin-Token' => $adminToken];
+        $this->adminHeaders = [
+            'X-Org-Id' => $orgId,
+            'X-Admin-Token' => $adminToken,
+            'X-Org-Hostname' => $this->defaultDashboardHostname
+        ];
     }
 
     /**
@@ -407,5 +412,10 @@ class Authorization
         }
 
         return $this->admin;
+    }
+
+    public function getOrgId()
+    {
+        return $this->orgId;
     }
 }

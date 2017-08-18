@@ -30,7 +30,20 @@ return [
         'amount'          => 50000,
         'currency'        => 'INR',
         'base_amount'     => 50000,
-        'status'          => 'authorized',
+        'status'          => 'captured',
+        'two_factor_auth' => 'passed',
+        'method'          => 'wallet',
+        'wallet'          => 'mpesa',
+        'gateway'         => 'wallet_mpesa',
+        'terminal_id'     => '100VodaMpesaTl',
+    ],
+
+    'testAuthFloatPayment' => [
+        'merchant_id'     => '10000000000000',
+        'amount'          => 50050,
+        'currency'        => 'INR',
+        'base_amount'     => 50050,
+        'status'          => 'captured',
         'two_factor_auth' => 'passed',
         'method'          => 'wallet',
         'wallet'          => 'mpesa',
@@ -43,6 +56,15 @@ return [
         'received'             => true,
         'wallet'               => 'mpesa',
         'amount'               => 500,
+        'response_code'        => '100',
+        'response_description' => 'SUCCESS'
+    ],
+
+    'testAuthFloatPaymentWalletEntity' => [
+        'action'               => 'authorize',
+        'received'             => true,
+        'wallet'               => 'mpesa',
+        'amount'               => 500.5,
         'response_code'        => '100',
         'response_description' => 'SUCCESS'
     ],
@@ -83,7 +105,7 @@ return [
         ],
     ],
 
-    'testOtpPaymentVerify' => [
+    'testAuthPaymentVerify' => [
         'payment'                   => [
             'verified'              => 1
         ],
@@ -96,6 +118,22 @@ return [
                 'statusCode'        => '100',
                 'reason'            => 'SUCCESS',
             ],
+        ],
+    ],
+
+    'testVerifyCallbackFailure' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
         ],
     ],
 

@@ -4,6 +4,7 @@ namespace RZP\Models\P2p;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
@@ -135,17 +136,29 @@ class Service extends Base\Service
 
     protected function eventP2pCreated($p2p)
     {
-        $this->app['events']->fire('api.p2p.created', array($p2p));
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $p2p
+        ];
+
+        $this->app['events']->fire('api.p2p.created', $eventPayload);
     }
 
     protected function eventP2pRejected($p2p)
     {
-        $this->app['events']->fire('api.p2p.rejected', array($p2p));
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $p2p
+        ];
+
+        $this->app['events']->fire('api.p2p.rejected', $eventPayload);
     }
 
     protected function eventP2pTransferred($p2p)
     {
-        $this->app['events']->fire('api.p2p.transferred', array($p2p));
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $p2p
+        ];
+
+        $this->app['events']->fire('api.p2p.transferred', $eventPayload);
     }
 
     public function completeAuthorization(string $id, array $input)

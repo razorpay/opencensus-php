@@ -16,7 +16,23 @@ class RefundReconciliate extends Base\RefundReconciliate
     const COLUMN_REFUND_AMOUNT  = ['domestic_amt', 'DOMESTIC AMT'];
     const COLUMN_ARN            = ['arn_no', 'ARN NO'];
 
-    protected function getRefundId(array $row)
+    const COLUMN_TERMINAL_NUMBER    = ['terminal_number', 'TERMINAL NUMBER'];
+
+    protected function getRefundId($row)
+    {
+        if ($this->isCybersource($row) === true)
+        {
+            $refundId = $this->getRefundIdForCybersource($row);
+        }
+        else
+        {
+            $refundId = $this->getRefundIdForFss($row);
+        }
+
+        return $refundId;
+    }
+
+    protected function getRefundIdForFss(array $row)
     {
         $refundId = null;
 
@@ -33,6 +49,16 @@ class RefundReconciliate extends Base\RefundReconciliate
         }
 
         return $refundId;
+    }
+
+    protected function getRefundIdForCybersource(array $row)
+    {
+        //
+        // Currently, the way to get refundId for a Cybersource
+        // refund is the same as for FSS refund. Keeping two
+        // different functions for clarity sake and easy reading.
+        //
+        return $this->getRefundIdForFss($row);
     }
 
     protected function getPaymentId(array $row)
@@ -63,7 +89,7 @@ class RefundReconciliate extends Base\RefundReconciliate
 
                 $arn = trim(str_replace("'", '', $arn));
 
-                if (strpos($arn, 'onus') !== false)
+                if (stripos($arn, 'onus') !== false)
                 {
                     $arn = 'NA';
                 }
@@ -109,5 +135,26 @@ class RefundReconciliate extends Base\RefundReconciliate
     protected function setArnInGateway(string $arn, PublicEntity $gatewayRefund)
     {
         $gatewayRefund->setArnNo($arn);
+    }
+
+    protected function isCybersource(array $row)
+    {
+        $terminalId = null;
+
+        foreach (self::COLUMN_TERMINAL_NUMBER as $ctn)
+        {
+            if (empty($row[$ctn]) === false)
+            {
+                $terminalId = $row[$ctn];
+
+                $terminalId = trim(str_replace("'", '', $terminalId));
+
+                break;
+            }
+        }
+
+        $isCybersource = (in_array($terminalId, Reconciliate::CYBERSOURCE_HDFC_TERMINAL_IDS, true) === true);
+
+        return $isCybersource;
     }
 }

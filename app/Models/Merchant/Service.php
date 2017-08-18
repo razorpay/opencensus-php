@@ -6,6 +6,7 @@ use DB;
 use Mail;
 use Config;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Exception;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
@@ -14,6 +15,7 @@ use RZP\Models\Emi;
 use RZP\Models\Key;
 use RZP\Models\User;
 use RZP\Models\Offer;
+use RZP\Models\Coupon;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Constants\Mode;
@@ -37,6 +39,8 @@ use RZP\Models\Merchant\SlackActions as SlackActions;
 class Service extends Base\Service
 {
     use Notify;
+
+    const COUPON_RESPONSE = 'apply_coupon';
 
     /**
      * Creates a merchant and saves in database
@@ -71,9 +75,9 @@ class Service extends Base\Service
 
         $merchant = (new Merchant\Core)->create($input);
 
-        $this->repo->saveOrFail($merchant);
+        $merchantData = $this->saveMerchantAndApplyCoupon($merchant, $input);
 
-        return $merchant->toArrayPublic();
+        return $merchantData;
     }
 
     public function createSubMerchant(array $input)
@@ -89,9 +93,46 @@ class Service extends Base\Service
             $this->sendSubMerchantCreationMail($subMerchant, $merchant);
         }
 
-        $this->repo->saveOrFail($subMerchant);
+        $subMerchantData = $this->saveMerchantAndApplyCoupon($subMerchant, $input);
 
-        return $subMerchant->toArrayPublic();
+        return $subMerchantData;
+    }
+
+    protected function saveMerchantAndApplyCoupon(Entity $merchant, array $input)
+    {
+        $this->repo->saveOrFail($merchant);
+
+        $merchantData = $merchant->toArrayPublic();
+
+        $couponResponse = $this->applyCouponOnSignUp($input, $merchant);
+
+        $merchantData[self::COUPON_RESPONSE] = $couponResponse;
+
+        return $merchantData;
+    }
+
+    protected function applyCouponOnSignUp(array $input, Entity $merchant)
+    {
+        $result = [];
+
+        if (isset($input[Entity::COUPON_CODE]) === true)
+        {
+            $couponInput = [
+                Coupon\Entity::CODE        => $input[Entity::COUPON_CODE],
+                Coupon\Entity::MERCHANT_ID => $merchant->getId()
+            ];
+
+            try
+            {
+                $result = (new Coupon\Service)->apply($couponInput);
+            }
+            catch (\Throwable $e)
+            {
+                $result = ['message'=> $e->getMessage()];
+            }
+        }
+
+        return $result;
     }
 
     public function edit(string $id, array $input)
@@ -247,6 +288,20 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $keyData = (new Key\Core)->createFirstKey($merchant, $this->mode);
+
+        if ($this->mode === MODE::LIVE)
+        {
+            $action = Merchant\Action::LIVE_KEYS_CREATED;
+        }
+        elseif ($this->mode === MODE::TEST)
+        {
+            $action = Merchant\Action::TEST_KEYS_CREATED;
+        }
+
+        if ($action !== null)
+        {
+            $this->app['eventManager']->trackEvents($merchant, $action, $merchant->toArrayEvent());
+        }
 
         return $keyData;
     }
@@ -657,7 +712,8 @@ class Service extends Base\Service
     public function createWebhook($input)
     {
         $webhook = (new Webhook\Core)->createWebhook($this->merchant, $input);
-        return $webhook->toArray();
+
+        return $webhook->toArrayPublic();
     }
 
     public function editWebhook($webhookId, $input)
@@ -671,14 +727,14 @@ class Service extends Base\Service
 
         $webhook = (new Webhook\Core)->editWebhook($this->merchant, $webhookId, $input);
 
-        return $webhook->toArray();
+        return $webhook->toArrayPublic();
     }
 
     public function getWebhook($id)
     {
         $webhook = $this->repo->webhook->findByIdAndMerchant($id, $this->merchant);
 
-        return $webhook->toArray();
+        return $webhook->toArrayPublic();
     }
 
     public function getWebhooks()
@@ -711,6 +767,24 @@ class Service extends Base\Service
         return $preferences;
     }
 
+    public function getGSTDetails(): array
+    {
+        return $this->merchant->merchantDetail->toArrayGST();
+    }
+
+    public function editGSTDetails(array $input): array
+    {
+        $merchantDetail = $this->merchant->merchantDetail;
+
+        $merchantDetail->getValidator()->validateIsGSTEditable($input);
+
+        $merchantDetail->edit($input);
+
+        $this->repo->saveOrFail($merchantDetail);
+
+        return $merchantDetail->toArrayGST();
+    }
+
     /**
     *   Generate and Send the beneficary file to nodal account's bank
     *   if a new merchant has been activated since
@@ -721,11 +795,11 @@ class Service extends Base\Service
     {
         if (isset($input['on']))
         {
-            $today = Carbon::createFromTimestamp($input['on'], 'Asia/Kolkata');
+            $today = Carbon::createFromTimestamp($input['on'], Timezone::IST);
         }
         else
         {
-            $today = Carbon::today('Asia/Kolkata');
+            $today = Carbon::today(Timezone::IST);
         }
 
         if (Holidays::isWorkingDay($today) === false)
@@ -959,6 +1033,83 @@ class Service extends Base\Service
         return $data;
     }
 
+    /**
+     * used for adding tags to merchant
+     * @param string $id
+     * @param array $input which contains the tags of the merchant
+     */
+    public function addTags($id, $input)
+    {
+        (new Validator)->validateInput('addTags', $input);
+
+        $this->trace->info(TraceCode::MERCHANT_TAGS_ADD, $input);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $tags = $input['tags'];
+
+        $merchant->retag($tags);
+
+        return $merchant->tagNames();
+    }
+
+    /**
+     * used for deleting a single tag of a merchant
+     * @param string $id
+     * @param string $tagName tag which has to be deleted
+     */
+    public function deleteTag($id, $tagName)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $merchant->untag($tagName);
+
+        return $merchant->tagNames();
+    }
+
+    public function markGratisTransactionPostpaid($input)
+    {
+        $this->trace->info(
+            TraceCode::GRATIS_TO_POSTPAID_INPUT,
+            $input);
+
+        $merchantIds = $input['merchant_ids'];
+
+        $from = $input['from'];
+
+        $successIds = [];
+
+        $failedIds = [];
+
+        $merchantCore = (new Merchant\Core);
+
+        foreach ($merchantIds as $merchantId) {
+            try
+            {
+                $merchantCore->markGratisTransactionPostpaid($merchantId, $from);
+
+                $successIds[] = $merchantId;
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e);
+
+                $failedIds[] = $merchantId;
+            }
+        }
+
+        $response = [
+            'success_ids' => $successIds,
+            'failed_ids'  => $failedIds,
+        ];
+
+        $this->trace->info(
+            TraceCode::GRATIS_TO_POSTPAID_RESPONSE,
+            $response);
+
+        return $response;
+    }
+
     protected function updateHoldFunds(string $merchantId, bool $holdFunds)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
@@ -975,6 +1126,23 @@ class Service extends Base\Service
         $users = (new Merchant\Core)->getUsers($merchant);
 
         return $users;
+    }
+
+    /**
+     * Return all submerchants of the master merchant (for aggregator model only)
+     *
+     * 1. We do not want all the aggregator merchant to download the complete report
+     *    so its behind aggregator_report feature
+     * 2. We will have to write the logic to fetch all its submerchants based on tags
+     * 3. Currently feature will be enabled only for e-Mitra, and merchants will be hard coded.
+     *
+     * @return array
+     */
+    public function getSubmerchants(): array
+    {
+        $merchant = $this->merchant;
+
+        return [ $merchant->getId() ];
     }
 
     /**

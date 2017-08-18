@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Wallet\Jiomoney\Mock;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Base;
@@ -110,7 +111,10 @@ class Server extends Base\Mock\Server
 
     protected function getGatewayResponse(array $content)
     {
-        $content[ResponseFields::CHECKSUM] = $this->generateHash($content);
+        if ($content[ResponseFields::RESPONSE_DESCRIPTION] !== 'BAD_REQUEST')
+        {
+            $content[ResponseFields::CHECKSUM] = $this->generateHash($content);
+        }
 
         $gatewayResponse = [];
         $gatewayResponse['response'] = implode('|', array_values($content));
@@ -121,7 +125,7 @@ class Server extends Base\Mock\Server
     protected function getAuthorizeResponse(array $input)
     {
         $date = $this->getFormattedTimeStamp(
-                        Carbon::now('Asia/Kolkata')->timestamp,
+                        Carbon::now()->getTimestamp(),
                         self::TXN_DATE_FORMAT);
 
         $paymentId = $input[RequestFields::getFormatted(RequestFields::TRANSACTION, RequestFields::PAYMENT_ID)];
@@ -148,7 +152,7 @@ class Server extends Base\Mock\Server
     protected function getRefundResponse(array $input)
     {
         $date = $this->getFormattedTimeStamp(
-                        Carbon::now('Asia/Kolkata')->timestamp,
+                        Carbon::now()->getTimestamp(),
                         self::TXN_DATE_FORMAT);
 
         return [
@@ -171,7 +175,7 @@ class Server extends Base\Mock\Server
     protected function getCheckTxnStatusResponse(array $input): array
     {
         $date = $this->getFormattedTimeStamp(
-                        Carbon::now('Asia/Kolkata')->timestamp,
+                        Carbon::now()->getTimestamp(),
                         self::TXN_DATE_FORMAT);
 
         if ($input[RequestFields::APINAME] === 'CHECKPAYMENTSTATUS')
@@ -204,7 +208,7 @@ class Server extends Base\Mock\Server
     protected function getCheckPaymentStatusResponse(array $input): array
     {
         $date = $this->getFormattedTimeStamp(
-                        Carbon::now('Asia/Kolkata')->timestamp,
+                        Carbon::now()->getTimestamp(),
                         self::TXN_DATE_FORMAT);
 
         return [
@@ -254,7 +258,7 @@ class Server extends Base\Mock\Server
 
     protected function getFormattedTimeStamp($timestamp, $format)
     {
-        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format($format);
+        return Carbon::createFromTimestamp($timestamp, Timezone::IST)->format($format);
     }
 
     protected function verifyAuthorizeHash($content)

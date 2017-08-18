@@ -55,10 +55,6 @@ class Inferno
 
     public function __construct()
     {
-        $app = App::getFacadeRoot();
-
-        $this->trace = $app['trace'];
-
         $this->repo = new Repository;
     }
 
@@ -68,6 +64,13 @@ class Inferno
      */
     public function fire($job, $data)
     {
+        $app = App::getFacadeRoot();
+
+        // initialising trace here, as inferno is bound as singleton
+        // to app container and we want fresh instance of trace to log
+        // request metadata
+        $this->trace = $app['trace'];
+
         $this->job = $job;
 
         $this->mode = $data['mode'];
@@ -154,11 +157,11 @@ class Inferno
     {
         $factory = app()->make('httplug.message_factory.default');
 
-        $req = $factory->createRequest('POST', $request['url'], $request['headers'], $request['content']);
+        $request = $factory->createRequest('POST', $request['url'], $request['headers'], $request['content']);
 
         $httpClient = $this->createHttpClient();
 
-        $response = $httpClient->sendRequest($req);
+        $response = $httpClient->sendRequest($request);
 
         return $response;
     }
@@ -179,11 +182,20 @@ class Inferno
         return $pluginClient;
     }
 
+    /**
+     * Set client is used for setting client in
+     * test cases
+     */
+    public function setClient($client = null)
+    {
+        $this->client = $client;
+    }
+
     public function getClient()
     {
         if ($this->client === null)
         {
-            $this->client = HttpClientDiscovery::find();
+            $this->client = app()->make('httplug.default');
         }
 
         return $this->client;
@@ -216,6 +228,8 @@ class Inferno
                 'request'     => $request,
                 'attempt'     => $this->job->attempts(),
             ]);
+
+        $timeOfRequest = microtime(true);
 
         try
         {
@@ -277,7 +291,8 @@ class Inferno
                     'webhook_id'        => $webhook->getId(),
                     'merchant_id'       => $webhook->merchant->getId(),
                     'response_code'     => $statusCode,
-                    'response_headers'  => $response->getHeaders()
+                    'response_headers'  => $response->getHeaders(),
+                    'response_time'     => (microtime(true) - $timeOfRequest),
                 ]);
 
             $clientError = false;

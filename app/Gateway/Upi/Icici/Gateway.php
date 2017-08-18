@@ -3,10 +3,12 @@
 namespace RZP\Gateway\Upi\Icici;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use ErrorException;
 use phpseclib\Crypt\RSA;
 use Request;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base\AuthorizeFailed;
@@ -33,6 +35,12 @@ class Gateway extends Base\Gateway
     protected $gateway = 'upi_icici';
 
     const ACQUIRER = 'icici';
+
+    /**
+     * This is what shows up as the payee
+     * on the notification to the customer
+     */
+    const DEFAULT_PAYEE_VPA = 'razorpay@icici';
 
     protected $map = [
         Entity::VPA                       => Entity::VPA,
@@ -108,7 +116,13 @@ class Gateway extends Base\Gateway
                 ResponseCode::getResponseMessage($status));
         }
 
-        return true;
+        $vpa = $this->terminal->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA;
+
+        return [
+            'data'   => [
+                'vpa'   => $vpa
+            ]
+        ];
     }
 
     /**
@@ -285,7 +299,6 @@ class Gateway extends Base\Gateway
         return $rsa->decrypt($data);
     }
 
-
     protected function getCipherInstance(): RSA
     {
         /**
@@ -309,21 +322,22 @@ class Gateway extends Base\Gateway
     {
         $payment = $input['payment'];
 
-        $collectByTimestamp = Carbon::now('Asia/Kolkata')->addMinutes(5)->format('d/m/Y h:i A');
+        $collectByTimestamp = Carbon::now(Timezone::IST)->addMinutes(5)->format('d/m/Y h:i A');
 
         $data = [
-            // Amount and note are lowercase
-            // despite being uppercase in docs
             Fields::AMOUNT           => $this->formatAmount($payment['amount']),
             Fields::COLLECT_BY_DATE  => $collectByTimestamp,
             Fields::BILL_NUMBER      => '1234',
             Fields::MERCHANT_ID      => $this->getMerchantId(),
             Fields::MERCHANT_TRAN_ID => $payment['id'],
             Fields::MERCHANT_NAME    => 'Razorpay',
+            // Do not change this.
+            // Note and Submerchant name fields only support alphanumeric hence replacing all
+            // the spaces to empty string here.
             Fields::NOTE             => preg_replace('/\s+/', '', $this->getPaymentRemark($input)),
+            Fields::SUBMERCHANT_NAME => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
             Fields::PAYER_VA_REQ     => $input['payment']['vpa'],
             Fields::SUBMERCHANT_ID   => $this->getSubMerchantId($input),
-            Fields::SUBMERCHANT_NAME => preg_replace('/\s+/', '', $input['merchant']->getFilteredDba()),
             Fields::TERMINAL_ID      => $this->getTerminalId($input),
         ];
 
@@ -334,10 +348,10 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
-                'request' => $request,
+                'request'           => $request,
                 'decrypted_content' => $data,
-                'gateway' => 'upi_icici',
-                'payment_id' => $input['payment']['id'],
+                'gateway'           => $this->gateway,
+                'payment_id'        => $input['payment']['id'],
             ]);
 
         return $request;
@@ -511,6 +525,21 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
+    public function verifyRefund(array $input)
+    {
+        $refundIds = [
+            '82NPrjC1TwVNb1'
+        ];
+
+        if (in_array($input['refund']['id'], $refundIds, true) === true)
+        {
+            return false;
+        }
+
+        throw new Exception\LogicException(
+            'UPI ICICI verify refund is not implemented');
+    }
+
     /**
      * subMerchantId is limited to 10 characters
      * so we send the first 10 characters
@@ -605,7 +634,7 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getGatewayEntityAttributes($input);
 
-        $refund = $this->createGatewayRefundEntity($attributes);
+        $refund = $this->createGatewayPaymentEntity($attributes);
 
         $request = $this->getRefundRequest($input);
 
@@ -654,7 +683,7 @@ class Gateway extends Base\Gateway
             Fields::REFUND_AMOUNT                   => $this->formatAmount($refund['amount']),
             Fields::PAYEE_VA                        => strtolower($payment['vpa']),
             Fields::NOTE                            => 'Razorpay Refund ' . $refund['id'],
-            Fields::ONLINE_REFUND                   => 'N',
+            Fields::ONLINE_REFUND                   => 'Y',
         ];
 
         $content = $this->transformRequestArrayToContent($data);

@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Invoice;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mockery;
 use Mail;
 
@@ -88,6 +89,36 @@ class InvoiceTest extends TestCase
 
             return true;
         });
+    }
+
+    public function testPayInvoiceWithCallbackUrl()
+    {
+        $order = $this->createOrder();
+
+        $invoice = $this->createIssuedInvoice([
+                        'callback_url'    => 'http://localhost/works',
+                        'callback_method' => 'get',
+                        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = $invoice->getAmount();
+
+        $response = $this->doAuthPayment($payment);
+
+        $actualSignature = $response['razorpay_signature'];
+
+        $signatureData = [
+            'razorpay_invoice_id'      => $invoice->getPublicId(),
+            'razorpay_invoice_receipt' => $invoice->getReceipt(),
+            'razorpay_invoice_status'  => 'paid',
+            'razorpay_payment_id'      => $response['razorpay_payment_id'],
+        ];
+
+        $exceptedSignature = $this->getSignature($signatureData, 'TheKeySecretForTests');
+
+        $this->assertEquals($exceptedSignature, $actualSignature);
     }
 
     public function testCreateLinkWithSource()
@@ -225,6 +256,8 @@ class InvoiceTest extends TestCase
 
     public function testCreateDraftInvoiceWithSomeData()
     {
+        $this->ba->privateAuth();
+
         $response = $this->startTest();
 
         $this->assertNotEmpty($response['id']);
@@ -387,20 +420,25 @@ class InvoiceTest extends TestCase
     {
         $esMock = $this->createEsMock(['bulkUpdate']);
 
-        //
-        // For the first time, it will createIndex as indexExists will return false.
-        // Asserting all of it.
-        //
-
         $expected = $this->getExpectedUpsertIndexParams();
+
+        // Asserting notes values differently as bulkUpdate gets notes
+        // as object of stdClass. And that is not asserted by
+        // assertArraySelectiveEquals() method.
+        // We declare the expected notes separately and then assert it
+        // against the actual value by typecasting the later to array.
+
+        $expectedNotes = [];
 
         $esMock->expects($this->once())
                ->method('bulkUpdate')
                ->with(
                     $this->callback(
-                        function ($actual) use ($expected)
+                        function ($actual) use ($expected, $expectedNotes)
                         {
                             $this->assertArraySelectiveEquals($expected, $actual);
+
+                            $this->assertEquals($expectedNotes, (array) $actual['body'][1]['notes']);
 
                             $this->assertNotEmpty($actual['body'][0]['index']['_id']);
                             $this->assertNotEmpty($actual['body'][1]['id']);
@@ -548,6 +586,30 @@ class InvoiceTest extends TestCase
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
+    public function testUpdateIssuedInvoiceWithOrderAttributes()
+    {
+        $this->createOrder();
+
+        $this->fixtures->create('invoice');
+
+        $this->fixtures->merchant->addFeatures(['invoice_partial_payments']);
+
+        $this->startTest();
+
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
+
+        // Updates partial_payment attribute in request and asserts again.
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['partial_payment'] = '0';
+        $testData['response']['content']['partial_payment'] = false;
+
+        $this->startTest();
+
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
+    }
+
     public function testUpdateIssuedInvoiceWithExtraFields()
     {
         $this->createOrder();
@@ -569,13 +631,22 @@ class InvoiceTest extends TestCase
                 'terms'   => 'Updated terms & conditions',
             ]);
 
+        // Ref to testCreateInvoiceAndAssertEsSync method of this file
+        // for why this is being asserted differently.
+
+        $expectedNotes = [
+            'key' => 'new value',
+        ];
+
         $esMock->expects($this->once())
                ->method('bulkUpdate')
                ->with(
                     $this->callback(
-                        function ($actual) use ($expected)
+                        function ($actual) use ($expected, $expectedNotes)
                         {
                             $this->assertArraySelectiveEquals($expected, $actual);
+
+                            $this->assertEquals($expectedNotes, (array) $actual['body'][1]['notes']);
 
                             return true;
                         }));
@@ -1151,7 +1222,7 @@ class InvoiceTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['content']['order_id'] = '100000000order';
+        $testData['request']['content']['order_id'] = 'order_100000000order';
         $testData['request']['content']['payment_id'] = $payment['id'];
 
         $testData['response']['content']['count'] = 1;
@@ -1175,6 +1246,18 @@ class InvoiceTest extends TestCase
             'id' => '10000lineitem2',
             'entity_id' => $invoice2->getId(),
             'item_id' => $item2->getId()]);
+
+        $this->startTest();
+    }
+
+    public function testGetMultipleInvoicesByTypes()
+    {
+        $this->ba->proxyAuth();
+
+        $this->createDraftInvoice();
+        $this->createDraftInvoice(['id' => '1000001invoice', 'type' => 'link']);
+        $this->createDraftInvoice(['id' => '1000002invoice', 'type' => 'ecod']);
+        $this->createDraftInvoice(['id' => '1000003invoice', 'type' => 'ecod']);
 
         $this->startTest();
     }
@@ -1209,6 +1292,24 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetMultipleInvoicesByEsFeildAndFrom()
+    {
+        $esMock = $this->createEsMock(['search']);
+
+        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+
+        $this->startTest();
+    }
+
+    public function testGetMultipleInvoicesByEsFeildFromAndTo()
+    {
+        $esMock = $this->createEsMock(['search']);
+
+        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+
+        $this->startTest();
+    }
+
     public function testGetMultipleInvoicesOnlyMysqlFields()
     {
         $this->ba->proxyAuth();
@@ -1234,6 +1335,39 @@ class InvoiceTest extends TestCase
 
         $esMock->expects($this->never())
                ->method('search');
+
+        $this->startTest();
+    }
+
+    public function testGetMultipleInvoicesByOnlyCommonFields()
+    {
+        $this->ba->proxyAuth();
+
+        $esMock = $this->createEsMock(['search']);
+
+        $esMock->expects($this->never())->method('search');
+
+        $this->startTest();
+    }
+
+    public function testGetMultipleInvoicesByCommonAndMysqlFields()
+    {
+        $this->ba->proxyAuth();
+
+        $esMock = $this->createEsMock(['search']);
+
+        $esMock->expects($this->never())->method('search');
+
+        $this->startTest();
+    }
+
+    public function testGetMultipleInvoicesByCommonAndEsFields()
+    {
+        $this->ba->proxyAuth();
+
+        $esMock = $this->createEsMock(['search']);
+
+        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
 
         $this->startTest();
     }
@@ -1355,7 +1489,7 @@ class InvoiceTest extends TestCase
         $this->createOrder();
         $this->fixtures->create('invoice');
 
-        $currentTime = Carbon::now('Asia/Kolkata');
+        $currentTime = Carbon::now(Timezone::IST);
         $currentTime->addDays(18);
         Carbon::setTestNow($currentTime);
 
@@ -1658,6 +1792,42 @@ class InvoiceTest extends TestCase
         $this->ba->appAuth();
 
         $this->startTest();
+    }
+
+    public function testIssueInvoiceByBatchId()
+    {
+        $this->testCreateDraftInvoiceWithSomeData();
+        $this->testCreateDraftInvoiceWithSomeData();
+        $this->testCreateDraftInvoiceWithSomeData();
+
+        $response = $this->getEntities('invoice');
+
+        $ids = array_column($response['items'], 'id');
+
+        $this->fixtures->create(
+            'batch',
+            [
+                'id'          => '00000000000001',
+                'type'        => 'payment_link',
+                'total_count' => 2,
+            ]);
+
+        // Associate 2 invoices with above batch
+
+        $this->fixtures->invoice->edit($ids[0], ['batch_id' => '00000000000001']);
+        $this->fixtures->invoice->edit($ids[2], ['batch_id' => '00000000000001']);
+
+        $this->startTest();
+
+        $response = $this->getEntities('invoice');
+
+        $invoices = $response['items'];
+
+        // Assert that invoices of the batch have gotten issued
+
+        $this->assertEquals('issued', $invoices[0]['status']);
+        $this->assertEquals('draft', $invoices[1]['status']);
+        $this->assertEquals('issued', $invoices[2]['status']);
     }
 
     // -------------------- Protected methods --------------------

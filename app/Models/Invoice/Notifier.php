@@ -2,18 +2,15 @@
 
 namespace RZP\Models\Invoice;
 
-use App;
-use Carbon\Carbon;
-use Config;
 use Mail;
-use RZP\Constants\MailTags;
-use RZP\Constants\Mode;
-use RZP\Exception;
-use RZP\Mail\Invoice as InvoiceMail;
+use Config;
+use Carbon\Carbon;
+
 use RZP\Models\Base;
-use RZP\Models\Customer;
-use RZP\Models\Invoice\ViewDataSerializer;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Mail\Invoice as InvoiceMail;
+use RZP\Models\Invoice\ViewDataSerializer;
 
 class Notifier extends Base\Core
 {
@@ -85,10 +82,7 @@ class Notifier extends Base\Core
 
     public function notifyInvoiceExpiredToCustomer(): bool
     {
-        if ($this->invoice->isExpired() === false)
-        {
-            return false;
-        }
+        $this->invoice->getValidator()->validateOperation('notifyInvoiceExpired');
 
         return $this->emailInvoiceExpiredToCustomer();
     }
@@ -97,14 +91,11 @@ class Notifier extends Base\Core
 
     public function canNotifyInvoiceIssuedToCustomer(): bool
     {
-        if ($this->invoice->isIssued() === false)
-        {
-            return false;
-        }
+        $this->invoice->getValidator()->validateOperation('notifyInvoiceIssued');
 
         $scheduledAt = $this->invoice->getScheduledAt();
 
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         // If it's not scheduled for within 5 minutes, do not send
         // the notification. Ideally, scheduled_at would be the same

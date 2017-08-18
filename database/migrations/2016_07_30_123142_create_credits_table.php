@@ -5,6 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
+use RZP\Models\Promotion;
 use RZP\Models\Merchant\Credits\Entity as Credits;
 
 class CreateCreditsTable extends Migration
@@ -24,10 +25,21 @@ class CreateCreditsTable extends Migration
                   ->primary();
 
             $table->string(Credits::CAMPAIGN, 255);
+
             $table->char(Credits::MERCHANT_ID, Merchant\Entity::ID_LENGTH);
+
+            $table->char(Credits::PROMOTION_ID, Promotion\Entity::ID_LENGTH)
+                  ->nullable();
+
             $table->integer(Credits::VALUE);
 
             $table->string(Credits::TYPE, 20);
+
+            $table->integer(Credits::USED)
+                  ->default(0);
+
+            $table->integer(Credits::EXPIRED_AT)
+                  ->nullable();
 
             $table->integer(Credits::CREATED_AT);
             $table->integer(Credits::UPDATED_AT);
@@ -35,6 +47,7 @@ class CreateCreditsTable extends Migration
             $table->index(Credits::CREATED_AT);
             $table->index(Credits::CAMPAIGN);
             $table->index(Credits::TYPE);
+            $table->index(Credits::EXPIRED_AT);
 
             $table->foreign(Credits::MERCHANT_ID)
                 ->references(Merchant\Entity::ID)

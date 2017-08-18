@@ -5,18 +5,14 @@ namespace RZP\Models\Plan\Subscription;
 use Carbon\Carbon;
 
 use RZP\Base;
+use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Trace\TraceCode;
+use RZP\Models\Plan\Cycle;
 
 class Validator extends Base\Validator
 {
-    /**
-     * Number of years allowed for a subscription.
-     *
-     * TODO: We may have to take into consideration leap years also.
-     */
-    const MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION = 1;
-
     /**
      * Maximum number of addons that we allow
      * as part of the subscription creations
@@ -26,12 +22,12 @@ class Validator extends Base\Validator
     const SECONDS_IN_ONE_YEAR = 31536000;
 
     protected static $createRules = [
-        Entity::CUSTOMER_ID     => 'required|string|size:19|public_id',
+        Entity::CUSTOMER_ID     => 'sometimes|string|size:19|public_id|nullable',
         Entity::PLAN_ID         => 'required|string|size:19|public_id',
-        Entity::QUANTITY        => 'required|integer|min:1|max:500',
+        Entity::QUANTITY        => 'filled|integer|min:1|max:500',
         Entity::NOTES           => 'sometimes|notes',
-        Entity::TOTAL_COUNT     => 'required_without:end_at|integer|min:1|max:365',
-        Entity::START_AT        => 'sometimes|integer|custom',
+        Entity::TOTAL_COUNT     => 'required_without:end_at|integer|min:1',
+        Entity::START_AT        => 'sometimes|integer|custom|nullable',
         Entity::END_AT          => 'required_without:total_count|epoch',
         // This is just for backward compatibility. Later, we are going to make `1` as
         // default. Hence, making it compulsory for the merchant to send this as 0 now.
@@ -65,7 +61,7 @@ class Validator extends Base\Validator
             return;
         }
 
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         if ($startAt < $currentTime)
         {
@@ -82,12 +78,20 @@ class Validator extends Base\Validator
 
     public function validateInputBeforeBuild(array $input)
     {
-        if (empty($input[Entity::CUSTOMER_ID]) === true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'customer_id should be sent in the request to create a subscription.',
-                'customer_id');
-        }
+        //
+        // Keeping it commented for now. Will remove this later, once confident.
+        //
+        // If customer_id is not sent in the input, we get the customer and associate
+        // during the auth transaction. We create a global customer.
+        //
+        //
+
+        // if (empty($input[Entity::CUSTOMER_ID]) === true)
+        // {
+        //     throw new Exception\BadRequestValidationFailureException(
+        //         'customer_id should be sent in the request to create a subscription.',
+        //         'customer_id');
+        // }
 
         if (empty($input[Entity::PLAN_ID]) === true)
         {
@@ -95,6 +99,70 @@ class Validator extends Base\Validator
                 'plan_id should be sent in the request to create a subscription.',
                 'plan_id');
         }
+    }
+
+    public function validateSubscriptionCancellable()
+    {
+        $subscription = $this->entity;
+
+        $currentStatus = $subscription->getStatus();
+
+        if (in_array($currentStatus, Status::$nonCancellableStatuses, true) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Subscription is not cancellable in ' . $currentStatus . ' status.',
+                'status',
+                [
+                    'subscription_id' => $subscription->getId(),
+                    'status'          => $currentStatus,
+                ]);
+        }
+    }
+
+    public function validateSubscriptionChargeable(Invoice\Entity $invoice, bool $manual)
+    {
+        $subscription = $this->entity;
+        $valid = true;
+
+        //
+        // This will be empty only when valid is true,
+        // in which case, we don't care about it's value.
+        //
+        $traceCode = '';
+
+        if (in_array($subscription->getStatus(), Status::$nonChargeableStatuses, true) === true)
+        {
+            $traceCode = TraceCode::SUBSCRIPTION_NOT_IN_CHARGEABLE_STATE;
+
+            $valid = false;
+        }
+        //
+        // This happens when two crons picked up the same invoice
+        // and queued the charge on them.
+        // If one of the queue picks it up first, it would have marked the
+        // invoice as paid and now this queue gets executed.
+        //
+        else if ($invoice->isPaid() === true)
+        {
+            $traceCode = TraceCode::SUBSCRIPTION_INVOICE_ALREADY_PAID;
+
+            $valid = false;
+        }
+        //
+        // When a different cron picked up the invoice for a charge
+        // and got queued, the status could have gone into
+        // halted. If this happened, we should not attempt
+        // to charge the subscription now.
+        //
+        else if (($invoice->getSubscriptionStatus() === Invoice\Status::HALTED) and
+                 ($manual === false))
+        {
+            $traceCode = TraceCode::SUBSCRIPTION_INVOICE_HALTED;
+
+            $valid = false;
+        }
+
+        return [$valid, $traceCode];
     }
 
     protected function validateEndAtWithStartAt(int $startAt, int $endAt)
@@ -110,17 +178,17 @@ class Validator extends Base\Validator
                 ]);
         }
 
-        $maxSecondsFromStartAt = $startAt + (self::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION * self::SECONDS_IN_ONE_YEAR);
+        $maxSecondsFromStartAt = $startAt + (Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION * self::SECONDS_IN_ONE_YEAR);
 
         if ($endAt > $maxSecondsFromStartAt)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'end_at should be within ' . self::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION . ' year/s of start_at.',
+                'end_at should be within ' . Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION . ' year/s of start_at.',
                 null,
                 [
                     'start_at'  => $startAt,
                     'end_at'    => $endAt,
-                    'max_years' => self::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION,
+                    'max_years' => Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION,
                     'seconds'   => $maxSecondsFromStartAt,
                 ]);
         }
@@ -155,7 +223,7 @@ class Validator extends Base\Validator
 
     protected function validateStartAt($attribute, $value)
     {
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         if ($value < $currentTime)
         {
@@ -168,18 +236,18 @@ class Validator extends Base\Validator
                 ]);
         }
 
-        $maxSecondsAllowedForSubscription = self::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION * self::SECONDS_IN_ONE_YEAR;
+        $maxSecondsAllowedForSubscription = Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION * self::SECONDS_IN_ONE_YEAR;
 
         $maxSecondsFromCurrentTime = $currentTime + $maxSecondsAllowedForSubscription;
 
         if ($value > $maxSecondsFromCurrentTime)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'start_at must be less than one year from now.',
+                'start_at must be less than ' . Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION . ' year/s from now.',
                 null,
                 [
                     'start_at'  => $value,
-                    'max_year'  => self::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION,
+                    'max_year'  => Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION,
                     'seconds'   => $maxSecondsFromCurrentTime,
                 ]);
         }
@@ -206,7 +274,27 @@ class Validator extends Base\Validator
                 ]);
         }
 
-        // TODO: Add more validations around the maximum value of
-        // total_count depending on the interval and period of the plan.
+        $totalCount = $input[Entity::TOTAL_COUNT];
+
+        $subscription = $this->entity;
+        $plan = $subscription->plan;
+
+        $period = $plan->getPeriod();
+        $interval = $plan->getInterval();
+
+        $maxAllowedTotalCount = Cycle::getMaxAllowedTotalCount($plan);
+
+        if ($totalCount > $maxAllowedTotalCount)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Exceeds the maximum total_count (' . $maxAllowedTotalCount . ') allowed for the given period and interval',
+                null,
+                [
+                    'period'        => $period,
+                    'interval'      => $interval,
+                    'max_allowed'   => $maxAllowedTotalCount,
+                    'input'         => $input,
+                ]);
+        }
     }
 }

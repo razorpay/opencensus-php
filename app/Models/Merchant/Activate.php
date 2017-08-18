@@ -12,6 +12,7 @@ use RZP\Models\Admin\Org;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Key;
+use RZP\Trace\Trace;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Payment;
@@ -27,6 +28,12 @@ class Activate extends Base\Core
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
+        }
+
+        if ($merchant->isArchived() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION);
         }
 
         //
@@ -55,6 +62,26 @@ class Activate extends Base\Core
 
         $oldMerchant = clone $merchant;
 
+        $merchantPromotions = $this->repo->merchant_promotion->getByMerchantId($merchant->getId());
+
+        $merchantPromotionCore = (new Merchant\Promotion\Core);
+
+        foreach ($merchantPromotions as $merchantPromotion)
+        {
+            try
+            {
+                $merchantPromotionCore->activate($merchantPromotion);
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::CRITICAL,
+                    TraceCode::PROMOTION_ACTIVATION_FAILED,
+                    ['merchant_promotion_id' => $merchantPromotion->getId()]);
+            }
+        }
+
         $merchant->enableReceiptEmails();
 
         $merchant->activate();
@@ -72,17 +99,33 @@ class Activate extends Base\Core
             TraceCode::MERCHANT_ACCOUNT_ACTIVATED,
             ['merchant_id' => $merchant->getId()]);
 
-        $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::ACTIVATED);
-
-        $this->sendActivationEmail($merchant);
+        $this->sendMerchantActivatedEvents($merchant);
 
         return $merchant->toArrayPublic();
     }
 
     /**
+     * Send merchant activated events to drip & eventManager
+     * Also, send the email to merchant.
+     *
+     * @param Entity $merchant
+     */
+    protected function sendMerchantActivatedEvents(Entity $merchant)
+    {
+        $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::ACTIVATED);
+
+        $attributes = $merchant->toArrayEvent();
+
+        $this->app['eventManager']->trackEvents($merchant, Merchant\Action::ACTIVATED, $attributes);
+
+        $this->sendActivationEmail($merchant);
+    }
+
+    /**
      * Sends activation email to the merchant, cc's notifications
      * Includes pricing details in the email (properly formatted)
-     * @param  RZP\Models\Merchant\Entity $merchant merchant entity
+     *
+     * @param  Entity $merchant merchant entity
      * @return null
      */
     public function sendActivationEmail($merchant)
@@ -120,8 +163,6 @@ class Activate extends Base\Core
         ];
 
         $data['merchant']['org']['hostname'] = $org->getPrimaryHostName();
-
-        $config = $this->app->config->get('applications.mailgun');
 
         // For marketplace accounts, send this email to the parent merchant
         if ($merchant->isLinkedAccount() === true)
@@ -290,7 +331,6 @@ class Activate extends Base\Core
     /**
      * Remove rules in the merchant's pricing plan
      * for methods not enabled for the merchant
-     * Current checks for International, Emi and Amex
      *
      * @param array $rules Array of rules
      * @param Entity $merchant Merchant entity being activated
@@ -305,6 +345,12 @@ class Activate extends Base\Core
         foreach ($rules as $rule) {
             // Don't add rules other than payment
             if ($rule[Pricing\Entity::FEATURE] !== Pricing\Feature::PAYMENT)
+            {
+                continue;
+            }
+
+            // Don't include marketplace transfer method (for now)
+            if ($rule[Pricing\Entity::PAYMENT_METHOD] === Payment\Method::TRANSFER)
             {
                 continue;
             }

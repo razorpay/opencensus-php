@@ -3,11 +3,12 @@
 namespace RZP\Gateway\AxisMigs;
 
 use Str;
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Exception;
-use RZP\Gateway\AxisMigs;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Payment;
@@ -82,14 +83,14 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK, [$input['gateway']]);
 
-        $this->assertPaymentId($input['payment']['id'], $input['gateway']['vpc_MerchTxnRef']);
-
         if (isset($input['gateway']['vpc_MerchTxnRef']) === false)
         {
             // Payment fails since vpc_MerchTxnRef not set, throw exception
             throw new Exception\GatewayErrorException(
                         Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
+
+        $this->assertPaymentId($input['payment']['id'], $input['gateway']['vpc_MerchTxnRef']);
 
         $gatewayPayment = $this->repo->findByMerchantTxnRefAndCommand(
             $input['gateway']['vpc_MerchTxnRef'], Command::PAY);
@@ -205,6 +206,12 @@ class Gateway extends Base\Gateway
 
     protected function canForceRefund(array $input)
     {
+        // Hardcoding id to do a manual full refund
+        if ($input['refund']['id'] === '882zf69e2bMnED')
+        {
+            return true;
+        }
+
         $isRefundRequired = $this->isRefundRequired($input, false);
 
         if ($isRefundRequired === false)
@@ -318,6 +325,8 @@ class Gateway extends Base\Gateway
             'action' => $this->action,
             'payment' => $input['payment'],
             'refund' => $input['refund']]);
+
+        $this->verifyAmaTransactionResponse($content, $input);
     }
 
     public function forceAuthorizeFailed($input)
@@ -381,11 +390,18 @@ class Gateway extends Base\Gateway
 
         // We have confirmed with acquirer banks that these refunds have
         // not been processed.
-        $hardcodedRefundIds = ['7myk24mVipncjt', '7quh5ytxljRfqo'];
+        $unprocessedRefundIds = ['85VhjZuf8juCfZ'];
 
-        if (in_array($input['refund']['id'], $hardcodedRefundIds) === true)
+        if (in_array($input['refund']['id'], $unprocessedRefundIds) === true)
         {
             return false;
+        }
+
+        $processedRefundIds = ['8COZiOoXPgf2cI'];
+
+        if (in_array($input['refund']['id'], $processedRefundIds) === true)
+        {
+            return true;
         }
 
         // Adding a check for 8th May 2017 as track id was
@@ -398,17 +414,21 @@ class Gateway extends Base\Gateway
 
         $content = $this->sendVerifyRequest($input, 'refund');
 
+        // vpc_DRExists can be 'N' in two cases:
+        // 1. If refund is older than 5 days (MiGS doesn't allow txn query on txns older than 5 days)
+        //    We throw exception in this case as it has to be manually reviewed
+        // 2. If refund request didn't reach them (Host not found, Domain resolution failed etc.)
+        //    We return false here since the refund request didn't reach them and it needs to be
+        //    retried
         if ($content['vpc_DRExists'] === 'N')
         {
-            if ($input['refund']['created_at'] < Carbon::now('Asia/Kolkata')->subDays(5)->timestamp)
+            if ($input['refund']['created_at'] > Carbon::now(Timezone::IST)->subDays(5)->timestamp)
             {
                 return false;
             }
-            else
-            {
-                throw new Exception\LogicException(
-                    'Unable to verify migs refund');
-            }
+
+            throw new Exception\RuntimeException(
+                'Cannot verify old MiGS refunds');
         }
 
         if (($content['vpc_FoundMultipleDRs'] === 'N') and
@@ -737,7 +757,7 @@ class Gateway extends Base\Gateway
     protected function getVerifyRequestContent($input, $entity)
     {
         $content = [
-            'vpc_Command'       => AxisMigs\Command::QUERYDR,
+            'vpc_Command'       => Command::QUERYDR,
             'vpc_MerchTxnRef'   => $input[$entity]['id'],
         ];
 
@@ -747,7 +767,7 @@ class Gateway extends Base\Gateway
     protected function getPaymentRefundRequestContent($input, $payment)
     {
         $content = [
-            'vpc_Command'       => AxisMigs\Command::REFUND,
+            'vpc_Command'       => Command::REFUND,
             'vpc_Amount'        => $input['refund']['amount'],
             'vpc_Currency'      => $input['currency'],
             'vpc_MerchTxnRef'   => $input['refund']['id'],
@@ -760,7 +780,7 @@ class Gateway extends Base\Gateway
     protected function getPaymentReversalRequestContent($input, $payment)
     {
         $content = [
-            'vpc_Command'       => AxisMigs\Command::REVERSAL,
+            'vpc_Command'       => Command::REVERSAL,
             'vpc_Currency'      => $input['payment']['currency'],
             'vpc_MerchTxnRef'   => $input['refund']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
@@ -939,7 +959,10 @@ class Gateway extends Base\Gateway
 
             $acquirerData = $this->getAcquirerData($gatewayPayment);
 
-            if (ThreeDSecureStatus::getThreeDSstatus($threeDSstatus) === Payment\TwoFactorAuth::FAILED)
+            $authStatus = ThreeDSecureStatus::getThreeDSstatus($threeDSstatus);
+
+            if (($authStatus === Payment\TwoFactorAuth::FAILED) or
+                ($authStatus === Payment\TwoFactorAuth::UNKNOWN))
             {
                 if ($input['merchant']['international'] === false)
                 {
@@ -1005,6 +1028,7 @@ class Gateway extends Base\Gateway
     protected function getApiErrorCode($input)
     {
         $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
+        $message = $input['gateway']['vpc_Message'] ?? null;
 
         if ($this->isSessionExpired($input))
         {
@@ -1023,9 +1047,9 @@ class Gateway extends Base\Gateway
         }
 
         // Check for mapped TxnResponseCode value
-        if ((isset(AxisMigs\TxnResponseCode::$map[$txnResponseCode])))
+        if (TxnResponseCode::isErrorCodeMapped($txnResponseCode))
         {
-            return AxisMigs\TxnResponseCode::$map[$txnResponseCode];
+            return TxnResponseCode::getErrorCodeMapped($txnResponseCode, $message);
         }
         else
         {
@@ -1046,12 +1070,13 @@ class Gateway extends Base\Gateway
         $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
         $message = $input['gateway']['vpc_Message'];
 
-        if ((isset(AxisMigs\TxnResponseCode::$map[$txnResponseCode])) and
+        if ((isset(TxnResponseCode::$map[$txnResponseCode])) and
             ($txnResponseCode === 'Aborted') and
             ($message === 'Your Session has expired'))
         {
-                return true;
+            return true;
         }
+
         return false;
     }
 
@@ -1059,7 +1084,7 @@ class Gateway extends Base\Gateway
     {
         $txnResponseCode = null;
 
-        if (isset($content['vpc_TxnResponseCode']))
+        if (isset($content['vpc_TxnResponseCode']) === true)
         {
             $txnResponseCode = $content['vpc_TxnResponseCode'];
         }
@@ -1071,16 +1096,22 @@ class Gateway extends Base\Gateway
 
         $msg = null;
 
-        if (isset($content['vpc_Message']))
+        if (isset($content['vpc_Message']) === true)
         {
             $msg = $content['vpc_Message'];
         }
-        else if (isset($content['ERROR']))
+        else if (isset($content['ERROR']) === true)
         {
             $msg = $content['ERROR'];
         }
 
         $code = Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+
+        if (($txnResponseCode !== null) and
+            (TxnResponseCode::isErrorCodeMapped($txnResponseCode) === true))
+        {
+            $code = TxnResponseCode::getErrorCodeMapped($txnResponseCode, $msg);
+        }
 
         if ($this->action === Base\Action::REFUND)
         {

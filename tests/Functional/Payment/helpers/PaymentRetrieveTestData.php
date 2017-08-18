@@ -60,24 +60,14 @@ return [
             'content' => ['notes' => 'es_random_1'],
         ],
         'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::SERVER_ERROR,
-                    'description' => PublicErrorDescription::SERVER_ERROR,
-                ],
-            ],
-            'status_code' => 500,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\ServerErrorException',
-            'internal_error_code' => ErrorCode::SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND
+            'content' => ['count' => 0]
         ],
     ],
 
     'testSearchEsWithoutQueryParams' => [
         'request' => [
-            'url' => '/payments',
-            'method' => 'get',
+            'url'     => '/payments',
+            'method'  => 'get',
             'content' => [],
         ],
         'response' => [
@@ -87,8 +77,8 @@ return [
 
     'testSearchEsForNotesOnAdminAuth' => [
         'request' => [
-            'url' => '/admin/payment',
-            'method' => 'get',
+            'url'     => '/admin/payment',
+            'method'  => 'get',
             'content' => ['notes' => 'es'],
         ],
         'response' => [
@@ -96,10 +86,42 @@ return [
         ]
     ],
 
+    'testSearchEsForNotesOnAdminAuthExpectedSearchParams' => [
+        'index' => 'payment_test',
+        'type'  => 'payment_test',
+        'body'  => [
+            '_source' => false,
+            'from'    => 0,
+            'size'    => 1000,
+            'query'   => [
+                'bool' => [
+                    'must' => [
+                        [
+                            'multi_match' => [
+                                'query'  => 'es',
+                                'type'   => 'best_fields',
+                                'fields' => 'notes.*',
+                                'boost'  => 2,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
+
     'testSearchEsForNotesWithMerchantIdInQueryParamsOnProxyAuth' => [
         'request' => [
-            'url' => '/payments',
-            'method' => 'get',
+            'url'     => '/payments',
+            'method'  => 'get',
             'content' => ['notes' => 'es_random_1', 'merchant_id' => '12345678901234'],
         ],
         'response' => [
@@ -118,8 +140,8 @@ return [
 
     'testSearchEsForNotes' => [
         'request' => [
-            'url' => '/payments',
-            'method' => 'get',
+            'url'     => '/payments',
+            'method'  => 'get',
             'content' => ['notes' => 'es_random_1'],
         ],
         'response' => [
@@ -127,4 +149,48 @@ return [
         ],
     ],
 
+    'testSearchEsForNotesExpectedSearchParams' => [
+        'index' => 'payment_test',
+        'type'  => 'payment_test',
+        'body'  => [
+            '_source' => false,
+            'from'    => 0,
+            'size'    => 10,
+            'query'   => [
+                'bool' => [
+                    'must' => [
+                        [
+                            'multi_match' => [
+                                'query'  => 'es_random_1',
+                                'type'   => 'best_fields',
+                                'fields' => 'notes.*',
+                                'boost'  => 2,
+                            ],
+                        ],
+                    ],
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'term' => [
+                                        'merchant_id' => [
+                                            'value' => '10000000000000',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
 ];

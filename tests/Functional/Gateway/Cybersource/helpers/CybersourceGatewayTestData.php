@@ -46,6 +46,7 @@ return [
         'verified'          => null,
         'fee'               => 1000,
         'service_tax'       => 0,
+        'tax'               => 0,
         'entity'            => 'payment',
     ],
 
@@ -282,7 +283,7 @@ return [
             'status_code' => 500,
         ],
         'exception' => [
-            'class' => RZP\Exception\ServerErrorException::class,
+            'class' => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::SERVER_ERROR_INVALID_ARGUMENT,
         ],
     ],

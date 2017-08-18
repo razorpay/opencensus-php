@@ -4,33 +4,45 @@ namespace RZP\Tests\Functional\Settlement;
 
 use RZP\Models\FileStore\Storage\AwsS3\Handler;
 use RZP\Models\FundTransfer\Attempt;
+use RZP\Models\Settlement\Holidays;
+
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use AWS;
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 trait SettlementTrait
 {
     /**
      * Days used for testing creating a payment on settlement holiday
-     * @TODO Randomise these dates.
      **/
     protected function getDaysForSettlementHolidayTests()
     {
+        $date = Carbon::today(Timezone::IST)->subDays(30);
+
+        $holidayDate = Holidays::getNextSettlementHoliday($date)->addHours(7);
+
+        $paymentCreatedAt = $holidayDate->copy();
+
         return [
-            'payment_created_at'        => '5 july 2016',
-            'payment_settlment_holiday' => '9 july 2016 7:00:00',
-            'payment_settlement_on'     => '11 july 2016 7:00:00',
+            'payment_created_at'        => $paymentCreatedAt->subDays(4)->format('j M Y'),
+            'payment_settlment_holiday' => $holidayDate->format('j M Y h:i:s'),
+            'payment_settlement_on'     => Holidays::getNextWorkingDay($holidayDate->addDay())->format('j M Y h:i:s'),
         ];
     }
 
     /**
      * Days used for testing creating a payment on settlement non holiday
-     * @TODO Randomise these dates.
      **/
     protected function getDaysForSettlementNonHolidayTests()
     {
+        $prevWorkingDay = Holidays::getPreviousWorkingDay((Carbon::today(Timezone::IST))->subDays(25));
+
+        $paymentCreatedOn = $prevWorkingDay->copy();
+
         return [
-           'payment_created_at'    => '12 july 2016',
-           'payment_settlement_on' => '15 july 2016 7:00:00',
+           'payment_settlement_on'    => $prevWorkingDay->addHours(7)->format('j M Y'),
+           'payment_created_at' => $paymentCreatedOn->subDays(8)->format('j M Y h:i:s'),
         ];
     }
 
@@ -39,7 +51,6 @@ trait SettlementTrait
         $deleteUrls = [
             '/settlements/file/setl_initiate',
             '/settlements/file/reconcile',
-            '/settlements/file/return',
         ];
 
         $this->ba->appAuth();
@@ -163,51 +174,6 @@ trait SettlementTrait
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertFileNotExists($setlReconciliationFile);
-
-        return $content;
-    }
-
-    protected function generateSetlReturnFile($setlData)
-    {
-        $items = $setlData;
-
-        $content = [];
-
-        foreach ($items as $item)
-        {
-            $content[] = [
-                'id' => 'setl_' . $item['id'],
-                'refer_utr' => '1'
-            ];
-        }
-
-        $request = [
-            'url' => '/settlements/return/generate',
-            'content' => $content,
-        ];
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertArrayHasKey('setlReturnFile', $content);
-
-        return $content['setlReturnFile'];
-    }
-
-    protected function processSetlReturns($setlReturnFile)
-    {
-        $uploadedFile = $this->createUploadedFile($setlReturnFile);
-
-        $request = [
-            'url' => '/settlements/return',
-            'files' => [
-//                'setlReturnFile' => $uploadedFile
-                'file' => $uploadedFile,
-            ],
-        ];
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertFileNotExists($setlReturnFile);
 
         return $content;
     }

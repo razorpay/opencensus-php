@@ -3,12 +3,15 @@
 namespace RZP\Models\FundTransfer\Kotak\Reconciliation\Base;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Illuminate\Support\Facades\App;
 use Mail;
 
 use RZP\Constants\Entity;
 use RZP\Constants\MailTags;
 use RZP\Constants\Mode;
+use RZP\Exception;
+use RZP\Mail\Merchant\SettlementFailure as SettlementFailureMail;
 use RZP\Models\Base\Core as BaseCore;
 use RZP\Models\FundTransfer\Kotak\Headings;
 use RZP\Models\FundTransfer\Kotak\Reconciliation\Status;
@@ -95,6 +98,7 @@ class RowProcessor extends BaseCore
             'bank_status_code'  => trim($this->row[Headings::STATUS_OF_TRANSACTION] ?? null),
             'remarks'           => trim($this->row[Headings::REMARKS] ?? null),
             'payment_date'      => trim($this->row[Headings::PAYMENT_DATE] ?? null),
+            'instrument_date'   => trim($this->row[Headings::INSTRUMENT_DATE] ?? null),
             'date_time'         => trim($this->row[Headings::DATE_TIME] ?? null),
             'cms_ref_no'        => trim($this->row[Headings::CMS_REF_NO] ?? null),
         ];
@@ -104,15 +108,15 @@ class RowProcessor extends BaseCore
 
     protected function getReconciliationStatus()
     {
-        $recordDate = Carbon::createFromFormat('d-M-y', $this->parsedData['payment_date'], 'Asia/Kolkata');
+        $recordDate = Carbon::createFromFormat('d-M-y', $this->parsedData['payment_date'], Timezone::IST);
 
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         $tenPm = $recordDate->hour(22)->timestamp;
 
         $failureReason = null;
 
-        $class = Entity::getEntityNamespace($this->reconEntity->getEntityName()) . '\\Status';
+        $class = $this->getEntityStatusNamespace($this->reconEntity->getEntityName());
 
         $status = $class::FAILED;
 
@@ -162,7 +166,7 @@ class RowProcessor extends BaseCore
 
     protected function sendReconciliationFailureEmail()
     {
-        if ($this->mode === Mode::TEST)
+        if ($this->isMailEnabled() === false)
         {
             return;
         }
@@ -184,21 +188,28 @@ class RowProcessor extends BaseCore
 
         $data['subject'] = 'Razorpay | Notification for failed settlement on your account ' . $merchantId;
 
-        Mail::queue('emails.merchant.settlement_failure', $data, function($message) use ($data)
+        $settlementFailureMail = new SettlementFailureMail($data);
+
+        Mail::queue($settlementFailureMail);
+    }
+
+    protected function isMailEnabled(): bool
+    {
+        if ($this->app->environment('dev', 'testing') === true)
         {
-            $emails = $data['merchant_email'];
+            return true;
+        }
 
-            $message->from('care@razorpay.com', 'Razorpay Settlement Support');
+        if ($this->mode === Mode::TEST)
+        {
+            return false;
+        }
 
-            $message->cc('support@razorpay.com');
+        return true;
+    }
 
-            $message->subject($data['subject']);
-
-            $message->to($emails);
-
-            $headers = $message->getHeaders();
-
-            $headers->addTextHeader(MailTags::HEADER, MailTags::SETTLEMENT_FAILURE_EMAIL);
-        });
+    protected function getEntityStatusNamespace(string $entityName): string
+    {
+        return Entity::getEntityNamespace($entityName) . '\\Status';
     }
 }

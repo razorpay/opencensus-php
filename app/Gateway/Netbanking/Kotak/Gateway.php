@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Kotak;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -228,7 +229,7 @@ class Gateway extends Base\Gateway
     protected function getPaymentRequestData($input)
     {
         // Kotak asks for date in IST
-        $date = Carbon::now('Asia/Kolkata')->format('dmYHis');
+        $date = Carbon::now(Timezone::IST)->format('dmYHis');
 
         $billingLabel = $input['merchant']['billing_label'];
 
@@ -263,16 +264,19 @@ class Gateway extends Base\Gateway
     protected function sendPaymentVerifyRequest($verify)
     {
         $gatewayPayment = $verify->payment;
+
         $input = $verify->input;
 
-        $content = array(
+        $date = Carbon::now(Timezone::IST)->format('dmYHis');
+
+        $content = [
             'MessageCode'   => MessageCodes::VERIFY,
-            'DateTimeInGMT' => $gatewayPayment['date'],
+            'DateTimeInGMT' => $date,
             'MerchantId'    => $gatewayPayment['merchant_code'],
             'TraceNumber'   => $gatewayPayment['int_payment_id'],
             'Future1'       => '',
             'Future2'       => '',
-        );
+        ];
 
         $request = $this->getRequestArray($content);
 

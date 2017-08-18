@@ -1,5 +1,7 @@
 <?php
 
+use RZP\Models\VirtualAccount;
+
 return array(
     'dashboard' => array(
         'url'       => env('APP_DASHBOARD_URL'),
@@ -39,6 +41,14 @@ return array(
         'mock'      => env('SLACK_MOCK'),
     ),
 
+    'sns' => [
+        'mock'      => env('SNS_MOCK'),
+    ],
+
+    'zapier' => [
+        'mock'      => env('ZAPIER_MOCK'),
+    ],
+
     'hosted' => array(
         'secret'    => env('APP_HOSTED_SECRET'),
     ),
@@ -63,11 +73,10 @@ return array(
         'secretv2'  => env('MAXMIND_V2_SECRET')
     ),
 
-    'kotak' => array(
+    VirtualAccount\Provider::KOTAK => array(
         'secret'    => env('KOTAK_SECRET'),
     ),
-
-    'yesbank' => array(
+    VirtualAccount\Provider::YESBANK => array(
         'secret'    => env('YESBANK_SECRET'),
     ),
 
@@ -75,9 +84,16 @@ return array(
         'url'           => env('LUMBERJACK_URL'),
         'secret'        => env('LUMBERJACK_SECRET'),
         'key'           => env('LUMBERJACK_KEY'),
-        'is_mock'       => env('LUMBERJACK_MOCK', false),
+        'mock'          => env('LUMBERJACK_MOCK', false),
         'identifier'    => env('LUMBERJACK_API_IDENTIFIER')
     ),
+
+    'harvester' => [
+        'url'           => env('HARVESTER_URL'),
+        'secret'        => env('HARVESTER_SECRET'),
+        'mock'          => env('HARVESTER_MOCK', false),
+        'identifier'    => env('HARVESTER_API_IDENTIFIER')
+    ],
 
     'elfin' => [
         'mock'     => env('ELFIN_MOCK', true),
@@ -114,5 +130,14 @@ return array(
             'username' => env('STATUSCAKE_USERNAME'),
             'api_key'  => env('STATUSCAKE_API_KEY')
         ]
-    ]
+    ],
+
+    'nodal' => [
+        'mock' => env('NODAL_MOCK', false),
+        'auth' => [
+            'username' => env('NODAL_USERNAME'),
+            'password' => env('NODAL_PASSWORD'),
+        ],
+        'url' => env('NODAL_BASE_URL'),
+    ],
 );

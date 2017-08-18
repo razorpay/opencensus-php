@@ -11,48 +11,52 @@ use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Settlement;
 use RZP\Models\Payment;
+use Razorpay\IFSC\IFSC as BaseIFSC;
 
 class Gateway
 {
-    const AMEX                = 'amex';
-    const ATOM                = 'atom';
-    const AXIS_GENIUS         = 'axis_genius';
-    const AXIS_MIGS           = 'axis_migs';
-    const BILLDESK            = 'billdesk';
-    const CYBERSOURCE         = 'cybersource';
-    const EBS                 = 'ebs';
-    const FIRST_DATA          = 'first_data';
-    const HDFC                = 'hdfc';
-    const MOBIKWIK            = 'mobikwik';
-    const NETBANKING_HDFC     = 'netbanking_hdfc';
-    const NETBANKING_KOTAK    = 'netbanking_kotak';
-    const NETBANKING_ICICI    = 'netbanking_icici';
-    const NETBANKING_AIRTEL   = 'netbanking_airtel';
-    const NETBANKING_AXIS     = 'netbanking_axis';
-    const NETBANKING_FEDERAL  = 'netbanking_federal';
-    const NETBANKING_RBL      = 'netbanking_rbl';
-    const NETBANKING_INDUSIND = 'netbanking_indusind';
-    const PAYTM               = 'paytm';
-    const SHARP               = 'sharp';
-    const UPI_ICICI           = 'upi_icici';
-    const UPI_IDFC            = 'upi_idfc';
-    const AEPS_ICICI          = 'aeps_icici';
-    const WALLET_AIRTELMONEY  = 'wallet_airtelmoney';
-    const WALLET_FREECHARGE   = 'wallet_freecharge';
-    const WALLET_JIOMONEY     = 'wallet_jiomoney';
-    const WALLET_OPENWALLET   = 'wallet_openwallet';
-    const WALLET_OLAMONEY     = 'wallet_olamoney';
-    const WALLET_PAYUMONEY    = 'wallet_payumoney';
-    const WALLET_PAYZAPP      = 'wallet_payzapp';
-    const WALLET_MPESA        = 'wallet_mpesa';
+    const AMEX               = 'amex';
+    const ATOM               = 'atom';
+    const AXIS_GENIUS        = 'axis_genius';
+    const AXIS_MIGS          = 'axis_migs';
+    const BILLDESK           = 'billdesk';
+    const CYBERSOURCE        = 'cybersource';
+    const EBS                = 'ebs';
+    const FIRST_DATA         = 'first_data';
+    const HDFC               = 'hdfc';
+    const MOBIKWIK           = 'mobikwik';
+    const NETBANKING_AIRTEL  = 'netbanking_airtel';
+    const NETBANKING_AXIS    = 'netbanking_axis';
+    const NETBANKING_FEDERAL = 'netbanking_federal';
+    const NETBANKING_HDFC    = 'netbanking_hdfc';
+    const NETBANKING_ICICI   = 'netbanking_icici';
+    const NETBANKING_INDUSIND= 'netbanking_indusind';
+    const NETBANKING_KOTAK   = 'netbanking_kotak';
+    const NETBANKING_RBL     = 'netbanking_rbl';
+    const NETBANKING_PNB     = 'netbanking_pnb';
+    const PAYTM              = 'paytm';
+    const SHARP              = 'sharp';
+    const UPI_MINDGATE       = 'upi_mindgate';
+    const UPI_ICICI          = 'upi_icici';
+    const UPI_IDFC           = 'upi_idfc';
+    const AEPS_ICICI         = 'aeps_icici';
 
-    const ACQUIRER_HDFC       = 'hdfc';
-    const ACQUIRER_ICIC       = 'icic';
-    const ACQUIRER_AXIS       = 'axis';
-    const ACQUIRER_AMEX       = 'amex';
+    const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
+    const WALLET_FREECHARGE  = 'wallet_freecharge';
+    const WALLET_JIOMONEY    = 'wallet_jiomoney';
+    const WALLET_MPESA       = 'wallet_mpesa';
+    const WALLET_OLAMONEY    = 'wallet_olamoney';
+    const WALLET_OPENWALLET  = 'wallet_openwallet';
+    const WALLET_PAYUMONEY   = 'wallet_payumoney';
+    const WALLET_PAYZAPP     = 'wallet_payzapp';
 
-    const NOT_SUPPORTED       = 'not_supported';
-    const SUPPORTED           = 'supported';
+    const ACQUIRER_HDFC      = 'hdfc';
+    const ACQUIRER_ICIC      = 'icic';
+    const ACQUIRER_AXIS      = 'axis';
+    const ACQUIRER_AMEX      = 'amex';
+
+    const NOT_SUPPORTED      = 'not_supported';
+    const SUPPORTED          = 'supported';
 
     const GATEWAY_ACQUIRERS = [
         self::AXIS_MIGS   => [self::ACQUIRER_AXIS, self::ACQUIRER_HDFC],
@@ -68,7 +72,7 @@ class Gateway
         Wallet::PAYUMONEY,
         Wallet::OLAMONEY,
         Wallet::FREECHARGE,
-        Wallet::MPESA,
+        // Wallet::MPESA,
     ];
 
     /**
@@ -107,7 +111,9 @@ class Gateway
     */
     const FORCE_AUTHORIZE_GATEWAYS = [
         self::AXIS_MIGS,
-        self::WALLET_JIOMONEY
+        self::WALLET_JIOMONEY,
+        self::NETBANKING_RBL,
+        self::NETBANKING_INDUSIND,
     ];
 
     /**
@@ -127,6 +133,9 @@ class Gateway
         Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::AMEX,
         Payment\Gateway::WALLET_JIOMONEY,
+        Payment\Gateway::WALLET_AIRTELMONEY,
+        Payment\Gateway::FIRST_DATA,
+        Payment\Gateway::UPI_ICICI,
     ];
 
     public static $channels = [
@@ -148,6 +157,7 @@ class Gateway
         self::NETBANKING_FEDERAL  => Settlement\Channel::KOTAK,
         self::NETBANKING_RBL      => Settlement\Channel::KOTAK,
         self::NETBANKING_INDUSIND => Settlement\Channel::KOTAK,
+        self::NETBANKING_PNB      => Settlement\Channel::KOTAK,
         self::WALLET_PAYZAPP      => Settlement\Channel::KOTAK,
         self::WALLET_PAYUMONEY    => Settlement\Channel::KOTAK,
         self::WALLET_OLAMONEY     => Settlement\Channel::KOTAK,
@@ -157,6 +167,7 @@ class Gateway
         self::WALLET_OPENWALLET   => Settlement\Channel::KOTAK,
         self::WALLET_MPESA        => Settlement\Channel::KOTAK,
         self::FIRST_DATA          => Settlement\Channel::KOTAK,
+        self::UPI_MINDGATE        => Settlement\Channel::KOTAK,
         self::UPI_ICICI           => Settlement\Channel::KOTAK,
         self::AEPS_ICICI          => Settlement\Channel::KOTAK,
         self::CYBERSOURCE         => Settlement\Channel::KOTAK,
@@ -192,6 +203,7 @@ class Gateway
             self::NETBANKING_FEDERAL,
             self::NETBANKING_RBL,
             self::NETBANKING_INDUSIND,
+            self::NETBANKING_PNB,
         ],
 
         Method::WALLET => [
@@ -214,6 +226,7 @@ class Gateway
         ],
 
         Method::UPI => [
+            self::UPI_MINDGATE,
             self::UPI_ICICI,
             self::UPI_IDFC,
         ],
@@ -276,11 +289,12 @@ class Gateway
      * the payment to be authorized.
      * @var array
      */
-    public static $asynchronous = array(
+    public static $asynchronous = [
+        self::UPI_MINDGATE,
         self::UPI_ICICI,
         self::UPI_IDFC,
         self::SHARP,
-    );
+    ];
 
     /**
      * Each card gateway only support specific card networks.
@@ -330,7 +344,7 @@ class Gateway
         ],
     ];
 
-    public static $walletToGatewayMap = array(
+    public static $walletToGatewayMap = [
         Wallet::OLAMONEY    => Gateway::WALLET_OLAMONEY,
         Wallet::PAYTM       => Gateway::PAYTM,
         Wallet::MOBIKWIK    => Gateway::MOBIKWIK,
@@ -341,12 +355,20 @@ class Gateway
         Wallet::JIOMONEY    => Gateway::WALLET_JIOMONEY,
         Wallet::OPENWALLET  => Gateway::WALLET_OPENWALLET,
         Wallet::MPESA       => Gateway::WALLET_MPESA,
-    );
+    ];
 
-    public static $upiToGatewayMap = array(
+    public static $upiToGatewayMap = [
+        Upi::HDFC   => Gateway::UPI_MINDGATE,
         Upi::ICICI  => Gateway::UPI_ICICI,
         Upi::IDFC   => Gateway::UPI_IDFC,
-    );
+    ];
+
+    public static $acquirerToCodeMap = [
+        self::ACQUIRER_HDFC => IFSC::HDFC,
+        self::ACQUIRER_ICIC => IFSC::ICIC,
+        self::ACQUIRER_AXIS => IFSC::UTIB,
+        self::ACQUIRER_AMEX => Network::AMEX,
+    ];
 
     /**
      * @deprecated
@@ -369,8 +391,8 @@ class Gateway
         self::NETBANKING_AIRTEL,
         self::NETBANKING_AXIS,
         self::NETBANKING_FEDERAL,
-        self::NETBANKING_RBL,
         self::NETBANKING_INDUSIND,
+        self::NETBANKING_PNB,
         self::WALLET_PAYZAPP,
         self::FIRST_DATA,
         self::CYBERSOURCE,
@@ -379,12 +401,14 @@ class Gateway
         self::WALLET_OLAMONEY,
         self::WALLET_FREECHARGE,
         self::WALLET_JIOMONEY,
+        self::WALLET_MPESA,
         self::UPI_ICICI,
         self::UPI_IDFC,
     ];
 
     public static $verifyDisabled = [
-        self::WALLET_OPENWALLET
+        self::WALLET_OPENWALLET,
+        self::NETBANKING_RBL,
     ];
 
     /**
@@ -404,24 +428,25 @@ class Gateway
      *
      * @var array
      */
-    public static $s2sCallbackGateways = array(
+    public static $s2sCallbackGateways = [
         Gateway::BILLDESK,
+        Gateway::UPI_MINDGATE,
         Gateway::UPI_ICICI,
         Gateway::WALLET_OLAMONEY,
         Gateway::SHARP
-    );
+    ];
 
     /**
      * Card gateways which support international payments
      *
      * @var array
      */
-    public static $internationalCardGateways = array(
+    public static $internationalCardGateways = [
         Gateway::HDFC,
         Gateway::AXIS_MIGS,
         Gateway::AMEX,
         Gateway::CYBERSOURCE,
-    );
+    ];
 
     /**
      * For the banks that need a claims file to be generated,
@@ -432,6 +457,9 @@ class Gateway
         IFSC::KKBK,
         IFSC::UTIB,
         IFSC::FDRL,
+        IFSC::RATN,
+        IFSC::INDB,
+        IFSC::PUNB,
     ];
 
     /**
@@ -439,10 +467,11 @@ class Gateway
      *
      * @var array
      */
-    public static $partiallySupportedCardNetworks = array(
+    public static $partiallySupportedCardNetworks = [
         Network::MAES,
         Network::RUPAY,
-        Network::DICL);
+        Network::DICL
+    ];
 
     /**
      * For the banks we have direct tie-ups with,
@@ -452,7 +481,7 @@ class Gateway
      *
      * @var array
      */
-    public static $netbankingToGatewayMap = array(
+    public static $netbankingToGatewayMap = [
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::AIRP => Gateway::NETBANKING_AIRTEL,
@@ -460,7 +489,9 @@ class Gateway
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
-        IFSC::RATN => Gateway::NETBANKING_RBL);
+        IFSC::RATN => Gateway::NETBANKING_RBL,
+        IFSC::PUNB => Gateway::NETBANKING_PNB,
+    ];
 
     /**
      * For the banks that require a refundfile generated everyday,
@@ -468,27 +499,30 @@ class Gateway
      *
      * @var array
      */
-    public static $refundFileNetbankingGateways = array(
+    public static $refundFileNetbankingGateways = [
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
         IFSC::RATN => Gateway::NETBANKING_RBL,
-        IFSC::INDB => Gateway::NETBANKING_INDUSIND);
+        IFSC::INDB => Gateway::NETBANKING_INDUSIND,
+        IFSC::PUNB => Gateway::NETBANKING_PNB,
+    ];
 
     /**
      * List of gateways which support netbanking, either in test or live mode.
      *
      * @var array
      */
-    public static $netbankingGateways = array(
+    public static $netbankingGateways = [
         Gateway::BILLDESK,
         Gateway::EBS,
         Gateway::PAYTM,
-        Gateway::ATOM);
+        Gateway::ATOM
+    ];
 
-    public static $emiBanks = array(
+    public static $emiBanks = [
         IFSC::HDFC,
         IFSC::HSBC,
         IFSC::ICIC,
@@ -497,21 +531,37 @@ class Gateway
         IFSC::RATN,
         IFSC::SCBL,
         IFSC::UTIB,
-    );
+    ];
 
-    public static $emiBanksUsingCardTerminals = array(
+    public static $emiBanksUsingCardTerminals = [
         IFSC::INDB,
         IFSC::KKBK,
         IFSC::RATN,
         IFSC::UTIB,
-    );
+        IFSC::SCBL,
+        IFSC::ICIC,
+    ];
 
-    public static $emiBankToGatewayMap = array(
+    public static $emiBankToGatewayMap = [
         IFSC::HDFC => Gateway::HDFC,
-        IFSC::ICIC => Gateway::FIRST_DATA,
         IFSC::HSBC => Gateway::FIRST_DATA,
-        IFSC::SCBL => Gateway::FIRST_DATA,
-    );
+    ];
+
+    public static $subscriptionOverOneYearGateways = [
+        Gateway::AXIS_MIGS
+    ];
+
+    public static function getAcquirerName(string $acquirer)
+    {
+        $code = self::$acquirerToCodeMap[$acquirer];
+
+        if ($code === 'AMEX')
+        {
+            return Network::getFullName($code);
+        }
+
+        return BaseIFSC::getBankName($code);
+    }
 
     public static function isNetbankingBankDirectlySupported($bank)
     {

@@ -315,7 +315,7 @@ class Gateway extends Base\Gateway
 
             if (empty($authResponse['data']) === true)
             {
-                throw new Exception\LogicException(
+                throw new Exception\BadRequestValidationFailureException(
                     'The gateway input is empty. This is unexpected.',
                     null,
                     ['network' => $network]);
@@ -331,6 +331,8 @@ class Gateway extends Base\Gateway
         }
 
         $this->validateCallbackGatewayFields($input, $network);
+
+        $this->validateParesStatusIfApplicable($input);
 
         $this->id = $input['payment']['id'];
 
@@ -758,15 +760,16 @@ class Gateway extends Base\Gateway
                 $exception = new Exception\GatewayTimeoutException('');
                 break;
 
-            case Error\ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE:
-                $exception = new Exception\GatewayRequestException;
-                break;
-
-            case Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_UDF:
-            case Error\ErrorCode::GATEWAY_ERROR_PAYMENT_DENIED_NEGATIVE_BIN:
-            case Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT:
-                $exception = new Exception\GatewayErrorException($apiErrorCode);
-
+            case Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_NOT_AVAILABLE:
+                // TODO: This is a hack. Fix this in a better way.
+                if ($this->action === Base\Action::AUTHORIZE)
+                {
+                    $exception = new Exception\GatewayRequestException;
+                }
+                else
+                {
+                    $exception = new Exception\GatewayErrorException($apiErrorCode);
+                }
                 break;
 
             default:
@@ -804,4 +807,38 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function validateParesStatusIfApplicable(array $input)
+    {
+        if (isset($input['gateway']['PaRes']) === false)
+        {
+            return;
+        }
+
+        try
+        {
+            $PaRes = $input['gateway']['PaRes'];
+
+            $PaRes = base64_decode($PaRes);
+            $PaRes = gzinflate(substr($PaRes, 2));
+
+            $PaResObject = simplexml_load_string($PaRes);
+            $PaRes = json_decode(json_encode($PaResObject), true);
+        }
+        catch (\Throwable $e)
+        {
+            // Trace and ignore the exeption
+            $this->trace->traceException($e);
+
+            return;
+        }
+
+        // We are doing this only for N right now as Y, A and U
+        // depends on the processor
+        if ((isset($PaRes['Message']['PARes']['TX']['status']) === true) and
+            ($PaRes['Message']['PARes']['TX']['status'] === 'N'))
+        {
+            throw new Exception\GatewayErrorException(
+                Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED);
+        }
+    }
 }

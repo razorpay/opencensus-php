@@ -70,7 +70,7 @@ class Server extends Base\Mock\Server
 
         $httpQuery = http_build_query($postData);
 
-        $aes = new Netbanking\AESCrypto(AES::MODE_ECB, $masterKey);
+        $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
 
         $content['ES'] = base64_encode($aes->encryptString($httpQuery));
 
@@ -83,7 +83,7 @@ class Server extends Base\Mock\Server
     {
         $masterKey = $this->getGatewayInstance()->getSecret();
 
-        $aes = new Netbanking\AESCrypto(AES::MODE_ECB, $masterKey);
+        $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
 
         $decryptedString = $aes->decryptString(base64_decode($input['ES']));
 

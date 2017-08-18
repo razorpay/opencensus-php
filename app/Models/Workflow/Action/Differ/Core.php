@@ -49,12 +49,9 @@ class Core extends Base\Core
 
         $diff->build($differInput);
 
-        $diff[Entity::CREATED_AT] = Carbon::now('Asia/Kolkata')->timestamp;
+        $diff[Entity::CREATED_AT] = Carbon::now()->getTimestamp();
 
-        // makerAction
-        $function = $differInput['type'] . 'Action';
-
-        $diff = $this->$function($diff);
+        $diff = $this->makerAction($diff);
 
         return $diff;
     }
@@ -150,7 +147,11 @@ class Core extends Base\Core
     {
         // If the diff is already present, no need to run
         // the validators and compute it again.
-        if (empty($differ->getDiff()) === false)
+        //
+        // Not we'll consider [] to be a valid diff as well
+        // and store in ES
+
+        if ((empty($differ->getDiff()) === false))
         {
             $this->saveToEs($differ->toArray());
 

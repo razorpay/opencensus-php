@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use DB;
 use Mail;
 use Illuminate\Http\UploadedFile;
@@ -11,8 +12,8 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 use RZP\Mail\Merchant\Activation as ActivationMail;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
-use RZP\Models\Transaction;
 use RZP\Models\Merchant;
+use RZP\Models\Transaction;
 use RZP\Models\Merchant\Methods;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
@@ -401,10 +402,10 @@ class MerchantTest extends TestCase
         $this->assertLessThanOrEqual($content['activated_at'], $activatedAt);
 
         // We check that the merchant balance is just zero in live mode
-        $this->ba->proxyAuthLive();
+        $this->ba->proxyAuth('rzp_live_1cXSLlUU8V9sXl');
 
         $testData = $this->testData['testGetBalance'];
-        $testData['request']['url'] = '/merchants/1cXSLlUU8V9sXl/balance';
+        $testData['request']['url'] = '/balance';
         $testData['response']['content']['id'] = '1cXSLlUU8V9sXl';
         $testData['response']['content']['balance'] = 0;
 
@@ -625,6 +626,35 @@ class MerchantTest extends TestCase
         });
     }
 
+    public function testAddBankAccountWithMerchantDetail()
+    {
+        Mail::fake();
+
+        $merchantDetail = $this->fixtures->create('merchant_detail',
+                                                [
+                                                    'merchant_id' => '10000000000000',
+                                                ]);
+
+        $this->startTest();
+
+        Mail::assertSent(BankAccountChangeMail::class, function ($mail)
+        {
+            $testData = $this->testData['testAddBankAccount']['response']['content'];
+
+            $this->assertArraySelectiveEquals($testData, $mail->viewData);
+
+            return true;
+        });
+
+        $detail = $this->getLastEntity('merchant_detail', true);
+
+        $this->assertEquals('0002020000304030434', $detail['bank_account_number']);
+
+        $this->assertEquals('Test R4zorpay', $detail['bank_account_name']);
+
+        $this->assertEquals('ICIC0001206', $detail['bank_branch_ifsc']);
+    }
+
     public function testAddBankAccountWithInvalidIFSC()
     {
         $this->startTest();
@@ -676,8 +706,8 @@ class MerchantTest extends TestCase
 
         $this->testAddBankAccount();
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(5)->timestamp + 5;
-        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(5)->timestamp + 10;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(5)->timestamp + 5;
+        $capturedAt = Carbon::today(Timezone::IST)->subDays(5)->timestamp + 10;
 
         $capturedPayments = $this->fixtures->times(4)->create(
             'payment:captured',
@@ -795,8 +825,6 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->fixtures->merchant->addFeatures('expose_downtimes');
-
         $this->fixtures->create('gateway_downtime:card', [
             'gateway' => 'ALL',
             'issuer'  => 'ALL',
@@ -808,8 +836,6 @@ class MerchantTest extends TestCase
     public function testGetCheckoutPreferencesWithCardDowntimeWithIssuerOrNetworkUnknown()
     {
         $this->ba->publicAuth();
-
-        $this->fixtures->merchant->addFeatures('expose_downtimes');
 
         $this->fixtures->create('gateway_downtime:card', [
             'gateway' => 'first_data',
@@ -825,8 +851,6 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->fixtures->merchant->addFeatures('expose_downtimes');
-
         $this->fixtures->create('gateway_downtime:card', [
             'gateway' => 'hdfc',
             'issuer'  => 'ALL',
@@ -838,8 +862,6 @@ class MerchantTest extends TestCase
     public function testGetCheckoutPreferencesWithCardDowntimeWithGatewayExclusiveNetworkDown()
     {
         $this->ba->publicAuth();
-
-        $this->fixtures->merchant->addFeatures('expose_downtimes');
 
         $this->fixtures->create('gateway_downtime:card', [
             'gateway' => 'hdfc',
@@ -853,8 +875,6 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->fixtures->merchant->addFeatures('expose_downtimes');
-
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'ALL',
             'issuer'  => 'HDFC',]);
@@ -865,8 +885,6 @@ class MerchantTest extends TestCase
     public function testGetCheckoutPreferencesWithNetbankingDowntimeWithSharedNetbankingGateway()
     {
         $this->ba->publicAuth();
-
-        $this->fixtures->merchant->addFeatures('expose_downtimes');
 
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'billdesk',
@@ -879,8 +897,6 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->fixtures->merchant->addFeatures('expose_downtimes');
-
          $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway' => 'billdesk',
             'issuer'  => 'ALLA',]);
@@ -891,8 +907,6 @@ class MerchantTest extends TestCase
     public function testGetCheckoutPreferencesWithDirectNetbankingDowntime()
     {
         $this->ba->publicAuth();
-
-        $this->fixtures->merchant->addFeatures('expose_downtimes');
 
         $this->fixtures->create('gateway_downtime:netbanking', [
             'gateway'     => 'netbanking_hdfc',
@@ -905,8 +919,6 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $this->fixtures->merchant->addFeatures('expose_downtimes');
-
         $this->fixtures->create('gateway_downtime:wallet', [
             'gateway' => 'wallet_olamoney',
             'issuer'  => 'olamoney']);
@@ -918,7 +930,7 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $startsAt = Carbon::yesterday('Asia/Kolkata')->timestamp;
+        $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
 
         $offer = $this->fixtures->create('offer:wallet', [
                 'checkout_display' => true,
@@ -934,19 +946,29 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $startsAt = Carbon::yesterday('Asia/Kolkata')->timestamp;
+        $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
 
-        $offer = $this->fixtures->create('offer:card', [
-                'display_text' => 'Some display text',
-                'terms'        => 'Some terms',
-                'starts_at'    => $startsAt
-            ]);
+        $testData = $this->testData[__FUNCTION__];
 
-        $order = $this->fixtures->create('order:with_offer_applied', ['offer_id' => $offer->getId()]);
+        $request = $testData['request'];
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
+        foreach ($testData['tests'] as $test)
+        {
+            $data = [
+                'request' => $request,
+                'response' => $test['response'],
+            ];
 
-        $this->startTest();
+            $fixtureData = $test['offer'];
+            $fixtureData['starts_at'] = $startsAt;
+
+            $offer = $this->fixtures->create('offer', $fixtureData);
+            $order = $this->fixtures->create('order:with_offer_applied', ['offer_id' => $offer->getId()]);
+
+            $data['request']['url'] = '/preferences?order_id=' . $order->getPublicId();
+
+            $this->runRequestResponseFlow($data);
+        }
     }
 
     public function testGetCheckoutRouteWithSavedLocal()
@@ -1021,8 +1043,6 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->activate('10000000000000');
 
-        $this->fixtures->merchant->addFeatures(['cardsaving']);
-
         $response = $this->startTest();
 
         $this->assertNotNull($response['customer']['tokens']);
@@ -1054,6 +1074,15 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
         $this->fixtures->merchant->disableInternational();
+
+        $this->ba->appAuth();
+
+        $content = $this->startTest();
+    }
+
+    public function testPutEmiMethod()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['pricing_plan_id' => '1hDYlICobzOCYt']);
 
         $this->ba->appAuth();
 

@@ -11,6 +11,7 @@ use RZP\Models\Payment\Refund;
 use RZP\Exception;
 use RZP\Constants\Table;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 class Repository extends Base\Repository
 {
@@ -28,7 +29,7 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID     => 'sometimes|alpha_dash',
         Entity::TRANSACTION_ID  => 'sometimes|alpha_dash|min:14|max:18',
         Entity::BATCH_ID        => 'sometimes|alpha_dash|min:14|max:20',
-        Entity::NOTES           => 'sometimes|string|max:500',
+        Entity::NOTES           => 'sometimes|notes_fetch',
         Entity::STATUS          => 'sometimes|string|max:30',
     );
 
@@ -82,6 +83,24 @@ class Repository extends Base\Repository
                     ->where('refunds.created_at', '<=', $to)
                     ->where('payments.gateway', '=', $gateway)
                     ->get();
+    }
+
+    public function getRefundedAmountByGateway(string $gateway, int $from, int $to)
+    {
+        $refundPaymentId = $this->dbColumn(Entity::PAYMENT_ID);
+        $refundAmount = $this->dbColumn(Entity::BASE_AMOUNT);
+        $refundCreatedAt = $this->dbColumn(Entity::CREATED_AT);
+
+        $paymentId = $this->repo->payment->dbColumn(Payment\Entity::ID);
+        $paymentGateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+        $paymentCapturedAt = $this->repo->payment->dbColumn(Payment\Entity::CAPTURED_AT);
+
+        return $this->newQuery()
+                    ->join(Table::PAYMENT, $refundPaymentId, '=', $paymentId)
+                    ->where($paymentGateway, '=', $gateway)
+                    ->whereNotNull($paymentCapturedAt)
+                    ->whereBetween($refundCreatedAt, [$from, $to])
+                    ->sum($refundAmount);
     }
 
     public function fetchByIdPaymentIdMerchantId($id, $paymentId, $merchantId)
@@ -364,7 +383,7 @@ class Repository extends Base\Repository
         $pId = $pRepo->dbColumn(Payment\Entity::ID);
         $pGateway = $pRepo->dbColumn(Payment\Entity::GATEWAY);
 
-        $timeLimit = Carbon::now('Asia/Kolkata')->subMinutes(30)->timestamp;
+        $timeLimit = Carbon::now(Timezone::IST)->subMinutes(30)->timestamp;
 
         // TODO: If the number of gateways exceeds by half of total,
         // inverse the `whereIn` condition.

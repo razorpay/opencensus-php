@@ -8,6 +8,7 @@ use Excel;
 use Config;
 use RZP\Trace\Trace;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Models\FileStore\Storage\AwsS3\Handler;
 use RZP\Trace\TraceCode;
@@ -185,8 +186,9 @@ trait FileHandlerTrait
     /**
      * Flattens an array recursively
      * Concatenating keys using periods
-     * @param  array $array  input array
-     * @param  string $prefix prefix used to concat keys
+     *
+     * @param array $row
+     *
      * @return array flat version of input array
      */
     protected function flatten(array $row)
@@ -433,6 +435,13 @@ trait FileHandlerTrait
     {
         $fullpath = $this->getFullFilePath($name);
 
+        $dir = dirname($fullpath);
+
+        if (file_exists($dir) === false)
+        {
+            mkdir($dir, 0777, true);
+        }
+
         $file = fopen($fullpath, 'w');
         fwrite($file, $txt);
         fclose($file);
@@ -516,7 +525,7 @@ trait FileHandlerTrait
 
     protected function getFileToReadNameWithoutExt()
     {
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
 
         $mode = $this->getMode();
 
@@ -613,7 +622,7 @@ trait FileHandlerTrait
 
     protected function getFileToWriteNameWithoutExt()
     {
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
 
         $mode = $this->getMode();
 
@@ -720,7 +729,7 @@ trait FileHandlerTrait
             mkdir($dir, 0777);
         }
 
-        $time = Carbon::now('Asia/Kolkata')->format('H:i:s');
+        $time = Carbon::now(Timezone::IST)->format('H:i:s');
 
         $mode = $this->getMode();
 
@@ -794,7 +803,7 @@ trait FileHandlerTrait
         return array(
             'gid'   => '10000',
             'uid'   => '10001',
-            'mtime' => Carbon::now()->timestamp,
+            'mtime' => Carbon::now()->getTimestamp(),
             'mode'  => '33188'
         );
     }

@@ -30,6 +30,7 @@ return [
         'test' => [
             'payment' => [
                 'authorized'    => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'captured'      => env('AWS_WEBHOOKS_TEST_QUEUE'),
                 'failed'        => env('AWS_WEBHOOKS_TEST_QUEUE'),
             ],
             'order' => [
@@ -48,14 +49,17 @@ return [
             ],
             'subscription' => [
                 'activated'     => env('AWS_WEBHOOKS_TEST_QUEUE'),
-                'overdue'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'pending'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
                 'halted'        => env('AWS_WEBHOOKS_TEST_QUEUE'),
                 'expired'       => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'cancelled'     => env('AWS_WEBHOOKS_TEST_QUEUE'),
+                'completed'     => env('AWS_WEBHOOKS_TEST_QUEUE'),
             ]
         ],
         'live' => [
             'payment' => [
                 'authorized'    => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'captured'      => env('AWS_WEBHOOKS_LIVE_QUEUE'),
                 'failed'        => env('AWS_WEBHOOKS_FAILURE_QUEUE'),
             ],
             'order' => [
@@ -74,9 +78,11 @@ return [
             ],
             'subscription' => [
                 'activated'     => env('AWS_WEBHOOKS_LIVE_QUEUE'),
-                'overdue'       => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'pending'       => env('AWS_WEBHOOKS_LIVE_QUEUE'),
                 'halted'        => env('AWS_WEBHOOKS_LIVE_QUEUE'),
                 'expired'       => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'cancelled'     => env('AWS_WEBHOOKS_LIVE_QUEUE'),
+                'completed'     => env('AWS_WEBHOOKS_LIVE_QUEUE'),
             ]
         ],
     ],
@@ -113,6 +119,18 @@ return [
 
     'mail' => [
         'connection' => 'sqs_mail',
+    ],
+
+    'batch' => [
+        'connection' => 'sqs_multi_default',
+        'test'       => env('AWS_INVOICE_EMAILS_QUEUE'),
+        'live'       => env('AWS_INVOICE_EMAILS_QUEUE'),
+    ],
+
+    'capture' => [
+        'connection' => 'sqs_multi_default',
+        'test'       => env('AWS_GENERAL_TEST_QUEUE'),
+        'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
     ],
 
     'sqs_general_live'      => env('AWS_GENERAL_LIVE_QUEUE'),

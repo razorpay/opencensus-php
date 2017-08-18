@@ -5,6 +5,7 @@ namespace RZP\Models\Schedule;
 use RZP\Exception\LogicException;
 use RZP\Models\Settlement\Holidays;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 class Library
 {
@@ -16,7 +17,7 @@ class Library
 
         $settledAt = self::getMinimumDelayedTime($currentTime, $schedule);
 
-        $nextRun = Carbon::createFromTimestamp($nextRunAt, 'Asia/Kolkata');
+        $nextRun = Carbon::createFromTimestamp($nextRunAt, Timezone::IST);
 
         // If minimum delay is more than the time till next run of the settlement
         // schedule, then we calculate the *next* next run, and set that.
@@ -214,16 +215,16 @@ class Library
 
     protected static function getMinimumDelayedTime($currentTime, $schedule)
     {
-        $current = Carbon::createFromTimestamp($currentTime, 'Asia/Kolkata');
+        $current = Carbon::createFromTimestamp($currentTime, Timezone::IST);
 
         $minimumDelay = $schedule->getDelay();
 
-        if ($minimumDelay === 0)
+        if ($schedule->isHourly() === true)
         {
-            // Avoiding zero delay to prevent race conditions
-            $current->addHour();
+            // Hourly schedules have delays in hours
+            $current->addHour($minimumDelay);
 
-            // Adding a single hour resulted in a holiday.
+            // Adding a few hours resulted in a holiday.
             // Now jump forward in days instead of hours.
             if (Holidays::isWorkingDay($current) === false)
             {

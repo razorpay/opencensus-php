@@ -95,4 +95,15 @@ class AdminController extends Controller
 
         return ApiResponse::json([], $responseStatus);
     }
+
+    public function updateEntityTax($entity)
+    {
+        $input = Request::all();
+
+        $limit = $input['limit'];
+
+        $data = (new Admin\Service)->updateTaxColumnValue($entity, $limit);
+
+        return ApiResponse::json($data);
+    }
 }

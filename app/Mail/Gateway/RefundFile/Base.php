@@ -3,8 +3,10 @@
 namespace RZP\Mail\Gateway\RefundFile;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
+use RZP\Models\Payment\Gateway;
 
 class Base extends Mailable
 {
@@ -54,9 +56,7 @@ class Base extends Mailable
 
     protected function addSubject()
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-        $subject = Constants::SUBJECT_MAP[$this->type] . $today;
+        $subject = $this->getSubject();
 
         $this->subject($subject);
 
@@ -66,14 +66,30 @@ class Base extends Mailable
     protected function addMailData()
     {
         $mailData = [
-            'body' => Constants::BODY_MAP[$this->type]
+            'body' => Constants::BODY_MAP[$this->type],
         ];
+
+        // For ICICI netbanking refunds we are adding the subject to template data
+        // as the template used for this requires the subject
+        if ($this->type === Gateway::NETBANKING_ICICI)
+        {
+            $mailData['subject'] = $this->getSubject();
+        }
 
         $mailData = array_merge($mailData, $this->data);
 
         $this->with($mailData);
 
         return $this;
+    }
+
+    protected function getSubject()
+    {
+        $today = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        $subject = Constants::SUBJECT_MAP[$this->type] . $today;
+
+        return $subject;
     }
 
     protected function addHtmlView()

@@ -98,7 +98,7 @@ class Entity extends Base\Entity
 
     public function getAmountAttribute()
     {
-        return (int) $this->attributes[self::AMOUNT];
+        return (float) $this->attributes[self::AMOUNT];
     }
 
     public function getGatewayPaymentId()

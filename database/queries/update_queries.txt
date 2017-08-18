@@ -471,3 +471,118 @@ set f.merchant_id = s.merchant_id;
 
 # Updates amount_paid value for old rows
 UPDATE orders SET amount_paid = amount where status = 'paid' and amount_paid = 0;
+
+# Update settled_on, processed_at in settlement table
+update settlements s
+join
+(
+SELECT source_id, UNIX_TIMESTAMP(STR_TO_DATE(date_time, '%d/%m/%Y %H:%i:%s')) AS processed_at_timestamp, (UNIX_TIMESTAMP(DATE(STR_TO_DATE(date_time, '%d/%m/%Y %H:%i:%s')))) AS settled_at_timestamp
+FROM fund_transfer_attempts
+WHERE fund_transfer_attempts.status = 'processed'
+AND fund_transfer_attempts.`date_time` is not null
+) f
+ON s.id = f.source_id
+SET s.processed_at = f.processed_at_timestamp,
+s.settled_on = f.settled_at_timestamp;
+
+# Update settled_on, processed_at in payout table
+update payouts
+set processed_at = updated_at, settled_on = updated_at
+where utr is not null
+and processed_at is null;
+
+
+# Invitation Migration
+# Dump invitations from Dashboard
+mysqldump -h host --no-create-info --complete-insert -u user -p dbd invitations > dash_invitations.sql;
+
+# Import invitation on API
+source dash_invitations.sql;
+
+# mapping payment id to caps_payment_id
+UPDATE first_data
+    SET caps_payment_id = UPPER(payment_id);
+
+# Before capturing
+UPDATE payments
+    SET status='authorized', gateway_captured = 0 WHERE id='89AjRuhzkb4L0Z';
+# After capturing
+UPDATE payments
+    SET refund_status=null, amount_refunded=0 WHERE id='89AjRuhzkb4L0Z';
+DELETE FROM refunds WHERE payment_id='89AjRuhzkb4L0Z';
+# Fix stupid terminal
+UPDATE terminals
+    SET mode=3 WHERE id='7s0PjmEoOelWFZ';
+
+# Set delay in hours for hourly schedules
+UPDATE schedules SET delay=1 WHERE period='hourly' AND DELAY=0;
+
+UPDATE refunds SET reference1='NA' WHERE reference1 = '(Onus transaction)';
+
+UPDATE billdesk SET RefundId = 'IICI53376607981' WHERE id = 1714166;
+
+UPDATE terminals SET emi_subvention='customer' WHERE gateway IN ('amex', 'first_data') AND emi = 1 and emi_subvention is null;
+
+UPDATE terminals SET emi_subvention='customer' WHERE gateway_terminal_id in ('74014181', '74014180', '74014179', '74014178', '74014177', '74014176');
+
+UPDATE terminals SET emi_subvention='merchant' WHERE gateway = 'hdfc' and emi = 1 and emi_subvention is null;
+
+UPDATE billdesk SET RefundId = 'JSBI54543766931' WHERE id = 1714165;
+
+# sets emi_subvention in terminals
+UPDATE terminals set emi_subvention = 'customer' where emi = 1;
+
+# sets expired at for saved cards
+UPDATE tokens
+    JOIN cards ON tokens.card_id = cards.id
+    SET expired_at = UNIX_TIMESTAMP(DATE_ADD(MAKEDATE(cards.expiry_year, 1), INTERVAL cards.expiry_month MONTH))-19800;
+
+# GST changes
+UPDATE payments set tax = service_tax where created_at <= 1498847400;
+
+UPDATE transactions set tax = service_tax where created_at <= 1498847400;
+
+UPDATE settlements set tax = service_tax;
+
+UPDATE payouts set tax = service_tax;
+
+UPDATE transfers set tax = service_tax;
+
+UPDATE daily_settlements set tax = service_tax;
+
+# Process AMEX
+UPDATE refunds
+    JOIN payments ON refunds.payment_id = payments.id
+    SET refunds.status = "processed"
+WHERE payments.gateway = "amex"
+    AND payments.captured_at IS NULL
+    AND refunds.status = "created";
+
+# Process MiGS and Cybersource reversals
+UPDATE refunds
+    SET status = "processed"
+WHERE id IN ("84shD51i2CypDV", "85fm9FlMwhJpSd", "8KJZT8RZQVPOvd", "87FvldtTWZvs7i", "8FAcyuawIPLDl3", "882yZCVEIA56mT", "882zyjyXfsFccI", "88q2QFt01oNSkr", "89EZWVLgp4kVlD", "89d7ScPPvxtGIy", "8C0K8t54wp0IX7", "8COtm2uWnUnaNi", "8AQBowUFvpjSHo", "8AoiqFuAv3Uclm", "8Aoj7FkVXLShzZ", "8BDGSkZxgfkMrq", "8BDGXNQh3yxA9J", "8BDHSx7WhKMS6n");
+
+# Process ICICI UPI refunds
+UPDATE refunds SET status = "processed", gateway_refunded = 1 WHERE id IN ("81sMZtlsVc0dnR","7n14uolskYCR4b","7mXS3PjwHDXdap","7oeo9fveSwusps","7nKJKvF14OcUw0","7vIwFCinK1uVnn","7rp4eEAzhvUFMk","80bE1kIEtQQfmM","7vJHec0dqcfjq6","7vJCO0gr2eaCl8","7soe2X0rDd87gQ","7vLIw3t5dsBls4","7vJRw4hLTshJ4r","7vJ8pvnhE7Ek51","7xl5OVwTF7UaYZ","7xvOWcvbLq8x1v","7xkFVtR6Ix0tJ5","7y7ebSiYiaGxvd","7xgTG2ahByjFmN","7xh6BIsU9wsGyB","7xlu5QziPY6Uuo","7xwfAzgE7vuaw9","82u2juX0K59pZ8","82VVKNQxaXY9IH","80UbRz3SpMfkdI","82VVwCHg8Fzw3z","82NPrjC1TwVNb1","87Fw5ZvIAjBhd6","85cYRqDMFGgVn0","85dSNqGBSDrHAB","85cWhfXWIdgoqa","86gBu11A6pUQlo","87cu1HROns5gCT","8AFG6VrcRSiJe2","8BUz7OExYjijjy","8BUyt5sk7dKpjw","8BVGjIHdaE95ZI","8BVGowgbqDhMIR","8BVGwKiickrqBP","8BVH4CeQgJ1HS3");
+
+LOAD DATA LOCAL INFILE '/tmp/dispute_reasons.csv' INTO TABLE dispute_reasons FIELDS TERMINATED BY ',' ESCAPED BY '\b' OPTIONALLY ENCLOSED BY '"';
+
+UPDATE gateway_rules
+    SET type='sorter';
+
+# Tags Migration
+# Add column `tag_group_id` to Dashboard DB and get the dump, then remove that column from Dashboard DB
+# Dump tags from Dashboard
+mysqldump -h host --no-create-info --complete-insert -u user -p dbd tagging_tagged tagging_tags > tag_dump.sql;
+
+# Import tags on API
+truncate table tagging_tagged;
+truncate table tagging_tags;
+source tag_dump.sql;
+# Update tagging_tagged table
+UPDATE `tagging_tagged` SET `taggable_type` = 'merchant' WHERE `taggable_type` = 'App\\Merchant\\Entity';
+
+# Type 4 terminals are Non-3DS for recurring
+# FirstData N3DS terminals are always in Purchase mode
+UPDATE terminals SET mode=2 WHERE gateway='first_data' AND type=4;

@@ -42,6 +42,10 @@ class CreatePricing extends Migration
             $table->string(Pricing::PAYMENT_ISSUER)
                   ->nullable();
 
+            $table->integer(Pricing::EMI_DURATION)
+                  ->unsigned()
+                  ->nullable();
+
             $table->tinyInteger(Pricing::INTERNATIONAL)
                   ->default(0);
 
@@ -64,14 +68,26 @@ class CreatePricing extends Migration
                   ->unsigned()
                   ->default(0);
 
+            $table->integer(Pricing::MIN_FEE)
+                  ->unsigned()
+                  ->default(0);
+
+            $table->integer(Pricing::MAX_FEE)
+                  ->unsigned()
+                  ->nullable();
+
             $table->integer(Pricing::CREATED_AT);
             $table->integer(Pricing::UPDATED_AT);
+
+            $table->integer(Pricing::DELETED_AT)
+                  ->nullable();
 
             $table->integer(Pricing::EXPIRED_AT)
                   ->nullable();
 
             $table->index(Pricing::PLAN_ID);
             $table->index(Pricing::INTERNATIONAL);
+            $table->index(Pricing::DELETED_AT);
         });
     }
 

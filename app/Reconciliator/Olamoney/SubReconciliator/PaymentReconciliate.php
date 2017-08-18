@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\Olamoney;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Reconciliator\Base;
 use RZP\Trace\TraceCode;
 
@@ -45,7 +46,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return round($fee);
     }
 
-    protected function getGatewaySettledAt($row)
+    protected function getGatewaySettledAt(array $row)
     {
         if (empty($row[self::COLUMN_SETTLED_AT]) === true)
         {
@@ -58,7 +59,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         try
         {
-            $gatewaySettledAt = Carbon::createFromFormat(self::SETTLEMENT_DATE_FORMAT, $columnSettledAt, 'Asia/Kolkata');
+            $gatewaySettledAt = Carbon::createFromFormat(self::SETTLEMENT_DATE_FORMAT, $columnSettledAt, Timezone::IST);
             $gatewaySettledAt = $gatewaySettledAt->timestamp;
         }
         catch (\Exception $ex)

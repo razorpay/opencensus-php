@@ -78,7 +78,9 @@ class Gateway extends Base\Gateway
         // If callback status was a success, we verify the payment immediately
         $this->verifyCallback($input, $gatewayPayment);
 
-        return $this->getCallbackResponseData($input);
+        $acquirerData = $this->getAcquirerData($gatewayPayment);
+
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function verify(array $input)
@@ -88,6 +90,26 @@ class Gateway extends Base\Gateway
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
+    }
+
+    public function forceAuthorizeFailed($input)
+    {
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+                                    $input['payment']['id'],
+                                    Payment\Action::AUTHORIZE);
+
+        // If it's already authorized on gateway side, We just return back.
+        if (($gatewayPayment->getReceived() === true) and
+            ($gatewayPayment->getStatus() === Status::SUCCESS))
+        {
+            return true;
+        }
+
+        $gatewayPayment->setStatus(Status::SUCCESS);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return true;
     }
 
     /**
@@ -180,17 +202,6 @@ class Gateway extends Base\Gateway
         }
 
         return $status;
-    }
-
-    protected function checkApiSuccess(Verify $verify)
-    {
-        $verify->apiSuccess = true;
-
-        if (($verify->input['payment']['status'] === 'created') or
-            ($verify->input['payment']['status'] === 'failed'))
-        {
-            $verify->apiSuccess = false;
-        }
     }
 
     protected function checkGatewaySuccess(Verify $verify)

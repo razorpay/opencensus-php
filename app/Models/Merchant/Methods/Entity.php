@@ -3,8 +3,7 @@
 namespace RZP\Models\Merchant\Methods;
 
 use RZP\Models\Base;
-use RZP\Models\Feature;
-use RZP\Exception;
+use RZP\Models\Payment\Processor\Netbanking as NetbankingProcessor;
 
 class Entity extends Base\PublicEntity
 {
@@ -27,6 +26,7 @@ class Entity extends Base\PublicEntity
     const DEBIT_CARD        = 'debit_card';
     const CREDIT_CARD       = 'credit_card';
     const UPI               = 'upi';
+    const BANK_TRANSFER     = 'bank_transfer';
     const AEPS              = 'aeps';
 
     const METHODS           = 'methods';
@@ -59,6 +59,7 @@ class Entity extends Base\PublicEntity
         self::NETBANKING,
         self::DEBIT_CARD,
         self::CREDIT_CARD,
+        self::BANK_TRANSFER,
     ];
 
     protected $visible = [
@@ -82,6 +83,7 @@ class Entity extends Base\PublicEntity
         self::NETBANKING,
         self::DEBIT_CARD,
         self::CREDIT_CARD,
+        self::BANK_TRANSFER,
     ];
 
     protected $public = [
@@ -106,27 +108,29 @@ class Entity extends Base\PublicEntity
         self::DEBIT_CARD,
         self::CREDIT_CARD,
         self::ENTITY,
+        self::BANK_TRANSFER,
     ];
 
     protected $defaults = array(
-        self::AMEX          => false,
-        self::PAYTM         => false,
-        self::MOBIKWIK      => false,
-        self::PAYZAPP       => false,
-        self::PAYUMONEY     => false,
-        self::AIRTELMONEY   => false,
-        self::OLAMONEY      => false,
-        self::FREECHARGE    => false,
-        self::JIOMONEY      => false,
-        self::OPENWALLET    => false,
-        self::MPESA         => false,
-        self::BANKS         => [],
-        self::EMI           => false,
-        self::UPI           => true,
-        self::AEPS          => false,
-        self::NETBANKING    => true,
-        self::CREDIT_CARD   => true,
-        self::DEBIT_CARD    => true,
+        self::AMEX           => false,
+        self::PAYTM          => false,
+        self::MOBIKWIK       => false,
+        self::PAYZAPP        => false,
+        self::PAYUMONEY      => false,
+        self::AIRTELMONEY    => false,
+        self::OLAMONEY       => false,
+        self::FREECHARGE     => false,
+        self::JIOMONEY       => false,
+        self::OPENWALLET     => false,
+        self::MPESA          => false,
+        self::BANKS          => [],
+        self::EMI            => false,
+        self::UPI            => true,
+        self::AEPS           => false,
+        self::NETBANKING     => true,
+        self::CREDIT_CARD    => true,
+        self::DEBIT_CARD     => true,
+        self::BANK_TRANSFER  => false,
     );
 
     protected $wallets = array(
@@ -147,6 +151,7 @@ class Entity extends Base\PublicEntity
         self::EMI,
         self::AMEX,
         self::UPI,
+        self::BANK_TRANSFER,
         self::AEPS,
         self::NETBANKING,
         self::PAYTM,
@@ -161,23 +166,24 @@ class Entity extends Base\PublicEntity
 
     // Casts the attributes to native types
     protected $casts = [
-        self::AMEX        => 'bool',
-        self::PAYTM       => 'bool',
-        self::CREDIT_CARD => 'bool',
-        self::DEBIT_CARD  => 'bool',
-        self::NETBANKING  => 'bool',
-        self::MOBIKWIK    => 'bool',
-        self::OLAMONEY    => 'bool',
-        self::PAYZAPP     => 'bool',
-        self::PAYUMONEY   => 'bool',
-        self::AIRTELMONEY => 'bool',
-        self::FREECHARGE  => 'bool',
-        self::JIOMONEY    => 'bool',
-        self::OPENWALLET  => 'bool',
-        self::MPESA       => 'bool',
-        self::EMI         => 'bool',
-        self::UPI         => 'bool',
-        self::AEPS        => 'bool',
+        self::AMEX          => 'bool',
+        self::PAYTM         => 'bool',
+        self::CREDIT_CARD   => 'bool',
+        self::DEBIT_CARD    => 'bool',
+        self::NETBANKING    => 'bool',
+        self::MOBIKWIK      => 'bool',
+        self::OLAMONEY      => 'bool',
+        self::PAYZAPP       => 'bool',
+        self::PAYUMONEY     => 'bool',
+        self::AIRTELMONEY   => 'bool',
+        self::FREECHARGE    => 'bool',
+        self::JIOMONEY      => 'bool',
+        self::OPENWALLET    => 'bool',
+        self::MPESA         => 'bool',
+        self::EMI           => 'bool',
+        self::UPI           => 'bool',
+        self::BANK_TRANSFER => 'bool',
+        self::AEPS          => 'bool',
     ];
 
     public function setMethods(array $input = array())
@@ -214,6 +220,11 @@ class Entity extends Base\PublicEntity
     public function isUpiEnabled()
     {
         return $this->getAttribute(self::UPI);
+    }
+
+    public function isBankTransferEnabled()
+    {
+        return $this->getAttribute(self::BANK_TRANSFER);
     }
 
     public function isAepsEnabled()
@@ -311,7 +322,7 @@ class Entity extends Base\PublicEntity
 
     public function isMethodEnabled($method)
     {
-        $func = 'is' . ucfirst($method) . 'Enabled';
+        $func = 'is' . studly_case($method) . 'Enabled';
 
         return $this->$func();
     }
@@ -493,25 +504,15 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::BANKS] = json_encode($banks);
     }
 
-    public function toArrayWithBankNames()
+    public function toArrayWithBankNames(): array
     {
         $banks = $this->getBanks();
 
-        $names = \RZP\Models\Payment\Processor\Netbanking::getNames($banks);
+        $names = NetbankingProcessor::getNames($banks);
 
-        // Unsetting AIRP for now
+        // Unsetting AIRP, PUNB for now
         unset($names['AIRP']);
-
-        //
-        // Disabling HDFC netbanking for FxKart's two accounts
-        // Ref: https://razorpay.slack.com/archives/C0432SCD5/p1497018993519190
-        //
-        $fxKartMerchantIds = ['7dTJ1BmaZs62wG', '7b0Hl7t1Q5EnHo'];
-
-        if (in_array($this->getMerchantId(), $fxKartMerchantIds, true) === true)
-        {
-            unset($names['HDFC']);
-        }
+        unset($names['PUNB']);
 
         return $names;
     }

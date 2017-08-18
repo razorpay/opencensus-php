@@ -12,26 +12,27 @@ class Table
     const CARD                  = 'cards';
     const PLAN                  = 'plans';
     const ITEM                  = 'items';
+    const RISK                  = 'risk';
     const USER                  = 'users';
-    const BATCH                 = 'batches';
     const OFFER                 = 'offers';
     const ORDER                 = 'orders';
     const TOKEN                 = 'tokens';
-    const COUPON                = 'coupons';
-    const DEVICE                = 'devices';
     const ADDON                 = 'addons';
+    const COUPON                = 'coupons';
+    const BATCH                 = 'batches';
+    const DEVICE                = 'devices';
     const PAYOUT                = 'payouts';
     const REFUND                = 'refunds';
     const REPORT                = 'reports';
-    const INVOICE               = 'invoices';
     const BALANCE               = 'balance';
-    const METHODS               = 'merchant_banks';
     const PRICING               = 'pricing';
     const UPI_VPA               = 'upi_vpa';
+    const INVOICE               = 'invoices';
     const PAYMENT               = 'payments';
     const WEBHOOK               = 'webhooks';
-    const ADDRESS               = 'addresses';
     const FEATURE               = 'features';
+    const DISPUTE               = 'disputes';
+    const ADDRESS               = 'addresses';
     const MERCHANT              = 'merchants';
     const ACCOUNT               = 'merchants';
     const EMI_PLAN              = 'emi_plans';
@@ -40,27 +41,42 @@ class Table
     const CUSTOMER              = 'customers';
     const TRANSFER              = 'transfers';
     const REVERSAL              = 'reversals';
+    const PROMOTION             = 'promotions';
     const LINE_ITEM             = 'line_items';
-    const APP_TOKEN             = 'customer_apps';
     const INVITATION            = 'invitations';
     const FILE_STORE            = 'files';
     const ADJUSTMENT            = 'adjustment';
     const SETTLEMENT            = 'settlements';
     const FEE_BREAKUP           = 'fees_breakup';
     const TRANSACTION           = 'transactions';
+    const APP_TOKEN             = 'customer_apps';
     const BANK_ACCOUNT          = 'bank_accounts';
     const SUBSCRIPTION          = 'subscriptions';
+    const METHODS               = 'merchant_banks';
+    const BANK_TRANSFER         = 'bank_transfers';
+    const GATEWAY_TOKEN         = 'gateway_tokens';
     const SCHEDULE_TASK         = 'schedule_tasks';
-    const LINE_ITEM_TAX         = 'line_item_taxes';
     const MERCHANT_USERS        = 'merchant_users';
     const MERCHANT_OFFER        = 'merchant_offer';
+    const LINE_ITEM_TAX         = 'line_item_taxes';
+    const DISPUTE_REASON        = 'dispute_reasons';
+    const VIRTUAL_ACCOUNT       = 'virtual_accounts';
     const MERCHANT_DETAIL       = 'merchant_details';
     const CUSTOMER_BALANCE      = 'customer_balance';
     const MERCHANT_TERMINAL     = 'merchant_terminal';
+    const MERCHANT_PROMOTION    = 'merchant_promotion';
+    const MERCHANT_INVOICE      = 'merchant_invoice';
+    const CREDIT_TRANSACTION    = 'credit_transaction';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const BATCH_FUND_TRANSFER   = 'daily_settlements';
     const CUSTOMER_TRANSACTION  = 'customer_transactions';
     const FUND_TRANSFER_ATTEMPT = 'fund_transfer_attempts';
+
+    // This table does not belong to api service but is stored in api db.
+    // API Service should be owner of its DB and all the migrations for other
+    // services have to be stored in API source only
+    // Entity and Business logic is part of another codebase
+    const NODAL_STATEMENT       = 'nodal_statements';
 
     // organization roles permissions
     const ORG                   = 'orgs';

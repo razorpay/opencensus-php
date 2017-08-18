@@ -41,7 +41,7 @@
         </properties>
     </rule>
 
-    <rule ref="Squiz.Whitespace.LogicalOperatorSpacing"/>
+    <rule ref="Squiz.WhiteSpace.LogicalOperatorSpacing"/>
 
     <!-- Ensures all language constructs (without brackets) contain
     a single space between themselves and their content. -->
@@ -65,7 +65,7 @@
     Camel caps, and the first letter is capitalised -->
     <rule ref="Squiz.Classes.ValidClassName"/>
     <rule ref="Squiz.Classes.ClassFileName">
-        <exclude-pattern>database/migrations/*</exclude-pattern>
+        <exclude-pattern>database/migrations/*.php</exclude-pattern>
     </rule>
     <rule ref="Squiz.Classes.ClassDeclaration"/>
     <rule ref="Squiz.Classes.LowercaseClassKeywords"/>

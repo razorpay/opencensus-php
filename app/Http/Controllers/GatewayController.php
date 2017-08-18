@@ -29,20 +29,19 @@ class GatewayController extends Controller
         // to be able to call the next few methods.
         //
         // Eg: gateway request needs to be decrypted
-
         $input = $gateway->preProcessServerCallback($input);
 
         $paymentId = $gateway->getPaymentIdFromServerCallback($input);
 
         $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
 
-        \Database\DefaultConnection::set($mode);
-
         if ($mode === null)
         {
             throw new Exception\LogicException(
                 'Payment id not found in either database: ' . $paymentId);
         }
+
+        \Database\DefaultConnection::set($mode);
 
         $this->app['basicauth']->setMode($mode);
 
@@ -73,7 +72,7 @@ class GatewayController extends Controller
 
         $paymentId = Payment\Entity::getSignedId($paymentId);
 
-        return (new Payment\Service)->s2sCallback($paymentId, $input);
+        return $this->service('payment')->s2sCallback($paymentId, $input);
     }
 
     public function callbackGateway($gateway)
@@ -95,26 +94,25 @@ class GatewayController extends Controller
 
         switch ($gateway)
         {
+            // Standard Cases
+            case 'upi_mindgate':
+            case 'wallet_freecharge':
             case 'billdesk':
                 $data = $this->processServerCallback($input, $gateway);
                 break;
 
+            // Only logs the response
             case 'wallet_olamoney':
-            case 'upi_hdfc':
                 break;
 
-            case 'wallet_freecharge':
-                $data = $this->processServerCallback($input, $gateway);
-                break;
-
-            case 'upi':
+            // Special case because we need the raw request body
             case 'upi_icici':
                 $input = Request::getContent();
-                $gateway = 'upi_icici';
 
                 $data = $this->processServerCallback($input, $gateway);
 
                 break;
+
         }
 
         // $input['gateway'] = $gateway;

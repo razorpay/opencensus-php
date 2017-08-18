@@ -3,6 +3,8 @@
 namespace RZP\Tests\Unit\Models\Card;
 
 use Mockery;
+use Carbon\Carbon;
+
 use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Pricing;
@@ -37,6 +39,8 @@ class MerchantFeeTest extends TestCase
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__.'/helpers/MerchantFeeTestData.php';
+
         parent::setUp();
 
         $this->fee = new Pricing\Fee();
@@ -46,7 +50,7 @@ class MerchantFeeTest extends TestCase
 
     public function getMockPricingRepo($withCreditCardRule = false)
     {
-        $pricingRuleOne = new Pricing\Entity(array(
+        $pricingRuleOne = new Pricing\Entity([
                 'id'                  => '1nvp2XPMmaRLxx',
                 'plan_id'             => '1hDYlICobzOCYt',
                 'plan_name'           => 'testDefaultPlan',
@@ -61,9 +65,11 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 200,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-            ));
+                'min_fee'             => 0,
+                'max_fee'             => null,
+            ]);
 
-        $pricingRuleCredit = new Pricing\Entity(array(
+        $pricingRuleCredit = new Pricing\Entity([
                 'id'                  => '1nvp2XPMmaRLxy',
                 'plan_id'             => '1hDYlICobzOCYt',
                 'plan_name'           => 'testDefaultPlan',
@@ -78,9 +84,11 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 200,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-            ));
+                'min_fee'             => 0,
+                'max_fee'             => null,
+            ]);
 
-        $pricingRuleTwo = new Pricing\Entity(array (
+        $pricingRuleTwo = new Pricing\Entity([
                 'id'                  => '4pmbgtgNVVDd7x',
                 'plan_id'             => '1hDYlICobzOCYt',
                 'plan_name'           => 'testDefaultPlan',
@@ -90,14 +98,16 @@ class MerchantFeeTest extends TestCase
                 'payment_network'     => null,
                 'payment_issuer'      => null,
                 'international'       => false,
+                'min_fee'             => 0,
+                'max_fee'             => null,
                 'amount_range_active' => true,
                 'amount_range_min'    => 0,
                 'amount_range_max'    => 200000,
                 'percent_rate'        => 75,
                 'fixed_rate'          => 0,
-            ));
+            ]);
 
-        $pricingRuleThree = new Pricing\Entity(array(
+        $pricingRuleThree = new Pricing\Entity([
                 'id'                  => '4pmdaEzu3jmDTx',
                 'plan_id'             => '1hDYlICobzOCYt',
                 'plan_name'           => 'testDefaultPlan',
@@ -107,14 +117,16 @@ class MerchantFeeTest extends TestCase
                 'payment_network'     => null,
                 'payment_issuer'      => null,
                 'international'       => false,
+                'min_fee'             => 0,
+                'max_fee'             => null,
                 'amount_range_active' => true,
                 'amount_range_min'    => 200000,
                 'amount_range_max'    => 1000000000,
                 'percent_rate'        => 100,
                 'fixed_rate'          => 0,
-            ));
+            ]);
 
-        $pricingPlanAmex = new Pricing\Entity(array(
+        $pricingPlanAmex = new Pricing\Entity([
                 'id'                  => '1OwH8rTI0ejFxx',
                 'plan_id'             => '1hDYlICobzOCYt',
                 'plan_name'           => 'testDefaultPlan',
@@ -129,9 +141,11 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-            ));
+                'min_fee'             => 0,
+                'max_fee'             => null,
+            ]);
 
-        $pricingPlanDicl = new Pricing\Entity(array(
+        $pricingPlanDicl = new Pricing\Entity([
                 'id'                  => '1fq0OXpgeyafQx',
                 'plan_id'             => '1hDYlICobzOCYt',
                 'plan_name'           => 'testDefaultPlan',
@@ -146,9 +160,11 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-            ));
+                'min_fee'             => 0,
+                'max_fee'             => null,
+            ]);
 
-        $pricingPlanNetB = new Pricing\Entity(array(
+        $pricingPlanNetB = new Pricing\Entity([
                 'id'                  => '1fq0OXpgrfrt3x',
                 'plan_id'             => '1hDYlICobzOCYt',
                 'plan_name'           => 'testDefaultPlan',
@@ -163,9 +179,11 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-            ));
+                'min_fee'             => 0,
+                'max_fee'             => null,
+            ]);
 
-        $pricingPlanNetB1 = new Pricing\Entity(array(
+        $pricingPlanNetB1 = new Pricing\Entity([
                 'id'                  => '1fq0OXpgrfrt4x',
                 'plan_id'             => '1hDYlICobzOCYt',
                 'plan_name'           => 'testDefaultPlan',
@@ -180,9 +198,11 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 0,
                 'fixed_rate'          => 50,
                 'international'       => 0,
-            ));
+                'min_fee'             => 0,
+                'max_fee'             => null,
+            ]);
 
-        $pricingPlanNetB2 = new Pricing\Entity(array(
+        $pricingPlanNetB2 = new Pricing\Entity([
                 'id'                  => '1fq0OXpgrfrt5x',
                 'plan_id'             => '1hDYlICobzOCYt',
                 'plan_name'           => 'testDefaultPlan',
@@ -197,9 +217,11 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-            ));
+                'min_fee'             => 0,
+                'max_fee'             => null,
+            ]);
 
-        $pricingPlanNetB3 = new Pricing\Entity(array(
+        $pricingPlanNetB3 = new Pricing\Entity([
                 'id'                  => '1fq0OXpgrfrt6x',
                 'plan_id'             => '1hDYlICobzOCYt',
                 'plan_name'           => 'testDefaultPlan',
@@ -214,9 +236,11 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-            ));
+                'min_fee'             => 0,
+                'max_fee'             => null,
+            ]);
 
-        $pricingPlanWallet = new Pricing\Entity(array(
+        $pricingPlanWallet = new Pricing\Entity([
                 'id'                  => '1fq0O3dewex3df',
                 'plan_id'             => '1hDYlICobzOCYt',
                 'plan_name'           => 'testDefaultPlan',
@@ -231,9 +255,11 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-            ));
+                'min_fee'             => 0,
+                'max_fee'             => null,
+            ]);
 
-        $pricingPlanWallet1 = new Pricing\Entity(array(
+        $pricingPlanWallet1 = new Pricing\Entity([
                 'id'                  => '1fq0O3dewex3ff',
                 'plan_id'             => '1hDYlICobzOCYt',
                 'plan_name'           => 'testDefaultPlan',
@@ -248,9 +274,11 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-            ));
+                'min_fee'             => 0,
+                'max_fee'             => null,
+            ]);
 
-        $pricingPlanWallet2 = new Pricing\Entity(array(
+        $pricingPlanWallet2 = new Pricing\Entity([
                 'id'                  => '1fq0O3dewex3ef',
                 'plan_id'             => '1hDYlICobzOCYt',
                 'plan_name'           => 'testDefaultPlan',
@@ -265,9 +293,11 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-            ));
+                'min_fee'             => 0,
+                'max_fee'             => null,
+            ]);
 
-        $pricingPlanWallet3 = new Pricing\Entity(array(
+        $pricingPlanWallet3 = new Pricing\Entity([
                 'id'                  => '1fq0O3dewex3gf',
                 'plan_id'             => '1hDYlICobzOCYt',
                 'plan_name'           => 'testDefaultPlan',
@@ -282,9 +312,11 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-            ));
+                'min_fee'             => 0,
+                'max_fee'             => null,
+            ]);
 
-        $pricingPlanEmi = new Pricing\Entity(array(
+        $pricingPlanEmi = new Pricing\Entity([
                 'id'                  => '1fq0O3demix3gf',
                 'plan_id'             => '1hDYlICobzOCYt',
                 'plan_name'           => 'testDefaultPlan',
@@ -299,9 +331,31 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-            ));
+                'min_fee'             => 0,
+                'max_fee'             => null,
+            ]);
 
-        $pricingPlanEmiAmex = new Pricing\Entity(array(
+         $pricingPlanEmiPlan = new Pricing\Entity([
+                'id'                  => '1fq0O3demix3tt',
+                'plan_id'             => '1EmiSubPricing',
+                'plan_name'           => 'EmiSubPricingP',
+                'feature'             => 'emi',
+                'payment_method'      => 'emi',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'amount_range_active' => false,
+                'amount_range_min'    => 0,
+                'amount_range_max'    => 0,
+                'percent_rate'        => 300,
+                'fixed_rate'          => 0,
+                'international'       => 0,
+                'min_fee'             => 0,
+                'max_fee'             => null,
+                'emi_duration'        => 9,
+            ]);
+
+        $pricingPlanEmiAmex = new Pricing\Entity([
                 'id'                  => '1fq0O3demiamex',
                 'plan_id'             => '1hDYlICobzOCYt',
                 'plan_name'           => 'testDefaultPlan',
@@ -316,10 +370,12 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 300,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-            ));
+                'min_fee'             => 0,
+                'max_fee'             => null,
+            ]);
 
-         $pricingRuleCardRecurring = new Pricing\Entity(array(
-                'id'                  => '1nvp2XPMmaRLxx',
+         $pricingRuleCardRecurring = new Pricing\Entity([
+                'id'                  => '1nvp2XPMmaabxy',
                 'plan_id'             => '1hDYlICobzOCYt',
                 'plan_name'           => 'testCardRecurring',
                 'feature'             => 'recurring',
@@ -333,7 +389,10 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 200,
                 'fixed_rate'          => 0,
                 'international'       => 0,
-            ));
+                'min_fee'             => 0,
+                'max_fee'             => null,
+            ]);
+
         $pricingRules = [
             $pricingRuleOne,
             $pricingRuleTwo,
@@ -348,6 +407,7 @@ class MerchantFeeTest extends TestCase
             $pricingPlanWallet1,
             $pricingPlanWallet2,
             $pricingPlanWallet3,
+            $pricingPlanEmiPlan,
             $pricingPlanEmi,
             $pricingPlanEmiAmex,
             $pricingRuleCardRecurring,
@@ -373,7 +433,7 @@ class MerchantFeeTest extends TestCase
 
     protected function getMockInternationalPricingRepo()
     {
-        $internationalRule = new Pricing\Entity(array(
+        $internationalRule = new Pricing\Entity([
                 'id'                  => '1nvp2XPMmaRLzz',
                 'plan_id'             => '1hDYlICobzOCYt',
                 'plan_name'           => 'testDefaultPlan',
@@ -388,10 +448,70 @@ class MerchantFeeTest extends TestCase
                 'percent_rate'        => 200,
                 'fixed_rate'          => 0,
                 'international'       => true,
-            ));
+                'min_fee'            => 0,
+                'max_fee'            => null,
+            ]);
 
         $pricingRules = [
             $internationalRule
+        ];
+
+        $pricingPlan = new Pricing\Plan($pricingRules);
+
+        $mock = Mockery::mock(
+            'Models\Pricing\Repository',
+            function($mock) use ($pricingPlan)
+            {
+                $mock->shouldReceive('getPricingPlanById')
+                     ->andReturn($pricingPlan);
+            });
+
+        return $mock;
+    }
+
+    protected function getMockMaxFeePricingRepo()
+    {
+            $maxRateRuleForCard = new Pricing\Entity([
+                'id'                  => '1nvp2XPMmaRLMR',
+                'plan_id'             => '1hDYlICobzOCYt',
+                'plan_name'           => 'testMaxFee',
+                'feature'             => 'payment',
+                'payment_method'      => 'card',
+                'payment_method_type' => null,
+                'payment_network'     => null,
+                'payment_issuer'      => null,
+                'amount_range_active' => false,
+                'amount_range_min'    => 0,
+                'amount_range_max'    => 0,
+                'percent_rate'        => 200,
+                'fixed_rate'          => 0,
+                'international'       => 0,
+                'min_fee'             => 0,
+                'max_fee'             => 1000,
+            ]);
+
+            $maxRateRuleForWallet = new Pricing\Entity([
+                'id'                  => '1fq0O3dewex3MR',
+                'plan_id'             => '1hDYlICobzOCYt',
+                'plan_name'           => 'testMaxFee',
+                'feature'             => 'payment',
+                'payment_method'      => 'wallet',
+                'payment_method_type' => null,
+                'payment_network'     => 'mobikwik',
+                'payment_issuer'      => null,
+                'amount_range_active' => false,
+                'amount_range_min'    => 0,
+                'amount_range_max'    => 0,
+                'percent_rate'        => 300,
+                'fixed_rate'          => 0,
+                'international'       => 0,
+                'min_fee'             => 0,
+                'max_fee'             => 2000,
+            ]);
+
+        $pricingRules = [
+            $maxRateRuleForCard,
+            $maxRateRuleForWallet
         ];
 
         $pricingPlan = new Pricing\Plan($pricingRules);
@@ -472,7 +592,7 @@ class MerchantFeeTest extends TestCase
 
         $expectedPricingRules = [
                                     "payment"          => "4pmbgtgNVVDd7x",
-                                    "recurring"        => "1nvp2XPMmaRLxx",
+                                    "recurring"        => "1nvp2XPMmaabxy",
                                 ];
 
         $this->runMerchantFeeTest("100", "Visa", $expectedPricingRules, Card\Type::DEBIT, true);
@@ -561,18 +681,111 @@ class MerchantFeeTest extends TestCase
     {
         $this->fee->setPricingRepo($this->getMockPricingRepo());
 
+        $emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
+
         $this->runMerchantFeeTestEmi("Visa", ["payment" => "1fq0O3demix3gf"]);
 
         $this->runMerchantFeeTestEmi("American Express", ["payment" => "1fq0O3demiamex"]);
+
+        $this->runMerchantFeeTestEmiWithMerchantSubvention("Visa", ["payment" => "1fq0O3demix3gf",
+            "emi" => "1fq0O3demix3tt"]);
+    }
+
+    public function testIntrastateGstForCard()
+    {
+        $this->fee->setPricingRepo($this->getMockMaxFeePricingRepo());
+
+        // create merchant
+        $merchant = $this->fixtures->create('merchant');
+
+        $merchantDetails = $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => $merchant->getId(),
+                'gstin' => '29kjsngjk2139',
+            ]);
+
+        foreach ($this->testData[__FUNCTION__] as $data)
+        {
+            // create payment
+            $amount = $data['amount'];
+
+            $paymentArray = $this->getDefaultPaymentEntityArray();
+
+            $paymentArray['merchant_id'] = $merchant->getId();
+
+            $paymentArray['amount'] = $amount;
+
+            $paymentArray[Payment\Entity::METHOD] = Payment\Method::CARD;
+
+            $payment = new Payment\Entity($paymentArray);
+
+            $payment->card = (new Card\Entity)->build($this->card);
+
+            $payment->card->setNetwork('Visa');
+
+            $payment->card->setType($data['card_type']);
+
+            $payment->setBaseAmount($amount);
+
+            list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
+
+            $this->assertFeesAndTax(
+                $fee, $tax, $feesSplit->toArray(),
+                $data['fee'], $data['tax'], $data['fee_components']);
+        }
+    }
+
+    public function testFeeWithMaxFeeForCard()
+    {
+        $this->fee->setPricingRepo($this->getMockMaxFeePricingRepo());
+
+        foreach ($this->testData[__FUNCTION__] as $data)
+        {
+            $this->runFeeTestWithMaxFeeForCard($data['amount'],
+                                                $data['card_type'],
+                                                $data['fee'],
+                                                $data['tax'],
+                                                $data['fee_components']);
+        }
+    }
+
+    public function testFeeWithMaxFeeForWallet()
+    {
+        $this->fee->setPricingRepo($this->getMockMaxFeePricingRepo());
+
+        foreach ($this->testData[__FUNCTION__] as $data)
+        {
+            $this->runFeeTestWithMaxFeeForWallet($data['amount'],
+                                                  $data['fee'],
+                                                  $data['tax'],
+                                                  $data['fee_components']);
+        }
+    }
+
+    protected function runFeeTestWithMaxFeeForCard($amount, $cardType, $expectedFee, $expectedTax, $feeComponents)
+    {
+        list($fee, $tax, $feesSplit) = $this->runMerchantFeeTest($amount, "Visa", ["payment" => "1nvp2XPMmaRLMR"], $cardType);
+
+        $this->assertFeesAndTax($fee, $tax, $feesSplit->toArray(), $expectedFee, $expectedTax, $feeComponents);
+    }
+
+    protected function runFeeTestWithMaxFeeForWallet($amount, $expectedFee, $expectedTax, $feeComponents)
+    {
+        list($fee, $tax, $feesSplit) = $this->runMerchantFeeTestWallet("mobikwik", ["payment" => "1fq0O3dewex3MR"], $amount);
+
+        $this->assertFeesAndTax($fee, $tax, $feesSplit->toArray(), $expectedFee, $expectedTax, $feeComponents);
     }
 
     protected function runMerchantFeeTest($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false)
     {
         $payment = $this->createPaymentEntityForCard($amount, $network, $expectedRules, $cardType, $isRecurring, $isCardInternational);
 
-        list($fee, $serviceTax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
+        list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
         $this->assertPricingRules($expectedRules, $feesSplit);
+
+        return [$fee, $tax, $feesSplit];
     }
 
     protected function runMerchantFeeTestWithException($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false)
@@ -638,24 +851,30 @@ class MerchantFeeTest extends TestCase
 
         $payment->setBaseAmount($amount);
 
-        list($fee, $serviceTax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
+        list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
         $this->assertPricingRules($expectedRules, $feesSplit);
     }
 
-    protected function runMerchantFeeTestWallet($wallet, array $expectedRules)
+    protected function runMerchantFeeTestWallet($wallet, array $expectedRules, $amount = 50000)
     {
         $paymentArray = $this->getDefaultPaymentEntityArray();
 
         $paymentArray['wallet'] = $wallet;
 
+        $paymentArray['amount'] = $amount;
+
         $paymentArray[Payment\Entity::METHOD] = Payment\Method::WALLET;
 
         $payment = new Payment\Entity($paymentArray);
 
-        list($fee, $serviceTax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
+        $payment->setBaseAmount($amount);
+
+        list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
         $this->assertPricingRules($expectedRules, $feesSplit);
+
+        return [$fee, $tax, $feesSplit];
     }
 
     protected function runMerchantFeeTestEmi($network, array $expectedRules)
@@ -666,11 +885,38 @@ class MerchantFeeTest extends TestCase
 
         $paymentArray[Payment\Entity::METHOD] = Payment\Method::EMI;
 
+        $paymentArray[Payment\Entity::EMI_PLAN_ID] = '10101010101010';
+
         $payment = new Payment\Entity($paymentArray);
 
         $payment->card = (new Card\Entity)->build($this->card);
 
         $payment->card->setNetwork($network);
+
+        list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
+
+        $this->assertPricingRules($expectedRules, $feesSplit);
+    }
+
+    protected function runMerchantFeeTestEmiWithMerchantSubvention($network, array $expectedRules)
+    {
+        $paymentArray = $this->getDefaultPaymentEntityArray();
+
+        $paymentArray['amount'] = 500000;
+
+        $paymentArray[Payment\Entity::METHOD] = Payment\Method::EMI;
+
+        $paymentArray[Payment\Entity::EMI_PLAN_ID] = '10101010101010';
+
+        $payment = new Payment\Entity($paymentArray);
+
+        $payment->card = (new Card\Entity)->build($this->card);
+
+        $payment->card->setNetwork($network);
+
+        $payment->setBaseAmount(500000);
+
+        $this->fixtures->merchant->addFeatures('emi_merchant_subvention');
 
         list($fee, $serviceTax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
@@ -696,5 +942,19 @@ class MerchantFeeTest extends TestCase
                 return $feeSplit->getPricingRule();
             }
        }
+    }
+
+    protected function assertFeesAndTax($fee, $tax, $feeSplit, $expectedFee, $expectedTax, $expectedFeeSplit)
+    {
+        $this->assertEquals($expectedFee, $fee);
+
+        $this->assertEquals($expectedTax, $tax);
+
+        foreach ($feeSplit as $feeSplitComponent)
+        {
+            $componentName = $feeSplitComponent['name'];
+
+            $this->assertEquals($feeSplitComponent['amount'], $expectedFeeSplit[$componentName]);
+        }
     }
 }

@@ -19,7 +19,6 @@ class CreditsTest extends TestCase
         $this->ba->proxyAuth();
 
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_terminal');
-        $this->fixtures->create('pricing:zero_pricing_plan');
     }
 
     /**
@@ -27,6 +26,18 @@ class CreditsTest extends TestCase
      */
     public function testCredits()
     {
+
+        $this->fixtures->create('credits', [
+                       'type'        => 'amount',
+                       'value'       => 100000,
+                   ]);
+
+         $this->fixtures->create('credits', [
+                       'type'        => 'amount',
+                       'value'       => 100000,
+                       'merchant_id' => '10NodalAccount',
+                   ]);
+
         $this->fixtures->merchant->editCredits('100000', '10000000000000');
         $this->fixtures->merchant->editCreditsforNodalAccount('100000');
 
@@ -35,6 +46,7 @@ class CreditsTest extends TestCase
         $txn = $this->getLastEntity('transaction', true);
         $this->assertEquals(0, $txn['fee']);
         $this->assertEquals(0, $txn['service_tax']);
+        $this->assertEquals(0, $txn['tax']);
         $this->assertEquals(true, $txn['gratis']);
         $this->assertEquals('1ZeroPricingR1', $txn['pricing_rule_id']);
 
@@ -52,6 +64,17 @@ class CreditsTest extends TestCase
      */
     public function testCredits2()
     {
+        $this->fixtures->create('credits', [
+                       'type'        => 'amount',
+                       'value'       => 100000,
+                   ]);
+
+         $this->fixtures->create('credits', [
+                       'type'        => 'amount',
+                       'value'       => 100000,
+                       'merchant_id' => '10NodalAccount',
+                   ]);
+
         $this->fixtures->merchant->editCredits('100000', '10000000000000');
         $this->fixtures->merchant->editCreditsforNodalAccount('100000');
 
@@ -61,6 +84,7 @@ class CreditsTest extends TestCase
         $txn = $this->getLastEntity('transaction', true);
         $this->assertEquals(0, $txn['fee']);
         $this->assertEquals(0, $txn['service_tax']);
+        $this->assertEquals(0, $txn['tax']);
         $this->assertEquals(false, $txn['gratis']);
         $this->assertEquals(null, $txn['pricing_rule_id']);
 
@@ -86,6 +110,17 @@ class CreditsTest extends TestCase
 
     public function testPartialCredits()
     {
+        $this->fixtures->create('credits', [
+                       'type'        => 'amount',
+                       'value'       => 100000,
+                   ]);
+
+         $this->fixtures->create('credits', [
+                       'type'        => 'amount',
+                       'value'       => 100000,
+                       'merchant_id' => '10NodalAccount',
+                   ]);
+
         $this->fixtures->merchant->editCredits('100000', '10000000000000');
         $this->fixtures->merchant->editCreditsforNodalAccount('100000');
 
@@ -98,6 +133,7 @@ class CreditsTest extends TestCase
         $txn = $this->getLastEntity('transaction', true);
         $this->assertEquals(0, $txn['fee']);
         $this->assertEquals(0, $txn['service_tax']);
+        $this->assertEquals(0, $txn['tax']);
         $this->assertEquals(true, $txn['gratis']);
         $this->assertEquals('1ZeroPricingR2', $txn['pricing_rule_id']);
 
@@ -112,6 +148,17 @@ class CreditsTest extends TestCase
 
     public function testFeeCredits()
     {
+        $this->fixtures->create('credits', [
+                       'type'        => 'fee',
+                       'value'       => 10000,
+                   ]);
+
+         $this->fixtures->create('credits', [
+                       'type'        => 'fee',
+                       'value'       => 10000,
+                       'merchant_id' => '10NodalAccount',
+                   ]);
+
         $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
         $this->fixtures->merchant->editCreditsforNodalAccount('10000', 'fee');
 
@@ -136,6 +183,17 @@ class CreditsTest extends TestCase
     // credits are updated or not.
     public function testFeeCredits2()
     {
+        $this->fixtures->create('credits', [
+                       'type'        => 'fee',
+                       'value'       => 10000,
+                   ]);
+
+         $this->fixtures->create('credits', [
+                       'type'        => 'fee',
+                       'value'       => 10000,
+                       'merchant_id' => '10NodalAccount',
+                   ]);
+
         $this->fixtures->merchant->editFeeCredits('10000', '10000000000000');
         $this->fixtures->merchant->editCreditsforNodalAccount('10000', 'fee');
 

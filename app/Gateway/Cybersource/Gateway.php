@@ -9,12 +9,14 @@ use SoapVar;
 use SoapFault;
 use SoapClient;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Gateway\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Utility;
@@ -393,7 +395,7 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getVerifyRequestContent($input, 'refund');
 
-        $targetDate = Carbon::createFromTimestamp($input['refund']['last_attempted_at'], 'UTC')
+        $targetDate = Carbon::createFromTimestamp($input['refund']['last_attempted_at'], Timezone::IST)
                             ->format('Ymd');
 
         $request['content'][F::TARGET_DATE] = $targetDate;
@@ -403,7 +405,7 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequestContent(array $input, $entity)
     {
-        $targetDate = Carbon::createFromTimestamp($input[$entity]['created_at'], 'UTC')
+        $targetDate = Carbon::createFromTimestamp($input[$entity]['created_at'], Timezone::IST)
                             ->format('Ymd');
 
         $content = [
@@ -582,7 +584,6 @@ class Gateway extends Base\Gateway
                 return $this->getFieldsForFormSubmitToBankAcs($input, $response);
 
             case Result::NOT_ENROLLED:
-
                 $payerAuthEnrollReply = $response[F::PA_ENROLL_REPLY];
 
                 $this->validateAndSetEciValue($input, $this->gatewayPayment, $payerAuthEnrollReply);
@@ -708,9 +709,7 @@ class Gateway extends Base\Gateway
                 $gatewayPayment->fill($gatewayAttributes);
                 $gatewayPayment->save();
 
-                $desc = $payerAuthValidateReply[F::AUTHENTICATION_STATUS_MESSAGE] ?? null;
-
-                $this->checkErrorsAndThrowException($response, null, $desc);
+                $this->checkErrorsAndThrowException($response);
             }
 
             $gatewayAttributes = $this->getAttributeFromAuthorizeEnrolledResponse($input, $response);
@@ -1087,7 +1086,8 @@ class Gateway extends Base\Gateway
         $content[F::MERCHANT_REFERENCE_CODE] = $input['payment']['id'];
 
         $content[F::CC_AUTH_SERVICE] = [
-            F::RUN => 'true'
+            F::RUN => 'true',
+            F::RECONCILIATION_ID => $input['payment']['id'],
         ];
 
         $content[F::INVOICE_HEADER] = [
@@ -1137,6 +1137,12 @@ class Gateway extends Base\Gateway
 
         $content[F::BILL_TO] = $this->getBillingInfo($input);
 
+        if (($input['terminal']['gateway_terminal_id'] === 'RAZORPAYCYBS') or
+            ($input['merchant']['id'] === Merchant\Account::DEMO_PAGE_ACCOUNT))
+        {
+            unset($content[F::BILL_TO]);
+        }
+
         $request = $this->getStandardSoapRequest($content);
 
         return $request;
@@ -1173,7 +1179,8 @@ class Gateway extends Base\Gateway
             F::ECI_RAW            => $gatewayPayment->getEci(),
             F::PARES_STATUS       => $gatewayPayment->getParesStatus(),
             F::VERES_ENROLLED     => $gatewayPayment->getVeresEnrolled(),
-            F::COMMERCE_INDICATOR => $gatewayPayment->getCommerceIndicator()
+            F::COMMERCE_INDICATOR => $gatewayPayment->getCommerceIndicator(),
+            F::RECONCILIATION_ID  => $input['payment']['id'],
         ];
 
         $cardNetwork = $input['card']['network_code'];
@@ -1204,7 +1211,8 @@ class Gateway extends Base\Gateway
 
         $content[F::CC_CREDIT_SERVICE] = [
             F::RUN                => 'true',
-            F::CAPTURE_REQUEST_ID => $gatewayPayment->getCaptureRequestId()
+            F::CAPTURE_REQUEST_ID => $gatewayPayment->getCaptureRequestId(),
+            F::RECONCILIATION_ID  => $input['refund']['id'],
         ];
 
         $content[F::INVOICE_HEADER] = [
@@ -1242,8 +1250,8 @@ class Gateway extends Base\Gateway
         $content[F::MERCHANT_REFERENCE_CODE] = $input['refund']['id'];
 
         $content[F::CC_AUTH_REVERSAL_SERVICE] = [
-            F::RUN              => 'true',
-            F::AUTH_REQUEST_ID  => $gatewayPayment->getRequestId()
+            F::RUN                => 'true',
+            F::AUTH_REQUEST_ID    => $gatewayPayment->getRequestId()
         ];
 
         $content[F::PURCHASE_TOTALS] = [
@@ -1278,7 +1286,8 @@ class Gateway extends Base\Gateway
 
         $content[F::CC_CAPTURE_SERVICE] = [
             F::RUN => 'true',
-            F::AUTH_REQUEST_ID => $gatewayPayment->getRequestId()
+            F::AUTH_REQUEST_ID => $gatewayPayment->getRequestId(),
+            F::RECONCILIATION_ID  => $input['payment']['id'],
         ];
 
         $content[F::INVOICE_HEADER] = [
@@ -1598,12 +1607,6 @@ class Gateway extends Base\Gateway
 
         $code = $code ?: ResponseCode::getMappedCode($reasonCode);
         $desc = $desc ?: ResponseCode::getDescription($reasonCode);
-
-        if (ResponseCode::isFatalError($reasonCode) === true)
-        {
-            throw new Exception\ServerErrorException(
-                'Server error occured. Please contact admin.', $code);
-        }
 
         throw new Exception\GatewayErrorException(
                 $code, $reasonCode, $desc);

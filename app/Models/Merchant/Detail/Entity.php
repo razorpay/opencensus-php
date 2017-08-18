@@ -27,6 +27,8 @@ class Entity extends Base\PublicEntity
     const BUSINESS_OPERATION_CITY           =      'business_operation_city';
     const BUSINESS_OPERATION_PIN            =      'business_operation_pin';
     const BUSINESS_DOE                      =      'business_doe';
+    const GSTIN                             =      'gstin'; // Goods and Services Tax Identification Number
+    const P_GSTIN                           =      'p_gstin';
     const COMPANY_CIN                       =      'company_cin';
     const COMPANY_PAN                       =      'company_pan';
     const COMPANY_PAN_NAME                  =      'company_pan_name';
@@ -99,6 +101,8 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_OPERATION_CITY,
         self::BUSINESS_OPERATION_PIN,
         self::BUSINESS_DOE,
+        self::GSTIN,
+        self::P_GSTIN,
         self::COMPANY_CIN,
         self::COMPANY_PAN,
         self::COMPANY_PAN_NAME,
@@ -164,6 +168,8 @@ class Entity extends Base\PublicEntity
         self::PROMOTER_PAN,
         self::PROMOTER_PAN_NAME,
         self::BUSINESS_DOE,
+        self::GSTIN,
+        self::P_GSTIN,
         self::COMPANY_CIN,
         self::COMPANY_PAN,
         self::COMPANY_PAN_NAME,
@@ -209,6 +215,8 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::SUBMITTED_AT        => null,
         self::ACTIVATION_PROGRESS => 0,
+        self::GSTIN               => null,
+        self::P_GSTIN             => null,
     ];
 
     protected $casts = [
@@ -228,6 +236,24 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_OPERATION_PROOF_URL,
     ];
 
+    const GST_FIELDS = [
+        self::GSTIN,
+        self::P_GSTIN
+    ];
+
+    protected $eventFields = [
+        self::BUSINESS_NAME,
+        self::CONTACT_NAME,
+        self::CONTACT_EMAIL,
+        self::CONTACT_MOBILE,
+        self::BUSINESS_TYPE,
+        self::TRANSACTION_VOLUME,
+        self::BUSINESS_REGISTERED_CITY,
+        self::BUSINESS_REGISTERED_STATE,
+        self::BUSINESS_OPERATION_CITY,
+        self::BUSINESS_OPERATION_STATE,
+    ];
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity', self::MERCHANT_ID, 'id');
@@ -243,9 +269,31 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::SUBMITTED) === true);
     }
 
+    public function getGstin()
+    {
+        return $this->getAttribute(self::GSTIN);
+    }
+
+    public function getPGstin()
+    {
+        return $this->getAttribute(self::P_GSTIN);
+    }
+
     public function getBusinessRegisteredAddress()
     {
         return $this->getAttribute(self::BUSINESS_REGISTERED_ADDRESS);
+    }
+
+    public function getBusinessStateCode()
+    {
+        $gstin = $this->getGstin() ?? $this->getPGstin();
+
+        if (empty($gstin) === true)
+        {
+            return null;
+        }
+
+        return substr($gstin, 0, 2);
     }
 
     public function setContactEmail($email)
@@ -260,6 +308,31 @@ class Entity extends Base\PublicEntity
 
     public function getActivationProgress()
     {
-        $this->getAttribute(self::ACTIVATION_PROGRESS);
+        return $this->getAttribute(self::ACTIVATION_PROGRESS);
+    }
+
+    public function getContactMobile()
+    {
+        return $this->getAttribute(self::CONTACT_MOBILE);
+    }
+
+    public function toArrayGST()
+    {
+        return array_only($this->toArrayPublic(), self::GST_FIELDS);
+    }
+
+    public function toArrayEvent()
+    {
+        $merchantDetailAttributes = [];
+
+        foreach ($this->eventFields as $eventField)
+        {
+            if ($this->hasAttribute($eventField))
+            {
+                $merchantDetailAttributes[$eventField] = $this->getAttribute($eventField);
+            }
+        }
+
+        return $merchantDetailAttributes;
     }
 }

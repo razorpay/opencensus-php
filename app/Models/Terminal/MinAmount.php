@@ -11,7 +11,7 @@ class MinAmount
     /**
      * Map of min amount for network categories.
      *
-     * The map uses a gateway level seperation for
+     * The map uses a gateway level separation for
      * netbanking and a network level segregation
      * for cards.
      *
@@ -24,6 +24,8 @@ class MinAmount
                 Category::GOVT_EDUCATION => 200000,
                 Category::PVT_EDUCATION  => 200000,
                 Category::CORPORATE      => 200000,
+                Category::FOREX          => 200000,
+                Category::HOUSING        => 150000,
             ],
             self::TOP_SIX_BANKS => [
             ],
@@ -32,10 +34,12 @@ class MinAmount
                 Category::PVT_EDUCATION  => 200000,
                 Category::CORPORATE      => 200000,
                 Category::LENDING        => 150000,
+                Category::FOREX          => 150000,
+                Category::HOUSING        => 150000,
             ],
         ],
         Method::CARD => [
-            Network::AMEX => [
+            Gateway::AMEX => [
             ],
         ],
     ];
@@ -48,39 +52,28 @@ class MinAmount
     ];
 
     /**
-    * Accepts array of key-val pair
-    * with keys : category, method, network, gateway
-    * All keys should be present
-    * A more specific combination will override a
-    * less specific combination.
-    * Corresponding values can be null
-    *
-    * @param $filterParams array
-    * @return $minAmount from constant(MIN_AMOUNT)
-    */
+     * Accepts array of key-val pair
+     * with keys : category, method, network, gateway
+     * All keys should be present
+     * A more specific combination will override a
+     * less specific combination.
+     * Corresponding values can be null
+     *
+     * @param $method
+     * @param $gateway
+     * @param $network
+     * @param $category
+     *
+     * @return int $minAmount from constant(MIN_AMOUNT)
+     */
     public static function getMinAmount($method, $gateway, $network, $category)
     {
-        $key = '';
-
-        $minAmount = 0 ;
+        $minAmount = 0;
 
         // set category if not available
         if (empty($category) === true)
         {
-            $category = Category::getDefaultForMethodAndNetwork($method, $network);
-        }
-
-        // set method key
-        switch ($method)
-        {
-            case Method::NETBANKING:
-                $key = $gateway;
-                break;
-
-            case Method::EMI:
-            case Method::CARD:
-                $key = $network;
-                break;
+            $category = Category::getDefaultForMethodAndGateway($method, $gateway);
         }
 
         // get method category combination
@@ -98,9 +91,9 @@ class MinAmount
         }
 
         // get method key category map
-        if (isset(self::MIN_AMOUNT[$method][$key][$category]) === true)
+        if (isset(self::MIN_AMOUNT[$method][$gateway][$category]) === true)
         {
-            $minAmount = self::MIN_AMOUNT[$method][$key][$category];
+            $minAmount = self::MIN_AMOUNT[$method][$gateway][$category];
         }
 
         return $minAmount;

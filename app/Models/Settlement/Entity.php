@@ -2,6 +2,9 @@
 
 namespace RZP\Models\Settlement;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
+
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
@@ -16,6 +19,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT                 = 'amount';
     const FEES                   = 'fees';
     const SERVICE_TAX            = 'service_tax';
+    const TAX                    = 'tax';
     const STATUS                 = 'status';
     const TRANSACTION_ID         = 'transaction_id';
     const ATTEMPTS               = 'attempts';
@@ -24,6 +28,8 @@ class Entity extends Base\PublicEntity
     const FAILURE_REASON         = 'failure_reason';
     const REMARKS                = 'remarks';
     const RETURN_UTR             = 'return_utr';
+    const PROCESSED_AT           = 'processed_at';
+    const SETTLED_ON             = 'settled_on';
 
     protected static $sign = 'setl';
 
@@ -32,6 +38,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::FEES,
         self::SERVICE_TAX,
+        self::TAX,
         self::STATUS,
         self::MERCHANT_ID,
         self::BANK_ACCOUNT_ID,
@@ -39,6 +46,8 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS,
         self::CHANNEL,
         self::AMOUNT,
+        self::PROCESSED_AT,
+        self::SETTLED_ON,
     ];
 
     protected $visible = [
@@ -49,6 +58,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::FEES,
         self::SERVICE_TAX,
+        self::TAX,
         self::STATUS,
         self::TRANSACTION_ID,
         self::ATTEMPTS,
@@ -56,8 +66,10 @@ class Entity extends Base\PublicEntity
         self::REMARKS,
         self::CHANNEL,
         self::UTR,
+        self::PROCESSED_AT,
+        self::SETTLED_ON,
         self::CREATED_AT,
-        self::UPDATED_AT
+        self::UPDATED_AT,
     ];
 
     protected $public = [
@@ -68,7 +80,9 @@ class Entity extends Base\PublicEntity
         self::FEES,
         self::SERVICE_TAX,
         self::UTR,
-        self::CREATED_AT
+        self::SETTLED_ON,
+        self::CREATED_AT,
+        self::TAX,
     ];
 
     protected $defaults = [
@@ -79,17 +93,27 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS => 'int',
     ];
 
+    protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::PROCESSED_AT,
+        self::SETTLED_ON,
+    ];
+
     protected $amounts = [
         self::AMOUNT,
         self::FEES,
         self::SERVICE_TAX,
+        self::TAX,
     ];
+
+    protected $hiddenInReport = [self::SETTLED_ON];
 
     // --------------------------------- relations -------------------------------
 
     public function fundTransferAttempts()
     {
-        return $this->morphMany('RZP\Models\FundTransfer\Attempt\Entity');
+        return $this->morphMany('RZP\Models\FundTransfer\Attempt\Entity', 'source');
     }
 
     public function merchant()
@@ -156,6 +180,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SERVICE_TAX);
     }
 
+    public function getTax()
+    {
+        return $this->getAttribute(self::TAX);
+    }
+
     public function getFailureReason()
     {
         return $this->getAttribute(self::FAILURE_REASON);
@@ -166,11 +195,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::REMARKS);
     }
 
-    public function getVersion()
-    {
-        return $this->getAttribute(self::VERSION);
-    }
-
     public function getTransactionId()
     {
         return $this->getAttribute(self::TRANSACTION_ID);
@@ -179,6 +203,11 @@ class Entity extends Base\PublicEntity
     public function getAttempts()
     {
         return $this->getAttribute(self::ATTEMPTS);
+    }
+
+    public function getProcessedAt()
+    {
+        return $this->getAttribute(self::PROCESSED_AT);
     }
 
     // --------------------------------- setters -------------------------------
@@ -228,6 +257,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FEES, $fee);
     }
 
+    public function setTax($tax)
+    {
+        $this->setAttribute(self::TAX, $tax);
+    }
+
     public function setServiceTax($serviceTax)
     {
         $this->setAttribute(self::SERVICE_TAX, $serviceTax);
@@ -238,21 +272,31 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::REMARKS, $remarks);
     }
 
-    public function setVersion($version)
-    {
-        $this->setAttribute(self::VERSION, $version);
-    }
-
     public function setAttempts($count)
     {
         $this->setAttribute(self::ATTEMPTS, $count);
     }
 
-    // --------------------------------- modifiers -------------------------------
+    public function setProcessedAt($date)
+    {
+        $this->setAttribute(self::PROCESSED_AT, $date);
+    }
+
+    public function setSettledOn($date)
+    {
+        $this->setAttribute(self::SETTLED_ON, $date);
+    }
+
+    // --------------------------------- accessors -------------------------------
 
     protected function getServiceTaxAttribute()
     {
         return (int) $this->attributes[self::SERVICE_TAX];
+    }
+
+    protected function getTaxAttribute()
+    {
+        return (int) $this->attributes[self::TAX];
     }
 
     protected function getAmountAttribute()
@@ -270,6 +314,18 @@ class Entity extends Base\PublicEntity
         }
 
         return $fee;
+    }
+
+    protected function getSettledOnAttribute()
+    {
+        $timestamp = $this->attributes[self::SETTLED_ON];
+
+        if ($timestamp !== null)
+        {
+            return Carbon::createFromTimestamp($timestamp, Timezone::IST)->format('d/m/Y');
+        }
+
+        return null;
     }
 
     // ------------------------------- mutators --------------------------------

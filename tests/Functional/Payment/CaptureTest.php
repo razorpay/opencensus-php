@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Payment;
 
 use Redis;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mockery;
 use Mail;
 
@@ -141,9 +142,10 @@ class CaptureTest extends TestCase
 
         $transaction = $this->getLastEntity('transaction', true);
 
-        $this->assertEquals($transaction['credit'], 977000);
-        $this->assertEquals($transaction['fee'], 23000);
-        $this->assertEquals($transaction['service_tax'], 3000);
+        $this->assertEquals($transaction['credit'], 976400);
+        $this->assertEquals($transaction['fee'], 23600);
+        $this->assertEquals($transaction['service_tax'], 3600);
+        $this->assertEquals($transaction['tax'], 3600);
         $this->assertEquals($transaction['credit_type'], 'default');
         $this->assertEquals($transaction['fee_bearer'], 'platform');
         $this->assertEquals($transaction['fee_model'], 'prepaid');
@@ -313,7 +315,7 @@ class CaptureTest extends TestCase
     {
         $payment = $this->createFailedPayment('1', false);
 
-        $past = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp;
+        $past = Carbon::today(Timezone::IST)->subDays(1)->timestamp;
         $this->fixtures->payment->edit($payment['id'], ['created_at' => $past]);
 
         $this->fixtures->merchant->edit(
@@ -353,7 +355,7 @@ class CaptureTest extends TestCase
     {
         $payment = $this->createFailedPayment();
 
-        $past = Carbon::today('Asia/Kolkata')->subDays(6)->timestamp;
+        $past = Carbon::today(Timezone::IST)->subDays(6)->timestamp;
         $this->fixtures->payment->edit($payment['id'], ['created_at' => $past]);
 
         $this->authorizeFailedPayment($payment['id']);
@@ -371,7 +373,7 @@ class CaptureTest extends TestCase
     {
         $payment = $this->createFailedPayment();
 
-        $past = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp;
+        $past = Carbon::today(Timezone::IST)->subDays(1)->timestamp;
         $this->fixtures->payment->edit($payment['id'], ['created_at' => $past]);
 
         $defaultMerchantId = '10000000000000';
@@ -395,7 +397,7 @@ class CaptureTest extends TestCase
 
         $invoice = $this->getLastEntity('invoice', true);
 
-        $past = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp;
+        $past = Carbon::today(Timezone::IST)->subDays(1)->timestamp;
         $invoice = $this->fixtures->invoice->edit($invoice['id'], ['status' => 'expired']);
 
         $this->authorizeFailedPayment($payment['id']);
@@ -433,7 +435,7 @@ class CaptureTest extends TestCase
             'payment_capture' => '1'
             ]);
 
-        $dueBy = Carbon::now('Asia/Kolkata')->addDays(10)->timestamp;
+        $dueBy = Carbon::now(Timezone::IST)->addDays(10)->timestamp;
 
         $this->fixtures->create(
                             'invoice',
@@ -550,7 +552,7 @@ class CaptureTest extends TestCase
 
     public function testAutoCaptureEmail()
     {
-        $time = Carbon::today('Asia/Kolkata')->timestamp;
+        $time = Carbon::today(Timezone::IST)->timestamp;
         $createdAt = $time - rand(0, 23) * 60 * 60;
 
         $attributes = [
@@ -638,6 +640,16 @@ class CaptureTest extends TestCase
     // Fee Credit > 0
     public function testTransactionOnCaptureWithFeeCreditForPrepaid()
     {
+        $this->fixtures->create('credits', [
+            'type'  => 'fee',
+            'value' => 14000,
+        ]);
+
+        $this->fixtures->create('credits', [
+            'type'  => 'fee',
+            'value' => 10000,
+        ]);
+
         $this->fixtures->base->editEntity('balance', '10000000000000', ['fee_credits' => 24000]);
 
         $payment = $this->fixtures->create('payment:authorized', [
@@ -656,13 +668,94 @@ class CaptureTest extends TestCase
 
         $transaction = $this->getLastEntity('transaction', true);
 
+        $creditTransactions = $this->getEntities('credit_transaction', [], true);
+
+        $this->assertEquals($creditTransactions['items'][0]['credits_used'], 9600);
+        $this->assertEquals($creditTransactions['items'][1]['credits_used'], 14000);
+
+        //need to update the test case To fill
+
         $this->assertEquals($transaction['credit'], 1000000);
-        $this->assertEquals($transaction['fee'], 23000);
-        $this->assertEquals($transaction['service_tax'], 3000);
-        $this->assertEquals($transaction['fee_credits'], 23000);
+        $this->assertEquals($transaction['fee'], 23600);
+        $this->assertEquals($transaction['service_tax'], 3600);
+        $this->assertEquals($transaction['tax'], 3600);
+        $this->assertEquals($transaction['fee_credits'], 23600);
         $this->assertEquals($transaction['credit_type'], 'fee');
         $this->assertEquals($transaction['fee_bearer'], 'platform');
         $this->assertEquals($transaction['fee_model'], 'prepaid');
+    }
+
+    /**
+     *  This is to make sure that credits
+     *  are used first which are expiring first
+     */
+    public function testCreditTransactionWithFeeCreditForPrepaid()
+    {
+        $credit1 = $this->fixtures->create('credits', [
+                       'type'        => 'fee',
+                       'value'       => 34000,
+                       'expired_at' => time() + 2*24*60*60,
+                   ]);
+
+        $credit2 = $this->fixtures->create('credits', [
+                       'type'  => 'fee',
+                       'value' => 10000,
+                       'expired_at' => time() + 1*24*60*60,
+                   ]);
+
+        $payment = $this->fixtures->create('payment:authorized', [
+            'gateway_captured' => true
+        ]);
+
+        $this->payment = $payment->toArrayPublic();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $creditTransactions = $this->getEntities('credit_transaction', [], true);
+
+        $this->assertEquals($creditTransactions['items'][0]['credits_used'], 13600);
+        $this->assertEquals($creditTransactions['items'][0]['credits_id'], $credit1['id']);
+        $this->assertEquals($creditTransactions['items'][1]['credits_used'], 10000);
+        $this->assertEquals($creditTransactions['items'][1]['credits_id'], $credit2['id']);
+    }
+
+    /**
+     *  This is to make sure that credits
+     *  are used first which are expiring first
+     */
+    public function testCreditTransactionWithFeeCreditWithOldFlowForPrepaid()
+    {
+        $credit1 = $this->fixtures->create('credits', [
+                       'type'        => 'fee',
+                       'value'       => 34000,
+                       'expired_at' => time() + 2*24*60*60,
+                   ]);
+
+        $credit2 = $this->fixtures->create('credits', [
+                       'type'  => 'fee',
+                       'value' => 10000,
+                       'expired_at' => time() + 1*24*60*60,
+                   ]);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['fee_credits' => 0]);
+
+        $this->fixtures->merchant->addFeatures(['old_credits_flow']);
+
+        $payment = $this->fixtures->create('payment:authorized', [
+            'gateway_captured' => true
+        ]);
+
+        $this->payment = $payment->toArrayPublic();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $creditTransactions = $this->getEntities('credit_transaction', [], true);
+
+        $this->assertEmpty($creditTransactions['items']);
     }
 
     // Fee Model = Prepaid
@@ -670,6 +763,16 @@ class CaptureTest extends TestCase
     // Amount Credit > 0
     public function testTransactionOnCaptureWithAmountCreditForPrepaid()
     {
+        $this->fixtures->create('credits', [
+            'type'  => 'amount',
+            'value' => 14000,
+        ]);
+
+        $this->fixtures->create('credits', [
+            'type'  => 'amount',
+            'value' => 10000,
+        ]);
+
         $this->fixtures->base->editEntity('balance', '10000000000000', ['credits' => 24000]);
 
         $pricing = $this->fixtures->base->createEntity('pricing', [
@@ -694,14 +797,107 @@ class CaptureTest extends TestCase
 
         $transaction = $this->getLastEntity('transaction', true);
 
+        $creditTransactions = $this->getEntities('credit_transaction', [], true);
+
+        $this->assertEquals($creditTransactions['items'][0]['credits_used'], 10000);
+        $this->assertEquals($creditTransactions['items'][1]['credits_used'], 14000);
+
         $this->assertEquals($transaction['credit'], 1000000);
         $this->assertEquals($transaction['fee'], 0);
         $this->assertTrue($transaction['gratis']);
         $this->assertEquals($transaction['service_tax'], 0);
+        $this->assertEquals($transaction['tax'], 0);
         $this->assertEquals($transaction['credit_type'], 'amount');
         $this->assertEquals($transaction['fee_bearer'], 'platform');
         $this->assertEquals($transaction['fee_model'], 'prepaid');
     }
+
+    /**
+     *  This is to make sure that credits
+     *  are used first which are expiring first
+     */
+    public function testCreditTransactionWithAmountCreditWithOldFlowForPrepaid()
+    {
+        //These never expire. Should be used at last
+        $credit1 = $this->fixtures->create('credits', [
+                       'type'        => 'amount',
+                       'value'       => 1000000,
+                   ]);
+
+        $credit2 = $this->fixtures->create('credits', [
+                       'type'  => 'amount',
+                       'value' => 10000,
+                       'expired_at' => time() + 1*24*60*60,
+                   ]);
+
+        $this->fixtures->base->editEntity('balance', '10000000000000', ['credits' => 30]);
+
+        $this->fixtures->merchant->addFeatures(['old_credits_flow']);
+
+        $pricing = $this->fixtures->base->createEntity('pricing', [
+            'plan_id'           => '10ZeroPricingP',
+            'feature'           => 'payment',
+            'payment_method'    => 'card'
+        ]);
+
+        $payment = $this->fixtures->create('payment:authorized', [
+            'gateway_captured' => true
+        ]);
+
+        $this->payment = $payment->toArrayPublic();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $creditTransactions = $this->getEntities('credit_transaction', [], true);
+
+        $this->assertEquals($creditTransactions['items'][0]['credits_used'], 30);
+        $this->assertEquals($creditTransactions['items'][0]['credits_id'], $credit2['id']);
+    }
+
+    /**
+     *  This is to make sure that credits
+     *  are used first which are expiring first
+     */
+    public function testCreditTransactionWithAmountCreditForPrepaid()
+    {
+        //These never expire. Should be used at last
+        $credit1 = $this->fixtures->create('credits', [
+                       'type'        => 'amount',
+                       'value'       => 1000000,
+                   ]);
+
+        $credit2 = $this->fixtures->create('credits', [
+                       'type'  => 'amount',
+                       'value' => 10000,
+                       'expired_at' => time() + 1*24*60*60,
+                   ]);
+
+        $pricing = $this->fixtures->base->createEntity('pricing', [
+            'plan_id'           => '10ZeroPricingP',
+            'feature'           => 'payment',
+            'payment_method'    => 'card'
+        ]);
+
+        $payment = $this->fixtures->create('payment:authorized', [
+            'gateway_captured' => true
+        ]);
+
+        $this->payment = $payment->toArrayPublic();
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $creditTransactions = $this->getEntities('credit_transaction', [], true);
+
+        $this->assertEquals($creditTransactions['items'][0]['credits_used'], 990000);
+        $this->assertEquals($creditTransactions['items'][0]['credits_id'], $credit1['id']);
+        $this->assertEquals($creditTransactions['items'][1]['credits_used'], 10000);
+        $this->assertEquals($creditTransactions['items'][1]['credits_id'], $credit2['id']);
+    }
+
 
     // Fee Model = Prepaid
     // Fee Bearer = Customer
@@ -760,6 +956,7 @@ class CaptureTest extends TestCase
         $this->assertEquals($transaction['fee'], 0);
         $this->assertTrue($transaction['gratis']);
         $this->assertEquals($transaction['service_tax'], 0);
+        $this->assertEquals($transaction['tax'], 0);
         $this->assertEquals($transaction['credit_type'], 'amount');
         $this->assertEquals($transaction['fee_bearer'], 'customer');
         $this->assertEquals($transaction['fee_model'], 'prepaid');
@@ -801,6 +998,18 @@ class CaptureTest extends TestCase
     // Amount Credit > 0
     public function testTransactionOnCaptureWithAmountCreditForPostpaid()
     {
+         //These never expire. Should be used at last
+        $credit1 = $this->fixtures->create('credits', [
+                       'type'        => 'amount',
+                       'value'       => 20000,
+                   ]);
+
+        $credit2 = $this->fixtures->create('credits', [
+                       'type'  => 'amount',
+                       'value' => 10000,
+                       'expired_at' => time() + 1*24*60*60,
+                   ]);
+
         $this->fixtures->base->editEntity('balance', '10000000000000', ['credits' => 24000]);
 
         $this->fixtures->base->editEntity('merchant', '10000000000000', ['fee_model' => 'postpaid']);
@@ -830,6 +1039,7 @@ class CaptureTest extends TestCase
         $this->assertEquals($transaction['credit'], 1000000);
         $this->assertEquals($transaction['fee'], 0);
         $this->assertEquals($transaction['service_tax'], 0);
+        $this->assertEquals($transaction['tax'], 0);
         $this->assertTrue($transaction['gratis']);
         $this->assertEquals($transaction['credit_type'], 'amount');
         $this->assertEquals($transaction['fee_bearer'], 'platform');
@@ -841,6 +1051,17 @@ class CaptureTest extends TestCase
     // Fee Credit > 0
     public function testTransactionOnCaptureWithFeeCreditForPostpaid()
     {
+        $credit1 = $this->fixtures->create('credits', [
+                       'type'        => 'fee',
+                       'value'       => 20000,
+                   ]);
+
+        $credit2 = $this->fixtures->create('credits', [
+                       'type'  => 'fee',
+                       'value' => 10000,
+                       'expired_at' => time() + 1*24*60*60,
+                   ]);
+
         $this->fixtures->base->editEntity('balance', '10000000000000', ['fee_credits' => 24000]);
 
         $this->fixtures->base->editEntity('merchant', '10000000000000', ['fee_model' => 'postpaid']);
@@ -862,9 +1083,10 @@ class CaptureTest extends TestCase
         $transaction = $this->getLastEntity('transaction', true);
 
         $this->assertEquals($transaction['credit'], 1000000);
-        $this->assertEquals($transaction['fee'], 23000);
-        $this->assertEquals($transaction['service_tax'], 3000);
-        $this->assertEquals($transaction['fee_credits'], 23000);
+        $this->assertEquals($transaction['fee'], 23600);
+        $this->assertEquals($transaction['service_tax'], 3600);
+        $this->assertEquals($transaction['tax'], 3600);
+        $this->assertEquals($transaction['fee_credits'], 23600);
         $this->assertEquals($transaction['credit_type'], 'fee');
         $this->assertEquals($transaction['fee_bearer'], 'platform');
         $this->assertEquals($transaction['fee_model'], 'postpaid');
@@ -899,8 +1121,9 @@ class CaptureTest extends TestCase
         $transaction = $this->getLastEntity('transaction', true);
 
         $this->assertEquals($transaction['credit'], 1000000);
-        $this->assertEquals($transaction['fee'], 23000);
-        $this->assertEquals($transaction['service_tax'], 3000);
+        $this->assertEquals($transaction['fee'], 23600);
+        $this->assertEquals($transaction['service_tax'], 3600);
+        $this->assertEquals($transaction['tax'], 3600);
         $this->assertEquals($transaction['credit_type'], 'default');
         $this->assertEquals($transaction['fee_bearer'], 'platform');
         $this->assertEquals($transaction['fee_model'], 'postpaid');
@@ -983,7 +1206,7 @@ class CaptureTest extends TestCase
 
         if ($withInvoice)
         {
-            $dueBy = Carbon::now('Asia/Kolkata')->addDays(10)->timestamp;
+            $dueBy = Carbon::now(Timezone::IST)->addDays(10)->timestamp;
 
             $this->fixtures->create(
                                 'invoice',

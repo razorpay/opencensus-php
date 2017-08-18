@@ -26,7 +26,7 @@ class ResponseCodeMap
         // PSP is not registered
         5008 => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
         // Service unavailable. Please try later.
-        5009 => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        5009 => ErrorCode::BAD_REQUEST_PAYMENT_UPI_REQUEST_TIMED_OUT,
         5011 => ErrorCode::GATEWAY_ERROR_REFUND_DUPLICATE_REQUEST,
         5012 => ErrorCode::GATEWAY_ERROR_REFUND_DUPLICATE_REQUEST,
 

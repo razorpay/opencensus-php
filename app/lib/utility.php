@@ -93,14 +93,9 @@ if (! function_exists('random_integer'))
 {
     function random_integer($length = 1)
     {
-        $integer = '' . mt_rand(1, 9);
-
-        for($i = 1; $i < $length; $i++)
-        {
-            $integer .= mt_rand(0, 9);
-        }
-
-        return (int) $integer;
+        $min = 10**($length - 1);
+        $max = 10**($length) - 1;
+        return random_int($min, $max);
     }
 }
 
@@ -223,6 +218,11 @@ function is_associative_array(array $input)
     return array_keys($input) !== range(0, count($input) - 1);
 }
 
+function is_sequential_array(array $input)
+{
+    return array_keys($input) === range(0, count($input) - 1);
+}
+
 function upi_uuid($prefix = true)
 {
     $uuid = strtoupper(gen_uuid());
@@ -311,8 +311,28 @@ if (! function_exists('isJson'))
 {
     function isJson($string)
     {
+        if (is_string($string) === false)
+        {
+            return false;
+        }
+
         json_decode($string);
 
         return (json_last_error() == JSON_ERROR_NONE);
     }
+}
+
+/**
+ * For each character in the string checks if the ascii value is
+ * greater than 240 or not. Any character with a value greater than 240
+ * indicates that it is a 4 byte sequence and hence cannot be considered
+ * valid UTF-8 as we don't support utf8mb4 encoding.
+ * Ref- https://stackoverflow.com/questions/16496554/can-php-detect-4-byte-encoded-utf8-chars/16496730#16496730
+ *
+ * @param  string $string value to check
+ * @return boolean
+ */
+function is_valid_utf8(String $string)
+{
+    return (max(array_map('ord', str_split($string))) < 240);
 }

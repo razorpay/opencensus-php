@@ -15,6 +15,8 @@ class Activation extends Mailable
 
     public function __construct(array $data, array $org)
     {
+        parent::__construct();
+
         $this->data = $data;
 
         $this->org = $org;
@@ -45,7 +47,7 @@ class Activation extends Mailable
     {
         if ($this->org[Org\Entity::ID] !== Org\Entity::RAZORPAY_ORG_ID)
         {
-            $this->from($this->org['from_email'], $org['display_name']);
+            $this->from($this->org['from_email'], $this->org['display_name']);
         }
 
         return $this;

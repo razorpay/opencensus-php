@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Transaction;
 
+use DB;
+
 use RZP\Constants\Table;
 use RZP\Constants\Entity as E;
 use RZP\Exception;
@@ -148,6 +150,25 @@ class Repository extends Base\Repository
         return $txns;
     }
 
+    public function fetchEntitiesForDSPReport($merchantId, $from, $to, $count, $skip, $entityToRelationFetchMap)
+    {
+        $txns = $this->newQuery()
+                     ->merchantId($merchantId)
+                     ->betweenTime($from, $to)
+                     ->whereIn(Entity::TYPE, ['payment'])
+                     ->with('settlement')
+                     ->latest()
+                     ->get();
+
+        $this->trace->info(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            ['time' => time()]);
+
+        $txns = $this->fetchAssociatedRelationsWithLoadedEntities($txns, 'source', $entityToRelationFetchMap);
+
+        return $txns;
+    }
+
     /**
      * Fetches and associates with Transaction entity
      *
@@ -215,20 +236,20 @@ class Repository extends Base\Repository
                     ->betweenTime($from, $to)
                     ->sum('transactions.fee');
 
-        $serviceTax = $this->newQuery()
-                           ->where('transactions.merchant_id', $merchantId)
-                           ->where('type', 'payment')
-                           ->join('payments', 'transactions.entity_id', '=', 'payments.id')
-                           ->whereNotNull('payments.captured_at')
-                           ->betweenTime($from, $to)
-                           ->sum('transactions.service_tax');
+        $tax = $this->newQuery()
+                    ->where('transactions.merchant_id', $merchantId)
+                    ->where('type', 'payment')
+                    ->join('payments', 'transactions.entity_id', '=', 'payments.id')
+                    ->whereNotNull('payments.captured_at')
+                    ->betweenTime($from, $to)
+                    ->sum('transactions.service_tax');
 
-        // Total fee includes our cut + service tax
+        // Total fee includes our cut + tax
         return [
             'total_fee'         => $fee,
             // This is a combined tax column
             // and includes more than just service_tax (sb cess, kk cess)
-            'tax'               => $serviceTax
+            'tax'               => $tax
         ];
     }
 
@@ -409,7 +430,7 @@ class Repository extends Base\Repository
                     ->whereNotIn("transactions.id", function($query)
                         {
                             $query->select(FeeBreakup\Entity::TRANSACTION_ID)
-                                  ->from(TABLE::FEE_BREAKUP);
+                                  ->from(Table::FEE_BREAKUP);
                         });
 
         return $query->limit(1000)->get();
@@ -454,5 +475,33 @@ class Repository extends Base\Repository
         $payment->setRelation('transaction', $transaction);
 
         return $transaction;
+    }
+
+    public function updateTax(int $limit = 10000)
+    {
+        return $this->newQuery()
+                    ->whereNull(Entity::TAX)
+                    ->whereNotNull(Entity::SERVICE_TAX)
+                    ->limit($limit)
+                    ->update([Entity::TAX => DB::raw(Entity::SERVICE_TAX)]);
+    }
+
+    public function fetchGratisTransactions(string $merchantId, int $timestamp)
+    {
+        $createdAt = $this->dbColumn(Entity::CREATED_AT);
+
+        $paymentId = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $transactionData = $this->dbColumn('*');
+
+        return $this->newQuery()
+                    ->where(Entity::TYPE, Type::PAYMENT)
+                    ->where($createdAt, '>=', $timestamp)
+                    ->where(Transaction\Entity::GRATIS, '=', 1)
+                    ->merchantId($merchantId)
+                    ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentId)
+                    ->whereNotNull(Payment\Entity::CAPTURED_AT)
+                    ->select($transactionData)
+                    ->get();
     }
 }

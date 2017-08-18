@@ -9,12 +9,14 @@ use RZP\Models\Terminal;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Feature;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 
 class Validator extends Base\Validator
 {
     // Maximum image size - 1M.
-    const maxImageSize = 1024 * 1024;
-    const extensionMimeMap = [
+    const MAXIMAGESIZE = 1024 * 1024;
+
+    const EXTENSIONMIMEMAP = [
         "jpeg"  => "image/jpeg",
         "jpg"   => "image/jpeg",
         "png"   => "image/png",
@@ -27,6 +29,7 @@ class Validator extends Base\Validator
         Entity::ORG_ID                      => 'sometimes|alpha_num|size:14',
         Entity::GROUPS                      => 'sometimes|array',
         Entity::ADMINS                      => 'sometimes|array',
+        Entity::COUPON_CODE                 => 'sometimes|string'
     ];
 
     protected static $editRules = [
@@ -42,6 +45,7 @@ class Validator extends Base\Validator
         Entity::SETTLEMENT_SCHEDULE         => 'sometimes|integer|min:1|max:30',
         Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
         Entity::RISK_RATING                 => 'sometimes|min:0|max:5',
+        Entity::RISK_THRESHOLD              => 'sometimes|integer|min:0|max:20',
         Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
         Entity::FEE_MODEL                   => 'sometimes|in:prepaid,postpaid',
         Entity::MAX_PAYMENT_AMOUNT          => 'sometimes|integer',
@@ -70,7 +74,10 @@ class Validator extends Base\Validator
         Entity::BRAND_COLOR                 => 'sometimes|regex:(^[0-9a-fA-F]{6}$)',
         Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array',
         Entity::LOGO_URL                    => 'sometimes|max:2000',
-        Entity::AUTO_CAPTURE_LATE_AUTH      => 'sometimes|boolean'
+        Entity::AUTO_CAPTURE_LATE_AUTH      => 'sometimes|boolean',
+        Entity::HANDLE                      => 'sometimes|nullable|size:4|custom|unique:merchants,handle,null',
+        MerchantDetail::GSTIN               => 'sometimes|nullable|string|size:15',
+        MerchantDetail::P_GSTIN             => 'sometimes|nullable|string',
     ];
 
     protected static $actionRules = [
@@ -80,6 +87,10 @@ class Validator extends Base\Validator
     protected static $featureRules = [
         'features'          => 'required|array',
         'optout_reason'     => 'sometimes|string|max:200'
+    ];
+
+    protected static $addTagsRules = [
+        'tags' => 'required|array'
     ];
 
     protected static $updateHoldFundsRules = [
@@ -104,6 +115,18 @@ class Validator extends Base\Validator
         'visible_features',
     ];
 
+    protected function validateHandle($attribute, $handle)
+    {
+        if ($handle !== null)
+        {
+            if ($handle !== strtoupper($handle))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_HANDLE_UPPERCASE_ONLY);
+            }
+        }
+    }
+
     public function validateLogo($imageDetails)
     {
         $fileSize = $imageDetails['size'];
@@ -111,7 +134,7 @@ class Validator extends Base\Validator
         $height = $imageDetails['height'];
 
         // File size should not be more than 1M.
-        if ($fileSize > self::maxImageSize)
+        if ($fileSize > self::MAXIMAGESIZE)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_LOGO_TOO_BIG);
@@ -136,7 +159,7 @@ class Validator extends Base\Validator
 
     public function validateImage($mimeType, $extension)
     {
-        $acceptedMimeArray = self::extensionMimeMap;
+        $acceptedMimeArray = self::EXTENSIONMIMEMAP;
 
         // Checks if extension is defined in the array and if the extension and mime type match.
         if ((!isset($acceptedMimeArray[$extension])) or
@@ -184,8 +207,10 @@ class Validator extends Base\Validator
 
     protected function validateCsvEmail($input)
     {
-        if (isset($input[Entity::TRANSACTION_REPORT_EMAIL]) === false)
+        if (empty($input[Entity::TRANSACTION_REPORT_EMAIL]) === true)
+        {
             return;
+        }
 
         $emails = $input[Entity::TRANSACTION_REPORT_EMAIL];
 

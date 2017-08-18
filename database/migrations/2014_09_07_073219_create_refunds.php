@@ -49,6 +49,9 @@ class CreateRefunds extends Migration
                   ->unique()
                   ->nullable();
 
+            $table->char(Refund::BATCH_FUND_TRANSFER_ID, Refund::ID_LENGTH)
+                  ->nullable();
+
             $table->tinyInteger(Refund::ATTEMPTS)
                   ->nullable();
 
@@ -69,6 +72,7 @@ class CreateRefunds extends Migration
             $table->index(Refund::ATTEMPTS);
             $table->index(Refund::CREATED_AT);
             $table->index(Refund::LAST_ATTEMPTED_AT);
+            $table->index(Refund::REFERENCE1);
 
             $table->foreign(Refund::MERCHANT_ID)
                   ->references(Merchant::ID)

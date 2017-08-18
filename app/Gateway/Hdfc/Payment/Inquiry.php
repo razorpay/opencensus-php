@@ -16,6 +16,12 @@ trait Inquiry
 
     public function verifyRefund(array $input)
     {
+        // processed refund
+        if ($input['refund']['id'] === '897lDRdq5x9QL1')
+        {
+            return true;
+        }
+
         $response = $this->sendRefundVerifyRequest($input);
 
         $data = $response['data'];
@@ -342,7 +348,12 @@ trait Inquiry
         $payment = $verify->payment;
 
         $content['action'] = Action::INQUIRY;
-        $content['transid'] = $payment['gateway_transaction_id'];
+
+        if ($verify->input['merchant']->getId() !== '2aTeFCKTYWwfrF')
+        {
+            $content['transid'] = $payment['gateway_transaction_id'];
+        }
+
         $content['udf5'] = 'PaymentID';
 
         $content['amt'] = $verify->input['payment']['amount'] / 100;

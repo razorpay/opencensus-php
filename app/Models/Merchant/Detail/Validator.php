@@ -7,6 +7,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Detail\FileType as FileType;
 
 class Validator extends Base\Validator
 {
@@ -33,11 +34,13 @@ class Validator extends Base\Validator
         Entity::BUSINESS_OPERATION_CITY         => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_PIN          => 'sometimes|max:15',
         Entity::BUSINESS_DOE                    => 'sometimes|date_format:"Y-m-d"|before:"today"',
+        Entity::GSTIN                           => 'sometimes|string|size:15',
+        Entity::P_GSTIN                         => 'sometimes|string|size:15',
         Entity::COMPANY_CIN                     => 'sometimes|alpha_num|max:21',
         Entity::COMPANY_PAN                     => 'sometimes|alpha_num|max:15',
         Entity::COMPANY_PAN_NAME                => 'sometimes|max:255',
         Entity::TRANSACTION_VOLUME              => 'sometimes|numeric|digits_between:1,4',
-        Entity::TRANSACTION_VALUE               => 'sometimes|numeric|min:0|max:10000000',
+        Entity::TRANSACTION_VALUE               => 'filled|numeric|min:0|max:10000000',
         Entity::PROMOTER_PAN                    => 'sometimes|alpha_num|max:15',
         Entity::PROMOTER_PAN_NAME               => 'sometimes|max:255',
         Entity::BANK_NAME                       => 'sometimes|alpha_num|between:5,20',
@@ -95,11 +98,13 @@ class Validator extends Base\Validator
         Entity::BUSINESS_OPERATION_CITY         => 'sometimes|alpha_space|max:255',
         Entity::BUSINESS_OPERATION_PIN          => 'sometimes|max:15',
         Entity::BUSINESS_DOE                    => 'sometimes|date_format:"Y-m-d"|before:"today"',
+        Entity::GSTIN                           => 'sometimes|string|size:15',
+        Entity::P_GSTIN                         => 'sometimes|string|size:15',
         Entity::COMPANY_CIN                     => 'sometimes|alpha_num|max:21',
         Entity::COMPANY_PAN                     => 'sometimes|alpha_num|max:15',
         Entity::COMPANY_PAN_NAME                => 'sometimes|max:255',
         Entity::TRANSACTION_VOLUME              => 'sometimes|numeric|digits_between:1,4',
-        Entity::TRANSACTION_VALUE               => 'sometimes|numeric|min:0|max:10000000',
+        Entity::TRANSACTION_VALUE               => 'filled|numeric|min:0|max:10000000',
         Entity::PROMOTER_PAN                    => 'sometimes|alpha_num|max:15',
         Entity::PROMOTER_PAN_NAME               => 'sometimes|max:255',
         Entity::BANK_NAME                       => 'sometimes|alpha_num|between:5,20',
@@ -160,6 +165,28 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateIsGSTEditable(array $input)
+    {
+        $error = false;
+
+        if ((empty($this->entity->getGstin()) === false) and
+            (isset($input[Entity::GSTIN]) === true))
+        {
+            $error = true;
+        }
+
+        if ((empty($this->entity->getPGstin()) === false) and
+            (isset($input[Entity::P_GSTIN]) === true))
+        {
+            $error = true;
+        }
+
+        if ($error === true)
+        {
+            throw new Exception\BadRequestValidationFailureException('Cannot update GSTIN value once set');
+        }
+    }
+
     public function validateIsNotLocked($accountCheck = false)
     {
         $errorCode = ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED;
@@ -172,6 +199,20 @@ class Validator extends Base\Validator
         if ($this->entity->isLocked() === true)
         {
             throw new Exception\BadRequestException($errorCode);
+        }
+    }
+
+    public function validateFileType($file)
+    {
+        $extension = strtolower($file->getClientOriginalExtension());
+
+        $mime = $file->getMimeType();
+
+        if ((in_array($extension, FileType::ALLOWED_EXTENSIONS) === false) or
+            (in_array($mime, FileType::ALLOWED_MIMES) === false))
+        {
+            throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_FILE_TYPE);
         }
     }
 }

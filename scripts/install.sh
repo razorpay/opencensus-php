@@ -1,24 +1,37 @@
 #!/bin/bash
+set -euo pipefail
+
 # Deployment Script
 echo "Setting BASEDIR"
 BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )
-
-# Take the app down
-echo "Take the app down"
-# cd /home/ubuntu/api/ && php artisan down
+API_INSTALL_DIR="/home/ubuntu/api"
+ALOHOMORA_BIN="$(which alohomora)"
 
 # Install new version
 echo  "Install new version"
-cd $BASEDIR && rsync -avz --force --delete --progress --exclude-from=./.rsyncignore ./ /home/ubuntu/api/
+cd $BASEDIR && rsync -avz --force --delete --progress --exclude-from=./.rsyncignore ./ "$API_INSTALL_DIR"
 
 # Fix permissions
 echo  "Fix permissions"
-cd /home/ubuntu/api/ && sudo chmod 777 -R storage
+cd "$API_INSTALL_DIR" && sudo chmod 777 -R storage
+
+# Run alohomora. No DB command should be run before this step
+echo  "Run alohomora"
+$ALOHOMORA_BIN cast --region ap-south-1 --env $DEPLOYMENT_GROUP_NAME --app $APPLICATION_NAME "$API_INSTALL_DIR/environment/.env.vault.j2"
+$ALOHOMORA_BIN cast --region ap-south-1 --env $DEPLOYMENT_GROUP_NAME --app $APPLICATION_NAME "$API_INSTALL_DIR/environment/env.php.j2"
+
+# start supervisor as root
+echo  "Supervisor Start"
+sudo systemctl start supervisor
 
 # DB Migrate
 echo  "DB Migrate"
-cd /home/ubuntu/api/ && php artisan migrate --force && php artisan migrate --database=test --force
+cd "$API_INSTALL_DIR" && php artisan migrate --force && php artisan migrate --database=test --force
 
-# Take the app up
-echo  "Take the app up"
-cd /home/ubuntu/api/ && php artisan up
+# Restart all queue worker processes
+echo "Queue Restart"
+cd "$API_INSTALL_DIR" && php artisan queue:restart
+
+# Clear and Re-cache Routes
+echo "Route Cache"
+cd "$API_INSTALL_DIR" && php artisan route:cache

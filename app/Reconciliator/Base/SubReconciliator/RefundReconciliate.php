@@ -158,7 +158,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
         return $refundAmount;
     }
 
-    protected function runPreReconciledAtCheckRecon($rowDetails)
+    protected function runPreReconciledAtCheckRecon(array $rowDetails)
     {
         $this->persistGatewaySettledAt($this->refund, $rowDetails);
 
@@ -285,7 +285,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
             return null;
         }
 
-        if (UniqueIdEntity::verifyUniqueId($refundId) === false)
+        if (UniqueIdEntity::verifyUniqueId($refundId, false) === false)
         {
             $this->trace->info(
                 [
@@ -444,16 +444,25 @@ class RefundReconciliate extends Foundation\SubReconciliate
         {
             $currentArn = $refundAcquirerData[Refund\Entity::ARN];
 
-            // if the arn in DB matches the arn from row
-            // simply return
+            //
+            // If the ARN in DB matches the
+            // ARN from row, simply return
+            //
             if ($currentArn === $reconArn)
             {
                 return;
             }
-            // if the arn in DB doesn't match the arn from row
-            // raise alert and return
-            else
+            else if ($currentArn !== 'NA')
             {
+                //
+                // If the ARN in DB doesn't match the ARN from row,
+                // there are two possibilities
+                // - the value is NA
+                //   don't do anything
+                //   just continue and override it after this block.
+                // - the value is not NA
+                //   raise an alert and return.
+                //
                 $this->messenger->raiseReconAlert(
                     [
                         'trace_code'    => TraceCode::RECON_MISMATCH,
@@ -490,7 +499,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
      * Getting the gatewayRefund associated with payment entity.
      * It is implemented in the child class.
      *
-     * @param $refundId string
+     * @param string $refundId
      *
      * @return null
      */

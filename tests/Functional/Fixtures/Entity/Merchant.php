@@ -55,6 +55,19 @@ class Merchant extends Base
         $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => Account::ATOM_ACCOUNT, 'balance' => '1000000']);
     }
 
+    public function createEventAccount()
+    {
+        $merchant = $this->fixtures->create('merchant', [
+            'id'        => '100001Razorpay',
+            'name'      => 'TestMerchant',
+            'email'     => 'abc.def@gmail.com',
+            'website'   => 'http://goyette.net/',
+            'category'  => 1100,
+        ]);
+
+        return $merchant;
+    }
+
     public function createApiFeeAccount()
     {
         $apiMerchant = $this->fixtures->create('merchant', ['id' => Account::API_FEE_ACCOUNT]);
@@ -181,7 +194,7 @@ class Merchant extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $this->fixtures->create('schedule_task', $attributes);
+        return $this->fixtures->create('schedule_task', $attributes);
     }
 
     public function activate($id = '10000000000000')
@@ -391,5 +404,10 @@ class Merchant extends Base
     public function setLogoUrl($url_path, $id = '10000000000000')
     {
         return $this->edit($id,['logo_url' => $url_path]);
+    }
+
+    public function setHandle($handle, $id = '10000000000000')
+    {
+        return $this->edit($id, ['handle' => $handle]);
     }
 }

@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Billdesk;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -481,10 +482,10 @@ class Gateway extends Base\Gateway
     {
         $refStatus = $verifyResponse['RefStatus'];
 
-        $txnDate = Carbon::createFromTimestamp($input['payment'][Payment\Entity::CREATED_AT], 'Asia/Kolkata');
+        $txnDate = Carbon::createFromTimestamp($input['payment'][Payment\Entity::CREATED_AT], Timezone::IST);
         $txnDate = $txnDate->format('Ymd');
 
-        $refDate = Carbon::createFromTimestamp($input['refund'][Payment\Refund\Entity::CREATED_AT], 'Asia/Kolkata');
+        $refDate = Carbon::createFromTimestamp($input['refund'][Payment\Refund\Entity::CREATED_AT], Timezone::IST);
         $refDate = $refDate->format('YmdHis');
 
         $refundContent = [
@@ -732,7 +733,7 @@ class Gateway extends Base\Gateway
     protected function getPaymentVerifyRequestContentArray($verify)
     {
         // Format yyyymmdd24hhmmss (in docs), actually yyyymmdd0hhmmss
-        $now = Carbon::now('Asia/Kolkata')->format('Ymd0His');
+        $now = Carbon::now(Timezone::IST)->format('Ymd0His');
 
         $input = $verify->input;
 
@@ -756,12 +757,12 @@ class Gateway extends Base\Gateway
     protected function getPaymentRefundRequestContent($payment, $input)
     {
         // Format YYYYMMDD
-        $date = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata');
-        $date = $date->format('Ymd');
+        $txnDate = Carbon::createFromFormat('d-m-Y H:i:s', $payment['TxnDate'], Timezone::IST);
+        $txnDate = $txnDate->format('Ymd');
 
         // Format yyyymmdd24hhmmss (in docs), actually yyyymmddhhmmss,
         // hh is in 24 hrs
-        $now = Carbon::now('Asia/Kolkata')->format('YmdHis');
+        $now = Carbon::now(Timezone::IST)->format('YmdHis');
 
         $refundAmount = (float) ($input['refund']['amount']);
 
@@ -773,7 +774,7 @@ class Gateway extends Base\Gateway
             'RequestType'       => '0400',
             'MerchantID'        => $input['terminal']['gateway_merchant_id'],
             'TxnReferenceNo'    => $payment['TxnReferenceNo'],
-            'TxnDate'           => $date,
+            'TxnDate'           => $txnDate,
             'CustomerID'        => $input['payment']['id'],
             'TxnAmount'         => $txnAmount,
             'RefAmount'         => $refundAmount,
@@ -875,7 +876,11 @@ class Gateway extends Base\Gateway
 
     protected function getAuthRequestContentArray($input)
     {
-        $bankId = BankCodes::$bankCodeMap[$input['payment']['bank']];
+        $bankIfsc = $input['payment']['bank'];
+
+        $corporate = $input['terminal']['corporate'];
+
+        $bankId = BankCodes::getBankCode($bankIfsc, $corporate);
 
         $content = [
             'MerchantID'                => $input['terminal']['gateway_merchant_id'],

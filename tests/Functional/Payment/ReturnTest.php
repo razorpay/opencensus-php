@@ -30,7 +30,7 @@ class ReturnTest extends TestCase
             ]
         );
 
-        $this->replaceDefualtValues($testData['request']['content']);
+        $this->replaceDefaultValues($testData['request']['content']);
 
         $payment = $this->runRequestResponseFlow($testData);
 
@@ -55,7 +55,7 @@ class ReturnTest extends TestCase
             ]
         );
 
-        $this->replaceDefualtValues($testData['request']['content']);
+        $this->replaceDefaultValues($testData['request']['content']);
 
         $payment = $this->runRequestResponseFlow($testData);
 
@@ -91,7 +91,7 @@ class ReturnTest extends TestCase
         // Status will be 200 because it's a form post to the callback url and we get a response from that.
         // So we are checking the status code of the response from merchant callback url here.
 
-        $this->replaceDefualtValues($testData['request']['content']);
+        $this->replaceDefaultValues($testData['request']['content']);
 
         $content = $this->runRequestResponseFlow($testData);
 
@@ -123,7 +123,7 @@ class ReturnTest extends TestCase
             ]
         );
 
-        $this->replaceDefualtValues($testData['request']['content']);
+        $this->replaceDefaultValues($testData['request']['content']);
 
         $content = $this->runRequestResponseFlow($testData);
 

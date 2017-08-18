@@ -7,7 +7,7 @@ use Carbon\Carbon;
 use Mail;
 use RZP\Constants\MailTags;
 use RZP\Constants\Mode;
-use RZP\Jobs\InvoiceAction;
+use RZP\Jobs\Invoice\Job as InvoiceJob;
 use RZP\Jobs\DispatchRouter;
 use RZP\Mail\Payment as PaymentMail;
 use RZP\Models\Invoice;
@@ -140,9 +140,10 @@ class Notify
     {
         // We don't send out a notification on capture
         $slackMessages = [
-            Payment\Event::FAILED_TO_AUTHORIZED => 'Failed Payment Authorized',
-            Payment\Event::AUTHORIZED           => 'Payment Authorized',
-            Payment\Event::REFUNDED             => 'Payment Refunded'
+            Payment\Event::FAILED_TO_AUTHORIZED       => 'Failed Payment Authorized',
+            Payment\Event::AUTHORIZED                 => 'Payment Authorized',
+            Payment\Event::INVOICE_PAYMENT_AUTHORIZED => 'Payment Authorized',
+            Payment\Event::REFUNDED                   => 'Payment Refunded'
         ];
 
         $settings = [
@@ -245,9 +246,9 @@ class Notify
 
             if ($event === Payment\Event::INVOICE_PAYMENT_AUTHORIZED)
             {
-                $job = new InvoiceAction(
+                $job = new InvoiceJob(
                             $this->mode,
-                            InvoiceAction::AUTHORIZED,
+                            InvoiceJob::AUTHORIZED,
                             $this->invoice->getId());
 
                 (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
@@ -335,6 +336,7 @@ class Notify
             // Both cases are the same
             case Payment\Event::FAILED_TO_AUTHORIZED:
             case Payment\Event::AUTHORIZED:
+            case Payment\Event::INVOICE_PAYMENT_AUTHORIZED:
                 $data = $this->template['payment'];
                 $data['id'] = $this->getPaymentLinkForSlack($data['id']);
                 unset($data['method'], $data['public_id']);
@@ -342,6 +344,7 @@ class Notify
 
             // Capture is unused right now
             case Payment\Event::CAPTURED:
+            case Payment\Event::INVOICE_PAYMENT_CAPTURED:
                 $data = $this->template['payment'];
                 break;
 
@@ -404,12 +407,13 @@ class Notify
                 'id'            => $this->payment->merchant->getId(),
             ],
             'payment'   => [
-                'id'          => $this->payment->getId(),
-                'public_id'   => $this->payment->getPublicId(),
-                'amount'      => $this->payment->getFormattedAmount(),
-                'raw_amount'  => $this->payment['base_amount'],
-                'timestamp'   => $this->payment->getUpdatedAt(),
-                'captured_at' => $this->payment->getAttribute('captured_at'),
+                'id'              => $this->payment->getId(),
+                'public_id'       => $this->payment->getPublicId(),
+                'amount'          => $this->payment->getFormattedAmount(),
+                'raw_amount'      => $this->payment['base_amount'],
+                'adjusted_amount' => $this->payment->getAdjustedAmountWrtCustFeeBearer(),
+                'timestamp'       => $this->payment->getUpdatedAt(),
+                'captured_at'     => $this->payment->getAttribute('captured_at'),
 
                 // note that payment method is unavailable to the merchant
                 'method'    => $this->payment->getMethodWithDetail(),
@@ -532,8 +536,9 @@ class Notify
     /**
      * Decides if we send a mail to customer for a payment event
      *
-     * @param  Mailable $mailable Mailable object being sent
-     * @return boolean
+     * @param PaymentMail\Base|Mailable $mailable Mailable object being sent
+     *
+     * @return bool
      */
     protected function isCustomerMailEnabled(PaymentMail\Base $mailable)
     {
@@ -557,7 +562,10 @@ class Notify
 
     protected function isMerchantMailEnabled(PaymentMail\Base $mailable)
     {
-        return $this->isEnabled();
+        $merchantTransactionReportEmail = $this->payment->merchant->getTransactionReportEmail();
+
+        return (($this->isEnabled() === true) and
+                (empty($merchantTransactionReportEmail) === false));
     }
 
     /**

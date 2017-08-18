@@ -25,7 +25,7 @@ class BasicAuth
      * Private -
      * rzp_mode_keyId:merchant_secret
      *
-     * Application -
+     * Application/Internal -
      * rzp_mode:app_secret
      *
      * Application proxy -
@@ -55,6 +55,8 @@ class BasicAuth
      * Dashboard headers are prefixed with following literal.
      */
     const DASHBOARD_HEADER_PREFIX = 'x-dashboard';
+
+    const ADMIN_TOKEN_HEADER = 'X-Admin-Token';
 
     /**
      * The application instance.
@@ -464,13 +466,13 @@ class BasicAuth
      */
     protected function setAdminAuthIfApplicable()
     {
-        $adminToken = $this->request->header('X-Admin-Token');
+        $adminToken = $this->request->header(self::ADMIN_TOKEN_HEADER);
 
         if ($adminToken !== null)
         {
             // Remove the token so that subsequent code has no
             // access to it (prevents logging, etc.)
-            $this->request->headers->remove('X-Admin-Token');
+            $this->request->headers->remove(self::ADMIN_TOKEN_HEADER);
 
             $token = $this->fetchAdminToken($adminToken);
 
@@ -895,7 +897,7 @@ class BasicAuth
         ];
 
         // Gets all headers with 'X-Dashboard' as prefix and assign them to a
-        // key(with prefix removed) in $this->dashboardHeaders.
+        // snake cased key (with prefix removed) in $this->dashboardHeaders.
 
         $dashHeaderPrefixLen = strlen(self::DASHBOARD_HEADER_PREFIX) + 1;
 
@@ -1036,6 +1038,11 @@ class BasicAuth
     public function getInternalApp()
     {
         return $this->internalApp;
+    }
+
+    public function isDashboardApp()
+    {
+        return ($this->internalApp === 'dashboard');
     }
 
     public function isCron()
@@ -1318,19 +1325,39 @@ class BasicAuth
     {
         $authType = $this->getAuthType();
 
+        if (empty($this->admin) === false)
+        {
+            // returning true on admin auth because admin access middleware
+            // checks and drops if it is not a valid merchant.
+
+            return true;
+        }
+
         switch ($authType)
         {
             case Type::PRIVATE_AUTH:
                 return ($account->getParentId() === $this->getMerchant()->getId());
-
-            case Type::ADMIN_AUTH:
-                return ($account->getOrgId() === $this->getAdmin()->getOrgId());
 
             case Type::PRIVILEGE_AUTH:
                 return true;
 
             default:
                 return false;
+        }
+    }
+
+    public function validateSuperAdminAccess()
+    {
+        $admin = $this->getAdmin();
+
+        if ($admin->isSuperAdmin() === false)
+        {
+            $data = ['admin_id' => $admin->getId()];
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUPERADMIN_ACCESS_REQUIRED,
+                null,
+                $data);
         }
     }
 }

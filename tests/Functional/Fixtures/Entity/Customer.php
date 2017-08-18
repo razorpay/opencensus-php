@@ -34,7 +34,8 @@ class Customer extends Base
         array(
             'customer_id'   => '10000gcustomer',
             'id'            => '1000000custapp',
-            'device_token'  => '1000custdevice'
+            'device_token'  => '1000custdevice',
+            'merchant_id'   => '100000Razorpay',
         ),
     );
 
@@ -47,6 +48,7 @@ class Customer extends Base
             'wallet'        => 'paytm',
             'bank'          => null,
             'card_id'       => null,
+            'used_at'       => 10
         ),
         array(
             'id'            => '100000custbank',
@@ -56,6 +58,7 @@ class Customer extends Base
             'bank'          => 'HDFC',
             'wallet'        => null,
             'card_id'       => null,
+            'used_at'       => 10
         ),
         array(
             'id'            => '100000custcard',
@@ -65,6 +68,17 @@ class Customer extends Base
             'bank'          => null,
             'wallet'        => null,
             'card_id'       => '100000000lcard',
+            'used_at'       => 10
+        ),
+        array(
+            'id'            => '100001custcard',
+            'token'         => '10001cardtoken',
+            'customer_id'   => '100000customer',
+            'method'        => 'card',
+            'bank'          => null,
+            'wallet'        => null,
+            'card_id'       => '100000001lcard',
+            'used_at'       => 10
         ),
         array(
             'id'            => '10000custgcard',
@@ -75,6 +89,7 @@ class Customer extends Base
             'card_id'       => '100000000gcard',
             'bank'          => null,
             'wallet'        => null,
+            'used_at'       => 10
         ),
     );
 

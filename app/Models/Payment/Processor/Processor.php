@@ -9,6 +9,7 @@ use RZP\Dashboard\Dashboard;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Http;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\BankAccount;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Card;
@@ -20,6 +21,7 @@ use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Notify;
 use RZP\Models\Payment\Status;
 use RZP\Models\Pricing;
+use RZP\Models\Risk;
 use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Transfer\Core as TransferCore;
@@ -54,10 +56,6 @@ class Processor
      */
     const MAX_RETRY_ATTEMPTS = 5;
 
-    // Make sure that this is below 900 (seconds) because SQS doesn't support
-    // delay over 15 minutes.
-    const CAPTURE_QUEUE_DELAY = 180;
-
     /**
      * If a payment gets converted to authorized from failed after 15 minutes of creation of payment,
      * we do not send a notification to the customer.
@@ -79,9 +77,18 @@ class Processor
      */
     const ASYNC_PAYMENT_TIMEOUT = 300;
 
+    /**
+     * @var Merchant\Entity
+     */
     protected $merchant;
     protected $trace;
+    /**
+     * @var Payment\Entity
+     */
     protected $payment;
+    /**
+     * @var Terminal\Entity
+     */
     protected $terminal;
     protected $selectedTerminals;
     protected $mode;
@@ -92,7 +99,13 @@ class Processor
     protected $mutex;
     protected $request;
     protected $methods;
+    /**
+     * @var Payment\Refund\Entity
+     */
     protected $refund;
+    /**
+     * @var Order\Entity
+     */
     protected $order;
     protected $segment;
 
@@ -191,14 +204,14 @@ class Processor
         // Performing dummy set of processing for the same
         $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
 
-        list($fee, $serviceTax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
+        list($fee, $tax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
 
         $data = array(
             'originalAmount'    => $input['amount'],
             'fees'              => $fee,
-            'razorpay_fee'      => $fee - $serviceTax,
-            'serviceTax'        => $serviceTax,
-            'amount'            => $input['amount'] + $fee
+            'razorpay_fee'      => $fee - $tax,
+            'serviceTax'        => $tax,
+            'amount'            => $input['amount'] + $fee,
         );
 
         // Converts all the amounts to rupees
@@ -357,30 +370,47 @@ class Processor
                 ErrorCode::BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED);
         }
 
-        // If payment is not in created state, then that means
-        // it's already been processed. It's possible that payment
-        // may have succeeded. In such cases, we need to send back
-        // exact same response as we would have if the payment succeeded
-        if ($payment->isCreated() === false)
-        {
-            return $this->processPaymentCallbackSecondTime($payment);
-        }
+        $resource = $this->getCallbackMutexResource($payment);
 
-        if (empty($input) === false)
-        {
-            $this->trace->info(TraceCode::PAYMENT_CANCELLED_METADATA, (array) $input);
-        }
+        $response = $this->mutex->acquireAndRelease(
+            $resource,
+            function() use ($payment, $input)
+            {
+                // Reload in case it's processed by another thread.
+                $this->repo->reload($payment);
 
-        $errorCode = $this->repo->transaction(function() use ($payment, $input)
-        {
-            $this->lockForUpdateAndReload($payment);
+                // If payment is not in created state, then that means
+                // it's already been processed. It's possible that payment
+                // may have succeeded. In such cases, we need to send back
+                // exact same response as we would have if the payment succeeded
+                if ($payment->isCreated() === false)
+                {
+                    return $this->processPaymentCallbackSecondTime($payment);
+                }
 
-            $errorCode = $this->cancelPayment($payment, $input);
+                if (empty($input) === false)
+                {
+                    $this->trace->info(TraceCode::PAYMENT_CANCELLED_METADATA, (array) $input);
+                }
 
-            return $errorCode;
-        });
+                $errorCode = $this->repo->transaction(function() use ($payment, $input)
+                {
+                    $this->lockForUpdateAndReload($payment);
 
-        throw new Exception\BadRequestException($errorCode);
+                    $errorCode = $this->cancelPayment($payment, $input);
+
+                    return $errorCode;
+                });
+
+                throw new Exception\BadRequestException($errorCode);
+            },
+            60,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+            20,
+            1000,
+            2000);
+
+        return $response;
     }
 
     protected function cancelPayment($payment, $input)
@@ -448,7 +478,7 @@ class Processor
                 $this->timeoutPayment();
 
                 throw new Exception\BadRequestException(
-                            ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
+                    ErrorCode::BAD_REQUEST_PAYMENT_TIMED_OUT);
             }
 
             return [
@@ -456,18 +486,35 @@ class Processor
             ];
         }
 
-        $diff = time() - $payment->getCreatedAt();
+        $resource = $this->getCallbackMutexResource($payment);
 
-        if (($payment->hasBeenAuthorized() === true) and
-            ($diff < self::CALLBACK_PROCESS_AGAIN_DURATION * 60))
-        {
-            return $this->processAuthorizeResponse($payment);
-        }
+        $response = $this->mutex->acquireAndRelease(
+            $resource,
+            function() use ($payment)
+            {
+                // Reload in case it's processed by another thread.
+                $this->repo->reload($payment);
 
-        $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+                $diff = time() - $payment->getCreatedAt();
 
-        throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+                if (($payment->hasBeenAuthorized() === true) and
+                    ($diff < self::CALLBACK_PROCESS_AGAIN_DURATION * 60))
+                {
+                    return $this->postPaymentAuthorizeProcessing($payment);
+                }
+
+                $this->app['segment']->trackPayment($payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+            },
+            60,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS,
+            20,
+            1000,
+            2000);
+
+        return $response;
     }
 
     public function callGatewayFunctionCaptureViaQueue($data, $payment)
@@ -573,6 +620,29 @@ class Processor
         }
     }
 
+    /**
+     * Checks for risk failures and creates log in risk table
+     *
+     * @param        $payment Payment\Entity
+     * @param string $internalErrorCode
+     */
+    public function logRiskFailureForGateway(
+        Payment\Entity $payment,
+        string $internalErrorCode)
+    {
+        $riskData = Risk\FailureCodeMap::getRiskDataForError($internalErrorCode);
+
+        // If it is not error raised due to fraud failure, ignore everything
+        if (empty($riskData) === true)
+        {
+            return;
+        }
+
+        $source = $riskData[Risk\Entity::SOURCE];
+
+        (new Risk\Core)->logPaymentForSource($payment, $source, $riskData);
+    }
+
     protected function setTwoFactorAuthAfterCallbackException(Exception\BaseException $exception)
     {
         $payment = $this->payment;
@@ -597,7 +667,11 @@ class Processor
 
     protected function eventPaymentFailed()
     {
-        $this->app['events']->fire('api.payment.failed', array($this->payment));
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $this->payment
+        ];
+
+        $this->app['events']->fire('api.payment.failed', $eventPayload);
     }
 
     protected function setPaymentError(Exception\BaseException $e, $traceCode)
@@ -684,6 +758,8 @@ class Processor
         $this->addOrderIdToInputForSubscriptionIfApplicable($input, $payment);
 
         $this->validateAndSetOrderDetailsIfApplicable($payment, $input);
+
+        $this->validateBankTransferDetailsIfApplicable($payment);
 
         $this->validateAndSetInvoiceDetailsIfApplicable($payment);
 
@@ -820,7 +896,7 @@ class Processor
         if (abs($feeDifference) > 5)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Payment failed because fees or service tax was tampered');
+                'Payment failed because fees or tax was tampered');
         }
     }
 
@@ -902,6 +978,16 @@ class Processor
         $invoice->getValidator()->validateInvoicePayable();
 
         $payment->invoice()->associate($invoice);
+    }
+
+    protected function validateBankTransferDetailsIfApplicable(Payment\Entity $payment)
+    {
+        if (($payment->isBankTransfer() === true) and
+            ($this->app['basicauth']->isAppAuth() === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid payment method given: ' . $payment->getMethod());
+        }
     }
 
     protected function tracePaymentFailed($error, string $traceCode)
@@ -1046,6 +1132,12 @@ class Processor
 
     protected function shouldAutoCapture(Payment\Entity $payment): bool
     {
+        // Bank transfers are auto-captured only if they are expected. This is checked later.
+        if ($payment->isBankTransfer() === true)
+        {
+            return false;
+        }
+
         //
         // We do an auto capture only if payment is associated with an order.
         //
@@ -1214,7 +1306,7 @@ class Processor
 
         $shouldRefundAt = $createdAt + $autoRefundDelay;
 
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         $this->trace->info(
             TraceCode::LATE_AUTHORIZE_AUTO_CAPTURE,
@@ -1403,5 +1495,15 @@ class Processor
         }
 
         return $merchant->methods;
+    }
+
+    protected function shouldHitGateway(Payment\Entity $payment)
+    {
+        if ($payment->isBankTransfer() === true)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

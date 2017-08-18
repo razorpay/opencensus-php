@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Transfer;
 
 use Carbon\Carbon;
 
+use RZP\Constants\Entity;
 use RZP\Models\Reversal;
 use RZP\Models\Payment;
 use RZP\Models\Transfer;
@@ -14,6 +15,13 @@ class TransferTest extends TestCase
 {
     use RequestResponseFlowTrait;
 
+    const STANDARD_PRICING_PLAN_ID  = '1A0Fkd38fGZPVC';
+
+    /**
+     * @var string
+     */
+    protected $linkedAccountId;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/TransferTestData.php';
@@ -22,9 +30,9 @@ class TransferTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
-        $this->fixtures->create('merchant:marketplace_account');
+        $account = $this->fixtures->create('merchant:marketplace_account');
 
-        $this->customer = $this->fixtures->create('customer:customer_balance');
+        $this->linkedAccountId = $account['id'];
     }
 
     public function testFetchTransferReversals()
@@ -74,9 +82,38 @@ class TransferTest extends TestCase
         $this->assertEquals($transfer['id'], $savedTransfer['id']);
 
         // When Transfer Fee = 0, zero pricing
-        $this->assertEquals($transfer['amount'], $this->getBalance('10000000000001'));
+        $this->assertEquals($transfer['amount'], $this->getBalance($this->linkedAccountId));
+
+        $this->checkTransferAndTxnRecords($transfer, ['fees' => 0, 'service_tax' => 0, 'tax' => 0]);
 
         $this->checkPaymentAndTxnRecords($transfer);
+    }
+
+    public function testTransferToAccountWithPricing()
+    {
+        $this->fixtures->create('pricing:standard_plan');
+
+        $this->fixtures->merchant->editPricingPlanId(self::STANDARD_PRICING_PLAN_ID);
+
+        $transfer = $this->createTransfer('account');
+
+        $tax = 4;
+        $expectedFee = 20 + $tax;
+
+        $transferData = [
+            'fees'  => $expectedFee,
+            'tax'   => $tax
+        ];
+
+        $txnData = [
+            'amount'      => $transfer['amount'],
+            'fee'         => $expectedFee,
+            'service_tax' => $tax,
+            'tax'         => $tax,
+            'debit'       => $transfer['amount'] + $expectedFee
+        ];
+
+        $this->checkTransferAndTxnRecords($transfer, $transferData, $txnData);
     }
 
     public function testLiveModeTransferToNonActivatedAccount()
@@ -87,11 +124,6 @@ class TransferTest extends TestCase
         {
             $this->createTransfer('account', [], 'live');
         });
-    }
-
-    public function testTransferToWallet()
-    {
-        // @todo: not implemented for wallet yet
     }
 
     public function testTransferInvalidType()
@@ -261,6 +293,27 @@ class TransferTest extends TestCase
         });
     }
 
+    public function testReversalWithInsufficientLinkedAccountBalance()
+    {
+        $transfer = $this->createTransfer('account');
+
+        $transferAmount = $transfer['amount'];
+
+        $linkedAccountBalance = $this->getEntityById('balance', $this->linkedAccountId, true);
+        $this->assertEquals($transferAmount, $linkedAccountBalance['balance']);
+
+        // Reset the linked account's balance to 0
+        $balance = $this->fixtures->balance->edit($this->linkedAccountId, ['balance' => 0]);
+
+        $linkedAccountBalance = $this->getEntityById('balance', $this->linkedAccountId, true);
+        $this->assertEquals(0, $linkedAccountBalance['balance']);
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function() use ($transfer)
+        {
+            $this->createReversal($transfer['id']);
+        });
+    }
+
     public function testLiveTransferFundsOnHold()
     {
         $this->fixtures->merchant->holdFunds();
@@ -331,7 +384,7 @@ class TransferTest extends TestCase
     // @todo: Refactor for transfer pricing calc
     protected function checkReversals($amount = null)
     {
-        $accOldBalance = $this->getBalance('10000000000001');
+        $accOldBalance = $this->getBalance($this->linkedAccountId);
 
         $marketplaceOldBalance = $this->getBalance('10000000000000');
 
@@ -355,7 +408,7 @@ class TransferTest extends TestCase
 
         $this->assertArraySelectiveEquals($expected, $reversal);
 
-        $transaction = $this->getReversalTxn($reversal['id']);
+        $transaction = $this->getSingleTxn('reversal', $reversal['id']);
 
         $this->assertEquals($amount, $transaction['credit']);
 
@@ -365,7 +418,7 @@ class TransferTest extends TestCase
 
         $this->assertEquals($marketplaceOldBalance - $amountUntransferred, $this->getBalance('10000000000000'));
 
-        $this->assertEquals($accOldBalance + $amountUntransferred, $this->getBalance('10000000000001'));
+        $this->assertEquals($accOldBalance + $amountUntransferred, $this->getBalance($this->linkedAccountId));
     }
 
     protected function getTransferRequestBody(string $type, string $action = 'create')
@@ -409,29 +462,45 @@ class TransferTest extends TestCase
         return $payments['items'][0];
     }
 
-    protected function getTransferPaymentTxn(string $paymentId)
+    protected function getSingleTxn(string $entity = 'payment', string $entityId)
     {
-        Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
+        $entity = Entity::getEntityClass($entity);
 
-        $txn = $this->getEntities('transaction', ['entity_id' => $paymentId], true);
+        $entity::verifyIdAndSilentlyStripSign($entityId);
+
+        $txn = $this->getEntities('transaction', ['entity_id' => $entityId], true);
 
         $this->assertEquals(1, count($txn['items']));
 
         return $txn['items'][0];
     }
 
-    protected function getReversalTxn(string $reversalId)
+    protected function checkTransferAndTxnRecords($transfer, array $transferData = [], array $txnData = [])
     {
-        Reversal\Entity::verifyIdAndSilentlyStripSign($reversalId);
+        $this->assertArraySelectiveEquals($transferData, $transfer);
 
-        $txn = $this->getEntities('transaction', ['entity_id' => $reversalId], true);
+        $txn = $this->getSingleTxn('transfer', $transfer['id']);
 
-        $this->assertEquals(1, count($txn['items']));
+        $expectedTxn = [
+            'type'          => 'transfer',
+            'entity_id'     => $transfer['id'],
+            'debit'         => $transfer['amount'],
+            'credit'        => 0,
+            'settled'       => false,
+            'fee'           => 0,
+            'service_tax'   => 0,
+            'tax'           => 0,
+        ];
 
-        return $txn['items'][0];
+        if (empty($txnData) === false)
+        {
+            $expectedTxn = array_merge($expectedTxn, $txnData);
+        }
+
+        $this->assertArraySelectiveEquals($expectedTxn, $txn);
     }
 
-    protected function checkPaymentAndTxnRecords($transfer)
+    protected function checkPaymentAndTxnRecords($transfer, array $txnData = [])
     {
         $id = $transfer['id'];
 
@@ -445,13 +514,23 @@ class TransferTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedPayment, $payment);
 
-        $txn = $this->getTransferPaymentTxn($payment['id']);
+        $txn = $this->getSingleTxn('payment', $payment['id']);
 
         $expectedTxn = [
+            'type'          => 'payment',
+            'entity_id'     => $payment['id'],
             'credit'        => $transfer['amount'],
             'on_hold'       => $transfer['on_hold'],
-            'settled'       => false
+            'settled'       => false,
+            'fee'           => 0,
+            'service_tax'   => 0,
+            'tax'           => 0,
         ];
+
+        if (empty($txnData) === false)
+        {
+            $expectedTxn = array_merge($expectedTxn, $txnData);
+        }
 
         $this->assertArraySelectiveEquals($expectedTxn, $txn);
     }

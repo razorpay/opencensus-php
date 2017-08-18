@@ -3,8 +3,10 @@
 namespace RZP\Models\Emi\Banks\Rbl;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Card;
 use RZP\Models\Emi\Banks\Base;
+use RZP\Models\FileStore;
 use RZP\Models\Emi\Entity;
 
 class EmiFile extends Base\EmiFile
@@ -15,56 +17,7 @@ class EmiFile extends Base\EmiFile
 
     protected $bankName  = 'Rbl';
 
-    protected static $headers = [
-        'EMI ID',
-        'RBL Card no',
-        'Issuer',
-        'Acquirer',
-        'Aggregator Merchant Name',
-        'Manufacturer',
-        'Auth Code',
-        'Tx Amount',
-        'EMI Offer',
-        'EMI Plan ID',
-        'Customer Name',
-        'Mobile No',
-        'Store Name',
-        'Address1',
-        'Store City',
-        'Store State',
-        'MID',
-        'TID',
-        'Tx Time',
-        'Subvention payable to Issuer',
-        'Subvention Amount (Rs.)',
-        'Interest Rate',
-        'Customer Processing Fee',
-        'Customer Processing Amount (Rs.)',
-        'Tx Status',
-        'Status',
-        'Description',
-        'Product Category',
-        'Product Sub-Category 1',
-        'Product Sub-Category 2',
-        'Model Name',
-        'Merchant Name',
-        'EMI Amount',
-        'Loan Amount',
-        'Discount / Cashback %',
-        'Discount / Cashback Amount',
-        'Additional Cashback',
-        'Bonus Reward Points',
-        'EMI Model',
-    ];
-
-    protected function writeEmiFile($emiData)
-    {
-        $url = $this->writeToExcelFile($emiData, $this->getFileToWriteNameWithoutExt());
-
-        $path = $this->getExcelFullFilePath();
-
-        return compact('url', 'path');
-    }
+    const TYPE = FileStore\Type::RBL_EMI_FILE;
 
     protected function getEmiData($input)
     {
@@ -132,6 +85,6 @@ class EmiFile extends Base\EmiFile
 
     private function formattedDateFromTimestamp($timestamp)
     {
-        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d-M-y');
+        return Carbon::createFromTimestamp($timestamp, Timezone::IST)->format('d-M-y');
     }
 }

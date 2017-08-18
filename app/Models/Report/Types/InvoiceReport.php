@@ -7,6 +7,8 @@ use Carbon\Carbon;
 use RZP\Base\JitValidator;
 use RZP\Models\Transaction;
 use RZP\Models\Pricing\Feature;
+use RZP\Models\Pricing\FeeCalculator;
+use RZP\Models\Transaction\FeeBreakup\Name as FeeName;
 
 class InvoiceReport extends BaseReport
 {
@@ -21,6 +23,10 @@ class InvoiceReport extends BaseReport
     const KRISHI_KALYAN_CESS_RATE = 0.005;
 
     const SERVICE_TAX  = 'Service Tax';
+    const IGST = 'IGST';
+    const CGST = 'CGST';
+    const SGST = 'SGST';
+
     const RAZORPAY_FEE = 'razorpay_fee';
     const TAXES = 'taxes';
     const TAX   = 'tax';
@@ -79,37 +85,102 @@ class InvoiceReport extends BaseReport
             }
         }
 
-        $serviceTax = 0;
-        $swachBharatCess = 0;
-        $krishiKalyanCess = 0;
 
-        if (empty($fees[Transaction\FeeBreakup\Name::SERVICE_TAX]) === false)
+        if (FeeCalculator::isGstApplicable($from) === true)
         {
-            $serviceTax = intval($fees[Transaction\FeeBreakup\Name::SERVICE_TAX]['sum']);
+            $taxInfo = $this->getGstTaxes($fees);
+        }
+        else
+        {
+            $taxInfo = $this->getNonGstTaxes($fees);
         }
 
-        if (empty($fees[Transaction\FeeBreakup\Name::SWACHH_BHARAT_CESS]) === false)
-        {
-            $swachBharatCess = intval($fees[Transaction\FeeBreakup\Name::SWACHH_BHARAT_CESS]['sum']);
-        }
-
-        if (empty($fees[Transaction\FeeBreakup\Name::KRISHI_KALYAN_CESS]) === false)
-        {
-            $krishiKalyanCess = intval($fees[Transaction\FeeBreakup\Name::KRISHI_KALYAN_CESS]['sum']);
-        }
-
-        $totalTax = $serviceTax + $swachBharatCess + $krishiKalyanCess;
+        $totalTax = $taxInfo['total_tax'];
+        $taxes = $taxInfo['taxes'];
 
         return [
             self::TOTAL_FEE    => $totalRzpFee + $totalTax,
             self::RAZORPAY_FEE => $totalRzpFee,
             self::TAX          => $totalTax,
-            self::TAXES        => [
+            self::TAXES        => $taxes,
+        ];
+    }
+
+    /**
+     * @return Array $arr
+     * @return Array $arr['taxes']      List of tax componensts with respective values
+     * @return Float $arr['total_tax']  Sum of all tax components
+     */
+    protected function getNonGstTaxes(array $f): array
+    {
+        $serviceTax = intval($f[FeeName::SERVICE_TAX]['sum'] ?? 0);
+        $swachBharatCess = intval($f[FeeName::SWACHH_BHARAT_CESS]['sum'] ?? 0);
+        $krishiKalyanCess = intval($f[FeeName::KRISHI_KALYAN_CESS]['sum'] ?? 0);
+
+        $nonGstTaxes = $serviceTax + $swachBharatCess + $krishiKalyanCess;
+
+        $taxes = [];
+
+        if ($nonGstTaxes > 0)
+        {
+            $taxes = [
                 self::SERVICE_TAX        => $serviceTax,
                 self::SWACH_BHARAT_CESS  => $swachBharatCess,
-                self::KRISHI_KALYAN_CESS => $krishiKalyanCess
-            ],
-        ];
+                self::KRISHI_KALYAN_CESS => $krishiKalyanCess,
+            ];
+        }
+
+        return ['taxes' => $taxes, 'total_tax' => $nonGstTaxes];
+    }
+
+    /**
+     * @return Array $arr
+     * @return Array $arr['taxes']      List of tax componensts with respective values
+     * @return Float $arr['total_tax']  Sum of all tax components
+     */
+    protected function getGstTaxes(array $fees): array
+    {
+        $igst = intval($fees[FeeName::IGST]['sum'] ?? 0);
+        $cgst = intval($fees[FeeName::CGST]['sum'] ?? 0);
+        $sgst = intval($fees[FeeName::SGST]['sum'] ?? 0);
+
+        $merchantBusinessStateCode = $this->merchant->getBusinessStateCode();
+
+        $intrastateGstApplicable = ($merchantBusinessStateCode === FeeCalculator::RZP_GST_STATE_CODE);
+
+        // all 3 taxes might have been charged to merchant if merchant updated
+        // their GSTN number later
+        if ($intrastateGstApplicable === true)
+        {
+            $halfOfIgst = (int) round($igst / 2);
+            $cgst += $halfOfIgst;
+            $sgst += $igst - $halfOfIgst;
+            $igst = 0;
+        }
+        else if ($intrastateGstApplicable === false)
+        {
+            $igst += ($cgst + $sgst);
+            $cgst = 0;
+            $sgst = 0;
+        }
+
+        if (($cgst > 0) or ($sgst > 0))
+        {
+            $totalTax = $cgst + $sgst;
+
+            $taxes = [
+                self::CGST => $cgst,
+                self::SGST => $sgst,
+            ];
+        }
+        else
+        {
+            $totalTax = $igst;
+
+            $taxes = [self::IGST => $igst];
+        }
+
+        return ['taxes' => $taxes, 'total_tax' => $totalTax];
     }
 
     public function getInvoice($input)

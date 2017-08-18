@@ -6,18 +6,26 @@ use Carbon\Carbon;
 use Config;
 use DB;
 
-use RZP\Constants\Table;
-
 class Org extends Base
 {
-    const HDFC_ORG     = 'HDFCbankOrgnId';
-    const RZP_ORG      = '100000razorpay';
-    const DEFAULT_GRP  = '1RazorpayGrpId';
-    const ADMIN_ROLE   = 'RzpAdminRoleId';
-    const MANAGER_ROLE = 'RzpMngerRoleId';
-    const SUPER_ADMIN  = 'RzrpySprAdmnId';
+    const HDFC_ORG       = 'HDFCbankOrgnId';
+    const RZP_ORG        = '100000razorpay';
+    const DEFAULT_GRP    = '1RazorpayGrpId';
+    const ADMIN_ROLE     = 'RzpAdminRoleId';
+    const MANAGER_ROLE   = 'RzpMngerRoleId';
+    const SUPER_ADMIN    = 'RzrpySprAdmnId';
 
-    const DEFAULT_TOKEN = 'SecretTokenForRazorpayAdminAuthentication';
+    // Workflow related roles
+    const MAKER_ROLE     = 'RzpMakerRoleId';
+    const MAKER_ADMIN    = 'RzpMakerAdmnId';
+    const CHECKER_ROLE   = 'RzpChekrRoleId';
+    const CHECKER_ADMIN  = 'RzpChekrAdmnId';
+
+    const DEFAULT_TOKEN  = 'SecretTokenForRazorpayAdminAuthentication';
+
+    //Workflow related role tokens
+    const MAKER_TOKEN    = 'SecretTokenForRazorpayMAKERAdminAuthentic';
+    const CHECKER_TOKEN  = 'SecretTokenForRazorpayCHECKERAdminAuthent';
 
     public function setUp()
     {
@@ -43,7 +51,7 @@ class Org extends Base
 
     public function createRazorpayOrg()
     {
-        $now = Carbon::now()->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         $permissions = $this->fixtures->create(
             'permission:default_permissions');
@@ -98,6 +106,57 @@ class Org extends Base
         $this->fixtures->create('admin_token', [
             'admin_id'   => self::SUPER_ADMIN,
             'token'      => self::DEFAULT_TOKEN,
+            'created_at' => $now,
+            'expires_at' => Carbon::now()->addYear()->timestamp,
+        ]);
+
+        return $org;
+    }
+
+    public function createWorkflowUsers($attributes)
+    {
+        $org = $attributes['org'];
+
+        $now = Carbon::now()->getTimestamp();
+
+        $makerRole = $this->fixtures->create('role', [
+            'id'     => self::MAKER_ROLE,
+            'org_id' => $org->getId(),
+            'name'   => 'Maker',
+        ]);
+
+        $checkerRole = $this->fixtures->create('role', [
+            'id'     => self::CHECKER_ROLE,
+            'org_id' => $org->getId(),
+            'name'   => 'Checker',
+        ]);
+
+        $adminMaker = $this->fixtures->create('admin', [
+            'id'     => self::MAKER_ADMIN,
+            'org_id' => $org->getId(),
+            'email'  => 'maker@razorpay.com',
+        ]);
+
+        $adminChecker = $this->fixtures->create('admin', [
+            'id'     => self::CHECKER_ADMIN,
+            'org_id' => $org->getId(),
+            'email'  => 'checker@razorpay.com',
+        ]);
+
+        $adminMaker->roles()->attach($makerRole);
+
+        $adminChecker->roles()->attach($checkerRole);
+
+        $this->fixtures->create('admin_token', [
+            'admin_id'   => self::MAKER_ADMIN,
+            'token'      => self::MAKER_TOKEN,
+            'created_at' => $now,
+            'expires_at' => Carbon::now()->addYear()->timestamp,
+        ]);
+
+        $this->fixtures->create('admin_token', [
+            'admin_id'   => self::CHECKER_ADMIN,
+            'token'      => self::CHECKER_TOKEN,
             'created_at' => $now,
             'expires_at' => Carbon::now()->addYear()->timestamp,
         ]);

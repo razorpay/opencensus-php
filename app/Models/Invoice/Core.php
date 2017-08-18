@@ -5,18 +5,22 @@ namespace RZP\Models\Invoice;
 use Config;
 use Carbon\Carbon;
 
-use RZP\Models\Base;
-use RZP\Models\Payment;
-use RZP\Models\Merchant;
-use RZP\Models\Order;
-use RZP\Models\LineItem;
 use RZP\Trace\Trace;
+use RZP\Models\Base;
+use RZP\Models\Order;
+use RZP\Models\Batch;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
-use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Error\ErrorCode;
-use RZP\Jobs\InvoiceAction;
+use RZP\Models\Merchant;
+use RZP\Models\LineItem;
 use RZP\Models\FileStore;
 use RZP\Jobs\DispatchRouter;
+use RZP\Models\Plan\Subscription;
+use RZP\Exception\BadRequestException;
+use RZP\Jobs\Invoice\Job as InvoiceJob;
+use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Jobs\Invoice\BatchIssue as InvoiceBatchIssueJob;
 
 class Core extends Base\Core
 {
@@ -46,10 +50,23 @@ class Core extends Base\Core
         $this->pdfGenerator = new PdfGenerator($invoice);
     }
 
+    /**
+     * Creates invoice
+     *
+     * @param array               $input
+     * @param Merchant\Entity     $merchant
+     * @param Subscription\Entity $subscription - If created via subscription, this
+     *                                            is passed for associations.
+     * @param Batch\Entity        $batch        - If created via batch flow, this
+     *                                            is passed for association.
+     *
+     * @return Entity
+     */
     public function create(
         array $input,
         Merchant\Entity $merchant,
-        $subscription = null): Entity
+        Subscription\Entity $subscription = null,
+        Batch\Entity $batch = null): Entity
     {
         $this->trace->info(
             TraceCode::INVOICE_CREATE_REQUEST,
@@ -60,18 +77,16 @@ class Core extends Base\Core
 
         $invoice = (new Generator($merchant))
                         ->setSubscription($subscription)
+                        ->setBatch($batch)
                         ->generate($input);
 
-        $this->trace->info(
-            TraceCode::INVOICE_CREATED,
-            $invoice->toArrayPublic()
-        );
+        $this->trace->info(TraceCode::INVOICE_CREATED, $invoice->toArrayPublic());
 
         if ($invoice->isIssued())
         {
-            $job = new InvoiceAction(
+            $job = new InvoiceJob(
                         $this->mode,
-                        InvoiceAction::ISSUED,
+                        InvoiceJob::ISSUED,
                         $invoice->getId());
 
             (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
@@ -125,9 +140,9 @@ class Core extends Base\Core
 
         if ($invoice->isIssued())
         {
-            $job = new InvoiceAction(
+            $job = new InvoiceJob(
                         $this->mode,
-                        InvoiceAction::UPDATED,
+                        InvoiceJob::UPDATED,
                         $invoice->getId());
 
             (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
@@ -145,6 +160,8 @@ class Core extends Base\Core
                 'invoice_status' => $invoice->getStatus(),
             ]);
 
+        $invoice->getValidator()->validateOperation(__FUNCTION__);
+
         $this->repo->transaction(
             function() use ($invoice, $merchant)
             {
@@ -153,9 +170,9 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        $job = new InvoiceAction(
+        $job = new InvoiceJob(
                     $this->mode,
-                    InvoiceAction::ISSUED,
+                    InvoiceJob::ISSUED,
                     $invoice->getId());
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
@@ -419,9 +436,9 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        $job = new InvoiceAction(
+        $job = new InvoiceJob(
                         $this->mode,
-                        InvoiceAction::EXPIRED,
+                        InvoiceJob::EXPIRED,
                         $invoice->getId());
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
@@ -557,7 +574,7 @@ class Core extends Base\Core
             return null;
         }
 
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         if ($now - $invoice->getUpdatedAt() <= self::MAX_EXPECTED_QUEUE_DELAY)
         {
@@ -623,6 +640,51 @@ class Core extends Base\Core
         $this->setPdfGenerator($invoice);
 
         return $this->generatePdfWithRetry($invoice->getId());
+    }
+
+    /**
+     * Issues all invoices of given $batch, if list of invoice ids are sent
+     * that is used (ensuring those ids are of given batch).
+     *
+     * The method returns success and the actual issue happens asynchronously
+     * in a queue job.
+     *
+     * @param Batch\Entity $batch
+     * @param array        $input
+     *
+     * @return array
+     */
+    public function issueInvoicesOfBatch(Batch\Entity $batch, array $input): array
+    {
+        //
+        // There is an action of 'Issue all payment links' of a processed(created
+        // in draft state) payment link batch. But currently this action is not
+        // saved anywhere and so can be called multiple times on given processed batch.
+        // There is validation in the flow to not issue already issued invoice, but
+        // following check will throw error in advance if there is any non draft status
+        // invoices against the given batch.
+        //
+
+        $batchId = $batch->getId();
+
+        $nonDraftInvCount = $this->repo->invoice
+                                       ->getNonDraftInvoiceCountByBatchId($batchId);
+
+        if ($nonDraftInvCount > 0)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_LINK_BATCH_ISSUED_ALREADY,
+                Entity::BATCH_ID,
+                [
+                    Entity::BATCH_ID => $batchId,
+                ]);
+        }
+
+        $job = new InvoiceBatchIssueJob($this->mode, $batch->getId(), $input);
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+
+        return ['success' => true];
     }
 
     /**
@@ -699,7 +761,36 @@ class Core extends Base\Core
         Entity $invoice,
         array $input)
     {
-        $this->repo->saveOrFail($invoice);
+        $this->repo->transaction(
+            function () use ($invoice)
+            {
+                $this->updateOrderOfIssuedInvoice($invoice);
+
+                $this->repo->saveOrFail($invoice);
+            });
+    }
+
+    /**
+     * Issue invoice has an order created. There are few attributes
+     * which gets copied to order when issuing an invoice. Eg. invoice
+     * has partial_payment attribute.
+     *
+     * In most of the cases we don't allow edits on issued invoice attributes
+     * but when we do and it affects orders (highly unlikely case) we need
+     * to update corresponding order details as well.
+     *
+     * @param Entity $invoice
+     */
+    protected function updateOrderOfIssuedInvoice(Entity $invoice)
+    {
+        if ($invoice->isDirty(Entity::PARTIAL_PAYMENT) === true)
+        {
+            $order = $invoice->order;
+
+            $order->togglePartialPayment();
+
+            $this->repo->saveOrFail($order);
+        }
     }
 
     /**
@@ -766,12 +857,19 @@ class Core extends Base\Core
         {
             $this->trace->traceException(
                 $e,
-                Trace::ERROR,
+                null,
                 TraceCode::INVOICE_PDF_GEN_FAILED,
                 [
                     'id'       => $id,
                     'attempts' => $attempt,
                 ]);
+
+            // Don't attempt regenerating file if there was some 4XX error
+
+            if ($e instanceof BadRequestValidationFailureException)
+            {
+                return null;
+            }
 
             $this->generatePdfWithRetry($id, $attempt);
         }

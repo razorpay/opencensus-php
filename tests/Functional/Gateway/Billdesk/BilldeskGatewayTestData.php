@@ -29,8 +29,9 @@ return [
         'terminal_id'       => '1000BdeskTrmnl',
         'signed'            => false,
         'verified'          => null,
-        'fee'               => 1438,
-        'service_tax'       => 188,
+        'fee'               => 1475,
+        'service_tax'       => 225,
+        'tax'               => 225,
         'entity'            => 'payment',
     ],
 
@@ -40,6 +41,7 @@ return [
         'amount'          => 50000,
         'fee'             => 0,
         'service_tax'     => 0,
+        'tax'             => 0,
         'pricing_rule_id' => null,
         'debit'           => 0,
         'credit'          => 0,
@@ -60,11 +62,11 @@ return [
         'type'          => 'payment',
         'merchant_id'   => '10000000000000',
         'amount'        => 50000,
-        'fee'           => 1438,
+        'fee'           => 1475,
         'debit'         => 0,
-        'credit'        => 48562,
+        'credit'        => 48525,
         'currency'      => 'INR',
-        'balance'       => 1048562,
+        'balance'       => 1048525,
         'gateway_fee'   => 0,
         'api_fee'       => 0,
         'channel'       => 'kotak',
@@ -185,6 +187,7 @@ return [
         'gateway_fee'     => 0,
         'api_fee'         => 0,
         'service_tax'     => 0,
+        'tax'             => 0,
         'channel'         => 'kotak',
         'settled'         => false,
         'settled_at'      => null,
@@ -287,6 +290,21 @@ return [
         'exception' => [
             'class'                 => 'RZP\Exception\RuntimeException',
             'internal_error_code'   => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
+        ],
+    ],
+    'testMakerCheckerPaymentNormalCallbackForFailed' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         ],
     ],
 ];

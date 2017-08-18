@@ -6,6 +6,7 @@ use Config;
 use Eloquent;
 use RZP\Models;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Merchant;
 use RZP\Tests\TestDummy\Factory;
 
@@ -185,14 +186,14 @@ final class FactoryData
             'id' => $faker->uniqueid,
             // 'source_id' => 'factory:\RZP\Models\Settlement\Entity',
             'source_type' => 'settlement',
-            'status' => 'created',
+            'status' => 'initiated',
             'channel' => 'kotak',
             'version' => 'V3',
         ]);
 
         $factory(\RZP\Models\FundTransfer\Batch\Entity::class, [
             'id' => $faker->uniqueid,
-            'date' => Carbon::today('Asia/Kolkata')->timestamp,
+            'date' => Carbon::today(Timezone::IST)->timestamp,
             'channel' => 'kotak',
             'amount' => $faker->randomNumber(4),
             'processed_amount' => 0,
@@ -201,7 +202,7 @@ final class FactoryData
             'api_fee' => $faker->randomNumber(2),
             'gateway_fee' => $faker->randomNumber(2),
             'urls' => $faker->sentence,
-            'initiated_at' => Carbon::today('Asia/Kolkata')->timestamp + 10,
+            'initiated_at' => Carbon::today(Timezone::IST)->timestamp + 10,
         ]);
 
         $factory(\RZP\Models\Adjustment\Entity::class, [
@@ -399,6 +400,13 @@ final class FactoryData
             'customer_id'  => '10000gcustomer',
             'device_token' => 'test',
             'merchant_id'  => '10000000000000'
+        ]);
+
+        $factory(\RZP\Models\Customer\GatewayToken\Entity::class, [
+            'id' => '10gatewaytoken',
+            'token_id' => '10000custgcard',
+            'terminal_id' => '1RecurringTerm',
+            'merchant_id' => '10000000000000'
         ]);
 
         $factory(\RZP\Models\Merchant\Credits\Entity::class, [
@@ -675,6 +683,7 @@ final class FactoryData
 
         $factory(\RZP\Models\Gateway\Rule\Entity::class, [
             'id'         => $faker->uniqueid,
+            'min_amount' => 0,
             'created_at' => $faker->timestamp,
             'updated_at' => $faker->timestamp
         ]);
@@ -699,6 +708,18 @@ final class FactoryData
             'deleted_at'  => null,
         ]);
 
+        $factory(\RZP\Models\Promotion\Entity::class, [
+            'id'          => $faker->uniqueid
+        ]);
+
+        $factory(\RZP\Models\Coupon\Entity::class, [
+            'id'          => $faker->uniqueid
+        ]);
+
+        $factory(\RZP\Models\Merchant\Promotion\Entity::class, [
+            'id'          => $faker->uniqueid,
+        ]);
+
         $factory(\RZP\Models\FileStore\Entity::class, [
             'id'          => $faker->uniqueid,
             'merchant_id' => '10000000000000',
@@ -717,11 +738,48 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Invitation\Entity::class, [
-            'id'                       => $faker->uniqueid,
+            'id'                       => $faker->randomNumber(6),
             'email'                    => $faker->email,
             'merchant_id'              => $faker->uniqueid,
             'role'                     => 'manager',
             'token'                    => $faker->name(30),
+        ]);
+
+        $factory(\RZP\Models\Dispute\Reason\Entity::class, [
+            'id'                  => $faker->uniqueid,
+            'gateway_code'        => '8393',
+            'gateway_description' => 'This was always a bad idea',
+            'code'                => 'BAD_IDEA',
+            'description'         => 'I told you so',
+        ]);
+
+        $factory(\RZP\Models\Dispute\Entity::class, [
+            'id'                 => $faker->uniqueid,
+            'phase'              => \RZP\Models\Dispute\Phase::CHARGEBACK,
+            'raised_on'          => $faker->timestamp,
+            'expires_on'         => $faker->timestamp,
+            'deduct_at_onset'    => 1,
+            'currency'           => 'INR',
+            'status'             => \RZP\Models\Dispute\Status::OPEN,
+            'reason_code'        => 'SOMETHING_BAD',
+            'reason_description' => 'Something went wrong'
+        ]);
+        
+        $factory(\RZP\Models\Workflow\Entity::class, [
+           'id'      => $faker->uniqueid,
+            'org_id' => '100000razorpay',
+            'name'   => $faker->name,
+        ]);
+
+        $factory(\RZP\Models\Workflow\Step\Entity::class,[
+            'id'               => $faker->uniqueid,
+            'role_id'          => 'factory:RZP\Models\Admin\Role\Entity',
+            'workflow_id'      => 'factory:RZP\Models\Workflow\Entity',
+            'reviewer_count'   => 1,
+            'op_type'          => 'or',
+            'level'            => 1,
+            'created_at'       => $faker->timestamp,
+            'updated_at'       => $faker->timestamp,
         ]);
     }
 }

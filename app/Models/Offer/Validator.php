@@ -25,37 +25,37 @@ class Validator extends Base\Validator
     ];
 
     protected static $createRules = [
-        Entity::NAME                => 'sometimes|string|max:25',
+        Entity::NAME                => 'sometimes|filled|string|max:25',
         Entity::PAYMENT_METHOD      => 'required|alpha|custom',
         Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card|in:debit,credit',
-        Entity::PAYMENT_NETWORK     => 'sometimes|alpha',
+        Entity::PAYMENT_NETWORK     => 'sometimes|filled|alpha',
         Entity::ISSUER              => 'sometimes_if:payment_method,card|alpha|custom',
         Entity::IINS                => 'sometimes_if:payment_method,card|array',
-        Entity::PERCENT_RATE        => 'sometimes|integer|min:0|max:10000',
-        Entity::MAX_CASHBACK        => 'sometimes|integer|min:0',
-        Entity::FLAT_CASHBACK       => 'sometimes|integer|min:0',
-        Entity::MIN_AMOUNT          => 'sometimes|integer|min:0',
+        Entity::PERCENT_RATE        => 'sometimes|filled|integer|min:0|max:10000',
+        Entity::MAX_CASHBACK        => 'sometimes|filled|integer|min:0',
+        Entity::FLAT_CASHBACK       => 'sometimes|filled|integer|min:0',
+        Entity::MIN_AMOUNT          => 'sometimes|filled|integer|min:0',
         Entity::MAX_PAYMENT_COUNT   => 'sometimes_if:payment_method,card,emi|integer|min:1',
         Entity::LINKED_OFFER_IDS    => 'sometimes_if:payment_method,card,emi|array',
-        Entity::PROCESSING_TIME     => 'sometimes|integer',
-        Entity::TYPE                => 'sometimes|in:instant,deferred',
-        Entity::CHECKOUT_DISPLAY    => 'sometimes|boolean',
-        Entity::STARTS_AT           => 'sometimes|epoch',
+        Entity::PROCESSING_TIME     => 'sometimes|filled|integer',
+        Entity::TYPE                => 'sometimes|filled|in:instant,deferred',
+        Entity::CHECKOUT_DISPLAY    => 'sometimes|filled|boolean',
+        Entity::STARTS_AT           => 'sometimes|filled|epoch',
         Entity::ENDS_AT             => 'required|epoch',
-        Entity::DISPLAY_TEXT        => 'sometimes|string|max:255',
-        Entity::ERROR_MESSAGE       => 'sometimes|string|max:255',
+        Entity::DISPLAY_TEXT        => 'sometimes|filled|string|max:255',
+        Entity::ERROR_MESSAGE       => 'sometimes|filled|string|max:255',
         Entity::TERMS               => 'required|string'
     ];
 
     protected static $editRules = [
-        Entity::NAME               => 'sometimes|alpha_space_num|max:25',
-        Entity::IINS               => 'sometimes|array',
-        Entity::MAX_PAYMENT_COUNT  => 'sometimes|integer|min:1',
-        Entity::LINKED_OFFER_IDS   => 'sometimes|array',
-        Entity::ACTIVE             => 'sometimes|in:0',
-        Entity::DISPLAY_TEXT       => 'sometimes|string|max:255',
-        Entity::ERROR_MESSAGE      => 'sometimes|string|max:255',
-        Entity::TERMS              => 'sometimes|string'
+        Entity::NAME               => 'sometimes|filled|string|max:25',
+        Entity::IINS               => 'sometimes|filled|array',
+        Entity::MAX_PAYMENT_COUNT  => 'sometimes|filled|integer|min:1',
+        Entity::LINKED_OFFER_IDS   => 'sometimes|filled|array',
+        Entity::ACTIVE             => 'sometimes|filled|in:0',
+        Entity::DISPLAY_TEXT       => 'sometimes|filled|string|max:255',
+        Entity::ERROR_MESSAGE      => 'sometimes|filled|string|max:255',
+        Entity::TERMS              => 'sometimes|filled|string'
     ];
 
     protected static $createValidators = [
@@ -128,7 +128,7 @@ class Validator extends Base\Validator
 
     protected function validateOfferPeriod(array $input)
     {
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         $endsAt = $input[Entity::ENDS_AT];
 

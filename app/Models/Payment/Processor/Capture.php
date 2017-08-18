@@ -2,18 +2,21 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Jobs\DispatchRouter;
+use RZP\Jobs\Capture as CaptureJob;
+use RZP\Listeners\ApiEventSubscriber;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Currency;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant;
-use RZP\Models\Payment;
 use RZP\Models\Order;
+use RZP\Models\Payment;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Transaction;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Models\Base\PublicCollection;
 
 trait Capture
 {
@@ -426,7 +429,9 @@ trait Capture
         // Example : HDFC sends FS00002 error if capture request is sent within 20 seconds of the
         // previous capture request.
         //
-        $this->app['queue']->later(self::CAPTURE_QUEUE_DELAY, \RZP\Jobs\Capture::class, ['data' => $data]);
+        $job = new CaptureJob($data);
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::CAPTURE);
     }
 
     /**
@@ -481,7 +486,7 @@ trait Capture
             $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
 
-        $this->eventPaymentCaptured();
+        $this->triggerPaymentCapturedEvents();
 
         $this->notifyPaymentCaptured();
 
@@ -498,8 +503,10 @@ trait Capture
      *
      * @return null
      */
-    protected function eventPaymentCaptured()
+    protected function triggerPaymentCapturedEvents()
     {
+        $this->eventPaymentCaptured();
+
         $this->eventOrderPaid();
 
         $this->eventInvoicePaid();
@@ -525,7 +532,11 @@ trait Capture
 
         if ($payment->getApiOrderId() !== null)
         {
-            $this->app['events']->fire('api.order.paid', array($payment));
+            $eventPayload = [
+                ApiEventSubscriber::MAIN => $payment
+            ];
+
+            $this->app['events']->fire('api.order.paid', $eventPayload);
         }
     }
 
@@ -538,7 +549,22 @@ trait Capture
             return;
         }
 
-        $this->app['events']->fire('api.invoice.paid', array($payment));
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $payment
+        ];
+
+        $this->app['events']->fire('api.invoice.paid', $eventPayload);
+    }
+
+    protected function eventPaymentCaptured()
+    {
+        $payment = $this->payment;
+
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $payment
+        ];
+
+        $this->app['events']->fire('api.payment.captured', $eventPayload);
     }
 
     protected function updatePaymentCaptured($payment, $autoCaptured = false)
@@ -566,6 +592,8 @@ trait Capture
         list($txn, $feesSplit) = $txnCore->createOrUpdateFromPaymentCaptured($payment);
 
         $payment->setServiceTax($txn->getServiceTax());
+
+        $payment->setTax($txn->getTax());
 
         if ($this->merchant->isFeeBearerCustomer() === false)
         {
@@ -620,6 +648,15 @@ trait Capture
                 'payment_id' => $payment->getId(),
                 'order_id'   => $order->getId(),
             ]);
+
+        //
+        // We have to use order's invoice instead of payment's invoice here
+        // as in the transaction order entity gets updated and invoice depends
+        // on order.amount_paid attribute to update it's status. We could have
+        // used $payment->invoice with refresh() but decided to stick with order
+        // as payment as invoice just for queries, actual association is between
+        // order and invoice and order->invoice can get used again this this flow.
+        //
 
         $invoice = $order->invoice;
 

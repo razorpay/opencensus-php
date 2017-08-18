@@ -58,7 +58,6 @@ class Entity extends Base\PublicEntity
     const PAYMENT_CAPTURE = 'payment_capture';
 
     protected $fillable = [
-        self::PARTIAL_PAYMENT,
         self::AMOUNT,
         self::CURRENCY,
         self::RECEIPT,
@@ -87,7 +86,6 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::ENTITY,
-        // self::PARTIAL_PAYMENT,
         self::AMOUNT,
         self::AMOUNT_PAID,
         self::AMOUNT_DUE,
@@ -122,6 +120,11 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::OFFER_ID,
+    ];
+
+    protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected static $sign = 'order';
@@ -160,29 +163,8 @@ class Entity extends Base\PublicEntity
 
     /** End Appends */
 
-    /** Accessors */
-
-    /**
-     * TODO: Remove this once corresponding update queries is run post
-     *       partial payments pr deployment.
-     *
-     * Get amount paid attribute.
-     *
-     * @return int
-     */
-    public function getAmountPaidAttribute(int $amountPaid): int
-    {
-        if (($this->isPaid() === true) and ($amountPaid === 0))
-        {
-            return $this->getAmount();
-        }
-
-        return $amountPaid;
-    }
-
-    /** End Accessors */
-
     /** Setters And Getters */
+
     public function setStatus($status)
     {
         return $this->setAttribute(self::STATUS, $status);
@@ -201,6 +183,11 @@ class Entity extends Base\PublicEntity
     public function setAmountPaid(int $amountPaid)
     {
         $this->setAttribute(self::AMOUNT_PAID, $amountPaid);
+    }
+
+    public function setPartialPayment(bool $partialPayment)
+    {
+        $this->setAttribute(self::PARTIAL_PAYMENT, $partialPayment);
     }
 
     public function getStatus()
@@ -275,9 +262,21 @@ class Entity extends Base\PublicEntity
 
     /** Other Functions */
 
-    public function hasPartialPaymentEnabled()
+    public function isPartialPaymentAllowed()
     {
         return $this->getAttribute(self::PARTIAL_PAYMENT);
+    }
+
+    public function allowPartialPayment()
+    {
+        $this->setPartialPayment(true);
+    }
+
+    public function togglePartialPayment()
+    {
+        $value = ($this->isPartialPaymentAllowed() === false);
+
+        $this->setPartialPayment($value);
     }
 
     public function incrementAttempts()

@@ -81,7 +81,8 @@ class WebhookTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        HttpClientDiscovery::prependStrategy(MockClientStrategy::class);
+        $this->app['webhook.inferno']->setClient($this->app['httplug']->driver('mock'));
+
         $messageFactory = MessageFactoryDiscovery::find();
 
         $client = $this->app['webhook.inferno']->getClient();
@@ -120,14 +121,21 @@ class WebhookTest extends TestCase
             return true;
         });
 
-        $order = $this->fixtures->create('order', ['id' => '100000000order', 'receipt' => 'random']);
+        $order = $this->fixtures->create('order',
+                    [
+                        'id'              => '100000000order',
+                        'receipt'         => 'random',
+                        'payment_capture' => true,
+                    ]);
+
         $this->fixtures->create('invoice', ['amount' => 1000000]);
 
         $payment = $this->getDefaultPaymentArray();
-        $payment['order_id'] = $order->getPublicId();
-        $payment['amount'] = $order->getAmount();
 
-        $this->doAuthAndCapturePayment($payment);
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = $order->getAmount();
+
+        $this->doAuthPayment($payment);
     }
 
     /**
@@ -152,8 +160,15 @@ class WebhookTest extends TestCase
             return true;
         });
 
-        $order = $this->fixtures->create('order', ['id' => '100000000order', 'receipt' => 'random']);
-        $this->fixtures->create('invoice', [
+        $order = $this->fixtures->create('order',
+                    [
+                        'id'              => '100000000order',
+                        'receipt'         => 'random',
+                        'payment_capture' => true,
+                    ]);
+
+        $this->fixtures->create('invoice',
+            [
                 'amount'           => 1000000,
                 'customer_id'      => null,
                 'customer_name'    => null,
@@ -162,10 +177,11 @@ class WebhookTest extends TestCase
             ]);
 
         $payment = $this->getDefaultPaymentArray();
-        $payment['order_id'] = $order->getPublicId();
-        $payment['amount'] = $order->getAmount();
 
-        $this->doAuthAndCapturePayment($payment);
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = $order->getAmount();
+
+        $this->doAuthPayment($payment);
     }
 
     public function testInvoicePaidWebhookEventDataWithOrderAndWithoutInvoice()
@@ -190,8 +206,9 @@ class WebhookTest extends TestCase
         $order = $this->fixtures->create('order', ['amount' => 50000, 'receipt' => 'random']);
 
         $payment = $this->getDefaultPaymentArray();
+
         $payment['order_id'] = $order->getPublicId();
-        $payment['amount'] = $order->getAmount();
+        $payment['amount']   = $order->getAmount();
 
         $this->doAuthAndCapturePayment($payment);
     }
@@ -208,14 +225,44 @@ class WebhookTest extends TestCase
 
         $this->app->instance('webhook.inferno', $inferno);
 
-        $order = $this->fixtures->create('order', ['id' => '100000000order', 'receipt' => 'random']);
+        $order = $this->fixtures->create('order',
+                    [
+                        'id'              => '100000000order',
+                        'receipt'         => 'random',
+                        'payment_capture' => true,
+                    ]);
+
         $this->fixtures->create('invoice');
 
         $payment = $this->getDefaultPaymentArray();
-        $payment['order_id'] = $order->getPublicId();
-        $payment['amount'] = $order->getAmount();
 
-        $this->doAuthAndCapturePayment($payment);
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = $order->getAmount();
+
+        $this->doAuthPayment($payment);
+    }
+
+    public function testWebhooksFeatureBasedEvents()
+    {
+        $this->createWebhook(['events' => ['payment.authorized' => '1', 'subscription.charged' => '1']]);
+
+        $testData = $this->testData['testGetWebhooks'];
+
+        $response = $this->startTest($testData);
+
+        $events = $response['items'][0]['events'];
+
+        $this->assertArrayNotHasKey('subscription.charged', $events);
+
+        $this->fixtures->merchant->addFeatures(['subscriptions']);
+
+        $testData = $this->testData['testGetWebhooks'];
+
+        $response = $this->startTest($testData);
+
+        $events = $response['items'][0]['events'];
+
+        $this->assertArrayHasKey('subscription.charged', $events);;
     }
 
     public function testOrderPaidWebhookEventData()

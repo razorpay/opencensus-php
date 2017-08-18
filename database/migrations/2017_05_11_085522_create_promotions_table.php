@@ -1,0 +1,85 @@
+<?php
+
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Migrations\Migration;
+
+use RZP\Constants\Table;
+use RZP\Models\Schedule;
+use RZP\Models\Merchant\Credits\Entity as Credits;
+use RZP\Models\Promotion\Entity as Promotion;
+
+class CreatePromotionsTable extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
+        Schema::create(Table::PROMOTION, function (Blueprint $table)
+        {
+            $table->engine = 'InnoDB';
+
+            $table->char(Promotion::ID, Promotion::ID_LENGTH)
+                  ->primary();
+
+            $table->string(Promotion::NAME, 50);
+
+            $table->integer(Promotion::CREDIT_AMOUNT)
+                  ->unsigned();
+
+            $table->string(Promotion::CREDIT_TYPE, 20);
+
+            $table->char(Promotion::SCHEDULE_ID, Schedule\Entity::ID_LENGTH)
+                  ->nullable();
+
+            $table->integer(Promotion::ITERATIONS)
+                  ->unsigned()
+                  ->default(1);
+
+            $table->tinyInteger(Promotion::CREDITS_EXPIRE)
+                  ->default(0);
+
+            $table->integer(Promotion::CREATED_AT);
+
+            $table->integer(Promotion::UPDATED_AT);
+
+            $table->foreign(Promotion::SCHEDULE_ID)
+                  ->references(Schedule\Entity::ID)
+                  ->on(Table::SCHEDULE)
+                  ->on_delete('restrict');
+        });
+
+        // This needs to be done here because migrations are run in order of
+        // timestamps and promotions table gets created after credits.
+        Schema::table(Table::CREDITS, function(Blueprint $table)
+        {
+            $table->foreign(Credits::PROMOTION_ID)
+                  ->references(Promotion::ID)
+                  ->on(Table::PROMOTION)
+                  ->on_delete('restrict');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
+        Schema::table(Table::PROMOTION, function($table)
+        {
+            $table->dropForeign(Table::PROMOTION.'_'.Promotion::SCHEDULE_ID.'_foreign');
+        });
+
+        Schema::table(Table::CREDITS, function($table)
+        {
+            $table->dropForeign(
+                Table::CREDITS.'_'.Credits::PROMOTION_ID.'_foreign');
+        });
+
+        Schema::drop(Table::PROMOTION);
+    }
+}

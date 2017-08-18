@@ -4,18 +4,48 @@ namespace RZP\Models\Plan\Subscription;
 
 use Carbon\Carbon;
 
+use RZP\Constants;
 use RZP\Constants\Table;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use RZP\Models\Schedule\Task;
+use RZP\Models\Customer;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'subscription';
 
+    protected $entityFetchParamRules = [
+        Entity::PLAN_ID     => 'filled|string|min:14|max:19',
+        Entity::STATUS      => 'filled|string|max:16|custom',
+    ];
+
+    protected $proxyFetchParamRules = [
+        Entity::CUSTOMER_ID     => 'filled|string|min:14|max:19',
+        Entity::CUSTOMER_EMAIL  => 'filled|string|min:1|max:255'
+    ];
+
+    protected $appFetchParamRules = [
+        Entity::ERROR_STATUS    => 'filled|string|max:32',
+        Entity::SCHEDULE_ID     => 'filled|string|size:14',
+        Entity::MERCHANT_ID     => 'filled|string|size:14',
+        Entity::TOKEN_ID        => 'filled|string|min:14|max:20',
+        Entity::AUTH_ATTEMPTS   => 'filled|integer|min:1|max:5',
+    ];
+
+    protected $signedIds = [
+        Entity::PLAN_ID,
+        Entity::CUSTOMER_ID,
+        Entity::SCHEDULE_ID,
+        Entity::MERCHANT_ID,
+        Entity::TOKEN_ID,
+    ];
+
     public function getSubscriptionsToCharge()
     {
         $subscriptions = $this->getBaseSubscriptionsQuery()
-                              ->whereIn(Entity::STATUS, [Status::ACTIVE, Status::AUTHENTICATED, Status::HALTED])
+                              ->whereIn(Entity::STATUS, Status::$cronChargeableStatuses)
                               ->whereNull(Entity::ENDED_AT)
                               ->where(function($query)
                               {
@@ -35,7 +65,7 @@ class Repository extends Base\Repository
     public function getSubscriptionsToRetry()
     {
         return $this->getBaseSubscriptionsQuery()
-                    ->where(Entity::STATUS, '=', Status::OVERDUE)
+                    ->where(Entity::STATUS, '=', Status::PENDING)
                     ->whereNotNull(Entity::ERROR_STATUS)
                     ->where(Entity::AUTH_ATTEMPTS, '>', 0)
                     ->where(Entity::AUTH_ATTEMPTS, '<', Charge::MAX_AUTH_ATTEMPTS)
@@ -45,7 +75,7 @@ class Repository extends Base\Repository
 
     public function getSubscriptionsToExpire()
     {
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         return $this->newQuery()
                     ->whereNotNull(Entity::START_AT)
@@ -63,7 +93,7 @@ class Repository extends Base\Repository
 
         $subscriptionAttrs = $this->dbColumn('*');
 
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         return $this->newQuery()
                     ->select($subscriptionAttrs)
@@ -75,5 +105,51 @@ class Repository extends Base\Repository
                                   ->orWhere(Entity::CURRENT_END, '<', $currentTime);
                         })
                     ->with(['plan', 'merchant']);
+    }
+
+    protected function validateStatus($attribute, $value)
+    {
+        if (Status::isStatusValid($value) === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_INVALID_STATUS,
+                Entity::STATUS,
+                [
+                    'status' => $value
+                ]);
+        }
+    }
+
+    protected function addQueryParamCustomerEmail($query, $params)
+    {
+        $this->joinQueryCustomer($query);
+
+        $customerEmail = $this->repo->customer->dbColumn(Customer\Entity::EMAIL);
+
+        $query->where($customerEmail, '=', $params[Entity::CUSTOMER_EMAIL]);
+
+        $query->select($this->getTableName() . '.*');
+    }
+
+    protected function joinQueryCustomer($query)
+    {
+        $joins = $query->getQuery()->joins;
+
+        $joins = $joins ?: [];
+
+        $customerTable = Table::getTableNameForEntity(Constants\Entity::CUSTOMER);
+
+        foreach ($joins as $join)
+        {
+            if ($join->table === $customerTable)
+            {
+                return;
+            }
+        }
+
+        $subscriptionCustomerId = $this->dbColumn(Entity::CUSTOMER_ID);
+        $customerId = $this->repo->customer->dbColumn(Customer\Entity::ID);
+
+        $query->join($customerTable, $subscriptionCustomerId, '=', $customerId);
     }
 }

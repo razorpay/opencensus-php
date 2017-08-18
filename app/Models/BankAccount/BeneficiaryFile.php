@@ -2,46 +2,24 @@
 
 namespace RZP\Models\BankAccount;
 
+use App;
 use Mail;
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Exception;
-use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
+use RZP\Models\Base;
+use RZP\Models\FileStore;
 use RZP\Models\BankAccount;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 
-class BeneficiaryFile
+class BeneficiaryFile extends Base\Core
 {
-    use FileHandlerTrait;
-
     protected static $fileToWriteName = 'Kotak_Beneficiary_File';
 
     const DEFAULT_PRICING_RATE = 30000000;
 
-    public static $headings = array(
-        'Client_Code',
-        'Bene_Code',
-        'Bene Name',
-        'Bene Add 1',
-        'Bene Add 2',
-        'Bene Add 3',
-        'Bene Add 4',
-        'Bene Add 5',
-        'Bene_City',
-        'Bene_Pin',
-        'State',
-        'Country',
-        'Bene_Email',
-        'Bene_Mobile',
-        'Bene_Tel',
-        'Bene_Fax',
-        'IFSC',
-        'Bene_A/c No',
-    );
-
-    // Supports only text format right now
-    public static $format = array(
-       'Bene_A/c No' => 'text',
-    );
+    const SIGNED_URL_DURATION = '1440';
 
     public function generate()
     {
@@ -67,7 +45,7 @@ class BeneficiaryFile
 
         foreach ($list as $ba)
         {
-            $array = array(
+            $array = [
                 'Client_Code'           => 'RAZORNODAL',
                 'Bene_Code'             => $ba->getBeneficiaryCode(),
                 'Bene_Name'             => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_NAME),
@@ -86,26 +64,60 @@ class BeneficiaryFile
                 'Bene_Fax'              => '',
                 'IFSC'                  => $ba->getAttribute(BankAccount\Entity::IFSC_CODE),
                 'Bene_A/c No'           => $ba->getAttribute(BankAccount\Entity::ACCOUNT_NUMBER),
-            );
+            ];
 
             array_push($data, $array);
         }
 
-        $urlExcel = $this->writeToExcelFile($data, $this->getFileToWriteNameWithoutExt());
-        $fullpath = $this->getExcelFullFilePath();
         $merchantsCount = count($list);
 
-        $this->sendKotakBeneficiaryFileMail($fullpath, $merchantsCount);
+        $fileData = $this->generateFile($data);
 
-        return ['url' => $fullpath];
+        $this->sendKotakBeneficiaryFileMail($fileData, $merchantsCount);
+
+        return ['url' => $fileData['local_file_path']];
     }
 
-    protected function sendKotakBeneficiaryFileMail($fullpath, $merchantsCount)
+    protected function generateFile(array $data): array
     {
+        $fileName = $this->getFileToWriteNameWithoutExt();
+
+        $creator = new FileStore\Creator;
+
+        $creator->extension(FileStore\Format::XLSX)
+                ->content($data)
+                ->name($fileName)
+                ->store(FileStore\Store::S3)
+                ->type(FileStore\Type::BENEFICIARY_FILE)
+                ->save();
+
+        $file = $creator->get();
+
+        $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
+
         $data = [
-            'filePath'       => $fullpath,
-            'merchantsCount' => $merchantsCount,
+            'signed_url'      => $signedFileUrl,
+            'local_file_path' => $file['local_file_path'],
+            'file_name'       => basename($file['local_file_path']),
         ];
+
+        return $data;
+    }
+
+    protected function getFileToWriteNameWithoutExt(): string
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        $mode = $this->mode;
+
+        $fileName = static::$fileToWriteName . '_' . $mode . '_' . $time;
+
+        return $fileName;
+    }
+
+    protected function sendKotakBeneficiaryFileMail(array $fileData, int $merchantsCount)
+    {
+        $data = $fileData + ['merchants_count' => $merchantsCount];
 
         $beneficiaryFileMail = new BeneficiaryFileMail($data);
 

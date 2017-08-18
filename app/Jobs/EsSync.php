@@ -2,14 +2,13 @@
 
 namespace RZP\Jobs;
 
-use App;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-use RZP\Exception\LogicException;
+use RZP\Models\Base;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Models\Base;
+use RZP\Exception\LogicException;
 
 /**
  * Es sync job class.
@@ -19,15 +18,12 @@ class EsSync extends Job implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    private $mode;
     private $action;
     private $entity;
     private $id;
 
-    private $repoManager;
     private $repo;
     private $esRepo;
-    private $trace;
 
     public function __construct(
         string $mode,
@@ -35,7 +31,8 @@ class EsSync extends Job implements ShouldQueue
         string $entity,
         string $id)
     {
-        $this->mode   = $mode;
+        parent::__construct($mode);
+
         $this->action = $action;
         $this->entity = $entity;
         $this->id     = $id;
@@ -43,7 +40,10 @@ class EsSync extends Job implements ShouldQueue
 
     public function handle()
     {
+        parent::handle();
+
         // Trace payload should include all necessary info for debugging.
+
         $tracePayload = [
             'job_attempts' => $this->attempts(),
             'mode'         => $this->mode,
@@ -54,23 +54,27 @@ class EsSync extends Job implements ShouldQueue
 
         try
         {
-            $this->init();
-
             $this->trace->debug(TraceCode::ES_SYNC_REQUEST, $tracePayload);
+
+            $this->setRepoAndEsRepo();
 
             $this->sync();
 
             $this->delete();
         }
-        catch(\Exception $e)
+        catch(\Throwable $e)
         {
             $this->trace->traceException(
-                $e, Trace::ERROR, TraceCode::ES_SYNC_FAILED, $tracePayload);
+                            $e,
+                            null,
+                            TraceCode::ES_SYNC_FAILED,
+                            $tracePayload);
 
             // If it's logical error or maximum number of retries has happened
             // just delete the job, else retry the job after a wait.
+
             if (($e instanceof LogicException) or
-                ($this->attempts() > Base\EsRepository::MAX_JOB_ATTEMPTS))
+                ($this->attempts() >= Base\EsRepository::MAX_JOB_ATTEMPTS))
             {
                 $this->delete();
             }
@@ -82,31 +86,14 @@ class EsSync extends Job implements ShouldQueue
     }
 
     /**
-     * We can't do initializes following services(repo, traces etc) as part of
-     * constructor as Job instance tries to serialize(custom way) the object
-     * after construction and sends to queue. And during serialization these objects
-     * fail(repo, traces etc) as they have lots of other references etc.
-     * Also not a good practice to make queue message heavy.
-     *
-     * - Initializes instance variables: core, trace etc.
-     * - Sets application mode, database connection based on the mode.
-     * - Validates event
+     * Sets repository and es repository corresponding to the entity
+     * set in queue message.
      *
      * @return null
      * @throws LogicException
      */
-    private function init()
+    private function setRepoAndEsRepo()
     {
-        $app = App::getFacadeRoot();
-
-        $app['rzp.mode'] = $this->mode;
-
-        \Database\DefaultConnection::set($this->mode);
-
-        $this->repoManager = $app['repo'];
-
-        $this->trace = $app['trace'];
-
         $this->repo = $this->repoManager->{$this->entity};
 
         $this->repo->setEsRepoIfExist();

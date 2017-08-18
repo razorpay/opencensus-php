@@ -3,6 +3,7 @@
 namespace RZP\Gateway\FirstData\Mock;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Constants\HashAlgo;
 use RZP\Exception;
 use RZP\Gateway\Base;
@@ -32,7 +33,7 @@ class Server extends Base\Mock\Server
 
         $this->validateAuthorizeInput($input);
 
-        $dateTime = Carbon::now('Asia/Kolkata');
+        $dateTime = Carbon::now(Timezone::IST);
 
         $tdate = $dateTime->getTimestamp() . random_integer(5);
 
@@ -108,7 +109,7 @@ class Server extends Base\Mock\Server
 
         $body = json_decode(json_encode($xmlBody), true);
 
-        $dateTime = Carbon::now('Asia/Kolkata');
+        $dateTime = Carbon::now(Timezone::IST);
 
         $content = [
             FirstData\ApiResponseFields::APPROVAL_CODE               => $this->getApprovalCode(),
@@ -149,7 +150,7 @@ class Server extends Base\Mock\Server
 
         $body = json_decode(json_encode($xmlBody), true);
 
-        $dateTime = Carbon::now('Asia/Kolkata');
+        $dateTime = Carbon::now(Timezone::IST);
 
         $content = [
             FirstData\ApiResponseFields::APPROVAL_CODE               => $this->getApprovalCode(),
@@ -190,7 +191,7 @@ class Server extends Base\Mock\Server
 
         $body = json_decode(json_encode($xmlBody), true);
 
-        $dateTime = Carbon::now('Asia/Kolkata');
+        $dateTime = Carbon::now(Timezone::IST);
 
         $content = [
             FirstData\ApiResponseFields::APPROVAL_CODE               => $this->getApprovalCode(),
@@ -221,7 +222,7 @@ class Server extends Base\Mock\Server
 
         $oid = $inquiryOrder[FirstData\ApiRequestFields::ORDER_ID];
 
-        $dateTime = Carbon::now('Asia/Kolkata');
+        $dateTime = Carbon::now(Timezone::IST);
 
         $tdate = (string) $dateTime->getTimestamp();
 
@@ -232,6 +233,42 @@ class Server extends Base\Mock\Server
         $soapContent = FirstData\SoapWrapper::verifyResponseWrapper($oid, $dateTime, $tdate, $approvalCode, $tdateFormatted);
 
         $this->content($soapContent);
+
+        return $this->prepareResponse($soapContent);
+    }
+
+    public function verifyRefund($input)
+    {
+        $xml = simplexml_load_string($input);
+
+        $xmlBody = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true)->children('a1', true);
+
+        $body = json_decode(json_encode($xmlBody), true);
+
+        $inquiryTransaction = $body[FirstData\ApiRequestFields::ACTION][FirstData\ApiRequestFields::INQUIRY_TRANSACTION];
+
+        $merchantTxnId = $inquiryTransaction[FirstData\ApiRequestFields::MERCHANT_TXN_ID];
+
+        $soapContent = FirstData\SoapWrapper::verifyRefundResponseWrapper($merchantTxnId);
+
+        $this->content($soapContent, 'verify_refund');
+
+        return $this->prepareResponse($soapContent);
+    }
+
+    public function verifyReverse($input)
+    {
+        $xml = simplexml_load_string($input);
+
+        $xmlBody = $xml->children('SOAP-ENV', true)->Body->children('ipgapi', true)->children('a1', true);
+
+        $body = json_decode(json_encode($xmlBody), true);
+
+        $inquiryTransaction = $body[FirstData\ApiRequestFields::ACTION][FirstData\ApiRequestFields::INQUIRY_TRANSACTION];
+
+        $merchantTxnId = $inquiryTransaction[FirstData\ApiRequestFields::MERCHANT_TXN_ID];
+
+        $soapContent = FirstData\SoapWrapper::verifyReverseResponseWrapper($merchantTxnId);
 
         return $this->prepareResponse($soapContent);
     }

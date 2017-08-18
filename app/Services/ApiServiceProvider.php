@@ -4,6 +4,7 @@ namespace RZP\Services;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Http\Mock\Client as MockHttplug;
 use RZP\Models\Admin as Admin;
 use RZP\Constants as Constants;
 use RZP\Gateway\GatewayManager;
@@ -18,6 +19,7 @@ use RZP\Models\Payment\Refund;
 use RZP\Models\Settlement;
 use RZP\Models\Payout;
 use RZP\Models\BankAccount;
+use RZP\Models\Promotion;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Batch;
@@ -68,7 +70,7 @@ class ApiServiceProvider extends BaseServiceProvider
             return new \RZP\Models\Merchant\Webhook\Inferno;
         });
 
-        $this->app->singleton('exception.handler', function($app)
+        $this->app->bind('exception.handler', function($app)
         {
             return new \RZP\Exception\Handler($app);
         });
@@ -85,7 +87,7 @@ class ApiServiceProvider extends BaseServiceProvider
             return new TokenEx($app);
         });
 
-        $this->app->singleton('raven', function($app)
+        $this->app->bind('raven', function($app)
         {
             return new Raven($app);
         });
@@ -110,6 +112,11 @@ class ApiServiceProvider extends BaseServiceProvider
             return new EventTrackerClient($app);
         });
 
+        $this->app->singleton('eventManager', function($app)
+        {
+            return new HarvesterClient($app);
+        });
+
         $this->registerApiMutex();
 
         $this->registerMaxMind();
@@ -117,8 +124,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerElfin();
 
         $this->registerExchange();
-
-        $this->registerValidatorResolver();
 
         $this->registerQueueableEntityResolver();
 
@@ -128,7 +133,11 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerDrip();
 
+        $this->registerSns();
+
         $this->registerWorkflow();
+
+        $this->registerHttplugMockClient();
     }
 
     /**
@@ -152,11 +161,13 @@ class ApiServiceProvider extends BaseServiceProvider
             'repo',
             'elfin',
             'segment',
+            'eventManager',
             'upi.client',
             'webhook.inferno',
             'exchange',
             'pigeon',
             'workflow',
+            'sns',
         ];
     }
 
@@ -170,15 +181,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('Illuminate\Contracts\Queue\EntityResolver', function ()
         {
             return new \RZP\Base\QueueEntityResolver;
-        });
-    }
-
-    protected function registerValidatorResolver()
-    {
-        $this->app['validator']->resolver(function($translator, $data, $rules, $messages, $customAttributes)
-        {
-            return new \RZP\Models\Base\ExtendedValidations(
-                            $translator, $data, $rules, $messages, $customAttributes);
         });
     }
 
@@ -278,6 +280,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'bank_account'    => BankAccount\Entity::class,
 
             'subscription'    => Subscription\Entity::class,
+            'promotion'       => Promotion\Entity::class,
         ]);
     }
 
@@ -317,11 +320,34 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
+    protected function registerSns()
+    {
+        $this->app->singleton('sns', function ($app)
+        {
+            $snsMock = $app['config']->get('applications.sns.mock');
+
+            if ($snsMock === true)
+            {
+                return new Aws\Mock\Sns($app);
+            }
+
+            return new Aws\Sns($app);
+        });
+    }
+
     protected function registerWorkflow()
     {
         $this->app->singleton('workflow', function ($app)
         {
             return new Workflow\Service($app);
+        });
+    }
+
+    protected function registerHttplugMockClient()
+    {
+        $this->app['httplug']->extend('mock', function()
+        {
+            return new MockHttplug;
         });
     }
 }

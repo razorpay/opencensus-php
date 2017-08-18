@@ -169,6 +169,24 @@ class Core extends Base\Core
 
     protected function checkCvvLength($card, $input)
     {
+        //
+        // In case of global subscription recurring, we create
+        // a duplicate card for a charge so that we can associate
+        // that with the payment entity. But, to create a card,
+        // the cvv should always be present. Since, we cannot get
+        // cvv when charge is being done in a recurring manner,
+        // we skip it.
+        // The charges are done by internal auth.
+        // Ideally, we shouldn't have internal auth check because
+        // we might need to do a similar thing when we start with
+        // global charge at will recurring.
+        //
+        if (($this->app['basicauth']->isPrivilegeAuth() === true) and
+            (isset($input['cvv']) === false))
+        {
+            return;
+        }
+
         $cvvLength = strlen($input['cvv']);
 
         // If card is Amex, cvv length should be 4.

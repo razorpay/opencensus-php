@@ -9,12 +9,7 @@ class Service extends Base\Service
     /**
      * Create invitation for a merchant.
      *
-     * @param  array  $input [
-     *                            id      => as generated from Dashboard
-     *                            email   => member's email to whom invite has to be sent
-     *                            role    => member's role
-     *                            token   => as generated from Dashboard
-     *                        ]
+     * @param  array  $input
      * @return array
      */
     public function create(array $input): array
@@ -25,7 +20,21 @@ class Service extends Base\Service
     }
 
     /**
+     * Fetch Invitation by Token
+     *
+     * @param  array  $input
+     * @return array
+     */
+    public function fetchByToken(string $token): array
+    {
+        $invitation = $this->core()->fetchByToken($token);
+
+        return $invitation->toArrayPublic();
+    }
+
+    /**
      * Get all pending invitations of a merchant
+     *
      * @return array
      */
     public function list(): array
@@ -37,16 +46,15 @@ class Service extends Base\Service
 
     /**
      * Resend Invitation Mail
-     * TODO: Will be using this when the invitation blade is moved to API
      *
      * @param  string $inviteId
      * @return array
      */
-    public function resend(string $inviteId): array
+    public function resend(string $inviteId, array $input): array
     {
         $invitation = $this->repo->invitation->findOrFailPublic($inviteId);
 
-        // TODO: Add mailing with org customizations
+        $this->core()->resend($invitation, $input);
 
         return $invitation->toArrayPublic();
     }
@@ -56,7 +64,6 @@ class Service extends Base\Service
      *
      * @param  string $inviteId
      * @param array   $input
-     *
      * @return array
      */
     public function edit(string $inviteId, array $input): array

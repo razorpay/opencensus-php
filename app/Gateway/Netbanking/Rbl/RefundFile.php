@@ -3,13 +3,10 @@
 namespace RZP\Gateway\Netbanking\Rbl;
 
 use Carbon\Carbon;
-use Mail;
+use RZP\Constants\Timezone;
 
 use RZP\Gateway\Base;
 use RZP\Models\FileStore;
-use RZP\Models\Payment\Gateway;
-use RZP\Constants\MailTags;
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 
 class RefundFile extends Base\RefundFile
 {
@@ -31,7 +28,7 @@ class RefundFile extends Base\RefundFile
 
     public function generate($input)
     {
-        $data = $this->getRefundData($input);
+        list($totalAmount, $data) = $this->getRefundData($input);
 
         $fileName = $this->getFileToWriteNameWithoutExt();
 
@@ -44,20 +41,17 @@ class RefundFile extends Base\RefundFile
 
         $file = $creator->get();
 
-        $today = Carbon::now('Asia/Kolkata')->format('jS F Y');
+        $today = Carbon::now(Timezone::IST)->format('jS F Y');
 
         $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
 
-        $fileData = [
-            'file_path'  => $file['local_file_path'],
-            'signed_url' => $signedFileUrl,
-            'count'      => count($data) - 1,
-            'file_name'  => basename($file['local_file_path']),
+        return [
+            'local_file_path' => $file['local_file_path'],
+            'signed_url'      => $signedFileUrl,
+            'count'           => count($data) - 1,
+            'file_name'       => basename($file['local_file_path']),
+            'total_amount'    => $totalAmount,
         ];
-
-        $this->sendRefundEmail($fileData);
-
-        return $file['local_file_path'];
     }
 
     protected function getRefundData($input)
@@ -68,16 +62,18 @@ class RefundFile extends Base\RefundFile
 
         $index = 1;
 
+        $totalAmount = 0;
+
         foreach ($input['data'] as $row)
         {
             $date = Carbon::createFromTimestamp(
                         $row['payment']['created_at'],
-                        'Asia/Kolkata')
+                        Timezone::IST)
                         ->format('m-d-y h:m:s');
 
             $refundDate = Carbon::createFromTimestamp(
                               $row['refund']['created_at'],
-                              'Asia/Kolkata')
+                              Timezone::IST)
                               ->format('m-d-y h:m:s');
 
             $data[] = [
@@ -90,18 +86,13 @@ class RefundFile extends Base\RefundFile
                 RefundFields::MERCHANT_ID        => $row['terminal']['gateway_merchant_id'],
                 RefundFields::BANK_REFERENCE     => $row['gateway']['bank_payment_id'],
                 RefundFields::PGI_REFERENCE      => $row['payment']['id'],
-                RefundFields::TRANSACTION_AMOUNT => $row['payment']['amount'] / 100,
-                RefundFields::REFUND_AMOUNT      => $row['refund']['amount'] / 100,
+                RefundFields::TRANSACTION_AMOUNT => $this->getFormattedAmount($row['payment']['amount']),
+                RefundFields::REFUND_AMOUNT      => $this->getFormattedAmount($row['refund']['amount']),
             ];
+
+            $totalAmount += $row['refund']['amount'] / 100;
         }
 
-        return $data;
-    }
-
-    protected function sendRefundEmail($fileData = [])
-    {
-        $refundFileMail = new RefundFileMail($fileData, Gateway::NETBANKING_RBL);
-
-        Mail::queue($refundFileMail);
+        return [$totalAmount, $data];
     }
 }

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Workflow\Action;
 
+use App;
+use Request;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Workflow\Base;
 use RZP\Models\Workflow\Step;
@@ -10,14 +12,14 @@ use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Workflow\Action\Checker;
 use RZP\Models\Base\PublicEntity;
 
+use RZP\Models\Admin\Org;
+use RZP\Models\Workflow;
+use RZP\Models\Admin\Permission;
+
 class Core extends Base\Core
 {
-    public function create(array $input)
+    private function buildParams(array $input) : array
     {
-        $action = new Entity;
-
-        $action->generateId();
-
         $admin = $this->app['basicauth']->getAdmin();
 
         $params = [
@@ -76,20 +78,99 @@ class Core extends Base\Core
 
         $params[Entity::ENTITY_NAME] = $input[Differ\Entity::ENTITY_NAME] ?: null;
 
-        $action->build($params);
+        return $params;
+    }
 
-        $this->repo->transactionOnLiveAndTest(function() use($action, $params)
+    /*
+        In case of a retry we won't need to do any parsing/processing
+        that we do in `buildParams()` since that was already done
+        in the initial call (before exception was thrown by workflow trigger)
+        and now we have the final values to insert in the RDBMS directly.
+    */
+    private function buildParamsForRetry(array $input) : array
+    {
+        $strip = 'verifyIdAndStripSign';
+
+        $params = [
+            Entity::ORG_ID          => Org\Entity::$strip($input[Entity::ORG_ID]),
+            Entity::ADMIN_ID        => Admin\Entity::$strip($input[Entity::ADMIN_ID]),
+            Entity::WORKFLOW_ID     => Workflow\Entity::$strip($input[Entity::WORKFLOW_ID]),
+            Entity::PERMISSION_ID   => Permission\Entity::$strip($input[Entity::PERMISSION_ID]),
+            Entity::ENTITY_ID       => $input[Entity::ENTITY_ID],
+            Entity::ENTITY_NAME     => $input[Entity::ENTITY_NAME],
+        ];
+
+        return $params;
+    }
+
+    /*
+        When the action is created for the first time
+        $retry will/should be false. But at times the workflow
+        trigger code will be inside a transaction of the main
+        login. For instance the code for "assigning schedule"
+        is a good example. There the workflow triggers inside
+        a transaction which rolls back if the workflow
+        is supposed to throw an exception to end the runtime
+        execution and throw the workflow action as the response.
+
+        Although the workflow action object will be thrown as
+        the response (because in-memory) since the transaction
+        rollsback the transaction/code to create workflow action
+        (which is the the following create function) will also fail.
+        Hence no entries will be made into the DB.
+
+        To prevent that when the exception is caught in Exception/Handler.php
+        we'll trigger `retryCreate` from there which will call `create`
+        with $retry = true. This will help build parameters to be inserted
+        into the DB accordingly. What this means is we'll take the in-memory
+        response data and insert that data in the DB directly without any
+        processing which we did in the initial create call.
+
+        Similarly basis the same $retry flag we can prevent further inserts
+        into ES or any similar caching/DB system that is separate from
+        our main RDBMS and to whom the entries did not fail because
+        transaction rollbacks don't affect that.
+    */
+    public function create(array $input, $retry = false)
+    {
+        $action = new Entity;
+
+        $action->generateId();
+
+        if ($retry === true)
         {
+            $params = $this->buildParamsForRetry($input);
+
+            $actionId = $input[Entity::ID];
+
+            Entity::verifyIdAndStripSign($actionId);
+
+            $action->setId($actionId);
+        }
+        else
+        {
+            $params = $this->buildParams($input);
+        }
+
+        $this->repo->transactionOnLiveAndTest(function() use ($action, $params, $retry)
+        {
+            $differInput = $params[Entity::DIFFER] ?? null;
+
+            unset($params[Entity::DIFFER]);
+
+            $action->build($params);
+
             $this->repo->saveOrFail($action);
 
             $this->createInitialStateForAction($action);
 
-            $differ = $params[Entity::DIFFER];
+            if (($retry === false) and (empty($differInput) === false))
+            {
+                unset($differInput[Entity::ORG_ID]);
 
-            unset($differ[Entity::ORG_ID]);
-
-            // Create the diff for the entity
-            (new Differ\Core)->create($action, $differ);
+                // Create the diff for the entity
+                (new Differ\Core)->create($action, $differInput);
+            }
         });
 
         return $action;
@@ -302,6 +383,13 @@ class Core extends Base\Core
         return $this->repo->workflow_action->findOrFailPublic($id);
     }
 
+    public function getByIdAndOrgId(string $id, string $orgId)
+    {
+        Entity::verifyIdAndStripSign($id);
+
+        return $this->repo->workflow_action->findByIdAndOrgId($id, $orgId);
+    }
+
     public function edit(Entity $action, array $input)
     {
         //
@@ -383,5 +471,57 @@ class Core extends Base\Core
                                    $entityId, $entityName, $permissionId);
 
         return $actions;
+    }
+
+    public function executeAction($action)
+    {
+        list($stateCore, $differCore) = [
+            new State\Core,
+            new Differ\Core,
+        ];
+
+        $diff = (new Differ\Service)->fetchRequest($action->getId());
+
+        $routeParams = $diff[Differ\Entity::ROUTE_PARAMS];
+
+        $payload = $diff[Differ\Entity::PAYLOAD];
+
+        $controller = $diff[Differ\Entity::CONTROLLER];
+
+        $functionName = $diff[Differ\Entity::FUNCTION_NAME];
+
+        $authDetails = $diff[Differ\Entity::AUTH_DETAILS];
+
+        // Replace the current request's payload with the
+        // actual maker request payload.
+        Request::replace($payload);
+
+        // Create controller object
+        $controller = App::make($controller);
+
+        // Auth details have to be initialized before
+        // the actual code (Controller@action) runs.
+        $this->initAuthDetails($authDetails);
+
+        $internalResponse = App::call([$controller, $functionName], array_values($routeParams));
+
+        $state = State\Entity::EXECUTED;
+
+        if ($internalResponse->getStatusCode() !== 200)
+        {
+            $state = State\Entity::FAILED;
+        }
+
+        $adminId = $this->app['basicauth']->getAdmin()->getId();
+
+        // Update states
+
+        $this->updateState($action, $state);
+
+        $stateCore->changeActionState($action->getId(), $state, $adminId);
+
+        $differCore->updateStateInEs($action->getId(), $state);
+
+        return ['success' => true];
     }
 }

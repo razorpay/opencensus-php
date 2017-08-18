@@ -21,6 +21,7 @@ class Validator extends Base\Validator
         RequestFields::AMOUNT                => 'required|string',
         RequestFields::RETURN_URL            => 'required|string',
         RequestFields::NARRATION             => 'required|string|in:Razorpay',
+        RequestFields::FILLER3               => 'sometimes|string',
     ];
 
     protected static $validateCustomerRules = [
@@ -58,7 +59,7 @@ class Validator extends Base\Validator
         RequestFields::QUERY_TRANSACTION_REF     => 'required|string|size:14',
         RequestFields::PMT_TRANSACTION_REFERENCE => 'required|string|size:14',
         RequestFields::AMOUNT                    => 'required|numeric',
-        RequestFields::CMDID                     => 'required|numeric|in:111'
+        RequestFields::CMDID                     => 'sometimes|numeric|in:111'
     ];
 
     protected static $refundPaymentTransactionRules = [

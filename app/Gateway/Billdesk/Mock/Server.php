@@ -3,11 +3,13 @@
 namespace RZP\Gateway\Billdesk\Mock;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Requests;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Billdesk;
+use RZP\Gateway\Billdesk\AuthStatus;
 use RZP\Models\Card;
 
 class Server extends Base\Mock\Server
@@ -35,7 +37,7 @@ class Server extends Base\Mock\Server
         $this->validateAuthorizeInput($input);
 
         // Format - YYYYMMDD
-        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y H:i:s');
+        $date = Carbon::today(Timezone::IST)->format('d-m-Y H:i:s');
 
         $content = array(
             'MerchantID'        => $input['MerchantID'],
@@ -52,7 +54,7 @@ class Server extends Base\Mock\Server
             'SecurityID'        => 'NA',
             'SecurityPassword'  => 'NA',
             'TxnDate'           => $date,
-            'AuthStatus'        => '0300',
+            'AuthStatus'        => AuthStatus::SUCCESS,
             'SettlementType'    => 'NA',
             'AdditionalInfo1'   => 'NA',
             'AdditionalInfo2'   => 'NA',
@@ -64,6 +66,11 @@ class Server extends Base\Mock\Server
             'ErrorStatus'       => 'NA',
             'ErrorDescription'  => 'NA',
         );
+
+        if ($gatewayPayment->getBankId() === 'ICO')
+        {
+            $content['AuthStatus'] = AuthStatus::PENDING;
+        }
 
         $msg = $this->getGatewayInstance()
                     // ->setInput($gatewayInput)
@@ -123,6 +130,8 @@ class Server extends Base\Mock\Server
                 $content[$key] = $payment[$key];
         }
 
+        $content['AuthStatus'] = AuthStatus::SUCCESS;
+
         $refunds = $this->getRepo()->findRefunds($input['Customer ID']);
 
         $refundAmount = 0.00;
@@ -160,7 +169,7 @@ class Server extends Base\Mock\Server
 
         // Format yyyymmdd24hhmmss (in docs), actually yyyymmdd0hhmmss,
         // hh is in 24 hrs
-        $now = Carbon::now('Asia/Kolkata')->format('Ymd0His');
+        $now = Carbon::now(Timezone::IST)->format('Ymd0His');
 
         $content = array(
             'RequestType'   => '0410',

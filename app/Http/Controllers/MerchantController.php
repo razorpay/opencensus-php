@@ -323,13 +323,6 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getBalance($id)
-    {
-        $data = (new Merchant\Service)->fetchBalance($id);
-
-        return ApiResponse::json($data);
-    }
-
     public function getAccountBalance()
     {
         $data = (new Merchant\Service)->fetchBalance();
@@ -484,14 +477,29 @@ class MerchantController extends Controller
         return $report->getReport($input);
     }
 
-    public function getInvoiceReport()
+    public function getDSPTransactionReport()
     {
         $input = Request::all();
 
-        return (new Report\Types\InvoiceReport)->getInvoice($input);
+        $report = new Report\Types\DSPTransactionReport(E::TRANSACTION);
+
+        $data = $report->getReport($input);
+
+        return ApiResponse::json($data);
     }
 
-    public function getInvoiceReportV2()
+    public function getRPPOrderReport()
+    {
+        $input = Request::all();
+
+        $report = new Report\Types\RPPOrderReport(E::ORDER);
+
+        $data = $report->getReportUrl($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getInvoiceReport()
     {
         $input = Request::all();
 
@@ -697,5 +705,46 @@ class MerchantController extends Controller
         $data = (new Merchant\Service)->getUsers($id);
 
         return ApiResponse::json($data);
+    }
+
+    public function getGSTDetails()
+    {
+        $response = (new Merchant\Service)->getGSTDetails();
+
+        return ApiResponse::json($response);
+    }
+
+    public function editGSTDetails()
+    {
+        $input = Request::all();
+
+        $response = (new Merchant\Service)->editGSTDetails($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function addTags($id)
+    {
+        $input = Request::all();
+
+        $response = (new Merchant\Service)->addTags($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function deleteTag($id, $tagName)
+    {
+        $response = (new Merchant\Service)->deleteTag($id, $tagName);
+
+        return ApiResponse::json($response);
+    }
+
+    public function markGratisTransactionPostpaid()
+    {
+        $input = Request::all();
+
+        $response = (new Merchant\Service)->markGratisTransactionPostpaid($input);
+
+        return ApiResponse::json($response);
     }
 }

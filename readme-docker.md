@@ -16,6 +16,7 @@ First install Brew on your MAC
 - `brew tap homebrew/dupes`
 - `brew tap homebrew/php`
 - Install PHP 7.0.+ `brew install php70`
+- Install gmp : `brew install php70-gmp`
 - Install `mcrypt`: `brew install mcrypt php70-mcrypt`
 - Finally, install composer: `brew install composer`
 
@@ -50,6 +51,16 @@ Now Log out and log back in once after last step.
 ##### Install docker-compose
 [Install Docker Compose](https://docs.docker.com/compose/install/)
 
+##### Login to Dockerhub
+Ensure that you have a dockerhub user that is added to the Razorpay Organization.
+ - Admin Contact: `nemo@razorpay.com`
+
+###### Mac Users
+Run Docker for Mac while signed-in as this user.
+
+###### Linux Users
+use the `docker login` command to sign-in with the aforementioned dockerhub user.
+
 ## Run docker-compose
 [Create a github PAT](https://help.github.com/articles/creating-an-access-token-for-command-line-use/), if you do not have one.
 
@@ -70,6 +81,14 @@ Note: Docker for Mac suffers from heavy performance implications due to the natu
 ```
 $ make init
 ```
+[Optional Step] : If this fails saying certain files are missing, you can add the folloring in your docker container location : 
+```
+cd <PATH_TO_CONTAINERS>/Containers/com.docker.docker/Data/database/com.docker.driver.amd64-linux/
+mkdir disk
+touch disk/full-sync-on-flush
+touch disk/on-flush
+```
+For Mac Users, PATH_TO_CONTAINERS is by default ~/Library/
 
 Now, build the containers:
 
@@ -131,7 +150,7 @@ Available Databases:
 $ mysql -u api_user -p -P23306 -h 127.0.0.1 api_live
 ```
 
-Look at the value of `DB_LIVE_PASSWORD` in `docker-compose.dev.yml` file for the password. You can also use tools like sequelpro etc with the 
+Look at the value of `DB_LIVE_PASSWORD` in `docker-compose.dev.yml` file for the password. You can also use tools like sequelpro etc with the
 above configuration. Do note that the mysql port is going to be `23306`.
 
 
@@ -139,8 +158,3 @@ above configuration. Do note that the mysql port is going to be `23306`.
 
 Please file issues regarding Containerization on the local `api`
 issue-tracker and tag @razorpay/devops
-
-
-
-
-

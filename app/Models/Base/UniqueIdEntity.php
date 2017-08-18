@@ -11,6 +11,8 @@ class UniqueIdEntity extends Entity
 
     const ID_LENGTH = 14;
 
+    const MAC_OS = 'Darwin';
+
     /**
      * This should be set to true if you expect a unique id to be
      * generated when the entity is being saved. Note that if a unique id
@@ -197,11 +199,12 @@ class UniqueIdEntity extends Entity
         // preg_match() returns int 0 when the pattern does not match
         // and int 1 if a match is found. false (boolean) is returned
         // whenever any error happens.
-        if ((in_array($res, [0, false], true) === true) and
-            ($throw === true))
+        $res = (bool) $res;
+
+        if (($res === false) and ($throw === true))
         {
             throw new Exception\BadRequestValidationFailureException(
-                        $id . ' is not a valid id');
+                $id . ' is not a valid id');
         }
 
         return $res;
@@ -254,9 +257,15 @@ class UniqueIdEntity extends Entity
 
     protected static function getNanotimeInteger()
     {
+        // If we have the php-nanotime extension installed
+        if (function_exists('nanotime'))
+        {
+            return nanotime();
+        }
+
         $cmd = '';
 
-        if (PHP_OS === 'Darwin')
+        if (PHP_OS === self::MAC_OS)
         {
             $cmd = '/usr/local/opt/coreutils/libexec/gnubin/';
         }

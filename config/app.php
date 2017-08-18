@@ -129,7 +129,7 @@ return array(
     |
     */
 
-    'providers' => array(
+    'providers' => [
         /*
          * Laravel Framework Service Providers...
          */
@@ -155,22 +155,11 @@ return array(
         Illuminate\Validation\ValidationServiceProvider::class,
         Illuminate\View\ViewServiceProvider::class,
 
-        /*
-         * Application Service Providers...
-         */
-        // RZP\Providers\AppServiceProvider::class,
-        // RZP\Providers\AuthServiceProvider::class,
-        RZP\Services\ApiServiceProvider::class,
-        RZP\Providers\EventServiceProvider::class,
-        RZP\Providers\RouteServiceProvider::class,
-        RZP\Http\BasicAuth\ServiceProvider::class,
-        RZP\Trace\TraceServiceProvider::class,
-        RZP\Services\DashboardServiceProvider::class,
-        // Makes blade sharper
-        RZP\Providers\KnifeServiceProvider::class,
-
-        /*
+        /**
          * Third party providers
+         * We can use an external service provider in one of our service providers because
+         * of which we are initialising the external service providers before the
+         * application service providers.
          */
         Aws\Laravel\AwsServiceProvider::class,
         Jenssegers\Agent\AgentServiceProvider::class,
@@ -179,8 +168,25 @@ return array(
         Maatwebsite\Excel\ExcelServiceProvider::class,
         Http\Httplug\HttplugServiceProvider::class,
         Schuppo\PasswordStrength\PasswordStrengthServiceProvider::class,
+        GrahamCampbell\Throttle\ThrottleServiceProvider::class,
+        Razorpay\Trace\ServiceProvider::class,
 
-    ),
+        /**
+         * Application Service Providers...
+         */
+        // RZP\Providers\AppServiceProvider::class,
+        // RZP\Providers\AuthServiceProvider::class,
+        RZP\Providers\FirstServiceProvider::class,
+        RZP\Services\ApiServiceProvider::class,
+        RZP\Providers\EventServiceProvider::class,
+        RZP\Providers\RouteServiceProvider::class,
+        RZP\Http\BasicAuth\ServiceProvider::class,
+        // RZP\Trace\TraceServiceProvider::class,
+        RZP\Services\DashboardServiceProvider::class,
+        // Makes blade sharper
+        RZP\Providers\KnifeServiceProvider::class,
+        \Conner\Tagging\Providers\TaggingServiceProvider::class,
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -242,7 +248,7 @@ return array(
 
         // Application Facades
         'ApiResponse'   => RZP\Http\Response\Facade::class,
-        'Trace'         => RZP\Trace\Facade::class,
+        'Trace'         => Razorpay\Trace\Facades\Trace::class,
 
         // Custom Facade
         'Excel'         => Maatwebsite\Excel\Facades\Excel::class,
@@ -250,6 +256,7 @@ return array(
         'Slack'         => Razorpay\Slack\Laravel\Facade::class,
         'Mail'          => RZP\Mail\Facade::class,
         'Workflow'      => RZP\Services\Workflow\Facade::class,
+        'Throttle'      => GrahamCampbell\Throttle\Facades\Throttle::class,
     ),
 
     'context' => env('CONTEXT'),

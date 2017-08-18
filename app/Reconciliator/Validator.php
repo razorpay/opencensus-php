@@ -11,18 +11,20 @@ class Validator
         'txt'   => ['text/plain'],
         // Ensure that this is always above 'xlsx' because of `getExtensionFromContentType`
         'zip'   => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
-        // Don't know why but, getting application/zip and application/octet-stream as mimetype for xlsx files.
         'xlsx'  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                     'application/zip', 'application/octet-stream'],
         // `text/plain` is being added here because HDFC sends CSV files with XLS extension. kthxbye
+        // `application/CDFV2-unknown` is being sent for FirstData files. sigh.
         'xls'   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel',
-                    'application/vnd.ms-office', 'application/octet-stream'],
+                    'application/vnd.ms-office', 'application/octet-stream', 'text/plain',
+                    'application/cdfv2-unknown'],
         'xlsb'  => [
             'application/excel', 'application/vnd.ms-excel', 'application/msexcel', 'application/vnd.ms-office',
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip',
             'application/octet-stream', 'application/vnd.oasis.opendocument.spreadsheet',
         ],
         'rpt'   => ['text/plain'],
+        'dat'   => ['text/plain'],
     ];
 
     const GATEWAY_SUBJECT_REGEX = [
@@ -34,8 +36,11 @@ class Validator
         Orchestrator::NETBANKING_AXIS    => "/^MIS file for (0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}, "
                                             . "for all RazorPay & Payees : Payeespecific MIS\(FEBA\)/",
         Orchestrator::NETBANKING_ICICI   => "/^Payment Through Internet Banking Center Razorpay/",
-        Orchestrator::NETBANKING_FEDERAL => "/^MIS Report File Dated " .
-                                            "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}---razorpay/",
+        Orchestrator::NETBANKING_FEDERAL => "/^MIS Report File Dated "
+                                            . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}---razorpay/",
+        Orchestrator::AXIS               => "/^Axis Estatement [0-9]{2}-"
+                                            . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
+        Orchestrator::FIRST_DATA         => "/Statement for Merchant MID No. razorpay/",
     ];
 
     const GATEWAY_BODY_REGEX = [
@@ -46,12 +51,17 @@ class Validator
         Orchestrator::NETBANKING_ICICI   => "/Please find below the payment report for the day./",
         Orchestrator::NETBANKING_FEDERAL => "/^MIS Report File Dated "
                                             . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/",
+        Orchestrator::AXIS               => "/Please find attached the settlement file for today."
+                                            . " You net amount settled is/",
+        Orchestrator::FIRST_DATA         => "/the statement of transactions for MID (.)*razorpay/"
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
         Orchestrator::OLAMONEY           => 1,
         Orchestrator::NETBANKING_AXIS    => 1,
-        Orchestrator::NETBANKING_FEDERAL => 1
+        Orchestrator::NETBANKING_FEDERAL => 1,
+        Orchestrator::AXIS               => 1,
+        Orchestrator::FIRST_DATA         => 1,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -62,13 +72,13 @@ class Validator
 
     public function filterEmails(array $emailDetails)
     {
-        $from = $emailDetails['from'];
+        $from = $emailDetails[Orchestrator::FROM];
         $validEmailIds = Orchestrator::GATEWAY_SENDER_MAPPING;
 
         if (Orchestrator::getKeyFromSubArrayMatch($from, $validEmailIds) === null)
         {
             throw new Exception\ReconciliationException(
-                'The sender email ID is not whitelisted.', ['email_details' => $emailDetails]
+                'The sender email ID is not whitelisted.', [Orchestrator::EMAIL_DETAILS => $emailDetails]
             );
         }
     }
@@ -82,21 +92,21 @@ class Validator
 
     public function validateHdfcEmail(array $emailDetails)
     {
-        return $this->validateEmailSubject($emailDetails['subject'], Orchestrator::HDFC);
+        return $this->validateEmailSubject($emailDetails[Orchestrator::SUBJECT], Orchestrator::HDFC);
     }
 
     public function validateKotakEmail(array $emailDetails)
     {
-        return $this->validateEmailSubject($emailDetails['subject'], Orchestrator::KOTAK);
+        return $this->validateEmailSubject($emailDetails[Orchestrator::SUBJECT], Orchestrator::KOTAK);
     }
 
     public function validateFreechargeEmail(array $emailDetails)
     {
         $validSubject = $this->validateEmailSubject(
-            $emailDetails['subject'], Orchestrator::FREECHARGE);
+            $emailDetails[Orchestrator::SUBJECT], Orchestrator::FREECHARGE);
 
         $validBody = $this->validateEmailBody(
-            $emailDetails['body_html_text'],
+            $emailDetails[Orchestrator::BODY_HTML_TEXT],
             Orchestrator::FREECHARGE);
 
         return ($validSubject and $validBody);
@@ -104,9 +114,9 @@ class Validator
 
     public function validateOlamoneyEmail(array $emailDetails)
     {
-        $validSubject = $this->validateEmailSubject($emailDetails['subject'], Orchestrator::OLAMONEY);
+        $validSubject = $this->validateEmailSubject($emailDetails[Orchestrator::SUBJECT], Orchestrator::OLAMONEY);
 
-        $validBody = $this->validateEmailBody($emailDetails['body'], Orchestrator::OLAMONEY);
+        $validBody = $this->validateEmailBody($emailDetails[Orchestrator::BODY], Orchestrator::OLAMONEY);
 
         $validAttachmentCount = $this->validateAttachmentCount(
             $emailDetails[Orchestrator::ATTACHMENT_COUNT],
@@ -117,9 +127,11 @@ class Validator
 
     public function validateNetbankingAxisEmail(array $emailDetails)
     {
-        $validSubject = $this->validateEmailSubject($emailDetails['subject'], Orchestrator::NETBANKING_AXIS);
+        $validSubject = $this->validateEmailSubject(
+                                    $emailDetails[Orchestrator::SUBJECT],
+                                    Orchestrator::NETBANKING_AXIS);
 
-        $validBody = $this->validateEmailBody($emailDetails['body'], Orchestrator::NETBANKING_AXIS);
+        $validBody = $this->validateEmailBody($emailDetails[Orchestrator::BODY], Orchestrator::NETBANKING_AXIS);
 
         $validAttachmentCount = $this->validateAttachmentCount(
             $emailDetails[Orchestrator::ATTACHMENT_COUNT],
@@ -130,9 +142,11 @@ class Validator
 
     public function validateNetbankingIciciEmail(array $emailDetails)
     {
-        $validSubject = $this->validateEmailSubject($emailDetails['subject'], Orchestrator::NETBANKING_ICICI);
+        $validSubject = $this->validateEmailSubject(
+                                $emailDetails[Orchestrator::SUBJECT],
+                                Orchestrator::NETBANKING_ICICI);
 
-        $validBody = $this->validateEmailBody($emailDetails['body'], Orchestrator::NETBANKING_ICICI);
+        $validBody = $this->validateEmailBody($emailDetails[Orchestrator::BODY], Orchestrator::NETBANKING_ICICI);
 
         //
         // There isn't a need to validate the attachment count because
@@ -144,13 +158,41 @@ class Validator
 
     public function validateNetbankingFederalEmail(array $emailDetails)
     {
-        $validSubject = $this->validateEmailSubject($emailDetails['subject'], Orchestrator::NETBANKING_FEDERAL);
+        $validSubject = $this->validateEmailSubject(
+                            $emailDetails[Orchestrator::SUBJECT],
+                            Orchestrator::NETBANKING_FEDERAL);
 
-        $validBody = $this->validateEmailBody($emailDetails['body'], Orchestrator::NETBANKING_FEDERAL);
+        $validBody = $this->validateEmailBody($emailDetails[Orchestrator::BODY], Orchestrator::NETBANKING_FEDERAL);
 
         $validAttachmentCount = $this->validateAttachmentCount(
             $emailDetails[Orchestrator::ATTACHMENT_COUNT],
             Orchestrator::NETBANKING_FEDERAL);
+
+        return ($validSubject and $validAttachmentCount and $validBody);
+    }
+
+    public function validateAxisEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject($emailDetails[Orchestrator::SUBJECT], Orchestrator::AXIS);
+
+        $validBody = $this->validateEmailBody($emailDetails[Orchestrator::BODY], Orchestrator::AXIS);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[Orchestrator::ATTACHMENT_COUNT],
+            Orchestrator::AXIS);
+
+        return ($validSubject and $validAttachmentCount and $validBody);
+    }
+
+    public function validateFirstDataEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject($emailDetails[Orchestrator::SUBJECT], Orchestrator::FIRST_DATA);
+
+        $validBody = $this->validateEmailBody($emailDetails[Orchestrator::BODY_HTML_TEXT], Orchestrator::FIRST_DATA);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[Orchestrator::ATTACHMENT_COUNT],
+            Orchestrator::FIRST_DATA);
 
         return ($validSubject and $validAttachmentCount and $validBody);
     }

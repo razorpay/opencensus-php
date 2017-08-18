@@ -3,6 +3,7 @@
 namespace RZP\Models\Report\Types;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Models\Base;
 use RZP\Base\RuntimeManager;
@@ -49,7 +50,7 @@ class BaseReport extends Base\Core
             $day = (int) $input['day'];
             $month = (int) $input['month'];
 
-            $date = Carbon::createFromDate($year, $month, $day, 'Asia/Kolkata')
+            $date = Carbon::createFromDate($year, $month, $day, Timezone::IST)
                           ->startOfDay();
 
             $from = $date->timestamp;
@@ -62,11 +63,11 @@ class BaseReport extends Base\Core
             assertTrue($month > 0);
             assertTrue($month <= 12);
 
-            $from = Carbon::createFromDate($year, $month, 1, 'Asia/Kolkata')
+            $from = Carbon::createFromDate($year, $month, 1, Timezone::IST)
                           ->startOfDay()
                           ->timestamp;
 
-            $to = Carbon::createFromDate($year, $month, 1, 'Asia/Kolkata')
+            $to = Carbon::createFromDate($year, $month, 1, Timezone::IST)
                         ->endOfMonth()
                         ->timestamp;
         }
@@ -85,7 +86,7 @@ class BaseReport extends Base\Core
     {
         $this->increaseAllowedSystemLimits();
 
-        date_default_timezone_set('Asia/Kolkata');
+        date_default_timezone_set(Timezone::IST);
     }
 
     protected function increaseAllowedSystemLimits()

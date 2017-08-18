@@ -83,16 +83,36 @@ class Creator extends Base\Core
      */
     protected $env;
 
+    /**
+     * Flag to signify if file has to be compressed
+     *
+     * @var boolean Compress flag
+     */
+    protected $shouldCompress = false;
+
+    /**
+     * Format in which file has to be Compress
+     *
+     * @var string Compression Format
+     */
+    protected $compressionFormat;
+
+    /**
+     * Command to be used for zipping
+     *
+     * @var string Compression Command
+     */
+    protected $compressionCommand = null;
+
     const DEFAULT_STORE    = 's3';
-    const DEFAULT_METADATA = [];
 
-    public function __construct()
+    const COMMAND_FOR_ZIPPING = 'zip --junk-paths --move';
+
+    public function init()
     {
-        parent::__construct();
-
         $this->file = new Entity;
 
-        $this->env = $this->app->environment();
+        $this->file->generate([]);
 
         $this->setDefaults();
     }
@@ -103,8 +123,6 @@ class Creator extends Base\Core
     public function setDefaults()
     {
         $this->store(self::DEFAULT_STORE);
-
-        $this->file->setMetadata(self::DEFAULT_METADATA);
     }
 
     /**
@@ -191,6 +209,23 @@ class Creator extends Base\Core
         return $this;
     }
 
+    /** Set Compression Params for file
+     *
+     * @param Compression format
+     *
+     * @return Creator object
+     */
+    public function compress($format = 'zip')
+    {
+        $this->shouldCompress = true;
+
+        $this->compressionFormat = $format;
+
+        $this->setCompressionCommand();
+
+        return $this;
+    }
+
     /**
      * Set the Store  of File Store
      *
@@ -217,6 +252,20 @@ class Creator extends Base\Core
     public function type(string $type)
     {
         $this->file->setType($type);
+
+        return $this;
+    }
+
+    /**
+     * Set the Password of File Store
+     *
+     * @param string $password Password
+     *
+     * @return Creator object
+     */
+    public function password(string $password)
+    {
+        $this->file->setPassword($password);
 
         return $this;
     }
@@ -310,6 +359,7 @@ class Creator extends Base\Core
      * upload it to service specified and creates file store entity
      *
      * @return Creator object
+     * @throws Exception\LogicException
      */
     public function save()
     {
@@ -414,6 +464,19 @@ class Creator extends Base\Core
         return $this->file;
     }
 
+    protected function setCompressionCommand()
+    {
+        switch ($this->compressionFormat)
+        {
+            case 'zip':
+                $this->compressionCommand = self::COMMAND_FOR_ZIPPING;
+                break;
+
+            default:
+                throw new Exception\LogicException('Not A Valid Compression Format ' . $this->compressionFormat);
+        }
+    }
+
     /**
      * Validates the Content before saving
      *
@@ -424,6 +487,19 @@ class Creator extends Base\Core
         Format::validateContentTypeForExtension($this->content, $this->file->getExtension());
 
         Type::validateType($this->file->getType());
+
+        $this->validateCompressionSupport();
+    }
+
+    protected function validateCompressionSupport()
+    {
+        if (($this->shouldCompress === true) and
+            (($this->localFile !== null) or
+            ($this->localFilePath !== null)))
+        {
+            throw new Exception\LogicException(
+                'Compression is not supported for Local Files');
+        }
     }
 
     /**
@@ -479,6 +555,8 @@ class Creator extends Base\Core
     {
         $extension = $this->file->getExtension();
 
+        $this->createDirectory();
+
         switch($extension)
         {
             case Format::TXT:
@@ -498,12 +576,48 @@ class Creator extends Base\Core
             default:
                 throw new Exception\LogicException('Not A Valid Extension');
         }
+
+        if ($this->shouldCompress === true)
+        {
+            $this->compressFile();
+        }
+
+        $this->updateFilePermission();
     }
 
-    protected function writeTextFile()
+    /*
+     * Compress the file and stores in the Compressed file Path
+     * Sample Command :
+     * `zip --junk-paths --move  --password <password> '<compression_path>' '<source_path>'`
+     */
+    protected function compressFile()
     {
-        $fileName = $this->file->getName() . '.' . $this->file->getExtension();
+        $unzippedFilePath = $this->getFullFilePath();
 
+        $compressionCommand = $this->compressionCommand;
+
+        if (empty($this->file->getPassword()) === false)
+        {
+            $compressionCommand .= " --password " . $this->file->getPassword();
+        }
+
+        exec(
+            $compressionCommand .
+            " " .
+            escapeshellarg($this->getCompressedFileFullPath()) .
+            " " .
+            escapeshellarg($unzippedFilePath)
+        );
+
+        $this->extension($this->compressionFormat);
+
+        $this->createUploadedFile($this->getFullFilePath(), $this->getFullFileName());
+
+        $this->mime($this->localFile->getMimeType());
+    }
+
+    protected function createDirectory()
+    {
         $fullPath = $this->getFullFilePath();
 
         $dir = dirname($fullPath);
@@ -512,32 +626,17 @@ class Creator extends Base\Core
         {
             (new Utility)->callFileOperation('mkdir', [$dir, 0777, true]);
         }
+    }
+
+    protected function writeTextFile()
+    {
+        $fileName = $this->file->getName() . '.' . $this->file->getExtension();
+
+        $fullPath = $this->getFullFilePath();
 
         $file = fopen($fullPath, 'w');
         fwrite($file, $this->content);
         fclose($file);
-
-        try
-        {
-            //
-            // This step is important because file can be created
-            // via different users (www-data or ubuntu (via queue))
-            //
-            if (substr(sprintf('%o', fileperms($fullPath)), -3) !== '777')
-            {
-                (new Utility)->callFileOperation('chmod', [$fullPath, 0777]);
-            }
-        }
-        catch (\Exception $e)
-        {
-            $this->trace->traceException(
-                $e,
-                Trace::WARNING,
-                TraceCode::FILE_PERMISSION_CHANGE_FAILED,
-                [
-                    'path' => $fullPath
-                ]);
-        }
 
         $this->createUploadedFile($fullPath, $fileName);
     }
@@ -554,6 +653,44 @@ class Creator extends Base\Core
             $this->getStorageDir());
 
         $this->createUploadedFile($fileMetadata['full'], $fileMetadata['file']);
+    }
+
+    /**
+     * Updates permission to 777 on any local files generated via filestore, so that
+     * delete operations can be performed successfully on them
+     */
+    protected function updateFilePermission()
+    {
+        try
+        {
+            //
+            // This step is important because file can be created
+            // via different users (www-data or ubuntu (via queue))
+            //
+            $filePermission = substr(sprintf('%o', fileperms($this->filePath)), -3);
+
+            if ($filePermission !== '777')
+            {
+                (new Utility)->callFileOperation('chmod', [$this->filePath, 0777]);
+
+                $this->trace->debug(
+                    TraceCode::CHANGING_FILE_PERMISSION,
+                    [
+                        'file_path'                 => $this->filePath,
+                        'current_file_permission'   => $filePermission,
+                    ]);
+            }
+        }
+        catch (\Throwable $e)
+        {
+             $this->trace->traceException(
+                 $e,
+                 Trace::WARNING,
+                 TraceCode::FILE_PERMISSION_CHANGE_FAILED,
+                 [
+                     'path' => $this->filePath
+                 ]);
+        }
     }
 
     protected function createUploadedFile($filePath, $fileName)
@@ -583,9 +720,19 @@ class Creator extends Base\Core
         $this->file->merchant()->associate($merchant);
     }
 
+    protected function getFullFileName()
+    {
+        return $this->file->getName() . '.' . $this->file->getExtension();
+    }
+
     public function getFullFilePath()
     {
         return $this->getStorageDir() . $this->file->getName() . '.' . $this->file->getExtension();
+    }
+
+    public function getCompressedFileFullPath()
+    {
+        return $this->getStorageDir() . $this->file->getName() . '.' . Format::ZIP;
     }
 
     protected function getStorageDir()

@@ -6,6 +6,7 @@ use DB;
 use Illuminate\Support\Facades\App;
 
 use RZP\Models;
+use RZP\Base\Common;
 use RZP\Models\Base\EsRepository;
 use RZP\Exception;
 use RZP\Constants;
@@ -13,7 +14,6 @@ use RZP\Constants\Entity as E;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\EsSync;
-use RZP\Jobs\EsRepository as OldEsSync;
 use RZP\Jobs\DispatchRouter;
 
 class Repository extends \Razorpay\Spine\Repository
@@ -393,7 +393,9 @@ class Repository extends \Razorpay\Spine\Repository
      */
     public function setEsRepoIfExist()
     {
-        $esRepoClassPath = $this->getEsRepoClassPath();
+        $parentNamespace = $this->getParentNamespace();
+
+        $esRepoClassPath = $parentNamespace . '\\' . 'EsRepository';
 
         if (class_exists($esRepoClassPath) === true)
         {
@@ -424,7 +426,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         $this->modifyQueryForIndexing($query);
 
-        $entity = $query->find($id);
+        $entity = $query->findOrFail($id);
 
         return $this->serializeForIndexing($entity);
     }
@@ -432,18 +434,40 @@ class Repository extends \Razorpay\Spine\Repository
     /**
      * Finds many entities for indexing.
      *
-     * @param int|integer $skip
-     * @param int|integer $take
+     * @param int      $skip
+     * @param int      $take
+     * @param int|null $createdAtStart
+     * @param int|null $createdAtEnd
      *
      * @return array
      */
-    public function findManyForIndexing(int $skip = 0, int $take = 100): array
+    public function findManyForIndexing(
+        int $skip = 0,
+        int $take = 100,
+        int $createdAtStart = null,
+        int $createdAtEnd = null): array
     {
         $query = $this->newQuery();
 
+        $idCol        = $this->dbColumn(Common::ID);
+        $createdAtCol = $this->dbColumn(Common::CREATED_AT);
+
+        if ($createdAtStart !== null)
+        {
+            $query->where($createdAtCol, '>=', $createdAtStart);
+        }
+
+        if ($createdAtEnd !== null)
+        {
+            $query->where($createdAtCol, '<=', $createdAtEnd);
+        }
+
         $this->modifyQueryForIndexing($query);
 
-        $collection = $query->skip($skip)->take($take)->get();
+        $collection = $query->skip($skip)
+                            ->take($take)
+                            ->orderBy($idCol, 'desc')
+                            ->get();
 
         return array_map(
             function ($v)
@@ -477,48 +501,20 @@ class Repository extends \Razorpay\Spine\Repository
         // toArray. The result from toArray is directly passed to es client for
         // indexing.
 
-        return $entity->setVisible($this->getEsRepo()->getFields())->toArray();
-    }
+        $fields = $this->esRepo->getIndexedFields();
 
-    /**
-     * @deprecated
-     *
-     * Saves dirtied entities to es if few conditions met.
-     *
-     * @param Models\Base\PublicEntity $entity
-     * @param array                    $dirty
-     *
-     * @return
-     */
-    protected function syncToEsDeprecated(Models\Base\PublicEntity $entity, array $dirty)
-    {
-        try
+        $serialized = $entity->setVisible($fields)->toArray();
+
+        // There is issue around Notes and NotesTrait which needs to be handled
+        // there. For now following is the quickest solution to handle it.
+        // Ref: https://github.com/razorpay/api/issues/1678
+
+        if (array_key_exists(Common::NOTES, $serialized) === true)
         {
-            $esRepoClassPath = $this->getEsRepoClassPath();
-
-            $esType = $this->getEsType();
-
-            $mode = $this->app['rzp.mode'];
-
-            $queueData = [
-                'es_type'           => $esType,
-                // This entity object is converted into an array because Queue::push
-                // decodes and encodes it with assoc array flag set to true.
-                'entity'            => $entity->toArray(),
-                'mode'              => $mode,
-                'es_repo_path'      => $esRepoClassPath,
-            ];
-
-            // Saving the entity in ES.
-            $job = new OldEsSync($queueData);
-
-            (new DispatchRouter)->dispatchOn($job, DispatchRouter::ES);
+            $serialized[Common::NOTES] = (object) $serialized[Common::NOTES];
         }
-        catch (\Throwable $ex)
-        {
-            $this->trace->traceException(
-                $ex, Trace::ERROR, TraceCode::ES_SAVE_FAILED, $entity->toArray());
-        }
+
+        return $serialized;
     }
 
     /**
@@ -536,25 +532,24 @@ class Repository extends \Razorpay\Spine\Repository
     {
         $this->setEsRepoIfExist();
 
-        if ($this->esRepo === null)
+        if (($this->esRepo === null) or
+            ($this->isEsSyncNeeded($action, $dirty) === false))
         {
             return;
         }
 
-        if ($this->isEsSyncNeeded($action, $dirty) === false)
-        {
-            return;
-        }
+        $mode = $this->app['rzp.mode'];
 
-        // If entity is in old flow use the old method. To be removed later.
-        if ($this->isEntityInOldEsFlow($entity->getEntity()) === true)
-        {
-            return $this->syncToEsDeprecated($entity, $dirty);
-        }
+        $tracePayload = [
+            'action'    => $action,
+            'entity'    => $entity->getEntity(),
+            'entity_id' => $entity->getId(),
+            'mode'      => $mode,
+        ];
 
         try
         {
-            $mode = $this->app['rzp.mode'];
+            $this->trace->debug(TraceCode::ES_SYNC_PUSH_PAYLOAD, $tracePayload);
 
             $job = (new EsSync(
                         $mode,
@@ -570,12 +565,8 @@ class Repository extends \Razorpay\Spine\Repository
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                TraceCode::ES_SYNC_FAILED,
-                [
-                    'entity_id' => $entity->getId(),
-                    'action'    => $action,
-                ]
-            );
+                TraceCode::ES_SYNC_PUSH_FAILED,
+                $tracePayload);
         }
     }
 
@@ -587,9 +578,16 @@ class Repository extends \Razorpay\Spine\Repository
      *
      * @return bool
      */
-    protected function isEsSyncNeeded(string $action, array $dirty): bool
+    public function isEsSyncNeeded(string $action, array $dirty): bool
     {
-        $esFields = $this->esRepo->getFields();
+        $esFields = $this->esRepo->getIndexedFields();
+
+        // Fields merchant_id and created_at never comes in dirty
+        // as they are not update-able. But keeping this filter here
+        // so during first time indexing these documents are not picked for
+        // indexing as they have nothing search-able.
+
+        $esFields = array_diff($esFields, [Common::ID, Common::MERCHANT_ID, Common::CREATED_AT]);
 
         // If no fields are configured to be in ES in the repository, return false.
         if (count($esFields) === 0)
@@ -641,49 +639,11 @@ class Repository extends \Razorpay\Spine\Repository
         return $shouldSync;
     }
 
-    /**
-     * @deprecated
-     *
-     * @return string
-     */
-    protected function getEsRepoClassPath(): string
-    {
-        $parentNamespace = $this->getParentNamespace();
-
-        $esRepoClassPath = $parentNamespace . '\\' . 'EsRepository';
-
-        return $esRepoClassPath;
-    }
-
     protected function getParentNamespace()
     {
         // get_called_class gives the (namespace+classname)
         // removing the last element to get only the namespace.
         return join('\\', explode('\\', get_called_class(), -1));
-    }
-
-    /**
-     * @deprecated
-     *
-     * Override this method in entity/repository in case the type name is
-     * different for that entity.
-     *
-     * @return string
-     */
-    protected function getEsType(): string
-    {
-        $parentNamespace = $this->getParentNamespace();
-
-        $parentNamespaceArray = explode('\\', $parentNamespace);
-
-        // Constant names are all uppercase.
-        // Table constant class has the same name as the entity class name.
-        $className = strtoupper(end($parentNamespaceArray));
-
-        // The ES type name is the same as the table name for the entity in MySQL.
-        $typeName = constant("RZP\\Constants\\Table::$className");
-
-        return $typeName;
     }
 
     protected function dbColumn($col)

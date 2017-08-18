@@ -16,6 +16,12 @@ class Options
 
     protected $failedTerminals = [];
 
+    protected $skippedFilters = [
+        'method',
+        'network',
+        'bank'
+    ];
+
     public function __construct()
     {
         $this->setChance();
@@ -49,6 +55,16 @@ class Options
         }
 
         $this->chance = $chance;
+    }
+
+    public function getSkippedFilters()
+    {
+        return $this->skippedFilters;
+    }
+
+    public function setSkippedFilters(array $filters)
+    {
+        $this->skippedFilters = $filters;
     }
 
     public function setFailedTerminals(array $exclude)

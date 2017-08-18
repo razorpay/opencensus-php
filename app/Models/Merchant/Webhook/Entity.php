@@ -25,19 +25,19 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
-    protected $defaults = array(
+    protected $defaults = [
         self::ACTIVE        => true,
         self::FAILURE_COUNT => 0,
-    );
+    ];
 
-    protected $fillable = array(
+    protected $fillable = [
         self::URL,
         self::ACTIVE,
         self::EVENTS,
         self::SECRET
-    );
+    ];
 
-    protected $visible = array(
+    protected $visible = [
         self::ID,
         self::URL,
         self::EVENTS,
@@ -48,17 +48,24 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
         self::SECRET,
         self::LAST_SUCCESSFUL_AT
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
+        self::ENTITY,
         self::URL,
         self::EVENTS,
         self::ACTIVE,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::LAST_SUCCESSFUL_AT
-    );
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::EVENTS,
+    ];
 
     public function edit(array $input = array(), $operation = 'edit')
     {
@@ -170,6 +177,26 @@ class Entity extends Base\PublicEntity
         }
 
         return $eventsArray;
+    }
+
+    public function setPublicEventsAttribute(array & $array)
+    {
+        $featureMap = Event::$eventsToFeatureMap;
+
+        $assignedFeatures = $this->merchant->getEnabledFeatures();
+
+        foreach ($array[self::EVENTS] as $event => $value)
+        {
+            if (isset($featureMap[$event]) === false)
+            {
+                continue;
+            }
+
+            if (in_array($featureMap[$event], $assignedFeatures, true) === false)
+            {
+                unset($array[self::EVENTS][$event]);
+            }
+        }
     }
 
     public function isEventEnabled($event)

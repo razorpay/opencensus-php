@@ -35,7 +35,7 @@ class Validator extends Base\Validator
         'bank'                    => 'required_if:method,netbanking,aeps',
         'wallet'                  => 'required_if:method,wallet|custom',
         'emi_duration'            => 'required_if:method,emi|integer|in:3,6,9,12,18,24',
-        'description'             => 'sometimes',
+        'description'             => 'sometimes|string|max:255|utf8',
         'email'                   => 'sometimes|nullable|email',
         'contact'                 => 'sometimes|nullable|contact_syntax',
         'signature'               => 'sometimes|nullable|string',
@@ -43,14 +43,15 @@ class Validator extends Base\Validator
         'notes.merchant_order_id' => 'required_with:signature',
         'callback_url'            => 'sometimes|url',
         'order_id'                => 'sometimes|filled',
-        'customer_id'             => 'required_if:wallet,openwallet|public_id|filled',
+        'customer_id'             => 'sometimes|public_id|filled',
         'subscription_id'         => 'sometimes|public_id',
         'app_token'               => 'sometimes',
         'token'                   => 'sometimes',
         'save'                    => 'sometimes|in:0,1',
         'recurring'               => 'sometimes_if:method,card|in:0,1',
         'fee'                     => 'sometimes|filled|integer|max:50000000',
-        'service_tax'             => 'sometimes|filled|integer|max:50000000',
+        Entity::SERVICE_TAX       => 'sometimes|filled|integer|max:50000000',
+        Entity::TAX               => 'sometimes|filled|integer|max:50000000',
         'on_hold'                 => 'sometimes_if:method,transfer|boolean',
         'on_hold_until'           => 'sometimes_if:method,transfer|nullable|epoch',
         'ip'                      => 'sometimes|ip',
@@ -96,11 +97,11 @@ class Validator extends Base\Validator
         'amount',
         'bank',
         'currency',
-        'description',
         'fee',
         'contact',
         'email',
         'hold_parameters',
+        'customer_id',
     ];
 
     protected function validateEmail(array $input)
@@ -108,6 +109,7 @@ class Validator extends Base\Validator
         $allowedPaymentMethods = [
             'aeps',
             Payment\Method::TRANSFER,
+            Payment\Method::BANK_TRANSFER,
         ];
 
         if ((in_array($input[Entity::METHOD], $allowedPaymentMethods, true) === false) and
@@ -202,6 +204,12 @@ class Validator extends Base\Validator
                 'amount');
         }
 
+        // No limit on amount for payments made via bank_transfer
+        if ($input['method'] === Payment\Method::BANK_TRANSFER)
+        {
+            return;
+        }
+
         $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
 
         if ($amount > $maxAmountAllowed)
@@ -291,6 +299,7 @@ class Validator extends Base\Validator
         $allowedPaymentMethods = [
             'aeps',
             Payment\Method::TRANSFER,
+            Payment\Method::BANK_TRANSFER,
         ];
 
         if ((in_array($input[Entity::METHOD], $allowedPaymentMethods, true) === false) and
@@ -313,25 +322,41 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateDescription($input)
+    protected function validateCustomerId($input)
     {
-        if (isset($input['description']) === false)
-            return;
-
-        $desc = $input['description'];
-
-        if (is_string($desc) === false)
+        if (isset($input[Entity::CUSTOMER_ID]) === false)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_DESCRIPTION_SHOULD_BE_STRING,
-                Entity::DESCRIPTION);
+            //
+            // customer_id should always be sent in case of openwallet.
+            // It's okay to not send otherwise. Gets handled in the main flow.
+            //
+            if ((isset($input[Entity::WALLET]) === true) and
+                ($input[Entity::WALLET] === Merchant\Methods\Entity::OPENWALLET))
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The customer id field is required when wallet is openwallet.',
+                    'customer_id',
+                    [
+                        'wallet' => $input[Entity::WALLET]
+                    ]);
+            }
+
+            return;
         }
 
-        if (strlen($desc) > 255)
+        //
+        // Should not send customer_id for a subscription payment,
+        // since subscription already has a customer associated.
+        //
+        if (isset($input[Entity::SUBSCRIPTION_ID]) === true)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_DESCRIPTION_TOO_LARGE,
-                Entity::DESCRIPTION);
+            throw new Exception\BadRequestValidationFailureException(
+                'customer_id is not required and should not be sent',
+                'customer_id',
+                [
+                    'customer_id'       => $input[Entity::CUSTOMER_ID],
+                    'subscription_id'   => $input[Entity::SUBSCRIPTION_ID],
+                ]);
         }
     }
 
@@ -399,7 +424,7 @@ class Validator extends Base\Validator
                     'The on_hold field must be set to 1, if on_hold_until is sent');
             }
 
-            $now = Carbon::now('Asia/Kolkata')->timestamp;
+            $now = Carbon::now()->getTimestamp();
 
             if ($input[Entity::ON_HOLD_UNTIL] < $now)
             {

@@ -16,6 +16,7 @@ class Repository extends Base\Repository
 
     protected $proxyFetchParamRules = [
         Entity::STATUS          => 'sometimes|in:created,attempted,paid',
+        Entity::NOTES           => 'sometimes|notes_fetch',
     ];
 
     protected $appFetchParamRules = [
@@ -39,5 +40,19 @@ class Repository extends Base\Repository
         $payment->order()->associate($order);
 
         return $order;
+    }
+
+    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $entityToRelationFetchMap = [])
+    {
+        $orders = $this->newQuery()
+                       ->merchantId($merchantId)
+                       ->betweenTime($from, $to)
+                       ->with('payments')
+                       ->take($count)
+                       ->skip($skip)
+                       ->latest()
+                       ->get();
+
+        return $orders;
     }
 }

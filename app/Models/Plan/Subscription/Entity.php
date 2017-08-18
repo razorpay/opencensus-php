@@ -3,6 +3,7 @@
 namespace RZP\Models\Plan\Subscription;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Models\Base;
 use RZP\Models\Customer;
@@ -40,13 +41,18 @@ class Entity extends Base\PublicEntity
 
     // Input Keys
 
-    //
-    // Add-on needs to be at a subscription level because
-    // the add-on amount can change based on the subscription period.
-    // For example: if the subscription is for 3 months, add-on amount can
-    // be 1000rs and if subscription is for 1yr, add-on amount can be 500rs.
-    //
+    /**
+     * Add-on needs to be at a subscription level because
+     * the add-on amount can change based on the subscription period.
+     * For example: if the subscription is for 3 months, add-on amount can
+     * be 1000rs and if subscription is for 1yr, add-on amount can be 500rs.
+     */
     const ADDONS = 'addons';
+
+    /**
+     * This key is used to search in subscriptions fetch multiple
+     */
+    const CUSTOMER_EMAIL = 'customer_email';
 
     protected static $sign = 'sub';
 
@@ -101,7 +107,7 @@ class Entity extends Base\PublicEntity
         self::CURRENT_END,
         self::ENDED_AT,
         self::QUANTITY,
-        self::TOKEN_ID,
+        // self::TOKEN_ID,
         self::NOTES,
         self::CHARGE_AT,
         self::START_AT,
@@ -110,6 +116,7 @@ class Entity extends Base\PublicEntity
         self::TOTAL_COUNT,
         self::PAID_COUNT,
         self::CUSTOMER_NOTIFY,
+        self::CREATED_AT,
     ];
 
     protected $casts = [
@@ -128,7 +135,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::CUSTOMER_ID,
-        self::TOKEN_ID,
+        // self::TOKEN_ID,
         self::PLAN_ID,
     ];
 
@@ -149,6 +156,8 @@ class Entity extends Base\PublicEntity
     ];
 
     const DEFAULT_AUTH_AMOUNT = 500;
+
+    const MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION = 10;
 
     // --------------------- GETTERS ---------------------
 
@@ -218,6 +227,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CURRENT_END);
     }
 
+    public function getCancelledAt()
+    {
+        return $this->getAttribute(self::CANCELLED_AT);
+    }
+
     public function getAuthAttempts()
     {
         return $this->getAttribute(self::AUTH_ATTEMPTS);
@@ -236,6 +250,11 @@ class Entity extends Base\PublicEntity
     public function hasSchedule()
     {
         return $this->isAttributeNotNull(self::SCHEDULE_ID);
+    }
+
+    public function hasCustomer()
+    {
+        return $this->isAttributeNotNull(self::CUSTOMER_ID);
     }
 
     public function getCustomerId()
@@ -263,9 +282,9 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) === Status::ACTIVE);
     }
 
-    public function isOverDue()
+    public function isPending()
     {
-        return ($this->getAttribute(self::STATUS) === Status::OVERDUE);
+        return ($this->getAttribute(self::STATUS) === Status::PENDING);
     }
 
     public function isHalted()
@@ -276,6 +295,11 @@ class Entity extends Base\PublicEntity
     public function isExpired()
     {
         return ($this->getAttribute(self::STATUS) === Status::EXPIRED);
+    }
+
+    public function isCompleted()
+    {
+        return ($this->getAttribute(self::STATUS) === Status::COMPLETED);
     }
 
     public function isAuthTxnCharge()
@@ -290,6 +314,29 @@ class Entity extends Base\PublicEntity
     public function isChangeCardStatus()
     {
         return (in_array($this->getStatus(), Status::$changeCardStatuses, true) === true);
+    }
+
+    public function followLocalFlow()
+    {
+        $localCustomer = $this->customer;
+
+        // If local customer is null, then it needs to be created and mapped
+        // to global customer for subscription first 2FA txn.
+        if ($localCustomer === null)
+        {
+            return false;
+        }
+
+        //
+        // If global customer is null, it means, that the subscription
+        // follows the local flow only.
+        // In case it's not null, it means that this is NOT the first 2FA
+        // txn and is a second charge or change card flow
+        // and follows global flow. The mapping happens in first txn.
+        //
+        $hasGlobalCustomer = $localCustomer->hasGlobalCustomer();
+
+        return ($hasGlobalCustomer === false);
     }
 
     // --------------------- END GETTERS ---------------------
@@ -334,7 +381,7 @@ class Entity extends Base\PublicEntity
 
     public function setStatus($status)
     {
-        Status::checkStatus($status);
+        Status::validateStatus($status);
 
         $this->setAttribute(self::STATUS, $status);
 
@@ -342,7 +389,7 @@ class Entity extends Base\PublicEntity
         {
             $timestampKey = $status . '_at';
 
-            $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+            $currentTime = Carbon::now()->getTimestamp();
 
             $this->setAttribute($timestampKey, $currentTime);
         }
@@ -466,12 +513,12 @@ class Entity extends Base\PublicEntity
         $array[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
     }
 
-    public function setPublicTokenIdAttribute(array & $array)
-    {
-        $tokenId = $this->getAttribute(self::TOKEN_ID);
-
-        $array[self::TOKEN_ID] = Customer\Token\Entity::getSignedIdOrNull($tokenId);
-    }
+    // public function setPublicTokenIdAttribute(array & $array)
+    // {
+    //     $tokenId = $this->getAttribute(self::TOKEN_ID);
+    //
+    //     $array[self::TOKEN_ID] = Customer\Token\Entity::getSignedIdOrNull($tokenId);
+    // }
 
     // --------------------- END PUBLIC SETTERS ---------------------
 
@@ -495,13 +542,24 @@ class Entity extends Base\PublicEntity
 
     public function associateEntities(
         Plan\Entity $plan,
-        Customer\Entity $customer)
+        Customer\Entity $customer = null)
     {
-        $merchant = $customer->merchant;
+        //
+        // Cannot get it via customer since customer can be null too.
+        //
+        $merchant = $plan->merchant;
 
         $this->merchant()->associate($merchant);
         $this->plan()->associate($plan);
-        $this->customer()->associate($customer);
+
+        //
+        // Don't want to override the relation to null by mistake;
+        // hence the check.
+        //
+        if ($customer !== null)
+        {
+            $this->customer()->associate($customer);
+        }
     }
 
     public function getAnchorForSchedule()
@@ -512,11 +570,22 @@ class Entity extends Base\PublicEntity
 
         if ($this->getStartAt() !== null)
         {
-            $startAt = Carbon::createFromTimestamp($this->getStartAt(), 'Asia/Kolkata');
+            $startAt = Carbon::createFromTimestamp($this->getStartAt(), Timezone::IST);
 
             $anchor = $startAt->{Anchor::CHECKS[$period]};
         }
 
         return $anchor;
+    }
+
+    public function isMoreThanOneYear()
+    {
+        $plan = $this->plan;
+
+        $totalCount = $this->getTotalCount();
+
+        $totalCountForOneYear = Plan\Cycle::getTotalCountForOneYear($plan);
+
+        return ($totalCount > $totalCountForOneYear);
     }
 }

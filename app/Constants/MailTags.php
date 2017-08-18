@@ -30,6 +30,7 @@ class MailTags
     const PAYU_MONEY_REFUNDS_MAIL          = 'payu_money_refunds_mail';
     const ICICI_UPI_REFUNDS_MAIL           = 'icici_upi_refunds_mail';
     const BATCH_REFUNDS_FILE               = 'batch_refunds_file';
+    const BATCH_PAYMENT_LINK_FILE          = 'batch_payment_link_file';
 
     const PAYMENT_SUCCESSFUL               = 'payment_successful';
     const REFUND_SUCCESSFUL                = 'refund_successful';
@@ -61,6 +62,12 @@ class MailTags
 
     // Heimdall Email Tags
     const ADMIN_INVITE_MERCHANT            = 'admin_invite_merchant';
+
+    const MERCHANT_INVITATION_MAIL         = 'merchant_invitation_mail';
+
+    // Merchant Activation Email Tags
+    const NOTIFY_ACTIVATION_SUBMISSION     = 'notify_activation_submission';
+    const CONFIRM_ACTIVATION_SUBMISSION    = 'confirm_activation_submission';
 
     /**
      * Email tags that should respond to the mailgun failure webhook

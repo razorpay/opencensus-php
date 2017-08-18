@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\BasicAuth;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 
 class BasicAuthTest extends TestCase
 {
@@ -61,7 +62,7 @@ class BasicAuthTest extends TestCase
         $this->startTest();
     }
 
-     public function testPrivateAuthOnAdminRoute()
+    public function testPrivateAuthOnAdminRoute()
     {
         $this->ba->privateAuth();
 
@@ -225,9 +226,18 @@ class BasicAuthTest extends TestCase
     {
         $this->ba->adminAuth();
 
-        $this->ba->addAccountAuth('10000000000000');
+        $admin = $this->ba->getAdmin();
 
-        $this->startTest();
+        $merchant = $this->fixtures->create(
+            'merchant', ['org_id' => Org::RZP_ORG]);
+
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->addAccountAuth($merchant->getId());
+
+        $result = $this->startTest();
+
+        $this->assertEquals($merchant->getId(), $result['id']);
     }
 
     public function testAccountAuthInvalidId()

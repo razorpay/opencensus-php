@@ -1464,6 +1464,25 @@ return [
         ]
     ],
 
+    'testUpdateIssuedInvoiceWithOrderAttributes' => [
+        'request' => [
+            'url'       => '/invoices/inv_1000000invoice',
+            'method'    => 'patch',
+            'content'   => [
+                'receipt'         => 'inv_receipt_0001',
+                'partial_payment' => '1',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'              => 'inv_1000000invoice',
+                'entity'          => 'invoice',
+                'receipt'         => 'inv_receipt_0001',
+                'partial_payment' => true,
+            ]
+        ]
+    ],
+
     'testUpdateIssuedInvoiceWithExtraFields' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice',
@@ -1497,18 +1516,23 @@ return [
             'url'       => '/invoices/inv_1000000invoice',
             'method'    => 'patch',
             'content'   => [
-                'receipt'      => 'inv_receipt_0001',
-                'terms'        => 'Updated terms & conditions',
+                'receipt' => 'inv_receipt_0001',
+                'terms'   => 'Updated terms & conditions',
+                'notes'   => [
+                    'key' => 'new value',
+                ],
             ],
         ],
         'response' => [
             'content' => [
-                'id'                   => 'inv_1000000invoice',
-                'entity'               => 'invoice',
-                'receipt'              => 'inv_receipt_0001',
-                'status'               => 'draft',
-                'terms'                => 'Updated terms & conditions',
-                'notes'                => [],
+                'id'      => 'inv_1000000invoice',
+                'entity'  => 'invoice',
+                'receipt' => 'inv_receipt_0001',
+                'status'  => 'draft',
+                'terms'   => 'Updated terms & conditions',
+                'notes'   => [
+                    'key' => 'new value',
+                ],
             ]
         ]
     ],
@@ -2304,7 +2328,6 @@ return [
                             'name'    => 'test',
                         ],
                         'line_items'       => [],
-                        'customer_id'      => 'cust_100000customer',
                         'short_url'        => 'http://bitly.dev/2eZ11Vn',
                         'notes'            => [],
                         'status'           => 'issued',
@@ -2381,6 +2404,35 @@ return [
         ],
     ],
 
+    'testGetMultipleInvoicesByTypes' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'get',
+            'content' => [
+                'types' => ['link', 'ecod'],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 3,
+                'items' => [
+                    [
+                        'id'   => 'inv_1000003invoice',
+                        'type' => 'ecod',
+                    ],
+                    [
+                        'id'   => 'inv_1000002invoice',
+                        'type' => 'ecod',
+                    ],
+                    [
+                        'id'   => 'inv_1000001invoice',
+                        'type' => 'link',
+                    ],
+                ]
+            ],
+        ],
+    ],
+
     'testGetMultipleInvoicesOnlyEsFields' => [
         'request' => [
             'url'     => '/invoices',
@@ -2446,26 +2498,115 @@ return [
         ],
     ],
 
+    'testGetMultipleInvoicesByEsFeildAndFrom' => [
+        'request' => [
+            'url'     => '/invoices',
+            'method'  => 'get',
+            'content' => [
+                'receipt' => 'rec',
+                'skip'    => 20,
+                'count'   => 100,
+                'from'    => 1498634126,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 0,
+                'items' => [],
+            ],
+        ],
+    ],
+
+    'testGetMultipleInvoicesByEsFeildFromAndTo' => [
+        'request' => [
+            'url'     => '/invoices',
+            'method'  => 'get',
+            'content' => [
+                'receipt' => 'rec',
+                'skip'    => 20,
+                'count'   => 100,
+                'from'    => 1498634126,
+                'to'      => 1498644126,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 0,
+                'items' => [],
+            ],
+        ],
+    ],
+
     'testGetMultipleInvoicesOnlyMysqlFields' => [
         'request' => [
             'url'     => '/invoices',
             'method'  => 'get',
             'content' => [
-                'type'    => 'link',
-                'user_id' => '1000000000user',
+                'customer_id' => 'cust_100000customer',
+                'user_id'     => '1000000000user',
+                'skip'        => 0,
+                'count'       => 100,
             ],
         ],
         'response' => [
             'content' => [
-                'count' => 1,
+                'count' => 2,
                 'items' => [
                     [
-                        'id'      => 'inv_1000000invoice',
-                        'type'    => 'link',
-                        'user_id' => '1000000000user',
+                        'id'          => 'inv_1000002invoice',
+                        'customer_id' => 'cust_100000customer',
+                        'user_id'     => '1000000000user',
+                    ],
+                    [
+                        'id'          => 'inv_1000000invoice',
+                        'customer_id' => 'cust_100000customer',
+                        'user_id'     => '1000000000user',
                     ],
                 ],
             ],
+        ],
+    ],
+
+    'testGetMultipleInvoicesByOnlyCommonFields' => [
+        'request' => [
+            'url'     => '/invoices',
+            'method'  => 'get',
+            'content' => [
+                'status' => 'issued',
+                'type'   => 'link',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testGetMultipleInvoicesByCommonAndMysqlFields' => [
+        'request' => [
+            'url'     => '/invoices',
+            'method'  => 'get',
+            'content' => [
+                'status'     => 'issued',
+                'payment_id' => 'pay_1000000payment',
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testGetMultipleInvoicesByCommonAndEsFields' => [
+        'request' => [
+            'url'     => '/invoices',
+            'method'  => 'get',
+            'content' => [
+                'type'    => 'link',
+                'status'  => 'issued',
+                'receipt' => 'xyz',
+            ],
+        ],
+        'response' => [
+            'content' => [],
         ],
     ],
 
@@ -2474,16 +2615,17 @@ return [
             'url'     => '/invoices',
             'method'  => 'get',
             'content' => [
-                'type'    => 'link',
-                'user_id' => '1000000000user',
-                'receipt' => 'xyz',
+                'type'        => 'link',
+                'customer_id' => 'cust_100000customer',
+                'user_id'     => '1000000000user',
+                'receipt'     => 'xyz',
             ],
         ],
         'response' => [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'type, user_id not expected with other params sent',
+                    'description' => 'customer_id, user_id not expected with other params sent',
                 ],
             ],
             'status_code' => 400,
@@ -2753,6 +2895,19 @@ return [
         ],
     ],
 
+    'testIssueInvoiceByBatchId' => [
+        'request' => [
+            'url'     => '/invoices/batch/batch_00000000000001/issue',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+        ],
+    ],
+
     // ----------------------------------------------------------------------
     // Expectations for ES
 
@@ -2788,6 +2943,14 @@ return [
                             ],
                         ],
                     ],
+                ],
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
                 ],
             ],
         ],
@@ -2843,6 +3006,14 @@ return [
                             ],
                         ],
                     ],
+                ],
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
                 ],
             ],
         ],
@@ -2901,6 +3072,14 @@ return [
                             ],
                         ],
                     ],
+                ],
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
                 ],
             ],
         ],
@@ -2978,6 +3157,188 @@ return [
         ],
     ],
 
+    'testGetMultipleInvoicesByEsFeildAndFromExpectedSearchParams' => [
+        'index' => 'invoice_test',
+        'type'  => 'invoice_test',
+        'body'  => [
+            '_source' => false,
+            'from'    => 20,
+            'size'    => 100,
+            'query'   => [
+                'bool' => [
+                    'must' => [
+                        [
+                            'match' => [
+                                'receipt' => [
+                                    'query' =>'rec',
+                                    'boost' => 2,
+                                ],
+                            ],
+                        ],
+                    ],
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'range' => [
+                                        'created_at' => [
+                                            'gte' => 1498634126,
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'merchant_id' => [
+                                            'value' => '10000000000000',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
+
+    'testGetMultipleInvoicesByEsFeildAndFromExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [],
+        ],
+    ],
+
+    'testGetMultipleInvoicesByEsFeildFromAndToExpectedSearchParams' => [
+        'index' => 'invoice_test',
+        'type'  => 'invoice_test',
+        'body'  => [
+            '_source' => false,
+            'from'    => 20,
+            'size'    => 100,
+            'query'   => [
+                'bool' => [
+                    'must' => [
+                        [
+                            'match' => [
+                                'receipt' => [
+                                    'query' =>'rec',
+                                    'boost' => 2,
+                                ],
+                            ],
+                        ],
+                    ],
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'range' => [
+                                        'created_at' => [
+                                            'gte' => 1498634126,
+                                            'lte' => 1498644126,
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'merchant_id' => [
+                                            'value' => '10000000000000',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
+
+    'testGetMultipleInvoicesByEsFeildFromAndToExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [],
+        ],
+    ],
+
+    'testGetMultipleInvoicesByCommonAndEsFieldsExpectedSearchParams' => [
+        'index' => 'invoice_test',
+        'type'  => 'invoice_test',
+        'body'  => [
+            '_source' => false,
+            'from'    => 0,
+            'size'    => 10,
+            'query'   => [
+                'bool' => [
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'term' => [
+                                        'type' => [
+                                            'value' => 'link',
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'status' => [
+                                            'value' => 'issued',
+                                        ],
+                                    ],
+                                ],
+                                [
+                                    'term' => [
+                                        'merchant_id' => [
+                                            'value' => '10000000000000',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    'must' => [
+                        [
+                            'match' => [
+                                'receipt' => [
+                                    'query' =>'xyz',
+                                    'boost' => 2,
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+            'sort' => [
+                '_score' => [
+                    'order' => 'desc',
+                ],
+                'created_at' => [
+                    'order' => 'desc',
+                ],
+            ],
+        ],
+    ],
+
+    'testGetMultipleInvoicesByCommonAndEsFieldsExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [],
+        ],
+    ],
+
     'expectedUpsertIndexParams' => [
         //
         // Commented fields are dynamic and needs to be asserted in other ways,
@@ -3001,7 +3362,6 @@ return [
                 'customer_contact' => '1234567890',
                 'description'      => null,
                 'terms'            => null,
-                'notes'            => [],
             ],
         ],
     ],

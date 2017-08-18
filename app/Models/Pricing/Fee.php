@@ -19,6 +19,8 @@ class Fee extends Base\Core
 
     protected $defaultPricingPlan = '1hDYlICobzOCYt';
 
+    protected $emiSubPricingPlanId = '1EmiSubPricing';
+
     public function __construct()
     {
         parent::__construct();
@@ -29,19 +31,21 @@ class Fee extends Base\Core
     /**
      *  Used in testing to mock
      *  pricing repository
+     *
+     * @param $repo
      */
     public function setPricingRepo($repo)
     {
         $this->repo = $repo;
     }
 
-    public function getZeroPricingPlanRule($entity)
+    public function getZeroPricingPlanRule($entity): Entity
     {
         $feature = $entity->getEntity();
 
         $method = $entity->getMethod();
 
-        return $this->repo->getZeroPricingPlanRuleForMethod($feature, $method)->getId();
+        return $this->repo->getZeroPricingPlanRuleForMethod($feature, $method);
     }
 
     public function calculateMerchantFees($entity)
@@ -52,25 +56,11 @@ class Fee extends Base\Core
 
         $pricing = $this->repo->getPricingPlanById($pricingPlanId);
 
+        $emiSubPricing = $this->repo->getPricingPlanById($this->emiSubPricingPlanId);
+
+        $pricing = $pricing->merge($emiSubPricing);
+
         return $calculator->calculate($pricing);
-    }
-
-    public function calculateServiceTaxFromFees($entity, $fee)
-    {
-        // Solving these
-        // rzpFee + servTax = totFee;
-        // servTax = ST_PERC * rzpFee;
-        //         = ST_PERC * (totFee - servTax);
-
-        // servTax = ( ST_PERC * totFee ) / ( 100 + ST_PERC ) ;
-
-        $calculator = new FeeCalculator($entity, $this->repo);
-
-        $totalTax = $calculator->calculateServiceTaxesFromFees($fee);
-
-        $feesSplit = $calculator->getFeesSplit();
-
-        return [$totalTax, $feesSplit];
     }
 
     protected function getPricingPlanId($merchant)

@@ -6,6 +6,7 @@ use Str;
 use File;
 use ZipArchive;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mail;
 
 use RZP\Mail\Emi as EmiMail;
@@ -71,7 +72,7 @@ class EmiPaymentTest extends TestCase
         $emiPlan = $this->emiPlan;
 
         //Making transactions hapen yesterday
-        $yesterdayAtTen = Carbon::yesterday('Asia/Kolkata')->addHours(10)->timestamp;
+        $yesterdayAtTen = Carbon::yesterday(Timezone::IST)->addHours(10)->timestamp;
 
         $this->fixtures->merchant->enableEmi();
 
@@ -89,6 +90,16 @@ class EmiPaymentTest extends TestCase
         //RBL Card
         $this->makeEmiPaymentOnCard('5243730000000008', 9, $yesterdayAtTen);
 
+        //Standard Chartered card
+        $this->makeEmiPaymentOnCard('4028740000000001', 9, $yesterdayAtTen);
+
+        //ICICI Card
+        $this->makeEmiPaymentOnCard('4076510000000033', 9, $yesterdayAtTen);
+
+        //ICICI Merchant subvention Card
+        $this->makeEmiPaymentOnCard('4076510000000033', 9, $yesterdayAtTen, 0, null, null, true);
+
+
         $request = array(
             'method' => 'POST',
             'url' => '/emi/generate/excel',
@@ -98,17 +109,20 @@ class EmiPaymentTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(count($content), 4);
+        $this->assertEquals(count($content), 6);
 
         $this->assertEquals(true, File::exists($this->zipFileName($content['KKBK'])));
         $this->assertEquals(true, File::exists($this->zipFileName($content['UTIB'])));
         $this->assertEquals(true, File::exists($this->zipFileName($content['INDB'])));
         $this->assertEquals(true, File::exists($this->zipFileName($content['RATN'])));
+        $this->assertEquals(true, File::exists($this->zipFileName($content['SCBL'])));
+        $this->assertEquals(true, File::exists($content['ICIC']));
 
         $this->checkPasswordProtectedZip($this->zipFileName($content['KKBK']));
         $this->checkPasswordProtectedZip($this->zipFileName($content['UTIB']));
         $this->checkPasswordProtectedZip($this->zipFileName($content['INDB']));
         $this->checkPasswordProtectedZip($this->zipFileName($content['RATN']));
+        $this->checkPasswordProtectedZip($this->zipFileName($content['SCBL']));
 
         Mail::assertSent(EmiMail\File::class);
 
@@ -117,6 +131,8 @@ class EmiPaymentTest extends TestCase
         $this->fixtures->merchant->disableEmi();
 
         $this->deleteAlltheGenerateFiles($content);
+
+        unlink($content['ICIC']);
     }
 
     private function zipFileName($filePath)
@@ -178,7 +194,8 @@ class EmiPaymentTest extends TestCase
         }
     }
 
-    protected function makeEmiPaymentOnCard($card, $emiDuration, $paymentTime, $save = 0, $appToken = null, $customerId = null)
+    protected function makeEmiPaymentOnCard($card, $emiDuration,
+        $paymentTime, $save = 0, $appToken = null, $customerId = null, $merchantSubvention = false)
     {
         $this->payment['amount'] = 500000;
         $this->payment['method'] = 'emi';
@@ -187,6 +204,11 @@ class EmiPaymentTest extends TestCase
         $this->payment['save'] = $save;
         $this->payment['app_token'] = $appToken;
         $this->payment['customer_id'] = $customerId;
+
+        if ($merchantSubvention === true)
+        {
+            $this->fixtures->merchant->addFeatures(['emi_merchant_subvention']);
+        }
 
         $this->doAuthAndCapturePayment($this->payment);
 

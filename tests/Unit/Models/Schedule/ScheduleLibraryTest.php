@@ -5,6 +5,7 @@ namespace RZP\Tests\Unit\Models\Schedule;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Schedule;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 class ScheduleLibraryTest extends TestCase
 {
@@ -13,8 +14,6 @@ class ScheduleLibraryTest extends TestCase
         $this->testDataFilePath = __DIR__.'/ScheduleLibraryTestData.php';
 
         parent::setUp();
-
-        $this->markTestSkipped('Not using next run of schedule now');
     }
 
     public function testBasicT3Schedule()
@@ -80,47 +79,46 @@ class ScheduleLibraryTest extends TestCase
         $this->runCaseWiseScheduleTest($lastWeekSchedule, $data['cases']);
     }
 
-    public function testTimedSchedule()
-    {
-        $data = $this->testData[__FUNCTION__];
-
-        $timedSchedule = (new Schedule\Entity)->build($data['schedule']);
-
-        $timedSchedule->updateNextRun();
-
-        $calculatedNextRun = $this->getTimeObject($timedSchedule->getNextRun());
-
-        $this->assertEquals($data['schedule']['hour'], $calculatedNextRun->hour);
-    }
-
     private function runCaseWiseScheduleTest($schedule, $cases)
     {
         foreach ($cases as $case)
         {
-            $initialTime = $this->getTimeStamp($case['initialTime']);
+            $initialTimestamp = $this->getTimestampFromFormatted($case['initialTime']);
 
-            $nextTime = Schedule\Library::getNextApplicableTime($initialTime, $schedule, $schedule->getNextRun());
+            $nextRun = $this->getInitialNextRun($case['initialTime']);
 
-            $calculatedTime = $this->getFormattedTime($nextTime);
+            $nextTime = Schedule\Library::getNextApplicableTime($initialTimestamp, $schedule, $nextRun);
+
+            $calculatedTime = $this->getFormattedTimeFromTimestamp($nextTime);
 
             $this->assertEquals($case['expectedNextTime'], $calculatedTime);
         }
     }
 
-    private function getTimeStamp($dateTime)
+    private function getTimestampFromFormatted($formattedTime)
     {
-        return Carbon::createFromFormat('Y-m-d H:i:s',
-                                        $dateTime,
-                                        'Asia/Kolkata')->timestamp;
+        return $this->getTimeObjectFromFormatted($formattedTime)->getTimestamp();
     }
 
-    private function getFormattedTime($timestamp)
+    private function getInitialNextRun($formattedTime)
     {
-        return $this->getTimeObject($timestamp)->format('Y-m-d H:i:s');
+        $timeObject = $this->getTimeObjectFromFormatted($formattedTime);
+
+        return $timeObject->hour(0)->minute(0)->second(0)->getTimestamp();
     }
 
-    private function getTimeObject($timestamp)
+    private function getFormattedTimeFromTimestamp($timestamp)
     {
-        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata');
+        return $this->getTimeObjectFromTimestamp($timestamp)->format('Y-m-d H:i:s');
+    }
+
+    private function getTimeObjectFromFormatted($formattedTime)
+    {
+        return Carbon::createFromFormat('Y-m-d H:i:s', $formattedTime, Timezone::IST);
+    }
+
+    private function getTimeObjectFromTimestamp($timestamp)
+    {
+        return Carbon::createFromTimestamp($timestamp, Timezone::IST);
     }
 }

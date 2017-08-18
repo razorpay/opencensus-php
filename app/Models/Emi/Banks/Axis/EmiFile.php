@@ -3,6 +3,8 @@
 namespace RZP\Models\Emi\Banks\Axis;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
+use RZP\Models\FileStore;
 use RZP\Models\Emi\Banks\Base;
 
 class EmiFile extends Base\EmiFile
@@ -13,29 +15,9 @@ class EmiFile extends Base\EmiFile
 
     protected $bankName  = 'Axis';
 
-    protected static $headers = [
-        'Card Number',
-        'Transaction Amount',
-        'Transaction Date',
-        'Settlement Date',
-        'Authorisation Id',
-        'Merchant Name',
-        'MCC (Merchant Category Code)',
-        'Tenure',
-        'Source',
-        'EMI ID',
-    ];
+    const EXTENSION = FileStore\Format::CSV;
 
-    protected function writeEmiFile($emiData)
-    {
-        // Axis wants the file to be in CSV format, but named with a .txt extension
-        $url = $this->writeToCsvFile($emiData, $this->getFileToWriteNameWithoutExt(), $this->getTextFullFilePath());
-
-        // Since the file name is in excel we use the txt function
-        $path = $this->getTextFullFilePath();
-
-        return compact('url', 'path');
-    }
+    const TYPE = FileStore\Type::AXIS_EMI_FILE;
 
     protected function getEmiData($input)
     {
@@ -45,9 +27,9 @@ class EmiFile extends Base\EmiFile
         {
             $emiTenure = $emiPayment->emiPlan['duration'];
 
-            $merchant = $this->repo->merchant->fetchMerchantFromEntity($emiPayment);
+            $merchant = $emiPayment->merchant;
 
-            $txn = $this->repo->transaction->fetchForPayment($emiPayment);
+            $txn = $emiPayment->transaction;
 
             $data[] = [
                 'Card Number'                  => $this->getCardNumber($emiPayment->card),
@@ -68,6 +50,6 @@ class EmiFile extends Base\EmiFile
 
     private function formattedDateFromTimestamp($timestamp)
     {
-        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d-M-Y');
+        return Carbon::createFromTimestamp($timestamp, Timezone::IST)->format('d-M-Y');
     }
 }

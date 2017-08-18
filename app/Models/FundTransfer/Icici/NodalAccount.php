@@ -3,6 +3,7 @@
 namespace RZP\Models\FundTransfer\Icici;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mail;
 use phpseclib\Crypt;
 
@@ -45,7 +46,7 @@ class NodalAccount extends Base\Core
     {
         parent::__construct();
 
-        $this->date = Carbon::today('Asia/Kolkata');
+        $this->date = Carbon::today(Timezone::IST);
 
         $this->id = Base\UniqueIdEntity::generateUniqueId();
     }
@@ -65,8 +66,10 @@ class NodalAccount extends Base\Core
 
     protected function getPlainText($amount)
     {
+        $mode = ($amount >= 200000) ? "R" : "N";
+
         $values = [
-            "N",
+            $mode,
             "Razorpay Software Pvt Ltd",
             "7911547334",
             "KKBK0000958",
@@ -135,7 +138,7 @@ class NodalAccount extends Base\Core
         return [
             'gid'   => '10000',
             'uid'   => '10002',
-            'mtime' => Carbon::now()->timestamp,
+            'mtime' => Carbon::now()->getTimestamp(),
             'mode'  => '33188'
         ];
     }

@@ -162,6 +162,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY_TOKEN2);
     }
 
+    public function getTerminalId()
+    {
+        return $this->getAttribute(self::TERMINAL_ID);
+    }
+
     public function isRecurring()
     {
         return $this->getAttribute(self::RECURRING);
@@ -214,9 +219,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECURRING, $recurring);
     }
 
-    public function setUsedAt($time)
+    public function setUsedAt($timestamp)
     {
-        $this->setAttribute(self::USED_AT, $time);
+        $this->setAttribute(self::USED_AT, $timestamp);
+    }
+
+    public function setExpiredAt($timestamp)
+    {
+        $this->setAttribute(self::EXPIRED_AT, $timestamp);
     }
 
     public function incrementUsedCount()

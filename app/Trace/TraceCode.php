@@ -4,7 +4,7 @@ namespace RZP\Trace;
 
 use RZP\Exception\InvalidArgumentException;
 
-class TraceCode
+class TraceCode extends \Razorpay\Trace\TraceCode
 {
     /*
      * Payment component error messages
@@ -81,6 +81,11 @@ class TraceCode
     const PAYMENT_HOLD_TOGGLE_UPDATE_TRANSACTION        = 'PAYMENT_HOLD_TOGGLE_UPDATE_TRANSACTION';
     const TRANSACTION_CREATED_IN_VERIFY_CAPTURE         = 'TRANSACTION_CREATED_IN_VERIFY_CAPTURE';
     const TRANSACTION_AMOUNT_CREDITS                    = 'TRANSACTION_AMOUNT_CREDITS';
+    const CREDITS_EXPIRED                               = 'CREDITS_EXPIRED';
+    const CREDITS_ADDED                                 = 'CREDITS_ADDED';
+    const SCHEDULE_TASKS_PROCESS_REQUEST                = 'SCHEDULE_TASKS_PROCESS_REQUEST';
+    const SCHEDULE_TASKS_PROCESSED                      = 'SCHEDULE_TASKS_PROCESSED';
+    const SCHEDULE_TASK_PROCESSING_FAILED               = 'SCHEDULE_TASK_PROCESSING_FAILED';
     const PAYMENT_NOT_CAPTURED_CREATE_TRANSACTION       = 'PAYMENT_NOT_CAPTURED_CREATE_TRANSACTION';
     const VERIFY_CAPTURE_RESPONSE                       = 'VERIFY_CAPTURE_RESPONSE';
     const PAYMENT_ANALYTICS_SAVE_FAILED                 = 'PAYMENT_ANALYTICS_SAVE_FAILED';
@@ -89,6 +94,7 @@ class TraceCode
     const TERMINAL_ANALYTICS_SAVE_FAILED                = 'TERMINAL_ANALYTICS_SAVE_FAILED';
     const TERMINAL_CREATE_REQUEST                       = 'TERMINAL_CREATE_REQUEST';
     const TERMINAL_REMOVE_FROM_MERCHANT                 = 'TERMINAL_REMOVE_FROM_MERCHANT';
+    const TERMINAL_ADD_MERCHANT                         = 'TERMINAL_ADD_MERCHANT';
     const TERMINAL_COPY                                 = 'TERMINAL_COPY';
     const TERMINAL_REASSIGN_MERCHANT                    = 'TERMINAL_REASSIGN_MERCHANT';
     const VERIFY_REFUND_TRANSACTION_CREATED             = 'VERIFY_REFUND_TRANSACTION_CREATED';
@@ -106,6 +112,7 @@ class TraceCode
     const PAYMENT_REFUND_TIMEOUT_SKIP                   = 'PAYMENT_REFUND_TIMEOUT_SKIP';
     const PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND         = 'PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND';
     const CHECKOUT_PREFERENCES_RESPONSE                 = 'CHECKOUT_PREFERENCES_RESPONSE';
+    const CHECKOUT_PREFERENCES_EXCEPTION                = 'CHECKOUT_PREFERENCES_EXCEPTION';
     const PAYMENT_AUTO_REFUND_FAILURE                   = 'PAYMENT_AUTO_REFUND_FAILURE';
     const CREATE_GATEWAY_REFUND_RECORD_FAILED           = 'CREATE_GATEWAY_REFUND_RECORD_FAILED';
     const GATEWAY_REFUND_RECORD_CREATED                 = 'GATEWAY_REFUND_RECORD_CREATED';
@@ -134,6 +141,9 @@ class TraceCode
     const RECON_FILE_LINK_NOT_FOUND                     = 'RECON_FILE_LINK_NOT_FOUND';
     const GATEWAY_ENTITIES_COUNT_UNEXPECTED             = 'GATEWAY_ENTITIES_COUNT_UNEXPECTED';
     const GATEWAY_ENTITY_UNEXPECTED_ACTION              = 'GATEWAY_ENTITY_UNEXPECTED_ACTION';
+    const CHANGING_FILE_PERMISSION                      = 'CHANGING_FILE_PERMISSION';
+
+    const MPESA_GATEWAY_PARAM_ARRAY                     = 'MPESA_GATEWAY_PARAM_ARRAY';
 
     const GATEWAY_MULTIPLE_BANK_PAYMENT_IDS             = 'GATEWAY_MULTIPLE_BANK_PAYMENT_IDS';
 
@@ -159,7 +169,11 @@ class TraceCode
     const REQUESTS_JOB_ERROR                            = 'REQUESTS_JOB_ERROR';
     const MOCK_DRIP_REQUEST                             = 'MOCK_DRIP_REQUEST';
 
+    const DASHBOARD_JOB_ERROR                           = 'DASHBOARD_JOB_ERROR';
+
     const TERMINAL_SELECTION                            = 'TERMINAL_SELECTION';
+    const TERMINAL_SELECTION_FOR_RULE_GROUP             = 'TERMINAL_SELECTION_FOR_RULE_GROUP';
+    const TERMINAL_RULE_FILTER_EXCEPTION                = 'TERMINAL_RULE_FILTER_EXCEPTION';
     const TERMINAL_SELECTION_MISMATCH                   = 'TERMINAL_SELECTION_MISMATCH';
     const TERMINAL_FAILURE                              = 'TERMINAL_FAILURE';
     const TERMINAL_EDIT                                 = 'TERMINAL_EDIT';
@@ -176,6 +190,7 @@ class TraceCode
     const CARD_NUMBER_SCRUBBED                          = 'CARD_NUMBER_SCRUBBED';
     const ORDERS_MULTIPLE_AUTHORIZED_REFUNDS            = 'ORDERS_MULTIPLE_AUTHORIZED_REFUNDS';
     const REFUND_EXCEPTION                              = 'REFUND_EXCEPTION';
+    const GATEWAY_TOKEN_ALREADY_PRESENT                 = 'GATEWAY_TOKEN_ALREADY_PRESENT';
 
     const CANCEL_INVOICE                                = 'CANCEL_INVOICE';
     const INVOICE_EXPIRE_VIA_CRON_FAILED                = 'INVOICE_EXPIRE_VIA_CRON_FAILED';
@@ -201,6 +216,9 @@ class TraceCode
     const INVOICE_NEW_CUSTOMER                          = 'INVOICE_NEW_CUSTOMER';
     const INVOICE_ACTION_JOB_RECEIVED                   = 'INVOICE_ACTION_JOB_RECEIVED';
     const INVOICE_ACTION_JOB_HANDLED                    = 'INVOICE_ACTION_JOB_HANDLED';
+    const INVOICE_BATCH_ISSUE_JOB_RECEIVED              = 'INVOICE_BATCH_ISSUE_JOB_RECEIVED';
+    const INVOICE_BATCH_ISSUE_JOB_HANDLED               = 'INVOICE_BATCH_ISSUE_JOB_HANDLED';
+    const INVOICE_BATCH_ISSUE_JOB_ERROR                 = 'INVOICE_BATCH_ISSUE_JOB_ERROR';
 
     const SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_RECEIVED    = 'SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_RECEIVED';
     const SUBSCRIPTION_PAYMENT_FAILED                   = 'SUBSCRIPTION_PAYMENT_FAILED';
@@ -209,7 +227,8 @@ class TraceCode
     const PAYMENT_CAPTURE_SUBSCRIPTION_UPDATE           = 'PAYMENT_CAPTURE_SUBSCRIPTION_UPDATE';
     const SUBSCRIPTION_STATE_UNEXPECTED                 = 'SUBSCRIPTION_STATE_UNEXPECTED';
     const SUBSCRIPTION_TOKEN_ASSOCIATE                  = 'SUBSCRIPTION_TOKEN_ASSOCIATE';
-    const SUBSCRIPTION_TOKEN_ALREADY_ASSOCIATED         = 'SUBSCRIPTION_TOKEN_ALREADY_ASSOCIATED';
+    const SUBSCRIPTION_CUSTOMER_ALREADY_ASSOCIATED      = 'SUBSCRIPTION_CUSTOMER_ALREADY_ASSOCIATED';
+    const SUBSCRIPTION_CUSTOMER_ASSOCIATE               = 'SUBSCRIPTION_CUSTOMER_ASSOCIATE';
     const PAYMENT_SUBSCRIPTION_ASSOCIATE                = 'PAYMENT_SUBSCRIPTION_ASSOCIATE';
     const SUBSCRIPTION_ERROR_STATUS_UNEXPECTED          = 'SUBSCRIPTION_ERROR_STATUS_UNEXPECTED';
     const SUBSCRIPTION_CHARGE_QUEUE_FAILED              = 'SUBSCRIPTION_CHARGE_QUEUE_FAILED';
@@ -235,6 +254,8 @@ class TraceCode
     const RUN_CREATE_REQUEST                            = 'RUN_CREATE_REQUEST';
     const EXPIRE_INVOICE                                = 'EXPIRE_INVOICE';
     const INVOICE_SEND_SUBSCRIPTION_NOTIFICATION        = 'INVOICE_SEND_SUBSCRIPTION_NOTIFICATION';
+    const SUBSCRIPTION_CANCEL                           = 'SUBSCRIPTION_CANCEL';
+    const SUBSCRIPTION_NOT_IN_CHARGEABLE_STATE          = 'SUBSCRIPTION_NOT_IN_CHARGEABLE_STATE';
 
     const MAILER_JOB_RECEIVED                           = 'MAILER_JOB_RECEIVED';
     const MAILER_JOB_ERROR                              = 'MAILER_JOB_ERROR';
@@ -242,6 +263,15 @@ class TraceCode
     const INVOICE_PDF_GEN_FAILED                        = 'INVOICE_PDF_GEN_FAILED';
     const INVOICE_PDF_GEN_TIME_TAKEN                    = 'INVOICE_PDF_GEN_TIME_TAKEN';
     const INVOICE_PDF_GEN_SYNC                          = 'INVOICE_PDF_GEN_SYNC';
+
+    const PROMOTION_CREATE_REQUEST                      = 'PROMOTION_CREATE_REQUEST';
+    const PROMOTION_UPDATE_REQUEST                      = 'PROMOTION_UPDATE_REQUEST';
+    const PROMOTION_ACTIVATION_FAILED                   = 'PROMOTION_ACTIVATION_FAILED';
+
+    const COUPON_CREATE_REQUEST                         = 'COUPON_CREATE_REQUEST';
+    const COUPON_APPLY_REQUEST                          = 'COUPON_APPLY_REQUEST';
+    const COUPON_DELETE_REQUEST                         = 'COUPON_DELETE_REQUEST';
+    const COUPON_DELETED                                = 'COUPON_DELETED';
 
     const ITEM_CREATE_REQUEST                           = 'ITEM_CREATE_REQUEST';
     const ITEM_UPDATE_REQUEST                           = 'ITEM_UPDATE_REQUEST';
@@ -293,6 +323,10 @@ class TraceCode
     const PAYMENT_APP_TOKEN_NOT_FOUND                   = 'PAYMENT_APP_TOKEN_NOT_FOUND';
     const PAYMENT_UPDATE_TOKEN                          = 'PAYMENT_UPDATE_TOKEN';
     const SAVED_CARDS_UPDATED_WITH_IIN                  = 'SAVED_CARDS_UPDATED_WITH_IIN';
+    const TOKENS_FETCHED_COUNT_FOR_MIGRATE              = 'TOKENS_FETCHED_COUNT_FOR_MIGRATE';
+    const TOKEN_MIGRATE_TO_GATEWAY_TOKEN_FAILED         = 'TOKEN_MIGRATE_TO_GATEWAY_TOKEN_FAILED';
+    const TOKEN_BEING_MIGRATED                          = 'TOKEN_BEING_MIGRATED';
+    const GATEWAY_TOKEN_MIGRATED                        = 'GATEWAY_TOKEN_MIGRATED';
 
     //Pricing
     const PRICING_RULE_SELECTION                        = 'PRICING_RULE_SELECTION';
@@ -313,6 +347,11 @@ class TraceCode
     const PAYMENT_VERIFY_ALREADY_AUTHORIZED             = 'PAYMENT_VERIFY_ALREADY_AUTHORIZED';
 
     const PAYMENT_UPDATE_AMOUNT_PAIDOUT                 = 'PAYMENT_UPDATE_AMOUNT_PAIDOUT';
+    const PAYMENT_WALLET_LOW_BALANCE                    = 'PAYMENT_WALLET_LOW_BALANCE';
+
+    const FILE_DELETING                                 = 'FILE_DELETING';
+    const DIRECTORY_DELETING                            = 'DIRECTORY_DELETING';
+    const FILES_DELETING                                = 'FILES_DELETING';
 
 
     // Gateway component error messages
@@ -415,6 +454,7 @@ class TraceCode
     const GATEWAY_FIRST_DATA_UNEXPECTED             = 'GATEWAY_FIRST_DATA_UNEXPECTED';
     const GATEWAY_DOWNTIME_SORTING                  = 'GATEWAY_DOWNTIME_SORTING';
     const GATEWAY_DOWNTIME_SORTING_FAILED           = 'GATEWAY_DOWNTIME_SORTING_FAILED';
+    const GATEWAY_DOWNTIME_WEBHOOK                  = 'GATEWAY_DOWNTIME_WEBHOOK';
 
     const SETTLEMENT_INITIATING                     = 'SETTLEMENT_INITIATING';
     const SETTLEMENT_INITIATED                      = 'SETTLEMENT_INITIATED';
@@ -461,18 +501,31 @@ class TraceCode
     const SCHEDULE_MIGRATION_FAILED                 = 'SCHEDULE_MIGRATION_FAILED';
     const SCHEDULE_MIGRATION_COMPLETE               = 'SCHEDULE_MIGRATION_COMPLETE';
 
-    const ECOLLECT_VALIDATION_REQUEST               = 'ECOLLECT_VALIDATION_REQUEST';
-    const ECOLLECT_VALIDATION_DUPLICATE_UTR         = 'ECOLLECT_VALIDATION_DUPLICATE_UTR';
-    const ECOLLECT_PAY_REQUEST                      = 'ECOLLECT_PAY_REQUEST';
+    const VIRTUAL_ACCOUNT_CREATE_REQUEST            = 'VIRTUAL_ACCOUNT_CREATE_REQUEST';
+    const VIRTUAL_ACCOUNT_CREATED                   = 'VIRTUAL_ACCOUNT_CREATED';
+    const VIRTUAL_ACCOUNT_NUMBER_GENERATED          = 'VIRTUAL_ACCOUNT_NUMBER_GENERATED';
+    const VIRTUAL_ACCOUNT_EXCESS_REFUND             = 'VIRTUAL_ACCOUNT_EXCESS_REFUND';
+
+    const BANK_TRANSFER_PROCESS_REQUEST             = 'BANK_TRANSFER_PROCESS_REQUEST';
+    const BANK_TRANSFER_PROCESSING_SUCCESSFUL       = 'BANK_TRANSFER_PROCESSING_SUCCESSFUL';
+    const BANK_TRANSFER_PROCESSING_FAILED           = 'BANK_TRANSFER_PROCESSING_FAILED';
+    const BANK_TRANSFER_PROCESS_DUPLICATE_UTR       = 'BANK_TRANSFER_PROCESS_DUPLICATE_UTR';
+    const BANK_TRANSFER_RESERVED_ACCOUNT            = 'BANK_TRANSFER_RESERVED_ACCOUNT';
+    const BANK_TRANSFER_NOTIFY_REQUEST              = 'BANK_TRANSFER_NOTIFY_REQUEST';
+    const BANK_TRANSFER_UNEXPECTED_NOTIFY           = 'BANK_TRANSFER_UNEXPECTED_NOTIFY';
+    const BANK_TRANSFER_PROVIDER_VALIDATION_FAILED  = 'BANK_TRANSFER_PROVIDER_VALIDATION_FAILED';
 
     const MERCHANT_BENEFICIARY_FILE_GENERATE        = 'MERCHANT_BENEFICIARY_FILE_GENERATE';
     const MERCHANT_REPORT_GENERATION                = 'MERCHANT_REPORT_GENERATION';
+    const MERCHANT_REPORT_FILE_MAX_LIMIT_EXCEED     = 'MERCHANT_REPORT_FILE_MAX_LIMIT_EXCEED';
     const MERCHANT_NOTIFY_HOLIDAY                   = 'MERCHANT_NOTIFY_HOLIDAY';
     const MERCHANT_NEWSLETTER_MAILING_LIST_CREATED  = 'MERCHANT_NEWSLETTER_MAILING_LIST_CREATED';
     const MERCHANT_ACCOUNT_ACTIVATED                = 'MERCHANT_ACCOUNT_ACTIVATED';
     const MERCHANT_TERMINALS                        = 'MERCHANT_TERMINALS';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
     const MERCHANT_ORG_NOT_GIVEN                    = 'MERCHANT_ORG_NOT_GIVEN';
+    const MERCHANT_SAVE_ACTIVATION_DETAILS          = 'MERCHANT_SAVE_ACTIVATION_DETAILS';
+    const MERCHANT_TAGS_ADD                         = 'MERCHANT_TAGS_ADD';
 
     const MERCHANT_BALANCE_DEBIT_FAILURE            = 'MERCHANT_BALANCE_DEBIT_FAILURE';
 
@@ -495,12 +548,16 @@ class TraceCode
     const AWS_INSTANCE_DATA_WRITE_FAILURE           = 'AWS_INSTANCE_DATA_WRITE_FAILURE';
     const AWS_INSTANCE_DATA_READ_FAILURE            = 'AWS_INSTANCE_DATA_READ_FAILURE';
     const AWS_S3_LOGO_UPLOAD                        = 'AWS_S3_LOGO_UPLOAD';
+    const AWS_S3_LOGO_UPLOADED                      = 'AWS_S3_LOGO_UPLOADED';
     const AWS_FILE_UPLOAD                           = 'AWS_FILE_UPLOAD';
     const AWS_FILE_DOWNLOAD                         = 'AWS_FILE_DOWNLOAD';
     const AWS_FILE_DELETE                           = 'AWS_FILE_DELETE';
+    const LOGO_IMAGE_DETAILS                        = 'LOGO_IMAGE_DETAILS';
 
     const DASHBOARD_INTEGRATION_ERROR               = 'DASHBOARD_INTEGRATION_ERROR';
     const DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED    = 'DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED';
+
+    const NODAL_INTEGRATION_ERROR                   = 'NODAL_INTEGRATION_ERROR';
 
     const QUEUE_JOB_FAILURE                         = 'QUEUE_JOB_FAILURE';
     const QUEUE_INVALID_CONFIG                      = 'QUEUE_INVALID_CONFIG';
@@ -510,6 +567,7 @@ class TraceCode
     const ERROR_INVALID_ARGUMENT                    = 'ERROR_INVALID_ARGUMENT';
     const MISC_TRACE_CODE                           = 'MISC_TRACE_CODE';
     const REFUND_TRANSACTION_FAILED                 = 'REFUND_TRANSACTION_FAILED';
+    const CREDITS_TRANSACTION_FAILED                = 'CREDITS_TRANSACTION_FAILED';
 
     const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';
 
@@ -517,6 +575,7 @@ class TraceCode
     const TOKENEX_RESPONSE                          = 'TOKENEX_RESPONSE';
     const TOKENEX_RETRY                             = 'TOKENEX_RETRY';
     const RAVEN_REQUEST                             = 'RAVEN_REQUEST';
+    const RAVEN_ASYNC_REQUEST_FAILED                = 'RAVEN_ASYNC_REQUEST_FAILED';
     const RAVEN_RESPONSE                            = 'RAVEN_RESPONSE';
 
     const EXCHANGE_REQUEST                          = 'EXCHANGE_REQUEST';
@@ -528,14 +587,12 @@ class TraceCode
     const ES_CAT_RESPONSE                           = 'ES_CAT_RESPONSE';
     const ES_MAPPING_RESPONSE                       = 'ES_MAPPING_RESPONSE';
     const ES_SETTINGS_RESPONSE                      = 'ES_SETTINGS_RESPONSE';
-    const ES_GET_NOTES_QUERY_AND_RESPONSE           = 'ES_GET_NOTES_QUERY_AND_RESPONSE';
     const ES_DEBUG_FAILED                           = 'ES_DEBUG_FAILED';
-    const ES_SAVE_FAILED                            = 'ES_SAVE_FAILED';
+    const ES_SYNC_PUSH_PAYLOAD                      = 'ES_SYNC_PUSH_PAYLOAD';
+    const ES_SYNC_PUSH_FAILED                       = 'ES_SYNC_PUSH_FAILED';
     const ES_SYNC_FAILED                            = 'ES_SYNC_FAILED';
     const ES_SYNC_REQUEST                           = 'ES_SYNC_REQUEST';
     const ES_BULK_UPDATE_FAILED                     = 'ES_BULK_UPDATE_FAILED';
-    const ES_BULK_UPDATE                            = 'ES_BULK_UPDATE';
-    const ES_SAVE_REQUEST                           = 'ES_SAVE_REQUEST';
     const ES_MYSQL_RESULTS_MISMATCH                 = 'ES_MYSQL_RESULTS_MISMATCH';
 
     const RECON_ALERT                               = 'RECON_ALERT';
@@ -561,18 +618,26 @@ class TraceCode
     const PRICING_RULE_MISTMATCH                        = 'PRICING_RULE_MISTMATCH';
     const PRICING_RULE_DOES_NOT_EXISTS                  = 'PRICING_RULE_DOES_NOT_EXISTS';
 
+    const BATCH_CREATE_REQUEST                          = 'BATCH_CREATE_REQUEST';
     const BATCH_CREATED                                 = 'BATCH_CREATED';
+    const BATCH_UPLOADING_FILE                          = 'BATCH_UPLOADING_FILE';
     const BATCH_UPLOAD_FILE                             = 'BATCH_UPLOAD_FILE';
-    const BATCH_PROCESS_FILE                            = 'BATCH_PROCESS_FILE';
+    const BATCH_FILE_PROCESSING                         = 'BATCH_FILE_PROCESSING';
+    const BATCH_FILE_PROCESSED                          = 'BATCH_FILE_PROCESSED';
     const BATCH_ALREADY_PROCESSED                       = 'BATCH_ALREADY_PROCESSED';
+    const BATCH_PROCESSING_ENTRY                        = 'BATCH_PROCESSING_ENTRY';
     const BATCH_PROCESSING_ERROR                        = 'BATCH_PROCESSING_ERROR';
     const BATCH_RETRY                                   = 'BATCH_RETRY';
     const BATCH_DOWNLOAD                                = 'BATCH_DOWNLOAD';
     const BATCH_LIST                                    = 'BATCH_LIST';
     const BATCH_GET                                     = 'BATCH_GET';
     const BATCH_FILE_DELETE                             = 'BATCH_FILE_DELETE';
+    const BATCH_JOB_RECEIVED                            = 'BATCH_JOB_RECEIVED';
+    const BATCH_JOB_HANDLED                             = 'BATCH_JOB_HANDLED';
+    const BATCH_JOB_ERROR                               = 'BATCH_JOB_ERROR';
 
     const MUTEX_LOCK_ALREADY_RELEASED                   = 'MUTEX_LOCK_ALREADY_RELEASED';
+    const MUTEX_UNABLE_TO_ACQUIRE                       = 'MUTEX_UNABLE_TO_ACQUIRE';
 
     /**
      * Trace code for critical info
@@ -594,14 +659,15 @@ class TraceCode
     const FORCE_AUTH_FAILED_PAYMENT                     = 'FORCE_AUTH_FAILED_PAYMENT';
     const PAYMENT_FAILED_EXPECTED_GATEWAY_SUCCESS       = 'PAYMENT_FAILED_EXPECTED_GATEWAY_SUCCESS';
     const PAYMENT_ALREADY_AUTHORIZED                    = 'PAYMENT_ALREADY_AUTHORIZED';
-    const LUMBERJACK_TRACK_FAILED                       = 'LUMBERJACK_TRACK_FAILED';
-    const LUMBERJACK_CONTEXT_FETCH_FAILED               = 'LUMBERJACK_CONTEXT_FETCH_FAILED';
-    const LUMBERJACK_EMPTY_EVENTS                       = 'LUMBERJACK_EMPTY_EVENTS';
-    const LUMBERJACK_POST_FAILED                        = 'LUMBERJACK_POST_FAILED';
-    const LUMBERJACK_QUEUE_SEND_FAILED                  = 'LUMBERJACK_QUEUE_SEND_FAILED';
-    const LUMBERJACK_MISSING_PAYMENT_PROPERTY           = 'LUMBERJACK_MISSING_PAYMENT_PROPERTY';
-    const LUMBERJACK_MISSING_TERMINAL_DATA              = 'LUMBERJACK_MISSING_TERMINAL_DATA';
-    const LUMBERJACK_MISSING_PAYMENT_CONTEXT            = 'LUMBERJACK_MISSING_PAYMENT_CONTEXT';
+
+    // Trace codes for events
+    const EVENT_TRACK_FAILED                            = 'EVENT_TRACK_FAILED';
+    const EVENT_CONTEXT_FETCH_FAILED                    = 'EVENT_CONTEXT_FETCH_FAILED';
+    const EVENT_MISSING_PAYMENT_PROPERTY                = 'EVENT_MISSING_PAYMENT_PROPERTY';
+    const EVENT_MISSING_TERMINAL_DATA                   = 'EVENT_MISSING_TERMINAL_DATA';
+    const EVENT_MISSING_PAYMENT_CONTEXT                 = 'EVENT_MISSING_PAYMENT_CONTEXT';
+    const EVENT_QUEUE_SEND_FAILED                       = 'EVENT_QUEUE_SEND_FAILED';
+    const EVENT_POST_FAILED                             = 'EVENT_POST_FAILED';
 
     // Trace code for features
 
@@ -610,6 +676,8 @@ class TraceCode
     const FEATURE_ASSIGNMENT_EXCEPTION                  = 'FEATURE_ASSIGNMENT_EXCEPTION';
     const MERCHANT_FEATURE_EDIT                         = 'MERCHANT_FEATURE_EDIT';
     const MERCHANT_FEATURE_UPDATE                       = 'MERCHANT_FEATURE_UPDATE';
+    const FEATURE_MULTI_ASSIGN_REQUEST                  = 'FEATURE_MULTI_ASSIGN_REQUEST';
+    const FEATURE_MULTI_REMOVE_REQUEST                  = 'FEATURE_MULTI_REMOVE_REQUEST';
 
     const MERCHANT_METHODS_BULK_UPDATE                  = 'MERCHANT_METHODS_BULK_UPDATE';
     const MERCHANT_HOLD_FUNDS_BULK_UPDATE_REQUEST       = 'MERCHANT_HOLD_FUNDS_BULK_UPDATE_REQUEST';
@@ -691,13 +759,21 @@ class TraceCode
 // Trace codes for gateway
     const USER_EDIT                                     = 'USER_EDIT';
 
+// Trace code for Invitation
+    const INVITATION_CREATE                             = 'INVITATION_CREATE';
+    const INVITATION_EDIT                               = 'INVITATION_EDIT';
+    const INVITATION_ACCEPT                             = 'INVITATION_ACCEPT';
+    const INVITATION_REJECT                             = 'INVITATION_REJECT';
+    const INVITATION_EMAIL                              = 'INVITATION_EMAIL';
+
 // Trace codes for gateway load rules
-    const GATEWAY_RULE_CREATE_REQUEST            = 'GATEWAY_RULE_CREATE_REQUEST';
-    const GATEWAY_RULE_DELETE_REQUEST            = 'GATEWAY_RULE_DELETE_REQUEST';
-    const GATEWAY_RULE_UPDATE_REQUEST            = 'GATEWAY_RULE_UPDATE_REQUEST';
-    const GATEWAY_RULES_POST_FILTER              = 'GATEWAY_RULES_POST_FILTER';
-    const GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS = 'GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS';
-    const GATEWAY_LOAD_SORTING_FALLBACK          = 'GATEWAY_LOAD_SORTING_FALLBACK';
+    const GATEWAY_RULE_CREATE_REQUEST                   = 'GATEWAY_RULE_CREATE_REQUEST';
+    const GATEWAY_RULE_DELETE_REQUEST                   = 'GATEWAY_RULE_DELETE_REQUEST';
+    const GATEWAY_RULE_UPDATE_REQUEST                   = 'GATEWAY_RULE_UPDATE_REQUEST';
+    const GATEWAY_RULES_POST_FILTER                     = 'GATEWAY_RULES_POST_FILTER';
+    const GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS        = 'GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS';
+    const GATEWAY_LOAD_SORTING_FALLBACK                 = 'GATEWAY_LOAD_SORTING_FALLBACK';
+    const GATEWAY_FILTER_RULES                          = 'GATEWAY_FILTER_RULES';
 
     // Trace codes for tax and tax groups crud
     const TAX_GROUP_CREATE_REQUEST                      = 'TAX_GROUP_CREATE_REQUEST';
@@ -706,6 +782,15 @@ class TraceCode
     const TAX_CREATE_REQUEST                            = 'TAX_CREATE_REQUEST';
     const TAX_UPDATE_REQUEST                            = 'TAX_UPDATE_REQUEST';
     const TAX_DELETE_REQUEST                            = 'TAX_DELETE_REQUEST';
+
+    // Trace codes for dispute entity
+    const DISPUTE_CREATE_REQUEST                        = 'DISPUTE_CREATE_REQUEST';
+    const DISPUTE_EDIT_REQUEST                          = 'DISPUTE_EDIT_REQUEST';
+    const GRATIS_TO_POSTPAID_INPUT                      = 'GRATIS_TO_POSTPAID_INPUT';
+    const GRATIS_TO_POSTPAID_FAILED                     = 'GRATIS_TO_POSTPAID_FAILED';
+    const GRATIS_TO_POSTPAID_RESPONSE                   = 'GRATIS_TO_POSTPAID_RESPONSE';
+
+    const DUMMY_JOB = 'DUMMY_JOB';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
@@ -788,10 +873,7 @@ class TraceCode
         self::ERROR_EXCEPTION                           => 'Unhandled critical exception occured',
         self::RECOVERABLE_EXCEPTION                     => 'Recoverable exception occurred',
         self::MISC_TRACE_CODE                           => 'Miscellaneous trace code',
-        self::ES_SAVE_FAILED                            => 'Failed while trying to save the entity to ES',
         self::ES_BULK_UPDATE_FAILED                     => 'Failed while bulk updating in ES',
-        self::ES_BULK_UPDATE                            => 'Bulk update for ES',
-        self::ES_SAVE_REQUEST                           => 'Request for saving in ES',
 
         self::RECON_ALERT                               => 'Alert raised for reconciliation',
         self::RECON_FILE_SKIP                           => 'Skipping a reconciliation file',
@@ -808,6 +890,7 @@ class TraceCode
         self::IIN_INSERT_FAILED                         => 'Inserting into Iin failed for given Iin',
         self::RECON_INFO                                => 'General recon info',
         self::REFUND_TRANSACTION_FAILED                 => 'Transaction failed to create for refund',
+        self::CREDITS_TRANSACTION_FAILED                => 'Credits transaction failed on payment capture',
         self::RECON_INFO_SUMMARY                        => 'Summary of the reconciliation of the files',
         self::TRANSACTION_CREATED_IN_VERIFY_CAPTURE     => 'Transaction created for a failed capture',
         self::REFUND_RETRY_INITIATED                    => 'Retry of failed refunds initiated',
@@ -820,7 +903,6 @@ class TraceCode
 
         self::BATCH_CREATED                             => 'Batch created',
         self::BATCH_UPLOAD_FILE                         => 'Uploaded batch file',
-        self::BATCH_PROCESS_FILE                        => 'Processing the batch file',
         self::BATCH_ALREADY_PROCESSED                   => 'Batch File already processed',
         self::BATCH_PROCESSING_ERROR                    => 'Error in processing batch',
         self::BATCH_RETRY                               => 'Manual retry for the batch file',
@@ -853,6 +935,10 @@ class TraceCode
 
         self::OFFER_IIN_DOES_NOT_EXISTS                 => 'IIN does not exists for the offer create request',
         self::OFFER_DEACTIVATE                          => 'Deactivating the expired offer',
+
+        self::GRATIS_TO_POSTPAID_INPUT                  => 'Mark gratis transactions as postpaid request',
+        self::GRATIS_TO_POSTPAID_FAILED                 => 'Transaction conversion from gratis to postpaid failed',
+        self::GRATIS_TO_POSTPAID_RESPONSE               => 'Gratis to postpaid response',
     );
 
     /**

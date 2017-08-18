@@ -3,6 +3,12 @@
 namespace RZP\Tests\Functional\Gateway\Kotak;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
+
+use RZP\Models\Payout\Status as PayoutStatus;
+use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
+use RZP\Models\FundTransfer\Kotak;
+use RZP\Models\FileStore\Creator;
 
 trait ReconciliationTrait
 {
@@ -12,8 +18,8 @@ trait ReconciliationTrait
 
         $r = range(1,5);
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(20)->timestamp + 5;
-        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(20)->timestamp + 10;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(20)->timestamp + 5;
+        $capturedAt = Carbon::today(Timezone::IST)->subDays(20)->timestamp + 10;
 
         foreach ($r as $i)
         {
@@ -43,7 +49,7 @@ trait ReconciliationTrait
 
         $r = range(1,5);
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(4)->timestamp + 5;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(4)->timestamp + 5;
 
         foreach ($r as $i)
         {
@@ -101,16 +107,6 @@ trait ReconciliationTrait
         return $content;
     }
 
-    protected function initiatePayoutsAndAssertSuccess()
-    {
-        $content = $this->initiatePayouts();
-
-        $this->assertArrayHasKey('kotak', $content);
-        $this->assertArrayHasKey('payout_text_file', $content['kotak']);
-
-        return $content['kotak']['payout_text_file'];
-    }
-
     protected function initiateSettlementsAndAssertSuccess()
     {
         $content = $this->initiateSettlements();
@@ -138,6 +134,81 @@ trait ReconciliationTrait
         $this->assertGreaterThanOrEqual($batchFundTransfer['returned_at'], $time);
 
         return $batchFundTransfer;
+    }
+
+    protected function createSettlementsAndSettlementFile(
+        $settlementCount = 2,
+        $setlAttemptTimestamp = null): Creator
+    {
+        $timestamp = $setlAttemptTimestamp ?: Carbon::today("Asia/Kolkata")->timestamp;
+
+        // Create merchant
+        $merchant = $this->fixtures->create('merchant');
+        $merchantId = $merchant->getId();
+
+        $bankAccount = $this->fixtures->create('bank_account', ['entity_id' => $merchantId]);
+
+        // Create settlements
+        $settlements = $this->fixtures->times($settlementCount)->create(
+            'settlement',
+            [
+                'merchant_id' => $merchantId,
+                'utr' => null,
+                'created_at' => $timestamp,
+            ]);
+
+        // Create batch of settlement
+        $batchTransferEntity = $this->fixtures->create(
+            'batch_fund_transfer',
+            [
+                'total_count' => 1,
+                'transaction_count' => $settlementCount,
+                'created_at' => $timestamp
+            ]);
+
+        // Create fund transfer attempts
+        $textData = $allAttempts = [];
+
+        foreach ($settlements as $settlement)
+        {
+            // Create transaction
+            $transaction = $this->fixtures->create(
+                                'transaction',
+                                [
+                                    'merchant_id'   => $merchantId,
+                                    'type'          => 'settlement',
+                                    'entity_id'     => $settlement->getId()
+                                ]);
+
+            $this->fixtures->edit('settlement', $settlement->getId(), ['transaction_id' => $transaction->getId()]);
+
+            $fta = $this->fixtures->create(
+                'fund_transfer_attempt',
+                [
+                    'source_id'                 => $settlement->getId(),
+                    'created_at'                => $timestamp,
+                    'batch_fund_transfer_id'    => $batchTransferEntity->getId(),
+                    'merchant_id'               => $merchantId,
+                    'status'                    => AttemptStatus::INITIATED,
+                ]
+            );
+
+            $allAttempts[] = $fta;
+        }
+
+        list($textFile, $excelFile) = (new Kotak\NodalAccount)->generateSettlementFile(
+                                                                        $allAttempts, false);
+
+        // Update batch with generated settlement file id
+        $batchTransferEntity->setTxtFileId(($textFile->get())['id']);
+
+        $this->fixtures->edit(
+            'batch_fund_transfer',
+            $batchTransferEntity->getId(),
+            ['txt_file_id' => ($textFile->get())['id']]
+        );
+
+        return $textFile;
     }
 
     protected function checkAdjustmentCreated()

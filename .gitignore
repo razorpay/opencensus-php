@@ -2,11 +2,13 @@
 /vendor
 .env
 .env.*
+.idea/*
 !environment/.env.wercker
 !environment/.env.defaults
 !environment/.env.production
 !environment/.env.beta
 !environment/.env.alpha
+!environment/*.j2
 
 # ignore generated docker conf
 environment/.env.dev_docker
@@ -22,3 +24,7 @@ app/config/**/dev/
 /environment/env.php
 _*
 storage/
+
+#eclipse
+.buildpath
+.project

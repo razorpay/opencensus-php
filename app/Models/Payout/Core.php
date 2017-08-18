@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
@@ -13,6 +14,7 @@ use RZP\Models\Payment;
 use RZP\Models\Settlement;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Transaction;
+use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
 
 class Core extends Base\Core
@@ -37,7 +39,7 @@ class Core extends Base\Core
      * @param  Merchant\Entity $merchant
      * @return Payout\Entity
      */
-    public function directPayout(array $input, Merchant\Entity $merchant)
+    public function directPayout(array $input, Merchant\Entity $merchant): Entity
     {
         $payout = $this->createPayout($input, $merchant);
 
@@ -72,7 +74,7 @@ class Core extends Base\Core
      * @param  string $channel
      * @return array
      */
-    public function initiatePayouts(array $input, string $channel) : array
+    public function initiatePayouts(array $input, string $channel): array
     {
         return $this->mutex->acquireAndRelease(
             self::MUTEX_RESOURCE,
@@ -84,7 +86,7 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
-    protected function createPayout(array $input, Merchant\Entity $merchant) : Entity
+    protected function createPayout(array $input, Merchant\Entity $merchant): Entity
     {
         $this->validateMerchantStatus($merchant);
 
@@ -92,60 +94,67 @@ class Core extends Base\Core
         {
             $payout = $this->createPayoutEntity($input, $merchant);
 
+            $payoutAttempt = $this->createPayoutAttemptEntity($payout);
+
             $this->updatePayoutWithTxn($payout);
 
             return $payout;
         });
     }
 
-    protected function processBankPayouts(array $input, string $channel) : array
+    protected function processBankPayouts(array $input, string $channel): array
     {
         return $this->repo->transaction(function() use ($input, $channel)
         {
-            $timestamp = Carbon::now('Asia/Kolkata')->timestamp;
+            $timestamp = Carbon::now()->getTimestamp();
 
-            $payouts = $this->repo->payout->fetchCreatedPayouts($timestamp, Method::FUND_TRANSFER);
-
-            $this->updatePayoutStatus($payouts, Status::INITIATED);
+            $attempts = $this->repo
+                             ->fund_transfer_attempt
+                             ->getCreatedAttemptsBeforeTimestamp($timestamp, ['source']);
 
             $method = 'processBankPayoutsFor' . ucfirst($channel);
 
             // Calls $this->processBankPayoutsForKotak()
-            $data[$channel] = $this->$method($payouts);
-
-            $this->saveEntitiesToDb($payouts);
+            $data[$channel] = $this->$method($attempts);
 
             return $data;
         });
     }
 
-    protected function processBankPayoutsForKotak(Base\PublicCollection $payouts) : array
+    protected function processBankPayoutsForKotak(Base\PublicCollection $payoutAttempts): array
     {
-        $data['channel'] = 'kotak';
+        $count = $payoutAttempts->count();
 
-        $data['count'] = $payouts->count();
+        $data = ['channel' => 'kotak', 'count' => $count];
 
-        if ($payouts->count() === 0)
+        if ($count === 0)
         {
             $data['message'] = 'No payouts to process';
 
             return $data;
         }
 
-        foreach ($payouts as $payout)
+        foreach ($payoutAttempts as $attempt)
         {
-            $this->createOrUpdateBatchFundTransferForEntity($payout, 1);
+            // $attempt->source is payout entity
+            $this->createOrUpdateBatchFundTransferForEntity($attempt->source, 1);
 
-            $payout->batchFundTransfer()->associate($this->batchFundTransfer);
+            $attempt->batchFundTransfer()->associate($this->batchFundTransfer);
+
+            $attempt->setStatus(FundTransferAttempt\Status::INITIATED);
+
+            $attempt->source->batchFundTransfer()->associate($this->batchFundTransfer);
+
+            $attempt->source->setStatus(Status::INITIATED);
         }
 
-        $urlText = (new Kotak\NodalAccount)->getPayoutsFile($payouts);
+        $urlText = (new Kotak\NodalAccount)->generatePayoutsFile($payoutAttempts);
 
-        $urls = [
-            'kotak_payout_txt'   => $urlText,
-        ];
+        $urls = ['kotak_payout_txt'   => $urlText];
 
         $this->updateFileDetailsInBatchFundTransferEntity(['urls' => $urls]);
+
+        $this->saveEntitiesToDb($payoutAttempts);
 
         $data['payout_text_file'] = $urlText;
 
@@ -157,15 +166,17 @@ class Core extends Base\Core
         $this->repo->payout->updateStatus($payouts, $status);
     }
 
-    protected function saveEntitiesToDb(Base\PublicCollection $payouts)
+    protected function saveEntitiesToDb(Base\PublicCollection $payoutAttempts)
     {
-        foreach ($payouts as $payout)
+        foreach ($payoutAttempts as $attempt)
         {
-            $this->repo->saveOrFail($payout);
+            $this->repo->saveOrFail($attempt);
+
+            $this->repo->saveOrFail($attempt->source);
         }
     }
 
-    protected function createPayoutEntity(array $input, Merchant\Entity $merchant) : Entity
+    protected function createPayoutEntity(array $input, Merchant\Entity $merchant): Entity
     {
         $payout = (new Entity)->build($input);
 
@@ -184,7 +195,31 @@ class Core extends Base\Core
         return $payout;
     }
 
-    protected function getCustomer(array $input, Merchant\Entity $merchant) : Customer\Entity
+    protected function createPayoutAttemptEntity(Entity $payout): FundTransferAttempt\Entity
+    {
+        $fundTransferAttempt = new FundTransferAttempt\Entity;
+
+        $values = [
+            FundTransferAttempt\Entity::CHANNEL   => $payout->getChannel(),
+            FundTransferAttempt\Entity::VERSION   => FundTransferAttempt\Version::V3,
+            FundTransferAttempt\Entity::STATUS    => FundTransferAttempt\Status::CREATED,
+            FundTransferAttempt\Entity::NARRATION => 'RAZORPAY SETTLEMENT',
+        ];
+
+        $fundTransferAttempt->fillAndGenerateId($values);
+
+        $fundTransferAttempt->source()->associate($payout);
+
+        $fundTransferAttempt->merchant()->associate($payout->merchant);
+
+        $fundTransferAttempt->bankAccount()->associate($payout->destination);
+
+        $this->repo->saveOrFail($fundTransferAttempt);
+
+        return $fundTransferAttempt;
+    }
+
+    protected function getCustomer(array $input, Merchant\Entity $merchant): Customer\Entity
     {
         $customerId = $input[Entity::CUSTOMER_ID];
 
@@ -221,6 +256,8 @@ class Core extends Base\Core
         $payout->setFees($txn->getFee());
 
         $payout->setServiceTax($txn->getServiceTax());
+
+        $payout->setTax($txn->getTax());
 
         $this->validateMerchantBalance($payout);
 

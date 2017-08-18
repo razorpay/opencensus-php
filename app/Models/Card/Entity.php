@@ -2,9 +2,12 @@
 
 namespace RZP\Models\Card;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
+
 use RZP\Models\Card;
 use RZP\Models\Base;
-use RZP\Exception;
+use RZP\Models\Merchant;
 
 class Entity extends Base\PublicEntity
 {
@@ -99,31 +102,32 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
     );
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::ENTITY,
         self::NAME,
         self::LAST4,
         self::NETWORK,
         self::TYPE,
+        self::ISSUER,
         self::INTERNATIONAL,
-    );
+        self::EMI,
+    ];
 
-    protected $appends = array(
-        self::NETWORK_CODE);
+    protected $appends = [self::NETWORK_CODE];
 
-    protected $publicSetters = array(
+    protected $publicSetters = [
         self::ID,
         self::ENTITY,
-        self::EMI);
+    ];
 
-    protected $defaults = array(
+    protected $defaults = [
         self::INTERNATIONAL     => null,
         self::EMI               => false,
         self::GLOBAL_CARD_ID    => null,
         self::VAULT             => null,
         self::VAULT_TOKEN       => null,
-    );
+    ];
 
     public function merchant()
     {
@@ -309,6 +313,17 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EXPIRY_YEAR);
     }
 
+    public function getExpiryTimestamp()
+    {
+        $year = $this->getExpiryYear();
+
+        $month = $this->getExpiryMonth();
+
+        return Carbon::createFromDate($year, $month, 1, Timezone::IST)
+                        ->endOfMonth()
+                        ->timestamp;
+    }
+
     public function getTypeElseDefault()
     {
         // Fee based on the method type
@@ -367,21 +382,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TRIVIA, $trivia);
     }
 
-    protected function setPublicEmiAttribute(array & $array)
-    {
-        $array[self::ISSUER] = null;
-        $array[self::EMI] = $this->getEmi();
-
-        if ($this->getEmi() === true)
-        {
-            $array[self::ISSUER] = $this->getIssuer();
-        }
-        else
-        {
-            unset($array[self::ISSUER]);
-        }
-    }
-
     public function getIin()
     {
         return $this->getAttribute(self::IIN);
@@ -390,6 +390,22 @@ class Entity extends Base\PublicEntity
     public function getIssuer()
     {
         return $this->getAttribute(self::ISSUER);
+    }
+
+    public function setPublicIssuerAttribute(array & $array)
+    {
+        //
+        // Allowing only for policy bazaar and shared merchant account
+        //
+        $allowedMerchantIds = ['7LAuMvKMcy7s0f', Merchant\Account::SHARED_ACCOUNT];
+
+        $cardMerchant = $this->getMerchantId();
+
+        if (($this->getEmi() === false) and
+            (in_array($cardMerchant, $allowedMerchantIds, true) === false))
+        {
+            unset($array[self::ISSUER]);
+        }
     }
 
     public function getEmi()
@@ -438,7 +454,7 @@ class Entity extends Base\PublicEntity
 
     public function getFormatted()
     {
-        return 'XXXX-XXXX-XXXX-'.$this->getLast4();
+        return 'XXXX-XXXX-XXXX-' . $this->getLast4();
     }
 
     public function getCountry()
@@ -485,13 +501,17 @@ class Entity extends Base\PublicEntity
 
     public function isBlocked()
     {
+        // if iin is missing from database, allow transaction on it
+        if ($this->iinRelation === null)
+        {
+            return false;
+        }
+
         $iin = $this->getIin();
 
         $last4 = $this->getLast4();
 
-        $blackListedIins = Card\BlackList::BLOCKED_IIN;
-
-        if (in_array($iin, $blackListedIins) === true)
+        if ($this->iinRelation->isEnabled() === false)
         {
             return true;
         }

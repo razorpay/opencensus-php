@@ -9,8 +9,6 @@ use RZP\Models\Reversal;
 
 class ReversalController extends Controller
 {
-    protected $service = Reversal\Service::class;
-
     public function __construct()
     {
         parent::__construct();

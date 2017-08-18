@@ -3,15 +3,18 @@
 namespace RZP\Reconciliator\Axis;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Exception\ReconciliationException;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Service as PaymentService;
 use RZP\Models\Payment\Status as PaymentStatus;
+use RZP\Gateway\Cybersource;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
@@ -20,14 +23,20 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      *******************/
     const COLUMN_PAYMENT_ID    = ['merchant_trans_ref', 'merchant_tran_ref'];
     const COLUMN_CARD_TYPE     = 'card_type';
-    const COLUMN_SERVICE_TAX   = ['service_taxat145', 'service_taxat1450', 'service_taxat135',
-                                  'service_taxat1350', 'service_taxat1500'];
+    const COLUMN_SERVICE_TAX   = ['service_tax', 'service_taxat145', 'service_taxat1450',
+                                  'service_taxat135', 'service_taxat1350', 'service_taxat1500'];
+    const COLUMN_GST           = ['gst'];
     const COLUMN_FEE           = 'commission';
     const COLUMN_CARD_TRIVIA   = ['card', 'network', 'card_category'];
     const COLUMN_ORDER_ID      = 'order_id';
     const COLUMN_CARD_LOCALE   = 'lofo';
     const COLUMN_ISSUER        = 'transaction_category';
     const COLUMN_SETTLED_AT    = 'settlement_date';
+    const COLUMN_MSG_TYPE      = 'msg_type';
+    const COLUMN_MID           = 'mid';
+
+    const PREAUTH              = 'PREAUTH';
+    const CYBS                 = 'CYBS';
 
     const POSSIBLE_DATE_FORMATS = [
         'd-M-y',
@@ -45,15 +54,61 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getPaymentId($row)
     {
+        if ($this->isCybersource($row) === true)
+        {
+            $paymentId = $this->getPaymentIdForCybersource($row);
+        }
+        else
+        {
+            $paymentId = $this->getPaymentIdForMigs($row);
+        }
+
+        return $paymentId;
+    }
+
+    protected function getPaymentIdForMigs(array $row)
+    {
+        $paymentId = null;
+
         foreach (self::COLUMN_PAYMENT_ID as $cpi)
         {
             if (empty($row[$cpi]) === false)
             {
-                return $row[$cpi];
+                $paymentId = $row[$cpi];
+
+                break;
             }
         }
 
-        return null;
+        //
+        // For Cybersource payments via Axis, we don't get a payment ID
+        // in the self::COLUMN_PAYMENT_ID. We get some reference number.
+        // This usually means that it's a Cybersource payment and we have
+        // to get payment_id in a different way.
+        //
+        if (UniqueIdEntity::verifyUniqueId($paymentId, false) === false)
+        {
+            return null;
+        }
+
+        return $paymentId;
+    }
+
+    protected function getPaymentIdForCybersource(array $row)
+    {
+        $paymentId = null;
+
+        $orderId = $row[self::COLUMN_ORDER_ID];
+
+        $gatewayPayment = $this->repo->cybersource->findSuccessfulTxnByActionAndRef(
+                                                        Cybersource\Action::CAPTURE, $orderId);
+
+        if ($gatewayPayment !== null)
+        {
+            $paymentId = $gatewayPayment->getPaymentId();
+        }
+
+        return $paymentId;
     }
 
     protected function getGatewayServiceTax($row)
@@ -68,28 +123,41 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             //
             if (isset($row[$cst]) === true)
             {
-                $columnServiceTax = $cst;
+                $columnServiceTax = $row[$cst];
                 break;
             }
         }
 
-        if ($columnServiceTax === null)
-        {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'      => TraceCode::RECON_FAILURE,
-                    'message'         => 'Unable to get the service tax!',
-                    'row'             => $row,
-                    'gateway'         => get_class()
-                ]);
-
-            throw new ReconciliationException('Unable to get the service tax for Axis from the recon file.');
-        }
-
         // Convert service tax into basic unit of currency. (ex: paise)
-        $serviceTax = floatval($row[$columnServiceTax]) * 100;
+        $serviceTax = floatval($columnServiceTax) * 100;
+
+        $gst = $this->getGst($row);
+
+        $serviceTax += $gst;
 
         return round($serviceTax);
+    }
+
+    protected function getGst(array $row)
+    {
+        $columnGst = null;
+
+        foreach(self::COLUMN_GST as $cgst)
+        {
+            //
+            // This should be isset only and not empty
+            // because gst can be 0 also.
+            //
+            if (isset($row[$cgst]) === true)
+            {
+                $columnGst = $row[$cgst];
+                break;
+            }
+        }
+
+        $gst = floatval($columnGst) * 100;
+
+        return $gst;
     }
 
     protected function getGatewayFee($row)
@@ -231,41 +299,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $cardType;
     }
 
-    protected function forceAuthorizeFailed($row)
+    protected function getInputForForceAuthorize($row)
     {
-        $paymentService = new PaymentService();
-
-        $paymentId = $this->payment->getPublicId();
-
-        $input['vpc_TransactionNo'] = $row[self::COLUMN_ORDER_ID];
-
-        $this->messenger->raiseReconAlert(
-            [
-                'trace_code'      => TraceCode::RECON_INFO_ALERT,
-                'message'         => 'Payment status is still failed after verify. Doing force authorize now.',
-                'payment_id'      => $this->payment->getId(),
-                'gateway'         => get_called_class()
-            ]);
-
-        // If there's any issue during authorize, the function throws an exception.
-        $response = $paymentService->forceAuthorizeFailed($paymentId, $input);
-
-        $this->app['trace']->info(
-            TraceCode::RECON_INFO,
-            [
-                'info_code' => 'FORCE_AUTHORIZATION_RESPONSE',
-                'message'   => 'Response received from force authorization',
-                'response'  => $response
-            ]
-        );
-
-        if ((empty($response['status']) === false) and
-            ($response['status'] === PaymentStatus::AUTHORIZED))
-        {
-            return true;
-        }
-
-        return false;
+        return [
+            'vpc_TransactionNo' => $row[self::COLUMN_ORDER_ID]
+        ];
     }
 
     protected function getCardLocale($cardLocale, $row)
@@ -280,8 +318,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'recon_card_trivia' => $cardLocale,
                     'row'               => $row,
                     'gateway'           => get_class()
-                ]
-            );
+                ]);
 
             return null;
         }
@@ -304,8 +341,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'recon_card_trivia' => $cardLocale,
                     'row'               => $row,
                     'gateway'           => get_class()
-                ]
-            );
+                ]);
 
             // It's as good as no card locale present in the row.
             return null;
@@ -314,7 +350,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $cardType;
     }
 
-    protected function getGatewaySettledAt($row)
+    protected function getGatewaySettledAt(array $row)
     {
         if (empty($row[self::COLUMN_SETTLED_AT]) === true)
         {
@@ -329,7 +365,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         {
             try
             {
-                $gatewaySettledAt = Carbon::createFromFormat($possibleDateFormat, $columnSettledAt, 'Asia/Kolkata');
+                $gatewaySettledAt = Carbon::createFromFormat($possibleDateFormat, $columnSettledAt, Timezone::IST);
                 $gatewaySettledAt = $gatewaySettledAt->timestamp;
             }
             catch (\Exception $ex)
@@ -339,5 +375,34 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         return $gatewaySettledAt;
+    }
+
+
+    protected function isCybersource(array $row)
+    {
+        $msgType = $mid = null;
+
+        if (isset($row[self::COLUMN_MSG_TYPE]) === true)
+        {
+            $msgType = $row[self::COLUMN_MSG_TYPE];
+        }
+
+        if (isset($row[self::COLUMN_MID]) === true)
+        {
+            $mid = $row[self::COLUMN_MID];
+        }
+
+        if ((stripos($msgType, self::PREAUTH) === true) or
+            (ends_with($mid, self::CYBS) === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function shouldAttemptForceAuthorizeFailed()
+    {
+        return true;
     }
 }

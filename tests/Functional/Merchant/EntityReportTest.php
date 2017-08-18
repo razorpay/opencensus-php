@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -25,7 +26,7 @@ class EntityReportTest extends TestCase
         $this->doAuthAndCapturePayment();
         $this->doAuthCaptureAndRefundPayment();
 
-        $dt = Carbon::today('Asia/Kolkata');
+        $dt = Carbon::today(Timezone::IST);
 
         $input = [
             'year' => $dt->year,
@@ -47,7 +48,7 @@ class EntityReportTest extends TestCase
         $this->doAuthAndCapturePayment();
         $this->doAuthCaptureAndRefundPayment();
 
-        $dt = Carbon::today('Asia/Kolkata');
+        $dt = Carbon::today(Timezone::IST);
 
         $input = [
             'year' => $dt->year,
@@ -68,7 +69,7 @@ class EntityReportTest extends TestCase
         $payment['order_id'] = $order['id'];
         $rzpPayment = $this->doAuthPayment($payment);
 
-        $dt = Carbon::today('Asia/Kolkata');
+        $dt = Carbon::today(Timezone::IST);
 
         $input = array(
             'year' => $dt->year,
@@ -118,7 +119,7 @@ class EntityReportTest extends TestCase
      */
     public function testEntityReportTLE()
     {
-        $dt = Carbon::today('Asia/Kolkata');
+        $dt = Carbon::today(Timezone::IST);
 
         $input = array(
             'year' => 2017,
@@ -135,7 +136,7 @@ class EntityReportTest extends TestCase
     {
         $this->testEntityReports();
 
-        $dt = Carbon::today('Asia/Kolkata');
+        $dt = Carbon::today(Timezone::IST);
 
         $input = array(
             'year' => $dt->year,
@@ -161,7 +162,7 @@ class EntityReportTest extends TestCase
         $input['force'] = '1';
         $this->refundAuthorizedPayment($payment['id'], $input);
 
-        $dt = Carbon::today('Asia/Kolkata');
+        $dt = Carbon::today(Timezone::IST);
         $input = [
             'year'  => $dt->year,
             'month' => $dt->month
@@ -169,16 +170,17 @@ class EntityReportTest extends TestCase
 
         $invoice = $this->fetchInvoice($input);
 
-        $this->assertEquals('2000', $invoice['total_fee']);
-        $this->assertEquals('0', $invoice['tax']);
+        $this->assertEquals(2000, $invoice['total_fee']);
+        $this->assertEquals(0, $invoice['tax']);
         $this->assertEquals(2000, $invoice['razorpay_fee']);
+        $this->assertEquals(0, $invoice['taxes']['IGST']);
     }
 
     public function testPaymentReportWithoutAcquirerData()
     {
         $this->doAuthAndCapturePayment();
 
-        $dt = Carbon::today('Asia/Kolkata');
+        $dt = Carbon::today(Timezone::IST);
 
         $input = [
             'year' => $dt->year,
@@ -192,6 +194,46 @@ class EntityReportTest extends TestCase
         $this->assertArrayNotHasKey('acquirer_data', $paymentReport[0]);
     }
 
+    public function testDspReport()
+    {
+        $this->fixtures->merchant->addFeatures(['dsp_report']);
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_terminal');
+
+        $order = $this->fixtures->create('order',
+            [
+                'amount' => 50000,
+                'currency' => 'INR',
+                'receipt' => 'randon string',
+                'notes' => [
+                    'ref_1' => 'random 1',
+                    'ref_2' => 'random 2',
+                    'ref_3' => 'random 3',
+                    'ref_5' => 'random 5',
+                    'ref_6' => 'random 6',
+                    'ref_7' => 'random 7',
+                    'ref_8' => 'random 8',
+                    'ref_9' => 'random 9'
+                ]
+
+            ]);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['order_id'] = $order->getPublicId();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $dt = Carbon::today(Timezone::IST);
+
+        $input = [
+            'day'         => 'today',
+            'merchant_id' => '10000000000000',
+            'email'       => 'test1@razorpay.com',
+        ];
+
+        $data = $this->fetchDSPReport($input);
+    }
+
     public function testBrokingReport()
     {
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_terminal');
@@ -201,7 +243,7 @@ class EntityReportTest extends TestCase
         $this->doAuthAndCapturePayment($payment);
         $this->doAuthCaptureAndRefundPayment($payment);
 
-        $dt = Carbon::today('Asia/Kolkata');
+        $dt = Carbon::today(Timezone::IST);
 
         $input = array(
             'year' => $dt->year,
@@ -260,6 +302,18 @@ class EntityReportTest extends TestCase
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function fetchDSPReport($content)
+    {
+        $request = array(
+            'url' => '/reports/transaction/dsp',
+            'method' => 'get',
+            'content' => $content);
+
+        $this->ba->proxyAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     public function testGenerateReportCombined()
     {
         $entity = 'transaction';
@@ -286,7 +340,7 @@ class EntityReportTest extends TestCase
         $this->doAuthAndCapturePayment();
         $this->doAuthCaptureAndRefundPayment();
 
-        $dt = Carbon::today('Asia/Kolkata');
+        $dt = Carbon::today(Timezone::IST);
 
         $input = [
             'year' => $dt->year,

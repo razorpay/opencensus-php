@@ -131,7 +131,7 @@ class Core extends Base\Core
 
         $gateways[] = Entity::ALL;
 
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         $params = [
             Entity::GATEWAY => $gateways,
@@ -147,7 +147,7 @@ class Core extends Base\Core
             return $params;
         }
 
-        return;
+        return [];
     }
 
     /**

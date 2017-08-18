@@ -134,6 +134,8 @@ class Core extends Base\Core
             {
                 $data['emi'] = $emi;
 
+                $data['emi_subvention'] = $merchant->getEmiSubvention();
+
                 $data['emi_plans'] = (new Emi\Service)->all();
             }
         }
@@ -178,7 +180,6 @@ class Core extends Base\Core
         {
             $methods->setCreditCard(true);
             $methods->setDebitCard(true);
-            $methods->setAmex(true);
             $methods->setMobikwik(true);
             $methods->setPayzapp(true);
             $methods->setPayumoney(true);

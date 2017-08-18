@@ -49,7 +49,7 @@ class ResponseFields
             self::CARD_NUMBER,
             self::CARD_TYPE,
             self::CARD_NETWORK,
-            self::CHECKSUM
+            self::CHECKSUM,
         ];
     }
 }

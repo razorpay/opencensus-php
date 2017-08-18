@@ -2,6 +2,9 @@
 
 namespace RZP\Models\Payout;
 
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
+
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -27,6 +30,7 @@ class Entity extends Base\PublicEntity
     const NOTES                  = 'notes';
     const FEES                   = 'fees';
     const SERVICE_TAX            = 'service_tax';
+    const TAX                    = 'tax';
     const PAYMENT_ID             = 'payment_id';
     const TRANSACTION_ID         = 'transaction_id';
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
@@ -36,6 +40,8 @@ class Entity extends Base\PublicEntity
     const FAILURE_REASON         = 'failure_reason';
     const RETURN_UTR             = 'return_utr';
     const REMARKS                = 'remarks';
+    const PROCESSED_AT           = 'processed_at';
+    const SETTLED_ON             = 'settled_on';
 
     // Public attribute
     const DESTINATION            = 'destination';
@@ -59,6 +65,8 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::STATUS,
         self::NOTES,
+        self::PROCESSED_AT,
+        self::SETTLED_ON,
     ];
 
     protected $visible = [
@@ -72,6 +80,7 @@ class Entity extends Base\PublicEntity
         self::METHOD,
         self::FEES,
         self::SERVICE_TAX,
+        self::TAX,
         self::PAYMENT_ID,
         self::TRANSACTION_ID,
         self::BATCH_FUND_TRANSFER_ID,
@@ -80,6 +89,8 @@ class Entity extends Base\PublicEntity
         self::UTR,
         self::FAILURE_REASON,
         self::REMARKS,
+        self::PROCESSED_AT,
+        self::SETTLED_ON,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -95,8 +106,10 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::FEES,
         self::SERVICE_TAX,
+        self::TAX,
         self::STATUS,
         self::UTR,
+        self::SETTLED_ON,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -117,13 +130,21 @@ class Entity extends Base\PublicEntity
     protected $amounts = [
         self::AMOUNT,
         self::FEES,
-        self::SERVICE_TAX
+        self::SERVICE_TAX,
+        self::TAX,
     ];
 
     protected $casts = [
         self::AMOUNT      => 'int',
         self::FEES        => 'int',
         self::SERVICE_TAX => 'int',
+    ];
+
+    protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::PROCESSED_AT,
+        self::SETTLED_ON,
     ];
 
     public function merchant()
@@ -171,6 +192,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SERVICE_TAX);
     }
 
+    public function getTax()
+    {
+        return $this->getAttribute(self::TAX);
+    }
+
     public function getMethod()
     {
         return $this->getAttribute(self::METHOD);
@@ -199,6 +225,16 @@ class Entity extends Base\PublicEntity
     public function getRemarks()
     {
         return $this->getAttribute(self::REMARKS);
+    }
+
+    public function getUtr()
+    {
+        return $this->getAttribute(self::UTR);
+    }
+
+    public function getProcessedAt()
+    {
+        return $this->getAttribute(self::PROCESSED_AT);
     }
 
     public function isStatusCreated()
@@ -241,6 +277,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SERVICE_TAX, $serviceTax);
     }
 
+    public function setTax($tax)
+    {
+        $this->setAttribute(self::TAX, $tax);
+    }
+
     public function setFees($fees)
     {
         $this->setAttribute(self::FEES, $fees);
@@ -269,6 +310,28 @@ class Entity extends Base\PublicEntity
     public function setRemarks(string $remarks)
     {
         $this->setAttribute(self::REMARKS, $remarks);
+    }
+
+    public function setProcessedAt($date)
+    {
+        $this->setAttribute(self::PROCESSED_AT, $date);
+    }
+
+    public function setSettledOn($date)
+    {
+        $this->setAttribute(self::SETTLED_ON, $date);
+    }
+
+    protected function getSettledOnAttribute()
+    {
+        $timestamp = $this->attributes[self::SETTLED_ON];
+
+        if ($timestamp !== null)
+        {
+            return Carbon::createFromTimestamp($timestamp, Timezone::IST)->format('d/m/Y');
+        }
+
+        return null;
     }
 
     public function setPublicDestinationAttribute(array & $attributes)

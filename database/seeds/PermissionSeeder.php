@@ -10,19 +10,11 @@ class PermissionSeeder extends Seeder
 {
     protected static $permissions = [];
 
-    protected static $assignablePermissions = [];
-
     protected static $permissionIds;
-
-    protected static $enableWorkflowPermissions;
 
     public function __construct()
     {
         self::$permissions = Config::get('heimdall.permissions');
-
-        self::$assignablePermissions = Config::get('heimdall.assignable_permissions');
-
-        self::$enableWorkflowPermissions = Config::get('heimdall.enable_workflow_permissions');
     }
 
     /**
@@ -43,17 +35,13 @@ class PermissionSeeder extends Seeder
     {
         $permissions = self::$permissions;
 
-        $assignablePermissions = self::$assignablePermissions;
-
-        $enableWorkflowPermissions = self::$enableWorkflowPermissions;
-
-        DB::transaction(function() use ($permissions, $assignablePermissions, $enableWorkflowPermissions)
+        DB::transaction(function() use ($permissions)
         {
             $index = 0;
 
             foreach ($permissions as $category => $details)
             {
-                foreach ($details as $permission => $description)
+                foreach ($details as $permission => $permissionValue)
                 {
                     if (isset(self::$permissionIds[$index]) === true)
                     {
@@ -68,15 +56,19 @@ class PermissionSeeder extends Seeder
 
                     $index++;
 
+                    $desc = isset($permissionValue['description']) ? $permissionValue['description'] : '';
+                    $assignable = isset($permissionValue['assignable']) ? $permissionValue['assignable'] : false;
+                    $workflow = isset($permissionValue['workflow']) ? $permissionValue['workflow'] : false;
+
                     DB::table(Table::PERMISSION)->insert([
                         'id'          => $id,
                         'name'        => $permission,
-                        'description' => $description,
+                        'description' => $desc,
                         'category'    => $category,
                         'created_at'  => time(),
                         'updated_at'  => time(),
+                        'assignable'  => $assignable
                     ]);
-
 
                     DB::table(Table::PERMISSION_MAP)->insert([
                         'permission_id'     => $id,
@@ -88,25 +80,16 @@ class PermissionSeeder extends Seeder
                         'permission_id' => $id,
                         'entity_id'     => '100000razorpay',
                         'entity_type'   => 'org',
+                        'enable_workflow' => $workflow
                     ];
-
-                    if (isset($enableWorkflowPermissions[$category]) and
-                        isset($enableWorkflowPermissions[$category][$permission]))
-                    {
-                        $data['enable_workflow'] = 1;
-                    }
 
                     // Razorpay Org will have all permissions
                     DB::table(Table::PERMISSION_MAP)->insert($data);
 
                     // For trimmed down ones (like HDFC)
-                    if (isset($assignablePermissions[$category]) and
-                        isset($assignablePermissions[$category][$permission]))
+                    if (isset($permissionValue['assignable']) and
+                        $permissionValue['assignable'])
                     {
-                        DB::table(Table::PERMISSION)
-                            ->where('id', $id)
-                            ->update(['assignable' => 1]);
-
                         DB::table(Table::PERMISSION_MAP)->insert([
                             [
                                 'permission_id'     => $id,

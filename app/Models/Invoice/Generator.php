@@ -2,23 +2,21 @@
 
 namespace RZP\Models\Invoice;
 
-use App;
-use Mail;
 use Config;
 
+use RZP\Models\Base;
+use RZP\Models\Batch;
+use RZP\Models\Order;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestValidationFailureException;
-use RZP\Exception\LogicException;
-use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\LineItem;
-use RZP\Models\Item;
 use RZP\Models\Merchant;
-use RZP\Models\Order;
-use RZP\Models\Plan\Subscription;
 use RZP\Trace\TraceCode;
+use RZP\Exception\LogicException;
+use RZP\Models\Plan\Subscription;
 use RZP\Services\Elfin\Service as Elfin;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Generator extends Base\Core
 {
@@ -55,6 +53,13 @@ class Generator extends Base\Core
      */
     protected $subscription;
 
+    /**
+     * The batch entity using which invoice was created.
+     *
+     * @var Batch\Entity
+     */
+    protected $batch;
+
     const ORDER_CURRENCY = 'INR';
     const SHORT_MODE_LIVE = 'l';
     const SHORT_MODE_TEST = 't';
@@ -77,11 +82,23 @@ class Generator extends Base\Core
     /**
      * @param null|Subscription\Entity $subscription
      *
-     * @return $this
+     * @return Generator
      */
-    public function setSubscription($subscription)
+    public function setSubscription(Subscription\Entity $subscription = null)
     {
         $this->subscription = $subscription;
+
+        return $this;
+    }
+
+    /**
+     * @param null|Batch\Entity $batch
+     *
+     * @return Generator
+     */
+    public function setBatch(Batch\Entity $batch = null)
+    {
+        $this->batch = $batch;
 
         return $this;
     }
@@ -116,7 +133,12 @@ class Generator extends Base\Core
     }
 
     /**
-     * @param array                     $input
+     * Pre-processes invoice creation.
+     * - Creates and associate customers
+     * - Associates subscription or batch relations if applicable
+     * - Creates and associates line items
+     *
+     * @param array $input
      *
      * @throws BadRequestValidationFailureException
      */
@@ -132,6 +154,11 @@ class Generator extends Base\Core
             {
                 $this->invoice->setSubscriptionStatus(Status::HALTED);
             }
+        }
+
+        if ($this->batch !== null)
+        {
+            $this->invoice->batch()->associate($this->batch);
         }
 
         $this->createLineItems($input);
@@ -227,7 +254,9 @@ class Generator extends Base\Core
 
         $invoice->build($input);
 
-        (new Validator)->validateInput(camel_case($operation), $input);
+        $validator = $invoice->getValidator();
+
+        $validator->validateInput(camel_case($operation), $input);
 
         //
         // This is being done because dashboard can create an invoice
@@ -235,7 +264,7 @@ class Generator extends Base\Core
         // any keys at all.
         //
 
-        $invoice->getValidator()->validateMerchantSpecificData();
+        $validator->validateMerchantSpecificData();
 
         //
         // This is being done so that we can do associations
@@ -311,23 +340,23 @@ class Generator extends Base\Core
 
     protected function createAndAssociateOrderForInvoice()
     {
-        $orderAmount = $this->invoice->getAmount();
-
+        $orderAmount   = $this->invoice->getAmount();
         $orderCurrency = $this->invoice->getCurrency();
-
-        $allowPartialPayment = $this->invoice->hasPartialPaymentEnabled();
-
-        $orderReceipt = 'Invoice Order';
+        $orderReceipt  = 'Invoice Order';
 
         $orderInput = [
-            Order\Entity::AMOUNT            => $orderAmount,
-            Order\Entity::CURRENCY          => $orderCurrency,
-            Order\Entity::RECEIPT           => $orderReceipt,
-            Order\Entity::PAYMENT_CAPTURE   => true,
-            Order\Entity::PARTIAL_PAYMENT   => $allowPartialPayment,
+            Order\Entity::AMOUNT          => $orderAmount,
+            Order\Entity::CURRENCY        => $orderCurrency,
+            Order\Entity::RECEIPT         => $orderReceipt,
+            Order\Entity::PAYMENT_CAPTURE => true,
         ];
 
-        $order = (new Order\Core)->create($orderInput, $this->merchant);
+        $partialPayment = $this->invoice->isPartialPaymentAllowed();
+
+        $order = (new Order\Core)->create(
+                                    $orderInput,
+                                    $this->merchant,
+                                    $partialPayment);
 
         $this->invoice->order()->associate($order);
     }

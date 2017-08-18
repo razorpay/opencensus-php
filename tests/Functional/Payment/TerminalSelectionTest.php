@@ -2,6 +2,11 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use RZP\Error;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
+
 use RZP\Exception\RuntimeException;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
@@ -236,6 +241,27 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('ShrdHdfcEmiTrm', $payment['terminal_id']);
     }
 
+    public function testHDFCTerminalNotUsedForIin()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_axis_terminal');
+
+        $this->mockTokenex();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['amount'] = 500000;
+        $payment['method'] = 'card';
+        $payment['card']['number'] = '4573920000000008';
+
+        $content = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        // Payment should have been made through shared emi terminl
+        $this->assertEquals('1000AxisMigsTl', $payment['terminal_id']);
+    }
+
     public function testHDFCEmiTerminalNotUsedForCard()
     {
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
@@ -254,6 +280,35 @@ class TerminalSelectionTest extends TestCase
         // Payment should have been made through shared terminl of correct category
         // $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('1000HdfcShared', $payment['terminal_id']);
+    }
+
+    public function testHDFCEmiTerminalWithMerchantSubvention()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hdfc_emi_terminal');
+        $this->fixtures->create('terminal:shared_hdfc_emi_merchant_subvention_terminal');
+        $emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
+
+        $this->fixtures->merchant->enableEmi();
+        $this->fixtures->merchant->addFeatures('emi_merchant_subvention');
+        $this->mockTokenex();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['method'] = 'emi';
+
+        $payment['emi_duration'] = 9;
+
+        $payment['amount'] = 500000;
+
+        $content = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        // Payment should have been made through shared terminl of correct category
+        // $payment = $this->getLastEntity('payment', true);
+        $this->assertEquals('ShrdEmiMrSubTr', $payment['terminal_id']);
     }
 
     public function testKotakEmisFlowThroughCardTerminal()
@@ -288,49 +343,6 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->merchant->disableEmi();
     }
 
-    public function testTerminalChoiceonChance()
-    {
-        $this->fixtures->create('terminal:all_shared_terminals');
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $this->mockTokenex();
-
-        $chances = [
-            // Chance from 96 to 100 should give First Data
-            //[ 'chanceValue' => 100,  'expected_terminal_id' => '1000FrstDataTl' ],
-            //[ 'chanceValue' => 98,  'expected_terminal_id' => '1000FrstDataTl' ],
-            //[ 'chanceValue' => 96,  'expected_terminal_id' => '1000FrstDataTl' ],
-            // Chance from 5100 to 9500 should give AxisMigs
-            ['chanceValue' => 9500, 'expected_terminal_id' => '1000AxisMigsTl'],
-            ['chanceValue' => 7000, 'expected_terminal_id' => '1000AxisMigsTl'],
-            ['chanceValue' => 5100, 'expected_terminal_id' => '1000AxisMigsTl'],
-            // Chance from 4600 to 5000 should give Cybersource axis
-            ['chanceValue' => 5000, 'expected_terminal_id' => '1000CybAxTrmnl'],
-            ['chanceValue' => 4700, 'expected_terminal_id' => '1000CybAxTrmnl'],
-            ['chanceValue' => 4600, 'expected_terminal_id' => '1000CybAxTrmnl'],
-            // Chance 4500 or below should give HDFC
-            ['chanceValue' => 4500, 'expected_terminal_id' => '1000HdfcShared'],
-            ['chanceValue' => 2000, 'expected_terminal_id' => '1000HdfcShared'],
-            ['chanceValue' => 0, 'expected_terminal_id' => '1000HdfcShared'],
-        ];
-
-        foreach ($chances as $chance)
-        {
-            $this->chanceTerminalTest($chance['chanceValue'], $chance['expected_terminal_id']);
-        }
-    }
-
-    private function chanceTerminalTest($chance, $expectedTerminalId)
-    {
-        Options::setTestChance($chance);
-
-        $this->payment = $this->getDefaultPaymentArray();
-
-        $content = $this->doAuthAndCapturePayment($this->payment);
-
-        $payment = $this->getLastEntity('payment', true);
-        $this->assertEquals($expectedTerminalId, $payment['terminal_id']);
-    }
-
     public function testTerminalChoiceOnRiskyMerchant()
     {
         $this->markTestSkipped();
@@ -361,6 +373,15 @@ class TerminalSelectionTest extends TestCase
         $payment['card']['number'] = '341111111111111';
         $payment['card']['cvv'] = '8888';
 
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin' => 341111,
+                'network' => 'Amex',
+                'type' => 'credit',
+                'country' => null,
+            ]);
+
         $content = $this->doAuthAndCapturePayment($payment);
         $payment = $this->getLastEntity('payment', true);
 
@@ -379,6 +400,15 @@ class TerminalSelectionTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '341111111111111';
         $payment['card']['cvv'] = '8888';
+
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin' => 341111,
+                'network' => 'Amex',
+                'type' => 'credit',
+                'country' => null,
+            ]);
 
         $content = $this->doAuthAndCapturePayment($payment);
         $payment = $this->getLastEntity('payment', true);
@@ -427,6 +457,15 @@ class TerminalSelectionTest extends TestCase
         $payment['card']['number'] = '341111111111111';
         $payment['card']['cvv'] = '8888';
 
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin' => 341111,
+                'network' => 'Amex',
+                'type' => 'credit',
+                'country' => null,
+            ]);
+
         $content = $this->doAuthAndCapturePayment($payment);
         $payment = $this->getLastEntity('payment', true);
 
@@ -451,6 +490,15 @@ class TerminalSelectionTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '341111111111111';
         $payment['card']['cvv'] = '8888';
+
+        $this->fixtures->create(
+            'iin',
+            [
+                'iin' => 341111,
+                'network' => 'Amex',
+                'type' => 'credit',
+                'country' => null,
+            ]);
 
         $content = $this->doAuthAndCapturePayment($payment);
         $payment = $this->getLastEntity('payment', true);
@@ -680,7 +728,7 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('DrctNbKtkTmnl3', $payment1['terminal_id']);
     }
 
-    public function testCorporateMerchantsBilldeskICICI()
+    public function testCorporateMerchantsSharedBilldeskICICI()
     {
         $this->fixtures->merchant->editCategory2('corporate');
 
@@ -712,6 +760,70 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('SharNbBdkTmnl2', $payment1['terminal_id']);
     }
 
+    public function testCorporateMerchantsBilldeskCorporateICICISelection()
+    {
+        // Corporate Enabled Icici terminal for Billdesk
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             [
+                'id'          => 'DrctNbBdkTmnl1',
+                'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+                'corporate'   => 1,
+             ]
+            );
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             [
+              'id' => 'SharNbBdkTmnl1',
+              'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+             ]
+            );
+
+        $data = [
+            'response'  => [
+                'content'     => [
+                    'error' => [
+                        'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class'                 => \RZP\Exception\GatewayErrorException::class,
+                'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            ]
+        ];
+
+        $payment = $this->getDefaultNetbankingPaymentArray('ICIC');
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+           $this->doAuthPayment($payment);
+        });
+
+        $payment1 = $this->getLastEntity('payment', true);
+        $billdesk = $this->getLastEntity('billdesk', true);
+
+        $this->assertEquals('DrctNbBdkTmnl1', $payment1['terminal_id']);
+        $this->assertEquals('ICO', $billdesk['BankID']);
+
+        $this->fixtures->merchant->editCategory2('corporate');
+
+        $payment = $this->getDefaultNetbankingPaymentArray('ICIC');
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+           $this->doAuthPayment($payment);
+        });
+
+        $payment1 = $this->getLastEntity('payment', true);
+        $billdesk = $this->getLastEntity('billdesk', true);
+
+        $this->assertEquals('DrctNbBdkTmnl1', $payment1['terminal_id']);
+        $this->assertEquals('ICO', $billdesk['BankID']);
+
+    }
+
     public function testPharmaMerchantTerminalSelection()
     {
         $this->fixtures->merchant->editCategory2(Category::PHARMA);
@@ -740,5 +852,150 @@ class TerminalSelectionTest extends TestCase
 
         $payment1 = $this->getLastEntity('payment', true);
         $this->assertEquals('DrctHDFCTermnl', $payment1['terminal_id']);
+    }
+
+    public function testMutualFundsMerchantTerminalSelection()
+    {
+        $this->fixtures->merchant->editCategory2(Category::MUTUAL_FUNDS);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'DrctNbBdkTmnl1',
+              'merchant_id' => Merchant\Account::TEST_ACCOUNT]);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'DrctNbBdkTmnl2',
+              'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+              'network_category' => 'ecommerce']);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'DrctNbBdkTmnl3',
+              'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+              'network_category' => 'mutual_funds']);
+
+        $this->fixtures->create('terminal:shared_netbanking_icici_terminal');
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['bank'] = 'SBIN';
+        $this->doAuthAndCapturePayment($payment);
+        $payment1 = $this->getLastEntity('payment', true);
+        $this->assertEquals('DrctNbBdkTmnl3', $payment1['terminal_id']);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['bank'] = 'ICIC';
+        $this->doAuthAndCapturePayment($payment);
+        $payment1 = $this->getLastEntity('payment', true);
+        $this->assertEquals('100NbIciciTmnl', $payment1['terminal_id']);
+    }
+
+    public function testHousingMerchantTerminalSelection()
+    {
+        $this->fixtures->merchant->editCategory2(Category::HOUSING);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'DrctNbBdkTmnl1',
+              'merchant_id' => Merchant\Account::TEST_ACCOUNT]);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'DrctNbBdkTmnl2',
+              'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+              'network_category' => 'ecommerce']);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'DrctNbBdkTmnl3',
+              'merchant_id' => Merchant\Account::TEST_ACCOUNT,
+              'network_category' => 'mutual_funds']);
+
+        $this->fixtures->create('terminal:shared_netbanking_icici_terminal');
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['bank'] = 'ICIC';
+        $this->doAuthAndCapturePayment($payment);
+        $payment1 = $this->getLastEntity('payment', true);
+        $this->assertEquals('100NbIciciTmnl', $payment1['terminal_id']);
+    }
+
+    public function testInsuranceMerchantTerminalSelection()
+    {
+        $this->fixtures->merchant->editCategory2(Category::INSURANCE);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'ShrdNbBdkTmnl1',
+              'merchant_id' => Merchant\Account::SHARED_ACCOUNT]);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'ShrdNbBdkTmnl2',
+              'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+              'network_category' => 'ecommerce']);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'ShrdNbBdkTmnl3',
+              'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+              'network_category' => 'insurance']);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['bank'] = 'SBIN';
+        $this->doAuthAndCapturePayment($payment);
+        $payment1 = $this->getLastEntity('payment', true);
+        $this->assertEquals('ShrdNbBdkTmnl2', $payment1['terminal_id']);
+    }
+
+    public function testBilldeskHousingChoiceForForexMerchant()
+    {
+        $this->fixtures->merchant->editCategory2(Category::FOREX);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'ShrdNbBdkNoCat',
+              'merchant_id' => Merchant\Account::SHARED_ACCOUNT]);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'ShrdNbBdkEComm',
+              'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+              'network_category' => 'ecommerce']);
+
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'ShrdNbBdkHouse',
+              'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+              'network_category' => 'housing']);
+
+        // Should not be picked. Not even allowed with the new config.
+        $this->fixtures->create('terminal:shared_billdesk_terminal',
+             ['id' => 'ShrdNbBdkForex',
+              'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
+              'network_category' => 'forex']);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        // Amount filter should have rejected the housing terminal
+        $payment['bank'] = 'SBIN';
+
+        $this->doAuthAndCapturePayment($payment);
+        $payment1 = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('ShrdNbBdkEComm', $payment1['terminal_id']);
+
+        // Amount filter will let the payment though for amount greater than 2K
+        $payment['amount'] = '300000';
+
+        $this->doAuthAndCapturePayment($payment);
+        $payment1 = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('ShrdNbBdkHouse', $payment1['terminal_id']);
+    }
+
+    public function testSharedTerminalFilter()
+    {
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_hdfc_terminal');
+
+        Merchant\Preferences::$merchantSharedTerminalsBlackList[] = '10000000000000';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+           $this->doAuthPayment();
+        });
+
+        array_pop(Merchant\Preferences::$merchantSharedTerminalsBlackList);
     }
 }

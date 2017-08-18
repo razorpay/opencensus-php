@@ -41,6 +41,10 @@ class CreateSettlements extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->integer(Settlement::TAX)
+                  ->unsigned()
+                  ->nullable();
+
             $table->string(Settlement::STATUS);
 
             $table->char(Settlement::TRANSACTION_ID, Settlement::ID_LENGTH)
@@ -65,6 +69,12 @@ class CreateSettlements extends Migration
             $table->string(Settlement::RETURN_UTR)
                   ->nullable()
                   ->unique();
+
+            $table->integer(Settlement::PROCESSED_AT)
+                  ->nullable();
+
+            $table->integer(Settlement::SETTLED_ON)
+                  ->nullable();
 
             // Adds created_at and updated_at columns to the table
             $table->integer(Settlement::CREATED_AT);

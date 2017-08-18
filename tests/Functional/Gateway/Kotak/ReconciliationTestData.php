@@ -3,13 +3,16 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
+use RZP\Models\Settlement\Status as SettlementStatus;
 
 return [
     'fetchAndMatchBatchDataSettlement' => [
         'channel'           => 'kotak',
-        'amount'            => 4385000,
-        'fees'              => 115000,
-        'service_tax'       => 15000,
+        'amount'            => 4382000,
+        'fees'              => 118000,
+        'service_tax'       => 18000,
+        'tax'               => 18000,
         'api_fee'           => 0,
         'gateway_fee'       => 0,
         'total_count'       => 1,
@@ -21,8 +24,9 @@ return [
         'entity'            => 'batch_fund_transfer',
         'channel'           => 'kotak',
         'amount'            => 5000,
-        'fees'              => 2935,
-        'service_tax'       => 385,
+        'fees'              => 3010,
+        'service_tax'       => 460,
+        'tax'               => 460,
         'api_fee'           => 0,
         'gateway_fee'       => 0,
         'total_count'       => 5,
@@ -32,9 +36,10 @@ return [
     'fetchAndMatchSettlementsForReconSuccess' => [
         'channel'           => "kotak",
         'merchant_id'       => '10000000000000',
-        'amount'            => 4385000,
-        'fees'              => 115000,
-        'service_tax'       => 15000,
+        'amount'            => 4382000,
+        'fees'              => 118000,
+        'service_tax'       => 18000,
+        'tax'               => 18000,
         'failure_reason'    => null,
         'attempts'          => 1,
     ],
@@ -42,9 +47,10 @@ return [
     'fetchAndMatchSettlementsForRetryReconSuccess' => [
         'channel'           => "kotak",
         'merchant_id'       => '10000000000000',
-        'amount'            => 4385000,
-        'fees'              => 115000,
-        'service_tax'       => 15000,
+        'amount'            => 4382000,
+        'fees'              => 118000,
+        'service_tax'       => 18000,
+        'tax'               => 18000,
         'failure_reason'    => null,
         'attempts'          => 2,
     ],
@@ -52,11 +58,12 @@ return [
     'fetchAndMatchSettlementsForReconFailure' => [
         'channel'           => "kotak",
         'merchant_id'       => '10000000000000',
-        'amount'            => 4385000,
-        'fees'              => 115000,
-        'service_tax'       => 15000,
+        'amount'            => 4382000,
+        'fees'              => 118000,
+        'service_tax'       => 18000,
+        'tax'               => 18000,
         'failure_reason'    => 'Reconciliation',
-        'status'            => 'failed',
+        'status'            => SettlementStatus::FAILED,
         'attempts'          => 1,
         'remarks'           => 'This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count li',
     ],
@@ -75,7 +82,7 @@ return [
         'channel'          => 'kotak',
         'version'          => 'V3',
         'bank_status_code' => 'P',
-        'status'           => 'failed',
+        'status'           => AttemptStatus::FAILED,
         'remarks'          => 'This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count li',
         'failure_reason'   => 'Reconciliation',
     ],

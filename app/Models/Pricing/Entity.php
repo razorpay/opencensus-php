@@ -3,38 +3,48 @@
 namespace RZP\Models\Pricing;
 
 use RZP\Models\Base;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                    = 'id';
-    const PLAN_ID               = 'plan_id';
-    const PLAN_NAME             = 'plan_name';
-    const FEATURE               = 'feature';
-    const GATEWAY               = 'gateway';
-    const PAYMENT_METHOD        = 'payment_method';
-    const PAYMENT_METHOD_TYPE   = 'payment_method_type';
-    const PAYMENT_NETWORK       = 'payment_network';
-    const INTERNATIONAL         = 'international';
+    use SoftDeletes;
+
+    const ID                   = 'id';
+    const PLAN_ID              = 'plan_id';
+    const PLAN_NAME            = 'plan_name';
+    const FEATURE              = 'feature';
+    const GATEWAY              = 'gateway';
+    const PAYMENT_METHOD       = 'payment_method';
+    const PAYMENT_METHOD_TYPE  = 'payment_method_type';
+    const PAYMENT_NETWORK      = 'payment_network';
+    const INTERNATIONAL        = 'international';
 
     // Humanized name of the payment network
-    const PAYMENT_NETWORK_NAME  = 'payment_network_name';
-    const PAYMENT_ISSUER        = 'payment_issuer';
+    const PAYMENT_NETWORK_NAME = 'payment_network_name';
+    const PAYMENT_ISSUER       = 'payment_issuer';
+
+    const EMI_DURATION         = 'emi_duration';
 
     // Amount Range Rule
-    const AMOUNT_RANGE_ACTIVE   = 'amount_range_active';
-    const AMOUNT_RANGE_MIN      = 'amount_range_min';
-    const AMOUNT_RANGE_MAX      = 'amount_range_max';
+    const AMOUNT_RANGE_ACTIVE  = 'amount_range_active';
+    const AMOUNT_RANGE_MIN     = 'amount_range_min';
+    const AMOUNT_RANGE_MAX     = 'amount_range_max';
 
+    const PERCENT_RATE         = 'percent_rate';
+    const FIXED_RATE           = 'fixed_rate';
 
-    const PERCENT_RATE          = 'percent_rate';
-    const FIXED_RATE            = 'fixed_rate';
-    const EXPIRED_AT            = 'expired_at';
+    // Min And Max Rate
+    const MIN_FEE              = 'min_fee';
+    const MAX_FEE              = 'max_fee';
+
+    const EXPIRED_AT           = 'expired_at';
+    const DELETED_AT           = 'deleted_at';
 
     protected $revisionEnabled = true;
 
     protected $revisionCreationsEnabled = true;
 
-    protected $fillable = array(
+    protected $fillable = [
         self::ID,
         self::PLAN_ID,
         self::PLAN_NAME,
@@ -49,7 +59,11 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_RANGE_MIN,
         self::AMOUNT_RANGE_MAX,
         self::PERCENT_RATE,
-        self::FIXED_RATE);
+        self::FIXED_RATE,
+        self::MIN_FEE,
+        self::MAX_FEE,
+        self::EMI_DURATION,
+    ];
 
     protected $entity = 'pricing';
 
@@ -62,18 +76,36 @@ class Entity extends Base\PublicEntity
      *
      * @var array
      */
-    protected static $modifiers = array('inputRemoveBlanks', 'inputProvideDefaults');
+    protected static $modifiers = ['inputRemoveBlanks', 'inputProvideDefaults'];
 
-    protected static $generators = array('plan_id');
+    protected static $generators = ['plan_id'];
 
-    protected $defaults = array(
-        self::FEATURE               => Feature::PAYMENT,
-        self::PAYMENT_METHOD_TYPE   => null,
-        self::PAYMENT_NETWORK       => null,
-        self::PAYMENT_ISSUER        => null,
-        self::PERCENT_RATE          => 0,
-        self::FIXED_RATE            => 0,
-        self::AMOUNT_RANGE_ACTIVE   => '0');
+    protected $defaults = [
+        self::FEATURE             => Feature::PAYMENT,
+        self::PAYMENT_METHOD_TYPE => null,
+        self::PAYMENT_NETWORK     => null,
+        self::PAYMENT_ISSUER      => null,
+        self::PERCENT_RATE        => 0,
+        self::FIXED_RATE          => 0,
+        self::MIN_FEE             => 0,
+        self::MAX_FEE             => null,
+        self::AMOUNT_RANGE_ACTIVE => '0',
+        self::EMI_DURATION        => null,
+    ];
+
+    /**
+     * Adds casts for fields
+     *
+     * @var array
+     */
+    protected $casts = [
+        self::INTERNATIONAL       => 'bool',
+        self::AMOUNT_RANGE_ACTIVE => 'bool',
+        self::PERCENT_RATE        => 'int',
+        self::FIXED_RATE          => 'int',
+        self::MIN_FEE             => 'int',
+        self::EMI_DURATION        => 'int',
+    ];
 
     const ZERO_PRICING = '10ZeroPricingP';
 
@@ -175,6 +207,11 @@ class Entity extends Base\PublicEntity
         return [$this->getPercentRate(), $this->getFixedRate()];
     }
 
+    public function getMinMaxFees()
+    {
+        return [$this->getMinFee(), $this->getMaxFee()];
+    }
+
     public function getPlanId()
     {
         return $this->getAttribute(self::PLAN_ID);
@@ -207,10 +244,7 @@ class Entity extends Base\PublicEntity
 
     public function getAmountRange()
     {
-        $min = $this->getAmountRangeMin();
-        $max = $this->getAmountRangeMax();
-
-        return [$min, $max];
+        return [$this->getAmountRangeMin(), $this->getAmountRangeMax()];
     }
 
     public function getAmountRangeMin()
@@ -233,14 +267,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PERCENT_RATE);
     }
 
-    protected function getInternationalAttribute()
+    public function getMinFee()
     {
-        return (bool) $this->attributes[self::INTERNATIONAL];
+        return $this->getAttribute(self::MIN_FEE);
     }
 
-    protected function getAmountRangeActiveAttribute()
+    public function getMaxFee()
     {
-        return (bool) $this->attributes[self::AMOUNT_RANGE_ACTIVE];
+        return $this->getAttribute(self::MAX_FEE);
+    }
+
+    public function getEmiDuration()
+    {
+        return $this->getAttribute(self::EMI_DURATION);
     }
 
     protected function getAmountRangeMinAttribute()
@@ -257,14 +296,11 @@ class Entity extends Base\PublicEntity
         return ($max === null) ? $max : (int) $max;
     }
 
-    protected function getPercentRateAttribute()
+    protected function getMaxFeeAttribute()
     {
-        return (int) $this->attributes[self::PERCENT_RATE];
-    }
+        $max = $this->attributes[self::MAX_FEE];
 
-    protected function getFixedRateAttribute()
-    {
-        return (int) $this->attributes[self::FIXED_RATE];
+        return ($max === null) ? $max : (int) $max;
     }
 
     public function getFeature()

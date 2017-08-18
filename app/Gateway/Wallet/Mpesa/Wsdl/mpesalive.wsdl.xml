@@ -1,7 +1,7 @@
 <definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tns="http://paymentgateway.mcommerce/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.xmlsoap.org/wsdl/" targetNamespace="http://paymentgateway.mcommerce/" name="MCOMPGInterfaceImplService">
 <types>
 <xsd:schema>
-<xsd:import namespace="http://paymentgateway.mcommerce/" schemaLocation="http://www.mpesa.in:80/mcommerce.webservices/pgService?xsd=1"/>
+<xsd:import namespace="http://paymentgateway.mcommerce/" schemaLocation="mpesalive.xsd.xml"/>
 </xsd:schema>
 </types>
 <message name="processPayment">

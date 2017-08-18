@@ -1,6 +1,11 @@
 <?php
 
-class Razorpay_Sniffs_Operators_ValidLogicalOperatorsSniff implements PHP_CodeSniffer_Sniff
+namespace Razorpay\Sniffs\Operators;
+
+use PHP_CodeSniffer\Sniffs\Sniff;
+use PHP_CodeSniffer\Files\File;
+
+class ValidLogicalOperatorsSniff implements Sniff
 {
     /**
      * Returns an array of tokens this test wants to listen for.
@@ -24,7 +29,7 @@ class Razorpay_Sniffs_Operators_ValidLogicalOperatorsSniff implements PHP_CodeSn
      *
      * @return void
      */
-    public function process(PHP_CodeSniffer_File $phpcsFile, $stackPtr)
+    public function process(File $phpcsFile, $stackPtr)
     {
         $tokens = $phpcsFile->getTokens();
 

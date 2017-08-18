@@ -11,39 +11,45 @@ class Validator extends Base\Validator
 {
     const INVALID_IFSC_CODE_MESSAGE = 'Invalid IFSC Code in Bank Account';
 
-    protected static $addBankAccountRules = array(
-        'ifsc_code'             => 'required|alpha_num|size:11',
-        'account_number'        => 'required|alpha_num|between:5,20',
-        'beneficiary_name'      => 'required|min:4|max:40|alpha_space_num',
-        'beneficiary_address1'  => 'required|max:30',
-        'beneficiary_address2'  => 'sometimes|max:30',
-        'beneficiary_address3'  => 'sometimes|max:30',
-        'beneficiary_address4'  => 'sometimes|max:30',
-        'mobile_banking_enabled'=> 'sometimes|in:0,1',
-        'mpin'                  => 'sometimes|max:6',
-        'beneficiary_city'      => 'required|max:30',
-        'beneficiary_state'     => 'required|max:2',
-        'beneficiary_pin'       => 'required|integer|digits:6',
-        'beneficiary_country'   => 'sometimes|in:IN',
-        'beneficiary_email'     => 'required|email',
-        'beneficiary_mobile'    => 'required|numeric|digits_between:10,12',
-    );
+    protected static $addBankAccountRules = [
+        Entity::IFSC_CODE              => 'required|alpha_num|size:11',
+        Entity::ACCOUNT_NUMBER         => 'required|alpha_num|between:5,20',
+        Entity::BENEFICIARY_NAME       => 'required|between:4,40|alpha_space_num',
+        Entity::BENEFICIARY_ADDRESS1   => 'required|max:30',
+        Entity::BENEFICIARY_ADDRESS2   => 'sometimes|max:30',
+        Entity::BENEFICIARY_ADDRESS3   => 'sometimes|max:30',
+        Entity::BENEFICIARY_ADDRESS4   => 'sometimes|max:30',
+        Entity::MOBILE_BANKING_ENABLED => 'sometimes|in:0,1',
+        Entity::MPIN                   => 'sometimes|max:6',
+        Entity::BENEFICIARY_CITY       => 'required|max:30',
+        Entity::BENEFICIARY_STATE      => 'required|max:2',
+        Entity::BENEFICIARY_PIN        => 'required|integer|digits:6',
+        Entity::BENEFICIARY_COUNTRY    => 'sometimes|in:IN',
+        Entity::BENEFICIARY_EMAIL      => 'required|email',
+        Entity::BENEFICIARY_MOBILE     => 'required|numeric|digits_between:10,12',
+    ];
 
-    protected static $addBankAccountValidators = array(
-        'beneficiary_state');
+    protected static $addVirtualBankAccountRules = [
+        Entity::IFSC_CODE             => 'required|alpha_num|size:11',
+        Entity::ACCOUNT_NUMBER        => 'required|alpha_num|between:5,20',
+        Entity::BENEFICIARY_NAME      => 'required|max:40|alpha_space_num',
+    ];
 
-    protected static $beneficiaryStateCodes = array(
+    protected static $addBankAccountValidators = [
+        Entity::BENEFICIARY_STATE
+    ];
+
+    protected static $beneficiaryStateCodes = [
         'AN', 'AP', 'AR', 'AS', 'BI', 'CH', 'CT', 'DN',
         'DD', 'GO', 'GJ', 'HA', 'HP', 'JK', 'JH', 'KA',
         'KE', 'LD', 'MP', 'MH', 'MA', 'ME', 'MI', 'NA',
         'DL', 'OR', 'PO', 'PB', 'RJ', 'SK', 'TG', 'TN',
-        'TR', 'UP', 'UT', 'WB');
+        'TR', 'UP', 'UT', 'WB'
+    ];
 
     protected function validateBeneficiaryState($input)
     {
-        $state = $input['beneficiary_state'];
-
-        if (in_array($state, self::$beneficiaryStateCodes, true) === false)
+        if (in_array($input[Entity::BENEFICIARY_STATE], self::$beneficiaryStateCodes, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Not a valid state code');

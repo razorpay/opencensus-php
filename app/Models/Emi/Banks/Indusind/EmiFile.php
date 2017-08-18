@@ -3,7 +3,9 @@
 namespace RZP\Models\Emi\Banks\Indusind;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Card;
+use RZP\Models\FileStore;
 use RZP\Models\Emi\Banks\Base;
 
 class EmiFile extends Base\EmiFile
@@ -14,53 +16,7 @@ class EmiFile extends Base\EmiFile
 
     protected $bankName  = 'IndusInd';
 
-    protected static $headers = [
-            'EMI ID',
-            'Card Pan',
-            'Issuer',
-            'RRN',
-            'Auth Code',
-            'Tx Amount',
-            'EMI_Offer',
-            'Manufacturer',
-            'Merchant Name',
-            'Address1',
-            'Store City',
-            'Store State',
-            'Acquirer',
-            'MID',
-            'TID',
-            'Tx Time',
-            'Settlement Time',
-            'Customer Processing Fee',
-            'Customer Processing Amt',
-            'Subvention payable to Issuer',
-            'Subvention Amount (Rs.)',
-            'Interest Rate',
-            'Tx Status',
-            'Product Category',
-            'Product Sub-Category 1',
-            'Product Sub-Category 2',
-            'Model Name',
-            'Card Hash',
-            'EMI Amount',
-            'Loan Amount',
-            'Discount / Cashback %',
-            'Discount / Cashback Amount',
-            'Is New Model',
-            'Additional Cashback',
-            'Reward Point',
-            'Txn Type',
-        ];
-
-    protected function writeEmiFile($emiData)
-    {
-        $url = $this->writeToExcelFile($emiData, $this->getFileToWriteNameWithoutExt());
-
-        $path = $this->getExcelFullFilePath();
-
-        return compact('url', 'path');
-    }
+    const TYPE = FileStore\Type::INDUSIND_EMI_FILE;
 
     protected function getEmiData($input)
     {
@@ -119,6 +75,6 @@ class EmiFile extends Base\EmiFile
 
     private function formattedDateFromTimestamp($timestamp)
     {
-        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('j/n/Y');
+        return Carbon::createFromTimestamp($timestamp, Timezone::IST)->format('j/n/Y');
     }
 }

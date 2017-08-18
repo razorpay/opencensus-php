@@ -305,4 +305,13 @@ class CustomerController extends Controller
 
         return ApiResponse::json($statement);
     }
+
+    public function postMigrateToGatewayTokens()
+    {
+        $input = Request::all();
+
+        $summary = $this->service('token')->migrateToGatewayTokens($input);
+
+        return ApiResponse::json($summary);
+    }
 }

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Plan\Subscription;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Merchant\Webhook\Event;
 
 class Status
@@ -27,9 +29,9 @@ class Status
     const ACTIVE            = 'active';
 
     /**
-     * When a charge fails and is applicable to be retried more, it's in overdue state.
+     * When a charge fails and is applicable to be retried more, it's in pending state.
      */
-    const OVERDUE           = 'overdue';
+    const PENDING           = 'pending';
 
     /**
      * When a charge fails and all retries have been exhausted, it's moved to halted state.
@@ -78,14 +80,39 @@ class Status
 
     public static $webhookStatuses = [
         self::ACTIVE    => Event::SUBSCRIPTION_ACTIVATED,
-        self::OVERDUE   => Event::SUBSCRIPTION_OVERDUE,
+        self::PENDING   => Event::SUBSCRIPTION_PENDING,
         self::HALTED    => Event::SUBSCRIPTION_HALTED,
+        self::CANCELLED => Event::SUBSCRIPTION_CANCELLED,
+        self::COMPLETED => Event::SUBSCRIPTION_COMPLETED,
         // self::EXPIRED   => Event::SUBSCRIPTION_EXPIRED,
     ];
 
     public static $changeCardStatuses = [
         self::ACTIVE,
-        self::OVERDUE,
+        self::PENDING,
+        self::HALTED,
+    ];
+
+    public static $nonCancellableStatuses = [
+        self::EXPIRED,
+        self::COMPLETED,
+        self::CANCELLED
+    ];
+
+    public static $nonChargeableStatuses = [
+        self::EXPIRED,
+        self::CANCELLED,
+        self::COMPLETED,
+    ];
+
+    public static $cronChargeableStatuses = [
+        self::ACTIVE,
+        self::AUTHENTICATED,
+        self::HALTED
+    ];
+
+    public static $invoiceManualChargeableStatuses = [
+        self::ACTIVE,
         self::HALTED,
     ];
 
@@ -94,11 +121,16 @@ class Status
         return (defined(__CLASS__ . '::' . strtoupper($status)));
     }
 
-    public static function checkStatus($status)
+    public static function validateStatus($status)
     {
         if (self::isStatusValid($status) === false)
         {
-            throw new \InvalidArgumentException('Not a valid status: ' . $status);
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_INVALID_STATUS,
+                Entity::STATUS,
+                [
+                    'status' => $status
+                ]);
         }
     }
 }

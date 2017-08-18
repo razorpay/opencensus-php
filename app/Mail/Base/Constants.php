@@ -17,6 +17,7 @@ class Constants
     const ALERTS        = 'alerts';
     const EMI           = 'emi';
     const ADMIN         = 'admin';
+    const ACTIVATION    = 'activation';
 
     const MAIL_ADDRESSES = [
         self::SUPPORT       => 'support@razorpay.com',
@@ -32,14 +33,17 @@ class Constants
         self::ALERTS        => 'alerts@razorpay.com',
         self::EMI           => 'emifiles@razorpay.com',
         self::ADMIN         => 'admin@razorpay.com',
+        self::ACTIVATION    => 'activationsteam@razorpay.com',
     ];
 
     const HEADERS = [
-        self::SUPPORT   => 'Team Razorpay',
-        self::SCORECARD => 'Razorpay Scorecard',
-        self::REFUNDS   => 'Refunds File',
-        self::REPORTS   => 'Team Razorpay',
-        self::CARE      => 'Team Razorpay',
-        self::ALERTS    => 'Razorpay Webhook Support'
+        self::SUPPORT    => 'Team Razorpay',
+        self::SCORECARD  => 'Razorpay Scorecard',
+        self::REFUNDS    => 'Refunds File',
+        self::INVOICES   => 'Razorpay Invoices',
+        self::REPORTS    => 'Team Razorpay',
+        self::CARE       => 'Team Razorpay',
+        self::ALERTS     => 'Razorpay Webhook Support',
+        self::ACTIVATION => 'Razorpay Activations Team',
     ];
 }

@@ -950,7 +950,7 @@ class Gateway extends Base\Gateway
 
         $content = array(
             // Topup amount is equal to payment amount - we topup how much he has to pay.
-            RequestFields::AMOUNT       => (string) $topupAmount,
+            RequestFields::AMOUNT       => (string) ceil($topupAmount),
             RequestFields::CALLBACK_URL => $input['callbackUrl'],
             RequestFields::CHANNEL      => self::DEFAULT_TXN_CHANNEL,
             RequestFields::LOGIN_TOKEN  => '',
@@ -1085,7 +1085,7 @@ class Gateway extends Base\Gateway
         }
         else if (($payment['received'] === false) and
                  (($payment['status_code'] === null) or
-                  ($payment['status_code'] !== Status::SUCCESS)))
+                  ($payment['status_code'] !== Status::TRANSACTION_SUCCESS)))
         {
             $verify->apiSuccess = false;
         }

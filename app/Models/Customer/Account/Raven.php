@@ -2,32 +2,54 @@
 
 namespace RZP\Models\Customer;
 
+use App;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 
-class Raven
+class Raven extends Base\Core
 {
     protected $raven = null;
 
+    protected $sns = null;
+
     public function __construct()
     {
-         $app = \App::getFacadeRoot();
+        parent::__construct();
 
-         $this->raven = $app['raven'];
+        $this->raven = $this->app['raven'];
+
+        $this->sns = $this->app['sns'];
     }
 
     public function sendOtp($input, $merchant)
     {
+        $success = true;
+
         $request = $this->getRavenSendOtpRequestInput($input, $merchant);
 
-        $response = $this->raven->sendOtp($request);
-
-        if (isset($response['sms_id']))
+        try
         {
-            return ['success' => true];
+            $this->trace->info(TraceCode::RAVEN_REQUEST, $request);
+
+            $this->sns->publish(json_encode($request));
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::RAVEN_ASYNC_REQUEST_FAILED, $request);
+
+            $success = false;
+            $response = $this->raven->sendOtp($request);
+
+            if (isset($response['sms_id']) === false)
+            {
+                $success = false;
+            }
         }
 
-        return ['success' => false];
+        return ['success' => $success];
     }
 
     public function verifyOtp($input, $merchant)

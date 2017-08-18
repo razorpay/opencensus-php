@@ -23,51 +23,67 @@ class Orchestrator extends Base\Core
      * It's all meta data.
      */
     const EXTRA_DETAILS    = 'extra_details';
-    const EMAIL_DETAILS    = 'email_details';
     const ATTACHMENT_COUNT = 'attachment_count';
+
+    /**************************
+     * Email details constants
+     **************************/
+    const EMAIL_DETAILS    = 'email_details';
+    const FROM             = 'from';
+    const TO               = 'to';
+    const SUBJECT          = 'subject';
+    const TIMESTAMP        = 'timestamp';
+    const BODY             = 'body';
+    const BODY_HTML_TEXT   = 'body_html_text';
 
     /******************
      * Bank constants
      ******************/
 
-    const HDFC               = 'HDFC';
-    const AXIS               = 'Axis';
-    const KOTAK              = 'Kotak';
-    const BILLDESK           = 'BillDesk';
-    const PAYZAPP            = 'PayZapp';
-    const MOBIKWIK           = 'Mobikwik';
-    const PAYTM              = 'Paytm';
-    const OLAMONEY           = 'Olamoney';
-    const FREECHARGE         = 'Freecharge';
-    const NETBANKING_AXIS    = 'NetbankingAxis';
-    const NETBANKING_ICICI   = 'NetbankingIcici';
-    const NETBANKING_FEDERAL = 'NetbankingFederal';
-    const JIOMONEY           = 'Jiomoney';
-    const EBS                = 'Ebs';
-    const ADMIN              = 'admin';
+    const HDFC                = 'HDFC';
+    const AXIS                = 'Axis';
+    const KOTAK               = 'Kotak';
+    const BILLDESK            = 'BillDesk';
+    const PAYZAPP             = 'PayZapp';
+    const MOBIKWIK            = 'Mobikwik';
+    const PAYTM               = 'Paytm';
+    const OLAMONEY            = 'Olamoney';
+    const FREECHARGE          = 'Freecharge';
+    const NETBANKING_AXIS     = 'NetbankingAxis';
+    const NETBANKING_ICICI    = 'NetbankingIcici';
+    const NETBANKING_FEDERAL  = 'NetbankingFederal';
+    const NETBANKING_RBL      = 'NetbankingRbl';
+    const NETBANKING_INDUSIND = 'NetbankingIndusind';
+    const JIOMONEY            = 'Jiomoney';
+    const EBS                 = 'Ebs';
+    const FIRST_DATA          = 'FirstData';
+    const ADMIN               = 'admin';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
      * The banks send their MIS files through this sender address
      */
     const GATEWAY_SENDER_MAPPING = [
-        self::HDFC               => ['payoutreport@hdfcbank.com'],
-        self::AXIS               => [],
-        self::BILLDESK           => [],
-        self::PAYZAPP            => [],
-        self::MOBIKWIK           => [],
-        self::PAYTM              => [],
-        self::KOTAK              => ['BankAlerts@kotak.com'],
-        self::OLAMONEY           => ['olamoney-noreply@olacabs.com'],
-        self::FREECHARGE         => ['noreply@freechargemail.in'],
-        self::NETBANKING_AXIS    => ['it.rico@axisbank.com'],
-        self::NETBANKING_ICICI   => ['ubpshelp@icicibank.com'],
-        self::NETBANKING_FEDERAL => ['fednetrm@federalbank.co.in'],
-        self::JIOMONEY           => [],
-        self::EBS                => [],
+        self::HDFC                => ['payoutreport@hdfcbank.com'],
+        self::AXIS                => ['pg.estatements@axisbank.com'],
+        self::BILLDESK            => [],
+        self::PAYZAPP             => [],
+        self::MOBIKWIK            => [],
+        self::PAYTM               => [],
+        self::KOTAK               => ['BankAlerts@kotak.com'],
+        self::OLAMONEY            => ['olamoney-noreply@olacabs.com'],
+        self::FREECHARGE          => ['noreply@freechargemail.in'],
+        self::NETBANKING_AXIS     => ['it.rico@axisbank.com'],
+        self::NETBANKING_ICICI    => ['ubpshelp@icicibank.com'],
+        self::NETBANKING_FEDERAL  => ['fednetrm@federalbank.co.in'],
+        self::NETBANKING_RBL      => ['internetbanking@rblbank.com'],
+        self::NETBANKING_INDUSIND => [],
+        self::JIOMONEY            => [],
+        self::EBS                 => [],
+        self::FIRST_DATA          => ['customer.care@icici.mailserv.in'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
-        self::ADMIN              => ['prashanth.yv@razorpay.com'],
+        self::ADMIN               => ['prashanth.yv@razorpay.com'],
     ];
 
     /**
@@ -75,9 +91,11 @@ class Orchestrator extends Base\Core
      */
     const GATEWAY_EMAIL_VALIDATION = [
         self::HDFC,
+        self::AXIS,
         self::KOTAK,
         self::OLAMONEY,
         self::FREECHARGE,
+        self::FIRST_DATA,
         self::NETBANKING_AXIS,
         self::NETBANKING_ICICI,
         self::NETBANKING_FEDERAL
@@ -154,7 +172,7 @@ class Orchestrator extends Base\Core
             }
 
             $this->trace->traceException(
-                $e, Trace::INFO, TraceCode::RECON_ALERT,
+                $e, Trace::DEBUG, TraceCode::RECON_ALERT,
                 (array) json_decode($e->getMessage()));
 
             // We do not throw an exception as route is hit via Mailgun,
@@ -163,6 +181,25 @@ class Orchestrator extends Base\Core
         }
 
         return $summary;
+    }
+
+    /**
+     * @param $needle
+     * @param array $haystack An associative array with array values.
+     *                        ['a' => ['b', 'c'], 'd' => ['e', 'f']]
+     * @return int|string|null
+     */
+    public static function getKeyFromSubArrayMatch($needle, array $haystack)
+    {
+        foreach ($haystack as $key => $subArray)
+        {
+            if (in_array($needle, $subArray, true) === true)
+            {
+                return $key;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -369,7 +406,12 @@ class Orchestrator extends Base\Core
                 continue;
             }
 
+            //
             // Delete the file. We have all the data in $allFilesContents.
+            // Ensure that you don't delete the directory by mistake.
+            // In case of zip files, that's fine. But otherwise, it'll delete
+            // off the settlement folder only.
+            //
             $this->fileProcessor->deleteFileLocally($fileDetails[FileProcessor::FILE_PATH]);
         }
 
@@ -379,8 +421,7 @@ class Orchestrator extends Base\Core
                 'File contents are empty.',
                 [
                     'all_files_details' => $this->allFilesDetails,
-                ]
-            );
+                ]);
         }
 
         return $this->gatewayReconciliator->startReconciliation($this->allFilesContents);
@@ -465,12 +506,12 @@ class Orchestrator extends Base\Core
         //
 
         $emailDetails = [
-            'from'              => $input['X-Original-Sender'] ?? $input['sender'],
-            'subject'           => $input['subject'],
-            'to'                => $input['recipient'],
-            'timestamp'         => $input['timestamp'],
-            'body'              => $input['stripped-text'],
-            'body_html_text'    => html_entity_decode(strip_tags($input['stripped-html'])),
+            self::FROM           => $input['X-Original-Sender'] ?? $input['sender'],
+            self::SUBJECT        => $input['subject'],
+            self::TO             => $input['recipient'],
+            self::TIMESTAMP      => $input['timestamp'],
+            self::BODY           => $input['stripped-text'],
+            self::BODY_HTML_TEXT => html_entity_decode(strip_tags($input['stripped-html'])),
         ];
 
         //
@@ -527,7 +568,7 @@ class Orchestrator extends Base\Core
 
         if ($gateway === self::ADMIN)
         {
-            $gateway = $this->emailDetails['subject'];
+            $gateway = $this->emailDetails[self::SUBJECT];
 
             assert(
                 in_array(
@@ -541,7 +582,7 @@ class Orchestrator extends Base\Core
 
     protected function getGatewayFromEmail()
     {
-        $fromEmailId = $this->emailDetails['from'];
+        $fromEmailId = $this->emailDetails[self::FROM];
 
         $gateway = $this->getKeyFromSubArrayMatch($fromEmailId, self::GATEWAY_SENDER_MAPPING);
 
@@ -555,9 +596,15 @@ class Orchestrator extends Base\Core
         if (($this->gatewayEmailValidationIsNeeded($gateway) === true) and
             ($this->gatewayEmailIsValid($gateway) === false))
         {
+            $formattedMailDetails = $this->emailDetails;
+            unset($formattedMailDetails[self::BODY]);
+            unset($formattedMailDetails[self::BODY_HTML_TEXT]);
+
             throw new Exception\ReconciliationException(
                 'Email content is invalid.',
-                ['email_details' => $this->emailDetails]);
+                [
+                    self::EMAIL_DETAILS => $formattedMailDetails
+                ]);
         }
 
         return $gateway;
@@ -606,6 +653,8 @@ class Orchestrator extends Base\Core
             // Else, get the file details of the attachment.
             if (in_array($fileType, Validator::SUPPORTED_ZIP_EXTENSIONS))
             {
+                $zipFileDetails = [];
+
                 try
                 {
                     // Gets the actual zip file's details first.
@@ -650,6 +699,8 @@ class Orchestrator extends Base\Core
                             'gateway'      => $this->gateway,
                         ]);
 
+                    $this->deleteFileLocallyIfPresent($zipFileDetails);
+
                     continue;
                 }
             }
@@ -664,13 +715,48 @@ class Orchestrator extends Base\Core
         return $allFilesDetails;
     }
 
+    protected function deleteFileLocallyIfPresent(array $fileDetails)
+    {
+        if (isset($fileDetails[FileProcessor::FILE_PATH]) === false)
+        {
+            return;
+        }
+
+        $this->fileProcessor->deleteFileLocally($fileDetails[FileProcessor::FILE_PATH]);
+    }
+
     protected function getFileDetailsFromAllZipFiles($zipFilesDetails)
     {
         $allExtractedFileDetails = [];
 
         foreach ($zipFilesDetails as $zipFileDetails)
         {
-            $extractedFileDetails = $this->getFileDetailsFromZipFile($zipFileDetails);
+            try
+            {
+                $extractedFileDetails = $this->getFileDetailsFromZipFile($zipFileDetails);
+            }
+            catch (\Exception $ex)
+            {
+                $level = Trace::ERROR;
+
+                if ($this->gateway === self::AXIS)
+                {
+                    $level = Trace::INFO;
+                }
+
+                $this->trace->traceException(
+                    $ex,
+                    $level,
+                    TraceCode::RECON_INFO_ALERT,
+                    [
+                        'message'           => 'Unable to extract zip file',
+                        'zip_file_details'  => $zipFileDetails,
+                        'gateway'           => $this->gateway,
+                    ]);
+
+                continue;
+            }
+
             $allExtractedFileDetails = array_merge($allExtractedFileDetails, $extractedFileDetails);
         }
 
@@ -761,6 +847,8 @@ class Orchestrator extends Base\Core
         //
         $sheetNames = $this->gatewayReconciliator->getSheetNames();
 
+        $startRow = $this->gatewayReconciliator->getStartRow($fileDetails);
+
         // this flag enables us to check if spout lib has been used
         $spoutLib = false;
 
@@ -773,7 +861,7 @@ class Orchestrator extends Base\Core
         }
         else
         {
-            $sheetsContents = $this->converter->getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames);
+            $sheetsContents = $this->converter->getRowsFromExcelSheetsOptimized($fileDetails, $sheetNames, $startRow);
         }
 
         foreach ($sheetsContents as $sheetName => $rows)
@@ -830,7 +918,7 @@ class Orchestrator extends Base\Core
     {
         $columnHeaders = $this->getColumnHeadersForGatewayIfApplicable($fileDetails);
 
-        $linesToSkip = $this->gatewayReconciliator->getNumLinesToSkip();
+        $linesToSkip = $this->gatewayReconciliator->getNumLinesToSkip($fileDetails);
 
         $delimiter = $this->gatewayReconciliator->getDelimiter();
 
@@ -880,8 +968,10 @@ class Orchestrator extends Base\Core
 
         $zipPassword = $this->gatewayReconciliator->getReconPassword($zipFileDetails);
 
+        $use7z = $this->gatewayReconciliator->shouldUse7z($zipFileDetails);
+
         // unzipFile unzips the file and stores it in a location.
-        $unzippedFolderPath = $this->fileProcessor->unzipFile($zipFileDetails, $zipPassword);
+        $unzippedFolderPath = $this->fileProcessor->unzipFile($zipFileDetails, $zipPassword, $use7z);
 
         $unzippedFiles = new DirectoryIterator($unzippedFolderPath);
 
@@ -891,30 +981,11 @@ class Orchestrator extends Base\Core
             if ($unzippedFile->isFile() === true)
             {
                 $allExtractedFilesDetails[] = $this->fileProcessor
-                    ->getFileDetails($unzippedFile, FileProcessor::STORAGE);
+                                                   ->getFileDetails($unzippedFile, FileProcessor::STORAGE);
             }
         }
 
         return $allExtractedFilesDetails;
-    }
-
-    /**
-     * @param $needle
-     * @param array $haystack An associative array with array values.
-     *                        ['a' => ['b', 'c'], 'd' => ['e', 'f']]
-     * @return int|string|null
-     */
-    public static function getKeyFromSubArrayMatch($needle, array $haystack)
-    {
-        foreach ($haystack as $key => $subArray)
-        {
-            if (in_array($needle, $subArray, true) === true)
-            {
-                return $key;
-            }
-        }
-
-        return null;
     }
 
     protected function fetchAndStoreLinkDocuments(array & $input)

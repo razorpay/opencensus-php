@@ -84,10 +84,17 @@ class CreateMerchants extends Migration
             $table->char(Merchant::BRAND_COLOR, 6)
                   ->nullable();
 
+            $table->char(Merchant::HANDLE, 4)
+                  ->nullable();
+
             $table->text(Merchant::LOGO_URL)
                   ->nullable();
 
             $table->tinyInteger(Merchant::RISK_RATING);
+
+            $table->tinyInteger(Merchant::RISK_THRESHOLD)
+                  ->unsigned()
+                  ->nullable();
 
             $table->tinyInteger(Merchant::RECEIPT_EMAIL_ENABLED)
                   ->default(1);
@@ -145,7 +152,7 @@ class CreateMerchants extends Migration
         Schema::table(Table::MERCHANT, function($table)
         {
             $table->dropForeign(
-                Table::MERCHANT . '_' . MERCHANT::PARENT_ID . '_foreign');
+                Table::MERCHANT . '_' . Merchant::PARENT_ID . '_foreign');
         });
 
         Schema::drop(Table::MERCHANT);

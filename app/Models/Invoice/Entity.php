@@ -4,23 +4,26 @@ namespace RZP\Models\Invoice;
 
 use App;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
-use RZP\Models\Base\Traits\NotesTrait;
-use RZP\Models\Customer;
 use RZP\Models\Order;
-use RZP\Models\Plan\Subscription;
+use RZP\Models\Customer;
 use RZP\Models\Address;
-use RZP\Models\FileStore;
 use RZP\Models\LineItem;
+use RZP\Models\FileStore;
+use RZP\Models\Plan\Subscription;
+use RZP\Exception\LogicException;
+use RZP\Models\Base\Traits\NotesTrait;
+
 
 class Entity extends Base\PublicEntity
 {
-    const PDF_PREFIX = 'pdfs/';
-
     use NotesTrait;
     use SoftDeletes;
+
+    const PDF_PREFIX               = 'pdfs/';
 
     // ------------------ Entity Keys --------------------------------
 
@@ -29,6 +32,7 @@ class Entity extends Base\PublicEntity
     const INVOICE_NUMBER           = 'invoice_number';
     const MERCHANT_ID              = 'merchant_id';
     const SUBSCRIPTION_ID          = 'subscription_id';
+    const BATCH_ID                 = 'batch_id';
     const CUSTOMER_ID              = 'customer_id';
     const CUSTOMER_NAME            = 'customer_name';
     const CUSTOMER_EMAIL           = 'customer_email';
@@ -86,6 +90,15 @@ class Entity extends Base\PublicEntity
      * the bottom of invoice.
      */
     const GROUP_TAXES_DISCOUNTS    = 'group_taxes_discounts';
+
+
+    /**
+     * Post payment hosted page sends back control to following
+     * callback URL via specified method (currently only GET).
+     */
+    const CALLBACK_URL             = 'callback_url';
+    const CALLBACK_METHOD          = 'callback_method';
+
     const DELETED_AT               = 'deleted_at';
 
     // ---------------------- Input Keys -----------------------------
@@ -95,6 +108,8 @@ class Entity extends Base\PublicEntity
     const EMAIL_NOTIFY             = 'email_notify';
     const SMS_NOTIFY               = 'sms_notify';
     const DRAFT                    = 'draft';
+    const BATCH_IDS                = 'batch_ids';
+    const TYPES                    = 'types';
 
     // ---------------------- Input Keys End -------------------------
 
@@ -110,6 +125,7 @@ class Entity extends Base\PublicEntity
     const EMAIL                    = 'email';
     const SMS                      = 'sms';
     const ITEMS                    = 'items';
+    const IS_PAID                  = 'is_paid';
 
     const DEFAULT_DUE_DAYS         = 60;
 
@@ -122,6 +138,7 @@ class Entity extends Base\PublicEntity
     // ------------------------ Relation Keys ------------------------
 
     const ORDER                    = 'order';
+    const PAYMENTS                 = 'payments';
 
     protected static $sign         = 'inv';
 
@@ -130,9 +147,11 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate  = true;
 
     protected $validOperations = [
+        // Core's actions
         'create',
         'update',
         'delete',
+        'issue',
         'cancelInvoice',
         'expireInvoice',
         'sendNotification',
@@ -142,6 +161,10 @@ class Entity extends Base\PublicEntity
         'updateLineItem',
         'removeLineItem',
         'removeManyLineItems',
+
+        // Notifier's actions
+        'notifyInvoiceIssued',
+        'notifyInvoiceExpired',
     ];
 
     protected $defaults = [
@@ -175,6 +198,8 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_CONTACT         => null,
         self::CUSTOMER_BILLING_ADDR_ID => null,
         self::GROUP_TAXES_DISCOUNTS    => false,
+        self::CALLBACK_URL             => null,
+        self::CALLBACK_METHOD          => null,
     ];
 
     protected static $generators = [
@@ -205,6 +230,8 @@ class Entity extends Base\PublicEntity
         self::BILLING_END,
         self::USER_ID,
         self::EXPIRE_BY,
+        self::CALLBACK_URL,
+        self::CALLBACK_METHOD,
     ];
 
     protected $visible = [
@@ -243,6 +270,8 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::PARTIAL_PAYMENT,
         self::GROUP_TAXES_DISCOUNTS,
+        self::CALLBACK_URL,
+        self::CALLBACK_METHOD,
         self::AMOUNT,
         self::AMOUNT_PAID,
         self::AMOUNT_DUE,
@@ -277,7 +306,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS,
         self::DATE,
         self::TERMS,
-        // self::PARTIAL_PAYMENT,
+        self::PARTIAL_PAYMENT,
         self::GROSS_AMOUNT,
         self::TAX_AMOUNT,
         self::AMOUNT,
@@ -324,24 +353,73 @@ class Entity extends Base\PublicEntity
         self::AMOUNT                => 'int',
         self::AMOUNT_PAID           => 'int',
         self::AMOUNT_DUE            => 'int',
-        self::DATE                  => 'int',
-        self::EXPIRE_BY             => 'int',
-        self::EXPIRED_AT            => 'int',
         self::GROUP_TAXES_DISCOUNTS => 'bool',
+    ];
+
+    protected $amounts = [
+        self::AMOUNT,
+        self::AMOUNT_PAID,
+        self::AMOUNT_DUE,
+    ];
+
+    /**
+     * Reports currently works for type:link only.
+     *
+     * @todo: Plan and spit link, invoices.
+     *
+     * @var array
+     */
+    protected $hiddenInReport = [
+        self::INVOICE_NUMBER,
+        self::CUSTOMER_DETAILS,
+        self::ORDER_ID,
+        self::SUBSCRIPTION_ID,
+        self::LINE_ITEMS,
+        self::PAYMENT_ID,
+        self::GROSS_AMOUNT,
+        self::TAX_AMOUNT,
+        self::COMMENT,
+        self::VIEW_LESS,
+        self::BILLING_START,
+        self::BILLING_END,
+        self::TYPE,
+        self::GROUP_TAXES_DISCOUNTS,
+    ];
+
+    protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::DATE,
+        self::EXPIRE_BY,
+        self::ISSUED_AT,
+        self::PAID_AT,
+        self::EXPIRED_AT,
+        self::CANCELLED_AT,
     ];
 
     // -------------------------------------- Mutators ---------------
 
+    // Following 2 mutators are for converting '' (empty strings)
+    // input to null.
+
     public function setDateAttribute($date)
     {
-        // To convert '' (empty strings coming from url encoded form data)
-        // to null
-        if (empty($date))
+        if (empty($date) === true)
         {
             $date = null;
         }
 
         $this->attributes[self::DATE] = $date;
+    }
+
+    public function setExpireByAttribute($expireBy)
+    {
+        if (empty($expireBy) === true)
+        {
+            $expireBy = null;
+        }
+
+        $this->attributes[self::EXPIRE_BY] = $expireBy;
     }
 
     // -------------------------------------- End Mutators -----------
@@ -356,6 +434,11 @@ class Entity extends Base\PublicEntity
     public function getSmsStatus()
     {
         return $this->getAttribute(self::SMS_STATUS);
+    }
+
+    public function getCustomerName()
+    {
+        return $this->getAttribute(self::CUSTOMER_NAME);
     }
 
     public function getCustomerEmail()
@@ -388,7 +471,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ORDER_ID);
     }
 
-    public function hasPartialPaymentEnabled()
+    public function isPartialPaymentAllowed()
     {
         return $this->getAttribute(self::PARTIAL_PAYMENT);
     }
@@ -495,6 +578,16 @@ class Entity extends Base\PublicEntity
         return Type::getLabel($this->getType());
     }
 
+    public function getCallbackUrl()
+    {
+        return $this->getAttribute(self::CALLBACK_URL);
+    }
+
+    public function getCallbackMethod()
+    {
+        return $this->getAttribute(self::CALLBACK_METHOD);
+    }
+
     public function hasBeenPaid()
     {
         return ($this->getStatus() === Status::PAID);
@@ -540,6 +633,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::CUSTOMER_BILLING_ADDR_ID) !== null);
     }
 
+    public function isTypeLink(): bool
+    {
+        return ($this->getType() === Type::LINK);
+    }
+
     public function isTypeInvoice(): bool
     {
         return ($this->getType() === Type::INVOICE);
@@ -583,16 +681,15 @@ class Entity extends Base\PublicEntity
 
     public function getPdfDisplayName(): string
     {
-        //
         // Expected format:
         // Invoice <Reciept/Invoice ID> from <Company> (<Paid/Unpaid>).pdf
-        //
 
         $receipt = $this->getReceiptElsePublicId();
         $from    = $this->merchant->getBillingLabel();
         $status  = $this->hasBeenPaid() ? 'Paid' : 'Unpaid';
+        $ext     = FileStore\Format::PDF;
 
-        return sanitizeFilename("Invoice $receipt from $from ($status)");
+        return sanitizeFilename("Invoice $receipt from $from ($status).$ext");
     }
 
     // -------------------------------------- End Getters ------------
@@ -679,7 +776,7 @@ class Entity extends Base\PublicEntity
         if (in_array($status, Status::$timestampedStatuses, true) === true)
         {
             $timestampKey = $status . '_at';
-            $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+            $currentTime = Carbon::now()->getTimestamp();
 
             $this->setAttribute($timestampKey, $currentTime);
         }
@@ -918,7 +1015,7 @@ class Entity extends Base\PublicEntity
         // If DATE is sent, even as null use that only(so not using isset)
         if (array_key_exists(Entity::DATE, $input) === false)
         {
-            $now = Carbon::now('Asia/Kolkata')->timestamp;
+            $now = Carbon::now()->getTimestamp();
 
             $this->setAttribute(self::DATE, $now);
         }
@@ -956,7 +1053,7 @@ class Entity extends Base\PublicEntity
         }
         else
         {
-            $dueBy = Carbon::now('Asia/Kolkata')->addDays(self::DEFAULT_DUE_DAYS)
+            $dueBy = Carbon::now(Timezone::IST)->addDays(self::DEFAULT_DUE_DAYS)
                                                 ->timestamp;
         }
 
@@ -971,7 +1068,7 @@ class Entity extends Base\PublicEntity
         }
         else
         {
-            $scheduledAt = Carbon::now('Asia/Kolkata')->timestamp;
+            $scheduledAt = Carbon::now()->getTimestamp();
         }
 
         $this->setAttribute(self::SCHEDULED_AT, $scheduledAt);
@@ -1022,6 +1119,16 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Plan\Subscription\Entity');
     }
 
+    /**
+     * The batch which created this invoice entity.
+     *
+     * @return null|\Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function batch()
+    {
+        return $this->belongsTo('RZP\Models\Batch\Entity');
+    }
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
@@ -1061,5 +1168,25 @@ class Entity extends Base\PublicEntity
     public function getValidOperations(): array
     {
         return $this->validOperations;
+    }
+
+    // -------------------------------------- Serializations ---------
+
+    public function toArrayReport()
+    {
+        if ($this->isTypeLink() === false)
+        {
+            throw new LogicException('Report not available for types other than link');
+        }
+
+        $report = parent::toArrayReport();
+
+        // Add flattened customer details in report
+
+        $report[self::CUSTOMER_NAME]    = $this->getCustomerName();
+        $report[self::CUSTOMER_EMAIL]   = $this->getCustomerEmail();
+        $report[self::CUSTOMER_CONTACT] = $this->getCustomerContact();
+
+        return $report;
     }
 }

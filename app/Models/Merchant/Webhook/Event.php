@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Webhook;
 use RZP\Constants\Entity;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Feature;
 
 /**
  * The events whether they are enabled or disabled are store in bit format.
@@ -23,8 +24,11 @@ class Event
     const P2P_REJECTED              = 'p2p.rejected';
     const P2P_TRANSFERRED           = 'p2p.transferred';
     const SUBSCRIPTION_ACTIVATED    = 'subscription.activated';
-    const SUBSCRIPTION_OVERDUE      = 'subscription.overdue';
+    const SUBSCRIPTION_CHARGED      = 'subscription.charged';
+    const SUBSCRIPTION_PENDING      = 'subscription.pending';
     const SUBSCRIPTION_HALTED       = 'subscription.halted';
+    const SUBSCRIPTION_CANCELLED    = 'subscription.cancelled';
+    const SUBSCRIPTION_COMPLETED    = 'subscription.completed';
     // const SUBSCRIPTION_EXPIRED      = 'subscription.expired';
     const ACCOUNT_ACTIVATED         = 'account.activated';
 
@@ -39,13 +43,16 @@ class Event
         self::P2P_REJECTED,
         self::P2P_TRANSFERRED,
         self::SUBSCRIPTION_ACTIVATED,
-        self::SUBSCRIPTION_OVERDUE,
+        self::SUBSCRIPTION_CHARGED,
+        self::SUBSCRIPTION_PENDING,
         self::SUBSCRIPTION_HALTED,
+        self::SUBSCRIPTION_CANCELLED,
+        self::SUBSCRIPTION_COMPLETED,
         // self::SUBSCRIPTION_EXPIRED,
         self::ACCOUNT_ACTIVATED,
     ];
 
-    protected static $bitMap = array(
+    protected static $bitMap = [
         self::PAYMENT_AUTHORIZED        => 0x1,
         self::PAYMENT_FAILED            => 0x2,
         self::PAYMENT_CAPTURED          => 0x3,
@@ -55,10 +62,14 @@ class Event
         self::P2P_CREATED               => 0x7,
         self::P2P_REJECTED              => 0x8,
         self::SUBSCRIPTION_ACTIVATED    => 0x9,
-        self::SUBSCRIPTION_OVERDUE      => 0x10,
+        self::SUBSCRIPTION_PENDING      => 0x10,
         self::SUBSCRIPTION_HALTED       => 0x11,
-        // self::SUBSCRIPTION_EXPIRED      => 0x12,
-    );
+        self::SUBSCRIPTION_CHARGED      => 0x12,
+        self::SUBSCRIPTION_CANCELLED    => 0x13,
+        self::SUBSCRIPTION_COMPLETED    => 0x14,
+        // self::SUBSCRIPTION_EXPIRED      => 0x15,
+        self::ACCOUNT_ACTIVATED         => 0x16,
+    ];
 
     /**
      * Events which are present in the system and
@@ -68,6 +79,7 @@ class Event
     protected static $names = [
         self::PAYMENT_AUTHORIZED,
         self::PAYMENT_FAILED,
+        self::PAYMENT_CAPTURED,
         self::ORDER_PAID,
         self::INVOICE_PAID,
         self::VPA_EDITED,
@@ -75,8 +87,11 @@ class Event
         self::P2P_REJECTED,
         self::P2P_TRANSFERRED,
         self::SUBSCRIPTION_ACTIVATED,
-        self::SUBSCRIPTION_OVERDUE,
+        self::SUBSCRIPTION_PENDING,
         self::SUBSCRIPTION_HALTED,
+        self::SUBSCRIPTION_CHARGED,
+        self::SUBSCRIPTION_CANCELLED,
+        self::SUBSCRIPTION_COMPLETED,
         // self::SUBSCRIPTION_EXPIRED,
         self::ACCOUNT_ACTIVATED,
     ];
@@ -92,10 +107,13 @@ class Event
         self::P2P_REJECTED              => 8,
         self::P2P_TRANSFERRED           => 9,
         self::SUBSCRIPTION_ACTIVATED    => 10,
-        self::SUBSCRIPTION_OVERDUE      => 11,
+        self::SUBSCRIPTION_PENDING      => 11,
         self::SUBSCRIPTION_HALTED       => 12,
-        // self::SUBSCRIPTION_EXPIRED      => 13,
-        self::ACCOUNT_ACTIVATED         => 14,
+        self::SUBSCRIPTION_CHARGED      => 13,
+        self::SUBSCRIPTION_CANCELLED    => 14,
+        self::SUBSCRIPTION_COMPLETED    => 15,
+        // self::SUBSCRIPTION_EXPIRED      => 15,
+        self::ACCOUNT_ACTIVATED         => 16,
     ];
 
     /**
@@ -106,6 +124,7 @@ class Event
     protected static $launchedEvents = [
         self::PAYMENT_AUTHORIZED,
         self::PAYMENT_FAILED,
+        self::PAYMENT_CAPTURED,
         self::ORDER_PAID,
         self::INVOICE_PAID,
         self::VPA_EDITED,
@@ -113,8 +132,11 @@ class Event
         self::P2P_REJECTED,
         self::P2P_TRANSFERRED,
         self::SUBSCRIPTION_ACTIVATED,
-        self::SUBSCRIPTION_OVERDUE,
+        self::SUBSCRIPTION_PENDING,
         self::SUBSCRIPTION_HALTED,
+        self::SUBSCRIPTION_CHARGED,
+        self::SUBSCRIPTION_CANCELLED,
+        self::SUBSCRIPTION_COMPLETED,
         // self::SUBSCRIPTION_EXPIRED,
         self::ACCOUNT_ACTIVATED,
     ];
@@ -132,9 +154,22 @@ class Event
         self::INVOICE_PAID              => Entity::INVOICE,
         self::ORDER_PAID                => Entity::ORDER,
         self::SUBSCRIPTION_ACTIVATED    => Entity::SUBSCRIPTION,
-        self::SUBSCRIPTION_OVERDUE      => Entity::SUBSCRIPTION,
+        self::SUBSCRIPTION_PENDING      => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_HALTED       => Entity::SUBSCRIPTION,
+        self::SUBSCRIPTION_CHARGED      => Entity::SUBSCRIPTION,
+        self::SUBSCRIPTION_CANCELLED    => Entity::SUBSCRIPTION,
+        self::SUBSCRIPTION_COMPLETED    => Entity::SUBSCRIPTION,
         // self::SUBSCRIPTION_EXPIRED      => Entity::SUBSCRIPTION,
+    ];
+
+    public static $eventsToFeatureMap = [
+        self::SUBSCRIPTION_ACTIVATED    => Feature\Constants::SUBSCRIPTIONS,
+        self::SUBSCRIPTION_PENDING      => Feature\Constants::SUBSCRIPTIONS,
+        self::SUBSCRIPTION_HALTED       => Feature\Constants::SUBSCRIPTIONS,
+        self::SUBSCRIPTION_CHARGED      => Feature\Constants::SUBSCRIPTIONS,
+        self::SUBSCRIPTION_CANCELLED    => Feature\Constants::SUBSCRIPTIONS,
+        self::SUBSCRIPTION_COMPLETED    => Feature\Constants::SUBSCRIPTIONS,
+        // self::SUBSCRIPTION_EXPIRED      => Feature\Constants::SUBSCRIPTIONS,
     ];
 
     /**
@@ -195,18 +230,13 @@ class Event
         return ($hexEvent >> ($pos - 1)) & 1;
     }
 
-    public static function validateEventName($event)
+    public static function validateEventName(string $event): bool
     {
-        $event = strtoupper(str_replace('.', '_', $event));
-
-        return (defined(__CLASS__ . '::' . $event));
+        return (in_array($event, self::$names) === true);
     }
 
-    public static function getBitPosition($event)
+    public static function getBitPosition(string $event): int
     {
-        $event = str_replace('_', '.', $event);
-        $event = strtolower($event);
-
         return self::$bitPosition[$event];
     }
 }

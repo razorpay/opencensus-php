@@ -3,6 +3,7 @@
 namespace RZP\Models\Plan;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Models\Schedule\Library;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -28,10 +29,10 @@ class Cycle
     ];
 
     protected static $allowedMaxInterval = [
-        self::YEARLY  => self::ONE_YEAR,
-        self::MONTHLY => self::MONTHS_IN_YEAR,
-        self::WEEKLY  => self::WEEKS_IN_YEAR,
-        self::DAILY   => self::DAYS_IN_YEAR,
+        self::YEARLY  => self::ONE_YEAR * Subscription\Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION,
+        self::MONTHLY => self::MONTHS_IN_YEAR * Subscription\Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION,
+        self::WEEKLY  => self::WEEKS_IN_YEAR * Subscription\Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION,
+        self::DAILY   => self::DAYS_IN_YEAR * Subscription\Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION,
     ];
 
     protected static $carbonFunctionMapping = [
@@ -41,32 +42,74 @@ class Cycle
         self::DAILY     => 'days',
     ];
 
-    public static function isPeriodValid(string $period) : bool
+    public static function isPeriodValid(string $period): bool
     {
         return (in_array($period, self::$validPeriods, true) === true);
     }
 
-    public static function getMaxAllowedInterval(string $period) : int
+    public static function validatePeriod($period)
     {
         if (self::isPeriodValid($period) === false)
         {
             throw new BadRequestValidationFailureException(
-                'Invalid argument for period passed', null, ['period' => $period]
-            );
+                'Invalid argument for period passed', Entity::PERIOD, [Entity::PERIOD => $period]);
         }
+    }
+
+    /**
+     * The maximum allowed total count is basically the maximum
+     * allowed interval divided by the interval set for the plan.
+     *
+     * For example, for a subscription with a plan with period=monthly,
+     * the maximum interval allowed is 120 (months).
+     * If the plan interval chosen by the merchant is 2, then the total
+     * count cannot be more than 60. A total count of 60 for a bi-monthly
+     * plan means the subscription is for 10 years.
+     *
+     * @param Entity $plan
+     *
+     * @return float
+     * @throws BadRequestValidationFailureException
+     */
+    public static function getMaxAllowedTotalCount(Entity $plan)
+    {
+        $period = $plan->getPeriod();
+        $interval = $plan->getInterval();
+
+        self::validatePeriod($period);
+
+        $maxAllowedInterval = self::getMaxAllowedInterval($period);
+
+        $maxAllowedTotalCount = $maxAllowedInterval / $interval;
+
+        return $maxAllowedTotalCount;
+    }
+
+    public static function getMaxAllowedInterval(string $period): int
+    {
+        self::validatePeriod($period);
 
         return self::$allowedMaxInterval[$period];
     }
 
-    public static function getTotalCountForGivenInterval(Subscription\Entity $subscription) : int
+    public static function getTotalCountForOneYear(Entity $plan)
+    {
+        $maxAllowedTotalCount = self::getMaxAllowedTotalCount($plan);
+
+        $totalCountForOneYear = ($maxAllowedTotalCount / (Subscription\Entity::MAX_YEARS_ALLOWED_FOR_SUBSCRIPTION));
+
+        return $totalCountForOneYear;
+    }
+
+    public static function getTotalCountForGivenInterval(Subscription\Entity $subscription): int
     {
         $start = $subscription->getStartAt();
         $end = $subscription->getEndAt();
 
         $schedule = $subscription->schedule;
 
-        $start = Carbon::createFromTimestamp($start, 'Asia/Kolkata');
-        $end = Carbon::createFromTimestamp($end, 'Asia/Kolkata');
+        $start = Carbon::createFromTimestamp($start, Timezone::IST);
+        $end = Carbon::createFromTimestamp($end, Timezone::IST);
 
         $nextRun = $start;
 
@@ -95,7 +138,7 @@ class Cycle
         $start = $subscription->getStartAt();
         $totalCount = $subscription->getTotalCount();
 
-        $start = Carbon::createFromTimestamp($start, 'Asia/Kolkata');
+        $start = Carbon::createFromTimestamp($start, Timezone::IST);
 
         //
         // We are subtracting one because we would be

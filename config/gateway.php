@@ -1,6 +1,6 @@
 <?php
 
-return array(
+return [
 
     /*
     |--------------------------------------------------------------------------
@@ -9,7 +9,7 @@ return array(
     |
     */
 
-    'available' => array(
+    'available' => [
         'amex',
         'atom',
         'axis_genius',
@@ -30,10 +30,12 @@ return array(
         'netbanking_federal',
         'netbanking_rbl',
         'netbanking_indusind',
+        'netbanking_pnb',
         'sharp',
         'wallet_olamoney',
         'upi_idfc',
         'upi_icici',
+        'upi_mindgate',
         'upi_npci',
         'aeps_icici',
         'wallet_payzapp',
@@ -43,7 +45,7 @@ return array(
         'wallet_jiomoney',
         'wallet_openwallet',
         'wallet_mpesa',
-    ),
+    ],
 
     'mock_amex'                => env('AMEX_MOCK'),
     'mock_hdfc'                => env('HDFC_MOCK'),
@@ -63,6 +65,7 @@ return array(
     'mock_netbanking_federal'  => env('NETBANKING_FEDERAL_MOCK'),
     'mock_netbanking_rbl'      => env('NETBANKING_RBL_MOCK'),
     'mock_netbanking_indusind' => env('NETBANKING_INDUSIND_MOCK'),
+    'mock_netbanking_pnb'      => env('NETBANKING_PNB_MOCK'),
     'mock_billdesk'            => env('BILLDESK_MOCK'),
     'mock_ebs'                 => env('EBS_MOCK'),
     'mock_wallet_olamoney'     => env('OLAMONEY_MOCK'),
@@ -70,6 +73,7 @@ return array(
     'mock_wallet_payumoney'    => env('PAYUMONEY_MOCK'),
     'mock_wallet_airtelmoney'  => env('AIRTELMONEY_MOCK'),
     'mock_wallet_jiomoney'     => env('JIOMONEY_MOCK'),
+    'mock_upi_mindgate'        => env('UPI_MINDGATE_MOCK'),
     'mock_upi_icici'           => env('UPI_ICICI_MOCK'),
     'mock_upi_idfc'            => env('UPI_IDFC_MOCK'),
     'mock_upi_npci'            => env('UPI_NPCI_MOCK'),
@@ -79,20 +83,20 @@ return array(
 
     'certificate_path'         => env('CERTIFICATE_DIR_PATH'),
 
-    'hdfc' => array(
+    'hdfc' => [
         'test_terminal_id'  => env('HDFC_GATEWAY_TEST_TERMINAL_ID'),
         'test_terminal_pwd' => env('HDFC_GATEWAY_TEST_TERMINAL_PASSWORD'),
         'mock_server'       => false,
-    ),
+    ],
 
-    'cybersource' => array(
+    'cybersource' => [
         'test_username'         => env('CYBERSOURCE_GATEWAY_TEST_MERCHANT_ID'),
         'test_password'         => env('CYBERSOURCE_GATEWAY_TEST_ACCESS_CODE'),
         'test_merchant_id'      => env('CYBERSOURCE_GATEWAY_TEST_USERNAME', 'cybersource_id'),
         'test_merchant_secret'  => env('CYBERSOURCE_GATEWAY_TEST_SECRET', 'cybersource_secret'),
-    ),
+    ],
 
-    'first_data' => array(
+    'first_data' => [
         // Test credentials
         'test_store_id'                     => env('FIRST_DATA_TEST_STORE_ID'),
         'test_hash_secret'                  => env('FIRST_DATA_TEST_HASH_SECRET'),
@@ -110,31 +114,31 @@ return array(
         'cert_dir_name'                     => env('FIRST_DATA_CERT_DIR_NAME'),
         'server_certificate'                => env('FIRST_DATA_SERVER_CERTIFICATE'),
         'client_certificate'                => env('FIRST_DATA_CLIENT_CERTIFICATE'),
-    ),
+    ],
 
-    'amex' => array(
+    'amex' => [
         'test_hash_secret'  => env('AMEX_GATEWAY_TEST_HASH_SECRET'),
         'test_merchant_id'  => env('AMEX_GATEWAY_TEST_MERCHANT_ID'),
         'test_access_code'  => env('AMEX_GATEWAY_TEST_ACCESS_CODE'),
         'test_ama_user'     => env('AMEX_GATEWAY_TEST_AMA_USER'),
         'test_ama_password' => env('AMEX_GATEWAY_TEST_AMA_PASSWORD'),
-    ),
+    ],
 
-    'axis_migs' => array(
+    'axis_migs' => [
         'test_hash_secret'  => env('AXIS_MIGS_GATEWAY_TEST_HASH_SECRET'),
         'test_merchant_id'  => env('AXIS_MIGS_GATEWAY_TEST_MERCHANT_ID'),
         'test_access_code'  => env('AXIS_MIGS_GATEWAY_TEST_ACCESS_CODE'),
         'test_ama_user'     => env('AXIS_MIGS_GATEWAY_TEST_AMA_USER'),
         'test_ama_password' => env('AXIS_MIGS_GATEWAY_TEST_AMA_PASSWORD'),
-    ),
+    ],
 
-    'axis_genius' => array(
+    'axis_genius' => [
         'test_hash_secret'  => env('AXIS_GENIUS_GATEWAY_TEST_HASH_SECRET'),
         'test_merchant_id'  => env('AXIS_GENIUS_GATEWAY_TEST_MERCHANT_ID'),
         'test_access_code'  => env('AXIS_GENIUS_GATEWAY_TEST_ACCESS_CODE'),
-    ),
+    ],
 
-    'billdesk' => array(
+    'billdesk' => [
         'test_merchant_id'      => env('BILLDESK_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'      => env('BILLDESK_GATEWAY_TEST_HASH_SECRET'),
         'test_access_code'      => env('BILLDESK_GATEWAY_TEST_ACCESS_CODE'),
@@ -143,49 +147,57 @@ return array(
         //SECRET FOR SECURITIES MERCHANTS
         'live_hash_secret_sec'  => env('BILLDESK_GATEWAY_SECURITIES_LIVE_HASH_SECRET'),
         'live_access_code_sec'  => env('BILLDESK_GATEWAY_SECURITIES_LIVE_ACCESS_CODE'),
-    ),
+    ],
 
-    'ebs' => array(
+    'ebs' => [
         'test_merchant_id' => env('EBS_GATEWAY_TEST_MERCHANT_ID', 'random'),
         'test_hash_secret' => env('EBS_GATEWAY_TEST_HASH_SECRET', 'secret'),
-    ),
+    ],
 
-    'mobikwik' => array(
+    'mobikwik' => [
         'test_hash_secret'  => env('MOBIKWIK_GATEWAY_TEST_HASH_SECRET'),
         'test_merchant_id'  => 'MBK9002',
         // 'test_merchant_id'  => 'MBK7518',
-    ),
+    ],
 
-    'paytm' => array(
+    'paytm' => [
         'test_merchant_id'  => env('PAYTM_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'  => env('PAYTM_GATEWAY_TEST_HASH_SECRET'),
-    ),
+    ],
 
-    'upi_icici' => array(
+    'upi_icici' => [
         'test_merchant_id'       => env('UPI_ICICI_GATEWAY_TEST_MERCHANT_ID'),
         'test_public_key'        => env('UPI_ICICI_TEST_PUBLIC_KEY'),
         'test_private_key'       => env('UPI_ICICI_TEST_PRIVATE_KEY'),
         'live_merchant_id'       => env('UPI_ICICI_GATEWAY_LIVE_MERCHANT_ID'),
         'live_public_key'        => env('UPI_ICICI_LIVE_PUBLIC_KEY'),
         'live_private_key'       => env('UPI_ICICI_LIVE_PRIVATE_KEY'),
-    ),
+    ],
 
     'aeps_icici' => [
         'terminal_id'           => env('AEPS_TERMINAL_ID'),
     ],
 
     'upi_idfc' => [
+    ],
+
+    'upi_idfc'  => [
         'test_kek'               => env('UPI_IDFC_TEST_KEK'),
         'test_password'          => env('UPI_IDFC_TEST_PASSWORD'),
     ],
 
     'upi_npci' => [
-        'test_decryption_key'     => env('UPI_NPCI_TEST_DECRYPTION_KEY'),
-        'test_signing_key'        => env('UPI_NPCI_TEST_SIGNING_KEY'),
-        'test_signing_public_key' => env('UPI_NPCI_TEST_SIGNING_PUBLIC_KEY'),
+        'test_decryption_key'       => env('UPI_NPCI_TEST_DECRYPTION_KEY'),
+        'test_signing_key'          => env('UPI_NPCI_TEST_SIGNING_KEY'),
+        'test_signing_public_key'   => env('UPI_NPCI_TEST_SIGNING_PUBLIC_KEY'),
     ],
 
-    'wallet_payzapp' => array(
+    'upi_mindgate' => [
+        'test_merchant_id'       => env('UPI_MINDGATE_TEST_MERCHANT_ID'),
+        'test_merchant_key'      => env('UPI_MINDGATE_TEST_MERCHANT_KEY'),
+    ],
+
+    'wallet_payzapp' => [
         'pg_merchant_login_id'      => env('PAYZAPP_WALLET_PG_MERCHANT_LOGIN_ID'),
         'test_merchant_id'          => env('PAYZAPP_WALLET_TEST_MERCHANT_ID'),
         'test_merchant_app_id'      => env('PAYZAPP_WALLET_TEST_MERCHANT_APP_ID'),
@@ -194,63 +206,64 @@ return array(
         'test_pg_merchant_id'       => env('PAYZAPP_WALLET_TEST_PG_MERCHANT_ID'),
         'test_pg_hash_key'          => env('PAYZAPP_WALLET_TEST_PG_HASH_KEY'),
         'live_pg_instance_id'       => env('PAYZAPP_WALLET_LIVE_PG_INSTANCE_ID'),
-    ),
+    ],
 
-    'wallet_olamoney' => array(
+    'wallet_olamoney'  => [
         'test_merchant_id'      => env('OLAMONEY_WALLET_TEST_MERCHANT_ID'),
         'test_hash_secret'      => env('OLAMONEY_WALLET_TEST_HASH_SECRET'),
         'test_access_code'      => env('OLAMONEY_WALLET_TEST_CLIENT_ID'),
-    ),
+    ],
 
-    'wallet_payumoney' => array(
+    'wallet_payumoney' => [
         'test_hash_secret'      => env('PAYUMONEY_WALLET_TEST_HASH_SECRET'),
         'test_merchant_id'      => env('PAYUMONEY_WALLET_TEST_MERCHANT_ID'),
         'test_access_code'      => env('PAYUMONEY_WALLET_TEST_CLIENT_ID'),
         'test_auth_header'      => env('PAYUMONEY_WALLET_TEST_AUTH_HEADER'),
-    ),
+    ],
 
-    'wallet_airtelmoney' => array(
+    'wallet_airtelmoney' => [
         'test_hash_secret' => env('AIRTELMONEY_WALLET_TEST_HASH_SECRET'),
         'test_merchant_id' => env('AIRTELMONEY_WALLET_TEST_MERCHANT_ID'),
         'test_end_mid'     => env('AIRTELMONEY_WALLET_TEST_END_MID'),
         'live_merchant_id' => env('AIRTELMONEY_WALLET_LIVE_MERCHANT_ID'),
         'live_hash_secret' => env('AIRTELMONEY_WALLET_LIVE_HASH_SECRET'),
-    ),
+    ],
 
-    'wallet_freecharge' => array(
+    'wallet_freecharge' => [
         'test_hash_secret'      => env('FREECHARGE_WALLET_TEST_HASH_SECRET'),
         'test_merchant_id'      => env('FREECHARGE_WALLET_TEST_MERCHANT_ID'),
         'test_dealer_id'        => env('FREECHARGE_WALLET_TEST_DEALER_ID'),
-    ),
+    ],
 
-    'wallet_jiomoney' => array(
+    'wallet_jiomoney' => [
         'test_merchant_id'      => env('JIOMONEY_WALLET_TEST_MERCHANT_ID'),
         'test_client_id'        => env('JIOMONEY_WALLET_TEST_CLIENT_ID'),
         'test_hash_secret'      => env('JIOMONEY_WALLET_TEST_HASH_SECRET')
-    ),
+    ],
 
-    'wallet_mpesa' => array(
-        'test_merchant_id' => env('MPESA_WALLET_TEST_MERCHANT_ID'),
-        'test_hash_secret' => env('MPESA_WALLET_TEST_HASH_SECRET'),
-        'test_user_id'     => env('MPESA_WALLET_TEST_USER_ID'),
-        'test_password'    => env('MPESA_WALLET_TEST_PASSWORD'),
-        'live_user_id'     => env('MPESA_WALLET_LIVE_USER_ID'),
-        'live_password'    => env('MPESA_WALLET_LIVE_PASSWORD'),
-    ),
+    'wallet_mpesa' => [
+        'test_merchant_id'  => env('MPESA_WALLET_TEST_MERCHANT_ID'),
+        'test_merchant_id2' => env('MPESA_WALLET_TEST_MERCHANT_ID2'),
+        'test_hash_secret'  => env('MPESA_WALLET_TEST_HASH_SECRET'),
+        'test_user_id'      => env('MPESA_WALLET_TEST_USER_ID'),
+        'test_password'     => env('MPESA_WALLET_TEST_PASSWORD'),
+        'live_user_id'      => env('MPESA_WALLET_LIVE_USER_ID'),
+        'live_password'     => env('MPESA_WALLET_LIVE_PASSWORD'),
+    ],
 
-    'netbanking_hdfc' => array(
+    'netbanking_hdfc' => [
         'live_hash_secret'  => env('NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'),
         'test_hash_secret'  => '123456',
         // tpv
         'live_hash_secret_tpv' => env('NETBANKING_HDFC_GATEWAY_CUG_LIVE_HASH_SECRET'),
         'test_hash_secret_tpv' => '12345',
-    ),
+    ],
 
-    'netbanking_kotak' => array(
+    'netbanking_kotak' => [
         'live_hash_secret'     => env('NETBANKING_KOTAK_GATEWAY_LIVE_HASH_SECRET'),
         'test_hash_secret'     => env('NETBANKING_KOTAK_GATEWAY_TEST_HASH_SECRET'),
         'live_hash_secret_tpv' => env('NETBANKING_KOTAK_GATEWAY_SEC_LIVE_HASH_SECRET'),
-    ),
+    ],
 
     'netbanking_icici' => [
         'test_hash_secret'      => env('NETBANKING_ICICI_GATEWAY_TEST_HASH_SECRET'),
@@ -262,11 +275,11 @@ return array(
         'live_merchant_id2_tpv' => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID_BROKER'),
     ],
 
-    'netbanking_axis' => array(
+    'netbanking_axis' => [
         'live_hash_secret' => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET'),
         'test_hash_secret' => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET'),
         'test_merchant_id' => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID'),
-    ),
+    ],
 
     'netbanking_airtel' => [
         'test_merchant_id'  => env('NETBANKING_AIRTEL_GATEWAY_TEST_MERCHANT_ID'),
@@ -293,10 +306,15 @@ return array(
         'live_hash_secret'  => env('NETBANKING_INDUSIND_GATEWAY_LIVE_HASH_SECRET'),
     ],
 
-    'sharp' => array(
-    ),
+    'netbanking_pnb' => [
+        'test_hash_secret'  => env('NETBANKING_PNB_GATEWAY_TEST_HASH_SECRET'),
+        'live_hash_secret'  => env('NETBANKING_PNB_GATEWAY_LIVE_HASH_SECRET'),
+    ],
+
+    'sharp' => [
+    ],
 
     'proxy_enabled' => env('PROXY_ENABLED'),
 
     'proxy_address' => env('PROXY_ADDRESS'),
-);
+];

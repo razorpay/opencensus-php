@@ -14,6 +14,7 @@ use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\Process\Exception\ProcessTimedOutException;
+use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use RZP\Exception\EarlyWorkflowResponse;
 
@@ -70,6 +71,12 @@ class Handler extends ExceptionHandler
 
         switch (true)
         {
+            // Order should not be changed,
+            // GatewayErrorException extends RecoverableException
+            case $e instanceof GatewayErrorException:
+                $response = $this->gatewayExceptionHandler($e);
+                break;
+
             case $e instanceof BaseException:
             case $e instanceof RecoverableException:
                 $response = $this->baseExceptionHandler($e);
@@ -83,8 +90,19 @@ class Handler extends ExceptionHandler
                 $response = ApiResponse::httpMethodNotAllowed();
                 break;
 
+            case $e instanceof TooManyRequestsHttpException:
+                $response = ApiResponse::rateLimitExceeded();
+                break;
+
             case $e instanceof EarlyWorkflowResponse:
                 $workflowActionData = json_decode($e->getMessage(), true);
+
+                // Although we're doing a re-assignment
+                // the returned array will be exactly similar
+                // to the $e->getMessage()
+                $workflowActionData = $this->app['workflow']
+                                           ->saveActionIfTransactionFailed(
+                                                $workflowActionData);
 
                 $response = ApiResponse::json($workflowActionData);
 
@@ -107,25 +125,21 @@ class Handler extends ExceptionHandler
     {
         $traceData = $this->getExceptionDetails($exception, 0, $extraData);
 
-        if (($level === null) and
-            ($code === null))
-        {
-            if ($exception instanceof RecoverableException)
-            {
-                $level = Trace::INFO;
-                $code = TraceCode::RECOVERABLE_EXCEPTION;
-            }
-            else
-            {
-                $level = Trace::ERROR;
-                $code = TraceCode::ERROR_EXCEPTION;
+        // Gets default level and code based on exception
 
-                if ($this->route->isCriticalRoute())
-                {
-                    $level = Trace::CRITICAL;
-                }
-            }
+        $defaultLevel = $this->route->isCriticalRoute() ? Trace::CRITICAL : Trace::ERROR;
+        $defaultCode  = TraceCode::ERROR_EXCEPTION;
+
+        if ($exception instanceof RecoverableException)
+        {
+            $defaultLevel = Trace::INFO;
+            $defaultCode  = TraceCode::RECOVERABLE_EXCEPTION;
         }
+
+        // Use default level and code if not sent as part of arguments
+
+        $level = $level ?: $defaultLevel;
+        $code  = $code ?: $defaultCode;
 
         $this->trace->addRecord($level, $code, $traceData);
     }
@@ -157,6 +171,22 @@ class Handler extends ExceptionHandler
         $this->trace->info(
             TraceCode::RECOVERABLE_EXCEPTION,
             $this->getExceptionDetails($exception));
+
+        return $this->recoverableErrorResponse($this->isDebug(), $exception);
+    }
+
+    protected function gatewayExceptionHandler(GatewayErrorException $exception)
+    {
+        $level = Trace::INFO;
+        $code = TraceCode::RECOVERABLE_EXCEPTION;
+
+        if ($exception->isCritical() === true)
+        {
+            $level = Trace::CRITICAL;
+            $code = TraceCode::ERROR_EXCEPTION;
+        }
+
+        $this->traceException($exception, $level, $code);
 
         return $this->recoverableErrorResponse($this->isDebug(), $exception);
     }

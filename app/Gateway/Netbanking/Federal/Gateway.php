@@ -181,17 +181,6 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
-    protected function checkApiSuccess(Verify $verify)
-    {
-        $verify->apiSuccess = true;
-
-        if (($verify->input['payment']['status'] === 'created') or
-            ($verify->input['payment']['status'] === 'failed'))
-        {
-            $verify->apiSuccess = false;
-        }
-    }
-
     protected function checkGatewaySuccess(Verify $verify)
     {
         $verify->gatewaySuccess = false;
@@ -388,14 +377,14 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantId()
     {
-        $mode = $this->getLiveMerchantId();
+        $merchantId = $this->getLiveMerchantId();
 
         if ($this->mode === Mode::TEST)
         {
-            $mode = $this->getTestMerchantId();
+            $merchantId = $this->getTestMerchantId();
         }
 
-        return $mode;
+        return $merchantId;
     }
 
     protected function getLiveMerchantId()

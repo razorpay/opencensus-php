@@ -383,6 +383,7 @@ return [
         'request' => [
             'content' => [
                 'brand_color' => '00bcd4',
+                'handle'      => 'LOLO',
             ],
             'url' => '/account/config',
             'method' => 'put',
@@ -393,8 +394,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'id' => '10000000000000',
-                'brand_color' => '#00BCD4'
+                'id'          => '10000000000000',
+                'brand_color' => '#00BCD4',
+                'handle'      => 'LOLO',
             ]
         ]
     ],
@@ -644,6 +646,45 @@ return [
     ],
 
     'testAddBankAccount' => [
+        'request' => [
+            'content' => [
+                'ifsc_code'             => 'ICIC0001206',
+                'account_number'        => '0002020000304030434',
+                'beneficiary_name'      => 'Test R4zorpay',
+                'beneficiary_address1'  => 'address 1',
+                'beneficiary_address2'  => 'address 2',
+                'beneficiary_address3'  => 'address 3',
+                'beneficiary_address4'  => 'address 4',
+                'beneficiary_email'     => 'random@email.com',
+                'beneficiary_mobile'    => '9988776655',
+                'beneficiary_city'      => 'Kolkata',
+                'beneficiary_state'     => 'WB',
+                'beneficiary_country'   => 'IN',
+                'beneficiary_pin'       => '123456',
+            ],
+            'url' => '/merchants/10000000000000/bank_account',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'ifsc_code' => 'ICIC0001206',
+                'account_number' => '0002020000304030434',
+                'beneficiary_name' => 'Test R4zorpay',
+                'beneficiary_address1' => 'address 1',
+                'beneficiary_address2' => 'address 2',
+                'beneficiary_address3' => 'address 3',
+                'beneficiary_city' => 'Kolkata',
+                'beneficiary_state' => 'WB',
+                'beneficiary_country' => 'IN',
+                'beneficiary_pin' => '123456',
+                'beneficiary_email' => 'random@email.com',
+                'beneficiary_mobile' => '9988776655',
+            ]
+        ]
+    ],
+
+    'testAddBankAccountWithMerchantDetail' => [
         'request' => [
             'content' => [
                 'ifsc_code'             => 'ICIC0001206',
@@ -949,6 +990,90 @@ return [
             'url'    => null,
             'method' => 'get',
         ],
+        'tests' => [
+            [
+                'offer' => [
+                    'payment_method'      => 'card',
+                    'payment_method_type' => 'credit',
+                    'payment_network'     => 'VISA',
+                    'issuer'              => 'HDFC',
+                    'iins'                => ['123456'],
+                    'error_message'       => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+                    'display_text'        => 'Some display text',
+                    'terms'               => 'Some terms',
+                ],
+                'response' => [
+                    'content' => [
+                        'methods' => [
+                            'entity' => 'methods',
+                            'card'   => true
+                        ],
+                        'offers' => [
+                            [
+                                'name'            => 'Test Offer',
+                                'payment_method'  => 'card',
+                                'payment_network' => 'VISA',
+                                'display_text'    => 'Some display text',
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            [
+                'offer' => [
+                    'payment_method'      => 'netbanking',
+                    'payment_network'     => 'HDFC',
+                    'error_message'       => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+                    'display_text'        => 'Some display text',
+                    'terms'               => 'Some terms',
+                ],
+                'response' => [
+                    'content' => [
+                        'methods' => [
+                            'entity'     => 'methods',
+                            'netbanking' => [
+                                'HDFC' => 'HDFC Bank',
+                            ]
+                        ],
+                        'offers' => [
+                            [
+                                'name'            => 'Test Offer',
+                                'payment_method'  => 'netbanking',
+                                'payment_network' => 'HDFC',
+                                'display_text'    => 'Some display text',
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            [
+                'offer' => [
+                    'payment_method'      => 'wallet',
+                    'payment_network'     => 'airtelmoney',
+                    'error_message'       => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+                    'display_text'        => 'Some display text',
+                    'terms'               => 'Some terms',
+                ],
+                'response' => [
+                    'content' => [
+                        'methods' => [
+                            'entity'     => 'methods',
+                            'wallet' => [
+                                'airtelmoney'
+                            ]
+                        ],
+                        'offers' => [
+                            [
+                                'name'            => 'Test Offer',
+                                'payment_method'  => 'wallet',
+                                'payment_network' => 'airtelmoney',
+                                'display_text'    => 'Some display text',
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+        ],
         'response' => [
             'content' => [
                 'methods' => [
@@ -1250,6 +1375,24 @@ return [
         ]
     ],
 
+    'testPutEmiMethod' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/methods',
+            'method' => 'put',
+            'content' => [
+                'emi' => true,
+            ],
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ]
+        ]
+    ],
+
     'testGetKeySecret' => [
         'request' => [
             'url' => '/keys/rzp_test_TheTestAuthKey/secret',
@@ -1525,7 +1668,7 @@ return [
                 'features' => [
                     [
                         'feature' => "noflashcheckout",
-                        'value' => FALSE,
+                        'value' => false,
                         'display_name' => "No Flash Checkout"
                     ],
                 ]
@@ -1554,7 +1697,7 @@ return [
                 'features' => [
                     [
                         'feature' => "noflashcheckout",
-                        'value' => TRUE,
+                        'value' => true,
                         'display_name' => "No Flash Checkout"
                     ]
                 ]

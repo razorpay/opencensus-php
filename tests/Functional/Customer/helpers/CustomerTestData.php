@@ -176,6 +176,22 @@ return [
         ],
     ],
 
+    'testUpdateCustomerName' => [
+        'request' => [
+            'url' => '/customers/cust_100000customer',
+            'method' => 'put',
+            'content' => [
+                'name'    => 'test1'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'    => 'test1',
+                'contact' => '1234567890',
+            ],
+        ],
+    ],
+
     'testGetCustomer' => [
         'request' => [
             'url' => '/customers/cust_100000customer',
@@ -219,6 +235,14 @@ return [
                         'token'         => '100wallettoken',
                         'method'        => 'wallet',
                         'wallet'        => 'paytm',
+                    ],
+                    [
+                        'token'         => '10001cardtoken',
+                        'method'        => 'card',
+                        'card'          =>  [
+                            'last4'         => '1111',
+                            'network'       => 'Visa',
+                        ]
                     ],
                     [
                         'token'         => '10000cardtoken',

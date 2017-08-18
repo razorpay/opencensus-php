@@ -36,4 +36,13 @@ class Repository extends Base\Repository
                     ->where(Entity::STATUS, '=', Status::CAPTURED)
                     ->first();
     }
+
+    public function findSuccessfulTxnByActionAndRef(string $action, $ref)
+    {
+        return $this->newQuery()
+                    ->where(Entity::REF, '=', $ref)
+                    ->where(Entity::ACTION, '=', $action)
+                    ->where(Entity::REASON_CODE, '=', Result::SUCCESS)
+                    ->first();
+    }
 }

@@ -46,6 +46,12 @@ class Biller extends Base\Core
                     'subscription_id'   => $subscription->getId(),
                 ]);
 
+            //
+            // We need to update the charge_at of the subscription so that the
+            // flow continues as it is even if the subscription is in halted state.
+            //
+            (new Charge)->updateNextRunAtForSubscription($subscription);
+
             return;
         }
 
@@ -149,12 +155,16 @@ class Biller extends Base\Core
         $lineItems = $this->getLineItemsForInvoiceInput($subscription, $addons, $first);
 
         $invoiceInput = [
-            Invoice\Entity::CUSTOMER_ID     => $customer->getPublicId(),
             Invoice\Entity::LINE_ITEMS      => $lineItems,
             Invoice\Entity::CURRENCY        => $plan->item->getCurrency(),
             Invoice\Entity::SMS_NOTIFY      => '0',
             Invoice\Entity::EMAIL_NOTIFY    => '0',
         ];
+
+        if ($customer !== null)
+        {
+            $invoiceInput[Invoice\Entity::CUSTOMER_ID] = $customer->getPublicId();
+        }
 
         return $invoiceInput;
     }
@@ -200,8 +210,9 @@ class Biller extends Base\Core
             // or item_input also to be sent in its input.
             //
             $addonLineItem = [
-                LineItem\Entity::ITEM_ID  => $addon->item->getPublicId(),
-                LineItem\Entity::REF      => $addon,
+                LineItem\Entity::QUANTITY   => $addon->getQuantity(),
+                LineItem\Entity::ITEM_ID    => $addon->item->getPublicId(),
+                LineItem\Entity::REF        => $addon,
             ];
 
             $lineItems[] = $addonLineItem;

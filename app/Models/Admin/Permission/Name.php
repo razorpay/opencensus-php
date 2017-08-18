@@ -6,6 +6,7 @@ use RZP\Models\Merchant;
 
 class Name
 {
+    const VIEW_HOMEPAGE                       = 'view_homepage';
     const VIEW_ALL_MERCHANTS                  = 'view_all_merchants';
     const VIEW_MERCHANT                       = 'view_merchant';
     const VIEW_MERCHANT_BALANCE               = 'view_merchant_balance';
@@ -58,11 +59,13 @@ class Name
     const EDIT_AUTHORIZED_FAILED_PAYMENT      = 'edit_authorized_failed_payment';
     const VIEW_REFUND_PAYMENTS                = 'view_refund_payments';
     const EDIT_AUTHORIZED_REFUND_PAYMENT      = 'edit_authorized_refund_payment';
+    const RETRY_REFUND_FAILED                 = 'retry_refund_failed';
     const EDIT_PAYMENT_REFUND                 = 'edit_payment_refund';
     const EDIT_PAYMENT_CAPTURE                = 'edit_payment_capture';
     const EDIT_MERCHANT_CONFIRM               = 'edit_merchant_confirm';
     const CREATE_BENEFICIARY_FILE             = 'create_beneficiary_file';
     const CREATE_NETBANKING_REFUND            = 'create_netbanking_refund';
+    const CREATE_EMI_FILES                    = 'create_emi_files';
     const CREATE_SETTLEMENT_INITIATE          = 'create_settlement_initiate';
     const DELETE_TERMINAL                     = 'delete_terminal';
     const EDIT_TERMINAL                       = 'edit_terminal';
@@ -137,11 +140,15 @@ class Name
     const VIEW_ALL_WORKFLOW                   = 'view_all_workflow';
     const EDIT_WORKFLOW                       = 'edit_workflow';
     const DELETE_WORKFLOW                     = 'delete_workflow';
+    const VIEW_WORKFLOW_REQUESTS              = 'view_workflow_requests';
     const CREATE_GATEWAY_RULE                 = 'create_gateway_rule';
     const EDIT_GATEWAY_RULE                   = 'edit_gateway_rule';
     const DELETE_GATEWAY_RULE                 = 'delete_gateway_rule';
     const VIEW_GATEWAY_RULE                   = 'view_gateway_rule';
     const VIEW_MERCHANT_REPORT                = 'view_merchant_report';
+    const CREATE_MERCHANT_OFFER               = 'create_merchant_offer';
+    const EDIT_MERCHANT_OFFER                 = 'edit_merchant_offer';
+    const ASSIGN_MERCHANT_HANDLE              = 'assign_merchant_handle';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,

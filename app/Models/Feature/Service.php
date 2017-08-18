@@ -38,6 +38,17 @@ class Service extends Base\Service
 
         $this->trace->info(TraceCode::FEATURE_DELETE_REQUEST, $feature->toArrayPublic());
 
+        // Workflow
+
+        list($original, $dirty) = [
+            ['feature' => $featureName],
+            ['feature' => null],
+        ];
+
+        $this->app['workflow']
+             ->setEntity($feature->getEntity())
+             ->handle($original, $dirty);
+
         $this->repo->feature->delete($feature);
 
         (new Core)->notifyOnSlack($feature, true);
@@ -47,6 +58,8 @@ class Service extends Base\Service
 
     public function multiAssignFeature($input)
     {
+        $this->trace->info(TraceCode::FEATURE_MULTI_ASSIGN_REQUEST, $input);
+
         $entityIds = $input[Constants::ENTITY_IDS];
 
         $response = new Base\Collection;
@@ -80,9 +93,11 @@ class Service extends Base\Service
 
     public function multiRemoveFeature($input)
     {
+        $this->trace->info(TraceCode::FEATURE_MULTI_REMOVE_REQUEST, $input);
+
         $entityIds = $input[Constants::ENTITY_IDS];
 
-        $featureName = $input[ENTITY::NAME];
+        $featureName = $input[Entity::NAME];
 
         $response = new Base\Collection;
 

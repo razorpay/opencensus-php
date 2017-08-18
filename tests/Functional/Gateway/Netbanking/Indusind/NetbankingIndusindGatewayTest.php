@@ -5,8 +5,9 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Indusind;
 use Mail;
 use Excel;
 use Mockery;
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
+use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Terminal\Options;
@@ -47,6 +48,8 @@ class NetbankingIndusindGatewayTest extends TestCase
 
         // Asserts that bank payment id exists in response and is an int
         $this->assertEquals(9999999999, $gatewayPayment['bank_payment_id']);
+
+        $this->assertEquals($gatewayPayment['bank_payment_id'], $payment['reference1']);
     }
 
     public function testPaymentVerify()
@@ -104,6 +107,8 @@ class NetbankingIndusindGatewayTest extends TestCase
         $this->createRefundsForExcel();
 
         $this->alterRefundsDateToYesterday();
+
+        $this->setPaymentsCreatedAtYesterday();
 
         // Generating 3rd payment and leaving its created_at
         // date to now unlike first 2 payments
@@ -180,40 +185,10 @@ class NetbankingIndusindGatewayTest extends TestCase
             });
     }
 
-    protected function createRefundsForExcel()
-    {
-        // Refund the payment above in full
-        $refund = $this->doAuthCaptureAndRefundPayment($this->payment);
-
-        // Create a new payment #2
-        $payment = $this->doAuthAndCapturePayment($this->payment);
-
-        // Do a partial refund of 10000 of payment #2
-        $this->refundPayment($payment['id'], 10000);
-        // Refund the remaining amount of the 2nd payment
-        $this->refundPayment($payment['id']);
-    }
-
-    protected function alterRefundsDateToYesterday()
-    {
-        // Get all pending refunds
-        $refunds = $this->getEntities('refund', [], true);
-
-        // Convert the created_at dates to yesterday's so that they are picked
-        // up during refund excel generation
-        foreach ($refunds['items'] as $refund)
-        {
-            $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 10;
-            $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
-        }
-    }
-
     protected function checkRefundFileData($data)
     {
-        $filePath = $data['netbanking_indusind']['file'];
+        $filePath = $data['netbanking_indusind']['refunds'];
 
-        // Data shows 3 refunds - payment 1 = full, payment 2 = 100 and 400. Payment 3 doesn't show up
-        $this->assertEquals($data['netbanking_indusind']['count'], 3);
         $this->assertTrue(file_exists($filePath));
 
         $refundsFileContents = file($filePath);
@@ -239,13 +214,54 @@ class NetbankingIndusindGatewayTest extends TestCase
         unlink($filePath);
     }
 
+    protected function createRefundsForExcel()
+    {
+        // Refund the payment above in full
+        $refund = $this->doAuthCaptureAndRefundPayment($this->payment);
+
+        // Create a new payment #2
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        // Do a partial refund of 10000 of payment #2
+        $this->refundPayment($payment['id'], 10000);
+        // Refund the remaining amount of the 2nd payment
+        $this->refundPayment($payment['id']);
+    }
+
+    protected function alterRefundsDateToYesterday()
+    {
+        // Get all pending refunds
+        $refunds = $this->getEntities('refund', [], true);
+
+        // Convert the created_at dates to yesterday's so that they are picked
+        // up during refund excel generation
+        foreach ($refunds['items'] as $refund)
+        {
+            $createdAt = Carbon::yesterday(Timezone::IST)->timestamp + 10;
+            $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
+        }
+    }
+
+    protected function setPaymentsCreatedAtYesterday()
+    {
+        // Set the transactions to be reconciled today
+        $payments = $this->getEntities('payment', [], true);
+
+        $createdAt = Carbon::yesterday(Timezone::IST)->timestamp + 10;
+
+        foreach ($payments['items'] as $payment)
+        {
+            $this->fixtures->edit('payment', $payment['id'], ['authorized_at' => $createdAt]);
+        }
+    }
+
     protected function checkMailQueue()
     {
-        Mail::assertSent(RefundFileMail::class, function ($mail)
+        Mail::assertSent(DailyFileMail::class, function ($mail)
         {
-            $body = 'Please forward the Indusind Netbanking refunds file to UBPS operations team';
+            $this->assertEquals('3', $mail->viewData['count']['refunds']);
 
-            $this->assertEquals($body, $mail->viewData['body']);
+            $this->assertEquals('2', $mail->viewData['count']['claims']);
 
             return true;
         });

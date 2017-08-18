@@ -5,11 +5,13 @@ namespace RZP\Tests\Functional\Helpers\Subscription;
 use Mockery;
 use Closure;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 
 trait SubscriptionTrait
 {
-    public function getSubscriptionAuthTransactionRequest($subscription, $authAmount = null)
+    public function getSubscriptionAuthTransactionRequest(
+        $subscription, $authAmount = null, $token = null)
     {
         $paymentRequest = $this->getDefaultRecurringPaymentArray();
 
@@ -18,13 +20,16 @@ trait SubscriptionTrait
 
         $paymentRequest['subscription_id'] = $subscription['id'];
 
-        if ($authAmount === null)
-        {
-            $paymentRequest['amount'] = 500;
-        }
-        else
+        $paymentRequest['amount'] = 500;
+
+        if ($authAmount !== null)
         {
             $paymentRequest['amount'] = $authAmount;
+        }
+
+        if ($token !== null)
+        {
+            $paymentRequest['token'] = $token;
         }
 
         return $paymentRequest;
@@ -95,7 +100,8 @@ trait SubscriptionTrait
         $planAttributes = [],
         $subscriptionAttributes = [],
         $addons = false,
-        $emptyResponseContent = false)
+        $emptyResponseContent = false,
+        $createCustomer = true)
     {
         $this->fixtures->create('customer');
 
@@ -111,6 +117,18 @@ trait SubscriptionTrait
         }
 
         $requestContent = $this->testData[$testFuncName];
+
+        //
+        // This needs to be before the merge block because we might
+        // send customer_id in subscriptionAttributes, but don't want
+        // it to be sent or created via this function. Basically, pre-created
+        // customer. Don't use the standard customer_id (1000000customer)
+        //
+        if ($createCustomer === false)
+        {
+            $requestContent['request']['content']['customer_id'] = null;
+            unset($requestContent['response']['content']['customer_id']);
+        }
 
         if (empty($subscriptionAttributes) === false)
         {
@@ -250,7 +268,6 @@ trait SubscriptionTrait
             $this->assertArrayHasKey('current_end'     , $subscription);
             $this->assertArrayHasKey('ended_at'        , $subscription);
             $this->assertArrayHasKey('quantity'        , $subscription);
-            $this->assertArrayHasKey('token_id'        , $subscription);
             $this->assertArrayHasKey('notes'           , $subscription);
             $this->assertArrayHasKey('charge_at'       , $subscription);
             $this->assertArrayHasKey('start_at'        , $subscription);
@@ -265,11 +282,31 @@ trait SubscriptionTrait
         $times);
     }
 
+    protected function mockAndTestWebhookDataCustom(string $event, string $testDataKey)
+    {
+        $testData = $this->testData[$testDataKey];
+
+        $this->mockInfernoFire(function ($data) use ($testData, $event)
+        {
+            $data['event'] = json_decode($data['event'], true);
+
+            $this->assertArraySelectiveEquals($testData, $data);
+
+            $subscriptionPayload = $data['event']['payload']['subscription']['entity'];
+
+            $this->assertArrayNotHasKey('token_id', $subscriptionPayload);
+
+            $this->assertNotNull('webhook_id', $data);
+
+            return true;
+        });
+    }
+
     protected function chargeSubscriptionsViaCron($timestamp = null)
     {
         if ($timestamp !== null)
         {
-            $chargeAt = Carbon::createFromTimestamp($timestamp + 1, 'Asia/Kolkata');
+            $chargeAt = Carbon::createFromTimestamp($timestamp + 1, Timezone::IST);
 
             Carbon::setTestNow($chargeAt);
         }

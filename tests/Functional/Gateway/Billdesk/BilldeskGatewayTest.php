@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\Billdesk;
 
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 
@@ -90,6 +91,169 @@ class BilldeskGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentBilldeskEntity'], $payment);
+    }
+
+    public function testMakerCheckerPaymentNormalCallbackForFailed()
+    {
+        $this->fixtures->create('terminal:billdesk_terminal', [
+            'corporate' => 1
+        ]);
+
+        $this->fixtures->terminal->disableTerminal($this->sharedTerminal->getId());
+
+        $data = $this->testData['testMakerCheckerPaymentNormalCallbackForFailed'];
+
+        $payment = $this->getDefaultNetbankingPaymentArray('ICIC');
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+           $this->doAuthPayment($payment);
+        });
+
+        $billdesk = $this->getLastEntity('billdesk', true);
+        $payment = $this->getLastEntity('payment', true);
+
+        // Choose ICICI corporate bank
+        $this->assertEquals($billdesk['BankID'], 'ICO');
+        $this->assertEquals($payment['status'], 'failed');
+
+        $time = Carbon::now()->getTimestamp();
+
+        // Change created_at to allow payments to be picked up,
+        // Allow verify to pick up payment
+        $this->fixtures->edit('payment', $payment['id'], ['created_at' => $time-150]);
+
+        $this->runVerify('payments_failed');
+
+        $billdesk = $this->getLastEntity('billdesk', true);
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'authorized');
+
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+
+        $this->assertEquals($payment['status'], 'captured');
+    }
+
+    /**
+     * Asynchronous payment with corporate banking, the initial response
+     * provides a pending status which can be used to wait leave the
+     * payment in the created state.
+     *
+     * Assuming the authorization takes place in the meanwhile.
+     * The payment will be successful with verify post the authorization.
+     * */
+    public function testMakerCheckerPaymentNormalCallback()
+    {
+        $this->markTestSkipped();
+        $this->fixtures->create('terminal:billdesk_terminal', [
+            'corporate' => 1
+        ]);
+
+        $this->fixtures->terminal->disableTerminal($this->sharedTerminal->getId());
+
+        $payment = $this->getDefaultNetbankingPaymentArray('ICIC');
+        $payment = $this->doAuthPayment($payment);
+
+        $billdesk = $this->getLastEntity('billdesk', true);
+        $payment = $this->getLastEntity('payment', true);
+
+        // Choose ICICI corporate bank
+        $this->assertEquals($billdesk['BankID'], 'ICO');
+        $this->assertEquals($payment['status'], 'created');
+
+        $time = Carbon::now()->getTimestamp();
+
+        // Change created_at to allow payments to be picked up,
+        // Allow verify to pick up payment
+        $this->fixtures->edit('payment', $payment['id'], ['created_at' => $time-150]);
+
+        $this->runVerify();
+
+        $billdesk = $this->getLastEntity('billdesk', true);
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'authorized');
+
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+
+        $this->assertEquals($payment['status'], 'captured');
+    }
+
+    public function testMakerCheckerPaymentS2SCallback()
+    {
+        $this->markTestSkipped();
+        $this->fixtures->create('terminal:billdesk_terminal', [
+            'corporate' => 1
+        ]);
+
+        $this->fixtures->terminal->disableTerminal($this->sharedTerminal->getId());
+
+        // Setup mock server
+        $server = $this->mockServer()
+                        ->shouldReceive('content')
+                        ->andReturnUsing(function (& $content)
+                        {
+                            $request = array(
+                                'content' => $content,
+                                'url' => '/callback/billdesk',
+                                'method' => 'post');
+
+                            // Fire s2s callback request
+                            $response = $this->makeRequestAndGetContent($request);
+
+                            $this->assertEquals($response['success'], true);
+
+                            // Stop the progress here.
+                            throw new Exception\RuntimeException(
+                                'Stop here.');
+
+                        })->mock();
+
+        // Set mock server
+        $this->setMockServer($server);
+
+        $data = $this->testData['testServerToServerCallback'];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $payment = $this->getDefaultNetbankingPaymentArray('ICIC');
+            $payment = $this->doAuthPayment($payment);
+        });
+
+        $billdesk = $this->getLastEntity('billdesk', true);
+        $payment = $this->getLastEntity('payment', true);
+
+        // // Choose ICICI corporate bank
+        $this->assertEquals($billdesk['BankID'], 'ICO');
+        $this->assertEquals($payment['status'], 'created');
+
+        $time = Carbon::now()->getTimestamp();
+
+        // Change created_at to allow payments to be picked up,
+        // Allow verify to pick up payment
+        $this->fixtures->edit('payment', $payment['id'], ['created_at' => $time-150]);
+
+        $this->runVerify();
+
+        $billdesk = $this->getLastEntity('billdesk', true);
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'authorized');
+
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+
+        $this->assertEquals($payment['status'], 'captured');
+    }
+
+    protected function runVerify($filter = 'payments_created')
+    {
+        $request = [
+            'url'    => '/payments/verify/'. $filter,
+            'method' => 'post'
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
     }
 
     public function testPaymentOnDirectBilldeskTerminal()

@@ -15,11 +15,13 @@ class Entity extends Base\Entity
     const STATUS                  = 'status';
     const TRANSACTION_RESULT      = 'transaction_result';
     const GATEWAY_TRANSACTION_ID  = 'gateway_transaction_id';
+    const CAPS_PAYMENT_ID         = 'caps_payment_id';
     const ENDPOINT_TRANSACTION_ID = 'endpoint_transaction_id';
     const GATEWAY_TERMINAL_ID     = 'gateway_terminal_id';
     const AUTH_CODE               = 'auth_code';
     const APPROVAL_CODE           = 'approval_code';
     const ERROR_MESSAGE           = 'error_message';
+    const ARN_NO                  = 'arn_no';
 
     protected $fillable = [
         self::PAYMENT_ID,
@@ -33,9 +35,11 @@ class Entity extends Base\Entity
         self::STATUS,
         self::TRANSACTION_RESULT,
         self::GATEWAY_TRANSACTION_ID,
+        self::CAPS_PAYMENT_ID,
         self::ENDPOINT_TRANSACTION_ID,
         self::GATEWAY_TERMINAL_ID,
         self::AUTH_CODE,
+        self::ARN_NO,
         self::APPROVAL_CODE,
         self::ERROR_MESSAGE,
     ];
@@ -67,6 +71,16 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::ENDPOINT_TRANSACTION_ID);
     }
 
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
     // ----------------------- Setters ---------------------------------------------
 
     public function setTdate($tdate)
@@ -82,5 +96,15 @@ class Entity extends Base\Entity
     public function setStatus($status)
     {
         return $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setCapsPaymentId($capsPaymentId)
+    {
+        return $this->setAttribute(self::CAPS_PAYMENT_ID, $capsPaymentId);
+    }
+
+    public function setArnNo($arnNo)
+    {
+        $this->setAttribute(self::ARN_NO, $arnNo);
     }
 }

@@ -35,6 +35,8 @@ class MpesaGatewayTest extends TestCase
 
     public function testOtpPayment()
     {
+        $this->markTestSkipped();
+
         $testData = $this->testData[__FUNCTION__];
 
         $this->doAuthAndCapturePayment($this->payment);
@@ -56,18 +58,9 @@ class MpesaGatewayTest extends TestCase
 
     public function testAuthPayment()
     {
-        $this->markTestSkipped();
-
         $testData = $this->testData[__FUNCTION__];
 
-        //
-        // Manually setting the payment to auth flow
-        // instead of otp flow to execute the test case correctly
-        //
-        $payment = $this->payment;
-        $payment['_']['source'] = 's2s';
-
-        $this->doAuthPayment($payment);
+        $this->doAuthAndCapturePayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -82,20 +75,58 @@ class MpesaGatewayTest extends TestCase
         $this->assertEmpty($wallet['gateway_payment_id_2']);
     }
 
-    public function testAuthPaymentFailure()
+    /**
+     * The purpose of this test to ensure that
+     * float payments don't cause an issue when
+     * array_flip is called when generating request xml
+     */
+    public function testAuthFloatPayment()
     {
-        $this->markTestSkipped();
+        //
+        // Changing amount to 500.50/-
+        //
+        $this->payment['amount'] = '50050';
 
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertArraySelectiveEquals($testData, $payment);
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($wallet, 'testAuthFloatPaymentWalletEntity');
+
+        $this->assertNotEmpty($wallet['gateway_payment_id']);
+
+        $this->assertEmpty($wallet['gateway_payment_id_2']);
+    }
+
+    public function testVerifyCallbackFailure()
+    {
         $data = $this->testData[__FUNCTION__];
 
-        //
-        // Manually setting the payment to auth flow
-        // instead of otp flow to execute the test case correctly
-        //
         $payment = $this->payment;
-        $payment['_']['source'] = 's2s';
 
-        $this->mockActionFailure();
+        $this->mockActionFailure(SoapAction::QUERY_API);
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
+    }
+
+    public function testAuthPaymentFailure()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->payment;
+
+        $this->mockActionFailure(Action::AUTHORIZE);
 
         $this->runRequestResponseFlow(
             $data,
@@ -107,6 +138,8 @@ class MpesaGatewayTest extends TestCase
 
     public function testOtpCustomerValidationFailure()
     {
+        $this->markTestSkipped();
+
         $data = $this->testData['testOtpAuthFailure'];
 
         $this->mockActionFailure();
@@ -122,6 +155,8 @@ class MpesaGatewayTest extends TestCase
 
     public function testOtpGenerationFailure()
     {
+        $this->markTestSkipped();
+
         $data = $this->testData['testOtpAuthFailure'];
 
         $this->mockActionFailure();
@@ -137,6 +172,8 @@ class MpesaGatewayTest extends TestCase
 
     public function testCallbackOtpSubmitFailure()
     {
+        $this->markTestSkipped();
+
         $data = $this->testData['testOtpAuthFailure'];
 
         $this->mockActionFailure(SoapAction::OTP_SUBMIT_API);
@@ -150,11 +187,11 @@ class MpesaGatewayTest extends TestCase
         );
     }
 
-    public function testOtpPaymentVerify()
+    public function testAuthPaymentVerify()
     {
         $data = $this->testData[__FUNCTION__];
 
-        $this->testOtpPayment();
+        $this->testAuthPayment();
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -166,13 +203,13 @@ class MpesaGatewayTest extends TestCase
         $this->assertNotEmpty($verify['gateway']['verifyResponseContent']['MSISDN']);
     }
 
-    public function testOtpPaymentSuccessVerifyFailed()
+    public function testAuthPaymentSuccessVerifyFailed()
     {
         $data = $this->testData['testVerifyMismatch'];
 
         $expectedWallet = $this->testData['verifyFailedWalletEntity'];
 
-        $this->testOtpPayment();
+        $this->testAuthPayment();
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -190,15 +227,14 @@ class MpesaGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedWallet, $wallet);
 
-        $this->assertNotEmpty($wallet['contact']);
         $this->assertNotEmpty($wallet['gateway_payment_id']);
     }
 
-    public function testOtpPaymentFailedVerifySuccess()
+    public function testAuthPaymentFailedVerifySuccess()
     {
         $data = $this->testData['testVerifyMismatch'];
 
-        $this->testCallbackOtpSubmitFailure();
+        $this->testAuthPaymentFailure();
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -216,7 +252,6 @@ class MpesaGatewayTest extends TestCase
         $this->assertArraySelectiveEquals($data, $wallet);
 
         $this->assertNotEmpty($wallet['gateway_payment_id']);
-        $this->assertNotEmpty($wallet['gateway_payment_id_2']);
     }
 
     public function testRefundPayment()
@@ -231,9 +266,9 @@ class MpesaGatewayTest extends TestCase
 
     public function testRefundFailed()
     {
-        $this->testOtpPayment();
+        $this->testAuthPayment();
 
-        $this->mockActionFailure();
+        $this->mockActionFailure(SoapAction::REFUND_API);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -249,7 +284,7 @@ class MpesaGatewayTest extends TestCase
     {
         $data = $this->testData[$key];
 
-        $this->testOtpPayment();
+        $this->testAuthPayment();
 
         $payment = $this->getLastEntity('payment', true);
 

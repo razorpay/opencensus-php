@@ -197,12 +197,6 @@ class Newsletter
 
         $this->addListMembersToMailgun($lists, $listAddress);
 
-        // Don't wait in testing
-        if ($this->app->runningUnitTests() === false)
-        {
-            $this->waitForEmailsToReflect($listAddress);
-        }
-
         return $listAddress;
     }
 
@@ -216,7 +210,10 @@ class Newsletter
 
         $this->app['trace']->info(
             TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
-            ['pre_upsert_timestamp' => Carbon::now('Asia/Kolkata')->timestamp]);
+            [
+                'pre_upsert_timestamp' => Carbon::now()->getTimestamp(),
+                'merchant_count'       => $this->count,
+            ]);
 
         foreach ($chunks as $merchants)
         {
@@ -232,42 +229,7 @@ class Newsletter
 
         $this->app['trace']->info(
             TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
-            ['post_upsert_timestamp' => Carbon::now('Asia/Kolkata')->timestamp]);
-    }
-
-    /**
-     * Performs a sleep and waits until the count in the listAddress matches
-     * the count of merchants in the list or a wait of 60 seconds, whichever comes first.
-     * @param $listAddress listAddress against which count is to be checked.
-     * @return void
-     **/
-    protected function waitForEmailsToReflect($listAddress)
-    {
-        // Arbit wait time of about 10 for the mail to be sent.
-        sleep(self::WAIT_BEFORE_RETRY);
-
-        $iterations = 0;
-
-        do{
-            $iterations = $iterations + 1;
-
-            $relativeUrl = 'lists/' . $listAddress . '/members';
-
-            $listInfo = $this->getMailgunInstance()->get($relativeUrl, [
-                'skip' => $this->count]);
-
-            $count = $listInfo->http_response_body->total_count;
-
-            $this->app['trace']->info(
-                TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
-                ['count_match_timestamp' => Carbon::now('Asia/Kolkata')->timestamp,
-                 'info_post_sleep'       => $listInfo]);
-
-            sleep(self::WAIT_BEFORE_RETRY);
-
-        // Possible that not every email id can be part of mailing list.
-        // Number could always be lesser.
-        } while (($count < $this->count) and ($iterations < 6));
+            ['post_upsert_timestamp' => Carbon::now()->getTimestamp()]);
     }
 
     public function setTestEmail($email)

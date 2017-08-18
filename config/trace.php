@@ -2,30 +2,39 @@
 
 return array(
 
-    /**
-     * The following debug options come
-     * into play only 'debug' is true.
-     *
-     * They define the places where the
-     * logs will be written.
-     */
-    'debug_options' => array(
-        'screen' => false,
-        'browser' => false,
-        'chrome' => false),
-
-    /**
-     * Displays line/file/class/method from which the log call originated
-     */
-    'introspection' => true,
-
     /*
     |--------------------------------------------------------------------------
     | Path for trace logs
     |--------------------------------------------------------------------------
     */
+    'channel' => 'Razorpay API',
 
-    'logpath' => storage_path().'/logs/trace.log',
+    'fallbackEmail' => 'developers@razorpay.com',
 
-    'instance_data_file' => storage_path().'/logs/instance.json',
+    'cloud' => env('CLOUD'),
+
+    'sensitive_urls' => [
+        'payments/create/jsonp',
+        'v1/payments/create/jsonp',
+        'v1/payments',
+        'v1/payments/create',
+        'v1/payments/create/recurring',
+        'v1/payments/create/redirect',
+        'v1/payments/create/checkout',
+        'v1/payments/create/jsonp',
+        'v1/payments/create/ajax',
+        'v1/payments/create/fees',
+        'v1/payments/create/wallet',
+        'v1/payments/create/upi'
+    ],
+
+    'alerts' => [
+        'email' => [
+            'driver' => 'email',
+            'from' => 'errors@razorpay.com',
+            'to' => 'developers@razorpay.com',
+        ]
+    ],
+
+    'trace_code_class' => RZP\Trace\TraceCode::class,
 );

@@ -3,6 +3,7 @@
 namespace RZP\Models\FundTransfer\Kotak;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Excel;
 use Mail;
 
@@ -17,6 +18,7 @@ use RZP\Models\FundTransfer;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Constants\MailTags;
+use RZP\Constants\Entity;
 use RZP\Constants\Mode;
 use RZP\Models\Transaction;
 
@@ -30,6 +32,8 @@ class NodalAccount
 
     // RTGS if amount is more that 10L
     const RTGS_AMOUNT = 1000000.00;
+    // IMPS if amount is less that 1L
+    const IMPS_AMOUNT = 100000.00;
 
     protected $summary;
 
@@ -38,9 +42,9 @@ class NodalAccount
     public function __construct()
     {
         // Date format is DD/MM/YYYY in human representation
-        $this->date = Carbon::today('Asia/Kolkata')->format('d/m/Y');
+        $this->date = Carbon::today(Timezone::IST)->format('d/m/Y');
 
-        $this->hour = Carbon::now('Asia/Kolkata')->hour;
+        $this->hour = Carbon::now(Timezone::IST)->hour;
 
         $this->queue = \Queue::getFacadeRoot();
 
@@ -92,7 +96,7 @@ class NodalAccount
 
             $amount = $source->getAmount() / 100;
 
-            $type = $this->getPaymenType($ba, $amount);
+            $type = $this->getPaymentType($ba, $amount, $entity->getSourceType());
 
             $this->updateSummary($type, $amount);
 
@@ -134,27 +138,31 @@ class NodalAccount
         return [$textFileEntity, $excelFileEntity];
     }
 
-    public function getPayoutsFile(Base\PublicCollection $payouts)
+    public function generatePayoutsFile(Base\PublicCollection $payoutAttempts): string
     {
         $textData = [];
 
         $totalAmount = 0;
 
-        foreach ($payouts as $payout)
+        foreach ($payoutAttempts as $attempt)
         {
-            $merchant = $payout->merchant;
+            list($version, $paymentRefNo, $source) = $this->getPaymentRefNoAndVersion($attempt);
 
-            $ba = $payout->destination;
+            $merchant = $attempt->merchant;
 
-            $amount = $payout->getAmount() / 100;
+            $ba = $attempt->bankAccount;
+
+            $amount = $source->getAmount() / 100;
 
             $totalAmount += $amount;
+
+            $type = $this->getPaymentType($ba, $amount, $attempt->getSourceType());
 
             $array = [
                 Headings::CLIENT_CODE             => 'RAZORNODAL',
                 Headings::PRODUCT_CODE            => 'REFUND',
-                Headings::PAYMENT_TYPE            => 'IMPS',
-                Headings::PAYMENT_REF_NO          => $payout->getPublicId(),
+                Headings::PAYMENT_TYPE            => $type,
+                Headings::PAYMENT_REF_NO          => $paymentRefNo,
                 Headings::PAYMENT_DATE            => $this->date,
                 Headings::DR_AC_NO                => static::$nodalAccountNumber,
                 Headings::AMOUNT                  => (string) $amount,
@@ -162,11 +170,11 @@ class NodalAccount
                 Headings::BENEFICIARY_NAME        => $ba->getBeneficiaryName(),
                 Headings::IFSC_CODE               => $ba->getIfscCode(),
                 Headings::BENEFICIARY_ACC_NO      => $ba->getAccountNumber(),
-                Headings::CREDIT_NARRATION        => 'RAZORPAY SETTLEMENT',
-                Headings::PAYMENT_DETAILS_1       => 'RAZORPAY PAYOUTS',
+                Headings::CREDIT_NARRATION        => $attempt->getNarration() ?? 'RAZORPAY SETTLEMENT',
+                Headings::PAYMENT_DETAILS_1       => $source->getPublicId(),
                 Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
-                Headings::PAYMENT_DETAILS_3       => $ba->getId(),
-                Headings::PAYMENT_DETAILS_4       => $payout->getBatchFundTransferId(),
+                Headings::PAYMENT_DETAILS_3       => $version,
+                Headings::PAYMENT_DETAILS_4       => $attempt->getBatchFundTransferId(),
             ];
 
             $array = $this->getAllFields($array);
@@ -178,7 +186,7 @@ class NodalAccount
 
         $amounts['total'] = $totalAmount;
 
-        $count['total'] = $payouts->count();
+        $count['total'] = $payoutAttempts->count();
 
         $txt = $this->generateText($textData);
 
@@ -224,7 +232,7 @@ class NodalAccount
         return [$version, $paymentRefNo, $source];
     }
 
-    protected function getPaymenType(BankAccount\Entity $ba, $amount)
+    protected function getPaymentType(BankAccount\Entity $ba, $amount, string $sourceType)
     {
         $ifsc = $ba->getIfscCode();
 
@@ -239,6 +247,11 @@ class NodalAccount
                  ($this->hour <= 14))
         {
             $type = 'RTGS';
+        }
+        else if (($amount <= self::IMPS_AMOUNT) and
+                 ($sourceType !== Entity::SETTLEMENT))
+        {
+            $type = 'IMPS';
         }
         else
         {
@@ -294,7 +307,7 @@ class NodalAccount
             $metadata = [
                 'gid'   => '10000',
                 'uid'   => '10001',
-                'mtime' => Carbon::now()->timestamp,
+                'mtime' => Carbon::now()->getTimestamp(),
                 'mode'  => '33188',
             ];
 
@@ -328,7 +341,7 @@ class NodalAccount
 
         $summary = $this->summary;
 
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $today = Carbon::now(Timezone::IST)->format('d-m-Y');
         $subject = "Kotak Settlement files for $today";
 
         $data = compact('summary', 'subject');
@@ -359,7 +372,7 @@ class NodalAccount
 
     protected function getFileToWriteNameWithoutExt()
     {
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y-H-i-s');
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y-H-i-s');
 
         $mode = $this->getMode();
 
@@ -376,7 +389,7 @@ class NodalAccount
 
     protected function getH2HFileNameWithoutExt()
     {
-        $name = 'RAZORNODAL_'. Carbon::now('Asia/Kolkata')->format('dmYHis');
+        $name = 'RAZORNODAL_'. Carbon::now(Timezone::IST)->format('dmYHis');
 
         return $name;
     }

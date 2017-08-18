@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\Freecharge;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Reconciliator\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
@@ -46,7 +47,7 @@ class RefundReconciliate extends Base\RefundReconciliate
         return $paymentId;
     }
 
-    protected function getGatewaySettledAt($row)
+    protected function getGatewaySettledAt(array $row)
     {
         if (empty($row[self::COLUMN_SETTLED_AT]) === true)
         {
@@ -60,7 +61,7 @@ class RefundReconciliate extends Base\RefundReconciliate
             $gatewaySettledAt = Carbon::createFromFormat(
                                     self::SETTLEMENT_DATE_FORMAT,
                                     $row[self::COLUMN_SETTLED_AT],
-                                    'Asia/Kolkata');
+                                    Timezone::IST);
 
             $gatewaySettledAt = $gatewaySettledAt->timestamp;
         }

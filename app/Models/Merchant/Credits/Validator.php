@@ -13,15 +13,17 @@ class Validator extends Base\Validator
     const MAX_FEE_CREDITS    = 50000000;
     const MIN_CREDITS        = -1000000;
 
-    protected static $createRules = array(
-        Entity::CAMPAIGN => 'required|alpha_dash|max:255',
-        Entity::VALUE    => 'required|integer|min:'.self::MIN_CREDITS.'|max:'.self::MAX_AMOUNT_CREDITS,
-        Entity::TYPE     => 'required|alpha_dash|max:20',
-    );
+    protected static $createRules = [
+        Entity::CAMPAIGN     => 'required|alpha_dash|max:255',
+        Entity::VALUE        => 'required|integer|between:-1000000,100000000',
+        Entity::TYPE         => 'required|alpha_dash|max:20|in:amount,fee',
+        Entity::EXPIRED_AT   => 'sometimes|integer',
+        Entity::PROMOTION_ID => 'sometimes|alpha_num|max:14',
+    ];
 
-    protected static $editRules = array(
+    protected static $editRules = [
         Entity::VALUE    => 'sometimes|integer',
-    );
+    ];
 
     /**
      * Validates credits value when credits is being edited.

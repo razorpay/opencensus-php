@@ -14,7 +14,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = array(
         Entity::CONTACT             => 'sometimes|contact_syntax',
-        Entity::NAME                => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:50',
+        Entity::NAME                => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:50|nullable',
         Entity::EMAIL               => 'sometimes|email',
         Entity::NOTES               => 'sometimes|notes',
         Entity::SHIPPING_ADDRESS    => 'sometimes',
@@ -29,11 +29,11 @@ class Validator extends Base\Validator
     );
 
     protected static $globalCreateRules = array(
-        Entity::CONTACT         => 'sometimes|contact_syntax',
-        Entity::EMAIL           => 'sometimes|email',
-        'otp'                   => 'sometimes|string|regex:"^\d{4,8}$"',
-        'device_token'          => 'sometimes|',
-        '_'                     => 'sometimes'
+        Entity::CONTACT         => 'required|contact_syntax|phone:AUTO,LENIENT,IN,mobile,fixed_line',
+        Entity::EMAIL           => 'required|email',
+        'otp'                   => 'required|string|regex:"^\d{4,8}$"',
+        'device_token'          => 'sometimes|string|max:14',
+        '_'                     => 'sometimes|array'
     );
 
     protected static $contactRules = array(
@@ -70,6 +70,10 @@ class Validator extends Base\Validator
     /**
      * Wallets can only be created for customers having
      * Indian mobile numbers
+     *
+     * @param null $number
+     *
+     * @throws Exception\BadRequestException
      */
     public function validateIndianContact($number = null)
     {

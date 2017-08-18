@@ -5,12 +5,15 @@ namespace RZP\Tests\Functional\Helpers\Payment;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\BaseException;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use Mockery;
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
+use RZP\Tests\Functional\Fixtures\Entity\MerchantFluid;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\Merchant\Account;
+use RZP\Models\Payment\Verify\Action;
 
 trait PaymentTrait
 {
@@ -140,7 +143,7 @@ trait PaymentTrait
         if ($payment !== null)
             $testData['request']['content'] = $payment;
 
-        $this->replaceDefualtValues($testData['request']['content']);
+        $this->replaceDefaultValues($testData['request']['content']);
 
         $testData['request']['method'] = 'POST';
         $testData['request']['url'] = '/payments';
@@ -234,7 +237,7 @@ trait PaymentTrait
         $this->assertArrayHasKey('razorpay_payment_id', $content);
 
         $count = count($content);
-        $this->assertLessThanOrEqual(4, $count);
+        $this->assertLessThanOrEqual(6, $count);
 
         return $content;
     }
@@ -413,9 +416,17 @@ trait PaymentTrait
     {
         $request = [
             'url'    => '/callback/' . $this->gateway,
-            'method' => 'post',
-            'raw'    => $content
+            'method' => 'post'
         ];
+
+        if (is_string($content))
+        {
+            $request['raw'] = $content;
+        }
+        else
+        {
+            $request['content'] = $content;
+        }
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -724,7 +735,18 @@ trait PaymentTrait
 
     protected function refundAuthorizedPayment($id, array $input = [])
     {
-        $this->ba->proxyAuth();
+        $this->ba->adminAuth();
+
+        $this->ba->addAdminAuthHeaders('org_' . Org::RZP_ORG);
+
+        $merchant = (new MerchantFluid())->getMerchant(Account::TEST_ACCOUNT)->get();
+
+        $admin = $this->ba->getAdmin();
+
+        // Linking merchant with admin because admins can access only linked merchants.
+        $admin->merchants()->attach($merchant);
+
+        $this->ba->addAccountAuth($merchant->getId());
 
         $request = array(
             'method'  => 'POST',
@@ -933,10 +955,11 @@ trait PaymentTrait
         $this->ba->appAuth();
 
         $request = array(
-            'url'     => '/refunds/netbanking/excel',
+            'url'     => '/refunds/excel',
             'method'  => 'post',
             'content' => [
-                'bank'   => $bank
+                'bank'   => $bank,
+                'method' => 'netbanking',
             ],
         );
 
@@ -1022,7 +1045,7 @@ trait PaymentTrait
         }
     }
 
-    protected function replaceDefualtValues(array & $content)
+    protected function replaceDefaultValues(array & $content)
     {
         $data = $this->getDefaultPaymentArray();
 
@@ -1117,7 +1140,9 @@ trait PaymentTrait
         $var = 'mock_' . $this->gateway;
 
         if (isset($gateway[$var]))
+        {
             return $gateway['mock_' . $this->gateway];
+        }
 
         return false;
     }
@@ -1293,7 +1318,8 @@ trait PaymentTrait
 
                     $binRiskMapping = [
                         '510510' => '22.0',
-                        '401201' => '60.3',
+                        '401201' => '15.3',
+                        '555555' => '2.4'
                     ];
 
                     if (isset($binRiskMapping[$bin]) === true)
@@ -1374,5 +1400,56 @@ trait PaymentTrait
         $response = $this->sendRequest($request);
 
         return json_decode($response->getContent(), true);
+    }
+
+    public function getVerificationSkipError()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            throw new Exception\PaymentVerificationException(
+                ['test' => 'test'],
+                '',
+                Action::FINISH);
+        });
+    }
+
+    public function getFatalErrorInVerify()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            throw new Exception\FatalThrowableError();
+        });
+    }
+
+    public function getTimeoutInVerify()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            throw new Exception\GatewayTimeoutException(
+                'cURL error 28: Operation timed out after ' .
+                '10001 milliseconds with 0 bytes received');
+        });
+    }
+
+    public function getVerificationRetryError()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            throw new Exception\PaymentVerificationException(
+                ['test' => 'test'],
+                '',
+                Action::RETRY);
+        });
+    }
+
+    public function getVerificationBlockError()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            throw new Exception\PaymentVerificationException(
+                ['test' => 'test'],
+                '',
+                Action::BLOCK);
+        });
     }
 }

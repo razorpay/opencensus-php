@@ -3,14 +3,17 @@
 namespace RZP\Models\Invoice;
 
 use Carbon\Carbon;
+
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Order;
+use RZP\Models\Batch;
 use RZP\Models\Payment;
-use RZP\Models\Plan\Subscription;
+use RZP\Base\BuilderEx;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
-use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Plan\Subscription;
 
 class Repository extends Base\Repository
 {
@@ -19,17 +22,20 @@ class Repository extends Base\Repository
     protected $entityFetchParamRules = [
         Entity::PAYMENT_ID  => 'sometimes|string|min:14|max:18',
         Entity::RECEIPT     => 'sometimes|string|min:1|max:40',
-        Entity::CUSTOMER_ID => 'sometimes|string|min:14|max:20',
+        Entity::CUSTOMER_ID => 'sometimes|string|min:14|max:19',
     ];
 
     protected $proxyFetchParamRules = [
+        Entity::BATCH_ID          => 'sometimes|string|min:14|max:20',
         Entity::USER_ID           => 'sometimes|alpha_num',
         Entity::STATUS            => 'sometimes|string',
-        Entity::TYPE              => 'sometimes|string|max:16',
+        Entity::TYPE              => 'sometimes|string|custom',
+        Entity::TYPES             => 'sometimes|array|min:1|max:2|custom',
         Entity::CUSTOMER_NAME     => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:255',
         Entity::CUSTOMER_CONTACT  => 'sometimes|contact_syntax',
         Entity::CUSTOMER_EMAIL    => 'sometimes|email',
-        Entity::NOTES             => 'sometimes|string|min:1|max:40',
+        Entity::NOTES             => 'sometimes|notes_fetch',
+        Entity::SUBSCRIPTION_ID   => 'sometimes|string|min:14|max:18',
         EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
         // TODO: Enable this once the expand pr is back merged.
         // EsRepository::SEARCH_HITS => 'sometimes|boolean',
@@ -39,6 +45,31 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID => 'sometimes|alpha_num',
         Entity::ORDER_ID    => 'sometimes|string|max:20',
     ];
+
+    protected $signedIds = [
+        Entity::PAYMENT_ID,
+        Entity::CUSTOMER_ID,
+        Entity::ORDER_ID,
+        Entity::SUBSCRIPTION_ID,
+        Entity::BATCH_ID,
+    ];
+
+    // ---------------------- Custom validation methods --------------
+
+    protected function validateType($attribute, $value)
+    {
+        Type::checkType($value);
+    }
+
+    protected function validateTypes($attribute, $value)
+    {
+        foreach ($value as $type)
+        {
+            Type::checkType($type);
+        }
+    }
+
+    // ---------------------- Custom validation methods ends ---------
 
     /**
      * Fetches invoice entity for given public id and merchant, followed by
@@ -85,7 +116,7 @@ class Repository extends Base\Repository
 
     public function getInvoicesForIssuedNotificationToCustomer($medium)
     {
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         return $this->newQuery()
                     ->where($medium . '_status', '=', NotifyStatus::PENDING)
@@ -112,7 +143,7 @@ class Repository extends Base\Repository
      */
     public function getIssuedAndPastExpiredByInvoices()
     {
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         return $this->newQuery()
                     ->where(Entity::STATUS, '=', Status::ISSUED)
@@ -184,12 +215,111 @@ class Repository extends Base\Repository
                        ->count();
     }
 
-    protected function addQueryParamPaymentId($query, $params)
+    /**
+     * Currently reporting is only available for link type.
+     * This query is used in reporting and here we're adding where type=link
+     * condition.
+     *
+     * @todo: Fix this!
+     *
+     * Ideally there should be two entities - PaymentLink and Invoice
+     * OR some refactoring in entity report generation to pass around additional
+     * query parameters conditionally or anyhow.
+     *
+     * @param       $merchantId
+     * @param       $from
+     * @param       $to
+     * @param       $count
+     * @param       $skip
+     * @param array $relations
+     *
+     * @return
+     */
+    public function fetchEntitiesForReport(
+        $merchantId,
+        $from,
+        $to,
+        $count,
+        $skip,
+        $relations = [])
+    {
+        $query = $this->getFetchBetweenTimestampQuery($merchantId, $from, $to);
+
+        $query->where(Entity::TYPE, Type::LINK);
+
+        if (count($relations) > 0)
+        {
+            $query->with(...$relations);
+        }
+
+        return $query->take($count)
+                     ->skip($skip)
+                     ->get();
+    }
+
+    /**
+     * Gets list of invoices of given batch ids. If a non-empty array of ids
+     * are passed only those out of total invoices of batch are returned.
+     *
+     * @param string $batchId
+     * @param array  $ids
+     *
+     * @return Base\PublicCollection
+     */
+    public function findByBatchIdAndPublicIds(
+        string $batchId,
+        array $ids = []): Base\PublicCollection
+    {
+        $query = $this->newQuery()->where(Entity::BATCH_ID, $batchId);
+
+        if (empty($ids) === false)
+        {
+            Entity::verifyIdAndSilentlyStripSignMultiple($ids);
+
+            $query->whereIn(Entity::ID, $ids);
+        }
+
+        return $query->get();
+    }
+
+    public function getNonDraftInvoiceCountByBatchId(string $batchId): int
+    {
+        return $this->newQuery()
+                    ->where(Entity::BATCH_ID, $batchId)
+                    ->where(Entity::STATUS, '!=', Status::DRAFT)
+                    ->count();
+    }
+
+    public function getNonDraftInvoiceCountByBatchIds(array $batchIds): array
+    {
+        $collection = $this->newQuery()
+                           ->selectRaw(Entity::BATCH_ID . ', COUNT(1) as count')
+                           ->whereIn(Entity::BATCH_ID, $batchIds)
+                           ->where(Entity::STATUS, '!=', Status::DRAFT)
+                           ->groupBy(Entity::BATCH_ID)
+                           ->get();
+
+        //  Converts collection results to needed format:
+        //  [
+        //      {
+        //          'batch_id': 'batch_xyz',
+        //          'count':     10
+        //      },
+        //      ..
+        //  ]
+
+        return $collection->map(
+                function ($entity, $key)
+                {
+                    return $entity->getAttributes();
+                })->toArray();
+    }
+
+    protected function addQueryParamPaymentId(BuilderEx $query, array $params)
     {
         $this->joinQueryPayment($query);
 
         $paymentId = $params[Entity::PAYMENT_ID];
-        Entity::stripSignWithoutValidation($paymentId);
 
         $paymentIdAttribute = $this->repo->payment->dbColumn(Payment\Entity::ID);
         $query->where($paymentIdAttribute, '=', $paymentId);
@@ -197,26 +327,11 @@ class Repository extends Base\Repository
         $query->select($query->getModel()->getTable() . '.*');
     }
 
-    protected function addQueryParamCustomerId(
-        \RZP\Base\BuilderEx $query,
-        array $params)
+    protected function addQueryParamTypes(BuilderEx $query, array $params)
     {
-        $customerId = $params[Entity::CUSTOMER_ID];
+        $typeAttribute = $this->dbColumn(Entity::TYPE);
 
-        Customer\Entity::stripSignWithoutValidation($customerId);
-
-        $customerIdAttr = $this->repo->invoice->dbColumn(Entity::CUSTOMER_ID);
-
-        $query->where($customerIdAttr, $customerId);
-    }
-
-    protected function addQueryParamOrderId($query, $params)
-    {
-        $orderId = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
-
-        $orderIdAttribute = $this->repo->invoice->dbColumn(Entity::ORDER_ID);
-
-        $query->where($orderIdAttribute, '=', $orderId);
+        $query->whereIn($typeAttribute, $params[Entity::TYPES]);
     }
 
     protected function joinQueryPayment($query)

@@ -6,7 +6,6 @@ use RZP\Jobs\Job;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-use App;
 use Requests;
 use RZP\Trace\Trace;
 use RZP\Error\ErrorCode;
@@ -32,6 +31,8 @@ class RequestJob extends Job implements ShouldQueue
      */
     public function __construct(array $request)
     {
+        parent::__construct();
+
         $this->request = $request;
     }
 
@@ -42,10 +43,10 @@ class RequestJob extends Job implements ShouldQueue
      */
     public function handle()
     {
+        parent::handle();
+
         try
         {
-            $this->init();
-
             $this->handleRequest();
 
             $this->delete();
@@ -54,13 +55,6 @@ class RequestJob extends Job implements ShouldQueue
         {
             $this->handleException($e);
         }
-    }
-
-    protected function init()
-    {
-        $app = App::getFacadeRoot();
-
-        $this->trace = $app['trace'];
     }
 
     protected function traceRequest()
@@ -112,7 +106,7 @@ class RequestJob extends Job implements ShouldQueue
     {
         $jobAction = self::JOB_DELETED;
 
-        if ($this->attempts() > self::MAX_ALLOWED_ATTEMPTS)
+        if ($this->attempts() >= self::MAX_ALLOWED_ATTEMPTS)
         {
             $this->delete();
         }

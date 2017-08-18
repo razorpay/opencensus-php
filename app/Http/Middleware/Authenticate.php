@@ -4,8 +4,10 @@ namespace RZP\Http\Middleware;
 
 use Closure;
 use ApiResponse;
-use Illuminate\Foundation\Application;
 use RZP\Http\Route;
+use RZP\Http\Throttle;
+use RZP\Http\BasicAuth\Type;
+use Illuminate\Foundation\Application;
 
 class Authenticate
 {
@@ -19,8 +21,7 @@ class Authenticate
     /**
      * Create a new filter instance.
      *
-     * @param  Guard  $auth
-     * @return void
+     * @param Application $app
      */
     public function __construct(Application $app)
     {
@@ -91,11 +92,43 @@ class Authenticate
 
         $ret = $ba->feature();
 
+        $this->addTraceDataForMerchantAndAdmin($ba);
+
         if ($ret !== null)
         {
             return $ret;
         }
 
         return $next($request);
+    }
+
+    /**
+     * This is our global rate throttling mechanism
+     */
+    private function throttleRequests(string $auth)
+    {
+        $throttle = new Throttle($this->app);
+
+        $throttle->process($auth);
+    }
+
+    /**
+     * Adds details in trace for merchant_id who or on whose behalf request
+     * is being made. Adds dashboard headers details for admin etc. making
+     * the request.
+     */
+    private function addTraceDataForMerchantAndAdmin($ba)
+    {
+        $merchantId = $ba->getMerchantIdOfKey();
+        $data = ['merchant_id' => $merchantId];
+
+        if ($ba->isDashboardApp())
+        {
+            $dashboardHeaders = $ba->getDashboardHeaders();
+
+            $data = array_merge($data, $dashboardHeaders);
+        }
+
+        $this->app['trace']->processor('web')->addServerData($data);
     }
 }

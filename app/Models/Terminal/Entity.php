@@ -4,10 +4,12 @@ namespace RZP\Models\Terminal;
 
 use Crypt;
 use Illuminate\Database\Eloquent\SoftDeletes;
+
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Emi\Subvention as EmiSubvention;
 
 class Entity extends Base\PublicEntity
 {
@@ -35,6 +37,7 @@ class Entity extends Base\PublicEntity
     const UPI                           = 'upi';
     const AEPS                          = 'aeps';
     const EMI_DURATION                  = 'emi_duration';
+    const EMI_SUBVENTION                = 'emi_subvention';
     const RECURRING                     = 'recurring';
     const INTERNATIONAL                 = 'international';
     const TPV                           = 'tpv';
@@ -44,6 +47,10 @@ class Entity extends Base\PublicEntity
     const NETWORK_CATEGORY              = 'network_category';
     const TYPE                          = 'type';
     const MODE                          = 'mode';
+
+    // Used for allowing gateway level changes for coporate netbanking payments.
+    const CORPORATE                     = 'corporate';
+
     const DELETED                       = 'deleted';
     const DELETED_AT                    = 'deleted_at';
 
@@ -69,11 +76,13 @@ class Entity extends Base\PublicEntity
         self::AEPS,
         self::EMI,
         self::EMI_DURATION,
+        self::EMI_SUBVENTION,
         self::SHARED,
         self::INTERNATIONAL,
         self::TPV,
         self::TYPE,
         self::MODE,
+        self::CORPORATE,
         self::CURRENCY,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
@@ -99,6 +108,7 @@ class Entity extends Base\PublicEntity
         self::AEPS,
         self::EMI,
         self::EMI_DURATION,
+        self::EMI_SUBVENTION,
         self::INTERNATIONAL,
         self::SHARED,
         self::TPV,
@@ -109,6 +119,7 @@ class Entity extends Base\PublicEntity
         self::USED_COUNT,
         self::TYPE,
         self::MODE,
+        self::CORPORATE,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
@@ -127,11 +138,14 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'terminal';
 
-    protected static $generators = ['method'];
+    protected static $generators = [
+        'method',
+    ];
 
     protected static $modifiers = [
         'inputRemoveBlanks',
         self::INTERNATIONAL,
+        self::EMI_SUBVENTION,
     ];
 
     protected $defaults = [
@@ -148,12 +162,14 @@ class Entity extends Base\PublicEntity
         self::TPV                       => false,
         self::TYPE                      => 1,
         self::MODE                      => Mode::DUAL,
+        self::CORPORATE                 => 0,
         self::CURRENCY                  => self::DEFAULT_CURRENCY,
         self::EMI_DURATION              => null,
         self::GATEWAY_ACQUIRER          => null,
         self::INTERNATIONAL             => 0,
         self::ENABLED                   => true,
         self::USED                      => false,
+        self::EMI_SUBVENTION            => null,
     ];
 
     protected $casts = [
@@ -168,6 +184,7 @@ class Entity extends Base\PublicEntity
         self::TPV                       => 'boolean',
         self::TYPE                      => 'int',
         self::MODE                      => 'int',
+        self::CORPORATE                 => 'boolean',
         self::USED                      => 'boolean',
     ];
 
@@ -176,6 +193,11 @@ class Entity extends Base\PublicEntity
     public function getGatewayMerchantId()
     {
         return $this->getAttribute(self::GATEWAY_MERCHANT_ID);
+    }
+
+    public function getGatewayMerchantId2()
+    {
+        return $this->getAttribute(self::GATEWAY_MERCHANT_ID2);
     }
 
     public function getGatewayReconPassword()
@@ -233,6 +255,11 @@ class Entity extends Base\PublicEntity
     public function getEmiDuration()
     {
         return $this->getAttribute(self::EMI_DURATION);
+    }
+
+    public function getEmiSubvention()
+    {
+        return $this->getAttribute(self::EMI_SUBVENTION);
     }
 
     protected function getSubMerchants()
@@ -320,6 +347,11 @@ class Entity extends Base\PublicEntity
         $merchantId = $this->getAttribute(self::MERCHANT_ID);
 
         return ($merchantId === Merchant\Account::SHARED_ACCOUNT);
+    }
+
+    public function isCorporate()
+    {
+        return $this->getAttribute(self::CORPORATE);
     }
 
     // ---------------------- SETTERS ----------------------
@@ -447,6 +479,16 @@ class Entity extends Base\PublicEntity
             {
                 $input[self::INTERNATIONAL] = 1;
             }
+        }
+    }
+
+    protected function modifyEmiSubvention(& $input)
+    {
+        $isEmi = $input[self::EMI] ?? false;
+
+        if ($isEmi == true)
+        {
+            $input[self::EMI_SUBVENTION] = $input[self::EMI_SUBVENTION] ?? EmiSubvention::CUSTOMER;
         }
     }
 
@@ -580,11 +622,12 @@ class Entity extends Base\PublicEntity
         return ($this->isTpv() === false);
     }
 
-    public function isValidEmiTerminal($gateway, $emiDuration)
+    public function isValidEmiTerminal($gateway, $emiDuration, $subvention)
     {
         if (($this->isEmiEnabled()) and
             ($this->getGateway() === $gateway) and
-            ($this->getEmiDuration() === $emiDuration))
+            ($this->getEmiDuration() === $emiDuration) and
+            ($this->getEmiSubvention() === $subvention))
         {
             return true;
         }

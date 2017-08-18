@@ -115,6 +115,9 @@ trait Callback
     {
         $payment = $this->retrieve($id);
 
+        // For redirect flow
+        $this->checkForMerchantCallbackUrl($payment);
+
         if ($payment->isCreated() === false)
         {
             return $this->processPaymentCallbackSecondTime($payment);
@@ -175,6 +178,7 @@ trait Callback
         if ($payment->hasCard())
         {
             $card = $this->repo->card->fetchForPayment($payment);
+
             $input['card'] = $card->toArray();
         }
 
@@ -234,6 +238,8 @@ trait Callback
         if ((isset($input['gateway']['type'])) and
             ($input['gateway']['type'] === 'otp'))
         {
+            $this->validateCallbackInputIfApplicable($input);
+
             // TODO: Better name suggestions
             $data = $this->callGatewayFunction('callbackOtpSubmit', $input);
 
@@ -331,11 +337,13 @@ trait Callback
                 ]);
         }
 
-        $code = $e->getError()->getInternalErrorCode();
+        $internalErrorCode = $e->getError()->getInternalErrorCode();
 
         $this->setTwoFactorAuthAfterCallbackException($e);
 
-        if (Error\Error::hasAction($code) === false)
+        $this->logRiskFailureForGateway($this->payment, $internalErrorCode);
+
+        if (Error\Error::hasAction($internalErrorCode) === false)
         {
             $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
         }
@@ -344,7 +352,7 @@ trait Callback
             $this->setPaymentError($e, TraceCode::PAYMENT_AUTH_PENDING);
         }
 
-        switch ($code)
+        switch ($internalErrorCode)
         {
             case ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT:
                 $payment->incrementOtpAttempts();
@@ -354,6 +362,14 @@ trait Callback
                 $this->app['segment']->trackPayment($payment,
                                                     ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT);
 
+                break;
+
+            case ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE:
+                $this->trace->info(TraceCode::PAYMENT_WALLET_LOW_BALANCE, [
+                        'id'     => $payment->getId(),
+                        'wallet' => $payment->getWallet(),
+                        'amount' => $payment->getAmount()
+                    ]);
                 break;
         }
 
@@ -392,6 +408,19 @@ trait Callback
 
         throw new Exception\BadRequestException(
             ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
+    }
+
+    protected function validateCallbackInputIfApplicable(array $input)
+    {
+        if ((isset($input['gateway']['type']) === true) and
+            ($input['gateway']['type'] === 'otp'))
+        {
+            if (empty($input['gateway']['otp']) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Please enter a valid OTP.', 'otp', $input['gateway']);
+            }
+        }
     }
 
     protected function checkForMerchantCallbackUrl($payment)

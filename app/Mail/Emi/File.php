@@ -3,18 +3,19 @@
 namespace RZP\Mail\Emi;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Mail\Base\Constants;
 
 class File extends Base
 {
-    protected $filePath;
+    protected $fileData;
 
-    public function __construct(string $bankName, string $filePath, array $emails)
+    public function __construct(string $bankName, array $fileData, array $emails)
     {
         parent::__construct($bankName, $emails);
 
-        $this->filePath = $filePath;
+        $this->fileData = $fileData;
     }
 
     protected function addSender()
@@ -41,7 +42,7 @@ class File extends Base
 
     protected function addSubject()
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $today = Carbon::now(Timezone::IST)->format('d-m-Y');
 
         $subject = $this->bankName . ' Emi File for ' . $today;
 
@@ -52,7 +53,12 @@ class File extends Base
 
     protected function addAttachments()
     {
-        $this->attach($this->filePath);
+        $this->attach(
+            $this->fileData['signed_url'],
+            [
+                'as'   => $this->fileData['file_name'],
+                'mime' => 'application/zip'
+            ]);
 
         return $this;
     }

@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Settlement;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mail;
 
 use RZP\Mail\Settlement\IciciSettlement as IciciSettlementMail;
@@ -12,14 +13,12 @@ use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Settlement\Entity as SettlementEntity;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Tests\Functional\Helpers\EntityActionTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class SettlementTest extends TestCase
 {
-    use RequestResponseFlowTrait;
     use SettlementTrait;
-    use EntityActionTrait;
+    use PaymentTrait;
 
     public function setUp()
     {
@@ -72,7 +71,6 @@ class SettlementTest extends TestCase
         $this->assertEquals(10000, $refund->transaction->debit);
 
         $this->assertEquals(6000, $merchants[0]->balance->reload()->getBalance());
-        $this->assertEquals(6000, $merchants[0]->balance->reload()->getBalance());
     }
 
     /**
@@ -87,7 +85,6 @@ class SettlementTest extends TestCase
         $urls = [
             '/settlements/reconcile/generate',
             '/settlements/reconcile',
-            '/settlements/return',
         ];
 
         $this->ba->appAuth();
@@ -121,8 +118,8 @@ class SettlementTest extends TestCase
 
     protected function createPaymentEntities(int $count = 5)
     {
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(50)->timestamp + 5;
-        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(50)->timestamp + 10;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 5;
+        $capturedAt = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 10;
 
         $payments = $this->fixtures->times($count)->create(
             'payment:captured',
@@ -144,15 +141,15 @@ class SettlementTest extends TestCase
 
         $days = $this->getDaysForSettlementHolidayTests();
 
-        $createdAt = Carbon::parse($days['payment_created_at'], 'Asia/Kolkata')->timestamp;
-        $capturedAt = Carbon::parse($days['payment_created_at'], 'Asia/Kolkata')->timestamp + 10;
+        $createdAt = Carbon::parse($days['payment_created_at'], Timezone::IST)->timestamp;
+        $capturedAt = Carbon::parse($days['payment_created_at'], Timezone::IST)->timestamp + 10;
 
         $payments = $this->fixtures->times(5)->create('payment:captured',
                 ['captured_at' => $capturedAt,
                  'created_at' => $createdAt,
-                 'updated_at' => $createdAt + 10]);
+                 'updated_at' => $createdAt]);
 
-        $setDate = Carbon::parse($days['payment_settlment_holiday'],'Asia/Kolkata');
+        $setDate = Carbon::parse($days['payment_settlment_holiday'],Timezone::IST);
 
         Carbon::setTestNow($setDate);
 
@@ -176,17 +173,17 @@ class SettlementTest extends TestCase
 
         $days = $this->getDaysForSettlementNonHolidayTests();
 
-        $createdAt = Carbon::parse($days['payment_created_at'], 'Asia/Kolkata')->timestamp;
-        $capturedAt = Carbon::parse($days['payment_created_at'], 'Asia/Kolkata')->timestamp + 10;
+        $createdAt = Carbon::parse($days['payment_created_at'], Timezone::IST)->timestamp;
+        $capturedAt = Carbon::parse($days['payment_created_at'], Timezone::IST)->timestamp + 10;
 
         $payments = $this->fixtures->times(5)->create('payment:captured',
                 ['captured_at' => $capturedAt,
                  'created_at' => $createdAt,
-                 'updated_at' => $createdAt + 10]);
+                 'updated_at' => $createdAt]);
 
         $txn = $this->getEntities('transaction',[],true);
 
-        $setDate = Carbon::parse($days['payment_settlement_on'],'Asia/Kolkata');
+        $setDate = Carbon::parse($days['payment_settlement_on'], Timezone::IST);
         Carbon::setTestNow($setDate);
 
         // Generate settlements for above transactions
@@ -208,15 +205,15 @@ class SettlementTest extends TestCase
     {
         $days = $this->getDaysForSettlementHolidayTests();
 
-        $createdAt = Carbon::parse($days['payment_created_at'], 'Asia/Kolkata')->timestamp;
-        $capturedAt = Carbon::parse($days['payment_created_at'], 'Asia/Kolkata')->timestamp + 10;
+        $createdAt = Carbon::parse($days['payment_created_at'], Timezone::IST)->timestamp;
+        $capturedAt = Carbon::parse($days['payment_created_at'], Timezone::IST)->timestamp + 10;
 
         $payments = $this->fixtures->times(5)->create('payment:captured',
                 ['captured_at' => $capturedAt,
                  'created_at' => $createdAt,
-                 'updated_at' => $createdAt + 10]);
+                 'updated_at' => $createdAt]);
 
-        $setDate = Carbon::parse($days['payment_settlement_on'],'Asia/Kolkata');
+        $setDate = Carbon::parse($days['payment_settlement_on'], Timezone::IST);
         Carbon::setTestNow($setDate);
 
         // Generate settlements for above transactions
@@ -236,15 +233,15 @@ class SettlementTest extends TestCase
     {
         $days = $this->getDaysForSettlementNonHolidayTests();
 
-        $createdAt = Carbon::parse($days['payment_created_at'], 'Asia/Kolkata')->timestamp;
-        $capturedAt = Carbon::parse($days['payment_created_at'], 'Asia/Kolkata')->timestamp + 10;
+        $createdAt = Carbon::parse($days['payment_created_at'], Timezone::IST)->timestamp;
+        $capturedAt = Carbon::parse($days['payment_created_at'], Timezone::IST)->timestamp + 10;
 
         $payments = $this->fixtures->times(5)->create('payment:captured',
                 ['captured_at' => $capturedAt,
                  'created_at' => $createdAt,
                  'updated_at' => $createdAt + 10]);
 
-        $setDate = Carbon::parse($days['payment_settlement_on'],'Asia/Kolkata');
+        $setDate = Carbon::parse($days['payment_settlement_on'],Timezone::IST);
         Carbon::setTestNow($setDate);
 
         // Generate settlements for above transactions
@@ -264,7 +261,7 @@ class SettlementTest extends TestCase
         // Create payments and refunds with timestamps two days back
         $payments = $this->createPaymentEntities();
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 5;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp + 5;
 
         $payout = $this->fixtures->create(
             'payout',
@@ -285,6 +282,17 @@ class SettlementTest extends TestCase
     public function testMerchantSettlement()
     {
         $this->ba->appAuth();
+
+        $this->fixtures->create('credits', [
+                       'type'        => 'fee',
+                       'value'       => 50000,
+                   ]);
+
+         $this->fixtures->create('credits', [
+                       'type'        => 'fee',
+                       'value'       => 50000,
+                       'merchant_id' => '10NodalAccount',
+                   ]);
 
         // $this->fixtures->merchant->createBankAccount();
         $this->fixtures->merchant->editFeeCredits('50000', Account::TEST_ACCOUNT);
@@ -368,7 +376,7 @@ class SettlementTest extends TestCase
         $this->assertSame($totalAmount, $setl['amount']);
 
         // check settlement report
-        $dt = Carbon::today('Asia/Kolkata');
+        $dt = Carbon::today(Timezone::IST);
 
         $input = array(
             'year' => $dt->year,
@@ -466,12 +474,72 @@ class SettlementTest extends TestCase
         Mail::assertSent(KotakSettlementMail::class);
     }
 
+    public function testSettlementForMultipleMerchants()
+    {
+        $this->ba->appAuth();
+
+        $merchants = $this->fixtures->times(2)->create('merchant');
+
+        $firstMerchant = $merchants[0]->getId();
+        $secondMerchant = $merchants[1]->getId();
+
+        $amount = 10000;
+
+        foreach ($merchants as $merchant)
+        {
+            $merchantId = $merchant->getId();
+
+            $balance = $this->fixtures->create('balance', ['id' => $merchantId]);
+
+            $this->fixtures->create('terminal', ['merchant_id' => $merchantId]);
+
+            $this->fixtures->create(
+                'bank_account',
+                ['entity_id' => $merchantId, 'beneficiary_name' => random_alpha_string(10)]);
+
+            $createdAt = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 5;
+            $capturedAt = Carbon::today(Timezone::IST)->subDays(50)->timestamp + 10;
+
+            $payments = $this->fixtures->times(2)->create(
+                'payment:captured',
+                [
+                    'captured_at' => $capturedAt,
+                    'method'      => 'card',
+                    'merchant_id' => $merchantId,
+                    'amount'      => $amount,
+                    'created_at'  => $createdAt,
+                    'updated_at'  => $createdAt + 10
+                ]
+            );
+
+            $amount = $amount * 2;
+        }
+
+        $request = [
+            'url' => '/settlements/initiate/kotak',
+            'method' => 'POST'
+        ];
+
+        $setlResponse = $this->makeRequestAndGetContent($request);
+
+        $this->assertTestResponse($setlResponse);
+
+        // Verifiy settlement amounts
+        $firstSettlements = $this->getEntities('settlement', ['merchant_id' => $firstMerchant], true);
+        $this->assertEquals(1, $firstSettlements['count']);
+        $this->assertEquals(19600, $firstSettlements['items'][0]['amount']);
+
+        $secondSettlements = $this->getEntities('settlement', ['merchant_id' => $secondMerchant], true);
+        $this->assertEquals(1, $secondSettlements['count']);
+        $this->assertEquals(39200, $secondSettlements['items'][0]['amount']);
+    }
+
     public function testSettlementIgnoredTxns()
     {
         $this->ba->appAuth();
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 5;
-        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 10;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp + 5;
+        $capturedAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp + 10;
 
         $payment = $this->fixtures->create(
             'payment:captured',
@@ -555,7 +623,42 @@ class SettlementTest extends TestCase
         $this->assertSame($content['count'], 4);
     }
 
-    public function testIciciNodalTransfer()
+    public function testIciciNodalTransferWithGateway()
+    {
+        Mail::fake();
+
+        $this->ba->appAuth();
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_first_data_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $payment = $this->doAuthAndCapturePayment();
+
+        $p1=  $this->getLastEntity('payment', true);
+
+        $testTime = Carbon::tomorrow(Timezone::IST)->addHours(5);
+
+        Carbon::setTestNow($testTime);
+
+        $request = [
+            'url'     => '/nodal/transfer/icici',
+            'method'  => 'POST',
+            'content' => [
+                'gateway' => 'first_data'
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEquals(null, $content['file']);
+
+        Mail::assertSent(IciciSettlementMail::class);
+
+        Carbon::setTestNow();
+    }
+
+    public function testIciciNodalTransferWithAmount()
     {
         Mail::fake();
 
@@ -580,7 +683,7 @@ class SettlementTest extends TestCase
     {
         $payment = $this->createPaymentEntities(1);
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 5;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp + 5;
 
         $transfer = $this->fixtures->create(
             'transfer:to_account',
@@ -610,7 +713,7 @@ class SettlementTest extends TestCase
     {
         $payment = $this->createPaymentEntities(1);
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 5;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp + 5;
 
         $transfer = $this->fixtures->create(
             'transfer:to_account',
@@ -642,7 +745,7 @@ class SettlementTest extends TestCase
     {
         $payment = $this->createPaymentEntities(1);
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 5;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp + 5;
 
         $account = $this->fixtures->create('merchant:marketplace_account', ['balance' => 250000]);
 
@@ -655,7 +758,7 @@ class SettlementTest extends TestCase
                 'amount'        => 5000,
                 'currency'      => 'INR',
                 'on_hold'       => '1',
-                'on_hold_until' => Carbon::today('Asia/Kolkata')->timestamp - 600,
+                'on_hold_until' => Carbon::today(Timezone::IST)->timestamp - 600,
                 'created_at'    => $createdAt,
                 'updated_at'    => $createdAt + 10
             ]);
@@ -697,7 +800,7 @@ class SettlementTest extends TestCase
     {
         $payment = $this->createPaymentEntities(1);
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 5;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp + 5;
 
         $account = $this->fixtures->create('merchant:marketplace_account', ['balance' => 250000]);
 

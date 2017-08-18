@@ -22,8 +22,11 @@ class Type
     const P2P_REJECTED              = 'p2p.rejected';
     const P2P_TRANSFERRED           = 'p2p.transferred';
     const SUBSCRIPTION_ACTIVATED    = 'subscription.activated';
-    const SUBSCRIPTION_OVERDUE      = 'subscription.overdue';
+    const SUBSCRIPTION_PENDING      = 'subscription.pending';
     const SUBSCRIPTION_HALTED       = 'subscription.halted';
+    const SUBSCRIPTION_CHARGED      = 'subscription.charged';
+    const SUBSCRIPTION_CANCELLED    = 'subscription.cancelled';
+    const SUBSCRIPTION_COMPLETED    = 'subscription.completed';
     // const SUBSCRIPTION_EXPIRED      = 'subscription.expired';
     const ACCOUNT_ACTIVATED         = 'account.activated';
 }

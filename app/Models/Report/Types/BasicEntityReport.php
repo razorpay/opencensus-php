@@ -3,9 +3,10 @@
 namespace RZP\Models\Report\Types;
 
 use Carbon\Carbon;
-
 use RZP\Exception;
 use RZP\Models\Report;
+use RZP\Models\Feature;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Base\JitValidator;
@@ -17,6 +18,8 @@ class BasicEntityReport extends BaseReport
     use FileHandlerTrait;
 
     const BATCH_LIMIT = 20000;
+
+    const MAX_FILE_LIMIT = 200000;
 
     protected $entity;
 
@@ -41,6 +44,7 @@ class BasicEntityReport extends BaseReport
         E::SETTLEMENT   => [],
         E::TRANSFER     => [],
         E::REVERSAL     => [],
+        E::INVOICE      => [E::ORDER],
     ];
 
     // Entities for which report-generation is allowed
@@ -53,6 +57,7 @@ class BasicEntityReport extends BaseReport
         E::MERCHANT,
         E::TRANSFER,
         E::REVERSAL,
+        E::INVOICE,
     ];
 
     public function __construct(string $entity)
@@ -68,6 +73,13 @@ class BasicEntityReport extends BaseReport
         if ($entity === 'account')
         {
             $entity = 'merchant';
+        }
+
+        // @todo: Fix this!
+
+        if ($entity === 'payment_link')
+        {
+            $entity = 'invoice';
         }
 
         $this->entity = $entity;
@@ -146,11 +158,20 @@ class BasicEntityReport extends BaseReport
 
         $this->createReportEntity($input);
 
-        $now = Carbon::now()->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         $filename = $this->generateFilename($now);
 
-        $fullpath = $this->writeDataToCsv($input, $filename);
+        // We do not want all the aggregator merchant to download the complete report
+        // so its behind aggregator_report feature
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::AGGREGATOR_REPORT) === true)
+        {
+            $fullpath = $this->writeDataToCsvForAggregator($input, $filename);
+        }
+        else
+        {
+            $fullpath = $this->writeDataToCsv($input, $filename);
+        }
 
         $s3File = $this->createFileAndSave($fullpath, $filename);
 
@@ -161,30 +182,93 @@ class BasicEntityReport extends BaseReport
 
     /**
      * Generates report data and creates the csv file
+     * We need to get the report for all the merchants
+     * Currently, we are taking BATCH_LIMIT for each merchant's report
+     * We will later modify the logic of how many enties of each merchant we want.
      *
-     * @param $input array
-     *        expected : 'day', 'month', 'year'
-     * @param $filename  string
-     * @return $fullpath string
+     * @param  array  $input    [expected : 'day', 'month', 'year']
+     * @param  string $filename
+     *
+     * @return string
      */
-    protected function writeDataToCsv(array $input, $filename)
+    protected function writeDataToCsvForAggregator(array $input, string $filename): string
     {
-        list($from, $to, $count, $skip) = $this->getParamsForReport($input);
+        list($from, $to, $originalCount, $originalSkip) = $this->getParamsForReport($input);
+
+        $merchantIds = (new Merchant\Service)->getSubmerchants();
 
         $append = false;
 
+        $totalEntries = 0;
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $count = $originalCount;
+            $skip = $originalSkip;
+
+            list($totalCount, $fullpath) = $this->writeDataToCsvForMerchant($from, $to, $count, $skip, $filename, $merchantId, $append);
+
+            $totalEntries += $totalCount;
+
+            $append = true;
+        }
+
+        if ($totalEntries > self::MAX_FILE_LIMIT)
+        {
+            $this->trace->critical(
+                TraceCode::MERCHANT_REPORT_FILE_MAX_LIMIT_EXCEED,
+                [
+                    'merchant_id'   => $this->merchant->getId(),
+                    'total_entries' => $totalEntries,
+                ]);
+        }
+
+        return $fullpath;
+    }
+
+    /**
+     * Generates report data and creates the csv file
+     *
+     * @param  array  $input    [expected : 'day', 'month', 'year']
+     * @param  string $filename
+     *
+     * @return string
+     */
+    protected function writeDataToCsv(array $input, string $filename): string
+    {
+        list($from, $to, $count, $skip) = $this->getParamsForReport($input);
+
+        $merchantId = $this->merchant->getId();
+
+        list($totalCount, $fullpath) = $this->writeDataToCsvForMerchant($from, $to, $count, $skip, $filename, $merchantId);
+
+        return $fullpath;
+    }
+
+    protected function writeDataToCsvForMerchant(int $from,
+                                                 int $to,
+                                                 int $count,
+                                                 int $skip,
+                                                 string $filename,
+                                                 string $merchantId,
+                                                 bool $append = false): array
+    {
+        $totalCount = 0;
+
         while ($count === self::BATCH_LIMIT)
         {
-            list($data, $count) = $this->getReportData($from, $to, self::BATCH_LIMIT, $skip);
+            list($data, $count) = $this->getReportDataForMerchant($from, $to, self::BATCH_LIMIT, $skip, $merchantId);
 
             $fullpath = $this->createCsvFile($data, $filename, null, 'files/report', $append);
 
             $skip += $count;
 
+            $totalCount += $count;
+
             $append = true;
         }
 
-        return $fullpath;
+        return [$totalCount, $fullpath];
     }
 
     /**
@@ -263,13 +347,37 @@ class BasicEntityReport extends BaseReport
      * 1. Fetches entities to be added in report
      * 2. Formats data to be shown in report
      *
-     * @param $from, $to, $count, $skip
-     * @return [$formattedData, $fetchCount] array
+     * @param  int    $from
+     * @param  int    $to
+     * @param  int    $count
+     * @param  int    $skip
+     * @return array
      */
-    protected function getReportData($from, $to, $count, $skip): array
+    protected function getReportData(int $from, int $to, int $count, int $skip): array
     {
         $merchantId = $this->merchant->getId();
 
+        return $this->getReportDataForMerchant($from, $to, $count, $skip, $merchantId);
+    }
+
+    /**
+     * Gets report data for concerned entity
+     * 1. Fetches entities to be added in report
+     * 2. Formats data to be shown in report
+     *
+     * @param  int    $from
+     * @param  int    $to
+     * @param  int    $count
+     * @param  int    $skip
+     * @param  string $merchantId
+     * @return array
+     */
+    protected function getReportDataForMerchant(int $from,
+                                                int $to,
+                                                int $count,
+                                                int $skip,
+                                                string $merchantId): array
+    {
         $begin = time();
 
         $this->trace->debug(
@@ -337,6 +445,13 @@ class BasicEntityReport extends BaseReport
      * This function is overridden in concerned repo
      * If not, it is executed from base repo
      *
+     * @param $merchantId
+     * @param $from
+     * @param $to
+     * @param $count
+     * @param $skip
+     *
+     * @return \RZP\Base\PublicCollection
      */
     protected function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
     {
@@ -359,10 +474,8 @@ class BasicEntityReport extends BaseReport
      * Sets report entity by building it from params
      * The resultant report entity is not yet saved to DB
      *
-     * @param $from  integer
-     * @param $to    integer
      * @param $input array
-     *        expected : 'day', 'month', 'year'
+     *               expected : 'day', 'month', 'year'
      */
     protected function createReportEntity(array $input)
     {
@@ -382,12 +495,15 @@ class BasicEntityReport extends BaseReport
     }
 
     /**
-     * Creates uploded file &
+     * Creates uploaded file &
      * Uses UFH to save file to s3
      *
      * @param  $filePath string
      * @param  $fileName string
-     * @return $s3File   FileStore\Entity
+     *
+     * @return FileStore\Entity $s3File
+     *
+     * @throws Exception\LogicException
      */
     protected function createFileAndSave($filePath, $fileName)
     {
@@ -395,7 +511,7 @@ class BasicEntityReport extends BaseReport
 
         $s3File = $creator->localFilePath($filePath)
                           ->extension(FileStore\Format::CSV)
-                          ->mime('text/csv')
+                          ->mime('application/octet-stream')
                           ->name('reports/' . $fileName)
                           ->store(FileStore\Store::S3)
                           ->type(FileStore\Type::REPORT)

@@ -74,6 +74,8 @@ class TransactionTest extends TestCase
 
         $adj = $this->startTest();
 
+        $this->ba->addAdminAuthHeaders(null, null);
+
         $txn = $this->getLastEntity('transaction', true);
         $this->assertTestResponse($txn, 'txnDataAfterAddingAdjWithNoEscrowUpdate');
     }
@@ -116,8 +118,6 @@ class TransactionTest extends TestCase
     {
         $this->markTestSkipped();
 
-        $this->fixtures->create('pricing:zero_pricing_plan');
-
         $payment = $this->fixtures->times(5)->create('payment:authorized',
             ['created_at' => 1467301400]);
 
@@ -126,6 +126,7 @@ class TransactionTest extends TestCase
         $testData = $this->testData['testTransactionCreateForOldPayment'];
         $testData['fee'] = $txn['fee'];
         $testData['service_tax'] = $txn['service_tax'];
+        $testData['tax'] = $txn['tax'];
 
         $this->assertArraySelectiveEquals($testData, $txn);
 

@@ -149,6 +149,12 @@ class Core extends Base\Core
         // Create a transaction for the transfer; debits the source merchant
         $txn = (new Transaction\Core)->createFromTransfer($transfer);
 
+        $transfer->setFees($txn->getFee());
+
+        $transfer->setServiceTax($txn->getServiceTax());
+
+        $transfer->setTax($txn->getTax());
+
         $this->repo->saveOrFail($txn);
 
         $this->repo->saveOrFail($transfer);

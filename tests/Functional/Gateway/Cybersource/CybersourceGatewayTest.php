@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Gateway\Cybersource;
 
 use RZP\Exception;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Tests\Functional\TestCase;
@@ -28,7 +29,7 @@ class CybersourceGatewayTest extends TestCase
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
-        $this->fixtures->merchant->addFeatures('recurring');
+        $this->fixtures->merchant->addFeatures('charge_at_will');
 
         $this->gateway = 'cybersource';
 
@@ -365,7 +366,7 @@ class CybersourceGatewayTest extends TestCase
             }
         });
 
-        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
         $response = $this->retryFailedRefunds();
@@ -401,7 +402,7 @@ class CybersourceGatewayTest extends TestCase
             }
         });
 
-        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
         $response = $this->retryFailedRefunds();
@@ -437,7 +438,7 @@ class CybersourceGatewayTest extends TestCase
             }
         });
 
-        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
         $response = $this->retryFailedRefunds();
@@ -496,7 +497,7 @@ class CybersourceGatewayTest extends TestCase
             }
         });
 
-        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
         $response = $this->retryFailedRefunds();
@@ -536,7 +537,7 @@ class CybersourceGatewayTest extends TestCase
             }
         });
 
-        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
         $response = $this->retryFailedRefunds();
@@ -566,7 +567,7 @@ class CybersourceGatewayTest extends TestCase
         $this->assertEquals('processed', $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
 
-        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
         $response = $this->retryFailedRefunds();
@@ -670,7 +671,8 @@ class CybersourceGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             $this->doAuthPayment($payment);
         });
     }
