@@ -233,6 +233,7 @@ const watch = () => {
       'public/react/admin/**/*',
       'public/react/rzp/**/*',
       'public/react/styles/**/*.styl',
+      'public/react/styles/fonts/style.css',
     ],
     ['dev:webpack']
   );
@@ -257,7 +258,7 @@ gulp.task('iconfont', function() {
     .pipe(
       iconfont({
         fontName: fontName,
-        formats: ['svg', 'ttf', 'eot', 'woff'], // default, 'woff2' and 'svg' are available
+        formats: ['svg', 'ttf', 'eot', 'woff', 'woff2'], // default, 'woff2' and 'svg' are available
         normalize: true,
         prependUnicode: true, // recommended option
         fontHeight: 1001,
