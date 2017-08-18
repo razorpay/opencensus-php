@@ -99,6 +99,7 @@ class WorkflowActionTest extends TestCase
     public function testUpdateWorkflowAction()
     {
         $defaultWorkflowActionId = 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID;
+
         $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
@@ -113,5 +114,64 @@ class WorkflowActionTest extends TestCase
         $this->testData[__FUNCTION__]['response']['content']['id'] = $defaultWorkflowActionId;
 
         $this->startTest();
+    }
+
+    /**
+     * Test edit admin workflow action diff.
+     *
+     */
+    public function testWorkflowActionDiff()
+    {
+        //adding in relations too just to check diff correctly.
+        $content = [
+            "name"  => "Checker checker",
+            "roles" => [
+                "role_" . Org::CHECKER_ROLE,
+                "role_" . Org::MAKER_ROLE,
+            ],
+            "groups" => [
+                "grp_" . Org::DEFAULT_GRP,
+            ],
+        ];
+
+        // we have a default workflow for edit admin so this will trigger wf action.
+        $workflowAction = $this->editAdmin('org_' . Org::RZP_ORG,
+            'admin_' . Org::CHECKER_ADMIN,
+            $content);
+
+        //After Indexing into ES the document is not available in Real Time so a sec delay.
+        sleep(1);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $workflowAction['id']);
+        s($workflowAction['id']);
+        // Assign url
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['response']['content'] = [
+            "old" => [
+                "name"   => "test admin",
+                "roles"  => [],
+                "groups" => [],
+            ],
+            "new" => [
+                "name"  => "Checker checker",
+                "roles" => [
+                    [
+                        "name" => "Maker"
+                    ]
+                ],
+                "groups" => [
+                    [
+                        "name"        => "razorpay_group",
+                        "description" => "This is a test group"
+                    ],
+                ],
+            ],
+        ];
+
+        $this->startTest();
+
     }
 }

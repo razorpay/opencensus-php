@@ -18,7 +18,7 @@ build:
     # The steps that will be executed on build
     steps:
       - script:
-          name: ENV
+          name: ENV Variables
           code: env
       - script:
           name: copy env file

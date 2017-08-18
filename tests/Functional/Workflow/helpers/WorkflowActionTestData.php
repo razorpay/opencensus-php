@@ -81,4 +81,16 @@ return [
             ]
         ],
     ],
+    'testWorkflowActionDiff' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/w-actions/%s/diff',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+
+            ],
+        ],
+    ],
 ];
