@@ -59,8 +59,6 @@ class ViewDataSerializer extends Base\Core
      */
     public function get(): array
     {
-        $publicId = $this->invoice->getPublicId();
-
         $invoiceData = $this->getFormattedInvoiceDataForView();
 
         $keyId = $this->repo->key

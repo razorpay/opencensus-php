@@ -638,6 +638,8 @@ class Validator extends Base\Validator
                     throw new BadRequestValidationFailureException("$label with id $id is expired");
                 }
 
+                break;
+
             default:
 
                 break;
