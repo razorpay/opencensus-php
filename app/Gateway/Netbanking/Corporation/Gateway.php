@@ -26,13 +26,14 @@ class Gateway extends Base\Gateway
         ResponseFields::BANK_REF_NUMBER  => NetbankingEntity::BANK_PAYMENT_ID,
         ResponseFields::PAYMENT_ID       => NetbankingEntity::PAYMENT_ID,
         ResponseFields::STATUS           => NetbankingEntity::STATUS,
+        NetbankingEntity::RECEIVED       => NetbankingEntity::RECEIVED,
     ];
 
     public function authorize(array $input)
     {
         parent::authorize($input);
 
-        $content = $this->getPaymentRequestData($input);
+        $content = $this->getAuthRequestData($input);
 
         $gatewayPayment = $this->createGatewayPaymentEntity($content);
 
@@ -74,23 +75,68 @@ class Gateway extends Base\Gateway
         // Saving callback response only if the above checks pass
         $gatewayPayment = $this->saveCallbackResponse($content);
 
-        return $gatewayPayment;
+        return $this->getCallbackResponseData($input);
+    }
+
+    // -------------------------- Auth helper methods ------------------------------
+
+    protected function getAuthRequestData($input)
+    {
+        $data = array(
+            // Setting this as the merchant code shared with us
+            'CustID'            => $this->getMerchantId(),
+            'MerCD'             => $this->getMerchantId(),
+            'AMT'               => $input['payment']['amount'] / 100,
+            'OTC'               => $input['payment']['id'],
+            'MD'                => 'P',
+            'TT'                => 'T',
+        );
+
+        if ($input['merchant']->isTPVRequired())
+        {
+            $data['AcctNo'] = $input['order']['account_number'];
+        }
+
+        return $data;
+    }
+
+    // -------------------------- Auth helper methods end --------------------------
+
+    // -------------------------- Callback helper methods ------------------------------
+
+    protected function checkCallbackStatus(array $content)
+    {
+        if ($content[ResponseFields::STATUS] !== ResponseCodeMap::SUCCESS_CODE)
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_CALLBACK_FAILURE,
+                [
+                    'content' => $content
+                ]);
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
     }
 
     protected function saveCallbackResponse($content)
     {
         $data = [
-            NetbankingEntity::RECEIVED        => true
+            NetbankingEntity::RECEIVED => true
         ] + $content;
 
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+        $gatewayPayment = $this->getRepository()->findByPaymentIdAndActionOrFail(
                                     $content[ResponseFields::PAYMENT_ID],
                                     Action::AUTHORIZE);
 
-        $this->updateGatewayPaymentEntity($gatewayPayment, $data);
+        $gatewayPayment = $this->updateGatewayPaymentEntity($gatewayPayment, $data);
 
         return $gatewayPayment;
     }
+
+    // -------------------------- Callback helper methods end --------------------------
+
+    // -------------------------- Verify helper methods ------------------------------
 
     /**
      * Verifying the payment after callback response is saved to
@@ -114,18 +160,6 @@ class Gateway extends Base\Gateway
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
-        }
-    }
-
-    protected function checkGatewaySuccess($verify)
-    {
-        $verify->gatewaySuccess = false;
-
-        $content = $verify->verifyResponseContent;
-
-        if ($content[ResponseFields::VERIFY_RESULT] === ResponseCodeMap::RESULT_SUCCESS)
-        {
-            $verify->gatewaySuccess = true;
         }
     }
 
@@ -186,31 +220,27 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
+    protected function checkGatewaySuccess($verify)
+    {
+        $verify->gatewaySuccess = false;
+
+        $content = $verify->verifyResponseContent;
+
+        if ($content[ResponseFields::VERIFY_RESULT] === ResponseCodeMap::RESULT_SUCCESS)
+        {
+            $verify->gatewaySuccess = true;
+        }
+    }
+
+    // -------------------------- Verify helper methods end --------------------------
+
+    // -------------------------- General helper methods --------------------------
+
     public function getEncryptor()
     {
         $secret = $this->getSecret();
 
         return new Encryptor(AES::MODE_ECB, $secret);
-    }
-
-    protected function getPaymentRequestData($input)
-    {
-        $data = array(
-            // Setting this as the merchant code shared with us
-            'CustID'            => $this->getMerchantId(),
-            'MerCD'             => $this->getMerchantId(),
-            'AMT'               => $input['payment']['amount'] / 100,
-            'OTC'               => $input['payment']['id'],
-            'MD'                => 'P',
-            'TT'                => 'T',
-        );
-
-        if ($input['merchant']->isTPVRequired())
-        {
-            $data['AcctNo'] = $input['order']['account_number'];
-        }
-
-        return $data;
     }
 
     public function getMerchantId()
@@ -225,37 +255,5 @@ class Gateway extends Base\Gateway
         return $mid;
     }
 
-
-
-    /**
-     * In this case, we have added a custom callback route.
-     * When the callback is called from their end, we need
-     * to generate the gateway instance from the payment id
-     * in the callback.
-     *
-     * This function identifies the above and returns the same.
-     *
-     * @param array $input
-     * @return String
-     */
-    public function getPaymentIdFromServerCallback($input)
-    {
-        return $input[ResponseFields::PAYMENT_ID];
-    }
-
-    protected function checkCallbackStatus(array $content)
-    {
-        if ($content[ResponseFields::STATUS] !== ResponseCodeMap::SUCCESS_CODE)
-        {
-            $this->trace->info(
-                TraceCode::PAYMENT_CALLBACK_FAILURE,
-                [
-                    'content' => $content
-                ]);
-
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
-    }
-
+    // -------------------------- General helper methods end ----------------------
 }

@@ -28,9 +28,9 @@ return [
     ],
 
     'testPaymentNetbankingEntity' => [
-        'bank_payment_id' => '99999999',
+        'bank_payment_id' => 'AB1234',
         'received'        => true,
         'bank'            => 'CORP',
-        'status'          => 'Y',
+        'status'          => 'S',
     ],
 ];

@@ -971,7 +971,7 @@ class Gateway
 
         $gatewayPayment->fill($attributes);
 
-        $this->repo->saveOrFail($gatewayPayment);
+        $this->getRepository()->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
     }
