@@ -819,7 +819,8 @@ class SettlementTest extends TestCase
         $reversal = $this->fixtures->create(
             'reversal',
             [
-                'transfer_id'   => $transfer[1]->getId(),
+                'entity_type'   => 'transfer',
+                'entity_id'     => $transfer[1]->getId(),
                 'amount'        => 90,
                 'created_at'    => $createdAt + 10,
                 'updated_at'    => $createdAt + 20

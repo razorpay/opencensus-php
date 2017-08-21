@@ -65,9 +65,9 @@ class TransferTest extends TestCase
         $response = $this->startTest($data);
 
         $expected = [
-            'id'          => $reversal['id'],
-            'transfer_id' => $transfer['id'],
-            'amount'      => $transfer['amount']
+            'id'            => $reversal['id'],
+            'transfer_id'   => $transfer['id'],
+            'amount'        => $transfer['amount']
         ];
 
         $this->assertArraySelectiveEquals($expected, $response);
@@ -215,7 +215,7 @@ class TransferTest extends TestCase
 
         $this->runRequestResponseFlow($this->testData[__FUNCTION__], function() use ($transfer, $body)
         {
-            $this->patchTransfer('account', 'trf_' . $transfer['id'], $body);
+            $this->patchTransfer('account', Transfer\Entity::getSignedId($transfer['id']), $body);
         });
     }
 

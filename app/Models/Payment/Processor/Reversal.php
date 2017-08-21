@@ -114,6 +114,8 @@ trait Reversal
                                  ->findByPublicIdAndMerchant($reversal['transfer'], $this->merchant);
             }
 
+            unset($reversal['transfer']);
+
             $this->mutex->acquireAndRelease(
                 $transfer->getId(),
                 function() use ($transfer, $reversal)
