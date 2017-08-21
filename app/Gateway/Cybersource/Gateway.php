@@ -1137,8 +1137,13 @@ class Gateway extends Base\Gateway
 
         $content[F::BILL_TO] = $this->getBillingInfo($input);
 
+        //
+        // We are doing this because not all the terminals have this configuration
+        // from CYBS end. This is to decrease the cases of "Do Not Honour" which was
+        // happening because of the AVS checks at the issuer end.
+        //
         if (($input['terminal']['gateway_terminal_id'] === 'RAZORPAYCYBS') or
-            ($input['merchant']['id'] === Merchant\Account::DEMO_PAGE_ACCOUNT))
+            ($input['terminal']['gateway_terminal_id'] === 'hdfc_89050055'))
         {
             unset($content[F::BILL_TO]);
         }
