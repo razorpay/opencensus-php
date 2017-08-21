@@ -462,6 +462,7 @@ tr:hover .row-action.btn-group {
 
   .pair-label, .pair-value, .pair-separator {
     display: table-cell;
+    vertical-align: top;
   }
   .pair-label {
     width: 39%;
@@ -486,6 +487,10 @@ tr:hover .row-action.btn-group {
     // check icon looks mis-aligned without negative margin
     > .icon {
       margin-left: -3px;
+    }
+
+    textarea {
+      resize: vertical;
     }
 
     // For nested values
@@ -733,6 +738,41 @@ tr:hover .row-action.btn-group {
 
   .add-note {
     padding-left: 0;
+  }
+}
+
+.SliderPanel__Body {
+  .note {
+    .icon-close {
+      right: -3px;
+    }
+    .key{
+      padding-right: 32px;
+    }
+  }
+
+  label {
+    font-weight: normal;
+    line-height: 29px;
+  }
+
+  .btn-toolbar {
+    padding: 8px;
+    margin-left: 0;
+    margin-right: 0;
+
+    .btn {
+      padding: 8px 12px;
+    }
+
+    >.btn-half {
+      width: 48%;
+      margin-left: 0;
+    }
+
+    > .btn-half + .btn {
+      margin-left: 4%;
+    }
   }
 }
 
