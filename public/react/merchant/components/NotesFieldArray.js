@@ -5,6 +5,10 @@ import { isPresent } from 'rzp/utils/rzp-utils';
 
 const required = index => {
   return (currentValue, allProps) => {
+    if (!allProps.notes[index]) {
+      return;
+    }
+
     let key = allProps.notes[index].key;
     let value = allProps.notes[index].value;
     if (isPresent(value) && !isPresent(key)) {
