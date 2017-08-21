@@ -74,7 +74,7 @@ class FileProcessor extends BaseProcessor
 
     public function getDelimiter()
     {
-        return ',';
+        return '|';
     }
 
     public function getHeaders()

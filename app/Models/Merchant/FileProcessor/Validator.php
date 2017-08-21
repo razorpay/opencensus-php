@@ -67,7 +67,7 @@ class Validator
             // The input's attachment-count and found attachments count should be equal.
             if ($input['attachment-count'] !== $foundAttachmentsCount)
             {
-                throw new Exception\BadRequestException(
+                throw new Exception\BadRequestValidationFailureException(
                     'The number of attachments found, does not match with the attachment-count input',
                     ['attachments_found' => $foundAttachmentsCount, 'attachment_count' => $input['attachment-count']]
                 );
@@ -83,7 +83,7 @@ class Validator
         {
             $fileDetailsValidator = 'validate' . $merchant . 'FileDetails';
 
-            $this->$fileDetailsValidator($this->allFilesDetails);
+            $this->$fileDetailsValidator($fileDetails);
         }
     }
 
@@ -97,7 +97,7 @@ class Validator
 
         if (count($fileDetails) !== 2)
         {
-            throw new Exception\BadRequestException(
+            throw new Exception\BadRequestValidationFailureException(
                 'The number of attachments sent should be 2'
             );
         }
@@ -110,7 +110,7 @@ class Validator
             {
                 $refundType = true;
             }
-            else if (strop($fileName, 'settlement') !==false)
+            else if (strpos($fileName, 'settlement') !==false)
             {
                 $settlementType = true;
             }
@@ -119,7 +119,7 @@ class Validator
         if (($refundType === false) or
             ($settlementType === false))
         {
-            throw new Exception\BadRequestException(
+            throw new Exception\BadRequestValidationFailureException(
                 'Both settlement file and refund file needs to be sent'
             );
         }

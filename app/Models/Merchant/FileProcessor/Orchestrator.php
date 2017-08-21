@@ -126,7 +126,7 @@ class Orchestrator extends Base\Core
                 TraceCode::MERCHANT_FILE_DETAILS,
                 [
                     'message'      => 'File details of the file being orchestrated.',
-                    'file_details' => $fileDetails
+                    'file_details' => $fileDetails['file_name']
                 ]
             );
 
@@ -156,7 +156,7 @@ class Orchestrator extends Base\Core
 
         if (empty($this->allFilesContents) === true)
         {
-            throw new Exception\BadRequestException(
+            throw new Exception\BadRequestValidationFailureException(
                 'File contents are empty.',
                 [
                     'all_files_details' => $this->allFilesDetails,
@@ -271,7 +271,7 @@ class Orchestrator extends Base\Core
                 {
                     if ($columnHeadersCount !== count($row))
                     {
-                        throw new Exception\BadRequestException(
+                        throw new Exception\BadRequestValidationFailureException(
                             'The number of columns in the row does not match the column headers count.',
                             ['file_details' => $fileDetails, 'column_headers' => $columnHeaders, 'row' => $row]
                         );
