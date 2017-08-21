@@ -12,7 +12,7 @@ use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 
 class DailyFiles extends Base\DailyFiles
 {
-    protected $emailIdsToSendTo = '';
+    protected $emailIdsToSendTo = 'namrata.chaudhary@razorpay.com';
 
     public function generate($from, $to, $email = null)
     {
