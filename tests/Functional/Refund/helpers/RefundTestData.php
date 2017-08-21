@@ -17,6 +17,22 @@ return [
         ],
     ],
 
+    'testRefundWithReceipt' => [
+        'request' => [
+            'content' => [
+                'receipt' => '1234'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity'   => 'refund',
+                'amount'   => 50000,
+                'currency' => 'INR',
+                'receipt'  => '1234'
+            ],
+        ],
+    ],
+
     'testMultipleRefunds' => [
         'request' => [
             'method' => 'GET',

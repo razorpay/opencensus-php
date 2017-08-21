@@ -3,15 +3,13 @@
 namespace RZP\Tests\Functional\Refund;
 
 use DB;
+use Mail;
 use Mockery;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use Mail;
 
-use RZP\Mail\Payment\Refunded as RefundedMail;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\Payment\Entity as PaymentEntity;
-use RZP\Models\Batch\Status;
+use RZP\Mail\Payment\Refunded as RefundedMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 /**
@@ -67,6 +65,28 @@ class RefundTest extends TestCase
         Mail::assertSent(RefundedMail::class);
     }
 
+    public function testRefundWithReceipt()
+    {
+        Mail::fake();
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->mockDashboardRequest();
+
+        $refund = $this->startTest($payment['id'], (string) $payment['amount']);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $this->assertGreaterThan(time() - 30, $refund['created_at']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(true, $refund['gateway_refunded']);
+
+        Mail::assertSent(RefundedMail::class);
+    }
+
     public function testRefundDirect()
     {
         $payment = $this->fixtures->create('payment:captured');
@@ -75,6 +95,7 @@ class RefundTest extends TestCase
             [
                 'payment_id' => $payment->getPublicId(),
                 'notes'      => ['a' => 'b'],
+                'receipt'    => '2544325',
             ]);
 
         $this->assertEquals('refund', $refund['entity']);
@@ -98,6 +119,30 @@ class RefundTest extends TestCase
 
         $refunds = $this->getEntities('refund', ['payment_id' => $payment['id']]);
         $this->assertEquals($refunds['count'], 4);
+    }
+
+    public function testRefundsWithDuplicateReceipt()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $refund = $this->refund(
+            [
+                'payment_id' => $payment['id'],
+                'notes'      => ['a' => 'b'],
+                'amount'     => '1000',
+                'receipt'    => '2544325',
+            ]);
+
+        $this->expectException('Illuminate\Database\QueryException');
+
+        $response =  $this->refund(
+                    [
+                        'payment_id' => $payment['id'],
+                        'notes'      => ['a' => 'b'],
+                        'amount'     => '1000',
+                        'receipt'    => '2544325',
+                    ]);
     }
 
     public function testRefundWithHigherAmount()
