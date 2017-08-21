@@ -1127,11 +1127,11 @@ return [
                 'downtime' => [
                     'card' => [
                         [
-                            'issuer' => ['ALL'],
+                            'issuer'    => ['ALL'],
                             'scheduled' => true,
-                            'reason_code' => 'OTHER',
+                            'severity'  => 'low',
                             'card_type' => 'credit',
-                            'network' => ['VISA'],
+                            'network'   => ['VISA'],
                         ],
                     ],
                 ],
@@ -1148,9 +1148,9 @@ return [
             'content' => [
                 'netbanking' => [
                     [
-                        'issuer'      => ['HDFC'],
-                        'scheduled'   => true,
-                        'reason_code' => 'OTHER',
+                        'issuer'    => ['HDFC'],
+                        'scheduled' => true,
+                        'severity'  => 'low',
                     ],
                 ],
             ],
@@ -1178,11 +1178,11 @@ return [
                 'downtime' => [
                     'card' => [
                         [
-                            'issuer'      => ['ALL'],
-                            'scheduled'   => true,
-                            'reason_code' => 'OTHER',
-                            'card_type'   => 'credit',
-                            'network'     => ['DICL'],
+                            'issuer'    => ['ALL'],
+                            'scheduled' => true,
+                            'severity'  => 'low',
+                            'card_type' => 'credit',
+                            'network'   => ['DICL'],
                         ],
                     ],
                 ],
@@ -1200,11 +1200,11 @@ return [
                 'downtime' => [
                     'card' => [
                         [
-                            'issuer'      => ['ALL'],
-                            'scheduled'   => true,
-                            'reason_code' => 'OTHER',
-                            'card_type'   => 'credit',
-                            'network'     => ['DICL'],
+                            'issuer'    => ['ALL'],
+                            'scheduled' => true,
+                            'severity'  => 'low',
+                            'card_type' => 'credit',
+                            'network'   => ['DICL'],
                         ],
                     ],
                 ],
@@ -1222,9 +1222,9 @@ return [
                 'downtime' => [
                     'netbanking' => [
                         [
-                            'issuer'      => ['HDFC'],
-                            'scheduled'   => true,
-                            'reason_code' => 'OTHER',
+                            'issuer'    => ['HDFC'],
+                            'scheduled' => true,
+                            'severity'  => 'low',
                         ],
                     ],
                 ],
@@ -1275,7 +1275,7 @@ return [
                                 'LAVB_C'
                             ],
                             'scheduled'   => true,
-                            'reason_code' => 'OTHER',
+                            'severity'    => 'low',
                         ],
                     ],
                 ],
@@ -1293,9 +1293,9 @@ return [
                 'downtime' => [
                     'netbanking' => [
                         [
-                            'issuer'      => ['ALLA'],
-                            'scheduled'   => true,
-                            'reason_code' => 'OTHER',
+                            'issuer'    => ['ALLA'],
+                            'scheduled' => true,
+                            'severity'  => 'low',
                         ],
                     ],
                 ],
@@ -1313,9 +1313,9 @@ return [
                 'downtime' => [
                     'netbanking' => [
                         [
-                            'issuer'      => ['HDFC'],
-                            'scheduled'   => true,
-                            'reason_code' => 'OTHER',
+                            'issuer'    => ['HDFC'],
+                            'scheduled' => true,
+                            'severity'  => 'low',
                         ],
                     ],
                 ],
@@ -1333,9 +1333,9 @@ return [
                 'downtime' => [
                     'wallet' => [
                         [
-                            'issuer'      => ['olamoney'],
-                            'scheduled'   => true,
-                            'reason_code' => 'OTHER',
+                            'issuer'    => ['olamoney'],
+                            'scheduled' => true,
+                            'severity'  => 'low',
                         ],
                     ],
                 ],
@@ -1387,7 +1387,7 @@ return [
                                 'LAVBC'
                             ],
                             'scheduled'   => true,
-                            'reason_code' => 'OTHER',
+                            'severity'    => 'low',
                         ],
                     ],
                 ],

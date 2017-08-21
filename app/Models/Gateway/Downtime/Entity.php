@@ -31,6 +31,7 @@ class Entity extends Base\PublicEntity
     const UNKNOWN       = 'UNKNOWN';
     const ALL           = 'ALL';
 
+    const SEVERITY      = 'severity';
 
     protected $fillable = [
         self::GATEWAY,
@@ -373,9 +374,11 @@ class Entity extends Base\PublicEntity
      */
     public function toArrayExternal()
     {
+        $reasonCode = $this->getReasonCode();
+
         $data = [
             Entity::ISSUER      => (array) $this->getIssuer(),
-            Entity::REASON_CODE => $this->getReasonCode(),
+            Entity::SEVERITY    => ReasonCode::SEVERITY_MAP[$reasonCode],
             Entity::PARTIAL     => $this->isPartial(),
             Entity::SCHEDULED   => $this->isScheduled(),
             Entity::BEGIN       => $this->getBegin(),
