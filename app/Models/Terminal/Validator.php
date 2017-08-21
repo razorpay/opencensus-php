@@ -156,6 +156,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
         Entity::CARD                        => 'sometimes|boolean|in:1',
+        Entity::TYPE                        => 'sometimes|integer|in:1,6',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
     ];
 
