@@ -6,6 +6,7 @@ use RZP\Models\Admin\Permission as AdminPermission;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Admin\Role\Repository as RoleRepository;
 use RZP\Tests\Functional\Fixtures\Entity\WorkflowAction;
+use RZP\Tests\Functional\Helpers\Workflow\WorkflowTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
@@ -14,6 +15,7 @@ class WorkflowActionTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use HeimdallTrait;
+    use WorkflowTrait;
 
     public function setUp()
     {
@@ -200,6 +202,7 @@ class WorkflowActionTest extends TestCase
 
     public function testWorkflowActionRejection()
     {
+        //This will create a wf action in Mysql and ES,not using default workflow.
         $workflow = $this->editAdmin('org_' . Org::RZP_ORG, 'admin_' . Org::CHECKER_ADMIN);
 
         //ES is not so Real Time
@@ -212,6 +215,30 @@ class WorkflowActionTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->testData[__FUNCTION__]['response']['content']['checkers'][0]['admin_id'] = 'admin_' . Org::SUPER_ADMIN;
+
+        $this->startTest();
+    }
+
+    public function testWorkflowActionExecuteLastApproval()
+    {
+        //This will create a wf action in Mysql and ES,not using default workflow.
+        $workflow = $this->editAdmin('org_' . Org::RZP_ORG, 'admin_' . Org::CHECKER_ADMIN);
+
+        sleep(1);
+
+        $this->approveWorkflowAction($workflow['id']);
+
+        $this->ba->adminAuth('test', Org::MAKER_TOKEN, 'org_' . Org::RZP_ORG);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $workflow['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['response']['content']['checkers'][0]['admin_id'] = 'admin_' . Org::SUPER_ADMIN;
+
+        $this->testData[__FUNCTION__]['response']['content']['checkers'][1]['admin_id'] = 'admin_' . Org::MAKER_ADMIN;
 
         $this->startTest();
     }

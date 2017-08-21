@@ -91,5 +91,27 @@ trait WorkflowTrait
             ],
         ];
     }
+
+    /**
+     * Workflow action approve neeeded for workflow execution.
+     *
+     * @param array  $workflowActionId
+     * @param string $token
+     * @return mixed
+     */
+    private function approveWorkflowAction($workflowActionId)
+    {
+        $this->ba->adminAuth('test', Org::DEFAULT_TOKEN, 'org_' . Org::RZP_ORG);
+
+        $request = [
+            'method'    => 'POST',
+            'url'       => '/w-actions/' . $workflowActionId . '/checkers',
+            'content'   => [
+                'approved'  => 1,
+            ],
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
 }
 

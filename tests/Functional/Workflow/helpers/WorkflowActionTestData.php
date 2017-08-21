@@ -157,5 +157,24 @@ return [
                 ]
             ],
         ],
-    ]
+    ],
+    'testWorkflowActionExecuteLastApproval' => [
+        'request' => [
+            'method'    => 'POST',
+            'url'       => '/w-actions/%s/checkers',
+            'content'   => [
+                'approved'  => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'state'     => 'executed',
+                'checkers'  => [
+                    [
+                        'approved' => true,
+                    ]
+                ]
+            ],
+        ],
+    ],
 ];
