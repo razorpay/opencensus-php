@@ -41,7 +41,7 @@ class ClaimsFile extends Base\RefundFile
             'file_name'       => basename($file['local_file_path']),
             'total_amount'    => $totalAmount,
         ];
-        sd($fileData);
+
         return $fileData;
     }
 
