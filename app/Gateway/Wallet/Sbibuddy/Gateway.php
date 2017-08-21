@@ -181,13 +181,6 @@ class Gateway extends Base\Gateway
 
     protected function getRefundRequest(array $input, $wallet)
     {
-        $content = $this->getRefundRequestData($input, $wallet);
-
-        return $content;
-    }
-
-    protected function getRefundRequestData(array $input, $wallet): array
-    {
         $payment = $input['payment'];
 
         // Here either the order ID or the transaction ID is requred.
