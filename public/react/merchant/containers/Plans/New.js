@@ -105,8 +105,8 @@ export default class AddPlan extends Component {
                       class="form-control"
                       placeholder="Optional"
                     />
-                    <small class="help-block">
-                      <i class="icon icon-info-circle" />
+                    <small class="help-block label--primary">
+                      <i class="icon icon-info-outline" />
                       The <b>Plan Name</b> and <b>Plan Description</b> will
                       appear on the invoice as entered above
                     </small>
@@ -145,8 +145,8 @@ export default class AddPlan extends Component {
                       <option value="yearly">Year(s)</option>
                     </Field>
 
-                    <small class="help-block">
-                      <i class="icon icon-info-circle" /> You can set{' '}
+                    <small class="help-block label--primary">
+                      <i class="icon icon-info-outline" />You can set{' '}
                       <b>billing cycle</b> (start date and end date) and{' '}
                       <b>trial period</b> later while, creating a subscription.
                     </small>
@@ -166,8 +166,8 @@ export default class AddPlan extends Component {
                       validate={required('Billing amount is required')}
                       placeholder="199.99"
                     />
-                    <small class="help-block">
-                      <i class="icon icon-info-circle" />
+                    <small class="help-block label--primary">
+                      <i class="icon icon-info-outline" />
                       <b>Billing amount</b> and <b>billing frequency</b> can not
                       be changed later.
                     </small>

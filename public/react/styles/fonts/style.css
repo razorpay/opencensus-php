@@ -145,58 +145,62 @@
 	content: "\E01F";
 }
 
-.icon-link:before {
+.icon-info-outline:before {
 	content: "\E020";
 }
 
-.icon-notes:before {
+.icon-link:before {
 	content: "\E021";
 }
 
-.icon-people:before {
+.icon-notes:before {
 	content: "\E022";
 }
 
-.icon-plan:before {
+.icon-people:before {
 	content: "\E023";
 }
 
-.icon-plus:before {
+.icon-plan:before {
 	content: "\E024";
 }
 
-.icon-refresh:before {
+.icon-plus:before {
 	content: "\E025";
 }
 
-.icon-repeat:before {
+.icon-refresh:before {
 	content: "\E026";
 }
 
-.icon-save:before {
+.icon-repeat:before {
 	content: "\E027";
 }
 
-.icon-search:before {
+.icon-save:before {
 	content: "\E028";
 }
 
-.icon-send:before {
+.icon-search:before {
 	content: "\E029";
 }
 
-.icon-settings:before {
+.icon-send:before {
 	content: "\E02A";
 }
 
-.icon-store:before {
+.icon-settings:before {
 	content: "\E02B";
 }
 
-.icon-undo:before {
+.icon-store:before {
 	content: "\E02C";
 }
 
-.icon-wallet:before {
+.icon-undo:before {
 	content: "\E02D";
+}
+
+.icon-wallet:before {
+	content: "\E02E";
 }
