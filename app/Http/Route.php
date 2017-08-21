@@ -191,6 +191,7 @@ final class Route
         'merchant_activation_upload_file_admin'   => ['post',     'merchant/activation/{id}/files',                 'MerchantController@postUploadActivationFileAdmin'                  ],
         'merchant_activation_update'              => ['put',      'merchant/activation/{id}/update',                'MerchantController@putEditMerchantDetailsAfterLock'                ],
         'merchant_activation_migrate'             => ['post',     'merchant/activation/migrate',                    'MerchantController@postMerchantDetailMigrate'                      ],
+        'merchant_file_processor'                 => ['post',      'merchant/file/process',                         'MerchantController@processFile'                                    ],
         'pricing_create_plan'                     => ['post',     'pricing',                                        'PricingController@postCreatePricingPlan'                           ],
         'pricing_upload_plan'                     => ['post',     'pricing/upload',                                 'PricingController@postUploadPricingPlan'                           ],
         'pricing_get_plans'                       => ['get',      'pricing',                                        'PricingController@getPricingPlans'                                 ],
@@ -1038,6 +1039,7 @@ final class Route
         'invitation_resend',
         'invitation_edit',
         'invitation_delete',
+        'merchant_file_processor',
     ];
 
     // These will run on internal auth with the assurance
