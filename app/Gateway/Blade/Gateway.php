@@ -1005,14 +1005,16 @@ class Gateway extends Base\Gateway
 
         $request['options'] = array_merge($options, $request['options']);
 
-        $request = $client->createRequest(
-            $request['method'], $request['url'], $request['options']);
-
-        $response = null;
+        unset($request['options']['cert']);
+        unset($request['options']['ssl_key']);
+        //TODO Fix this
 
         try
         {
-            $response = $client->send($request);
+            $response = $client->request(
+                $request['method'],
+                $request['url'],
+                $request['options']);
         }
         catch (GuzzleHttp\Exception\BadResponseException $e)
         {
