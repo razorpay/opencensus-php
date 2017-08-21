@@ -146,6 +146,7 @@ class Entity extends Base\PublicEntity
         'inputRemoveBlanks',
         self::INTERNATIONAL,
         self::EMI_SUBVENTION,
+        self::TYPE,
     ];
 
     protected $defaults = [
@@ -489,6 +490,25 @@ class Entity extends Base\PublicEntity
         if ($isEmi == true)
         {
             $input[self::EMI_SUBVENTION] = $input[self::EMI_SUBVENTION] ?? EmiSubvention::CUSTOMER;
+        }
+    }
+
+    protected function modifyType(& $input)
+    {
+        $hex = 0;
+
+        if (empty($input[self::TYPE]) === false)
+        {
+            // Create flow gives json
+            // Edit flow gives array
+            $inputType = $input[self::TYPE];
+
+            if (is_array($input[Entity::TYPE]) === false)
+            {
+                $inputType = json_decode($input[Entity::TYPE], true);
+            }
+
+            $input[self::TYPE] = Type::getTypeHex($inputType, $hex);
         }
     }
 

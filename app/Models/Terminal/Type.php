@@ -44,5 +44,30 @@ class Type
 
         return ((($hexType >> ($pos - 1)) & 1) === 1);
     }
+
+    public static function getValidTypes()
+    {
+        return self::$types;
+    }
+
+    public static function getBitPosition($type)
+    {
+        return self::$bitPosition[$type];
+    }
+
+    public static function getTypeHex($types, $hex)
+    {
+        foreach ($types as $type => $value)
+        {
+            $pos = self::getBitPosition($type);
+
+            $value = (($value === true) or ($value === '1')) ? 1 : 0;
+
+            // Sets the bit value for the current event.
+            $hex ^= ((-1 * $value) ^ $hex) & (1 << ($pos - 1));
+        }
+
+        return $hex;
+    }
 }
 
