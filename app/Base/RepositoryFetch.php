@@ -361,16 +361,16 @@ trait RepositoryFetch
      *
      * @param array $params
      */
-    protected function unsetExtraKeysFromFindParams(array & $params)
+    protected function modifyFindParams(array $params): array
     {
-        $originalParams = $params;
+        $filtered = array_only($params, $this->findParamRuleKeys);
 
-        $params = array_only($params, $this->findParamRuleKeys);
-
-        if (count($params) !== count($originalParams))
+        if (count($filtered) !== count($params))
         {
-            $this->trace->info(TraceCode::EXTRA_QUERY_PARAM_IN_GET_ROUTE, $originalParams);
+            $this->trace->info(TraceCode::EXTRA_QUERY_PARAM_IN_GET_ROUTE, $params);
         }
+
+        return $filtered;
     }
 
     /**
@@ -571,7 +571,7 @@ trait RepositoryFetch
         Merchant\Entity $merchant,
         array $params = []): PublicEntity
     {
-        $this->unsetExtraKeysFromFindParams($params);
+        $params = $this->modifyFindParams($params);
 
         $this->validateFindParams($params);
 
