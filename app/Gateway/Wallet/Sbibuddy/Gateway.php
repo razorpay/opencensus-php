@@ -7,6 +7,7 @@ use phpseclib\Crypt\AES;
 
 use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Constants\Timezone;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Verify;
@@ -158,7 +159,7 @@ class Gateway extends Base\Gateway
      */
     protected function saveWalletEntity(array $data)
     {
-        $date = Carbon::now('Asia/Kolkata')->format('d/m/Y H:m:s');
+        $date = Carbon::now(Timezone::IST)->format('d/m/Y H:m:s');
 
         $contentToSave = $data + [
             Entity::RECEIVED    => true,
@@ -234,7 +235,7 @@ class Gateway extends Base\Gateway
             Entity::GATEWAY_REFUND_ID   => $refundId,
             Entity::STATUS_CODE         => $data[ResponseFields::STATUS_CODE],
             Entity::REFUND_ID           => $input['refund']['id'],
-            Entity::DATE                => $date = Carbon::now()->format('d/m/Y H:m:s'),
+            Entity::DATE                => Carbon::now(Timezone::IST)->format('d/m/Y H:m:s'),
         ];
 
         // Since error description is optional
