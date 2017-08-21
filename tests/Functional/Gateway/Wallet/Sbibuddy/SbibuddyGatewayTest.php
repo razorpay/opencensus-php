@@ -7,6 +7,7 @@ use RZP\Gateway\Wallet\Sbibuddy\RequestFields;
 use RZP\Gateway\Wallet\Sbibuddy\ResponseFields;
 use RZP\Gateway\Wallet\Sbibuddy\ResponseCodeMap;
 use RZP\Models\Payment\Refund\Status as RefundStatus;
+use RZP\Models\Payment\Entity as Payment;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -61,7 +62,7 @@ class SbibuddyGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals('unknown', $payment['two_factor_auth']);
+        $this->assertEquals('unknown', $payment[Payment::TWO_FACTOR_AUTH]);
 
         $wallet = $this->getLastEntity('wallet', true);
 
