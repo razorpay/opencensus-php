@@ -18,4 +18,6 @@ class RequestFields
     const VERIFY_BANK_REF_NUMBER        = 'bankrefno';
     const VERIFY_MODE_OF_TRANSACTION    = 'md';
     const VERIFY_ACCOUNT_NUMBER         = 'bracctno';
+
+    const VERIFY_MODE_OF_TRANSACTION_VALUE = 'V';
 }

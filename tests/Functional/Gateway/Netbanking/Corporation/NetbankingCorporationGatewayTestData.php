@@ -1,5 +1,8 @@
 <?php
 
+use RZP\Gateway\Netbanking\Corporation\Mock\Server;
+use RZP\Gateway\Netbanking\Corporation;
+
 return [
     'testPayment' => [
         'merchant_id'       => '10000000000000',
@@ -32,5 +35,12 @@ return [
         'received'        => true,
         'bank'            => 'CORP',
         'status'          => 'S',
+    ],
+
+    'testPaymentVerifySuccessEntity' => [
+        'bank_payment_id' => Server::BANK_REF_NUMBER,
+        'received'        => true,
+        'bank'            => 'CORP',
+        'status'          => Corporation\ResponseCodeMap::SUCCESS_CODE
     ],
 ];

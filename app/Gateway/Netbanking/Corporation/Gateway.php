@@ -187,7 +187,47 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH);
 
-        $verify->payment = $this->saveVerifyContent($verify);
+        $verify->payment = $this->saveVerifyResponse($verify);
+    }
+
+    protected function saveVerifyResponse(Verify $verify)
+    {
+        $gatewayPayment = $verify->payment;
+
+        $content = $verify->verifyResponseContent;
+
+        $attributes = $this->getVerifyAttributesToSave($content, $gatewayPayment);
+
+        $gatewayPayment->fill($attributes);
+
+        $this->getRepository()->saveOrFail($gatewayPayment);
+
+        return $gatewayPayment;
+    }
+
+    protected function getVerifyAttributesToSave(array $content, $gatewayPayment): array
+    {
+        $attributes = [];
+
+        if ($this->shouldStatusBeUpdated($gatewayPayment) === true)
+        {
+            $attributes[Base\Entity::STATUS] = $content[ResponseFields::STATUS];
+        }
+
+        if (isset($content[ResponseFields::BANK_REF_NUMBER]) === true)
+        {
+            if (empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true)
+            {
+                $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_REF_NUMBER];
+            }
+        }
+
+        return $attributes;
+    }
+
+    protected function getAuthSuccessStatus()
+    {
+        return ResponseCodeMap::SUCCESS_CODE;
     }
 
     protected function getVerifyMatchStatus(Verify $verify)
@@ -240,12 +280,28 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequestData(array $input)
     {
+        // If we're calling the double verification request from callback,
+        // we'll have the 'gateway' attribute filled, because we already got
+        // the response from the gateway in the callback request.
+        // But, if we're calling this method from the verify request,
+        // we'll have to fetch the bank ref number from the netbanking repo.
+        if(isset($input['gateway']) === false)
+        {
+            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+
+            $bankRefNumber = $gatewayPayment[Base\Entity::BANK_PAYMENT_ID];
+        }
+        else
+        {
+            $bankRefNumber = $input['gateway'][ResponseFields::BANK_REF_NUMBER];
+        }
+
         $data = [
             RequestFields::VERIFY_MERCHANT_CODE         => $this->getMerchantId(),
             RequestFields::VERIFY_PAYMENT_ID            => $input['payment']['id'],
             RequestFields::VERIFY_AMOUNT                => $input['payment']['amount'] / 100,
-            RequestFields::VERIFY_BANK_REF_NUMBER       => $input['gateway'][ResponseFields::BANK_REF_NUMBER],
-            RequestFields::VERIFY_MODE_OF_TRANSACTION   => $input['gateway'][ResponseFields::MODE_OF_TRANSACTION],
+            RequestFields::VERIFY_BANK_REF_NUMBER       => $bankRefNumber,
+            RequestFields::VERIFY_MODE_OF_TRANSACTION   => RequestFields::VERIFY_MODE_OF_TRANSACTION_VALUE,
             RequestFields::VERIFY_ACCOUNT_NUMBER        => "",
         ];
 

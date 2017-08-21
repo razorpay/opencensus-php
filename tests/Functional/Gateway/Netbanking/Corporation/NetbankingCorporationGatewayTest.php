@@ -43,6 +43,19 @@ class NetbankingCorporationGatewayTest extends TestCase
         $this->assertArrayHasKey('bank_payment_id', $payment);
     }
 
+    public function testPaymentVerify()
+    {
+        $payment = $this->doNetbankingCorporationAuthAndCapturePayment();
+
+        $verify = $this->verifyPayment($payment['id']);
+
+        assert($verify['payment']['verified'] === 1);
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertTestResponse($gatewayPayment, 'testPaymentVerifySuccessEntity');
+    }
+
     protected function doNetbankingCorporationAuthAndCapturePayment($order = [])
     {
         $payment = $this->getDefaultNetbankingPaymentArray();

@@ -16,6 +16,8 @@ class Server extends Base\Mock\Server
 {
     use Base\Mock\GatewayTrait;
 
+    const BANK_REF_NUMBER = 'AB1234';
+
     public function authorize($input)
     {
         parent::authorize($input);
@@ -49,7 +51,7 @@ class Server extends Base\Mock\Server
             ResponseFields::CUSTOMER_ID         => $input[RequestFields::MERCHANT_CODE],
             ResponseFields::AMOUNT              => $input[RequestFields::AMOUNT],
             ResponseFields::FUND_TRANSFER       => ResponseCodeMap::FUND_TRANSFER,
-            ResponseFields::BANK_REF_NUMBER     => 'AB1234',
+            ResponseFields::BANK_REF_NUMBER     => self::BANK_REF_NUMBER,
             ResponseFields::STATUS              => ResponseCodeMap::SUCCESS_CODE,
         ];
     }
