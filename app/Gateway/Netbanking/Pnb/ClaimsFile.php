@@ -41,7 +41,7 @@ class ClaimsFile extends Base\RefundFile
             'file_name'       => basename($file['local_file_path']),
             'total_amount'    => $totalAmount,
         ];
-
+        sd($fileData);
         return $fileData;
     }
 
@@ -77,13 +77,13 @@ class ClaimsFile extends Base\RefundFile
             {
                 $type = Constants::CREDIT;
                 $amount = number_format($amountRefunded / 100, 2, '.', '');
-                $txnDetails = Constants::PAYMENT;
+                $txnDetails = Constants::REFUND;
             }
             else
             {
                 $type = Constants::DEBIT;
                 $amount = number_format($row['payment']['amount'] / 100, 2, '.', '');
-                $txnDetails = Constants::REFUND;
+                $txnDetails = Constants::PAYMENT;
             }
 
             $data[] = [
