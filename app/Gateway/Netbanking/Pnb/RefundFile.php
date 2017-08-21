@@ -74,7 +74,7 @@ class RefundFile extends Base\RefundFile
                 $row['gateway']['account_number'],
                 $row['payment']['currency'],
                 Constants::SERVICE_OUTLET,
-                Constants::CREDIT,
+                str_pad(Constants::CREDIT, 2, ' ', STR_PAD_LEFT),
                 str_pad($amount, 17, ' ', STR_PAD_LEFT),
                 Constants::REFUND,
                 $date,
@@ -88,7 +88,7 @@ class RefundFile extends Base\RefundFile
             'RazorPay Pool A/c',
             'INR',
             '0120000',
-            Constants::DEBIT,
+            str_pad(Constants::DEBIT, 2, ' ', STR_PAD_LEFT),
             str_pad($amount, 17, ' ', STR_PAD_LEFT),
             Constants::REFUND,
         ];

@@ -8,6 +8,7 @@ use RZP\Gateway\Base;
 use RZP\Constants\Mode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\Payment\RefundStatus;
 
 class ClaimsFile extends Base\RefundFile
 {
@@ -70,16 +71,16 @@ class ClaimsFile extends Base\RefundFile
                     $row['payment']['created_at'], Timezone::IST)
                     ->format('dmYHis');
 
-            if (isset($row['payment']['refund']) === true)
+            if (isset($row['payment']['refund_status']) !== RefundStatus::NULL)
             {
                 $type = Constants::CREDIT;
-                $amount = $row['refund']['amount'] / 100;
+                $amount = number_format($row['refund']['amount'] / 100, 2, '.', '');
                 $txnDetails = Constants::PAYMENT;
             }
             else
             {
                 $type = Constants::DEBIT;
-                $amount = $row['payment']['amount'] / 100;
+                $amount = number_format($row['payment']['amount'] / 100, 2, '.', '');
                 $txnDetails = Constants::REFUND;
             }
 
@@ -87,7 +88,7 @@ class ClaimsFile extends Base\RefundFile
                 $row['gateway']['account_number'],
                 $row['payment']['currency'],
                 Constants::SERVICE_OUTLET,
-                $type,
+                str_pad($type, 2, ' ', STR_PAD_LEFT),
                 str_pad($amount, 17, ' ', STR_PAD_LEFT),
                 $txnDetails,
                 $date,
