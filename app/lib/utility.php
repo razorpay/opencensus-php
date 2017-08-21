@@ -336,3 +336,24 @@ function is_valid_utf8(String $string)
 {
     return (max(array_map('ord', str_split($string))) < 240);
 }
+
+if (! function_exists('camel_case_array'))
+{
+    /**
+     * Camel cases all values of given array and
+     * returns the new array.
+     *
+     * @param array $arr
+     *
+     * @return array
+     */
+    function camel_case_array(array $arr)
+    {
+        return array_map(
+                    function ($v)
+                    {
+                        return camel_case($v);
+                    },
+                    $arr);
+    }
+}

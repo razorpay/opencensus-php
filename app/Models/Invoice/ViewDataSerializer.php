@@ -11,6 +11,12 @@ use RZP\Constants\Mode;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant\Checkout;
 
+/**
+ * This class is common source of invoice and related data to be sent
+ * - to mail templates as payload
+ * - to hosted page view
+ *
+ */
 class ViewDataSerializer extends Base\Core
 {
     const DEFAULT_MERCHANT_BRAND_COLOR = '#6A5DD1';
@@ -85,6 +91,10 @@ class ViewDataSerializer extends Base\Core
 
     protected function getFormattedInvoiceDataForView(): array
     {
+        // Reload is needed as from Payment\Processor\Notify, the invoice
+        // object passed as part of construct does not have relations loaded.
+        $this->repo->loadRelations($this->invoice);
+
         $invoiceData = $this->invoice->toArrayPublic();
 
         $invoiceData[Entity::IS_PAID] = $this->invoice->isPaid();

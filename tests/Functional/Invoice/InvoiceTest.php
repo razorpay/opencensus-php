@@ -1140,7 +1140,14 @@ class InvoiceTest extends TestCase
 
         $this->fixtures->create('line_item');
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        //
+        // Asserts that the response doesn't contain 'payments' which should
+        // be asked for with 'expands' query parameter in GET requests.
+        //
+
+        $this->assertArrayNotHasKey('payments', $response);
     }
 
     public function testGetInvoiceByReceipt()
@@ -1154,6 +1161,13 @@ class InvoiceTest extends TestCase
                 'receipt'  => '00000000000001'
             ]);
 
+        $this->fixtures->create(
+                            'line_item',
+                            [
+                                'entity_id' => '1000001invoice',
+                                'item_id' => null,
+                            ]);
+
         $order = $this->fixtures->create('order');
 
         $this->createIssuedInvoice(
@@ -1162,6 +1176,14 @@ class InvoiceTest extends TestCase
                 'order_id' => $order->getId(),
                 'receipt'  => '00000000000002'
             ]);
+
+        $this->fixtures->create(
+                            'line_item',
+                            [
+                                'id' => '100002lineitem',
+                                'entity_id' => '1000002invoice',
+                                'item_id' => null,
+                            ]);
 
         $esMock = $this->createEsMock(['search']);
 
@@ -1202,6 +1224,21 @@ class InvoiceTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testGetInvoiceWithPayments()
+    {
+        $this->createOrder();
+
+        $invoice = $this->createIssuedInvoice();
+
+        $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['payment_id']);
+    }
+
     public function testGetMultipleInvoices()
     {
         $this->createOrder();
@@ -1218,6 +1255,33 @@ class InvoiceTest extends TestCase
             'id' => '10000lineitem2',
             'entity_id' => $invoice2->getId(),
             'item_id' => $item2->getId()]);
+
+        $response = $this->startTest();
+
+        //
+        // Asserts that the response doesn't contain 'payments' which should
+        // be asked for with 'expands' query parameter in GET requests.
+        //
+
+        foreach ($response['items'] as $entity)
+        {
+            $this->assertArrayNotHasKey('payments', $entity);
+        }
+    }
+
+    public function testGetMultipleInvoicesWithPayments()
+    {
+        $this->createOrder();
+
+        $invoice1 = $this->createIssuedInvoice();
+
+        $this->createOrder(['id' => '10000000order2']);
+
+        $invoice2 = $this->createIssuedInvoice(['id' => '100000invoice2', 'order_id' => '10000000order2']);
+
+        $this->makePaymentForInvoiceAndAssert($invoice2->toArrayPublic());
+
+        $this->ba->proxyAuth();
 
         $this->startTest();
     }

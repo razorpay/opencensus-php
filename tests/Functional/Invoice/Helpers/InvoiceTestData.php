@@ -2283,7 +2283,23 @@ return [
                             'contact' => '1234567890',
                             'name'    => 'test',
                         ],
-                        'line_items'       => [],
+                        'line_items'       => [
+                            [
+                                'id'            => 'li_100002lineitem',
+                                'name'          => 'Some item name',
+                                'description'   => 'Some item description',
+                                'amount'        => 100000,
+                                'unit_amount'   => 100000,
+                                'gross_amount'  => 100000,
+                                'tax_amount'    => 0,
+                                'net_amount'    => 100000,
+                                'currency'      => 'INR',
+                                'tax_inclusive' => false,
+                                'unit'          => null,
+                                'quantity'      => 1,
+                                'taxes'         => [],
+                            ],
+                        ],
                         'short_url'        => 'http://bitly.dev/2eZ11Vn',
                         'notes'            => [],
                         'status'           => 'issued',
@@ -2308,6 +2324,73 @@ return [
         'response' => [
             'content' => [
                 'count' => 0,
+            ],
+        ],
+    ],
+
+    'testGetInvoiceWithPayments' => [
+        'request' => [
+            'url' => '/invoices/inv_1000000invoice',
+            'method'  => 'get',
+            'content' => [
+                'expand'   => [
+                    'payments',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'             => 'inv_1000000invoice',
+                'entity'         => 'invoice',
+                'customer_id'    => 'cust_100000customer',
+                'customer_details' => [
+                    'name'            => 'test',
+                    'email'           => 'test@razorpay.com',
+                    'contact'         => '1234567890',
+                    'billing_address' => null,
+                ],
+                'order_id'       => 'order_100000000order',
+                'line_items'     => [],
+                'payments'       => [
+                    'entity' => 'collection',
+                    'count'  => 1,
+                    'items'  => [
+                        [
+                            'entity'            => 'payment',
+                            'amount'            => 100000,
+                            'currency'          => 'INR',
+                            'status'            => 'captured',
+                            'order_id'          => 'order_100000000order',
+                            'invoice_id'        => 'inv_1000000invoice',
+                            'international'     => false,
+                            'method'            => 'card',
+                            'amount_refunded'   => 0,
+                            'refund_status'     => null,
+                            'captured'          => true,
+                            'description'       => 'random description',
+                            'bank'              => null,
+                            'wallet'            => null,
+                            'vpa'               => null,
+                            'email'             => 'a@b.com',
+                            'contact'           => '+919918899029',
+                            'notes'             => [
+                                'merchant_order_id' => 'random order id',
+                            ],
+                            'fee'               => 2000,
+                            'service_tax'       => 0,
+                            'error_code'        => null,
+                            'error_description' => null,
+                            'acquirer_data'     => [],
+                            'tax'               => 0,
+                        ],
+                    ],
+                ],
+                'status'         => 'paid',
+                'amount'         => 100000,
+                'amount_paid'    => 100000,
+                'amount_due'     => 0,
+                'currency'       => 'INR',
+                'type'           => 'invoice',
             ],
         ],
     ],
@@ -2355,6 +2438,54 @@ return [
                         ],
                         'status' => 'issued',
                     ]
+                ]
+            ],
+        ],
+    ],
+
+    'testGetMultipleInvoicesWithPayments' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'get',
+            'content' => [
+                'expand' => [
+                    'payments',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 2,
+                'items' => [
+                    [
+                        'id'          => 'inv_100000invoice2',
+                        'customer_id' => 'cust_100000customer',
+                        'order_id'    => 'order_10000000order2',
+                        'line_items'  => [],
+                        'status'      => 'paid',
+                        'payments'    => [
+                            'entity' => 'collection',
+                            'count'  => 1,
+                            'items'  => [
+                                [
+                                    'entity'            => 'payment',
+                                    'amount'            => 100000,
+                                    'currency'          => 'INR',
+                                    'status'            => 'captured',
+                                    'order_id'          => 'order_10000000order2',
+                                    'invoice_id'        => 'inv_100000invoice2',
+                                ],
+                            ],
+                        ],
+                    ],
+                    [
+                        'id'          => 'inv_1000000invoice',
+                        'customer_id' => 'cust_100000customer',
+                        'order_id'    => 'order_100000000order',
+                        'line_items'  => [],
+                        'status'      => 'issued',
+                        'payments'    => [],
+                    ],
                 ]
             ],
         ],
