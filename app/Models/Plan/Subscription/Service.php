@@ -235,8 +235,13 @@ class Service extends Base\Service
             }
             catch (\Exception $ex)
             {
-                // TODO: Add more details to the exception
-                $this->trace->traceException($ex);
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::SUBSCRIPTION_CANCEL_FAILED,
+                    [
+                        'subscription_id' => $subscription->getId()
+                    ]);
 
                 $failures[] = $subscription->getId();
             }

@@ -294,6 +294,7 @@ class PublicErrorDescription
     const BAD_REQUEST_SUBSCRIPTION_PAYMENT_WITHOUT_SAVING                       = 'Subscription payment cannot be made without saving the card';
     const BAD_REQUEST_SUBSCRIPTION_ANOTHER_OPERATION_IN_PROGRESS                = 'Request failed because another subscription operation is in progress';
     const BAD_REQUEST_SUBSCRIPTION_INVALID_STATUS                               = 'Invalid status passed in the query params';
+    const BAD_REQUEST_SUBSCRIPTION_CYCLE_NOT_RUNNING                            = 'No subscription cycle running currently';
 
     const BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE                                = 'Invoice status cannot be retrieved now';
     const BAD_REQUEST_PAYMENT_NOT_AUTHORIZED                                    = 'Payment is not in authorized state';

@@ -396,6 +396,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ENDED_AT, $endAt);
     }
 
+    public function setCancelledAt($cancelledAt)
+    {
+        $this->setAttribute(self::CANCELLED_AT, $cancelledAt);
+    }
+
     public function setCancelAt($cancelAt)
     {
         $this->setAttribute(self::CANCEL_AT, $cancelAt);
@@ -413,7 +418,20 @@ class Entity extends Base\PublicEntity
 
             $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
-            $this->setAttribute($timestampKey, $currentTime);
+            $currentTimestamp = $this->getAttribute($timestampKey);
+
+            //
+            // In some cases like cancelled_at, the request to
+            // cancel the subscription is received at time T1, to
+            // cancel the subscription at time T2.
+            // We set the cancelled_at to T1, but the state is not changed
+            // to `cancelled`. We do not change the timestamp after we
+            // actually change the state to `cancelled` at time T2.
+            //
+            if (empty($currentTimestamp) === true)
+            {
+                $this->setAttribute($timestampKey, $currentTime);
+            }
         }
     }
 

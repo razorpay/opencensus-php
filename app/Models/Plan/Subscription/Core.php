@@ -485,18 +485,34 @@ class Core extends Base\Core
 
             if ($currentCycleEnd === null)
             {
-                // TODO: Throw an exception since there is no cycle running right now.
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_SUBSCRIPTION_CYCLE_NOT_RUNNING,
+                    null,
+                    [
+                        'subscription_id'   => $subscription->getId(),
+                        'start_at'          => $subscription->getStartAt(),
+                        'charge_at'         => $subscription->getChargeAt(),
+                    ]);
             }
 
-            $currentTime = Carbon::now('Asia/Kolkata')->getTimestamp();
+            $currentTime = Carbon::now()->getTimestamp();
 
             if ($currentCycleEnd < $currentTime)
             {
-                // TODO: Throw an exception
-                // ideally should never reach here at all
+                throw new LogicException(
+                    'Current cycle\'s cannot be lesser than the current time!',
+                    null,
+                    [
+                        'subscription_id'   => $subscription->getId(),
+                        'current_time'      => $currentTime,
+                        'current_cycle_end' => $currentCycleEnd,
+                        'charge_at'         => $subscription->getChargeAt(),
+                    ]);
             }
 
             $subscription->setCancelAt($currentCycleEnd);
+
+            $subscription->setCancelledAt($currentTime);
         }
 
         $this->repo->saveOrFail($subscription);

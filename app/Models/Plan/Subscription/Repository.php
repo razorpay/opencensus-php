@@ -101,6 +101,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->whereNotNull(Entity::CANCEL_AT)
                     ->where(Entity::CANCEL_AT, '<=', $currentTime)
+                    ->whereNotIn(Entity::STATUS, Status::$nonCancellableStatuses)
                     ->get();
     }
 
