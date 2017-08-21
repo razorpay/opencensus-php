@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\Wallet\Sbibuddy\Mock;
 
-use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Wallet\Sbibuddy;
 
@@ -12,7 +11,6 @@ class Gateway extends Sbibuddy\Gateway
 
     public function authorize(array $input)
     {
-
         $request = parent::authorize($input);
 
         $url = $this->route->getUrlWithPublicAuth(

@@ -9,7 +9,6 @@ class Url
 
     const AUTHORIZE      = 'mmgw-tls/merchant/page/paynow';
 
-
     const REFUND         = 'mmgw-tls/merchant/api/refund';
     const VERIFY         = 'mmgw-tls/merchant/api/status';
     const PAYMENT_STATUS = 'mmgw-tls/merchant/api/status';

@@ -43,7 +43,7 @@ class SbibuddyGatewayTest extends TestCase
         $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
     }
 
-    public function testPaymentFailureFlow()
+    public function testPaymentFailure()
     {
         $payment = $this->getDefaultWalletPaymentArray('sbibuddy');
 

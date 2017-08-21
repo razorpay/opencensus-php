@@ -190,6 +190,8 @@ class Gateway extends Base\Gateway
     {
         $payment = $input['payment'];
 
+        // Here either the order ID or the transaction ID is requred.
+        // We're sending both, since it would be easier to trace both these values.
         $data = [
             RequestFields::ORDER_ID             => $payment[Payment::ID],
             RequestFields::TRANSACTION_ID       => $wallet[Entity::GATEWAY_PAYMENT_ID],
@@ -396,7 +398,7 @@ class Gateway extends Base\Gateway
 
     protected function isStatusCodeSuccess(array $data): bool
     {
-        return in_array($data[ResponseFields::STATUS_CODE], ResponseCodeMap::$successCodes);
+        return in_array($data[ResponseFields::STATUS_CODE], ResponseCodeMap::$successCodes, true);
     }
 
     protected function parseResponse(array $input): array

@@ -3,8 +3,6 @@
 namespace RZP\Gateway\Wallet\Sbibuddy\Mock;
 
 use RZP\Gateway\Base;
-use phpseclib\Crypt\AES;
-use RZP\Models\Payment\Entity as Payment;
 use RZP\Gateway\Wallet\Base\Entity as Wallet;
 use RZP\Gateway\Wallet\Sbibuddy\Encryptor;
 use RZP\Gateway\Wallet\Sbibuddy\RequestFields;
