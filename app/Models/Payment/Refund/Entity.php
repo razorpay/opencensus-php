@@ -3,9 +3,8 @@
 namespace RZP\Models\Payment\Refund;
 
 use RZP\Models\Base;
-use RZP\Models\Currency;
 use RZP\Models\Payment;
-use RZP\Models\Batch;
+use RZP\Models\Currency;
 use RZP\Models\Transaction\Channel;
 use RZP\Models\Base\Traits\NotesTrait;
 use Razorpay\Spine\DataTypes\Dictionary;

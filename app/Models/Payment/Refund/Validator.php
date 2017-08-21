@@ -3,10 +3,10 @@
 namespace RZP\Models\Payment\Refund;
 
 use RZP\Base;
-use RZP\Models\Base\PublicCollection;
-use RZP\Models\Payment;
 use RZP\Exception;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Models\Base\PublicCollection;
 
 class Validator extends Base\Validator
 {

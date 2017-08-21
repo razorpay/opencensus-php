@@ -4,9 +4,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Payment\Refund\Entity as Refund;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\Payment\Refund\Entity as Refund;
 use RZP\Models\Transaction\Entity as Transaction;
 
 class CreateRefunds extends Migration

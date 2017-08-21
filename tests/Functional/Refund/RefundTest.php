@@ -3,15 +3,13 @@
 namespace RZP\Tests\Functional\Refund;
 
 use DB;
+use Mail;
 use Mockery;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use Mail;
 
-use RZP\Mail\Payment\Refunded as RefundedMail;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\Payment\Entity as PaymentEntity;
-use RZP\Models\Batch\Status;
+use RZP\Mail\Payment\Refunded as RefundedMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 /**
