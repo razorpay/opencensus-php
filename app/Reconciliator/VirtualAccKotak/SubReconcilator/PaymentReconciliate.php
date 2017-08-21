@@ -198,6 +198,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             BankTransfer\Entity::MODE           => 'neft',
         ];
 
-        return (new BankTransfer\Processor)->process($data);
+        return (new BankTransfer\Core)->process($data);
     }
 }

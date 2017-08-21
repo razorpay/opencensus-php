@@ -1056,7 +1056,7 @@ trait Refund
 
         try
         {
-            (new BankTransfer\Refund)->process($data, $this->merchant);
+            (new BankTransfer\Core)->refund($data, $this->merchant);
 
             $this->refund->setStatus(Payment\Refund\Status::CREATED);
 
