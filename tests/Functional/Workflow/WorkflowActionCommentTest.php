@@ -35,8 +35,6 @@ class WorkflowActionCommentTest extends TestCase
         // Assign url
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $this->testData[__FUNCTION__]['response']['admin_id'] = 'admin_' . Org::SUPER_ADMIN;
-
         $this->testData[__FUNCTION__]['response']['action_id'] = 'w_action' . $defaultWorkflowAction;
 
         $this->startTest();

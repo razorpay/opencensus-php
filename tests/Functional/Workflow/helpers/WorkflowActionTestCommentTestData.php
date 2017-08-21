@@ -11,7 +11,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'comment' => 'cool comment.'
+                'comment'  => 'cool comment.',
+                'admin_id' => 'admin_' . \RZP\Tests\Functional\Fixtures\Entity\Org::SUPER_ADMIN,
             ]
         ],
     ],
