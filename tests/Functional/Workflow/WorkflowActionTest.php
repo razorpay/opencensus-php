@@ -197,4 +197,22 @@ class WorkflowActionTest extends TestCase
         // Assign url
         $this->testData[$functionName]['request']['url'] = $url;
     }
+
+    public function testWorkflowActionRejection()
+    {
+        $workflow = $this->editAdmin('org_' . Org::RZP_ORG, 'admin_' . Org::CHECKER_ADMIN);
+
+        //ES is not so Real Time
+        sleep(1);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $workflow['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['response']['content']['checkers'][0]['admin_id'] = 'admin_' . Org::SUPER_ADMIN;
+
+        $this->startTest();
+    }
 }

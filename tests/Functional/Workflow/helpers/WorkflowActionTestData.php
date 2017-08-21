@@ -137,4 +137,25 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_CHECK_NOT_REQUIRED_IN_CURRENT_LEVEL,
         ],
     ],
+    'testWorkflowActionRejection' => [
+        'request' => [
+            'method'    => 'POST',
+            'url'       => '/w-actions/%s/checkers',
+            'content'   => [
+                'approved'  => 0,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                "state"         => "rejected",
+                "approved"      => false,
+                "current_level" => 1,
+                "checkers"      => [
+                    [
+                        "approved"  => false,
+                    ]
+                ]
+            ],
+        ],
+    ]
 ];
