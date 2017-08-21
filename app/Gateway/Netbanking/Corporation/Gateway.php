@@ -7,6 +7,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Payment\Action;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
 use phpseclib\Crypt\AES;
@@ -78,6 +79,15 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input);
     }
 
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
     // -------------------------- Auth helper methods ------------------------------
 
     protected function getAuthRequestData($input)
@@ -138,31 +148,6 @@ class Gateway extends Base\Gateway
 
     // -------------------------- Verify helper methods ------------------------------
 
-    /**
-     * Verifying the payment after callback response is saved to
-     * prevent user tampering with the data while making a payment.
-     */
-    protected function verifyCallback(array $input)
-    {
-        parent::verify($input);
-
-        $verify = new Verify($this->gateway, $input);
-
-        $this->sendPaymentVerifyRequest($verify);
-
-        $this->checkGatewaySuccess($verify);
-
-        //
-        // If verify returns false, we throw an error as
-        // authorize request / response has been tampered with
-        //
-        if ($verify->gatewaySuccess === false)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
-        }
-    }
-
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
         $content = $this->getVerifyRequestData($verify->input);
@@ -190,6 +175,60 @@ class Gateway extends Base\Gateway
                 'payment_id' => $verify->input['payment']['id'],
             ]
         );
+    }
+
+    protected function verifyPayment(Verify $verify)
+    {
+        $content = $verify->verifyResponseContent;
+
+        $status = $this->getVerifyMatchStatus($verify);
+
+        $verify->status = $status;
+
+        $verify->match = ($status === VerifyResult::STATUS_MATCH);
+
+        $verify->payment = $this->saveVerifyContent($verify);
+    }
+
+    protected function getVerifyMatchStatus(Verify $verify)
+    {
+        $status = VerifyResult::STATUS_MATCH;
+
+        $this->checkApiSuccess($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
+        {
+            $status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        return $status;
+    }
+
+    /**
+     * Verifying the payment after callback response is saved to
+     * prevent user tampering with the data while making a payment.
+     */
+    protected function verifyCallback(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        $this->sendPaymentVerifyRequest($verify);
+
+        $this->checkGatewaySuccess($verify);
+
+        //
+        // If verify returns false, we throw an error as
+        // authorize request / response has been tampered with
+        //
+        if ($verify->gatewaySuccess === false)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+        }
     }
 
     protected function parseVerifyResponse($content)
