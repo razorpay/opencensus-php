@@ -42,29 +42,22 @@ class BladeGatewayTest extends TestCase
             ]
         ]);
 
-        sd($payment);
-
         $txn = $this->getEntities('transaction', [], true);
-        $this->assertEquals(0, $txn['count']);
+        $this->assertEquals(1, $txn['count']);
 
         $payment = $this->getLastEntity('payment', true);
-        $this->assertNull($payment['transaction_id']);
-        $this->assertEquals('1000CybrsTrmnl', $payment['terminal_id']);
+        $this->assertNotNull($payment['transaction_id']);
+        $this->assertEquals('1000BladeTrmnl', $payment['terminal_id']);
 
         $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
 
         $txn = $this->getLastTransaction(true);
+
         $this->assertArraySelectiveEquals(
-            $this->testData['testTransactionAfterCapture'], $txn);
+            $this->testData['testSuccessful13DigitPanTxn'], $txn);
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertNotNull($payment['approval_code']);
-        $this->assertTestResponse($payment);
-
-        $payment = $this->getLastEntity('cybersource', true);
-
-        $this->assertArraySelectiveEquals(
-            $this->testData['testCybersourceCaptureEntity'], $payment);
+        $this->assertNull($payment['approval_code']);
     }
 }

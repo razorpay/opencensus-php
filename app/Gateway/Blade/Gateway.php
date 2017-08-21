@@ -792,12 +792,12 @@ class Gateway extends Base\Gateway
         $recurring = '';
         $installments = '';
 
-        if ($input['payment']['notes']['installments'] !== null)
+        if (empty($input['payment']['notes']['installments']) === false)
         {
             $installments = '<install>'. $input['payment']['notes']['installments'] . '</install>';
         }
 
-        if ($input['payment']['notes']['recurring_frequency'] !== null)
+        if (empty($input['payment']['notes']['recurring_frequency']) === false)
         {
             $recurring = '<Recur>
                         <frequency>'.$input['payment']['notes']['recurring_frequency'].'</frequency>
