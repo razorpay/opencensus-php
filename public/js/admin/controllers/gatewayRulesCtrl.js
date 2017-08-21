@@ -367,6 +367,22 @@ app
       if (Object.keys(current).length) {
         $scope.editMode = true;
 
+        if ($scope.current['shared_terminal'] === null) {
+          $scope.current['shared_terminal'] = '';
+        } else {
+          $scope.current['shared_terminal'] = $scope.current['shared_terminal']
+            ? '1'
+            : '0';
+        }
+
+        if ($scope.current['international'] === null) {
+          $scope.current['international'] = '';
+        } else {
+          $scope.current['international'] = $scope.current['international']
+            ? '1'
+            : '0';
+        }
+
         // 1. Iins: Convert iins from array to comma supported to dispay in input field
         $scope.current['iins'] = $scope.current['iins']
           ? $scope.current['iins'].join(',')
@@ -380,7 +396,7 @@ app
       function cleanFields(currentRule) {
         //1. Iins: Convert to array
         if (currentRule['iins']) {
-          currentRule['iins'] = currentRule['iins'].split(','); // Convert command separate values to array
+          currentRule['iins'] = currentRule['iins'].split(','); // Convert comma separate values to array
         }
 
         //2. Convert rupees values to paisa

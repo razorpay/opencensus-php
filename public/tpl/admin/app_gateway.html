@@ -404,12 +404,12 @@
           <!--<input type="text" class="form-control m-b" name="international" ng-model="current.international" ng-readonly="editMode">-->
           <select name="international"
                   ng-model="current.international"
-                  ng-init="current.international = current.international || ''"
+                  ng-init="current.international = current.international"
                   class="form-control"
                   ng-disabled="editMode">
             <option value="">Both</option>
-            <option value="no">No</option>
-            <option value="yes">Yes</option>
+            <option value="0">No</option>
+            <option value="1">Yes</option>
           </select>
         </div>
       </div>
@@ -509,7 +509,7 @@
           <!--<input type="text" class="form-control m-b" name="international" ng-model="current.international" ng-readonly="editMode">-->
           <select name="shared_terminal"
                   ng-model="current.shared_terminal"
-                  ng-init="current.shared_terminal = current.shared_terminal || ''"
+                  ng-init="current.shared_terminal = current.shared_terminal"
                   class="form-control"
                   ng-disabled="editMode">
             <option value="">ALL</option>
