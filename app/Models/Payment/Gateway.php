@@ -420,6 +420,7 @@ class Gateway
         Gateway::CYBERSOURCE,
         Gateway::FIRST_DATA,
         Gateway::AXIS_MIGS,
+        Gateway::HDFC,
     ];
 
     /**
