@@ -70,6 +70,7 @@ class CreateRefunds extends Migration
             $table->integer(Refund::CREATED_AT);
             $table->integer(Refund::UPDATED_AT);
 
+            $table->index(Refund::AMOUNT);
             $table->index(Refund::STATUS);
             $table->index(Refund::GATEWAY_REFUNDED);
             $table->index(Refund::ATTEMPTS);

@@ -2373,6 +2373,10 @@ ALTER TABLE hdfc
     ADD COLUMN gateway_payment_id bigint(20) unsigned AFTER gateway_transaction_id,
     ADD INDEX hdfc_gateway_payment_id_index (gateway_payment_id);
 
+# Add index on refund amount
+ALTER TABLE refunds
+    ADD INDEX refunds_amount_index (amount);
+
 ALTER TABLE refunds
     ADD COLUMN receipt VARCHAR(255) DEFAULT NULL AFTER notes,
     ADD UNIQUE INDEX refunds_merchant_id_receipt_unique (merchant_id, receipt);
