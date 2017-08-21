@@ -985,32 +985,23 @@ class AdminTest extends TestCase
         $this->startTest();
     }
 
-    public function testConfigKeysSet()
+    public function testConfigKeys()
     {
         $this->ba->appAuth();
 
-        Cache::shouldReceive('get')
-                ->once()
-                ->with('terminal_selection_log_verbose')
-                ->andReturn('0');
+        $request = $this->testData['testConfigKeysSet']['request'];
 
-        Cache::shouldReceive('forever')
-                ->once()
-                ->with('terminal_selection_log_verbose', '1');
+        $this->assertArraySelectiveEquals(
+                $this->testData['testConfigKeysSet']['response'],
+                $this->makeRequestAndGetContent($request)
+            );
 
-        $this->startTest();
-    }
+        $request = $this->testData['testConfigKeysFetch']['request'];
 
-    public function testConfigKeysFetch()
-    {
-        $this->ba->appAuth();
-
-        Cache::shouldReceive('get')
-                ->once()
-                ->with('terminal_selection_log_verbose')
-                ->andReturn('1');
-
-        $this->startTest();
+        $this->assertArraySelectiveEquals(
+                $this->testData['testConfigKeysFetch']['response'],
+                $this->makeRequestAndGetContent($request)
+            );
     }
 
     public function testConfigKeysSetSensitive()

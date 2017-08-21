@@ -783,14 +783,10 @@ return [
             ],
         ],
         'response' => [
-            'content' => [
-                [
-                    'key'       => 'terminal_selection_log_verbose',
-                    'old_value' => '0',
-                    'new_value' => '1',
-                ],
+            [
+                'key'       => 'terminal_selection_log_verbose',
+                'new_value' => '1',
             ],
-            'status_code' => 200,
         ],
     ],
 
@@ -800,10 +796,7 @@ return [
             'url'     => '/config/keys',
         ],
         'response' => [
-            'content' => [
-                'terminal_selection_log_verbose' => '1',
-            ],
-            'status_code' => 200,
+            'terminal_selection_log_verbose' => '1',
         ],
     ],
 ];
