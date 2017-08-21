@@ -353,6 +353,27 @@ trait RepositoryFetch
     }
 
     /**
+     * Temporary:
+     * There are clients(including Dashboard) which is sending
+     * skip,count like extra parameters in GET routes. For now
+     * everything which is not expected would be ignored. We'll
+     * keep trace of violations and act on it later.
+     *
+     * @param array $params
+     */
+    protected function unsetExtraKeysFromFindParams(array & $params)
+    {
+        $originalParams = $params;
+
+        $params = array_only($params, $this->findParamRuleKeys);
+
+        if (count($params) !== count($originalParams))
+        {
+            $this->trace->info(TraceCode::EXTRA_QUERY_PARAM_IN_GET_ROUTE, $originalParams);
+        }
+    }
+
+    /**
      * Validates query parameters passed during GET by id endpoints.
      * E.g. GET /invoices/inv_123?expand[]=payments
      *
@@ -550,6 +571,8 @@ trait RepositoryFetch
         Merchant\Entity $merchant,
         array $params = []): PublicEntity
     {
+        $this->unsetExtraKeysFromFindParams($params);
+
         $this->validateFindParams($params);
 
         $expands = $this->getExpandsForQueryFromInput($params);
