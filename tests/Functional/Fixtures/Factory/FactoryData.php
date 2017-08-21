@@ -50,6 +50,18 @@ final class FactoryData
             'gateway_secure_secret'     => null,
         ]);
 
+        $factory(\RZP\Models\Merchant\Invoice\Entity::class, [
+            'id'                => $faker->uniqueid,
+            'merchant_id'       => '10000000000000',
+            'invoice_number'    => $faker->name,
+            'month'             => 8,
+            'year'              => 2017,
+            'gstin'             => '29kjsngjk213922',
+            'amount'            => 500,
+            'amount_due'        => 0,
+            'tax'               => 22,
+        ]);
+
         $factory(\RZP\Models\Merchant\Balance\Entity::class, [
             'id'                        => $faker->uniqueid,
             'balance'                   => 0,

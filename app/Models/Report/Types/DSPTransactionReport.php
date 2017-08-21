@@ -56,10 +56,10 @@ class DSPTransactionReport extends BasicEntityReport
 
     protected $transactionCount = 0;
 
+    protected $transactionVolume = 0;
+
     public function getReport(array $input)
     {
-        $email = $input['email'] ?? $this->merchant->getEmail();
-
         $this->setDefaults();
 
         $now = Carbon::now()->getTimestamp();
@@ -148,6 +148,8 @@ class DSPTransactionReport extends BasicEntityReport
             ];
 
             $data[] = $row;
+
+            $this->transactionVolume += ($txn->getAmount() / 100);
         }
 
         if (count($data) === 0)
@@ -376,13 +378,15 @@ class DSPTransactionReport extends BasicEntityReport
         if ((isset($input['day']) === true) and
             ($input['day'] === 'today'))
         {
-            // $from and $to would be 00:00 to 23:59. In the message body we need to send time as 12:59
-            $tdateTime = Carbon::create(null, null, null, 12, 59, 59, Timezone::IST)->format('Y-m-d H:i');
+            // $from and $to would be 00:00 to 23:59. In the message body we need to send time as 15:00
+            $tdateTime = Carbon::create(null, null, null, 15, 00, 00, Timezone::IST)->format('Y-m-d H:i');
         }
 
         $data = [
             'subject'    => 'Razorpay recon report - ' . $fdate .' to ' . $tdate,
-            'body'       => 'Razorpay recon report (Mode: ' . strtoupper($this->mode) .') From ' . $fdateTime .' To ' . $tdateTime . '<br>Total Transaction Count = ' .$this->transactionCount,
+            'body'       => 'Razorpay recon report (Mode: ' . strtoupper($this->mode) .') From ' . $fdateTime .' To ' . $tdateTime
+                                . '<br>Total Transaction Count = ' .$this->transactionCount
+                                . '<br>Total Transaction Volume (INR) = ' .$this->transactionVolume,
             'signed_url' => $signedUrl,
             'filename'   => $filename,
             'emails'     => $input['email']

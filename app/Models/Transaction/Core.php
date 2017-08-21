@@ -616,7 +616,15 @@ class Core extends Base\Core
 
                 break;
             default:
-                throw new Exception\LogicException('Should not have reached here');
+                throw new Exception\LogicException(
+                    'Should not have reached here',
+                    null,
+                    [
+                        'refund_id'         => $refund->getId(),
+                        'payment_id'        => $payment->getId(),
+                        'status'            => $paymentStatus,
+                        'transaction_id'    => $txn->getId(),
+                    ]);
         }
 
         return $txn;
@@ -928,7 +936,15 @@ class Core extends Base\Core
 
         if ($feeCredits < $fee)
         {
-            throw new Exception\LogicException("FeeCredits should be higher or equal to the fee");
+            throw new Exception\LogicException(
+                'FeeCredits should be higher or equal to the fee',
+                null,
+                [
+                    'transaction_id'    => $txn->getId(),
+                    'merchant_id'       => $merchantId,
+                    'fee_credits'       => $feeCredits,
+                    'fee'               => $fee,
+                ]);
         }
 
         // $nodalBalance = $this->getNodalBalanceLockForUpdate($txn->getChannel());

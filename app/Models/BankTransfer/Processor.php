@@ -17,7 +17,6 @@ use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 class Processor extends Base\Core
 {
     protected $virtualAccount;
-    protected $core;
     protected $provider;
     protected $merchant;
 
@@ -32,18 +31,19 @@ class Processor extends Base\Core
 
         $this->validator = new Validator;
 
-        $this->core = new Core;
-
         // These flows are initiated by the provider bank hitting
         // our APIs. Provider banks are currently authenticated by
         // registering them as apps, and using AppAuth.
         $this->provider = $this->app['basicauth']->getInternalApp();
     }
 
-    public function process(array $input)
+    /**
+     * @param Entity $bankTransfer
+     *
+     * @return Entity|null
+     */
+    public function process(Entity $bankTransfer)
     {
-        $bankTransfer = $this->core->create($input);
-
         $this->setUtrInTestMode($bankTransfer);
 
         $isTransferExpected = $this->isTransferExpected($bankTransfer);
@@ -59,17 +59,19 @@ class Processor extends Base\Core
         {
             if ($this->checkReservedAccount($bankTransfer) === true)
             {
-                return;
+                return null;
             }
 
             $this->preProcessUnexpectedBankTransfer($bankTransfer);
         }
         else
         {
+            //
             // The transfer is an expected one, i.e. it is made to a valid account
             // but the UTR is a duplicate, indicating that a payment is being processed
             // for a second time. In this case, we do not create anything but a
             // bank_transfer entity, marked as unexpected.
+            //
             $bankTransfer->setExpected(false);
 
             $this->repo->saveOrFail($bankTransfer);
@@ -81,8 +83,7 @@ class Processor extends Base\Core
 
         $this->trace->info(
                 TraceCode::BANK_TRANSFER_PROCESSING_SUCCESSFUL,
-                $bankTransfer->toArrayPublic()
-            );
+                $bankTransfer->toArrayPublic());
 
         return $bankTransfer;
     }

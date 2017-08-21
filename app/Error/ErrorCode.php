@@ -59,6 +59,7 @@ class ErrorCode
     const GATEWAY_ERROR_USER_INACTIVE                                               = 'GATEWAY_ERROR_USER_INACTIVE';
     const GATEWAY_ERROR_CARD_NOT_ENROLLED                                           = 'GATEWAY_ERROR_CARD_NOT_ENROLLED';
     const GATEWAY_ERROR_CARD_RUPAY_MAESTRO_NOT_ENABLED                              = 'GATEWAY_ERROR_CARD_RUPAY_MAESTRO_NOT_ENABLED';
+    const GATEWAY_ERROR_SOAP_ERROR                                                  = 'GATEWAY_ERROR_SOAP_ERROR';
 
     const GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH                                   = 'GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH';
 
@@ -96,6 +97,8 @@ class ErrorCode
     const GATEWAY_ERROR_INVALID_CALLBACK_URL                                        = 'GATEWAY_ERROR_INVALID_CALLBACK_URL';
 
     const GATEWAY_ERROR_PAYMENT_TRANSACTION_NOT_FOUND                               = 'GATEWAY_ERROR_PAYMENT_TRANSACTION_NOT_FOUND';
+
+    const GATEWAY_ERROR_CALLBACK_EMPTY_INPUT                                        = 'GATEWAY_ERROR_CALLBACK_EMPTY_INPUT';
 
 // Generic bad requests
     const BAD_REQUEST_INVALID_ID                                                    = 'BAD_REQUEST_INVALID_ID';

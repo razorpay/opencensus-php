@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Constants;
 use RZP\Error\ErrorCode;
 use RZP\Models\Card;
+use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Transaction;
@@ -28,6 +29,8 @@ class FeeCalculator
 
     // '29' - Karnataka's state code
     const RZP_GST_STATE_CODE = '29';
+
+    const CARD_TAX_CUT_OFF = 200000;
 
     /**
      * For which fees needs to be calculated.
@@ -59,7 +62,7 @@ class FeeCalculator
 
         $this->trace = \Trace::getFacadeRoot();
 
-        $this->taxComponents = $this->getTaxComponents();
+        $this->taxComponents = self::getTaxComponents($this->entity->merchant);
     }
 
     public function calculate(Pricing\Plan $pricing): array
@@ -705,7 +708,7 @@ class FeeCalculator
 
             // No tax is levied on card payments of 2000 Rs. or less
             if (($payment->isMethodCardOrEmi() === true) and
-                ($amount <= 200000))
+                ($amount <= self::CARD_TAX_CUT_OFF))
             {
                 return false;
             }
@@ -714,9 +717,17 @@ class FeeCalculator
         return true;
     }
 
-    protected function getTaxComponents(): array
+    protected static function getTaxComponents(Merchant\Entity $merchant): array
     {
-        if ($this->isIntrastateGstApplicable() === true)
+        $merchantBusinessStateCode = $merchant->getBusinessStateCode();
+
+        return self::getTaxComponentsFromStateCode($merchantBusinessStateCode);
+    }
+
+    public static function getTaxComponentsFromStateCode(string $merchatGstStateCode = null): array
+    {
+        // Intrastate gst
+        if ($merchatGstStateCode === self::RZP_GST_STATE_CODE)
         {
             return [
                 FeeBreakupName::CGST => self::CGST_PERCENTAGE,
@@ -727,20 +738,6 @@ class FeeCalculator
         return [
             FeeBreakupName::IGST => self::IGST_PERCENTAGE,
         ];
-    }
-
-    protected function isIntrastateGstApplicable(): bool
-    {
-        $merchant = $this->entity->merchant;
-
-        $merchantBusinessStateCode = $merchant->getBusinessStateCode();
-
-        if ($merchantBusinessStateCode === self::RZP_GST_STATE_CODE)
-        {
-            return true;
-        }
-
-        return false;
     }
 
     protected function calculateTaxFromFees($fee, $taxPercentage)

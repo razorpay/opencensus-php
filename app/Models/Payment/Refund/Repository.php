@@ -26,11 +26,13 @@ class Repository extends Base\Repository
     ];
 
     protected $appFetchParamRules = array(
+        Entity::AMOUNT          => 'sometimes|integer',
         Entity::MERCHANT_ID     => 'sometimes|alpha_dash',
         Entity::TRANSACTION_ID  => 'sometimes|alpha_dash|min:14|max:18',
         Entity::BATCH_ID        => 'sometimes|alpha_dash|min:14|max:20',
         Entity::NOTES           => 'sometimes|notes_fetch',
         Entity::STATUS          => 'sometimes|string|max:30',
+        Payment\Entity::GATEWAY => 'sometimes|string|max:30'
     );
 
     protected $signedIds = [
@@ -38,6 +40,42 @@ class Repository extends Base\Repository
         Entity::PAYMENT_ID,
         Entity::TRANSACTION_ID,
     ];
+
+    protected function addQueryParamGateway($query, $params)
+    {
+        $gateway = $params[Payment\Entity::GATEWAY];
+
+        Payment\Gateway::validateGateway($gateway);
+
+        $this->joinQueryPayment($query);
+
+        $query->where(Payment\Entity::GATEWAY, '=', $gateway);
+
+        $query->select($query->getModel()->getTable().'.*');
+    }
+
+    protected function joinQueryPayment($query)
+    {
+        $joins = $query->getQuery()->joins;
+
+        $joins = ($joins) ?? [];
+
+        foreach ($joins as $join)
+        {
+            if ($join->table === $this->repo->payment->getTableName())
+            {
+                return;
+            }
+        }
+
+        $paymentId = $this->repo->payment->dbColumn(Payment\Entity::ID);
+        $refundPaymentId = $this->dbColumn(Refund\Entity::PAYMENT_ID);
+
+        $paymentTable = $this->repo->payment->getTableName();
+
+        $query->join($paymentTable, $paymentId, '=', $refundPaymentId);
+    }
+
 
     public function findOrFailPublicByParams($id, $merchantId, $paymentId = null)
     {

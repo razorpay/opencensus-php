@@ -172,7 +172,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DASHBOARD_JOB_ERROR                           = 'DASHBOARD_JOB_ERROR';
 
     const TERMINAL_SELECTION                            = 'TERMINAL_SELECTION';
-    const TERMINAL_FILTER_RULE_MATCH                    = 'TERMINAL_FILTER_RULE_MATCH';
     const TERMINAL_SELECTION_FOR_RULE_GROUP             = 'TERMINAL_SELECTION_FOR_RULE_GROUP';
     const TERMINAL_RULE_FILTER_EXCEPTION                = 'TERMINAL_RULE_FILTER_EXCEPTION';
     const TERMINAL_SELECTION_MISMATCH                   = 'TERMINAL_SELECTION_MISMATCH';
@@ -437,6 +436,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_CHECKSUM_VERIFY_REQUEST           = 'GATEWAY_CHECKSUM_VERIFY_REQUEST';
     const GATEWAY_CHECKSUM_VERIFY_FAILED            = 'GATEWAY_CHECKSUM_VERIFY_FAILED';
     const GATEWAY_SOAP_REQUEST                      = 'GATEWAY_SOAP_REQUEST';
+    const GATEWAY_SOAP_FAULT                        = 'GATEWAY_SOAP_FAULT';
     const GATEWAY_REQUEST_TIMEOUT                   = 'GATEWAY_REQUEST_TIMEOUT';
     const GATEWAY_RUPAY_CALLBACK                    = 'GATEWAY_RUPAY_CALLBACK';
     const GATEWAY_HDFC_CALLBACK_EMPTY               = 'GATEWAY_HDFC_CALLBACK_EMPTY';
@@ -569,6 +569,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MISC_TRACE_CODE                           = 'MISC_TRACE_CODE';
     const REFUND_TRANSACTION_FAILED                 = 'REFUND_TRANSACTION_FAILED';
     const CREDITS_TRANSACTION_FAILED                = 'CREDITS_TRANSACTION_FAILED';
+    const REDIS_KEY_SET                             = 'REDIS_KEY_SET';
+    const TERMINAL_CONFIG_FETCH_ERROR               = 'TERMINAL_CONFIG_FETCH_ERROR';
 
     const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';
 
@@ -644,6 +646,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
      * Trace code for critical info
      */
     const PAYMENT_NOTES_INVALID                         = 'PAYMENT_NOTES_INVALID';
+    const EXTRA_QUERY_PARAM_IN_GET_ROUTE                = 'EXTRA_QUERY_PARAM_IN_GET_ROUTE';
 
     // Trace codes for Segment integration
 
@@ -790,6 +793,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GRATIS_TO_POSTPAID_INPUT                      = 'GRATIS_TO_POSTPAID_INPUT';
     const GRATIS_TO_POSTPAID_FAILED                     = 'GRATIS_TO_POSTPAID_FAILED';
     const GRATIS_TO_POSTPAID_RESPONSE                   = 'GRATIS_TO_POSTPAID_RESPONSE';
+
+    // Trace code for Merchant Invoices
+    const MERCHANT_INVOICE_ENTITY_CREATION_FAILED       = 'MERCHANT_INVOICE_ENTITY_CREATION_FAILED';
+    const MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED      = 'MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED';
 
     const DUMMY_JOB = 'DUMMY_JOB';
 

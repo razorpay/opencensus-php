@@ -47,7 +47,7 @@ class Service extends Base\Service
         return (new Payment\Service)->refund($paymentId, $input);
     }
 
-    public function getRefundsFile(array $input = array())
+    public function getRefundsFile(array $input = [])
     {
         list($from, $to) = $this->getTimestamps($input);
 
@@ -110,7 +110,13 @@ class Service extends Base\Service
                 break;
 
             default:
-                throw new Exception\LogicException('Invalid method provided for generating refunds file.');
+                throw new Exception\LogicException(
+                    'Invalid method provided for generating refunds file.',
+                    null,
+                    [
+                        'input'     => $input,
+                        'method'    => $method,
+                    ]);
         }
 
         if ($gatewayCode === null)
@@ -503,7 +509,14 @@ class Service extends Base\Service
 
                     if ($transaction === null)
                     {
-                        throw new Exception\LogicException('Transaction did not get created');
+                        throw new Exception\LogicException(
+                            'Transaction did not get created',
+                            null,
+                            [
+                                'refund_id'     => $refundWithoutTxn->getId(),
+                                'payment_id'    => $payment->getId(),
+                                'force'         => $forceRefundTransaction,
+                            ]);
                     }
 
                     //

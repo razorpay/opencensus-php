@@ -26,6 +26,11 @@ class Entity extends Base\Entity
 
     protected $generateIdOnCreate = false;
 
+    protected $embeddedRelations = [
+        self::STEPS,
+        self::PERMISSIONS,
+    ];
+
     protected $fillable = [
         self::ID,
         self::NAME,
