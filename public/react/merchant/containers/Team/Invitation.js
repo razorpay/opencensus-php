@@ -20,7 +20,7 @@ const ROLES = without(roles, 'owner');
   updateInvitation,
   ...NotificationsActions,
 })
-@reduxForm()
+@reduxForm({})
 export default class EditInvitation extends Component {
   componentWillMount() {
     this.props.initialize({
@@ -95,12 +95,16 @@ export default class EditInvitation extends Component {
 
     return (
       <tr>
-        <td>{invite.email}</td>
+        <td>
+          {invite.email}
+        </td>
         <td>
           <Field name="role" component="select" class="form-control">
-            {Object.keys(ROLES).map(role => (
-              <option key={role} value={role}>{ROLES[role].label}</option>
-            ))}
+            {Object.keys(ROLES).map(role =>
+              <option key={role} value={role}>
+                {ROLES[role].label}
+              </option>
+            )}
           </Field>
         </td>
 

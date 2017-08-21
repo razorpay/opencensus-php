@@ -7,7 +7,7 @@ import { showNotification } from 'rzp/modules/notifications';
 import { required } from 'rzp/utils/validators';
 
 @connect(state => state.config, { showNotification })
-@reduxForm()
+@reduxForm({})
 export default class EmailNotifications extends Component {
   componentWillMount() {
     this.props.initialize(this.props.config);
@@ -22,7 +22,10 @@ export default class EmailNotifications extends Component {
         <div class="panel-body">
           <form class="form-horizontal" onSubmit={handleSubmit(onSave)}>
             <div class="help-block">
-              Enter email addresses that will receive email notifications regarding payments, settlements, daily payment reports, webhooks, etc. (You can enter multiple email addresses separated by a comma.)
+              Enter email addresses that will receive email notifications
+              regarding payments, settlements, daily payment reports, webhooks,
+              etc. (You can enter multiple email addresses separated by a
+              comma.)
             </div>
 
             <div class="form-group">
