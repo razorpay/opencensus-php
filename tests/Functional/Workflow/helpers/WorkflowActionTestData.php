@@ -115,4 +115,26 @@ return [
             ],
         ],
     ],
+    'testWorkflowActionApproveDiffRole' => [
+        'request' => [
+            'method'    => 'POST',
+            'url'       => '/w-actions/%s/checkers',
+            'content'   => [
+                'approved'      => 1,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'No check required from checker roles in the current workflow action level',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CHECK_NOT_REQUIRED_IN_CURRENT_LEVEL,
+        ],
+    ],
 ];

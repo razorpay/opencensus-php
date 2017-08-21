@@ -75,14 +75,7 @@ class WorkflowActionTest extends TestCase
      */
     public function testGetWorkflowActionDetails()
     {
-        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID);
-
-        // Assign url
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
+        $this->setDefaultActionIdInUrl();
 
         $this->testData[__FUNCTION__]['response']['content']['entity_id'] = Org::MAKER_ADMIN;
 
@@ -100,14 +93,7 @@ class WorkflowActionTest extends TestCase
     {
         $defaultWorkflowActionId = 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID;
 
-        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $defaultWorkflowActionId);
-
-        // Assign url
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
+        $this->setDefaultActionIdInUrl();
 
         $this->testData[__FUNCTION__]['response']['content']['org_id'] = 'org_' . Org::RZP_ORG;
 
@@ -178,19 +164,37 @@ class WorkflowActionTest extends TestCase
     {
         $defaultWorkflowActionId = 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID;
 
-        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $defaultWorkflowActionId);
-
-        // Assign url
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
+        $this->setDefaultActionIdInUrl(Org::DEFAULT_TOKEN);
 
         $this->testData[__FUNCTION__]['response']['content']['checkers'][0]['admin_id'] = 'admin_' . Org::SUPER_ADMIN;
 
         $this->testData[__FUNCTION__]['response']['content']['checkers'][0]['action_id'] = $defaultWorkflowActionId;
 
         $this->startTest();
+    }
+
+    public function testWorkflowActionApproveDiffRole()
+    {
+        $this->setDefaultActionIdInUrl();
+
+        $this->startTest();
+    }
+
+    private function setDefaultActionIdInUrl($adminToken = Org::MAKER_TOKEN)
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+
+        $functionName = $trace[1]['function'];
+
+        $defaultWorkflowActionId = 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID;
+
+        $this->ba->adminAuth('test', $adminToken, 'org_' . Org::RZP_ORG);
+
+        $url = $this->testData[$functionName]['request']['url'];
+
+        $url = sprintf($url, $defaultWorkflowActionId);
+
+        // Assign url
+        $this->testData[$functionName]['request']['url'] = $url;
     }
 }
