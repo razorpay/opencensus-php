@@ -19,6 +19,8 @@ class EmiFile extends Base\Core
     // Regenerated every time the EMI file is created
     protected $emiFilePassword;
 
+    protected $shouldCompress = true;
+
     const EMI_FILE_PASSWORD_LENGTH = 7;
 
     const EXTENSION = FileStore\Format::XLSX;
@@ -46,18 +48,28 @@ class EmiFile extends Base\Core
         return $fileData['signed_url'];
     }
 
-    protected function generateEmiFile(array $emiData, $store = 's3')
+    protected function generateEmiFile(array $emiData, array $metadata = [])
     {
+        $store = FileStore\Store::S3;
+
+        $fileName = $this->getFileToWriteName($emiData);
+
         $creator = new FileStore\Creator;
 
         $creator->extension(static::EXTENSION)
-                ->password($this->emiFilePassword)
                 ->content($emiData)
-                ->name(static::$fileToWriteName)
+                ->name($fileName)
                 ->store($store)
                 ->type(static::TYPE)
-                ->compress()
-                ->save();
+                ->metadata($metadata);
+
+        if ($this->shouldCompress === true)
+        {
+            $creator->password($this->emiFilePassword)
+                    ->compress();
+        }
+
+        $creator->save();
 
         $file = $creator->get();
 
@@ -69,6 +81,11 @@ class EmiFile extends Base\Core
         ];
 
         return $fileData;
+    }
+
+    protected function getFileToWriteName(array $data)
+    {
+        return static::$fileToWriteName;
     }
 
     protected function resetEmail($email)
@@ -116,6 +133,15 @@ class EmiFile extends Base\Core
 
     protected function fetchAndSendPassword()
     {
+        // skip the password mail if email id list is empty
+        if ((empty($this->emailIdsToSendTo) === true) or
+            ($this->shouldCompress === false))
+        {
+            $this->emiFilePassword = null;
+
+            return;
+        }
+
         $this->emiFilePassword = $this->generateEmiFilePassword();
 
         $this->sendEmiPassword();
@@ -146,6 +172,12 @@ class EmiFile extends Base\Core
 
     protected function sendEmiFile(array $fileData)
     {
+        // skip the emi file mail if email id list is empty
+        if (empty($this->emailIdsToSendTo) === true)
+        {
+            return;
+        }
+
         $emiFileMail = new EmiMail\File(
             $this->bankName,
             $fileData,

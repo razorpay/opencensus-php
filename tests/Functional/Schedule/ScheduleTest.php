@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Schedule;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -113,7 +114,7 @@ class ScheduleTest extends TestCase
 
         $txn = $this->getLastTransaction(true);
 
-        $time = Carbon::createFromTimestamp($txn['settled_at'], 'Asia/Kolkata');
+        $time = Carbon::createFromTimestamp($txn['settled_at'], Timezone::IST);
 
         // Check if time is set to hour value in schedule
         $this->assertEquals(12, $time->hour);
@@ -176,7 +177,7 @@ class ScheduleTest extends TestCase
                 ]);
 
         // next_run_at for task is right now set to something that isn't 12
-        $time = Carbon::createFromTimestamp($task->getNextRunAt(), 'Asia/Kolkata');
+        $time = Carbon::createFromTimestamp($task->getNextRunAt(), Timezone::IST);
         $this->assertNotEquals(12, $time->hour);
 
         // Update schedule hour to 12
@@ -194,7 +195,7 @@ class ScheduleTest extends TestCase
 
         // next_run_at for task is now set to 12
         $task = $this->getEntityById('schedule_task', $task->getId(), true);
-        $time = Carbon::createFromTimestamp($task['next_run_at'], 'Asia/Kolkata');
+        $time = Carbon::createFromTimestamp($task['next_run_at'], Timezone::IST);
         $this->assertEquals(12, $time->hour);
     }
 
@@ -241,7 +242,7 @@ class ScheduleTest extends TestCase
 
         $request = $this->testData[__FUNCTION__];
 
-        $time = Carbon::now('Asia/Kolkata');
+        $time = Carbon::now(Timezone::IST);
 
         $time->addDay(32);
 
@@ -281,7 +282,7 @@ class ScheduleTest extends TestCase
 
         $request = $this->testData['testExpireCredits'];
 
-        $time = Carbon::now('Asia/Kolkata');
+        $time = Carbon::now(Timezone::IST);
 
         $time->addDay(32);
 
@@ -352,7 +353,7 @@ class ScheduleTest extends TestCase
 
         $request = $this->testData['testExpireCredits'];
 
-        $time = Carbon::now('Asia/Kolkata');
+        $time = Carbon::now(Timezone::IST);
 
         $time->addDay(32);
 
@@ -404,7 +405,7 @@ class ScheduleTest extends TestCase
 
         $this->applyCouponOnMerchant($coupon['code'], $merchantId);
 
-        $time = Carbon::now('Asia/Kolkata');
+        $time = Carbon::now(Timezone::IST);
 
         $time->addDay(32);
 

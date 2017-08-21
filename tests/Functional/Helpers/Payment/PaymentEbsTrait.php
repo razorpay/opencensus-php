@@ -3,7 +3,9 @@
 namespace RZP\Tests\Functional\Helpers\Payment;
 
 use Config;
+use RZP\Error\ErrorCode;
 use RZP\Exception\GatewayTimeoutException;
+use RZP\Exception\PaymentVerificationException;
 use RZP\Gateway\Ebs\ResponseConstants as Response;
 
 trait PaymentEbsTrait
@@ -40,24 +42,6 @@ trait PaymentEbsTrait
         $this->mockServerContentFunction(function (& $content)
         {
             $content = '<output errorCode="5"/>';
-        });
-    }
-
-    public function getFatalErrorInVerify()
-    {
-        $this->mockServerContentFunction(function (& $content)
-        {
-            throw new FatalThrowableError();
-        });
-    }
-
-    public function getTimeoutInVerify()
-    {
-        $this->mockServerContentFunction(function (& $content)
-        {
-            throw new GatewayTimeoutException(
-                'cURL error 28: Operation timed out after ' .
-                '10001 milliseconds with 0 bytes received');
         });
     }
 

@@ -59,11 +59,13 @@ class Name
     const EDIT_AUTHORIZED_FAILED_PAYMENT      = 'edit_authorized_failed_payment';
     const VIEW_REFUND_PAYMENTS                = 'view_refund_payments';
     const EDIT_AUTHORIZED_REFUND_PAYMENT      = 'edit_authorized_refund_payment';
+    const RETRY_REFUND_FAILED                 = 'retry_refund_failed';
     const EDIT_PAYMENT_REFUND                 = 'edit_payment_refund';
     const EDIT_PAYMENT_CAPTURE                = 'edit_payment_capture';
     const EDIT_MERCHANT_CONFIRM               = 'edit_merchant_confirm';
     const CREATE_BENEFICIARY_FILE             = 'create_beneficiary_file';
     const CREATE_NETBANKING_REFUND            = 'create_netbanking_refund';
+    const CREATE_EMI_FILES                    = 'create_emi_files';
     const CREATE_SETTLEMENT_INITIATE          = 'create_settlement_initiate';
     const DELETE_TERMINAL                     = 'delete_terminal';
     const EDIT_TERMINAL                       = 'edit_terminal';

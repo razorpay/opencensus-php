@@ -139,6 +139,8 @@ final class Route
         'merchant_live_enable'                    => ['post',     'merchants/{id}/live/enable',                     'MerchantController@postLiveEnable'                                 ],
         'merchant_live_disable'                   => ['post',     'merchants/{id}/live/disable',                    'MerchantController@postLiveDisable'                                ],
         'merchant_actions'                        => ['put',      'merchants/{id}/action',                          'MerchantController@putAction'                                      ],
+        'merchant_tag_add'                        => ['post',     'merchants/{id}/tags',                            'MerchantController@addTags'                                        ],
+        'merchant_tag_delete'                     => ['delete',   'merchants/{id}/tags/{tagName}',                  'MerchantController@deleteTag'                                      ],
         'merchant_edit_free_credits'              => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
         'merchant_fetch_users'                    => ['get',      'merchants/{id}/users',                           'MerchantController@getUsers',                                      ],
         'merchant_patch_beneficiary_code'         => ['patch',    'merchants/beneficiary/code',                     'MerchantController@patchMerchantBeneficiaryCode'                   ],
@@ -229,7 +231,7 @@ final class Route
         'setl_get_details'                        => ['get',      'settlements/{id}/details',                       'SettlementController@getSettlementDetails',                        ],
         'setl_post_details_old'                   => ['post',     'settlements/details',                            'SettlementController@postSettlementDetailsForOldTxns'              ],
         'setl_combined_report'                    => ['get',      'settlements/report/combined',                    'SettlementController@getSettlementCombinedReport'                  ],
-        'nodal_initiate_transfer'                 => ['post',     'nodal/transfer/icici',                         'SettlementController@postInitiateTransfer'                         ],
+        'nodal_initiate_transfer'                 => ['post',     'nodal/transfer/icici',                           'SettlementController@postInitiateTransfer'                         ],
         'adj_fetch_by_id'                         => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
         'adj_fetch_multiple'                      => ['get',      'adjustments',                                    'AdjustmentController@getAdjustments'                               ],
         'adj_add'                                 => ['post',     'adjustments',                                    'AdjustmentController@postAdjustment'                               ],
@@ -464,8 +466,6 @@ final class Route
         'workflow_update'                         => ['put',      'workflows/{id}',                                 'WorkflowController@updateWorkflow'                                 ],
         'workflow_delete'                         => ['delete',   'workflows/{id}',                                 'WorkflowController@deleteWorkflow'                                 ],
         'workflow_step_get_multiple'              => ['get',      'workflows/{id}/steps',                           'WorkflowController@getWorkflowSteps'                               ],
-        // 'workflow_step_create'                    => ['post',     'workflows/{id}/steps',                           'WorkflowController@createWorkflowStep'                             ],
-        // 'workflow_step_get'                       => ['get',      'workflows/{id}/steps/{stepId}',                  'WorkflowController@getWorkflowStep'                                ],
         'workflow_action_get_multiple'            => ['get',      'w-actions',                                      'WorkflowController@getActionMultiple'                              ],
         'workflow_action_update'                  => ['put',      'w-actions/{id}',                                 'WorkflowController@updateWorkflowAction'                           ],
         'action_checker_create'                   => ['post',     'w-actions/{id}/checkers',                        'WorkflowController@postActionChecker'                              ],
@@ -479,9 +479,6 @@ final class Route
         'action_request_execute'                  => ['post',     'w-actions/{id}/execute',                         'WorkflowController@postExecuteAction'                              ],
         'action_comment_create'                   => ['post',     'w-actions/{id}/comments',                        'WorkflowController@postActionComment'                              ],
         'action_comment_fetch'                    => ['get',      'w-actions/{id}/comments',                        'WorkflowController@getActionComments'                              ],
-        'workflow_get_actions_for_checker'        => ['get',      'w-manager/get-actions-for-checker',              'WorkflowController@getActionsForChecker'                           ],
-        'workflow_get_actions_by_maker'           => ['get',      'w-manager/get-actions-by-maker',                 'WorkflowController@getActionsByMaker'                              ],
-        'workflow_get_actions_checked'            => ['get',      'w-manager/get-actions-checked',                  'WorkflowController@getActionsChecked'                              ],
 
         // UPI
         'p2p_fetch_private'                       => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
@@ -574,9 +571,15 @@ final class Route
         'invitation_delete'                       => ['delete',   'invitations/{id}',                               'InvitationController@delete'                                       ],
         'invitation_action'                       => ['post',     'invitations/{id}/{action}',                      'InvitationController@postAction'                                   ],
         'migrate_tokens_to_gateway_tokens'        => ['post',     'tokens/migrate/gateway_tokens',                  'CustomerController@postMigrateToGatewayTokens'                     ],
+        // Risk Routes
+        'risk_create'                             => ['post',     'risk',                                           'RiskController@create'                                             ],
+        'risk_update'                             => ['patch',    'risk/{id}',                                      'RiskController@update'                                             ],
+        'risk_fetch_multiple'                     => ['get',      'risk',                                           'RiskController@list'                                               ],
+        'risk_get'                                => ['get',      'risk/{id}',                                      'RiskController@get'                                                ],
 
         // Dispute routes
-        'payment_dispute_create'                  => ['post',     'payments/{id}/disputes',                         'DisputeController@create'                                          ],
+        'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
+        'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                            ],
 
         // OAuth routes
         'oauth_token_fetch_multiple'              => ['get',      'oauth/tokens',                                   'OAuthTokenController@getTokens'                                    ],
@@ -830,7 +833,6 @@ final class Route
         'terminal_check_encrypted_value',
         'key_fetch_by_id',
         'key_fetch_multiple',
-        'pricing_create_plan',
         'pricing_upload_plan',
         'pricing_get_plans',
         'pricing_get_merchant_plans',
@@ -966,6 +968,8 @@ final class Route
         'gateway_update_rule',
         'gateway_delete_rule',
         'merchant_actions',
+        'merchant_tag_add',
+        'merchant_tag_delete',
         'refund_retry_failed',
         'refund_verify_failed',
         'merchants_update_bank_account',
@@ -981,8 +985,13 @@ final class Route
         'migrate_tokens_to_gateway_tokens',
         'mock_generate_reconciliation',
         'payment_dispute_create',
+        'dispute_edit',
         'gratis_postpaid_transactions',
         'virtual_account_refund_excess',
+        'risk_create',
+        'risk_update',
+        'risk_fetch_multiple',
+        'risk_get',
         'oauth_merchant_notify',
     ];
 
@@ -1131,13 +1140,11 @@ final class Route
         'workflow_action_details',
         'workflow_action_close',
         'workflow_action_get_multiple',
-        'workflow_get_actions_for_checker',
-        'workflow_get_actions_by_maker',
-        'workflow_get_actions_checked',
         'merchants_update_hold_funds',
         'adj_add',
         'payment_authorize_refund',
         'admin_change_password',
+        'pricing_create_plan',
     ];
 
     public static $routePermission = [
@@ -1202,8 +1209,6 @@ final class Route
         'action_request_execute'           => '*',
         'action_comment_create'            => '*',
         'action_comment_fetch'             => '*',
-        'workflow_get_actions_for_checker' => '*',
-        'workflow_get_actions_by_maker'    => '*',
         'workflow_action_close'            => '*',
         'workflow_action_update'           => '*',
         'workflow_action_states'           => '*',
@@ -1234,6 +1239,7 @@ final class Route
         'admin_fetch_entity_multiple'      => '*',
         'payment_authorize_refund'         => Permission::EDIT_AUTHORIZED_REFUND_PAYMENT,
         'payment_fetch_refunds'            => Permission::VIEW_REFUND_PAYMENTS,
+        'retry_refund_failed'              => Permission::RETRY_REFUND_FAILED,
         'payment_refund'                   => Permission::EDIT_PAYMENT_REFUND,
         'payment_capture'                  => Permission::EDIT_PAYMENT_CAPTURE,
         'gateway_create_rule'              => Permission::CREATE_GATEWAY_RULE,
@@ -1257,6 +1263,8 @@ final class Route
         'merchant_fetch_users'             => '*',
         'admin_change_password'            => '*',
         'admin_get_file'                   => '*',
+        'invitation_fetch'                 => '*',
+        'pricing_create_plan'              => Permission::CREATE_PRICING_PLAN,
     ];
 
     public static $direct = [

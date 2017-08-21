@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Icici;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
@@ -187,7 +188,7 @@ class Gateway extends Base\Gateway
         $data = $this->createDefaultRequestData($input);
 
         $paymentDate = Carbon::createFromTimestamp($payment['created_at'],
-                                                   'Asia/Kolkata')
+                                                   Timezone::IST)
                                                    ->format('Y-m-d');
 
         $data[RequestFields::PAYMENT_DATE] = $paymentDate;
@@ -195,8 +196,6 @@ class Gateway extends Base\Gateway
         $data[RequestFields::MODE]  = Action::INQUIRY;
 
         $additionalData = $this->getPaymentReferenceData($input);
-
-        $this->setTpvFieldIfNeeded($additionalData, $input);
 
         $data = array_merge($data, $additionalData);
 

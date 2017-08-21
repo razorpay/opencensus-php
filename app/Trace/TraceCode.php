@@ -4,7 +4,7 @@ namespace RZP\Trace;
 
 use RZP\Exception\InvalidArgumentException;
 
-class TraceCode
+class TraceCode extends \Razorpay\Trace\TraceCode
 {
     /*
      * Payment component error messages
@@ -172,6 +172,8 @@ class TraceCode
     const DASHBOARD_JOB_ERROR                           = 'DASHBOARD_JOB_ERROR';
 
     const TERMINAL_SELECTION                            = 'TERMINAL_SELECTION';
+    const TERMINAL_SELECTION_FOR_RULE_GROUP             = 'TERMINAL_SELECTION_FOR_RULE_GROUP';
+    const TERMINAL_RULE_FILTER_EXCEPTION                = 'TERMINAL_RULE_FILTER_EXCEPTION';
     const TERMINAL_SELECTION_MISMATCH                   = 'TERMINAL_SELECTION_MISMATCH';
     const TERMINAL_FAILURE                              = 'TERMINAL_FAILURE';
     const TERMINAL_EDIT                                 = 'TERMINAL_EDIT';
@@ -434,6 +436,7 @@ class TraceCode
     const GATEWAY_CHECKSUM_VERIFY_REQUEST           = 'GATEWAY_CHECKSUM_VERIFY_REQUEST';
     const GATEWAY_CHECKSUM_VERIFY_FAILED            = 'GATEWAY_CHECKSUM_VERIFY_FAILED';
     const GATEWAY_SOAP_REQUEST                      = 'GATEWAY_SOAP_REQUEST';
+    const GATEWAY_SOAP_FAULT                        = 'GATEWAY_SOAP_FAULT';
     const GATEWAY_REQUEST_TIMEOUT                   = 'GATEWAY_REQUEST_TIMEOUT';
     const GATEWAY_RUPAY_CALLBACK                    = 'GATEWAY_RUPAY_CALLBACK';
     const GATEWAY_HDFC_CALLBACK_EMPTY               = 'GATEWAY_HDFC_CALLBACK_EMPTY';
@@ -452,6 +455,7 @@ class TraceCode
     const GATEWAY_FIRST_DATA_UNEXPECTED             = 'GATEWAY_FIRST_DATA_UNEXPECTED';
     const GATEWAY_DOWNTIME_SORTING                  = 'GATEWAY_DOWNTIME_SORTING';
     const GATEWAY_DOWNTIME_SORTING_FAILED           = 'GATEWAY_DOWNTIME_SORTING_FAILED';
+    const GATEWAY_DOWNTIME_WEBHOOK                  = 'GATEWAY_DOWNTIME_WEBHOOK';
 
     const SETTLEMENT_INITIATING                     = 'SETTLEMENT_INITIATING';
     const SETTLEMENT_INITIATED                      = 'SETTLEMENT_INITIATED';
@@ -522,6 +526,7 @@ class TraceCode
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
     const MERCHANT_ORG_NOT_GIVEN                    = 'MERCHANT_ORG_NOT_GIVEN';
     const MERCHANT_SAVE_ACTIVATION_DETAILS          = 'MERCHANT_SAVE_ACTIVATION_DETAILS';
+    const MERCHANT_TAGS_ADD                         = 'MERCHANT_TAGS_ADD';
 
     const MERCHANT_BALANCE_DEBIT_FAILURE            = 'MERCHANT_BALANCE_DEBIT_FAILURE';
 
@@ -571,6 +576,7 @@ class TraceCode
     const TOKENEX_RESPONSE                          = 'TOKENEX_RESPONSE';
     const TOKENEX_RETRY                             = 'TOKENEX_RETRY';
     const RAVEN_REQUEST                             = 'RAVEN_REQUEST';
+    const RAVEN_ASYNC_REQUEST_FAILED                = 'RAVEN_ASYNC_REQUEST_FAILED';
     const RAVEN_RESPONSE                            = 'RAVEN_RESPONSE';
 
     const EXCHANGE_REQUEST                          = 'EXCHANGE_REQUEST';
@@ -654,14 +660,15 @@ class TraceCode
     const FORCE_AUTH_FAILED_PAYMENT                     = 'FORCE_AUTH_FAILED_PAYMENT';
     const PAYMENT_FAILED_EXPECTED_GATEWAY_SUCCESS       = 'PAYMENT_FAILED_EXPECTED_GATEWAY_SUCCESS';
     const PAYMENT_ALREADY_AUTHORIZED                    = 'PAYMENT_ALREADY_AUTHORIZED';
-    const LUMBERJACK_TRACK_FAILED                       = 'LUMBERJACK_TRACK_FAILED';
-    const LUMBERJACK_CONTEXT_FETCH_FAILED               = 'LUMBERJACK_CONTEXT_FETCH_FAILED';
-    const LUMBERJACK_EMPTY_EVENTS                       = 'LUMBERJACK_EMPTY_EVENTS';
-    const LUMBERJACK_POST_FAILED                        = 'LUMBERJACK_POST_FAILED';
-    const LUMBERJACK_QUEUE_SEND_FAILED                  = 'LUMBERJACK_QUEUE_SEND_FAILED';
-    const LUMBERJACK_MISSING_PAYMENT_PROPERTY           = 'LUMBERJACK_MISSING_PAYMENT_PROPERTY';
-    const LUMBERJACK_MISSING_TERMINAL_DATA              = 'LUMBERJACK_MISSING_TERMINAL_DATA';
-    const LUMBERJACK_MISSING_PAYMENT_CONTEXT            = 'LUMBERJACK_MISSING_PAYMENT_CONTEXT';
+
+    // Trace codes for events
+    const EVENT_TRACK_FAILED                            = 'EVENT_TRACK_FAILED';
+    const EVENT_CONTEXT_FETCH_FAILED                    = 'EVENT_CONTEXT_FETCH_FAILED';
+    const EVENT_MISSING_PAYMENT_PROPERTY                = 'EVENT_MISSING_PAYMENT_PROPERTY';
+    const EVENT_MISSING_TERMINAL_DATA                   = 'EVENT_MISSING_TERMINAL_DATA';
+    const EVENT_MISSING_PAYMENT_CONTEXT                 = 'EVENT_MISSING_PAYMENT_CONTEXT';
+    const EVENT_QUEUE_SEND_FAILED                       = 'EVENT_QUEUE_SEND_FAILED';
+    const EVENT_POST_FAILED                             = 'EVENT_POST_FAILED';
 
     // Trace code for features
 
@@ -767,6 +774,7 @@ class TraceCode
     const GATEWAY_RULES_POST_FILTER                     = 'GATEWAY_RULES_POST_FILTER';
     const GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS        = 'GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS';
     const GATEWAY_LOAD_SORTING_FALLBACK                 = 'GATEWAY_LOAD_SORTING_FALLBACK';
+    const GATEWAY_FILTER_RULES                          = 'GATEWAY_FILTER_RULES';
 
     // Trace codes for tax and tax groups crud
     const TAX_GROUP_CREATE_REQUEST                      = 'TAX_GROUP_CREATE_REQUEST';
@@ -778,6 +786,7 @@ class TraceCode
 
     // Trace codes for dispute entity
     const DISPUTE_CREATE_REQUEST                        = 'DISPUTE_CREATE_REQUEST';
+    const DISPUTE_EDIT_REQUEST                          = 'DISPUTE_EDIT_REQUEST';
     const GRATIS_TO_POSTPAID_INPUT                      = 'GRATIS_TO_POSTPAID_INPUT';
     const GRATIS_TO_POSTPAID_FAILED                     = 'GRATIS_TO_POSTPAID_FAILED';
     const GRATIS_TO_POSTPAID_RESPONSE                   = 'GRATIS_TO_POSTPAID_RESPONSE';

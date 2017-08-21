@@ -4,6 +4,7 @@ namespace RZP\Models\Payment;
 
 use DB;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
@@ -31,7 +32,8 @@ class Repository extends Base\Repository
     protected $entityFetchParamRules = [
         Entity::EMAIL              => 'sometimes|email',
         Entity::ORDER_ID           => 'sometimes|string|size:20',
-        Entity::TRANSFERRED        => 'sometimes|boolean|in:0,1'
+        Entity::TRANSFERRED        => 'sometimes|boolean|in:0,1',
+        self::EXPAND . '.*'        => 'string|in:card,',
     ];
 
     // These are proxy allowed params to search on.
@@ -286,28 +288,30 @@ class Repository extends Base\Repository
     /**
      * Return Payments object(s) which should be verified
      *
-     * @param array  $minMaxArray    Min/Max array
-     * @param string $verifyBoundary array of [VERIFY_BUCKET and timestamp] values
-     * @param string $verifyStatus   value for filter of VerifyStatus
-     * @param string $paymentStatus  value for filter of paymentStatus
-     * @param bool   $random         Db should take param in random value or not
-     * @param int    $rowsToFetch    Rows to fetch
+     * @param array        $minMaxArray      Min/Max array
+     * @param array|string $verifyBoundary   Array of [VERIFY_BUCKET and timestamp] values
+     * @param string       $verifyStatus     Value for filter of VerifyStatus
+     * @param string       $paymentStatus    Value for filter of paymentStatus
+     * @param int          $rowsToFetch      Rows to fetch
+     * @param array        $disabledGateways Gateways for which verify should be skipped
+     * @param bool         $random           Db should take param in random value or not
      *
-     * @return Collection of Payment
+     * @return array
      */
     public function getPaymentsToVerify(
                         array $minMaxArray,
                         array $verifyBoundary,
                         $verifyStatus = null,
                         $paymentStatus = null,
-                        bool $random = true,
-                        int $rowsToFetch = 100)
+                        int $rowsToFetch = 100,
+                        array $disabledGateways = [],
+                        bool $random = true)
     {
-        $verifyDisabledGateways = Payment\Gateway::$verifyDisabled;
-
         $query = $this->newQuery()
                       ->whereNotNull(Payment\Entity::GATEWAY)
-                      ->whereNotIn(Payment\Entity::GATEWAY, $verifyDisabledGateways);
+                      ->whereNotIn(
+                          Payment\Entity::GATEWAY,
+                          $disabledGateways);
 
         if ($verifyStatus !== null)
         {
@@ -373,14 +377,14 @@ class Repository extends Base\Repository
      */
     protected function addWhereConditionsUsingMinimumTime(array $minMaxArray, BuilderEx $query)
     {
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         $query->where(Payment\Entity::CREATED_AT, '<=', $currentTime - $minMaxArray['min']);
     }
 
     protected function addWhereClauseForMinAndMaxTime(array $minMaxArray, array & $whereConditions)
     {
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         if ($minMaxArray['max'] !== null)
         {
@@ -405,7 +409,7 @@ class Repository extends Base\Repository
                                                     array $verifyBoundaries,
                                                     BuilderEx $query)
     {
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         $whereConditions = [];
 
@@ -673,16 +677,16 @@ class Repository extends Base\Repository
 
     public function getYesterdayVolume()
     {
-        $yesterday = Carbon::yesterday('Asia/Kolkata')->timestamp;
-        $today = Carbon::today('Asia/Kolkata')->timestamp;
+        $yesterday = Carbon::yesterday(Timezone::IST)->timestamp;
+        $today = Carbon::today(Timezone::IST)->timestamp;
 
         return $this->getPaymentVolumeBetweenTimestamp($yesterday, $today);
     }
 
     public function getCurrentMonthVolume()
     {
-        $from = Carbon::yesterday('Asia/Kolkata')->startOfMonth()->timestamp;
-        $to = Carbon::today('Asia/Kolkata')->timestamp;
+        $from = Carbon::yesterday(Timezone::IST)->startOfMonth()->timestamp;
+        $to = Carbon::today(Timezone::IST)->timestamp;
 
         return $this->getPaymentVolumeBetweenTimestamp($from, $to);
     }
@@ -708,8 +712,8 @@ class Repository extends Base\Repository
 
     public function getYesterdayTopMerchantVolumeWise()
     {
-        $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
-        $to = Carbon::today('Asia/Kolkata')->timestamp;
+        $from = Carbon::yesterday(Timezone::IST)->timestamp;
+        $to = Carbon::today(Timezone::IST)->timestamp;
 
         $pid = $this->dbColumn(Payment\Entity::MERCHANT_ID);
         $mid = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
@@ -735,8 +739,8 @@ class Repository extends Base\Repository
 
     public function getMonthTopMerchantVolumeWise()
     {
-        $from = Carbon::yesterday('Asia/Kolkata')->startOfMonth()->timestamp;
-        $to = Carbon::today('Asia/Kolkata')->timestamp;
+        $from = Carbon::yesterday(Timezone::IST)->startOfMonth()->timestamp;
+        $to = Carbon::today(Timezone::IST)->timestamp;
 
         $pid = $this->dbColumn(Payment\Entity::MERCHANT_ID);
         $mid = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
@@ -888,7 +892,7 @@ class Repository extends Base\Repository
         // For optimization purposes we only pick payments in last 10 days. This picked
         // '10 days' is sufficient filter logically.
 
-        $nowMinus10Days = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;
+        $nowMinus10Days = Carbon::today(Timezone::IST)->subDays(10)->timestamp;
 
         $results = $this->newQuery()
                         ->join($orderTable, $orderId, '=', $paymentOrderId)

@@ -61,6 +61,11 @@ class Entity extends Base\Entity
         self::OLD_PASSWORDS
     ];
 
+    protected $embeddedRelations = [
+        self::ROLES,
+        self::GROUPS,
+    ];
+
     protected $revisionEnabled = true;
 
     protected $revisionCreationsEnabled = true;
@@ -259,7 +264,7 @@ class Entity extends Base\Entity
 
     public function updateLastLoginAt()
     {
-        $this->setAttribute(self::LAST_LOGIN_AT, Carbon::now()->timestamp);
+        $this->setAttribute(self::LAST_LOGIN_AT, Carbon::now()->getTimestamp());
     }
 
     public function getLastLoginAt()
@@ -367,7 +372,7 @@ class Entity extends Base\Entity
 
     protected function updatePasswordChangedAt()
     {
-        $this->setAttribute(self::PASSWORD_CHANGED_AT, Carbon::now()->timestamp);
+        $this->setAttribute(self::PASSWORD_CHANGED_AT, Carbon::now()->getTimestamp());
     }
 
     protected function setOldPasswordsAttribute($oldPasswords = [])

@@ -4,6 +4,7 @@ namespace RZP\Gateway\AxisMigs;
 
 use Str;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
 use RZP\Error;
@@ -205,6 +206,12 @@ class Gateway extends Base\Gateway
 
     protected function canForceRefund(array $input)
     {
+        // Hardcoding id to do a manual full refund
+        if ($input['refund']['id'] === '882zf69e2bMnED')
+        {
+            return true;
+        }
+
         $isRefundRequired = $this->isRefundRequired($input, false);
 
         if ($isRefundRequired === false)
@@ -415,7 +422,7 @@ class Gateway extends Base\Gateway
         //    retried
         if ($content['vpc_DRExists'] === 'N')
         {
-            if ($input['refund']['created_at'] > Carbon::now('Asia/Kolkata')->subDays(5)->timestamp)
+            if ($input['refund']['created_at'] > Carbon::now(Timezone::IST)->subDays(5)->timestamp)
             {
                 return false;
             }

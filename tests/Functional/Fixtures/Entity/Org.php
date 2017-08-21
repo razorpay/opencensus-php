@@ -51,7 +51,7 @@ class Org extends Base
 
     public function createRazorpayOrg()
     {
-        $now = Carbon::now()->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         $permissions = $this->fixtures->create(
             'permission:default_permissions');
@@ -117,7 +117,7 @@ class Org extends Base
     {
         $org = $attributes['org'];
 
-        $now = Carbon::now()->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         $makerRole = $this->fixtures->create('role', [
             'id'     => self::MAKER_ROLE,

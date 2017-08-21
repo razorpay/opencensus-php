@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Helpers\Subscription;
 use Mockery;
 use Closure;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 
 trait SubscriptionTrait
@@ -305,7 +306,7 @@ trait SubscriptionTrait
     {
         if ($timestamp !== null)
         {
-            $chargeAt = Carbon::createFromTimestamp($timestamp + 1, 'Asia/Kolkata');
+            $chargeAt = Carbon::createFromTimestamp($timestamp + 1, Timezone::IST);
 
             Carbon::setTestNow($chargeAt);
         }

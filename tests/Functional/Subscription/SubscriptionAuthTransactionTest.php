@@ -9,6 +9,7 @@ use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Plan\Subscription;
 
 class SubscriptionAuthTransactionTest extends TestCase
@@ -107,7 +108,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->assertEquals(1, $subscription['paid_count']);
         $this->assertEquals($payment['created_at'], $subscription['start_at']);
         $this->assertNotNull($subscription['end_at']);
-        $expectedStartAt = Carbon::createFromTimestamp($subscription['start_at'], 'Asia/Kolkata')
+        $expectedStartAt = Carbon::createFromTimestamp($subscription['start_at'], Timezone::IST)
                                  ->addMonthsNoOverflow(2)
                                  ->startOfDay()
                                  ->timestamp;
@@ -247,7 +248,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->assertEquals(1, $subscription['paid_count']);
         $this->assertEquals($payment['created_at'], $subscription['start_at']);
         $this->assertNotNull($subscription['end_at']);
-        $expectedStartAt = Carbon::createFromTimestamp($subscription['start_at'], 'Asia/Kolkata')
+        $expectedStartAt = Carbon::createFromTimestamp($subscription['start_at'], Timezone::IST)
                                 ->addMonthsNoOverflow(2)
                                 ->startOfDay()
                                 ->timestamp;
@@ -320,7 +321,7 @@ class SubscriptionAuthTransactionTest extends TestCase
 
     public function testSubscriptionAuthTxnWithPastStartAt()
     {
-        Carbon::setTestNow(Carbon::createFromTimestamp(1379631300, 'Asia/Kolkata'));
+        Carbon::setTestNow(Carbon::createFromTimestamp(1379631300, Timezone::IST));
 
         $subscription = $this->createSubscription(true, [], ['start_at' => 1379631400], false, true);
 

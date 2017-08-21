@@ -2,12 +2,13 @@
 
 namespace RZP\Tests\Functional\Subscription;
 
-use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\TestCase;
+use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 class SubscriptionCancelTest extends TestCase
 {
@@ -64,7 +65,7 @@ class SubscriptionCancelTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
-        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, 'Asia/Kolkata');
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, Timezone::IST);
 
         Carbon::setTestNow($chargeAt);
 
@@ -141,7 +142,7 @@ class SubscriptionCancelTest extends TestCase
         {
             $this->failCharge();
 
-            $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'], 'Asia/Kolkata')
+            $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'], Timezone::IST)
                 ->addDay(1)
                 ->addMinute(1);
 

@@ -6,6 +6,7 @@ use Mail;
 use Excel;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -246,7 +247,7 @@ class NetbankingIciciGatewayTest extends TestCase
         // up during refund excel generation
         foreach ($refunds['items'] as $refund)
         {
-            $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 10;
+            $createdAt = Carbon::yesterday(Timezone::IST)->timestamp + 10;
             $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
         }
     }

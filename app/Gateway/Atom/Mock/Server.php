@@ -4,6 +4,7 @@ namespace RZP\Gateway\Atom\Mock;
 
 use RZP\Models\Card;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Gateway\Atom;
 use RZP\Gateway\Atom\Mock;
@@ -134,7 +135,7 @@ class Server extends Base\Mock\Server
         $publicId = $payment->getPublicId();
         $merchantCallbackUrl = $this->formMerchantCallbackUrl($publicId);
 
-        $time = Carbon::now('Asia/Kolkata')->format('D M d H:i:s \G\M\T+05:30 Y');
+        $time = Carbon::now(Timezone::IST)->format('D M d H:i:s \G\M\T+05:30 Y');
 
         $data = array(
             'mmp_txn'       => $tempTxnId,

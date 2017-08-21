@@ -30,6 +30,7 @@ return [
         'netbanking_federal',
         'netbanking_rbl',
         'netbanking_indusind',
+        'netbanking_pnb',
         'sharp',
         'wallet_olamoney',
         'upi_idfc',
@@ -64,6 +65,7 @@ return [
     'mock_netbanking_federal'  => env('NETBANKING_FEDERAL_MOCK'),
     'mock_netbanking_rbl'      => env('NETBANKING_RBL_MOCK'),
     'mock_netbanking_indusind' => env('NETBANKING_INDUSIND_MOCK'),
+    'mock_netbanking_pnb'      => env('NETBANKING_PNB_MOCK'),
     'mock_billdesk'            => env('BILLDESK_MOCK'),
     'mock_ebs'                 => env('EBS_MOCK'),
     'mock_wallet_olamoney'     => env('OLAMONEY_MOCK'),
@@ -240,12 +242,13 @@ return [
     ],
 
     'wallet_mpesa' => [
-        'test_merchant_id' => env('MPESA_WALLET_TEST_MERCHANT_ID'),
-        'test_hash_secret' => env('MPESA_WALLET_TEST_HASH_SECRET'),
-        'test_user_id'     => env('MPESA_WALLET_TEST_USER_ID'),
-        'test_password'    => env('MPESA_WALLET_TEST_PASSWORD'),
-        'live_user_id'     => env('MPESA_WALLET_LIVE_USER_ID'),
-        'live_password'    => env('MPESA_WALLET_LIVE_PASSWORD'),
+        'test_merchant_id'  => env('MPESA_WALLET_TEST_MERCHANT_ID'),
+        'test_merchant_id2' => env('MPESA_WALLET_TEST_MERCHANT_ID2'),
+        'test_hash_secret'  => env('MPESA_WALLET_TEST_HASH_SECRET'),
+        'test_user_id'      => env('MPESA_WALLET_TEST_USER_ID'),
+        'test_password'     => env('MPESA_WALLET_TEST_PASSWORD'),
+        'live_user_id'      => env('MPESA_WALLET_LIVE_USER_ID'),
+        'live_password'     => env('MPESA_WALLET_LIVE_PASSWORD'),
     ],
 
     'netbanking_hdfc' => [
@@ -301,6 +304,11 @@ return [
         'test_merchant_id'  => env('NETBANKING_INDUSIND_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'  => env('NETBANKING_INDUSIND_GATEWAY_TEST_HASH_SECRET'),
         'live_hash_secret'  => env('NETBANKING_INDUSIND_GATEWAY_LIVE_HASH_SECRET'),
+    ],
+
+    'netbanking_pnb' => [
+        'test_hash_secret'  => env('NETBANKING_PNB_GATEWAY_TEST_HASH_SECRET'),
+        'live_hash_secret'  => env('NETBANKING_PNB_GATEWAY_LIVE_HASH_SECRET'),
     ],
 
     'sharp' => [

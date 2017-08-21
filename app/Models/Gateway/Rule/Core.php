@@ -18,7 +18,9 @@ class Core extends Base\Core
 
         $rule = (new Entity)->build($input);
 
-        $this->validateNewRule($rule, $input);
+        $validatorMethod = $this->getValidatorMethod($rule);
+
+        $this->$validatorMethod($rule);
 
         $this->repo->saveOrFail($rule);
 
@@ -38,9 +40,9 @@ class Core extends Base\Core
 
         $rule->edit($input);
 
-        // Checks if the edited load value will cause total load across similar
-        // rules to exceed max load value of 100
-        $this->validateTotalLoad($rule);
+        $validatorMethod = $this->getValidatorMethod($rule);
+
+        $this->$validatorMethod($rule);
 
         $this->repo->saveOrFail($rule);
 
@@ -51,7 +53,7 @@ class Core extends Base\Core
      * Fetches rules from db as per payment criteria during terminal selection
      *
      * @param  array        $terminals Set of all terminals
-     * @param  array        $input     Array containing payment, merchant enttties
+     * @param  array        $input     Array containing payment, merchant entities
      * @param  bool         $verbose
      * @return PublicCollection collection of applicable rules
      */
@@ -65,92 +67,65 @@ class Core extends Base\Core
                                 ->gateway_rule
                                 ->fetchApplicableRulesForPayment($ruleFetchParams);
 
-        // Checks if merchant specific rules are present. If present we only use them
-        // and discard other rules
-        $merchantSpecificRules = $this->getMerchantSpecificRules(
-                                            $applicableRules,
-                                            $input['merchant']);
-
-        if ($merchantSpecificRules->isEmpty() === false)
+        if ($input['payment']->isMethodCardOrEmi() === true)
         {
-            $applicableRules = $merchantSpecificRules;
+            $iins = (array) $input['payment']->card->getIin();
+
+            $applicableRules = $this->getRulesWithOverLappingIins($iins, $applicableRules);
         }
 
         return $applicableRules;
     }
 
     /**
-     * Selects rules for the merchant from the set of all rules
-     *
-     * @param  Base\PublicCollection $rules    Set of all applicable rules
-     * @param  Merchant\Entity       $merchant Merchant making the payment
-     * @return Base\PublicCollection merchant specific rules
+     * For filter rules checks if there is any rule which satisfies same criteria
+     * as new rule, and same gateway but opposite filter type in the same group
+     * Ror e.g select rule for gateway A and reject rule for gateway A cannot be
+     * present in same group
+     * @param  Entity $rule Rule entity being created
      */
-    protected function getMerchantSpecificRules(
-                            Base\PublicCollection $rules,
-                            Merchant\Entity $merchant): Base\PublicCollection
+    protected function validateFilterRule(Entity $rule)
     {
-        return $rules->filter(function ($rule) use ($merchant)
+        $matchingRules = $this->getRulesWithMatchingCriteria($rule);
+
+        if ($matchingRules->isNotEmpty() === true)
         {
-            return ($rule->getMerchantId() === $merchant->getId());
-        });
-    }
-
-    /**
-     * Checks if the new rule is not a duplicate and that the total load across
-     * rules with criteria matching the current rule's criteria does not exceed
-     * 100 which is the distribution size limit
-     *
-     * @param  Entity $rule  New rule built from input
-     * @param  array  $input Request data
-     */
-    protected function validateNewRule(Entity $rule, array $input)
-    {
-        // Unsetting load here as it is not required to check for conflicting rules
-        unset($input[Entity::LOAD]);
-
-        // Checks if there is already a rule defined with the exact same criteria
-        $existingRulesCount = $this->repo->gateway_rule->fetch($input)->count();
-
-        if ($existingRulesCount > 0)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_GATEWAY_RULE_EXISTS);
+            throw new Exception\BadRequestValidationFailureException(
+                'select and reject filter rules for same criteria cannot be present in same group');
         }
-
-        // Checks that the total load across all rules with similar criteria doesn't exceed
-        // max load.
-        $this->validateTotalLoad($rule);
     }
 
     /**
-     * Checks if the total load across all existing rules matching the criteria
-     * defined by current rule is less than the max load value of 100. This is
-     * required so that we don't end up having rules during terminal sorting whose
-     * total load exceeds the distribution space of 100 as we are treating load
-     * values as percentages
+     * For sorter rules checks if the total load across all existing rules
+     * matching the criteria defined by current rule is less than the max load value of 100,
+     * This is required so that we don't end up having rules during
+     * terminal sorting whose total load exceeds the distribution space of 100
+     * as we are treating load values as percentages
      *
      * @param  Entity $rule  New rule
      * @param  array  $input Request data
      */
-    protected function validateTotalLoad(Entity $rule)
+    protected function validateSorterRule(Entity $rule)
     {
-        $totalLoadForSimilarRules = $this->repo
-                                         ->gateway_rule
-                                         ->getTotalLoadForRulesWithMatchingCriteria($rule);
+        $matchingRules = $this->getRulesWithMatchingCriteria($rule);
 
-        $totalLoad = $rule->getLoad() + $totalLoadForSimilarRules;
-
-        if ($totalLoad > Entity::MAX_LOAD)
+        if ($matchingRules->isNotEmpty() === true)
         {
-            $data = [
-                'total_load' => $totalLoad,
-            ];
+            $totalExistingLoad = $matchingRules->sum(Entity::LOAD);
 
-            throw new Exception\BadRequestValidationFailureException(
-                'Load across all gateway rules must be less than 100 percent',
-                null,
-                $data);
+            $totalLoad = $rule->getLoad() + $totalExistingLoad;
+
+            if ($totalLoad > Entity::MAX_LOAD)
+            {
+                $data = [
+                    'total_load' => $totalLoad,
+                ];
+
+                throw new Exception\BadRequestValidationFailureException(
+                    'Load across all gateway rules must be less than 100 percent',
+                    null,
+                    $data);
+            }
         }
     }
 
@@ -168,56 +143,115 @@ class Core extends Base\Core
 
         $merchant = $input['merchant'];
 
-        $gateways = $this->getTerminalGateways($terminals);
-
         $params = [
             Entity::MERCHANT_ID   => [$merchant->getId(), Account::SHARED_ACCOUNT],
-            Entity::GATEWAY       => $gateways,
             Entity::METHOD        => $payment->getMethod(),
             Entity::INTERNATIONAL => false,
+            Entity::CATEGORY2     => $merchant->getCategory2(),
+            Entity::CURRENCY      => $payment->getCurrency(),
+            // Here min_amount and max_amount are both set to payment_amount
+            // as the final query will be min_amount <= payment_amount <= max_amount
+            Entity::MIN_AMOUNT    => $payment->getAmount(),
+            Entity::MAX_AMOUNT    => $payment->getAmount()
         ];
 
-        $method = $payment->getMethod();
-
-        // For UPI or wallet payments, there is no issuer or network
-        switch ($method)
-        {
-            case Payment\Method::CARD:
-            case Payment\Method::EMI:
-
-                $this->fillCardDetails($params, $payment);
-
-                break;
-
-            case Payment\Method::NETBANKING:
-
-                $params[Entity::ISSUER] = $payment->getBank();
-
-                break;
-        }
+        $this->fillMethodSpecificDetails($params, $payment);
 
         return $params;
     }
 
-    protected function fillCardDetails(array & $params, Payment\Entity $payment)
+    protected function fillMethodSpecificDetails(array & $params, Payment\Entity $payment)
     {
+        $method = $payment->getMethod();
         $card = $payment->card;
+        $emiPlan = $payment->emiPlan;
+        $bank = $payment->getBank();
 
-        $params[Entity::METHOD_TYPE] = $card->getType();
+        switch ($method)
+        {
+            case Payment\Method::CARD:
+                $params[Entity::METHOD_TYPE]   = $card->getType();
+                $params[Entity::NETWORK]       = $card->getNetworkCode();
+                $params[Entity::ISSUER]        = $card->getIssuer();
+                $params[Entity::INTERNATIONAL] = $payment->isInternational();
 
-        $params[Entity::NETWORK] = $card->getNetworkCode();
+                break;
 
-        $params[Entity::ISSUER] = $card->getIssuer();
+            case Payment\Method::EMI:
+                // For certain banks whose emi payments need to go through card terminals
+                // we set the method sa card both while fetching applicable rules
+                if (in_array($bank, Payment\Gateway::$emiBanksUsingCardTerminals, true) === true)
+                {
+                    $params[Entity::METHOD] = Payment\Method::CARD;
+                }
 
-        $params[Entity::INTERNATIONAL] = $payment->isInternational();
+                $params[Entity::METHOD_TYPE]    = $card->getType();
+                $params[Entity::NETWORK]        = $card->getNetworkCode();
+                $params[Entity::ISSUER]         = $payment->getBank();
+                $params[Entity::EMI_DURATION]   = $emiPlan->getDuration();
+                $params[Entity::EMI_SUBVENTION] = $emiPlan->getSubvention();
+
+                break;
+
+            case Payment\Method::NETBANKING:
+                $params[Entity::ISSUER] = $payment->getBank();
+
+                break;
+
+            case Payment\Method::WALLET:
+                $params[Entity::ISSUER] = $payment->getWallet();
+
+                break;
+        }
     }
 
-    protected function getTerminalGateways(array $terminals): array
+    /**
+     * Fetches rules whose applicability criteria for a particular payment, overlaps
+     * with the applicablity criteria for the rule being compared against
+     *
+     * @param  Entity $rule             Rule entity against which we need to check overlap
+     * @return Base\PublicCollection    rules which have matching criteria
+     */
+    protected function getRulesWithMatchingCriteria(Entity $rule): Base\PublicCollection
     {
-        $gateways = array_pluck($terminals, 'gateway');
+        $matchingRules = $this->repo
+                              ->gateway_rule
+                              ->getRulesWithMatchingCriteria($rule);
 
-        $gateways = array_values(array_unique($gateways));
+        if ($rule->isMethodCardOrEmi() === true)
+        {
+            $matchingRules = $this->getRulesWithOverLappingIins($rule->getIins(), $matchingRules);
+        }
 
-        return $gateways;
+        return $matchingRules;
+    }
+
+    /**
+     * Returns rules which have iins overlapping with given iins.
+     * If any existing rule has null iin, that is also considered overlapping
+     * with current rule
+     *
+     * @param  Base\PublicCollection $rules Collection of exisitng rules which can have
+     *                                      overlapping ins
+     * @return Base\PublicCollection        rules with overlapping iins
+     */
+    protected function getRulesWithOverLappingIins(array $iins, Base\PublicCollection $rules): Base\PublicCollection
+    {
+        $rules = $rules->filter(function ($rule) use ($iins)
+        {
+            if ((empty($iins) === true) or (empty($rule->getIins()) === true))
+            {
+                return true;
+            }
+
+            return count(array_intersect($iins, $rule->getIins())) > 0;
+        });
+
+        return $rules;
+    }
+
+    protected function getValidatorMethod(Entity $rule)
+    {
+        return 'validate' . ucfirst($rule->getType()) . 'Rule';
     }
 }

@@ -6,6 +6,7 @@ use Config;
 use Eloquent;
 use RZP\Models;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Merchant;
 use RZP\Tests\TestDummy\Factory;
 
@@ -192,7 +193,7 @@ final class FactoryData
 
         $factory(\RZP\Models\FundTransfer\Batch\Entity::class, [
             'id' => $faker->uniqueid,
-            'date' => Carbon::today('Asia/Kolkata')->timestamp,
+            'date' => Carbon::today(Timezone::IST)->timestamp,
             'channel' => 'kotak',
             'amount' => $faker->randomNumber(4),
             'processed_amount' => 0,
@@ -201,7 +202,7 @@ final class FactoryData
             'api_fee' => $faker->randomNumber(2),
             'gateway_fee' => $faker->randomNumber(2),
             'urls' => $faker->sentence,
-            'initiated_at' => Carbon::today('Asia/Kolkata')->timestamp + 10,
+            'initiated_at' => Carbon::today(Timezone::IST)->timestamp + 10,
         ]);
 
         $factory(\RZP\Models\Adjustment\Entity::class, [
@@ -682,6 +683,7 @@ final class FactoryData
 
         $factory(\RZP\Models\Gateway\Rule\Entity::class, [
             'id'         => $faker->uniqueid,
+            'min_amount' => 0,
             'created_at' => $faker->timestamp,
             'updated_at' => $faker->timestamp
         ]);

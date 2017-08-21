@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Refund;
 
 use Config;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
@@ -21,10 +22,10 @@ use RZP\Models\Transaction;
 class Service extends Base\Service
 {
     /**
-     * We get the last 100 days refunds created of a gateway.
+     * We get the last 10 days refunds created of a gateway.
      * We run the cron for this once a day.
      */
-    const GATEWAY_REFUND_RECORDS_TIME_LIMIT = 8640000;
+    const GATEWAY_REFUND_RECORDS_TIME_LIMIT = 864000;
 
     const MAX_REFUND_RETRY_ATTEMPTS = 3;
 
@@ -205,8 +206,8 @@ class Service extends Base\Service
 
     protected function getTimestamps($input)
     {
-        $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
-        $to = Carbon::today('Asia/Kolkata')->timestamp - 1;
+        $from = Carbon::yesterday(Timezone::IST)->timestamp;
+        $to = Carbon::today(Timezone::IST)->timestamp - 1;
         $frequency = 'daily';
 
         if (isset($input['frequency']))
@@ -218,14 +219,14 @@ class Service extends Base\Service
         {
             if (isset($input['on']))
             {
-                $dt = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata');
+                $dt = Carbon::createFromFormat('Y-m-d', $input['on'], Timezone::IST);
 
                 $from = $dt->startOfMonth()->timestamp;
                 $to   = $dt->endOfMonth()->addDay()->timestamp - 1;
             }
             else
             {
-                $dt = Carbon::yesterday('Asia/Kolkata');
+                $dt = Carbon::yesterday(Timezone::IST);
 
                 $from = $dt->startOfMonth()->timestamp;
                 $to   = $dt->endOfMonth()->addDay()->timestamp - 1;
@@ -235,7 +236,7 @@ class Service extends Base\Service
         {
             if (isset($input['on']))
             {
-                $from = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata')->setTime(0,0,0);
+                $from = Carbon::createFromFormat('Y-m-d', $input['on'], Timezone::IST)->setTime(0,0,0);
 
                 $fromTimeStamp = $from->timestamp;
 

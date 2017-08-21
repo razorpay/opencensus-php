@@ -904,7 +904,7 @@ class BasicAuth
         ];
 
         // Gets all headers with 'X-Dashboard' as prefix and assign them to a
-        // key(with prefix removed) in $this->dashboardHeaders.
+        // snake cased key (with prefix removed) in $this->dashboardHeaders.
 
         $dashHeaderPrefixLen = strlen(self::DASHBOARD_HEADER_PREFIX) + 1;
 
@@ -1055,6 +1055,11 @@ class BasicAuth
     public function getInternalApp()
     {
         return $this->internalApp;
+    }
+
+    public function isDashboardApp()
+    {
+        return ($this->internalApp === 'dashboard');
     }
 
     public function isCron()
@@ -1407,6 +1412,21 @@ class BasicAuth
 
             default:
                 return false;
+        }
+    }
+
+    public function validateSuperAdminAccess()
+    {
+        $admin = $this->getAdmin();
+
+        if ($admin->isSuperAdmin() === false)
+        {
+            $data = ['admin_id' => $admin->getId()];
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUPERADMIN_ACCESS_REQUIRED,
+                null,
+                $data);
         }
     }
 }

@@ -939,7 +939,7 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('ShrdNbBdkTmnl2', $payment1['terminal_id']);
     }
 
-    public function testBilldeskCorporateChoiceForForexMerchant()
+    public function testBilldeskHousingChoiceForForexMerchant()
     {
         $this->fixtures->merchant->editCategory2(Category::FOREX);
 
@@ -953,9 +953,9 @@ class TerminalSelectionTest extends TestCase
               'network_category' => 'ecommerce']);
 
         $this->fixtures->create('terminal:shared_billdesk_terminal',
-             ['id' => 'ShrdNbBdkCorpo',
+             ['id' => 'ShrdNbBdkHouse',
               'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
-              'network_category' => 'corporate']);
+              'network_category' => 'housing']);
 
         // Should not be picked. Not even allowed with the new config.
         $this->fixtures->create('terminal:shared_billdesk_terminal',
@@ -965,7 +965,7 @@ class TerminalSelectionTest extends TestCase
 
         $payment = $this->getDefaultNetbankingPaymentArray();
 
-        // Amount filter should have rejected the corporate terminal
+        // Amount filter should have rejected the housing terminal
         $payment['bank'] = 'SBIN';
 
         $this->doAuthAndCapturePayment($payment);
@@ -979,7 +979,7 @@ class TerminalSelectionTest extends TestCase
         $this->doAuthAndCapturePayment($payment);
         $payment1 = $this->getLastEntity('payment', true);
 
-        $this->assertEquals('ShrdNbBdkCorpo', $payment1['terminal_id']);
+        $this->assertEquals('ShrdNbBdkHouse', $payment1['terminal_id']);
     }
 
     public function testSharedTerminalFilter()

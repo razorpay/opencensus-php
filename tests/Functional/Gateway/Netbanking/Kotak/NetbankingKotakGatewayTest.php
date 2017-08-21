@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Kotak;
 use Mail;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\TestCase;
@@ -164,7 +165,7 @@ class NetbankingKotakGatewayTest extends TestCase
 
     protected function setUpMailMock()
     {
-        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+        $date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
         $testData = [
             'subject' => 'Kotak Netbanking claims and refund files for '.$date,
@@ -235,7 +236,7 @@ class NetbankingKotakGatewayTest extends TestCase
 
     protected function movePaymentsToYesterday($payments)
     {
-        $createdAt = Carbon::yesterday('Asia/Kolkata')->addHours(10)->addMinutes(30)->timestamp;
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(10)->addMinutes(30)->timestamp;
 
         // Set payment dates to yesterday
         foreach ($payments['items'] as $payment)
@@ -251,7 +252,7 @@ class NetbankingKotakGatewayTest extends TestCase
         // Set the transactions to be reconciled today
         $transactions = $this->getEntities('transaction', [], true);
 
-        $reconciledAt = Carbon::today('Asia/Kolkata')->addHours(5)->addMinutes(13)->timestamp;
+        $reconciledAt = Carbon::today(Timezone::IST)->addHours(5)->addMinutes(13)->timestamp;
 
         foreach ($transactions['items'] as $transaction)
         {
@@ -282,7 +283,7 @@ class NetbankingKotakGatewayTest extends TestCase
     {
         $refunds = $this->getEntities('refund', [], true);
 
-        $createdAt = Carbon::yesterday('Asia/Kolkata')->addHours(10)->addMinutes(45)->timestamp;
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(10)->addMinutes(45)->timestamp;
 
         // Mark refunds as created yesterday
         foreach ($refunds['items'] as $refund)

@@ -82,6 +82,8 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::INVOICE_CREATED, $invoice->toArrayPublic());
 
+        $this->repo->loadRelations($invoice);
+
         if ($invoice->isIssued())
         {
             $job = new InvoiceJob(
@@ -137,6 +139,8 @@ class Core extends Base\Core
         {
             ExceptionHandler::handleMySqlUniqueError($e, $invoice, $input);
         }
+
+        $this->repo->loadRelations($invoice);
 
         if ($invoice->isIssued())
         {
@@ -219,7 +223,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        return $invoice;
+        return $this->repo->loadRelations($invoice);
     }
 
     public function updateLineItem(
@@ -254,7 +258,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        return $invoice;
+        return $this->repo->loadRelations($invoice);
     }
 
     public function removeLineItem(
@@ -282,7 +286,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        return $invoice;
+        return $this->repo->loadRelations($invoice);
     }
 
     public function removeManyLineItems(
@@ -309,7 +313,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        return $invoice;
+        return $this->repo->loadRelations($invoice);
     }
 
     public function sendNotification(Entity $invoice, string $medium): array
@@ -574,7 +578,7 @@ class Core extends Base\Core
             return null;
         }
 
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         if ($now - $invoice->getUpdatedAt() <= self::MAX_EXPECTED_QUEUE_DELAY)
         {

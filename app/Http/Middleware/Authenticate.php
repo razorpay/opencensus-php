@@ -107,38 +107,26 @@ class Authenticate
         }
         else if (in_array($route, Route::$private, true) === true)
         {
-            $this->throttleRequests(Type::PRIVATE_AUTH);
-
             $ret = $ba->privateAuth();
         }
         else if (in_array($route, Route::$public, true) === true)
         {
-            $this->throttleRequests(Type::PUBLIC_AUTH);
-
             $ret = $ba->publicAuth();
         }
         else if (in_array($route, Route::$publicCallback, true) === true)
         {
-            $this->throttleRequests(Type::PUBLIC_AUTH);
-
             $ret = $ba->publicCallbackAuth();
         }
         else if (in_array($route, Route::$proxy, true) === true)
         {
-            $this->throttleRequests(Type::PROXY_AUTH);
-
             $ret = $ba->proxyAuth();
         }
         else if (in_array($route, Route::$device, true) === true)
         {
-            $this->throttleRequests(Type::DEVICE_AUTH);
-
             $ret = $ba->deviceAuth();
         }
         else if (in_array($route, Route::$direct, true) === true)
         {
-            $this->throttleRequests(Type::DIRECT_AUTH);
-
             ; // $ret = $ba->proxyAuth();
         }
         else
@@ -231,6 +219,8 @@ class Authenticate
 
         $featureCheck = $this->ba->feature();
 
+        $this->addTraceDataForMerchantAndAdmin($this->ba);
+
         if ($featureCheck !== null)
         {
             return $featureCheck;
@@ -242,8 +232,28 @@ class Authenticate
      */
     private function throttleRequests(string $auth)
     {
-        // $throttle = new Throttle($this->app);
+        $throttle = new Throttle($this->app);
 
-        // $throttle->process($auth);
+        $throttle->process($auth);
+    }
+
+    /**
+     * Adds details in trace for merchant_id who or on whose behalf request
+     * is being made. Adds dashboard headers details for admin etc. making
+     * the request.
+     */
+    private function addTraceDataForMerchantAndAdmin($ba)
+    {
+        $merchantId = $ba->getMerchantIdOfKey();
+        $data = ['merchant_id' => $merchantId];
+
+        if ($ba->isDashboardApp())
+        {
+            $dashboardHeaders = $ba->getDashboardHeaders();
+
+            $data = array_merge($data, $dashboardHeaders);
+        }
+
+        $this->app['trace']->processor('web')->addServerData($data);
     }
 }

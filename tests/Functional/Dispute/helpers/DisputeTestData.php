@@ -2,6 +2,7 @@
 
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 return [
     'testDisputeCreate' => [
@@ -10,7 +11,7 @@ return [
             'content' => [
                 'gateway_dispute_id'   => '4342frf34r',
                 'raised_on'            => '946684800',
-                'expires_on'           => '1102444800',
+                'expires_on'           => '1912162918',
                 'amount'               => 100,
                 'deduct_at_onset'      => 1,
                 'phase'                => 'chargeback',
@@ -28,13 +29,40 @@ return [
         ],
     ],
 
+    'testDisputeCreateWithoutReason' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 100,
+                'deduct_at_onset'      => 1,
+                'phase'                => 'chargeback',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'reason_id should be sent in the request to create a dispute.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testDisputeCreateWithExtraFields' => [
         'request' => [
             'method'  => 'post',
             'content' => [
                 'gateway_dispute_id'   => '4342frf34r',
                 'raised_on'            => '946684800',
-                'expires_on'           => '1102444800',
+                'expires_on'           => '1912162918',
                 'amount'               => 100,
                 'deduct_at_onset'      => 1,
                 'phase'                => 'chargeback',
@@ -63,7 +91,7 @@ return [
                 'gateway_dispute_id'   => '4342frf34r',
                 'gateway_dispute_code' => '4342',
                 'raised_on'            => '946684800',
-                'expires_on'           => '1102444800',
+                'expires_on'           => '1912162918',
                 'amount'               => 100,
                 'deduct_at_onset'      => 1,
                 'phase'                => 'chargeback',
@@ -92,7 +120,7 @@ return [
                 'gateway_dispute_id'   => '4342frf34r',
                 'gateway_dispute_code' => '4342',
                 'raised_on'            => '946684800',
-                'expires_on'           => '1102444800',
+                'expires_on'           => '1912162918',
                 'amount'               => 1000060,
                 'deduct_at_onset'      => 1,
                 'phase'                => 'chargeback',
@@ -120,7 +148,7 @@ return [
             'content' => [
                 'gateway_dispute_id'   => '4342frf34r',
                 'raised_on'            => '946684800',
-                'expires_on'           => '1102444800',
+                'expires_on'           => '1912162918',
                 'amount'               => 10,
                 'deduct_at_onset'      => 1,
                 'phase'                => 'chargeback',
@@ -147,7 +175,7 @@ return [
             'content' => [
                 'gateway_dispute_id'   => '4342frf34r',
                 'raised_on'            => '946684800',
-                'expires_on'           => '1102444800',
+                'expires_on'           => '1912162918',
                 'amount'               => 1000,
                 'deduct_at_onset'      => 1,
                 'phase'                => 'dispute',
@@ -167,4 +195,118 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testDisputeEdit' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                'status'                 => 'under_review',
+                'expires_on'             => '1912162918',
+                'gateway_dispute_status' => 'processing'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'amount'      => 1000000,
+                'currency'    => 'INR',
+                'phase'       => 'chargeback',
+                'status'      => 'under_review'
+            ],
+        ],
+    ],
+
+    'testDisputeEditClose' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                'status'                 => 'won',
+                'expires_on'             => '1912162918',
+                'gateway_dispute_status' => 'processing'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'amount'      => 1000000,
+                'currency'    => 'INR',
+                'phase'       => 'chargeback',
+                'status'      => 'won'
+            ],
+        ],
+    ],
+
+    'testDisputeEditInvalidStatus' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                'status'                 => 'review',
+                'expires_on'             => '1912162918',
+                'gateway_dispute_status' => 'processing'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Not a valid dispute status',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testDisputeEditExtraInput' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                'status'                 => 'under_review',
+                'expires_on'             => '1912162918',
+                'gateway_dispute_status' => 'processing',
+                'phase'                  => 'chargeback'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'phase is/are not required and should not be sent',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\ExtraFieldsException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
+        ],
+    ],
+
+    'testDisputeEditClosed' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                'status'                 => 'under_review',
+                'expires_on'             => '1912162918',
+                'gateway_dispute_status' => 'processing',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CANNOT_UPDATE_CLOSED_DISPUTE,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CANNOT_UPDATE_CLOSED_DISPUTE,
+        ],
+    ],
+
 ];

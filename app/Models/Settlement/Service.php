@@ -3,6 +3,7 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base;
 use RZP\Models\FundTransfer\Icici;
@@ -46,7 +47,7 @@ class Service extends Base\Service
 
         $versionV2RolloutTimestamp = 1489170600; // Date 1st March 2017 IST
 
-        $currentTimestamp = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTimestamp = Carbon::now()->getTimestamp();
 
         if ($batch->getCreatedAt() < $versionV2RolloutTimestamp)
         {
@@ -160,9 +161,9 @@ class Service extends Base\Service
             // TODO: add strict validation for gateway based on channel
             Payment\Gateway::validateGateway($gateway);
 
-            $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
+            $from = Carbon::yesterday(Timezone::IST)->timestamp;
 
-            $to = Carbon::today('Asia/Kolkata')->timestamp - 1;
+            $to = Carbon::today(Timezone::IST)->timestamp - 1;
 
             // Get the amount for captured payments on gateway for last day
             $paymentAmount = $this->repo->payment->getCapturedAmountByGateway($gateway, $from, $to);

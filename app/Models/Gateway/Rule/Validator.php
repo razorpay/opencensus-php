@@ -5,27 +5,46 @@ namespace RZP\Models\Gateway\Rule;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Bank\IFSC;
-use RZP\Models\Card\Network;
 use RZP\Models\Card;
+use RZP\Models\Card\Network;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
+use RZP\Models\Terminal\Category;
 
 class Validator extends Base\Validator
 {
+    const AMOUNTS = 'amounts';
+
     protected static $createRules = [
         Entity::GATEWAY          => 'required|string|max:50|custom',
         Entity::MERCHANT_ID      => 'required|alpha_num|size:14',
-        Entity::LOAD             => 'required|numeric|between:0,100',
+        Entity::TYPE             => 'required|in:sorter,filter',
+        Entity::GROUP            => 'sometimes|filled|string|max:50',
+        Entity::FILTER_TYPE      => 'required_unless:type,sorter|required_only_if:type,filter|in:select,reject',
+        Entity::LOAD             => 'required_unless:type,filter|required_only_if:type,sorter|numeric|between:0,100',
+        Entity::GATEWAY_ACQUIRER => 'sometimes|filled|string|max:30',
+        Entity::GATEWAY_ACQUIRER => 'sometimes|filled|string',
+        Entity::INTERNATIONAL    => 'sometimes|filled|boolean',
+        Entity::NETWORK_CATEGORY => 'sometimes_if:type,filter|string|max:30',
+        Entity::CATEGORY2        => 'sometimes_if:type,filter|string|max:30|custom',
+        Entity::SHARED_TERMINAL  => 'sometimes_if:type,filter|boolean',
         Entity::METHOD           => 'required|string|max:30',
         Entity::METHOD_TYPE      => 'sometimes|filled|string|max:10',
         Entity::ISSUER           => 'sometimes|filled|string',
         Entity::NETWORK          => 'sometimes|filled|string|max:10',
-        Entity::GATEWAY_ACQUIRER => 'sometimes|filled|string',
-        Entity::INTERNATIONAL    => 'sometimes|filled|boolean',
+        Entity::MIN_AMOUNT       => 'sometimes|filled|integer|min:0',
+        Entity::MAX_AMOUNT       => 'sometimes|filled|integer|min:1',
+        Entity::EMI_DURATION     => 'required_only_if:method,emi|integer|in:3,6,9,12,18,24',
+        Entity::EMI_SUBVENTION   => 'required_only_if:method,emi|in:customer,merchant',
+        Entity::IINS             => 'sometimes|filled|array',
+        Entity::CURRENCY         => 'sometimes|filled|in:INR,USD'
     ];
 
     protected static $editRules = [
-        Entity::LOAD => 'sometimes|filled|numeric|between:0,100'
+        Entity::GROUP       => 'sometimes|filled|string|max:50',
+        Entity::FILTER_TYPE => 'sometimes|filled|in:select,reject',
+        Entity::LOAD        => 'sometimes|filled|numeric|between:0,100',
+        Entity::IINS        => 'sometimes|filled|array',
     ];
 
     protected static $createValidators = [
@@ -34,9 +53,18 @@ class Validator extends Base\Validator
         Entity::ISSUER,
         Entity::NETWORK,
         Entity::GATEWAY_ACQUIRER,
+        Entity::NETWORK_CATEGORY,
+        Entity::IINS,
+        self::AMOUNTS,
     ];
 
-    public function validateGateway(string $attribute, string $gateway)
+    protected static $editValidators = [
+        Entity::FILTER_TYPE,
+        Entity::LOAD,
+        Entity::IINS,
+    ];
+
+    protected function validateGateway(string $attribute, string $gateway)
     {
         if (Gateway::isValidGateway($gateway) === false)
         {
@@ -45,7 +73,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateGatewayAcquirer(array $input)
+    protected function validateGatewayAcquirer(array $input)
     {
         $gateway = $input[Entity::GATEWAY];
 
@@ -68,7 +96,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateMethod(array $input)
+    protected function validateMethod(array $input)
     {
         $method = $input[Entity::METHOD];
 
@@ -80,6 +108,12 @@ class Validator extends Base\Validator
                         $method . ' is not a valid payment method');
         }
 
+        // If it is a reject filter type  don't check if gateway supports method
+        if (self::isRejectFilter($input) === true)
+        {
+            return;
+        }
+
         if (Gateway::isMethodSupported($method, $gateway) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -87,7 +121,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateMethodType(array $input)
+    protected function validateMethodType(array $input)
     {
         $method = $input[Entity::METHOD];
 
@@ -108,34 +142,37 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateIssuer(array $input)
+    protected function validateIssuer(array $input)
     {
-        $issuer = $input[Entity::ISSUER] ?? null;
-
         $method = $input[Entity::METHOD];
-
-        $gateway = $input[Entity::GATEWAY];
 
         switch($method)
         {
             case Method::CARD:
+                $this->validateCardIssuer($input);
+                break;
+
             case Method::EMI:
-
-                $this->validateCardIssuer($issuer);
-
+                $this->validateEmiIssuer($input);
                 break;
 
             case Method::NETBANKING:
 
-                $this->validateNetbankingIssuer($gateway, $issuer);
+                $this->validateNetbankingIssuer($input);
+
+                break;
+
+            case Method::WALLET:
+
+                $this->validateWalletIssuer($input);
 
                 break;
 
             default:
 
-                // For certain methods like UPI / wallet there is no concept of issuer, so
+                // For certain methods like UPI there is no concept of issuer, so
                 // we don't validate if issuer is null
-                if ($issuer !== null)
+                if (empty($input[Entity::ISSUER]) === false)
                 {
                     throw new Exception\BadRequestValidationFailureException(
                         'Issuer ' . $issuer . ' for method ' . $method . ' is not supported');
@@ -143,8 +180,10 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateCardIssuer(string $issuer = null)
+    protected function validateCardIssuer(array $input)
     {
+        $issuer = $input[Entity::ISSUER] ?? null;
+
         if (($issuer !== null) and (IFSC::exists($issuer) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -152,8 +191,36 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateNetbankingIssuer(string $gateway, string $issuer = null)
+    protected function validateEmiIssuer(array $input)
     {
+        if (self::isRejectFilter($input) === true)
+        {
+            return;
+        }
+
+        $gatewayToEmiBankMap = array_flip(Gateway::$emiBankToGatewayMap);
+
+        $gateway = $input[Entity::GATEWAY];
+        $issuer = $input[Entity::ISSUER] ?? null;
+
+        if ((isset($gatewayToEmiBankMap[$gateway]) === true) and ($issuer !== $gatewayToEmiBankMap[$gateway]))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $issuer . ' is not a valid for emi for gateway ' . $gateway);
+        }
+    }
+
+    protected function validateNetbankingIssuer(array $input)
+    {
+        // If it is a reject filter type skip validation
+        if (self::isRejectFilter($input) === true)
+        {
+            return;
+        }
+
+        $issuer = $input[Entity::ISSUER] ?? null;
+        $gateway = $input[Entity::GATEWAY];
+
         if ($issuer === null)
         {
             if (in_array($gateway, Gateway::$netbankingGateways, true) === true)
@@ -171,6 +238,29 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 $issuer . ' is not a supported bank for gateway ' . $gateway);
+        }
+    }
+
+    protected function validateWalletIssuer(array $input)
+    {
+        if (self::isRejectFilter($input) === true)
+        {
+            return;
+        }
+
+        $issuer = $input[Entity::ISSUER] ?? null;
+        $gateway = $input[Entity::GATEWAY];
+
+        if ($issuer === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'issuer cannot be null for wallet select filter rules');
+        }
+
+        if ($gateway !== Gateway::$walletToGatewayMap[$issuer])
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'wallet issuer not valid for gateway');
         }
     }
 
@@ -196,6 +286,12 @@ class Validator extends Base\Validator
                 $network . ' is not a valid network');
         }
 
+        // If it is a reject filter type don't check if gateway supports network
+        if (self::isRejectFilter($input) === true)
+        {
+            return;
+        }
+
         // Checks if card network is supported by gateway
         $cardNetWorks = Gateway::$cardNetworkMap[$gateway];
 
@@ -205,5 +301,115 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 $network . ' is not a valid network for gateway ' . $gateway);
         }
+    }
+
+    protected function validateAmounts(array $input)
+    {
+        if ((empty($input[Entity::MIN_AMOUNT]) === true) or
+            (empty($input[Entity::MAX_AMOUNT]) === true))
+        {
+            return;
+        }
+
+        $result = ($input[Entity::MIN_AMOUNT] < $input[Entity::MAX_AMOUNT]);
+
+        if ($result === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'min_amount should be lesser than max_amount');
+        }
+    }
+
+    protected function validateIins(array $input)
+    {
+        if (empty($input[Entity::IINS]) === true)
+        {
+            return;
+        }
+
+        $iins = $input[Entity::IINS];
+
+        $method = $this->entity->getMethod() ?? $input[Entity::METHOD];
+
+        $allowedMethods = [Method::CARD, Method::EMI];
+
+        if (in_array($method, $allowedMethods, true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "iins should be sent only for card or emi rules");
+        }
+
+        if (is_associative_array($iins) === true)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'iins should be sent as a numerically indexed array');
+        }
+
+        $invalidIin = array_first($iins, function ($iin)
+        {
+            return strlen($iin) != 6;
+        });
+
+        if (empty($invalidIin) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'iins should be equal to 6 characters');
+        }
+    }
+
+    protected function validateNetworkCategory(array $input)
+    {
+        if (empty($input[Entity::NETWORK_CATEGORY]) === true)
+        {
+            return;
+        }
+
+        list($networkCategory, $method, $gateway) = [
+            $input[Entity::NETWORK_CATEGORY],
+            $input[Entity::METHOD],
+            $input[Entity::GATEWAY]];
+
+        if (Category::isNetworkCategoryValid($networkCategory, $method, $gateway) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Category provided invalid for gateway',
+                Entity::NETWORK_CATEGORY,
+                [$input[Entity::NETWORK_CATEGORY]]);
+        }
+    }
+
+    protected function validateCategory2($attribute, $category2)
+    {
+        if (Category::isMerchantCategoryValid($category2) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Category: ' . $category2 . ' invalid for merchant');
+        }
+    }
+
+    protected function validateFilterType(array $input)
+    {
+        if ((empty($input[Entity::FILTER_TYPE]) === false) and
+            ($this->entity->isFilter() === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'filter_type is editable only for filter rules');
+        }
+    }
+
+    protected function validateLoad(array $input)
+    {
+        if ((empty($input[Entity::LOAD]) === false) and
+            ($this->entity->isSorter() === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'load is editable only for sorter rules');
+        }
+    }
+
+    protected static function isRejectFilter(array $input): bool
+    {
+        return(($input[Entity::TYPE] === Entity::FILTER) and
+            ($input[Entity::FILTER_TYPE] === Entity::REJECT));
     }
 }

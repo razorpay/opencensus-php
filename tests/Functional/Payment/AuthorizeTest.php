@@ -285,10 +285,13 @@ class AuthorizeTest extends TestCase
 
         $this->assertEquals($content['count'], 1);
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/payments/'.$payment['public_id'];
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/' . $payment['public_id'];
 
         $this->ba->privateAuth();
-        $this->startTest();
+
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testTimeoutOldPaymentWithErrorRetention()
@@ -302,10 +305,13 @@ class AuthorizeTest extends TestCase
 
         $this->assertEquals($content['count'], 1);
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/payments/'.$payment['public_id'];
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/' . $payment['public_id'];
 
         $this->ba->privateAuth();
-        $this->startTest();
+
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testFailPaymentWithPaymentFailureMailEnabled()
@@ -371,10 +377,13 @@ class AuthorizeTest extends TestCase
 
         $this->assertEquals($content['count'], 0);
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/payments/'.$payment['public_id'];
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/' . $payment['public_id'];
 
         $this->ba->privateAuth();
-        $this->startTest();
+
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testAuthorizeFailedPayment()

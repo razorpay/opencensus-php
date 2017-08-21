@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Federal;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mail;
 use RZP\Constants\MailTags;
 use RZP\Gateway\Base;
@@ -62,7 +63,7 @@ class RefundFile extends Base\RefundFile
         {
             $date = Carbon::createFromTimestamp(
                     $row['payment']['created_at'],
-                    'Asia/Kolkata')
+                    Timezone::IST)
                     ->format('Y-d-m');
 
             $data[] = [
@@ -94,7 +95,7 @@ class RefundFile extends Base\RefundFile
 
     protected function getFileToWriteNameWithoutExt()
     {
-        $date = $time = Carbon::now('Asia/Kolkata')->format('d_m_Y');
+        $date = $time = Carbon::now(Timezone::IST)->format('d_m_Y');
 
         return self::$fileToWriteName . '_' . $date;
     }

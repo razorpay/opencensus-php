@@ -86,7 +86,7 @@ class Entity extends Base\Entity
      */
     public function getValidToken()
     {
-        $now = Carbon::now()->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         if ($now >= $this->getExpiresAt())
         {

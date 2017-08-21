@@ -3,6 +3,7 @@
 namespace RZP\Gateway\FirstData;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Requests_Hooks;
 use SimpleXMLElement;
 
@@ -153,6 +154,16 @@ class Gateway extends Base\Gateway
         if (($verify->gatewaySuccess === false) and
             ($this->approval === true))
         {
+            // Callback verify is failing, but possibly only
+            // because verify status has not been updated.
+            //
+            // This should still be considered a failure,
+            // but not a case of data tampering.
+            if ($verify->payment->getStatus() === Status::WAITING)
+            {
+                throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
+            }
+
             throw new Exception\LogicException(
                 'Data tampering found.', null, [
                     'callback_result' => $this->approval,
@@ -673,6 +684,8 @@ class Gateway extends Base\Gateway
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
+        $verifyAuthResponse = null;
+
         if($verifyResponse === null)
         {
             // Verify request failed, as FirstData API returned successfully flag set to false
@@ -714,6 +727,11 @@ class Gateway extends Base\Gateway
                     // state. So we avoid the second transaction, and break after finding the first.
                     break;
                 }
+            }
+
+            if ($verifyAuthResponse === null)
+            {
+                throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_FATAL_ERROR);
             }
 
             // A example of the verify response structure can be found
@@ -840,6 +858,11 @@ class Gateway extends Base\Gateway
                 'code'    => $response->status_code,
             ]
         );
+
+        if ($response->body === null)
+        {
+            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
+        }
 
         $xml = simplexml_load_string(trim($response->body));
 
@@ -998,7 +1021,7 @@ class Gateway extends Base\Gateway
     {
         $createdAt = $input['payment'][Payment\Entity::CREATED_AT];
 
-        $dateTime = Carbon::createFromTimestamp($createdAt, 'Asia/Kolkata');
+        $dateTime = Carbon::createFromTimestamp($createdAt, Timezone::IST);
 
         $txnDateTime = $dateTime->format(Codes::DATE_TIME_FORMAT);
 
@@ -1020,7 +1043,7 @@ class Gateway extends Base\Gateway
         }
 
         $content = [
-            ConnectRequestFields::TIME_ZONE                 => 'Asia/Kolkata',
+            ConnectRequestFields::TIME_ZONE                 => Timezone::IST,
             ConnectRequestFields::TXN_DATE_TIME             => $txnDateTime,
             ConnectRequestFields::HASH_ALGORITHM            => strtoupper(HashAlgo::SHA1),
             ConnectRequestFields::HASH                      => $requestHash,

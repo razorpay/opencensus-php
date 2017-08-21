@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Payment;
 
 use Redis;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mockery;
 use Mail;
 
@@ -314,7 +315,7 @@ class CaptureTest extends TestCase
     {
         $payment = $this->createFailedPayment('1', false);
 
-        $past = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp;
+        $past = Carbon::today(Timezone::IST)->subDays(1)->timestamp;
         $this->fixtures->payment->edit($payment['id'], ['created_at' => $past]);
 
         $this->fixtures->merchant->edit(
@@ -354,7 +355,7 @@ class CaptureTest extends TestCase
     {
         $payment = $this->createFailedPayment();
 
-        $past = Carbon::today('Asia/Kolkata')->subDays(6)->timestamp;
+        $past = Carbon::today(Timezone::IST)->subDays(6)->timestamp;
         $this->fixtures->payment->edit($payment['id'], ['created_at' => $past]);
 
         $this->authorizeFailedPayment($payment['id']);
@@ -372,7 +373,7 @@ class CaptureTest extends TestCase
     {
         $payment = $this->createFailedPayment();
 
-        $past = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp;
+        $past = Carbon::today(Timezone::IST)->subDays(1)->timestamp;
         $this->fixtures->payment->edit($payment['id'], ['created_at' => $past]);
 
         $defaultMerchantId = '10000000000000';
@@ -396,7 +397,7 @@ class CaptureTest extends TestCase
 
         $invoice = $this->getLastEntity('invoice', true);
 
-        $past = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp;
+        $past = Carbon::today(Timezone::IST)->subDays(1)->timestamp;
         $invoice = $this->fixtures->invoice->edit($invoice['id'], ['status' => 'expired']);
 
         $this->authorizeFailedPayment($payment['id']);
@@ -434,7 +435,7 @@ class CaptureTest extends TestCase
             'payment_capture' => '1'
             ]);
 
-        $dueBy = Carbon::now('Asia/Kolkata')->addDays(10)->timestamp;
+        $dueBy = Carbon::now(Timezone::IST)->addDays(10)->timestamp;
 
         $this->fixtures->create(
                             'invoice',
@@ -551,7 +552,7 @@ class CaptureTest extends TestCase
 
     public function testAutoCaptureEmail()
     {
-        $time = Carbon::today('Asia/Kolkata')->timestamp;
+        $time = Carbon::today(Timezone::IST)->timestamp;
         $createdAt = $time - rand(0, 23) * 60 * 60;
 
         $attributes = [
@@ -1205,7 +1206,7 @@ class CaptureTest extends TestCase
 
         if ($withInvoice)
         {
-            $dueBy = Carbon::now('Asia/Kolkata')->addDays(10)->timestamp;
+            $dueBy = Carbon::now(Timezone::IST)->addDays(10)->timestamp;
 
             $this->fixtures->create(
                                 'invoice',

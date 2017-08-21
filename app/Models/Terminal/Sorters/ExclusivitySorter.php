@@ -18,7 +18,7 @@ class ExclusivitySorter extends Terminal\Sorter
      * @param array $input
      * @return array
      */
-    public function sharedSorter($terminals, array $input)
+    public function sharedSorter($terminals)
     {
         $sharedTerminals = [];
         $nonSharedTerminals = [];

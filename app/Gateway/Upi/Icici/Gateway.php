@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Upi\Icici;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use ErrorException;
 use phpseclib\Crypt\RSA;
 use Request;
@@ -321,7 +322,7 @@ class Gateway extends Base\Gateway
     {
         $payment = $input['payment'];
 
-        $collectByTimestamp = Carbon::now('Asia/Kolkata')->addMinutes(5)->format('d/m/Y h:i A');
+        $collectByTimestamp = Carbon::now(Timezone::IST)->addMinutes(5)->format('d/m/Y h:i A');
 
         $data = [
             Fields::AMOUNT           => $this->formatAmount($payment['amount']),

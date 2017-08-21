@@ -1,10 +1,11 @@
 <?php
 
-namespace RZP\Trace;
+namespace RZP\Providers;
 
-use Illuminate\Support\ServiceProvider as BaseServiceProvider;
+use Illuminate\Support\ServiceProvider;
+use RZP\Trace\ApiTraceProcessor;
 
-class TraceServiceProvider extends BaseServiceProvider
+class FirstServiceProvider extends ServiceProvider
 {
     /**
      * Indicates if loading of the provider is deferred.
@@ -14,46 +15,22 @@ class TraceServiceProvider extends BaseServiceProvider
     protected $defer = false;
 
     /**
-     * Register the service provider.
+     * Register the application services.
      *
      * @return void
      */
     public function register()
     {
-        //
-        // We need to register this macro here
-        // because immediately after it's being used
-        // in trace constructor
-        //
-
-        $this->registerRequestGenerateIdMacro();
-
         $this->registerRequestGetIdMacro();
 
         $this->registerRequestSetTaskIdMacro();
 
-        $this->registerRequestGenerateTaskIdMacro();
-
         $this->registerRequestGetTaskIdMacro();
-
-        $this->app->bind('trace', function($app)
-        {
-            $trace = new Trace($app);
-
-            $trace->init();
-
-            return $trace;
-        });
     }
 
-    /**
-     * Get the services provided by the provider.
-     *
-     * @return array
-     */
-    public function provides()
+    public function boot()
     {
-        return ['trace'];
+        $this->registerValidatorResolver();
     }
 
     /**
@@ -64,7 +41,14 @@ class TraceServiceProvider extends BaseServiceProvider
     {
         $request = $this->app['request'];
 
-        $request->macro('getId', function() use ($request)
+        $request->macro('generateId', function()
+        {
+            $this->requestId = bin2hex(openssl_random_pseudo_bytes(16));
+
+            return $this->requestId;
+        });
+
+        $request->macro('getId', function() use($request)
         {
             if ($this->requestId === null)
             {
@@ -75,18 +59,13 @@ class TraceServiceProvider extends BaseServiceProvider
         });
     }
 
-    /**
-     * Generates a neew random id for logging
-     */
-    protected function registerRequestGenerateIdMacro()
+    protected function registerValidatorResolver()
     {
-        $request = $this->app['request'];
-
-        $request->macro('generateId', function()
+        $this->app['validator']->resolver(
+            function($translator, $data, $rules, $messages, $customAttributes)
         {
-            $this->requestId = bin2hex(openssl_random_pseudo_bytes(16));
-
-            return $this->requestId;
+            return new \RZP\Models\Base\ExtendedValidations(
+                            $translator, $data, $rules, $messages, $customAttributes);
         });
     }
 
@@ -103,11 +82,11 @@ class TraceServiceProvider extends BaseServiceProvider
         {
             if ($this->taskId === null)
             {
-                // For task id if nothing is set we check the X-Razorpay-TaskId header
-                // value before generating our own task id
+                // For task id if nothing is set we check the X-Razorpay-TaskId
+                // header value. Otherwise, simply copy the request id to task id.
                 $taskIdHeader = $this->headers->get('X-Razorpay-TaskId');
 
-                $this->taskId = $taskIdHeader ?? $this->generateTaskId();
+                $this->taskId = $taskIdHeader ?? $this->getId();
             }
 
             return $this->taskId;
@@ -121,18 +100,6 @@ class TraceServiceProvider extends BaseServiceProvider
         $request->macro('setTaskId', function ($taskId)
         {
             $this->taskId = $taskId;
-
-            return $this->taskId;
-        });
-    }
-
-    protected function registerRequestGenerateTaskIdMacro()
-    {
-        $request = $this->app['request'];
-
-        $request->macro('generateTaskId', function ()
-        {
-            $this->taskId = $this->getId();
 
             return $this->taskId;
         });
