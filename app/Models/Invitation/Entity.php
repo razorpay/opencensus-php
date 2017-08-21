@@ -43,6 +43,10 @@ class Entity extends Base\PublicEntity
         self::TOKEN,
     ];
 
+    protected $hidden = [
+        self::TOKEN
+    ];
+
     /**
      * Get the merchant that owns the invitation.
      */
