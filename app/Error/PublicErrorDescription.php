@@ -147,7 +147,6 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_WALLET_AUTHENTICATION_FAILED                      = 'Payment failed due to wallet authentication failure';
     const BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE                       = 'Payment failed due to insufficient balance in wallet';
     const BAD_REQUEST_PAYMENT_WALLET_CONTACT_PAYUMONEY                          = 'Payment failed. Please contact care@payumoney.com using your registered email';
-    const BAD_REQUEST_PAYMENT_WALLET_OPERATION_NOT_ALLOWED                      = 'Operation not allowed.';
     const BAD_REQUEST_AIRTEL_MONEY_ACCOUNT_BLOCKED                              = 'Payment failed as airtel money account has been blocked. Please reset mPIN or call 400 for assistance';
     const BAD_REQUEST_AIRTEL_MONEY_RESET_MPIN                                   = 'Payment failed as airtel money mPIN has not been changed. Please call 121 to reset your mPIN.';
     const BAD_REQUEST_CONTACT_AIRTEL_MONEY_CUSTOMER_CARE_FOR_REFUND             = 'Refund failed. Please contact airtel money customer care.';
