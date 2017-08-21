@@ -1,18 +1,17 @@
 import { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-import { Field, FieldArray, reduxForm } from 'redux-form';
+import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
-import InputGroupField from 'rzp/ui/Forms/InputField/InputGroupField';
 import Alert from 'rzp/ui/Forms/Alert';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { required } from 'rzp/utils/validators';
-import { savePlan } from 'merchant/modules/plans';
+import { saveAddOn } from 'merchant/modules/addons';
 import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 
 @connect(null, {
-  savePlan,
+  saveAddOn,
   showNotification,
   ...ModalActions,
 })
@@ -35,9 +34,8 @@ export default class CreateAddOn extends Component {
 
   save = props => {
     return this.props
-      .savePlan(props)
+      .saveAddOn(props)
       .then(addon => {
-        this.props.onSave(addon);
         this.props.showNotification({
           type: 'success',
           message: 'Add-on details successfully created',
@@ -93,7 +91,7 @@ export default class CreateAddOn extends Component {
                 <Field
                   name="item[amount]"
                   placeholder="0.00"
-                  component={InputGroupField}
+                  component={InputField}
                   class="form-control"
                   validate={required()}
                 />
@@ -108,7 +106,7 @@ export default class CreateAddOn extends Component {
                 <label class="control-label label-required">No. of Units</label>
                 <Field
                   name="item[units]"
-                  component={InputGroupField}
+                  component={InputField}
                   class="form-control"
                   validate={required()}
                 />
