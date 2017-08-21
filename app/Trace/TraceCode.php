@@ -791,6 +791,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GRATIS_TO_POSTPAID_FAILED                     = 'GRATIS_TO_POSTPAID_FAILED';
     const GRATIS_TO_POSTPAID_RESPONSE                   = 'GRATIS_TO_POSTPAID_RESPONSE';
 
+    // Trace code for Merchant Invoices
+    const MERCHANT_INVOICE_ENTITY_CREATION_FAILED       = 'MERCHANT_INVOICE_ENTITY_CREATION_FAILED';
+
     const DUMMY_JOB = 'DUMMY_JOB';
 
     protected static $messages = array(

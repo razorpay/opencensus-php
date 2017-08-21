@@ -503,7 +503,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        return (new Report\Types\InvoiceReport)->getInvoiceV2($input);
+        return (new Report\Types\InvoiceReport)->getInvoiceReport($input);
     }
 
     /**

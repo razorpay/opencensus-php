@@ -7,6 +7,7 @@ use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\Invoice;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -174,6 +175,58 @@ class EntityReportTest extends TestCase
         $this->assertEquals(0, $invoice['tax']);
         $this->assertEquals(2000, $invoice['razorpay_fee']);
         $this->assertEquals(0, $invoice['taxes']['IGST']);
+    }
+
+    public function testInvoiceNew()
+    {
+        $this->fixtures->create('merchant_invoice', ['type' => Invoice\Type::CARD_LTE_2K]);
+        $this->fixtures->create('merchant_invoice', ['type' => Invoice\Type::CARD_GT_2K]);
+        $this->fixtures->create('merchant_invoice', ['type' => Invoice\Type::NON_CARD]);
+
+        $dt = Carbon::today(Timezone::IST);
+        $input = [
+            'year'      => $dt->year,
+            'month'     => $dt->month,
+            'format'    => 'new',
+        ];
+
+        $invoiceEntries = $this->fetchInvoice($input);
+
+        $keyedEntries = [];
+        foreach ($invoiceEntries['rows'] as $entry)
+        {
+            unset($entry['Sl. No.']);
+
+            $keyedEntries[$entry['Description']] = $entry;
+        }
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals(
+            $keyedEntries[Invoice\Type::CARD_LTE_2K_DESCRIPTION], $data[Invoice\Type::CARD_LTE_2K_DESCRIPTION]);
+
+        $this->assertArraySelectiveEquals(
+            $keyedEntries[Invoice\Type::CARD_GT_2K_DESCRIPTION], $data[Invoice\Type::CARD_GT_2K_DESCRIPTION]);
+
+        $this->assertArraySelectiveEquals(
+            $keyedEntries[Invoice\Type::NON_CARD_DESCRIPTION], $data[Invoice\Type::NON_CARD_DESCRIPTION]);
+
+        $this->assertArraySelectiveEquals($keyedEntries['Total'], $data['Total']);
+
+        $requiredFields = [
+            'total_amount_due',
+            'total_amount_paid',
+            'rzp_gstin',
+            'rzp_pan_no',
+            'rzp_cin_no',
+            'invoice_number',
+            'invoice_date',
+        ];
+
+        foreach ($requiredFields as $key)
+        {
+            $this->assertNotNull($invoiceEntries[$key]);
+        }
     }
 
     public function testPaymentReportWithoutAcquirerData()

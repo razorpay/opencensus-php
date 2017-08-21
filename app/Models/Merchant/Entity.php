@@ -962,6 +962,16 @@ class Entity extends Base\PublicEntity
         return $businessStateCode;
     }
 
+    public function getGstin()
+    {
+        if ($this->merchantDetail === null)
+        {
+            return null;
+        }
+
+        return $this->merchantDetail->getGstin() ?? $this->merchantDetail->getPGstin();
+    }
+
     public function enableReceiptEmails()
     {
         $this->setAttribute(self::RECEIPT_EMAIL_ENABLED, true);
