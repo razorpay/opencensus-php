@@ -2,7 +2,7 @@
 
 namespace App\Gateway\Blade;
 
-use App\Models\Base;
+use App\Gateway\Base;
 use RZP\Exception;
 
 class Validator extends Base\Validator

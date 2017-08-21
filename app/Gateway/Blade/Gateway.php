@@ -352,9 +352,10 @@ class Gateway extends Base\Gateway
     {
         $VEres = json_decode(json_encode($VEres), true);
 
-        $this->trace->info('VEres', $VEres);
+        $this->trace->info(TraceCode::VERIFY_ENROLLMENT_RESPONSE, $VEres);
 
-        validate(Validator::$VEresRules, $VEres, false);
+        //TODO Fix this
+        //validate(Validator::$VEresRules, $VEres, false);
 
         if ($VEres['Message']['@attributes']['id'] !== $this->input['payment']['public_id'])
         {
@@ -364,12 +365,8 @@ class Gateway extends Base\Gateway
 
         $dotted_veres = array_dot($VEres);
 
-        $difference = array_diff($VEres, Validator::$VEresRules);
+ //       $difference = array_diff($VEres, Validator::$VEresRules);
 
-        foreach ($difference as $key => $value)
-        {
-
-        }
     }
 
     public function sendCRReq()
@@ -719,18 +716,20 @@ class Gateway extends Base\Gateway
 
         $xml = $this->sendGatewayRequest($request);
 
-        $valid = $this->validateXml($xml);
+        $body = $xml->body;
+
+        $valid = $this->validateXml($body);
 
         if ($valid === false)
         {
             $this->trace->warning(
                 TraceCode::BLADE_VERES_PARSE_FAILURE,
-                ['message' => 'Malformed xml: ' . $xml]);
+                ['message' => 'Malformed xml: ' . $body]);
 
             return Enrolled::U;
         }
 
-        return simplexml_load_string($xml);
+        return simplexml_load_string($body);
     }
 
     protected function getVereqRequestArray($input)
@@ -939,7 +938,7 @@ class Gateway extends Base\Gateway
         // then this line is inserted as second line
         // else it's inserted as first line.
         //
-        $dtdLine = '<!DOCTYPE ThreeDSecure SYSTEM "'.$file.'">';
+        $dtdLine = '<!DOCTYPE ThreeDSecure SYSTEM "' . $file . '">';
 
         $ix = strpos($xml, '?>');
 

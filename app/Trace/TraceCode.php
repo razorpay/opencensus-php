@@ -794,6 +794,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const DUMMY_JOB = 'DUMMY_JOB';
 
+    const VERIFY_ENROLLMENT_RESPONSE                    = 'VERIFY_ENROLLMENT_RESPONSE';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
