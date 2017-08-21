@@ -65,6 +65,28 @@ class RefundTest extends TestCase
         Mail::assertSent(RefundedMail::class);
     }
 
+    public function testRefundWithReceipt()
+    {
+        Mail::fake();
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->mockDashboardRequest();
+
+        $refund = $this->startTest($payment['id'], (string) $payment['amount']);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $this->assertGreaterThan(time() - 30, $refund['created_at']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(true, $refund['gateway_refunded']);
+
+        Mail::assertSent(RefundedMail::class);
+    }
+
     public function testRefundDirect()
     {
         $payment = $this->fixtures->create('payment:captured');
