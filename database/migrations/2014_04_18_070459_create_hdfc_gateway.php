@@ -31,6 +31,10 @@ class CreateHdfcGateway extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->bigInteger('gateway_payment_id')
+                  ->unsigned()
+                  ->nullable();
+
             $table->string('action', 1);
 
             $table->tinyInteger('received')->nullable();
@@ -83,6 +87,7 @@ class CreateHdfcGateway extends Migration
 
             $table->index('refund_id');
             $table->index('gateway_transaction_id');
+            $table->index('gateway_payment_id');
             $table->index('received');
             $table->index('ref');
         });

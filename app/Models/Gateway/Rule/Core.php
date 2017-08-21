@@ -195,6 +195,12 @@ class Core extends Base\Core
 
             case Payment\Method::NETBANKING:
                 $params[Entity::ISSUER] = $payment->getBank();
+
+                break;
+
+            case Payment\Method::WALLET:
+                $params[Entity::ISSUER] = $payment->getWallet();
+
                 break;
         }
     }

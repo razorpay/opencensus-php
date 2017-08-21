@@ -61,6 +61,11 @@ class Entity extends Base\Entity
         self::OLD_PASSWORDS
     ];
 
+    protected $embeddedRelations = [
+        self::ROLES,
+        self::GROUPS,
+    ];
+
     protected $revisionEnabled = true;
 
     protected $revisionCreationsEnabled = true;

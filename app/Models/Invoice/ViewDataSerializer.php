@@ -6,12 +6,17 @@ use Config;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant\Checkout;
 
+/**
+ * This class is common source of invoice and related data to be sent
+ * - to mail templates as payload
+ * - to hosted page view
+ *
+ */
 class ViewDataSerializer extends Base\Core
 {
     const DEFAULT_MERCHANT_BRAND_COLOR = '#6A5DD1';
@@ -57,24 +62,9 @@ class ViewDataSerializer extends Base\Core
      * to be used in hosted page, pdf generation, mails etc.
      *
      * @return array
-     * @throws Exception\BadRequestValidationFailureException
      */
     public function get(): array
     {
-        $publicId = $this->invoice->getPublicId();
-
-        if ($this->invoice->isDraft())
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                "Invoice with id $publicId is not issued yet");
-        }
-
-        if ($this->invoice->isCancelled())
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                "Invoice with id $publicId is cancelled");
-        }
-
         $invoiceData = $this->getFormattedInvoiceDataForView();
 
         $keyId = $this->repo->key
@@ -101,12 +91,22 @@ class ViewDataSerializer extends Base\Core
 
     protected function getFormattedInvoiceDataForView(): array
     {
+        // Reload is needed as from Payment\Processor\Notify, the invoice
+        // object passed as part of construct does not have relations loaded.
+        $this->repo->loadRelations($this->invoice);
+
         $invoiceData = $this->invoice->toArrayPublic();
 
         $invoiceData[Entity::IS_PAID] = $this->invoice->isPaid();
 
+        // Puts callback_url, callback_method in view data. Those are not
+        // exposed in route response as of now.
+
+        $invoiceData[Entity::CALLBACK_URL]    = $this->invoice->getCallbackUrl();
+        $invoiceData[Entity::CALLBACK_METHOD] = $this->invoice->getCallbackMethod();
+
         // Gets public view attributes of all payments against this invoice
-        // in desc order.
+        // in descending order.
 
         $invoiceData[Entity::PAYMENTS] = $this->invoice
                                               ->load(Entity::PAYMENTS)

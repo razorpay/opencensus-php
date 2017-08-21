@@ -17,8 +17,6 @@ class NetbankingPnbGatewayTest extends TestCase
 
     public function setup()
     {
-        $this->markTestSkipped();
-
         $this->testDataFilePath = __DIR__.'/NetbankingPnbGatewayTestData.php';
 
         parent::setUp();

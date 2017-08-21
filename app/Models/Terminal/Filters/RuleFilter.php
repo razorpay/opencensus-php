@@ -81,8 +81,6 @@ class RuleFilter extends Terminal\Filter
             {
                 $match = $rule->matches($terminal);
 
-                $this->traceRuleMatch($rule, $terminal, $match, $verbose);
-
                 if ($match === true)
                 {
                     if ($rule->shouldSelectTerminal() === true)
@@ -170,25 +168,6 @@ class RuleFilter extends Terminal\Filter
             }
 
             $this->trace->info(TraceCode::GATEWAY_FILTER_RULES, $traceData);
-        }
-    }
-
-    protected function traceRuleMatch(Rule\Entity $rule, Terminal\Entity $terminal, bool $match, bool $verbose)
-    {
-        if ($verbose === true)
-        {
-            $this->trace->info(TraceCode::TERMINAL_FILTER_RULE_MATCH, [
-                    'rule'     => [
-                        'id'      => $rule->getId(),
-                        'group'   => $rule->getGroup(),
-                        'gateway' => $rule->getGateway(),
-                    ],
-                    'terminal' => [
-                        'id'      => $terminal->getId(),
-                        'gateway' => $terminal->getGateway()
-                    ],
-                    'match'    => $match,
-                ]);
         }
     }
 

@@ -22,6 +22,7 @@ class Payment extends Validator
         Entity::REFUND_STATUS       => 'sometimes|',
         Entity::DESCRIPTION         => 'sometimes|',
         Entity::CARD_ID             => 'sometimes|',
+        Entity::CARD                => 'sometimes|',
         Entity::TRANSFER_ID         => 'sometimes|',
         Entity::BANK                => 'sometimes|',
         Entity::WALLET              => 'sometimes|',

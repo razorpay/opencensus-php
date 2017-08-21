@@ -1,0 +1,54 @@
+<?php
+
+namespace RZP\Models\Merchant\Invoice;
+
+use Carbon\Carbon;
+
+use RZP\Constants\Timezone;
+use RZP\Jobs\DispatchRouter;
+use RZP\Jobs\MerchantInvoice as MerchantInvoiceJob;
+use RZP\Models\Base;
+
+class Core extends Base\Core
+{
+    public function queueCreateInvoiceEntities(array $input)
+    {
+        (new Validator)->validateInput('create_queue', $input);
+
+        if ((isset($input['month']) === true) and (isset($input['year']) === true))
+        {
+            $invoiceDate = Carbon::createFromDate($input['year'], $input['month'], 1, Timezone::IST);
+        }
+        else
+        {
+            $invoiceDate = Carbon::now(Timezone::IST)->subMonth();
+        }
+
+        $endTimestamp = $invoiceDate->endOfMonth()->timestamp;
+
+        $batch = 100;
+
+        $skip = 0;
+
+        $count = 100;
+
+        while ($batch === $count)
+        {
+            $merchants = $this->repo
+                              ->merchant
+                              ->fetchActivatedMerchantsBeforeTimestamp($batch, $skip, $endTimestamp);
+
+            $count = $merchants->count();
+
+            $skip += $count;
+
+            foreach ($merchants as $merchant)
+            {
+                $createJob = new MerchantInvoiceJob(
+                    $merchant->getId(), $invoiceDate->month, $invoiceDate->year, $this->mode);
+
+                (new DispatchRouter)->dispatchOn($createJob, DispatchRouter::MERCHANT_INVOICE);
+            }
+        }
+    }
+}

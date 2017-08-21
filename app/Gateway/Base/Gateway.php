@@ -281,6 +281,19 @@ class Gateway
         $this->mock = $mock;
     }
 
+    protected function checkApiSuccess(Verify $verify)
+    {
+        $verify->apiSuccess = true;
+
+        $input = $verify->input;
+
+        if (($input['payment'][Payment\Entity::STATUS] === Payment\Status::FAILED) or
+            ($input['payment'][Payment\Entity::STATUS] === Payment\Status::CREATED))
+        {
+            $verify->apiSuccess = false;
+        }
+    }
+
     protected function assertPaymentId($expectedPaymentId, $actualPaymentId)
     {
         if ($actualPaymentId !== $expectedPaymentId)
@@ -346,6 +359,12 @@ class Gateway
 
     protected function isSecondRecurringPaymentRequest($input)
     {
+        if (($this->app['basicauth']->isPrivateAuth() === false) and
+            ($this->app['basicauth']->isPrivilegeAuth() === false))
+        {
+            return false;
+        }
+
         if (($input['payment']['recurring'] === true) and
             (isset($input['token']) === true) and
             ($input['token']->isRecurring() === true) and

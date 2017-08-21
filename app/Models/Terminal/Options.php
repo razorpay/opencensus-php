@@ -16,7 +16,12 @@ class Options
 
     protected $failedTerminals = [];
 
-    protected $skippedFilters = [];
+    protected $skippedFilters = [
+        'method',
+        'network',
+        'bank',
+        'amount',
+    ];
 
     public function __construct()
     {

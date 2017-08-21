@@ -147,6 +147,7 @@ final class Route
         'merchant_beneficiary_file'               => ['get',      'merchants/beneficiary/file',                     'MerchantController@getMerchantBeneficiaryFile'                     ],
         'merchant_post_beneficiary_file'          => ['post',     'merchants/beneficiary/file/bank',                'MerchantController@postMerchantBeneficiaryFile'                    ],
         'merchant_notify_holiday'                 => ['post',     'merchants/notify/holiday',                       'MerchantController@postMerchantsNotifyHoliday'                     ],
+        'merchant_create_invoice_entities'        => ['post',     'merchants/invoice/create',                      'MerchantInvoiceController@postCreateInvoiceEntities'               ],
         'balance_fetch'                           => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'credits_create'                          => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
         'credits_fetch_by_id'                     => ['get',      'merchants/{mid}/credits/{id}',                   'MerchantController@getCreditsLog'                                  ],
@@ -231,7 +232,7 @@ final class Route
         'setl_get_details'                        => ['get',      'settlements/{id}/details',                       'SettlementController@getSettlementDetails',                        ],
         'setl_post_details_old'                   => ['post',     'settlements/details',                            'SettlementController@postSettlementDetailsForOldTxns'              ],
         'setl_combined_report'                    => ['get',      'settlements/report/combined',                    'SettlementController@getSettlementCombinedReport'                  ],
-        'nodal_initiate_transfer'                 => ['post',     'nodal/transfer/icici',                         'SettlementController@postInitiateTransfer'                         ],
+        'nodal_initiate_transfer'                 => ['post',     'nodal/transfer/icici',                           'SettlementController@postInitiateTransfer'                         ],
         'adj_fetch_by_id'                         => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
         'adj_fetch_multiple'                      => ['get',      'adjustments',                                    'AdjustmentController@getAdjustments'                               ],
         'adj_add'                                 => ['post',     'adjustments',                                    'AdjustmentController@postAdjustment'                               ],
@@ -578,8 +579,7 @@ final class Route
         'risk_get'                                => ['get',      'risk/{id}',                                      'RiskController@get'                                                ],
         // Dispute routes
         'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
-        'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                          ],
-        'merchant_file_processor'                 => ['post',     'merchant/file/process',                          'MerchantController@processFile'                                    ],
+        'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                            ],
     ];
 
     public static $public = [
@@ -976,7 +976,7 @@ final class Route
         'risk_update',
         'risk_fetch_multiple',
         'risk_get',
-        'merchant_file_processor',
+        'merchant_create_invoice_entities',
     ];
 
     public static $proxy = [
@@ -1320,6 +1320,7 @@ final class Route
             'reports_transaction_dsp',
             'schedule_process_tasks',
             'virtual_account_refund_excess',
+            'merchant_create_invoice_entities',
         ],
 
         'kotak' => [

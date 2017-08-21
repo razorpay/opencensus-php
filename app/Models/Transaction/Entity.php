@@ -607,6 +607,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEE_BEARER) === Merchant\FeeBearer::CUSTOMER;
     }
 
+    public function isPostpaid()
+    {
+        return ($this->getAttribute(self::FEE_MODEL) === Merchant\FeeModel::POSTPAID);
+    }
+
     public function toArrayReport()
     {
         $reportTxn = parent::toArrayReport();

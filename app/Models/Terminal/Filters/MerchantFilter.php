@@ -450,11 +450,13 @@ class MerchantFilter extends Terminal\Filter
             return true;
         }
 
+        // Removes shared terminals for airtelmoney and freecharge gateways if any
+        // direct terminals for these same gateways are present
         foreach ($applicableTerminals as $currentTerminal)
         {
-            if ($currentTerminal->isShared() === false)
+            if ((in_array($currentTerminal->getGateway(), $wallets, true) === true) and
+                ($currentTerminal->isShared() === false))
             {
-                // direct terminals exists, do not use shared terminals
                 return false;
             }
         }
