@@ -169,6 +169,7 @@ export default class Content extends Component {
                 <Route path="/customers" component={InvoicingContainer} />
                 <Route path="/subscriptions" component={Subscriptions} />
                 <Route path="/plans" component={Subscriptions} />
+                <Route path="/addons" component={Subscriptions} />
                 <Route path="/route" component={Marketplace} />
                 <Route path="/virtualaccounts" component={VirtualAccounts} />
                 <Route path="/reports" component={Reports} />
