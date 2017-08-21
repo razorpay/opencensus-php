@@ -845,10 +845,15 @@ class Gateway extends Base\Gateway
 
     protected function postAmaTransactionRequest(array & $content, $input)
     {
+        $traceContent = $content;
+
+        unset($traceContent['vpc_CardNum']);
+        unset($traceContent['vpc_CardExp']);
+
         $this->trace->info(
             TraceCode::GATEWAY_SUPPORT_REQUEST,
             ['action' => 'Support action request array',
-            'content' => $content]);
+            'content' => $traceContent]);
 
         $this->addAmaTransactionFields($content, $input);
 
