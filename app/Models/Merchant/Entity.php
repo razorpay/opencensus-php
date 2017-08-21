@@ -85,6 +85,10 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_REPORT_EMAIL
     ];
 
+    protected $embeddedRelations = [
+        self::GROUPS,
+    ];
+
     protected $fillable = [
         self::ID,
         self::NAME,
