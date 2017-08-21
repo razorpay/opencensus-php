@@ -481,7 +481,7 @@ class Service extends Base\Service
             'steps_finished'      => $merchantDetail['steps_finished'],
             'locked'              => $merchantDetail['locked'],
             'submitted'           => $merchantDetail['submitted'],
-            'tags'                => $tags[0]['tags'],
+            'tags'                => $tags[0]['tags'] ?? [],
             'submitted_at'        => $merchantDetail['submitted_at'],
             'activated_dashboard' => $merchant['activated']
         ] + $merchant;
