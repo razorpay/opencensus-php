@@ -1,6 +1,6 @@
 <?php
 
-namespace Gateway\Blade;
+namespace RZP\Gateway\Blade;
 
 class Url
 {

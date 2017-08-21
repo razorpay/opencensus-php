@@ -313,24 +313,31 @@ class Gateway
             Network::MAES,
             Network::DICL,
             Network::RUPAY,
-            Network::UNKNOWN],
+            Network::UNKNOWN
+        ],
         self::AXIS_MIGS => [
             Network::MC,
-            Network::VISA],
+            Network::VISA
+        ],
         self::AXIS_GENIUS => [
             Network::MC,
-            Network::VISA],
+            Network::VISA
+        ],
         self::ATOM => [
             Network::MC,
-            Network::VISA],
+            Network::VISA
+        ],
         self::AMEX => [
-            Network::AMEX],
+            Network::AMEX
+        ],
         self::BLADE => [
             Network::MC,
-            Network::VISA],
+            Network::VISA
+        ],
         self::PAYTM => [
             Network::MC,
-            Network::VISA],
+            Network::VISA
+        ],
         self::SHARP => [
             Network::MC,
             Network::VISA,
@@ -338,10 +345,12 @@ class Gateway
             Network::AMEX,
             Network::DICL,
             Network::RUPAY,
-            Network::UNKNOWN],
+            Network::UNKNOWN
+        ],
         self::CYBERSOURCE => [
             Network::MC,
-            Network::VISA],
+            Network::VISA
+        ],
         self::FIRST_DATA => [
             Network::MC,
             Network::VISA,

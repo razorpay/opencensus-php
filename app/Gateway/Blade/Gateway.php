@@ -849,7 +849,9 @@ class Gateway extends Base\Gateway
     {
         $creds = $this->getCreds();
 
-        $deviceCategory = DeviceCategory::getDeviceCategory($input['payment']['notes']['device_category']);
+        // $deviceCategory = DeviceCategory::getDeviceCategory($input['payment']['notes']['device_category']);
+        // todo: fix this
+        $deviceCategory = 0;
 
         $accept = substr($this->app['request']->header('Accept'), 0, 2048);
         $userAgent = substr($this->app['request']->header('User-Agent'), 0, 256);
