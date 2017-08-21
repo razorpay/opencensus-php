@@ -1,31 +1,31 @@
 <?php
 
-namespace RZP\Models\Merchant\FileProcessor;
+namespace RZP\Models\Merchant\FileProcessor\Irctc;
 
 use RZP\Exception;
 use RZP\Trace\Trace;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\Base as BaseModel;
+use RZP\Models\Merchant\FileProcessor\FileProcessor as BaseProcessor;
 
-class FileProcessor extends BaseModel\Core
+class FileProcessor extends BaseProcessor
 {
     const REFUND = 'refund';
     const SETTLEMENT = 'settlement';
 
-    public function process(array $fileContents)
+    public function process(array $filesContents)
     {
         $processedIds = [];
 
         $details = [];
 
-        foreach ($fileContents as $file => $fileDetails)
+        foreach ($filesContents as $file => $fileContents)
         {
-            $type = $this->getType($fileDetails['file_details']);
+            $type = $this->getType($fileContents['file_details']['file_name']);
 
-            unset($fileDetails['file_details']);
+            unset($fileContents['file_details']);
 
-            $details[$type]  = $fileDetails;
+            $details[$type]  = $fileContents;
         }
 
         $this->processRTypeRefunds($details['refund']);
@@ -53,15 +53,13 @@ class FileProcessor extends BaseModel\Core
 
     protected function processSettlements($details)
     {
-        $settlementProcessor = new Settlement('C');
+        $settlementProcessor = new Settlement();
 
         $settlementProcessor->process($details);
     }
 
-    protected function getType($fileDetails)
+    public function getType($fileName)
     {
-        $fileName = $fileDetails['file_name'];
-
         if (strpos($fileName, self::REFUND) !== false)
         {
             $type = self::REFUND;

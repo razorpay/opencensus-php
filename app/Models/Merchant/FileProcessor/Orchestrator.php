@@ -21,10 +21,6 @@ class Orchestrator extends Base\Core
 
     const IRCTC                = 'Irctc';
 
-    const MERCHANT_FILE_DETAILS_VALIDATION = [
-        self::IRCTC
-    ];
-
     /*********************
      * Instance variables
      *********************/
@@ -97,14 +93,7 @@ class Orchestrator extends Base\Core
 
         $this->allFilesDetails = $this->getFileDetailsFromInput($inputDetails, $input);
 
-        $merchant = studly_case($input['merchant']);
-
-        if (in_array($merchant, self::MERCHANT_FILE_DETAILS_VALIDATION) === true)
-        {
-            $fileDetailsValidator = 'validate' . $merchant . 'FileDetails';
-
-            $this->validator->$fileDetailsValidator($this->allFilesDetails);
-        }
+        $this->validator->validateFileDetails($input, $this->allFilesDetails);
 
         $this->validator->validateIrctcFileDetails($this->allFilesDetails);
 
@@ -226,7 +215,7 @@ class Orchestrator extends Base\Core
 
     protected function getFileContentInArrayAndSet($fileDetails)
     {
-        $columnHeaders = $this->fileProcessor->getHeaders();
+        $columnHeaders = $this->getColumnHeaders($fileDetails);
 
         $delimiter = $this->fileProcessor->getDelimiter();
 
@@ -235,6 +224,17 @@ class Orchestrator extends Base\Core
         $this->setExtraDetails($csvArray, $fileDetails);
 
         $this->allFilesContents[] = $csvArray;
+    }
+
+    protected function getColumnHeaders($fileDetails)
+    {
+        $fileName = $fileDetails[FileProcessor::FILE_NAME];
+
+        $processorType = $this->fileProcessor->getType($fileName);
+
+        $columnHeaders = $this->fileProcessor->getColumnHeadersForType($processorType);
+
+        return $columnHeaders;
     }
 
 

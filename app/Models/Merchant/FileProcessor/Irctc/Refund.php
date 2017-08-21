@@ -30,7 +30,7 @@ class Refund extends TypeProcessor
 
     protected $refundType;
 
-    public function __construct(string $type)
+    public function __construct(string $type = 'R')
     {
         parent::__construct();
 

@@ -16,7 +16,9 @@ class FileProcessor extends BaseModel\Core
 
         foreach ($fileContents as $file => $fileDetails)
         {
-            $typeProcessor = __NAMESPACE__ . studly_case($this->getType($fileDetails['file_details']));
+            $typeProcessorName = __NAMESPACE__ . studly_case($this->getType($fileDetails['file_details']));
+
+            $typeProcessor = new $typeProcessorName;
 
             unset($fileDetails['file_details']);
 
@@ -28,9 +30,16 @@ class FileProcessor extends BaseModel\Core
 
 
     //Should be implement in child class
-    protected function getType()
+    public function getType()
     {
 
+    }
+
+    public function getColumnHeadersForType($type)
+    {
+        $typeProcessorName = __NAMESPACE__ . studly_case($type);
+
+        return new $typeProcessorName;
     }
 
 

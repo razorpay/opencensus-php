@@ -6,6 +6,10 @@ use RZP\Exception;
 
 class Validator
 {
+    const MERCHANT_FILE_DETAILS_VALIDATION = [
+        Orchestrator::IRCTC
+    ];
+
     /**
      * For emails without attachments, but links, we allow
      * zero attachments during the initial validation.
@@ -68,6 +72,18 @@ class Validator
                     ['attachments_found' => $foundAttachmentsCount, 'attachment_count' => $input['attachment-count']]
                 );
             }
+        }
+    }
+
+    public function validateFileDetails(array $input, array $fileDetails)
+    {
+        $merchant = studly_case($input['merchant']);
+
+        if (in_array($merchant, self::MERCHANT_FILE_DETAILS_VALIDATION) === true)
+        {
+            $fileDetailsValidator = 'validate' . $merchant . 'FileDetails';
+
+            $this->$fileDetailsValidator($this->allFilesDetails);
         }
     }
 
