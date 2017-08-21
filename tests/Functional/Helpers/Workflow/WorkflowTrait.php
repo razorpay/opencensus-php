@@ -66,7 +66,7 @@ trait WorkflowTrait
             'levels' => [
                 [
                     'level'   => 1,
-                    'op_type' => 'and',
+                    'op_type' => 'or',
                     'steps'   => [
                         [
                             'reviewer_count' => 1,
@@ -76,6 +76,16 @@ trait WorkflowTrait
                             'reviewer_count' => 1,
                             'role_id'        => Org::CHECKER_ROLE,
                         ]
+                    ],
+                ],
+                [
+                    'level'   => 2,
+                    'op_type' => 'and',
+                    'steps'   => [
+                        [
+                            'reviewer_count' => 1,
+                            'role_id'        => Org::MAKER_ROLE,
+                        ],
                     ],
                 ],
             ],

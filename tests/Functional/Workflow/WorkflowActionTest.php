@@ -140,7 +140,7 @@ class WorkflowActionTest extends TestCase
             $content);
 
         //After Indexing into ES the document is not available in Real Time so a sec delay.
-        sleep(5);
+        sleep(1);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -172,6 +172,25 @@ class WorkflowActionTest extends TestCase
         ];
 
         $this->startTest();
+    }
 
+    public function testWorkflowActionApproveL1()
+    {
+        $defaultWorkflowActionId = 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID;
+
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $defaultWorkflowActionId);
+
+        // Assign url
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['response']['content']['checkers'][0]['admin_id'] = 'admin_' . Org::SUPER_ADMIN;
+
+        $this->testData[__FUNCTION__]['response']['content']['checkers'][0]['action_id'] = $defaultWorkflowActionId;
+
+        $this->startTest();
     }
 }

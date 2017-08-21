@@ -93,4 +93,26 @@ return [
             ],
         ],
     ],
+    'testWorkflowActionApproveL1' => [
+        'request' => [
+            'method'    => 'POST',
+            'url'       => '/w-actions/%s/checkers',
+            'content'   => [
+                'approved'      => 1,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                "state"             => "open",
+                "current_level"     => 2,
+                "checkers"          => [
+                    [
+                        "approved"      => true,
+                        "admin"         => [],
+                    ]
+                ],
+                "comments"          => [],
+            ],
+        ],
+    ],
 ];
