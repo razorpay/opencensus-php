@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
@@ -168,7 +169,7 @@ trait GenerateRefundFile
 
     protected function getFileToWriteNameWithoutExt()
     {
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
 
         return static::FILE_NAME . '_' . $this->mode . '_' . $time;
     }
