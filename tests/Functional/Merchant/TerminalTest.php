@@ -156,7 +156,7 @@ class TerminalTest extends TestCase
 
         $tid = $terminal['id'];
 
-        $data = array('gateway_terminal_id' => 'random', 'gateway_terminal_password' => 'random');
+        $data = ['gateway_terminal_id' => 'random', 'gateway_terminal_password' => 'random'];
 
         $content = $this->editTerminal($tid, $data);
 
@@ -170,7 +170,7 @@ class TerminalTest extends TestCase
 
         $tid = $terminal['id'];
 
-        $data = array('gateway_recon_password' => 'random');
+        $data = ['gateway_recon_password' => 'random'];
 
         $content = $this->editTerminal($tid, $data);
 

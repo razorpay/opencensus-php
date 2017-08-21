@@ -63,7 +63,7 @@ class Type
 
             $value = (($value === true) or ($value === '1')) ? 1 : 0;
 
-            // Sets the bit value for the current event.
+            // Sets the bit value for the current type.
             $hex ^= ((-1 * $value) ^ $hex) & (1 << ($pos - 1));
         }
 

@@ -17,6 +17,10 @@ return [
                 'gateway_terminal_password' => '12345678',
                 'category'                  => '4567',
                 'emi_subvention'            => 'merchant',
+                'type'                      => json_encode(
+                    [
+                        'non_recurring' => (string) 1,
+                    ]),
             ],
             'method' => 'POST'
         ],
@@ -39,7 +43,11 @@ return [
                 'gateway_merchant_id'       => '12345',
                 'gateway_terminal_id'       => '12345678',
                 'gateway_terminal_password' => '12345678',
-                'category'                  => '4567'
+                'category'                  => '4567',
+                'type'                      => json_encode(
+                    [
+                        'non_recurring' => (string) 1,
+                    ]),
             ],
             'method' => 'POST'
         ],
@@ -69,6 +77,10 @@ return [
                 'category'                  => '4567',
                 'emi'                       => '1',
                 'shared'                    => '1',
+                'type'                      => json_encode(
+                    [
+                        'non_recurring' => (string) 1,
+                    ]),
             ],
             'method' => 'POST'
         ],
@@ -91,7 +103,11 @@ return [
                 'gateway_acquirer'          => 'hdfc',
                 'gateway_merchant_id'       => '12345',
                 'gateway_terminal_id'       => '12345678',
-                'gateway_terminal_password' => '12345678'
+                'gateway_terminal_password' => '12345678',
+                'type'                      => json_encode(
+                    [
+                        'non_recurring' => (string) 1,
+                    ]),
             ],
             'url' => '/merchants/10000000000000/terminals',
             'method' => 'POST'
@@ -196,6 +212,10 @@ return [
                 'shared'    => '1',
                 'network_category' => 'education',
                 'gateway_acquirer' => 'hdfc',
+                'type'                      => json_encode(
+                    [
+                        'non_recurring' => (string) 1,
+                    ]),
             ],
             'method' => 'POST'
         ],

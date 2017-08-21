@@ -820,6 +820,7 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
+                'type'                  => 1,
                 )
             );
 
@@ -835,6 +836,7 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
+                'type'                  => 1,
                 )
             );
 
@@ -881,6 +883,7 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
+                'type'                  => 1,
                 )
             );
 
@@ -927,6 +930,7 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
+                'type'                  => 1,
                 )
             );
 
@@ -986,6 +990,7 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
+                'type'                  => 1,
                 )
             );
 
