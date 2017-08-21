@@ -288,9 +288,9 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment($verify)
     {
-        $payment = $verify->payment;
-        $input   = $verify->input;
-        $content = $verify->verifyResponseContent;
+        $gatewayPayment = $verify->payment;
+        $input          = $verify->input;
+        $content        = $verify->verifyResponseContent;
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
@@ -305,7 +305,7 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
-        $this->saveVerifyContentIfNeeded($payment, $input['payment']);
+        $this->saveVerifyContentIfNeeded($gatewayPayment, $input['payment']);
     }
 
     protected function setVerifyApiSuccess($verify, $payment)
@@ -346,6 +346,8 @@ class Gateway extends Base\Gateway
             $gatewayPayment->fill($walletAttributes);
             $gatewayPayment->saveOrFail();
         }
+
+        $this->action = Action::VERIFY;
 
         return $gatewayPayment;
     }
