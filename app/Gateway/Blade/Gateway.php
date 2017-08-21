@@ -717,7 +717,7 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getVereqRequestArray($input);
 
-        $xml = $this->postGuzzleRequest($request);
+        $xml = $this->sendGatewayRequest($request);
 
         $valid = $this->validateXml($xml);
 
@@ -759,16 +759,17 @@ class Gateway extends Base\Gateway
         ];
 
         $options = [
-            'body'      => $xml,
             'headers'   => $headers,
-            'cert'      => [$certFile, ''],
-            'ssl_key'   => [$keyFile, ''],
+            //TODO fix me
+            //'cert'      => [$certFile, ''],
+            //'ssl_key'   => [$keyFile, ''],
             'verify'    => false,
             'debug'     => false,
             'timeout'   => 30
         ];
 
         $request = [
+            'content'   => $xml,
             'url'       => $url,
             'method'    => 'POST',
             'options'   => $options
