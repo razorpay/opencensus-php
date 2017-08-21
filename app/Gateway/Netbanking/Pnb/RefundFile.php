@@ -68,7 +68,7 @@ class RefundFile extends Base\RefundFile
                     $row['payment']['created_at'], Timezone::IST)
                     ->format('dmYHis');
 
-            $amount = $row['refund']['amount'] / 100;
+            $amount = number_format($row['refund']['amount'] / 100, 2, '.', '');
 
             $data[] = [
                 $row['gateway']['account_number'],
@@ -89,7 +89,7 @@ class RefundFile extends Base\RefundFile
             'INR',
             '0120000',
             str_pad(Constants::DEBIT, 2, ' ', STR_PAD_LEFT),
-            str_pad($amount, 17, ' ', STR_PAD_LEFT),
+            str_pad($totalAmount, 17, ' ', STR_PAD_LEFT),
             Constants::REFUND,
         ];
 

@@ -71,10 +71,12 @@ class ClaimsFile extends Base\RefundFile
                     $row['payment']['created_at'], Timezone::IST)
                     ->format('dmYHis');
 
-            if (isset($row['payment']['refund_status']) !== RefundStatus::NULL)
+            $amountRefunded = $row['payment']['amount_refunded'];
+
+            if ($amountRefunded !== 0)
             {
                 $type = Constants::CREDIT;
-                $amount = number_format($row['refund']['amount'] / 100, 2, '.', '');
+                $amount = number_format($amountRefunded / 100, 2, '.', '');
                 $txnDetails = Constants::PAYMENT;
             }
             else

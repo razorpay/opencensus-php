@@ -311,9 +311,9 @@ class NetbankingPnbGatewayTest extends TestCase
         $testData = [
             'subject' => 'Pnb Netbanking claims and refund files for '.$date,
                 'amount' => [
-                    'claims'  => 1500,
-                    'refunds' => 500,
-                    'total'   => 1000,
+                    'claims'  => 1500.0,
+                    'refunds' => 500.0,
+                    'total'   => 1000.0,
                 ],
                 'count'   => [
                     'claims'  => 3,
@@ -339,9 +339,9 @@ class NetbankingPnbGatewayTest extends TestCase
         $testData = [
             'subject' => 'Pnb Netbanking claims and refund files for '.$date,
                 'amount' => [
-                    'claims'  => 1500,
+                    'claims'  => 1500.0,
                     'refunds' => 0,
-                    'total'   => 1500,
+                    'total'   => 1500.0,
                 ],
                 'count'   => [
                     'claims'  => 3,
