@@ -180,4 +180,36 @@ return [
         'currency' => 'INR',
         'gateway_refunded' => true,
     ],
+
+    'testSoapTimeoutError' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR_REQUEST_TIMEOUT,
+                ],
+            ],
+            'status_code' => 504,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\GatewayTimeoutException::class,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        ],
+    ],
+
+    'testSoapError' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_SOAP_ERROR,
+        ],
+    ],
 ];

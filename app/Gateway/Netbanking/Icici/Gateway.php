@@ -197,8 +197,6 @@ class Gateway extends Base\Gateway
 
         $additionalData = $this->getPaymentReferenceData($input);
 
-        $this->setTpvFieldIfNeeded($additionalData, $input);
-
         $data = array_merge($data, $additionalData);
 
         return $data;

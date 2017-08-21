@@ -21,6 +21,8 @@ class InvoiceTest extends TestCase
     use InvoiceTestTrait;
     use PaymentTrait;
 
+    const TEST_INV_ID = 'inv_1000000invoice';
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/Helpers/InvoiceTestData.php';
@@ -268,19 +270,6 @@ class InvoiceTest extends TestCase
         $this->assertNull($order);
     }
 
-    public function testCreateDraftInvoiceAndView()
-    {
-        $skipReason = 'View endpoint will now not throw exception.
-                      It will serve error page.
-                      Will remove this if required later.';
-
-        $this->markTestSkipped($skipReason);
-
-        $this->createDraftInvoice();
-
-        $this->startTest();
-    }
-
     /**
      * Creates invoice with few line items such that the total invoice amount
      * exceeds the allowed payment amount for merchant.
@@ -289,23 +278,6 @@ class InvoiceTest extends TestCase
      */
     public function testCreateDraftInvoiceWithLineItemsAndMaxAllowedAmount()
     {
-        $this->startTest();
-    }
-
-    public function testInvoiceViewWithExpiredInvoice()
-    {
-        $skipReason = 'View endpoint will now not throw exception.
-                      It will serve error page.
-                      Will remove this if required later.';
-
-        $this->markTestSkipped($skipReason);
-
-        $this->fixtures->create('invoice',
-            [
-                'status'   => 'expired',
-                'order_id' => null
-            ]);
-
         $this->startTest();
     }
 
@@ -1569,26 +1541,121 @@ class InvoiceTest extends TestCase
 
     public function testGetLinkView()
     {
-        $this->ba->publicAuth();
-
         $this->createOrder();
-        $this->fixtures->create('invoice', ['type' => 'link']);
 
-        $response = $this->call('GET', '/v1/t/inv_1000000invoice', ['key_id' => $this->ba->getKey()]);
+        $this->createIssuedInvoice(['type' => 'link']);
 
-        $this->assertResponseOk($response);
+        $this->callViewUrlAndMakeAssertions();
+    }
+
+    public function testGetLinkViewDraft()
+    {
+        $this->createDraftInvoice(['type' => 'link']);
+
+        $this->callViewUrlAndMakeAssertions(
+                self::TEST_INV_ID,
+                200,
+                'Payment Link with id inv_1000000invoice is not issued yet');
+    }
+
+    public function testGetLinkViewCancelled()
+    {
+        $this->createOrder();
+
+        $this->createDraftInvoice(['type' => 'link', 'status' => 'cancelled']);
+
+        $this->callViewUrlAndMakeAssertions(
+                self::TEST_INV_ID,
+                200,
+                'Payment Link with id inv_1000000invoice is cancelled');
+    }
+
+    public function testGetLinkViewExpired()
+    {
+        $this->createOrder();
+
+        $this->createIssuedInvoice(['type' => 'link', 'status' => 'expired']);
+
+        $this->callViewUrlAndMakeAssertions(
+                self::TEST_INV_ID,
+                200,
+                'Payment Link with id inv_1000000invoice is expired');
     }
 
     public function testGetInvoiceView()
     {
+        $this->createOrder();
+
+        $this->createIssuedInvoice();
+
+        $this->callViewUrlAndMakeAssertions();
+    }
+
+    public function testGetInvoiceViewDraft()
+    {
+        $this->createDraftInvoice();
+
+        $this->callViewUrlAndMakeAssertions(
+                self::TEST_INV_ID,
+                200,
+                'Invoice with id inv_1000000invoice is not issued yet');
+    }
+
+    public function testGetInvoiceViewCancelled()
+    {
+        $this->createOrder();
+
+        $this->createIssuedInvoice(['status' => 'cancelled']);
+
+        $this->callViewUrlAndMakeAssertions(
+                self::TEST_INV_ID,
+                200,
+                'Invoice with id inv_1000000invoice is cancelled');
+    }
+
+    public function testGetInvoiceViewExpired()
+    {
+        $this->createOrder();
+
+        $this->createDraftInvoice(['status' => 'expired']);
+
+        $this->callViewUrlAndMakeAssertions();
+
+    }
+
+    /**
+     * Calls GET invoice route and makes assertions for status code
+     * and errors if any.
+     *
+     * @param string $id
+     * @param int    $code
+     * @param string $errorMessage
+     *
+     */
+    protected function callViewUrlAndMakeAssertions(
+        string $id = self::TEST_INV_ID,
+        int $code = 200,
+        string $errorMessage = null)
+    {
         $this->ba->publicAuth();
 
-        $this->createOrder();
-        $this->fixtures->create('invoice');
+        $response = $this->call('GET', "/v1/t/$id", ['key_id' => $this->ba->getKey()]);
 
-        $response = $this->call('GET', '/v1/t/inv_1000000invoice', ['key_id' => $this->ba->getKey()]);
+        $response->assertStatus($code);
 
-        $this->assertResponseOk($response);
+        //
+        // If there is an error message expected, assert that else assert
+        // that view doesn't contain Error heading.
+        //
+
+        if (empty($errorMessage) === false)
+        {
+            $this->assertContains($errorMessage, $response->getContent());
+        }
+        else
+        {
+            $this->assertNotContains('<h2>Error</h2>', $response->getContent());
+        }
     }
 
     public function testPayExpiredInvoice()

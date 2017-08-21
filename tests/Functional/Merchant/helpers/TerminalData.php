@@ -4,6 +4,7 @@ use RZP\Gateway\Hdfc;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Terminal;
 
 return [
     'testAssignTerminal' => [
@@ -225,5 +226,154 @@ return [
                 'enabled' => false
             ]
         ]
-    ]
+    ],
+
+    'testTerminalModeDual' => [
+        'request' => [
+            'url' => '/merchants/100000Razorpay/terminals',
+            'content' => [
+                'gateway'                   => 'first_data',
+                'gateway_merchant_id'       => 'randommerchantid',
+                'gateway_acquirer'          => 'icic',
+                'mode'                      => Terminal\Mode::DUAL,
+                'type'                      => 1,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'mode'                      => Terminal\Mode::DUAL,
+                'type'                      => 1,
+            ]
+        ],
+    ],
+
+    'testTerminalModePurchase' => [
+        'request' => [
+            'url' => '/merchants/100000Razorpay/terminals',
+            'content' => [
+                'gateway'                   => 'first_data',
+                'gateway_merchant_id'       => 'randommerchantid',
+                'gateway_acquirer'          => 'icic',
+                'mode'                      => Terminal\Mode::PURCHASE,
+                'type'                      => 4,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'mode'                      => Terminal\Mode::PURCHASE,
+                'type'                      => 4,
+            ]
+        ],
+    ],
+
+    'testTerminalModeAuthCapture' => [
+        'request' => [
+            'url' => '/merchants/100000Razorpay/terminals',
+            'content' => [
+                'gateway'                   => 'axis_migs',
+                'gateway_acquirer'          => 'axis',
+                'gateway_merchant_id'       => 'randommerchantid',
+                'gateway_secure_secret'     => 'randomsecuresecretwhichis32chars',
+                'gateway_access_code'       => 'rndmcode',
+                'gateway_terminal_id'       => 'randomterminalid',
+                'gateway_terminal_password' => 'randomterminalpassword',
+                'mode'                      => Terminal\Mode::AUTH_CAPTURE,
+                'type'                      => 1,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'mode'                      => Terminal\Mode::AUTH_CAPTURE,
+                'type'                      => 1,
+            ]
+        ],
+    ],
+
+    'testTerminalModeDualFailure' => [
+        'request' => [
+            'url' => '/merchants/100000Razorpay/terminals',
+            'content' => [
+                'gateway'                   => 'first_data',
+                'gateway_merchant_id'       => 'randommerchantid',
+                'gateway_acquirer'          => 'icic',
+                'mode'                      => Terminal\Mode::AUTH_CAPTURE,
+                'type'                      => 1,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'first_data terminals must be in Dual mode',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testTerminalModePurchaseFailure' => [
+        'request' => [
+            'url' => '/merchants/100000Razorpay/terminals',
+            'content' => [
+                'gateway'                   => 'first_data',
+                'gateway_merchant_id'       => 'randommerchantid',
+                'gateway_acquirer'          => 'icic',
+                'mode'                      => Terminal\Mode::DUAL,
+                'type'                      => 4,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'FirstData Non-3DS terminals must be in Purchase mode',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testTerminalModeAuthCaptureFailure' => [
+        'request' => [
+            'url' => '/merchants/100000Razorpay/terminals',
+            'content' => [
+                'gateway'                   => 'axis_migs',
+                'gateway_acquirer'          => 'axis',
+                'gateway_merchant_id'       => 'randommerchantid',
+                'gateway_secure_secret'     => 'randomsecuresecretwhichis32chars',
+                'gateway_access_code'       => 'rndmcode',
+                'gateway_terminal_id'       => 'randomterminalid',
+                'gateway_terminal_password' => 'randomterminalpassword',
+                'mode'                      => Terminal\Mode::DUAL,
+                'type'                      => 1,
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'axis_migs terminals must be in AuthCapture mode',
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];

@@ -546,28 +546,6 @@ return [
         ],
     ],
 
-    'testCreateDraftInvoiceAndView' => [
-        'request' => [
-            'url'       => '/t/inv_1000000invoice',
-            'method'    => 'get',
-            'content'   => [
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Operation not allowed for Invoice in draft status.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
     'testCreateDraftInvoiceWithLineItemsAndMaxAllowedAmount' => [
         'request' => [
             'url' => '/invoices',
@@ -593,28 +571,6 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'Invoice amount exceeds maximum payment amount allowed.',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ],
-    ],
-
-    'testInvoiceViewWithExpiredInvoice' => [
-        'request' => [
-            'url'       => '/t/inv_1000000invoice',
-            'method'    => 'get',
-            'content'   => [
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Operation not allowed for invoice in expired status.',
                 ],
             ],
             'status_code' => 400,

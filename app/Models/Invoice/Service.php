@@ -3,9 +3,9 @@
 namespace RZP\Models\Invoice;
 
 use RZP\Models\Base;
+use RZP\Models\Batch;
 use RZP\Constants\Mode;
 use RZP\Models\LineItem;
-use RZP\Models\Batch;
 
 class Service extends Base\Service
 {
@@ -263,6 +263,8 @@ class Service extends Base\Service
         $this->app['rzp.mode'] = $mode;
 
         $invoice = $this->repo->invoice->findByPublicId($invoiceId);
+
+        $invoice->getValidator()->validateInvoiceViewable();
 
         return (new ViewDataSerializer($invoice))->get();
     }

@@ -19,7 +19,8 @@ class Options
     protected $skippedFilters = [
         'method',
         'network',
-        'bank'
+        'bank',
+        'amount',
     ];
 
     public function __construct()
