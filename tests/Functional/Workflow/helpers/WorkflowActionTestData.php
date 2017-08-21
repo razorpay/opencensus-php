@@ -153,6 +153,7 @@ return [
                 "checkers"      => [
                     [
                         "approved"  => false,
+                        "admin_id"  => 'admin_' . \RZP\Tests\Functional\Fixtures\Entity\Org::SUPER_ADMIN,
                     ]
                 ]
             ],
@@ -172,6 +173,11 @@ return [
                 'checkers'  => [
                     [
                         'approved' => true,
+                        'admin_id' => 'admin_' . \RZP\Tests\Functional\Fixtures\Entity\Org::SUPER_ADMIN,
+                    ],
+                    [
+                        'approved'  => true,
+                        'admin_id'  => 'admin_' . \RZP\Tests\Functional\Fixtures\Entity\Org::MAKER_ADMIN,
                     ]
                 ]
             ],

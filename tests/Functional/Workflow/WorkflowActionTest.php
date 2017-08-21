@@ -214,8 +214,6 @@ class WorkflowActionTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $this->testData[__FUNCTION__]['response']['content']['checkers'][0]['admin_id'] = 'admin_' . Org::SUPER_ADMIN;
-
         $this->startTest();
     }
 
@@ -235,10 +233,6 @@ class WorkflowActionTest extends TestCase
         $url = sprintf($url, $workflow['id']);
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $this->testData[__FUNCTION__]['response']['content']['checkers'][0]['admin_id'] = 'admin_' . Org::SUPER_ADMIN;
-
-        $this->testData[__FUNCTION__]['response']['content']['checkers'][1]['admin_id'] = 'admin_' . Org::MAKER_ADMIN;
 
         $this->startTest();
     }
