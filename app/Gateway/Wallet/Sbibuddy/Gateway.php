@@ -239,7 +239,7 @@ class Gateway extends Base\Gateway
         ];
 
         // Since error description is optional
-        if(array_key_exists(ResponseFields::ERROR_DESCRIPTION, $data))
+        if(isset($data[ResponseFields::ERROR_DESCRIPTION]))
         {
             $contentToSave[Entity::ERROR_MESSAGE] = $data[ResponseFields::ERROR_DESCRIPTION];
         }
