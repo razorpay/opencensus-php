@@ -419,11 +419,13 @@ app.controller('EntitiesCtrl', [
         plan_id: ['Plan Id'],
       },
       refund: {
+        amount: ['Amount'],
+        batch_id: ['Batch Id'],
+        gateway: gatewayList,
         merchant_id: ['Merchant Id'],
         payment_id: ['Payment Id'],
         status: ['all', 'created', 'failed', 'processed'],
         transaction_id: ['Transaction Id'],
-        batch_id: ['Batch Id'],
       },
       reversal: {
         merchant_id: ['Merchant Id'],
