@@ -252,7 +252,7 @@ trait Enroll
             // Collect udf fields
             $data['udf1'] = $input['merchant']->getBillingLabel();
 
-            $data['udf4'] = $input['payment']['description'] ?: $data['udf4'];
+            $data['udf4'] = $input['payment']['description'] ?? $data['udf4'];
 
             $data['udf5'] = $this->request->ip();
         }

@@ -43,6 +43,10 @@ class CreateMerchantInvoices extends Migration
 
             $table->integer(Invoice::TAX);
 
+            $table->integer(Invoice::AMOUNT_DUE)
+                  ->unsigned()
+                  ->default(0);
+
             $table->integer(Invoice::CREATED_AT);
 
             $table->integer(Invoice::UPDATED_AT);
@@ -63,6 +67,8 @@ class CreateMerchantInvoices extends Migration
                   ->references(Merchant::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
+
+            $table->unique([Invoice::MERCHANT_ID, Invoice::YEAR, Invoice::MONTH, Invoice::TYPE]);
         });
     }
 

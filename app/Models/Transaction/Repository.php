@@ -504,4 +504,25 @@ class Repository extends Base\Repository
                     ->select($transactionData)
                     ->get();
     }
+
+    public function fetchCapturedTransactionsBetweenTimestamp(string $merchantId, int $start, int $end)
+    {
+        $createdAtCol = $this->dbColumn(Entity::CREATED_AT);
+
+        $merchantIdCol = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $paymentIdCol = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $transactionData = $this->dbColumn('*');
+
+        return $this->newQuery()
+                    ->select($transactionData)
+                    ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentIdCol)
+                    ->whereBetween($createdAtCol, [$start, $end])
+                    ->merchantId($merchantId)
+                    ->whereNotNull(Payment\Entity::CAPTURED_AT)
+                    ->where(Entity::TYPE, Type::PAYMENT)
+                    ->with('source')
+                    ->get();
+    }
 }

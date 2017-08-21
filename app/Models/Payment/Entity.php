@@ -240,6 +240,7 @@ class Entity extends Base\PublicEntity
         self::CAPTURED,
         self::DESCRIPTION,
         self::CARD_ID,
+        self::CARD,
         self::BANK,
         self::WALLET,
         self::VPA,

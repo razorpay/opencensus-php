@@ -38,6 +38,17 @@ class Repository extends Base\Repository
         Entity::RISK_RATING             => 'sometimes|integer|max:5|min:1',
     );
 
+    public function fetchActivatedMerchantsBeforeTimestamp(int $limit, int $skip, int $end)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ACTIVATED, '=', 1)
+                    ->where(Entity::ACTIVATED_AT, '<=', $end)
+                    ->take($limit)
+                    ->skip($skip)
+                    ->with('merchantDetail')
+                    ->get();
+    }
+
     public function getSharedAccount()
     {
         if ($this->sharedMerchant === null)

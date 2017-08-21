@@ -5,7 +5,6 @@ namespace RZP\Tests\Functional\Helpers\Payment;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\BaseException;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use Mockery;
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
@@ -14,6 +13,7 @@ use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Fixtures\Entity\MerchantFluid;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Payment\Verify\Action;
 
 trait PaymentTrait
 {
@@ -1400,5 +1400,56 @@ trait PaymentTrait
         $response = $this->sendRequest($request);
 
         return json_decode($response->getContent(), true);
+    }
+
+    public function getVerificationSkipError()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            throw new Exception\PaymentVerificationException(
+                ['test' => 'test'],
+                '',
+                Action::FINISH);
+        });
+    }
+
+    public function getFatalErrorInVerify()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            throw new Exception\FatalThrowableError();
+        });
+    }
+
+    public function getTimeoutInVerify()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            throw new Exception\GatewayTimeoutException(
+                'cURL error 28: Operation timed out after ' .
+                '10001 milliseconds with 0 bytes received');
+        });
+    }
+
+    public function getVerificationRetryError()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            throw new Exception\PaymentVerificationException(
+                ['test' => 'test'],
+                '',
+                Action::RETRY);
+        });
+    }
+
+    public function getVerificationBlockError()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            throw new Exception\PaymentVerificationException(
+                ['test' => 'test'],
+                '',
+                Action::BLOCK);
+        });
     }
 }
