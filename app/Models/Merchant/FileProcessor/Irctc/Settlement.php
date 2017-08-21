@@ -27,7 +27,9 @@ class Settlement extends TypeProcessor
 
         $paymentProcessor = (new PaymentProcessor($payment->merchant));
 
-        $paymentProcessor->capture($paymentId);
+        $amount = $payment->getAmount();
+
+        $paymentProcessor->capture($paymentId, ['amount' => $amount]);
 
         return true;
     }

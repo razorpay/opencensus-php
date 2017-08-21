@@ -44,7 +44,7 @@ class FileProcessor extends BaseProcessor
         $refundProcessor->process($details);
     }
 
-    protected function processCTypeRefunds($detials)
+    protected function processCTypeRefunds($details)
     {
         $refundProcessor = new Refund('C');
 
