@@ -38,21 +38,25 @@ class Repository extends Base\Repository
 
     public function persistAfterEnroll($request, $response)
     {
-        $result = $response['enroll_result'];
+        switch($response['enroll_result'])
+        {
+            case Payment\Result::ENROLLED:
+                $status = Payment\Status::ENROLLED;
 
-        $status = null;
+                break;
 
-        if ($result === Payment\Result::ENROLLED)
-        {
-            $status = Payment\Status::ENROLLED;
-        }
-        else if ($result === Payment\Result::NOT_ENROLLED)
-        {
-            $status = Payment\Status::NOT_ENROLLED;
-        }
-        else if ($result === Payment\Result::INITIALIZED)
-        {
-            $status = Payment\Status::INITIALIZED;
+            case Payment\Result::NOT_ENROLLED:
+                $status = Payment\Status::NOT_ENROLLED;
+
+                break;
+
+            case Payment\Result::INITIALIZED:
+                $status = Payment\Status::INITIALIZED;
+
+                break;
+
+            default:
+                $status = null;
         }
 
         //
@@ -65,6 +69,7 @@ class Repository extends Base\Repository
             'received'                  => '0',
             'payment_id'                => $request['trackid'],
             'gateway_transaction_id'    => $response['paymentid'],
+            'gateway_payment_id'        => $response['paymentid'],
             'action'                    => $request['action'],
             'amount'                    => $request['amt'],
             'currency'                  => $request['currencycode'],
