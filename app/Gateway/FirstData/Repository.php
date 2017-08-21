@@ -86,7 +86,6 @@ class Repository extends Base\Repository
         //
         if ($refundEntities->count() > 1)
         {
-
             throw new Exception\LogicException(
                 'Multiple refund entities found for a refund ID',
                 Error\ErrorCode::SERVER_ERROR_MULTIPLE_REFUNDS_FOUND,

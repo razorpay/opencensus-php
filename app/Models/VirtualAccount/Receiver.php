@@ -146,7 +146,9 @@ class Receiver
      * otherwise use random characters.
      *
      * @param  string $root Root given by for provider of Virtual a/c services
+     *
      * @return string Unique account number
+     * @throws Exception\LogicException
      */
     protected function generateNewAccountNumberWithRoot(string $root)
     {
@@ -168,7 +170,13 @@ class Receiver
 
         if (strlen($accountNumber) > self::ACCOUNT_NUMBER_LENGTH)
         {
-            throw new Exception\LogicException('Error in account number generation.');
+            throw new Exception\LogicException(
+                'Error in account number generation.',
+                null,
+                [
+                    'account_number'    => $accountNumber,
+                    'max_length'        => self::ACCOUNT_NUMBER_LENGTH,
+                ]);
         }
 
         return $accountNumber;

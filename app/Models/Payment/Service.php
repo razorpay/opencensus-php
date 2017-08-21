@@ -1104,7 +1104,13 @@ class Service extends Base\Service
         // Fail if no associated transfer. @todo - Remove this when payment hold is added\
         else
         {
-            throw new Exception\LogicException('Hold update attempted for payment with no transfer');
+            throw new Exception\LogicException(
+                'Hold update attempted for payment with no transfer',
+                null,
+                [
+                    'transaction_id'    => $txn->getId(),
+                    'payment_id'        => $payment->getId(),
+                ]);
         }
     }
 

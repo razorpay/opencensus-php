@@ -895,7 +895,13 @@ class Gateway extends Base\Gateway
         }
 
         throw new Exception\LogicException(
-            'Unrecognized verify refund gateway response: ' . $content);
+            'Unrecognized verify refund gateway response',
+            null,
+            [
+                'payment_id' => $input['refund']['payment_id'],
+                'refund_id'  => $input['refund']['id'],
+                'content'    => $content,
+            ]);
     }
 
     protected function isSuccessFullyRefundedOnGateway(array $gatewayRefundData, array $input): bool

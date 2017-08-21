@@ -269,7 +269,13 @@ class Repository extends Base\Repository
                 break;
 
             default:
-                throw new Exception\LogicException('Should not reach here. Action: ' . $action);
+                throw new Exception\LogicException(
+                    'Should not reach here.',
+                    null,
+                    [
+                        'payment_id' => $paymentId,
+                        'action'     => $action,
+                    ]);
         }
 
         $attributes = [

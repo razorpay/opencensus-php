@@ -291,7 +291,11 @@ class Processor
         if ($merchant->isActivated() === false)
         {
             throw new Exception\LogicException(
-                'A non-activated merchant is making live request. Blasphemy!');
+                'A non-activated merchant is making live request. Blasphemy!',
+                null,
+                [
+                    'merchant_id' => $merchant->getId(),
+                ]);
         }
     }
 

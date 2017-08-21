@@ -79,7 +79,12 @@ trait Callback
         if (in_array($gateway, Payment\Gateway::$s2sCallbackGateways, true) === false)
         {
             throw new Exception\LogicException(
-                'Invalid gateway provided: ' . $gateway);
+                'Invalid gateway provided',
+                null,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'gateway'       => $gateway
+                ]);
         }
 
         $this->mutex->acquireAndRelease(

@@ -60,7 +60,7 @@ class HdfcGatewayTest extends TestCase
             $this->testData['testHdfcPaymentEntity'], $payment);
     }
 
-    public function testTamparedPayment()
+    public function testTamperedPayment()
     {
         $payment = $this->doAuthPayment();
 

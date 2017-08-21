@@ -351,7 +351,14 @@ trait Refund
             if ($payment->transaction === null)
             {
                 throw new Exception\LogicException(
-                    'Transaction expected but not present for payment: ' . $payment->getId());
+                    'Transaction expected but not present for payment',
+                    null,
+                    [
+                        'payment_id'        => $payment->getId(),
+                        'auth_capture'      => $supportsAuthAndCapture,
+                        'force_refund_txn'  => $forceRefundTransaction,
+                        'gateway_refunded'  => $gatewayRefunded,
+                    ]);
             }
 
             $txn = (new Transaction\Core)->createFromRefund($refund);
@@ -677,7 +684,12 @@ trait Refund
         }
         else
         {
-            throw new Exception\LogicException('Should not have reached here');
+            throw new Exception\LogicException(
+                'Should not have reached here',
+                null,
+                [
+                    'payment_id'    => $payment->getId(),
+                ]);
         }
     }
 
@@ -818,10 +830,11 @@ trait Refund
         if ($balance->getBalance() < $refund->getBaseAmount())
         {
             $traceMessage = [
-                'type'             => $type,
-                'message'          => 'Not enough balance',
-                'merchant_balance' => $balance->getBalance(),
-                'refund_amount'    => $refund->getBaseAmount()
+                'type'              => $type,
+                'message'           => 'Not enough balance',
+                'merchant_balance'  => $balance->getBalance(),
+                'refund_amount'     => $refund->getBaseAmount(),
+                'refund_id'         => $refund->getId(),
             ];
 
             if ($type === 'refund')
@@ -996,7 +1009,12 @@ trait Refund
         if ($payment->transaction === null)
         {
             throw new Exception\LogicException(
-                'Transaction expected but not present for payment: ' . $payment->getId());
+                'Transaction expected but not present for payment',
+                null,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'refund_id'     => $refundId
+                ]);
         }
 
         $input = [

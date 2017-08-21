@@ -38,7 +38,12 @@ trait Authorize
                 return $this->getFieldsForFormSubmitForRupay();
 
             default:
-                throw new Exception\LogicException('Should not have reached here');
+                throw new Exception\LogicException(
+                    'Should not have reached here',
+                    null,
+                    [
+                        'enroll_status' => $enrollStatus,
+                    ]);
         }
     }
 
