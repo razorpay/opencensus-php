@@ -2372,3 +2372,7 @@ ALTER TABLE invoices
 ALTER TABLE hdfc
     ADD COLUMN gateway_payment_id bigint(20) unsigned AFTER gateway_transaction_id,
     ADD INDEX hdfc_gateway_payment_id_index (gateway_payment_id);
+
+# Add index on refund amount
+ALTER TABLE refunds
+    ADD INDEX refunds_amount_index (amount);

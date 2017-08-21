@@ -598,6 +598,26 @@ class RefundTest extends TestCase
         ];
     }
 
+    public function testFetchRefundsAdminAuth()
+    {
+        $this->ba->privateAuth();
+        $payment1 = $this->fixtures->create('payment:captured', ['gateway' => 'cybersource']);
+        $rfnd1 = $this->fixtures->create('refund:from_payment', ['payment' => $payment1]);
+        $payment2 = $this->fixtures->create('payment:captured', ['gateway' => 'hdfc']);
+        $rfnd2 = $this->fixtures->create('refund:from_payment', ['payment' => $payment2]);
+
+        $refunds  = $this->getEntities(
+                        'refund',
+                        [
+                            'gateway'     => $payment1->getGateway(),
+                            'amount'      => $rfnd1->getAmount()
+                        ],
+                        true);
+
+        $this->assertEquals(1, $refunds['count']);
+
+        $this->assertEquals($rfnd1->getPublicId(), $refunds['items'][0]['id']);
+    }
 
     public function testRefundValidationOnWrongGateway()
     {
