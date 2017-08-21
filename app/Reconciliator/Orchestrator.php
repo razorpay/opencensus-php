@@ -82,7 +82,7 @@ class Orchestrator extends Base\Core
         self::JIOMONEY            => [],
         self::EBS                 => [],
         self::FIRST_DATA          => ['customer.care@icici.mailserv.in'],
-        self::VIRTUAL_ACC_KOTAK   => [],
+        self::VIRTUAL_ACC_KOTAK   => ['KMB.Reports@kotak.com'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN               => ['prashanth.yv@razorpay.com'],
