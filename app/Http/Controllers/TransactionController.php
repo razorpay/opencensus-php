@@ -136,7 +136,7 @@ class TransactionController extends Controller
              array (
                  'Sl. No.' => 1,
                  'GST.SAC Code' => '997158',
-                 'Description' => 'Comission on Card Payments <= INR 2,000',
+                 'Description' => 'Commission on Card Payments <= INR 2,000',
                  'Amount' => 500,
                  'SGST @ 9%' => 11,
                  'CGST @ 9%' => 11,
@@ -147,7 +147,7 @@ class TransactionController extends Controller
              array (
                  'Sl. No.' => 2,
                  'GST.SAC Code' => "997158",
-                 'Description' => "Comission on Card Payments > INR 2,000",
+                 'Description' => "Commission on Card Payments > INR 2,000",
                  'Amount' => 500,
                  'SGST @ 9%' => 11,
                  'CGST @ 9%' => 11,
@@ -158,7 +158,7 @@ class TransactionController extends Controller
              array (
                  'Sl. No.' => 3,
                  'GST.SAC Code' => "997158",
-                 'Description' => "Comission on All Methods Except Cards",
+                 'Description' => "Commission on All Methods Except Cards",
                  'Amount' => 500,
                  'SGST @ 9%' => 11,
                  'CGST @ 9%' => 11,
