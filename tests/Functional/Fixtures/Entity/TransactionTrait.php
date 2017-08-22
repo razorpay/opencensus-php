@@ -2,13 +2,15 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+use RZP\Models\Transaction\Core as TransactionCore;
+
 trait TransactionTrait
 {
     protected function createTransactionForPaymentAuthorized($payment)
     {
         return $this->transaction(function() use ($payment)
         {
-            return (new \RZP\Models\Transaction\Core)->createFromPaymentAuthorized($payment);
+            return (new TransactionCore)->createFromPaymentAuthorized($payment);
         });
     }
 
@@ -16,7 +18,7 @@ trait TransactionTrait
     {
         return $this->transaction(function() use ($payment)
         {
-            return (new \RZP\Models\Transaction\Core)->createOrUpdateFromPaymentCaptured($payment);
+            return (new TransactionCore)->createOrUpdateFromPaymentCaptured($payment);
         });
     }
 
@@ -24,7 +26,7 @@ trait TransactionTrait
     {
         return $this->transaction(function() use ($payment)
         {
-            return (new \RZP\Models\Transaction\Core)->createFromPaymentTransferred($payment);
+            return (new TransactionCore)->createFromPaymentTransferred($payment);
         });
     }
 
@@ -32,7 +34,7 @@ trait TransactionTrait
     {
         return $this->transaction(function() use ($refund)
         {
-            return (new \RZP\Models\Transaction\Core)->createFromRefund($refund);
+            return (new TransactionCore)->createFromRefund($refund);
         });
     }
 
@@ -40,7 +42,7 @@ trait TransactionTrait
     {
         return $this->transaction(function() use ($payout)
         {
-            return (new \RZP\Models\Transaction\Core)->createFromPayout($payout);
+            return (new TransactionCore)->createFromPayout($payout);
         });
     }
 
@@ -48,7 +50,7 @@ trait TransactionTrait
     {
         return $this->transaction(function() use ($transfer)
         {
-            return (new \RZP\Models\Transaction\Core)->createFromTransfer($transfer);
+            return (new TransactionCore)->createFromTransfer($transfer);
         });
     }
 
@@ -56,7 +58,16 @@ trait TransactionTrait
     {
         return $this->transaction(function() use ($reversal)
         {
-            return (new \RZP\Models\Transaction\Core)->createFromReversal($reversal);
+            return (new TransactionCore)->createFromReversal($reversal);
         });
     }
+
+    protected function createTransactionOnDispute($dispute)
+    {
+        return $this->transaction(function() use ($dispute)
+        {
+            return (new TransactionCore)->createFromDispute($dispute);
+        });
+    }
+
 }
