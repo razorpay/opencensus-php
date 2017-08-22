@@ -107,34 +107,15 @@ class Repository extends Base\Repository
 
     public function persistAfterAuthNotEnrolled($model, $data)
     {
-        $status = Payment\Status::AUTHORIZED;
-
-        if ($data['result'] === Payment\Result::CAPTURED)
-        {
-            $status = Payment\Status::CAPTURED;
-        }
-
-        $attributes = [
-            'received'      => '1',
-            'payment_id'    => $data['trackid'],
-            'status'        => $status,
-            'amount'        => $data['amt'],
-            'result'        => $data['result'],
-            'ref'           => $data['ref'],
-            'auth'          => $data['auth'],
-            'avr'           => $data['avr'],
-            'postdate'      => $data['postdate'],
-            'gateway_transaction_id' => $data['tranid']
-        ];
-
-        $model->fill($attributes);
-
-        $this->saveOrFail($model);
-
-        return $model;
+        return $this->persistEnrollData($model, $data);
     }
 
     public function persistAfterAuthEnrolled($model, $data)
+    {
+        return $this->persistEnrollData($model, $data);
+    }
+
+    protected function persistEnrollData($model, $data)
     {
         $status = Payment\Status::AUTHORIZED;
 
@@ -144,19 +125,22 @@ class Repository extends Base\Repository
         }
 
         $attributes = [
-            'received'      => '1',
-            'payment_id'    => $data['trackid'],
-            'status'        => $status,
-            'result'        => $data['result'],
-            'ref'           => $data['ref'],
-            'auth'          => $data['auth'],
-            'avr'           => $data['avr'],
-            'postdate'      => $data['postdate']
+            'received'               => '1',
+            'payment_id'             => $data['trackid'],
+            'status'                 => $status,
+            'result'                 => $data['result'],
+            'ref'                    => $data['ref'],
+            'auth'                   => $data['auth'],
+            'avr'                    => $data['avr'],
+            'postdate'               => $data['postdate'],
+            'gateway_transaction_id' => $data['tranid'],
         ];
 
         $model->fill($attributes);
 
         $this->saveOrFail($model);
+
+        return $model;
     }
 
     public function persistAfterAuthRecurring($request, $data)
