@@ -926,6 +926,30 @@ class Service extends Base\Service
         return [[], $currentMerchant->toArray()];
     }
 
+    public function getMerchantTags($merchantId) {
+        $getTags = [
+            'route_name' => 'merchant_get_tags',
+            'url_params' => [
+                '{id}' => $merchantId,
+            ]
+        ];
+
+        $genericService = new Generic\Service;
+
+        list($error, $data) = $genericService->call('GET', $getTags);
+
+        if (empty($error) === false)
+        {
+            throw new \Razorpay\Api\Errors\BadRequestError(
+                $error,
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
+        return $data;
+    }
+
     public function addMerchantTagsOnAPI($merchantId, $tags) {
         $addTags = [
             'route_name' => 'merchant_tag_add',

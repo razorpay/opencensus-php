@@ -521,6 +521,7 @@ return [
         'refund_verify_failed'              => 'refunds/{id}/retry',
 
         // Tags
+        'merchant_get_tags'                 => 'merchants/{id}/tags',
         'merchant_tag_add'                  => 'merchants/{id}/tags',
         'merchant_tag_delete'               => 'merchants/{id}/tags/{tagName}',
 
