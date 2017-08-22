@@ -364,10 +364,7 @@ trait Inquiry
 
         $content['action'] = Action::INQUIRY;
 
-        if ($verify->input['merchant']->getId() !== '2aTeFCKTYWwfrF')
-        {
-            $content['transid'] = $payment['gateway_transaction_id'];
-        }
+        $content['transid'] = $payment['gateway_payment_id'];
 
         $content['udf5'] = 'PaymentID';
 
