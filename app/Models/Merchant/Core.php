@@ -399,7 +399,9 @@ class Core extends Base\Core
 
     public function syncEventToEs(string $event, array $payload)
     {
-        $job = (new MerchantSync($this->mode, $event, $payload))->delay(Repository::ES_JOB_DELAY);
+        $job = new MerchantSync($this->mode, $event, $payload);
+
+        $job->delay(Repository::ES_JOB_DELAY);
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::ES_V2);
     }

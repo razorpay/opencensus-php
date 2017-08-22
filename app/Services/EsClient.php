@@ -10,6 +10,11 @@ use RZP\Exception\InvalidArgumentException;
 
 class EsClient
 {
+    /**
+     * Value gets used during scroll queries to ES.
+     * It tells ES to keep scroll search context to be open
+     * for another x seconds. Post that it'll return empty results.
+     */
     const DEFAULT_SCROLL_SECS = '30s';
 
     protected $client;
@@ -117,6 +122,18 @@ class EsClient
         return $this->client->search($params);
     }
 
+    /**
+     * Search and scroll: Given the es request parameters, makes
+     * scroll calls to ES and keeps returning the results using Generator.
+     *
+     * Note: The callee shouldn't take more than DEFAULT_SCROLL_SECS s to
+     * process the yield results or else the scroll context in ES dies
+     * and will not return further results.
+     *
+     * @param array $params
+     *
+     * @return \Generator
+     */
     public function searchAndScroll(array $params): \Generator
     {
         $params[Es::SCROLL] = self::DEFAULT_SCROLL_SECS;
@@ -134,6 +151,13 @@ class EsClient
         }
     }
 
+    /**
+     * Makes a scroll search call to ES with given scroll id.
+     *
+     * @param string $scrollId
+     *
+     * @return array
+     */
     public function scroll(string $scrollId): array
     {
         if ($this->esMock === true)

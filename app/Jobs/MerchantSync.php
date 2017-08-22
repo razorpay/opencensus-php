@@ -5,9 +5,11 @@ namespace RZP\Jobs;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
+use RZP\Constants\Es;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Group;
 use RZP\Constants\Entity as E;
+use RZP\Models\Base\EsRepository;
 
 /**
  * Merchant index needs extended support for sync. Merchant index contains
@@ -20,16 +22,7 @@ class MerchantSync extends Job implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    /**
-     * Group edit: When a group is edited with new parents we need
-     * to find all merchants of hierarchical children of this group and re-index
-     * those merchant entities.
-     */
     const GROUP_EDIT   = 'group_edit';
-
-    /**
-     * Group delete: Same as above.
-     */
     const GROUP_DELETE = 'group_delete';
 
     private $event;
@@ -71,28 +64,33 @@ class MerchantSync extends Job implements ShouldQueue
         {
             $this->trace->traceException($e, null, null, $this->getTraceData());
 
-            $this->release();
+            $this->release(EsRepository::JOB_RELEASE_WAIT);
         }
     }
 
+    /**
+     * Group edit: When a group is edited with new parents we need
+     * to find all merchants of hierarchical children of this group and re-index
+     * those merchant entities.
+     *
+     * Merchant ids to be re-indexed are queried from ES itself
+     * for simplicity. We find all documents which had this group id
+     * in their 'groups' attribute.
+     */
     protected function handleGroupEdit()
     {
         $groupId = $this->payload[Group\Entity::ID];
 
         $params = [
             Merchant\Entity::GROUPS         => [$groupId],
-            Merchant\Entity::ACCOUNT_STATUS => 'all',
+            Merchant\Entity::ACCOUNT_STATUS => Merchant\AccountStatus::ALL,
         ];
-
-        // Queries from ES itself for simplicity. We find all documents
-        // which had this group id in their 'groups' attribute. These are the
-        // merchant docs that needs to be re-indexed.
 
         $merchantIds = [];
 
         foreach ($this->esRepo->buildQuerySearchAndScroll($params) as $results)
         {
-            $ids = array_collapse($results['hits']['hits'], '_id');
+            $ids = array_pluck($results[ES::HITS][ES::HITS], ES::_ID);
 
             $merchantIds = array_merge($merchantIds, $ids);
         }
@@ -100,14 +98,29 @@ class MerchantSync extends Job implements ShouldQueue
         $this->pushEsSyncJob($merchantIds);
     }
 
+    /**
+     * Same as  handleGroupEdit()
+     */
     protected function handleGroupDelete()
     {
         $this->handleGroupEdit();
     }
 
-    protected function pushEsSyncJob(array $merchantIds)
+    /**
+     * We already have flow (via EsSync) where particular entity gets re-indexed.
+     * Using the same flow here.
+     *
+     * Cons:
+     * - If there are thousands of merchant ids to be re-indexed this will push
+     *   to queue that many times. In one way it's fine as those will be spread
+     *   across listeners. But there is scope of optimization on db query when
+     *   done in bulk.
+     *
+     * @param array $ids
+     */
+    protected function pushEsSyncJob(array $ids)
     {
-        foreach ($merchantIds as $merchantId)
+        foreach ($ids as $id)
         {
             $job = new EsSync($this->mode, Merchant\EsRepository::UPDATE, E::MERCHANT, $id);
 

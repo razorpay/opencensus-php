@@ -57,11 +57,9 @@ class Service extends Base\Service
 
         $this->repo->deleteOrFail($group);
 
-        (new Merchant\Core)->syncEventToEs(
-            MerchantSync::GROUP_DELETE,
-            [
-                Entity::ID => $group->getId(),
-            ]);
+        $payload = [Entity::ID => $group->getId()];
+
+        (new Merchant\Core)->syncEventToEs(MerchantSync::GROUP_DELETE, $payload);
 
         return $group->toArrayDeleted();
     }

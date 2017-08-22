@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Base\Traits\Es;
 
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\PublicCollection;
 
 /**
@@ -36,12 +37,27 @@ trait Hydrator
     // Following two methods can be overridden(and written in corresponding
     // Repository class) if required.
 
+    /**
+     * Process the array item before it's used to convert into
+     * corresponding model. E.g. 'notes' comes as JSON from ES but as text
+     * from MySQL and so we json_encode that value so the array can be used
+     * to build model(in above method) without issues.
+     *
+     * @param array $item
+     */
     protected function preProcessForHydration(array & $item)
     {
         $this->jsonEncodeNotesForHydration($item);
     }
 
-    protected function postProcessForHydration($model, array & $item)
+    /**
+     * Processes the model after hydration. Handles relations association
+     * and unset not expected/required values.
+     *
+     * @param PublicEntity $model
+     * @param array        $item
+     */
+    protected function postProcessForHydration(PublicEntity $model, array & $item)
     {
     }
 

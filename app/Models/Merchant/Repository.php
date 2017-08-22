@@ -17,6 +17,8 @@ class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLive;
 
+    const SUB_ACCOUNTS_ONLY_VALUE = '1';
+
     protected $entity = 'merchant';
 
     protected $sharedMerchant = null;
@@ -40,15 +42,24 @@ class Repository extends Base\Repository
     ];
 
     protected $adminFetchParamRules = [
-        EsRepository::SEARCH_HITS       => 'sometimes|boolean',
-        EsRepository::QUERY             => 'sometimes|string|min:2|max:100',
-        Entity::ACCOUNT_STATUS          => 'sometimes|string|in:suspended,archived,activated,pending,dead',
-        Entity::SUB_ACCOUNTS            => 'sometimes',
+        EsRepository::SEARCH_HITS       => 'filled|boolean',
+        EsRepository::QUERY             => 'filled|string|min:2|max:100',
+        Entity::ACCOUNT_STATUS          => 'filled|string|in:suspended,archived,activated,pending,dead',
+        Entity::SUB_ACCOUNTS            => 'filled|custom',
         Entity::GROUPS                  => 'sometimes|array',
-        Entity::ADMINS                  => 'required|string',
+        Entity::ADMINS                  => 'required|array|min:1|max:1',
     ];
 
-    public function fetchActivatedMerchantsBeforeTimestamp(int $limit, int $skip, int $end, array $merchantIds = [])
+    protected function validateSubAccounts($attribute, $value)
+    {
+        ($value === self::SUB_ACCOUNTS_ONLY_VALUE) or $this->validatePublicId($attribute, $value);
+    }
+
+    public function fetchActivatedMerchantsBeforeTimestamp(
+      int $limit,
+      int $skip,
+      int $end,
+      array $merchantIds = []): Base\PublicCollection
     {
         $query = $this->newQuery()
                     ->where(Entity::ACTIVATED, '=', 1)
@@ -483,6 +494,33 @@ class Repository extends Base\Repository
             Entity::FEATURES                    => function () {},
         ];
 
+        //
+        // Following 5 queries are run in total (dumps from indexing command):
+        //
+        // - SELECT * FROM merchants
+        //
+        // - SELECT <fields> FROM merchant_details
+        //   WHERE merchant_details.merchant_id IN (?)
+        //
+        // - SELECT <fields> FROM groups
+        //   INNER JOIN merchant_map
+        //   ON groups.id = merchant_map.entity_id
+        //   WHERE merchant_map.merchant_id IN (?)
+        //      AND merchant_map.entity_type = ?
+        //      AND groups.deleted_at IS NULL
+        //
+        // - SELECT <fields> FROM admins
+        //   INNER JOIN merchant_map
+        //   ON admins.id = merchant_map.entity_id
+        //   WHERE merchant_map.merchant_id IN (?)
+        //      AND merchant_map.entity_type = ?
+        //      AND admins.deleted_at IS NULL
+        //
+        // - SELECT * FROM features
+        //   WHERE features.entity_id IN (?)
+        //      AND features.entity_type = ?
+        //
+
         $query->with($with);
     }
 
@@ -523,7 +561,7 @@ class Repository extends Base\Repository
         return $serialized;
     }
 
-    protected function postProcessForHydration($model, array & $item)
+    protected function postProcessForHydration(Base\PublicEntity $model, array & $item)
     {
         $attributes = $item[Entity::MERCHANT_DETAIL];
 

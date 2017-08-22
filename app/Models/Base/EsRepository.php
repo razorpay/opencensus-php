@@ -18,9 +18,9 @@ class EsRepository extends \Razorpay\Spine\Repository
     const MAX_JOB_ATTEMPTS = 3;
 
     /**
-     * Wait for 120 s before re-queuing the failed job.
+     * Wait for 30 s before re-queuing the failed job.
      */
-    const JOB_RELEASE_WAIT = 120;
+    const JOB_RELEASE_WAIT = 30;
 
     // Different actions on ES document
     const CREATE           = 'create';
@@ -172,6 +172,8 @@ class EsRepository extends \Razorpay\Spine\Repository
         $this->addMerchantIdInEsParamsIfSet($params, $merchantId);
 
         $esRequestParams = $this->buildQueryAndGetEsRequestParams($params);
+
+        $this->trace->info(TraceCode::ES_REQUEST_PARAMS, $esRequestParams);
 
         return $this->esDao->search($esRequestParams);
     }

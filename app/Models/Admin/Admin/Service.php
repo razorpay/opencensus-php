@@ -562,7 +562,7 @@ class Service extends Base\Service
         // Adds following to $input so all merchant to which this admin
         // has direct access to can be filtered.
 
-        $input[Merchant\Entity::ADMINS] = $admin->getId();
+        $input[Merchant\Entity::ADMINS] = [$admin->getId()];
 
         // We would want to receive the ES payload
 
@@ -575,12 +575,15 @@ class Service extends Base\Service
     {
         $results = $this->getMerchantsFromEs($orgId, $adminId, []);
 
-        // Existing consumer(dashboard) expect the result as following.
+        //
+        // Existing consumer(dashboard) expect the result as following:
+        // [
+        //   "id" => "referrer",
+        //   ...
+        // ]
+        //
 
-        $ids       = array_column($results, Merchant\Entity::ID);
-        $referrers = array_column($results, Merchant\Entity::REFERRER);
-
-        return array_combine($ids, $referrers);
+        return array_pluck($results, Merchant\Entity::REFERRER, Merchant\Entity::ID);
     }
 
     /**

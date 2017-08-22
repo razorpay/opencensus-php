@@ -41,11 +41,9 @@ class Core extends Base\Core
 
         $this->associateRelevantEntitiesToGroup($input, $group);
 
-        (new Merchant\Core)->syncEventToEs(
-            MerchantSync::GROUP_EDIT,
-            [
-                Entity::ID => $group->getId(),
-            ]);
+        $payload = [Entity::ID => $group->getId()];
+
+        (new Merchant\Core)->syncEventToEs(MerchantSync::GROUP_EDIT, $payload);
 
         return $group;
     }

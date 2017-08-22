@@ -33,6 +33,7 @@ final class Es
     const FIELDS               = 'fields';
     const EXISTS               = 'exists';
     const SHOULD               = 'should';
+    const _SOURCE              = '_source';
     const MUST_NOT             = 'must_not';
     const SCROLL_ID            = 'scroll_id';
     const _SCROLL_ID           = '_scroll_id';

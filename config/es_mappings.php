@@ -285,7 +285,6 @@ return [
             'admins' => [
                 'type' => 'keyword',
             ],
-
             'groups' => [
                 'type' => 'keyword',
             ],

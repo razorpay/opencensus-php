@@ -56,16 +56,16 @@ class Repository extends Base\Repository
     {
         $finalResult = $withOriginal ? $groups : new PublicCollection;
 
-        $parentGruops = $this->findImmdiateParentsOfGroups($groups);
+        $parentGroups = $this->findImmediateParentsOfGroups($groups);
 
-        while ($parentGruops->count() > 0)
+        while ($parentGroups->count() > 0)
         {
-            $parentGruops->each(function ($group, $id) use ($finalResult)
+            $parentGroups->each(function ($group, $id) use ($finalResult)
             {
                 $finalResult->push($group);
             });
 
-            $parentGruops = $this->findImmdiateParentsOfGroups($parentGruops);
+            $parentGroups = $this->findImmediateParentsOfGroups($parentGroups);
         }
 
         return $finalResult;
@@ -79,13 +79,13 @@ class Repository extends Base\Repository
      *
      * @return PublicCollection
      */
-    public function findImmdiateParentsOfGroups(
+    public function findImmediateParentsOfGroups(
         PublicCollection $groups): PublicCollection
     {
         $groups->load(Entity::PARENTS);
 
         $parents = $groups->pluck(Entity::PARENTS)->collapse()->all();
 
-        return (new PublicCollection($parents));
+        return new PublicCollection($parents);
     }
 }

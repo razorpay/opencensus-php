@@ -608,6 +608,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ES_SYNC_REQUEST                           = 'ES_SYNC_REQUEST';
     const ES_BULK_UPDATE_FAILED                     = 'ES_BULK_UPDATE_FAILED';
     const ES_MYSQL_RESULTS_MISMATCH                 = 'ES_MYSQL_RESULTS_MISMATCH';
+    const ES_REQUEST_PARAMS                         = 'ES_REQUEST_PARAMS';
 
     const RECON_ALERT                               = 'RECON_ALERT';
     const RECON_FILE_SKIP                           = 'RECON_FILE_SKIP';

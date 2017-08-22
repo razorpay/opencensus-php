@@ -3,13 +3,13 @@
 namespace RZP\Base;
 
 use RZP\Constants;
+use RZP\Constants\Es;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
-use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\PublicEntity;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Base\Traits\Es\Hydrator as EsHydrator;
@@ -239,18 +239,17 @@ trait RepositoryFetch
         string $merchantId = null,
         array $expands): PublicCollection
     {
-        $entity = $this->entity;
-
         $response = $this->esRepo->buildQueryAndSearch($params, $merchantId);
 
         // Extract results from ES response: If hit has _source get that else
         // just the document id.
+
         $result = array_map(
                     function ($res)
                     {
-                        return $res['_source'] ?? ['id' => $res['_id']];
+                        return $res[ES::_SOURCE] ?? [Common::ID => $res[ES::_ID]];
                     },
-                    $response['hits']['hits']);
+                    $response[ES::HITS][ES::HITS]);
 
         if (count($result) === 0)
         {

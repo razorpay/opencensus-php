@@ -13,12 +13,21 @@ trait EsRepositoryUpdateTestAndLive
      *
      * @var boolean
      */
-    public static $syncEnabled = true;
+    protected static $syncEnabled = true;
 
     public function disableSync()
     {
         self::$syncEnabled = false;
     }
+
+    //
+    // Following 2 methods work as following:
+    // - We run the parent's method. This updates the index
+    //   in current mode.
+    // - We set index name for alternate mode.
+    // - We run the parent's method again.
+    // - We reset index name.
+    //
 
     public function bulkUpdate(array $documents): array
     {
@@ -29,6 +38,8 @@ trait EsRepositoryUpdateTestAndLive
             $this->setIndexNameForAlternateMode();
 
             parent::bulkUpdate($documents);
+
+            $this->setIndexName();
         }
 
         return $result;
@@ -43,6 +54,8 @@ trait EsRepositoryUpdateTestAndLive
             $this->setIndexNameForAlternateMode();
 
             parent::deleteDocument($id);
+
+            $this->setIndexName();
         }
     }
 }
