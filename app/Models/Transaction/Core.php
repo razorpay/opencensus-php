@@ -7,7 +7,7 @@ use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
-use RZP\Models\Card;
+use RZP\Models\Dispute;
 use RZP\Models\Reversal;
 use RZP\Models\Currency;
 use RZP\Models\Merchant;
@@ -15,7 +15,6 @@ use RZP\Models\Payment;
 use RZP\Models\Payout;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Pricing;
-use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement\Holidays;
@@ -23,7 +22,6 @@ use RZP\Models\Schedule\Library as ScheduleLibrary;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Models\Customer;
 use RZP\Models\Transfer;
 use RZP\Models\Feature;
 use RZP\Models\Merchant\Credits;
@@ -769,6 +767,38 @@ class Core extends Base\Core
         $txn->sourceAssociate($reversal);
 
         $this->updateBalances($txn, false);
+
+        return $txn;
+    }
+
+    public function createFromDispute(Dispute\Entity $dispute): Entity
+    {
+        $txn = new Entity;
+
+        $nowTimestamp = Carbon::now()->getTimestamp();
+
+        $data = [
+            Entity::DEBIT         => $dispute->getAmountDeducted(),
+            Entity::CREDIT        => 0,
+            Entity::CURRENCY      => $dispute->getCurrency(),
+            Entity::GATEWAY_FEE   => 0,
+            Entity::API_FEE       => 0,
+            Entity::SETTLED       => 0,
+            Entity::SETTLED_AT    => $nowTimestamp,
+            Entity::FEE           => 0,
+            Entity::SERVICE_TAX   => 0,
+            Entity::AMOUNT        => $dispute->getAmountDeducted(),
+            Entity::TYPE          => Type::DISPUTE,
+            Entity::CHANNEL       => Channel::KOTAK,
+        ];
+
+        $txn->fillAndGenerateId($data);
+
+        $txn->merchant()->associate($dispute->merchant);
+
+        $txn->sourceAssociate($dispute);
+
+        $this->updateBalances($txn);
 
         return $txn;
     }

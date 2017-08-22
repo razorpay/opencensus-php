@@ -23,6 +23,7 @@ use RZP\Models\Promotion;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Batch;
+use RZP\Models\Dispute;
 use RZP;
 use Swift_Mailer;
 
@@ -279,6 +280,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
             'subscription'    => Subscription\Entity::class,
             'promotion'       => Promotion\Entity::class,
+
+            'dispute'         => Dispute\Entity::class,
         ]);
     }
 

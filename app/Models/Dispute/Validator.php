@@ -17,7 +17,7 @@ class Validator extends Base\Validator
         Entity::EXPIRES_ON             => 'required|epoch',
         Entity::REASON_ID              => 'required|alpha_num|size:14',
         Entity::AMOUNT                 => 'required|integer|min:100',
-        Entity::DEDUCT_AT_ONSET        => 'required|boolean',
+        Entity::DEDUCT_AT_ONSET        => 'sometimes|boolean',
     ];
 
     protected static $editRules = [
@@ -48,7 +48,6 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_CANNOT_UPDATE_CLOSED_DISPUTE);
         }
-
     }
 
     public function validatePaymentForDispute(array $input, Payment\Entity $payment)

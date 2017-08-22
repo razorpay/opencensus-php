@@ -31,6 +31,52 @@ class DisputeTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals(true, $payment['disputed']);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $this->assertEquals(0, $dispute['amount_deducted']);
+    }
+
+    public function testDisputeCreateWithDeduct()
+    {
+        $testData = $this->updateCreateTestData();
+
+        $testData['response']['content']['payment_id'] = $this->payment->getId();
+
+        $this->startTest($testData);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['disputed']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('dispute', $transaction['type']);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $this->assertEquals(100, $dispute['amount_deducted']);
+    }
+
+    public function testDisputeCreateWithDeductWithoutEnoughBalance()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+
+        $this->fixtures->refund->createFromPayment(['payment' => $payment]);
+
+        $testData = $this->updateCreateTestData('pay_' . $payment->getId());
+
+        $testData['request']['content']['amount'] = $payment->getAmount();
+
+        $this->startTest($testData);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('refund', $transaction['type']);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $this->assertNull($dispute);
     }
 
     public function testDisputeCreateWithoutReason()
