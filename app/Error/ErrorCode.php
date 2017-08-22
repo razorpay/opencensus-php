@@ -121,7 +121,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_P2P                                                   = 'BAD_REQUEST_INVALID_P2P';
     const BAD_REQUEST_VPA_DOESNT_EXIST                                              = 'BAD_REQUEST_VPA_DOESNT_EXIST';
 
-// Unauthorized bad requests
+    // Unauthorized bad requests
     const BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED                               = 'BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY                                  = 'BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET                               = 'BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET';
@@ -134,7 +134,11 @@ class ErrorCode
     const BAD_REQUEST_UNAUTHORIZED_API_KEY_EXPIRED                                  = 'BAD_REQUEST_UNAUTHORIZED_API_KEY_EXPIRED';
     const BAD_REQUEST_UNAUTHORIZED                                                  = 'BAD_REQUEST_UNAUTHORIZED';
 
-// Payment bad requests
+    // OAuth Authorization errors
+    const BAD_REQUEST_UNAUTHORIZED_OAUTH_TOKEN_INVALID                              = 'BAD_REQUEST_UNAUTHORIZED_OAUTH_TOKEN_INVALID';
+    const BAD_REQUEST_UNAUTHORIZED_OAUTH_OAUTH_SCOPE_INVALID                        = 'BAD_REQUEST_UNAUTHORIZED_OAUTH_OAUTH_SCOPE_INVALID';
+
+    // Payment bad requests
     const BAD_REQUEST_PAYMENT_FAILED                                                = 'BAD_REQUEST_PAYMENT_FAILED';
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_USER                                     = 'BAD_REQUEST_PAYMENT_CANCELLED_BY_USER';
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_PRESSING_BACK_ON_ANDROID                 = 'BAD_REQUEST_PAYMENT_CANCELLED_BY_PRESSING_BACK_ON_ANDROID';
