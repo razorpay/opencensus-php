@@ -95,7 +95,7 @@ class EsRepository extends Base\EsRepository
     // builder doesn't get called for these fields in input.
     //
 
-    public function buildQueryForAdmins(array & $query, string $value)
+    public function buildQueryForAdmins(array & $query, array $value)
     {
     }
 

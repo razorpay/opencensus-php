@@ -458,18 +458,18 @@ class OrganizationController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function getMerchantIdsFromEs($id, $adminId)
+    public function getMerchantIdsFromEs(Admin\Admin\Service $service)
     {
-        $response = (new Admin\Admin\Service)->getMerchantIdsFromEs($id, $adminId);
+        $response = $service->getMerchantIdsFromEs();
 
         return ApiResponse::json($response);
     }
 
-    public function getMerchantsFromEs($id, $adminId)
+    public function getMerchantsFromEs(Admin\Admin\Service $service)
     {
         $input = Request::all();
 
-        $response = (new Admin\Admin\Service)->getMerchantsFromEs($id, $adminId, $input);
+        $response = $service->getMerchantsFromEs($input);
 
         return ApiResponse::json($response);
     }

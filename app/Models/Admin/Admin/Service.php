@@ -544,9 +544,9 @@ class Service extends Base\Service
         return $responseHash;
     }
 
-    public function getMerchantsFromEs(string $orgId, string $adminId, array $input): array
+    public function getMerchantsFromEs(array $input): array
     {
-        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
+        $admin = $this->auth->getAdmin();
 
         // Appends more payload in $input for ES search:
 
@@ -556,7 +556,9 @@ class Service extends Base\Service
 
         if ($admin->canSeeAllMerchants() === false)
         {
-            $input[Merchant\Entity::GROUPS] = $admin->groups->getIds();
+            $groupIds = $admin->groups()->get()->getIds();
+
+            $input[Merchant\Entity::GROUPS] = $groupIds;
         }
 
         // Adds following to $input so all merchant to which this admin
@@ -568,12 +570,14 @@ class Service extends Base\Service
 
         $input[Base\EsRepository::SEARCH_HITS] = 1;
 
-        return $this->repo->merchant->fetch($input)->toArrayAdmin();
+        $merchants = $this->repo->merchant->fetch($input);
+
+        return $merchants->toArrayAdmin();
     }
 
-    public function getMerchantIdsFromEs(string $orgId, string $adminId): array
+    public function getMerchantIdsFromEs(): array
     {
-        $results = $this->getMerchantsFromEs($orgId, $adminId, []);
+        $result = $this->getMerchantsFromEs([]);
 
         //
         // Existing consumer(dashboard) expect the result as following:
@@ -583,7 +587,9 @@ class Service extends Base\Service
         // ]
         //
 
-        return array_pluck($results, Merchant\Entity::REFERRER, Merchant\Entity::ID);
+        $items = $result['items'];
+
+        return array_pluck($items, Merchant\Entity::REFERRER, Merchant\Entity::ID);
     }
 
     /**
