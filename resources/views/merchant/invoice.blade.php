@@ -188,7 +188,7 @@
 
     .invoice-box table td.sno, .invoice-box table th.sno {
 
-      padding: 5px 12px;
+      padding: 0 12px;
     }
 
     div.bank-details table td.lesser-width.seperator {
@@ -251,10 +251,26 @@
               <td class="text-right">
                 <b>Issued To:</b><br/>
                 {{{$merchant['name']}}} [{{{$merchant['id']}}}]<br>
-                #252/4b, 8a cross, 11th main , Venkataputa<br>
-                Bengaluru - 560034<br/>
-                Karnataka<br/>
-                <span class="code">GSTIN - {{{$rzp_gstin}}}</span>
+                @if ($merchant_details['business_registered_address'])
+                {{{$merchant_details['business_registered_address']}}}<br/>
+                @endif
+                @if ($merchant_details['business_registered_city'])
+                {{{$merchant_details['business_registered_city']}}}
+                @if ($merchant_details['business_registered_pin'])
+                -
+                @else
+                <br/>
+                @endif
+                @endif
+                @if ($merchant_details['business_registered_pin'])
+                {{{$merchant_details['business_registered_pin']}}}<br/>
+                @endif
+                @if ($merchant_details['business_registered_state'])
+                {{{$merchant_details['business_registered_state']}}}<br/>
+                @endif
+                @if (!empty($gst))
+                <span class="code">GSTIN - {{{$gst}}}</span>
+                @endif
               </td>
             </tr>
           </table>
@@ -288,22 +304,30 @@
             </thead>
 
             <tbody>
-              <?php $totalAmount = 0; $totalTax = 0; $grandTotal = 0; ?>
+              <?php $rowsSize = sizeOf($rows); ?>
 
               @foreach($rows as $rowIndex => $rowItem)
-              <tr class="item <?php echo(sizeOf($rows) - 1 === $rowIndex ? "last" : "")?>">
+
+              <?php $isTotalRow = $rowItem['Description'] === "Total"; ?>
+
+              @if (!$isTotalRow)
+              <tr class="item <?php echo(($rowsSize === 1 || $rowsSize - 2 === $rowIndex) ? "last" : "")?>">
                 <td class="sno">
                   {{{$rowItem['Sl. No.']}}}.
                 </td>
                 <td class="gst-code">
                   {{{$rowItem['GST.SAC Code']}}}
                 </td>
-                <td class="description">
+              @else
+              <tr class="total">
+                <td class="empty" colspan="2"></td>
+              @endif
+
+                <td class="description <?php echo($isTotalRow ? "text-right" : "") ?>">
                   {{{$rowItem['Description']}}}
                 </td>
                 <td class="amount text-right">
                   <b>₹{{{$rowItem['Amount']}}}</b>
-                  <?php $totalAmount = $totalAmount + $rowItem['Amount']; ?>
                 </td>
                 <td class="tax text-right">
                   @if (array_key_exists('SGST @ 9%', $rowItem))
@@ -315,27 +339,19 @@
                   @endif
 
                   @if (array_key_exists('IGST @ 18%', $rowItem))
-                  IGST @ 18% - ₹{{{ $rowItem['CGST @ 9%'] }}}<br/>
+                  IGST @ 18% - ₹{{{ $rowItem['IGST @ 18%'] }}}<br/>
                   @endif
 
                   @if (array_key_exists('Tax Total', $rowItem))
                   <b>Tax Total - ₹{{{ $rowItem['Tax Total'] }}}</b>
-                  <?php $totalTax = $totalTax + $rowItem['Tax Total']; ?>
                   @endif
-
                 </td>
                 <td class="grand-total text-right">
                   <b>₹{{{$rowItem['Grand Total']}}}</b>
-                  <?php $grandTotal = $grandTotal + $rowItem['Grand Total']; ?>
                 </td>
               </tr>
               @endforeach
-              <tr class="total">
-                <td class="empty" colspan="3"></td>
-                <td class="text-right">₹{{ $totalAmount }}</td>
-                <td class="text-right">₹{{ $totalTax }}</td>
-                <td class="text-right">₹{{ $grandTotal}}</td>
-              </tr>
+
               <tr>
                 <td colspan="4"></td>
                 <td class="text-right">Paid</td>
