@@ -15,6 +15,8 @@ class Server extends Base\Mock\Server
     {
         $data = $this->parseEncryptedInput($input);
 
+        $this->validateActionInput($data, 'authorize');
+
         $redirectUrl = $data[RequestFields::CALLBACK_URL];
 
         $content = $this->prepareAuthorizeResponse($data, $input[RequestFields::MERCHANT_ID]);
@@ -30,6 +32,8 @@ class Server extends Base\Mock\Server
 
         $data = $this->parseEncryptedInput($input);
 
+        $this->validateActionInput($data, 'refund');
+
         $this->content($data, 'validateRefund');
 
         $content = $this->prepareRefundResponse($data, $input[RequestFields::MERCHANT_ID]);
@@ -44,6 +48,8 @@ class Server extends Base\Mock\Server
         parent::verify($input);
 
         $data = $this->parseEncryptedInput($input);
+
+        $this->validateActionInput($data, 'verify');
 
         $content = $this->prepareVerifyResponse($data, $input[RequestFields::MERCHANT_ID]);
 

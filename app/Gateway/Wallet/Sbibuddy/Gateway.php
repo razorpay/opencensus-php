@@ -413,7 +413,7 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
 
         $this->trace->info(
-            TraceCode::GATEWAY_SUPPORT_REQUEST,
+            TraceCode::GATEWAY_SUPPORT_RESPONSE,
             [
                 'content' => $response->body,
                 'gateway' => 'wallet_sbibuddy'
