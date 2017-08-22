@@ -36,11 +36,15 @@ export default class ModalSlider extends Component {
   };
 
   render() {
+    var className = 'ModalSlider__Overlay';
+    if (this.props.expanded) {
+      className += ' expanded';
+    }
     return (
       <Modal
         isOpen={this.props.isOpen}
         closeTimeoutMS={300}
-        overlayClassName="ModalSlider__Overlay"
+        overlayClassName={className}
         class="ModalSlider__Content"
         contentLabel="SliderModal"
       >

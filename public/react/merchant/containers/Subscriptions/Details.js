@@ -10,8 +10,11 @@ import { fetchPlan } from 'merchant/modules/plans';
 import { fetchCustomer } from 'merchant/modules/customers';
 import { fetchInvoice } from 'merchant/modules/invoices/details';
 import { showNotification } from 'rzp/modules/notifications';
+import { expandSlider, compactSlider } from 'rzp/modules/slider';
 
 @connect(state => state.subscription, {
+  expandSlider,
+  compactSlider,
   fetchInvoice,
   fetchItem,
   fetchPlan,
@@ -24,11 +27,7 @@ export default class SubscriptionDetailsContainer extends Component {
     confirm: PropTypes.func,
   };
 
-  state = {
-    secLoading: false,
-    invoice: null,
-    payment: null,
-  };
+  state = {};
 
   componentWillMount() {
     this.fetchSubscriptionDetails(this.props.id);
@@ -47,18 +46,17 @@ export default class SubscriptionDetailsContainer extends Component {
   }
 
   fetchInvoice(id) {
-    this.setState({ secLoading: true });
+    this.props.expandSlider();
+    this.setState({ secView: true });
     this.props
       .fetchInvoice(id)
       .then(invoice => {
         this.setState({
           invoice,
-          secLoading: false,
         });
       })
       .catch(({ errors }) => {
         this.setState({
-          secLoading: false,
           errors,
         });
       });
@@ -109,7 +107,7 @@ export default class SubscriptionDetailsContainer extends Component {
 
   render() {
     let { entity, plan, customer } = this.props;
-    let { invoice, secLoading } = this.state;
+    let { invoice, secView } = this.state;
     let errors = this.state.errors;
     let isLoading = this.state.isLoading;
     let statusMsg = {};
@@ -131,7 +129,7 @@ export default class SubscriptionDetailsContainer extends Component {
           statusMsg={statusMsg}
           onCancelClick={this.cancelSubscription}
         />
-        <InvoiceDetail invoice={invoice} isLoading={secLoading} />
+        <InvoiceDetail invoice={invoice} isLoading={secView && !invoice} />
       </div>
     );
   }

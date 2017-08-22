@@ -26,6 +26,26 @@
     opacity: 1;
     transform: translateX(90%);
   }
+
+  &.expanded {
+    width: 1050px;
+    button.close {
+      left: 50%;
+    }
+    .content-wrapper {
+      width: 50%;
+      position: absolute;
+      top: 0;
+      left: 50%;
+      height: 100%;
+      &:first-child {
+        left: 0;
+        .panel, .panel-heading {
+          background-color: #FAFAFA;
+        }
+      }
+    }
+  }
 }
 
 .ModalSlider__Content {
@@ -36,7 +56,8 @@
     padding: 10px;
     position: absolute;
     top: 16px;
-    right: 10px;
+    margin-left: -53px;
+    left: 100%;
     z-index: 2;
   }
 
