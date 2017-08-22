@@ -20,22 +20,17 @@ export default class TestModeBanner extends Component {
 
     return (
       <div class="alert alert-warning TestModeBanner">
-        You are in <b>Test Mode</b>, so only test data is shown.
-        {' '}
+        You are in <b>Test Mode</b>, so only test data is shown.{' '}
         {user.isActivated
           ? <span>
-              Switch to
-              {' '}
-              <a onClick={this.switchToLiveMode}>Live mode</a>
-              {' '}
-              to see real transaction data.
+              Switch to <a onClick={this.switchToLiveMode}>Live mode</a> to see
+              real transaction data.
             </span>
           : null}
         <ShowWhen myRole="owner manager admin">
           <span>
-            <Link to="/activation">Activate your account</Link>
-            {' '}
-            to start making live transactions.
+            {' '}<Link to="/activation">Activate your account</Link> to start
+            making live transactions.
           </span>
         </ShowWhen>
       </div>
