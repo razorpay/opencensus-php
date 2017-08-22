@@ -321,8 +321,7 @@ class Validator extends Base\Validator
             $input[Entity::MERCHANT_ID],
             $input[Entity::NETWORK_CATEGORY],
             $input[Entity::GATEWAY_ACQUIRER],
-            $input[Entity::MODE],
-            $input[Entity::TYPE]);
+            $input[Entity::MODE]);
 
         $op = $input['gateway'] . '_terminal';
 

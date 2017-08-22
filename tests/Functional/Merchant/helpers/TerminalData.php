@@ -256,7 +256,10 @@ return [
                 'gateway_merchant_id'       => 'randommerchantid',
                 'gateway_acquirer'          => 'icic',
                 'mode'                      => Terminal\Mode::DUAL,
-                'type'                      => 1,
+                'type'                      => json_encode(
+                    [
+                        'non_recurring' => (string) 1,
+                    ]),
             ],
             'method' => 'POST'
         ],
@@ -276,7 +279,10 @@ return [
                 'gateway_merchant_id'       => 'randommerchantid',
                 'gateway_acquirer'          => 'icic',
                 'mode'                      => Terminal\Mode::PURCHASE,
-                'type'                      => 4,
+                'type'                      => json_encode(
+                    [
+                        'recurring_non_3ds' => (string) 1,
+                    ]),
             ],
             'method' => 'POST'
         ],
@@ -300,7 +306,10 @@ return [
                 'gateway_terminal_id'       => 'randomterminalid',
                 'gateway_terminal_password' => 'randomterminalpassword',
                 'mode'                      => Terminal\Mode::AUTH_CAPTURE,
-                'type'                      => 1,
+                'type'                      => json_encode(
+                    [
+                        'non_recurring' => (string) 1,
+                    ]),
             ],
             'method' => 'POST'
         ],
@@ -320,7 +329,10 @@ return [
                 'gateway_merchant_id'       => 'randommerchantid',
                 'gateway_acquirer'          => 'icic',
                 'mode'                      => Terminal\Mode::AUTH_CAPTURE,
-                'type'                      => 1,
+                'type'                      => json_encode(
+                    [
+                        'non_recurring' => (string) 1,
+                    ]),
             ],
             'method' => 'POST'
         ],
@@ -347,7 +359,10 @@ return [
                 'gateway_merchant_id'       => 'randommerchantid',
                 'gateway_acquirer'          => 'icic',
                 'mode'                      => Terminal\Mode::DUAL,
-                'type'                      => 4,
+                'type'                      => json_encode(
+                    [
+                        'recurring_non_3ds' => (string) 1,
+                    ]),
             ],
             'method' => 'POST'
         ],
@@ -378,7 +393,10 @@ return [
                 'gateway_terminal_id'       => 'randomterminalid',
                 'gateway_terminal_password' => 'randomterminalpassword',
                 'mode'                      => Terminal\Mode::DUAL,
-                'type'                      => 1,
+                'type'                      => json_encode(
+                    [
+                        'non_recurring' => (string) 1,
+                    ]),
             ],
             'method' => 'POST'
         ],
