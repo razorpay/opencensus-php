@@ -11,7 +11,7 @@ import RadioButton from 'rzp/ui/Forms/RadioButton';
 import { showNotification } from 'rzp/modules/notifications';
 import { cancelSubscription } from 'merchant/modules/subscriptions';
 
-@connect(state => state.session, {
+@connect(null, {
   closeModal,
   cancelSubscription,
   showNotification,
