@@ -150,6 +150,49 @@ class MerchantInvoiceTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testInvoiceEntityCreateForGivenMerchant()
+    {
+        $this->createData();
+
+        $this->ba->appAuth();
+
+        $currentTime = Carbon::today(Timezone::IST)->addMonth();
+
+        Carbon::setTestNow($currentTime);
+
+        $request = [
+            'url'     => '/merchants/invoice/create',
+            'method'  => 'POST',
+            'content' => ['merchant_ids' => ['10000000000000']],
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $entities = $this->getEntities('merchant_invoice', [], true);
+
+        $this->assertEquals(3, $entities['count']);
+
+        $entities = $entities['items'];
+
+        $invoiceEntities = [];
+
+        foreach ($entities as $e)
+        {
+            $invoiceEntities[$e[Invoice\Entity::TYPE]] = [
+                Invoice\Entity::AMOUNT  => $e[Invoice\Entity::AMOUNT],
+                Invoice\Entity::TAX     => $e[Invoice\Entity::TAX],
+            ];
+        }
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($invoiceEntities['non_card'], $data['non_card']);
+        $this->assertArraySelectiveEquals($invoiceEntities['card_gt_2k'], $data['card_gt_2k']);
+        $this->assertArraySelectiveEquals($invoiceEntities['card_lte_2k'], $data['card_lte_2k']);
+
+        Carbon::setTestNow();
+    }
+
     protected function createData()
     {
         $this->fixtures->edit('merchant', '10000000000000', [
