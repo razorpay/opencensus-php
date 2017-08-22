@@ -791,7 +791,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GRATIS_TO_POSTPAID_FAILED                     = 'GRATIS_TO_POSTPAID_FAILED';
     const GRATIS_TO_POSTPAID_RESPONSE                   = 'GRATIS_TO_POSTPAID_RESPONSE';
 
-    const DUMMY_JOB = 'DUMMY_JOB';
+    const AUTH_SERVICE_REQUEST                          = 'AUTH_SERVICE_REQUEST';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

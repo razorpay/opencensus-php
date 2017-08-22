@@ -9,8 +9,8 @@ namespace RZP\Tests\Functional;
 
 use Artisan;
 
-use RZP\Tests\TestCase as ParentTestCase;
 use RZP\Services\EsClient;
+use RZP\Tests\TestCase as ParentTestCase;
 
 class TestCase extends ParentTestCase
 {

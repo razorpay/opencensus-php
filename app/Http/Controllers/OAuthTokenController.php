@@ -5,87 +5,59 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 
-use Razorpay\OAuth\Token\Service as TokenService;
+use Razorpay\OAuth\Token;
 
 class OAuthTokenController extends Controller
 {
-    /**
-     * @var TokenService
-     */
-    protected $tokenService;
+    protected $auth;
 
-    /**
-     * @var \RZP\Models\Merchant\Entity
-     */
-    protected $merchant;
+    protected $authservice;
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->tokenService = new TokenService;
+        $this->auth = $this->app['basicauth'];
+
+        $this->authservice = $this->app['authservice'];
     }
 
-    public function getTokens()
+    public function getAll()
     {
         $input = Request::all();
 
-        //
-        // OAuth Services are sent a single array of data
-        // This is to allow for simple .proto definitions
-        // when we move the OAuth module to a gRPC implementation
-        //
-        $merchant = $this->app['basicauth']->getMerchant();
+        $merchant = $this->auth->getMerchant();
 
-        $input['merchant_id'] = $merchant->getId();
+        $input[Token\Entity::MERCHANT_ID] = $merchant->getId();
 
-        $result = $this->tokenService->getAllTokens($input);
+        $data = $this->authservice->getTokens($input);
 
-        return ApiResponse::json($result);
+        return ApiResponse::json($data);
     }
 
-    public function getToken(string $id)
+    public function get(string $id)
     {
         $input = Request::all();
 
-        $input['id'] = $id;
+        $merchant = $this->auth->getMerchant();
 
-        $merchant = $this->app['basicauth']->getMerchant();
+        $input[Token\Entity::MERCHANT_ID] = $merchant->getId();
 
-        $input['merchant_id'] = $merchant->getId();
+        $data = $this->authservice->getToken($id, $input);
 
-        $result = $this->tokenService->getToken($input);
-
-        return ApiResponse::json($result);
+        return ApiResponse::json($data);
     }
 
-    public function updateToken(string $id)
+    public function revoke(string $id)
     {
         $input = Request::all();
 
-        $input['id'] = $id;
+        $merchant = $this->auth->getMerchant();
 
-        $merchant = $this->app['basicauth']->getMerchant();
+        $input[Token\Entity::MERCHANT_ID] = $merchant->getId();
 
-        $input['merchant_id'] = $merchant->getId();
+        $data = $this->authservice->revokeToken($id, $input);
 
-        $result = $this->tokenService->editToken($input);
-
-        return ApiResponse::json($result);
-    }
-
-    public function revokeToken(string $id)
-    {
-        $input = Request::all();
-
-        $input['id'] = $id;
-
-        $merchant = $this->app['basicauth']->getMerchant();
-
-        $input['merchant_id'] = $merchant->getId();
-
-        $result = $this->tokenService->revokeToken($input);
-
-        return ApiResponse::json($result);
+        return ApiResponse::json($data);
     }
 }

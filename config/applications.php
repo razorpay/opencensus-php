@@ -144,4 +144,9 @@ return array(
         ],
         'url' => env('NODAL_BASE_URL'),
     ],
+
+    'auth_service' => array(
+        'url'       => env('AUTH_SERVICE_URL'),
+        'secret'    => env('AUTH_SERVICE_SECRET'),
+    ),
 );
