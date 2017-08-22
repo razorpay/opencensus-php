@@ -13,7 +13,9 @@ class PaymentController extends Controller
 {
     public function getPayment($id)
     {
-        $payment = $this->service('payment')->fetch($id);
+        $input = Request::all();
+
+        $payment = $this->service('payment')->fetch($id, $input);
 
         return ApiResponse::json($payment);
     }

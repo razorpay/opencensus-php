@@ -541,9 +541,11 @@ class Service extends Base\Service
         return $payments->toArrayPublic();
     }
 
-    public function fetch($id)
+    public function fetch(string $id, array $input = []): array
     {
-        $payment = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getId());
+        $payment = $this->repo
+                        ->payment
+                        ->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
         return $payment->toArrayPublic();
     }
@@ -565,7 +567,7 @@ class Service extends Base\Service
 
     public function addPaymentMetadata($id, $input)
     {
-        $payment = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getKey());
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
         $this->trace->info(TraceCode::PAYMENT_METADATA, $input);
 
@@ -1102,7 +1104,13 @@ class Service extends Base\Service
         // Fail if no associated transfer. @todo - Remove this when payment hold is added\
         else
         {
-            throw new Exception\LogicException('Hold update attempted for payment with no transfer');
+            throw new Exception\LogicException(
+                'Hold update attempted for payment with no transfer',
+                null,
+                [
+                    'transaction_id'    => $txn->getId(),
+                    'payment_id'        => $payment->getId(),
+                ]);
         }
     }
 

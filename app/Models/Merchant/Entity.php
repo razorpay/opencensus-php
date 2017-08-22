@@ -85,6 +85,10 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_REPORT_EMAIL
     ];
 
+    protected $embeddedRelations = [
+        self::GROUPS,
+    ];
+
     protected $fillable = [
         self::ID,
         self::NAME,
@@ -956,6 +960,16 @@ class Entity extends Base\PublicEntity
         }
 
         return $businessStateCode;
+    }
+
+    public function getGstin()
+    {
+        if ($this->merchantDetail === null)
+        {
+            return null;
+        }
+
+        return $this->merchantDetail->getGstin() ?? $this->merchantDetail->getPGstin();
     }
 
     public function enableReceiptEmails()

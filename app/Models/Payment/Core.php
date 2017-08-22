@@ -10,15 +10,6 @@ use RZP\Models\Transaction;
 
 class Core extends Base\Core
 {
-    public function retrieveByIdAndMerchantId($id, $merchantId)
-    {
-        Payment\Entity::verifyIdAndStripSign($id);
-
-        $payment = $this->repo->payment->findByIdAndMerchantId($id, $merchantId);
-
-        return $payment;
-    }
-
     public function retrieveRefund($refundId, $merchantId, $paymentId = null)
     {
         if ($paymentId !== null)

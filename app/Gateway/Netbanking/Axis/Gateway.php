@@ -131,19 +131,6 @@ class Gateway extends Base\Gateway
         $verify->match = ($status === VerifyResult::STATUS_MATCH);
     }
 
-    protected function checkApiSuccess(Verify $verify)
-    {
-        $verify->apiSuccess = true;
-
-        $input = $verify->input;
-
-        if (($input['payment']['status'] === Payment\Status::FAILED) or
-            ($input['payment']['status'] === Payment\Status::CREATED))
-        {
-            $verify->apiSuccess = false;
-        }
-    }
-
     protected function checkGatewaySuccess(Verify $verify)
     {
         $response = $verify->verifyResponseContent;

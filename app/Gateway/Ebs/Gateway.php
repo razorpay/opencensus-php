@@ -771,7 +771,12 @@ class Gateway extends Base\Gateway
         if (empty($paymentMode) === true)
         {
             throw new Exception\LogicException(
-                'Invalid payment mode');
+                'Invalid payment mode',
+                null,
+                [
+                    'payment_id'   => $input['payment']['id'],
+                    'payment_mode' => $paymentMode,
+                ]);
         }
 
         return $paymentMode;

@@ -154,8 +154,21 @@ class Gateway extends Base\Gateway
         if (($verify->gatewaySuccess === false) and
             ($this->approval === true))
         {
+            // Callback verify is failing, but possibly only
+            // because verify status has not been updated.
+            //
+            // This should still be considered a failure,
+            // but not a case of data tampering.
+            if ($verify->payment->getStatus() === Status::WAITING)
+            {
+                throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
+            }
+
             throw new Exception\LogicException(
-                'Data tampering found.', null, [
+                'Data tampering found.',
+                null,
+                [
+                    'payment_id'      => $input['payment']['id'],
                     'callback_result' => $this->approval,
                     'verify_result'   => $verify->gatewaySuccess,
                 ]);
@@ -363,7 +376,12 @@ class Gateway extends Base\Gateway
 
         // For refunds older than this, verification is not possible.
         throw new Exception\LogicException(
-                'Verification is not possible for older refunds.');
+                'Verification is not possible for older refunds.',
+                null,
+                [
+                    'payment_id' => $input['refund']['payment_id'],
+                    'refund_id'  => $input['refund']['id'],
+                ]);
     }
 
     // First Data is not returning approval code in some cases.

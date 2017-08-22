@@ -171,10 +171,18 @@ class Server extends Base\Core
     {
         $accountNumberLengths = Netbanking::getAccountNumberLengths();
 
-        if ((in_array($this->bank, $accountNumberLengths) === true) and
-            ($accountNumberLengths[$this->bank] !== $accountNumber))
+        if ((in_array($this->bank, array_keys($accountNumberLengths)) === true) and
+            ($accountNumberLengths[$this->bank] !== strlen($accountNumber)))
         {
-            throw new Exception\LogicException('WRONG_ACCOUNT_NUMBER_LENGTH');
+            throw new Exception\LogicException(
+                'WRONG_ACCOUNT_NUMBER_LENGTH',
+                null,
+                [
+                    'account_number'  => $accountNumber,
+                    'bank'            => $this->bank,
+                    'length'          => strlen($accountNumber),
+                    'expected_length' => $accountNumberLengths,
+                ]);
         }
     }
 

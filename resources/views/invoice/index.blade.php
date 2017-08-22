@@ -119,6 +119,57 @@
 
         var data = {!!utf8_json_encode($data)!!};
 
+        function forEach (dict, cb) {
+
+          dict = dict || {};
+
+          if (typeof dict !== "object" || typeof cb !== "function") {
+
+            return dict;
+          }
+
+          var key, value;
+
+          for (key in dict) {
+
+            if (!dict.hasOwnProperty(key)) {
+
+              continue;
+            }
+
+            value = dict[key];
+            cb.apply(value, [value, key, dict]);
+          }
+
+          return dict;
+        }
+
+        function parseQuery(qstr) {
+
+          var query = {};
+
+          var a = (qstr[0] === '?' ? qstr.substr(1) : qstr).split('&'), i, b;
+
+          for (i = 0; i < a.length; i++) {
+
+            b = a[i].split('=');
+            query[decodeURIComponent(b[0])] = decodeURIComponent(b[1] || '');
+          }
+
+          return query;
+        }
+
+        function createHiddenInput (key, value) {
+
+          var input = document.createElement("input");
+            
+          input.type  = "hidden";
+          input.name  = key;
+          input.value = value;
+
+          return input;
+        }
+
         function hasRedirect () {
 
           return data.invoice &&
@@ -134,26 +185,35 @@
                                       "paid",
                                       "has-redirect"]).join(" ");
 
-          var form = document.createElement("form"),
+          var form   = document.createElement("form"),
+              method = callbackMethod.toUpperCase(),
               input, key;
 
-          form.method = callbackMethod.toUpperCase();
+          form.method = method;
           form.action = callbackUrl;
 
-          for (key in requestParams) {
+          forEach(requestParams, function (value, key) {
 
-            if (!requestParams.hasOwnProperty(key)) {
+            form.appendChild(createHiddenInput(key, value));
+          });
 
-              continue;
+          var urlParamRegex = /^[^#]+\?([^#]+)/,
+              matches       = callbackUrl.match(urlParamRegex),
+              queryParams;
+
+          if (method === "GET" && matches) {
+
+            queryParams = matches[1];
+
+            if (queryParams.length > 0) {
+
+              queryParams = parseQuery(queryParams);
+
+              forEach(queryParams, function (value, key) {
+
+                form.appendChild(createHiddenInput(key, value)); 
+              });
             }
-
-            input = document.createElement("input");
-
-            input.type  = "hidden";
-            input.name  = key;
-            input.value = requestParams[key];
-
-            form.appendChild(input);
           }
 
           document.body.appendChild(form);
@@ -220,6 +280,7 @@
 
                 var invoiceObj = data.invoice;
                 var merchant = data.merchant;
+
                 var options = {
                   key: data.key_id,
                   invoice_id: invoiceObj.id,
