@@ -177,7 +177,7 @@ app.controller('EntitiesCtrl', [
         payment_id: ['Payment ID'],
         utr: ['UTR'],
         virtual_account_id: ['Virtual Account ID'],
-        mode: ['NEFT', 'RTGS', 'IFT', 'IMPS'],
+        mode: ['all', 'neft', 'rtgs', 'ift', 'imps'],
         payer_account: ['Payer Account'],
         payer_ifsc: ['Payer IFSC'],
         payee_account: ['Payee Account'],
@@ -524,7 +524,7 @@ app.controller('EntitiesCtrl', [
       },
       virtual_account: {
         merchant_id: ['Merchant ID'],
-        status: ['active', 'closed', 'paid'],
+        status: ['all', 'active', 'closed', 'paid'],
         customer_id: ['Customer ID'],
       },
       wallet: {
