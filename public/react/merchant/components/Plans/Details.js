@@ -12,7 +12,6 @@ import { subscriptionId, createdAt, status } from 'rzp/ui/item/pair';
 
 export default ({ plan, isLoading, statusMsg, subscriptions }) => {
   const tableLimit = 5; // Set limit to total rows displayed in table
-
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading
@@ -32,13 +31,17 @@ export default ({ plan, isLoading, statusMsg, subscriptions }) => {
 
                 <EntityDetailRow
                   label="Plan Description"
-                  value={() => {
-                    return (
-                      <span class="pre">
-                        {plan.item.description}
-                      </span>
-                    );
-                  }}
+                  value={
+                    plan.item.description
+                      ? () => {
+                          return (
+                            <span class="pre">
+                              {plan.item.description}
+                            </span>
+                          );
+                        }
+                      : null
+                  }
                 />
 
                 <EntityDetailRow

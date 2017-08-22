@@ -15,6 +15,9 @@ import { fetchInvoice } from 'merchant/modules/invoices/details';
 import { showNotification } from 'rzp/modules/notifications';
 import { expandSlider, compactSlider } from 'rzp/modules/slider';
 
+import { openModal } from 'rzp/modules/modals';
+import CancellationModal from './CancellationModal';
+
 @withRouter
 @connect(
   state => {
@@ -33,6 +36,7 @@ import { expandSlider, compactSlider } from 'rzp/modules/slider';
     fetchCustomer,
     cancelSubscription,
     showNotification,
+    openModal
   }
 )
 export default class SubscriptionDetailsContainer extends Component {
@@ -150,27 +154,9 @@ export default class SubscriptionDetailsContainer extends Component {
   };
 
   cancelSubscription = () => {
-    this.context.confirm({
-      header: 'Cancel Subscription?',
-      message:
-        "The subscription will be terminated and the customer's card will not be charged.",
-      affirmativeLabel: 'Yes',
-      abortLabel: 'No',
-      action: () =>
-        this.props
-          .cancelSubscription(this.props.entity.id)
-          .then(response => {
-            this.props.showNotification({
-              type: 'success',
-              message: 'Subscription cancelled successfully',
-            });
-          })
-          .catch(({ errors }) => {
-            this.props.showNotification({
-              type: 'error',
-              message: errors,
-            });
-          }),
+    this.props.openModal({
+      component: <CancellationModal subscriptionId={this.props.id} />,
+      size: 'small',
     });
   };
 

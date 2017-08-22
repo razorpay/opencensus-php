@@ -56,12 +56,12 @@ export const deleteSubscription = params => {
   };
 };
 
-export const cancelSubscription = id => {
+export const cancelSubscription = ({ id, cancel_at_cycle_end }) => {
   const subscription = new Subscription({ id });
 
   return {
     type: SUBSCRIPTION_CANCEL,
-    payload: subscription.cancel(),
+    payload: subscription.cancel(cancel_at_cycle_end),
   };
 };
 
