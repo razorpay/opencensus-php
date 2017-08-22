@@ -597,6 +597,32 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->create('terminal:netbanking_kotak_terminal',
                                 ['id' => 'DrctNbKtkTrmnl', 'network_category' => 'ecommerce']);
 
+        // Rule to select netbanking_kotak terminals for kotak bank payments
+        $this->fixtures->create('gateway_rule', [
+            'method'      => 'netbanking',
+            'merchant_id' => '100000Razorpay',
+            'gateway'     => 'netbanking_kotak',
+            'issuer'      => 'KKBK',
+            'type'        => 'filter',
+            'filter_type' => 'select',
+            'group'       => 'method_filter',
+        ]);
+
+        // Rule to reject corporate network_category terminals for KOTAK
+        // for amount les than 2000 INR
+        $this->fixtures->create('gateway_rule', [
+            'method'           => 'netbanking',
+            'merchant_id'      => '100000Razorpay',
+            'gateway'          => 'netbanking_kotak',
+            'issuer'           => 'KKBK',
+            'type'             => 'filter',
+            'filter_type'      => 'reject',
+            'min_amount'       => 0,
+            'max_amount'       => 200000,
+            'network_category' => 'corporate',
+            'group'            => 'min_amount_filter',
+        ]);
+
         $payment = $this->getDefaultNetbankingPaymentArray();
         $payment['bank'] = 'KKBK';
         $payment['amount'] = 100000;
@@ -962,6 +988,30 @@ class TerminalSelectionTest extends TestCase
              ['id' => 'ShrdNbBdkForex',
               'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
               'network_category' => 'forex']);
+
+        $this->fixtures->create('gateway_rule', [
+            'method'           => 'netbanking',
+            'merchant_id'      => '100000Razorpay',
+            'gateway'          => 'billdesk',
+            'type'             => 'filter',
+            'filter_type'      => 'reject',
+            'min_amount'       => 0,
+            'max_amount'       => 200000,
+            'network_category' => 'forex',
+            'group'            => 'min_amount_filter',
+        ]);
+
+        $this->fixtures->create('gateway_rule', [
+            'method'           => 'netbanking',
+            'merchant_id'      => '100000Razorpay',
+            'gateway'          => 'billdesk',
+            'type'             => 'filter',
+            'filter_type'      => 'reject',
+            'min_amount'       => 0,
+            'max_amount'       => 150000,
+            'network_category' => 'housing',
+            'group'            => 'min_amount_filter',
+        ]);
 
         $payment = $this->getDefaultNetbankingPaymentArray();
 
