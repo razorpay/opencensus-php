@@ -30,6 +30,8 @@ class Server extends Base\Mock\Server
 
         $data = $this->parseEncryptedInput($input);
 
+        $this->content($data, 'validateRefund');
+
         $content = $this->prepareRefundResponse($data, $input[RequestFields::MERCHANT_ID]);
 
         $content = http_build_query($content);

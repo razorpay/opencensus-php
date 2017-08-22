@@ -90,6 +90,18 @@ class SbibuddyGatewayTest extends TestCase
 
         $refundAmount = $payment['amount'] / 2;
 
+        $this->mockServerContentFunction(function(& $content, $action) use ($refundAmount)
+        {
+            if ($action === 'validateRefund')
+            {
+                $actualRefundAmount = (int) ($content['amount'] * 100);
+
+                $assertion = ($actualRefundAmount === $refundAmount);
+
+                $this->assertTrue($assertion, 'Actual refund amount different than expected amount');
+            }
+        });
+
         $this->refundPayment($capturePayment['id'], $refundAmount);
 
         $refund = $this->getLastEntity('wallet', true);
