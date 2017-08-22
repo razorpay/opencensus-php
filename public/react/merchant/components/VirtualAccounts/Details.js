@@ -27,8 +27,7 @@ export default props => {
           </div>
         : <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
-              <i class="icon icon-account-balance text-success" />
-              {' '}
+              <i class="icon icon-account-balance text-success icon--formal" />{' '}
               <strong>{virtualaccount.id}</strong>
             </div>
 
@@ -45,11 +44,10 @@ export default props => {
 
                   <EntityDetailRow
                     label="Status"
-                    value={() => (
+                    value={() =>
                       <VirtualAccountStatusLabel
                         status={virtualaccount.status}
-                      />
-                    )}
+                      />}
                   />
 
                   <EntityDetailRow
@@ -59,12 +57,11 @@ export default props => {
 
                   <EntityDetailRow
                     label="Created At"
-                    value={() => (
+                    value={() =>
                       <Time
                         value={virtualaccount.created_at}
                         format="DD MMM YYYY, hh:mm:ss a"
-                      />
-                    )}
+                      />}
                   />
                 </div>
 
@@ -90,9 +87,7 @@ export default props => {
                     : null}
 
                   <p class="text-muted" style={{ lineHeight: '35px' }}>
-                    Payments to this account -
-                    {' '}
-                    {va_payments.length} payments
+                    Payments to this account - {va_payments.length} payments
                   </p>
 
                   <Table

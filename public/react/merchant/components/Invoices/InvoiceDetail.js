@@ -33,10 +33,8 @@ export default props => {
           </div>
         : <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
-              <i class="icon icon-link text-primary" />
-              {' '}
+              <i class="icon icon-link text-primary icon--formal" />{' '}
               <strong>{invoice.id}</strong>
-
               <ShowWhen notMyRole="support finance">
                 <div class="btn-toolbar pull-right">
                   {(isDraft || isIssued) &&
@@ -77,12 +75,11 @@ export default props => {
 
                   <DetailRow
                     label={isExpired ? 'Expired on' : 'Expires on'}
-                    value={() => (
+                    value={() =>
                       <Time
                         value={invoice.expire_by}
                         format="DD MMM YYYY, hh:mm:ss a"
-                      />
-                    )}
+                      />}
                   />
 
                   <DetailRow label="Receipt" value={invoice.receipt} />
@@ -103,19 +100,20 @@ export default props => {
                       }
                       return (
                         <NavLink to={`/payments/${invoice.payment_id}`}>
-                          <code>{invoice.payment_id}</code>
+                          <code>
+                            {invoice.payment_id}
+                          </code>
                         </NavLink>
                       );
                     }}
                   />
                   <DetailRow
                     label="Paid At"
-                    value={() => (
+                    value={() =>
                       <Time
                         value={invoice.paid_at}
                         format="DD MMM YYYY, hh:mm:ss a"
-                      />
-                    )}
+                      />}
                   />
                   <DetailRow label="Terms & Conditions" value={invoice.terms} />
                   <NestedDetailRow label="Notes" value={invoice.notes} />
@@ -132,44 +130,44 @@ export default props => {
                     />
                     <DetailRow
                       label="Email"
-                      value={() => (
+                      value={() =>
                         <span>
                           {invoice.customer_details.customer_email}
                           {invoice.email_status
                             ? <span
                                 style={{ marginLeft: '10px' }}
-                                class={`${notificationClassMap[invoice.email_status]}`}
+                                class={`${notificationClassMap[
+                                  invoice.email_status
+                                ]}`}
                               >
                                 ({invoice.email_status})
                               </span>
                             : null}
-                        </span>
-                      )}
+                        </span>}
                     />
                     <DetailRow
                       label="Phone"
-                      value={() => (
+                      value={() =>
                         <span>
                           {invoice.customer_details.customer_contact}
                           {invoice.sms_status
                             ? <span
                                 style={{ marginLeft: '10px' }}
-                                class={`${notificationClassMap[invoice.sms_status]}`}
+                                class={`${notificationClassMap[
+                                  invoice.sms_status
+                                ]}`}
                               >
                                 ({invoice.sms_status})
                               </span>
                             : null}
-                        </span>
-                      )}
+                        </span>}
                     />
                   </div>
                 </div>
 
                 {invoice.line_items.length
                   ? <div class="panel panel-default">
-                      <div class="panel-heading">
-                        Item Details
-                      </div>
+                      <div class="panel-heading">Item Details</div>
 
                       <div class="panel-body">
                         <LineItemReadOnlyTable
@@ -180,19 +178,16 @@ export default props => {
                   : ''}
 
                 <div class="panel panel-default">
-                  <div class="panel-heading panel-heading-sm">
-                    Updates
-                  </div>
+                  <div class="panel-heading panel-heading-sm">Updates</div>
 
                   <div class="list-group details-row-container">
                     <DetailRow
                       label="Created At"
-                      value={() => (
+                      value={() =>
                         <Time
                           value={invoice.created_at}
                           format="DD MMM YYYY, hh:mm:ss a"
-                        />
-                      )}
+                        />}
                     />
                   </div>
                 </div>

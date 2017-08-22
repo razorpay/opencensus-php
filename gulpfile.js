@@ -233,7 +233,7 @@ const watch = () => {
       'public/react/admin/**/*',
       'public/react/rzp/**/*',
       'public/react/styles/**/*.styl',
-      'public/react/styles/fonts/style.css',
+      'public/react/styles/fonts/*.*',
     ],
     ['dev:webpack']
   );
