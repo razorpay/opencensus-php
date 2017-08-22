@@ -78,7 +78,7 @@ export default class AddPlan extends Component {
       <div class="content-wrapper content-sm txn-details">
         <div class="panel panel-default SliderPanel">
           <div class="panel-heading">
-            <i class="icon icon-plan text-info" />{' '}
+            <i class="icon icon-plan text-main icon--formal" />{' '}
             <strong>{plan && plan.id ? 'Edit Plan' : 'New Plan'}</strong>
           </div>
           <div class="SliderPanel__Body">
