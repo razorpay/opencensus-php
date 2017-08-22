@@ -575,6 +575,35 @@ class SubscriptionChargeTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testSubscriptionManualChargeTestMode()
+    {
+        $this->doAuthTxnForNewSubscription();
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('authenticated', $subscription['status']);
+
+        $subscription = $this->chargeSubscriptionManuallyTestMode($subscription['id']);
+        $this->assertEquals('active', $subscription['status']);
+
+        $subscription = $this->chargeSubscriptionManuallyTestMode($subscription['id'], false);
+        $this->assertEquals('pending', $subscription['status']);
+
+        $subscription = $this->chargeSubscriptionManuallyTestMode($subscription['id'], false);
+        $subscription = $this->chargeSubscriptionManuallyTestMode($subscription['id'], false);
+        $subscription = $this->chargeSubscriptionManuallyTestMode($subscription['id'], false);
+        $this->assertEquals('halted', $subscription['status']);
+
+        $invoice = $this->getLastEntity('invoice', true);
+        $this->assertEquals('halted', $invoice['subscription_status']);
+
+        $subscription = $this->chargeSubscriptionInvoiceManually($invoice);
+        $this->assertEquals('active', $subscription['status']);
+
+        $subscription = $this->chargeSubscriptionManuallyTestMode($subscription['id']);
+        $subscription = $this->chargeSubscriptionManuallyTestMode($subscription['id']);
+        $subscription = $this->chargeSubscriptionManuallyTestMode($subscription['id']);
+        $this->assertEquals('completed', $subscription['status']);
+    }
+
     public function testSubscriptionHaltedAuthFailure()
     {
         $this->doAuthTxnForSubscriptionWithAddOn();

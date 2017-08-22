@@ -23,7 +23,7 @@ class Biller extends Base\Core
         if ($data['activated'] === true)
         {
             //
-            // Might have to fire a webhook in sync --
+            // We fire this webhook in sync --
             // otherwise charge webhook might go before this
             // since our queue doesn't maintain order.
             //

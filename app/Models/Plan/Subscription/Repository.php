@@ -42,6 +42,13 @@ class Repository extends Base\Repository
         Entity::TOKEN_ID,
     ];
 
+    /**
+     * Subscriptions which need to be picked up by the charge cron
+     * This includes active subscriptions, and also halted subscriptions
+     * since we still create invoices for these subscriptions, without
+     * charging them.
+     * @return Collection Subscriptions
+     */
     public function getSubscriptionsToCharge()
     {
         $subscriptions = $this->getBaseSubscriptionsQuery()

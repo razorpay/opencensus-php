@@ -264,15 +264,23 @@ class Service extends Base\Service
 
         if ($capture === true)
         {
-            return $this->core->retryCapture($subscription, $invoice, true);
+            $this->core->retryCapture($subscription, $invoice, true);
         }
         else
         {
-            return $this->core->charge($subscription, $invoice, true);
+            $this->core->charge($subscription, $invoice, true);
         }
+
+        return $invoice->toArrayPublic();
     }
 
     /**
+     * Whether an invoice should be captured can be determined just by seeing if there
+     * are any authorized payments. An authorized payment can only exist if the amount
+     * has already been validated, so this can be captured.
+     *
+     * We can't use subscription errorStatus, as merchant may be manually charging an older invoice, and subscription attributes may since have been updated.
+     *
      * @param Invoice\Entity $invoice
      * @param Entity         $subscription
      *

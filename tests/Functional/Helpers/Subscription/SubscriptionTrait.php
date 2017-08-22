@@ -314,6 +314,23 @@ trait SubscriptionTrait
         return $this->makeSubscriptionChargeCronRequest();
     }
 
+    protected function chargeSubscriptionManuallyTestMode($subscriptionId, $success = true)
+    {
+        $request = [
+            'url'     => "/subscriptions/$subscriptionId/charge",
+            'action'  => 'post',
+            'content' => [
+                'success' => $success,
+            ],
+        ];
+
+        $this->ba->privateAuth();
+
+        $response = $this->sendRequest($request);
+
+        return json_decode($response->getContent(), true);
+    }
+
     protected function chargeSubscriptionInvoiceManually($invoice)
     {
         return $this->makeSubscriptionInvoiceChargeManualRequest($invoice['id']);
