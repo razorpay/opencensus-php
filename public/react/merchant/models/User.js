@@ -33,7 +33,8 @@ export default class User {
   }
 
   get isActivated() {
-    return !!parseInt(this.activated);
+    return true;
+    // return !!parseInt(this.activated);
   }
 
   get isSubmitted() {
