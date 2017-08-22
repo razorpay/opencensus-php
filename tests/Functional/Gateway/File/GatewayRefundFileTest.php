@@ -25,7 +25,7 @@ class GatewayRefundFileTest extends TestCase
         parent::setUp();
     }
 
-    public function testRefundFileProcessor()
+    public function testProcessRefundFile()
     {
         $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
 
@@ -46,18 +46,6 @@ class GatewayRefundFileTest extends TestCase
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-        Mail::assertSent(RefundFileMail::class, function ($mail)
-        {
-            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-            $expectedSubject = RefundFileMailConstants::SUBJECT_MAP[Gateway::NETBANKING_HDFC] . $today;
-
-            $this->assertEquals($expectedSubject, $mail->subject);
-
-            return ($mail->hasFrom('refunds@razorpay.com') and
-                    ($mail->hasTo(RefundFileMailConstants::RECIPIENT_EMAILS_MAP[Gateway::NETBANKING_HDFC])));
-        });
-
         $file = $this->getLastEntity('file_store', true);
 
         $expectedFileContent = [
@@ -68,6 +56,8 @@ class GatewayRefundFileTest extends TestCase
         ];
 
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        Mail::assertSent(RefundFileMail::class);
     }
 
     public function testProcessGatewayFileWithInvalidType()
@@ -112,7 +102,7 @@ class GatewayRefundFileTest extends TestCase
         $this->startTest();
     }
 
-    public function testRefundFileProcessorWithCustomRecipients()
+    public function testProcessRefundFileWithCustomRecipients()
     {
         $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
 
@@ -133,31 +123,10 @@ class GatewayRefundFileTest extends TestCase
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-        Mail::assertSent(RefundFileMail::class, function ($mail)
-        {
-            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-            $expectedSubject = RefundFileMailConstants::SUBJECT_MAP[Gateway::NETBANKING_HDFC] . $today;
-
-            $this->assertEquals($expectedSubject, $mail->subject);
-
-            return ($mail->hasFrom('refunds@razorpay.com') and
-                    ($mail->hasTo(['test@razorpay.com'])));
-        });
-
-        $file = $this->getLastEntity('file_store', true);
-
-        $expectedFileContent = [
-            'type'        => 'hdfc_netbanking_refund',
-            'entity_type' => File\Entity::class,
-            'entity_id'   => $content['id'],
-            'extension'   => 'xlsx',
-        ];
-
-        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+        Mail::assertSent(RefundFileMail::class);
     }
 
-    public function testRefundFileProcessorWithNoRefundData()
+    public function testProcessRefundFileWithNoRefundData()
     {
         Mail::fake();
 
@@ -173,7 +142,7 @@ class GatewayRefundFileTest extends TestCase
         Mail::assertNotSent(RefundFileMail::class);
     }
 
-    public function testRefundFileProcessorWithFileGenerationError()
+    public function testProcessRefundFileWithFileGenerationError()
     {
         $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
 
@@ -203,7 +172,7 @@ class GatewayRefundFileTest extends TestCase
         $this->assertNull($file);
     }
 
-    public function testRefundFileProcessingWithMailSendError()
+    public function testProcessRefundFileWithMailSendError()
     {
         $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
 
@@ -272,17 +241,7 @@ class GatewayRefundFileTest extends TestCase
         $this->assertNotNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-        Mail::assertSent(RefundFileMail::class, function ($mail)
-        {
-            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-            $expectedSubject = RefundFileMailConstants::SUBJECT_MAP[Gateway::NETBANKING_HDFC] . $today;
-
-            $this->assertEquals($expectedSubject, $mail->subject);
-
-            return ($mail->hasFrom('refunds@razorpay.com') and
-                    ($mail->hasTo(RefundFileMailConstants::RECIPIENT_EMAILS_MAP[Gateway::NETBANKING_HDFC])));
-        });
+        Mail::assertSent(RefundFileMail::class);
 
         $file = $this->getLastEntity('file_store', true);
 
@@ -298,7 +257,7 @@ class GatewayRefundFileTest extends TestCase
 
     public function testRefundFileMailSendErrorRetryProcessing()
     {
-        $this->testRefundFileProcessingWithMailSendError();
+        $this->testProcessRefundFileWithMailSendError();
 
         Mail::fake();
 
@@ -315,17 +274,7 @@ class GatewayRefundFileTest extends TestCase
         $this->assertNotNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-        Mail::assertSent(RefundFileMail::class, function ($mail)
-        {
-            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-            $expectedSubject = RefundFileMailConstants::SUBJECT_MAP[Gateway::NETBANKING_HDFC] . $today;
-
-            $this->assertEquals($expectedSubject, $mail->subject);
-
-            return ($mail->hasFrom('refunds@razorpay.com') and
-                    ($mail->hasTo(RefundFileMailConstants::RECIPIENT_EMAILS_MAP[Gateway::NETBANKING_HDFC])));
-        });
+        Mail::assertSent(RefundFileMail::class);
 
         $file = $this->getLastEntity('file_store', true);
 
@@ -344,20 +293,7 @@ class GatewayRefundFileTest extends TestCase
      */
     public function testRefundFileNoDataAvailableRetryProcessing()
     {
-        $this->testRefundFileProcessorWithNoRefundData();
-
-        $gatewayFile = $this->getLastEntity('gateway_file', true);
-
-        $this->testData[__FUNCTION__]['request']['url'] = '/gateway/files/' . $gatewayFile['id'] . '/retry';
-
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testRetryForAcknowledgedGatewayFile()
-    {
-        $this->testGatewayFileAcknowledge();
+        $this->testProcessRefundFileWithNoRefundData();
 
         $gatewayFile = $this->getLastEntity('gateway_file', true);
 
@@ -370,7 +306,7 @@ class GatewayRefundFileTest extends TestCase
 
     public function testGatewayFileAcknowledge()
     {
-        $this->testRefundFileProcessor();
+        $this->testProcessRefundFile();
 
         $gatewayFile = $this->getLastEntity('gateway_file', true);
 
@@ -383,7 +319,7 @@ class GatewayRefundFileTest extends TestCase
         $this->assertNotNull($content[File\Entity::ACKNOWLEDGED_AT]);
     }
 
-    public function testAcknowledgedgatewayFileRetry()
+    public function testAcknowledgedGatewayFileRetry()
     {
         $this->testGatewayFileAcknowledge();
 
@@ -398,7 +334,7 @@ class GatewayRefundFileTest extends TestCase
 
     public function testGatewayFileAcknowledgePartiallyProcessed()
     {
-        $this->testRefundFileProcessor();
+        $this->testProcessRefundFile();
 
         $gatewayFile = $this->getLastEntity('gateway_file', true);
 

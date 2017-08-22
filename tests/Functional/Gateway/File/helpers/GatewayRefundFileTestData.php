@@ -2,17 +2,18 @@
 
 use Carbon\Carbon;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
 use RZP\Error\PublicErrorCode;
 
 return [
-    'testRefundFileProcessor' => [
+    'testProcessRefundFile' => [
         'request' => [
             'content' => [
                 'type'    => 'refund',
                 'gateway' => 'netbanking_hdfc',
                 'bank'    => 'HDFC',
-                'from'    => Carbon::today('Asia/Kolkata')->timestamp,
-                'to'      => Carbon::tomorrow('Asia/Kolkata')->timestamp
+                'from'    => Carbon::today(Timezone::IST)->timestamp,
+                'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -39,8 +40,8 @@ return [
                 'type'    => 'xyz',
                 'gateway' => 'netbanking_hdfc',
                 'bank'    => 'HDFC',
-                'from'    => Carbon::today('Asia/Kolkata')->timestamp,
-                'to'      => Carbon::tomorrow('Asia/Kolkata')->timestamp
+                'from'    => Carbon::today(Timezone::IST)->timestamp,
+                'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -66,8 +67,8 @@ return [
                 'type'    => 'refund',
                 'gateway' => 'hdfc',
                 'bank'    => 'HDFC',
-                'from'    => Carbon::today('Asia/Kolkata')->timestamp,
-                'to'      => Carbon::tomorrow('Asia/Kolkata')->timestamp
+                'from'    => Carbon::today(Timezone::IST)->timestamp,
+                'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -93,8 +94,8 @@ return [
                 'type'    => 'refund',
                 'gateway' => 'netbanking_hdfc',
                 'bank'    => 'ICIC',
-                'from'    => Carbon::today('Asia/Kolkata')->timestamp,
-                'to'      => Carbon::tomorrow('Asia/Kolkata')->timestamp
+                'from'    => Carbon::today(Timezone::IST)->timestamp,
+                'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -120,8 +121,8 @@ return [
                 'type'       => 'refund',
                 'gateway'    => 'netbanking_hdfc',
                 'bank'       => 'HDFC',
-                'from'       => Carbon::today('Asia/Kolkata')->timestamp,
-                'to'         => Carbon::tomorrow('Asia/Kolkata')->timestamp,
+                'from'       => Carbon::today(Timezone::IST)->timestamp,
+                'to'         => Carbon::tomorrow(Timezone::IST)->timestamp,
                 'recipients' => ['abc']
             ],
             'url' => '/gateway/files',
@@ -148,8 +149,8 @@ return [
                 'type'       => 'refund',
                 'gateway'    => 'netbanking_hdfc',
                 'bank'       => 'HDFC',
-                'from'       => Carbon::tomorrow('Asia/Kolkata')->timestamp,
-                'to'         => Carbon::tomorrow('Asia/Kolkata')->timestamp,
+                'from'       => Carbon::tomorrow(Timezone::IST)->timestamp,
+                'to'         => Carbon::tomorrow(Timezone::IST)->timestamp,
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -175,8 +176,8 @@ return [
                 'type'       => 'refund',
                 'gateway'    => 'netbanking_hdfc',
                 'bank'       => 'HDFC',
-                'from'       => Carbon::today('Asia/Kolkata')->timestamp,
-                'to'         => Carbon::yesterday('Asia/Kolkata')->timestamp,
+                'from'       => Carbon::today(Timezone::IST)->timestamp,
+                'to'         => Carbon::yesterday(Timezone::IST)->timestamp,
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -196,15 +197,15 @@ return [
         ]
     ],
 
-    'testRefundFileProcessorWithCustomRecipients' => [
+    'testProcessRefundFileWithCustomRecipients' => [
         'request' => [
             'content' => [
                 'type'       => 'refund',
                 'gateway'    => 'netbanking_hdfc',
                 'bank'       => 'HDFC',
                 'recipients' => ['test@razorpay.com'],
-                'from'       => Carbon::today('Asia/Kolkata')->timestamp,
-                'to'         => Carbon::tomorrow('Asia/Kolkata')->timestamp
+                'from'       => Carbon::today(Timezone::IST)->timestamp,
+                'to'         => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -226,14 +227,14 @@ return [
         ]
     ],
 
-    'testRefundFileProcessorWithNoRefundData' => [
+    'testProcessRefundFileWithNoRefundData' => [
         'request' => [
             'content' => [
                 'type'    => 'refund',
                 'gateway' => 'netbanking_hdfc',
                 'bank'    => 'HDFC',
-                'from'    => Carbon::today('Asia/Kolkata')->timestamp,
-                'to'      => Carbon::tomorrow('Asia/Kolkata')->timestamp
+                'from'    => Carbon::today(Timezone::IST)->timestamp,
+                'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -255,14 +256,14 @@ return [
         ]
     ],
 
-    'testRefundFileProcessorWithFileGenerationError' => [
+    'testProcessRefundFileWithFileGenerationError' => [
         'request' => [
             'content' => [
                 'type'    => 'refund',
                 'gateway' => 'netbanking_hdfc',
                 'bank'    => 'HDFC',
-                'from'    => Carbon::today('Asia/Kolkata')->timestamp,
-                'to'      => Carbon::tomorrow('Asia/Kolkata')->timestamp
+                'from'    => Carbon::today(Timezone::IST)->timestamp,
+                'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -284,14 +285,14 @@ return [
         ]
     ],
 
-    'testRefundFileProcessingWithMailSendError' => [
+    'testProcessRefundFileWithMailSendError' => [
         'request' => [
             'content' => [
                 'type'    => 'refund',
                 'gateway' => 'netbanking_hdfc',
                 'bank'    => 'HDFC',
-                'from'    => Carbon::today('Asia/Kolkata')->timestamp,
-                'to'      => Carbon::tomorrow('Asia/Kolkata')->timestamp
+                'from'    => Carbon::today(Timezone::IST)->timestamp,
+                'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -378,7 +379,7 @@ return [
         ]
     ],
 
-    'testRetryForAcknowledgedGatewayFile' => [
+    'testAcknowledgedGatewayFileRetry' => [
         'request' => [
             'content' => [
             ],
