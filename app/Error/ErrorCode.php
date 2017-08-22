@@ -98,6 +98,8 @@ class ErrorCode
 
     const GATEWAY_ERROR_PAYMENT_TRANSACTION_NOT_FOUND                               = 'GATEWAY_ERROR_PAYMENT_TRANSACTION_NOT_FOUND';
 
+    const GATEWAY_ERROR_CALLBACK_EMPTY_INPUT                                        = 'GATEWAY_ERROR_CALLBACK_EMPTY_INPUT';
+
 // Generic bad requests
     const BAD_REQUEST_INVALID_ID                                                    = 'BAD_REQUEST_INVALID_ID';
     const BAD_REQUEST_INVALID_IDS                                                   = 'BAD_REQUEST_INVALID_IDS';
