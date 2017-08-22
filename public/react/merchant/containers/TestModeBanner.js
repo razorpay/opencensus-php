@@ -27,12 +27,13 @@ export default class TestModeBanner extends Component {
               real transaction data.
             </span>
           : null}
-        <ShowWhen myRole="owner manager admin">
-          <span>
-            {' '}<Link to="/activation">Activate your account</Link> to start
-            making live transactions.
-          </span>
-        </ShowWhen>
+        {!user.isActivated &&
+          <ShowWhen myRole="owner manager admin">
+            <span>
+              {' '}<Link to="/activation">Activate your account</Link> to start
+              making live transactions.
+            </span>
+          </ShowWhen>}
       </div>
     );
   }
