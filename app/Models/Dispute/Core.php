@@ -9,6 +9,13 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
+    /**
+     * @param Payment\Entity $payment
+     * @param Reason\Entity  $reason
+     * @param array          $input
+     *
+     * @return Entity
+     */
     public function create(
         Payment\Entity $payment,
         Reason\Entity $reason,
@@ -41,6 +48,12 @@ class Core extends Base\Core
         return $dispute;
     }
 
+    /**
+     * @param Entity $dispute
+     * @param array  $input
+     *
+     * @return Entity
+     */
     public function update(Entity $dispute, array $input): Entity
     {
         $this->trace->info(

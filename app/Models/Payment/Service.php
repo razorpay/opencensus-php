@@ -685,7 +685,7 @@ class Service extends Base\Service
         $date = Carbon::today(Timezone::IST);
         $ts = $date->subSeconds($seconds)->timestamp;
 
-        $payments = $this->repo->payment->getAuthorizedPaymentsBeforeTimestamp($ts);
+        $payments = $this->repo->payment->getAuthorizedPaymentsBeforeTimestamp($ts, false);
 
         // We fetch all the authorized payments eligible for refund.
         // Payments are identified on the basis of merchant auto_refund_delay

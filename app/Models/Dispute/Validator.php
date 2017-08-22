@@ -31,7 +31,7 @@ class Validator extends Base\Validator
         if (Phase::exists($value) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Not a valid dispute phase: '.$value);
+                'Not a valid dispute phase: ' . $value);
         }
     }
 
@@ -56,13 +56,17 @@ class Validator extends Base\Validator
         if ($payment->isDisputed() === true)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_UNDER_DISPUTE);
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_UNDER_DISPUTE,
+                null,
+                ['input' => $input, 'payment_id' => $payment->getId()]);
         }
 
         if ($payment->getAmount() < $input[Entity::AMOUNT])
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_DISPUTE_AMOUNT_GREATER_THAN_PAYMENT_AMOUNT);
+                ErrorCode::BAD_REQUEST_DISPUTE_AMOUNT_GREATER_THAN_PAYMENT_AMOUNT,
+                Entity::AMOUNT,
+                ['input' => $input, 'payment_id' => $payment->getId()]);
         }
     }
 
@@ -72,7 +76,8 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'reason_id should be sent in the request to create a dispute.',
-                Entity::REASON_ID);
+                Entity::REASON_ID,
+                $input);
         }
     }
 }
