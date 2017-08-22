@@ -42,7 +42,7 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        $request = $this->getPayloadForAuth($input);
+        $request = $this->getAuthorizeRequestArray($input);
 
         $this->traceGatewayPaymentRequest($request, $input);
 
@@ -55,7 +55,7 @@ class Gateway extends Base\Gateway
 
     public function callback(array $input)
     {
-        $data = $this->parseResponse($input['gateway']);
+        $data = $this->decryptResponse($input['gateway']);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
@@ -68,7 +68,7 @@ class Gateway extends Base\Gateway
 
         $this->assertPaymentId($input['payment']['id'], $data[ResponseFields::ORDER_ID]);
 
-        $this->saveWalletEntity($data);
+        $this->saveCallbackResponse($input, $data);
 
         // If status code is not success code, throw exception
         if ($data[ResponseFields::STATUS_CODE] !== ResponseCodeMap::SUCCESS_CODE)
@@ -94,7 +94,7 @@ class Gateway extends Base\Gateway
 
         $wallet = $this->repo->fetchWalletByPaymentId($input['payment']['id']);
 
-        $request = $this->getRefundRequest($input, $wallet);
+        $request = $this->getRefundRequestArray($input, $wallet);
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $request);
 
@@ -112,7 +112,7 @@ class Gateway extends Base\Gateway
 
     //----------------Auth helper methods----------------------
 
-    protected function getPayloadForAuth(array $input): array
+    protected function getAuthorizeRequestArray(array $input): array
     {
         $payment = $input['payment'];
 
@@ -157,30 +157,30 @@ class Gateway extends Base\Gateway
     /**
      * If the callback gives a success status, update the wallet entity
      */
-    protected function saveWalletEntity(array $data)
+    protected function saveCallbackResponse(array $input, array $response)
     {
-        $date = Carbon::now(Timezone::IST)->format('d/m/Y H:m:s');
-
-        $contentToSave = $data + [
-            Entity::RECEIVED    => true,
-            Entity::DATE        => $date
+        $content = [
+            'received' => true,
+            'externalTransactionId' => $response[ResponseFields::EXTERNAL_TRANSACTION_ID],
+            'orderId'  => $response[ResponseFields::ORDER_ID],
+            'transactionId' => $response[ResponseFields::TRANSACTION_ID],
+            'statusCode' => $response[ResponseFields::STATUS_CODE],
+            'errorDescription' => $response[ResponseFields::ERROR_DESCRIPTION] ?? null
         ];
-
-        $contentToSave[ResponseFields::AMOUNT] = $contentToSave[ResponseFields::AMOUNT] * 100;
 
         // Order ID in the wallet API is mapped to our payment ID
         $wallet = $this->repo->findByPaymentIdAndAction(
-            $data[ResponseFields::ORDER_ID],
+            $input['payment']['id'],
             Action::AUTHORIZE
         );
 
-        $this->updateGatewayPaymentEntity($wallet, $contentToSave);
+        $this->updateGatewayPaymentEntity($wallet, $content);
     }
     //----------------Callback helper methods end--------------
 
     //----------------Refund helper methods--------------------
 
-    protected function getRefundRequest(array $input, $wallet)
+    protected function getRefundRequestArray(array $input, $wallet)
     {
         $payment = $input['payment'];
 
@@ -190,8 +190,7 @@ class Gateway extends Base\Gateway
             RequestFields::ORDER_ID             => $payment[Payment::ID],
             RequestFields::TRANSACTION_ID       => $wallet[Entity::GATEWAY_PAYMENT_ID],
             RequestFields::AMOUNT               => $this->formatAmount($input['refund']['amount']),
-            RequestFields::REFUND_FEE           => ResponseCodeMap::REFUND_FEE,
-            // This is optional
+            RequestFields::REFUND_FEE           => Constants::REFUND_FEE,
             RequestFields::REFUND_REQUEST_ID    => $input['refund']['id'],
         ];
 
@@ -219,12 +218,11 @@ class Gateway extends Base\Gateway
         // They return all the refund ids comma separated in every
         // refund request. So, we're taking the last one out of those
         // and associate that with the current refund request.
-        $exploded = explode(',', $data[ResponseFields::REFUND_ID]);
-        $refundId = end($exploded);
+        $refundIds = explode(',', $data[ResponseFields::REFUND_ID]);
+        $refundId = end($refundIds);
 
         $contentToSave = [
             Entity::PAYMENT_ID          => $input['payment']['id'],
-            Entity::ACTION              => $this->action,
             Entity::AMOUNT              => $input['refund']['amount'],
             Entity::WALLET              => $input['payment']['wallet'],
             Entity::EMAIL               => $input['payment']['email'],
@@ -235,14 +233,8 @@ class Gateway extends Base\Gateway
             Entity::GATEWAY_REFUND_ID   => $refundId,
             Entity::STATUS_CODE         => $data[ResponseFields::STATUS_CODE],
             Entity::REFUND_ID           => $input['refund']['id'],
-            Entity::DATE                => Carbon::now(Timezone::IST)->format('d/m/Y H:m:s'),
+            Entity::ERROR_MESSAGE       => $data[ResponseFields::ERROR_DESCRIPTION] ?? null,
         ];
-
-        // Since error description is optional
-        if(isset($data[ResponseFields::ERROR_DESCRIPTION]))
-        {
-            $contentToSave[Entity::ERROR_MESSAGE] = $data[ResponseFields::ERROR_DESCRIPTION];
-        }
 
         return $contentToSave;
     }
@@ -252,7 +244,7 @@ class Gateway extends Base\Gateway
 
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
-        $request = $this->getVerifyRequestData($verify);
+        $request = $this->getVerifyRequestArray($verify);
 
         list($content, $response) = $this->sendRequest($request);
 
@@ -263,7 +255,7 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getVerifyRequestData(Verify $verify)
+    protected function getVerifyRequestArray(Verify $verify)
     {
         $payment = $verify->input['payment'];
 
@@ -366,7 +358,7 @@ class Gateway extends Base\Gateway
 
         assert($secret !== null);
 
-        return new AESCrypto(AES::MODE_ECB, $secret);
+        return (new AESCrypto(AES::MODE_ECB, $secret));
     }
 
     public function getEncryptedStringFromData($data)
@@ -397,7 +389,7 @@ class Gateway extends Base\Gateway
         return in_array($data[ResponseFields::STATUS_CODE], ResponseCodeMap::$successCodes, true);
     }
 
-    protected function parseResponse(array $input): array
+    protected function decryptResponse(array $input): array
     {
         $decryptedInput = $this->getEncryptor()->decryptString($input[ResponseFields::ENCRYPTED_DATA]);
 
@@ -420,11 +412,18 @@ class Gateway extends Base\Gateway
     {
         $response = $this->sendGatewayRequest($request);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_SUPPORT_REQUEST,
+            [
+                'content' => $response->body,
+                'gateway' => 'wallet_sbibuddy'
+            ]);
+
         $responseContent = [];
 
         parse_str($response->body, $responseContent);
 
-        return [$this->parseResponse($responseContent), $responseContent];
+        return [$this->decryptResponse($responseContent), $responseContent];
     }
     //----------------General helper methods ends---------------
 }
