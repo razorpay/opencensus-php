@@ -127,6 +127,57 @@ class TransactionController extends Controller
 
     public function getInvoiceReport($mode)
     {
+
+        /*
+         * TODO: Dummy data to be removed
+         */
+        $extraData = array(
+         'rows' => array (
+             array (
+                 'Sl. No.' => 1,
+                 'GST.SAC Code' => '997158',
+                 'Description' => 'Comission on Card Payments <= INR 2,000',
+                 'Amount' => 500,
+                 'SGST @ 9%' => 11,
+                 'CGST @ 9%' => 11,
+                 'IGST @ 18%' => 0,
+                 'Tax Total' => 22,
+                 'Grand Total' => 522
+             ),
+             array (
+                 'Sl. No.' => 2,
+                 'GST.SAC Code' => "997158",
+                 'Description' => "Comission on Card Payments > INR 2,000",
+                 'Amount' => 500,
+                 'SGST @ 9%' => 11,
+                 'CGST @ 9%' => 11,
+                 'IGST @ 18%' => 0,
+                 'Tax Total' => 22,
+                 'Grand Total' => 522
+             ),
+             array (
+                 'Sl. No.' => 3,
+                 'GST.SAC Code' => "997158",
+                 'Description' => "Comission on All Methods Except Cards",
+                 'Amount' => 500,
+                 'SGST @ 9%' => 11,
+                 'CGST @ 9%' => 11,
+                 'IGST @ 18%' => 0,
+                 'Tax Total' => 22,
+                 'Grand Total' => 522
+             )
+
+         ),
+         'total_amount_due' => 0,
+         'total_amount_paid' => 1566,
+         'rzp_gstin' => "29AAGCR4375J1ZU",
+         'rzp_pan_no' => "29AAGCR4375J1ZU",
+         'rzp_cin_no' => "U72200KA2013PTC097389",
+         'invoice_number' => "3vHW4",
+         'invoice_date' => "31/08/2017"
+        );
+
+
         $this->checkMode($mode);
 
         $input = Input::all();
@@ -155,6 +206,9 @@ class TransactionController extends Controller
             $data['isGstApplicable'] = $isGstApplicable;
 
             $data['merchant_details'] = $merchantDetails;
+
+            // TODO: appending dummy data, to be removed
+            $data = array_merge($data, $extraData);
 
             // return PDF::url('http://google.com');
             // PDF::setOutputMode('F');
