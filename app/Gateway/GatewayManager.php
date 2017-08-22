@@ -180,7 +180,7 @@ class GatewayManager extends \Illuminate\Support\Manager
         return $this->fileProcessors[$driver];
     }
 
-    protected function getFileProcessorDriver(string $type, string $gateway, string $gate): string
+    protected function getFileProcessorDriver(string $type, string $gateway, string $bank): string
     {
         $baseNamespace = 'RZP\\Models\\Gateway\\File\\Processor\\';
 
