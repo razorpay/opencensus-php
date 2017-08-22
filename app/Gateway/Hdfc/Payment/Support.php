@@ -235,10 +235,7 @@ trait Support
 
         $data['member'] = $card['name'];
 
-        if ($input['merchant']->getId() !== '2aTeFCKTYWwfrF')
-        {
-            $data['transid'] = $this->model->gateway_transaction_id;
-        }
+        $data['transid'] = $this->model->gateway_transaction_id;
 
         if ($type === 'refund')
         {
@@ -260,6 +257,12 @@ trait Support
         if ($input['card']['network'] === 'RuPay')
         {
             $data['udf5'] = 'PaymentID';
+        }
+
+        if ($input['merchant']->getId() === '5ubLZpACTmD8D4')
+        {
+            $data['udf5'] = 'TrackID';
+            $data['transid'] = $this->model->payment_id;
         }
     }
 
