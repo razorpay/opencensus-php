@@ -100,6 +100,7 @@ export default class HomeContainer extends Component {
             />
           </div>
         </Header>
+
         <div
           class="Dashboard"
           style={{

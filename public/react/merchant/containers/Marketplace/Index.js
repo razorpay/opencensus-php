@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Route, Switch, NavLink } from 'react-router-dom';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 import PaymentsList from 'merchant/containers/Marketplace/Payments/List';
 import TransfersList from 'merchant/containers/Marketplace/Transfers/List';
@@ -16,7 +17,7 @@ export default class MarketplaceContainer extends Component {
           <NavLink to="/route/reversals">Reversals</NavLink>
           <NavLink to="/route/accounts">Accounts</NavLink>
         </header>
-
+        <TestModeBanner />
         <content>
           <Switch>
             <Route path="/route/payments" component={PaymentsList} />
