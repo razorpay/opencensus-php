@@ -34,7 +34,7 @@ class Xml
 
         self::$xml = null;
 
-        return $xml;
+        return $xml->saveXml();
     }
 
     /**

@@ -115,4 +115,14 @@ class Currency
         self::INR => '₹',
         self::USD => '$',
     ];
+
+    public static function getIsoCode(string $currency)
+    {
+        return self::ISO_NUMERIC_CODES[$currency] ?? null;
+    }
+
+    public function getSymbol(string $currency)
+    {
+        return self::SYMBOL[$currency] ?? '';
+    }
 }

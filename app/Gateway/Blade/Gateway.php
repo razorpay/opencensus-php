@@ -13,6 +13,8 @@ use RZP\Gateway\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use Lib\Formatters\Xml;
+use RZP\Models\Currency\Currency;
 
 class Gateway extends Base\Gateway
 {
@@ -305,7 +307,7 @@ class Gateway extends Base\Gateway
 
         $currency = (int) $PAResBase['Purchase']['currency'];
 
-        if ($currency  !== 356)
+        if ($currency !== 356)
         {
             throw new Exception\BadRequestValidationFailureException(
                     'Invalid currency code', 'xid');
@@ -613,9 +615,9 @@ class Gateway extends Base\Gateway
     protected function verifyXmlSign($pares)
     {
         $doc = new DOMDocument();
-        $arTests = ['SIGN_TEST'=>'./firmas/sign-basic-test_mio.xml'];
+        $arTests = ['SIGN_TEST' => './firmas/sign-basic-test_mio.xml'];
 
-        foreach ($arTests as $testName=>$testFile)
+        foreach ($arTests as $testName => $testFile)
         {
             $doc->load($testFile);
             $objXMLSecDSig = new XMLSecurityDSig();
@@ -645,16 +647,23 @@ class Gateway extends Base\Gateway
         {
            throw new Exception("We have no idea about the key");
         }
-        $key = NULL;
+        $key = null;
         $objKeyInfo = XMLSecEnc::staticLocateKeyInfo($objKey, $objDSig);
-        if (! $objKeyInfo->key && empty($key)) {
+
+        if ((! $objKeyInfo->key) and (empty($key) === true))
+        {
            $objKey->loadKey('i.pem', TRUE);
         }
-        if ($objXMLSecDSig->verify($objKey)) {
+
+        if ($objXMLSecDSig->verify($objKey))
+        {
            print "Signature validateddd!";
-        } else {
+        }
+        else
+        {
            print "Failure!!!!!!!!";
         }
+
         print "\n";
     }
 
@@ -782,30 +791,66 @@ class Gateway extends Base\Gateway
         // Format YYYYMMDD HH:MM:SS
         $date = Carbon::createFromTimestamp($input['payment']['created_at'], 'Asia/Kolkata')->format('Ymd H:m:s');
 
-        $expiry = substr($input['card']['expiry_year'], -2).str_pad($input['card']['expiry_month'], 2, 0, STR_PAD_LEFT);
-
-        $xid = '000000'.$input['payment']['id'];
-        $xid = base64_encode($xid);
-
         $mid = $input['payment']['public_id'];
 
-        $recurring = '';
-        $installments = '';
+        $content = [
+            'Message' => [
+                '@attributes' => [
+                    'id' => $mid,
+                ],
+                'PAReq' => [
+                    'version' => self::VERSION,
+                    'Merchant' => [
+                        'acqBIN'  => $creds['acq_bin'],
+                        'merID'   => $creds['merchant_id'],
+                        // todo: make it dynamic
+                        'name'    => 'Razorpay Software Pvt Ltd',
+                        'country' => '356',
+                        'url'     => 'https://razorpay.com',
+                    ],
+                    'Purchase' => [
+                        'xid'     => $this->generateXid($input),
+                        'date'    => $date,
+                        'amount'  => $this->getFormattedAmount($input['payment']),
+                        'purchAmount' => $input['payment']['amount'],
+                        'currency' => Currency::getIsoCode($input['payment']['currency']),
+                        'exponent' => '2',
+                    ],
+                    'CH' => [
+                        'acctID' => $veres->Message->VERes->CH->acctID,
+                        'expiry' => $this->getFormattedCardExpiry($input['card']),
+                    ]
+                ]
+            ]
+        ];
 
-        if (empty($input['payment']['notes']['installments']) === false)
+        if (isset($recurring) === true)
         {
-            $installments = '<install>'. $input['payment']['notes']['installments'] . '</install>';
+            $content['Message']['PAReq']['Purchase']['Recur'] = [
+                'frequency' => '',
+                'endRecur'  => '',
+            ];
         }
 
-        if (empty($input['payment']['notes']['recurring_frequency']) === false)
+        if (isset($emi) === true)
         {
-            $recurring = '<Recur>
-                        <frequency>'.$input['payment']['notes']['recurring_frequency'].'</frequency>
-                        <endRecur>'.$input['payment']['notes']['recurring_expiry'] .'</endRecur>
-                        </Recur>';
+            $content['Message']['PAReq']['Purchase']['install'] = $emi;
         }
 
-        // Currency is INR (356 - ISO 4217 numeric value) for now
+        // if (empty($input['payment']['notes']['installments']) === false)
+        // {
+        //     $installments = '<install>'. $input['payment']['notes']['installments'] . '</install>';
+        // }
+
+        // if (empty($input['payment']['notes']['recurring_frequency']) === false)
+        // {
+        //     $recurring = '<Recur>
+        //                 <frequency>'.$input['payment']['notes']['recurring_frequency'].'</frequency>
+        //                 <endRecur>'.$input['payment']['notes']['recurring_expiry'] .'</endRecur>
+        //                 </Recur>';
+        // }
+
+        /* Currency is INR (356 - ISO 4217 numeric value) for now
         // TODO: Make it dynamic with INR as default
         $xml = '<?xml version="1.0" encoding="UTF-8"?>'.
                 '<ThreeDSecure>
@@ -837,7 +882,9 @@ class Gateway extends Base\Gateway
                     </Message>
                 </ThreeDSecure>';
 
-        $xml = trim($xml);
+        */
+
+        $xml = Xml::create('ThreeDSecure', $content);
 
         $xml = zlib_encode($xml, 15);
         $xml = base64_encode($xml);
@@ -845,39 +892,60 @@ class Gateway extends Base\Gateway
         return $xml;
     }
 
+    private function generateXid(array $input)
+    {
+        $xid = str_pad($input['payment']['id'], 18, '0', STR_PAD_LEFT);
+
+        return base64_encode($xid);
+    }
+
+    private function getFormattedAmount(array $payment)
+    {
+        $currency = Currency::getSymbol($payment['currency']);
+
+        $amount = (string) ($payment['amount'] / 100);
+
+        return trim($currency . ' ' . $amount);
+    }
+
+    private function getFormattedCardExpiry(array $card)
+    {
+        $year = substr($input['card']['expiry_year'], -2);
+        $month = str_pad($input['card']['expiry_month'], 2, 0, STR_PAD_LEFT);
+
+        return $year . $month;
+    }
+
     protected function getVereqXmlString($input)
     {
         $creds = $this->getCreds();
 
-        // $deviceCategory = DeviceCategory::getDeviceCategory($input['payment']['notes']['device_category']);
-        // todo: fix this
-        $deviceCategory = 0;
-
         $accept = substr($this->app['request']->header('Accept'), 0, 2048);
         $userAgent = substr($this->app['request']->header('User-Agent'), 0, 256);
 
-        $xml = ''.
-            '<?xml version="1.0" encoding="UTF-8"?>
-            <ThreeDSecure>
-              <Message id="'.$input['payment']['public_id'].'">
-                <VEReq>
-                  <version>1.0.2</version>
-                  <pan>'.$input['card']['number'].'</pan>
-                  <Merchant>
-                    <acqBIN>'.$creds['acq_bin'].'</acqBIN>
-                    <merID>'.$creds['merchant_id'].'</merID>
-                    <password>'.$creds['password'].'</password>
-                  </Merchant>
-                  <Browser>
-                    <deviceCategory>' . $deviceCategory. '</deviceCategory>
-                    <accept>' . $accept .'</accept>
-                    <userAgent>' . $userAgent. '</userAgent>
-                  </Browser>
-                </VEReq>
-              </Message>
-            </ThreeDSecure>';
+        $content = [
+            'Message' => [
+                '@attributes' => [
+                    'id' => $input['payment']['public_id']
+                ],
+                'VEReq' => [
+                    'version' => self::VERSION,
+                    'pan'     => $input['card']['number'],
+                    'Merchant' => [
+                        'acqBIN' => $creds['acq_bin'],
+                        'merID'  => $creds['merchant_id'],
+                        'password' => $creds['password'],
+                    ],
+                    'Browser' => [
+                        'deviceCategory' => DeviceCategory::DESKTOP,
+                        'accept'         => $accept,
+                        'userAgent'      => $userAgent,
+                    ]
+                ]
+            ]
+        ];
 
-        return $xml;
+        return Xml::create('ThreeDSecure', $content);
     }
 
     protected function getCreds()
