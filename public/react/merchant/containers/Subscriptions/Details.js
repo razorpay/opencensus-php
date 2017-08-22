@@ -1,15 +1,18 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import SubscriptionDetails from 'merchant/components/Subscriptions/Details';
+import InvoiceDetail from 'merchant/components/Invoices/InvoiceDetail';
 import {
   fetchSubscription as fetchItem,
   cancelSubscription,
 } from 'merchant/modules/subscriptions';
 import { fetchPlan } from 'merchant/modules/plans';
 import { fetchCustomer } from 'merchant/modules/customers';
+import { fetchInvoice } from 'merchant/modules/invoices/details';
 import { showNotification } from 'rzp/modules/notifications';
 
 @connect(state => state.subscription, {
+  fetchInvoice,
   fetchItem,
   fetchPlan,
   fetchCustomer,
@@ -21,16 +24,44 @@ export default class SubscriptionDetailsContainer extends Component {
     confirm: PropTypes.func,
   };
 
-  state = {};
+  state = {
+    secLoading: false,
+    invoice: null,
+    payment: null,
+  };
 
   componentWillMount() {
     this.fetchSubscriptionDetails(this.props.id);
+    if (this.props.invoice_id) {
+      this.fetchInvoice(this.props.invoice_id);
+    }
+    if (this.props.payment_id) {
+      this.fetchPayment(this.props.payment_id);
+    }
   }
 
   componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
       this.props.fetchItem(nextProps.id);
     }
+  }
+
+  fetchInvoice(id) {
+    this.setState({ secLoading: true });
+    this.props
+      .fetchInvoice(id)
+      .then(invoice => {
+        this.setState({
+          invoice,
+          secLoading: false,
+        });
+      })
+      .catch(({ errors }) => {
+        this.setState({
+          secLoading: false,
+          errors,
+        });
+      });
   }
 
   fetchSubscriptionDetails(id) {
@@ -54,7 +85,8 @@ export default class SubscriptionDetailsContainer extends Component {
   cancelSubscription = () => {
     this.context.confirm({
       header: 'Cancel Subscription?',
-      message: "The subscription will be terminated and the customer's card will not be charged.",
+      message:
+        "The subscription will be terminated and the customer's card will not be charged.",
       affirmativeLabel: 'Yes',
       abortLabel: 'No',
       action: () =>
@@ -77,6 +109,7 @@ export default class SubscriptionDetailsContainer extends Component {
 
   render() {
     let { entity, plan, customer } = this.props;
+    let { invoice, secLoading } = this.state;
     let errors = this.state.errors;
     let isLoading = this.state.isLoading;
     let statusMsg = {};
@@ -89,14 +122,17 @@ export default class SubscriptionDetailsContainer extends Component {
     }
 
     return (
-      <SubscriptionDetails
-        subscription={entity}
-        plan={plan}
-        customer={customer}
-        isLoading={isLoading}
-        statusMsg={statusMsg}
-        onCancelClick={this.cancelSubscription}
-      />
+      <div>
+        <SubscriptionDetails
+          subscription={entity}
+          plan={plan}
+          customer={customer}
+          isLoading={isLoading}
+          statusMsg={statusMsg}
+          onCancelClick={this.cancelSubscription}
+        />
+        <InvoiceDetail invoice={invoice} isLoading={secLoading} />
+      </div>
     );
   }
 }

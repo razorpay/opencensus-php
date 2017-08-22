@@ -18,7 +18,7 @@ const notificationClassMap = {
 export default props => {
   let { invoice, isLoading, statusMsg } = props;
 
-  let status = invoice.status;
+  let status = invoice && invoice.status;
   let isDraft = status === 'draft';
   let isIssued = status === 'issued';
   let isPaid = status === 'paid';
@@ -31,7 +31,8 @@ export default props => {
         ? <div class="page-spinner-container">
             <Spinner />
           </div>
-        : <div class="panel panel-default SliderPanel">
+        : invoice &&
+          <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
               <i class="icon icon-link text-primary icon--formal" />{' '}
               <strong>{invoice.id}</strong>
