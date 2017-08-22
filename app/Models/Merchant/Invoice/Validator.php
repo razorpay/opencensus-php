@@ -17,6 +17,10 @@ class Validator extends Base\Validator
         Entity::GSTIN       => 'sometimes|string|size:15',
     ];
 
+    protected static $editGstinRules = [
+        Entity::INVOICE_NUMBER  => 'required|string',
+    ];
+
     protected static $createQueueRules = [
         Entity::MONTH       => 'sometimes|integer|between:1,12',
         Entity::YEAR        => 'sometimes|digits:4',

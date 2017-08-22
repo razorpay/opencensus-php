@@ -160,7 +160,6 @@ class Processor extends Base\Core
     {
         $this->merchant = $this->repo->merchant->findOrFailPublicWithRelations($this->merchantId, ['merchantDetail']);
 
-        // Month, Year
         $beginDate = Carbon::createFromDate($this->year, $this->month, 1, Timezone::IST);
 
         $this->beginTimestamp = $beginDate->startOfMonth()->timestamp;
@@ -175,14 +174,12 @@ class Processor extends Base\Core
 
         $commissionTypes = Type::getAllTypes();
 
-        //
         // [
         //    'card_lte_2k'   => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
         //    'card_gt_2k'    => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
         //    'non_card'      => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
         //    'adjustment'    => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
         // ]
-        //
         foreach ($commissionTypes as $key)
         {
             $this->invoiceBreakup[$key] = [
