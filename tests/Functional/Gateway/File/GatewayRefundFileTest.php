@@ -6,6 +6,7 @@ use Mail;
 use Excel;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
@@ -237,15 +238,30 @@ class GatewayRefundFileTest extends TestCase
 
     public function testRefundFileFileGenErrorRetryProcessing()
     {
-        $this->markTestSkipped();
-        $this->testRefundFileProcessorWithFileGenerationError();
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
 
-        Mockery::close();
         Mail::fake();
 
-        $gatewayFile = $this->getLastEntity('gateway_file', true);
+        $gatewayFile = $this->fixtures->create('gateway_file', [
+            'gateway'      => 'netbanking_hdfc',
+            'bank'         => 'HDFC',
+            'type'         => 'refund',
+            'sender'       => 'refunds@razorpay.com',
+            'status'       => 'failed',
+            'failure_code' => 'error_creating_file',
+            'failed_at'    => time(),
+            'attempts'     => 1,
+            'from'         => Carbon::today(Timezone::IST)->timestamp,
+            'to'           => Carbon::tomorrow(Timezone::IST)->timestamp,
+        ]);
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/gateway/files/' . $gatewayFile['id'] . '/retry';
+        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/gateway/files/' . $gatewayFile->getId() . '/retry';
 
         $this->ba->appAuth();
 
@@ -253,7 +269,7 @@ class GatewayRefundFileTest extends TestCase
 
         $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
         $this->assertNotNull($content[File\Entity::SENT_AT]);
-        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNotNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
         Mail::assertSent(RefundFileMail::class, function ($mail)
@@ -323,6 +339,35 @@ class GatewayRefundFileTest extends TestCase
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
     }
 
+    /**
+     * Retries processing of a refund file with no refunds available in given period
+     */
+    public function testRefundFileNoDataAvailableRetryProcessing()
+    {
+        $this->testRefundFileProcessorWithNoRefundData();
+
+        $gatewayFile = $this->getLastEntity('gateway_file', true);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/gateway/files/' . $gatewayFile['id'] . '/retry';
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testRetryForAcknowledgedGatewayFile()
+    {
+        $this->testGatewayFileAcknowledge();
+
+        $gatewayFile = $this->getLastEntity('gateway_file', true);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/gateway/files/' . $gatewayFile['id'] . '/retry';
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function testGatewayFileAcknowledge()
     {
         $this->testRefundFileProcessor();
@@ -336,6 +381,19 @@ class GatewayRefundFileTest extends TestCase
         $content = $this->startTest();
 
         $this->assertNotNull($content[File\Entity::ACKNOWLEDGED_AT]);
+    }
+
+    public function testAcknowledgedgatewayFileRetry()
+    {
+        $this->testGatewayFileAcknowledge();
+
+        $gatewayFile = $this->getLastEntity('gateway_file', true);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/gateway/files/' . $gatewayFile['id'] . '/retry';
+
+        $this->ba->appAuth();
+
+        $this->startTest();
     }
 
     public function testGatewayFileAcknowledgePartiallyProcessed()
@@ -355,6 +413,7 @@ class GatewayRefundFileTest extends TestCase
 
     public function testGenerateGatewayFilesBulk()
     {
+        // @todo Use correct timestamps in this test
         $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
 
         Mail::fake();

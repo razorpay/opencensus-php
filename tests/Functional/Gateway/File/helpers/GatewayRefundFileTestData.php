@@ -357,6 +357,48 @@ return [
         ]
     ],
 
+    'testRefundFileNoDataAvailableRetryProcessing' => [
+        'request' => [
+            'content' => [
+            ],
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'This gateway file is not retriable',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => \RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE,
+        ]
+    ],
+
+    'testRetryForAcknowledgedGatewayFile' => [
+        'request' => [
+            'content' => [
+            ],
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'This gateway file is not retriable',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => \RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE,
+        ]
+    ],
+
     'testGatewayFileAcknowledge' => [
         'request' => [
             'content' => [
