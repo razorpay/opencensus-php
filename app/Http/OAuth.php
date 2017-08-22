@@ -3,9 +3,12 @@
 namespace RZP\Http;
 
 use ApiResponse;
-
-use Illuminate\Http\Request;
 use Razorpay\OAuth\OAuthServer;
+use Razorpay\OAuth\Token\Entity as OAuthToken;
+
+use RZP\Error\ErrorCode;
+use Illuminate\Http\Request;
+use RZP\Exception\LogicException;
 use RZP\Http\BasicAuth\BasicAuth;
 use Illuminate\Support\Facades\App;
 
@@ -22,11 +25,20 @@ class OAuth
 
     protected $request;
 
+    protected $router;
+
+    /**
+     * @var string
+     */
+    protected $publicToken;
+
     public function __construct(Request $request)
     {
         $app = App::getFacadeRoot();
 
         $this->ba = $app['basicauth'];
+
+        $this->router = $app['router'];
 
         $this->server = new OAuthServer();
 
@@ -35,6 +47,7 @@ class OAuth
 
     /**
      * Check if the request have an OAuth public token
+     * TODO: Refactor common functions into a generic Auth class
      *
      * @return bool
      */
@@ -42,7 +55,9 @@ class OAuth
     {
         $request = $this->request;
 
-        $key = $request->input('key_id') ?? $request->getUser();
+        $keyParam = $request->input('key_id');
+
+        $key = $keyParam ?? $request->getUser();
 
         //
         // If the key was empty or null, return false and allow
@@ -58,6 +73,26 @@ class OAuth
         $isPublicToken = ((strlen($key) === self::PUBLIC_TOKEN_LENGTH) and
                           (substr($key, 8, 7) === '_oauth_'));
 
+        if ($isPublicToken === true)
+        {
+            $this->publicToken = $key;
+        }
+
+        // Set the public_key on BasicAuth
+        $this->ba->setPublicKey($key);
+
+        //
+        // If $keyParam is non-null, it means the request was authenticated with
+        // key_id sent in the request params and not via Basic Auth header.
+        // In this case, we remove the key_id attribute before proceeding
+        //
+        if (($isPublicToken === true) and ($keyParam !== null))
+        {
+            // Remove 'key_id' from query params
+            $this->request->query->remove('key_id');
+            $this->request->request->remove('key_id');
+        }
+
         return $isPublicToken;
     }
 
@@ -68,47 +103,119 @@ class OAuth
      *
      * @param string $token
      *
-     * @return array
+     * @return mixed|null ErrorResponse if error, else null
      */
-    public function resolveToken(string $token)
+    public function resolveBearerToken(string $token)
     {
-        $response = $this->server->authenticateWithBearerToken($token);
-
-        // Error
-        if (empty($response) === true)
+        try
         {
-            return null;
+            $response = $this->server->authenticateWithBearerToken($token);
+        }
+        catch (\Exception $exception)
+        {
+            // TODO: Add an API <> OAuth Exception map
+
+            return ApiResponse::generateErrorResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_OAUTH_TOKEN_INVALID);
         }
 
-        $scopes = (array) $response['scopes'];
-
-        $this->resolveScopes($scopes);
-
-        $merchantId = $response['merchant_id'];
-
-        $tokenId = $response['id'];
-
-        $clientId = $response['client_id'];
-
-        $mode = $response['mode'];
-
-        return [$merchantId, $tokenId, $clientId, $mode];
+        return $this->parseOAuthServerResponse($response);
     }
 
-    public function resolvePublicToken(string $token)
+    /**
+     * Resolve and process an OAuth public token
+     *
+     * @return mixed|null ErrorResponse if error, else null
+     * @throws LogicException
+     */
+    public function resolvePublicToken()
     {
-        $response = $this->server->authenticateWithBearerToken($token);
-
-        // Error
-        if (empty($response) === true)
+        //
+        // If $this->publicToken isn't set by the Authenticate middleware,
+        // This is user-created bug
+        // Fail with a LogicException
+        //
+        if (isset($this->publicToken) === false)
         {
-            return null;
+            throw new LogicException('OAuth: publicToken property was not set in the Authenticate middleware');
         }
+
+        try
+        {
+            $response = $this->server->authenticateWithPublicToken($this->publicToken);
+        }
+        catch (\Exception $exception)
+        {
+            // TODO: Add an API <> OAuth Exception map
+
+            return ApiResponse::generateErrorResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_OAUTH_TOKEN_INVALID);
+        }
+
+        return $this->parseOAuthServerResponse($response);
     }
 
+    protected function parseOAuthServerResponse(array $response)
+    {
+        $route = $this->router->currentRouteName();
+
+        $this->resolveScopes($response[OAuthToken::SCOPES]);
+
+        $routeScopes = Scopes::getScopesForRoute($route);
+
+        if ($this->areScopesAllowed($routeScopes) === false)
+        {
+            return ApiResponse::oauthInvalidScope();
+        }
+
+        //
+        // Set merchant for the current request
+        // TODO: Move this to a common auth class
+        //
+        $this->ba->setMerchantById($response[OAuthToken::MERCHANT_ID]);
+
+        $mode = $response[OAuthToken::MODE];
+
+        // Sets the mode for the request, and database connection
+        $this->ba->setMode($mode);
+        \Database\DefaultConnection::set($mode);
+
+        // Sets the identifiers that are sent in trace logs
+        $this->ba->setAccessTokenId($response[OAuthToken::ID]);
+        $this->ba->setOAuthClientId($response[OAuthToken::CLIENT_ID]);
+    }
+
+    protected function areScopesAllowed(array $routeScopes) : bool
+    {
+        foreach ($routeScopes as $scope)
+        {
+            if ($this->ba->hasScope($scope) === true)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * TODO: Parse exceptions thrown from the OAuth package
+     * and throw corresponding exceptions from API
+     */
+    protected function parseOAuthException()
+    {
+        // TODO: Add an API <> OAuth Exception map
+    }
+
+    /**
+     * Process token scopes on API before usage
+     *
+     * @param array $tokenScopes
+     */
     protected function resolveScopes(array $tokenScopes)
     {
-        // Save scopes so endpoints can check against it, if needed
+        //
+        // Save scopes on BasicAuth so endpoints can check
+        // against it, if needed
+        //
         $this->ba->withScopes($tokenScopes);
     }
 }

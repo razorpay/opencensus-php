@@ -128,7 +128,7 @@ class Authenticate
             //
             if ($this->oauth->hasOAuthPublicToken() === true)
             {
-                $ret = $this->processOAuthPublicToken();
+                $ret = $this->authenticateOAuthPublicToken();
             }
             else
             {
@@ -161,6 +161,8 @@ class Authenticate
     }
 
     /**
+     * Authenticate the request with a OAuth token
+     *
      * @param string $route
      * @param string $bearerToken
      *
@@ -177,50 +179,19 @@ class Authenticate
             return ApiResponse::routeNotFound();
         }
 
-        list($merchantId, $tokenId, $clientId, $mode) = $this->oauth->resolveToken($bearerToken);
-
-        if ($merchantId === null)
-        {
-            // todo: Change to unauthorized response
-            return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
-        }
-
-        $routeScopes = Scopes::getScopesForRoute($route);
-
-        $scopeAllowed = $this->checkScopes($routeScopes);
-
-        if ($scopeAllowed === false)
-        {
-            // todo: Change to unauthorized response
-            return ApiResponse::httpMethodNotAllowed();
-        }
-
-        //
-        // Set merchant for the current request
-        // TODO: Move this to a common auth class
-        //
-        $this->ba->setMerchantById($merchantId);
-
-        $this->ba->setMode($mode);
-
-        \Database\DefaultConnection::set($mode);
-
-        $this->ba->setAccessTokenId($tokenId);
-
-        $this->ba->setOAuthClientId($clientId);
+        return $this->oauth->resolveBearerToken($bearerToken);
     }
 
-    protected function checkScopes(array $routeScopes) : bool
+    /**
+     * Handle authentication for public route that have an
+     * OAuth public token set
+     * Sample token: rzp_test_oauth_8P3XVPteKu4igS
+     *
+     * @return mixed|null ErrorResponse if error, else null
+     */
+    protected function authenticateOAuthPublicToken()
     {
-        foreach ($routeScopes as $scope)
-        {
-            if ($this->ba->hasScope($scope) === true)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->oauth->resolvePublicToken();
     }
 
     /**
@@ -248,11 +219,6 @@ class Authenticate
         }
 
         return null;
-    }
-
-    protected function processOAuthPublicToken()
-    {
-        $this->oauth->resolveToken();
     }
 
     /**

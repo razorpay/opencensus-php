@@ -1115,6 +1115,11 @@ class BasicAuth
         $this->isAdmin = true;
     }
 
+    public function setPublicKey(string $publicKey)
+    {
+        $this->creds['public_key'] = $publicKey;
+    }
+
     protected function setProxyTrue()
     {
         $this->proxy = true;
