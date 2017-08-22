@@ -5,7 +5,7 @@ namespace RZP\Gateway\Wallet\Sbibuddy;
 class Url
 {
     const TEST_DOMAIN    = 'https://buddyuat.sbi.co.in/';
-    const LIVE_DOMAIN    = 'https://example.sbibuddy.com/';
+    const LIVE_DOMAIN    = 'https://erupee.sbi.co.in/';
 
     const AUTHORIZE      = 'mmgw-tls/merchant/page/paynow';
 
