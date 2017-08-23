@@ -4,10 +4,10 @@ namespace RZP\Models\BankTransfer;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Trace\Trace;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use Razorpay\Trace\Logger as Trace;
 
 class Core extends Base\Core
 {
