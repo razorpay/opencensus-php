@@ -76,6 +76,14 @@ export default props => {
           </div>
         : <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
+              {props.onClose &&
+                <button
+                  type="button"
+                  class="close close-secondary"
+                  onClick={props.onClose}
+                >
+                  <i class="icon icon-close" />
+                </button>}
               Payment Id: <b>{payment.id}</b>
             </div>
 

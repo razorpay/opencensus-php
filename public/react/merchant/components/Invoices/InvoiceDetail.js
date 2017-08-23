@@ -33,6 +33,15 @@ export default props => {
           </div>
         : <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
+              {props.onClose &&
+                <button
+                  type="button"
+                  class="close close-secondary"
+                  onClick={props.onClose}
+                >
+                  <i class="icon icon-arrow-back" />
+                  <i class="icon icon-close" />
+                </button>}
               <i class="icon icon-link text-primary icon--formal" />{' '}
               <strong>{invoice.id}</strong>
               <ShowWhen notMyRole="support finance">

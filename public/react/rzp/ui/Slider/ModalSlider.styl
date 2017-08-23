@@ -27,18 +27,39 @@ $slider-width = 500px
   }
 
   &.expanded {
-    transform: translateX(-100%);
-    .content-wrapper {
-      &:first-child {
-        .panel, .panel-heading {
-          background-color: #FAFAFA;
+    @media (min-width: 1280px) {
+      transform: translateX(-100%);
+      .content-wrapper {
+        &:first-child {
+          .panel, .panel-heading {
+            background-color: #FAFAFA;
+          }
         }
       }
     }
   }
   .close-secondary {
-    left: 200%;
+    left: 100%;
     display: block;
+    .icon-arrow-back {
+      display: none;
+    }
+  }
+
+  @media (max-width: 1279px) {
+    .close-secondary {
+      left: 0;
+      margin: 3px 0 0 6px;
+      .icon-arrow-back {
+        display: block;
+      }
+      .icon-close {
+        display: none;
+      }
+    }
+    .content-wrapper:not(:first-child) .panel-heading {
+      padding-left: 50px;
+    }
   }
 
   &.ReactModal__Overlay--before-close {
@@ -61,6 +82,7 @@ $slider-width = 500px
   }
 
   .content-wrapper {
+    overflow: auto;
     max-width: none
     margin: 0
     min-height: 0;
@@ -69,9 +91,11 @@ $slider-width = 500px
     top: 0
     bottom: 0
     background: #fff
-    width: $slider-width
-    &+.content-wrapper {
-      left: 100%;
+    width: 100%
+    @media (min-width: 1280px) {
+      &+.content-wrapper {
+        left: 100%;
+      }
     }
   }
 

@@ -156,16 +156,17 @@ export default class SubscriptionDetailsContainer extends Component {
           onCancelClick={this.cancelSubscription}
         />
         {secView === 'invoice' &&
-          <InvoiceDetail invoice={invoice} isLoading={secView && !invoice} />}
+          <InvoiceDetail
+            invoice={invoice}
+            onClose={this.secClose}
+            isLoading={secView && !invoice}
+          />}
         {secView === 'payment' &&
-          <PaymentDetail payment={payment} isLoading={secView && !payment} />}
-        <button
-          type="button"
-          class="close close-secondary"
-          onClick={this.secClose}
-        >
-          <i class="icon icon-close" />
-        </button>
+          <PaymentDetail
+            payment={payment}
+            onClose={this.secClose}
+            isLoading={secView && !payment}
+          />}
       </div>
     );
   }
@@ -176,7 +177,7 @@ export default class SubscriptionDetailsContainer extends Component {
     compactSlider();
     setTimeout(
       () => history.push(location.pathname.replace(/\/[^\/]+\/?$/, '')),
-      300
+      150
     );
   };
 }
