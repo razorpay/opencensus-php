@@ -18,7 +18,7 @@ const notificationClassMap = {
 export default props => {
   let { invoice, isLoading, statusMsg } = props;
 
-  let status = invoice.status;
+  let status = invoice && invoice.status;
   let isDraft = status === 'draft';
   let isIssued = status === 'issued';
   let isPaid = status === 'paid';
