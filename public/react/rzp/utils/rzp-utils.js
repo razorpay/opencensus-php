@@ -129,7 +129,34 @@ export const objectDiff = (oldObj = {}, newObj = {}) => {
   }, {});
 };
 
-// TODO: Remove this fn once Selva's branch is merged having this function.
+/*
+  * Convert the object to url query string
+  * Don't allow undefined, null and empty string as values
+  * Note: It doesn't handle nested object
+*/
+export const stringifyQueryParams = params => {
+  let queryString;
+  let queryElements = [];
+
+  for (let key in params) {
+    if (
+      params.hasOwnProperty(key) &&
+      params[key] != null &&
+      params[key] !== ''
+    ) {
+      queryElements.push(key + '=' + params[key]);
+    }
+  }
+
+  queryString = '?' + queryElements.join('&');
+  return queryString;
+};
+
+/*
+ * Convert the location into query params object
+ * Usually, passing url = this.props.location.search
+ * Use Case: utilize to populate filter form
+*/
 export const getURLQueryParams = (url = document.location.hash) => {
   let search = url.split('?')[1];
   let params = {};

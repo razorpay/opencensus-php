@@ -11,6 +11,7 @@ import * as CustomerActions from 'merchant/modules/customers';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationActions from 'rzp/modules/notifications';
 import { luminateRow } from 'merchant/modules/app';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 @connect(state => state.customers, {
   ...CustomerActions,
@@ -74,6 +75,8 @@ export default class CustomersListContainer extends ListContainer {
 
     return (
       <div class="content-wrapper">
+        <TestModeBanner />
+
         <HeaderAction>
           <ShowWhen notMyRole="support">
             <div class="btn-toolbar">

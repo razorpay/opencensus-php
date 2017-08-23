@@ -48,8 +48,8 @@
           Generate Refunds Excel (Netbanking)
         </a>
         <a href class="list-group-item" ng-click="openGenerateEmiFiles()"
-           ng-show="admin.permissions.indexOf('generate_emi_files') !== -1"
-           dynamic-tooltip-pos="top" dynamic-tooltip="generate_emi_files">
+           ng-show="admin.permissions.indexOf('create_emi_files') !== -1"
+           dynamic-tooltip-pos="top" dynamic-tooltip="create_emi_files">
           Generate Emi Excel
         </a>
         <a href class="list-group-item" ng-click="openAuthorizeFailedPayment()"
@@ -202,13 +202,14 @@
         <label for="bank" class="col-lg-2 control-label">Bank</label>
         <div class="col-lg-10" >
           <select class="form-control m-b" name="bank" ng-model="emi.bank">
+            <option value="RATN">RBL</option>
             <option value="HDFC">HDFC</option>
-            <option value="KKBK">Kotak</option>
             <option value="UTIB">Axis</option>
+            <option value="KKBK">Kotak</option>
             <option value="ICIC">ICICI</option>
             <option value="FDRL">Federal</option>
             <option value="INDB">Indusind</option>
-            <option value="RATN">RBL</option>
+            <option value="SCBL">Standard Chartered</option>
           </select>
         </div>
       </div>
@@ -535,6 +536,7 @@
             <option value="NetbankingRbl">Netbanking Rbl</option>
             <option value="NetbankingIndusind">Netbanking Indusind</option>
             <option value="FirstData">First Data</option>
+            <option value="VirtualAccKotak">Virtual Accounts Kotak</option>
           </select>
         </div>
       </div>
@@ -659,12 +661,12 @@
         <div class="col-lg-10" >
           <select class="form-control m-b" name="bank" ng-model="bank">
             <!-- Take care to keep these capitalized -->
-            <option value="KKBK">KOTAK</option>
-            <option value="UTIB">AXIS</option>
-            <option value="INDB">INDUS_IND</option>
-            <option value="RATN">RBL</option>
-            <option value="SCBL">SCBL</option>
-            <option value="ICIC">ICICI</option>
+            <option value="KKBK">Kotak</option>
+            <option value="UTIB">Axis</option>
+            <option value="INDB">IndusInd</option>
+            <option value="RATN">Rbl</option>
+            <option value="SCBL">Scbl</option>
+            <option value="ICIC">Icici</option>
           </select>
         </div>
       </div>

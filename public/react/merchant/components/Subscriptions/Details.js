@@ -24,8 +24,7 @@ export default ({
           </div>
         : <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
-              <i class="icon icon-refresh text-info" />
-              {' '}
+              <i class="icon icon-refresh text-main icon--formal" />{' '}
               <strong>{subscription.id}</strong>
             </div>
 
@@ -39,21 +38,22 @@ export default ({
 
                 <EntityDetailRow
                   label="Plan"
-                  value={() => (
+                  value={() =>
                     <div>
                       <Link to={`/plans/${subscription.plan_id}`}>
                         {plan.item.name}
                       </Link>
                       <div class="text-muted">
-                        <small>{plan.item.description}</small>
+                        <small>
+                          {plan.item.description}
+                        </small>
                       </div>
-                    </div>
-                  )}
+                    </div>}
                 />
 
                 <EntityDetailRow
                   label="Recurring Billing"
-                  value={() => (
+                  value={() =>
                     <div>
                       <div>
                         <Amount
@@ -62,19 +62,14 @@ export default ({
                         />
                       </div>
                       <small class="text-muted">
-                        {subscription.quantity}
-                        {' '}
-                        x
-                        {' '}
+                        {subscription.quantity} x{' '}
                         <Amount
                           currency={plan.item.currency}
                           value={plan.item.unit_amount}
-                        />
-                        {' '}
+                        />{' '}
                         per unit
                       </small>
-                    </div>
-                  )}
+                    </div>}
                 />
 
                 <EntityDetailRow
@@ -84,19 +79,17 @@ export default ({
 
                 <EntityDetailRow
                   label="Status"
-                  value={() => (
-                    <SubscriptionStatusLabel status={subscription.status} />
-                  )}
+                  value={() =>
+                    <SubscriptionStatusLabel status={subscription.status} />}
                 />
 
                 <EntityDetailRow
                   label="Created At"
-                  value={() => (
+                  value={() =>
                     <Time
                       value={subscription.created_at}
                       format="DD MMM YYYY, hh:mm:ss a"
-                    />
-                  )}
+                    />}
                 />
 
                 <NestedEntityDetailRow

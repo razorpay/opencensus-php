@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Route, NavLink, withRouter } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 import Invoices from 'merchant/containers/Invoices/List';
 import Customers from 'merchant/containers/Customers/List';
@@ -25,7 +26,7 @@ export default class InvoicingContainer extends Component {
             </span>
           </ShowWhen>
         </header>
-
+        <TestModeBanner />
         <content>
           <Route path="/invoices" component={Invoices} />
           <Route path="/items" component={Items} />

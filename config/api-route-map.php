@@ -348,6 +348,36 @@ return [
             'routeName' => 'marketplace_read'
         ],
 
+        // OAuth routes
+        'oauth_application_create'   => [
+            'url'       => 'oauth/applications',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_application_fetch_multiple'   => [
+            'url'       => 'oauth/applications',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_application_fetch'   => [
+            'url'       => 'oauth/applications/{id}',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_application_delete'  => [
+            'url'       => 'oauth/applications/{id}',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_application_update'  => [
+            'url'       => 'oauth/applications/{id}',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_token_fetch_multiple'  => [
+            'url'       => 'oauth/tokens/',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_token_revoke'  => [
+            'url'       => 'oauth/tokens/{id}/revoke',
+            'routeName' => 'oauth_read'
+        ],
+
         // GST
         'merchant_gst_fetch'    =>  [
             'url'         => 'merchant/gst',
@@ -538,6 +568,10 @@ return [
 
         // Make test payment for Virtual Account
         'bank_transfer_process'             => 'ecollect/validate',
+
+        // Payment Dispute
+        'payment_disputes'                  => 'payments/{id}/disputes',
+        'dispute_edit'                      => 'disputes/{id}',
     ],
 
     // auth

@@ -266,7 +266,10 @@
 
       <!-- Merchant Id-->
       <div class="form-group" ng-if="!editMode">
-        <label class="col-lg-2 control-label">Merchant ID*:</label>
+        <label class="col-lg-2 control-label">
+          <span style="color: red" ng-if="!editMode">*</span>
+          Merchant ID:
+        </label>
         <div class="col-lg-10" >
           <input type="text" class="form-control m-b" name="merchant_id"
                  ng-model="current.merchant_id"
@@ -287,7 +290,7 @@
           <select name="method" ng-model="current.method" class="form-control"
                   ng-change="updateGatewayList(current.method)"
                   ng-disabled="editMode" ng-required="!editMode" >
-            <option ng-repeat="(key, option) in methodMap" value={{key}}>{{option}}</option>
+            <option ng-repeat="(key, option) in methodMap" value={{key}} ng-selected="{{key == current.method}}">{{option}}</option>
           </select>
           <!--Display error for select type tags-->
           <span ng-show="editRuleForm.method.$error.required" style="font-size:11px; color: red;">
@@ -317,7 +320,7 @@
       </div>
 
       <!-- Method Type -->
-      <div class="form-group" ng-if="current.method === 'card'">
+      <div class="form-group" ng-if="['card', 'emi'].indexOf(current.method) !== -1">
         <label class="col-lg-2 control-label">Method Type:</label>
         <div class="col-lg-10" >
           <select name="method_type" ng-model="current.method_type" class="form-control" ng-disabled="editMode">
@@ -339,12 +342,12 @@
                   class="form-control"
                   ng-disabled="editMode">
             <option value="">ALL</option>
-            <option ng-repeat="(key, option) in networkMap" value={{key}}>{{option}}</option>
+            <option ng-repeat="(key, option) in networkMap" value={{key}} ng-selected="{{key === current.network}}">{{option}}</option>
           </select>
         </div>
       </div>
 
-      <!-- Category2 .-->
+      <!-- Category2 -->
       <div class="form-group">
         <label class="col-lg-2 control-label">Category2:</label>
         <div class="col-lg-10" >
@@ -358,6 +361,7 @@
             <option value="securities">Securities</option>
             <option value="commodities">Commodities</option>
             <option value="grocery">Grocery</option>
+            <option value="gaming">Gaming</option>
             <option value="ecommerce">Ecommerce</option>
             <option value="govt_education">Govt Education</option>
             <option value="pvt_education">Pvt Education</option>
@@ -400,12 +404,12 @@
           <!--<input type="text" class="form-control m-b" name="international" ng-model="current.international" ng-readonly="editMode">-->
           <select name="international"
                   ng-model="current.international"
-                  ng-init="current.international = current.international || ''"
+                  ng-init="current.international = current.international"
                   class="form-control"
                   ng-disabled="editMode">
             <option value="">Both</option>
-            <option value="no">No</option>
-            <option value="yes">Yes</option>
+            <option value="0">No</option>
+            <option value="1">Yes</option>
           </select>
         </div>
       </div>
@@ -454,7 +458,6 @@
                   ng-model="current.emi_duration"
                   ng-disabled="editMode"
                   ng-init="current.emi_duration = current.emi_duration || ''">
-            <option value="">ALL</option>
             <option value="3">3 months</option>
             <option value="6">6 months</option>
             <option value="9">9 months</option>
@@ -474,7 +477,6 @@
                   ng-model="current.emi_subvention"
                   ng-disabled="editMode"
                   ng-init="current.emi_subvention = current.emi_subvention || ''">
-            <option value="">ALL</option>
             <option value="customer">Customer</option>
             <option value="merchant">Merchant</option>
           </select>
@@ -487,8 +489,7 @@
         <div class="col-lg-10" >
           <input type="text" class="form-control m-b" name="iins"
                  placeholder="Enter comma(,) separated values. Each value must be 6 digit. Example: 123422,345244"
-                 ng-model="current.iins"
-                 ng-readonly="editMode">
+                 ng-model="current.iins">
         </div>
       </div>
 
@@ -496,7 +497,7 @@
       <div class="form-group" ng-if="current.type === 'filter'">
         <label class="col-lg-2 control-label">Network Category:</label>
         <div class="col-lg-10" >
-          <input type="decimal" class="form-control m-b" name="load"
+          <input class="form-control m-b" name="network_category" ng-disabled="editMode"
                  ng-model="current.network_category">
         </div>
       </div>
@@ -508,7 +509,7 @@
           <!--<input type="text" class="form-control m-b" name="international" ng-model="current.international" ng-readonly="editMode">-->
           <select name="shared_terminal"
                   ng-model="current.shared_terminal"
-                  ng-init="current.shared_terminal = current.shared_terminal || ''"
+                  ng-init="current.shared_terminal = current.shared_terminal"
                   class="form-control"
                   ng-disabled="editMode">
             <option value="">ALL</option>
@@ -518,7 +519,7 @@
         </div>
       </div>
 
-      <!-- Currency .-->
+      <!-- Currency -->
       <div class="form-group">
         <label class="col-lg-2 control-label">Currency:</label>
         <div class="col-lg-10" >
