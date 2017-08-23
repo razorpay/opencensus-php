@@ -136,7 +136,7 @@ class ErrorCode
 
     // OAuth Authorization errors
     const BAD_REQUEST_UNAUTHORIZED_OAUTH_TOKEN_INVALID                              = 'BAD_REQUEST_UNAUTHORIZED_OAUTH_TOKEN_INVALID';
-    const BAD_REQUEST_UNAUTHORIZED_OAUTH_OAUTH_SCOPE_INVALID                        = 'BAD_REQUEST_UNAUTHORIZED_OAUTH_OAUTH_SCOPE_INVALID';
+    const BAD_REQUEST_UNAUTHORIZED_OAUTH_SCOPE_INVALID                              = 'BAD_REQUEST_UNAUTHORIZED_OAUTH_SCOPE_INVALID';
 
     // Payment bad requests
     const BAD_REQUEST_PAYMENT_FAILED                                                = 'BAD_REQUEST_PAYMENT_FAILED';

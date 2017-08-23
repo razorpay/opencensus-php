@@ -98,7 +98,7 @@ class Response
 
     public function oauthInvalidScope()
     {
-        return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_OAUTH_OAUTH_SCOPE_INVALID);
+        return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_OAUTH_SCOPE_INVALID);
     }
 
     public function generateErrorResponse($error, $debug = false)
