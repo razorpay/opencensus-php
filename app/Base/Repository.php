@@ -111,8 +111,6 @@ class Repository extends \Razorpay\Spine\Repository
         array $relations = [],
         array $columns = array('*'))
     {
-        $this->getColumnsAfterValidation($columns);
-
         $query = $this->newQuery();
 
         if (empty($relations) === false)
@@ -744,25 +742,5 @@ class Repository extends \Razorpay\Spine\Repository
         $tableName = $this->getTableName();
 
         return DB::getSchemaBuilder()->getColumnListing($tableName);
-    }
-
-    protected function getColumnsAfterValidation(array & $columns)
-    {
-        if ($this->auth->isAdminAuth() and
-            isset($this->attributePermissions))
-        {
-            if ($columns === ['*'])
-            {
-                $columns = $this->getColumnListing();
-            }
-
-            $admin = $this->auth->getAdmin();
-
-            $permissions = $admin->getPermissionsList();
-
-            $attributes = array_keys(array_diff($this->attributePermissions, $permissions));
-
-            $columns = array_diff($columns, $attributes);
-        }
     }
 }
