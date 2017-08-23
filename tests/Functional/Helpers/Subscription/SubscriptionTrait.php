@@ -324,7 +324,7 @@ trait SubscriptionTrait
             ],
         ];
 
-        $this->ba->privateAuth();
+        $this->ba->proxyAuth();
 
         $response = $this->sendRequest($request);
 

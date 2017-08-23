@@ -83,6 +83,13 @@ class SubscriptionController extends Controller
         return ApiResponse::json($invoice);
     }
 
+    public function postTestChargeSubscription($subscriptionId)
+    {
+        $subscription = $this->service()->chargeTestSubscription($subscriptionId);
+
+        return ApiResponse::json($subscription);
+    }
+
     public function postExpireSubscriptions()
     {
         $summary = $this->service()->expireSubscriptions();

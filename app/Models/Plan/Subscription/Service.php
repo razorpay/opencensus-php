@@ -10,6 +10,7 @@ use RZP\Models\Plan;
 use RZP\Trace\TraceCode;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
+use RZP\Constants\Mode;
 use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
@@ -216,6 +217,32 @@ class Service extends Base\Service
         $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
 
         $subscription = $this->core->cancel($subscription);
+
+        return $subscription->toArrayPublic();
+    }
+
+    public function chargeTestSubscription(string $subscriptionId)
+    {
+        if ($this->mode !== Mode::TEST)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_NOT_CHARGEABLE_IN_LIVE_MODE,
+                null,
+                [
+                    'subscription_id' => $subscriptionId,
+                ]);
+        }
+
+        $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_INVOICE_MANUAL_CHARGE,
+            [
+                'subscription_id'   => $subscription->getId(),
+                'subscription'      => $subscription->toArray(),
+            ]);
+
+        $this->core->testCharge($subscription);
 
         return $subscription->toArrayPublic();
     }

@@ -138,6 +138,15 @@ class Core extends Base\Core
         $this->repo->saveOrFail($subscription);
     }
 
+    public function testCharge(Entity $subscription)
+    {
+        $subscription->getValidator()->validateTestSubscriptionChargeable();
+
+        (new Biller)->createInvoiceAndCharge($subscription);
+
+        return $subscription;
+    }
+
     /**
      * Subscription need not be updated if it's in created or activated state.
      * That flow would be taken care by the normal subscription capture flow.

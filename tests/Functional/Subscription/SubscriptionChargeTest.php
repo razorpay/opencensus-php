@@ -584,6 +584,9 @@ class SubscriptionChargeTest extends TestCase
         $subscription = $this->chargeSubscriptionManuallyTestMode($subscription['id']);
         $this->assertEquals('active', $subscription['status']);
 
+        $invoice = $this->getLastEntity('invoice', true);
+        $this->assertEquals($subscription['id'], $invoice['subscription_id']);
+
         $subscription = $this->chargeSubscriptionManuallyTestMode($subscription['id'], false);
         $this->assertEquals('pending', $subscription['status']);
 
