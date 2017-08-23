@@ -965,7 +965,7 @@ class Service extends Base\Service
         if (empty($error) === false)
         {
             throw new \Razorpay\Api\Errors\BadRequestError(
-                $error,
+                $error[0],
                 \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
                 400
             );
