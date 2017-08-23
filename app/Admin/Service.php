@@ -533,9 +533,7 @@ class Service extends Base\Service
 
             if ((isset($input['fee_bearer'])) and ($input['fee_bearer'] === 'customer'))
             {
-                $merchant = Merchant\Entity::findOrFail($id);
-
-                $currentTags = $merchant->tags;
+                $currentTags = (new Merchant\Service)->getMerchantTags($id);
 
                 $this->addTagToMerchant($id, 'feebearer');
 
@@ -1156,7 +1154,7 @@ class Service extends Base\Service
 
             (new Merchant\Service)->addMerchantTagsOnAPI($merchantId, $inputTags);
 
-            $merchant['tags'] = $merchant->tags;
+            $merchant['tags'] = (new Merchant\Service)->getMerchantTags($merchantId);
 
             $this->logActionToSlack($merchant, Actions::TAGGED, ['tags' => $input['tags']]);
 
@@ -1267,9 +1265,11 @@ class Service extends Base\Service
 
         $featureNames = $this->getFeatureNames($features['assigned_features']);
 
-        $merchant->retag(array_merge($featureNames, $merchant->tags));
+        $merchantTags = (new Merchant\Service)->getMerchantTags($merchant->id);
 
-        (new Merchant\Service)->addMerchantTagsOnAPI($merchant->id, array_merge($featureNames, $merchant->tags));
+        $merchant->retag(array_merge($featureNames, $merchantTags));
+
+        (new Merchant\Service)->addMerchantTagsOnAPI($merchant->id, array_merge($featureNames, $merchantTags));
     }
 
     private function getFeatureNames($features)
