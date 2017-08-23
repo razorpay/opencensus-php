@@ -29,17 +29,15 @@ class Dispute extends Base
             $this->fixtures->edit('payment', $payment->getId(), [Payment::DISPUTED => 0]);
         }
 
-        //
-        // TODO: Uncomment the following lines after dispute deduct PR is merged.
-        // https://github.com/razorpay/api/pull/4324
-        // Also ensure to remove the skip on test - SettlementTest::testSettlementWithDispute()
-        //
+        // Create a transaction only when there's a deduction made
+        if ($dispute->getAmountDeducted() !== 0)
+        {
+            $txn = $this->createTransactionOnDispute($dispute);
 
-        //$txn = $this->createTransactionOnDispute($dispute);
-        //
-        //$txn->setAttribute(Transaction::SETTLED_AT, $dispute->getCreatedAt());
-        //
-        //$txn->saveOrFail();
+            $txn->setAttribute(Transaction::SETTLED_AT, $dispute->getCreatedAt());
+
+            $txn->saveOrFail();
+        }
 
         return $dispute;
     }

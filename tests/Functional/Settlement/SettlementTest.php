@@ -849,8 +849,6 @@ class SettlementTest extends TestCase
 
     public function testSettlementWithDispute()
     {
-        $this->markTestSkipped('Skipping temporarily until PR #4324 is merged');
-
         // Create payment
         $payment = $this->createPaymentEntities(1);
 
