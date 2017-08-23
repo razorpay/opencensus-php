@@ -35,16 +35,7 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        // Changes occur to url, secrets and responses
-        // multiple callbacks will have to be handled
-        // verify calls will have to be handled
-        if ($input['terminal']->isCorporate() === true)
-        {
-            $this->setCorporateBanking();
-        }
-
-        //Sets domain type to include bankingType and mode
-        $this->setDomainType();
+        $this->setBankingTypeAndDomainType($input['terminal']);
 
         $content = $this->getPaymentRequestData($input);
 
@@ -63,16 +54,7 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        // Changes occur to url, secrets and responses
-        // multiple callbacks will have to be handled
-        // verify calls will have to be handled
-        if ($input['terminal']->isCorporate() === true)
-        {
-            $this->setBankingType('corporate');
-        }
-
-        //Sets domain type to include bankingType and mode
-        $this->setDomainType();
+        $this->setBankingTypeAndDomainType($input['terminal']);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
 
@@ -106,18 +88,20 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    public function sendPaymentVerifyRequest(Verify $verify)
+    protected function setBankingTypeAndDomainType($terminal)
     {
-        // Changes occur to url, secrets and responses
-        // multiple callbacks will have to be handled
-        // verify calls will have to be handled
-        if ($verify->input['terminal']->isCorporate() === true)
+        // Default banking type is retail
+        if ($terminal->isCorporate() === true)
         {
             $this->setBankingType('corporate');
         }
 
-        //Sets domain type to include bankingType and mode
         $this->setDomainType();
+    }
+
+    public function sendPaymentVerifyRequest(Verify $verify)
+    {
+        $this->setBankingTypeAndDomainType($verify->input['terminal']);
 
         $content = $this->getVerifyRequestData($verify);
 
