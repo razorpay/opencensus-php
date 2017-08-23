@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\FileProcessor;
 
 use RZP\Exception;
+use RZP\Reconciliator\FileProcessor;
 
 class Validator
 {
@@ -18,8 +19,8 @@ class Validator
      */
     public function validateMerchant(array $input)
     {
-        if ((isset($input['merchant']) === false) and
-            (in_array($input['merchant'], self::MERCHANTS, true) === false))
+        if ((isset($input[Orchestrator::MERCHANT]) === false) and
+            (in_array($input[Orchestrator::MERCHANT], self::MERCHANTS, true) === false))
         {
             throw new Exception\BadRequestException('No merchant found in the input.');
         }
@@ -82,7 +83,7 @@ class Validator
                 'The number of attachments sent should be 2');
         }
 
-        $fileNames = array_column($fileDetails, 'file_name');
+        $fileNames = array_column($fileDetails, FileProcessor::FILE_NAME);
 
         $files = array_filter(
             $fileNames,

@@ -10,37 +10,16 @@ use RZP\Reconciliator\FileProcessor;
 
 class Orchestrator extends Base\Core
 {
-    const ATTACHMENT_COUNT = 'attachment_count';
-    const MERCHANT         = 'merchant';
-    const TYPE             = 'type';
-    const EXTRA_INPUT_TYPE = 'extra_input_type';
+    const MERCHANT = 'merchant';
+    const TYPE     = 'type';
+    const IRCTC    = 'irctc';
 
-    /******************
-     * Merchant constants
-     ******************/
-
-    const IRCTC                = 'irctc';
-
-    /*********************
-     * Instance variables
-     *********************/
-
-    protected $allFilesContents;
-    protected $allFilesDetails;
-
-    /********************
-     * Instance objects
-     ********************/
-
-    protected $validator;
     protected $fileProcessor;
     protected $baseFileProcessor;
 
     public function __construct()
     {
         parent::__construct();
-
-        $this->validator = new Validator;
 
         $this->baseFileProcessor = new FileProcessor;
     }
@@ -73,31 +52,25 @@ class Orchestrator extends Base\Core
      */
     protected function processRequest(array $input)
     {
-        $this->validator->validateMerchant($input);
+        $validator = new Validator;
 
-        $this->validator->validateAttachments($input);
+        $validator->validateMerchant($input);
 
-        $this->setMerchantProcessor($input['merchant']);
+        $validator->validateAttachments($input);
+
+        $this->setMerchantProcessor($input[self::MERCHANT]);
 
         $allFilesDetails = $this->getFileDetailsFromInput($input);
 
-        $this->validator->validateFileDetails($allFilesDetails, $input['merchant']);
+        $validator->validateFileDetails($allFilesDetails, $input[self::MERCHANT]);
 
         return $this->orchestrate($allFilesDetails);
     }
 
-
-    /**
-     * Validates each file.
-     * Gets the content of each file and stores it in an array.
-     * Deletes the file from local storage.
-     * Calls the Merchant File Processor with
-     * all the file details and file contents.
-     *
-     * @throws Exception\BadRequestException
-     */
     protected function orchestrate(array $fileDetails)
     {
+        $allFilesContents = [];
+
         // Run validations and conversions on each file
         foreach ($fileDetails as $fileDetail)
         {
@@ -112,7 +85,9 @@ class Orchestrator extends Base\Core
             try
             {
                 // Converts to in-memory array and stores it in instance variable..
-                $this->getFileContents($fileDetail);
+                list($type, $contents) = $this->getFileContents($fileDetail);
+
+                $allFilesContents[$type] = $contents;
             }
             catch (\Exception $ex)
             {
@@ -122,27 +97,20 @@ class Orchestrator extends Base\Core
                     TraceCode::MERCHANT_FILE_SKIP,
                     ['file_detail' => $fileDetail]
                 );
-
-                // Don't get the content of the file.
-                continue;
             }
 
-            //
             // Delete the file. We have all the data in $allFilesContents.
-            //
             $this->baseFileProcessor->deleteFileLocally($fileDetail[FileProcessor::FILE_PATH]);
         }
 
-        if (empty($this->allFilesContents) === true)
+        if (empty($allFilesContents) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'File contents are empty.',
-                [
-                    'all_files_details' => $this->allFilesDetails,
-                ]);
+                [ 'file_details' => $fileDetails]);
         }
-
-        return $this->fileProcessor->process($this->allFilesContents);
+        
+        return $this->fileProcessor->process($allFilesContents);
     }
 
     protected function getFileDetailsFromInput(array $input): array
@@ -169,7 +137,7 @@ class Orchestrator extends Base\Core
 
         $csvArray = $this->convertCsvToArray($fileDetail, $headers, $delimiter);
 
-        $this->allFilesContents[$type] = $csvArray;
+        return [$type, $csvArray];
     }
 
     protected function getColumnHeaders(string $type)
