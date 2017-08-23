@@ -68,7 +68,7 @@ class Gateway extends Base\Gateway
         // verify calls will have to be handled
         if ($input['terminal']->isCorporate() === true)
         {
-            $this->setCorporateBanking();
+            $this->setBankingType('corporate');
         }
 
         //Sets domain type to include bankingType and mode
@@ -113,7 +113,7 @@ class Gateway extends Base\Gateway
         // verify calls will have to be handled
         if ($verify->input['terminal']->isCorporate() === true)
         {
-            $this->setCorporateBanking();
+            $this->setBankingType('corporate');
         }
 
         //Sets domain type to include bankingType and mode
@@ -384,13 +384,11 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $verify->payment;
 
-        $confirmation = $this->getConfirmationFromContent($content);
-
         $attributes = [];
 
         if ($this->shouldStatusBeUpdated($gatewayPayment) === true)
         {
-            $attributes = [Base\Entity::STATUS => $confirmation];
+            $attributes = [Base\Entity::STATUS => $this->getConfirmationFromContent($content)];
         }
 
         if (empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true)
@@ -543,6 +541,6 @@ class Gateway extends Base\Gateway
 
     protected function getUrlType()
     {
-        return $this->getBankingType() . '_' . $this->getAction();
+        return $this->getBankingType() . '_QUERY' ;
     }
 }
