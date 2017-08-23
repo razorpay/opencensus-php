@@ -39,7 +39,7 @@ class Orchestrator extends Base\Core
     {
         parent::__construct();
 
-        $this->validator     = new Validator;
+        $this->validator = new Validator;
 
         $this->baseFileProcessor = new FileProcessor;
     }
@@ -54,9 +54,9 @@ class Orchestrator extends Base\Core
      */
     public function initiateFileProcessing(array $input)
     {
-         $this->trace->info(
-            TraceCode::MERCHANT_FILE_REQUEST,
-            $input);
+        $this->trace->info(TraceCode::MERCHANT_FILE_REQUEST, $input);
+
+        $summary = [];
 
         try
         {
@@ -65,8 +65,6 @@ class Orchestrator extends Base\Core
         catch (\Throwable $e)
         {
             $this->trace->traceException($e);
-
-            return [];
         }
 
         return $summary;
@@ -94,15 +92,6 @@ class Orchestrator extends Base\Core
         $this->allFilesDetails = $this->getFileDetailsFromInput($inputDetails, $input);
 
         $this->validator->validateFileDetails($input, $this->allFilesDetails);
-
-        $this->validator->validateIrctcFileDetails($this->allFilesDetails);
-
-        if (empty($this->allFilesDetails) === true)
-        {
-            throw new Exception\BadRequestException(
-                'File Details are empty.'
-            );
-        }
 
         return $this->orchestrate();
     }
@@ -203,10 +192,6 @@ class Orchestrator extends Base\Core
             // Validations should take care of this.
             $file = $input['attachment-' . $attachmentNumber];
 
-            // This step is mainly to figure out whether the file is of zip type,
-            // since we need to execute a different set of flow ONLY for zip files.
-            $fileType = $this->baseFileProcessor->getTypeOfFile($file, $fileLocationType);
-
             $allFilesDetails[] = $this->baseFileProcessor->getFileDetails($file, $fileLocationType);
         }
 
@@ -292,7 +277,9 @@ class Orchestrator extends Base\Core
 
     protected function setMerchantProcessor($inputDetails)
     {
-        $merchantFileProcessorClassName = 'RZP\\Models\\Merchant\\FileProcessor' . '\\' . studly_case($inputDetails['merchant']) . '\\FileProcessor';
+        $merchantFileProcessorClassName = 'RZP\\Models\\Merchant\\FileProcessor'
+                                            . '\\' . studly_case($inputDetails['merchant'])
+                                            . '\\FileProcessor';
 
         $this->fileProcessor = new $merchantFileProcessorClassName($inputDetails);
     }

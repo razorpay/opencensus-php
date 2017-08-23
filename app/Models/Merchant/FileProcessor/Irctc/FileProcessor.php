@@ -2,15 +2,11 @@
 
 namespace RZP\Models\Merchant\FileProcessor\Irctc;
 
-use RZP\Exception;
-use RZP\Trace\Trace;
-use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\FileProcessor\FileProcessor as BaseProcessor;
 
 class FileProcessor extends BaseProcessor
 {
-    const REFUND = 'refund';
+    const REFUND     = 'refund';
     const SETTLEMENT = 'settlement';
 
     public function process(array $filesContents)
@@ -25,7 +21,7 @@ class FileProcessor extends BaseProcessor
 
             unset($fileContents['file_details']);
 
-            $details[$type]  = $fileContents;
+            $details[$type] = $fileContents;
         }
 
         $this->processRTypeRefunds($details['refund']);
@@ -63,8 +59,7 @@ class FileProcessor extends BaseProcessor
         if (strpos($fileName, self::REFUND) !== false)
         {
             $type = self::REFUND;
-        }
-        else if (strpos($fileName, self::SETTLEMENT) !== false)
+        } else if (strpos($fileName, self::SETTLEMENT) !== false)
         {
             $type = self::SETTLEMENT;
         }

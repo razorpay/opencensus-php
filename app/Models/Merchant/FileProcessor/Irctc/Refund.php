@@ -82,12 +82,12 @@ class Refund extends TypeProcessor
         $input = [
             Entity::RECEIPT => $row[self::CANCELLATION_ID],
             Entity::NOTES   => [
-                'receipt' => $row[self::CANCELLATION_ID],
+                'receipt'     => $row[self::CANCELLATION_ID],
                 'refund_type' => $row[self::REFUND_TYPE],
-            ]
+            ],
         ];
 
-        $refund = $paymentProcessor->createRefundFromMerchantFile($payment, $input);
+        $paymentProcessor->createRefundFromMerchantFile($payment, $input);
     }
 
     protected function processCTypeRefunds($row, $payment)
@@ -105,12 +105,12 @@ class Refund extends TypeProcessor
             Entity::AMOUNT  => intval($row[self::REFUND_AMOUNT] * 100),
             Entity::RECEIPT => $row[self::CANCELLATION_ID],
             Entity::NOTES   => [
-                'receipt' => $row[self::CANCELLATION_ID],
+                'receipt'     => $row[self::CANCELLATION_ID],
                 'refund_type' => $row[self::REFUND_TYPE],
-            ]
+            ],
         ];
 
-        $refund = $paymentProcessor->createRefundFromMerchantFile($payment, $input);
+        $paymentProcessor->createRefundFromMerchantFile($payment, $input);
     }
 
     public function getHeaders()

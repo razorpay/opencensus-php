@@ -77,6 +77,13 @@ class Validator
 
     public function validateFileDetails(array $input, array $fileDetails)
     {
+        if (empty($fileDetails) === true)
+        {
+            throw new Exception\BadRequestException(
+                'File Details are empty.'
+            );
+        }
+
         $merchant = studly_case($input['merchant']);
 
         if (in_array($merchant, self::MERCHANT_FILE_DETAILS_VALIDATION) === true)
@@ -89,8 +96,6 @@ class Validator
 
     public function validateIrctcFileDetails($fileDetails)
     {
-        $types = [];
-
         $refundType = false;
 
         $settlementType = false;

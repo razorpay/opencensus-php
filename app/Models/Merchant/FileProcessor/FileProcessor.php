@@ -2,10 +2,6 @@
 
 namespace RZP\Models\Merchant\FileProcessor;
 
-use RZP\Exception;
-use RZP\Trace\Trace;
-use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\Base as BaseModel;
 
 class FileProcessor extends BaseModel\Core
@@ -49,7 +45,6 @@ class FileProcessor extends BaseModel\Core
         // Gets the namespace from the called class, by removing the last part of the FQCN.
         return join('\\', explode('\\', get_called_class(), -1));
     }
-
 
     public function getDelimiter()
     {

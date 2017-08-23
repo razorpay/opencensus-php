@@ -2,10 +2,6 @@
 
 namespace RZP\Models\Merchant\FileProcessor;
 
-use RZP\Exception;
-use RZP\Trace\Trace;
-use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use RZP\Models\Base as BaseModel;
 
 class TypeProcessor extends BaseModel\Core
