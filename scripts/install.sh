@@ -43,6 +43,9 @@ cd "$DASHBOARD_INSTALL_DIR" && php artisan config:cache
 echo "== apache restart =="
 sudo service apache2 restart
 
+echo "== opcache cli clear =="
+cd "$DASHBOARD_INSTALL_DIR/scripts && php clear_cli_opcache.php"
+
 # Restart all queue worker processes
 # This ensures that our workers have the new code (and have cleared opcache)
 echo "Queue Restart"
