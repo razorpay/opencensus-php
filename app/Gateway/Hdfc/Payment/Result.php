@@ -21,7 +21,7 @@ final class Result
      * the authentication is not available
      * but instead of returning error fields,
      * the error response is returned in 'result'
-     * field, because you know, fuck logic!
+     * field, because you know, <bleep> logic!
      */
     const FSS0001_ENROLLED = -1;
 
