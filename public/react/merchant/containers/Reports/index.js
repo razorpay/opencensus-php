@@ -47,7 +47,7 @@ const selector = formValueSelector('generateReports');
     entity: 'payment',
     type: 'daily',
     date: moment(),
-    invoiceDate: moment().subtract(1, 'months'),
+    invoiceDate: moment().subtract(1, 'months'), // Invoice date can not be current month
   },
 })
 export default class ReportsContainer extends Component {
