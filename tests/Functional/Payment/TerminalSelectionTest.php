@@ -247,6 +247,16 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->create('terminal:shared_hdfc_terminal');
         $this->fixtures->create('terminal:shared_axis_terminal');
 
+        $this->fixtures->create('gateway_rule', [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'axis_migs',
+            'type'          => 'filter',
+            'filter_type'   => 'select',
+            'group'         => 'prepaid_iin_filter',
+            'iins'          => ['457392'],
+        ]);
+
         $this->mockTokenex();
 
         $payment = $this->getDefaultPaymentArray();
