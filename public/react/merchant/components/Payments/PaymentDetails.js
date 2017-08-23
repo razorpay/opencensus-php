@@ -64,9 +64,9 @@ const keysNotShown = entity => {
 };
 
 export default props => {
-  let { payment, card, refunds, isLoading, statusMsg } = props;
+  let { payment, card, refunds, isLoading, statusMsg = {} } = props;
 
-  let otherKeys = keysNotShown(payment);
+  let otherKeys = payment && keysNotShown(payment);
 
   return (
     <div class="content-wrapper content-sm txn-details">
@@ -117,13 +117,13 @@ export default props => {
                         label="Card Details"
                         onToggleClick={() => props.onToggleCardDetails(payment)}
                       >
-                        {Object.keys(card.details).map(key => (
+                        {Object.keys(card.details).map(key =>
                           <EntityDetailRow
                             key={key}
                             label={titleCase(key)}
                             value={card.details[key]}
                           />
-                        ))}
+                        )}
                       </ListGroupToggler>
                     : null}
 
@@ -152,12 +152,11 @@ export default props => {
 
                   <EntityDetailRow
                     label="Total Fees"
-                    value={() => (
+                    value={() =>
                       <span data-tip="Total Fees is inclusive of tax charges">
                         <Amount value={payment.fee} />
                         <i class="icon icon-info-circle info-tooltip" />
-                      </span>
-                    )}
+                      </span>}
                   />
 
                   <EntityDetailRow
@@ -165,14 +164,14 @@ export default props => {
                     value={() => <CheckIcon value={payment.international} />}
                   />
 
-                  {otherKeys.map(key => (
+                  {otherKeys.map(key =>
                     <OtherDetail
                       key={key}
                       label={key}
                       value={payment[key]}
                       entity={payment}
                     />
-                  ))}
+                  )}
                   {payment.error_code
                     ? <EntityDetailRow
                         label="Error"
@@ -190,12 +189,11 @@ export default props => {
 
                   <EntityDetailRow
                     label="Created At"
-                    value={() => (
+                    value={() =>
                       <Time
                         value={payment.created_at}
                         format="DD MMM YYYY, hh:mm:ss a"
-                      />
-                    )}
+                      />}
                   />
                   {payment.refund_status
                     ? <ListToggler
@@ -232,7 +230,7 @@ export default props => {
                           </button>
                         : null}
                       {payment.status === 'captured' &&
-                        payment.refund_status !== 'full'
+                      payment.refund_status !== 'full'
                         ? <button
                             type="submit"
                             class="btn btn-primary"

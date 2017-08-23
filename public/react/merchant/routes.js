@@ -25,6 +25,7 @@ const entityMap = {
   '/plans/new': PlanNew,
   '/plans/:id': PlanDetails,
   '/subscriptions/:id(sub_.+)/:invoice_id(inv_.+)': SubscriptionDetails,
+  '/subscriptions/:id(sub_.+)/:payment_id(pay_.+)': SubscriptionDetails,
   '/subscriptions/:id(sub_.+)': SubscriptionDetails,
   '/subscriptions/:id': SubscriptionDetails,
   '/route/transfers/:id': TransferDetails,

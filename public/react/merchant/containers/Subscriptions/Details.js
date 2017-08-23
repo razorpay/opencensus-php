@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import SubscriptionDetails from 'merchant/components/Subscriptions/Details';
 import InvoiceDetail from 'merchant/components/Invoices/InvoiceDetail';
+import PaymentDetail from 'merchant/components/Payments/PaymentDetails';
 import {
   fetchSubscription as fetchItem,
   cancelSubscription,
@@ -10,6 +11,7 @@ import {
 import { fetchPlan } from 'merchant/modules/plans';
 import { fetchCustomer } from 'merchant/modules/customers';
 import { fetchInvoice } from 'merchant/modules/invoices/details';
+import { fetchItem as fetchPayment } from 'merchant/modules/payments/details';
 import { showNotification } from 'rzp/modules/notifications';
 import { expandSlider, compactSlider } from 'rzp/modules/slider';
 
@@ -18,6 +20,7 @@ import { expandSlider, compactSlider } from 'rzp/modules/slider';
   expandSlider,
   compactSlider,
   fetchInvoice,
+  fetchPayment,
   fetchItem,
   fetchPlan,
   fetchCustomer,
@@ -49,12 +52,29 @@ export default class SubscriptionDetailsContainer extends Component {
 
   fetchInvoice(id) {
     this.props.expandSlider();
-    this.setState({ secView: true });
+    this.setState({ secView: 'invoice' });
     this.props
       .fetchInvoice(id)
       .then(invoice => {
         this.setState({
           invoice,
+        });
+      })
+      .catch(({ errors }) => {
+        this.setState({
+          errors,
+        });
+      });
+  }
+
+  fetchPayment(id) {
+    this.props.expandSlider();
+    this.setState({ secView: 'payment' });
+    this.props
+      .fetchPayment(id)
+      .then(payment => {
+        this.setState({
+          payment,
         });
       })
       .catch(({ errors }) => {
@@ -113,7 +133,7 @@ export default class SubscriptionDetailsContainer extends Component {
 
   render() {
     let { entity, plan, customer } = this.props;
-    let { invoice, secView } = this.state;
+    let { invoice, payment, secView } = this.state;
     let errors = this.state.errors;
     let isLoading = this.state.isLoading;
     let statusMsg = {};
@@ -135,7 +155,10 @@ export default class SubscriptionDetailsContainer extends Component {
           statusMsg={statusMsg}
           onCancelClick={this.cancelSubscription}
         />
-        <InvoiceDetail invoice={invoice} isLoading={secView && !invoice} />
+        {secView === 'invoice' &&
+          <InvoiceDetail invoice={invoice} isLoading={secView && !invoice} />}
+        {secView === 'payment' &&
+          <PaymentDetail payment={payment} isLoading={secView && !payment} />}
         <button
           type="button"
           class="close close-secondary"
