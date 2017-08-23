@@ -4,7 +4,7 @@ namespace RZP\Models\Merchant\FileProcessor;
 
 use RZP\Models\Base as BaseModel;
 
-class FileProcessor extends BaseModel\Core
+abstract class FileProcessor extends BaseModel\Core
 {
     public function process(array $fileContents)
     {
@@ -24,14 +24,9 @@ class FileProcessor extends BaseModel\Core
         return $processedIds;
     }
 
+    abstract public function getType(string $filename);
 
-    //Should be implement in child class
-    public function getType($fileName)
-    {
-
-    }
-
-    public function getColumnHeadersForType($type)
+    public function getColumnHeaders($type)
     {
         $typeProcessorName = $this->getParentNamespace() . '\\' . studly_case($type);
 

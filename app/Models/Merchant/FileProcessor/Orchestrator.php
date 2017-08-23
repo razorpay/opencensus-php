@@ -34,6 +34,7 @@ class Orchestrator extends Base\Core
 
     protected $validator;
     protected $fileProcessor;
+    protected $baseFileProcessor;
 
     public function __construct()
     {
@@ -44,14 +45,6 @@ class Orchestrator extends Base\Core
         $this->baseFileProcessor = new FileProcessor;
     }
 
-    /**
-     * Get and Process File
-     *
-     * @param array $input The input received from the route
-     *
-     * @return array Summary of file processing
-     * @throws \Throwable
-     */
     public function initiateFileProcessing(array $input)
     {
         $this->trace->info(TraceCode::MERCHANT_FILE_REQUEST, $input);
@@ -86,11 +79,11 @@ class Orchestrator extends Base\Core
 
         $this->setMerchantProcessor($input['merchant']);
 
-        $this->allFilesDetails = $this->getFileDetailsFromInput($input);
+        $allFilesDetails = $this->getFileDetailsFromInput($input);
 
-        $this->validator->validateFileDetails($this->allFilesDetails, $input['merchant']);
+        $this->validator->validateFileDetails($allFilesDetails, $input['merchant']);
 
-        return $this->orchestrate();
+        return $this->orchestrate($allFilesDetails);
     }
 
 
@@ -103,23 +96,23 @@ class Orchestrator extends Base\Core
      *
      * @throws Exception\BadRequestException
      */
-    protected function orchestrate()
+    protected function orchestrate(array $fileDetails)
     {
         // Run validations and conversions on each file
-        foreach ($this->allFilesDetails as $file => $fileDetails)
+        foreach ($fileDetails as $fileDetail)
         {
             $this->trace->info(
                 TraceCode::MERCHANT_FILE_DETAILS,
                 [
                     'message'      => 'File details of the file being orchestrated.',
-                    'file_details' => $fileDetails['file_name']
+                    'file_detail' => $fileDetail[FileProcessor::FILE_NAME]
                 ]
             );
 
             try
             {
                 // Converts to in-memory array and stores it in instance variable..
-                $this->getFileContentInArrayAndSet($fileDetails);
+                $this->getFileContents($fileDetail);
             }
             catch (\Exception $ex)
             {
@@ -127,7 +120,7 @@ class Orchestrator extends Base\Core
                     $ex,
                     Trace::ERROR,
                     TraceCode::MERCHANT_FILE_SKIP,
-                    ['file_details' => $fileDetails]
+                    ['file_detail' => $fileDetail]
                 );
 
                 // Don't get the content of the file.
@@ -137,7 +130,7 @@ class Orchestrator extends Base\Core
             //
             // Delete the file. We have all the data in $allFilesContents.
             //
-            $this->baseFileProcessor->deleteFileLocally($fileDetails[FileProcessor::FILE_PATH]);
+            $this->baseFileProcessor->deleteFileLocally($fileDetail[FileProcessor::FILE_PATH]);
         }
 
         if (empty($this->allFilesContents) === true)
@@ -158,7 +151,7 @@ class Orchestrator extends Base\Core
 
         unset($input['merchant']);
 
-        foreach ($input as $key => $file)
+        foreach ($input as $file)
         {
             $allFilesDetails[] = $this->baseFileProcessor->getFileDetails($file, FileProcessor::UPLOADED);
         }
@@ -166,35 +159,36 @@ class Orchestrator extends Base\Core
         return $allFilesDetails;
     }
 
-    protected function getFileContentInArrayAndSet($fileDetails)
+    protected function getFileContents($fileDetail)
     {
-        $columnHeaders = $this->getColumnHeaders($fileDetails);
+        $type = $this->getType($fileDetail);
+
+        $headers = $this->getColumnHeaders($type);
 
         $delimiter = $this->fileProcessor->getDelimiter();
 
-        $csvArray = $this->convertCsvToArray($fileDetails, $columnHeaders, $delimiter);
+        $csvArray = $this->convertCsvToArray($fileDetail, $headers, $delimiter);
 
-        $this->setExtraDetails($csvArray, $fileDetails);
-
-        $this->allFilesContents[] = $csvArray;
+        $this->allFilesContents[$type] = $csvArray;
     }
 
-    protected function getColumnHeaders($fileDetails)
+    protected function getColumnHeaders(string $type)
     {
-        $fileName = $fileDetails[FileProcessor::FILE_NAME];
-
-        $processorType = $this->fileProcessor->getType($fileName);
-
-        $columnHeaders = $this->fileProcessor->getColumnHeadersForType($processorType);
+        $columnHeaders = $this->fileProcessor->getColumnHeaders($type);
 
         return $columnHeaders;
     }
 
+    protected function getType($fileDetail)
+    {
+        $fileName = $fileDetail[FileProcessor::FILE_NAME];
 
-    public function convertCsvToArray(
-        $fileDetails,
-        $columnHeaders = [],
-        $delimiter = ',')
+        $type = $this->fileProcessor->getType($fileName);
+
+        return $type;
+    }
+
+    protected function convertCsvToArray($fileDetails, $columnHeaders = [], $delimiter = ',')
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
@@ -206,8 +200,7 @@ class Orchestrator extends Base\Core
 
         if ($handle === false)
         {
-            throw new Exception\RuntimeException(
-                'Unable to open file . ' . $filePath);
+            throw new Exception\RuntimeException('Unable to open file . ' . $filePath);
         }
 
         try
@@ -250,10 +243,5 @@ class Orchestrator extends Base\Core
                                             . '\\FileProcessor';
 
         $this->fileProcessor = new $merchantFileProcessorClassName();
-    }
-
-    protected function setExtraDetails(& $arrayContent, $fileDetails)
-    {
-        $arrayContent['file_details'] = $fileDetails;
     }
 }

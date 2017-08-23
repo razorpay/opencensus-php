@@ -54,12 +54,13 @@ class FileProcessor extends BaseProcessor
         $settlementProcessor->process($details);
     }
 
-    public function getType($fileName)
+    public function getType(string $filename)
     {
-        if (strpos($fileName, self::REFUND) !== false)
+        if (strpos($filename, self::REFUND) !== false)
         {
             $type = self::REFUND;
-        } else if (strpos($fileName, self::SETTLEMENT) !== false)
+        }
+        else if (strpos($filename, self::SETTLEMENT) !== false)
         {
             $type = self::SETTLEMENT;
         }
