@@ -201,7 +201,6 @@ class UserController extends Controller
     /**
      * Fetch data for the currently active user session
      *
-     *
      * @return mixed
      */
     public function getSessionData()
