@@ -59,7 +59,9 @@ export default class SettlementsListContainer extends ListContainer {
             <div class="row">
               <div class="col-md-6 col-md-offset-3 col-sm-12 text-center">
                 <p>
-                  A settlement is an aggregate of payments and refunds, and as such the fees in a settlement is not reflective of the pricing. We only charge fees on a captured payment.
+                  A settlement is an aggregate of payments and refunds, and as
+                  such the fees in a settlement is not reflective of the
+                  pricing. We only charge fees on a captured payment.
                 </p>
               </div>
             </div>

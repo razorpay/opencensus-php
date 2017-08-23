@@ -106,9 +106,8 @@ app
         var gatewayRule = Object.assign({}, rule);
 
         Object.keys(gatewayRule).forEach(function(key) {
-          gatewayRule.issuer = gatewayRule.issuer === 'ALL'
-            ? null
-            : gatewayRule.issuer;
+          gatewayRule.issuer =
+            gatewayRule.issuer === 'ALL' ? null : gatewayRule.issuer;
 
           // Delete null, undefined or empty string keys
           if (!gatewayRule[key]) {

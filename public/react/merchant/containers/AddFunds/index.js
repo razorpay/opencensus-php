@@ -46,10 +46,12 @@ export default class AddFundsContainer extends Component {
           type: 'info',
           message: (
             <span>
-              API keys need to be generated before adding funds.
-              {' '}
+              API keys need to be generated before adding funds.{' '}
               <span>
-                Keys can be generated <Link to="/keys"><u>here.</u></Link>
+                Keys can be generated{' '}
+                <Link to="/keys">
+                  <u>here.</u>
+                </Link>
               </span>
             </span>
           ),
@@ -136,12 +138,14 @@ export default class AddFundsContainer extends Component {
           <Alert type={status.type} message={status.message} />
 
           <p>
-            This is just a simple way for you to add money to your account balance with Razorpay. This is needed sometimes when you are making refunds and your account doesn't have enough funds.
+            This is just a simple way for you to add money to your account
+            balance with Razorpay. This is needed sometimes when you are making
+            refunds and your account doesn't have enough funds.
           </p>
           <p>
-            Add Funds works over your own account. Therefore, a TDR will be deducted on this
-            as well. If you are adding funds for a large refund, send us a mail to
-            {' '}
+            Add Funds works over your own account. Therefore, a TDR will be
+            deducted on this as well. If you are adding funds for a large
+            refund, send us a mail to{' '}
             <a href="mailto:support@razorpay.com" class="highlight">
               support@razorpay.com
             </a>
@@ -149,15 +153,11 @@ export default class AddFundsContainer extends Component {
           </p>
 
           {this.props.mode === 'test' &&
-            <p>
-              Since you are in test mode, this will be a test payment.
-            </p>}
+            <p>Since you are in test mode, this will be a test payment.</p>}
 
           <form style={{ marginTop: '30px' }}>
             <div class="form-group">
-              <label class="control-label label-required">
-                Description
-              </label>
+              <label class="control-label label-required">Description</label>
               <Field
                 name="description"
                 component={InputField}

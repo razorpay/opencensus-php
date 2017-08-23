@@ -39,9 +39,8 @@ function matcher(routeMap, pathname) {
       var MatchedComponent = routeMap[route];
       return {
         match,
-        component: props => (
-          <MatchedComponent id={match.params.id} {...props} />
-        ),
+        component: props =>
+          <MatchedComponent id={match.params.id} {...props} />,
       };
     }
   }

@@ -14,7 +14,9 @@ export default class TransactionsContainer extends Component {
       <tabbed-container>
         <header id="transactions-header">
           <NavLink to="/payments">Payments</NavLink>
-          <NavLink to="/refunds" exact>Refunds</NavLink>
+          <NavLink to="/refunds" exact>
+            Refunds
+          </NavLink>
           <ShowWhen
             featureEnabled="Batchrefunds"
             myRole="owner manager operations admin finance"
