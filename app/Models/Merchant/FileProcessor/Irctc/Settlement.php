@@ -44,4 +44,9 @@ class Settlement extends TypeProcessor
     {
         return '|';
     }
+
+    protected function getId(array $entry)
+    {
+        return $entry[self::PAYMENT_ID];
+    }
 }

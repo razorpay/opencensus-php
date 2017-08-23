@@ -8,20 +8,18 @@ abstract class FileProcessor extends BaseModel\Core
 {
     public function process(array $fileContents)
     {
-        $processedIds = [];
+        $processedEntries = [];
 
-        foreach ($fileContents as $file => $fileDetails)
+        foreach ($fileContents as $type => $content)
         {
-            $typeProcessorName = __NAMESPACE__ . '\\' . studly_case($this->getType($fileDetails['file_details']));
+            $typeProcessorName = __NAMESPACE__ . '\\' . studly_case($type);
 
             $typeProcessor = new $typeProcessorName;
 
-            unset($fileDetails['file_details']);
-
-            $processedIds[] = $typeProcessor->process($fileDetails);
+            $processedEntries[$type][] = $typeProcessor->process($content);
         }
 
-        return $processedIds;
+        return $processedEntries;
     }
 
     abstract public function getType(string $filename);

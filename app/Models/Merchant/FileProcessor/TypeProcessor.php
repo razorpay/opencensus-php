@@ -4,44 +4,34 @@ namespace RZP\Models\Merchant\FileProcessor;
 
 use RZP\Models\Base as BaseModel;
 
-class TypeProcessor extends BaseModel\Core
+abstract class TypeProcessor extends BaseModel\Core
 {
-    public function process(array $fileDetails)
+    public function process(array $fileContents)
     {
-        $processedIds = [];
+        $processedEntries = [];
 
-        foreach ($fileDetails as $row)
+        foreach ($fileContents as $row)
         {
-            $processed = false;
+            $id = $this->getId($row);
 
             try
             {
-                $paymentId = $row['payment_id'];
+                $this->processEntry($row);
 
-                $processed = $this->processEntry($row);
+                $processedEntries['success'][] = $id;
             }
             catch (\Exception $e)
             {
                 $this->trace->traceException($e);
-            }
 
-            if ($processed === true)
-            {
-                $processedIds[] = $paymentId;
+                $processedEntries['failure'][] = $id;
             }
         }
 
-        return $processedIds;
+        return $processedEntries;
     }
 
-    /**
-     * This method needs to be implemented by the child classes.
-     *
-     * @param array $entry
-     *
-     */
-    protected function processEntry(array $entry)
-    {
-        throw new \BadMethodCallException();
-    }
+    abstract protected function processEntry(array $entry);
+
+    abstract protected function getId(array $entry);
 }

@@ -109,7 +109,7 @@ class Orchestrator extends Base\Core
                 'File contents are empty.',
                 [ 'file_details' => $fileDetails]);
         }
-        
+
         return $this->fileProcessor->process($allFilesContents);
     }
 
