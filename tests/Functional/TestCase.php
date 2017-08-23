@@ -37,22 +37,22 @@ class TestCase extends ParentTestCase
 
 //      $this->markTestSkipped();
 
-        $this->db = new Database($this->app);
-
-        // Instantiate fixture class
-        $this->fixtures = Fixtures\Fixtures::getInstance();
-
         $this->initialSetup();
 
         // Instantiate auth class
         $this->ba = new Authorization($this);
 
         // Enable filters
-        // $this->app['router']->enableFilters();
+        //$this->app['router']->enableFilters();
     }
 
     public function initialSetup()
     {
+        $this->db = new Database($this->app);
+
+        // Instantiate fixture class
+        $this->fixtures = Fixtures\Fixtures::getInstance();
+
         $this->db->setUp();
 
         $this->db->runFixtures($this->fixtures);

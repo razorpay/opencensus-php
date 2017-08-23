@@ -114,6 +114,8 @@ trait Reversal
                                  ->findByPublicIdAndMerchant($reversal['transfer'], $this->merchant);
             }
 
+            unset($reversal['transfer']);
+
             $this->mutex->acquireAndRelease(
                 $transfer->getId(),
                 function() use ($transfer, $reversal)
@@ -234,7 +236,13 @@ trait Reversal
 
             if ($transferCount === 0)
             {
-                throw new Exception\LogicException('Zero transfers found for reversal');
+                throw new Exception\LogicException(
+                    'Zero transfers found for reversal',
+                    null,
+                    [
+                        'payment_id'    => $payment->getId(),
+                        'refund_type'   => $refundType,
+                    ]);
             }
 
             if ($transferCount > 1)
@@ -266,7 +274,13 @@ trait Reversal
         }
         else
         {
-            throw new Exception\LogicException('Payment transfer reversal - Invalid refund type : ' . $refundType);
+            throw new Exception\LogicException(
+                'Payment transfer reversal - Invalid refund type',
+                null,
+                [
+                    'refund_type'   => $refundType,
+                    'payment_id'    => $payment->getId(),
+                ]);
         }
 
         return $reverseAll;

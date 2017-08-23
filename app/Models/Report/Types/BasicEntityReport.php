@@ -34,7 +34,13 @@ class BasicEntityReport extends BaseReport
             E::PAYMENT  => [E::ORDER],
             E::REFUND   => [
                 E::PAYMENT,
-                E::PAYMENT . '.' . E::ORDER
+                E::PAYMENT . '.' . E::CARD,
+                E::PAYMENT . '.' . E::ORDER,
+            ],
+            E::DISPUTE => [
+                E::PAYMENT,
+                E::PAYMENT . '.' . E::CARD,
+                E::PAYMENT . '.' . E::ORDER,
             ],
         ],
         E::MERCHANT     => [],

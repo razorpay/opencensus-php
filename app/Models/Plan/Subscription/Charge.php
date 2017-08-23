@@ -9,7 +9,6 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Schedule\Library;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
@@ -17,6 +16,7 @@ use RZP\Models\Plan;
 use RZP\Models\Invoice;
 use RZP\Models\Base;
 use RZP\Models\Schedule\Task;
+use Razorpay\Trace\Logger as Trace;
 
 class Charge extends Base\Core
 {

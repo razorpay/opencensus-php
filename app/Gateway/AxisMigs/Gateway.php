@@ -206,6 +206,12 @@ class Gateway extends Base\Gateway
 
     protected function canForceRefund(array $input)
     {
+        // Hardcoding id to do a manual full refund
+        if ($input['refund']['id'] === '882zf69e2bMnED')
+        {
+            return true;
+        }
+
         $isRefundRequired = $this->isRefundRequired($input, false);
 
         if ($isRefundRequired === false)
@@ -403,7 +409,12 @@ class Gateway extends Base\Gateway
         if ($input['refund']['created_at'] < 1494268200)
         {
             throw new Exception\LogicException(
-                'Unable to verify migs refund');
+                'Unable to verify migs refund',
+                null,
+                [
+                    'payment_id'    => $input['refund']['payment_id'],
+                    'refund_id'     => $input['refund']['id'],
+                ]);
         }
 
         $content = $this->sendVerifyRequest($input, 'refund');
@@ -433,7 +444,12 @@ class Gateway extends Base\Gateway
         else if ($content['vpc_FoundMultipleDRs'] === 'Y')
         {
             throw new Exception\LogicException(
-                'Shouldn\'t reach here');
+                'Shouldn\'t reach here',
+                null,
+                [
+                    'payment_id' => $input['refund']['payment_id'],
+                    'refund_id'  => $input['refund']['id'],
+                ]);
         }
 
         return false;
@@ -839,10 +855,15 @@ class Gateway extends Base\Gateway
 
     protected function postAmaTransactionRequest(array & $content, $input)
     {
+        $traceContent = $content;
+
+        unset($traceContent['vpc_CardNum']);
+        unset($traceContent['vpc_CardExp']);
+
         $this->trace->info(
             TraceCode::GATEWAY_SUPPORT_REQUEST,
             ['action' => 'Support action request array',
-            'content' => $content]);
+            'content' => $traceContent]);
 
         $this->addAmaTransactionFields($content, $input);
 

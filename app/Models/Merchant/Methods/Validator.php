@@ -53,7 +53,12 @@ class Validator extends Base\Validator
     {
         if (is_array($input['banks']) === false)
         {
-            throw new Exception\LogicException('Not an array');
+            throw new Exception\LogicException(
+                'Not an array',
+                null,
+                [
+                    'banks' => $input['banks'],
+                ]);
         }
 
         $banks = $input['banks'];

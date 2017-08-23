@@ -144,6 +144,7 @@ return [
             ],
             Permission::CREATE_BENEFICIARY_FILE => '',
             Permission::CREATE_NETBANKING_REFUND => '',
+            Permission::CREATE_EMI_FILES => '',
             Permission::CREATE_SETTLEMENT_INITIATE => '',
             Permission::DELETE_TERMINAL => '',
             Permission::EDIT_TERMINAL => '',

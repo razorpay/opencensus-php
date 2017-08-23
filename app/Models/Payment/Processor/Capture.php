@@ -15,8 +15,8 @@ use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Transaction;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 trait Capture
 {
@@ -648,6 +648,15 @@ trait Capture
                 'payment_id' => $payment->getId(),
                 'order_id'   => $order->getId(),
             ]);
+
+        //
+        // We have to use order's invoice instead of payment's invoice here
+        // as in the transaction order entity gets updated and invoice depends
+        // on order.amount_paid attribute to update it's status. We could have
+        // used $payment->invoice with refresh() but decided to stick with order
+        // as payment as invoice just for queries, actual association is between
+        // order and invoice and order->invoice can get used again this this flow.
+        //
 
         $invoice = $order->invoice;
 

@@ -1039,6 +1039,8 @@ class DatabaseSeeder extends Seeder
         $this->createJiomoneyTerminals();
         $this->createOpenwalletTerminals();
         $this->createVodafoneMpesaTerminal();
+        $this->createNetbankingRblTerminal();
+        $this->createEbsTerminal();
     }
 
     protected function createNetbankingHdfcTerminals()
@@ -1673,6 +1675,43 @@ class DatabaseSeeder extends Seeder
                 'created_at'                => time(),
                 'updated_at'                => time(),
             )
+        );
+    }
+
+    protected function createNetbankingRblTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                   => Terminal\Shared::NETBANKING_RBL_TERMINAL,
+                'merchant_id'          => Account::TEST_ACCOUNT,
+                'gateway'              => Gateway::NETBANKING_RBL,
+                'card'                 => '0',
+                'netbanking'           => '1',
+                'recurring'            => '0',
+                'gateway_merchant_id'  => 'netbanking_rbl_merchant_id',
+                'gateway_merchant_id2' => 'netbanking_rbl_merchant_id2',
+                'gateway_access_code'  => 'random_rbl_code',
+                'created_at'           => time(),
+                'updated_at'           => time()
+            ]
+        );
+    }
+
+    protected function createEbsTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::EBS_RAZORPAY_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::EBS,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'recurring'             => '0',
+                'gateway_merchant_id'   => 'abcd',
+                'gateway_secure_secret' => 'secret',
+                'created_at'            => time(),
+                'updated_at'            => time()
+            ]
         );
     }
 }

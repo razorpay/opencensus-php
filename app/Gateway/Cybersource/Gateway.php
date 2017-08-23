@@ -593,7 +593,13 @@ class Gateway extends Base\Gateway
 
         // @codeCoverageIgnoreStart
         // Adding this as a defensive code, code should never reach here.
-        throw new Exception\LogicException('Unexpected response');
+        throw new Exception\LogicException(
+            'Unexpected response',
+            null,
+            [
+                'payment_id'  => $input['payment']['id'],
+                'reason_code' => $response[F::REASON_CODE],
+            ]);
         // @codeCoverageIgnoreEnd
     }
 
@@ -1137,7 +1143,13 @@ class Gateway extends Base\Gateway
 
         $content[F::BILL_TO] = $this->getBillingInfo($input);
 
-        if ($input['terminal']['gateway_terminal_id'] === 'RAZORPAYCYBS')
+        //
+        // We are doing this because not all the terminals have this configuration
+        // from CYBS end. This is to decrease the cases of "Do Not Honour" which was
+        // happening because of the AVS checks at the issuer end.
+        //
+        if (($input['terminal']['gateway_terminal_id'] === 'RAZORPAYCYBS') or
+            ($input['terminal']['gateway_terminal_id'] === 'hdfc_89050055'))
         {
             unset($content[F::BILL_TO]);
         }
@@ -1646,7 +1658,13 @@ class Gateway extends Base\Gateway
             ($actualXid !== $expectedXid))
         {
             throw new Exception\LogicException(
-                'Invalid XID given');
+                'Invalid XID given',
+                null,
+                [
+                    'payment_id'   => $gatewayPayment->getPaymentId(),
+                    'expected_xid' => $expectedXid,
+                    'actual_xid'   => $actualXid,
+                ]);
         }
     }
 

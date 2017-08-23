@@ -6,7 +6,6 @@ use App;
 use Illuminate\Foundation\Application;
 use RZP\Base\RepositoryManager;
 use RZP\Constants\Mode;
-use RZP\Trace\Trace;
 
 class Core
 {

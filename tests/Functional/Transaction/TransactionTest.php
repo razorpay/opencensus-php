@@ -147,6 +147,37 @@ class TransactionTest extends TestCase
         return $refund;
     }
 
+    public function testCreateDisputeWithDeduct()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+
+        $dispute = $this->disputePayment($payment, 1);
+
+        $txn = $this->getLastTransaction(true);
+
+        $testData = $this->testData['txnDataAfterDisputingPayment'];
+        $testData['entity_id'] = $dispute['id'];
+
+        $this->assertArraySelectiveEquals($testData, $txn);
+
+        return $dispute;
+    }
+
+    public function testCreateDisputeWithoutDeduct()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+
+        $dispute = $this->disputePayment($payment);
+
+        $txn = $this->getLastTransaction(true);
+
+        $testData = $this->testData['txnDataAfterDisputingPaymentWithoutDeduct'];
+
+        $this->assertArraySelectiveEquals($testData, $txn);
+
+        return $dispute;
+    }
+
     protected function startTest($testDataToReplace = array())
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

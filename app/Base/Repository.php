@@ -6,18 +6,20 @@ use DB;
 use Illuminate\Support\Facades\App;
 
 use RZP\Models;
-use RZP\Base\Common;
-use RZP\Models\Base\EsRepository;
 use RZP\Exception;
 use RZP\Constants;
-use RZP\Constants\Entity as E;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
 use RZP\Jobs\EsSync;
+use RZP\Trace\TraceCode;
 use RZP\Jobs\DispatchRouter;
+use RZP\Constants\Entity as E;
+use RZP\Models\Base\PublicEntity;
+use RZP\Models\Base\EsRepository;
+use Razorpay\Trace\Logger as Trace;
 
 class Repository extends \Razorpay\Spine\Repository
 {
+    use RepositoryFetch;
+
     /**
      * Delay in making es job available for queue consumer.
      * Value is in seconds.
@@ -30,7 +32,19 @@ class Repository extends \Razorpay\Spine\Repository
      */
     const ES_JOB_DELAY = 3;
 
-    use RepositoryFetch;
+    /**
+     * Query parameter: Holds list of relations to be
+     * eager loaded when doing getting entity(s).
+     *
+     */
+    const EXPAND       = 'expand';
+
+    // Other common query parameters
+
+    const FROM         = 'from';
+    const TO           = 'to';
+    const COUNT        = 'count';
+    const SKIP         = 'skip';
 
     protected $app;
 
@@ -41,6 +55,14 @@ class Repository extends \Razorpay\Spine\Repository
     protected $trace;
 
     protected $manager;
+
+    /**
+     * List of relations to be eager loaded when entity(s) is fetched via GET,
+     * used in RepositoryFetch's methods.
+     *
+     * @var array
+     */
+    protected $expands = [];
 
     /**
      * Corresponding esRepo instance of entity.
@@ -489,7 +511,7 @@ class Repository extends \Razorpay\Spine\Repository
      */
     protected function modifyQueryForIndexing(BuilderEx $query)
     {
-
+        //
     }
 
     /**
@@ -642,6 +664,49 @@ class Repository extends \Razorpay\Spine\Repository
         }
 
         return $shouldSync;
+    }
+
+    public function getExpands(): array
+    {
+        return $this->expands;
+    }
+
+    /**
+     * Returns an array which can be used in with() of BuilderEx.
+     *
+     * It camel cases $expands (which is generally the snake cased output key)
+     * and returns unique list of it.
+     *
+     * @param array $extra - Optional, if provided returns list merged with default.
+     *
+     * @return array
+     */
+    public function getExpandsForQuery(array $extra = []): array
+    {
+        $defaultExpands = $this->expands;
+
+        $expands = array_merge($defaultExpands, $extra);
+
+        $relations = camel_case_array($expands);
+
+        return array_values(array_unique($relations));
+    }
+
+    /**
+     * Loads the relations as specified in $expands parameter.
+     * This method will not unset existing loaded relations.
+     *
+     * @param PublicEntity $entity
+     *
+     * @return PublicEntity
+     */
+    public function loadRelations(PublicEntity $entity): PublicEntity
+    {
+        $relations = $this->getExpandsForQuery();
+
+        $entity->load($relations);
+
+        return $entity;
     }
 
     protected function getParentNamespace()

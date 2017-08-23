@@ -139,6 +139,7 @@ final class Route
         'merchant_live_enable'                    => ['post',     'merchants/{id}/live/enable',                     'MerchantController@postLiveEnable'                                 ],
         'merchant_live_disable'                   => ['post',     'merchants/{id}/live/disable',                    'MerchantController@postLiveDisable'                                ],
         'merchant_actions'                        => ['put',      'merchants/{id}/action',                          'MerchantController@putAction'                                      ],
+        'merchant_get_tags'                       => ['get',      'merchants/{id}/tags',                            'MerchantController@getTags'                                        ],
         'merchant_tag_add'                        => ['post',     'merchants/{id}/tags',                            'MerchantController@addTags'                                        ],
         'merchant_tag_delete'                     => ['delete',   'merchants/{id}/tags/{tagName}',                  'MerchantController@deleteTag'                                      ],
         'merchant_edit_free_credits'              => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
@@ -147,6 +148,8 @@ final class Route
         'merchant_beneficiary_file'               => ['get',      'merchants/beneficiary/file',                     'MerchantController@getMerchantBeneficiaryFile'                     ],
         'merchant_post_beneficiary_file'          => ['post',     'merchants/beneficiary/file/bank',                'MerchantController@postMerchantBeneficiaryFile'                    ],
         'merchant_notify_holiday'                 => ['post',     'merchants/notify/holiday',                       'MerchantController@postMerchantsNotifyHoliday'                     ],
+        'merchant_invoice_update_gstin'           => ['put',      'merchants/{id}/invoice/gstin',                    'MerchantInvoiceController@updateGstin'                             ],
+        'merchant_create_invoice_entities'        => ['post',     'merchants/invoice/create',                      'MerchantInvoiceController@postCreateInvoiceEntities'               ],
         'balance_fetch'                           => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'credits_create'                          => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
         'credits_fetch_by_id'                     => ['get',      'merchants/{mid}/credits/{id}',                   'MerchantController@getCreditsLog'                                  ],
@@ -278,6 +281,8 @@ final class Route
         'reconciliate'                            => ['post',     'reconciliate',                                   'ReconciliatorController@postReconciliation'                        ],
         'dummy_return_callback'                   => ['post',     'return/callback',                                'PaymentController@postDummyReturnCallback'                         ],
         'dummy_critical_error'                    => ['get',      'trigger/error',                                  'AdminController@getTriggerError'                                   ],
+        'set_config_keys'                         => ['put',      'config/keys',                                    'AdminController@setConfigKeys'                                     ],
+        'get_config_keys'                         => ['get',      'config/keys',                                    'AdminController@getConfigKeys'                                     ],
         'dummy_route'                             => ['post',     'dummy/route',                                    'PaymentController@postDummyRoute'                                  ],
         'transparent_redirect_get'                => ['get',      'redirect',                                       'AdminController@getTransparentRedirect'                            ],
         'transparent_redirect_post'               => ['post',     'redirect',                                       'AdminController@postTransparentRedirect'                           ],
@@ -813,6 +818,8 @@ final class Route
         'terminal_remove_merchant',
         'terminal_reassign_merchant',
         'terminal_check_encrypted_value',
+        'set_config_keys',
+        'get_config_keys',
         'key_fetch_by_id',
         'key_fetch_multiple',
         'pricing_upload_plan',
@@ -950,6 +957,7 @@ final class Route
         'gateway_update_rule',
         'gateway_delete_rule',
         'merchant_actions',
+        'merchant_get_tags',
         'merchant_tag_add',
         'merchant_tag_delete',
         'refund_retry_failed',
@@ -974,6 +982,7 @@ final class Route
         'risk_update',
         'risk_fetch_multiple',
         'risk_get',
+        'merchant_create_invoice_entities',
     ];
 
     public static $proxy = [
@@ -1114,6 +1123,7 @@ final class Route
         'admin_change_password',
         'pricing_create_plan',
         'merchant_get_pricing',
+        'merchant_invoice_update_gstin',
     ];
 
     public static $routePermission = [
@@ -1235,6 +1245,7 @@ final class Route
         'invitation_fetch'                 => '*',
         'pricing_create_plan'              => Permission::CREATE_PRICING_PLAN,
         'merchant_get_pricing'             => Permission::VIEW_MERCHANT_PRICING,
+        'merchant_invoice_update_gstin'    => '*',
     ];
 
     public static $direct = [
@@ -1319,6 +1330,7 @@ final class Route
             'reports_transaction_dsp',
             'schedule_process_tasks',
             'virtual_account_refund_excess',
+            'merchant_create_invoice_entities',
         ],
 
         'kotak' => [
@@ -1417,6 +1429,7 @@ final class Route
         'schedule_update',
         'schedule_assign',
         'admin_dummy_account_test',
+        'merchant_invoice_update_gstin',
     ];
 
     const RAZORPAYJS_ROUTES = [

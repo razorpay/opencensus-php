@@ -39,8 +39,8 @@ use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Customer\GatewayToken;
 use RZP\Models\Upi;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 trait Authorize
 {
@@ -972,7 +972,7 @@ trait Authorize
     {
         if ($payment->shouldRunFraudChecks() === true)
         {
-            $this->validateFraudDetection($payment);
+            $this->validateFraudDetection($payment, $this->merchant);
 
             $this->validateBlockedCard($payment);
         }
@@ -2373,6 +2373,12 @@ trait Authorize
             {
                 $this->fillReturnDataWithSubscription($payment, $returnData);
             }
+            else if ($payment->hasInvoice() === true)
+            {
+                assertTrue($payment->hasBeenCaptured() === true);
+
+                $this->fillReturnDataWithInvoice($payment, $returnData);
+            }
             else if ($payment->hasOrder() === true)
             {
                 if ($payment->order->getPaymentCapture() === true)
@@ -2396,6 +2402,27 @@ trait Authorize
     protected function fillReturnDataWithSubscription(Payment\Entity $payment, array & $data)
     {
         $data['razorpay_subscription_id'] = $payment->subscription->getPublicId();
+
+        $data['razorpay_signature'] = $this->getSignature($data);
+    }
+
+    protected function fillReturnDataWithInvoice(Payment\Entity $payment, array & $data)
+    {
+        $invoice = $payment->invoice;
+
+        //
+        // Need to refresh invoice entity as in recordCapture() method
+        // post authorization order's invoice association gets updated.
+        // And not payment's invoice association. Also there that's
+        // needed(using order's invoice) as invoice inherits amount_paid
+        // and stuff from order associated.
+        //
+
+        $invoice->refresh();
+
+        $data['razorpay_invoice_id']      = $invoice->getPublicId();
+        $data['razorpay_invoice_status']  = $invoice->getStatus();
+        $data['razorpay_invoice_receipt'] = $invoice->getReceipt();
 
         $data['razorpay_signature'] = $this->getSignature($data);
     }

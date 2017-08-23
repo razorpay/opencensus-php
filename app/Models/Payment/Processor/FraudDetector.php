@@ -5,20 +5,19 @@ namespace RZP\Models\Payment\Processor;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
-use RZP\Models\Card;
+use RZP\Models\Merchant;
 use RZP\Models\Risk;
-use RZP\Trace\Trace;
 use RZP\Exception;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Analytics\Metadata;
 
 trait FraudDetector
 {
-    protected function validateFraudDetection(Payment\Entity $payment)
+    protected function validateFraudDetection(Payment\Entity $payment, Merchant\Entity $merchant)
     {
         $riskScore = $this->getRiskScore($payment);
 
-        if (($payment->shouldFailOnRiskFailure() === true) and
-            ($riskScore > 5))
+        if ($riskScore > $merchant->getRiskThreshold())
         {
             $data = [
                 'payment_id' => $payment->getPublicId(),

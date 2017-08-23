@@ -13,6 +13,30 @@ return [
                 'raised_on'            => '946684800',
                 'expires_on'           => '1912162918',
                 'amount'               => 100,
+                'deduct_at_onset'      => 0,
+                'phase'                => 'chargeback',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id'        => '10000000000000',
+                'amount'             => 100,
+                'currency'           => 'INR',
+                'phase'              => 'chargeback',
+                'status'             => 'open',
+                'reason_description' => 'This is a serious fraud',
+            ],
+        ],
+    ],
+
+    'testDisputeCreateWithDeduct' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'amount'               => 100,
                 'deduct_at_onset'      => 1,
                 'phase'                => 'chargeback',
             ],
@@ -26,6 +50,32 @@ return [
                 'status'             => 'open',
                 'reason_description' => 'This is a serious fraud',
             ],
+        ],
+    ],
+
+    'testDisputeCreateWithDeductWithoutEnoughBalance' => [
+        'request' => [
+            'method'  => 'post',
+            'content' => [
+                'gateway_dispute_id'   => '4342frf34r',
+                'raised_on'            => '946684800',
+                'expires_on'           => '1912162918',
+                'deduct_at_onset'      => 1,
+                'phase'                => 'chargeback',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'The server encountered an error. The incident has been reported to admins.',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\LogicException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
         ],
     ],
 
@@ -308,5 +358,4 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_CANNOT_UPDATE_CLOSED_DISPUTE,
         ],
     ],
-
 ];

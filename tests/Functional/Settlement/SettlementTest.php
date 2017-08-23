@@ -31,13 +31,11 @@ class SettlementTest extends TestCase
 
     public function testSettlement()
     {
-        $pricing = $this->fixtures->create('pricing:standard_plan');
+        $this->fixtures->create('pricing:standard_plan');
 
         $merchants = $this->fixtures->times(3)->create('merchant:with_balance_terminals_standard_pricing');
 
         $merchantPayments = [];
-
-        $i = 0;
 
         foreach ($merchants as $merchant)
         {
@@ -378,10 +376,11 @@ class SettlementTest extends TestCase
         // check settlement report
         $dt = Carbon::today(Timezone::IST);
 
-        $input = array(
-            'year' => $dt->year,
+        $input = [
+            'year'  => $dt->year,
             'month' => $dt->month,
-            'day' => $dt->day);
+            'day'   => $dt->day
+        ];
 
         $settlementReport = $this->fetchReport('settlement', $input);
         assert(count($settlementReport) === 1);
@@ -635,7 +634,7 @@ class SettlementTest extends TestCase
 
         $payment = $this->doAuthAndCapturePayment();
 
-        $p1=  $this->getLastEntity('payment', true);
+        $p1 = $this->getLastEntity('payment', true);
 
         $testTime = Carbon::tomorrow(Timezone::IST)->addHours(5);
 
@@ -819,7 +818,8 @@ class SettlementTest extends TestCase
         $reversal = $this->fixtures->create(
             'reversal',
             [
-                'transfer_id'   => $transfer[1]->getId(),
+                'entity_type'   => 'transfer',
+                'entity_id'     => $transfer[1]->getId(),
                 'amount'        => 90,
                 'created_at'    => $createdAt + 10,
                 'updated_at'    => $createdAt + 20
@@ -845,6 +845,31 @@ class SettlementTest extends TestCase
         //  1 transfer payment refund txn + 1 reversal txn)
         //
         $this->assertEquals(7, $content['kotak']['transaction_count']);
+    }
+
+    public function testSettlementWithDispute()
+    {
+        // Create payment
+        $payment = $this->createPaymentEntities(1);
+
+        $createdAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp + 5;
+
+        // Create dispute on the payment (fixture internally creates a transaction)
+        $this->fixtures->create(
+            'dispute',
+            [
+                'payment_id'      => $payment->getId(),
+                'amount'          => 5000,
+                'amount_deducted' => 5000,
+                'created_at'      => $createdAt,
+                'updated_at'      => $createdAt + 100
+            ]);
+
+        // Generate settlements
+        $content = $this->initiateSettlements();
+
+        // Expected 2: 1 payment txn and 1 dispute txn
+        $this->assertEquals(2, $content['kotak']['transaction_count']);
     }
 
     protected function startTest($testDataToReplace = array())

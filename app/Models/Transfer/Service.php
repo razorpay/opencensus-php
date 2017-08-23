@@ -5,6 +5,7 @@ namespace RZP\Models\Transfer;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Reversal;
+use RZP\Constants\Entity as EntityConstant;
 
 class Service extends Base\Service
 {
@@ -37,9 +38,12 @@ class Service extends Base\Service
 
     public function fetchReversalsOfTransfer(string $id): array
     {
-        $options = [Reversal\Entity::TRANSFER_ID => $id];
-
         $merchantId = $this->merchant->getId();
+
+        $options = [
+            Reversal\Entity::ENTITY_ID      => Entity::verifyIdAndStripSign($id),
+            Reversal\Entity::ENTITY_TYPE    => EntityConstant::TRANSFER
+        ];
 
         $reversals = $this->repo->reversal->fetch($options, $merchantId);
 
