@@ -45,16 +45,23 @@ export default props => {
                 <div class="list-group details-row-container">
                   <EntityDetailRow
                     label="Invoice"
-                    value={invoice.id}
+                    value={() =>
+                      <NavLink to={`/invoices/${invoice.id}`} target="_blank">
+                        {invoice.id}
+                        <i class="icon icon-external-link" />
+                      </NavLink>}
                   />
                   <EntityDetailRow
-                    label="Status"
-                    value={() =>
-                      <InvoiceStatusLabel status={invoice.status} />}
+                    label="Invoice Status"
+                    value={() => <InvoiceStatusLabel status={invoice.status} />}
                   />
                   <EntityDetailRow
                     label="Amount"
-                    value={() => <Amount value={invoice.amount} />}
+                    value={() =>
+                      <Amount
+                        currency={invoice.currency}
+                        value={invoice.amount}
+                      />}
                   />
                 </div>
               </div>
