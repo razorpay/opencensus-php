@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import TetherComponent from 'react-tether';
+import HeaderAction from 'rzp/ui/HeaderAction';
 import Pager from 'rzp/ui/Pager';
 import Alert from 'rzp/ui/Forms/Alert';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -11,6 +11,7 @@ import * as CustomerActions from 'merchant/modules/customers';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationActions from 'rzp/modules/notifications';
 import { luminateRow } from 'merchant/modules/app';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 @connect(state => state.customers, {
   ...CustomerActions,
@@ -69,19 +70,14 @@ export default class CustomersListContainer extends ListContainer {
   };
 
   render() {
-    let { loading, customers } = this.props;
+    let { loading, items } = this.props;
     let status = this.state.status;
 
     return (
       <div class="content-wrapper">
-        <TetherComponent
-          target="#invoicing-header"
-          attachment="top right"
-          targetAttachment="top right"
-          offset="-8px 0"
-        >
-          <div />{/* required by react-tether */}
+        <TestModeBanner />
 
+        <HeaderAction>
           <ShowWhen notMyRole="support">
             <div class="btn-toolbar">
               <button
@@ -93,12 +89,12 @@ export default class CustomersListContainer extends ListContainer {
               </button>
             </div>
           </ShowWhen>
-        </TetherComponent>
+        </HeaderAction>
 
         <Alert type={status.type} message={status.message} />
 
         <CustomersList
-          customers={customers}
+          customers={items}
           isLoading={loading}
           onEdit={this.showCustomerModal}
           onDelete={this.deleteCustomer}
@@ -107,7 +103,7 @@ export default class CustomersListContainer extends ListContainer {
         <Pager
           count={this.state.count}
           skip={this.state.skip}
-          length={customers.length}
+          length={items.length}
           onClick={this.paginate}
         />
       </div>

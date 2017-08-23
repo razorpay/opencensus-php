@@ -21,6 +21,7 @@ const ConfirmModal = (props, context) => {
         onRequestClose={props.onAbort}
         closeTimeoutMS={300}
         class={`Modal Modal--small Modal--confirm`}
+        contentLabel="ConfirmModal"
       >
         <div class="modal-header">
           <h3 class="modal-title">

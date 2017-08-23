@@ -46,3 +46,26 @@ export const setCookie = (sKey, sValue, vEnd, sPath, sDomain, bSecure) => {
     (bSecure ? '; secure' : '');
   return true;
 };
+
+export const removeCookie = (sKey, sPath, sDomain) => {
+  if (!hasCookie(sKey)) {
+    return false;
+  }
+  document.cookie =
+    encodeURIComponent(sKey) +
+    '=; expires=Thu, 01 Jan 1970 00:00:00 GMT' +
+    (sDomain ? '; domain=' + sDomain : '') +
+    (sPath ? '; path=' + sPath : '');
+  return true;
+};
+
+export const hasCookie = sKey => {
+  if (!sKey) {
+    return false;
+  }
+  return new RegExp(
+    '(?:^|;\\s*)' +
+      encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, '\\$&') +
+      '\\s*\\='
+  ).test(document.cookie);
+};

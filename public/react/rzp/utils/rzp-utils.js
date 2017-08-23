@@ -27,22 +27,39 @@ export function makeArray(obj) {
   return Array.isArray(obj) ? obj : [obj];
 }
 
-export function isBlank(obj) {
-  if (!obj) return !obj;
-
-  if (typeof obj === 'object') {
-    return !Object.keys(obj).length;
+export function arrayDiff(arr1, arr2) {
+  if (arr1.length < arr2.length) {
+    let tempArr = arr1;
+    arr1 = arr2;
+    arr2 = tempArr;
   }
 
-  if (typeof obj === 'string') {
-    obj = obj.trim();
+  return arr1.reduce((prev, curr) => {
+    if (arr2.indexOf(curr) === -1) {
+      prev.push(curr);
+    }
+    return prev;
+  }, []);
+}
+
+export function isBlank(value) {
+  if (value !== null && typeof value === 'object') {
+    return !Object.keys(value).length;
   }
-  return !obj;
+  if (typeof value === 'string') {
+    value = value.trim();
+    return !value;
+  }
+  return isNone(value);
 }
 
 export function isPresent(obj) {
   return !isBlank(obj);
 }
+
+export const isNone = value => {
+  return value === null || value === undefined;
+};
 
 export const findBy = (array, prop, value) => {
   return array.find(item => {
@@ -84,6 +101,13 @@ export const normalizeBoolean = bool => {
 
 export const getFixedINRAmount = amount => (Number(amount) / 100).toFixed(2);
 
+// following regex formats in indian comma separated, i.e. 2,01,20,45,222.66
+export const getFormattedAmount = amount =>
+  (amount / 100)
+    .toFixed(2)
+    .replace(/(.{1,2})(?=.(..)+(\...)$)/g, '$1,')
+    .replace('.00', '');
+
 export const without = (source, keys) => {
   keys = makeArray(keys);
   return Object.keys(source).reduce((prev, key) => {
@@ -105,7 +129,34 @@ export const objectDiff = (oldObj = {}, newObj = {}) => {
   }, {});
 };
 
-// TODO: Remove this fn once Selva's branch is merged having this function.
+/*
+  * Convert the object to url query string
+  * Don't allow undefined, null and empty string as values
+  * Note: It doesn't handle nested object
+*/
+export const stringifyQueryParams = params => {
+  let queryString;
+  let queryElements = [];
+
+  for (let key in params) {
+    if (
+      params.hasOwnProperty(key) &&
+      params[key] != null &&
+      params[key] !== ''
+    ) {
+      queryElements.push(key + '=' + params[key]);
+    }
+  }
+
+  queryString = '?' + queryElements.join('&');
+  return queryString;
+};
+
+/*
+ * Convert the location into query params object
+ * Usually, passing url = this.props.location.search
+ * Use Case: utilize to populate filter form
+*/
 export const getURLQueryParams = (url = document.location.hash) => {
   let search = url.split('?')[1];
   let params = {};
@@ -150,3 +201,30 @@ export const intervals = [
     label: 'Yearly',
   },
 ];
+
+const periods = {
+  weekly: 'Week',
+  monthly: 'Month',
+  yearly: 'Year',
+};
+
+export const getIntervalCycle = (interval, period) => {
+  switch (interval) {
+    case 1:
+      return `Every ${periods[period]}`;
+
+    case 2:
+      return `Bi-${titleCase(period)}`;
+
+    default:
+      return `Once in ${interval} ${periods[period]}s`;
+  }
+};
+
+export const getCustomerDisplayName = ({ name, contact, email }) => {
+  let displayParts = [name, contact, email].filter(item => !isBlank(item));
+
+  return `${displayParts
+    .join(' / ')
+    .replace('\/ ', '(')}${displayParts.length > 1 ? ')' : ''}`;
+};

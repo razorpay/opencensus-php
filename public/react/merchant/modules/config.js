@@ -1,6 +1,7 @@
 import ajax from 'merchant/utils/ajax';
 import { set, merge } from 'rzp/utils/immutable';
 
+const CONFIG_FETCH = 'CONFIG_FETCH';
 const CONFIG_AND_FEATURES_FETCH = 'CONFIG_AND_FEATURES_FETCH';
 const MERCHANT_LOGO_UPLOADED = 'MERCHANT_LOGO_UPLOADED';
 const CONFIG_SAVE = 'CONFIG_SAVE';
@@ -32,8 +33,9 @@ export const fetchFeatures = currentUserId => {
 };
 
 export const fetchConfig = () => {
-  return dispatch => {
-    return fetchConfigAjax();
+  return {
+    type: CONFIG_FETCH,
+    payload: fetchConfigAjax(),
   };
 };
 
@@ -41,11 +43,9 @@ export const fetchConfig = () => {
  * Fetches merchant's config and features
  */
 export const fetchConfigAndFeatures = currentUserId => {
-  return dispatch => {
-    return dispatch({
-      type: CONFIG_AND_FEATURES_FETCH,
-      payload: Promise.all([fetchConfigAjax(), fetchFeatures(currentUserId)]),
-    });
+  return {
+    type: CONFIG_AND_FEATURES_FETCH,
+    payload: Promise.all([fetchConfigAjax(), fetchFeatures(currentUserId)]),
   };
 };
 
@@ -58,16 +58,14 @@ export const updateFeatures = (data, currentUserId) => {
     },
   };
 
-  return dispatch => {
-    return dispatch({
-      type: FEATURES_SAVE,
-      payload: ajax({
-        url: '/user/generic',
-        method: 'post',
-        data: params,
-        appendModeInQueryParam: true,
-      }),
-    });
+  return {
+    type: FEATURES_SAVE,
+    payload: ajax({
+      url: '/user/generic',
+      method: 'post',
+      data: params,
+      appendModeInQueryParam: true,
+    }),
   };
 };
 
@@ -76,16 +74,14 @@ export const updateConfig = data => {
     route_name: 'merchant_edit_config',
     body: data,
   };
-  return dispatch => {
-    return dispatch({
-      type: CONFIG_SAVE,
-      payload: ajax({
-        url: '/user/generic',
-        method: 'put',
-        data: params,
-        appendModeInQueryParam: true,
-      }),
-    });
+  return {
+    type: CONFIG_SAVE,
+    payload: ajax({
+      url: '/user/generic',
+      method: 'put',
+      data: params,
+      appendModeInQueryParam: true,
+    }),
   };
 };
 
@@ -102,19 +98,17 @@ export const uploadLogo = (file, fieldName) => {
     formData.append(field, value);
   }
 
-  return dispatch => {
-    return dispatch({
-      type: MERCHANT_LOGO_UPLOADED,
-      payload: ajax({
-        url: '/user/generic',
-        file: file,
-        data: formData,
-        method: 'post',
-        processData: false,
-        contentType: false,
-        appendModeInQueryParam: true,
-      }),
-    });
+  return {
+    type: MERCHANT_LOGO_UPLOADED,
+    payload: ajax({
+      url: '/user/generic',
+      file: file,
+      data: formData,
+      method: 'post',
+      processData: false,
+      contentType: false,
+      appendModeInQueryParam: true,
+    }),
   };
 };
 
@@ -162,6 +156,7 @@ export default function(state = initialState, action) {
         ...initialState,
       });
 
+    case `${CONFIG_FETCH}::SUCCESS`:
     case `${CONFIG_SAVE}::SUCCESS`:
     case `${MERCHANT_LOGO_UPLOADED}::SUCCESS`:
       return set(state, 'config', normalizeConfig(action.payload.data));

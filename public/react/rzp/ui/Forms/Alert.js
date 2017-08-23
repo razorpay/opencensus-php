@@ -1,4 +1,4 @@
-import { PropTypes, Component } from 'react';
+import { PropTypes, Component, isValidElement } from 'react';
 import cx from 'classnames';
 import { makeArray } from 'rzp/utils/rzp-utils';
 
@@ -29,6 +29,9 @@ class Alert extends Component {
   render() {
     let props = this.props;
     let msgs = makeArray(props.message);
+    msgs = msgs.filter(
+      msg => typeof msg !== 'string' || msg.indexOf('Status Code') === -1
+    );
 
     if (!(!this.state.close && msgs.length)) {
       return null;
@@ -38,7 +41,7 @@ class Alert extends Component {
       <div
         class={cx(
           'alert alert-dismissable',
-          props.type === 'error' ? 'alert-danger' : 'alert-success'
+          `alert-${props.type === 'error' ? 'danger' : props.type}`
         )}
         style={{ borderRadius: 0 }}
       >
@@ -49,15 +52,19 @@ class Alert extends Component {
 
         <ul
           class={`${msgs.length === 1 ? 'list-unstyled' : ''}`}
-          style={{ paddingLeft: '15px' }}
+          style={{ paddingLeft: msgs.length === 1 ? 5 : 15 }}
         >
-          {msgs.map((msg, index) => (
-            <li key={index}>
-              {msg.stack
-                ? msg.stack
-                : typeof msg === 'object' ? JSON.stringify(msg) : msg}
-            </li>
-          ))}
+          {msgs.map((msg, index) => {
+            return (
+              <li key={index}>
+                {isValidElement(msg)
+                  ? msg
+                  : msg.stack
+                      ? msg.stack
+                      : typeof msg === 'object' ? JSON.stringify(msg) : msg}
+              </li>
+            );
+          })}
         </ul>
       </div>
     );
@@ -68,6 +75,7 @@ Alert.displayName = 'FormAlert';
 
 Alert.defaultProps = {
   showDismiss: true,
+  type: 'success',
 };
 
 Alert.propTypes = {

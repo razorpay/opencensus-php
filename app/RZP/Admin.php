@@ -29,13 +29,6 @@ class Admin extends Entity
         return $this->request('GET', $relativeUrl, $options);
     }
 
-    public function sendTestNewsletter($params)
-    {
-        $relativeUrl = $this->getEntityUrl(). 'newsletter/test';
-
-        return $this->request('POST', $relativeUrl, $params);
-    }
-
     public function fetchMerchantIds($orgId, $adminId)
     {
         $relativeUrl = "orgs/$orgId/admins/$adminId/merchant_ids";
@@ -50,13 +43,6 @@ class Admin extends Entity
         return $this->request('GET', $relativeUrl, $input);
     }
 
-    public function sendNewsletter($params)
-    {
-        $relativeUrl = $this->getEntityUrl(). 'newsletter/mail';
-
-        return $this->request('POST', $relativeUrl, $params);
-    }
-
     public function logout($orgId)
     {
         $relativeUrl = "orgs/$orgId/admin/logout";
@@ -64,30 +50,16 @@ class Admin extends Entity
         return $this->request('POST', $relativeUrl);
     }
 
-    public function forgotPassword($orgId, $input)
-    {
-        $relativeUrl = "orgs/$orgId/admin/forgot_password";
-
-        return $this->request('POST', $relativeUrl, $input);
-    }
-
-    public function resetPassword($orgId, $input)
-    {
-        $relativeUrl = "orgs/$orgId/admin/reset_password";
-
-        return $this->request('POST', $relativeUrl, $input);
-    }
-
-    public function makeReconciliateRequest($input)
+    public function makeReconciliateRequest($input, $mode = 'live')
     {
         // Makes a guzzle file request
-        $response = $this->makeGuzzleFileRequest($input);
+        $response = $this->makeGuzzleFileRequest($input, $mode);
 
         // Builds an entity from the response received
         return ApiEntity::buildEntity($response);
     }
 
-    public function makeGuzzleFileRequest($input)
+    public function makeGuzzleFileRequest($input, $mode = 'live')
     {
         // Creates a new Guzzle client
         $client = new Guzzle(['base_url' => Config::get('api.url')]);
@@ -96,7 +68,7 @@ class Admin extends Entity
         $options = array(
             // For reconciliation route, auth is not required.
             // But, sending it just for the sake of it.
-            'auth'      => $this->getApiCredentials(),
+            'auth'      => $this->getApiCredentials($mode),
             'headers'   => ApiRequest::getHeaders(),
             // TODO: Check if $postBody->setField() can be used, instead.
             'body'      => [
@@ -190,10 +162,8 @@ class Admin extends Entity
         }
     }
 
-    protected function getApiCredentials()
+    protected function getApiCredentials($mode = 'live')
     {
-        $mode = 'live';
-
         $id = 'rzp_' . $mode;
 
         $secret = Config::get('api.auth_pass');
@@ -258,12 +228,5 @@ class Admin extends Entity
         $relativeUrl = "orgs/$orgId/current_admin";
 
         return $this->request('POST', $relativeUrl, $body);
-    }
-
-    public function getFileByAdmin($fileId)
-    {
-        $relativeUrl = "files/$fileId/signed-url";
-
-        return $this->rawRequest('GET', $relativeUrl);
     }
 }

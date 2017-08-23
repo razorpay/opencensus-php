@@ -117,7 +117,7 @@ class AppResponse
             $row = self::flatten($row);
         }
 
-        $headings = array_keys($data[0]);
+        $headings = isset($data[0]) ? array_keys($data[0]) : [];
 
         $file = new SplTempFileObject();
         $csv = Writer::createFromFileObject($file);

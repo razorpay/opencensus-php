@@ -2,20 +2,23 @@ import React, { Component } from 'react';
 import { NavLink, Switch, Route, withRouter, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import Home from 'merchant/containers/HomeContainer';
+import { matchDetail } from 'merchant/routes';
+import Slider from 'rzp/ui/Slider';
+import ShowWhen from 'merchant/components/ShowWhen';
+import Home from 'merchant/containers/Home/Index';
 import Transactions from 'merchant/containers/Transactions';
 import Settlements from 'merchant/containers/Settlements/List';
-import PaymentLinks from 'merchant/containers/PaymentLinks/List';
+import PaymentLinks from 'merchant/containers/PaymentLinks/Index';
 import InvoicingContainer from 'merchant/containers/Invoicing';
 import InvoicesNew from 'merchant/containers/Invoices/New';
+import Subscriptions from 'merchant/containers/Subscriptions/Index';
 import Customers from 'merchant/containers/Customers/List';
-import Marketplace from 'merchant/containers/Marketplace/Accounts/List';
+import Marketplace from 'merchant/containers/Marketplace/Index';
 import Reports from 'merchant/containers/Reports';
 import TeamManagement from 'merchant/containers/Team';
 import MyAccount from 'merchant/containers/MyAccount';
 import Settings from 'merchant/containers/Settings';
-import { matchDetail } from 'merchant/routes';
-import Slider from 'rzp/ui/Slider';
+import VirtualAccounts from 'merchant/containers/VirtualAccounts/List';
 
 // Below will be removed with old navigation removal
 import PaymentsList from 'merchant/containers/Payments/List';
@@ -32,7 +35,8 @@ import Configuration from 'merchant/containers/Configuration';
 import ApiKeys from 'merchant/containers/Keys/List';
 import Webhooks from 'merchant/containers/Webhooks/List';
 
-import { removeActiveRow } from 'merchant/modules/app';
+import { setBaseLocation, setActiveEntity } from 'merchant/modules/app';
+import { openSlider } from 'rzp/modules/slider';
 
 // Can be removed with old navigation removal
 const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
@@ -41,16 +45,65 @@ const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
       <header id={headerId}>
         <NavLink to={to}>{navLabel}</NavLink>
       </header>
-      <Route path={path || to} component={component} />
+      <content>
+        <Route path={path || to} component={component} />
+      </content>
+    </tabbed-container>
+  );
+};
+
+// Can be removed with old navigation removal
+const RefundsTabbedContainer = () => {
+  return (
+    <tabbed-container>
+      <header id="transactions-header">
+        <NavLink to="/refunds" exact>Refunds</NavLink>
+        <ShowWhen
+          featureEnabled="Batchrefunds"
+          myRole="owner manager operations admin finance"
+        >
+          <NavLink
+            to="/refunds/batchuploads"
+            isActive={(match, { pathname }) =>
+              pathname === '/refunds/batchupload' ||
+              pathname === '/refunds/batchuploads'}
+          >
+            Batch Refunds
+          </NavLink>
+        </ShowWhen>
+      </header>
+      <content>
+        <Switch>
+          <Route path="/refunds/batchupload" component={BatchUpload} />
+          <Route path="/refunds/batchuploads" component={BatchUploads} />
+          <Route path="/refunds" component={RefundsList} />
+        </Switch>
+      </content>
     </tabbed-container>
   );
 };
 
 @withRouter
-@connect(null, { removeActiveRow })
+@connect(null, { setBaseLocation, setActiveEntity, openSlider })
 export default class Content extends Component {
+  setBaseLocation = location => {
+    let { setBaseLocation, setActiveEntity } = this.props;
+    var matchResult = matchDetail(location.pathname);
+
+    if (matchResult) {
+      this.detailView = matchResult.component;
+      setActiveEntity(matchResult.match.params.id);
+    } else {
+      this.detailView = null;
+      setActiveEntity(null);
+
+      this.baseLocation = location;
+      setBaseLocation(location);
+    }
+  };
+
   getBaseView = () => {
-    let isNewUIEnabled = this.props.user.tags.indexOf('Newui') !== -1;
+    let isNewUIEnabled = this.props.user.isNewUIEnabled;
 
     return (
       <div>
@@ -72,6 +125,8 @@ export default class Content extends Component {
                 <Route path="/invoices/new" component={InvoicesNew} />
                 <Route path="/items" component={InvoicingContainer} />
                 <Route path="/paymentlinks" component={PaymentLinks} />
+                <Route path="/subscriptions" component={Subscriptions} />
+                <Route path="/plans" component={Subscriptions} />
                 <Route
                   path="/customers"
                   render={() => (
@@ -84,8 +139,8 @@ export default class Content extends Component {
                   )}
                 />
 
-                <Route path="/marketplace" component={Marketplace} />
-                <Route path="/accounts" component={Marketplace} />
+                <Route path="/route" component={Marketplace} />
+                <Route path="/virtualaccounts" component={VirtualAccounts} />
 
                 <Route path="/reports" component={Reports} />
                 <Route path="/team" component={TeamManagement} />
@@ -99,6 +154,7 @@ export default class Content extends Component {
                 <Route path="/config" component={Settings} />
                 <Route path="/keys" component={Settings} />
                 <Route path="/webhooks" component={Settings} />
+                <Route path="/applications" component={Settings} />
 
                 <Redirect to="/dashboard" />
               </Switch>;
@@ -118,44 +174,7 @@ export default class Content extends Component {
                   )}
                 />
 
-                <Route
-                  path="/refunds/batchupload"
-                  render={() => (
-                    <TabbedContent
-                      headerId="transactions-header"
-                      to="/refunds"
-                      path="/refunds/batchupload"
-                      navLabel="Refunds"
-                      component={BatchUpload}
-                    />
-                  )}
-                />
-
-                <Route
-                  path="/refunds/batchuploads"
-                  render={() => (
-                    <TabbedContent
-                      headerId="transactions-header"
-                      to="/refunds"
-                      path="/refunds/batchuploads"
-                      navLabel="Refunds"
-                      component={BatchUploads}
-                    />
-                  )}
-                />
-
-                <Route
-                  path="/refunds"
-                  exact
-                  render={() => (
-                    <TabbedContent
-                      headerId="transactions-header"
-                      to="/refunds"
-                      navLabel="Refunds"
-                      component={RefundsList}
-                    />
-                  )}
-                />
+                <Route path="/refunds" component={RefundsTabbedContainer} />
 
                 <Route
                   path="/orders"
@@ -175,9 +194,10 @@ export default class Content extends Component {
                 <Route path="/invoices/new" component={InvoicesNew} />
                 <Route path="/items" component={InvoicingContainer} />
                 <Route path="/customers" component={InvoicingContainer} />
-
-                <Route path="/marketplace" component={Marketplace} />
-                <Route path="/accounts" component={Marketplace} />
+                <Route path="/subscriptions" component={Subscriptions} />
+                <Route path="/plans" component={Subscriptions} />
+                <Route path="/route" component={Marketplace} />
+                <Route path="/virtualaccounts" component={VirtualAccounts} />
                 <Route path="/reports" component={Reports} />
                 <Route path="/team" component={TeamManagement} />
 
@@ -275,25 +295,28 @@ export default class Content extends Component {
     );
   };
 
-  removeActiveRow = () => {
-    this.props.removeActiveRow();
-  };
+  componentWillMount() {
+    this.setBaseLocation(this.props.location);
+  }
+
+  componentWillReceiveProps(props) {
+    this.setBaseLocation(props.location);
+    this.showSliderView();
+  }
+
+  showSliderView() {
+    if (this.detailView && this.baseLocation) {
+      this.props.openSlider();
+    }
+  }
 
   render() {
-    let location = this.props.location;
-    let DetailView = matchDetail(location.pathname);
-
-    if (!DetailView) {
-      this.baseLocation = location;
-    }
-
+    var DetailView = this.detailView;
     var BaseView = this.baseLocation ? this.getBaseView() : null;
 
     if (DetailView) {
       DetailView = BaseView
-        ? <Slider closeUrl={this.baseLocation} onClose={this.removeActiveRow}>
-            <DetailView />
-          </Slider>
+        ? <Slider closeUrl={this.baseLocation}> <DetailView /> </Slider>
         : <DetailView />;
     }
 

@@ -30,12 +30,13 @@ export default class MyAccount extends Component {
             <NavLink to="/referrals">Referrals</NavLink>
           </ShowWhen>
         </header>
-
-        <Route path="/profile" component={Profile} />
-        <Route path="/activation" component={Activation} />
-        <Route path="/credits" component={Credits} />
-        <Route path="/addfunds" component={AddFunds} />
-        <Route path="/referrals" component={Referrals} />
+        <content>
+          <Route path="/profile" component={Profile} />
+          <Route path="/activation" component={Activation} />
+          <Route path="/credits" component={Credits} />
+          <Route path="/addfunds" component={AddFunds} />
+          <Route path="/referrals" component={Referrals} />
+        </content>
       </tabbed-container>
     );
   }

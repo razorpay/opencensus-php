@@ -1,24 +1,21 @@
 import { set } from 'rzp/utils/immutable';
 
-const ROW_HIGHLIGHT_ADD = 'ROW_HIGHLIGHT_ADD';
-const ROW_HIGHLIGHT_REMOVE = 'ROW_HIGHLIGHT_REMOVE';
 const ROW_LUMINATE_ADD = 'ROW_LUMINATE_ADD';
 const ROW_LUMINATE_REMOVE = 'ROW_LUMINATE_REMOVE';
+const LOCATION_UPDATE = 'LOCATION_UPDATE';
+const ENTITY_UPDATE = 'ENTITY_UPDATE';
 
-export const setActiveRow = id => {
-  return dispatch => {
-    return dispatch({
-      type: ROW_HIGHLIGHT_ADD,
-      payload: { id },
-    });
+export const setBaseLocation = location => {
+  return {
+    type: LOCATION_UPDATE,
+    payload: location,
   };
 };
 
-export const removeActiveRow = id => {
-  return dispatch => {
-    return dispatch({
-      type: ROW_HIGHLIGHT_REMOVE,
-    });
+export const setActiveEntity = id => {
+  return {
+    type: ENTITY_UPDATE,
+    payload: id,
   };
 };
 
@@ -38,17 +35,16 @@ export const luminateRow = id => {
 };
 
 let initialState = {
-  activeRowId: null,
   luminateRowId: null,
 };
 
 export default function(state = initialState, action) {
   switch (action.type) {
-    case ROW_HIGHLIGHT_ADD:
-      return set(state, 'activeRowId', action.payload.id);
+    case ENTITY_UPDATE:
+      return set(state, 'activeEntityId', action.payload);
 
-    case ROW_HIGHLIGHT_REMOVE:
-      return set(state, 'activeRowId', null);
+    case LOCATION_UPDATE:
+      return set(state, 'baseLocation', action.payload);
 
     case ROW_LUMINATE_ADD:
       return set(state, 'luminateRowId', action.payload.id);

@@ -8,24 +8,28 @@ app
     '$stateParams',
     'alertsFactory',
     '$modal',
+    'admin',
     'statusClass',
     'isStatusKey',
     'getState',
     'getType',
     'displayClass',
     'displayValue',
+    '$state',
     function(
       $scope,
       $http,
       $stateParams,
       alertsFactory,
       $modal,
+      admin,
       statusClass,
       isStatusKey,
       getState,
       getType,
       displayClass,
-      displayValue
+      displayValue,
+      $state
     ) {
       //Intialise alerts and scope functions
       $scope.getStatusClass = statusClass;
@@ -38,10 +42,26 @@ app
       $scope.mode = $stateParams.mode;
       $scope.entity = { id: $stateParams.id };
       $scope.loadType = $stateParams.type;
+      $scope.hasRetryRefund = false;
+      $scope.isRetryRefundProcessing = false;
+
+      var adminData = admin.identity().then(function(data) {
+        $scope.admin = data;
+      });
 
       $scope.generate = function(entityType) {
-        fetchEntity(entityType);
+        adminData.then(function() {
+          fetchEntity(entityType);
+        });
       };
+
+      function hasRetryRefund(entity) {
+        return (
+          $scope.admin.permissions.indexOf('retry_refund_failed') !== -1 &&
+          $scope.loadType === 'refund' &&
+          entity.status === 'failed'
+        );
+      }
 
       function fetchEntity(entityType) {
         var routeName = 'admin_fetch_entity_by_id';
@@ -64,6 +84,18 @@ app
             $scope.alerts.resetAlerts();
             if (data.success) {
               $scope.entity = data.data;
+
+              // api sends data in range 0-10000. Changing it into 0-100
+              if (entityType === 'offer') {
+                $scope.entity['percent_rate'] =
+                  $scope.entity['percent_rate'] / 100;
+
+                $scope.entity['iins'] = $scope.entity['iins']
+                  ? $scope.entity['iins'].join(',')
+                  : null;
+              }
+
+              $scope.hasRetryRefund = hasRetryRefund($scope.entity);
             } else {
               angular.forEach(data.errors, function(error) {
                 $scope.alerts.addAlert('danger', error);
@@ -75,16 +107,135 @@ app
           });
       }
 
+      // Used for download file action
+      $scope.downloadFile = function() {
+        var windowRef = window.open('', '_blank');
+        var data = {
+          route_name: 'admin_get_file',
+          url_params: {
+            '{fileId}': $scope.entity.id,
+          },
+        };
+
+        var request = $http.get('/admin/generic', {
+          params: data,
+        });
+
+        request.success(function(data) {
+          if (data.success) {
+            windowRef.location.href = data.data.url;
+          } else {
+            windowRef.close();
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function(value) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        });
+      };
+
+      // Dispute specific actions
+      $scope.dispute = {
+        edit: function(data) {
+          var params = {
+            route_name: 'dispute_edit',
+            url_params: {
+              '{id}': $scope.entity.id,
+            },
+            mode: 'test',
+            body: data,
+          };
+
+          var request = $http({
+            method: 'patch',
+            url: '/admin/generic',
+            data: params,
+          });
+          request
+            .success(function(data) {
+              if (data.success) {
+                window.location.reload();
+              } else {
+                angular.forEach(data.errors, function(value) {
+                  $scope.alerts.addAlert('danger', value);
+                });
+              }
+            })
+            .error(function() {
+              $scope.alerts.addAlert('danger', null, true);
+            });
+        },
+      };
+
+      // Offer Specific actions
+      $scope.offer = {
+        edit: function(offer) {
+          var body = offer;
+
+          var successMsg = 'Offer is successfully Updated';
+          if (body.hasOwnProperty('active')) {
+            successMsg = 'Offer is successfully Deactivated';
+          }
+
+          var request = $http({
+            url: '/admin/generic',
+            method: 'PATCH',
+            params: {
+              route_name: 'offer_update',
+              mode: $scope.mode,
+              url_params: {
+                '{id}': $scope.entity.id,
+              },
+            },
+            data: {
+              merchant_id: $scope.entity.merchant_id,
+              body: body,
+            },
+          });
+
+          request
+            .success(function(data) {
+              if (data.success) {
+                $scope.alerts.addAlert('success', successMsg, true);
+
+                // Update UI if request for deactivation is successful
+                if (offer.active === 0) {
+                  $scope.entity.active = false;
+                }
+              } else {
+                $scope.alerts.resetAlerts();
+                angular.forEach(data.errors, function(value) {
+                  $scope.alerts.addAlert('danger', value);
+                });
+              }
+            })
+            .error(function() {
+              $scope.alerts.addAlert('danger', null, true);
+            });
+        },
+      };
+
       // Terminal Specific actions
       $scope.terminal = {
         delete: function(id) {
-          var request = $http.delete(
-            '/admin/' + $scope.mode + '/terminal/' + id
-          );
+          var data = {
+            route_name: 'terminal_delete',
+            url_params: {
+              '{id}': id,
+            },
+            mode: $scope.mode,
+          };
+          var request = $http.delete('/admin/generic', {
+            params: data,
+          });
           request
             .success(function(data) {
               if (data.success) {
                 alert('Terminal deleted');
+                $state.go('app.entities', {
+                  mode: $scope.mode,
+                  type: 'terminal',
+                });
               } else {
                 alert(data.errors);
               }
@@ -101,10 +252,19 @@ app
               delete data[i];
             }
           }
-          var request = $http.put(
-            '/admin/' + $scope.mode + '/terminal/' + id,
-            data
-          );
+          var terminalData = {
+            route_name: 'terminal_edit',
+            url_params: {
+              '{id}': id,
+            },
+            mode: $scope.mode,
+            body: data,
+          };
+          var request = $http({
+            method: 'put',
+            url: '/admin/generic',
+            data: terminalData,
+          });
           request
             .success(function(data) {
               if (data.success) {
@@ -120,10 +280,19 @@ app
         },
         disable: function(id) {
           var data = { toggle: 0 };
-          var request = $http.put(
-            '/admin/' + $scope.mode + '/terminal/' + id + '/toggle',
-            data
-          );
+          var TerminalData = {
+            route_name: 'terminal_toggle',
+            url_params: {
+              '{id}': id,
+            },
+            mode: $scope.mode,
+            body: data,
+          };
+          var request = $http({
+            method: 'put',
+            url: '/admin/generic',
+            data: TerminalData,
+          });
           request
             .success(function(data) {
               if (data.success) {
@@ -139,10 +308,19 @@ app
         },
         enable: function(id) {
           var data = { toggle: 1 };
-          var request = $http.put(
-            '/admin/' + $scope.mode + '/terminal/' + id + '/toggle',
-            data
-          );
+          var TerminalData = {
+            route_name: 'terminal_toggle',
+            url_params: {
+              '{id}': id,
+            },
+            mode: $scope.mode,
+            body: data,
+          };
+          var request = $http({
+            method: 'put',
+            url: '/admin/generic',
+            data: TerminalData,
+          });
           request
             .success(function(data) {
               if (data.success) {
@@ -157,15 +335,19 @@ app
             });
         },
         addSubMerchant: function(id, merchant_id) {
-          var request = $http.put(
-            '/admin/' +
-              $scope.mode +
-              '/terminal/' +
-              id +
-              '/merchant/' +
-              merchant_id
-          );
-
+          var data = {
+            route_name: 'terminal_add_merchant',
+            url_params: {
+              '{id}': id,
+              '{mid}': merchant_id,
+            },
+            mode: $scope.mode,
+          };
+          var request = $http({
+            method: 'put',
+            url: '/admin/generic',
+            data: data,
+          });
           request
             .success(function(data) {
               if (data.success) {
@@ -190,12 +372,21 @@ app
             });
         },
         changePrimaryMerchant: function(terminal_id, merchant_id) {
-          var url =
-            '/admin/' + $scope.mode + '/terminal/' + terminal_id + '/reassign';
-          var request = $http.put(url, {
-            merchant_id: merchant_id,
+          var data = {
+            route_name: 'terminal_reassign_merchant',
+            url_params: {
+              '{id}': terminal_id,
+            },
+            body: {
+              merchant_id: merchant_id,
+            },
+            mode: $scope.mode,
+          };
+          var request = $http({
+            method: 'put',
+            url: '/admin/generic',
+            data: data,
           });
-
           request
             .success(function(data) {
               if (data.success) {
@@ -221,20 +412,6 @@ app
 
       // IIN Specific actions
       $scope.iin = {
-        delete: function(id) {
-          var request = $http.delete('/admin/' + $scope.mode + '/iin/' + id);
-          request
-            .success(function(data) {
-              if (data.success) {
-                alert('IIN deleted');
-              } else {
-                alert(data.errors);
-              }
-            })
-            .error(function() {
-              alert('There was an error while deleting the IIN');
-            });
-        },
         edit: function(iin) {
           var iinId = iin.iin;
 
@@ -254,7 +431,18 @@ app
               delete iin[i];
             }
           }
-          var request = $http.put('/admin/iin/' + iinId, iin);
+          var data = {
+            route_name: 'iin_edit',
+            url_params: {
+              '{id}': iinId,
+            },
+            body: iin,
+          };
+          var request = $http({
+            method: 'put',
+            url: '/admin/generic',
+            data: data,
+          });
           request
             .success(function(data) {
               if (data.success) {
@@ -274,11 +462,23 @@ app
       $scope.emi = {
         delete: function(id) {
           // EMI plans are also modeless
-          var request = $http.delete('/admin/emi/' + id);
+          var data = {
+            route_name: 'emi_plan_delete',
+            url_params: {
+              '{id}': id,
+            },
+          };
+          var request = $http.delete('/admin/generic', {
+            params: data,
+          });
           request
             .success(function(data) {
               if (data.success) {
                 alert('EMI Plan deleted');
+                $state.go('app.entities', {
+                  mode: $scope.mode,
+                  type: 'emi_plan',
+                });
               } else {
                 alert(data.errors);
               }
@@ -306,6 +506,34 @@ app
           modalInstance.result.then(function(input) {
             delete input.merchant_id;
             $scope.terminal.edit(input.id, input);
+          }, $.noop);
+        },
+        offerEdit: function(offer) {
+          var modalInstance = $modal.open({
+            templateUrl: 'editOffer.html',
+            controller: 'editOfferModalCtrl',
+            resolve: {
+              current: function() {
+                return Object.assign({}, offer);
+              },
+            },
+          });
+          modalInstance.result.then(function(offer) {
+            $scope.offer.edit(offer);
+          }, $.noop);
+        },
+        disputeEdit: function(dispute) {
+          var modalInstance = $modal.open({
+            templateUrl: 'disputeModalContent.html',
+            controller: 'DisputeModalCtrl',
+            resolve: {
+              current: function() {
+                return Object.assign({}, dispute);
+              },
+            },
+          });
+          modalInstance.result.then(function(dispute) {
+            $scope.dispute.edit(dispute);
           }, $.noop);
         },
         iinEdit: function(iin) {
@@ -375,6 +603,54 @@ app
         var keys = Object.keys($scope.entity);
         return keys;
       };
+
+      function retryRefund(entityId) {
+        return $http
+          .post('/admin/generic/', {
+            mode: $scope.mode,
+            route_name: 'refund_verify_failed',
+            url_params: {
+              '{id}': entityId,
+            },
+          })
+          .catch(function onRetryRefundFail() {
+            return {
+              data: {
+                errors: ['There was an error while retrying to refund.'],
+              },
+            };
+          });
+      }
+
+      $scope.onRetryRefund = function onRetryRefund(e) {
+        e.preventDefault();
+
+        var entityType = $scope.loadType, entityId = $scope.entity.id;
+
+        if (entityType !== 'refund' || $scope.isRetryRefundProcessing) {
+          return;
+        }
+
+        $scope.isRetryRefundProcessing = true;
+
+        retryRefund(entityId).then(function onRetryRefundResp(resp) {
+          var data = resp.data;
+
+          $scope.alerts.resetAlerts();
+          $scope.isRetryRefundProcessing = false;
+
+          if (data.success) {
+            $scope.alerts.addAlert('success', 'Refund Successful');
+            $scope.entity.status = data.data.status;
+
+            $scope.hasRetryRefund = hasRetryRefund($scope.entity);
+          } else {
+            angular.forEach(data.errors, function(error) {
+              $scope.alerts.addAlert('danger', error);
+            });
+          }
+        });
+      };
     },
   ])
   .controller('editTerminalModalCtrl', [
@@ -388,12 +664,61 @@ app
         gateway_access_code: current.gateway_access_code,
         gateway_merchant_id: current.gateway_merchant_id,
         gateway_terminal_id: current.gateway_terminal_id,
+        merchant_id: current.merchant_id,
         id: current.id,
-        card: current.card,
         gateway: current.gateway,
       };
       $scope.ok = function(terminal) {
         $modalInstance.close(terminal);
+      };
+      $scope.cancel = function() {
+        $modalInstance.dismiss('cancel');
+      };
+    },
+  ])
+  .controller('editOfferModalCtrl', [
+    '$scope',
+    'dateFactory',
+    '$modalInstance',
+    'current',
+    function($scope, dateFactory, $modalInstance, current) {
+      $scope.date = dateFactory.getHandler($scope);
+      $scope.date.dateOptions['showWeeks'] = false;
+
+      $scope.offer = current;
+
+      $scope.offer['linked_offer_ids'] = $scope.offer['linked_offer_ids']
+        ? $scope.offer['linked_offer_ids'].join(',')
+        : null;
+
+      $scope.ok = function() {
+        if ($scope.offer['iins']) {
+          $scope.offer['iins'] = $scope.offer['iins'].split(',');
+        }
+        if ($scope.offer['linked_offer_ids']) {
+          $scope.offer['linked_offer_ids'] = $scope.offer[
+            'linked_offer_ids'
+          ].split(',');
+        }
+
+        $scope.offer = {
+          name: $scope.offer.name,
+          iins: $scope.offer.iins,
+          max_payment_count: $scope.offer.max_payment_count,
+          linked_offer_ids: $scope.offer.linked_offer_ids,
+          display_text: $scope.offer.display_text,
+          error_message: $scope.offer.error_message,
+          terms: $scope.offer.terms,
+        };
+
+        // Remove keys with null/empty value
+        Object.keys($scope.offer).forEach(function(key) {
+          if (!$scope.offer[key]) {
+            delete $scope.offer[key];
+          }
+        });
+
+        $modalInstance.close($scope.offer);
       };
       $scope.cancel = function() {
         $modalInstance.dismiss('cancel');
@@ -457,23 +782,20 @@ app
       $scope.alerts = alertsFactory.getHandler();
 
       $scope.deleteSubMerchant = function(merchantId) {
-        var request = $http.delete(
-          '/admin/' +
-            mode +
-            '/terminal/' +
-            current.id +
-            '/merchant/' +
-            merchantId
-        );
-
+        var data = {
+          route_name: 'terminal_remove_merchant',
+          url_params: {
+            '{id}': current.id,
+            '{mid}': merchantId,
+          },
+          mode: mode,
+        };
+        var request = $http.delete('/admin/generic', {
+          params: data,
+        });
         request
           .success(function(data) {
             if (data.success) {
-              var index = $scope.subMerchants.indexOf(merchantId);
-              if (index > -1) {
-                $scope.subMerchants.splice(index, 1);
-              }
-
               $scope.alerts.addAlert(
                 'success',
                 'Sub merchant unassigned from the terminal successfully'

@@ -2,7 +2,6 @@ import { Component } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router';
 import ModalDialog from 'rzp/ui/ModalDialog';
-import Slider from 'rzp/ui/Slider';
 import Notifications from 'rzp/ui/Notifications';
 import ReactIdle from 'rzp/ui/ReactIdle';
 import LocalStorageService from 'rzp/utils/localStorage';
@@ -10,18 +9,24 @@ import Sidebar from 'merchant/components/Sidebar';
 import HeaderNav from 'merchant/components/HeaderNav';
 import Content from 'merchant/components/Content';
 import Footer from 'merchant/components/Footer';
+import MerchantTour from 'merchant/containers/MerchantTour';
 import ActivationRequired from 'merchant/components/ActivationRequired';
 import IdleWarningDialog from 'merchant/components/IdleWarningDialog';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationActions from 'rzp/modules/notifications';
 import * as SessionActions from 'merchant/modules/session';
 import { applyTheme } from 'rzp/themes';
+import User from 'merchant/models/User';
+import ShowWhen from 'merchant/components/ShowWhen';
+import AddGST from 'merchant/containers/Profile/AddGST';
+import { fetchGST } from 'merchant/modules/profile';
 
 @withRouter
 @connect(state => state.session, {
   ...ModalActions,
   ...SessionActions,
   ...NotificationActions,
+  fetchGST,
 })
 export default class App extends Component {
   state = {
@@ -32,22 +37,25 @@ export default class App extends Component {
   componentWillMount() {
     let currentMode = LocalStorageService.getItem('rzp_mode');
 
-    if (currentMode) {
-      this.props.updateSession({ mode: currentMode });
-    }
+    this.props.fetchGST();
     Promise.all([
-      this.props.fetchUser().then(({ data }) => {
-        let role = data.merchants[data.current].role;
+      this.fetchUser().then(({ data }) => {
+        let user = data;
+        let role = user.userRole;
 
         if (!currentMode) {
-          currentMode = parseInt(data.activated) === 1 ? 'live' : 'test';
-          this.props.updateSession({ mode: currentMode });
+          currentMode = user.isActivated ? 'live' : 'test';
+        } else if (!user.isActivated) {
+          currentMode = 'test';
         }
 
+        this.props.updateSession({ mode: currentMode });
         this.redirectToRoute(role);
-        this.initSmooch(data);
+        setTimeout(() => {
+          this.initSmooch(user);
+        });
       }),
-      this.props.fetchOrg().then(({ data }) => {
+      this.fetchOrg().then(({ data }) => {
         let orgCode = (this.orgCode = data.custom_code);
         if (orgCode && orgCode !== 'rzp') {
           applyTheme(orgCode);
@@ -61,14 +69,55 @@ export default class App extends Component {
     });
   }
 
+  componentWillReceiveProps({ user, history }) {
+    if (user.isAuthenticated) {
+      let role = user.userRole;
+      this.redirectToRoute(role);
+    }
+  }
+
+  fetchUser() {
+    let user = new User(window.rzp_user);
+    if (user) {
+      delete window.rzp_user;
+      this.props.updateSession({ user });
+      return Promise.resolve({ data: user });
+    } else {
+      return this.props.fetchUser();
+    }
+  }
+
+  fetchOrg() {
+    let org = window.rzp_org;
+    if (org) {
+      delete window.rzp_org;
+      this.props.updateSession({ org });
+      return Promise.resolve({ data: org });
+    } else {
+      return this.props.fetchOrg();
+    }
+  }
+
   redirectToRoute(role) {
-    if (role === 'sellerapp') {
-      this.props.history.replace('/invoices');
+    let pathname = this.props.history.location.pathname;
+    let isNewUIEnabled = this.props.user.isNewUIEnabled;
+
+    if (pathname === '/' || pathname === '/dashboard') {
+      switch (role) {
+        case 'sellerapp':
+          let url = isNewUIEnabled ? '/paymentlinks' : '/invoices';
+          return this.props.history.replace(url);
+        case 'support':
+          return this.props.history.replace('/payments');
+
+        case null:
+          return this.props.history.replace('/profile');
+      }
     }
   }
 
   initSmooch(data) {
-    let role = data.merchants[data.current].role;
+    let role = data.userRole;
     if (window.smoochScript) {
       smoochScript.then(function() {
         var sk_user = function() {
@@ -85,6 +134,7 @@ export default class App extends Component {
               activated: data.activated,
               locked: data.locked,
               submitted: data.submitted,
+              isNewUIEnabled: data.isNewUIEnabled,
               role: role,
               userEmail: data.user.email,
               dashboardLink: location.origin +
@@ -108,7 +158,7 @@ export default class App extends Component {
 
   switchMode = mode => {
     let user = this.props.user;
-    if (mode === 'live' && parseInt(user.activated) !== 1) {
+    if (mode === 'live' && !user.isActivated) {
       this.props.openModal({
         size: 'small',
         component: <ActivationRequired onCloseClick={this.props.closeModal} />,
@@ -133,14 +183,8 @@ export default class App extends Component {
       });
   };
 
-  logout = () => {
-    return this.props.logout().then(() => {
-      location.reload();
-    });
-  };
-
   lock = () => {
-    let email = this.props.user.contact_email;
+    let email = this.props.user.user.email;
     return this.props.logout().then(() => {
       location.hash = `/access/lockme/${email}`;
       location.reload();
@@ -160,10 +204,17 @@ export default class App extends Component {
     });
   };
 
-  render() {
-    let { user, mode, modeFormatted } = this.props;
+  showGSTModal = () => {
+    this.props.openModal({
+      size: 'small',
+      component: <AddGST openedFromTopbar={true} />,
+    });
+  };
 
-    if (this.state.isLoading || !user) {
+  render() {
+    let { user, org, mode, modeFormatted } = this.props;
+
+    if (this.state.isLoading || !user.isAuthenticated) {
       return null;
     }
 
@@ -173,15 +224,19 @@ export default class App extends Component {
           user={user}
           mode={mode}
           modeFormatted={modeFormatted}
+          showGSTModal={this.showGSTModal}
           onSwitchMode={this.switchMode}
           onSwitchMerchant={this.switchMerchant}
-          onLogout={this.logout}
           toggleMobileNav={this.toggleMobileNav}
           showMobileNav={this.state.showMobileNav}
         />
-        <Sidebar user={user} />
+        <Sidebar user={user} logoURL={org.main_logo_url} />
         <Content user={user} modeFormatted={modeFormatted} />
         <Footer />
+
+        <ShowWhen myRole="owner">
+          <MerchantTour user={user} />
+        </ShowWhen>
 
         {/* Creates Portal for the comp */}
         <ModalDialog />
@@ -193,6 +248,8 @@ export default class App extends Component {
           onIdleEnd={this.props.closeModal}
           onIdleTimeout={this.lock}
         />
+
+        <MerchantTour user={user} />
       </div>
     );
   }

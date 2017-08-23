@@ -26,6 +26,7 @@
               <option value="maker">Made by You</option>
               <option value="checker">Awaiting your Approval</option>
               <option value="closed">Closed by You</option>
+              <option value="admin_checked">Checked by You</option>
               <option value="open" ng-if="isSuperAdmin">View all Open Actions</option>
               <option value="all" ng-if="isSuperAdmin">View all Actions</option>
             </select>
@@ -42,6 +43,7 @@
             <tr>
               <th>Action</th>
               <th>Title</th>
+              <th>Created By</th>
               <th>Created At</th>
               <th>State</th>
               <th>Action</th>
@@ -50,8 +52,11 @@
             <tr ng-repeat="row in workflow_requests">
               <td>{{row.permission_description}}</td>
               <td>{{row.title}}</td>
+              <td>{{row.admin.name}}</td>
               <td>{{row.created_at*1000 | date:'medium'}}</td>
-              <td>{{row.state}}</td>
+              <td>
+                <div class="label" ng-class="getStateClass(row.state)">{{row.state}}</div>
+              </td>
               <td>
                 <div class="btn-group">
                   <a class="btn btn-default btn-xs" ui-sref="app.workflows.actions.detail({ action_id: row.id })">

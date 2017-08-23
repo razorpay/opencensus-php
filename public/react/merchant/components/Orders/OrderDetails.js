@@ -3,32 +3,11 @@ import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import Spinner from 'rzp/ui/Spinner';
 import Alert from 'rzp/ui/Forms/Alert';
-import ListGroupToggler from 'rzp/ui/ListGroupToggler';
-import {
-  OrderStatusLabel,
-  PaymentStatusLabel,
-} from 'merchant/components/StatusLabel';
-import TableBody from 'rzp/ui/TableBody';
-import DetailRow from 'merchant/components/DetailRow';
-import { NavLink } from 'react-router-dom';
-
-const PaymentList = ({ payment }) => {
-  return (
-    <tr>
-      <td>
-        <NavLink to={`/payments/${payment.id}`}>
-          <code>{payment.id}</code>
-        </NavLink>
-      </td>
-      <td>
-        <PaymentStatusLabel status={payment.status} />
-      </td>
-      <td class="text-right">
-        <Time value={payment.created_at} format="DD MMM YYYY, hh:mm:ss a" />
-      </td>
-    </tr>
-  );
-};
+import DataTable from 'rzp/ui/Table/DataTable';
+import ListGroupToggler from 'rzp/ui/Toggler/ListGroupToggler';
+import { OrderStatusLabel } from 'merchant/components/StatusLabel';
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import { paymentId, amount, status, createdAt } from 'rzp/ui/item/pair';
 
 export default props => {
   let { order, payments, isLoading, statusMsg } = props;
@@ -40,47 +19,27 @@ export default props => {
             <Spinner />
           </div>
         : <div class="panel panel-default SliderPanel">
-            <Alert type={statusMsg.type} message={statusMsg.message} />
-
             <div class="panel-heading">
-              Order ID: <b>{order.id}</b>
+              Order Id: <b>{order.id}</b>
             </div>
 
-            <div class="panel-body SliderPanel__Body">
-              <div class="list-group details-row-container">
-                <DetailRow
+            <div class="SliderPanel__Body">
+              <Alert type={statusMsg.type} message={statusMsg.message} />
+              <div class="panel-body">
+                <EntityDetailRow
                   label="Amount"
                   value={() => <Amount value={order.amount} />}
                 />
 
-                <DetailRow label="Currency" value={order.currency} />
-                <DetailRow label="Attempts" value={order.attempts} />
+                <EntityDetailRow label="Currency" value={order.currency} />
+                <EntityDetailRow label="Attempts" value={order.attempts} />
 
-                <DetailRow
+                <EntityDetailRow
                   label="Status"
                   value={() => <OrderStatusLabel status={order.status} />}
                 />
 
-                {order.attempts > 0
-                  ? <ListGroupToggler
-                      label="Payments"
-                      onToggleClick={() => props.onTogglePayments(order)}
-                    >
-                      <table class="table table-hover">
-                        <TableBody
-                          colSpan={2}
-                          isLoading={payments.loading}
-                          rows={payments.items}
-                        >
-                          {payments.items.map(payment => (
-                            <PaymentList key={payment.id} payment={payment} />
-                          ))}
-                        </TableBody>
-                      </table>
-                    </ListGroupToggler>
-                  : <DetailRow label="Payments" value="No Payments" />}
-
-                <DetailRow
+                <EntityDetailRow
                   label="Created At"
                   value={() => (
                     <Time
@@ -89,6 +48,21 @@ export default props => {
                     />
                   )}
                 />
+
+                {order.attempts > 0
+                  ? <ListGroupToggler
+                      label="Payments"
+                      onToggleClick={() => props.onTogglePayments(order)}
+                    >
+                      <DataTable
+                        columns={[paymentId, amount, status, createdAt]}
+                        title="Payments"
+                        items={payments.items}
+                        loading={payments.loading}
+                        showHeaders={false}
+                      />
+                    </ListGroupToggler>
+                  : <EntityDetailRow label="Payments" value="No Payments" />}
               </div>
             </div>
           </div>}

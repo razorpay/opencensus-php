@@ -2,7 +2,7 @@ import Spinner from 'rzp/ui/Spinner';
 import Time from 'rzp/ui/Time';
 import Amount from 'rzp/ui/Amount';
 import Alert from 'rzp/ui/Forms/Alert';
-import TetherComponent from 'react-tether';
+import HeaderAction from 'rzp/ui/HeaderAction';
 
 export default props => {
   let { creditsData, balanceData, loading, error, currentUser } = props;
@@ -14,13 +14,7 @@ export default props => {
 
   return (
     <div class="content-wrapper content-sm">
-      <TetherComponent
-        target="#myaccount-header"
-        attachment="top right"
-        targetAttachment="top right"
-        offset="-8px 0"
-      >
-        <div />{/* required by react-tether */}
+      <HeaderAction>
         <div class="btn-toolbar pull-right">
           <a
             class="btn btn-link"
@@ -31,7 +25,7 @@ export default props => {
             <i class="icon icon-external-link" />
           </a>
         </div>
-      </TetherComponent>
+      </HeaderAction>
 
       {loading
         ? <div class="page-spinner-container">

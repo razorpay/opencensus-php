@@ -5,8 +5,10 @@ import Spinner from 'rzp/ui/Spinner';
 import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
 import * as ProfileActions from 'merchant/modules/profile';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 import MerchantDetails from 'merchant/components/Profile/MerchantDetails';
+import GST from 'merchant/containers/Profile/GST';
 import BankAccountDetails from 'merchant/components/Profile/BankAccountDetails';
 import LoggedInUserDetails
   from 'merchant/components/Profile/LoggedInUserDetails';
@@ -39,7 +41,6 @@ export default class Profile extends Component {
       }
     });
     this.props.fetchBankAccount();
-    this.props.fetchPendingInvitations();
     this.refreshUser(this.props.user);
   }
 
@@ -68,30 +69,44 @@ export default class Profile extends Component {
     this.setState({
       merchantCount: Object.keys(user.merchants).length,
       loggedInUser: user.user,
-      loggedInUserRole: user.merchants[user.id].role,
+      loggedInUserRole: user.userRole,
       hasMerchant,
     });
   }
 
-  updateInvitation = (type, invite) => {
-    let message = type === 'accept'
-      ? 'You have accepted the invite.'
-      : 'You have rejected the invite.';
+  acceptInvitation = invite => {
+    let message = 'You have accepted the invite.';
 
     return this.props
-      .updateInvitation(type, invite.id)
+      .acceptInvitation(invite.id)
       .then(() => {
         this.props.showNotification({
           type: 'success',
           message,
         });
-        if (type === 'reject') {
-          this.props.fetchPendingInvitations();
-        } else {
-          setTimeout(() => {
-            location.reload();
-          }, 400);
-        }
+        setTimeout(() => {
+          location.reload();
+        }, 400);
+      })
+      .catch(err => {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+      });
+  };
+
+  rejectInvitation = invite => {
+    let message = 'You have rejected the invite.';
+
+    return this.props
+      .rejectInvitation(invite.id, this.props.user.user.id)
+      .then(() => {
+        this.props.showNotification({
+          type: 'success',
+          message,
+        });
+        this.props.fetchUser();
       })
       .catch(err => {
         this.props.showNotification({
@@ -109,10 +124,11 @@ export default class Profile extends Component {
   };
 
   render() {
-    const { user, profile } = this.props;
-    const { bankAccount, invitations } = profile;
+    let { user, profile } = this.props;
+    let { bankAccount } = profile;
+    let invitations = user.user.invitations;
 
-    if (!user) {
+    if (!user.isAuthenticated) {
       return <div class="page-spinner-container"><Spinner /></div>;
     }
 
@@ -129,6 +145,10 @@ export default class Profile extends Component {
             {user && user.current ? <MerchantDetails user={user} /> : null}
           </div>
 
+          <ShowWhen myRole="owner finance">
+            <GST />
+          </ShowWhen>
+
           {bankAccount
             ? <BankAccountDetails bankAccount={bankAccount} />
             : null}
@@ -144,8 +164,8 @@ export default class Profile extends Component {
           {invitations.length
             ? <Invitations
                 invitations={invitations}
-                onAcceptClick={this.updateInvitation}
-                onRejectClick={this.updateInvitation}
+                onAcceptClick={this.acceptInvitation}
+                onRejectClick={this.rejectInvitation}
               />
             : null}
 

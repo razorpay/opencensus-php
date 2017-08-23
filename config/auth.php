@@ -8,10 +8,6 @@ return [
 
     //Authenticating guards
     'guards' => [
-        'admin' => [
-            'driver'    => 'session',
-            'provider'  => 'admins',
-        ],
         'user' =>[
             'driver'    => 'session',
             'provider'  => 'api_user',
@@ -29,10 +25,6 @@ return [
             'driver' => 'eloquent',
             'model'  => App\User\Entity::class,
         ],
-        'admins' => [
-            'driver' => 'eloquent',
-            'model'  => App\Admin\Entity::class,
-        ],
         'api' => [
             'driver' => 'api',
             'model'  => Illuminate\Auth\GenericUser::class
@@ -40,20 +32,6 @@ return [
         'api_user' => [
             'driver' => 'api_user',
             'model'  => Illuminate\Auth\GenericUser::class
-        ]
-    ],
-
-    //Resetting Password
-    'passwords' => [
-        'user' => [
-            'provider' => 'users',
-            'email'    => 'emails.auth.reminder',
-            'table'    => 'password_reminders',
-            'expire'   => 1440,
-        ],
-        'admins' => [
-            'provider' => 'admins',
-            'expire'   => 1440,
         ]
     ],
 ];

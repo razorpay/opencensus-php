@@ -123,6 +123,11 @@ app.controller('AddGroupCtrl', [
       // Reset body parents, we'll fill in values basis the selected ones from UI
       body.parents = [];
 
+      // The newly selected one from dropdown
+      if ($scope.new_parent_group) {
+        body.parents = $scope.new_parent_group;
+      }
+
       for (var key in $scope.selected_groups) {
         if ($scope.selected_groups.hasOwnProperty(key)) {
           // Checks if value is `true`
@@ -130,11 +135,6 @@ app.controller('AddGroupCtrl', [
             body.parents.push(key);
           }
         }
-      }
-
-      // The newly selected one from dropdown
-      if ($scope.new_parent_group) {
-        body.parents.push($scope.new_parent_group);
       }
 
       if ($scope.group_id) {
@@ -179,10 +179,8 @@ app.controller('AddGroupCtrl', [
             // 1. Reset select2
             // Seems like a bad hack, should get better with react transition
             $scope.new_parent_group = undefined;
-            $('.select2').select2({
-              placeholder: 'Select a Parent Group',
-              allowClear: true,
-            });
+
+            // Define $scope.initRoleSelector here and attach event listener if anything to peform on option selection (eg- option filtering, etc)
 
             if ($scope.group_id) {
               // 2. Update Parent Group list

@@ -1,4 +1,6 @@
 import { Component, PropTypes } from 'react';
+import { getURLQueryParams } from 'rzp/utils/rzp-utils';
+import { trimDeep } from 'rzp/utils/validators';
 
 export default class ListContainer extends Component {
   static SKIP = 0;
@@ -15,11 +17,29 @@ export default class ListContainer extends Component {
     };
   }
 
-  componentWillMount() {
-    this.fetchAll();
+  defaultSearch(queryString) {
+    let params = null;
+
+    if (queryString) {
+      params = getURLQueryParams(queryString);
+    }
+
+    this.fetchAll(params);
   }
 
-  fetchAll = (params = this.getDefaultPageParams()) => {
+  // Do default search based on query params
+  componentWillMount() {
+    this.defaultSearch(this.props.location.search);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.props.location.search !== nextProps.location.search) {
+      this.defaultSearch(nextProps.location.search);
+    }
+  }
+
+  fetchAll = (params = {}) => {
+    params = { ...this.getDefaultPageParams(), ...params };
     if (params) {
       this.setState(params);
     }
@@ -44,10 +64,10 @@ export default class ListContainer extends Component {
   };
 
   search = params => {
-    this.searchFilters = params;
+    this.searchFilters = trimDeep(params);
     return this.fetchAll({
       ...this.getDefaultPageParams(),
-      ...params,
+      ...this.searchFilters,
     });
   };
 
@@ -70,9 +90,7 @@ export default class ListContainer extends Component {
     };
   }
 
-  fetchEntityList() {
-    throw new Error(
-      `Implement \`fetchEntityList\` func in the ${this.constructor.name} component`
-    );
+  fetchEntityList(params) {
+    return this.props.fetchAll(params);
   }
 }

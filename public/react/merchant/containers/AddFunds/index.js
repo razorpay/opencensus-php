@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { reduxForm, Field } from 'redux-form';
+import { Link } from 'react-router-dom';
 import AsyncButton from 'react-async-button';
 import Alert from 'rzp/ui/Forms/Alert';
-import Header from 'rzp/ui/Header';
 import InputField from 'rzp/ui/Forms/InputField';
 import { required } from 'rzp/utils/validators';
 import * as AddFundsActions from 'merchant/modules/addfunds';
 import * as NotificationsActions from 'rzp/modules/notifications';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 @connect(state => state.session, {
   ...AddFundsActions,
@@ -42,8 +43,18 @@ export default class AddFundsContainer extends Component {
     ]).catch(error => {
       this.setState({
         status: {
-          type: 'error',
-          message: error,
+          type: 'info',
+          message: (
+            <span>
+              API keys need to be generated before adding funds.{' '}
+              <span>
+                Keys can be generated{' '}
+                <Link to="/keys">
+                  <u>here.</u>
+                </Link>
+              </span>
+            </span>
+          ),
         },
       });
     });
@@ -120,61 +131,63 @@ export default class AddFundsContainer extends Component {
     let { handleSubmit } = this.props;
 
     return (
-      <div class="content-wrapper content-sm">
-        <Alert type={status.type} message={status.message} />
+      <div>
+        <TestModeBanner />
 
-        <p>
-          This is just a simple way for you to add money to your account balance with Razorpay. This is needed sometimes when you are making refunds and your account doesn't have enough funds.
-        </p>
-        <p>
-          Add Funds works over your own account. Therefore, a TDR will be deducted on this
-          as well. If you are adding funds for a large refund, send us a mail to
-          {' '}
-          <a href="mailto:support@razorpay.com" class="highlight">
-            support@razorpay.com
-          </a>
-          .
-        </p>
+        <div class="content-wrapper content-sm">
+          <Alert type={status.type} message={status.message} />
 
-        {this.props.mode === 'test' &&
           <p>
-            Since you are in test mode, this will be a test payment.
-          </p>}
+            This is just a simple way for you to add money to your account
+            balance with Razorpay. This is needed sometimes when you are making
+            refunds and your account doesn't have enough funds.
+          </p>
+          <p>
+            Add Funds works over your own account. Therefore, a TDR will be
+            deducted on this as well. If you are adding funds for a large
+            refund, send us a mail to{' '}
+            <a href="mailto:support@razorpay.com" class="highlight">
+              support@razorpay.com
+            </a>
+            .
+          </p>
 
-        <form style={{ marginTop: '30px' }}>
-          <div class="form-group">
-            <label class="control-label label-required">
-              Description
-            </label>
-            <Field
-              name="description"
-              component={InputField}
-              class="form-control"
-              style={{ maxWidth: '300px' }}
-              validate={required()}
+          {this.props.mode === 'test' &&
+            <p>Since you are in test mode, this will be a test payment.</p>}
+
+          <form style={{ marginTop: '30px' }}>
+            <div class="form-group">
+              <label class="control-label label-required">Description</label>
+              <Field
+                name="description"
+                component={InputField}
+                class="form-control"
+                style={{ maxWidth: '300px' }}
+                validate={required()}
+              />
+            </div>
+
+            <div class="form-group">
+              <label class="control-label label-required">Amount</label>
+              <Field
+                name="amountInINR"
+                component={InputField}
+                class="form-control"
+                style={{ maxWidth: '300px' }}
+                validate={required()}
+              />
+            </div>
+
+            <AsyncButton
+              class="btn btn-primary"
+              text={this.state.isSaving ? 'Adding Funds...' : 'Add Funds'}
+              style={{ marginTop: '10px' }}
+              disabled={this.state.isSaving}
+              type="button"
+              onClick={handleSubmit(this.openCheckout)}
             />
-          </div>
-
-          <div class="form-group">
-            <label class="control-label label-required">Amount</label>
-            <Field
-              name="amountInINR"
-              component={InputField}
-              class="form-control"
-              style={{ maxWidth: '300px' }}
-              validate={required()}
-            />
-          </div>
-
-          <AsyncButton
-            class="btn btn-primary"
-            text={this.state.isSaving ? 'Adding Funds...' : 'Add Funds'}
-            style={{ marginTop: '10px' }}
-            disabled={this.state.isSaving}
-            type="button"
-            onClick={handleSubmit(this.openCheckout)}
-          />
-        </form>
+          </form>
+        </div>
       </div>
     );
   }

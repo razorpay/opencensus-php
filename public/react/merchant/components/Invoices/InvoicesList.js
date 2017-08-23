@@ -2,17 +2,21 @@ import { NavLink } from 'react-router-dom';
 import TableBody from 'rzp/ui/TableBody';
 import Time from 'rzp/ui/Time';
 import Amount from 'rzp/ui/Amount';
+import CopyLink from 'merchant/components/Invoices/CopyLink';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
+import { getCustomerDisplayName } from 'rzp/utils/rzp-utils';
 
 const InvoiceListItem = props => {
   let { invoice, isNewUIEnabled, onEditClick } = props;
+  let customer = invoice.customer_details;
+
   return (
     <EntityItemRow id={invoice.id}>
       <td>
         {
           do {
-            if (invoice.type === 'link') {
+            if (['link', 'ecod'].indexOf(invoice.type) !== -1) {
               if (isNewUIEnabled) {
                 <NavLink to={`/paymentlinks/${invoice.id}`}>
                   <code>{invoice.id}</code>
@@ -33,18 +37,20 @@ const InvoiceListItem = props => {
       <td>
         <Time value={invoice.date} />
       </td>
-      <td>{invoice.receipt}</td>
-      <td>
-        {invoice.customer_details.customer_contact ||
-          invoice.customer_details.customer_email ||
-          invoice.customer_details.customer_name}
-      </td>
-      <td>{invoice.short_url}</td>
-      {!isNewUIEnabled ? <td>{invoice.type}</td> : ''}
       <td class="text-right">
         <Amount value={invoice.amount} />
       </td>
-      <td class="text-right">
+      <td>{invoice.receipt}</td>
+      <td>
+        {getCustomerDisplayName({
+          name: customer.customer_name,
+          contact: customer.customer_contact,
+          email: customer.customer_email,
+        })}
+      </td>
+      <td>{invoice.short_url && <CopyLink url={invoice.short_url} />}</td>
+      {!isNewUIEnabled ? <td>{invoice.type}</td> : ''}
+      <td>
         <InvoiceStatusLabel status={invoice.status} />
       </td>
       <td>
@@ -79,12 +85,12 @@ export default props => {
           <tr>
             <th>{label} Id</th>
             <th>{label} Date</th>
+            <th class="text-right">Amount</th>
             <th>Receipt No.</th>
             <th>Customer</th>
             <th>Payment Link</th>
             {!isNewUIEnabled ? <th>Type</th> : ''}
-            <th class="text-right">Amount</th>
-            <th class="text-right">Status</th>
+            <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>

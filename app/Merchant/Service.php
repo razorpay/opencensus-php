@@ -10,6 +10,7 @@ use Requests;
 use App\Base;
 use App\User;
 use App\Admin;
+use App\Generic;
 use App\Merchant;
 use App\Invitation;
 use App\User\Helper;
@@ -18,7 +19,6 @@ use App\Mailers\UserMailer;
 use App\RZP\PublicCollection;
 use Razorpay\Api\Errors\BadRequestError;
 use Razorpay\Api\Errors\Error as ApiError;
-use App\Exceptions\EntityNotFoundException;
 
 class Service extends Base\Service
 {
@@ -32,7 +32,6 @@ class Service extends Base\Service
     const ACCOUNT_CREATION_NOT_ALLOWED          = "You do not have account creation privileges. Please contact support@razorpay.com";
     const SUBMERCHANT_EMAIL_NOT_UNIQUE          = "Unique email is required to create a new user";
     const NOT_AUTHORIZED_TO_ACCESS_MERCHANT     = "Cannot access merchant";
-    const BANK_ACCOUNT_NOT_FOUND                = "Could not find a Bank Account";
 
     public function __construct()
     {
@@ -62,6 +61,8 @@ class Service extends Base\Service
             if ($referer)
             {
                 $merchant->tag('ref-'.$referer);
+
+                (new Merchant\Service)->addMerchantTagsOnAPI($merchant->id, ['ref-'.$referer]);
             }
 
             $merchant->save();
@@ -133,6 +134,9 @@ class Service extends Base\Service
 
             if ($isLinkedAccount === false)
             {
+                // We tag the merchant as referred from the original merchant on api
+                $this->addMerchantTagsOnAPI($merchant->id, ['ref-'.$currentMerchant->id]);
+
                 // Finally attach the current user to the new user's team
                 // And also update the session user merchant list.
                 list($error, $response) = (new User\Service)->attachMerchantUserOnApi($this->currentUser->id, $merchant->id, 'owner');
@@ -501,17 +505,10 @@ class Service extends Base\Service
 
         $error = $response = null;
 
-        try
-        {
-            $response = $this->api
-                             ->merchant
-                             ->fetch($merchantId)
-                             ->toArray();
-        }
-        catch(BadRequestError $e)
-        {
-            throw new EntityNotFoundException("merchant");
-        }
+        $response = $this->api
+                         ->merchant
+                         ->fetch($merchantId)
+                         ->toArray();
 
         if (empty($response) === false)
         {
@@ -574,20 +571,6 @@ class Service extends Base\Service
         }
 
         return [$errors, $data];
-    }
-
-    public function getUsersListWithInvites()
-    {
-        $merchantId = $this->currentUser
-                           ->currentMerchant()
-                           ->id;
-
-        $users = Merchant\Entity::with('users', 'invitations')
-                                ->where('id', $merchantId)
-                                ->first()
-                                ->toArray();
-
-        return $users;
     }
 
     /**
@@ -779,38 +762,6 @@ class Service extends Base\Service
         return [$error, null];
     }
 
-    /**
-     * Fetches merchant balance
-     * Uses Proxy Auth on the API
-     *
-     * @param  string $merchantId Merchant Id
-     * @return array contains both test and live balances
-     */
-    public function fetchMerchantBalance($merchantId)
-    {
-        $test = $this->fetchProxyMerchantBalance($merchantId, 'test');
-        $live = $this->fetchProxyMerchantBalance($merchantId, 'live');
-
-        return compact('test', 'live');
-    }
-
-    protected function fetchProxyMerchantBalance($merchantId, $mode)
-    {
-        try
-        {
-            $this->setApiCredentials($merchantId, $mode);
-            return $this->api->merchant->fetchProxyBalance()->toArray();
-        }
-
-        catch(BadRequestError $e)
-        {
-            return [
-                'id'        =>  $merchantId,
-                'balance'   =>  0
-            ];
-        }
-    }
-
     public function fetchReferredMerchants($merchantId)
     {
         $tag = "ref-$merchantId";
@@ -848,30 +799,6 @@ class Service extends Base\Service
         }
 
         return $input;
-    }
-
-    /**
-     * This one uses Proxy Auth
-     * @return [type]
-     */
-    public function fetchBankAccount()
-    {
-        $merchantId = $this->currentUser->currentMerchant()->id;
-
-        $this->setApiCredentials($merchantId);
-
-        $error = $data = null;
-
-        try
-        {
-            $data = $this->api->merchant->fetchProxyBankAccount()->toArray();
-        }
-        catch (BadRequestError $e)
-        {
-            $error = [self::BANK_ACCOUNT_NOT_FOUND];
-        }
-
-        return [$error, $data];
     }
 
     public function savePreSignupDetails($merchantId, $input)
@@ -963,5 +890,69 @@ class Service extends Base\Service
         }
 
         return [$error, $genericUsers];
+    }
+
+    public function tagMerchant(array $input)
+    {
+        if ($this->currentUser === null)
+        {
+            return [[], []];
+        }
+
+        $currentMerchant = $this->currentUser->currentMerchant();
+
+        $currentMerchant = Merchant\Entity::find($currentMerchant->id);
+
+        $merchantTags = $currentMerchant->tagNames;
+
+        $allTags = [];
+
+        if (empty($merchantTags) === false)
+        {
+            $allTags = explode(', ', strtolower($merchantTags));
+        }
+
+        $newAllTags = array_diff($allTags, ['newui']);
+
+        if ((isset($input['newui']) === true) and ($input['newui'] === 'true'))
+        {
+            $newAllTags[] = 'newui';
+        }
+
+        $currentMerchant->retag($newAllTags);
+
+        $this->addMerchantTagsOnAPI($currentMerchant->id, $newAllTags);
+
+        return [[], $currentMerchant->toArray()];
+    }
+
+    public function addMerchantTagsOnAPI($merchantId, $tags) {
+        $addTags = [
+            'route_name' => 'merchant_tag_add',
+            'url_params' => [
+                '{id}' => $merchantId,
+            ],
+            'body' => [
+                'tags' => $tags
+            ]
+        ];
+
+        $genericService = new Generic\Service;
+
+        list($error, $data) = $genericService->call('POST', $addTags);
+    }
+
+    public function deleteMerchantTagOnAPI($merchantId, $tagName) {
+        $deleteTag = [
+            'route_name' => 'merchant_tag_delete',
+            'url_params' => [
+                '{id}'      => $merchantId,
+                '{tagName}' => $tagName
+            ],
+        ];
+
+        $genericService = new Generic\Service;
+
+        list($error, $data) = $genericService->call('DELETE', $deleteTag);
     }
 }

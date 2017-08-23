@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
 import { PowerSelect } from 'react-power-select';
 import ShowWhen from 'merchant/components/ShowWhen';
+import ProfileDropdown from 'merchant/containers/Header/ProfileDropdown';
 
 const ModesDropdown = ({ mode, modeFormatted, onSwitchMode }) => {
   return (
@@ -35,6 +36,7 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
       options={merchants}
       placeholder="Switch Merchant"
       searchIndices={['name']}
+      showClear={false}
       optionComponent={({ option }) => {
         return (
           <a class="SwitchMerchantDropdown__option">
@@ -45,7 +47,7 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
           </a>
         );
       }}
-      onChange={(option, select) => {
+      onChange={({ option, select }) => {
         if (option) {
           onSwitchMerchant(option);
         }
@@ -54,43 +56,13 @@ const SwitchMerchant = ({ user, onSwitchMerchant }) => {
   );
 };
 
-const ProfileDropdown = ({ user, onLogoutClick }) => {
-  return (
-    <Dropdown>
-      <DropdownTrigger class="dropdown-toggle">
-        {user.name || user.user.name} <span class="caret" />
-      </DropdownTrigger>
-      <DropdownContent>
-        <ul class="dropdown-menu">
-          {user.current &&
-            <ShowWhen myRole="owner manager admin">
-              <li>
-                <Link to="/activation">
-                  Activation
-                  {' '}
-                  {!user.activated &&
-                    <span class="badge bg-danger pull-right">
-                      {user.activation_progress}%
-                    </span>}
-                </Link>
-              </li>
-            </ShowWhen>}
-          <li><Link to="/profile">Profile</Link></li>
-          <li class="divider" />
-          <li><a onClick={onLogoutClick}>Logout</a></li>
-        </ul>
-      </DropdownContent>
-    </Dropdown>
-  );
-};
-
 export default ({
   user,
   mode,
+  showGSTModal,
   modeFormatted,
   onSwitchMode,
   onSwitchMerchant,
-  onLogout,
   toggleMobileNav,
   showMobileNav,
 }) => {
@@ -114,7 +86,11 @@ export default ({
           id="headerNav"
         >
           <ul class="nav navbar-nav navbar-right">
-            <li><a data-tip="Merchant ID" data-place="bottom">{user.id}</a></li>
+            <ShowWhen myRole="owner finance">
+              <li>
+                <a onClick={showGSTModal}>GST Details</a>
+              </li>
+            </ShowWhen>
             <li>
               <ModesDropdown
                 mode={mode}
@@ -135,7 +111,9 @@ export default ({
                 <span>Documentation</span>
               </a>
             </li>
-            <li><ProfileDropdown user={user} onLogoutClick={onLogout} /></li>
+            <li id="profile-dropdown">
+              <ProfileDropdown />
+            </li>
           </ul>
         </div>
       </div>

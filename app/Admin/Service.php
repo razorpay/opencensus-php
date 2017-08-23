@@ -9,6 +9,7 @@ use Cache;
 use Trace;
 use Queue;
 use Crypt;
+use Input;
 use Config;
 use Session;
 use Requests;
@@ -61,51 +62,6 @@ class Service extends Base\Service
         $this->trace = $app['trace'];
 
         $this->cache = $app['cache'];
-    }
-
-    public function forgotPassword($input)
-    {
-        $error = $data = null;
-
-        $domain = \Request::server('SERVER_NAME');
-
-        $org = $this->getOrgFromCache($domain);
-
-        // `/access/resetpwd` is a hard-coded angular route
-        $resetPasswordUrl = 'https://' . $org['hostname'] . '/admin#/access/resetpwd';
-
-        $input['reset_password_url'] = $resetPasswordUrl;
-
-        try
-        {
-            $data = $this->api->admin->forgotPassword($org['id'], $input);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $data];
-    }
-
-    public function resetPassword($input)
-    {
-        $error = $data = null;
-
-        $domain = \Request::server('SERVER_NAME');
-
-        $org = $this->getOrgFromCache($domain);
-
-        try
-        {
-            $data = $this->api->admin->resetPassword($org['id'], $input);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, $data];
     }
 
     public function passwordLogin($domain, array $input)
@@ -278,56 +234,6 @@ class Service extends Base\Service
         return $error;
     }
 
-    /**
-     * Changes password oflogged in admin
-     *
-     * @param  $input input array
-     * @param  $admin Admin\Entity Object
-     * @return  Status
-     */
-    public function changePassword($input, $admin)
-    {
-        $error = $admin->changePassword($input);
-
-        if (empty($error))
-        {
-            $admin->password = Hash::make($admin->password);
-            $admin->saveOrFail();
-        }
-
-        return [$error, null];
-    }
-
-    public function editAdmin($input, $id)
-    {
-        $error = [];
-
-        try
-        {
-            $this->logAdminEdits($id, $input);
-
-            $error = array();
-
-            $admin = Admin\Entity::findorfail($id);
-
-            $error = $admin->edit($input);
-
-            $admin->saveOrFail();
-
-            if (empty($error) === true)
-            {
-                // Delete all existing sessions
-                $this->deleteAllAdminSessions($id);
-            }
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return [$error, []];
-    }
-
     public function listMerchants($input)
     {
         $user = Auth::guard('api')->user();
@@ -392,12 +298,6 @@ class Service extends Base\Service
         return $this->api->admin->fetchMerchants($orgId, $adminId, $input);
     }
 
-
-    public function getAdmins()
-    {
-        return Admin\Entity::get()->toArray();
-    }
-
     public function getAdminActivity($id)
     {
         $sessionsCollection = (new SessionTable\Entity)->getAllSessionsForAdmin($id);
@@ -437,50 +337,6 @@ class Service extends Base\Service
         $sessionId = Crypt::decrypt($sessionId);
 
         (new SessionTable\Entity)->deleteOneSessionForAdmin($sessionId);
-    }
-
-    public function deleteAllAdminSessions($adminId)
-    {
-        (new SessionTable\Entity)->deleteAllSessionsForAdmin($adminId);
-    }
-
-    /**
-     * Adds a new admin
-     * @param $data input array
-     * @return Status
-     */
-    public function add($input)
-    {
-        $admin = new Admin\Entity;
-        $error = $admin->build($input);
-
-        if (empty($error))
-        {
-            $admin->password = Hash::make($admin->password);
-            $admin->saveOrFail();
-        }
-
-        return array($error, $admin->toArray());
-    }
-
-    /**
-     * Adds a new admin
-     * @param $data input array
-     * @return Status
-     */
-    public function promote($id)
-    {
-        $admin = Admin\Entity::findorfail($id);
-
-        try
-        {
-            $admin = $admin->promote();
-            return [null];
-        }
-        catch(\Exception $e)
-        {
-            return [$e->getMessage()];
-        }
     }
 
     public function fetchMerchantActivationDetails($id)
@@ -530,7 +386,18 @@ class Service extends Base\Service
 
         $details = $this->fetchMerchantDetails($id);
 
-        $activationDetails = (new MerchantDetails\Service)->getActivationFiles($id);
+        $merchantDetail = new MerchantDetails\Service;
+
+        //
+        // If parent_id is set, it is a marketplace linked account
+        // and we set the context for it
+        //
+        if (isset($details['parent_id']) === true)
+        {
+            $merchantDetail->linked_account = true;
+        }
+
+        $activationDetails = $merchantDetail->getActivationFiles($id);
 
         $data = [
             'activation' => $activationDetails,
@@ -545,6 +412,8 @@ class Service extends Base\Service
         $details = null;
 
         $error = [];
+
+        $this->setAdminCredentials();
 
         if ($id !== '10NodalAccount')
         {
@@ -573,70 +442,51 @@ class Service extends Base\Service
 
         $this->setApiCredentials();
 
-        try
+        $merchant = $this->api->merchant->fetch($id)->toArray();
+
+        $parentId = $merchant['parent_id'] ?? null;
+
+        // If parent_id is set, the merchant is a linked account under Marketplace
+        // and are marked confirmed, without email confirmation
+        if ($parentId !== null)
         {
-            $merchant = $this->api->merchant->fetch($id)->toArray();
-
-            $parentId = $merchant['parent_id'] ?? null;
-
-            // If parent_id is set, the merchant is a linked account under Marketplace
-            // and are marked confirmed, without email confirmation
-            if ($parentId !== null)
-            {
-                $merchant['confirmed'] = true;
-            }
-            else
-            {
-                $users = $this->api->merchant->getUsers($id)->toArray();
-
-                $genericUsers = (new Helper)->createGenericUsers($users);
-
-                $confirmedPrimaryOwner = $genericUsers->where('role', 'owner')
-                                                      ->where('confirmed', true)
-                                                      ->first();
-
-                $merchant['confirmed'] = (empty($confirmedPrimaryOwner) === false);
-            }
-
-            $tags = Merchant\Entity::select(['merchants.id'])
-                                    ->with('tagged')
-                                    ->where('merchants.id', $id)
-                                    ->get()
-                                    ->toArray();
-
-            $merchantDetail = (new MerchantDetails\Service)->fetchDetails($id);
-
-            $merchant['merchant_details'] = $merchantDetail;
-
-            $response = [
-                'archived_at'         => $merchant['archived_at'],
-                'suspended_at'        => $merchant['suspended_at'],
-                'steps_finished'      => $merchantDetail['steps_finished'],
-                'locked'              => $merchantDetail['locked'],
-                'submitted'           => $merchantDetail['submitted'],
-                'tags'                => $tags[0]['tags'],
-                'submitted_at'        => $merchantDetail['submitted_at'],
-                'activated_dashboard' => $merchant['activated']
-            ] + $merchant;
+            $merchant['confirmed'] = true;
         }
-        catch (BadRequestError $e){
+        else
+        {
+            $users = $this->api->merchant->getUsers($id)->toArray();
 
+            $genericUsers = (new Helper)->createGenericUsers($users);
+
+            $confirmedPrimaryOwner = $genericUsers->where('role', 'owner')
+                                                  ->where('confirmed', true)
+                                                  ->first();
+
+            $merchant['confirmed'] = (empty($confirmedPrimaryOwner) === false);
         }
+
+        $tags = Merchant\Entity::select(['merchants.id'])
+                                ->with('tagged')
+                                ->where('merchants.id', $id)
+                                ->get()
+                                ->toArray();
+
+        $merchantDetail = (new MerchantDetails\Service)->fetchDetails($id);
+
+        $merchant['merchant_details'] = $merchantDetail;
+
+        $response = [
+            'archived_at'         => $merchant['archived_at'],
+            'suspended_at'        => $merchant['suspended_at'],
+            'steps_finished'      => $merchantDetail['steps_finished'],
+            'locked'              => $merchantDetail['locked'],
+            'submitted'           => $merchantDetail['submitted'],
+            'tags'                => $tags[0]['tags'],
+            'submitted_at'        => $merchantDetail['submitted_at'],
+            'activated_dashboard' => $merchant['activated']
+        ] + $merchant;
 
         return $response;
-    }
-
-    public function fetchMerchantBalance($id)
-    {
-        $this->setApiCredentials(null, 'test');
-
-        $test = $this->api->merchant->setId($id)->fetchBalance()->toArray();
-
-        $this->setApiCredentials(null, 'live');
-
-        $live = $this->api->merchant->setId($id)->fetchBalance()->toArray();
-
-        return compact('test', 'live');
     }
 
     public function postEditMerchant($id, $input)
@@ -683,7 +533,13 @@ class Service extends Base\Service
 
             if ((isset($input['fee_bearer'])) and ($input['fee_bearer'] === 'customer'))
             {
+                $merchant = Merchant\Entity::findOrFail($id);
+
+                $currentTags = $merchant->tags;
+
                 $this->addTagToMerchant($id, 'feebearer');
+
+                (new Merchant\Service)->addMerchantTagsOnAPI($id, array_merge($currentTags, ['feebearer']));
             }
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
@@ -721,18 +577,12 @@ class Service extends Base\Service
         }
     }
 
-    protected function logAdminEdits($id, $input)
-    {
-        if (isset($input['email']))
-        {
-            $this->logActionToSlack($id, Actions::ADMIN_EDIT);
-        }
-    }
-
     public function postEditMerchantEmail($id, $input)
     {
         $data = $error = [];
         $this->setApiCredentials();
+
+        $input[Merchant\Entity::EMAIL] = strtolower($input[Merchant\Entity::EMAIL]);
 
         try
         {
@@ -909,9 +759,9 @@ class Service extends Base\Service
         //
         if ($linkedAccount === true)
         {
-            $data['beneficiary_address1']   = 'NA';
-            $data['beneficiary_city']       = 'NA';
-            $data['beneficiary_state']      = 'NA';
+            $data['beneficiary_address1']   = 'Bangalore';
+            $data['beneficiary_city']       = 'Bangalore';
+            $data['beneficiary_state']      = 'KA';
             $data['beneficiary_pin']        = 560001;
             $data['beneficiary_mobile']     = 9999999999;
         }
@@ -930,6 +780,8 @@ class Service extends Base\Service
      */
     public function activateMerchant($id, $dashboardOnly = false)
     {
+        $error = $response = [];
+
         $this->setApiCredentials();
 
         $merchant = $this->api->merchant->fetch($id);
@@ -938,7 +790,7 @@ class Service extends Base\Service
 
         if ((int) $details['submitted'] === 0)
         {
-            return ['Activation form has not been submitted by merchant yet.'];
+            return [['Activation form has not been submitted by merchant yet.'], []];
         }
 
         $this->setApiCredentials();
@@ -964,23 +816,23 @@ class Service extends Base\Service
 
         try
         {
-            $this->setApiCredentials();
+            $this->setAdminCredentials();
 
             // Only if the merchant doesn't have the Bank Account associated
             // Do we add a bank account
             if ($bankAccountApi === false)
             {
-                $this->api->merchant->fetch($id)->setBankAccount($bankAccount);
+                $this->api->merchant->setId($id)->setBankAccount($bankAccount);
             }
 
             if ($merchant['activated'] === false)
             {
-                $this->api->merchant->fetch($id)->activate();
+                $response = $this->api->merchant->setId($id)->activate();
             }
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
-            return [$e->getMessage()];
+            return [[$e->getMessage()], []];
         }
 
         try
@@ -1002,7 +854,9 @@ class Service extends Base\Service
         {
             $merchant = Merchant\Entity::findorfail($id);
 
-            return $this->activateMerchantOnDashboard($merchant);
+            $this->activateMerchantOnDashboard($merchant);
+
+            return [$error, $response->toArray()];
         }
     }
 
@@ -1133,33 +987,6 @@ class Service extends Base\Service
         return array($error, $response);
     }
 
-    public function getUploadedFile($id)
-    {
-        $error = null;
-        $url = null;
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $file = $this->api
-                         ->admin
-                         ->getFileByAdmin($id);
-            $url = $file->headers->offsetGet('location');
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = [ $e->getMessage() ];
-
-            Trace::debug('MISC_TRACE_CODE', [
-                    'error'     => "Error occured while getting requested file from API",
-                    'exception' => $error,
-            ]);
-        }
-
-        return array($error, $url);
-    }
-
     /**
      * Fires off a queue worker to start capturing screenshots
      * @param  string $id merchant id
@@ -1272,67 +1099,6 @@ class Service extends Base\Service
         return $links;
     }
 
-    public function sendTestNewsletter($input)
-    {
-        $this->setApiCredentials();
-
-        try
-        {
-            $input['email'] = Auth::guard('api')->user()->email;
-
-            return [null, $this->api->admin->sendTestNewsletter($input)
-                ->toArray()];
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [$e->getMessage(), null];
-        }
-    }
-
-    public function sendNewsletter($input)
-    {
-        $this->setApiCredentials();
-
-        try
-        {
-            return [null, $this->api->admin->sendNewsletter($input)
-                ->toArray()];
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [$e->getMessage(), null];
-        }
-    }
-
-    public function deleteTerminal($mode, $terminalId)
-    {
-        $this->setApiCredentials(null, $mode);
-        try
-        {
-            $response = $this->api->terminal->delete($terminalId);
-            return [null, $response->toArray()];
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [$e->getMessage(), null];
-        }
-    }
-
-    public function editTerminal($mode, $terminalId, $input)
-    {
-        $this->setApiCredentials(null, $mode);
-
-        try
-        {
-            $response = $this->api->terminal->edit($terminalId, $input);
-            return [null, $response->toArray()];
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [$e->getMessage(), null];
-        }
-    }
-
     public function editName($merchantId, $input)
     {
         $response = $error = null;
@@ -1349,94 +1115,6 @@ class Service extends Base\Service
         }
 
         return [$response, $error];
-    }
-
-    public function unassignSubMerchantToTerminal($mode, $terminalId, $merchantId)
-    {
-        $error = $response = null;
-
-        $this->setApiCredentials(null, $mode);
-
-        try
-        {
-            $response = $this->api->terminal->unassignSubMerchant($terminalId, $merchantId)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = $e->getMessage();
-        }
-
-        return [ $error, $response ];
-    }
-
-    public function assignSubMerchantToTerminal($mode, $terminalId, $merchantId)
-    {
-        $error = $response = null;
-
-        $this->setApiCredentials(null, $mode);
-
-        try
-        {
-            $response = $this->api->terminal->assignSubMerchant($terminalId, $merchantId)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = $e->getMessage();
-        }
-
-        return [ $error, $response ];
-    }
-
-    public function changeTerminalPrimaryMerchant($mode, $terminalId, $input)
-    {
-        $error = $response = null;
-
-        $this->setApiCredentials(null, $mode);
-
-        try
-        {
-            $response = $this->api->terminal->changePrimaryMerchant($terminalId, $input)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = $e->getMessage();
-        }
-
-        return [ $error, $response ];
-    }
-
-    public function toggleTerminal($mode, $terminalId, $input)
-    {
-        $this->setApiCredentials(null, $mode);
-        try
-        {
-            $response = $this->api->terminal->toggle($terminalId, $input);
-            return [null, $response->toArray()];
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [$e->getMessage(), null];
-        }
-    }
-
-    public function editCredits($merchantId, $input)
-    {
-        $this->setApiCredentials(null, 'live');
-
-        try
-        {
-            $response = $this->api->merchant->
-                fetch($merchantId)->editCredits($input);
-            $this->logActionToSlack($merchantId, Actions::FREE_CREDITS_EDIT, $input);
-
-            return [null, $response->toArray()];
-        }
-
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            return [[$e->getMessage()], null];
-        }
-
     }
 
     public function makeRawApiCall($path)
@@ -1464,7 +1142,20 @@ class Service extends Base\Service
         if (empty($error))
         {
             $merchant = Merchant\Entity::findOrFail($merchantId);
-            $merchant->retag(explode(',', $input['tags']));
+
+            if (is_array($input['tags']) === false)
+            {
+                $inputTags = explode(',', $input['tags']);
+            }
+            else
+            {
+                $inputTags = $input['tags'];
+            }
+
+            $merchant->retag($inputTags);
+
+            (new Merchant\Service)->addMerchantTagsOnAPI($merchantId, $inputTags);
+
             $merchant['tags'] = $merchant->tags;
 
             $this->logActionToSlack($merchant, Actions::TAGGED, ['tags' => $input['tags']]);
@@ -1523,11 +1214,9 @@ class Service extends Base\Service
 
     public function deleteEntityFeature($entityId, $featureName)
     {
-        $this->setAdminCredentials();
-
         try
         {
-            $response = $this->api->feature->deleteFeature($entityId, $featureName);
+            $this->deleteFeature($entityId, $featureName);
 
             $this->setApiCredentials();
 
@@ -1548,11 +1237,28 @@ class Service extends Base\Service
         return [$error, null];
     }
 
+    public function deleteFeature($entityId, $featureName)
+    {
+        $deleteFeature = [
+            'route_name' => 'feature_delete',
+            'url_params' => [
+                '{entityId}'    => $entityId,
+                '{featureName}' => $featureName
+            ],
+        ];
+
+        $genericService = new Generic\Service;
+
+        list($error, $data) = $genericService->call('DELETE', $deleteFeature);
+    }
+
     private function removeMerchantTag($entityId, $featureName)
     {
         $merchant = Merchant\Entity::findOrFail($entityId);
 
         $merchant->untag($featureName);
+
+        (new Merchant\Service)->deleteMerchantTagOnAPI($entityId, $featureName);
     }
 
     private function retagMerchant($entityId, $features)
@@ -1562,6 +1268,8 @@ class Service extends Base\Service
         $featureNames = $this->getFeatureNames($features['assigned_features']);
 
         $merchant->retag(array_merge($featureNames, $merchant->tags));
+
+        (new Merchant\Service)->addMerchantTagsOnAPI($merchant->id, array_merge($featureNames, $merchant->tags));
     }
 
     private function getFeatureNames($features)
@@ -1574,48 +1282,9 @@ class Service extends Base\Service
         return $featureNames;
     }
 
-    public function getMerchantTags($merchantId)
-    {
-        $merchant = Merchant\Entity::findOrFail($merchantId);
-
-        return [null, $merchant->tagNames()];
-    }
-
     public function confirmUser($email)
     {
         list($error, $data) = (new User\Service)->confirmUserByEmail($email);
-
-        return [$error, $data];
-    }
-
-    public function editIIN($iin, $input)
-    {
-        // Auth as admin, live mode
-        $this->setApiCredentials(null);
-
-        $this->api->IIN->edit($iin, $input);
-
-        return [null, 'IIN Edit successful'];
-    }
-
-    /**
-     * deletes an EMI Plan
-     * @param  string $emiId EMI Plan Id
-     * @return array
-     */
-    public function deleteEmi($emiId)
-    {
-        $this->setApiCredentials(null);
-        $error = $data = [];
-
-        try
-        {
-            $data = $this->api->EMI->setId($emiId)->delete($emiId);
-        }
-        catch (ApiError $e)
-        {
-            $error = $e->getMessage();
-        }
 
         return [$error, $data];
     }
@@ -1634,14 +1303,59 @@ class Service extends Base\Service
         return $slack->getResponse();
     }
 
-    public function getMerchantAggregations($mode, $resource, $input)
+    /**
+     * This function is used to get the required timestamp based on the filters applied
+     * on merchant stats page [Eg: Last 1 week, Last 3 Months etc.]
+     * @param $duration_count int
+     * @param $type $type string
+    */
+    public function getMerchantStatsFilterTimestamp($duration_count, $type)
+    {
+        $current = Carbon::now();
+
+        $timestamp = '';
+
+        switch ($type) {
+            case 'day':
+                $timestamp = $current->startOfDay()->subDays($duration_count)->timestamp;
+                break;
+
+            case 'week':
+                $timestamp = $current->startOfWeek()->subWeeks($duration_count)->timestamp;
+                break;
+
+            case 'month':
+                $timestamp = $current->startOfMonth()->subMonths($duration_count)->timestamp;
+                break;
+
+            case 'year':
+                $timestamp = $current->startOfYear()->subYears($duration_count)->timestamp;
+                break;
+        }
+
+        return $timestamp;
+    }
+
+    public function getMerchantAggregations($mode, $input)
     {
         $error = (new Admin\Validator)->validateInput('merchant_stats', $input)->messages();
 
         if (empty($error))
         {
-            $sort = \Input::get('sort', 'total_amount');
-            return [null, (new Transaction\Service)->getAllAggregations($mode, $resource, $sort)];
+            $sort = Input::get('sort', 'total_amount');
+
+            $count = Input::get('count', 10);
+
+            $duration_count = Input::get('duration_count', 1);
+
+            $type = Input::get('type', 'month');
+
+            $filterTimestamp = $this->getMerchantStatsFilterTimestamp($duration_count, $type);
+
+            $response =
+                Merchant\Entity::getAllTransactionAggregations($mode, $sort, $count, $filterTimestamp, $type);
+
+            return [null, $response];
         }
         else
         {
@@ -1650,27 +1364,30 @@ class Service extends Base\Service
 
     }
 
-    public function getSingleMerchantAggregations($merchantId, $mode, $resource)
+    public function getSingleMerchantAggregations($mode, $input, $merchantId)
     {
-        $data = [
-            'merchant_id'   =>  $merchantId,
-            'resource'      =>  $resource
-        ];
+        $sort = Input::get('sort', 'total_amount');
 
-        $response = Merchant\Entity::getAggregations($data, $mode);
+        $duration_count = Input::get('duration_count', 1);
+
+        $type = Input::get('type', 'month');
+
+        $filterTimestamp = $this->getMerchantStatsFilterTimestamp($duration_count, $type);
+
+        $response = Merchant\Entity::getTransactionAggregations($mode, $sort, $filterTimestamp, $type, $merchantId);
 
         return [null, $response];
     }
 
-    public function makeReconciliateRequest($input)
+    public function makeReconciliateRequest($input, $mode = 'live')
     {
-        $this->setApiCredentials();
+        $this->setApiCredentials(null, $mode);
 
         $error = $data = null;
 
         try
         {
-            $data = $this->api->admin->makeReconciliateRequest($input);
+            $data = $this->api->admin->makeReconciliateRequest($input, $mode);
         }
         catch(BadRequestError $e)
         {
@@ -1921,38 +1638,6 @@ class Service extends Base\Service
         try
         {
             $data = (new Admin\Mailgun)->getLogs($input);
-        }
-        catch (\Exception $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
-
-    public function getEmailBounce($email)
-    {
-        $error = $data = null;
-
-        try
-        {
-            $data = (new Admin\Mailgun)->getBounce($email);
-        }
-        catch (\Exception $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
-
-    public function deleteEmailBounce($email)
-    {
-        $error = $data = null;
-
-        try
-        {
-            $data = (new Admin\Mailgun)->deleteBounce($email);
         }
         catch (\Exception $e)
         {

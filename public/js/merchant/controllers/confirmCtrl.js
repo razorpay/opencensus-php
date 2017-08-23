@@ -65,7 +65,6 @@ app.controller('ConfirmCtrl', [
 
             logoutRequest.success(function(data) {
               location.hash = '/access/signin';
-              location.reload();
             });
           }, 3000);
         } else {

@@ -22,6 +22,7 @@ export default class DatePickerField extends Component {
     let {
       input,
       name,
+      endOfDayTimeStamp,
       onDateChange,
       isOutsideRange,
       outputDateFormat,
@@ -44,9 +45,16 @@ export default class DatePickerField extends Component {
             (date ? moment(date, 'MM YYYY') : moment())}
           isOutsideRange={isOutsideRange}
           onDateChange={date => {
-            input.onChange(
-              outputDateFormat ? date.format(outputDateFormat) : date.unix()
-            );
+            if (date) {
+              if (endOfDayTimeStamp) {
+                date = date.endOf('day');
+              }
+              date = outputDateFormat
+                ? date.format(outputDateFormat)
+                : date.unix();
+            }
+
+            input.onChange(date);
             onDateChange(date);
           }}
           onFocusChange={this.handleFocusChange}
@@ -63,4 +71,5 @@ DatePickerField.defaultProps = {
   displayFormat: 'DD MMM YYYY',
   onDateChange: () => {},
   isOutsideRange: () => false,
+  endOfDayTimeStamp: false,
 };

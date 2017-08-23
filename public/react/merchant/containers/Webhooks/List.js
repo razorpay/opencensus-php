@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import TetherComponent from 'react-tether';
-import Header from 'rzp/ui/Header';
+import HeaderAction from 'rzp/ui/HeaderAction';
 import Alert from 'rzp/ui/Forms/Alert';
 import ListContainer from 'merchant/containers/ListContainer';
 import WebhooksList from 'merchant/components/Webhooks/List';
@@ -44,13 +43,7 @@ export default class WebhooksContainer extends ListContainer {
 
     return (
       <div class="content-wrapper">
-        <TetherComponent
-          target="#settings-header"
-          attachment="top right"
-          targetAttachment="top right"
-          offset="-8px 0"
-        >
-          <div />{/* required by react-tether */}
+        <HeaderAction>
           <div class="btn-toolbar pull-right">
             <a
               class="btn btn-link"
@@ -61,7 +54,7 @@ export default class WebhooksContainer extends ListContainer {
               <i class="icon icon-external-link" />
             </a>
           </div>
-        </TetherComponent>
+        </HeaderAction>
 
         {error && <Alert type="error" message={error} />}
 

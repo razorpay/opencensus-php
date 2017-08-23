@@ -69,7 +69,7 @@ export default class InvoiceLineItem extends Component {
       >
         <td>
           <span class="remove-row-action" onClick={() => onRemove(index)}>
-            <i class="icon icon-done-circle text-danger" />
+            <i class="icon icon-close text-danger" />
           </span>
 
           <div class="item-ac-container">
@@ -81,6 +81,7 @@ export default class InvoiceLineItem extends Component {
               selected={selectedOption}
               optionLabelPath="name"
               placeholder="Select an item"
+              showClear={false}
               onOptionChange={this.updateLineItemRow}
               onQuickAdd={this.quickCreateItem}
               disabled={disabled}

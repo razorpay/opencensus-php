@@ -241,8 +241,8 @@
 // Status label for transactions
 .status-label {
   display: inline-block;
-  width: 80px;
-  font-size: 13px;
+  min-width: 78 px;
+  font-size: 12px;
   padding-top: 5px;
   padding-bottom: 5px;
 }
@@ -284,7 +284,7 @@ a.breadcrumb__backNav--link {
   }
 }
 
-.rzpChecbox {
+.rzpCheckbox {
   margin-bottom: 5px;
 
   [type='checkbox']:not(:checked), [type='checkbox']:checked {
@@ -325,6 +325,10 @@ a.breadcrumb__backNav--link {
 
   [type='checkbox']:checked + label::after {
     opacity: 1
+  }
+
+  [type='checkbox']:disabled + label {
+    cursor: not-allowed;
   }
 }
 
@@ -369,4 +373,63 @@ a.breadcrumb__backNav--link {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%)
+}
+
+.block-radio-group {
+  .list-group-item {
+    padding: 0;
+
+    input[type="radio"] {
+      display: none;
+    }
+
+    input[type="radio"]:checked + label {
+      background-color: #fffaea;
+
+      .fa-check {
+        color: #0b5;
+      }
+    }
+
+    input[type="radio"]:disabled + label {
+      background: #F7F8FA;
+      color: #CCC;
+      cursor: not-allowed;
+    }
+
+    > label {
+      display: block;
+      margin: 0;
+      padding: 9px 16px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .fa-check {
+      color: #f1f1f1;
+      line-height: 22px;
+      tranistion: 0.3s;
+    }
+  }
+}
+
+.TestModeBanner {
+  margin-bottom: 0;
+  padding: 8px 24px;
+  font-size: 12px;
+  color: #58666E;
+  border-top: 0;
+  border-color: #DEE5E7;
+  a {
+    color: #58666E;
+    text-decoration: underline;
+  }
+}
+
+.content-wrapper .TestModeBanner {
+  margin: -25px -25px 24px;
+
+  @media (max-width $screen-sm-min) {
+    margin: -10px -11px 24px;
+  }
 }

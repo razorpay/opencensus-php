@@ -2,12 +2,17 @@ import React, { Component } from 'react';
 import { withRouter, Link } from 'react-router-dom';
 import MainNavLink from 'merchant/components/MainNavLink';
 import ShowWhen from 'merchant/components/ShowWhen';
+import RZPLogoFullPNG from 'styles/assets/logo_full.png';
+import RZPLogoPNG from 'styles/assets/logo.png';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(profile|activation|credits|addfunds|referrals)/;
-const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys)/;
+const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys|applications|applications\/new)/;
 const INVOICES_ROUTES_REGEX = /^\/(invoices|items)/;
 const INVOICES_ROUTES_OLD_REGEX = /^\/(invoices|items|customers)/;
+const MARKETPLACE_ROUTES_REGEX = /^\/route\/(payments|transfers|reversals|accounts)/;
+const PAYMENTLINKS_ROUTES_REGEX = /^\/paymentlinks(\/batchuploads.*)?/;
+const SUBSCRIPTIONS_ROUTES_REGEX = /^\/(subscriptions|plans)/;
 
 @withRouter
 export default class Sidebar extends Component {
@@ -15,14 +20,13 @@ export default class Sidebar extends Component {
   // populated with initial values
   routes = {
     transactions: '/payments',
-    account: '/activation',
+    account: '/profile',
     settings: '/config',
     invoices: '/invoices',
+    marketplace: '/route/payments',
+    paymentlinks: '/paymentlinks',
+    subscriptions: '/subscriptions',
   };
-
-  componentWillMount() {
-    this.initializeRoutes(this.props.location);
-  }
 
   componentWillReceiveProps(nextProps) {
     this.initializeRoutes(nextProps.location);
@@ -31,7 +35,7 @@ export default class Sidebar extends Component {
   initializeRoutes(location) {
     let pathname = location.pathname;
     let routes = this.routes;
-    let isNewUIEnabled = this.props.user.tags.indexOf('Newui') !== -1;
+    let isNewUIEnabled = this.props.user.isNewUIEnabled;
     let invoicesRegex = isNewUIEnabled
       ? INVOICES_ROUTES_REGEX
       : INVOICES_ROUTES_OLD_REGEX;
@@ -44,21 +48,27 @@ export default class Sidebar extends Component {
       routes.settings = pathname.match(SETTINGS_ROUTES_REGEX)[0];
     } else if (invoicesRegex.test(pathname)) {
       routes.invoices = pathname.match(invoicesRegex)[0];
+    } else if (MARKETPLACE_ROUTES_REGEX.test(pathname)) {
+      routes.marketplace = pathname.match(MARKETPLACE_ROUTES_REGEX)[0];
+    } else if (PAYMENTLINKS_ROUTES_REGEX.test(pathname)) {
+      routes.paymentlinks = pathname.match(PAYMENTLINKS_ROUTES_REGEX)[0];
+    } else if (SUBSCRIPTIONS_ROUTES_REGEX.test(pathname)) {
+      routes.subscriptions = pathname.match(SUBSCRIPTIONS_ROUTES_REGEX)[0];
     }
   }
 
   render() {
-    let { user } = this.props;
+    let { user, logoURL } = this.props;
     let routes = this.routes;
     let isMerchant = !!user.current;
-    let isNewUIEnabled = user.tags.indexOf('Newui') !== -1;
+    let isNewUIEnabled = user.isNewUIEnabled;
 
     return (
       <div class="sidebar">
         <section class="brand-logo">
           <Link to="/dashboard">
-            <img src="img/logo_full.png" class="hidden-xs" />
-            <img src="img/logo.png" class="visible-xs-block" />
+            <img src={logoURL || RZPLogoFullPNG} class="hidden-xs" />
+            <img src={logoURL || RZPLogoPNG} class="visible-xs-block" />
           </Link>
         </section>
         <nav>
@@ -70,7 +80,7 @@ export default class Sidebar extends Component {
                 <div class="nav">
                   <MainNavLink
                     label="Home"
-                    icon="icon icon-chart"
+                    icon="icon icon-chart text-info"
                     to="/dashboard"
                     exact
                     notMyRole="sellerapp support"
@@ -78,13 +88,13 @@ export default class Sidebar extends Component {
                   <MainNavLink
                     label="Transactions"
                     id="transactions-nav"
-                    icon="icon icon-transactions"
+                    icon="icon icon-repeat text-primary"
                     to={routes.transactions}
                     notMyRole="sellerapp"
                   />
                   <MainNavLink
                     label="Settlements"
-                    icon="icon icon-done-all"
+                    icon="icon icon-done-all text-success"
                     to="/settlements"
                     notMyRole="sellerapp support"
                   />
@@ -93,38 +103,46 @@ export default class Sidebar extends Component {
 
                   <MainNavLink
                     label="Invoices"
-                    icon="icon icon-invoices"
+                    icon="icon icon-notes text-warning"
                     to={routes.invoices}
                     featureEnabled="Invoice"
                     notMyRole="sellerapp"
+                    beta={true}
                   />
                   <MainNavLink
                     label="Payment Links"
-                    icon="icon icon-link"
-                    to="/paymentlinks"
+                    icon="icon icon-link text-primary"
+                    to={routes.paymentlinks}
                   />
-
+                  <MainNavLink
+                    label="Subscriptions"
+                    icon="icon icon-refresh text-info"
+                    notMyRole="sellerapp support"
+                    featureEnabled="subscriptions"
+                    to={routes.subscriptions}
+                    beta={true}
+                  />
                   <MainNavLink
                     label="Customers"
-                    icon="icon icon-people"
+                    icon="icon icon-people text-warning"
                     to="/customers"
                     featureEnabled="Invoice"
                     notMyRole="sellerapp"
                   />
-
-                  <ShowWhen
-                    notMyRole="sellerapp support"
-                    featureEnabled="Marketplace"
-                  >
-                    <div class="divider" />
-                  </ShowWhen>
-
                   <MainNavLink
-                    label="Marketplace"
-                    icon="icon icon-store"
-                    to="/accounts"
+                    label="Route"
+                    icon="icon icon-store text-success"
+                    to={routes.marketplace}
                     notMyRole="sellerapp support"
                     featureEnabled="Marketplace"
+                    beta={true}
+                  />
+                  <MainNavLink
+                    label="Virtual Accounts"
+                    icon="icon icon-account-balance text-primary"
+                    to="/virtualaccounts"
+                    notMyRole="sellerapp support"
+                    featureEnabled="Virtual_Accounts"
                     beta={true}
                   />
 
@@ -132,28 +150,29 @@ export default class Sidebar extends Component {
 
                   <MainNavLink
                     label="Reports"
-                    icon="icon icon-reports"
+                    icon="icon icon-books text-danger"
                     to="/reports"
                     notMyRole="sellerapp support"
                   />
                   <MainNavLink
                     label="Manage Team"
-                    icon="icon icon-team"
+                    icon="icon icon-city text-info"
                     to="/team"
                     myRole="owner"
                     beta={true}
                   />
                   <MainNavLink
                     label="My Account"
-                    icon="icon icon-account"
+                    id="myaccount-nav"
+                    icon="icon icon-account text-primary"
                     to={routes.account}
                   />
                   <MainNavLink
                     label="Settings"
                     id="settings-nav"
-                    icon="icon icon-settings"
+                    icon="icon icon-settings text-warning"
                     to={routes.settings}
-                    myRole="owner admin"
+                    myRole="owner manager admin"
                   />
                 </div>;
               } else {
@@ -201,11 +220,29 @@ export default class Sidebar extends Component {
                   />
 
                   <MainNavLink
-                    label="Marketplace"
+                    label="Subscriptions"
+                    icon="icon icon-refresh text-warning"
+                    notMyRole="sellerapp support"
+                    featureEnabled="subscriptions"
+                    to={routes.subscriptions}
+                    beta={true}
+                  />
+
+                  <MainNavLink
+                    label="Route"
                     icon="icon icon-store text-primary"
-                    to="/accounts"
+                    to={routes.marketplace}
                     notMyRole="sellerapp support"
                     featureEnabled="Marketplace"
+                    beta={true}
+                  />
+
+                  <MainNavLink
+                    label="Virtual Accounts"
+                    icon="icon icon-account-balance text-success"
+                    to="/virtualaccounts"
+                    notMyRole="sellerapp support"
+                    featureEnabled="Virtual_Accounts"
                     beta={true}
                   />
 
@@ -270,6 +307,7 @@ export default class Sidebar extends Component {
                   />
 
                   <MainNavLink
+                    id="profile-nav"
                     label="Profile"
                     icon="fa fa-user-o text-info"
                     to="/profile"

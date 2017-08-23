@@ -135,10 +135,13 @@ app
 
         switch ($scope.action_details.state) {
           case 'approved':
-          case 'executed':
             $scope.stateClass = 'approved-bg-color';
             break;
+          case 'executed':
+            $scope.stateClass = 'executed-bg-color';
+            break;
           case 'closed':
+          case 'rejected':
             $scope.stateClass = 'rejected-bg-color';
             break;
           case 'open':

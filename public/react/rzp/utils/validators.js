@@ -8,10 +8,49 @@ export const isEmail = email => {
   return emailRegExp.test(email);
 };
 
+export const isUrl = (url) => {
+  url = url || '';
+
+  let urlRegExp = /^(https?:\/\/)(\w|\-)+(\.{1}(\w|\-)+)*\.[a-z]{2,}(:[0-9]{1,5})?(\/.*)?/;
+  return urlRegExp.test(url);
+};
+
+export const isDeepLink = (url) => {
+  url = url || '';
+
+  let urlRegExp = /[A-Za-z]+:\/\/.*/;
+  return urlRegExp.test(url);
+};
+
 export const isPhone = phone => {
   phone = phone || '';
   let phoneRegExp = new RegExp(/^$|\+?[0-9]{8,15}$/);
   return phoneRegExp.test(phone);
+};
+
+// Parse Object recursively and trims off extra spaces in strings
+export const trimDeep = params => {
+  let temp = Object.assign({}, params);
+
+  for (let key in temp) {
+    if (temp.hasOwnProperty(key)) {
+      if (typeof temp[key] === 'object' && temp[key]) {
+        temp[key] = trimDeep(temp[key]);
+      } else if (typeof temp[key] === 'string') {
+        temp[key] = temp[key].trim();
+      }
+    }
+  }
+
+  return temp;
+};
+
+export const length = (length, message = '') => {
+  message = message || `Must be ${length} characters`;
+
+  return (value = '') => {
+    return value.trim().length !== length ? message : '';
+  };
 };
 
 const makeValidator = (truthyFn, defaultMessage) => (
@@ -21,3 +60,5 @@ const makeValidator = (truthyFn, defaultMessage) => (
 export const required = makeValidator(isPresent, 'Required');
 export const email = makeValidator(isEmail, 'Invalid Email');
 export const phone = makeValidator(isPhone, 'Invalid Contact');
+export const url = makeValidator(isUrl, 'Invalid Url');
+export const deepLink = makeValidator(isDeepLink, 'Invalid Link');

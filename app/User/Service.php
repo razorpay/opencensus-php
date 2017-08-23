@@ -12,7 +12,6 @@ use Session;
 use Requests;
 use App\Base;
 use App\User;
-use App\Lead;
 use App\Generic;
 use App\Merchant;
 use App\AdminLead;
@@ -81,22 +80,17 @@ class Service extends Base\Service
      */
     protected function getInvitationAndUserFromToken($token)
     {
-        list($error, $invitation) = (new Invitation\Service)->getInvitationFromToken($token);
+        list($error, $invitation) = (new Invitation\Service)->getInvitationByTokenFromApi($token);
 
-        if ($error)
+        if (empty($error) === false)
         {
             // This error is a string
             throw new RecoverableException($error[0]);
         }
 
-        $user = User\Entity::where('email', $invitation->email)->first();
+        $user = User\Entity::where('email', $invitation['email'])->first();
 
-        if ($user)
-        {
-            return [$invitation, $user];
-        }
-
-        return [$invitation, null];
+        return [$invitation, $user];
     }
 
     /**
@@ -123,7 +117,7 @@ class Service extends Base\Service
             list($invitation, $user) = $this->getInvitationAndUserFromToken($invitationToken);
             // Since input would be lacking an email in case registration is via
             // the invitation
-            $input['email'] = $invitation->email;
+            $input['email'] = $invitation['email'];
         }
 
         $heimdallInvitationToken = Input::get('merchant_invitation');
@@ -186,9 +180,6 @@ class Service extends Base\Service
             {
                 $error[] = 'Error on creating User';
             }
-
-            // For Drip marketing. Where URL has ?email=abc@xyz.com
-            $this->updateLeadIfExists($user);
         }
 
         // These two branches are exclusive
@@ -197,8 +188,6 @@ class Service extends Base\Service
         if ($invitationToken)
         {
             $this->attachUserToInvite($user, $invitation);
-
-            $this->attachMerchantUserOnApi($user->id, $invitation->merchant_id, $invitation->role);
 
             $data['login'] = true;
         }
@@ -342,40 +331,6 @@ class Service extends Base\Service
         return $user;
     }
 
-    public function createLead($input)
-    {
-        $error = $data = null;
-
-        $lead = new Lead\Entity;
-
-        $error = $lead->build($input);
-
-        if (! empty($error))
-        {
-            $error = array_values($error);
-        }
-        else
-        {
-            $lead->save();
-        }
-
-        return [$error, null];
-    }
-
-    public function updateLeadIfExists($user)
-    {
-        // Update Leads as well
-        $lead = Lead\Entity::where('email', $user->email)->first();
-
-        if (! empty($lead))
-        {
-            $lead->registered = true;
-            $lead->registered_at = $user->created_at->timestamp;
-
-            $lead->save();
-        }
-    }
-
     /**
      * This function is used to confirm a user by email.
      * @param string $email
@@ -465,15 +420,22 @@ class Service extends Base\Service
     /**
      * Attach a user to a merchant using an invitation
      */
-    protected function attachUserToInvite(User\Entity $user, Invitation\Entity $invitation)
+    protected function attachUserToInvite(User\Entity $user, array $invitation)
     {
-        Merchant\Entity::attachUserToMerchantByInvitation($invitation, $user);
+        list($error, $response) = (new Invitation\Service)->acceptInvitationOnApi($invitation['id'], $user->id);
 
-        $user->confirm();
+        if (empty($error) === true)
+        {
+            $user->joinMerchantByIdWithRole($invitation['merchant_id'], $invitation['role']);
 
-        $this->confirmUserOnApi($user->id);
+            Session::put('current_merchant_id', $invitation['merchant_id']);
 
-        $this->subscribeToMailingList($user);
+            $user->confirm();
+
+            $this->confirmUserOnApi($user->id);
+
+            $this->subscribeToMailingList($user);
+        }
     }
 
     public function subscribeToMailingList(User\Entity $user)
@@ -844,11 +806,11 @@ class Service extends Base\Service
 
     public function upgradeUserToMerchant($input)
     {
-        $user = Auth::user();
+        $authUser = Auth::user();
 
         $error = (new User\Validator)->validateInput('upgrade', $input)->messages();
 
-        if (empty($error) === true)
+        if (empty($error) === false)
         {
             return [$error, null];
         }
@@ -857,10 +819,12 @@ class Service extends Base\Service
             'business_name' =>  $input['business_name']
         ];
 
+        $user = Entity::findOrFail($authUser->id);
+
         // We don't have a referrer for the upgrade
         list($error, $data) = $this->createMerchantFromUser($user, $data);
 
-        if (empty($error))
+        if (empty($error) === true)
         {
             // $data['id'] is the newly created merchant Id
             // This confirmation creates the Merchant Account on the API Side
@@ -874,6 +838,13 @@ class Service extends Base\Service
             $this->attachMerchantUserOnApi($user->id, $data['id'], 'owner');
 
             $this->subscribeToMailingList($user);
+
+            list($error, $genericUser) = $this->getUserFromApi($user->id);
+
+            if (empty($error) === true)
+            {
+                Session::put('dashboard_user_payload', $genericUser);
+            }
         }
 
         return [$error, $data];
@@ -1013,6 +984,11 @@ class Service extends Base\Service
 
         $data['user'] = $userDetails;
 
+        // Default values in case no merchant is associated
+        // with the user account
+        $data['pre_signup'] = [];
+        $data['pre_signup_complete'] = true;
+
         $currentMerchant = (new Helper)->getCurrentMerchant($genericUser);
 
         if ($currentMerchant === null)
@@ -1074,6 +1050,11 @@ class Service extends Base\Service
             // filled "role" or "department", but are
             // already activated.
             if ($activated)
+            {
+                $data['pre_signup_complete'] = true;
+            }
+
+            if ($currentMerchant->role !== 'owner')
             {
                 $data['pre_signup_complete'] = true;
             }

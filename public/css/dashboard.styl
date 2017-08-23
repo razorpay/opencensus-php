@@ -50,16 +50,29 @@ $supportkit-text = ' You can also reach us at 1800-270-0323'
   display: none;
 }
 
+.select2-container--classic .select2-selection--single .select2-selection__arrow {
+  height: 96%;
+}
+
+
+.select2-container--disabled {
+  background-color: #eee;
+}
+
 .select2-container .select2-selection--single .select2-selection__rendered {
   padding: 0 15px;
   width: 100%;
-  font-size: 0;
-  line-height: 51px;
-  height: 51px;
+  line-height: 34px;
 }
 
 .select2-search--dropdown {
   padding: 6px 10px;
+}
+
+.select2-selection.select2-selection--single {
+  border-radius: 1px;
+  background: none;
+  height: 34px;
 }
 
 .select2-container--default .select2-search--dropdown .select2-search__field {
@@ -67,6 +80,10 @@ $supportkit-text = ' You can also reach us at 1800-270-0323'
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.11) inset;
   background: #fefefe;
   border-radius: 2px;
+}
+
+.select2-search__field {
+  width: 100% !important;
 }
 
 ::-webkit-scrollbar-track
@@ -542,15 +559,6 @@ a.highlight:hover, a.highlight:focus {
     color: #FCCB00;
   }
 
-  .approved-bg-color {
-    background-color: #17C446;
-  }
-  .rejected-bg-color {
-    background-color: #F14F4B;
-  }
-  .pending-bg-color {
-    background-color: #FCCB00;
-  }
   .assignee-heading {
     margin-bottom: 4px
   }
@@ -885,5 +893,51 @@ a.highlight:hover, a.highlight:focus {
   cursor: pointer;
   &:hover {
     color: inherit;
+  }
+}
+
+.approved-bg-color {
+  background-color: #fc9700;
+}
+
+.executed-bg-color, .cat2-badge--typeA {
+  background-color: #17C446;
+}
+
+.rejected-bg-color, .cat2-badge--typeB {
+  background-color: #F14F4B;
+}
+.pending-bg-color, .cat1-badge--typeA {
+  background-color: #FCCB00;
+}
+
+.cat1-badge--typeB {
+  background-color: #0057fc;
+}
+
+.gateway-search-fields {
+  display: table-cell;
+  vertical-align: bottom;
+  width: 100%;
+}
+.gateway-search-element {
+  display: table-cell;
+  padding: 0 8px;
+  vertical-align:bottom;
+}
+
+.inactive {
+  opacity: 0.5;
+}
+
+
+/* Use this class on parent when using float prpoerty on element*/
+.clearfix {
+  overflow: auto;
+
+  &:after {
+    clear: both;
+    content: '';
+    display: table;
   }
 }

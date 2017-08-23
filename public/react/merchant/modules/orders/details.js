@@ -4,22 +4,19 @@ import { set, merge } from 'rzp/utils/immutable';
 const ORDER_FETCH = 'ORDER_FETCH';
 const ORDER_PAYMENTS_FETCH = 'ORDER_PAYMENTS_FETCH';
 
-export const fetchOrder = id => {
-  return dispatch => {
-    let order = new Order();
-    return dispatch({
-      type: ORDER_FETCH,
-      payload: order.fetch(id),
-    });
+export const fetchItem = id => {
+  let order = new Order();
+
+  return {
+    type: ORDER_FETCH,
+    payload: order.fetch(id),
   };
 };
 
 export const fetchOrderPayments = order => {
-  return dispatch => {
-    return dispatch({
-      type: ORDER_PAYMENTS_FETCH,
-      payload: order.fetchPayments(),
-    });
+  return {
+    type: ORDER_PAYMENTS_FETCH,
+    payload: order.fetchPayments(),
   };
 };
 

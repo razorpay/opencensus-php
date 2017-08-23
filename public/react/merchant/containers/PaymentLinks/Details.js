@@ -24,15 +24,12 @@ export default class InvoiceDetailContainer extends Component {
   }
 
   componentWillMount() {
-    let id = this.props.id || this.props.match.params.id;
-    this.props.fetchInvoice(id);
+    this.props.fetchInvoice(this.props.id);
   }
 
   componentWillReceiveProps(nextProps) {
-    let oldId = this.props.id || this.props.match.params.id;
-    let newId = nextProps.id || nextProps.match.params.id;
-    if (oldId !== newId) {
-      this.props.fetchInvoice(newId);
+    if (this.props.id !== nextProps.id) {
+      this.props.fetchInvoice(nextProps.id);
     }
   }
 

@@ -63,8 +63,13 @@ return [
         'admin_lead_get_multiple'           => 'orgs/{orgId}/admin-lead',
         'admin_lead_put'                    => 'orgs/{orgId}/admin-lead/{id}',
 
-        // Workflows
+        // Admin Change Password
+        'admin_change_password'             => 'orgs/admin/change_password',
 
+        // Get Admin File
+        'admin_get_file'                    => 'files/{fileId}/signed-url',
+
+        // Workflows
         'workflow_get_multiple'             => 'orgs/{orgId}/workflows',
         'workflow_create'                   => 'workflows',
         'workflow_get'                      => 'workflows/{id}',
@@ -75,11 +80,10 @@ return [
         'action_comment_fetch'              => 'w-actions/{id}/comments',
         'workflow_action_details'           => 'w-actions/{id}/details',
         'workflow_action_update'            => 'w-actions/{id}',
-        'workflow_get_actions_by_maker'     => 'w-manager/get-actions-by-maker',
-        'workflow_get_actions_for_checker'  => 'w-manager/get-actions-for-checker',
         'action_checker_create'             => 'w-actions/{id}/checkers',
         'action_request_execute'            => 'w-actions/{id}/execute',
         'workflow_action_close'             => 'w-actions/close/{id}',
+        'workflow_action_get_multiple'      => 'w-actions',
 
         // Admin Actions
         // Create Schedule
@@ -89,6 +93,14 @@ return [
 
         // Add Adjustment
         'adj_add'                           => 'adjustments',
+
+        // Feature Delete
+        'feature_delete'                    => 'features/{entityId}/{featureName}',
+
+        // Admin Payment Actions
+        // Refund Authorized Payment
+        'payment_authorize_refund'          => 'payments/{id}/authorize_refund',
+        'pricing_create_plan'               => 'pricing',
     ],
 
     // auth
@@ -111,6 +123,10 @@ return [
         'payment_fetch_refunds'             => [
             'url'       => 'payments/{id}/refunds',
             'routeName' => 'payment_get_refunds'
+        ],
+        'payment_fetch_transfers'             => [
+            'url'       => 'payments/{id}/transfers',
+            'routeName' => 'payment_get_transfers'
         ],
         'payment_capture'                   => [
             'url'       => 'payments/{id}/capture',
@@ -182,18 +198,52 @@ return [
             'url'       => 'account/config',
             'routeName' => 'get_config'
         ],
-        'merchant_edit_config'              => [
-            'url'       => 'account/config',
-            'routeName' => 'put_config'
-        ],
         'merchant_edit_config_logo'         => [
             'url'       => 'account/config/logo',
             'routeName' => 'post_config_logo'
         ],
 
+        // Bank Account Fetch
+        'bank_account_fetch'                => [
+            'url'       => 'account/bank_account',
+            'routeName' => 'bank_account_fetch'
+        ],
+
         // Features
         'merchant_get_features'             => 'merchants/{id}/features',
         'merchant_update_features'          => 'merchants/{id}/features',
+
+        // Activation
+        'merchant_activation_save'          => [
+            'url'       => 'merchant/activation',
+            'routeName' => 'post_activation_save_step'
+        ],
+        'merchant_activation_upload_file'   => [
+            'url'       => 'merchant/activation/upload',
+            'routeName' => 'post_activation_save_file'
+        ],
+        'merchant_activation_details'       => [
+            'url'       => 'merchant/activation',
+            'routeName' => 'get_activation_details'
+        ],
+
+        // Batches [Used for Refunds, Payment Links]
+        'batch_fetch_multiple'              => [
+            'url'       => 'batches',
+            'routeName' => 'batch_fetch_multiple'
+        ],
+        'batch_fetch_by_id'                 => [
+            'url'       => 'batches/{id}',
+            'routeName' => 'batch_fetch_single'
+        ],
+        'batch_download_file'               => [
+            'url'       => 'batches/{id}/download',
+            'routeName' => 'batch_download'
+        ],
+        'batch_create'                      => [
+            'url'       => 'batches',
+            'routeName' => 'batch_upload'
+        ],
 
         // Invoices
         'invoice_fetch_multiple'            => [
@@ -224,23 +274,35 @@ return [
             'url'       => 'invoices/{id}/cancel',
             'routeName' => 'invoice_cancel'
         ],
+        'invoice_issue_by_batch'            => [
+            'url'       => 'invoices/batch/{batchId}/issue',
+            'routeName' => 'invoice_issue_by_batch',
+        ],
+        'invoice_batches_issuable'          => [
+            'url'       => 'invoices/batches/issuable',
+            'routeName' => 'invoice_batches_issuable',
+        ],
 
         // Customers
         'customer_fetch_multiple'           => [
             'url'       => 'customers',
-            'routeName' => 'customer_fetch_all'
+            'routeName' => 'customer_read'
+        ],
+        'customer_fetch_by_id'           => [
+            'url'       => 'customers/{id}',
+            'routeName' => 'customer_read'
         ],
         'customer_create'                   => [
             'url'       => 'customers',
-            'routeName' => 'customer_create'
+            'routeName' => 'customer_write'
         ],
         'customer_update'                   => [
             'url'       => 'customers/{id}',
-            'routeName' => 'customer_edit'
+            'routeName' => 'customer_write'
         ],
         'customer_delete'                   => [
             'url'       => 'customers/{id}',
-            'routeName' => 'customer_delete'
+            'routeName' => 'customer_write'
         ],
 
         // Items
@@ -271,6 +333,11 @@ return [
             'routeName' => 'marketplace_read'
         ],
 
+        'transfer_reversal'           => [
+            'url'       => 'transfers/{id}/reversals',
+            'routeName' => 'marketplace_read'
+        ],
+
         // Reversals
         'reversal_fetch_multiple'           => [
             'url'       => 'reversals',
@@ -279,6 +346,136 @@ return [
         'reversal_fetch'           => [
             'url'       => 'reversals/{id}',
             'routeName' => 'marketplace_read'
+        ],
+
+        // OAuth routes
+        'oauth_application_create'   => [
+            'url'       => 'oauth/applications',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_application_fetch_multiple'   => [
+            'url'       => 'oauth/applications',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_application_fetch'   => [
+            'url'       => 'oauth/applications/{id}',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_application_delete'  => [
+            'url'       => 'oauth/applications/{id}',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_application_update'  => [
+            'url'       => 'oauth/applications/{id}',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_token_fetch_multiple'  => [
+            'url'       => 'oauth/tokens/',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_token_revoke'  => [
+            'url'       => 'oauth/tokens/{id}/revoke',
+            'routeName' => 'oauth_read'
+        ],
+
+        // GST
+        'merchant_gst_fetch'    =>  [
+            'url'         => 'merchant/gst',
+            'routeName'   => 'merchant_gst_fetch'
+        ],
+
+        'merchant_gst_edit'     => [
+            'url'       => 'merchant/gst',
+            'routeName' => 'merchant_gst_edit'
+        ],
+
+         // Invitations
+        'invitation_create'                 => [
+            'url'       => 'invitations',
+            'routeName' => 'invitations_send'
+         ],
+
+        'invitation_resend'                 => [
+            'url'       => 'invitations/{id}/resend',
+            'routeName' => 'invitation_resend'
+        ],
+        'invitation_edit'                   => [
+            'url'       => 'invitations/{id}',
+            'routeName' => 'invitations_edit'
+        ],
+        'invitation_delete'                 => [
+            'url'       => 'invitations/{id}',
+            'routeName' => 'invitations_delete'
+        ],
+
+        // Virtual Accounts
+        'virtual_account_fetch_multiple'    => [
+            'url'       => 'virtual_accounts',
+            'routeName' => 'virtual_accounts_read'
+        ],
+        'virtual_account_fetch'             => [
+            'url'       => 'virtual_accounts/{id}',
+            'routeName' => 'virtual_accounts_read'
+        ],
+        'virtual_account_create'            => [
+            'url'       => 'virtual_accounts',
+            'routeName' => 'virtual_accounts_write'
+        ],
+        'virtual_account_update'            => [
+            'url'       => 'virtual_accounts/{id}',
+            'routeName' => 'virtual_accounts_write'
+        ],
+        'virtual_account_fetch_payments'    => [
+            'url'       => 'virtual_accounts/{id}/payments',
+            'routeName' => 'virtual_accounts_read'
+        ],
+
+        // Subscriptions
+        'subscription_fetch_multiple'    => [
+            'url'       => 'subscriptions',
+            'routeName' => 'subscriptions_read'
+        ],
+        'subscription_account_fetch'             => [
+            'url'       => 'subscriptions/{id}',
+            'routeName' => 'subscriptions_read'
+        ],
+        'subscription_create'            => [
+            'url'       => 'subscriptions',
+            'routeName' => 'subscriptions_write'
+        ],
+        'subscription_update'            => [
+            'url'       => 'subscriptions/{id}',
+            'routeName' => 'subscriptions_write'
+        ],
+        'subscription_delete'            => [
+            'url'       => 'subscriptions/{id}',
+            'routeName' => 'subscriptions_write'
+        ],
+        'subscription_cancel'            => [
+            'url'       => 'subscriptions/{id}/cancel',
+            'routeName' => 'subscriptions_write'
+        ],
+
+        // Plans
+        'plan_fetch_multiple'    => [
+            'url'       => 'plans',
+            'routeName' => 'subscriptions_read'
+        ],
+        'plan_account_fetch'             => [
+            'url'       => 'plans/{id}',
+            'routeName' => 'subscriptions_read'
+        ],
+        'plan_create'            => [
+            'url'       => 'plans',
+            'routeName' => 'subscriptions_write'
+        ],
+        'plan_update'            => [
+            'url'       => 'plans/{id}',
+            'routeName' => 'subscriptions_write'
+        ],
+        'plan_delete'            => [
+            'url'       => 'plans/{id}',
+            'routeName' => 'subscriptions_write'
         ],
     ],
 
@@ -293,15 +490,22 @@ return [
             'routeName' => 'balance_get'
         ],
 
-        // Admin Payment Actions
-        // Refund Authorized Payment
-        'payment_authorize_refund'          => 'payments/{id}/authorize_refund',
+        // Edit Merchant config
+        'merchant_edit_config'              => [
+            'url'       => 'account/config',
+            'routeName' => 'put_config'
+        ],
+
         // Refund Payment
         'payment_refund'                    => 'payments/{id}/refund',
         // Capture Payment
         'payment_capture'                   => 'payments/{id}/capture',
         // View Payment Refunds
         'payment_fetch_refunds'             => 'payments/{id}/refunds',
+        // Offer create / update
+        'offer_create'                      => 'offers',
+        'offer_update'                      => 'offers/{id}',
+        'invitation_fetch'                  => 'invitations',
     ],
 
     // auth
@@ -325,7 +529,6 @@ return [
         'pricing_get_merchant_plans'        => 'pricing/merchants',
         'pricing_get_plan'                  => 'pricing/{id}',
         'pricing_add_plan_rule'             => 'pricing/{id}/rule',
-        'pricing_create_plan'               => 'pricing',
         'pricing_delete_plan_rule'          => 'pricing/{planId}/rule/{ruleId}',
         'pricing_supported_networks'        => 'pricing/networks',
 
@@ -338,16 +541,37 @@ return [
         'payment_verify'                    => 'payments/{id}/verify',
         // Authorize Failed Payment
         'payment_authorize_failed'          => 'payments/{id}/authorize_failed',
-        // Generate Refunds Excel (Netbanking)
-        'refund_netbanking_generate_excel'  => 'refunds/netbanking/excel',
+        // Generate Refunds Excel
+        'refund_generate_excel'             => 'refunds/excel',
+        // Generate Emi Excel
+        'emi_generate_excel'                => 'emi/generate/excel',
         // Trigger Dummy Error
         'dummy_critical_error'              => 'trigger/error',
+
+        'refund_verify_failed'              => 'refunds/{id}/retry',
+
+        // Tags
+        'merchant_tag_add'                  => 'merchants/{id}/tags',
+        'merchant_tag_delete'               => 'merchants/{id}/tags/{tagName}',
 
         'admin_lead_verify'                 => 'admin-lead/verify/{token}',
         'merchant_admin_lead_put'           => 'orgs/{orgId}/admin-lead-merchant/{id}',
 
         // Get Org details by hostname (for heimdall specifics)
         'org_get_by_hostname'               => 'orgs/hostname/{hostname}',
+
+        // Get Merchant Users
+        'merchant_fetch_users'              => 'merchants/{id}/users',
+
+        // Accept/Reject Invitation
+        'invitation_action'                 => 'invitations/{id}/{action}',
+
+        // Make test payment for Virtual Account
+        'bank_transfer_process'             => 'ecollect/validate',
+
+        // Payment Dispute
+        'payment_disputes'                  => 'payments/{id}/disputes',
+        'dispute_edit'                      => 'disputes/{id}',
     ],
 
     // auth
@@ -373,14 +597,33 @@ return [
 
         'merchant_edit'                     => 'merchants/{id}',
 
+        'merchant_action'                   => 'merchants/{id}/action',
+        'merchant_live_enable'              => 'merchants/{id}/live/enable',
+        'merchant_live_disable'             => 'merchants/{id}/live/disable',
+
         // Entities
         'admin_fetch_entity_by_id'          => 'admin/{type}/{id}',
         'admin_fetch_terminal_by_id'        => 'admin/terminal/{id}',
         'admin_fetch_entity_multiple'       => 'admin/{type}',
 
-        'merchant_action'                   => 'merchants/{id}/action',
-        'merchant_live_enable'              => 'merchants/{id}/live/enable',
-        'merchant_live_disable'             => 'merchants/{id}/live/disable',
+        // Toggle Terminal
+        'terminal_toggle'                   => 'terminals/{id}/toggle',
+        // Delete Terminal
+        'terminal_delete'                   => 'terminals/{id}',
+        // Edit Terminal
+        'terminal_edit'                     => 'terminals/{id}',
+        // Terminal Change Primary Merchant
+        'terminal_reassign_merchant'        => 'terminals/{id}/reassign',
+        // Terminal Assign Sub Merchants
+        'terminal_add_merchant'             => 'terminals/{id}/merchants/{mid}',
+        // Terminal Remove Sub Merchant
+        'terminal_remove_merchant'          => 'terminals/{id}/merchants/{mid}',
+
+        // Delete EMI Plan
+        'emi_plan_delete'                   => 'emi/{id}',
+
+        // Edit IIN
+        'iin_edit'                          => 'iins/{id}',
 
         // Gateway Rules
         'gateway_create_rule'               => 'gateway/rules',

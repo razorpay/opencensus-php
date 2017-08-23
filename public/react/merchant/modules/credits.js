@@ -28,20 +28,18 @@ const fetchBalance = () => {
 };
 
 export const fetchCreditBalance = () => {
-  return dispatch => {
-    return dispatch({
-      type: FETCH_BALANCE_AND_CREDITS,
-      payload: Promise.all([getCreditsData(), fetchBalance()]).then(values => {
-        if (
-          !values[0].success ||
-          !values[1].success ||
-          !Array.isArray(values[0].data.items)
-        ) {
-          throw "Couldn't load credits data";
-        }
-        return values;
-      }),
-    });
+  return {
+    type: FETCH_BALANCE_AND_CREDITS,
+    payload: Promise.all([getCreditsData(), fetchBalance()]).then(values => {
+      if (
+        !values[0].success ||
+        !values[1].success ||
+        !Array.isArray(values[0].data.items)
+      ) {
+        throw "Couldn't load credits data";
+      }
+      return values;
+    }),
   };
 };
 

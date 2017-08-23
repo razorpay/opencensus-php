@@ -16,4 +16,8 @@ class MailTags
     const MEMBER_INVITATION_MAIL        = 'member_invitation_mail';
 
     const ACCOUNT_CONFIRMATION_MAIL     = 'account_confirmation_mail';
+
+    const PASSWORD_RESET_REQUEST        = 'password_reset_request';
+
+    const FEEDBACK_MAIL                 = 'feedback_mail';
 }

@@ -1,0 +1,60 @@
+.PlaceholderLoader {
+  width: 80%;
+  height: 12px;
+  position: relative;
+  display: inline-block;
+
+  background: #eeeeee;
+  background: linear-gradient(to right, #eeeeee 8%, #e1e1e1 18%, #eeeeee 33%);
+  background-size: 800px 100px;
+  animation: placeHolderShimmer 1.2s forwards infinite linear;
+}
+
+@keyframes placeHolderShimmer {
+  0% {
+    background-position: -300px 0
+  }
+  100% {
+    background-position: 300px 0
+  }
+}
+
+
+.subscriptions-table {
+  tr {
+    td:nth-of-type(1) {
+      width: 44%;
+    }
+    td:nth-of-type(2) {
+      width: 46%;
+    }
+    td:nth-of-type(3) {
+      width: 20%;
+    }
+  }
+}
+
+.reversals-table {
+  tr {
+    td:nth-of-type(1) {
+      width: 47%;
+    }
+    td:nth-of-type(2) {
+      width: 15%;
+    }
+    td:nth-of-type(3) {
+      width: 43%;
+    }
+  }
+}
+
+.refunds-table {
+  tr {
+    td:nth-of-type(1) {
+      width: 60%;
+    }
+    td:nth-of-type(2) {
+      width: 40%;
+    }
+  }
+}

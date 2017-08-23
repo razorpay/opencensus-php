@@ -6,7 +6,7 @@ import InputField from 'rzp/ui/Forms/InputField';
 import { required, email } from 'rzp/utils/validators';
 import { roles } from 'rzp/utils/constants';
 import { without } from 'rzp/utils/rzp-utils';
-import { sendInvitation, fetchTeamDetails } from 'merchant/modules/team';
+import { sendInvitation, fetchTeamDetails } from 'rzp/modules/team';
 import * as NotificationsActions from 'rzp/modules/notifications';
 
 const ROLES = without(roles, 'owner');
@@ -15,6 +15,7 @@ const selector = formValueSelector('newInvitation');
   state => {
     return {
       selectedRole: selector(state, 'role'),
+      ...state.session,
     };
   },
   {
@@ -32,10 +33,12 @@ const selector = formValueSelector('newInvitation');
 })
 export default class NewInvitation extends Component {
   save = props => {
+    let user = this.props.user.user;
+
     return this.props
-      .sendInvitation(props)
+      .sendInvitation({ ...props, sender_name: user.name })
       .then(() => {
-        this.props.fetchTeamDetails();
+        this.props.fetchTeamDetails({ merchant_id: this.props.user.current });
         this.props.initialize(this.props.initialValues);
         this.props.showNotification({
           type: 'success',
@@ -51,7 +54,7 @@ export default class NewInvitation extends Component {
   };
 
   render() {
-    const { handleSubmit, invalid, selectedRole } = this.props;
+    const { handleSubmit, selectedRole } = this.props;
 
     return (
       <form onSubmit={handleSubmit(this.save)} style={{ marginBottom: '35px' }}>
@@ -64,7 +67,15 @@ export default class NewInvitation extends Component {
                 class="form-control"
                 placeholder="Email address of the user"
                 autoFocus={true}
-                validate={[required(), email('Invalid Email')]}
+                validate={[
+                  required(),
+                  email('Invalid Email'),
+                  value => {
+                    if (value === this.props.user.user.email) {
+                      return "You can't invite yourself";
+                    }
+                  },
+                ]}
               />
             </div>
           </div>
@@ -85,7 +96,6 @@ export default class NewInvitation extends Component {
                 class="btn btn-primary"
                 text="Send Invitation"
                 pendingText="Sending Invitation..."
-                disabled={invalid}
                 onClick={handleSubmit(this.save)}
               />
             </div>

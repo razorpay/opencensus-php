@@ -16,7 +16,7 @@ export default ({ user }) => {
       <DetailRow
         label="Activation Status"
         value={() => (
-          <span data-tip={user.activated === 1 ? 'Activated' : 'Not Activated'}>
+          <span data-tip={user.isActivated ? 'Activated' : 'Not Activated'}>
             <CheckIcon value={user.activated} />
           </span>
         )}
@@ -33,7 +33,6 @@ export default ({ user }) => {
         label="Activation Form Progress"
         value={`${user.activation_progress}%`}
       />
-
     </div>
   );
 };

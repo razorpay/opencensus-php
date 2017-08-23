@@ -8,28 +8,49 @@ import appReducer from 'merchant/modules/app';
 import homeReducer from 'merchant/modules/home';
 import invoicesReducer from 'merchant/modules/invoices/list';
 import invoiceDetailsReducer from 'merchant/modules/invoices/details';
-import subscriptionsReducer from 'merchant/modules/subscriptions';
-import plansReducer from 'merchant/modules/plans';
 import profileReducer from 'merchant/modules/profile';
 import customersReducer from 'merchant/modules/customers';
 import itemsReducer from 'merchant/modules/items';
-import ordersReducer from 'merchant/modules/orders/list';
 import orderReducer from 'merchant/modules/orders/details';
-import settlementsReducer from 'merchant/modules/settlements/list';
 import settlementReducer from 'merchant/modules/settlements/details';
 import webhooksReducer from 'merchant/modules/webhooks';
 import keysReducer from 'merchant/modules/keys';
 import creditsReducer from 'merchant/modules/credits';
-import teamReducer from 'merchant/modules/team';
+import teamReducer from 'rzp/modules/team';
 import configReducer from 'merchant/modules/config';
 import activationReducer from 'merchant/modules/activation';
-import refundsReducer from 'merchant/modules/refunds/list';
 import refundReducer from 'merchant/modules/refunds/details';
-import batchuploadsReducer from 'merchant/modules/refunds/batchuploads';
-import paymentsReducer from 'merchant/modules/payments/list';
 import paymentReducer from 'merchant/modules/payments/details';
+import transferReducer from 'merchant/modules/marketplace/transfer';
 import mpAccountsReducer from 'merchant/modules/marketplace/accounts';
 import referralsReducer from 'merchant/modules/referrals';
+import applicationsReducer from 'merchant/modules/applications';
+import {
+  virtualAccountsReducer,
+  virtualAccountReducer,
+} from 'merchant/modules/virtualaccounts';
+
+import {
+  refundBatchesReducer,
+  paymentLinkBatchesReducer,
+  PaymentBatchIdsReducer,
+} from 'merchant/modules/batches';
+
+import {
+  paymentsReducer,
+  ordersReducer,
+  transfersReducer,
+  reversalsReducer,
+  mpPaymentsReducer,
+  refundsReducer,
+  settlementsReducer,
+} from 'rzp/modules/collection';
+
+import {
+  subscriptionsReducer,
+  subscriptionReducer,
+} from 'merchant/modules/subscriptions';
+import { plansReducer, planReducer } from 'merchant/modules/plans';
 
 export default combineReducers({
   modal: modalReducer,
@@ -41,8 +62,13 @@ export default combineReducers({
   home: homeReducer,
   invoices: invoicesReducer,
   invoice: invoiceDetailsReducer,
+  paymentlinkbatches: paymentLinkBatchesReducer,
+  paymentBatchIds: PaymentBatchIdsReducer,
+  refundbatches: refundBatchesReducer,
   subscriptions: subscriptionsReducer,
+  subscription: subscriptionReducer,
   plans: plansReducer,
+  plan: planReducer,
   profile: profileReducer,
   customers: customersReducer,
   items: itemsReducer,
@@ -60,7 +86,13 @@ export default combineReducers({
   activation: activationReducer,
   refunds: refundsReducer,
   refund: refundReducer,
+  applications: applicationsReducer,
   referrals: referralsReducer,
-  batchuploads: batchuploadsReducer,
   accounts: mpAccountsReducer,
+  mpPayments: mpPaymentsReducer,
+  transfers: transfersReducer,
+  transfer: transferReducer,
+  reversals: reversalsReducer,
+  virtualaccounts: virtualAccountsReducer,
+  virtualaccount: virtualAccountReducer,
 });

@@ -1,38 +1,43 @@
 // kinda `redux-promise` catered to our needs.
 
-const isAsyncAction = obj => {
-  return obj.type && obj.payload && typeof obj.payload.then === 'function';
-};
-
 export default ({ dispatch, getState }) => {
   return next => action => {
-    if (isAsyncAction(action)) {
-      dispatch({
-        type: `${action.type}::PENDING`,
-        extraArgs: action.extraArgs,
-      });
-
-      return action.payload
-        .then(response => {
-          dispatch({
-            type: `${action.type}::SUCCESS`,
-            payload: response,
-            extraArgs: action.extraArgs,
-          });
-
-          return response;
-        })
-        .catch(error => {
-          dispatch({
-            type: `${action.type}::ERROR`,
-            payload: error,
-            error: true,
-            extraArgs: action.extraArgs,
-          });
-          throw error;
-        });
+    // Handles thunk like functionality-1
+    if (typeof action === 'function') {
+      return action(dispatch, getState);
     }
 
-    return next(action);
+    const { payload, type, ...rest } = action;
+
+    // Handles thunk like functionality-2
+    if (!payload || typeof action.payload.then !== 'function') {
+      return next(action);
+    }
+
+    next({
+      type: `${type}::PENDING`,
+      ...rest,
+    });
+
+    const actionPromise = payload;
+    actionPromise
+      .then(response =>
+        next({
+          type: `${type}::SUCCESS`,
+          payload: response,
+          ...rest,
+        })
+      )
+      .catch(error => {
+        next({
+          type: `${type}::ERROR`,
+          payload: error,
+          error: true,
+          ...rest,
+        });
+        throw error;
+      });
+
+    return actionPromise;
   };
 };

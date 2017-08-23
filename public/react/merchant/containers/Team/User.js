@@ -5,24 +5,27 @@ import AsyncButton from 'react-async-button';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import { roles } from 'rzp/utils/constants';
 import { without } from 'rzp/utils/rzp-utils';
-import {
-  updateUser,
-  removeUser,
-  fetchTeamDetails,
-} from 'merchant/modules/team';
+import { updateUser, removeUser, fetchTeamDetails } from 'rzp/modules/team';
 
 const ROLES = without(roles, 'owner');
-@connect(null, {
-  fetchTeamDetails,
-  updateUser,
-  removeUser,
-  ...NotificationsActions,
-})
-@reduxForm()
+@connect(
+  state => {
+    return {
+      merchantId: state.session.user.current,
+    };
+  },
+  {
+    fetchTeamDetails,
+    updateUser,
+    removeUser,
+    ...NotificationsActions,
+  }
+)
+@reduxForm({})
 export default class EditUser extends Component {
   componentWillMount() {
     this.props.initialize({
-      role: this.props.user.pivot.role,
+      role: this.props.user.role,
     });
   }
 
@@ -30,7 +33,9 @@ export default class EditUser extends Component {
     return this.props
       .updateUser(this.props.user.id, fieldProps)
       .then(() => {
-        this.props.fetchTeamDetails();
+        this.props.fetchTeamDetails({
+          merchant_id: this.props.merchantId,
+        });
         this.props.showNotification({
           type: 'success',
           message: "Team member's role has been changed successfully",
@@ -48,7 +53,9 @@ export default class EditUser extends Component {
     return this.props
       .removeUser(this.props.user.id)
       .then(() => {
-        this.props.fetchTeamDetails();
+        this.props.fetchTeamDetails({
+          merchant_id: this.props.merchantId,
+        });
         this.props.showNotification({
           type: 'success',
           message: 'Team member has been removed successfully',
@@ -67,13 +74,19 @@ export default class EditUser extends Component {
 
     return (
       <tr>
-        <td>{user.email}</td>
-        <td>{user.name}</td>
+        <td>
+          {user.email}
+        </td>
+        <td>
+          {user.name}
+        </td>
         <td>
           <Field name="role" component="select" class="form-control">
-            {Object.keys(ROLES).map(role => (
-              <option key={role} value={role}>{ROLES[role].label}</option>
-            ))}
+            {Object.keys(ROLES).map(role =>
+              <option key={role} value={role}>
+                {ROLES[role].label}
+              </option>
+            )}
           </Field>
         </td>
 

@@ -2,7 +2,6 @@ import GenericEntity from './GenericEntity';
 import Refund from './Refund';
 import { getFixedINRAmount } from 'rzp/utils/rzp-utils';
 import ajax from 'merchant/utils/ajax';
-import { fetchPayment } from 'merchant/modules/payments/details';
 
 export default class Payment extends GenericEntity {
   listRouteName = 'payment_fetch_multiple';
@@ -16,7 +15,7 @@ export default class Payment extends GenericEntity {
     data.route_name = 'payment_fetch_refunds';
     return this.makeGenericAjaxCall({ data }).then(response => {
       response.data.items = response.data.items.map(item =>
-        new Refund().deserialize(item)
+        new Refund(item).deserialize()
       );
       return response;
     });
@@ -45,10 +44,10 @@ export default class Payment extends GenericEntity {
   refund(params) {
     let data = {};
     const method = 'post';
-    const Klass = this.constructor;
 
     data.body = {
       amount: params.amount,
+      reverse_all: params.reverse_all,
       notes: {
         comment: params.comment,
       },
@@ -64,7 +63,6 @@ export default class Payment extends GenericEntity {
 
   fetchCardDetails() {
     let data = {};
-    const Klass = this.constructor;
     data.url_params = JSON.stringify({
       '{id}': this.id,
     });
@@ -72,12 +70,14 @@ export default class Payment extends GenericEntity {
     return this.makeGenericAjaxCall({ data });
   }
 
-  deserializeProperty(prop, value, allProps) {
-    if (prop === 'amount') {
-      this.amountInINR = getFixedINRAmount(value);
-    }
+  fetchTransfers() {
+    const data = {};
+    data.url_params = JSON.stringify({
+      '{id}': this.id,
+    });
 
-    return super.deserializeProperty(prop, value);
+    data.route_name = 'payment_fetch_transfers';
+    return this.makeGenericAjaxCall({ data });
   }
 
   didDeserialize() {

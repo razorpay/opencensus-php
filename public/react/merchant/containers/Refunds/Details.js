@@ -6,15 +6,12 @@ import * as RefundActions from 'merchant/modules/refunds/details';
 @connect(state => state.refund, RefundActions)
 export default class RefundDetailsContainer extends Component {
   componentWillMount() {
-    let id = this.props.id || this.props.match.params.id;
-    this.props.fetchRefund(id);
+    this.props.fetchItem(this.props.id);
   }
 
   componentWillReceiveProps(nextProps) {
-    let oldId = this.props.id || this.props.match.params.id;
-    let newId = nextProps.id || nextProps.match.params.id;
-    if (oldId !== newId) {
-      this.props.fetchRefund(newId);
+    if (this.props.id !== nextProps.id) {
+      this.props.fetchItem(nextProps.id);
     }
   }
 
@@ -25,7 +22,7 @@ export default class RefundDetailsContainer extends Component {
     if (error) {
       statusMsg = {
         type: 'error',
-        message: this.props.error,
+        message: error,
       };
     }
 

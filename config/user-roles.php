@@ -61,12 +61,10 @@ return [
     'invoice_create'            => array_merge($writers, ['sellerapp']),
     'invoice_edit'              => array_merge($writers, ['sellerapp']),
     'invoice_delete'            => array_merge($writers, ['sellerapp']),
+    'invoice_issue_by_batch'    => $writers,
 
-    'customer_fetch_all'        => $allButSellerApp,
-    'customer_autocomplete'     => $allButSellerApp,
-    'customer_create'           => $writers,
-    'customer_edit'             => $writers,
-    'customer_delete'           => $writers,
+    'customer_read'             => $allButSellerApp,
+    'customer_write'            => $writers,
 
     'item_fetch_all'            => $allButSellerApp,
     'item_fetch_autocomplete'   => $allButSellerApp,
@@ -74,5 +72,10 @@ return [
     'item_edit'                 => $writers,
     'item_delete'               => $writers,
 
-    'marketplace_read'          => $readers
+    'marketplace_read'          => $readers,
+
+    'oauth_read'                => ['owner'],
+
+    'virtual_accounts_read'     => ['owner', 'manager', 'admin'],
+    'virtual_accounts_write'    => ['owner', 'manager', 'admin'],
 ];

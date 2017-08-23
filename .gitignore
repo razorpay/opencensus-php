@@ -17,6 +17,7 @@ environment/.env.testing_docker
 !environment/.env.production
 !environment/.env.beta
 !environment/.env.alpha
+!environment/*.j2
 storage/
 generated/
 grunt.json

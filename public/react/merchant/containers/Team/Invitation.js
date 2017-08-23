@@ -10,17 +10,17 @@ import {
   updateInvitation,
   cancelInvitation,
   fetchTeamDetails,
-} from 'merchant/modules/team';
+} from 'rzp/modules/team';
 
 const ROLES = without(roles, 'owner');
-@connect(null, {
+@connect(state => state.session, {
   fetchTeamDetails,
   resendInvitation,
   cancelInvitation,
   updateInvitation,
   ...NotificationsActions,
 })
-@reduxForm()
+@reduxForm({})
 export default class EditInvitation extends Component {
   componentWillMount() {
     this.props.initialize({
@@ -32,7 +32,7 @@ export default class EditInvitation extends Component {
     return this.props
       .updateInvitation(this.props.invite.id, fieldProps)
       .then(() => {
-        this.props.fetchTeamDetails();
+        this.fetchTeamDetails();
         this.props.showNotification({
           type: 'success',
           message: "Team member's role has been changed successfully",
@@ -50,7 +50,7 @@ export default class EditInvitation extends Component {
     return this.props
       .cancelInvitation(this.props.invite.id)
       .then(() => {
-        this.props.fetchTeamDetails();
+        this.fetchTeamDetails();
         this.props.showNotification({
           type: 'success',
           message: "Team member's invitation has been removed successfully",
@@ -66,10 +66,13 @@ export default class EditInvitation extends Component {
 
   resendInvitation = () => {
     let invite = this.props.invite;
+    let data = {
+      sender_name: this.props.user.user.name,
+    };
     return this.props
-      .resendInvitation(invite.id)
+      .resendInvitation(invite.id, data)
       .then(() => {
-        this.props.fetchTeamDetails();
+        this.fetchTeamDetails();
         this.props.showNotification({
           type: 'success',
           message: `Invitation has been successfully resent to ${invite.email}`,
@@ -83,17 +86,25 @@ export default class EditInvitation extends Component {
       });
   };
 
+  fetchTeamDetails = () => {
+    this.props.fetchTeamDetails({ merchant_id: this.props.user.current });
+  };
+
   render() {
     const { handleSubmit, invite } = this.props;
 
     return (
       <tr>
-        <td>{invite.email}</td>
+        <td>
+          {invite.email}
+        </td>
         <td>
           <Field name="role" component="select" class="form-control">
-            {Object.keys(ROLES).map(role => (
-              <option key={role} value={role}>{ROLES[role].label}</option>
-            ))}
+            {Object.keys(ROLES).map(role =>
+              <option key={role} value={role}>
+                {ROLES[role].label}
+              </option>
+            )}
           </Field>
         </td>
 

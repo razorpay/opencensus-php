@@ -3,9 +3,9 @@ import ajax from 'merchant/utils/ajax';
 import store from 'merchant/store';
 
 /*
-  Abstrace class for most CRUD entities. The base Entity has methods like
-  - Class.fetchAll(params)
-  - Class.fetch(params)
+  Abstract class for most CRUD entities. The base Entity has methods like
+  - instance.fetchAll(params)
+  - instance.fetch(params)
   - instance.save()
   - instance.delete()
 */
@@ -34,7 +34,7 @@ export default class Entity extends Base {
       data,
     }).then(response => {
       response.data.items = response.data.items.map(item =>
-        new Klass().deserialize(item)
+        new Klass(item).deserialize()
       );
       return response;
     });
@@ -43,7 +43,7 @@ export default class Entity extends Base {
   fetch(id, data = {}) {
     const Klass = this.constructor;
     return ajax(`${this.resourceUrl}/${id}`, { data }).then(response => {
-      return new Klass().deserialize(response.data.items[0]);
+      return new Klass(response.data.items[0]).deserialize();
     });
   }
 
@@ -54,7 +54,7 @@ export default class Entity extends Base {
     let [url, method] = this.getResourceUrlAndMethod();
 
     return ajax({ url, method, data }).then(response => {
-      return new Klass().deserialize(response.data);
+      return new Klass(response.data).deserialize();
     });
   }
 

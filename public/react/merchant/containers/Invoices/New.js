@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import AsyncButton from 'react-async-button';
 import moment from 'moment';
+import Amount from 'rzp/ui/Amount';
 import Alert from 'rzp/ui/Forms/Alert';
 import DatePickerField from 'rzp/ui/Forms/DatePickerField';
 import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
@@ -17,8 +18,7 @@ import LineItemTable from './LineItemTable';
 import CustomerCreation from 'merchant/containers/Customers/New';
 import IssueConfirmModal from './IssueConfirmModal';
 import AddInternalNoteModal from './AddInternalNoteModal';
-import InvoiceBreadcrumbNav
-  from 'merchant/components/Invoices/InvoiceBreadcrumbNav';
+import InvoiceBreadcrumbNav from 'merchant/components/Invoices/InvoiceBreadcrumbNav';
 import InvoiceInfo from 'merchant/components/Invoices/InvoiceInfo';
 import InvoiceNotes from 'merchant/components/Invoices/InvoiceNotes';
 import InvoiceLogo from 'merchant/components/Invoices/InvoiceLogo';
@@ -64,7 +64,7 @@ const selector = formValueSelector('newInvoice');
 @withRouter
 @connect(
   state => {
-    let customers = state.customers.customers;
+    let customers = state.customers.items;
     return {
       session: state.session,
       customers,
@@ -122,7 +122,14 @@ export default class InvoicesNewContainer extends Component {
     let invoiceId = this.props.match.params.id;
 
     if (invoiceId) {
-      promises.push(this.props.fetchInvoice(invoiceId));
+      promises.push(
+        this.props.fetchInvoice(invoiceId).then(invoice => {
+          if (invoice.partial_payment) {
+            this.props.fetchInvoicePayments(invoiceId);
+          }
+          return invoice;
+        })
+      );
     } else {
       this.props.initializeInvoice();
     }
@@ -155,14 +162,7 @@ export default class InvoicesNewContainer extends Component {
       let config = response.data;
       let user = this.props.session.user;
       let merchant = user.merchants[user.current];
-      let logoUrl = '';
-
-      if (config.logo_url) {
-        let cdnName = window.location.hostname.indexOf('-') !== -1
-          ? 'betacdn'
-          : 'cdn';
-        logoUrl = `https://${cdnName}.razorpay.com${config.logo_url.replace(/\.([^\.]+$)/, '_medium.$1')}`;
-      }
+      let logoUrl = config.logo_url;
 
       this.setState({
         merchantLogoUrl: logoUrl,
@@ -312,16 +312,16 @@ export default class InvoicesNewContainer extends Component {
     let invoice = this.props.invoice;
     this.context.confirm({
       header: 'Delete Invoice?',
-      message: () => (
+      message: () =>
         <div class="text-semi-muted">
           <p>
             The Invoice will be deleted. There is no coming back!. Are you sure?
           </p>
           <div>
-            If you have added any item or customer, you can still use them in other invoices.
+            If you have added any item or customer, you can still use them in
+            other invoices.
           </div>
-        </div>
-      ),
+        </div>,
       affirmativeLabel: 'Yes, Delete',
       affirmativePendingLabel: 'Deleting...',
       abortLabel: "No, don't!",
@@ -351,13 +351,13 @@ export default class InvoicesNewContainer extends Component {
     let invoice = this.props.invoice;
     this.context.confirm({
       header: 'Cancel Invoice?',
-      message: () => (
+      message: () =>
         <div class="text-semi-muted">
           <p>
-            The Invoice will be cancelled and the customer will not be able to pay for it.
+            The Invoice will be cancelled and the customer will not be able to
+            pay for it.
           </p>
-        </div>
-      ),
+        </div>,
       affirmativeLabel: 'Yes, Cancel',
       affirmativePendingLabel: 'Cancelling...',
       abortLabel: "No, don't!",
@@ -402,28 +402,32 @@ export default class InvoicesNewContainer extends Component {
   };
 
   handleBackNavClick = () => {
-    if (!(this.props.anyTouched && this.props.dirty)) {
-      return this.navigateToList();
-    }
+    this.navigateToList();
 
-    this.context
-      .confirm({
-        header: 'Unsaved changes',
-        message: 'You have some unsaved changes. Do you want to leave this page ?',
-        affirmativeLabel: 'Yes, leave',
-        abortLabel: 'No, stay',
-      })
-      .then(() => {
-        this.navigateToList();
-      });
+    // TODO: should figure out why `anyTouched` & `dirty` flags are set to true
+    // if (!(this.props.anyTouched && this.props.dirty)) {
+    //   return this.navigateToList();
+    // }
+
+    // this.context
+    //   .confirm({
+    //     header: 'Unsaved changes',
+    //     message: 'You have some unsaved changes. Do you want to leave this page ?',
+    //     affirmativeLabel: 'Yes, leave',
+    //     abortLabel: 'No, stay',
+    //   })
+    //   .then(() => {
+    //     this.navigateToList();
+    //   });
   };
 
   handleWindowClose() {
-    window.onbeforeunload = function() {
-      return this.props.anyTouched && this.props.dirty
-        ? 'Unsaved changes will be deleted. Do you want to leave the page?'
-        : null;
-    }.bind(this);
+    // TODO: should figure out why `anyTouched` & `dirty` flags are set to true
+    // window.onbeforeunload = function() {
+    //   return this.props.anyTouched && this.props.dirty
+    //     ? 'Unsaved changes will be deleted. Do you want to leave the page?'
+    //     : null;
+    // }.bind(this);
   }
 
   componentWillUnmount() {
@@ -469,9 +473,7 @@ export default class InvoicesNewContainer extends Component {
                       <div class="invoice">
                         {isTestMode &&
                           <div class="alert-sm alert-warning testmode-warning">
-                            Invoice is created in
-                            {' '}
-                            <b>Test Mode</b>
+                            Invoice is created in <b>Test Mode</b>
                             . Only test payments can be made for this invoice
                           </div>}
                         <InvoiceLogo
@@ -499,7 +501,6 @@ export default class InvoicesNewContainer extends Component {
                                     class="form-control input-xs"
                                     placeholder="Receipt number"
                                     disabled={locked}
-                                    autoFocus={true}
                                   />}
                             </div>
 
@@ -515,7 +516,16 @@ export default class InvoicesNewContainer extends Component {
                           </div>
                           <div class="col-md-6 text-right">
                             <label>AMOUNT DUE</label>
-                            <h3 class="inv__amountdue">₹ {invoiceTotal}</h3>
+                            <h3 class="inv__amountdue">
+                              {invoice.amount_due
+                                ? <Amount
+                                    value={invoice.amount_due}
+                                    currency={invoice.currency}
+                                  />
+                                : <span>
+                                    ₹ {invoiceTotal}
+                                  </span>}
+                            </h3>
                           </div>
                         </div>
 
@@ -528,14 +538,8 @@ export default class InvoicesNewContainer extends Component {
                               component={TypeAhead}
                               options={this.props.customers}
                               selected={this.props.customer_id}
-                              selectedLabel={selectedCustomer => {
-                                return (
-                                  selectedCustomer.name ||
-                                  selectedCustomer.contact ||
-                                  selectedCustomer.email
-                                );
-                              }}
                               optionLabelPath="displayName"
+                              selectedOptionLabelPath="selectedDisplayName"
                               placeholder="Select a customer"
                               onQuickAdd={this.quickCreateCustomer}
                               disabled={isIssued || locked}
@@ -552,11 +556,7 @@ export default class InvoicesNewContainer extends Component {
                                   value
                                 );
                                 if (selected) {
-                                  return (
-                                    selected.name ||
-                                    selected.contact ||
-                                    selected.email
-                                  );
+                                  return selected.selectedDisplayName;
                                 }
                                 return value;
                               }}
@@ -564,9 +564,14 @@ export default class InvoicesNewContainer extends Component {
 
                             {customer &&
                               <div class="inv__customerdetails">
-                                {customer.name && <div>{customer.contact}</div>}
+                                {customer.name &&
+                                  <div>
+                                    {customer.contact}
+                                  </div>}
                                 {customer.name || customer.contact
-                                  ? <div>{customer.email}</div>
+                                  ? <div>
+                                      {customer.email}
+                                    </div>
                                   : ''}
                               </div>}
                           </div>
@@ -601,8 +606,28 @@ export default class InvoicesNewContainer extends Component {
                               component={LineItemTable}
                               items={this.props.items}
                               disabled={isIssued || locked}
+                              invoice={invoice}
                               invoiceTotal={invoiceTotal}
                             />
+                          </div>
+                        </div>
+
+                        <div class="row">
+                          <div class="col-md-12">
+                            <ShowWhen featureEnabled="Invoice_Partial_Payments">
+                              <div class="rzpCheckbox rzpCheckbox-sm">
+                                <Field
+                                  name="partial_payment"
+                                  id="partial_payment"
+                                  component="input"
+                                  type="checkbox"
+                                  disabled={locked}
+                                />
+                                <label for="partial_payment">
+                                  Enable Partial Payments
+                                </label>
+                              </div>
+                            </ShowWhen>
                           </div>
                         </div>
 
@@ -708,7 +733,7 @@ export default class InvoicesNewContainer extends Component {
                                 onClick={this.deleteInvoice}
                                 disabled={this.state.isSaving}
                               >
-                                <i class="icon icon-done" />
+                                <i class="icon icon-close" />
                                 <span>Delete Invoice</span>
                               </button>}
                             {isIssued &&
@@ -718,7 +743,7 @@ export default class InvoicesNewContainer extends Component {
                                 onClick={this.cancelInvoice}
                                 disabled={this.state.isSaving}
                               >
-                                <i class="icon icon-done" />
+                                <i class="icon icon-close" />
                                 <span>Cancel Invoice</span>
                               </button>}
                           </div>

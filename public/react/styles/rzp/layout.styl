@@ -1,6 +1,10 @@
 // Only page layout styles should reside in this file.
 // This will be moved under `rzp` later
 
+a, .btn-link {
+  color: $primary-color;
+}
+
 html, body {
   background-color: #f0f3f4;
   overflow-x: hidden;
@@ -17,6 +21,12 @@ body {
 .icon {
   vertical-align: text-bottom;
   font-size: 110%;
+  line-height: 0.8;
+
+  &--formal {
+    background-color: #FAFBFC;
+    border: 1px solid #DFE1EC;
+  }
 }
 
 .layout {
@@ -28,7 +38,7 @@ body {
 .main-content {
   margin-left: 200px;
   margin-top: 51px;
-  @media $sm-max {
+  @media (max-width $screen-sm-min) {
     margin-left: 45px;
   }
 }
@@ -50,9 +60,8 @@ body {
   background-color: #2E3345;
   width: 200px;
   z-index: 1111;
-  @media $sm-max {
+  @media (max-width $screen-sm-min) {
     width: 45px;
-    overflow: hidden;
   }
 
   .brand-logo {
@@ -89,7 +98,7 @@ body {
     margin-bottom: 10px;
     padding-left: 20px;
     padding-top: 10px;
-    @media $sm-max {
+    @media (max-width $screen-sm-min) {
       display: none;
     }
 
@@ -106,9 +115,13 @@ body {
     bottom: 0;
     left: 0;
     right: 0;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
     padding-bottom: 15px;
     padding-top: 15px;
+    @media (max-width $screen-sm-min) {
+      padding-bottom: 60px;
+    }
 
     .text-warning {
       color: #fbe165;
@@ -121,7 +134,7 @@ body {
     display: block;
     line-height: 40px;
     padding: 0 15px;
-    @media $sm-max {
+    @media (max-width $screen-sm-min) {
       white-space: nowrap;
     }
 
@@ -154,7 +167,7 @@ body {
   border-bottom: 0;
   background-color: #fff;
   box-shadow: 0 2px 2px rgba(0, 0, 0, 0.05), 0 1px 0 rgba(0, 0, 0, 0.05);
-  @media $sm-max {
+  @media (max-width $screen-sm-min) {
     margin-left: 45px;
   }
 }
@@ -179,7 +192,7 @@ body {
   font-size: 12px;
   color: #8F96B3;
   margin-left: 200px;
-  @media $sm-max {
+  @media (max-width $screen-sm-min) {
     margin-left: 45px;
   }
 
@@ -227,14 +240,17 @@ body {
 }
 
 .content-wrapper {
-  padding: 20px;
-  @media $sm-max {
+  padding: 24px;
+  @media (max-width $screen-sm-min) {
     padding: 10px;
   }
 }
 
 .content-sm {
-  max-width: 800px
+  max-width: 800px;
+  margin: auto;
+  min-height: 300px;
+  background-color: #fff;
 }
 
 // React Modal Style Overrides
@@ -324,7 +340,24 @@ body.ReactModal__Body--open {
 
 .DateInput__display-text {
   color: #aaa;
-  font-size: 12px;
+  font-size: 14px;
+}
+
+.SingleDatePickerInput__clear-date {
+  margin: 0;
+  padding: 0 8px;
+  svg {
+    fill: #ccc;
+  }
+}
+
+.SingleDatePickerInput__clear-date--hover,
+.SingleDatePickerInput__clear-date:focus {
+  background-color: transparent;
+  border-radius: 0;
+  svg {
+    fill: #666;
+  }
 }
 
 .DateInput__display-text--disabled {
@@ -405,16 +438,18 @@ body.ReactModal__Body--open {
 .quick-create {
   padding: 2px 5px;
   background-color: rgba(195, 195, 195, 0.23);
-  color: #337ab7;
+  color: $primary-color;
   cursor: pointer;
   font-size: 12px;
 }
 
-.row-action > .btn-group {
+.row-action > .btn-group,
+.row-action.btn-group {
   visibility: hidden;
 }
 
-tr:hover .row-action > .btn-group {
+tr:hover .row-action > .btn-group,
+tr:hover .row-action.btn-group {
   visibility: visible;
 }
 
@@ -424,9 +459,84 @@ tr:hover .row-action > .btn-group {
   }
 }
 
+.pair-group-item {
+  display: table;
+  width: 100%;
+  padding: 8px;
+  margin-bottom: -1px;
+  position: relative;
+
+  .pair-label, .pair-value, .pair-separator {
+    display: table-cell;
+    vertical-align: top;
+  }
+  .pair-label {
+    width: 39%;
+    color: #8991AE;
+    padding: 0; // to override col- padding
+  }
+  /*
+  // Separator is colon as per old design. Currently not being used but will be removed once design is concretely confirmed all across
+  .pair-separator {
+    padding: 0 4px;
+    color: #afafaf;
+  }
+  */
+  .pair-value {
+    width: 60%;
+    padding-left: 8px;
+
+    > span {
+      vertical-align: top;
+    }
+
+    // check icon looks mis-aligned without negative margin
+    > .icon {
+      margin-left: -3px;
+    }
+
+    textarea {
+      resize: vertical;
+    }
+
+    // For nested values
+    .table-responsive {
+      margin-top: 8px;
+
+      .pair-list-item {
+        .item-label {
+          font-weight: bold;
+          margin: 4px 0;
+          text-transform: capitalize;
+        }
+      }
+    }
+  }
+}
+
+.primary-link {
+  color: $primary-color;
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  word-break: break-word;
+  display: inline-block;
+}
+
+.list-table {
+  padding: 8px;
+  margin-top: 8px;
+  padding-top: 24px;
+  border-top: 1px solid #e2e8ea;
+
+  .list-label {
+    color: #58666e;
+  }
+}
+
 .details-row-container {
   .list-group-item {
-    span:first-child {
+    > span:first-child {
       margin-right: 20px;
     }
 
@@ -442,6 +552,7 @@ tr:hover .row-action > .btn-group {
 
     .list-group, .table {
       margin-bottom: 0;
+      border-bottom: 0;
     }
   }
 }
@@ -456,11 +567,28 @@ tr:hover .row-action > .btn-group {
 }
 
 .txn-details {
-  .panel {
+  > .panel {
     border: none;
 
     > .panel-heading {
-      border-bottom: none;
+      background-color: #fff;
+      line-height: 74px;
+      vertical-align: middle;
+      padding-top: 0;
+      padding-bottom: 0;
+      font-size: 18px;
+
+      .btn-toolbar {
+        padding-top: 26px;
+      }
+
+      > .icon {
+        padding: 4px 4px 0;
+      }
+
+      .icon + strong {
+        margin-left: 16px;
+      }
 
       > .close {
         display: none;
@@ -480,21 +608,28 @@ tr:hover .row-action > .btn-group {
 }
 
 .SwitchMerchantDropdown {
-  .powerselect {
-    height: auto
+  .PowerSelect {
     border: 0;
     width: 145px;
   }
 
-  .powerselect__trigger {
-    padding: 15px;
+  .PowerSelect__Trigger {
+    height: auto
+    padding: 8px;
   }
 
-  .powerselect__trigger-status {
-    top: 24px;
+  .PowerSelect__TriggerStatus {
+    padding-left: 0;
+    &::before {
+      border-top-color: #777;
+    }
   }
 
-  .powerselect__placeholder {
+  .PowerSelect__TriggerLabel {
+    padding-right: 8px;
+  }
+
+  .PowerSelect__Placeholder {
     color: #777;
   }
 }
@@ -507,5 +642,176 @@ tr:hover .row-action > .btn-group {
   .icon-done {
     margin-top: 2px;
     margin-left: 5px;
+  }
+}
+
+.detail-row {
+  margin-bottom: 12px;
+  padding-left: 5px;
+
+  > label {
+    font-weight: normal;
+    color: #999;
+
+    &::after {
+      content: ':';
+      position: absolute;
+      right: 0;
+      color: #ccc;
+    }
+  }
+}
+
+.amount {
+  white-space: nowrap;
+}
+
+.ProfileDropdown {
+  min-width: 300px;
+  padding: 0;
+  line-height: 1.8;
+
+  .media {
+    margin-top: 0;
+    padding: 10px 12px;
+
+    + .media {
+      border-top: 1px solid #eee;
+    }
+  }
+
+  .media-left {
+    vertical-align: middle;
+  }
+
+  .media-action {
+    cursor: pointer;
+
+    &:hover {
+      background-color: #F7F8FA;
+    }
+  }
+
+  .media-object {
+    width: 40px;
+    text-align: center;
+  }
+
+  .merchantname {
+    font-size: 16px;
+    font-weight: bold;
+  }
+
+  .icon-business,
+  .icon-account {
+    font-size: 40px;
+    color: #dadada;
+  }
+
+  .icon-help,
+  .icon-undo {
+    font-size: 20px;
+  }
+}
+
+.pre {
+  white-space: pre;
+}
+
+.notes {
+  .note {
+    position: relative;
+    margin-bottom: 12px;
+
+    .icon-close {
+      position: absolute;
+      right: -31px;
+      top: 1px;
+      padding: 8px;
+      cursor: pointer;
+      color: #ccc;
+
+      &:hover {
+        color: #aaa;
+      }
+    }
+
+    .key {
+      margin-bottom: 4px;
+    }
+  }
+
+  .add-note {
+    padding-left: 0;
+  }
+}
+
+.SliderPanel__Body {
+  .note {
+    .icon-close {
+      right: -3px;
+    }
+    .key{
+      padding-right: 32px;
+    }
+  }
+
+  label {
+    font-weight: normal;
+    line-height: 29px;
+  }
+
+  .btn-toolbar {
+    padding: 8px;
+    margin-left: 0;
+    margin-right: 0;
+
+    .btn {
+      padding: 8px 12px;
+    }
+
+    >.btn-half {
+      width: 48%;
+      margin-left: 0;
+    }
+
+    > .btn-half + .btn {
+      margin-left: 4%;
+    }
+  }
+}
+
+.secondary-details {
+  margin-top: 10px;
+  border-left: 2px solid rgb(234, 239, 240);
+
+  .table-responsive {
+    max-width: 475px;
+    border-left: 4px solid #e9eff0;
+    border-right: 1px solid #e9eff0;
+  }
+
+  .table {
+    margin: 0;
+  }
+
+  > .detail-row > label {
+    margin-left: -15px;
+    padding-left: 30px;
+  }
+}
+
+.info-tooltip {
+  font-size: 13px;
+  color: #ccc;
+  margin-left: 4px;
+}
+
+.empty-table-message, .table > tbody > tr > td.empty-table {
+  padding: 75px 50px;
+  text-align: center;
+
+  &:hover {
+    background: #fff;
   }
 }

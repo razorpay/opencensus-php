@@ -406,7 +406,28 @@ angular
           element.select2(options);
 
           // Call custom function to attach event listener which performs action when an option is selected
-          scope.initRoleSelector(element);
+          if (typeof scope.initRoleSelector === 'function') {
+            scope.initRoleSelector(element);
+          }
+        },
+      };
+    },
+  ])
+  /*
+   * Usage:
+   * - Check app_merchant_detail.html code for example: <ul class="dropdown-menu" style="list-style:none" ui-dropdown>
+   * - This directive helps to avoid closing of bootstrap dropdown when clicked inside dropdown
+   */
+  .directive('uiTimeDropdown', [
+    '$parse',
+    function($parse) {
+      return {
+        restrict: 'A',
+        link: function(scope, element, attrs) {
+          element.click(function(e) {
+            e.stopPropagation();
+            return false;
+          });
         },
       };
     },

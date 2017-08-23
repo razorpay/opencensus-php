@@ -1,8 +1,7 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-import TetherComponent from 'react-tether';
+import HeaderAction from 'rzp/ui/HeaderAction';
 import Alert from 'rzp/ui/Forms/Alert';
-import Header from 'rzp/ui/Header/Header';
 import ShowWhen from 'merchant/components/ShowWhen';
 import ListContainer from 'merchant/containers/ListContainer';
 import ReferralsList from 'merchant/components/Referrals/ReferralsList';
@@ -63,13 +62,7 @@ export default class ReferralsListContainer extends ListContainer {
 
     return (
       <div class="content-wrapper">
-        <TetherComponent
-          target="#myaccount-header"
-          attachment="top right"
-          targetAttachment="top right"
-          offset="-8px 0"
-        >
-          <div />{/* required by react-tether */}
+        <HeaderAction>
           <ShowWhen notMyRole="support">
             <div class="btn-toolbar">
               <button
@@ -81,7 +74,7 @@ export default class ReferralsListContainer extends ListContainer {
               </button>
             </div>
           </ShowWhen>
-        </TetherComponent>
+        </HeaderAction>
 
         <Alert type={status.type} message={status.message} />
 

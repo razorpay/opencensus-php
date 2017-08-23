@@ -69,26 +69,6 @@ class TransactionController extends Controller
         return AppResponse::jsonResponse([], $data);
     }
 
-    public function getTransactions($mode)
-    {
-        $this->checkMode($mode);
-
-        $input = Input::all();
-
-        list($error, $data) = (new Api\Service)->fetchCollection($input, $mode, 'transaction');
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getTransaction($mode, $id = null)
-    {
-        $this->checkMode($mode);
-
-        list($error, $data) = (new Api\Service)->fetchEntity($id, $mode, 'transaction');
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function postAddfunds($mode)
     {
         $this->checkMode($mode);
@@ -153,11 +133,26 @@ class TransactionController extends Controller
 
         list($error, $data) = (new Api\Service)->getInvoiceReportData($mode, $input);
 
+        $month = intval($input['month']);
+        $year = intval($input['year']);
+
+        // GST is applicable from 1st July 2017
+        $isGstApplicable = (($year >= 2017) and ($month >= 7));
+
         if ($error === null)
         {
-            $merchantId = $data['merchant']['id'];
+            $merchantId = $data['merchant_id'];
+
+            list($error, $merchant) = (new Merchant\Service)->fetchMerchantFromApi($merchantId);
+            $data['merchant'] = $merchant;
 
             $merchantDetails = (new MerchantDetails\Service)->fetchDetails($merchantId);
+
+            $gst = (empty($merchantDetails['gstin']) === false) ? $merchantDetails['gstin'] :
+                    ((empty($merchantDetails['p_gstin']) === false) ? $merchantDetails['p_gstin'] : '');
+
+            $data['gst'] = $gst;
+            $data['isGstApplicable'] = $isGstApplicable;
 
             $data['merchant_details'] = $merchantDetails;
 

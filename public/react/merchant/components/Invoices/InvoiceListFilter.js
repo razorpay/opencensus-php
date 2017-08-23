@@ -19,7 +19,7 @@ export default ({ type, ...otherProps }) => {
       </div>
 
       <div class="form-group list-filter-item">
-        <label>{label} ID</label>
+        <label>{label} Id</label>
         <Field name="id" component="input" class="form-control input-sm" />
       </div>
 

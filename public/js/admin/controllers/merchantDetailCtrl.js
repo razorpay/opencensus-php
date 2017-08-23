@@ -62,6 +62,7 @@ app
       $scope.selected_groups = {};
 
       generateMerchant();
+      getOffersOfMerchant();
       getGatewayRulesOfMerchant();
 
       // Gateway map is dependent upon method
@@ -200,11 +201,11 @@ app
       var getReferer = function(tags) {
         for (var i in tags) {
           var tag = tags[i];
-          if (tag.substr(0, 3).toLowerCase() === 'ref') {
+          if (tag.substr(0, 4).toLowerCase() === 'ref-') {
             return tag.substr(4);
           }
         }
-        return false;
+        return '';
       };
 
       $scope.tagMerchant = function(tags) {
@@ -339,6 +340,13 @@ app
                 true
               );
               $scope.merchant.details.activated = 1;
+
+              // Redirect to details page
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -447,6 +455,13 @@ app
                 true
               );
               $scope.merchant.details.live = 1;
+
+              // Redirect to details page
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -479,6 +494,13 @@ app
                 true
               );
               $scope.merchant.details.live = 0;
+
+              // Redirect to details page
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -497,9 +519,10 @@ app
           postMethods[i] = methods[i] ? 1 : 0;
         }
 
-        msg = typeof msg !== 'undefined'
-          ? msg
-          : 'Methods edited successfully: ' + JSON.stringify(methods);
+        msg =
+          typeof msg !== 'undefined'
+            ? msg
+            : 'Methods edited successfully: ' + JSON.stringify(methods);
 
         var data = {
           route_name: 'merchant_put_payment_methods',
@@ -622,6 +645,85 @@ app
             $scope.alerts.addAlert('danger', null, true);
           });
       };
+
+      // Prepare report
+      $scope.prepareReport = function(reportOptions) {
+        var entity = reportOptions.entity;
+        var type = reportOptions.type;
+        var month = reportOptions.month;
+        var year = reportOptions.year;
+        var day = reportOptions.day;
+
+        var data = {
+          month: month,
+          year: year,
+        };
+
+        // Open new window if entity type is 'invoice'
+        if (entity === 'invoice') {
+          return Promise.resolve(
+            window.open(
+              '/admin/live/reports/invoice?year=' +
+                year +
+                '&month=' +
+                month +
+                '&merchant_id=' +
+                $scope.merchant.id,
+              '_blank'
+            )
+          );
+        }
+
+        if (type === 'daily') {
+          data.day = day;
+        }
+
+        var ajaxParams = {
+          params: data,
+        };
+
+        if (entity === 'broking') {
+          ajaxParams.headers = {
+            Accept:
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          };
+        }
+
+        var request = $http.get(
+          '/admin/live/reports/' +
+            entity +
+            '?merchant_id=' +
+            $scope.merchant.id,
+          ajaxParams
+        );
+
+        request
+          .success(function(data) {
+            $scope.alerts.addAlert(
+              'success',
+              'Your report will download shortly',
+              true
+            );
+
+            if (entity === 'broking') {
+              var blob = new Blob([data], {
+                type:
+                  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+              });
+              return saveAs(blob, 'broking_report.xlsx');
+            }
+
+            location.href = data.data.url;
+          })
+          .error(function() {
+            $scope.alerts.addAlert(
+              'danger',
+              'No data found for given time range',
+              true
+            );
+          });
+      };
+
       $scope.assignSchedule = function(data) {
         var data = {
           route_name: 'schedule_assign',
@@ -689,6 +791,40 @@ app
           })
           .error(function() {
             alerts.addAlert('danger', null, true);
+          });
+      };
+
+      $scope.assignMerchantHandle = function(handle) {
+        var request = $http({
+          method: 'put',
+          url: '/admin/generic',
+          data: {
+            route_name: 'merchant_edit_config',
+            merchant_id: $scope.merchant.id,
+            body: {
+              handle: handle,
+            },
+          },
+        });
+
+        request
+          .success(function(data) {
+            if (data.success) {
+              $scope.alerts.addAlert(
+                'success',
+                'Merchant handle saved successfully',
+                true
+              );
+              generateMerchant();
+            } else {
+              $scope.alerts.resetAlerts();
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
+          })
+          .error(function() {
+            $scope.alerts.addAlert('danger', null, true);
           });
       };
 
@@ -927,6 +1063,8 @@ app
         delete bankAccount.id;
         delete bankAccount.merchant_id;
         delete bankAccount.mpin_set;
+        delete bankAccount.ifsc;
+        delete bankAccount.name;
 
         var merchantDetailsData = {
           bank_branch_ifsc: bankAccount.ifsc_code,
@@ -1065,6 +1203,13 @@ app
                 true
               );
               $scope.merchant.details.archived_at = null;
+
+              // Redirect to details page
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -1099,6 +1244,13 @@ app
                 true
               );
               $scope.merchant.details.suspended_at = Date.now() / 1000;
+
+              // Redirect to details page
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -1133,6 +1285,13 @@ app
                 true
               );
               $scope.merchant.details.suspended_at = null;
+
+              // Redirect to details page
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -1311,6 +1470,18 @@ app
           );
         }, $.noop);
       };
+
+      $scope.openCreateOffer = function() {
+        var modalInstance = $modal.open({
+          templateUrl: 'createMerchantOfferContent.html',
+          controller: 'createMerchantOfferModalCtrl',
+          backdrop: 'static',
+        });
+        modalInstance.result.then(function(data) {
+          $scope.createMerchantOffer(data.offer, data.mode);
+        }, $.noop);
+      };
+
       $scope.openEditMerchantEmail = function() {
         var modalInstance = $modal.open({
           templateUrl: 'editMerchantEmailModalContent.html',
@@ -1400,6 +1571,22 @@ app
           $scope.assignBanks(bankdata);
         }, $.noop);
       };
+
+      $scope.openAssignMerchantHandle = function() {
+        var modalInstance = $modal.open({
+          templateUrl: 'assignMerchantHandle.html',
+          controller: 'assignMerchantHandleCtrl',
+          resolve: {
+            handle: function() {
+              return $scope.merchant.details.handle;
+            },
+          },
+        });
+        modalInstance.result.then(function(handle) {
+          $scope.assignMerchantHandle(handle);
+        }, $.noop);
+      };
+
       $scope.openAddAdjustment = function() {
         var modalInstance = $modal.open({
           templateUrl: 'addAdjustmentModalContent.html',
@@ -1469,6 +1656,23 @@ app
             }
           });
         });
+      };
+
+      // Open download report modal
+      $scope.openDownloadReport = function() {
+        var modalInstance = $modal.open({
+          templateUrl: 'downloadReportModalContent.html',
+          controller: 'downloadReportModalCtrl',
+          resolve: {
+            merchant: function() {
+              return $scope.merchant.details;
+            },
+          },
+        });
+
+        modalInstance.result.then(function(reportOptions) {
+          $scope.prepareReport(reportOptions);
+        }, $.noop);
       };
 
       function getCreditsLog(mode) {
@@ -1550,13 +1754,109 @@ app
         $scope.terminals = terminals;
       }
 
+      // Create mapping for is vs admin details to be shown in table
+      function createMapping(admins) {
+        $scope.adminMap = {};
+
+        admins.forEach(function(admin) {
+          var adminObj = {
+            id: admin.id,
+            name: admin.name,
+            role:
+              admin.roles.length && admin.roles[0].name
+                ? admin.roles[0].name
+                : '--',
+          };
+
+          $scope.adminMap[admin.id] = adminObj; // create mapping id - name
+        });
+      }
+
+      // Fetch list of admins
+      var users = organization.fetchUsers();
+
+      if (typeof users.then === 'function') {
+        users.then(createMapping);
+      } else {
+        createMapping(users);
+      }
+
+      // Get offers of merchant to display in the list
+      function getOffersOfMerchant() {
+        var data = {
+          route_name: 'admin_fetch_entity_multiple',
+          url_params: {
+            '{type}': 'offer',
+          },
+          mode: 'live',
+          query_params: {
+            merchant_id: $scope.merchant.id,
+          },
+        };
+        var request = $http.get('/admin/generic', {
+          params: data,
+        });
+
+        request
+          .success(function(data) {
+            if (data.success) {
+              $scope.merchantOffers = data.data.items;
+            } else {
+              $scope.alerts.resetAlerts(true);
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
+          })
+          .error(function() {
+            $scope.alerts.resetAlerts(true);
+            $scope.alerts.addAlert('danger', null);
+          });
+      }
+
+      // Create merchant offer from the modal form
+      $scope.createMerchantOffer = function(offer, mode) {
+        var request = $http({
+          url: 'admin/generic',
+          method: 'POST',
+          data: {
+            route_name: 'offer_create',
+            content_type: 'application/json',
+            mode: mode,
+            merchant_id: $scope.merchant.id,
+            body: offer,
+          },
+        });
+
+        request
+          .success(function(data) {
+            if (data.success) {
+              $scope.alerts.addAlert(
+                'success',
+                'Offer is successfully created',
+                true
+              );
+
+              getOffersOfMerchant(); // Update offers list in merchant details when offer is created
+            } else {
+              $scope.alerts.resetAlerts();
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
+          })
+          .error(function() {
+            $scope.alerts.addAlert('danger', null, true);
+          });
+      };
+
       function getGatewayRulesOfMerchant() {
         var data = {
           route_name: 'admin_fetch_entity_multiple',
           url_params: {
             '{type}': 'gateway_rule',
           },
-          mode: $scope.mode,
+          mode: 'live',
           query_params: {
             merchant_id: $scope.merchant.id,
           },
@@ -1610,12 +1910,25 @@ app
               $scope.selected_admins = [];
 
               // Re-populated array with selected admin ids
-              merchantAdmins.map(function(admin) {
+              merchantAdmins.items.map(function(admin) {
                 $scope.selected_admins.push(admin.id);
               });
 
               fetchBalance();
               getMerchantFeatures();
+
+              $scope.hasSettlementSchedule = false;
+              if ($scope.merchant.schedule_tasks) {
+                for (var key in $scope.merchant.schedule_tasks.items) {
+                  if (
+                    $scope.merchant.schedule_tasks.items[key]['type'] ===
+                    'settlement'
+                  ) {
+                    $scope.hasSettlementSchedule = true;
+                    break;
+                  }
+                }
+              }
 
               $scope.merchant.creditsLogMode = 'live';
               getCreditsLog($scope.merchant.creditsLogMode);
@@ -1810,6 +2123,7 @@ app
       // by the API as false
       var forcedMethods = [
         'aeps',
+        'bank_transfer',
         'mobikwik',
         'payzapp',
         'payumoney',
@@ -1932,6 +2246,20 @@ app
       };
     },
   ])
+  .controller('assignMerchantHandleCtrl', [
+    '$scope',
+    '$modalInstance',
+    'handle',
+    function($scope, $modalInstance, handle) {
+      $scope.handle = handle;
+      $scope.ok = function(handle) {
+        $modalInstance.close(handle);
+      };
+      $scope.cancel = function() {
+        $modalInstance.dismiss('cancel');
+      };
+    },
+  ])
   .controller('addAdjustmentModalCtrl', [
     '$scope',
     '$modalInstance',
@@ -1970,8 +2298,7 @@ app
 
       $scope.adminMap = {};
 
-      // Fetch list of admins
-      organization.fetchUsers().then(function(users) {
+      function createMapping(users) {
         $scope.admins = [];
         users.forEach(function(admin) {
           var adminObj = {
@@ -1983,7 +2310,16 @@ app
           $scope.admins.push(adminObj); // create admin users object
           $scope.adminMap[admin.id] = admin.name; // create mapping id - name
         });
-      });
+      }
+
+      // Fetch list of admins
+      $scope.users = organization.fetchUsers();
+
+      if (typeof $scope.users.then === 'function') {
+        $scope.users.then(createMapping);
+      } else {
+        createMapping($scope.users);
+      }
 
       // Remove role which is already selected
       $scope.removeUser = function(adminId) {
@@ -2036,6 +2372,111 @@ app
         // We convert it back from INR to paise.
         merchant.max_payment_amount = merchant.max_payment_amount * 100;
         $modalInstance.close(merchant);
+      };
+      $scope.cancel = function() {
+        $modalInstance.dismiss('cancel');
+      };
+    },
+  ])
+  .controller('createMerchantOfferModalCtrl', [
+    '$scope',
+    'dateFactory',
+    'utilMapping',
+    '$modalInstance',
+    function($scope, dateFactory, utilMapping, $modalInstance) {
+      $scope.offer = {};
+      $scope.mode = { value: 'live' }; //set default mode as test
+
+      // Payment network map to have different dropdown values depending upon payment method
+      $scope.updatePaymentNetworkMap = function() {
+        switch ($scope.offer.payment_method) {
+          case 'card':
+          case 'emi':
+            $scope.paymentNetworkMap = utilMapping.getMap('networkMap');
+            break;
+          case 'wallet':
+            $scope.paymentNetworkMap = utilMapping.getMap('walletMap');
+            break;
+          default:
+            $scope.paymentNetworkMap = {};
+        }
+      };
+
+      $scope.date = dateFactory.getHandler($scope);
+      $scope.date.dateOptions['showWeeks'] = false;
+      $scope.date.dateOptions['minDate'] = moment(); // Avoid selection of date before today
+
+      var today = new Date();
+      $scope.currentDate = today.setHours(0, 0, 0, 0);
+      $scope.offer_time = {
+        starts: today,
+        ends: today,
+      };
+
+      function cleanFields() {
+        var offer = Object.assign({}, $scope.offer);
+        // 1. iins is for only card and emi.
+        if (['card', 'emi'].indexOf(offer['payment_method']) === -1) {
+          delete offer['iins'];
+        } else if (offer['iins']) {
+          offer['iins'] = offer['iins'].split(','); // Convert command separate values to array
+        }
+
+        // 2. Max payment count to be sent only when payment method = card
+        if (offer['payment_method'] !== 'card') {
+          delete offer['max_payment_count'];
+        }
+
+        // 3. Payment method is not required for upi
+        if (offer['payment_method'] === 'upi') {
+          delete offer['payment_network'];
+        }
+
+        // 4. Convert to array
+        if (offer['linked_offer_ids']) {
+          offer['linked_offer_ids'] = offer['linked_offer_ids'].split(',');
+        }
+
+        // 5. Percent rate has limit 0-10000 (view takes from 0-100)
+        offer['percent_rate'] = offer['percent_rate'] * 100;
+
+        // 6. Form the start and end time in unix timestamp form date and time taken separately for both start and end date
+        var startTime = new Date($scope.offer_time.starts);
+        var endTime = new Date($scope.offer_time.ends);
+
+        if (offer.starts_at) {
+          var offsetStart =
+            startTime.getHours() * 60 * 60 + startTime.getMinutes() * 60;
+
+          offer.starts_at =
+            new Date(offer.starts_at).getTime() + offsetStart * 1000;
+
+          offer.starts_at = offer.starts_at / 1000;
+        }
+        if (offer.ends_at) {
+          var offsetEnd =
+            endTime.getHours() * 60 * 60 + endTime.getMinutes() * 60;
+
+          offer.ends_at = new Date(offer.ends_at).getTime() + offsetEnd * 1000;
+
+          offer.ends_at = offer.ends_at / 1000;
+        }
+
+        // Remove keys with null/empty value
+        Object.keys(offer).forEach(function(key) {
+          if (!offer[key]) {
+            delete offer[key];
+          }
+        });
+
+        return offer;
+      }
+
+      $scope.ok = function() {
+        $modalInstance.close({
+          offer: cleanFields(),
+          mode: $scope.mode.value,
+        });
       };
       $scope.cancel = function() {
         $modalInstance.dismiss('cancel');
@@ -2305,7 +2746,8 @@ app
               merctech_tel_after: '+91-8003393912',
               merctech_fax: '',
               merctech_email: 'harshil@razorpay.com',
-              merctech_addr: '35, Vishnupuri, Opp. Malviya Nagar P.O., Jagatpura Road, Jaipur - 302017, Rajasthan',
+              merctech_addr:
+                '35, Vishnupuri, Opp. Malviya Nagar P.O., Jagatpura Road, Jaipur - 302017, Rajasthan',
               merctech_web_addr: current.website || '',
               merctech_return_url: 'https://api.razorpay.com',
               mercsetup_auth: 'Y',
@@ -2376,6 +2818,70 @@ app
     function($scope, $modalInstance) {
       $scope.ok = function(credits) {
         $modalInstance.close(credits);
+      };
+      $scope.cancel = function() {
+        $modalInstance.dismiss('cancel');
+      };
+    },
+  ])
+  .controller('downloadReportModalCtrl', [
+    '$scope',
+    '$modalInstance',
+    'merchant',
+    function($scope, $modalInstance, merchant) {
+      $scope.merchant = merchant;
+
+      $scope.reportForm = {
+        entity: 'payment',
+        type: 'monthly',
+        year: 2017,
+      };
+
+      // return no. of days in a month
+      function numberOfDays(month, year) {
+        return moment(year + ' ' + month, 'YYYY M').daysInMonth();
+      }
+
+      // Delete the dependent fields in the form
+      $scope.checkValue = function() {
+        // delete the key
+        if ($scope.reportForm.entity === 'invoice') {
+          delete $scope.reportForm.type;
+        }
+      };
+
+      // returns array of objects with 1: Jan, 2: Feb kind of mapping.
+      $scope.monthFields = moment.months().map(function(name, index) {
+        return { value: index + 1, name: name };
+      });
+
+      // Get array from range of Numbers (default step is 1). Used in getting range from 1 to total number of days in month
+      $scope.range = function(min, max, step) {
+        step = step || 1;
+        var input = [];
+        for (var i = min; i <= max; i += step) {
+          input.push(i);
+        }
+        return input;
+      };
+
+      // Update date as per changes in type, month, year
+      $scope.updateDates = function(month, year) {
+        $scope.daysInSelectedMonth = numberOfDays(month, year); // total days in that month-year
+
+        // Change the date if exceeding
+        if ($scope.daysInSelectedMonth < $scope.reportForm.day) {
+          $scope.reportForm.day = $scope.daysInSelectedMonth;
+        }
+
+        // Remove the date key if duration is no longer 'daily'
+        if ($scope.reportForm.type === 'monthly') {
+          delete $scope.reportForm.day;
+        }
+      };
+
+      $scope.ok = function() {
+        $modalInstance.close($scope.reportForm);
       };
       $scope.cancel = function() {
         $modalInstance.dismiss('cancel');

@@ -55,8 +55,8 @@ $errorTextColor = #F65656
   }
 
   .form-control:focus,
-  .powerselect--open,
-  .powerselect--focused,
+  .PowerSelect--open,
+  .PowerSelect--focused,
   .datepicker--focused {
     + .inlineField__value-container {
       .inlineField__value {
@@ -69,14 +69,14 @@ $errorTextColor = #F65656
     }
   }
 
-  .powerselect--focused.powerselect__with-search {
+  .PowerSelect--focused.PowerSelect__WithSearch {
     + .inlineField__value-container .inlineField__placeholder {
       display: none;
     }
   }
 
   .form-control,
-  .powerselect,
+  .PowerSelect,
   .SingleDatePickerInput {
     background: transparent;
     border-color: transparent;
@@ -88,7 +88,7 @@ $errorTextColor = #F65656
   }
 
   .form-control[disabled],
-  .powerselect--disabled,
+  .PowerSelect--disabled,
   &.inlineField--disabled .SingleDatePickerInput {
     &:hover {
       border-color: transparent;
@@ -96,24 +96,24 @@ $errorTextColor = #F65656
   }
 
   .DateInput--disabled,
-  .powerselect--disabled .powerselect__trigger-input {
+  .PowerSelect--disabled .PowerSelect__TriggerInput {
     background-color: transparent;
   }
 
   .form-control:focus,
-  .powerselect--open,
-  .powerselect--focused,
+  .PowerSelect--open,
+  .PowerSelect--focused,
   .datepicker--focused .SingleDatePickerInput,
   .datepicker--focused .DateInput__display-text {
     border-color: #b8b2dc;
     color: #555;
   }
 
-  .powerselect.error,
+  .PowerSelect.error,
   .InputField--error {
     background-color: $errorBgColor;
 
-    .powerselect__trigger-input {
+    .PowerSelect__TriggerInput {
       background-color: $errorBgColor;
     }
 
@@ -125,17 +125,17 @@ $errorTextColor = #F65656
     }
   }
 
-  .powerselect__trigger-status {
+  .PowerSelect__TriggerStatus {
     border-top-color: transparent;
   }
 
-  .powerselect:hover .powerselect__trigger-status,
-  .powerselect:focus .powerselect__trigger-status {
+  .PowerSelect:hover .PowerSelect__TriggerStatus,
+  .PowerSelect:focus .PowerSelect__TriggerStatus {
     border-top-color: #b8b2dc;
   }
 
   .input-xs,
-  .powerselect,
+  .PowerSelect,
   .DateInput__display-text,
   .inlineField__value-container {
     padding: 0 5px;
@@ -147,32 +147,43 @@ $errorTextColor = #F65656
     padding-right: 23px;
   }
 
-  input.input-xs, .powerselect {
+  input.input-xs {
     height: 22px;
   }
 
-  .powerselect:not(.powerselect--open) {
+  .PowerSelect:not(.PowerSelect--open) {
     border-radius: 2px;
   }
 
-  .powerselect__trigger {
+  .PowerSelect__Trigger {
     padding: 0;
+    height: 20px; // Will be removed in the next version bump
   }
 
-  .powerselect__trigger-input {
+  .PowerSelect__Clear,
+  .PowerSelect__TriggerInputContainer,
+  .PowerSelect__TriggerInput,
+  .PowerSelect__TriggerLabel,
+  .PowerSelect__TriggerStatus {
     height: 20px;
+  }
+
+  .PowerSelect__Clear {
+    padding: 0 4px; // Will be removed in the next version bump
+  }
+
+  .PowerSelect__TriggerInput {
     padding-right: 10px;
     padding-left: 0;
   }
 
-  .powerselect__trigger-status {
+  .PowerSelect__TriggerStatus {
     right: 0;
     top: 10px;
   }
 
   .SingleDatePicker {
     display: inline-block;
-    width: 120px;
   }
 
   .DateInput__display-text {
@@ -239,7 +250,7 @@ $errorTextColor = #F65656
   color: #7266ba;
 }
 
-.powerselect__option {
+.PowerSelect__Option {
   padding: 0 5px;
   line-height: 20px;
   font-size: 14px;

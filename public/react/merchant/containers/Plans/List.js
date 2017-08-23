@@ -1,65 +1,75 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { connect } from 'react-redux';
-import { reduxForm } from 'redux-form';
-import Modal from 'rzp/ui/Modal';
-import Header from 'rzp/ui/Header';
-import { fetchPlans } from 'merchant/modules/plans';
-import PlansList from 'merchant/components/Plans/PlansList';
+import HeaderAction from 'rzp/ui/HeaderAction';
+import PlansListFilter from 'merchant/components/Plans/ListFilter';
+import DataTable from 'rzp/ui/Table/DataTable';
+import ListContainer from 'merchant/containers/ListContainer';
+import { fetchPlans as fetchAll } from 'merchant/modules/plans';
+import * as ModalActions from 'rzp/modules/modals';
+import { luminateRow } from 'merchant/modules/app';
 import PlanCreation from 'merchant/containers/Plans/New';
-import ModalContainer from 'merchant/containers/ModalContainer';
+import ShowWhen from 'merchant/components/ShowWhen';
+import { NavLink } from 'react-router-dom';
 
-@connect(state => state.plans, { fetchPlans })
-@reduxForm({
-  form: 'newPlan',
-})
-export default class PlansListContainer extends ModalContainer {
-  constructor() {
-    super(...arguments);
-    this.editPlan = ::this.editPlan;
-    this.deletePlan = ::this.deletePlan;
-  }
+import {
+  planId,
+  planName,
+  planAmount,
+  planBillingCycle,
+  createdAt,
+} from 'rzp/ui/item/pair';
 
-  componentWillMount() {
-    this.props.fetchPlans();
-  }
+@connect(state => state.plans, { fetchAll, luminateRow, ...ModalActions })
+export default class PlansListContainer extends ListContainer {
+  showPlanModal = (plan = null) => {
+    this.props.openModal({
+      component: (
+        <PlanCreation
+          plan={plan}
+          onSave={this.highlightRowAndClose}
+          closeModal={this.props.closeModal}
+        />
+      ),
+    });
+  };
 
-  editPlan(plan) {
-    this.props.initialize(plan);
-    this.openModal();
-  }
-
-  deletePlan() {}
+  highlightRowAndClose = plan => {
+    this.props.luminateRow(plan.id);
+    this.props.closeModal();
+  };
 
   render() {
-    let { loading, plans } = this.props;
+    let { loading, items, error } = this.props;
 
     return (
-      <div>
-        <Header title="Plans">
-          <button class="pull-right btn btn-primary" onClick={this.openModal}>
-            <i class="icon icon-plus" />
-            <span>New Plan</span>
-          </button>
-        </Header>
+      <div class="content-wrapper">
+        <HeaderAction>
+          <ShowWhen notMyRole="support">
+            <div class="btn-toolbar">
+              <NavLink to="/plans/new">
+                <button class="pull-right btn btn-primary">
+                  <i class="icon icon-plus" />
+                  <span>New Plan</span>
+                </button>
+              </NavLink>
+            </div>
+          </ShowWhen>
+        </HeaderAction>
 
-        <div class="content-wrapper">
-          <div class="panel panel-default">
-            <PlansList
-              plans={plans}
-              isLoading={loading}
-              onEdit={this.editPlan}
-              onDelete={this.deletePlan}
-            />
-          </div>
-        </div>
+        <PlansListFilter
+          form="plansListFilter"
+          count={this.state.count}
+          onSubmit={this.search}
+        />
 
-        <Modal
-          isOpen={this.state.isModalOpen}
-          onRequestClose={this.closeModal}
-          closeTimeoutMS={300}
-        >
-          <PlanCreation onSave={this.closeModal} closeModal={this.closeModal} />
-        </Modal>
+        <DataTable
+          title="Plans"
+          columns={[planId, planName, planAmount, planBillingCycle, createdAt]}
+          count={this.state.count}
+          skip={this.state.skip}
+          paginate={this.paginate}
+          {...this.props}
+        />
       </div>
     );
   }

@@ -2,6 +2,7 @@
 
 const path = require('path');
 const fs = require('fs');
+const execSync = require('child_process').execSync;
 const gulp = require('gulp');
 const webpack = require('webpack');
 const through = require('through2').obj;
@@ -18,6 +19,9 @@ const concatMulti = require('gulp-concat-multi');
 const uglify = require('gulp-uglify');
 const rev = require('gulp-rev');
 const webpackConfig = require('./webpack.config.js');
+
+const iconfont = require('gulp-iconfont');
+const iconfontCss = require('gulp-iconfont-css');
 
 const revMap = {};
 let isDevelopment = false;
@@ -53,6 +57,10 @@ function handleError(err) {
   console.log(err.toString());
   this.emit('end');
 }
+
+gulp.task('clean', () => {
+  execSync('rm -rf public/dist public/js/generated public/css/generated');
+});
 
 gulp.task('css', () => {
   gulp
@@ -121,6 +129,7 @@ const concatJs = lazypipe().pipe(concatMulti, {
   ],
 
   'js/generated/admin.js': [
+    'public/js/angular/ng-react.js',
     'public/js/admin/**/*.js',
     'public/js/*.js',
     'node_modules/moment/min/moment.min.js',
@@ -133,7 +142,7 @@ gulp.task('js:prod', () => {
   return concatJs()
     .pipe(uglify())
     .on('error', function(e) {
-      console.log(e);
+      throw new Error('Uglify failed', e);
     })
     .pipe(rev())
     .pipe(gulp.dest('public'))
@@ -143,7 +152,10 @@ gulp.task('js:prod', () => {
 
 gulp.task('tmpl', () => {
   gulp
-    .src('resources/views/**/*.blade.php.tmpl')
+    .src([
+      'resources/views/**/tmpgetIndex.blade.php',
+      'resources/views/**/*.blade.php.tmpl',
+    ])
     .pipe(
       through(function(file, enc, cb) {
         file.path = file.path.replace(/\/([^\/]+)\.tmpl$/, '/tmp$1');
@@ -153,25 +165,6 @@ gulp.task('tmpl', () => {
       })
     )
     .pipe(gulp.dest('resources/views'));
-});
-
-gulp.task('dev', () => {
-  run('compileThemes', ['css', 'js'], 'tmpl');
-});
-
-gulp.task('reactRevReplace', () => {
-  return gulp
-    .src(`public/${revMap['js/generated/merchant.js']}`)
-    .pipe(
-      through(function(file, enc, cb) {
-        file.contents = new Buffer(
-          interpolate(String(file.contents), /\<\%([^\}]+)\%\>/g)
-        );
-        this.push(file);
-        cb();
-      })
-    )
-    .pipe(gulp.dest('public/js/generated'));
 });
 
 const runWebpack = (webpackConfig, cb) => {
@@ -188,71 +181,26 @@ const runWebpack = (webpackConfig, cb) => {
   });
 };
 
-gulp.task('webpack', cb => {
-  runWebpack(Object.create(webpackConfig), cb);
-});
-
 var webpackCompiler = null;
 gulp.task('webpack:watch', cb => {
   if (!webpackCompiler) {
-    webpackCompiler = webpack(Object.assign({}, webpackConfig));
+    webpackCompiler = webpack(webpackConfig('development'));
   }
   webpackCompiler.run(function(err, stats) {
-    console.log(
-      stats.toString({
-        colors: true,
-        chunks: false,
-      })
-    );
+    if (stats.hasErrors()) {
+      console.log(
+        stats.toString({
+          colors: true,
+          chunks: false,
+        })
+      );
+    }
     cb();
   });
 });
 
 gulp.task('webpack:prod', cb => {
-  let config = Object.create(webpackConfig);
-  config.plugins = config.plugins.concat(
-    new webpack.DefinePlugin({
-      'process.env': {
-        NODE_ENV: JSON.stringify('production'),
-      },
-    }),
-    new webpack.optimize.UglifyJsPlugin({
-      compress: {
-        warnings: false,
-      },
-      output: {
-        comments: false,
-      },
-    })
-  );
-
-  runWebpack(config, cb);
-});
-
-var rmOrig = function() {
-  return through(function(file, enc, cb) {
-    this.push(file); // We'll just pass this file along
-
-    if (!file.revOrigPath) {
-      return cb(); // Nothing to remove :)
-    }
-
-    fs.unlink(file.revOrigPath, function(err) {
-      // TODO: emit an error if err
-      cb();
-    });
-  });
-};
-
-//TODO: Need to offload this work to webpack especially when doing code splitting
-gulp.task('webpack:rev', cb => {
-  return gulp
-    .src(['public/dist/merchant_react.js', 'public/dist/merchant_react.css'])
-    .pipe(rev())
-    .pipe(gulp.dest('public/dist'))
-    .pipe(rmOrig())
-    .pipe(rev.manifest())
-    .pipe(through(revReference));
+  runWebpack(webpackConfig('production'), cb);
 });
 
 gulp.task('dev:setENV', cb => {
@@ -260,46 +208,61 @@ gulp.task('dev:setENV', cb => {
   cb();
 });
 
-gulp.task('default', cb => {
-  run(
-    'webpack:prod',
-    'webpack:rev',
-    'compileThemes',
-    ['css:prod', 'js:prod'],
-    'tmpl',
-    'reactRevReplace',
-    cb
-  );
+gulp.task('default', ['clean'], cb => {
+  run('compileThemes', ['css:prod', 'js:prod'], 'webpack:prod', 'tmpl', cb);
 });
 
 gulp.task('dev', cb => {
-  run(['css', 'js'], 'tmpl', cb);
+  run('compileThemes', ['css', 'js'], cb);
 });
 
 gulp.task('dev:webpack', ['dev:setENV'], cb => {
-  run('webpack:watch', 'dev', cb);
+  run('dev', 'webpack:watch', 'tmpl', cb);
 });
 
-gulp.task('watch:full', ['dev:webpack'], () => {
+const watch = () => {
   gulp.watch('public/js/themes/*.jst', ['compileThemes', 'js']);
-  gulp.watch(
-    [
-      'public/js/*.js',
-      'public/js/admin/**/*.js',
-      'public/js/merchant/**/*.js',
-      'public/react/merchant/**/*',
-      'public/react/admin/**/*',
-      'public/react/rzp/**/*',
-      'public/react/styles/**/*.styl',
-    ],
-    ['dev:webpack']
-  );
-});
-
-gulp.task('watch', ['dev'], () => {
   gulp.watch('public/css/*.styl', ['css']);
   gulp.watch(
     ['public/js/*.js', 'public/js/admin/**/*.js', 'public/js/merchant/**/*.js'],
     ['js']
   );
+  gulp.watch(
+    [
+      'public/react/merchant/**/*',
+      'public/react/admin/**/*',
+      'public/react/rzp/**/*',
+      'public/react/styles/**/*.styl',
+      'public/react/styles/fonts/*.*',
+    ],
+    ['dev:webpack']
+  );
+};
+
+gulp.task('watch:full', ['clean', 'dev:webpack'], watch);
+gulp.task('watch', ['clean', 'dev:webpack'], watch);
+
+// Gulp task to generate font icons from svg (run: gulp iconfont)
+const fontName = 'icons';
+gulp.task('iconfont', function() {
+  gulp
+    .src(['public/react/styles/merchant/svgs/*.svg'])
+    .pipe(
+      iconfontCss({
+        fontName: fontName,
+        targetPath: 'style.css',
+        fontPath: './',
+        cssClass: 'icon',
+      })
+    )
+    .pipe(
+      iconfont({
+        fontName: fontName,
+        formats: ['svg', 'ttf', 'eot', 'woff', 'woff2'], // default, 'woff2' and 'svg' are available
+        normalize: true,
+        prependUnicode: true, // recommended option
+        fontHeight: 1001,
+      })
+    )
+    .pipe(gulp.dest('public/react/styles/fonts/'));
 });

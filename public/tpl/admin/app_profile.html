@@ -78,7 +78,10 @@
             <button class="btn btn-primary modal-ok" ng-click="ok(data)">Change Password</button>
         </div>
       </script>
-      <button  class="btn btn-primary btn-rounded btn-change-pwd" ng-click="changePassword()">Change Password</button>
+      <button class="btn btn-primary btn-rounded btn-change-pwd"
+        ng-click="changePassword()" ng-show="auth_type=='password'">
+          Change Password
+      </button>
     </div>
   </div>
   <div class="panel panel-default col-sm-8 col-sm-offset-2" ng-show="activities">

@@ -31,6 +31,8 @@ class RawApiRequest
         'timeout'   =>  60
     ];
 
+    const RAZORPAY_ACCOUNT_HEADER = 'X-Razorpay-Account';
+
     /**
      * Construct a RawApiRequest instance
      * @param array $auth of auth (proxy|admin)
@@ -71,11 +73,21 @@ class RawApiRequest
 
             $this->path .= '?' . http_build_query($queryParams);
         }
+        // This block is supposed to handle internal generic calls
+        // not the ones coming from frontend/xhr.
+        else if (isset($input['query_params']) && !empty($input['query_params']))
+        {
+            $queryParams = $input['query_params'];
+
+            $this->path .= '?' . http_build_query($queryParams);
+        }
     }
 
     protected function setupCredentials($input)
     {
         $adminUser = Auth::guard('api')->user();
+
+        $adminToken = null;
 
         if (empty($adminUser) === false)
         {
@@ -86,11 +98,18 @@ class RawApiRequest
         switch ($input['auth'])
         {
             case 'proxy':
-                $merchantId = $input['merchant_id'] ?? null;
+                $merchantId = $this->resolveMerchantId($input, $adminToken);
 
-                if (empty($merchantId))
-                {
-                    $merchantId = Auth::guard('user')->user()->currentMerchant()->id;
+                if (isset($merchantId)) {
+                    /**
+                     * Setting X-Razorpay-Account header in case of market place routes.
+                     * The handling of this header is already taken care in api
+                     */
+                    $accountId = $input['account_id'] ?? null;
+
+                    if (empty($accountId) === false) {
+                        $this->params['headers'][self::RAZORPAY_ACCOUNT_HEADER] = $accountId;
+                    }
                 }
 
                 $this->setApiCredentials($input['mode'], $merchantId);
@@ -102,18 +121,15 @@ class RawApiRequest
                     $this->params['headers']['X-Admin-Token'] = $adminToken;
                 }
 
-                $merchantId = $input['merchant_id'] ?? null;
-
-                if (empty($merchantId))
-                {
-                    $merchantId = Auth::guard('user')->user()->currentMerchant()->id;
-                }
+                $merchantId = $this->resolveMerchantId($input, $adminToken);
 
                 $this->setApiCredentials($input['mode'], $merchantId);
                 break;
 
             case 'admin':
-                $this->setAdminCredentials($adminToken, $input['mode']);
+                $merchantId = $this->resolveMerchantId($input, $adminToken);
+
+                $this->setAdminCredentials($adminToken, $input['mode'], $merchantId);
                 break;
 
             case 'internal':
@@ -131,7 +147,7 @@ class RawApiRequest
         }
     }
 
-    protected function setAdminCredentials($token, $mode = 'live')
+    protected function setAdminCredentials($token, $mode = 'live', $merchantId = null)
     {
         $this->setApiCredentials($mode);
 
@@ -145,6 +161,11 @@ class RawApiRequest
         }
 
         $this->params['headers']['X-Admin-Token'] = $token;
+
+        if (empty($merchantId) === false) {
+
+            $this->params['headers'][self::RAZORPAY_ACCOUNT_HEADER] = $merchantId;
+        }
     }
 
     protected function setApiCredentials($mode, $merchantId = '')
@@ -199,11 +220,19 @@ class RawApiRequest
      */
     protected function parseBody()
     {
+        $inputBody = Input::get('body', '');
+
+        if (is_array($inputBody)) {
+            return $inputBody;
+        }
+
         $postArray = [];
+
         // @note: The second parameter is crucial and a huge
         // security risk if not added because otherwise it
         // replicates register_globals
-        mb_parse_str(Input::get('body', ''), $postArray);
+        mb_parse_str($inputBody, $postArray);
+
         $body = [];
 
         foreach ($postArray as $key => $value)
@@ -233,6 +262,15 @@ class RawApiRequest
             $fileFieldName = $this->input['file_name'];
             // This contains the original file name with extension
             $fileName = $file->getClientOriginalName();
+
+            if (empty($file->getFileName()) === true)
+            {
+                throw new \Razorpay\Api\Errors\BadRequestError(
+                    'Filename cannot be empty',
+                    \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                    400
+                );
+            }
 
             // This is as per guzzle 5, will need to get changed for 6
             $postFile = new PostFile($fileFieldName, fopen($file, 'r'), $fileName);
@@ -313,5 +351,38 @@ class RawApiRequest
         }
 
         return [$errors, null];
+    }
+
+    /**
+     * function to resolve merchantId from input/Auth guard
+     * @param  array  $input
+     *
+     * @return string
+     */
+    protected function resolveMerchantId($input, $adminToken = null)
+    {
+        $merchantId = null;
+
+        $merchantUser = Auth::guard('user')->user();
+
+        // If current user is NOT an admin
+        // Due to login as merchant this has to be in this way!
+
+        if (empty($adminToken) === false)
+        {
+            $merchantId = $input['merchant_id'] ?? null;
+        }
+
+        if (empty($merchantId) === true and empty($merchantUser) === false)
+        {
+            $currentMerchant = $merchantUser->currentMerchant();
+
+            if (empty($currentMerchant) === false)
+            {
+                $merchantId = $currentMerchant->id;
+            }
+        }
+
+        return $merchantId;
     }
 }

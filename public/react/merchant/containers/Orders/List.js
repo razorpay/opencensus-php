@@ -1,22 +1,21 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import { connect } from 'react-redux';
-import Pager from 'rzp/ui/Pager';
-import Alert from 'rzp/ui/Forms/Alert';
-import Header from 'rzp/ui/Header';
-import OrdersList from 'merchant/components/Orders/OrdersList';
+import DataTable from 'rzp/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import OrdersListFilter from 'merchant/components/Orders/OrdersListFilter';
-import { fetchOrders } from 'merchant/modules/orders/list';
+import { fetchOrders as fetchAll } from 'rzp/modules/collection';
+import {
+  orderId,
+  attempts,
+  amount,
+  status,
+  receipt,
+  createdAt,
+} from 'rzp/ui/item/pair';
 
-@connect(state => state.orders, { fetchOrders })
+@connect(state => state.orders, { fetchAll })
 export default class OrdersListContainer extends ListContainer {
-  fetchEntityList(params) {
-    return this.props.fetchOrders(params);
-  }
-
   render() {
-    let { loading, orders, error } = this.props;
-
     return (
       <div class="content-wrapper">
         <OrdersListFilter
@@ -25,15 +24,13 @@ export default class OrdersListContainer extends ListContainer {
           onSubmit={this.search}
         />
 
-        {error && <Alert type="error" message={error} />}
-
-        <OrdersList orders={orders} isLoading={loading} />
-
-        <Pager
+        <DataTable
+          title="Orders"
+          columns={[orderId, amount, attempts, receipt, createdAt, status]}
           count={this.state.count}
           skip={this.state.skip}
-          length={orders.length}
-          onClick={this.paginate}
+          paginate={this.paginate}
+          {...this.props}
         />
       </div>
     );

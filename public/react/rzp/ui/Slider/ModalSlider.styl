@@ -13,6 +13,11 @@
   overflow: hidden;
   padding-bottom: 45px;
 
+  @media (max-width: 650px) {
+    max-width: 92%;
+    width: 100%;
+  }
+
   &.ReactModal__Overlay--after-open {
     transform: translateX(1%);
   }
@@ -28,10 +33,10 @@
   transform: none;
 
   button.close {
-    padding: 14px;
+    padding: 10px;
     position: absolute;
-    top: 0;
-    right: 0;
+    top: 16px;
+    right: 10px;
     z-index: 2;
   }
 
@@ -51,9 +56,24 @@
     position: absolute;
     left: 0;
     right: 0;
-    top: 50px;
+    top: 75px;
     bottom: 0;
     overflow: auto;
-    padding-bottom: 80px;
+
+    > .panel-body {
+      padding-bottom: 80px;
+    }
+  }
+}
+
+.SliderPanel__Body {
+  .empty-table-message {
+    padding: 30px 50px;
+  }
+}
+
+.ReactModal__Content--after-open {
+  .SliderPanel .panel-heading > .btn-toolbar {
+    padding-right: 35px;
   }
 }

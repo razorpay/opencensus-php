@@ -4,6 +4,7 @@ import EntityItemRow from 'merchant/containers/EntityItemRow';
 const CustomersListItem = ({ customer, onEdit }) => {
   return (
     <EntityItemRow id={customer.id}>
+      <td><a onClick={onEdit}>{customer.id}</a></td>
       <td><a onClick={onEdit}>{customer.name}</a></td>
       <td>{customer.email}</td>
       <td>{customer.contact}</td>
@@ -25,6 +26,7 @@ export default ({ customers, isLoading, onEdit, onDelete }) => {
       <table class="table table-hover">
         <thead>
           <tr>
+            <th>Customer Id</th>
             <th>Customer Name</th>
             <th>Email</th>
             <th>Contact</th>
@@ -33,7 +35,7 @@ export default ({ customers, isLoading, onEdit, onDelete }) => {
         </thead>
         <TableBody
           isLoading={isLoading}
-          colSpan={4}
+          colSpan={5}
           rows={customers}
           emptyTableMsg="No Customers found!"
         >

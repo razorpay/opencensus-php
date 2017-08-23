@@ -18,24 +18,21 @@ export default class PaymentDetailsContainer extends Component {
   };
 
   componentWillMount() {
-    let id = this.props.id || this.props.match.params.id;
-    this.props.fetchPayment(id);
+    this.props.fetchItem(this.props.id).then(() => {
+      this.props.fetchRefunds(this.props.payment);
+    });
   }
 
   componentWillReceiveProps(nextProps) {
-    let oldId = this.props.id || this.props.match.params.id;
-    let newId = nextProps.id || nextProps.match.params.id;
-    if (oldId !== newId) {
-      this.props.fetchPayment(newId);
+    if (this.props.id !== nextProps.id) {
+      this.props.fetchItem(nextProps.id).then(() => {
+        this.props.fetchRefunds(nextProps.payment);
+      });
     }
   }
 
   fetchCardDetails = payment => {
     return this.props.fetchCardDetails(payment);
-  };
-
-  fetchRefunds = payment => {
-    return this.props.fetchRefunds(payment);
   };
 
   confirmCapture = payment => {
@@ -101,7 +98,6 @@ export default class PaymentDetailsContainer extends Component {
         isLoading={loading}
         statusMsg={statusMsg}
         onToggleCardDetails={this.fetchCardDetails}
-        onToggleRefundList={this.fetchRefunds}
         confirmCapture={this.confirmCapture}
         openRefundModal={this.openRefundModal}
       />

@@ -72,6 +72,7 @@ app.controller('EntitiesCtrl', [
       'billdesk',
       'ebs',
       'cybersource',
+      'hitachi',
       'first_data',
       'ezeclick',
       'hdfc',
@@ -86,9 +87,11 @@ app.controller('EntitiesCtrl', [
       'netbanking_federal',
       'netbanking_indusind',
       'netbanking_rbl',
+      'netbanking_pnb',
       'paytm',
       'sharp',
       'upi_icici',
+      'upi_mindgate',
       'wallet_payumoney',
       'wallet_payzapp',
       'wallet_olamoney',
@@ -131,6 +134,7 @@ app.controller('EntitiesCtrl', [
       'wallet',
       'upi',
       'transfer',
+      'bank_transfer',
     ];
     // This is the list of available filters
     // len==1 means a text input, rest are drop-downs
@@ -161,14 +165,33 @@ app.controller('EntitiesCtrl', [
         vpc_TxnResponseCode: ['Txn Response Code'],
         vpc_3DSstatus: ['all', 'Y', 'N', 'U', 'A'],
       },
+      balance: {},
       bank_account: {
         deleted: booleanList,
         entity_id: ['Entity Id'],
         merchant_id: ['Merchant Id'],
         type: ['all', 'customer', 'merchant'],
       },
-      balance: {},
-      ebs: {},
+      bank_transfer: {
+        merchant_id: ['Merchant Id'],
+        payment_id: ['Payment ID'],
+        utr: ['UTR'],
+        virtual_account_id: ['Virtual Account ID'],
+        mode: ['all', 'neft', 'rtgs', 'ift', 'imps'],
+        payer_account: ['Payer Account'],
+        payer_ifsc: ['Payer IFSC'],
+        payee_account: ['Payee Account'],
+        payee_ifsc: ['Payee IFSC'],
+        amount: ['Amount'],
+      },
+      batch: {
+        merchant_id: ['Merchant Id'],
+        status: ['all', 'created', 'processing', 'processed'],
+      },
+      batch_fund_transfer: {
+        type: ['all', 'settlement', 'payout'],
+        date: ['Date'],
+      },
       billdesk: {
         AuthStatus: ['all', '0001', '0300', '0002', '0399', 'NA'],
         BankReferenceNo: ['Bank Reference No'],
@@ -177,10 +200,6 @@ app.controller('EntitiesCtrl', [
         RefStatus: ['Refund Status'],
         RefundId: ['Billdesk Refund Id'],
         TxnReferenceNo: ['Txn Reference No'],
-      },
-      batch: {
-        merchant_id: ['Merchant Id'],
-        status: ['all', 'created', 'processing', 'processed'],
       },
       card: {
         global_card_id: ['Global Card Id'],
@@ -229,6 +248,9 @@ app.controller('EntitiesCtrl', [
         ref: ['Reference'],
         capture_ref: ['Capture Reference'],
       },
+      ebs: {
+        payment_id: ['Payment ID'],
+      },
       fee_breakup: {
         transaction_id: ['Transaction Id'],
         pricing_rule_id: ['Pricing Rule Id'],
@@ -240,10 +262,15 @@ app.controller('EntitiesCtrl', [
         refund_id: ['Refund ID'],
         gateway_payment_id: ['Gateway Payment ID'],
         tdate: ['Tdate'],
+        caps_payment_id: ['Caps Payment ID'],
+        gateway_transaction_id: ['Gateway Transaction ID'],
       },
-      batch_fund_transfer: {
-        type: ['all', 'settlement', 'payout'],
-        date: ['Date'],
+      dispute: {
+        merchant_id: ['Merchant ID'],
+        payment_id: ['Payment ID'],
+        status: ['open', 'under_review', 'won', 'lost'],
+        phase: ['chargeback', 'pre_arbitration', 'arbitration'],
+        amount: ['Amount'],
       },
       emi_plan: {
         bank: ['Bank'],
@@ -262,6 +289,7 @@ app.controller('EntitiesCtrl', [
         batch_fund_transfer_id: ['Batch Fund Transfer Id'],
         source_type: ['all', 'settlement', 'payout'],
         source_id: ['Source Id'],
+        merchant_id: ['Merchant Id'],
         status: ['all', 'created', 'failed', 'processed'],
         utr: ['UTR'],
       },
@@ -307,6 +335,7 @@ app.controller('EntitiesCtrl', [
         amex: booleanList2,
         card: booleanList2,
         category: ['MCC Code'],
+        category2: ['Category 2'],
         email: ['Email'],
         hold_funds: booleanList,
         international: booleanList,
@@ -345,12 +374,19 @@ app.controller('EntitiesCtrl', [
         jiomoney: booleanList,
         merchant_id: ['Merchant Id'],
       },
+      mobikwik: {
+        payment_id: ['Payment Id'],
+        received: booleanList,
+      },
       netbanking: {
         bank_payment_id: ['Bank Reference Id'],
         caps_payment_id: ['Caps Payment Id'],
         int_payment_id: ['Int Payment Id'],
         payment_id: ['Payment Id'],
         received: booleanList,
+      },
+      offer: {
+        merchant_id: ['Merchant Id'],
       },
       order: {
         account_number: ['Account Number'],
@@ -404,20 +440,24 @@ app.controller('EntitiesCtrl', [
       pricing: {
         plan_id: ['Plan Id'],
       },
-      mobikwik: {
-        payment_id: ['Payment Id'],
-        received: booleanList,
-      },
       refund: {
+        amount: ['Amount'],
+        batch_id: ['Batch Id'],
+        gateway: gatewayList,
         merchant_id: ['Merchant Id'],
         payment_id: ['Payment Id'],
         status: ['all', 'created', 'failed', 'processed'],
         transaction_id: ['Transaction Id'],
-        batch_id: ['Batch Id'],
       },
       reversal: {
         merchant_id: ['Merchant Id'],
         transfer_id: ['Transfer Id'],
+      },
+      risk: {
+        fraud_type: ['suspected', 'confirmed'],
+        source: ['bank', 'gateway', 'maxmind', 'manual', 'internal'],
+        merchant_id: ['Merchant Id'],
+        payment_id: ['Payment Id'],
       },
       settlement: {
         batch_fund_transfer_id: ['Batch Fund Transfer Id'],
@@ -475,13 +515,21 @@ app.controller('EntitiesCtrl', [
         token: ['Token'],
         wallet: walletList,
       },
-      wallet: {
-        payment_id: ['Payment Id'],
-        wallet: walletList,
-      },
       upi: {
         payment_id: ['Payment Id'],
         bank: upiBankList,
+      },
+      user: {
+        email: ['Email'],
+      },
+      virtual_account: {
+        merchant_id: ['Merchant ID'],
+        status: ['all', 'active', 'closed', 'paid'],
+        customer_id: ['Customer ID'],
+      },
+      wallet: {
+        payment_id: ['Payment Id'],
+        wallet: walletList,
       },
       webhook: {
         merchant_id: ['Merchant Id'],
