@@ -13,6 +13,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Invitation;
 use RZP\Exception\LogicException;
+use RZP\Models\Admin\Permission\Name as Permission;
 
 class Entity extends Base\PublicEntity
 {
@@ -189,6 +190,10 @@ class Entity extends Base\PublicEntity
         self::CONVERT_CURRENCY       => null,
         self::ARCHIVED_AT            => null,
         self::SUSPENDED_AT           => null,
+    ];
+
+    protected $attributePermissions = [
+        self::EMAIL                     => Permission::VIEW_MERCHANT_EMAIL,
     ];
 
     protected $publicSetters = [

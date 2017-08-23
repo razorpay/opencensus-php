@@ -39,11 +39,6 @@ class Repository extends Base\Repository
         Entity::RISK_RATING             => 'sometimes|integer|max:5|min:1',
     );
 
-
-    protected $attributePermissions = [
-        Entity::EMAIL                   => Permission::VIEW_MERCHANT_EMAIL,
-    ];
-
     public function fetchActivatedMerchantsBeforeTimestamp(int $limit, int $skip, int $end, array $merchantIds = [])
     {
         $query = $this->newQuery()

@@ -4,6 +4,7 @@ namespace RZP\Models\Base;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use App;
 
 class PublicEntity extends UniqueIdEntity
 {
@@ -63,6 +64,11 @@ class PublicEntity extends UniqueIdEntity
     protected $public           = [];
 
     /**
+     *
+     */
+    protected $attributePermissions = [];
+
+    /**
      * Fields exposed to hosted page(invoice, subscriptions etc)
      * where there would mostly be no authentication.
      *
@@ -77,6 +83,28 @@ class PublicEntity extends UniqueIdEntity
 
     protected $embeddedRelations = [];
 
+    /**
+     * The application instance.
+     *
+     * @var Illuminate\Foundation\Application
+     */
+    protected $app;
+
+    /**
+     * BasicAuth entity
+     * @var BasicAuth
+     */
+    protected $auth;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->app = App::getFacadeRoot();
+
+        $this->auth = $this->app['basicauth'];
+    }
+
     public function toArrayPublic()
     {
         $attributes = $this->attributesToArray();
@@ -87,7 +115,9 @@ class PublicEntity extends UniqueIdEntity
 
         $this->setPublicAttributes($array);
 
-        return $this->arrangePublicAttributes($array);
+        $array = $this->arrangePublicAttributes($array);
+
+        return $this->getValidatedArray($array);
     }
 
     public function toArrayAdmin()
@@ -98,7 +128,7 @@ class PublicEntity extends UniqueIdEntity
 
         $array[static::ADMIN] = true;
 
-        return $array;
+        return $this->getValidatedArray($array);
     }
 
     /**
@@ -569,5 +599,29 @@ class PublicEntity extends UniqueIdEntity
         }
 
         return ($object instanceof self);
+    }
+
+    /**
+     * Function validates and truncates attributes if admin doesn't have those permissions.
+     *
+     * @param array $array
+     *
+     * @return array
+     */
+    public function getValidatedArray(array $array)
+    {
+        if (($this->auth->isAdminAuth() === true) and
+            !empty($this->attributePermissions))
+        {
+            $admin = $this->auth->getAdmin();
+
+            $permissions = $admin->getPermissionsList();
+
+            $attributes = array_diff($this->attributePermissions, $permissions);
+
+            $array = array_diff_key($array, $attributes);
+        }
+
+        return $array;
     }
 }
