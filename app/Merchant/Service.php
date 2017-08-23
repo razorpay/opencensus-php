@@ -61,8 +61,6 @@ class Service extends Base\Service
             if ($referer)
             {
                 $merchant->tag('ref-'.$referer);
-
-                (new Merchant\Service)->addMerchantTagsOnAPI($merchant->id, ['ref-'.$referer]);
             }
 
             $merchant->save();
