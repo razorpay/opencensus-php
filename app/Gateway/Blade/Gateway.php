@@ -910,8 +910,8 @@ class Gateway extends Base\Gateway
 
     private function getFormattedCardExpiry(array $card)
     {
-        $year = substr($input['card']['expiry_year'], -2);
-        $month = str_pad($input['card']['expiry_month'], 2, 0, STR_PAD_LEFT);
+        $year = substr($card['expiry_year'], -2);
+        $month = str_pad($card['expiry_month'], 2, 0, STR_PAD_LEFT);
 
         return $year . $month;
     }

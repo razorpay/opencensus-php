@@ -121,7 +121,7 @@ class Currency
         return self::ISO_NUMERIC_CODES[$currency] ?? null;
     }
 
-    public function getSymbol(string $currency)
+    public static function getSymbol(string $currency)
     {
         return self::SYMBOL[$currency] ?? '';
     }
