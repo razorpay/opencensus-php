@@ -30,7 +30,7 @@ class Service extends Base\Service
 
     public function create(array $input) : array
     {
-        $payout = $this->core->directPayout($input, $this->merchant);
+        list($payout, $payoutAttempt) = $this->core->directPayout($input, $this->merchant);
 
         return $payout->toArrayPublic();
     }
@@ -38,6 +38,13 @@ class Service extends Base\Service
     public function initiatePayouts(array $input, $channel = null)
     {
         $data = (new Payout\Core)->initiatePayouts($input, $channel);
+
+        return $data;
+    }
+
+    public function irctcPayout(array $input)
+    {
+        $data = (new Payout\Core)->irctcPayout($input);
 
         return $data;
     }

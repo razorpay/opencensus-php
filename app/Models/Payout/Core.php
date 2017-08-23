@@ -41,11 +41,11 @@ class Core extends Base\Core
      */
     public function directPayout(array $input, Merchant\Entity $merchant): Entity
     {
-        $payout = $this->createPayout($input, $merchant);
+        list($payout, $payoutAttempt) = $this->createPayout($input, $merchant);
 
         $this->repo->saveOrFail($payout);
 
-        return $payout;
+        return [$payout, $payoutAttempt];
     }
 
     /**
@@ -58,7 +58,7 @@ class Core extends Base\Core
      */
     public function paymentPayout(array $input, Payment\Entity $payment, Merchant\Entity $merchant)
     {
-        $payout = $this->createPayout($input, $merchant);
+        list($payout, $payoutAttempt) = $this->createPayout($input, $merchant);
 
         $payout->payment()->associate($payment);
 
@@ -98,7 +98,7 @@ class Core extends Base\Core
 
             $this->updatePayoutWithTxn($payout);
 
-            return $payout;
+            return [$payout, $payoutAttempt];
         });
     }
 
@@ -289,5 +289,68 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD);
         }
+    }
+
+    public function irctcPayout($input)
+    {
+        $irctcMerchantId = 'randomfornow';
+
+        $irctcCustomerId = 'ranndomCustomerId';
+
+        $bankAccountId   = 'randombannkAccount';
+
+        $from = Carbon::yesterday(Timezone::IST)->timestamp;
+
+        $to = Carbon::today(Timezone::IST)->timestamp - 1;
+
+        if (isset($input['from']) === true)
+        {
+            $from = $input['from'];
+        }
+
+        if (isset($input['to']) === true)
+        {
+            $to = $input['to'];
+        }
+
+        if (isset($input['amount']) === true)
+        {
+            $amount = $input['amount'];
+        }
+        else
+        {
+            // Get the amount for captured payments on gateway for last day
+            $paymentAmount = $this->repo->payment->getCapturedAmountByMerchant($irctcMerchantId, $from, $to);
+
+            // Get the amount for refunds on gateway for last day
+            $refundAmount = $this->repo->refund->getRefundedAmountByMerchant($irctcMerchantId, $from, $to);
+
+            $amount = $paymentAmount  - $refundAmount;
+        }
+
+        if ($amount > 20000000)
+        {
+            $amount = number_format($amount / 100, 2, '.', '');
+
+            $payoutInput = [
+                Entity::CUSTOMER_ID    => $irctcCustomerId,
+                Entity::AMOUNT         => $amount,
+                Entity::CURRENCY       => 'INR',
+                Entity::METHOD         => Method::FUND_TRANSFER,
+                Entity::DESTINATION_ID => $bankAccountId,
+            ];
+
+            list($payout, $payoutAttempt) = $this->directPayout($payoutInput, $merchant);
+
+            $response = (new Kotak\NodalAccount)->generatePayoutsFile([$payoutAttempt]);
+        }
+        else
+        {
+            $response = [
+                'message' => 'amount to be transferred is less than 2 lakhs'
+            ];
+        }
+
+        return $response;
     }
 }
