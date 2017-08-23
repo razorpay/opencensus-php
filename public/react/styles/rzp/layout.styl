@@ -253,6 +253,40 @@ body {
   background-color: #fff;
 }
 
+.main-content .multi-content {
+  white-space: nowrap;
+  font-size: 0;
+  max-width: 1200px;
+  margin: 90px auto;
+  background: #fff;
+  border: 1px solid #eee
+  position: relative;
+
+  &:before {
+    content: '';
+    border-left: 1px solid #eaeff0;
+    height: 100%;
+    top: 0;
+    position: absolute;
+    left: 50%;
+  }
+
+  .content-sm {
+    padding: 0 20px;
+    display: inline-block;
+    vertical-align: top;
+    font-size: 14px;
+    width: 50%;
+  }
+}
+
+.panel-text {
+  background: none;
+  text-align: center;
+  padding: 200px 0;
+  margin-bottom: 12px;
+}
+
 // React Modal Style Overrides
 
 body.ReactModal__Body--open {
