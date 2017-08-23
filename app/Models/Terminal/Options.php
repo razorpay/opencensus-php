@@ -16,11 +16,24 @@ class Options
 
     protected $failedTerminals = [];
 
-    protected $skippedFilters = [
+    // Filters to be skipped for merchants with rule_filter
+    // feature enabled
+    protected $featureSkippedFilters = [
         'method',
         'network',
         'bank',
+    ];
+
+    // Filters to be skipped for any merchant
+    protected $globalSkippedFilters = [
         'amount',
+    ];
+
+    // Maps the rule group name to the corresponding filter property.
+    // This is temporary and will be used only in the migration phase
+    // until all merchants are using rule filters
+    protected $ruleGroupToFilterPropertyMap = [
+        'min_amount_filter' => 'amount'
     ];
 
     public function __construct()
@@ -58,14 +71,29 @@ class Options
         $this->chance = $chance;
     }
 
-    public function getSkippedFilters()
+    public function getFeatureSkippedFilters()
     {
-        return $this->skippedFilters;
+        return $this->featureSkippedFilters;
     }
 
-    public function setSkippedFilters(array $filters)
+    public function setFeatureSkippedFilters(array $filters)
     {
-        $this->skippedFilters = $filters;
+        $this->featureSkippedFilters = $filters;
+    }
+
+    public function getGlobalSkippedFilters()
+    {
+        return $this->globalSkippedFilters;
+    }
+
+    public function setGlobalSkippedFilters(array $filters)
+    {
+        $this->globalSkippedFilters = $filters;
+    }
+
+    public function getFilterPropertyForRuleGroup(string $group)
+    {
+        return $this->ruleGroupToFilterPropertyMap[$group] ?? null;
     }
 
     public function setFailedTerminals(array $exclude)

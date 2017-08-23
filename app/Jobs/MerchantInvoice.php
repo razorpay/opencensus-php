@@ -6,7 +6,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 use RZP\Models\Merchant\Invoice\Processor;
-use RZP\Trace\Trace;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 
 class MerchantInvoice extends Job implements ShouldQueue

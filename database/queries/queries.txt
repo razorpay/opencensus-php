@@ -2380,3 +2380,28 @@ ALTER TABLE refunds
 ALTER TABLE refunds
     ADD COLUMN receipt VARCHAR(255) DEFAULT NULL AFTER notes,
     ADD UNIQUE INDEX refunds_merchant_id_receipt_unique (merchant_id, receipt);
+
+# Reversal Migration
+ALTER TABLE reversals
+    ADD COLUMN `entity_id` CHAR(14) AFTER `merchant_id`
+    ADD COLUMN `entity_type` VARCHAR(255) AFTER `entity_id`,;
+
+ALTER TABLE reversals
+    ADD INDEX reversals_entity_id_index (entity_id),
+    DROP FOREIGN KEY reversals_transfer_id_foreign,
+    DROP INDEX reversals_transfer_id_foreign,
+    DROP COLUMN transfer_id;
+
+UPDATE hdfc
+    SET gateway_payment_id = gateway_transaction_id
+    WHERE gateway_payment_id IS NULL AND created_at > 1502841600 AND action IN ('1', '4');
+
+UPDATE hdfc
+    SET gateway_payment_id = gateway_transaction_id
+    WHERE gateway_payment_id IS NULL AND created_at <= 1502841600 AND action IN ('1', '4');
+
+# Adding index on payments.updated_at, payments.captured_at
+# Useful for analytics queries
+ALTER TABLE payments
+    ADD INDEX payments_updated_at_index (updated_at),
+    ADD INDEX payments_captured_at_index (captured_at);

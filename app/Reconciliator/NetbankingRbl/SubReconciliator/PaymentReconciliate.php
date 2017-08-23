@@ -49,7 +49,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                                                                      $status);
     }
 
-    protected function getNbCustomerDetails($row)
+    protected function getCustomerDetails($row)
     {
         return [
             Base\Reconciliate::CUSTOMER_ID   => $this->getNbCustomerId($row),

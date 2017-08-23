@@ -18,7 +18,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Processor;
 use RZP\Models\Payment\TwoFactorAuth;
-use RZP\Trace\Trace;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 use View;
 

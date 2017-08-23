@@ -293,8 +293,10 @@ class Repository extends Base\Repository
     }
 
     /**
-     * @param $txns - Array of transaction entities to be updated
-     * @param $values - Array. Key - Column name, Value - Column value
+     * @param       $txns   - Array of transaction entities to be updated
+     * @param array $values - Array. Key - Column name, Value - Column value
+     *
+     * @throws Exception\LogicException
      */
     public function settled($txns, array $values)
     {
@@ -314,8 +316,12 @@ class Repository extends Base\Repository
         if ($count !== $expected)
         {
             throw new Exception\LogicException(
-                'Failed to update expected number of rows. \n' .
-                'Expected: ' . $expected . ' Updated: ' . $count);
+                'Failed to update expected number of rows.',
+                null,
+                [
+                    'expected' => $expected,
+                    'updated'  => $count,
+                ]);
         }
 
         return $count;
@@ -341,8 +347,13 @@ class Repository extends Base\Repository
         if ($count !== $expected)
         {
             throw new Exception\LogicException(
-                'Failed to update expected number of rows. \n' .
-                'Expected: ' . $expected . ' Updated: ' . $count);
+                'Failed to update expected number of rows.',
+                null,
+                [
+                    'expected'      => $expected,
+                    'updated'       => $count,
+                    'settlement_id' => $settlementId
+                ]);
         }
 
         return $count;
@@ -359,7 +370,12 @@ class Repository extends Base\Repository
             ($fail))
         {
             throw new Exception\LogicException(
-                'Failed to find transaction with entity_id: ' . $entityId);
+                'Failed to find transaction with entity_id',
+                null,
+                [
+                    'entity_id'     => $entityId,
+                    'merchant_id'   => $merchant->getId(),
+                ]);
         }
 
         return $txn;

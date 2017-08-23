@@ -137,6 +137,14 @@ class Gateway extends Base\Gateway
 
         $verify->gatewaySuccess = false;
 
+        if (empty($response) === true)
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify,
+                Payment\Verify\Action::RETRY);
+        }
+
         if ((isset($response[ResponseFields::PAYMENT_STATUS]) === true) and
             ($response[ResponseFields::PAYMENT_STATUS] === Status::SUCCESS))
         {

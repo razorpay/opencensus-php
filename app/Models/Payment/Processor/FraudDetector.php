@@ -7,8 +7,8 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Risk;
-use RZP\Trace\Trace;
 use RZP\Exception;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Analytics\Metadata;
 
 trait FraudDetector

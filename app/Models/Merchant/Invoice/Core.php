@@ -15,6 +15,7 @@ class Core extends Base\Core
     {
         (new Validator)->validateInput('create_queue', $input);
 
+        // Get invoice date
         if ((isset($input['month']) === true) and (isset($input['year']) === true))
         {
             $invoiceDate = Carbon::createFromDate($input['year'], $input['month'], 1, Timezone::IST);
@@ -22,6 +23,14 @@ class Core extends Base\Core
         else
         {
             $invoiceDate = Carbon::now(Timezone::IST)->subMonth();
+        }
+
+        // Get merchants
+        $merchantIds = [];
+
+        if (isset($input['merchant_ids']) === true)
+        {
+            $merchantIds = $input['merchant_ids'];
         }
 
         $endTimestamp = $invoiceDate->endOfMonth()->timestamp;
@@ -36,7 +45,7 @@ class Core extends Base\Core
         {
             $merchants = $this->repo
                               ->merchant
-                              ->fetchActivatedMerchantsBeforeTimestamp($batch, $skip, $endTimestamp);
+                              ->fetchActivatedMerchantsBeforeTimestamp($batch, $skip, $endTimestamp, $merchantIds);
 
             $count = $merchants->count();
 
@@ -50,5 +59,16 @@ class Core extends Base\Core
                 (new DispatchRouter)->dispatchOn($createJob, DispatchRouter::MERCHANT_INVOICE);
             }
         }
+    }
+
+    public function updateGstin(string $merchantId, array $input)
+    {
+        (new Validator)->validateInput('edit_gstin', $input);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $currentGstin = $merchant->getGstin();
+
+        $this->repo->merchant_invoice->updateGstin($merchantId, $input[Entity::INVOICE_NUMBER], $currentGstin);
     }
 }

@@ -28,7 +28,7 @@ class Repository extends Base\Repository
         Entity::VIRTUAL_ACCOUNT_ID,
     ];
 
-    public function findByUtr($utr)
+    public function findByUtr(string $utr)
     {
         return $this->newQuery()
                     ->where(Entity::UTR, '=', $utr)

@@ -7,6 +7,7 @@ use RZP\Constants\Entity as E;
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Transaction;
+use RZP\Models\Reversal;
 
 class Entity extends Base\PublicEntity
 {
@@ -147,6 +148,11 @@ class Entity extends Base\PublicEntity
     public function to()
     {
         return $this->morphTo();
+    }
+
+    public function reversals()
+    {
+        return $this->morphMany(Reversal\Entity::class, 'entity');
     }
 
     // -------------------- End Relations -----------------------

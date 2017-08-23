@@ -22,4 +22,12 @@ class Repository extends Base\Repository
                     ->where(Entity::MONTH, '=', $month)
                     ->get();
     }
+
+    public function updateGstin(string $merchantId, string $invoiceNo, string $gstin)
+    {
+        return $this->newQuery()
+                    ->merchantId($merchantId)
+                    ->where(Entity::INVOICE_NUMBER, '=', $invoiceNo)
+                    ->update([Entity::GSTIN => $gstin]);
+    }
 }

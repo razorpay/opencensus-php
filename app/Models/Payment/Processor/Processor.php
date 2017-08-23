@@ -25,8 +25,8 @@ use RZP\Models\Risk;
 use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Transfer\Core as TransferCore;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class Processor
 {
@@ -291,7 +291,11 @@ class Processor
         if ($merchant->isActivated() === false)
         {
             throw new Exception\LogicException(
-                'A non-activated merchant is making live request. Blasphemy!');
+                'A non-activated merchant is making live request. Blasphemy!',
+                null,
+                [
+                    'merchant_id' => $merchant->getId(),
+                ]);
         }
     }
 

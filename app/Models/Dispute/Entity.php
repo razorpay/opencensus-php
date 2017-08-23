@@ -43,6 +43,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::GATEWAY_DISPUTE_ID,
         self::GATEWAY_DISPUTE_STATUS,
+        self::DEDUCT_AT_ONSET,
         self::REASON_CODE,
         self::REASON_DESCRIPTION,
         self::RAISED_ON,
@@ -51,7 +52,6 @@ class Entity extends Base\PublicEntity
         self::PHASE,
         self::AMOUNT_DEDUCTED,
         self::AMOUNT_REVERSED,
-        self::DEDUCT_AT_ONSET,
         self::COMMENTS,
     ];
 
@@ -114,7 +114,7 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::STATUS          => Status::OPEN,
-        self::DEDUCT_AT_ONSET => true,
+        self::DEDUCT_AT_ONSET => false,
         self::AMOUNT_DEDUCTED => 0,
         self::AMOUNT_REVERSED => 0
     ];
@@ -181,6 +181,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT_REVERSED);
     }
 
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
+    }
+    
     protected function getStatus()
     {
         return $this->getAttribute(self::STATUS);
@@ -199,6 +204,11 @@ class Entity extends Base\PublicEntity
     public function getRaisedOn()
     {
         return $this->getAttribute(self::RAISED_ON);
+    }
+
+    public function getDeductAtOnset()
+    {
+        return $this->getAttribute(self::DEDUCT_AT_ONSET);
     }
 
     // ----------------------- Getters Ends-------------------------------------

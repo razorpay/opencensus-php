@@ -591,3 +591,9 @@ UPDATE hdfc
 SET gateway_transaction_id = 8160981421672291, gateway_payment_id = 7696205411672290
 WHERE id = 8402808
 LIMIT 1;
+
+# Reversal migration
+UPDATE reversals
+    SET entity_type='transfer', entity_id=transfer_id
+    WHERE transfer_id IS NOT NULL;
+

@@ -17,5 +17,14 @@ class MerchantInvoiceController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function updateGstin($id)
+    {
+        $input = Request::all();
+
+        (new Invoice\Core)->updateGstin($id, $input);
+
+        return ApiResponse::json([]);
+    }
 }
 
