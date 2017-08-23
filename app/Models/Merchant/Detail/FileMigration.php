@@ -6,11 +6,11 @@ use Config;
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Detail;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FileStore\Storage\AwsS3\Handler;
 
 class FileMigration extends Base\Service

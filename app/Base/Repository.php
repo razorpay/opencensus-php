@@ -9,12 +9,12 @@ use RZP\Models;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Jobs\EsSync;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\DispatchRouter;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Base\EsRepository;
+use Razorpay\Trace\Logger as Trace;
 
 class Repository extends \Razorpay\Spine\Repository
 {
@@ -507,7 +507,10 @@ class Repository extends \Razorpay\Spine\Repository
      *
      * @return
      */
-    protected function modifyQueryForIndexing(BuilderEx $query) {}
+    protected function modifyQueryForIndexing(BuilderEx $query)
+    {
+        //
+    }
 
     /**
      * Serializes a given model for indexing.

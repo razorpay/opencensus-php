@@ -5,8 +5,8 @@ namespace RZP\Services;
 use Carbon\Carbon;
 use Exception;
 use RZP\Models\Base;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class HarvesterClient extends AbstractEventClient
 {

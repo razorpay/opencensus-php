@@ -2,11 +2,11 @@
 
 namespace RZP\Models\Feature;
 
-use RZP\Models\Base;
-use RZP\Exception;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
 use Config;
+use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class Core extends Base\Core
 {

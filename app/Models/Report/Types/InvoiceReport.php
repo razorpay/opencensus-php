@@ -87,7 +87,7 @@ class InvoiceReport extends BaseReport
         $invoiceBreakup = $this->repo->merchant_invoice->fetchInvoiceReportData(
                                 $this->merchant->getId(), $this->month, $this->year);
 
-        if (empty($invoiceBreakup) === true)
+        if ($invoiceBreakup->count() === 0)
         {
             // Downloading before the entities are created - may be middle of the month!
             return [];

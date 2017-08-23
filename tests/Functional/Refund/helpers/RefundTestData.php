@@ -225,7 +225,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'count'      => 4,
+                'count'      => 5,
                 // 'total_time' => '1 secs',
                 'failed_ids' => [],
             ],
@@ -277,6 +277,23 @@ return [
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_GATEWAY
+        ],
+    ],
+
+    'testRefundDisputedPayment' => [
+        'request'   => [],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_UNDER_DISPUTE_CANNOT_BE_REFUNDED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_UNDER_DISPUTE_CANNOT_BE_REFUNDED
         ],
     ],
 ];

@@ -5,10 +5,10 @@ namespace RZP\Gateway\Hdfc\Payment;
 use RZP\Exception;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card;
 use RZP\Models\Currency\Currency;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Feature\Constants as Feature;
 
 trait Enroll

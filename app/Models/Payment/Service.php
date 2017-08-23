@@ -16,10 +16,10 @@ use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Models\Transaction;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Constants;
 use RZP\Constants\MailTags;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Verify\Verify;
 
 class Service extends Base\Service
@@ -685,7 +685,7 @@ class Service extends Base\Service
         $date = Carbon::today(Timezone::IST);
         $ts = $date->subSeconds($seconds)->timestamp;
 
-        $payments = $this->repo->payment->getAuthorizedPaymentsBeforeTimestamp($ts);
+        $payments = $this->repo->payment->getAuthorizedPaymentsBeforeTimestamp($ts, false);
 
         // We fetch all the authorized payments eligible for refund.
         // Payments are identified on the basis of merchant auto_refund_delay

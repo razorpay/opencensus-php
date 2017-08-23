@@ -3,7 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use RZP\Models\Base\EsDao;
-use RZP\Trace\Trace;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 use Request;
 use RZP\Error\ErrorCode;

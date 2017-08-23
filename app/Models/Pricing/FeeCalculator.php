@@ -15,8 +15,8 @@ use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Models\Emi;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class FeeCalculator
 {
@@ -126,11 +126,6 @@ class FeeCalculator
     public static function isGstApplicable($fromTimestamp)
     {
         return ($fromTimestamp >= self::GST_START_TIMESTAMP);
-    }
-
-    public function getFeesSplit()
-    {
-        return $this->feesSplit;
     }
 
     protected function getRelevantPricingRule(Pricing\Plan $pricing)
@@ -678,7 +673,20 @@ class FeeCalculator
 
         foreach ($taxComponents as $name => $percentage)
         {
-            $taxValue = ($eligibleForGst === true) ? ((int) round(($percentage * $fee) / 10000)) : 0;
+            if (in_array($name, [FeeBreakupName::CGST, FeeBreakupName::SGST], true) === true)
+            {
+                $taxValue = ((int) round(($percentage * $fee) / 10000));
+            }
+            else if ($name === FeeBreakupName::IGST)
+            {
+                // Calculate as per cgst percentage, and double it to get the exact tax value.
+                // We do this so that if this value needs to be split later into sgst+cgst, it is an even value
+                $calculationPercentage = self::CGST_PERCENTAGE;
+
+                $taxValue = 2 * ((int) round(($calculationPercentage * $fee) / 10000));
+            }
+
+            $taxValue = ($eligibleForGst === true) ? $taxValue: 0;
 
             $taxBreakup = $this->createFeeBreakup(
                                             $name,
@@ -724,10 +732,10 @@ class FeeCalculator
         return self::getTaxComponentsFromStateCode($merchantBusinessStateCode);
     }
 
-    public static function getTaxComponentsFromStateCode(string $merchatGstStateCode = null): array
+    public static function getTaxComponentsFromStateCode(string $merchantGstStateCode = null): array
     {
         // Intrastate gst
-        if ($merchatGstStateCode === self::RZP_GST_STATE_CODE)
+        if ($merchantGstStateCode === self::RZP_GST_STATE_CODE)
         {
             return [
                 FeeBreakupName::CGST => self::CGST_PERCENTAGE,

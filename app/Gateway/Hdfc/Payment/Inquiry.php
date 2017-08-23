@@ -236,6 +236,11 @@ trait Inquiry
             }
         }
 
+        if (empty($content['tranid']) === false)
+        {
+            $gatewayPayment->setGatewayTransactionId($content['tranid']);
+        }
+
         $gatewayPayment->saveOrFail();
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
@@ -364,9 +369,18 @@ trait Inquiry
 
         $content['action'] = Action::INQUIRY;
 
-        $content['transid'] = $payment['gateway_payment_id'];
+        if ($verify->input['merchant']->getId() === '5ubLZpACTmD8D4')
+        {
+            $content['transid'] = $payment['payment_id'];
 
-        $content['udf5'] = 'PaymentID';
+            $content['udf5'] = 'TrackID';
+        }
+        else
+        {
+            $content['transid'] = $payment['gateway_payment_id'];
+
+            $content['udf5'] = 'PaymentID';
+        }
 
         $content['amt'] = $verify->input['payment']['amount'] / 100;
         $content['member'] = $verify->input['card']['name'];

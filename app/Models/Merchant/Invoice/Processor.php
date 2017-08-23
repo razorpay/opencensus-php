@@ -8,8 +8,8 @@ use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Pricing\FeeCalculator;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class Processor extends Base\Core
 {

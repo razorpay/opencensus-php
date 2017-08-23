@@ -8,13 +8,15 @@ use RZP\Models\Payment\Processor\Netbanking;
 
 class Validator extends Base\Validator
 {
-    protected static $addBanksRules = array(
-        Entity::BANKS => 'sometimes|array');
+    protected static $addBanksRules = [
+        Entity::BANKS => 'sometimes|array'
+    ];
 
-    protected static $addBanksValidators = array(
-        Entity::BANKS);
+    protected static $addBanksValidators = [
+        Entity::BANKS
+    ];
 
-    protected static $setMethodsRules = array(
+    protected static $setMethodsRules = [
         Entity::BANKS          => 'sometimes|array',
         Entity::NETBANKING     => 'sometimes|boolean',
         Entity::AMEX           => 'sometimes|boolean',
@@ -34,10 +36,11 @@ class Validator extends Base\Validator
         Entity::AEPS           => 'sometimes|boolean',
         Entity::MPESA          => 'sometimes|boolean',
         Entity::BANK_TRANSFER  => 'sometimes|boolean',
-    );
+    ];
 
-    protected static $setMethodsValidators = array(
-        'methodBanks');
+    protected static $setMethodsValidators = [
+        'methodBanks'
+    ];
 
     protected function validateMethodBanks(array $input)
     {
