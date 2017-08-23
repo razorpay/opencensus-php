@@ -245,7 +245,6 @@ return [
 
     'wallet_sbibuddy' => [
         'test_merchant_id'      => env('SBIBUDDY_WALLET_TEST_MERCHANT_ID'),
-        'test_client_id'        => env('SBIBUDDY_WALLET_TEST_CLIENT_ID'),
         'test_hash_secret'      => env('SBIBUDDY_WALLET_TEST_HASH_SECRET')
     ],
 
