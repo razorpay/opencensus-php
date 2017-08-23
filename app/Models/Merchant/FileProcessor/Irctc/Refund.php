@@ -18,6 +18,9 @@ class Refund extends TypeProcessor
     const PAYMENT_AMOUNT     = 'payment_amount';
     const CANCELLATION_ID    = 'cancellation_id';
 
+    const R_TYPE             = 'R';
+    const C_TYPE             = 'C';
+
     const HEADERS = [
         self::MERCHANT_REFERENCE,
         self::REFUND_TYPE,
@@ -30,7 +33,7 @@ class Refund extends TypeProcessor
 
     protected $refundType;
 
-    public function __construct(string $type = 'R')
+    public function __construct($type = self::R_TYPE)
     {
         parent::__construct();
 

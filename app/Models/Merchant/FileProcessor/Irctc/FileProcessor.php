@@ -11,47 +11,36 @@ class FileProcessor extends BaseProcessor
 
     public function process(array $filesContents)
     {
-        $processedIds = [];
+        $processedEntries = [];
 
-        $details = [];
+        $processedEntries[self::REFUND][] = $this->processRTypeRefunds($filesContents[self::REFUND]);
 
-        foreach ($filesContents as $file => $fileContents)
-        {
-            $type = $this->getType($fileContents['file_details']['file_name']);
+        $processedEntries[self::SETTLEMENT][] = $this->processSettlements($filesContents[self::SETTLEMENT]);
 
-            unset($fileContents['file_details']);
+        $processedEntries[self::REFUND][] = $this->processCTypeRefunds($filesContents[self::REFUND]);
 
-            $details[$type] = $fileContents;
-        }
-
-        $this->processRTypeRefunds($details['refund']);
-
-        $this->processSettlements($details['settlement']);
-
-        $this->processCTypeRefunds($details['refund']);
-
-        return $processedIds;
+        return $processedEntries;
     }
 
-    protected function processRTypeRefunds($details)
+    protected function processRTypeRefunds(array $details)
     {
-        $refundProcessor = new Refund('R');
+        $refundProcessor = new Refund(Refund::R_TYPE);
 
-        $refundProcessor->process($details);
+        return $refundProcessor->process($details);
     }
 
-    protected function processCTypeRefunds($details)
+    protected function processCTypeRefunds(array $details)
     {
-        $refundProcessor = new Refund('C');
+        $refundProcessor = new Refund(Refund::C_TYPE);
 
-        $refundProcessor->process($details);
+        return $refundProcessor->process($details);
     }
 
-    protected function processSettlements($details)
+    protected function processSettlements(array $details)
     {
         $settlementProcessor = new Settlement();
 
-        $settlementProcessor->process($details);
+        return $settlementProcessor->process($details);
     }
 
     public function getType(string $filename)
