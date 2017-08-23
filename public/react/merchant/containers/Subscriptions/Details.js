@@ -1,5 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
+import { withRouter } from 'react-router-dom';
 import SubscriptionDetails from 'merchant/components/Subscriptions/Details';
 import InvoiceDetail from 'merchant/components/Invoices/InvoiceDetail';
 import {
@@ -12,6 +13,7 @@ import { fetchInvoice } from 'merchant/modules/invoices/details';
 import { showNotification } from 'rzp/modules/notifications';
 import { expandSlider, compactSlider } from 'rzp/modules/slider';
 
+@withRouter
 @connect(state => state.subscription, {
   expandSlider,
   compactSlider,
@@ -63,21 +65,25 @@ export default class SubscriptionDetailsContainer extends Component {
   }
 
   fetchSubscriptionDetails(id) {
-    this.setState({ isLoading: true });
-    this.props
-      .fetchItem(id)
-      .then(subscription => {
-        return Promise.all([
-          this.props.fetchPlan(subscription.plan_id),
-          this.props.fetchCustomer(subscription.customer_id),
-        ]);
-      })
-      .then(() => {
-        this.setState({ isLoading: false });
-      })
-      .catch(({ errors }) => {
-        this.setState({ errors, isLoading: false });
-      });
+    let { entity, fetchItem, fetchPlan, fetchCustomer } = this.props;
+
+    if (!entity || id !== entity.id) {
+      this.setState({ isLoading: true });
+
+      fetchItem(id)
+        .then(subscription => {
+          return Promise.all([
+            fetchPlan(subscription.plan_id),
+            fetchCustomer(subscription.customer_id),
+          ]);
+        })
+        .then(() => {
+          this.setState({ isLoading: false });
+        })
+        .catch(({ errors }) => {
+          this.setState({ errors, isLoading: false });
+        });
+    }
   }
 
   cancelSubscription = () => {
@@ -120,7 +126,7 @@ export default class SubscriptionDetailsContainer extends Component {
     }
 
     return (
-      <div>
+      <div class="multi-content">
         <SubscriptionDetails
           subscription={entity}
           plan={plan}
@@ -130,7 +136,24 @@ export default class SubscriptionDetailsContainer extends Component {
           onCancelClick={this.cancelSubscription}
         />
         <InvoiceDetail invoice={invoice} isLoading={secView && !invoice} />
+        <button
+          type="button"
+          class="close close-secondary"
+          onClick={this.secClose}
+        >
+          <i class="icon icon-close" />
+        </button>
       </div>
     );
   }
+
+  secClose = () => {
+    let { compactSlider, history, location } = this.props;
+
+    compactSlider();
+    setTimeout(
+      () => history.push(location.pathname.replace(/\/[^\/]+\/?$/, '')),
+      300
+    );
+  };
 }

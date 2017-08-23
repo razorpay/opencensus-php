@@ -48,7 +48,7 @@ export default class ModalSlider extends Component {
         class="ModalSlider__Content"
         contentLabel="SliderModal"
       >
-        <button type="button" class="close" onClick={this.close}>
+        <button type="button" class="close close-primary" onClick={this.close}>
           <i class="icon icon-close" />
         </button>
 
