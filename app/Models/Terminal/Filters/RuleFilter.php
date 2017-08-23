@@ -3,10 +3,10 @@
 namespace RZP\Models\Terminal\Filters;
 
 use RZP\Models\Base;
-use RZP\Trace\Trace;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Feature\Constants as Feature;
 
 class RuleFilter extends Terminal\Filter

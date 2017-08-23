@@ -8,10 +8,10 @@ use App;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use RZP\Models\FileStore\Format;
+use Razorpay\Trace\Logger as Trace;
 
 class Orchestrator extends Base\Core
 {

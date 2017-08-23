@@ -16,8 +16,8 @@ use RZP\Models\Payment;
 use RZP\Models\BankTransfer;
 use RZP\Models\Payment\Refund\Entity as RefundEntity;
 use RZP\Models\Transaction;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 trait Refund
 {

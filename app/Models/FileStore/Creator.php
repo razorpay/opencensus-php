@@ -6,8 +6,8 @@ use Config;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FileStore\Formatter;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 

@@ -20,12 +20,12 @@ use RZP\Models\Adjustment;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Schedule\Library as ScheduleLibrary;
 use RZP\Models\Schedule\Task as ScheduleTask;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transfer;
 use RZP\Models\Feature;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\FeeModel;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Core extends Base\Core

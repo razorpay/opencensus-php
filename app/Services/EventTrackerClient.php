@@ -4,12 +4,12 @@ namespace RZP\Services;
 
 use Carbon\Carbon;
 use Exception;
-use RZP\Trace\Trace;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Analytics\Entity as Analytics;
 
 class EventTrackerClient extends AbstractEventClient

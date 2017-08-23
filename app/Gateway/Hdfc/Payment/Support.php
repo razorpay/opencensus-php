@@ -7,7 +7,7 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
 use RZP\Models\Payment as PaymentModel;
 use RZP\Gateway\Hdfc\Payment;
-use RZP\Trace\Trace;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card;
 

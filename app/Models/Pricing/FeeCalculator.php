@@ -15,8 +15,8 @@ use RZP\Models\Transaction\FeeBreakup\Name as FeeBreakupName;
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Models\Emi;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class FeeCalculator
 {

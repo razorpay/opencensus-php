@@ -6,12 +6,12 @@ use AWS;
 use App;
 use Excel;
 use Config;
-use RZP\Trace\Trace;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use RZP\Exception;
-use RZP\Models\FileStore\Storage\AwsS3\Handler;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\FileStore\Storage\AwsS3\Handler;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 trait FileHandlerTrait

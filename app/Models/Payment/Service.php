@@ -16,10 +16,10 @@ use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Models\Transaction;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Constants;
 use RZP\Constants\MailTags;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Verify\Verify;
 
 class Service extends Base\Service

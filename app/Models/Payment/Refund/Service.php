@@ -12,12 +12,12 @@ use RZP\Models\Base;
 use RZP\Constants;
 use RZP\Constants\Table;
 use RZP\Models\Payment;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Refund;
 use RZP\Exception;
 use RZP\Models\Transaction;
+use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {

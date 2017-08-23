@@ -6,7 +6,6 @@ use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Http\Mock\Client as MockHttplug;
 use RZP\Models\Admin as Admin;
-use RZP\Constants as Constants;
 use RZP\Gateway\GatewayManager;
 use RZP\Models\Adjustment;
 use RZP\Models\Invoice;
@@ -44,6 +43,8 @@ class ApiServiceProvider extends BaseServiceProvider
      */
     public function register()
     {
+        $this->registerTraceProcessors();
+        
         $this->app->singleton('mailgun', function($app)
         {
             $mailgunMock = $app['config']->get('applications.mailgun.mock');
@@ -350,5 +351,12 @@ class ApiServiceProvider extends BaseServiceProvider
         {
             return new MockHttplug;
         });
+    }
+
+    protected function registerTraceProcessors()
+    {
+        $apiProcessor = new RZP\Trace\ApiTraceProcessor($this->app);
+
+        $this->app['trace']->pushProcessor($apiProcessor);
     }
 }
