@@ -88,7 +88,7 @@ export default class Sidebar extends Component {
                   <MainNavLink
                     label="Transactions"
                     id="transactions-nav"
-                    icon="icon icon-transactions text-primary"
+                    icon="icon icon-repeat text-primary"
                     to={routes.transactions}
                     notMyRole="sellerapp"
                   />
@@ -103,7 +103,7 @@ export default class Sidebar extends Component {
 
                   <MainNavLink
                     label="Invoices"
-                    icon="icon icon-invoices text-warning"
+                    icon="icon icon-notes text-warning"
                     to={routes.invoices}
                     featureEnabled="Invoice"
                     notMyRole="sellerapp"
@@ -150,13 +150,13 @@ export default class Sidebar extends Component {
 
                   <MainNavLink
                     label="Reports"
-                    icon="icon icon-reports text-danger"
+                    icon="icon icon-books text-danger"
                     to="/reports"
                     notMyRole="sellerapp support"
                   />
                   <MainNavLink
                     label="Manage Team"
-                    icon="icon icon-team text-info"
+                    icon="icon icon-city text-info"
                     to="/team"
                     myRole="owner"
                     beta={true}

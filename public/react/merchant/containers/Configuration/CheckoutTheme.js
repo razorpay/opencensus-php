@@ -7,7 +7,7 @@ import { uploadLogo } from 'merchant/modules/config';
 import { showNotification } from 'rzp/modules/notifications';
 
 @connect(state => state.config, { uploadLogo, showNotification })
-@reduxForm()
+@reduxForm({})
 export default class CheckoutTheme extends Component {
   componentWillMount() {
     this.props.initialize(this.props.config);
@@ -40,7 +40,9 @@ export default class CheckoutTheme extends Component {
         <div class="panel-body">
           <form class="form-horizontal">
             <div class="form-group">
-              <label class="col-md-12"><strong>Theme Color</strong></label>
+              <label class="col-md-12">
+                <strong>Theme Color</strong>
+              </label>
               <div class="col-md-2 col-sm-3">
                 <Field
                   name="brand_color"
@@ -57,14 +59,16 @@ export default class CheckoutTheme extends Component {
                 />
               </div>
               <div class="col-md-12 help-block">
-                Choose a theme color to customize the checkout form. The default theme color will be used if none is specified.
-                {' '}
+                Choose a theme color to customize the checkout form. The default
+                theme color will be used if none is specified.{' '}
                 <b>Use the color picker or enter the hexadecimal color code</b>
               </div>
             </div>
 
             <div class="form-group">
-              <label class="col-md-12"><strong>Your Logo</strong></label>
+              <label class="col-md-12">
+                <strong>Your Logo</strong>
+              </label>
               <div class="col-md-12 media" style={{ marginTop: 0 }}>
                 {this.props.config.logo_url &&
                   <div class="media-left">
@@ -86,11 +90,14 @@ export default class CheckoutTheme extends Component {
                     maxSize="1048576"
                     onChange={this.uploadLogo}
                   />
-                  <div class="help-block"><i>Max file size: 1MB</i></div>
+                  <div class="help-block">
+                    <i>Max file size: 1MB</i>
+                  </div>
                 </div>
                 <div>
                   <small class="help-block">
-                    Upload your logo that will appear on the checkout form. Choose a square image of minimum dimensions 256x256 px.
+                    Upload your logo that will appear on the checkout form.
+                    Choose a square image of minimum dimensions 256x256 px.
                   </small>
                 </div>
               </div>

@@ -30,7 +30,6 @@ export default class MyAccount extends Component {
             <NavLink to="/referrals">Referrals</NavLink>
           </ShowWhen>
         </header>
-
         <content>
           <Route path="/profile" component={Profile} />
           <Route path="/activation" component={Activation} />

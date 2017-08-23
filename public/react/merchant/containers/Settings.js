@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Route, Switch, NavLink, withRouter } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 import Configuration from 'merchant/containers/Configuration';
 import ApiKeys from 'merchant/containers/Keys/List';
@@ -30,6 +31,7 @@ export default class Settings extends Component {
             <NavLink to="/applications">Applications</NavLink>
           </ShowWhen>
         </header>
+        <TestModeBanner />
         <content>
           <Route path="/config" component={Configuration} />
           <Route path="/webhooks" component={Webhooks} />

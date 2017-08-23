@@ -4,7 +4,7 @@ import AsyncButton from 'react-async-button';
 import { stringifyQueryParams, getURLQueryParams } from 'rzp/utils/rzp-utils';
 import { withRouter } from 'react-router-dom';
 
-@reduxForm()
+@reduxForm({})
 @withRouter
 export default class ListFilter extends Component {
   // populate the search filters based on query params
