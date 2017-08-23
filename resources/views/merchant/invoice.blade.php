@@ -424,5 +424,6 @@
   <div class="foot-note">
     Note: This is an auto generated invoice, no signature required.
   </div>
+  <script>window.print();</script>
 </body>
 </html>
