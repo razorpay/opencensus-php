@@ -2,7 +2,7 @@ import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import SubscriptionDetails from 'merchant/components/Subscriptions/Details';
-import InvoiceDetail from 'merchant/components/Invoices/InvoiceDetail';
+import InvoiceDetail from 'merchant/components/Subscriptions/InvoiceDetail';
 import PaymentDetail from 'merchant/components/Payments/PaymentDetails';
 import {
   fetchSubscription as fetchItem,
