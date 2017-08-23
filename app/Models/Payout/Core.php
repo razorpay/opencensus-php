@@ -39,7 +39,7 @@ class Core extends Base\Core
      * @param  Merchant\Entity $merchant
      * @return Payout\Entity
      */
-    public function directPayout(array $input, Merchant\Entity $merchant): Entity
+    public function directPayout(array $input, Merchant\Entity $merchant): array
     {
         list($payout, $payoutAttempt) = $this->createPayout($input, $merchant);
 
@@ -86,7 +86,7 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
-    protected function createPayout(array $input, Merchant\Entity $merchant): Entity
+    protected function createPayout(array $input, Merchant\Entity $merchant): array
     {
         $this->validateMerchantStatus($merchant);
 
@@ -299,6 +299,8 @@ class Core extends Base\Core
 
         $bankAccountId   = 'randombannkAccount';
 
+        $merchant = $this->repo->merchant->fetchById($irctcMerchantId);
+
         $from = Carbon::yesterday(Timezone::IST)->timestamp;
 
         $to = Carbon::today(Timezone::IST)->timestamp - 1;
@@ -319,10 +321,8 @@ class Core extends Base\Core
         }
         else
         {
-            // Get the amount for captured payments on gateway for last day
             $paymentAmount = $this->repo->payment->getCapturedAmountByMerchant($irctcMerchantId, $from, $to);
 
-            // Get the amount for refunds on gateway for last day
             $refundAmount = $this->repo->refund->getRefundedAmountByMerchant($irctcMerchantId, $from, $to);
 
             $amount = $paymentAmount  - $refundAmount;
@@ -330,7 +330,7 @@ class Core extends Base\Core
 
         if ($amount > 20000000)
         {
-            $amount = number_format($amount / 100, 2, '.', '');
+            $amount = (int) $amount/10000000;
 
             $payoutInput = [
                 Entity::CUSTOMER_ID    => $irctcCustomerId,
