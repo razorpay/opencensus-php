@@ -704,15 +704,6 @@ class Service extends Base\Service
         return base64_encode($gateway_client_certificate);
     }
 
-    public function fetchMerchantPricing($id)
-    {
-        $this->setApiCredentials();
-
-        $response = $this->api->merchant->fetch($id)->fetchPricing()->toArray();
-
-        return $response;
-    }
-
     public function fetchMerchantSchedule($id)
     {
         $this->setApiCredentials(null, 'live');
