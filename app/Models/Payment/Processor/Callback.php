@@ -230,10 +230,18 @@ trait Callback
                 // Reload in case it's processed by another thread.
                 $this->repo->reload($payment);
 
-                if ($payment->isCreated() === false)
+                $isCorporatePayment = $payment->terminal->isCorporate();
+
+                // In case of non - corporate payments, this case is fine.
+                if (($payment->isCreated() === false) and
+                    ($isCorporatePayment === false))
                 {
                     return $this->processPaymentCallbackSecondTime($payment);
                 }
+
+                // For corporate payments, cases that should be
+                //allowed       - process
+                //disallowed    - are not well defined
 
                 $this->processPaymentCallback($payment, $gatewayInput);
 
@@ -340,9 +348,14 @@ trait Callback
         $this->lockForUpdateAndReload($this->payment);
 
         $payment = $this->payment;
+
         $status = $payment->getStatus();
 
-        if ($status !== Status::CREATED)
+        $isCorporatePayment = $payment->terminal->isCorporate();
+
+        // In case of corporate payments, process this.
+        if (($status !== Status::CREATED) and
+            ($isCorporatePayment === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED,
