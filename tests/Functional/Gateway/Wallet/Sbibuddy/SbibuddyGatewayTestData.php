@@ -4,7 +4,6 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Gateway\Wallet\Sbibuddy\ResponseCodeMap;
-use RZP\Gateway\Wallet\Base\Entity as Wallet;
 
 return [
     'testPayment'   => [
@@ -87,16 +86,16 @@ return [
     ],
 
     'testFailedPaymentWalletEntity' => [
-        Wallet::ACTION               => 'authorize',
-        Wallet::AMOUNT               => 50000,
-        Wallet::WALLET               => 'sbibuddy',
-        Wallet::RECEIVED             => true,
-        Wallet::EMAIL                => 'a@b.com',
-        Wallet::CONTACT              => '9918899029',
-        Wallet::GATEWAY_MERCHANT_ID  => 'random_id',
-        Wallet::STATUS_CODE          => ResponseCodeMap::GENERAL_ERROR,
-        Wallet::ERROR_MESSAGE        => 'Error occured',
-        Wallet::ENTITY               => 'wallet'
+        'action'               => 'authorize',
+        'amount'               => 50000,
+        'wallet'               => 'sbibuddy',
+        'received'             => true,
+        'email'                => 'a@b.com',
+        'contact'              => '9918899029',
+        'gateway_merchant_id'  => 'random_id',
+        'status_code'          => ResponseCodeMap::GENERAL_ERROR,
+        'error_message'        => 'Error occured',
+        'entity'               => 'wallet'
     ],
 
 
