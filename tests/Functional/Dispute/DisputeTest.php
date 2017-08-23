@@ -141,7 +141,41 @@ class DisputeTest extends TestCase
     {
         $data = $this->updateEditTestData();
 
-        $content = $this->runRequestResponseFlow($data);
+        $this->runRequestResponseFlow($data);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(false, $payment['disputed']);
+    }
+
+    public function testDisputeEditDeductOnLost()
+    {
+        $data = $this->updateEditTestData();
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('payment', $txn['type']);
+
+        $this->runRequestResponseFlow($data);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(false, $payment['disputed']);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('dispute', $txn['type']);
+    }
+
+    public function testDisputeEditDoNotDeductOnLostIfDeducted()
+    {
+        $data = $this->updateEditTestData(['deduct_at_onset' => 1]);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('dispute', $txn['type']);
+
+        $this->runRequestResponseFlow($data);
 
         $payment = $this->getLastEntity('payment', true);
 
