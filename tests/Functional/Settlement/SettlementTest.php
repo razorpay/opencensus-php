@@ -886,13 +886,11 @@ class SettlementTest extends TestCase
         return $this->runRequestResponseFlow($testData);
     }
 
-    public function testTransfersWithSettlementReconciliation()
+    public function testUpdateSettlementDeailsInTransfers()
     {
         $payment = $this->createPaymentEntities(1);
 
         $createdAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp + 5;
-
-        $action = "create";
 
         $account = $this->fixtures->create('merchant:marketplace_account', ['balance' => 250000]);
 
@@ -908,6 +906,10 @@ class SettlementTest extends TestCase
                 'updated_at'  => $createdAt + 10
             ]);
 
+        // Check if the recipient_settlement_id for the transfer entity created is null
+        $defaultSettlementId1 = $transfer1->getRecipientSettlementId();
+        $this->assertEquals($defaultSettlementId1,null);
+
         $transfer2 = $this->fixtures->create(
             'transfer:to_account',
             [
@@ -920,27 +922,50 @@ class SettlementTest extends TestCase
                 'updated_at'  => $createdAt + 10
             ]);
 
-        $content = $this->initiateSettlements();
+        // Check if the recipient_settlement_id for the transfer entity created is null
+        $defaultSettlementId2 = $transfer2->getRecipientSettlementId();
+        $this->assertEquals($defaultSettlementId2,null);
 
-        $defaultSettlementId = $transfer1->getRecipientSettlementId();
+        $this->initiateSettlements();
 
+        // Reload the entities so that the cached values are not returned
         $transfer1->reload();
-
-        $updatedSettlementId = $transfer1->getRecipientSettlementId();
-
-        $this->assertEquals($defaultSettlementId,null);
-
-        $this->assertNotEquals($updatedSettlementId,null);
-
-        $defaultSettlementId = $transfer2->getRecipientSettlementId();
+        $updatedSettlementId1 = $transfer1->getRecipientSettlementId();
+        $this->assertNotEquals($updatedSettlementId1,null);
 
         $transfer2->reload();
+        $updatedSettlementId2 = $transfer2->getRecipientSettlementId();
+        $this->assertNotEquals($updatedSettlementId2,null);
 
-        $updatedSettlementId = $transfer2->getRecipientSettlementId();
+        $this->fixtures->merchant->addFeatures(['marketplace']);
 
-        $this->assertEquals($defaultSettlementId,null);
+        $this->ba->privateAuth();
 
-        $this->assertNotEquals($updatedSettlementId,null);
+        // The response should not contain details of the Settlement entity
+        $request = [
+            'url'     => '/transfers',
+            'method'  => 'GET',
+            'content' => [
 
+            ]
+        ];
+        $content = $this->makeRequestAndGetContent($request);
+        $transferResponse = $content['items'][0];
+        $this->assertArrayNotHasKey('recipient_settlement', $transferResponse);
+
+        // The response should contain details of the Settlement entity,
+        // since expand[]=recipient_settlement flag is being passed.
+        $request = [
+            'url'     => '/transfers',
+            'method'  => 'GET',
+            'content' => [
+                'expand'    =>  [
+                    'recipient_settlement'
+                ]
+            ]
+        ];
+        $content = $this->makeRequestAndGetContent($request);
+        $transferResponse = $content['items'][0];
+        $this->assertArrayHasKey('recipient_settlement', $transferResponse);
     }
 }
