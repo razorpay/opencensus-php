@@ -31,6 +31,7 @@ class Entity extends Base\PublicEntity
     const ON_HOLD_UNTIL             = 'on_hold_until';
     const TRANSACTION_ID            = 'transaction_id';
     const RECIPIENT_SETTLEMENT_ID   = 'recipient_settlement_id';
+    const RECIPIENT_SETTLEMENT      = 'recipient_settlement';
 
     // Public Attribute keys for SOURCE_ID and TO_ID
     const SOURCE                = 'source';
@@ -89,6 +90,8 @@ class Entity extends Base\PublicEntity
         self::ON_HOLD_UNTIL,
         self::CREATED_AT,
         self::TAX,
+        self::RECIPIENT_SETTLEMENT_ID,
+        self::RECIPIENT_SETTLEMENT
     ];
 
     protected $publicSetters = [
@@ -156,6 +159,11 @@ class Entity extends Base\PublicEntity
     public function reversals()
     {
         return $this->morphMany(Reversal\Entity::class, 'entity');
+    }
+
+    public function recipientSettlement()
+    {
+        return $this->hasOne('RZP\Models\Settlement\Entity', 'id', 'recipient_settlement_id');
     }
 
     // -------------------- End Relations -----------------------

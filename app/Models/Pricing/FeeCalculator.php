@@ -581,6 +581,11 @@ class FeeCalculator
             throw new Exception\LogicException(
                 'Only 1 pricing rule should have been present here. Found: ' . count($pricing));
         }
+        else if (count($pricing) == 0)
+        {
+            throw new Exception\LogicException(
+                '1 pricing rule should have been present here. Found: 0');
+        }
 
         $rule = $pricing[0];
 
