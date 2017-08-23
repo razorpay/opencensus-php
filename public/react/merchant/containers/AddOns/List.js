@@ -1,9 +1,10 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import HeaderAction from 'rzp/ui/HeaderAction';
+import Alert from 'rzp/ui/Forms/Alert';
+import Pager from 'rzp/ui/Pager';
 import AddOnsListFilter from 'merchant/components/AddOns/ListFilter';
-
-import DataTable from 'rzp/ui/Table/DataTable';
+import AddOnsList from 'merchant/components/AddOns/List';
 import ListContainer from 'merchant/containers/ListContainer';
 import { fetchPlans as fetchAll } from 'merchant/modules/plans';
 import * as ModalActions from 'rzp/modules/modals';
@@ -38,8 +39,25 @@ export default class AddOnsListContainer extends ListContainer {
     this.props.closeModal();
   };
 
+  actionOnAddOns = type => {
+    switch (type) {
+      case 'delete':
+        break; // dispatcher call
+      case 'edit':
+        break; // open edit modal
+    }
+  };
+
   render() {
     let { loading, items, error } = this.props;
+    let statusMsg = {};
+
+    if (error) {
+      statusMsg = {
+        type: 'error',
+        message: error,
+      };
+    }
 
     return (
       <div class="content-wrapper">
@@ -62,7 +80,22 @@ export default class AddOnsListContainer extends ListContainer {
           count={this.state.count}
           onSubmit={this.search}
         />
+
+        <Alert type={statusMsg.type} message={statusMsg.message} />
         {/*addonId, addonName, addonAmount, createdAt*/}
+
+        <AddOnsList
+          addons={items}
+          isLoading={loading}
+          onAction={this.actionOnAddOns}
+        />
+
+        <Pager
+          count={this.state.count}
+          skip={this.state.skip}
+          length={items.length}
+          onClick={this.paginate}
+        />
       </div>
     );
   }
