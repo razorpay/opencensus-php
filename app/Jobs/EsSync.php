@@ -6,9 +6,9 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 use RZP\Models\Base;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
+use Razorpay\Trace\Logger as Trace;
 
 /**
  * Es sync job class.

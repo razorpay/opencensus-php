@@ -49,6 +49,11 @@ class Entity extends Base\Entity
 
     protected $revisionCreationsEnabled = true;
 
+    protected $embeddedRelations = [
+        self::PERMISSIONS,
+        self::WORKFLOW_PERMISSIONS,
+    ];
+
     protected $fillable = [
         self::DISPLAY_NAME,
         self::BUSINESS_NAME,

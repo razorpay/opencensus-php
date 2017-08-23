@@ -435,6 +435,7 @@ class Gateway
         Gateway::CYBERSOURCE,
         Gateway::FIRST_DATA,
         Gateway::AXIS_MIGS,
+        Gateway::HDFC,
     ];
 
     /**
@@ -635,7 +636,11 @@ class Gateway
         if (in_array($gateway, self::$methodMap[Method::WALLET]) === false)
         {
             throw new Exception\LogicException(
-                'Unknown wallet gateway. Gateway: ' . $gateway);
+                'Unknown wallet gateway',
+                null,
+                [
+                    'gateway' => $gateway,
+                ]);
         }
 
         return array_flip(self::$walletToGatewayMap)[$gateway];
@@ -646,7 +651,11 @@ class Gateway
         if (self::isValidGateway($gateway) === false)
         {
             throw new Exception\LogicException(
-                'Unknown gateway. Gateway: ' . $gateway);
+                'Unknown gateway',
+                null,
+                [
+                    'gateway' => $gateway,
+                ]);
         }
     }
 

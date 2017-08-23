@@ -50,6 +50,18 @@ final class FactoryData
             'gateway_secure_secret'     => null,
         ]);
 
+        $factory(\RZP\Models\Merchant\Invoice\Entity::class, [
+            'id'                => $faker->uniqueid,
+            'merchant_id'       => '10000000000000',
+            'invoice_number'    => $faker->name,
+            'month'             => 8,
+            'year'              => 2017,
+            'gstin'             => '29kjsngjk213922',
+            'amount'            => 500,
+            'amount_due'        => 0,
+            'tax'               => 22,
+        ]);
+
         $factory(\RZP\Models\Merchant\Balance\Entity::class, [
             'id'                        => $faker->uniqueid,
             'balance'                   => 0,
@@ -758,13 +770,15 @@ final class FactoryData
             'phase'              => \RZP\Models\Dispute\Phase::CHARGEBACK,
             'raised_on'          => $faker->timestamp,
             'expires_on'         => $faker->timestamp,
-            'deduct_at_onset'    => 1,
+            'deduct_at_onset'    => 0,
+            'amount_deducted'    => 0,
+            'amount_reversed'    => 0,
             'currency'           => 'INR',
             'status'             => \RZP\Models\Dispute\Status::OPEN,
             'reason_code'        => 'SOMETHING_BAD',
             'reason_description' => 'Something went wrong'
         ]);
-        
+
         $factory(\RZP\Models\Workflow\Entity::class, [
            'id'      => $faker->uniqueid,
             'org_id' => '100000razorpay',

@@ -184,6 +184,12 @@ class Gateway
      */
     public function callback(array $input)
     {
+        if (empty($input['gateway']) === true)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_CALLBACK_EMPTY_INPUT);
+        }
+
         $this->input = $input;
         $this->action = Action::CALLBACK;
     }

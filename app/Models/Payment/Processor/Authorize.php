@@ -39,8 +39,8 @@ use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Customer\GatewayToken;
 use RZP\Models\Upi;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 trait Authorize
 {

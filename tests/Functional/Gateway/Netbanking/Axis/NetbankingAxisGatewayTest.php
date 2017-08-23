@@ -316,11 +316,18 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $this->mockVerifyNullResponse();
 
-        $data = $this->testData[__FUNCTION__];
+        $data = $this->testData['testVerifyMismatch'];
 
-        $verify = $this->verifyPayment($payment['id']);
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
 
-        $this->assertArraySelectiveEquals($data, $verify);
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertTestResponse($gatewayPayment, 'testAuthFailedVerifyNullResponse');
     }
 
     // Auth fails but verify shows success

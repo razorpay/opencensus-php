@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Wallet\Mpesa;
 
+use SoapFault;
 use SoapClient;
 use SoapHeader;
 use Carbon\Carbon;
@@ -12,6 +13,7 @@ use SimpleXMLElement;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Utility;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Base\Verify;
@@ -566,9 +568,28 @@ class Gateway extends Base\Gateway
                 ],
             ]);
 
-        $client = $this->getSoapClientObject();
+        try
+        {
+            $client = $this->getSoapClientObject();
 
-        $response = $client->__soapCall($method, [$soapRoot => $data]);
+            $response = $client->__soapCall($method, [$soapRoot => $data]);
+        }
+        catch (SoapFault $e)
+        {
+            if (isset($client) === true)
+            {
+                $this->trace->error(
+                    TraceCode::GATEWAY_SOAP_FAULT,
+                    [
+                        'payment_id'    => $this->input['payment']['id'],
+                        'gateway'       => $this->gateway,
+                        'soap_method'   => $method,
+                        'soap_response' => $client->__getLastResponse()
+                    ]);
+            }
+
+            $this->handleSoapFault($e, $method);
+        }
 
         return json_decode(json_encode($response), true);
     }
@@ -583,6 +604,19 @@ class Gateway extends Base\Gateway
         ];
 
         return $headers;
+    }
+
+    protected function handleSoapFault(SoapFault $e, string $method)
+    {
+        if (Utility::checkSoapTimeout($e) === true)
+        {
+            throw new Exception\GatewayTimeoutException($e->getMessage(), $e);
+        }
+
+        $errorMessage = SoapMethod::getErrorMessage($method);
+
+        throw new Exception\GatewayErrorException(
+            ErrorCode::GATEWAY_ERROR_SOAP_ERROR, null, $errorMessage, $e);
     }
 
     protected function checkGatewayResponse(string $status)
@@ -635,7 +669,7 @@ class Gateway extends Base\Gateway
     {
         $file = $this->getWsdlFile();
 
-        $soapClient = new SoapClient($file);
+        $soapClient = new SoapClient($file, ['trace' => 1]);
 
         $headers = $this->getSoapHeaders();
 

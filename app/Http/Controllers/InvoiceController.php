@@ -25,7 +25,9 @@ class InvoiceController extends Controller
 
     public function getInvoice(string $id)
     {
-        $invoice = $this->service('invoice')->fetch($id);
+        $input = Request::all();
+
+        $invoice = $this->service('invoice')->fetch($id, $input);
 
         return ApiResponse::json($invoice);
     }

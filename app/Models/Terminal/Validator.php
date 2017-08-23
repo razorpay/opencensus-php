@@ -156,6 +156,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
         Entity::CARD                        => 'sometimes|boolean|in:1',
+        Entity::TYPE                        => 'sometimes|integer|in:1,6',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
     ];
 
@@ -229,7 +230,6 @@ class Validator extends Base\Validator
     ];
 
     protected static $netbankingIciciTerminalRules = [
-        Entity::TYPE                 => 'required',
         Entity::GATEWAY              => 'required|in:netbanking_icici',
         Entity::GATEWAY_MERCHANT_ID  => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2 => 'required|string',
@@ -398,16 +398,25 @@ class Validator extends Base\Validator
             return;
         }
 
-        if ($input[Entity::MERCHANT_ID] != Merchant\Account::SHARED_ACCOUNT)
+        if ($input[Entity::MERCHANT_ID] !== Merchant\Account::SHARED_ACCOUNT)
         {
             throw new Exception\LogicException(
-                'EMI Terminals can only be added to shared merchant account');
+                'EMI Terminals can only be added to shared merchant account',
+                null,
+                [
+                    'input' => $input
+                ]);
         }
 
-        if (!isset($input[Entity::SHARED]) or ($input[Entity::SHARED] !== '1'))
+        if ((isset($input[Entity::SHARED]) === false) or
+            ($input[Entity::SHARED] !== '1'))
         {
             throw new Exception\LogicException(
-                'EMI Terminals must be shared terminals');
+                'EMI Terminals must be shared terminals',
+                null,
+                [
+                    'input' => $input
+                ]);
         }
     }
 
@@ -460,7 +469,14 @@ class Validator extends Base\Validator
             ($count > Entity::MAX_TERMINALS_COUNT))
         {
             throw new Exception\LogicException(
-                'Terminal count should not exceed max count');
+                'Terminal count should not exceed max count',
+                null,
+                [
+                    'count'                 => $count,
+                    'max'                   => Entity::MAX_TERMINALS_COUNT,
+                    'terminal_id'           => $newTerminal->getId(),
+                    'terminal_merchant_id'  => $newTerminal->getMerchantId(),
+                ]);
         }
         else if (($newTerminal->getMerchantId() !== Merchant\Account::SHARED_ACCOUNT) and
                  ($count === Entity::MAX_TERMINALS_COUNT))

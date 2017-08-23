@@ -409,7 +409,12 @@ class Gateway extends Base\Gateway
         if ($input['refund']['created_at'] < 1494268200)
         {
             throw new Exception\LogicException(
-                'Unable to verify migs refund');
+                'Unable to verify migs refund',
+                null,
+                [
+                    'payment_id'    => $input['refund']['payment_id'],
+                    'refund_id'     => $input['refund']['id'],
+                ]);
         }
 
         $content = $this->sendVerifyRequest($input, 'refund');
@@ -439,7 +444,12 @@ class Gateway extends Base\Gateway
         else if ($content['vpc_FoundMultipleDRs'] === 'Y')
         {
             throw new Exception\LogicException(
-                'Shouldn\'t reach here');
+                'Shouldn\'t reach here',
+                null,
+                [
+                    'payment_id' => $input['refund']['payment_id'],
+                    'refund_id'  => $input['refund']['id'],
+                ]);
         }
 
         return false;

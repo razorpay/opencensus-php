@@ -12,13 +12,13 @@ use RZP\Models\Admin\Org;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Key;
-use RZP\Trace\Trace;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class Activate extends Base\Core
 {
