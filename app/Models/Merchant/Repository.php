@@ -11,6 +11,7 @@ use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Balance;
+use RZP\Models\Admin\Permission\Name as Permission;
 
 class Repository extends Base\Repository
 {
@@ -37,6 +38,27 @@ class Repository extends Base\Repository
         Entity::HOLD_FUNDS              => 'sometimes|in:0,1',
         Entity::RISK_RATING             => 'sometimes|integer|max:5|min:1',
     );
+
+    protected $attributePermissions = [
+        Entity::EMAIL                   => Permission::VIEW_MERCHANT_EMAIL,
+    ];
+
+    public function fetchActivatedMerchantsBeforeTimestamp(int $limit, int $skip, int $end, array $merchantIds = [])
+    {
+        $query = $this->newQuery()
+                    ->where(Entity::ACTIVATED, '=', 1)
+                    ->where(Entity::ACTIVATED_AT, '<=', $end)
+                    ->take($limit)
+                    ->skip($skip)
+                    ->with('merchantDetail');
+
+        if (empty($merchantIds) === false)
+        {
+            $query = $query->whereIn(Entity::ID, $merchantIds);
+        }
+
+        return $query->get();
+    }
 
     public function getSharedAccount()
     {
