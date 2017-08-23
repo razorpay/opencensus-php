@@ -19,7 +19,7 @@ class Orchestrator extends Base\Core
      * Merchant constants
      ******************/
 
-    const IRCTC                = 'Irctc';
+    const IRCTC                = 'irctc';
 
     /*********************
      * Instance variables
@@ -80,18 +80,15 @@ class Orchestrator extends Base\Core
      */
     protected function processRequest(array $input)
     {
-        // Validates the input received.
-        // All the attachment files names should start with 'attachment-'
-        // Also, adds attachment-count to input, if not present already.
+        $this->validator->validateMerchant($input);
+
         $this->validator->validateAttachments($input);
 
-        $inputDetails = $this->getInputDetails($input);
+        $this->setMerchantProcessor($input['merchant']);
 
-        $this->setMerchantProcessor($inputDetails);
+        $this->allFilesDetails = $this->getFileDetailsFromInput($input);
 
-        $this->allFilesDetails = $this->getFileDetailsFromInput($inputDetails, $input);
-
-        $this->validator->validateFileDetails($input, $this->allFilesDetails);
+        $this->validator->validateFileDetails($this->allFilesDetails, $input['merchant']);
 
         return $this->orchestrate();
     }
@@ -155,44 +152,15 @@ class Orchestrator extends Base\Core
         return $this->fileProcessor->process($this->allFilesContents);
     }
 
-    /**
-     * Gets the required details from the input, structured.
-     *
-     * @param array $input
-     * @return array Structured input details
-     */
-    protected function getInputDetails(array $input)
-    {
-        $inputDetails = [
-            self::ATTACHMENT_COUNT => $input['attachment-count'],
-            self::MERCHANT         => $input['merchant'],
-        ];
-
-        return $inputDetails;
-    }
-
-    /**
-     * @param        $inputDetails
-     * @param        $input
-     * @param string $fileLocationType
-     *
-     * @return array
-     */
-    protected function getFileDetailsFromInput(
-        $inputDetails,
-        $input,
-        $fileLocationType = FileProcessor::UPLOADED)
+    protected function getFileDetailsFromInput(array $input): array
     {
         $allFilesDetails = [];
 
-        // Goes through each file and gets the file details.
-        foreach (range(1, $inputDetails[self::ATTACHMENT_COUNT]) as $attachmentNumber)
-        {
-            // All the attachment files have to be named as 'attachment-{number}'
-            // Validations should take care of this.
-            $file = $input['attachment-' . $attachmentNumber];
+        unset($input['merchant']);
 
-            $allFilesDetails[] = $this->baseFileProcessor->getFileDetails($file, $fileLocationType);
+        foreach ($input as $key => $file)
+        {
+            $allFilesDetails[] = $this->baseFileProcessor->getFileDetails($file, FileProcessor::UPLOADED);
         }
 
         return $allFilesDetails;
@@ -275,13 +243,13 @@ class Orchestrator extends Base\Core
         return $data;
     }
 
-    protected function setMerchantProcessor($inputDetails)
+    protected function setMerchantProcessor(string $merchant)
     {
         $merchantFileProcessorClassName = 'RZP\\Models\\Merchant\\FileProcessor'
-                                            . '\\' . studly_case($inputDetails['merchant'])
+                                            . '\\' . studly_case($merchant)
                                             . '\\FileProcessor';
 
-        $this->fileProcessor = new $merchantFileProcessorClassName($inputDetails);
+        $this->fileProcessor = new $merchantFileProcessorClassName();
     }
 
     protected function setExtraDetails(& $arrayContent, $fileDetails)

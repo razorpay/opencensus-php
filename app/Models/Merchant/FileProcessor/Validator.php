@@ -6,127 +6,98 @@ use RZP\Exception;
 
 class Validator
 {
-    const MERCHANT_FILE_DETAILS_VALIDATION = [
+    const MERCHANTS = [
         Orchestrator::IRCTC
     ];
 
     /**
-     * For emails without attachments, but links, we allow
-     * zero attachments during the initial validation.
-     * After we get the attachments from the link, we validate
-     * it again.
+     * Validate the input should have `merchant` key set and should be one of the valid merchants.
      *
      * @param array $input
-     * @param bool  $allowZeroAttachments
-     *
      * @throws Exception\BadRequestException
      */
-    public function validateAttachments(array & $input)
+    public function validateMerchant(array $input)
     {
-        //
+        if ((isset($input['merchant']) === false) and
+            (in_array($input['merchant'], self::MERCHANTS, true) === false))
+        {
+            throw new Exception\BadRequestException('No merchant found in the input.');
+        }
+    }
+
+    /**
+     * Validate the input should have `attachment-` files
+     *
+     * @param array $input
+     * @throws Exception\BadRequestException
+     */
+    public function validateAttachments(array $input)
+    {
         // Gets all the attachments found in the input by checking the number of
         // input keys starting with 'attachment-'.
-        // Excludes 'attachment-count'.
-        //
         $foundAttachments = array_filter(
             $input,
             function($key)
             {
-                return (strpos($key, 'attachment-') === 0) and
-                       (strpos($key, 'attachment-count') === false);
+                return (strpos($key, 'attachment-') === 0);
             },
             ARRAY_FILTER_USE_KEY
         );
 
         $foundAttachmentsCount = count($foundAttachments);
 
-        //
-        // In link based emails, we don't have the attachments at
-        // this point. Hence, it'll be 0. This is fine, since we
-        // update the attachment-count at a later point.
-        //
-        // Otherwise, there should be at least 1 attachment present.
-        //
         if ($foundAttachmentsCount === 0)
         {
-            throw new Exception\BadRequestException(
-                'No attachments found in the input.'
-            );
-        }
-
-        // Sets 'attachment-count' if not present and returns.
-        // If present, converts it to int.
-        if (isset($input['attachment-count']) === false)
-        {
-            $input['attachment-count'] = $foundAttachmentsCount;
-        }
-        else
-        {
-            $input['attachment-count'] = intval($input['attachment-count']);
-
-            // The input's attachment-count and found attachments count should be equal.
-            if ($input['attachment-count'] !== $foundAttachmentsCount)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The number of attachments found, does not match with the attachment-count input',
-                    ['attachments_found' => $foundAttachmentsCount, 'attachment_count' => $input['attachment-count']]
-                );
-            }
+            throw new Exception\BadRequestException('No attachments found in the input.');
         }
     }
 
-    public function validateFileDetails(array $input, array $fileDetails)
+    public function validateFileDetails(array $fileDetails, string $merchant)
     {
         if (empty($fileDetails) === true)
         {
-            throw new Exception\BadRequestException(
-                'File Details are empty.'
-            );
+            throw new Exception\BadRequestException('File Details are empty.');
         }
 
-        $merchant = studly_case($input['merchant']);
+        $fileDetailsValidator = 'validate' . studly_case($merchant) . 'FileDetails';
 
-        if (in_array($merchant, self::MERCHANT_FILE_DETAILS_VALIDATION) === true)
+        if (function_exists($fileDetailsValidator) === true)
         {
-            $fileDetailsValidator = 'validate' . $merchant . 'FileDetails';
-
             $this->$fileDetailsValidator($fileDetails);
         }
     }
 
-    public function validateIrctcFileDetails($fileDetails)
+    /**
+     * 1. Validate only 2 files are present
+     * 2. Validate only `refund_` and `settlement_` files are present
+     *
+     * @param array $fileDetails
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function validateIrctcFileDetails(array $fileDetails)
     {
-        $refundType = false;
-
-        $settlementType = false;
-
         if (count($fileDetails) !== 2)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'The number of attachments sent should be 2'
-            );
+                'The number of attachments sent should be 2');
         }
 
-        foreach ($fileDetails as $fileDetail)
-        {
-            $fileName = $fileDetail['file_name'];
+        $fileNames = array_column($fileDetails, 'file_name');
 
-            if (strpos($fileName, 'refund') !== false)
+        $files = array_filter(
+            $fileNames,
+            function($name)
             {
-                $refundType = true;
-            }
-            else if (strpos($fileName, 'settlement') !==false)
-            {
-                $settlementType = true;
-            }
-        }
+                return ((strpos($name, 'refund_') === 0) or
+                        (strpos($name, 'settlement_') === 0));
+            },
+            ARRAY_FILTER_USE_BOTH
+        );
 
-        if (($refundType === false) or
-            ($settlementType === false))
+        if (count($files) === 2)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Both settlement file and refund file needs to be sent'
-            );
+                'Both settlement file and refund file needs to be sent');
         }
     }
 }
