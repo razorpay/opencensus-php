@@ -85,7 +85,9 @@ class SubscriptionController extends Controller
 
     public function postTestChargeSubscription($subscriptionId)
     {
-        $subscription = $this->service()->chargeTestSubscription($subscriptionId);
+        $input = Request::input();
+
+        $subscription = $this->service()->chargeTestSubscription($subscriptionId, $input);
 
         return ApiResponse::json($subscription);
     }

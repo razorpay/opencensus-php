@@ -16,7 +16,7 @@ use RZP\Trace\TraceCode;
  */
 class Biller extends Base\Core
 {
-    public function createInvoiceAndCharge(Entity $subscription)
+    public function createInvoiceAndCharge(Entity $subscription, array $options = [])
     {
         $data = $this->createInvoiceBeforeCharge($subscription);
 
@@ -55,7 +55,7 @@ class Biller extends Base\Core
             return;
         }
 
-        (new Core)->charge($subscription, $invoice);
+        (new Core)->charge($subscription, $invoice, $options);
     }
 
     public function createInvoiceForSubscription(

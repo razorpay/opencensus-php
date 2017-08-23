@@ -40,6 +40,10 @@ class Validator extends Base\Validator
         Entity::END_AT,
     ];
 
+    protected static $manualTestChargeRules = [
+        'success' => 'sometimes|boolean',
+    ];
+
     public function validateEndAtAfterGenerating()
     {
         $subscription = $this->entity;
@@ -169,7 +173,7 @@ class Validator extends Base\Validator
     {
         $subscription = $this->entity;
 
-        if (in_array($subscription->getStatus(), Status::$cronChargeableStatuses, true) === false)
+        if (in_array($subscription->getStatus(), Status::$manualTestChargeableStatuses, true) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_NOT_IN_ACTIVE_OR_HALTED_STATE,

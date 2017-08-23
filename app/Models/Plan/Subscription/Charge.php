@@ -8,6 +8,7 @@ use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Schedule\Library;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -73,8 +74,6 @@ class Charge extends Base\Core
         //
         $this->app['basicauth']->checkAndSetKeyId($data['key_id']);
 
-        $recurringPayload = $data['recurring_payload'];
-
         $subscription = $this->repo->subscription->findOrFail($data['subscription_id']);
 
         $invoice = $this->repo->invoice->findOrFail($data['invoice_id']);
@@ -119,7 +118,7 @@ class Charge extends Base\Core
 
         try
         {
-            $payment = $this->authorizePayment($recurringPayload);
+            $payment = $this->authorizePayment($data);
         }
         catch (\Exception $ex)
         {
@@ -367,13 +366,27 @@ class Charge extends Base\Core
         return $valid;
     }
 
-    protected function authorizePayment(array $recurringPayload)
+    protected function authorizePayment(array $data)
     {
-        $recurringPayment = $this->processor->process($recurringPayload);
+        $this->preProcessSubscriptionCharge($data);
+
+        $recurringPayment = $this->processor->process($data['recurring_payload']);
 
         $authorizedPayment = $this->repo->payment->findByPublicId($recurringPayment['razorpay_payment_id']);
 
         return $authorizedPayment;
+    }
+
+    protected function preProcessSubscriptionCharge(array $data)
+    {
+        if (($this->mode === Mode::TEST) and
+            ($data['success'] === false))
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_SCHEDULED_FAILURE,
+                null,
+                $data);
+        }
     }
 
     protected function resetErrorFields(Entity $subscription)

@@ -221,7 +221,7 @@ class Service extends Base\Service
         return $subscription->toArrayPublic();
     }
 
-    public function chargeTestSubscription(string $subscriptionId)
+    public function chargeTestSubscription(string $subscriptionId, array $input)
     {
         if ($this->mode !== Mode::TEST)
         {
@@ -230,6 +230,7 @@ class Service extends Base\Service
                 null,
                 [
                     'subscription_id' => $subscriptionId,
+                    'input'           => $input,
                 ]);
         }
 
@@ -240,9 +241,10 @@ class Service extends Base\Service
             [
                 'subscription_id'   => $subscription->getId(),
                 'subscription'      => $subscription->toArray(),
+                'input'             => $input,
             ]);
 
-        $this->core->testCharge($subscription);
+        $this->core->testCharge($subscription, $input);
 
         return $subscription->toArrayPublic();
     }
@@ -289,13 +291,17 @@ class Service extends Base\Service
 
         $capture = $this->shouldCaptureInvoice($invoice, $subscription);
 
+        $options = [
+            'manual' => true,
+        ];
+
         if ($capture === true)
         {
-            $this->core->retryCapture($subscription, $invoice, true);
+            $this->core->retryCapture($subscription, $invoice, $options);
         }
         else
         {
-            $this->core->charge($subscription, $invoice, true);
+            $this->core->charge($subscription, $invoice, $options);
         }
 
         return $invoice->toArrayPublic();
@@ -306,7 +312,8 @@ class Service extends Base\Service
      * are any authorized payments. An authorized payment can only exist if the amount
      * has already been validated, so this can be captured.
      *
-     * We can't use subscription errorStatus, as merchant may be manually charging an older invoice, and subscription attributes may since have been updated.
+     * We can't use subscription errorStatus, as merchant may be manually charging an
+     * older invoice, and subscription attributes may since have been updated.
      *
      * @param Invoice\Entity $invoice
      * @param Entity         $subscription
