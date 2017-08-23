@@ -4,14 +4,11 @@ import { NavLink } from 'react-router-dom';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import DataTable from 'rzp/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
-import VirtualAccountsListFilter
-  from 'merchant/components/VirtualAccounts/ListFilter';
+import VirtualAccountsListFilter from 'merchant/components/VirtualAccounts/ListFilter';
 import CreateVirtualAccount from './CreateVirtualAccount';
 import { fetchConfig } from 'merchant/modules/config';
 import { openModal } from 'rzp/modules/modals';
-import {
-  fetchVirtualAccounts as fetchAll,
-} from 'merchant/modules/virtualaccounts';
+import { fetchVirtualAccounts as fetchAll } from 'merchant/modules/virtualaccounts';
 import {
   virtualAccountId,
   accountDescription,

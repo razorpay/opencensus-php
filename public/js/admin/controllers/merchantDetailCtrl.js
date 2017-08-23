@@ -1762,7 +1762,10 @@ app
           var adminObj = {
             id: admin.id,
             name: admin.name,
-            role: admin.roles[0].name,
+            role:
+              admin.roles.length && admin.roles[0].name
+                ? admin.roles[0].name
+                : '--',
           };
 
           $scope.adminMap[admin.id] = adminObj; // create mapping id - name

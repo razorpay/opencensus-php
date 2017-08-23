@@ -11,7 +11,7 @@
     </div>
     <div class="row wrapper actions-wrapper">
       <div class="list-group">
-        <a href="{{'/admin/merchant/' + merchant.details.id + '/login'}}" dynamic-tooltip="view_merchant_login" ng-show="admin.permissions.indexOf('view_merchant_login') !== -1" target="_blank" class="list-group-item" dynamic-tooltip="view_merchant_login">
+        <a href="{{'/admin/merchant/' + merchant.id + '/login'}}" dynamic-tooltip="view_merchant_login" ng-show="admin.permissions.indexOf('view_merchant_login') !== -1" target="_blank" class="list-group-item" dynamic-tooltip="view_merchant_login">
           Login as Merchant
         </a>
         <a ui-sref="app.merchants.activation({id: merchant.details.id})" dynamic-tooltip="view_activation_form" ng-show="admin.permissions.indexOf('view_activation_form') !== -1" class="list-group-item see-activation-form">
