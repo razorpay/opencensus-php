@@ -254,7 +254,6 @@ body {
 }
 
 .main-content .multi-content {
-  white-space: nowrap;
   font-size: 0;
   max-width: 1200px;
   margin: 90px auto;
@@ -270,6 +269,9 @@ body {
     top: 0;
     position: absolute;
     left: 50%;
+    @media (max-width: 1000px) {
+      content: none;
+    }
   }
 
   .content-sm {
@@ -279,7 +281,9 @@ body {
     vertical-align: top;
     font-size: 14px;
     width: 50%;
-    white-space: normal;
+    @media (max-width: 1000px) {
+      width: 100%
+    }
     &:only-of-type:before {
       position: absolute;
       left: 100%;
