@@ -90,16 +90,25 @@ class Service extends Base\Service
 
         $currentMerchant = Merchant\Entity::find($currentMerchant->id);
 
+        $currentMerchantTags = $this->getMerchantTags($currentMerchant->id);
+
         if ($isLinkedAccount === true)
         {
-            if ($currentMerchant->isMarketplace() === false)
+            if (in_array(Entity::MARKETPLACE, $currentMerchantTags) === false)
             {
                 return [[self::ACCOUNT_CREATION_NOT_ALLOWED], null];
             }
         }
         else
         {
-            if ($currentMerchant->isAggregator() === false)
+            /**
+             * Checking if the current merchant is an aggregator
+             * An aggregator is defined as a merchant
+             * which can create other merchants without sending
+             * them confirmation emails. All these merchants are also
+             * created with the same email address
+             */
+            if (in_array(Entity::AGGREGATOR, $currentMerchantTags) === false)
             {
                 return [[self::SUBMERCHANT_NOT_ALLOWED], null];
             }
@@ -848,6 +857,23 @@ class Service extends Base\Service
         return [ $error, $presignupDetails];
     }
 
+    public function getReferrerAttribute($merchantId)
+    {
+        $tags = $this->getMerchantTags($merchantId);
+
+        foreach ($tags as $tag)
+        {
+            $tag = strtolower($tag);
+
+            if (substr($tag, 0, 4) === 'ref-')
+            {
+                return substr($tag, 4);
+            }
+        }
+
+        return null;
+    }
+
     /**
      * returns the presignup data for a merchant
      * if the merchant is referred (submerchant)
@@ -859,7 +885,7 @@ class Service extends Base\Service
 
         $merchant = Merchant\Entity::findorfail($merchantId);
 
-        $referrer = $merchant->getReferrerAttribute();
+        $referrer = $this->getReferrerAttribute($merchantId);
 
         if (($referrer === null) or
             (Merchant\Entity::verifyUniqueId($referrer) === 0))
@@ -903,13 +929,13 @@ class Service extends Base\Service
 
         $currentMerchant = Merchant\Entity::find($currentMerchant->id);
 
-        $merchantTags = $currentMerchant->tagNames;
+        $merchantTags = $this->getMerchantTags($currentMerchant->id);
 
         $allTags = [];
 
         if (empty($merchantTags) === false)
         {
-            $allTags = explode(', ', strtolower($merchantTags));
+            $allTags = array_map('strtolower', $merchantTags);
         }
 
         $newAllTags = array_diff($allTags, ['newui']);
