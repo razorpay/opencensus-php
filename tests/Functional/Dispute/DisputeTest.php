@@ -35,6 +35,11 @@ class DisputeTest extends TestCase
         $dispute = $this->getLastEntity('dispute', true);
 
         $this->assertEquals(0, $dispute['amount_deducted']);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('payment', $txn['type']);
+
     }
 
     public function testDisputeCreateWithDeduct()

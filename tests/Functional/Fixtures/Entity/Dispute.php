@@ -30,7 +30,7 @@ class Dispute extends Base
         }
 
         // Create a transaction only when there's a deduction made
-        if ($dispute->getAmountDeducted() !== null)
+        if ($dispute->getAmountDeducted() !== 0)
         {
             $txn = $this->createTransactionOnDispute($dispute);
 
@@ -48,7 +48,6 @@ class Dispute extends Base
     {
         return [
            'amount'          => $payment->getAmount(),
-           'amount_deducted' => $payment->getAmount(),
            'payment_id'      => $payment->getId(),
            'merchant_id'     => $payment->getMerchantId(),
            'reason_id'       => $reason->getId(),
