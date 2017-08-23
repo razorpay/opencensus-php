@@ -14,6 +14,8 @@ class Type
 
     const HDFC_NETBANKING_REFUND            = 'hdfc_netbanking_refund';
 
+    const CORPORATION_NETBANKING_REFUND     = 'corporation_netbanking_refund';
+
     const ICICI_NETBANKING_REFUND           = 'icici_netbanking_refund';
 
     const AXIS_NETBANKING_REFUND            = 'axis_netbanking_refund';

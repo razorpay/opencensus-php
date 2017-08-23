@@ -25,8 +25,9 @@ class RefundFile extends Base\RefundFile
 
     public function generate($input)
     {
-        sd($input);
         list($txt, $totalAmount, $count) = $this->getRefundData($input);
+
+        // TODO: Create the text file
     }
 
     protected function getRefundData(array $input)
@@ -38,8 +39,9 @@ class RefundFile extends Base\RefundFile
         $data = [];
 
         // For first line
-        array_push($data, getDataForRow(
+        array_push($data, $this->getDataForRow(
                 self::POOLING_ACCOUNT_BR_CODE,
+                Carbon::now(Timezone::IST)->timestamp,
                 Constants::REFUND_FILE_DEBIT,
                 '00000000120000',
                 Constants::REFUND_FILE_ACCOUNT_TYPE_1,
@@ -51,19 +53,14 @@ class RefundFile extends Base\RefundFile
 
         foreach ($input['data'] as $row)
         {
-            sd($row);
-            $date = Carbon::createFromTimestamp(
-                    $row['payment']['created_at'], Timezone::IST)
-                    ->format('Ymd');
-
-            array_push($data, getDataForRow(
+            array_push($data, $this->getDataForRow(
                     self::CUSTOMER_ACCOUNT_BR_CODE,
+                    $row['payment']['created_at'],
                     Constants::REFUND_FILE_CREDIT,
                     '00000000040000',
-                    Constants::REFUND_FILE_ACCOUNT_TYPE_1,
+                    Constants::REFUND_FILE_ACCOUNT_TYPE_2,
                     Constants::REFUND_FILE_ACCOUNT_SUB_TYPE,
-                    self::SELF_ACCOUNT_NUMBER,
-                    true
+                    self::OTHERS_ACCOUNT_NUMBER
                 )
             );
 
@@ -72,13 +69,14 @@ class RefundFile extends Base\RefundFile
             $count++;
         }
 
-        $text = $this->generateText($data, '', $ignoreLastNewline);
+        $text = $this->generateText($data, '', true);
 
-        return [$txt, $totalAmount, $count];
+        return [$text, $totalAmount, $count];
     }
 
     protected function getDataForRow(
         $accountBrCode,
+        $date,
         $mode,
         $amount,
         $accountType,
@@ -88,7 +86,7 @@ class RefundFile extends Base\RefundFile
     )
     {
         $date = Carbon::createFromTimestamp(
-                $row['payment']['created_at'], Timezone::IST
+                $date, Timezone::IST
             )
             ->format('Ymd');
 
@@ -102,18 +100,20 @@ class RefundFile extends Base\RefundFile
             $accountType,
             $accountSubType,
             $accountNumber,
-            $this->getRearString($firstLine)
+            $this->getRearString($firstLine, $date)
         ];
+
+        return $data;
     }
 
-    protected function getRearString($firstLine)
+    protected function getRearString($firstLine, $date = null)
     {
         $lastString = self::FIXED_VALUE_REAR;
 
         if($firstLine === true)
         {
             $date = Carbon::createFromTimestamp(
-                $row['payment']['created_at'], Timezone::IST
+                $date
             )
             ->format('d.m.Y');
 
