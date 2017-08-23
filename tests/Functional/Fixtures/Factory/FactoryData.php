@@ -795,5 +795,22 @@ final class FactoryData
             'created_at'       => $faker->timestamp,
             'updated_at'       => $faker->timestamp,
         ]);
+
+        $factory(\RZP\Models\Workflow\Action\Entity::class,[
+            'id'                => $faker->uniqueid,
+            'entity_id'         => \RZP\Tests\Functional\Fixtures\Entity\Org::MAKER_ADMIN,
+            'entity_name'       => 'admin',
+            'title'             => 'a workflow action',
+            'workflow_id'       => \RZP\Tests\Functional\Fixtures\Entity\Workflow::DEFAULT_WORKFLOW_ID,
+            'approved'          => false,
+            'current_level'     => 1,
+            'state'             => \RZP\Models\Workflow\Action\State\Entity::OPEN,
+            'org_id'            => \RZP\Tests\Functional\Fixtures\Entity\Org::RZP_ORG,
+        ]);
+
+        $factory(\RZP\Models\Workflow\Action\State\Entity::class,[
+            'id'                => $faker->uniqueid,
+            'name'              => \RZP\Models\Workflow\Action\State\Entity::OPEN,
+        ]);
     }
 }
