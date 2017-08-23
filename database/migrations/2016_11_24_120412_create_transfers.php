@@ -8,6 +8,7 @@ use RZP\Constants\Table;
 use RZP\Models\Transaction;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Settlement;
 
 class CreateTransfers extends Migration
 {
@@ -67,6 +68,10 @@ class CreateTransfers extends Migration
 
             $table->char(Entity::TRANSACTION_ID, Entity::ID_LENGTH);
 
+            $table->char(Entity::RECIPIENT_SETTLEMENT_ID, Entity::ID_LENGTH)
+                ->nullable()
+                ->default(null);
+
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
 
@@ -82,6 +87,11 @@ class CreateTransfers extends Migration
                   ->references(Transaction\Entity::ID)
                   ->on(Table::TRANSACTION)
                   ->on_delete('restrict');
+
+            $table->foreign(Entity::RECIPIENT_SETTLEMENT_ID)
+                ->references(Settlement\Entity::ID)
+                ->on(Table::SETTLEMENT)
+                ->on_delete('restrict');
         });
 
         Schema::table(Table::PAYMENT, function($table)

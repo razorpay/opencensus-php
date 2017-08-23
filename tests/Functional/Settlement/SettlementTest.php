@@ -885,4 +885,62 @@ class SettlementTest extends TestCase
 
         return $this->runRequestResponseFlow($testData);
     }
+
+    public function testTransfersWithSettlementReconciliation()
+    {
+        $payment = $this->createPaymentEntities(1);
+
+        $createdAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp + 5;
+
+        $action = "create";
+
+        $account = $this->fixtures->create('merchant:marketplace_account', ['balance' => 250000]);
+
+        $transfer1 = $this->fixtures->create(
+            'transfer:to_account',
+            [
+                'account'     => $account,
+                'source_id'   => $payment->getId(),
+                'source_type' => 'payment',
+                'amount'      => 3000,
+                'currency'    => 'INR',
+                'created_at'  => $createdAt,
+                'updated_at'  => $createdAt + 10
+            ]);
+
+        $transfer2 = $this->fixtures->create(
+            'transfer:to_account',
+            [
+                'account'     => $account,
+                'source_id'   => $payment->getId(),
+                'source_type' => 'payment',
+                'amount'      => 4000,
+                'currency'    => 'INR',
+                'created_at'  => $createdAt,
+                'updated_at'  => $createdAt + 10
+            ]);
+
+        $content = $this->initiateSettlements();
+
+        $defaultSettlementId = $transfer1->getRecipientSettlementId();
+
+        $transfer1->reload();
+
+        $updatedSettlementId = $transfer1->getRecipientSettlementId();
+
+        $this->assertEquals($defaultSettlementId,null);
+
+        $this->assertNotEquals($updatedSettlementId,null);
+
+        $defaultSettlementId = $transfer2->getRecipientSettlementId();
+
+        $transfer2->reload();
+
+        $updatedSettlementId = $transfer2->getRecipientSettlementId();
+
+        $this->assertEquals($defaultSettlementId,null);
+
+        $this->assertNotEquals($updatedSettlementId,null);
+
+    }
 }

@@ -12,6 +12,8 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Entity;
+use RZP\Models\Payment;
 
 trait SettlementTrait
 {
@@ -128,6 +130,46 @@ trait SettlementTrait
         return [$setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $setlGatewayFee];
     }
 
+    /**
+     * [Marketplace] Updates the recipient's settlement details in the transfer entity
+     *
+     * Details -
+     *  1. Payment received by a master merchant has to be transferred to multiple child merchants
+     *  2. Internal transfer entity for master merchant's account is created
+     *  3. Internal transfer triggers corresponding payment entities for child merchants
+     *  4. Step 2 and 3 triggers transaction for each transfer/payment entity created
+     *  5. When the transactions for these payments are settled, the settlement id will be
+     *     updated for the transfer entity which initiated these payments.
+     *
+     * @param $setl
+     * @param $setlTxns
+     */
+    protected function updateSettlementDetailsInTransfer($setl, $setlTxns)
+    {
+        $settlementId = $setl->getId();
+
+        foreach($setlTxns as $txn)
+        {
+            if ($txn->getType() === Entity::PAYMENT)
+            {
+                $paymentId = Payment\Entity::getSignedId($txn->getEntityId());
+
+                $payment = $this->repo->payment->findByPublicId($paymentId);
+
+                // The transfer id of the payment entity
+                $paymentTransferId = $payment->getTransferId();
+
+                // Proceed only if the payment was initiated by some internal transfer.
+                if ($paymentTransferId !== null)
+                {
+                    $payment->transfer->setRecipientSettlementId($settlementId);
+
+                    $payment->transfer->saveOrFail();
+                }
+            }
+        }
+    }
+
     protected function settleForMerchant(
         $merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax): array
     {
@@ -160,6 +202,7 @@ trait SettlementTrait
                                                     $setlTxns->count(),
                                                     $bankTransferAtpt);
 
+                $this->updateSettlementDetailsInTransfer($setl, $setlTxns);
                 return [$setl, $bankTransferAtpt];
             });
 

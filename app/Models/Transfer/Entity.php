@@ -13,23 +13,24 @@ class Entity extends Base\PublicEntity
 {
     use NotesTrait;
 
-    const ID                    = 'id';
-    const MERCHANT_ID           = 'merchant_id';
-    const TO_ID                 = 'to_id';
-    const TO_TYPE               = 'to_type';
-    const SOURCE_ID             = 'source_id';
-    const SOURCE_TYPE           = 'source_type';
-    const AMOUNT                = 'amount';
-    const CURRENCY              = 'currency';
-    const REVERSAL_STATUS       = 'reversal_status';
-    const AMOUNT_REVERSED       = 'amount_reversed';
-    const NOTES                 = 'notes';
-    const FEES                  = 'fees';
-    const SERVICE_TAX           = 'service_tax';
-    const TAX                   = 'tax';
-    const ON_HOLD               = 'on_hold';
-    const ON_HOLD_UNTIL         = 'on_hold_until';
-    const TRANSACTION_ID        = 'transaction_id';
+    const ID                        = 'id';
+    const MERCHANT_ID               = 'merchant_id';
+    const TO_ID                     = 'to_id';
+    const TO_TYPE                   = 'to_type';
+    const SOURCE_ID                 = 'source_id';
+    const SOURCE_TYPE               = 'source_type';
+    const AMOUNT                    = 'amount';
+    const CURRENCY                  = 'currency';
+    const REVERSAL_STATUS           = 'reversal_status';
+    const AMOUNT_REVERSED           = 'amount_reversed';
+    const NOTES                     = 'notes';
+    const FEES                      = 'fees';
+    const SERVICE_TAX               = 'service_tax';
+    const TAX                       = 'tax';
+    const ON_HOLD                   = 'on_hold';
+    const ON_HOLD_UNTIL             = 'on_hold_until';
+    const TRANSACTION_ID            = 'transaction_id';
+    const RECIPIENT_SETTLEMENT_ID   = 'recipient_settlement_id';
 
     // Public Attribute keys for SOURCE_ID and TO_ID
     const SOURCE                = 'source';
@@ -70,6 +71,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::TAX,
+        self::RECIPIENT_SETTLEMENT_ID
     ];
 
     protected $public = [
@@ -116,10 +118,11 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::AMOUNT_REVERSED   => 0,
-        self::NOTES             => [],
-        self::ON_HOLD           => 0,
-        self::ON_HOLD_UNTIL     => null,
+        self::AMOUNT_REVERSED           => 0,
+        self::NOTES                     => [],
+        self::ON_HOLD                   => 0,
+        self::ON_HOLD_UNTIL             => null,
+        self::RECIPIENT_SETTLEMENT_ID   => null
     ];
 
     protected $dates = [
@@ -234,6 +237,11 @@ class Entity extends Base\PublicEntity
         return $this->getAmount();
     }
 
+    public function getRecipientSettlementId()
+    {
+        return $this->getAttribute(self::RECIPIENT_SETTLEMENT_ID);
+    }
+
     /**
      * Called by pricing flow to determine fee based on transfer
      * method
@@ -298,6 +306,11 @@ class Entity extends Base\PublicEntity
     public function setOnHoldUntil($holdUntil)
     {
         $this->setAttribute(self::ON_HOLD_UNTIL, $holdUntil);
+    }
+
+    public function setRecipientSettlementId($recipient_settlement_id)
+    {
+        $this->setAttribute(self::RECIPIENT_SETTLEMENT_ID, $recipient_settlement_id);
     }
 
     // -------------------- End Setters ---------------------------
