@@ -29,10 +29,11 @@ class Settlement extends TypeProcessor
 
         $amount = $payment->getAmount();
 
-        // TODO: if payment is refunded then don't capture
-        $paymentProcessor->capture($paymentId, ['amount' => $amount]);
-
-        return true;
+        // We do not capture the payment if its already refunded
+        if ($payment->isPartiallyOrFullyRefunded() === false)
+        {
+            $paymentProcessor->capture($paymentId, ['amount' => $amount]);
+        }
     }
 
     public function getHeaders()

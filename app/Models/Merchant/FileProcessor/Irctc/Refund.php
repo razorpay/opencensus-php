@@ -31,13 +31,13 @@ class Refund extends TypeProcessor
         self::CANCELLATION_ID,
     ];
 
-    protected $refundType;
+    protected $type;
 
     public function __construct($type = self::R_TYPE)
     {
         parent::__construct();
 
-        $this->refundType = $type;
+        $this->type = $type;
     }
 
     protected function processEntry(array $row)
@@ -46,54 +46,33 @@ class Refund extends TypeProcessor
 
         $payment = $this->repo->payment->findByPublicId($paymentId);
 
-        $type = $row[self::REFUND_TYPE];
-
-        $processed = false;
-
-        if (($this->refundType === 'R') and
-            ($type === $this->refundType))
+        if ($this->type === self::R_TYPE)
         {
             $this->processRTypeRefunds($row, $payment);
-
-            $processed = true;
         }
-        else if (($this->refundType === 'C') and
-                ($type === $this->refundType))
+        elseif ($this->type === self::C_TYPE)
         {
             $this->processCTypeRefunds($row, $payment);
-
-            $processed = true;
         }
-        else
-        {
-            throw new Exception\BadRequestException(
-                'Refund Type is not valid',
-                [
-                    'input_refund_type' => $this->refundType,
-                    'row_data'          => $row,
-                ]
-            );
-        }
-
-        return $processed;
     }
 
-    protected function processRTypeRefunds($row, $payment)
+    protected function processRTypeRefunds(array $row, Payment\Entity $payment)
     {
         $paymentProcessor = (new PaymentProcessor($payment->merchant));
 
         $input = [
-            Entity::RECEIPT => $row[self::CANCELLATION_ID],
+            Entity::RECEIPT => $row[self::CANCELLATION_ID . '_' . self::MERCHANT_REFERENCE],
             Entity::NOTES   => [
-                'receipt'     => $row[self::CANCELLATION_ID],
-                'refund_type' => $row[self::REFUND_TYPE],
+                'reservation_id' => $row[self::MERCHANT_REFERENCE],
+                'receipt'        => $row[self::CANCELLATION_ID],
+                'refund_type'    => $row[self::REFUND_TYPE],
             ],
         ];
 
         $paymentProcessor->createRefundFromMerchantFile($payment, $input);
     }
 
-    protected function processCTypeRefunds($row, $payment)
+    protected function processCTypeRefunds(array $row, Payment\Entity $payment)
     {
         $paymentProcessor = (new PaymentProcessor($payment->merchant));
 
@@ -106,10 +85,11 @@ class Refund extends TypeProcessor
 
         $input = [
             Entity::AMOUNT  => intval($row[self::REFUND_AMOUNT] * 100),
-            Entity::RECEIPT => $row[self::CANCELLATION_ID],
+            Entity::RECEIPT => $row[self::CANCELLATION_ID . '_' . self::MERCHANT_REFERENCE],
             Entity::NOTES   => [
-                'receipt'     => $row[self::CANCELLATION_ID],
-                'refund_type' => $row[self::REFUND_TYPE],
+                'reservation_id' => $row[self::MERCHANT_REFERENCE],
+                'receipt'        => $row[self::CANCELLATION_ID],
+                'refund_type'    => $row[self::REFUND_TYPE],
             ],
         ];
 

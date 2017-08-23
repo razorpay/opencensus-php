@@ -13,13 +13,43 @@ class FileProcessor extends BaseProcessor
     {
         $processedEntries = [];
 
-        $processedEntries[self::REFUND][] = $this->processRTypeRefunds($filesContents[self::REFUND]);
+        list($rtypeRefunds, $cTypeRefunds) = $this->splitRefunds($filesContents[self::REFUND]);
+
+        $processedEntries[self::REFUND][] = $this->processRTypeRefunds($rtypeRefunds);
 
         $processedEntries[self::SETTLEMENT][] = $this->processSettlements($filesContents[self::SETTLEMENT]);
 
-        $processedEntries[self::REFUND][] = $this->processCTypeRefunds($filesContents[self::REFUND]);
+        $processedEntries[self::REFUND][] = $this->processCTypeRefunds($cTypeRefunds);
 
         return $processedEntries;
+    }
+
+    protected function splitRefunds(array $refunds)
+    {
+        $cTypeRefunds = [];
+        $rTypeRefunds = [];
+
+        foreach ($refunds as $refund)
+        {
+            if ($refund[Refund::REFUND_TYPE] === Refund::R_TYPE)
+            {
+                $rTypeRefunds[] = $refund;
+            }
+            elseif ($refund[Refund::REFUND_TYPE] === Refund::C_TYPE)
+            {
+                $cTypeRefunds[] = $refund;
+            }
+            else
+            {
+                $this->trace->traceLogger(
+                    Trace::CRITICAL,
+                    TraceCode::MERCHANT_FILE_SKIP,
+                    ['file_detail' => $fileDetail]
+                );
+            }
+        }
+
+        return [$rTypeRefunds, $cTypeRefunds];
     }
 
     protected function processRTypeRefunds(array $details)
