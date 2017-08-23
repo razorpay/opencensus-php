@@ -736,11 +736,4 @@ class Repository extends \Razorpay\Spine\Repository
                 'Unique id not generated for the entity');
         }
     }
-
-    protected function getColumnListing()
-    {
-        $tableName = $this->getTableName();
-
-        return DB::getSchemaBuilder()->getColumnListing($tableName);
-    }
 }
