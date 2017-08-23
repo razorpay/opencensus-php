@@ -29,11 +29,15 @@ class Dispute extends Base
             $this->fixtures->edit('payment', $payment->getId(), [Payment::DISPUTED => 0]);
         }
 
-        $txn = $this->createTransactionOnDispute($dispute);
+        // Create a transaction only when there's a deduction made
+        if ($dispute->getAmountDeducted() !== null)
+        {
+            $txn = $this->createTransactionOnDispute($dispute);
 
-        $txn->setAttribute(Transaction::SETTLED_AT, $dispute->getCreatedAt());
+            $txn->setAttribute(Transaction::SETTLED_AT, $dispute->getCreatedAt());
 
-        $txn->saveOrFail();
+            $txn->saveOrFail();
+        }
 
         return $dispute;
     }
@@ -44,6 +48,7 @@ class Dispute extends Base
     {
         return [
            'amount'          => $payment->getAmount(),
+           'amount_deducted' => $payment->getAmount(),
            'payment_id'      => $payment->getId(),
            'merchant_id'     => $payment->getMerchantId(),
            'reason_id'       => $reason->getId(),
