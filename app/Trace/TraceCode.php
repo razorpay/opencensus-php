@@ -803,6 +803,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_INVOICE_ENTITY_CREATION_FAILED       = 'MERCHANT_INVOICE_ENTITY_CREATION_FAILED';
     const MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED      = 'MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED';
 
+    // IRCTC Error codes
+    const IRCTC_REFUND_TYPE_INVALID                     = 'IRCTC_REFUND_TYPE_INVALID';
+
     const DUMMY_JOB = 'DUMMY_JOB';
 
     protected static $messages = array(
@@ -955,6 +958,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::MERCHANT_FILE_REQUEST                     => 'Merchant file request',
         self::MERCHANT_FILE_DETAILS                     => 'Merchant file details',
         self::MERCHANT_FILE_SKIP                        => 'Merchant skip file',
+        self::IRCTC_REFUND_TYPE_INVALID                 => 'Refund type should be R or C Type',
     );
 
     /**

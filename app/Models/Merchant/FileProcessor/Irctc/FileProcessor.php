@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant\FileProcessor\Irctc;
 
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\FileProcessor\FileProcessor as BaseProcessor;
 
 class FileProcessor extends BaseProcessor
@@ -41,11 +42,11 @@ class FileProcessor extends BaseProcessor
             }
             else
             {
-                $this->trace->traceLogger(
-                    Trace::CRITICAL,
-                    TraceCode::MERCHANT_FILE_SKIP,
-                    ['file_detail' => $fileDetail]
-                );
+                $this->trace->crit(
+                    TraceCode::IRCTC_REFUND_TYPE_INVALID,
+                    [
+                        'row' => $refund
+                    ]);
             }
         }
 
