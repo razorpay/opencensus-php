@@ -2,11 +2,11 @@
 
 namespace RZP\Models\Gateway\File\Processor\Claim;
 
-use RZP\Trace\Trace;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Gateway\Base\Action;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
@@ -137,6 +137,18 @@ trait GenerateClaimFile
 
     protected function canProcess(): bool
     {
+        if ($this->gatewayFile->isAcknowledged() === true)
+        {
+            return false;
+        }
+
+        if ($this->gatewayFile->isFailed() === true)
+        {
+            $failureCode = $this->gatewayFile->getFailureCode();
+
+            return ($failureCode !== FailureCode::NO_DATA_FOR_FILE_GENERATION);
+        }
+
         return true;
     }
 

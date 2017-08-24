@@ -22,7 +22,6 @@ class NetbankingRbl extends Processor\Base
         $count = [
             'claims'  => 0,
             'refunds' => 0,
-            'total'   => 0
         ];
 
         $claimsFile = [];
@@ -55,6 +54,8 @@ class NetbankingRbl extends Processor\Base
 
             $claimsFile = $this->getFileData(FileStore\Type::RBL_NETBANKING_CLAIM);
         }
+
+        $amount['total'] = $amount['claims'] - $amount['refunds'];
 
         $date = Carbon::now(Timezone::IST)->format('jS F Y');
 

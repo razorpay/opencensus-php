@@ -16,7 +16,7 @@ class NetbankingIndusind extends Processor\Base
     use FileHandlerTrait;
 
     const FILE_NAME = 'PGReconRAZORPAY';
-    const EXTENSION = FileStore\Format::XLSX;
+    const EXTENSION = FileStore\Format::TXT;
     const FILE_TYPE = FileStore\Type::INDUSIND_NETBANKING_REFUND;
 
     protected $type = Payment\Entity::BANK;
