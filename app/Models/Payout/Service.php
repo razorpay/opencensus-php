@@ -30,7 +30,7 @@ class Service extends Base\Service
 
     public function create(array $input) : array
     {
-        list($payout, $payoutAttempt) = $this->core->directPayout($input, $this->merchant);
+        $payout = $this->core->directPayout($input, $this->merchant);
 
         return $payout->toArrayPublic();
     }

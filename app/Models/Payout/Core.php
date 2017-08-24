@@ -41,11 +41,11 @@ class Core extends Base\Core
      */
     public function directPayout(array $input, Merchant\Entity $merchant): array
     {
-        list($payout, $payoutAttempt) = $this->createPayout($input, $merchant);
+        $payout = $this->createPayout($input, $merchant);
 
         $this->repo->saveOrFail($payout);
 
-        return [$payout, $payoutAttempt];
+        return $payout;
     }
 
     /**
@@ -58,7 +58,7 @@ class Core extends Base\Core
      */
     public function paymentPayout(array $input, Payment\Entity $payment, Merchant\Entity $merchant)
     {
-        list($payout, $payoutAttempt) = $this->createPayout($input, $merchant);
+        $payout = $this->createPayout($input, $merchant);
 
         $payout->payment()->associate($payment);
 
@@ -98,7 +98,7 @@ class Core extends Base\Core
 
             $this->updatePayoutWithTxn($payout);
 
-            return [$payout, $payoutAttempt];
+            return $payout;
         });
     }
 
@@ -340,9 +340,7 @@ class Core extends Base\Core
                 Entity::DESTINATION_ID => $bankAccountId,
             ];
 
-            list($payout, $payoutAttempt) = $this->directPayout($payoutInput, $merchant);
-
-            $response = (new Kotak\NodalAccount)->generatePayoutsFile([$payoutAttempt]);
+            $payout = $this->directPayout($payoutInput, $merchant);
         }
         else
         {
