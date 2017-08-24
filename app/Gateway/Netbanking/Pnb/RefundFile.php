@@ -60,13 +60,13 @@ class RefundFile extends Base\RefundFile
 
     protected function getRefundData($input)
     {
-        $totalAmount = 0;
+        $totalAmount = 0.0;
 
         foreach ($input['data'] as $index => $row)
         {
             $date = Carbon::createFromTimestamp(
                     $row['payment']['created_at'], Timezone::IST)
-                    ->format('dmYHis');
+                    ->format('d/m/Y');
 
             $amount = number_format($row['refund']['amount'] / 100, 2, '.', '');
 
@@ -77,7 +77,8 @@ class RefundFile extends Base\RefundFile
                 str_pad(Constants::CREDIT, 2, ' ', STR_PAD_LEFT),
                 str_pad($amount, 17, ' ', STR_PAD_LEFT),
                 Constants::REFUND,
-                $date,
+                str_pad($row['payment']['id'], 2, ' ', STR_PAD_LEFT),
+                str_pad($date, 2, ' ', STR_PAD_LEFT),
             ];
 
             $totalAmount += $amount;

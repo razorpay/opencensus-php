@@ -288,7 +288,7 @@ class NetbankingPnbGatewayTest extends TestCase
         // 2 refunds + 1 total line
         assert(count($refundsFileContents) === 3);
 
-        assert(count($claimsFileContents) === 3);
+        assert(count($claimsFileContents) === 2);
     }
 
     protected function checkEmptyRefundTextData($data)
@@ -311,14 +311,14 @@ class NetbankingPnbGatewayTest extends TestCase
         $testData = [
             'subject' => 'Pnb Netbanking claims and refund files for '.$date,
                 'amount' => [
-                    'claims'  => 1500.0,
+                    'claims'  => 1000.0,
                     'refunds' => 500.0,
-                    'total'   => 1000.0,
+                    'total'   => 500.0,
                 ],
                 'count'   => [
-                    'claims'  => 3,
+                    'claims'  => 2,
                     'refunds' => 3,
-                    'total'   => 6
+                    'total'   => 5
                 ]
         ];
 

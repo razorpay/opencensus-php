@@ -69,31 +69,19 @@ class ClaimsFile extends Base\RefundFile
         {
             $date = Carbon::createFromTimestamp(
                     $row['payment']['created_at'], Timezone::IST)
-                    ->format('dmYHis');
+                    ->format('d/m/Y');
 
-            $amountRefunded = $row['payment']['amount_refunded'];
-
-            if ($amountRefunded !== 0)
-            {
-                $type = Constants::CREDIT;
-                $amount = number_format($amountRefunded / 100, 2, '.', '');
-                $txnDetails = Constants::REFUND;
-            }
-            else
-            {
-                $type = Constants::DEBIT;
-                $amount = number_format($row['payment']['amount'] / 100, 2, '.', '');
-                $txnDetails = Constants::PAYMENT;
-            }
+            $amount = number_format($row['payment']['amount'] / 100, 2, '.', '');
 
             $data[] = [
                 $row['gateway']['account_number'],
                 $row['payment']['currency'],
                 Constants::SERVICE_OUTLET,
-                str_pad($type, 2, ' ', STR_PAD_LEFT),
+                str_pad($row['payment'][Constants::CLAIM_TYPE], 2, ' ', STR_PAD_LEFT),
                 str_pad($amount, 17, ' ', STR_PAD_LEFT),
-                $txnDetails,
-                $date,
+                $row['payment'][Constants::TXN_DETAIL],
+                str_pad($row['payment']['id'], 2, ' ', STR_PAD_LEFT),
+                str_pad($date, 2, ' ', STR_PAD_LEFT),
             ];
 
             $totalAmount += $amount;

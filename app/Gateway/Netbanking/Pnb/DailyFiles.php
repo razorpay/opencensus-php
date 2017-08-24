@@ -5,6 +5,7 @@ namespace RZP\Gateway\Netbanking\Pnb;
 use Mail;
 use Carbon\Carbon;
 
+use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Constants\MailTags;
 use RZP\Gateway\Netbanking\Base;
@@ -80,5 +81,93 @@ class DailyFiles extends Base\DailyFiles
         $dailyFileMail = new DailyFileMail($data);
 
         Mail::queue($dailyFileMail);
+    }
+
+    protected function getClaimsData($from, $to)
+    {
+        $claims = [];
+
+        $exclusions = [];
+
+        $status = [
+            Payment\Status::AUTHORIZED,
+            Payment\Status::CAPTURED,
+            Payment\Status::REFUNDED
+        ];
+
+        $payments = $this->repo->payment
+                               ->fetchPaymentsWithStatus($from,
+                                                         $to,
+                                                         $this->gateway,
+                                                         $status);
+
+        foreach ($payments as $payment)
+        {
+            $refundAmount = $payment['amount_refunded'];
+
+            $amountToClaim = $payment['amount'] - $refundAmount;
+
+            // these refunds are to be excluded
+            if ($refundAmount > 0)
+            {
+                $exclusions[] = $payment['id'];
+            }
+
+            // not to include payments where
+            // full refund has happened
+            if ($amountToClaim === 0)
+            {
+                continue;
+            }
+
+            $payment[Constants::CLAIM_TYPE] = Constants::DEBIT;
+            $payment[Constants::TXN_DETAIL] = Constants::PAYMENT;
+
+            $claims[] = $payment;
+        }
+
+        $refunds = $this->repo->refund
+                              ->fetchRefundsExcludingPayments($from,
+                                                              $to,
+                                                              $exclusions);
+
+        foreach ($refunds as $refund)
+        {
+            $refund[Constants::CLAIM_TYPE] = Constants::CREDIT;
+            $refund[Constants::TXN_DETAIL] = Constants::REFUND;
+
+            $claims[] = $refund;
+        }
+
+        if (count($claims) === 0)
+        {
+            return [
+                'total_amount'    => 0,
+                'count'           => 0,
+                'url'             => '',
+                'name'            => '',
+                'local_file_path' => '',
+                'signed_url'      => '',
+                'file_name'       => '',
+             ];
+        }
+
+        $data = [];
+
+        foreach ($claims as $claim)
+        {
+            $col['payment'] = $claim;
+            $col['terminal'] = $claim->terminal->toArray();
+
+            $data[] = $col;
+        }
+
+        $input['data'] = $data;
+
+        $gateway = $this->gateway;
+
+        $action = 'generateClaims';
+
+        return $this->app['gateway']->call($gateway, $action, $input, $this->mode);
     }
 }
