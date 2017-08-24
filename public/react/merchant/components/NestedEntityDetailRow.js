@@ -1,24 +1,27 @@
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import NestedEntityDetailToggler
-  from 'rzp/ui/Toggler/NestedEntityDetailToggler';
+import NestedEntityDetailToggler from 'rzp/ui/Toggler/NestedEntityDetailToggler';
 
-export default ({ label, value = {} }) => {
+export default ({ label, value = {}, placeholder = '--' }) => {
   if (Object.keys(value).length) {
     return (
       <NestedEntityDetailToggler label={label} show={false}>
         {Object.keys(value).length
           ? <div class="table-responsive">
-              {Object.keys(value).map(key => (
+              {Object.keys(value).map(key =>
                 <div key={key} class="pair-list-item">
-                  <div class="item-label">{key}</div>
-                  <div class="items-value">{value[key]}</div>
+                  <div class="item-label">
+                    {key}
+                  </div>
+                  <div class="items-value">
+                    {value[key] || placeholder}
+                  </div>
                 </div>
-              ))}
+              )}
             </div>
           : null}
       </NestedEntityDetailToggler>
     );
   }
 
-  return <EntityDetailRow label={label} value="--" />;
+  return <EntityDetailRow label={label} value={placeholder} />;
 };
