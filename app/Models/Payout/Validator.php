@@ -64,10 +64,4 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_PENDING);
         }
     }
-
-
-    public function validateMerchantPayout($input)
-    {
-
-    }
 }

@@ -86,7 +86,7 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
-    protected function createPayout(array $input, Merchant\Entity $merchant): array
+    protected function createPayout(array $input, Merchant\Entity $merchant): Entity
     {
         $this->validateMerchantStatus($merchant);
 
