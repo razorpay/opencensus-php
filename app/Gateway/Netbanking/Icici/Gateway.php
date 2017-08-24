@@ -306,7 +306,8 @@ class Gateway extends Base\Gateway
             RequestFields::PAYEE_ID => $this->getPid(),
         ];
 
-        if (empty($input['token']->getGatewayToken()) === false)
+        if ((isset($input['token']) === true) and
+            (empty($input['token']->getGatewayToken()) === false))
         {
             $data[RequestFields::MODE] = Action::STANDING_INSTRUCTIONS;
         }
