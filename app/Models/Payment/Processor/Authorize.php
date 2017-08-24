@@ -1601,7 +1601,7 @@ trait Authorize
         $token = null;
 
         // create local saved card and link to payment
-        if ($payment->isCard() === true)
+        if ($payment->isMethodCardOrEmi() === true)
         {
             $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $customer->merchant);
 
@@ -1629,8 +1629,8 @@ trait Authorize
                                                array & $gatewayInput)
     {
         $token = null;
-        
-        if ($payment->isCard() === true)
+
+        if ($payment->isMethodCardOrEmi() === true)
         {
             // create global saved card and link to payment
             $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $customer->merchant);
