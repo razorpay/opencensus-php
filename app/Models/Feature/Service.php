@@ -5,6 +5,7 @@ namespace RZP\Models\Feature;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Merchant;
 
 class Service extends Base\Service
 {
@@ -53,7 +54,10 @@ class Service extends Base\Service
 
         (new Core)->notifyOnSlack($feature, true);
 
-        return $feature->toArrayPublic();
+        //we create tag also along with feature.
+        (new Merchant\Service)->deleteTag($entityId, $featureName);
+
+        return $this->getFeatures($entityId);
     }
 
     public function multiAssignFeature($input)
