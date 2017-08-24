@@ -42,6 +42,11 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEquals('9999999999', $netbanking['bank_payment_id']);
         $this->assertNotNull($netbanking['bank_payment_id']);
         $this->assertNotNull($netbanking['si_ref_id']);
+
+        $token = $this->getLastEntity('token', true);
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['token_id'], $token['id']);
     }
 
     public function testEMandateScheduledPayment()
@@ -51,7 +56,6 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->doAuthPayment($payment);
 
         $paymentEntity = $this->getLastEntity('payment', true);
-
         $tokenEntity   = $this->getLastEntity('token', true);
 
         $payment['token'] = $paymentEntity['token_id'];
