@@ -21,6 +21,9 @@ class Entity extends Base\Entity
     const DATE                  = 'date';
     const REFUND_ID             = 'refund_id';
     const REFERENCE1            = 'reference1';
+    const SI_REF_ID             = 'si_ref_id';
+    const SI_STATUS             = 'si_status';
+    const SI_MSG                = 'si_message';
     const ACCOUNT_NUMBER        = 'account_number';
     //Credit Account number is the bank account to which money is transferred.
     const CREDIT_ACCOUNT_NUMBER = 'credit_account_number';
@@ -66,6 +69,9 @@ class Entity extends Base\Entity
         self::REFERENCE1,
         self::ACCOUNT_NUMBER,
         self::INT_PAYMENT_ID,
+        self::SI_REF_ID,
+        self::SI_STATUS,
+        self::SI_MSG,
     );
 
     public function setBank($bank)

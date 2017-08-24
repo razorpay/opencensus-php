@@ -14,6 +14,7 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\AESCrypto;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Customer\Token;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 
@@ -32,8 +33,6 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
-
-        sd($input['payment']);
 
         $content = $this->getPaymentRequestData($input);
 
@@ -67,6 +66,11 @@ class Gateway extends Base\Gateway
         $gatewayPayment->fill($attrs);
 
         $this->repo->saveOrFail($gatewayPayment);
+
+        if (isset($input['token']) === true)
+        {
+            $this->handleTokenUpdate($input['token'], $attrs);
+        }
 
         $this->checkCallbackStatus($attrs, $content);
 
@@ -208,6 +212,16 @@ class Gateway extends Base\Gateway
     {
         $data = $this->getAuthorizeRequestData($input);
 
+        //
+        // For recurring payments, we use E - Mandate
+        //
+        if ($input['terminal']->isNonRecurring() === false)
+        {
+            $eMandateData = $this->getEMandateRequestData($input);
+
+            $data = array_merge($eMandateData, $data);
+        }
+
         $this->traceGatewayPaymentRequest($data, $input);
 
         $queryString = urldecode(http_build_query($data));
@@ -217,6 +231,38 @@ class Gateway extends Base\Gateway
         $aes = new AESCrypto(AES::MODE_ECB, $masterKey);
 
         return base64_encode($aes->encryptString($queryString));
+    }
+
+    protected function getEMandateRequestData($input)
+    {
+        $date = Carbon::now(Timezone::IST)->toDateTimeString();
+
+        $token = $input['token'];
+
+        //
+        // Second recurring payment
+        //
+        if (empty($token->getGatewayToken()) === false)
+        {
+            $data = [
+                RequestFields::EMD_PAYMENT_DATE => $date,
+                RequestFields::REFERENCE_ID     => $token->getGatewayToken()
+            ];
+        }
+        else
+        {
+            $data = [
+                RequestFields::STANDING_INSTRUCTIONS => Action::SUBSCRIPTION,
+                RequestFields::EMD_PAYMENT_DATE      => $date,
+                RequestFields::PAYMENT_TYPE          => Action::RECURRING,
+                RequestFields::PAYMENT_FREQ          => '20', // as and when presented
+                RequestFields::NUM_INSTALLMENTS      => '0', // random
+                RequestFields::AUTO_PAY_AMOUNT       => $input['payment']['amount'] + 1,
+                RequestFields::SI_END_DATE           => '0', // cannot be null
+            ];
+        }
+
+        return $data;
     }
 
     protected function getAuthorizeRequestData(array $input)
@@ -259,6 +305,11 @@ class Gateway extends Base\Gateway
             RequestFields::MODE     => Action::PAY,
             RequestFields::PAYEE_ID => $this->getPid(),
         ];
+
+        if (empty($input['token']->getGatewayToken()) === false)
+        {
+            $data[RequestFields::MODE] = Action::STANDING_INSTRUCTIONS;
+        }
 
         return $data;
     }
@@ -304,14 +355,36 @@ class Gateway extends Base\Gateway
         return [
             Base\Entity::RECEIVED        => true,
             Base\Entity::STATUS          => $content[ResponseFields::PAID],
-            Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_PAYMENT_ID]
+            Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_PAYMENT_ID],
+            Base\Entity::SI_REF_ID       => $content[ResponseFields::REFERENCE_ID] ?? null,
+            Base\Entity::SI_STATUS       => $content[ResponseFields::SI_STATUS] ?? null,
+            Base\Entity::SI_MSG          => $content[ResponseFields::SI_MESSAGE] ?? null,
         ];
+    }
+
+    protected function handleTokenUpdate(Token\Entity $token, array $attrs)
+    {
+        if ($token->getGatewayToken() !== null)
+        {
+            return;
+        }
+
+        $token->setGatewayToken($attrs[Base\Entity::SI_REF_ID]);
+
+        $token->saveOrFail();
     }
 
     protected function checkCallbackStatus(array $attrs, array $content)
     {
         if ((isset($attrs[ResponseFields::LC_STATUS]) === false) or
             ($attrs[ResponseFields::LC_STATUS] !== Confirmation::YES))
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+
+        if ((isset($content[ResponseFields::SI_STATUS]) === true) and
+                 ($content[ResponseFields::SI_STATUS] !== Confirmation::YES))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED);

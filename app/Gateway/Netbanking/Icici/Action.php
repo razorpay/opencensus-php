@@ -6,6 +6,9 @@ use RZP\Gateway\Base;
 
 class Action extends Base\Action
 {
-    const PAY     = 'P';
-    const INQUIRY = 'V';
+    const PAY                   = 'P';
+    const INQUIRY               = 'V';
+    const SUBSCRIPTION          = 'Y';
+    const RECURRING             = 'Y';
+    const STANDING_INSTRUCTIONS = 'SI';
 }

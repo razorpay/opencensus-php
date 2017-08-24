@@ -14,4 +14,7 @@ class ResponseFields
     const PAYMENT_DATE    = 'PMTDATE';
     const STATUS          = 'STATUS';
     const LC_STATUS       = 'status';
+    const REFERENCE_ID    = 'RID';
+    const SI_STATUS       = 'SCHSTATUS';
+    const SI_MESSAGE      = 'SCHMSG';
 }

@@ -1428,7 +1428,7 @@ trait Authorize
         //
         if (empty($input[Payment\Entity::TOKEN]) === false)
         {
-            $this->preProcessPaymentFromSavedCardLocal($customer, $payment, $input, $gatewayInput);
+            $this->preProcessPaymentFromSavedMethodLocal($customer, $payment, $input, $gatewayInput);
         }
         else
         {
@@ -1477,7 +1477,7 @@ trait Authorize
         // If token is set, then pay using global saved card
         if (empty($input[Payment\Entity::TOKEN]) === false)
         {
-            $this->preProcessPaymentFromSavedCardGlobal($customer, $payment, $input, $gatewayInput);
+            $this->preProcessPaymentFromSavedMethodGlobal($customer, $payment, $input, $gatewayInput);
         }
         else
         {
@@ -1486,7 +1486,7 @@ trait Authorize
         }
     }
 
-    protected function preProcessPaymentFromSavedCardLocal(Customer\Entity $customer,
+    protected function preProcessPaymentFromSavedMethodLocal(Customer\Entity $customer,
                                                            Payment\Entity $payment,
                                                            array & $input,
                                                            array & $gatewayInput)
@@ -1507,13 +1507,15 @@ trait Authorize
 
             $gatewayInput['card'] = $this->associateAndGetCardArrayForSavedToken($token, $input);
         }
+        else if ($payment->isNetbanking())
+        {
+            $payment->localToken()->associate($token);
+        }
 
-        // Need to add this for netbanking and wallets
-
-        //else @todo for netbanking/wallets
+        //else @todo for wallets
     }
 
-    protected function preProcessPaymentFromSavedCardGlobal(Customer\Entity $customer,
+    protected function preProcessPaymentFromSavedMethodGlobal(Customer\Entity $customer,
                                                             Payment\Entity $payment,
                                                             array & $input,
                                                             array & $gatewayInput)
@@ -1546,6 +1548,8 @@ trait Authorize
         else if ($payment->isMethod(Payment\Method::NETBANKING))
         {
             $payment->setBank($token->getBank());
+
+            $payment->globalToken()->associate($token);
         }
     }
 

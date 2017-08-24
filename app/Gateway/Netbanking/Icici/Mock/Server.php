@@ -5,6 +5,7 @@ namespace RZP\Gateway\Netbanking\Icici\Mock;
 use RZP\Gateway\Base;
 use phpseclib\Crypt\AES;
 use RZP\Gateway\Netbanking\Icici\Status;
+use RZP\Gateway\Netbanking\Icici\Action;
 use RZP\Gateway\Netbanking\Icici\Confirmation;
 use RZP\Gateway\Netbanking\Base as Netbanking;
 use RZP\Gateway\Netbanking\Icici\RequestFields;
@@ -59,6 +60,18 @@ class Server extends Base\Mock\Server
         if ($input[RequestFields::CONFIRMATION] === Confirmation::YES)
         {
             $response[ResponseFields::BANK_PAYMENT_ID] = 9999999999;
+        }
+
+        if ((isset($input[RequestFields::STANDING_INSTRUCTIONS]) === true) and
+            ($input[RequestFields::STANDING_INSTRUCTIONS] === Action::SUBSCRIPTION))
+        {
+            $response[ResponseFields::REFERENCE_ID] = uniqid();
+            $response[ResponseFields::SI_STATUS]    = Confirmation::YES;
+            $response[ResponseFields::SI_MESSAGE]   = 'Success';
+        }
+        else if (isset($input[RequestFields::REFERENCE_ID]) === true)
+        {
+            $response[ResponseFields::REFERENCE_ID] = $input[RequestFields::REFERENCE_ID];
         }
 
         return $response;

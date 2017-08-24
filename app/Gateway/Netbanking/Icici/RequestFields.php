@@ -16,4 +16,14 @@ class RequestFields
     const ACCOUNT_NO       = 'ACNO';
     const ENCRYPTED_STRING = 'ES';
     const PAYMENT_DATE     = 'Pmt_Date';
+
+    // E-Mandate Request Fields
+    const STANDING_INSTRUCTIONS = 'SI';
+    const EMD_PAYMENT_DATE      = 'PMT_DT';
+    const PAYMENT_TYPE          = 'PMT_TY';
+    const PAYMENT_FREQ          = 'PMT_FRQ';
+    const NUM_INSTALLMENTS      = 'NO_INST';
+    const AUTO_PAY_AMOUNT       = 'AUTO_PAY_AMOUNT';
+    const SI_END_DATE           = 'SI_END_DATE';
+    const REFERENCE_ID          = 'RID';
 }

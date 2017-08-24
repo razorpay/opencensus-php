@@ -157,6 +157,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY_TOKEN);
     }
 
+    public function setGatewayToken($gatewayToken)
+    {
+        return $this->setAttribute(self::GATEWAY_TOKEN, $gatewayToken);
+    }
+
     public function getGatewayToken2()
     {
         return $this->getAttribute(self::GATEWAY_TOKEN2);

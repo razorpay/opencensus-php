@@ -35,27 +35,30 @@ class NetbankingIciciEMandateTest extends TestCase
     {
         $payment = $this->payment;
 
-        $this->ba->publicAuth();
-
         $this->doAuthPayment($payment);
 
         $netbanking = $this->getLastEntity('netbanking', true);
 
         $this->assertEquals('9999999999', $netbanking['bank_payment_id']);
         $this->assertNotNull($netbanking['bank_payment_id']);
-        $this->assertNotNull($netbanking['schedule_ref_id']);
+        $this->assertNotNull($netbanking['si_ref_id']);
     }
 
     public function testEMandateScheduledPayment()
     {
-        $payment = $this->getNetbankingRecurringPaymentArray('ICIC');
-
-        $this->ba->publicAuth();
+        $payment = $this->payment;
 
         $this->doAuthPayment($payment);
 
-        $subscription = $this->getLastEntity('subscription', true);
+        $paymentEntity = $this->getLastEntity('payment', true);
 
-        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+        $tokenEntity   = $this->getLastEntity('token', true);
+
+        $payment['token'] = $paymentEntity['token_id'];
+
+        //
+        // Second auth payment for the recurring product
+        //
+        $this->doAuthPayment($payment);
     }
 }
