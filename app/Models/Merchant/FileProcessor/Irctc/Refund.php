@@ -46,14 +46,9 @@ class Refund extends TypeProcessor
 
         $payment = $this->repo->payment->findByPublicId($paymentId);
 
-        if ($this->type === self::R_TYPE)
-        {
-            $this->processRTypeRefunds($row, $payment);
-        }
-        elseif ($this->type === self::C_TYPE)
-        {
-            $this->processCTypeRefunds($row, $payment);
-        }
+        $processor = 'process' . studly_case($this->type) .'TypeRefunds';
+
+        $this->$processor($row, $payment);
     }
 
     protected function processRTypeRefunds(array $row, Payment\Entity $payment)

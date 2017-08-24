@@ -32,21 +32,22 @@ class FileProcessor extends BaseProcessor
 
         foreach ($refunds as $refund)
         {
-            if ($refund[Refund::REFUND_TYPE] === Refund::R_TYPE)
+            switch ($refund[Refund::REFUND_TYPE])
             {
-                $rTypeRefunds[] = $refund;
-            }
-            elseif ($refund[Refund::REFUND_TYPE] === Refund::C_TYPE)
-            {
-                $cTypeRefunds[] = $refund;
-            }
-            else
-            {
-                $this->trace->crit(
-                    TraceCode::IRCTC_REFUND_TYPE_INVALID,
-                    [
-                        'row' => $refund
-                    ]);
+                case Refund::R_TYPE:
+                    $rTypeRefunds[] = $refund;
+                    break;
+
+                case Refund::C_TYPE:
+                    $cTypeRefunds[] = $refund;
+                    break;
+
+                default:
+                    $this->trace->crit(
+                        TraceCode::IRCTC_REFUND_TYPE_INVALID,
+                        [
+                            'row' => $refund
+                        ]);
             }
         }
 
