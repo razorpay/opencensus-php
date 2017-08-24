@@ -50,6 +50,14 @@ if (! function_exists('read_env_file'))
 {
     function read_env_file($envDir, $fileName)
     {
+        // Don't read env files if cache exists
+        $configCacheFile = __DIR__ . '/cache/config.php';
+
+        if (file_exists($configCacheFile))
+        {
+            return;
+        }
+
         $file = $envDir . '/' . $fileName;
 
         if (file_exists($file) === false)
