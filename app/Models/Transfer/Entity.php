@@ -99,6 +99,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::SOURCE,
         self::RECIPIENT,
+        self::RECIPIENT_SETTLEMENT_ID,
         self::TRANSACTION_ID,
         self::ENTITY,
     ];
@@ -384,6 +385,15 @@ class Entity extends Base\PublicEntity
         }
 
         $attributes[self::SOURCE] = $entity::getSignedId($sourceId);
+    }
+
+    public function setPublicRecipientSettlementIdAttribute(array & $array)
+    {
+        if (isset($array[self::RECIPIENT_SETTLEMENT_ID]))
+        {
+            $array[self::RECIPIENT_SETTLEMENT_ID] =
+                Settlement\Entity::getIdPrefix() . $this->getAttribute(self::RECIPIENT_SETTLEMENT_ID);
+        }
     }
 
     public function toArrayReport()
