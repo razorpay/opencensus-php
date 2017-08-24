@@ -369,18 +369,9 @@ trait Inquiry
 
         $content['action'] = Action::INQUIRY;
 
-        if ($verify->input['merchant']->getId() === '5ubLZpACTmD8D4')
-        {
-            $content['transid'] = $payment['payment_id'];
+        $content['transid'] = $payment['payment_id'];
 
-            $content['udf5'] = 'TrackID';
-        }
-        else
-        {
-            $content['transid'] = $payment['gateway_payment_id'];
-
-            $content['udf5'] = 'PaymentID';
-        }
+        $content['udf5'] = 'TrackID';
 
         $content['amt'] = $verify->input['payment']['amount'] / 100;
         $content['member'] = $verify->input['card']['name'];
