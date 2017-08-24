@@ -1598,6 +1598,8 @@ trait Authorize
                                               array $input,
                                               array & $gatewayInput)
     {
+        $token = null;
+
         // create local saved card and link to payment
         if ($payment->isCard() === true)
         {
@@ -1626,6 +1628,8 @@ trait Authorize
                                                array $input,
                                                array & $gatewayInput)
     {
+        $token = null;
+        
         if ($payment->isCard() === true)
         {
             // create global saved card and link to payment
