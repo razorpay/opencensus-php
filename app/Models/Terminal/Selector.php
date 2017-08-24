@@ -161,7 +161,7 @@ class Selector extends Base\Core
     {
         if (($verbose === true) and (empty($terminals) === false))
         {
-            $terminalData = array_pluck($terminals, 'id', 'gateway');
+            $terminalData = array_pluck($terminals, 'gateway', 'id');
 
             $traceData = ['count' => count($terminals), 'terminals' => $terminalData, 'msg' => $msg];
 
