@@ -9,6 +9,10 @@ use RZP\Gateway\Base\Action;
 
 class Gateway extends \RZP\Gateway\Base\Gateway
 {
+    const RETAIL = 'retail';
+
+    const CORPORATE = 'corporate';
+
     protected function createGatewayPaymentEntity($attributes)
     {
         $attr = $this->getMappedAttributes($attributes);
@@ -92,6 +96,26 @@ class Gateway extends \RZP\Gateway\Base\Gateway
         $class = $namespace . '\\' . 'ClaimsFile';
 
         return (new $class)->generate($input);
+    }
+
+    public function setBankingType($bankingType)
+    {
+        $this->bankingType = $bankingType;
+    }
+
+    protected function setCorporateBanking()
+    {
+        $this->bankingType = 'corporate';
+    }
+
+    protected function isCorporateBanking()
+    {
+        return ($this->bankingType === 'corporate');
+    }
+
+    protected function getBankingType()
+    {
+        return $this->bankingType;
     }
 
     protected function shouldStatusBeUpdated(Entity $gatewayPayment)
