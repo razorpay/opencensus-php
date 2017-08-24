@@ -2,16 +2,18 @@
 
 namespace RZP\Gateway\Netbanking\Corporation;
 
+use Mail;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
 use RZP\Models\FileStore;
+use RZP\Models\Payment\Gateway;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 
 class RefundFile extends Base\RefundFile
 {
-    protected static $fileToWriteName = 'CORPORATION_Netbanking_Refunds';
+    protected static $fileToWriteName = 'Corporation_Netbanking_Refunds';
 
     // TODO: Remove the below data and use env to store them
     const DEBIT_ACCOUNT             = '12313123123132123';
@@ -49,15 +51,14 @@ class RefundFile extends Base\RefundFile
             'signed_url' => $signedFileUrl,
         ];
 
-        sd($input['email']);
-
         $this->sendRefundEmail($fileData, $input['email']);
-        // TODO: Create the text file
+
+        return $file['local_file_path'];
     }
 
     protected function sendRefundEmail($fileData = [], $email = null)
     {
-        $refundFileMail = new RefundFileMail($fileData, Gateway::NETBANKING_HDFC, $email);
+        $refundFileMail = new RefundFileMail($fileData, Gateway::NETBANKING_CORPORATION, $email);
 
         Mail::queue($refundFileMail);
     }

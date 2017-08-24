@@ -88,8 +88,8 @@ class NetbankingCorporationGatewayTest extends TestCase
 
         $data = $this->generateRefundsExcelForNb('CORP');
 
-        $this->assertEquals($data['netbanking_corp']['count'], 3);
-        $this->assertTrue(file_exists($data['netbanking_corp']['file']));
+        $this->assertEquals($data['netbanking_corporation']['count'], 3);
+        $this->assertTrue(file_exists($data['netbanking_corporation']['file']));
 
     }
 
