@@ -1,6 +1,10 @@
 !storage/screenshots
 selenium-server.jar
 ## Need to fix this
+*.swp
+*.swo
+*.swn
+*.swm
 .DS_Store
 /bootstrap/compiled.php
 /vendor
