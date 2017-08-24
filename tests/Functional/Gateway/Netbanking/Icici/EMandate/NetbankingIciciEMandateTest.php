@@ -23,16 +23,17 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $this->fixtures->create('customer');
 
-        $this->fixtures->plan->create();
-
         $this->fixtures->merchant->addFeatures(['charge_at_will']);
+
+        $this->payment = $this->getNetbankingRecurringPaymentArray('ICIC');
+        unset($this->payment['card']);
 
         $this->mockTokenex();
     }
 
     public function testEMandateInitialPayment()
     {
-        $payment = $this->getNetbankingRecurringPaymentArray('ICIC');
+        $payment = $this->payment;
 
         $this->ba->publicAuth();
 

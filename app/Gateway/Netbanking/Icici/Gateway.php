@@ -33,6 +33,8 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        sd($input['payment']);
+
         $content = $this->getPaymentRequestData($input);
 
         $entity = [RequestFields::AMOUNT => $input['payment'][Payment\Entity::AMOUNT] / 100];

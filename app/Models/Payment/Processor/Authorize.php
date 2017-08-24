@@ -1595,12 +1595,21 @@ trait Authorize
                                               array & $gatewayInput)
     {
         // create local saved card and link to payment
-        $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $customer->merchant);
+        if ($payment->isCard() === true)
+        {
+            $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $customer->merchant);
 
-        $savedLocalCard = $payment->card;
+            $savedLocalCard = $payment->card;
 
-        // save local saved card for local customer
-        $token = $this->savePaymentMethod($customer, $payment, $savedLocalCard->getId());
+            // save local saved card for local customer
+            $token = $this->savePaymentMethod($customer, $payment, $savedLocalCard->getId());
+        }
+        else if (($payment->isNetbanking() === true) and
+                 (Payment\Gateway::isRecurringSupportedOnBank($payment->getBank()) === true))
+        {
+            // save netbanking bank locally for local customer
+            $token = $this->savePaymentMethod($customer, $payment);
+        }
 
         if ($token !== null)
         {
@@ -1613,21 +1622,30 @@ trait Authorize
                                                array $input,
                                                array & $gatewayInput)
     {
-        // create global saved card and link to payment
-        $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $customer->merchant);
+        if ($payment->isLocal() === true)
+        {
+            // create global saved card and link to payment
+            $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $customer->merchant);
 
-        $savedGlobalCard = $payment->card;
+            $savedGlobalCard = $payment->card;
 
-        // create merchant local card entity and link to payment
-        $gatewayInput['card'] = $this->createCardEntity($input['card'], false, $this->merchant);
+            // create merchant local card entity and link to payment
+            $gatewayInput['card'] = $this->createCardEntity($input['card'], false, $this->merchant);
 
-        // link local card to global card entity
-        $payment->card->globalCard()->associate($savedGlobalCard);
+            // link local card to global card entity
+            $payment->card->globalCard()->associate($savedGlobalCard);
 
-        $this->repo->saveOrFail($payment->card);
+            $this->repo->saveOrFail($payment->card);
 
-        // save global saved card for global customer
-        $token = $this->savePaymentMethod($customer, $payment, $savedGlobalCard->getId());
+            // save global saved card for global customer
+            $token = $this->savePaymentMethod($customer, $payment, $savedGlobalCard->getId());
+        }
+        else if (($payment->isNetbanking() === true) and
+                 (Payment\Gateway::isRecurringSupportedOnBank($payment->getBank()) === true))
+        {
+            // save netbanking bank locally for local customer
+            $token = $this->savePaymentMethod($customer, $payment);
+        }
 
         if ($token !== null)
         {
@@ -1635,7 +1653,7 @@ trait Authorize
         }
     }
 
-    protected function savePaymentMethod(Customer\Entity $customer, Payment\Entity $payment, $savedCardId): Token\Entity
+    protected function savePaymentMethod(Customer\Entity $customer, Payment\Entity $payment, $savedCardId = null): Token\Entity
     {
         $this->trace->info(
             TraceCode::PAYMENT_SAVE_METHOD,
