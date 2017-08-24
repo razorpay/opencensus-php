@@ -46,6 +46,9 @@ class Entity extends Base\PublicEntity
     // Public attribute
     const DESTINATION            = 'destination';
 
+    const MIN_AMOUNT             = 'min_amount';
+    const MODULO                 = 'modulo';
+
     protected $entity = 'payout';
 
     protected $table  = Table::PAYOUT;

@@ -42,9 +42,11 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function irctcPayout(array $input)
+    public function merchantPayout(array $input)
     {
-        $data = (new Payout\Core)->irctcPayout($input);
+        (new Validator)->validateInput('merchant', $input);
+
+        $data = (new Payout\Core)->merchantPayout($input);
 
         return $data;
     }

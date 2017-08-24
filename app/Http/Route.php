@@ -583,7 +583,7 @@ final class Route
         // Dispute routes
         'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
         'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                          ],
-        'irctc_payouts'                           => ['post',      'irctc/payouts',                                 'PayoutController@postIrctcPayout'                                  ],
+        'merchant_payouts'                        => ['post',     'merchant/payouts',                               'PayoutController@postMerchantPayout'                                  ],
     ];
 
     public static $public = [

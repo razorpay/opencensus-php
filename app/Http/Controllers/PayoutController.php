@@ -43,11 +43,11 @@ class PayoutController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postIrctcPayout()
+    public function postMerchantPayout()
     {
         $input = Request::all();
 
-        $data = $this->service('payout')->irctcPayout($input);
+        $data = $this->service('payout')->merchantPayout($input);
 
         return ApiResponse::json($data);
     }

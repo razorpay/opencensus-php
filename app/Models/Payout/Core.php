@@ -291,31 +291,37 @@ class Core extends Base\Core
         }
     }
 
-    public function irctcPayout($input)
+    public function merchantPayout($input)
     {
-        $irctcMerchantId = 'randomfornow';
+        $merchantId = $input[Entity::MERCHANT_ID];
 
-        $irctcCustomerId = 'ranndomCustomerId';
+        $bankAccountId = $input[Entity::DESTINATION_ID];
 
-        $bankAccountId   = 'randombannkAccount';
+        $customerId = $input[Entity::CUSTOMER_ID];
 
-        $merchant = $this->repo->merchant->fetchById($irctcMerchantId);
+        $merchant = $this->repo->merchant->fetchById($merchantId);
 
-        if (isset($input['amount']) === true)
+        if (isset($input[Entity::AMOUNT]) === true)
         {
-            $amount = $input['amount'];
+            $amount = $input[Entity::AMOUNT];
         }
         else
         {
             $amount = $merchant->balance->getBalance();
         }
 
-        if ($amount > 20000000)
+        if ((isset($input[Entity::MIN_AMOUNT]) === true) and
+            ($amount > $input[Entity::MIN_AMOUNT]))
         {
-            $amount = (int) $amount/10000000;
+            if (isset($input[Entity::MODULO]) === true)
+            {
+                $moduloAmount = $amount % $input[Entity::MODULO];
+
+                $amount = $amount - $moduloAmount;
+            }
 
             $payoutInput = [
-                Entity::CUSTOMER_ID    => $irctcCustomerId,
+                Entity::CUSTOMER_ID    => $customerId,
                 Entity::AMOUNT         => $amount,
                 Entity::CURRENCY       => 'INR',
                 Entity::METHOD         => Method::FUND_TRANSFER,
@@ -327,7 +333,7 @@ class Core extends Base\Core
         else
         {
             $response = [
-                'message' => 'amount to be transferred is less than 2 lakhs'
+                'message' => 'amount to be transferred is less than' . $input[Entity::MIN_AMOUNT]
             ];
         }
 
