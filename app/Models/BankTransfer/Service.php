@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\VirtualAccount\Provider;
 
 class Service extends Base\Service

@@ -31,6 +31,57 @@ class DisputeTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals(true, $payment['disputed']);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $this->assertEquals(0, $dispute['amount_deducted']);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('payment', $txn['type']);
+
+    }
+
+    public function testDisputeCreateWithDeduct()
+    {
+        $testData = $this->updateCreateTestData();
+
+        $testData['response']['content']['payment_id'] = $this->payment->getId();
+
+        $this->startTest($testData);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['disputed']);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('dispute', $transaction['type']);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $this->assertEquals(100, $dispute['amount_deducted']);
+    }
+
+    public function testDisputeCreateWithDeductWithoutEnoughBalance()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+
+        $this->fixtures->refund->createFromPayment(['payment' => $payment]);
+
+        $testData = $this->updateCreateTestData('pay_' . $payment->getId());
+
+        $testData['request']['content']['amount'] = $payment->getAmount();
+
+        $this->startTest($testData);
+
+        $transaction = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('refund', $transaction['type']);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $this->assertNull($dispute);
     }
 
     public function testDisputeCreateWithoutReason()
@@ -90,7 +141,41 @@ class DisputeTest extends TestCase
     {
         $data = $this->updateEditTestData();
 
-        $content = $this->runRequestResponseFlow($data);
+        $this->runRequestResponseFlow($data);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(false, $payment['disputed']);
+    }
+
+    public function testDisputeEditDeductOnLost()
+    {
+        $data = $this->updateEditTestData();
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('payment', $txn['type']);
+
+        $this->runRequestResponseFlow($data);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(false, $payment['disputed']);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('dispute', $txn['type']);
+    }
+
+    public function testDisputeEditDoNotDeductOnLostIfDeducted()
+    {
+        $data = $this->updateEditTestData(['deduct_at_onset' => 1]);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('dispute', $txn['type']);
+
+        $this->runRequestResponseFlow($data);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -152,7 +237,7 @@ class DisputeTest extends TestCase
 
         $testData = &$this->testData[$name];
 
-        $testData['request']['url'] = '/disputes/'.$dispute->getPublicId();
+        $testData['request']['url'] = '/disputes/' . $dispute->getPublicId();
 
         return $testData;
     }

@@ -65,6 +65,16 @@ class RefundTest extends TestCase
         Mail::assertSent(RefundedMail::class);
     }
 
+    public function testRefundDisputedPayment()
+    {
+        $dispute = $this->fixtures->create('dispute');
+
+        $this->startTest(
+            $dispute->payment->getPublicId(),
+            (string) $dispute->payment->getAmount()
+        );
+    }
+
     public function testRefundWithReceipt()
     {
         Mail::fake();
@@ -228,6 +238,27 @@ class RefundTest extends TestCase
         $this->assertEquals(2, $content['authorized']);
     }
 
+    public function testRefundOfOldAuthorizedPaymentsContainingDisputed()
+    {
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(6)->timestamp;
+
+        $this->fixtures->times(2)->create(
+            'payment:authorized',
+            ['created_at' => $createdAt]);
+
+        $this->fixtures->create(
+            'payment:authorized',
+            ['created_at' => $createdAt,
+             'disputed'   => 1]);
+
+        $content = $this->refundOldAuthorizedPayments();
+
+        $this->assertArrayHasKey('refunded', $content);
+        $this->assertEquals(2, $content['refunded']);
+        $this->assertArrayHasKey('authorized', $content);
+        $this->assertEquals(2, $content['authorized']);
+    }
+
     /**
      * Tests if all the authorized payments of only paid order are getting
      * refunded via CRON.
@@ -237,6 +268,7 @@ class RefundTest extends TestCase
     {
         $this->ba->appAuth();
 
+        //
         // Order 1: - Created, Partial payment allowed
         //          - 2 Authorized payment exist, 1 Failed payment
         //          - Payments NOT PICKED for refund
@@ -264,6 +296,11 @@ class RefundTest extends TestCase
         // Order 7: - Attempted, Partial payment allowed
         //          - 2 Captured and 2 Authorized payment exists
         //          - Payments NOT PICKED for refund
+        //
+        // Order 8: - Paid
+        //          - 1 Captured and 1 Authorized payment exists, 1 Disputed payment
+        //          - 1 Payment PICKED for refund
+        //
 
         $order1 = $this->fixtures->order->create(['partial_payment' => true]);
 
@@ -369,6 +406,30 @@ class RefundTest extends TestCase
                                         'amount'   => '250000',
                                     ]);
 
+        $order8 = $this->fixtures->order->createPaid();
+
+        $this->fixtures->times(1)->create(
+                                    'payment:captured',
+                                    [
+                                        'order_id' => $order8->getId(),
+                                        'amount'   => '1000000',
+                                    ]);
+
+        $this->fixtures->times(1)->create(
+                                    'payment:authorized',
+                                    [
+                                        'order_id' => $order8->getId(),
+                                        'amount'   => '1000000',
+                                    ]);
+
+        $this->fixtures->times(1)->create(
+                                    'payment:authorized',
+                                    [
+                                        'order_id' => $order8->getId(),
+                                        'amount'   => '1000000',
+                                        'disputed' => 1,
+                                    ]);
+
         // Run test
 
         $testData = $this->testData[__FUNCTION__];
@@ -379,19 +440,25 @@ class RefundTest extends TestCase
 
         $payments = $this->getEntities('payment', [], true);
 
-        $authorizedCount = $capturedCount = $failedCount = $refundedCount = 0;
+        $authorizedCount = $capturedCount = $failedCount = $refundedCount = $disputedCount = 0;
 
         foreach ($payments['items'] as $payment)
         {
+            if ($payment['disputed'] === true)
+            {
+                $disputedCount += 1;
+            }
+
             $holder = $payment['status'] . 'Count';
 
             $$holder += 1;
         }
 
-        $this->assertEquals(5, $authorizedCount);
-        $this->assertEquals(9, $capturedCount);
+        $this->assertEquals(6, $authorizedCount);
+        $this->assertEquals(10, $capturedCount);
         $this->assertEquals(3, $failedCount);
-        $this->assertEquals(4, $refundedCount);
+        $this->assertEquals(5, $refundedCount);
+        $this->assertEquals(1, $disputedCount);
     }
 
     public function testRefundCreateOnGatewayForMissingRefunds()

@@ -6,7 +6,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use RZP\Trace\Trace;
+use Razorpay\Trace\Logger as Trace;
 
 class Core extends Base\Core
 {

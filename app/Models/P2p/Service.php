@@ -6,10 +6,10 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Models\Base;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
 use RZP\Models\Upi\Vpa;
+use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {

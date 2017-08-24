@@ -6,8 +6,8 @@ use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Exception;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class Action
 {

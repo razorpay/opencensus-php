@@ -14,8 +14,8 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Settlement;
 use RZP\Trace\TraceCode;
-use RZP\Trace\Trace;
 use RZP\Constants\MailTags;
+use Razorpay\Trace\Logger as Trace;
 
 class DailyReport extends Base\Core
 {

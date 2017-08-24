@@ -796,6 +796,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Trace code for Merchant Invoices
     const MERCHANT_INVOICE_ENTITY_CREATION_FAILED       = 'MERCHANT_INVOICE_ENTITY_CREATION_FAILED';
+    const MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED      = 'MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED';
 
     const DUMMY_JOB = 'DUMMY_JOB';
 

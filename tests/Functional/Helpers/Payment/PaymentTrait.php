@@ -7,6 +7,7 @@ use RZP\Exception\BaseException;
 use RZP\Exception;
 use Mockery;
 use Requests;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use Symfony\Component\DomCrawler\Crawler;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
@@ -681,6 +682,33 @@ trait PaymentTrait
         }
 
         return $refund;
+    }
+
+    protected function disputePayment(PaymentEntity $payment, int $deduct = 0): array
+    {
+        $this->ba->appAuth();
+
+        $reason = $this->fixtures->create('dispute_reason');
+
+        $content = [
+            'gateway_dispute_id' => '4342frf34r',
+            'raised_on'          => '946684800',
+            'expires_on'         => '1912162918',
+            'amount'             => $payment->getAmount(),
+            'phase'              => 'chargeback',
+            'deduct_at_onset'    => $deduct,
+            'reason_id'          => $reason->getId(),
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/' . $payment->getPublicId() . '/disputes',
+            'content' => $content
+        ];
+
+        $dispute = $this->makeRequestAndGetContent($request);
+
+        return $dispute;
     }
 
     protected function verifyRefund($id)

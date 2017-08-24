@@ -8,7 +8,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Mail\Mailer as MailerContract;
 use Illuminate\Contracts\Queue\Factory as Queue;
 use Illuminate\Mail\Mailable as BaseMailable;
-use RZP\Trace\Trace;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 
 class Mailable extends BaseMailable
