@@ -288,6 +288,9 @@ return [
         //corporate netbanking
         'test_hash_secret_corp'  => env('NETBANKING_ICICI_GATEWAY_TEST_HASH_SECRET_CORP'),
         'test_merchant_id2_corp' => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID2_CORP'),
+
+        'live_hash_secret_corp'  => env('NETBANKING_ICICI_GATEWAY_LIVE_HASH_SECRET_CORP'),
+        'live_merchant_id2_corp' => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID2_CORP'),
     ],
 
     'netbanking_axis' => [
