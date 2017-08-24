@@ -47,10 +47,7 @@ class NetbankingIciciEMandateTest extends TestCase
 
     public function testEMandateScheduledPayment()
     {
-        $subscription = $this->createSubscription();
-
         $payment = $this->getNetbankingRecurringPaymentArray('ICIC');
-        $payment['subscription_id'] = $subscription['id'];
 
         $this->ba->publicAuth();
 

@@ -751,8 +751,18 @@ trait Authorize
 
         $this->verifyFeatureForRecurring($merchant, $payment);
 
-        // Validate that the card supports recurring
-        $this->validateRecurringCard($payment);
+        //
+        // If payment type is card, validate that the card supports recurring
+        // or if payment type is netbanking, validate that the card supports recurring
+        //
+        if ($payment->isCard() === true)
+        {
+            $this->validateRecurringCard($payment);
+        }
+        else if ($payment->isNetbanking() === true)
+        {
+            $this->validateRecurringNetbanking($payment);
+        }
 
         //
         // The first recurring will be on public auth for non-S2S enabled merchants.
@@ -859,6 +869,17 @@ trait Authorize
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED);
+        }
+    }
+
+    protected function validateRecurringNetbanking(Payment\Entity $payment)
+    {
+        $bank = $payment->getBank();
+
+        if (Payment\Gateway::isRecurringSupportedOnBank($bank) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED);
         }
     }
 
@@ -1486,6 +1507,8 @@ trait Authorize
 
             $gatewayInput['card'] = $this->associateAndGetCardArrayForSavedToken($token, $input);
         }
+
+        // Need to add this for netbanking and wallets
 
         //else @todo for netbanking/wallets
     }

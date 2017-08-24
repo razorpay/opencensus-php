@@ -48,6 +48,7 @@ class CreateTokens extends Migration {
             $table->string(Token::WALLET, 15)
                   ->nullable();
 
+            // RID - from response
             $table->text(Token::GATEWAY_TOKEN)
                   ->nullable();
 

@@ -932,6 +932,17 @@ trait PaymentTrait
         return $payment;
     }
 
+    protected function getNetbankingRecurringPaymentArray($bank = 'HDFC')
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray($bank);
+
+        $payment['amount'] = 2000;
+
+        $payment['recurring'] = true;
+
+        return $payment;
+    }
+
     protected function getDefaultEmiPaymentArray($saved)
     {
         $card = null;

@@ -425,6 +425,16 @@ class Gateway
         Gateway::FIRST_DATA,
         Gateway::AXIS_MIGS,
         Gateway::HDFC,
+        Gateway::NETBANKING_ICICI
+    ];
+
+    /**
+     * List of netbanking gateways that support recurring payments
+     *
+     * @var array
+     */
+    public static $recurringNbGateways = [
+        Gateway::NETBANKING_ICICI
     ];
 
     /**
@@ -590,6 +600,34 @@ class Gateway
     public static function isRecurringGateway($gateway)
     {
         return in_array($gateway, self::$recurringGateways, true);
+    }
+
+    public static function isRecurringNetbankingGateway($gateway)
+    {
+        return in_array($gateway, self::$recurringNbGateways, true);
+    }
+
+    /**
+     * This method checks if the given netbanking bank supports recurring
+     * The algorithm is as follows:
+     * - Get all gateways for the bank
+     * - Check if any one gateway supports recurring
+     * - If yes, then bank supports recurring
+     * - if no, the bank does not support recurring
+     */
+    public static function isRecurringSupportedOnBank(string $bank)
+    {
+        $gateways = self::getGatewaysForNetbankingBank($bank);
+
+        foreach ($gateways as $gateway)
+        {
+            if (self::isRecurringNetbankingGateway($gateway) === true)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static function getChannel($gateway)
