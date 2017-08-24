@@ -94,7 +94,8 @@ class Gateway extends Base\Gateway
     protected function setBankingTypeAndDomainType($terminal)
     {
         // Default banking type is retail
-        if ($terminal->isCorporate() === true)
+        if ((isset($terminal) === true) and
+            ($terminal->isCorporate() === true))
         {
             $this->setBankingType(self::CORPORATE);
         }
