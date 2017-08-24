@@ -96,9 +96,9 @@ class PublicEntity extends UniqueIdEntity
      */
     protected $auth;
 
-    public function __construct()
+    public function __construct(array $attributes = [])
     {
-        parent::__construct();
+        parent::__construct($attributes);
 
         $this->app = App::getFacadeRoot();
 
