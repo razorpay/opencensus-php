@@ -886,7 +886,7 @@ class SettlementTest extends TestCase
         return $this->runRequestResponseFlow($testData);
     }
 
-    public function testUpdateSettlementDeailsInTransfers()
+    public function testUpdateRecipientSettlementIdInTransfers()
     {
         $payment = $this->createPaymentEntities(1);
 
