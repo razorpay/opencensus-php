@@ -286,6 +286,42 @@ return [
         ],
     ],
 
+    'testDisputeEditDeductOnLost' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                'status' => 'lost',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'amount'      => 1000000,
+                'currency'    => 'INR',
+                'phase'       => 'chargeback',
+                'status'      => 'lost'
+            ],
+        ],
+    ],
+
+    'testDisputeEditDoNotDeductOnLostIfDeducted' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                'status' => 'lost',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'amount'      => 1000000,
+                'currency'    => 'INR',
+                'phase'       => 'chargeback',
+                'status'      => 'lost'
+            ],
+        ],
+    ],
+
     'testDisputeEditInvalidStatus' => [
         'request' => [
             'method'  => 'patch',
