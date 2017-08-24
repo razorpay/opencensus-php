@@ -673,8 +673,6 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $repo->findByPaymentIdAndActionOrFail($payment['id'], Action::AUTHORIZE);
 
-        $this->getRefundId($refund);
-
         $data = [
             Fields::MERCHANT_ID                     => $this->getMerchantId(),
             Fields::SUBMERCHANT_ID                  => $this->getSubMerchantId($input),
