@@ -1626,7 +1626,7 @@ trait Authorize
                                                array $input,
                                                array & $gatewayInput)
     {
-        if ($payment->isLocal() === true)
+        if ($payment->isCard() === true)
         {
             // create global saved card and link to payment
             $gatewayInput['card'] = $this->createCardEntity($input['card'], true, $customer->merchant);
