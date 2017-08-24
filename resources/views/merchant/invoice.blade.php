@@ -54,7 +54,6 @@
     font-size: 12px;
     text-align: center;
     margin-top: 10px;
-    page-break-after: always;
   }
 
   .invoice-box table{
@@ -80,7 +79,9 @@
     padding: 5px 12px;
   }
 
-  .invoice-box table td.tax {
+  .invoice-box table td.tax,
+  .invoice-box table td.amount,
+  .invoice-box table td.grand-total {
 
     white-space: nowrap;
   }
@@ -215,6 +216,11 @@
 
       padding: 2px;
     }
+
+    .foot-note {
+
+      page-break-after: always;
+    }
   }
 
   @media only screen and (max-width: 600px) {
@@ -234,9 +240,10 @@
 </head>
 
 <body>
+  @foreach($pages as $pageName => $pageValue)
   <div class="invoice-box">
     <div class="page-title">
-      TAX INVOICE
+      {{{ $pageName }}}
     </div>
     <table cellpadding="0" cellspacing="0">
       <tr class="top">
@@ -266,9 +273,9 @@
                 #22, 1st Floor, SJR Cyder,<br/>
                 Laskar Hosur Road, Adugodi,<br/>
                 Bangalore, Karnataka - 560 030.<br/>
-                <span class="code">GSTIN - {{{ $rzp_gstin }}}<br/>
-                Pan No. - {{{ $rzp_pan_no }}}<br/>
-                CIN No. - {{{ $rzp_cin_no }}}</span>
+                GSTIN - 29AAGCR4375J1ZU<br/>
+                Pan No. - AAGCR4375J<br/>
+                CIN No. - U72200KA2013PTC097389
               </td>
 
               <td class="text-right">
@@ -327,7 +334,7 @@
             </thead>
 
             <tbody>
-              <?php $rowsSize = sizeOf($rows); ?>
+              <?php $rows = isset($pageValue['rows']) ? $pageValue['rows'] : []; $rowsSize = sizeOf($rows); ?>
 
               @foreach($rows as $rowIndex => $rowItem)
 
@@ -336,7 +343,7 @@
               @if (!$isTotalRow)
               <tr class="item <?php echo(($rowsSize === 1 || $rowsSize - 2 === $rowIndex) ? "last" : "")?>">
                 <td class="sno">
-                  {{{$rowItem['Sl. No.']}}}.
+                  {{{ $rowIndex + 1 }}}.
                 </td>
                 <td class="gst-code">
                   {{{$rowItem['GST.SAC Code']}}}
@@ -350,41 +357,54 @@
                   {{{$rowItem['Description']}}}
                 </td>
                 <td class="amount text-right">
-                  <b>₹{{{$rowItem['Amount']}}}</b>
+                  <b>@include('components/currency', ['value' => $rowItem['Amount']])</b>
                 </td>
                 <td class="tax text-right">
                   @if (array_key_exists('SGST @ 9%', $rowItem))
-                  SGST @ 9% - ₹{{{ $rowItem['SGST @ 9%'] }}}<br/>
+                  <div>SGST @ 9% : @include('components/currency', ['value' => $rowItem['SGST @ 9%']])</div>
                   @endif
 
                   @if (array_key_exists('CGST @ 9%', $rowItem))
-                  CGST @ 9% - ₹{{{ $rowItem['CGST @ 9%'] }}}<br/>
+                  <div>CGST @ 9% : @include('components/currency', ['value' => $rowItem['CGST @ 9%']])</div>
                   @endif
 
                   @if (array_key_exists('IGST @ 18%', $rowItem))
-                  IGST @ 18% - ₹{{{ $rowItem['IGST @ 18%'] }}}<br/>
+                  <div>IGST @ 18% : @include('components/currency', ['value' => $rowItem['IGST @ 18%']])</div>
                   @endif
 
                   @if (array_key_exists('Tax Total', $rowItem))
-                  <b>Tax Total - ₹{{{ $rowItem['Tax Total'] }}}</b>
+                  <b>Tax Total : @include('components/currency',
+                                          ['value' => $rowItem['Tax Total']])</b>
                   @endif
                 </td>
                 <td class="grand-total text-right">
-                  <b>₹{{{$rowItem['Grand Total']}}}</b>
+                  <b>@include('components/currency',
+                              ['value' => $rowItem['Grand Total']])</b>
                 </td>
               </tr>
               @endforeach
 
+              @if (isset($pageValue['total_amount_paid']))
               <tr>
                 <td colspan="4"></td>
                 <td class="text-right">Paid</td>
-                <td class="text-right font-bold">₹{{{ $total_amount_paid }}}</td>
+                <td class="text-right font-bold">
+                  @include('components/currency',
+                           ['value' => $pageValue['total_amount_paid']])
+                </td>
               </tr>
+              @endif
+
+              @if(isset($pageValue['total_amount_due']))
               <tr>
                 <td colspan="4"></td>
                 <td class="text-right">Due</td>
-                <td class="text-right font-bold">₹{{{ $total_amount_due }}}</td>
+                <td class="text-right font-bold">
+                  @include('components/currency',
+                           ['value' => $pageValue['total_amount_due']])
               </tr>
+              @endif
+
             <tbody>
           </table>
         </td>
@@ -447,6 +467,7 @@
   <div class="foot-note">
     Note: This is an auto generated invoice, no signature required.
   </div>
+  @endforeach
   <script>window.print();</script>
 </body>
 </html>
