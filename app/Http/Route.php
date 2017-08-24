@@ -583,7 +583,7 @@ final class Route
         // Dispute routes
         'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
         'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                          ],
-        'merchant_payouts'                        => ['post',     'merchant/payouts',                               'PayoutController@postMerchantPayout'                                  ],
+        'merchant_payouts'                        => ['post',     'merchant/payouts',                               'PayoutController@postMerchantPayout'                               ],
     ];
 
     public static $public = [
@@ -983,7 +983,7 @@ final class Route
         'risk_fetch_multiple',
         'risk_get',
         'merchant_create_invoice_entities',
-        'irctc_payouts',
+        'merchant_payouts',
     ];
 
     public static $proxy = [
