@@ -23,14 +23,15 @@ class Gateway extends Base\Gateway
     protected $gateway = 'blade';
 
     /**
-     * @param  array  $input
+     * Authorize the payment
+     *
+     * @param array $input Input
+     *
      * @return void
      */
     public function authorize(array $input)
     {
         parent::authorize($input);
-
-        $e = null;
 
         $data = null;
 
@@ -73,11 +74,6 @@ class Gateway extends Base\Gateway
 
         if ($ret === false)
         {
-            if ($e !== null)
-            {
-                throw $e;
-            }
-
             if ($authenticationStatus === AuthenticationStatus::F)
             {
                 throw new Exception\BadRequestException(
@@ -90,8 +86,9 @@ class Gateway extends Base\Gateway
         return $this->runGatewayAuthorization($input);
     }
 
-    protected function runGatewayAuthorization($input)
+    protected function runGatewayAuthorization(array $input)
     {
+        //TODO DO something
         $eci = ECI::getValue($input['authenticate_status'], $input['card']['network_code']);
 
         if (isset($input['gateway']['transaction']['eci']))
@@ -103,13 +100,9 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function shouldAuthorize($authenticationStatus)
+    protected function shouldAuthorize(string $authenticationStatus)
     {
         if ($authenticationStatus === AuthenticationStatus::Y)
-        {
-            return true;
-        }
-        else if ($this->isAuthenticationMandatory() === false)
         {
             return true;
         }
@@ -117,7 +110,7 @@ class Gateway extends Base\Gateway
         return false;
     }
 
-    protected function threeDSecure($input)
+    protected function threeDSecure(array $input)
     {
         $cardCache = Cache::get('card_cache', []);
 
@@ -183,7 +176,7 @@ class Gateway extends Base\Gateway
         $purchaseAttributes = (array) $corePares['Purchase'];
 
         $gatewayInput = [
-            'purchase' => $purchaseAttributes,
+            'purchase'    => $purchaseAttributes,
             'transaction' => $txnAttributes
         ];
 
@@ -204,7 +197,7 @@ class Gateway extends Base\Gateway
         return $this->runGatewayAuthorization($input);
     }
 
-    protected function processPares($pares)
+    protected function processPares(string $pares)
     {
         $pares = base64_decode($pares);
         $pares = gzinflate(substr($pares, 2));
@@ -221,23 +214,26 @@ class Gateway extends Base\Gateway
         {
             $msg = $e->getMessage();
 
-            $error = ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR;
-
-            if ($msg === 'Reference validation failed')
-            {
-                $this->trace->info(
-                    TraceCode::GATEWAY_INVALID_PARES_SIGNATURE_ERROR);
-
-                $error = ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR;
-            }
-            else if ($msg === 'Trying to get property of non-object')
-            {
-                $error = ErrorCode::BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_INVALID_RESPONSE;
-            }
-
             $this->trace->traceException($e);
 
-            throw new ThreeDSecureAuthenticationFailureException($error);
+            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR;
+
+            switch($msg)
+            {
+                case ParesResponse::MSG_REF_VALIDATION_FAILED:
+                    $this->trace->info(
+                        TraceCode::GATEWAY_INVALID_PARES_SIGNATURE_ERROR);
+
+                    $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR;
+
+                    break;
+                case ParesResponse::MSG_INVALID_PROPERTY:
+                    $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_INVALID_RESPONSE;
+
+                    break;
+            }
+
+            throw new ThreeDSecureAuthenticationFailureException($errorCode);
         }
 
         if ($ret === false)
@@ -366,9 +362,6 @@ class Gateway extends Base\Gateway
         }
 
         $dotted_veres = array_dot($VEres);
-
- //       $difference = array_diff($VEres, Validator::$VEresRules);
-
     }
 
     public function sendCRReq()
@@ -377,7 +370,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getCrreqRequestArray();
 
-        $xml = $this->postGuzzleRequest($request);
+        $xml = $this->sendGatewayRequest($request);
 
         $valid = $this->validateXml($xml);
 
@@ -497,12 +490,12 @@ class Gateway extends Base\Gateway
         // }
     }
 
-    protected function isSequentialArray($array)
+    protected function isSequentialArray(array $array)
     {
         return array_keys($array) === range(0, count($array) - 1);
     }
 
-    protected function validateCR($CRres)
+    protected function validateCR(array $CRres)
     {
         if (isset($CRres['Message']['CRRes']['CR']))
         {
@@ -555,7 +548,7 @@ class Gateway extends Base\Gateway
         $creds = $this->getCreds();
 
         $s = '';
-        if ($serialNumber)
+        if ($serialNumber !== null)
         {
             $s = '
                 <serialNumber>'.$serialNumber.'</serialNumber>';
@@ -564,14 +557,14 @@ class Gateway extends Base\Gateway
         $xml = ''.
             '<?xml version="1.0" encoding="UTF-8"?>
             <ThreeDSecure>
-              <Message id="'.$messageId.'">
+              <Message id="' . $messageId . '">
                 <CRReq>
                   <version>1.0.2</version>
                   <Merchant>
-                    <acqBIN>'.$creds['acq_bin'].'</acqBIN>
-                    <merID>'.$creds['merchant_id'].'</merID>
-                    <password>'.$creds['password'].'</password>
-                  </Merchant>'.$s.'
+                    <acqBIN>' . $creds['acq_bin'] . '</acqBIN>
+                    <merID>' . $creds['merchant_id'] . '</merID>
+                    <password>' . $creds['password'] . '</password>
+                  </Merchant>' . $s . '
                 </CRReq>
               </Message>
             </ThreeDSecure>';
@@ -599,7 +592,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function validateCrreq($CRres)
+    protected function validateCrreq(array $CRres)
     {
         $this->trace->info('CRres', $CRres);
 
@@ -972,18 +965,6 @@ class Gateway extends Base\Gateway
         return $creds;
     }
 
-    protected function getFieldsFromXML($xml, $fields)
-    {
-        $array = [];
-
-        foreach ($fields as $field)
-        {
-            $array[$field] = getTextBetweenStrings($xml, "<$field>", "</$field>");
-        }
-
-        return $array;
-    }
-
     /**
      * Validates the xml against the mpi schema.
      * @return  bool true/false whether the xml is valid or not
@@ -1060,65 +1041,21 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function isAuthenticationMandatory()
-    {
-        return true;
-    }
-
-    protected function postGuzzleRequest($request)
-    {
-        $client = new GuzzleHttp\Client();
-
-        $options = [];
-
-        $request['options'] = array_merge($options, $request['options']);
-
-        unset($request['options']['cert']);
-        unset($request['options']['ssl_key']);
-        //TODO Fix this
-
-        try
-        {
-            $response = $client->request(
-                $request['method'],
-                $request['url'],
-                $request['options']);
-        }
-        catch (GuzzleHttp\Exception\BadResponseException $e)
-        {
-            $response = $e->getResponse();
-
-            $responseBodyAsString = $response->getBody()->getContents();
-        }
-        catch (GuzzleHttp\Exception\ConnectException $e)
-        {
-            $response = $e->getResponse();
-
-            throw new Exception\GatewayTimeoutException(
-                $e->getMessage(), $e);
-        }
-
-        $content = $response->getBody()->getContents();
-
-        return $content;
-    }
-
-    protected function postCurlRequest($url, $txt, $certFile, $keyFile)
+    protected function postCurlRequest(string $url,string $txt, $certFile, $keyFile)
     {
         $curl_resource = curl_init();
 
-        curl_setopt ( $curl_resource, CURLOPT_URL, $url );
-        curl_setopt ( $curl_resource, CURLOPT_POST, 1 );
-        curl_setopt ( $curl_resource, CURLOPT_POSTFIELDS, $txt );
-        curl_setopt ( $curl_resource, CURLOPT_RETURNTRANSFER, 1 );
-        // curl_setopt ( $curl_resource, CURLOPT_HTTPHEADER, $headerdata);
-        curl_setopt ( $curl_resource, CURLOPT_HEADER, true);
-        curl_setopt ( $curl_resource, CURLOPT_SSLCERT , $certFile);
-        curl_setopt ( $curl_resource, CURLOPT_SSLCERTPASSWD, '');
-        curl_setopt ( $curl_resource, CURLOPT_SSLKEY, $keyFile);
-        curl_setopt ( $curl_resource, CURLOPT_SSL_VERIFYPEER, true);
-        curl_setopt ( $curl_resource, CURLOPT_SSL_VERIFYHOST, 2);
-        curl_setopt ( $curl_resource, CURLOPT_SSLCERTTYPE, 'PEM');
+        curl_setopt($curl_resource, CURLOPT_URL, $url);
+        curl_setopt($curl_resource, CURLOPT_POST, 1);
+        curl_setopt($curl_resource, CURLOPT_POSTFIELDS, $txt);
+        curl_setopt($curl_resource, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($curl_resource, CURLOPT_HEADER, true);
+        curl_setopt($curl_resource, CURLOPT_SSLCERT, $certFile);
+        curl_setopt($curl_resource, CURLOPT_SSLCERTPASSWD, '');
+        curl_setopt($curl_resource, CURLOPT_SSLKEY, $keyFile);
+        curl_setopt($curl_resource, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($curl_resource, CURLOPT_SSL_VERIFYHOST, 2);
+        curl_setopt($curl_resource, CURLOPT_SSLCERTTYPE, 'PEM');
 
         $output = curl_exec($curl_resource);
         curl_close($curl_resource);
