@@ -31,11 +31,16 @@ class Gateway extends Base\Gateway
         RequestFields::AMOUNT  => 'amount'
     ];
 
+    public function setGatewayParams($input, $mode, $terminal)
+    {
+        parent::setGatewayParams($input, $mode, $terminal);
+
+        $this->setBankingTypeAndDomainType($terminal);
+    }
+
     public function authorize(array $input)
     {
         parent::authorize($input);
-
-        $this->setBankingTypeAndDomainType($input['terminal']);
 
         $content = $this->getPaymentRequestData($input);
 
@@ -53,8 +58,6 @@ class Gateway extends Base\Gateway
     public function callback(array $input)
     {
         parent::callback($input);
-
-        $this->setBankingTypeAndDomainType($input['terminal']);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
 
@@ -101,8 +104,6 @@ class Gateway extends Base\Gateway
 
     public function sendPaymentVerifyRequest(Verify $verify)
     {
-        $this->setBankingTypeAndDomainType($verify->input['terminal']);
-
         $content = $this->getVerifyRequestData($verify);
 
         $request = $this->getStandardRequestArray($content, 'post', $this->getUrlType());

@@ -233,15 +233,14 @@ trait Callback
                 $isCorporatePayment = $payment->terminal->isCorporate();
 
                 // In case of non - corporate payments, this case is fine.
-                if (($payment->isCreated() === false) and
-                    ($isCorporatePayment === false))
+                // In case of corporate and payment already having been authorized
+                if ((($payment->isCreated() === false) and
+                    ($isCorporatePayment === false)) or
+                    (($isCorporatePayment === true) and
+                    ($payment->hasBeenAuthorized() === true)))
                 {
                     return $this->processPaymentCallbackSecondTime($payment);
                 }
-
-                // For corporate payments, cases that should be
-                //allowed       - process
-                //disallowed    - are not well defined
 
                 $this->processPaymentCallback($payment, $gatewayInput);
 
