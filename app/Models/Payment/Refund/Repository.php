@@ -141,24 +141,6 @@ class Repository extends Base\Repository
                     ->sum($refundAmount);
     }
 
-    public function getRefundedAmountByMerchant(string $merchantId, int $from, int $to)
-    {
-        $refundPaymentId = $this->dbColumn(Entity::PAYMENT_ID);
-        $refundAmount = $this->dbColumn(Entity::BASE_AMOUNT);
-        $refundCreatedAt = $this->dbColumn(Entity::CREATED_AT);
-
-        $paymentId = $this->repo->payment->dbColumn(Payment\Entity::ID);
-        $paymentMerchantId = $this->repo->payment->dbColumn(Payment\Entity::MERCHANT_ID);
-        $paymentCapturedAt = $this->repo->payment->dbColumn(Payment\Entity::CAPTURED_AT);
-
-        return $this->newQuery()
-                    ->join(Table::PAYMENT, $refundPaymentId, '=', $paymentId)
-                    ->where($paymentMerchantId, '=', $merchantId)
-                    ->whereNotNull($paymentCapturedAt)
-                    ->whereBetween($refundCreatedAt, [$from, $to])
-                    ->sum($refundAmount);
-    }
-
     public function fetchByIdPaymentIdMerchantId($id, $paymentId, $merchantId)
     {
         return $this->newQuery()

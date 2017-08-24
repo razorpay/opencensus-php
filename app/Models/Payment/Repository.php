@@ -938,14 +938,6 @@ class Repository extends Base\Repository
                     ->sum(Entity::AMOUNT);
     }
 
-    public function getCapturedAmountByMerchant(string $merchantId, int $from, int $to)
-    {
-        return $this->newQuery()
-                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
-                    ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
-                    ->sum(Entity::AMOUNT);
-    }
-
     public function updateTax(int $limit = 10000)
     {
         return $this->newQuery()

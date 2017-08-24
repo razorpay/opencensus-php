@@ -301,31 +301,13 @@ class Core extends Base\Core
 
         $merchant = $this->repo->merchant->fetchById($irctcMerchantId);
 
-        $from = Carbon::yesterday(Timezone::IST)->timestamp;
-
-        $to = Carbon::today(Timezone::IST)->timestamp - 1;
-
-        if (isset($input['from']) === true)
-        {
-            $from = $input['from'];
-        }
-
-        if (isset($input['to']) === true)
-        {
-            $to = $input['to'];
-        }
-
         if (isset($input['amount']) === true)
         {
             $amount = $input['amount'];
         }
         else
         {
-            $paymentAmount = $this->repo->payment->getCapturedAmountByMerchant($irctcMerchantId, $from, $to);
-
-            $refundAmount = $this->repo->refund->getRefundedAmountByMerchant($irctcMerchantId, $from, $to);
-
-            $amount = $paymentAmount  - $refundAmount;
+            $amount = $merchant->balance->getBalance();
         }
 
         if ($amount > 20000000)
