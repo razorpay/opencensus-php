@@ -22,18 +22,21 @@ class Options
         'method',
         'network',
         'bank',
+        'billdesk_category',
     ];
 
     // Filters to be skipped for any merchant
     protected $globalSkippedFilters = [
         'amount',
+        'iin',
     ];
 
     // Maps the rule group name to the corresponding filter property.
     // This is temporary and will be used only in the migration phase
     // until all merchants are using rule filters
     protected $ruleGroupToFilterPropertyMap = [
-        'min_amount_filter' => 'amount'
+        'min_amount_filter'  => 'amount',
+        'prepaid_iin_filter' => 'iin',
     ];
 
     public function __construct()
