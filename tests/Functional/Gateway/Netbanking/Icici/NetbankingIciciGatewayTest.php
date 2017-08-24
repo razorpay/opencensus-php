@@ -204,17 +204,48 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testEmptyVerifyResponse()
     {
-        $data = $this->testData['testFailedPaymentEmptyVerify'];
+        $data = $this->testData['testVerifyMismatch'];
 
         $this->testFailedAuthPayment();
 
-        $this->mockNullVerifyResponse();
+        $this->mockStringVerifyResponse();
 
         $payment = $this->getLastEntity('payment', true);
 
-        $verify = $this->verifyPayment($payment['id']);
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
 
-        $this->assertArraySelectiveEquals($data, $verify);
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals(true, $netbanking['received']);
+        $this->assertEquals('N', $netbanking['status']);
+    }
+
+    public function testStringIndexOutOfRangeVerifyResponse()
+    {
+        $data = $this->testData['testVerifyMismatch'];
+
+        $this->testFailedAuthPayment();
+
+        $this->mockStringVerifyResponse('String index out of range: -17');
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals(true, $netbanking['received']);
+        $this->assertEquals('N', $netbanking['status']);
     }
 
     public function testAuthResponseDecryptionFailure()
@@ -330,11 +361,11 @@ class NetbankingIciciGatewayTest extends TestCase
         });
     }
 
-    protected function mockNullVerifyResponse()
+    protected function mockStringVerifyResponse(string $response = '')
     {
-        $this->mockServerContentFunction(function(&$content, $action = null)
+        $this->mockServerContentFunction(function(&$content, $action = null) use ($response)
         {
-            $content = "";
+            $content = $response;
         });
     }
 

@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use phpseclib\Crypt\AES;
+use RZP\Models\Payment\Verify as PaymentVerify;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\AESCrypto;
 use RZP\Gateway\Netbanking\Base;
@@ -118,18 +119,18 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $responseBody = $response->body;
+        $verify->verifyResponseBody = $response->body;
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
                 'payment_id' => $verify->input['payment']['id'],
-                'response'   => $responseBody
+                'response'   => $response->body
             ]);
 
-        $this->preProcessVerifyResponse($responseBody);
+        $this->preProcessVerifyResponse($verify->verifyResponseBody);
 
-        $verify->verifyResponseContent = $this->getResponseArray($responseBody);
+        $verify->verifyResponseContent = $this->getResponseArray($verify);
     }
 
     public function verifyPayment(Verify $verify)
@@ -450,16 +451,21 @@ class Gateway extends Base\Gateway
         $content = str_replace(ResponseFields::CONSUMER_CODE, ResponseFields::US_CONSUMER_CODE, $content);
     }
 
-    protected function getResponseArray($content)
+    protected function getResponseArray(Verify $verify)
     {
-        $xml = (array) simplexml_load_string($content);
-
-        if (isset($xml['@attributes']) === false)
+        try
         {
-            return [];
-        }
+            $xml = (array) simplexml_load_string($verify->verifyResponseBody);
 
-        return $xml['@attributes'];
+            return $xml['@attributes'];
+        }
+        catch (\Exception $e)
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify,
+                PaymentVerify\Action::RETRY);
+        }
     }
 
     public function getSpid()

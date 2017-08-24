@@ -62,20 +62,6 @@ return [
         ],
     ],
 
-    'testFailedPaymentEmptyVerify' => [
-        'gateway' => [
-            'status'                => 'status_match',
-            'gateway'               => 'netbanking_icici',
-            'verifyResponseContent' => [],
-            'apiSuccess'            => false,
-            'gatewaySuccess'        => false,
-            'gatewayPayment'        => [
-                'received' => true,
-                'status'   => 'N',
-            ],
-        ],
-    ],
-
     'testFailedAuthPayment' => [
         'response'  => [
             'content'     => [

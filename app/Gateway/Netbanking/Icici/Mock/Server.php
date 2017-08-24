@@ -127,7 +127,7 @@ class Server extends Base\Mock\Server
     {
         $this->content($responseArray);
 
-        if (empty($responseArray) === true)
+        if (is_array($responseArray) === false)
         {
             return $responseArray;
         }
