@@ -519,9 +519,10 @@ app
           postMethods[i] = methods[i] ? 1 : 0;
         }
 
-        msg = typeof msg !== 'undefined'
-          ? msg
-          : 'Methods edited successfully: ' + JSON.stringify(methods);
+        msg =
+          typeof msg !== 'undefined'
+            ? msg
+            : 'Methods edited successfully: ' + JSON.stringify(methods);
 
         var data = {
           route_name: 'merchant_put_payment_methods',
@@ -683,7 +684,8 @@ app
 
         if (entity === 'broking') {
           ajaxParams.headers = {
-            Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            Accept:
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           };
         }
 
@@ -705,7 +707,8 @@ app
 
             if (entity === 'broking') {
               var blob = new Blob([data], {
-                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                type:
+                  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
               });
               return saveAs(blob, 'broking_report.xlsx');
             }
@@ -1759,7 +1762,10 @@ app
           var adminObj = {
             id: admin.id,
             name: admin.name,
-            role: admin.roles[0].name,
+            role:
+              admin.roles.length && admin.roles[0].name
+                ? admin.roles[0].name
+                : '--',
           };
 
           $scope.adminMap[admin.id] = adminObj; // create mapping id - name
@@ -1793,7 +1799,7 @@ app
 
         request
           .success(function(data) {
-            if (data.success || true) {
+            if (data.success) {
               $scope.merchantOffers = data.data.items;
             } else {
               $scope.alerts.resetAlerts(true);
@@ -1904,7 +1910,7 @@ app
               $scope.selected_admins = [];
 
               // Re-populated array with selected admin ids
-              merchantAdmins.map(function(admin) {
+              merchantAdmins.items.map(function(admin) {
                 $scope.selected_admins.push(admin.id);
               });
 
@@ -2133,6 +2139,7 @@ app
         'credit_card',
         'jiomoney',
         'openwallet',
+        'sbibuddy',
       ];
       $scope.methods = {};
 
@@ -2740,7 +2747,8 @@ app
               merctech_tel_after: '+91-8003393912',
               merctech_fax: '',
               merctech_email: 'harshil@razorpay.com',
-              merctech_addr: '35, Vishnupuri, Opp. Malviya Nagar P.O., Jagatpura Road, Jaipur - 302017, Rajasthan',
+              merctech_addr:
+                '35, Vishnupuri, Opp. Malviya Nagar P.O., Jagatpura Road, Jaipur - 302017, Rajasthan',
               merctech_web_addr: current.website || '',
               merctech_return_url: 'https://api.razorpay.com',
               mercsetup_auth: 'Y',
@@ -2863,13 +2871,13 @@ app
         $scope.daysInSelectedMonth = numberOfDays(month, year); // total days in that month-year
 
         // Change the date if exceeding
-        if ($scope.daysInSelectedMonth < $scope.reportForm.date) {
-          $scope.reportForm.date = $scope.daysInSelectedMonth;
+        if ($scope.daysInSelectedMonth < $scope.reportForm.day) {
+          $scope.reportForm.day = $scope.daysInSelectedMonth;
         }
 
         // Remove the date key if duration is no longer 'daily'
         if ($scope.reportForm.type === 'monthly') {
-          delete $scope.reportForm.date;
+          delete $scope.reportForm.day;
         }
       };
 

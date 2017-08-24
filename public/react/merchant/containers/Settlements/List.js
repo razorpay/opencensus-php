@@ -9,6 +9,7 @@ import SettlementsListFilter from 'merchant/components/Settlements/ListFilter';
 import SettlementBreakupModal from './BreakupModal';
 import { fetchSettlements as fetchAll } from 'rzp/modules/collection';
 import * as ModalActions from 'rzp/modules/modals';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 @connect(state => state.settlements, {
   fetchAll,
@@ -29,6 +30,8 @@ export default class SettlementsListContainer extends ListContainer {
         <header>
           <NavLink to="/settlements">Settlements</NavLink>
         </header>
+
+        <TestModeBanner />
 
         <content>
           <div class="content-wrapper">
@@ -56,7 +59,9 @@ export default class SettlementsListContainer extends ListContainer {
             <div class="row">
               <div class="col-md-6 col-md-offset-3 col-sm-12 text-center">
                 <p>
-                  A settlement is an aggregate of payments and refunds, and as such the fees in a settlement is not reflective of the pricing. We only charge fees on a captured payment.
+                  A settlement is an aggregate of payments and refunds, and as
+                  such the fees in a settlement is not reflective of the
+                  pricing. We only charge fees on a captured payment.
                 </p>
               </div>
             </div>

@@ -81,6 +81,7 @@ export default class InvoiceLineItem extends Component {
               selected={selectedOption}
               optionLabelPath="name"
               placeholder="Select an item"
+              showClear={false}
               onOptionChange={this.updateLineItemRow}
               onQuickAdd={this.quickCreateItem}
               disabled={disabled}

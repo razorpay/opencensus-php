@@ -1,5 +1,4 @@
 import Spinner from 'rzp/ui/Spinner';
-import './EmptyTableRow/EmptyTableRow.styl';
 
 export default props => {
   return (

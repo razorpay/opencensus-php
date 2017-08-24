@@ -1,5 +1,21 @@
 import { Field } from 'redux-form';
 import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
+import InputField from 'rzp/ui/Forms/InputField';
+import { isPresent } from 'rzp/utils/rzp-utils';
+
+const required = index => {
+  return (currentValue, allProps) => {
+    if (!allProps.notes[index]) {
+      return;
+    }
+
+    let key = allProps.notes[index].key;
+    let value = allProps.notes[index].value;
+    if (isPresent(value) && !isPresent(key)) {
+      return 'Key is required';
+    }
+  };
+};
 
 export default ({ fields, onAdd }) => {
   return (
@@ -11,9 +27,10 @@ export default ({ fields, onAdd }) => {
               <i class="icon icon-close" onClick={() => fields.remove(index)} />
               <Field
                 name={`notes[${index}][key]`}
-                component="input"
+                component={InputField}
                 class="form-control"
                 placeholder="Key"
+                validate={required(index)}
               />
             </div>
 

@@ -12,6 +12,7 @@ import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
 import * as InvoiceActions from 'merchant/modules/invoices/list';
 import * as ModalActions from 'rzp/modules/modals';
 import { luminateRow } from 'merchant/modules/app';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 @connect(state => ({ ...state.invoices, ...state.session }), {
   ...InvoiceActions,
@@ -20,7 +21,7 @@ import { luminateRow } from 'merchant/modules/app';
 })
 export default class PaymentLinksContainer extends ListContainer {
   fetchEntityList(params) {
-    params.type = 'link';
+    params.types = ['link', 'ecod'];
     return this.props.fetchInvoices(params);
   }
 
@@ -45,6 +46,8 @@ export default class PaymentLinksContainer extends ListContainer {
 
     return (
       <div class="content-wrapper">
+        <TestModeBanner />
+
         <HeaderAction>
           <ShowWhen notMyRole="support">
             <div class="btn-toolbar pull-right">

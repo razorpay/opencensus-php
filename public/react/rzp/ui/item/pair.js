@@ -33,6 +33,10 @@ export const email = { title: 'Email', value: item => item.email };
 export const contact = { title: 'Contact', value: item => item.contact };
 export const currency = { title: 'Currency', value: item => item.currency };
 export const status = { title: 'Status', value: items.status };
+export const paidCount = {
+  title: 'Paid Count',
+  value: item => item.paid_count,
+};
 export const createdAt = { title: 'Created At', value: items.createdAt };
 export const attempts = { title: 'Attempts', value: item => item.attempts };
 export const receipt = { title: 'Receipt', value: item => item.receipt };

@@ -42,14 +42,26 @@ app
       $scope.mode = $stateParams.mode;
       $scope.entity = { id: $stateParams.id };
       $scope.loadType = $stateParams.type;
+      $scope.hasRetryRefund = false;
+      $scope.isRetryRefundProcessing = false;
 
-      $scope.generate = function(entityType) {
-        fetchEntity(entityType);
-      };
-
-      admin.identity().then(function(data) {
+      var adminData = admin.identity().then(function(data) {
         $scope.admin = data;
       });
+
+      $scope.generate = function(entityType) {
+        adminData.then(function() {
+          fetchEntity(entityType);
+        });
+      };
+
+      function hasRetryRefund(entity) {
+        return (
+          $scope.admin.permissions.indexOf('retry_refund_failed') !== -1 &&
+          $scope.loadType === 'refund' &&
+          entity.status === 'failed'
+        );
+      }
 
       function fetchEntity(entityType) {
         var routeName = 'admin_fetch_entity_by_id';
@@ -82,6 +94,8 @@ app
                   ? $scope.entity['iins'].join(',')
                   : null;
               }
+
+              $scope.hasRetryRefund = hasRetryRefund($scope.entity);
             } else {
               angular.forEach(data.errors, function(error) {
                 $scope.alerts.addAlert('danger', error);
@@ -118,6 +132,39 @@ app
             });
           }
         });
+      };
+
+      // Dispute specific actions
+      $scope.dispute = {
+        edit: function(data) {
+          var params = {
+            route_name: 'dispute_edit',
+            url_params: {
+              '{id}': $scope.entity.id,
+            },
+            mode: $scope.mode,
+            body: data,
+          };
+
+          var request = $http({
+            method: 'patch',
+            url: '/admin/generic',
+            data: params,
+          });
+          request
+            .success(function(data) {
+              if (data.success) {
+                window.location.reload();
+              } else {
+                angular.forEach(data.errors, function(value) {
+                  $scope.alerts.addAlert('danger', value);
+                });
+              }
+            })
+            .error(function() {
+              $scope.alerts.addAlert('danger', null, true);
+            });
+        },
       };
 
       // Offer Specific actions
@@ -475,6 +522,23 @@ app
             $scope.offer.edit(offer);
           }, $.noop);
         },
+        disputeEdit: function(dispute) {
+          var modalInstance = $modal.open({
+            templateUrl: 'disputeModalContent.html',
+            controller: 'DisputeModalCtrl',
+            resolve: {
+              current: function() {
+                return Object.assign({}, dispute);
+              },
+              mode: function() {
+                return $scope.mode;
+              },
+            },
+          });
+          modalInstance.result.then(function(dispute) {
+            $scope.dispute.edit(dispute);
+          }, $.noop);
+        },
         iinEdit: function(iin) {
           var modalInstance = $modal.open({
             templateUrl: 'editIin.html',
@@ -541,6 +605,55 @@ app
       $scope.getKeys = function() {
         var keys = Object.keys($scope.entity);
         return keys;
+      };
+
+      function retryRefund(entityId) {
+        return $http
+          .post('/admin/generic/', {
+            mode: $scope.mode,
+            route_name: 'refund_verify_failed',
+            url_params: {
+              '{id}': entityId,
+            },
+          })
+          .catch(function onRetryRefundFail() {
+            return {
+              data: {
+                errors: ['There was an error while retrying to refund.'],
+              },
+            };
+          });
+      }
+
+      $scope.onRetryRefund = function onRetryRefund(e) {
+        e.preventDefault();
+
+        var entityType = $scope.loadType,
+          entityId = $scope.entity.id;
+
+        if (entityType !== 'refund' || $scope.isRetryRefundProcessing) {
+          return;
+        }
+
+        $scope.isRetryRefundProcessing = true;
+
+        retryRefund(entityId).then(function onRetryRefundResp(resp) {
+          var data = resp.data;
+
+          $scope.alerts.resetAlerts();
+          $scope.isRetryRefundProcessing = false;
+
+          if (data.success) {
+            $scope.alerts.addAlert('success', 'Refund Successful');
+            $scope.entity.status = data.data.status;
+
+            $scope.hasRetryRefund = hasRetryRefund($scope.entity);
+          } else {
+            angular.forEach(data.errors, function(error) {
+              $scope.alerts.addAlert('danger', error);
+            });
+          }
+        });
       };
     },
   ])

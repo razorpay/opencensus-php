@@ -186,6 +186,11 @@ class Service extends Base\Service
 
             (new Merchant\Service)->createMerchantOnApi($data['id'], $adminId);
 
+            if ($referer)
+            {
+                (new Merchant\Service)->addMerchantTagsOnAPI($data['id'], ['ref-'.$referer]);
+            }
+
             $this->attachMerchantUserOnApi($user->id, $data['id'], 'owner');
         }
 

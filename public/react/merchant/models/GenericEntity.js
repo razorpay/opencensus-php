@@ -50,9 +50,9 @@ export default class GenericEntity extends Entity {
     });
   }
 
-  save() {
+  save(params = null) {
     const Klass = this.constructor;
-    let params = this.serialize();
+    params = params || this.serialize();
     let url = this.resourceUrl;
     let method = this.getResourceMethod();
     let { id = this.id, ...bodyParams } = params;

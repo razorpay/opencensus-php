@@ -86,17 +86,7 @@ app
           .success(function(data) {
             if (data.success) {
               $scope.gatewayRules = data.data.items;
-
-              if (!$scope.gatewayRules.length) {
-                $scope.noResults = true;
-
-                // 1. Iins: Convert iins from array to comma supported to dispay in input field
-                $scope.gatewayRules['iins'] = $scope.gatewayRules['iins']
-                  ? $scope.gatewayRules['iins'].join(',')
-                  : null;
-              } else {
-                $scope.noResults = false;
-              }
+              $scope.noResults = $scope.gatewayRules.length ? false : true;
             } else {
               $scope.alerts.resetAlerts(true);
               angular.forEach(data.errors, function(value) {
@@ -116,9 +106,8 @@ app
         var gatewayRule = Object.assign({}, rule);
 
         Object.keys(gatewayRule).forEach(function(key) {
-          gatewayRule.issuer = gatewayRule.issuer === 'ALL'
-            ? null
-            : gatewayRule.issuer;
+          gatewayRule.issuer =
+            gatewayRule.issuer === 'ALL' ? null : gatewayRule.issuer;
 
           // Delete null, undefined or empty string keys
           if (!gatewayRule[key]) {
@@ -184,6 +173,24 @@ app
 
       // Update gateway rule by id
       $scope.updateRuleById = function(rule) {
+        var data = {};
+        // Pruning rule as only 4 fields are required in edit mode
+        if (rule['load']) {
+          data['load'] = rule['load'];
+        }
+
+        if (rule['group']) {
+          data['group'] = rule['group'];
+        }
+
+        if (rule['iins']) {
+          data['iins'] = rule['iins'];
+        }
+
+        if (rule['filter_type']) {
+          data['filter_type'] = rule['filter_type'];
+        }
+
         var request = $http({
           url: 'admin/generic',
           method: 'patch',
@@ -195,9 +202,7 @@ app
             },
           },
           data: {
-            body: {
-              load: rule.load,
-            },
+            body: data,
           },
         });
 
@@ -360,6 +365,27 @@ app
 
       if (Object.keys(current).length) {
         $scope.editMode = true;
+
+        if ($scope.current['shared_terminal'] === null) {
+          $scope.current['shared_terminal'] = '';
+        } else {
+          $scope.current['shared_terminal'] = $scope.current['shared_terminal']
+            ? '1'
+            : '0';
+        }
+
+        if ($scope.current['international'] === null) {
+          $scope.current['international'] = '';
+        } else {
+          $scope.current['international'] = $scope.current['international']
+            ? '1'
+            : '0';
+        }
+
+        // 1. Iins: Convert iins from array to comma supported to dispay in input field
+        $scope.current['iins'] = $scope.current['iins']
+          ? $scope.current['iins'].join(',')
+          : null;
       }
 
       if ($scope.editMode) {
@@ -369,7 +395,7 @@ app
       function cleanFields(currentRule) {
         //1. Iins: Convert to array
         if (currentRule['iins']) {
-          currentRule['iins'] = currentRule['iins'].split(','); // Convert command separate values to array
+          currentRule['iins'] = currentRule['iins'].split(','); // Convert comma separate values to array
         }
 
         //2. Convert rupees values to paisa

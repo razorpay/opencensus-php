@@ -263,6 +263,15 @@ class RawApiRequest
             // This contains the original file name with extension
             $fileName = $file->getClientOriginalName();
 
+            if (empty($file->getFileName()) === true)
+            {
+                throw new \Razorpay\Api\Errors\BadRequestError(
+                    'Filename cannot be empty',
+                    \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                    400
+                );
+            }
+
             // This is as per guzzle 5, will need to get changed for 6
             $postFile = new PostFile($fileFieldName, fopen($file, 'r'), $fileName);
 

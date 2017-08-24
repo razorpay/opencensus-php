@@ -10,6 +10,7 @@ import { fetchAccounts } from 'merchant/modules/marketplace/accounts';
 import * as NotificationsActions from 'rzp/modules/notifications';
 import ReduxDatetime from 'rzp/ui/ReduxDatetime';
 import { PowerSelect, TypeAhead } from 'react-power-select';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 function validYear(current) {
   return current.year() >= 2015 && current.year() <= 2017;
@@ -147,7 +148,7 @@ export default class ReportsContainer extends Component {
       });
     }
 
-    if (user.tags.indexOf('Rpp_report') !== -1) {
+    if (user.tags.indexOf('Rpp_Report') !== -1) {
       this.entityOptions.push({
         value: 'rpp_report',
         id: 'rpp_report',
@@ -180,10 +181,11 @@ export default class ReportsContainer extends Component {
 
   prepareGenerateReport = values => {
     let { entity, type, date } = values;
-    const account_id = user.isMarketplaceEnabled &&
+    const account_id =
+      this.props.user.isMarketplaceEnabled &&
       this.linkedAccountOptions.indexOf(this.props.entity) !== -1
-      ? this.state.merchantSelected.id
-      : this.props.user.current;
+        ? this.state.merchantSelected.id
+        : this.props.user.current;
 
     let data = {
       month: date.month() + 1, // Jan is 0 in moment library
@@ -193,7 +195,8 @@ export default class ReportsContainer extends Component {
     if (entity === 'invoice') {
       return Promise.resolve(
         window.open(
-          `/${this.props.mode}/reports/invoice?year=${data.year}&month=${data.month}`,
+          `/${this.props
+            .mode}/reports/invoice?year=${data.year}&month=${data.month}`,
           '_blank'
         )
       );
@@ -208,13 +211,17 @@ export default class ReportsContainer extends Component {
       data: data,
     };
 
-    if (user.isMarketplaceEnabled && account_id !== this.props.user.current) {
+    if (
+      this.props.user.isMarketplaceEnabled &&
+      account_id !== this.props.user.current
+    ) {
       data.account_id = 'acc_' + account_id; // It will be handled at api level later
     }
 
     if (entity === 'broking') {
       ajaxParams.headers = {
-        Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        Accept:
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       };
     }
 
@@ -228,7 +235,8 @@ export default class ReportsContainer extends Component {
 
         if (entity === 'broking') {
           var blob = new Blob([data], {
-            type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            type:
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           });
           return saveAs(blob, 'broking_report.xlsx');
         }
@@ -246,20 +254,20 @@ export default class ReportsContainer extends Component {
   render() {
     let { entity, type, mode, user, date, handleSubmit } = this.props;
 
-    let isDisabled =
-      user.isMarketplaceEnabled &&
-      this.linkedAccountOptions.indexOf(this.props.entity) !== -1;
-
     return (
       <tabbed-container>
         <header>
           <NavLink to="/reports">Download Reports</NavLink>
         </header>
+        <TestModeBanner />
         <content>
           <div class="report-wrapper col-lg-8 col-sm-10 col-xs-11">
             {/*Report Type Selection*/}
             <div
-              class={`col-lg-4 col-md-4 col-sm-12 col-xs-12 report-list-panel report-list-panel${this.isMobileDevice ? '--mobile' : '--desktop'}`}
+              class={`col-lg-4 col-md-4 col-sm-12 col-xs-12 report-list-panel report-list-panel${this
+                .isMobileDevice
+                ? '--mobile'
+                : '--desktop'}`}
             >
               <div class="title">SELECT REPORT TYPE</div>
               {this.isMobileDevice
@@ -267,11 +275,12 @@ export default class ReportsContainer extends Component {
                     options={this.entityOptions}
                     searchEnabled={false}
                     selected={this.state.entity}
+                    showClear={false}
                     onChange={({ option }) => {
                       this.setState({ entity: option }); // only for powerselect view otherwise not consumed elsewhere
                       this.props.change('entity', option.value); // programmatically set redux-form 'entity' otherwise, powerselect closes before redux-form is updated
                     }}
-                    optionComponent={({ option }) => (
+                    optionComponent={({ option }) =>
                       <div class="reports-entity-options">
                         <Field
                           name="entity"
@@ -281,15 +290,17 @@ export default class ReportsContainer extends Component {
                           type="radio"
                           class="report-type form-control"
                         />
-                        <label for={option.id}>{option.label}</label>
-                      </div>
-                    )}
-                    selectedOptionComponent={({ option }) => (
-                      <div>{option.label}</div>
-                    )}
+                        <label for={option.id}>
+                          {option.label}
+                        </label>
+                      </div>}
+                    selectedOptionComponent={({ option }) =>
+                      <div>
+                        {option.label}
+                      </div>}
                   />
                 : <div>
-                    {this.entityOptions.map((option, index) => (
+                    {this.entityOptions.map((option, index) =>
                       <div class="reports-entity-options" key={index}>
                         <Field
                           name="entity"
@@ -299,9 +310,11 @@ export default class ReportsContainer extends Component {
                           type="radio"
                           class="report-type form-control"
                         />
-                        <label for={option.id}>{option.label}</label>
+                        <label for={option.id}>
+                          {option.label}
+                        </label>
                       </div>
-                    ))}
+                    )}
                   </div>}
             </div>
             {/*Report Generate Panel*/}
@@ -313,16 +326,16 @@ export default class ReportsContainer extends Component {
               <div class="form-element">
                 <div class="title">
                   {user.isMarketplaceEnabled &&
-                    this.linkedAccountOptions.indexOf(this.props.entity) !== -1
+                  this.linkedAccountOptions.indexOf(this.props.entity) !== -1
                     ? 'SELECT '
                     : ''}
                   ACCOUNT
                 </div>
 
                 {user.isMarketplaceEnabled &&
-                  ['transaction', 'payment', 'refund', 'settlement'].indexOf(
-                    this.props.entity
-                  ) > -1
+                ['transaction', 'payment', 'refund', 'settlement'].indexOf(
+                  this.props.entity
+                ) > -1
                   ? <div class="custom-select" style={{ position: 'relative' }}>
                       <i class="icon icon-search custom-icon" />
                       <div
@@ -336,9 +349,14 @@ export default class ReportsContainer extends Component {
                               <b style={{ marginRight: '5px' }}>
                                 {this.state.merchantSelected.name}
                               </b>
-                              <span>- {this.state.merchantSelected.id}</span>
+                              <span>
+                                - {this.state.merchantSelected.id}
+                              </span>
                               <span
-                                class={`${this.isMobileDevice ? this.state.merchantSelected.tagIcon + ' icon' : ''} custom-tag`}
+                                class={`${this.isMobileDevice
+                                  ? this.state.merchantSelected.tagIcon +
+                                    ' icon'
+                                  : ''} custom-tag`}
                               >
                                 {this.isMobileDevice
                                   ? ''
@@ -357,23 +375,32 @@ export default class ReportsContainer extends Component {
                         }}
                         searchIndices={['name', 'id', 'email']}
                         selected={this.state.merchantSelected}
-                        optionComponent={({ option }) => (
+                        showClear={false}
+                        optionComponent={({ option }) =>
                           <div style={{ padding: 5 }}>
-                            <b style={{ marginRight: '5px' }}>{option.name}</b>
-                            <span>- {option.id}</span>
+                            <b style={{ marginRight: '5px' }}>
+                              {option.name}
+                            </b>
+                            <span>
+                              - {option.id}
+                            </span>
                             <span
-                              class={`${this.isMobileDevice ? option.tagIcon + ' icon' : ''} custom-tag`}
+                              class={`${this.isMobileDevice
+                                ? option.tagIcon + ' icon'
+                                : ''} custom-tag`}
                             >
                               {this.isMobileDevice ? '' : option.tag}
                             </span>
-                          </div>
-                        )}
-                        selectedOptionComponent={({ option }) => (
+                          </div>}
+                        selectedOptionComponent={({ option }) =>
                           <div>
-                            <b style={{ marginRight: '5px' }}>{option.name}</b>
-                            <span>- {option.id}</span>
-                          </div>
-                        )}
+                            <b style={{ marginRight: '5px' }}>
+                              {option.name}
+                            </b>
+                            <span>
+                              - {option.id}
+                            </span>
+                          </div>}
                         onChange={({ option }) => {
                           if (option) {
                             this.setState({ merchantSelected: option });
@@ -383,7 +410,9 @@ export default class ReportsContainer extends Component {
                       />
                     </div>
                   : <div class="account">
-                      <strong>{user.name || user.user.name}</strong>
+                      <strong>
+                        {user.name || user.user.name}
+                      </strong>
                     </div>}
 
                 {user.isMarketplaceEnabled &&
@@ -397,9 +426,7 @@ export default class ReportsContainer extends Component {
               </div>
 
               <div class="form-element">
-                <div class="title">
-                  PERIOD
-                </div>
+                <div class="title">PERIOD</div>
                 {entity === 'invoice' ||
                   <div class="col-sm-3 col-xs-12">
                     <div class="form-group form-control">
@@ -445,7 +472,6 @@ export default class ReportsContainer extends Component {
               <div class="form-element">
                 <AsyncButton
                   class="btn btn-primary"
-                  disabled={isDisabled}
                   onClick={handleSubmit(this.prepareGenerateReport)}
                   text="Generate and Download Report"
                   pendingText="Generating..."
@@ -453,8 +479,8 @@ export default class ReportsContainer extends Component {
 
                 {this.props.entity === 'transaction' &&
                   <footer style={{ marginTop: '16' }}>
-                    Combined reports will include transactions on the given date, as well as payments
-                    settled on that given date.
+                    Combined reports will include transactions on the given
+                    date, as well as payments settled on that given date.
                   </footer>}
               </div>
             </div>

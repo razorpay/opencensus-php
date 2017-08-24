@@ -88,7 +88,7 @@ export default class HomeContainer extends Component {
 
     return (
       <div class="react-root">
-        <Header title="Dashboard" showMode={false}>
+        <Header title="Dashboard" showMode={true}>
           <div class="pull-right">
             <DateRangePickerField
               onDatesChange={params => {
@@ -100,6 +100,7 @@ export default class HomeContainer extends Component {
             />
           </div>
         </Header>
+
         <div
           class="Dashboard"
           style={{
@@ -125,15 +126,25 @@ export default class HomeContainer extends Component {
                           </div>
                           <div class="media-body">
                             <AsyncButton
-                              class="btn btn-large btn-default pull-right"
-                              text="Switch to new Navigation"
+                              class="btn btn-large btn-primary pull-right"
                               pendingText="Switching..."
                               onClick={this.switchToNewUI}
-                            />
+                            >
+                              <span
+                                style={{
+                                  marginRight: '4px',
+                                }}
+                              >
+                                Switch to new Navigation
+                              </span>
+                              <i class="icon icon-chevron-right" />
+                            </AsyncButton>
                             <div>
                               <b>Try out the new dashboard navigation!</b>
                               <div>
-                                We are simplifying your dashboard experience. If you switch, you can come back anytime!
+                                We have simplified the dashboard experience.{' '}
+                                Starting 1 Sept 2017, you will be automatically
+                                upgraded to the new navigation.
                               </div>
                             </div>
                           </div>

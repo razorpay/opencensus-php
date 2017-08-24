@@ -47,6 +47,11 @@
            dynamic-tooltip-pos="top" dynamic-tooltip="create_netbanking_refund">
           Generate Refunds Excel (Netbanking)
         </a>
+        <a href class="list-group-item" ng-click="openGenerateEmiFiles()"
+           ng-show="admin.permissions.indexOf('create_emi_files') !== -1"
+           dynamic-tooltip-pos="top" dynamic-tooltip="create_emi_files">
+          Generate Emi Excel
+        </a>
         <a href class="list-group-item" ng-click="openAuthorizeFailedPayment()"
            ng-show="admin.permissions.indexOf('edit_authorized_failed_payment') !== -1"
            dynamic-tooltip-pos="top" dynamic-tooltip="edit_authorized_failed_payment">
@@ -197,13 +202,14 @@
         <label for="bank" class="col-lg-2 control-label">Bank</label>
         <div class="col-lg-10" >
           <select class="form-control m-b" name="bank" ng-model="emi.bank">
+            <option value="RATN">RBL</option>
             <option value="HDFC">HDFC</option>
-            <option value="KKBK">Kotak</option>
             <option value="UTIB">Axis</option>
+            <option value="KKBK">Kotak</option>
             <option value="ICIC">ICICI</option>
             <option value="FDRL">Federal</option>
             <option value="INDB">Indusind</option>
-            <option value="RATN">RBL</option>
+            <option value="SCBL">Standard Chartered</option>
           </select>
         </div>
       </div>
@@ -524,12 +530,14 @@
             <option value="Paytm">Paytm</option>
             <option value="Freecharge">Freecharge</option>
             <option value="Jiomoney">Jiomoney</option>
+            <option value="Sbibuddy">SBI Buddy</option>
             <option value="NetbankingAxis">Netbanking AXIS</option>
             <option value="NetbankingIcici">Netbanking ICICI</option>
             <option value="NetbankingFederal">Netbanking Federal</option>
             <option value="NetbankingRbl">Netbanking Rbl</option>
             <option value="NetbankingIndusind">Netbanking Indusind</option>
             <option value="FirstData">First Data</option>
+            <option value="VirtualAccKotak">Virtual Accounts Kotak</option>
           </select>
         </div>
       </div>
@@ -592,6 +600,7 @@
             <option value="FDRL">Federal</option>
             <option value="INDB">Indusind</option>
             <option value="RATN">RBL</option>
+            <option value="PUNB">PNB</option>
           </select>
         </div>
       </div>
@@ -604,11 +613,84 @@
           </select>
         </div>
       </div>
+      <div class="form-group">
+        <label for="email_self" class="col-lg-2 control-label">Send Email to self</label>
+        <div class="col-lg-10" >
+          <input type="checkbox" class="form-control m-b" name="email_self" ng-model="email_self" />
+        </div>
+      </div>
     </form>
   </div>
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" ng-click="ok(date,from_date,to_date,bank, mode)">Generate</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(date,from_date,to_date,bank, mode, email_self)">Generate</button>
+  </div>
+</script>
+
+<script type="text/ng-template" id="emiGenerateModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Generate EMI Files</h3>
+  </div>
+  <div class="modal-body terminal-modal">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label for="date" class="col-lg-2 control-label">Date: </label>
+        <div class="col-lg-10" >
+          <p class="input-group">
+            <input type="date" class="form-control" ng-model="date">
+          </p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="from" class="col-lg-2 control-label">From</label>
+        <div class="col-lg-10" >
+          <p class="input-group">
+            <input type="date" class="form-control" ng-model="from_date">
+          </p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="to" class="col-lg-2 control-label">To</label>
+        <div class="col-lg-10" >
+          <p class="input-group">
+            <input type="date" class="form-control" ng-model="to_date">
+          </p>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="bank" class="col-lg-2 control-label">Bank</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="bank" ng-model="bank">
+            <!-- Take care to keep these capitalized -->
+            <option value="KKBK">Kotak</option>
+            <option value="UTIB">Axis</option>
+            <option value="INDB">IndusInd</option>
+            <option value="RATN">Rbl</option>
+            <option value="SCBL">Scbl</option>
+            <option value="ICIC">Icici</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="mode" class="col-lg-2 control-label">Mode</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="mode" ng-model="mode">
+            <option value="live">Live</option>
+            <option value="test">Test</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="email_self" class="col-lg-2 control-label">Send Email to self</label>
+        <div class="col-lg-10" >
+          <input type="checkbox" class="form-control m-b" name="email_self" ng-model="email_self" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(date, from_date, to_date,bank, mode, email_self)">Generate</button>
   </div>
 </script>
 

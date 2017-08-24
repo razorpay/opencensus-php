@@ -74,6 +74,8 @@ return [
 
     'marketplace_read'          => $readers,
 
+    'oauth_read'                => ['owner'],
+
     'virtual_accounts_read'     => ['owner', 'manager', 'admin'],
     'virtual_accounts_write'    => ['owner', 'manager', 'admin'],
 ];
