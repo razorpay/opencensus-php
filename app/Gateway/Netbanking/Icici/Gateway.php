@@ -25,7 +25,7 @@ class Gateway extends Base\Gateway
 
     protected $bank = 'icici';
 
-    protected $bankingType = 'retail';
+    protected $bankingType = self::RETAIL;
 
     protected $map = [
         RequestFields::AMOUNT  => 'amount'
@@ -93,7 +93,7 @@ class Gateway extends Base\Gateway
         // Default banking type is retail
         if ($terminal->isCorporate() === true)
         {
-            $this->setBankingType('corporate');
+            $this->setBankingType(self::CORPORATE);
         }
 
         $this->setDomainType();
