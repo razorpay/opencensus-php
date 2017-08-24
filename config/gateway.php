@@ -44,6 +44,7 @@ return [
         'wallet_airtelmoney',
         'wallet_freecharge',
         'wallet_jiomoney',
+        'wallet_sbibuddy',
         'wallet_openwallet',
         'wallet_mpesa',
     ],
@@ -76,6 +77,7 @@ return [
     'mock_wallet_payumoney'    => env('PAYUMONEY_MOCK'),
     'mock_wallet_airtelmoney'  => env('AIRTELMONEY_MOCK'),
     'mock_wallet_jiomoney'     => env('JIOMONEY_MOCK'),
+    'mock_wallet_sbibuddy'     => env('SBIBUDDY_MOCK'),
     'mock_upi_mindgate'        => env('UPI_MINDGATE_MOCK'),
     'mock_upi_icici'           => env('UPI_ICICI_MOCK'),
     'mock_upi_idfc'            => env('UPI_IDFC_MOCK'),
@@ -247,6 +249,11 @@ return [
         'test_merchant_id'      => env('JIOMONEY_WALLET_TEST_MERCHANT_ID'),
         'test_client_id'        => env('JIOMONEY_WALLET_TEST_CLIENT_ID'),
         'test_hash_secret'      => env('JIOMONEY_WALLET_TEST_HASH_SECRET')
+    ],
+
+    'wallet_sbibuddy' => [
+        'test_merchant_id'      => env('SBIBUDDY_WALLET_TEST_MERCHANT_ID'),
+        'test_hash_secret'      => env('SBIBUDDY_WALLET_TEST_HASH_SECRET')
     ],
 
     'wallet_mpesa' => [

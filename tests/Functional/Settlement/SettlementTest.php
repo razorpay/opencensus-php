@@ -860,7 +860,7 @@ class SettlementTest extends TestCase
             [
                 'payment_id'      => $payment->getId(),
                 'amount'          => 5000,
-                'amount_deducted' => 5000,
+                'deduct_at_onset' => 1,
                 'created_at'      => $createdAt,
                 'updated_at'      => $createdAt + 100
             ]);

@@ -20,6 +20,11 @@ class Dispute extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
+        if (empty($attributes['deduct_at_onset']) === false)
+        {
+            $attributes['amount_deducted'] = $attributes['amount'];
+        }
+
         $dispute = $this->createEntity('dispute', $attributes);
 
         if ($dispute->isClosed() === true)
@@ -29,8 +34,8 @@ class Dispute extends Base
             $this->fixtures->edit('payment', $payment->getId(), [Payment::DISPUTED => 0]);
         }
 
-        // Create a transaction only when there's a deduction made
-        if ($dispute->getAmountDeducted() !== 0)
+        // Create a transaction only when there's a deduction required
+        if ($dispute->getDeductAtOnset() === true)
         {
             $txn = $this->createTransactionOnDispute($dispute);
 
