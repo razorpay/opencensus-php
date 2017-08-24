@@ -203,6 +203,7 @@ trait SettlementTrait
                                                     $bankTransferAtpt);
 
                 $this->updateSettlementDetailsInTransfer($setl, $setlTxns);
+
                 return [$setl, $bankTransferAtpt];
             });
 

@@ -908,7 +908,7 @@ class SettlementTest extends TestCase
 
         // Check if the recipient_settlement_id for the transfer entity created is null
         $defaultSettlementId1 = $transfer1->getRecipientSettlementId();
-        $this->assertEquals($defaultSettlementId1,null);
+        $this->assertEquals($defaultSettlementId1, null);
 
         $transfer2 = $this->fixtures->create(
             'transfer:to_account',
@@ -924,18 +924,18 @@ class SettlementTest extends TestCase
 
         // Check if the recipient_settlement_id for the transfer entity created is null
         $defaultSettlementId2 = $transfer2->getRecipientSettlementId();
-        $this->assertEquals($defaultSettlementId2,null);
+        $this->assertEquals($defaultSettlementId2, null);
 
         $this->initiateSettlements();
 
         // Reload the entities so that the cached values are not returned
         $transfer1->reload();
         $updatedSettlementId1 = $transfer1->getRecipientSettlementId();
-        $this->assertNotEquals($updatedSettlementId1,null);
+        $this->assertNotEquals($updatedSettlementId1, null);
 
         $transfer2->reload();
         $updatedSettlementId2 = $transfer2->getRecipientSettlementId();
-        $this->assertNotEquals($updatedSettlementId2,null);
+        $this->assertNotEquals($updatedSettlementId2, null);
 
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
@@ -944,10 +944,7 @@ class SettlementTest extends TestCase
         // The response should not contain details of the Settlement entity
         $request = [
             'url'     => '/transfers',
-            'method'  => 'GET',
-            'content' => [
-
-            ]
+            'method'  => 'GET'
         ];
         $content = $this->makeRequestAndGetContent($request);
         $transferResponse = $content['items'][0];

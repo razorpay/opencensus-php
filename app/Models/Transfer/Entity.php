@@ -3,11 +3,12 @@
 namespace RZP\Models\Transfer;
 
 use RZP\Exception;
-use RZP\Constants\Entity as E;
 use RZP\Models\Base;
-use RZP\Models\Base\Traits\NotesTrait;
-use RZP\Models\Transaction;
 use RZP\Models\Reversal;
+use RZP\Models\Settlement;
+use RZP\Models\Transaction;
+use RZP\Constants\Entity as E;
+use RZP\Models\Base\Traits\NotesTrait;
 
 class Entity extends Base\PublicEntity
 {
@@ -163,7 +164,7 @@ class Entity extends Base\PublicEntity
 
     public function recipientSettlement()
     {
-        return $this->hasOne('RZP\Models\Settlement\Entity', 'id', 'recipient_settlement_id');
+        return $this->belongsTo('RZP\Models\Settlement\Entity', 'recipient_settlement_id', 'id');
     }
 
     // -------------------- End Relations -----------------------
@@ -316,9 +317,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ON_HOLD_UNTIL, $holdUntil);
     }
 
-    public function setRecipientSettlementId($recipient_settlement_id)
+    public function setRecipientSettlementId($recipientSettlementId)
     {
-        $this->setAttribute(self::RECIPIENT_SETTLEMENT_ID, $recipient_settlement_id);
+        $this->setAttribute(self::RECIPIENT_SETTLEMENT_ID, $recipientSettlementId);
     }
 
     // -------------------- End Setters ---------------------------
