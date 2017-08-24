@@ -2005,11 +2005,20 @@ app
       }
 
       $scope.deleteFeature = function(featureName) {
-        var request = $http.delete(
-          '/admin/features/' + $scope.merchant.id + '/' + featureName
-        );
+        var request = $http.delete('/admin/generic', {
+          route_name: 'feature_delete',
+          url_params: {
+            '{entityId}': $scope.merchant.id,
+            '{featureName}': featureName,
+          },
+        });
         request.success(function(data) {
           if (data.success) {
+            if (utils.isWorkflow(data.data)) {
+              $state.go('app.workflows.actions.detail', {
+                action_id: data.data.id,
+              });
+            }
             $scope.merchant.details.allowedFeatures = data.data.all_features;
             $scope.merchant.details.features = getFeatureNames(
               data.data.assigned_features
