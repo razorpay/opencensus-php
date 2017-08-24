@@ -604,15 +604,13 @@ class SubscriptionChargeTest extends TestCase
         $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('active', $subscription['status']);
 
-        // Successful test charge marks the subscrition as active again
         while($subscription['paid_count'] < $subscription['total_count'])
         {
             $subscription = $this->chargeSubscriptionManuallyTestMode($subscription['id']);
         }
 
-        // Not working at the moment, since subscription is marked completed
-        // not on the basis of count, but using charge_at checks.
-        // $this->assertEquals('completed', $subscription['status']);
+        // Last charge marks the subscription completed
+        $this->assertEquals('completed', $subscription['status']);
     }
 
     public function testSubscriptionHaltedAuthFailure()

@@ -202,9 +202,9 @@ class Charge extends Base\Core
 
         $this->updateScheduleTask($task);
 
-        $this->setEndedAtIfApplicable($subscription);
-
         $this->incrementPaidCount($subscription);
+
+        $this->setEndedAtIfApplicable($subscription);
 
         if ($oldStatus === Status::AUTHENTICATED)
         {
@@ -531,7 +531,7 @@ class Charge extends Base\Core
      */
     protected function setEndedAtIfApplicable(Entity $subscription)
     {
-        if ($subscription->getChargeAt() === null)
+        if ($subscription->getPaidCount() === $subscription->getTotalCount())
         {
             //
             // If the last charge of the subscription is on 20th August,
