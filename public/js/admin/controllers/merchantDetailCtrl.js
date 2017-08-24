@@ -2139,6 +2139,7 @@ app
         'credit_card',
         'jiomoney',
         'openwallet',
+        'sbibuddy',
       ];
       $scope.methods = {};
 

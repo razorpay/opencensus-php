@@ -98,6 +98,7 @@ app.controller('EntitiesCtrl', [
       'wallet_airtelmoney',
       'wallet_freecharge',
       'wallet_jiomoney',
+      'wallet_sbibuddy',
       'wallet_openwallet',
       'wallet_mpesa',
     ];
@@ -111,6 +112,7 @@ app.controller('EntitiesCtrl', [
       'airtelmoney',
       'freecharge',
       'jiomoney',
+      'sbibuddy',
       'ezeclick',
       'openwallet',
       'mpesa',
@@ -350,6 +352,7 @@ app.controller('EntitiesCtrl', [
         airtelmoney: booleanList2,
         freecharge: booleanList2,
         jiomoney: booleanList2,
+        sbibuddy: booleanList2,
         pricing_plan_id: ['Pricing Plan Id'],
         parent_id: ['Marketplace Parent Id'],
         receipt_email_enabled: booleanList,
@@ -372,6 +375,7 @@ app.controller('EntitiesCtrl', [
         airtelmoney: booleanList,
         freecharge: booleanList,
         jiomoney: booleanList,
+        sbibuddy: booleanList,
         merchant_id: ['Merchant Id'],
       },
       mobikwik: {
