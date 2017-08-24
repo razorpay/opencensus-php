@@ -100,7 +100,7 @@ class Server extends Base\Mock\Server
 
         $masterKey = $this->getGatewayInstance($bankingType)->getSecret();
 
-        return new Netbanking\AESCrypto(AES::MODE_ECB, $masterKey);
+        return new Base\AESCrypto(AES::MODE_ECB, $masterKey);
     }
 
     protected function decryptData(array $input)
