@@ -8,7 +8,6 @@ use RZP\Gateway\Base;
 use RZP\Constants\Mode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-use RZP\Models\Payment\RefundStatus;
 
 class ClaimsFile extends Base\RefundFile
 {
@@ -80,8 +79,8 @@ class ClaimsFile extends Base\RefundFile
                 str_pad($row['payment'][Constants::CLAIM_TYPE], 2, ' ', STR_PAD_LEFT),
                 str_pad($amount, 17, ' ', STR_PAD_LEFT),
                 $row['payment'][Constants::TXN_DETAIL],
-                str_pad($row['payment']['id'], 2, ' ', STR_PAD_LEFT),
-                str_pad($date, 2, ' ', STR_PAD_LEFT),
+                str_pad($row['payment']['id'], 16, ' ', STR_PAD_LEFT),
+                str_pad($date, 12, ' ', STR_PAD_LEFT),
             ];
 
             $totalAmount += $amount;
