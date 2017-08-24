@@ -7,10 +7,13 @@ use RZP\Constants\Timezone;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
 use RZP\Models\FileStore;
+use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 
 class RefundFile extends Base\RefundFile
 {
-    // TODO: Use env variables for these
+    protected static $fileToWriteName = 'CORPORATION_Netbanking_Refunds';
+
+    // TODO: Remove the below data and use env to store them
     const DEBIT_ACCOUNT             = '12313123123132123';
     const POOLING_ACCOUNT_BR_CODE   = '1234';
     const CUSTOMER_ACCOUNT_BR_CODE  = '4321';
@@ -25,9 +28,38 @@ class RefundFile extends Base\RefundFile
 
     public function generate($input)
     {
-        list($txt, $totalAmount, $count) = $this->getRefundData($input);
+        $text = $this->getRefundData($input);
 
+        $fileName = $this->getFileToWriteNameWithoutExt();
+
+        $creator = $this->createFile(
+            FileStore\Format::TXT,
+            $text,
+            $fileName,
+            FileStore\Type::CORPORATION_NETBANKING_REFUND
+        );
+
+        $file = $creator->get();
+
+        $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
+
+        $fileData = [
+            'file_path'  => $file['local_file_path'],
+            'file_name'  => basename($file['local_file_path']),
+            'signed_url' => $signedFileUrl,
+        ];
+
+        sd($input['email']);
+
+        $this->sendRefundEmail($fileData, $input['email']);
         // TODO: Create the text file
+    }
+
+    protected function sendRefundEmail($fileData = [], $email = null)
+    {
+        $refundFileMail = new RefundFileMail($fileData, Gateway::NETBANKING_HDFC, $email);
+
+        Mail::queue($refundFileMail);
     }
 
     protected function getRefundData(array $input)
@@ -69,9 +101,7 @@ class RefundFile extends Base\RefundFile
             $count++;
         }
 
-        $text = $this->generateText($data, '', true);
-
-        return [$text, $totalAmount, $count];
+        return $this->generateText($data, '', true);
     }
 
     protected function getDataForRow(

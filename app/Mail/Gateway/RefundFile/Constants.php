@@ -10,36 +10,39 @@ use RZP\Models\Payment\Gateway;
 class Constants extends Base\Constants
 {
     const RECIPIENT_EMAILS_MAP = [
-        Gateway::NETBANKING_HDFC     => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
-        Gateway::NETBANKING_ICICI    => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
-        Gateway::NETBANKING_FEDERAL  => ['settlements@razorpay.com'],
-        Gateway::NETBANKING_RBL      => ['settlements@razorpay.com'],
-        Gateway::NETBANKING_INDUSIND => ['settlements@razorpay.com'],
-        Gateway::UPI_ICICI           => ['settlements@razorpay.com'],
-        Gateway::WALLET_AIRTELMONEY  => ['settlements@razorpay.com'],
-        Gateway::WALLET_PAYUMONEY    => ['settlements@razorpay.com']
+        Gateway::NETBANKING_HDFC        => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
+        Gateway::NETBANKING_ICICI       => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
+        Gateway::NETBANKING_CORPORATION => ['settlements@razorpay.com'],
+        Gateway::NETBANKING_FEDERAL     => ['settlements@razorpay.com'],
+        Gateway::NETBANKING_RBL         => ['settlements@razorpay.com'],
+        Gateway::NETBANKING_INDUSIND    => ['settlements@razorpay.com'],
+        Gateway::UPI_ICICI              => ['settlements@razorpay.com'],
+        Gateway::WALLET_AIRTELMONEY     => ['settlements@razorpay.com'],
+        Gateway::WALLET_PAYUMONEY       => ['settlements@razorpay.com']
     ];
 
     const HEADER_MAP = [
-        Gateway::NETBANKING_HDFC     => 'Hdfc Netbanking refunds',
-        Gateway::NETBANKING_ICICI    => 'Icici Netbanking refunds',
-        Gateway::NETBANKING_FEDERAL  => 'Federal Netbanking refunds',
-        Gateway::NETBANKING_RBL      => 'RBL Netbanking refunds',
-        Gateway::NETBANKING_INDUSIND => 'Indusind Netbanking refunds',
-        Gateway::UPI_ICICI           => 'UPI Icici Refunds',
-        Gateway::WALLET_AIRTELMONEY  => 'Wallet Airtelmoney refunds',
-        Gateway::WALLET_PAYUMONEY    => 'Wallet Payumoney refunds'
+        Gateway::NETBANKING_HDFC        => 'Hdfc Netbanking refunds',
+        Gateway::NETBANKING_CORPORATION => 'Corporation Netbanking refunds',
+        Gateway::NETBANKING_ICICI       => 'Icici Netbanking refunds',
+        Gateway::NETBANKING_FEDERAL     => 'Federal Netbanking refunds',
+        Gateway::NETBANKING_RBL         => 'RBL Netbanking refunds',
+        Gateway::NETBANKING_INDUSIND    => 'Indusind Netbanking refunds',
+        Gateway::UPI_ICICI              => 'UPI Icici Refunds',
+        Gateway::WALLET_AIRTELMONEY     => 'Wallet Airtelmoney refunds',
+        Gateway::WALLET_PAYUMONEY       => 'Wallet Payumoney refunds'
     ];
 
     const SUBJECT_MAP = [
-        Gateway::NETBANKING_HDFC     => 'HDFC Netbanking refunds file for ',
-        Gateway::NETBANKING_ICICI    => 'Icici Netbanking refunds file for ',
-        Gateway::NETBANKING_FEDERAL  => 'Federal Netbanking refunds file for ',
-        Gateway::NETBANKING_INDUSIND => 'Indusind Netbanking refunds file for ',
-        Gateway::UPI_ICICI           => 'UPI Icici refunds file for ',
-        Gateway::WALLET_AIRTELMONEY  => 'Airtelmoney refunds file for ',
-        Gateway::WALLET_PAYUMONEY    => 'PayUMoney refunds file for ',
-        Gateway::NETBANKING_RBL      => 'RBL Netbanking refunds file for ',
+        Gateway::NETBANKING_CORPORATION => 'Corporation Netbanking refunds file for ',
+        Gateway::NETBANKING_HDFC        => 'HDFC Netbanking refunds file for ',
+        Gateway::NETBANKING_ICICI       => 'Icici Netbanking refunds file for ',
+        Gateway::NETBANKING_FEDERAL     => 'Federal Netbanking refunds file for ',
+        Gateway::NETBANKING_INDUSIND    => 'Indusind Netbanking refunds file for ',
+        Gateway::UPI_ICICI              => 'UPI Icici refunds file for ',
+        Gateway::WALLET_AIRTELMONEY     => 'Airtelmoney refunds file for ',
+        Gateway::WALLET_PAYUMONEY       => 'PayUMoney refunds file for ',
+        Gateway::NETBANKING_RBL         => 'RBL Netbanking refunds file for ',
     ];
 
     const MAILTAG_MAP = [

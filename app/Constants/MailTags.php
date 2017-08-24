@@ -19,14 +19,15 @@ class MailTags
 
     const SETTLEMENT_FAILURE_EMAIL         = 'settlement_failure_email';
 
-    const HDFC_NETBANKING_REFUNDS_MAIL     = 'hdfc_netbanking_refunds_mail';
-    const AXIS_NETBANKING_REFUNDS_MAIL     = 'axis_netbanking_refunds_mail';
-    const AIRTEL_MONEY_REFUNDS_MAIL        = 'airtel_money_refunds_mail';
-    const ICICI_NETBANKING_REFUNDS_MAIL    = 'icici_netbanking_refunds_mail';
-    const FEDERAL_NETBANKING_REFUNDS_MAIL  = 'axis_netbanking_refunds_mail';
-    const KOTAK_NETBANKING_REFUNDS_MAIL    = 'kotak_netbanking_refunds_mail';
-    const RBL_NETBANKING_REFUNDS_MAIL      = 'rbl_netbanking_refunds_mail';
-    const INDUSIND_NETBANKING_REFUNDS_MAIL = 'indusind_netbanking_refunds_mail';
+    const CORPORATION_NETBANKING_REFUNDS_MAIL   = 'corporation_netbanking_refunds_mail';
+    const HDFC_NETBANKING_REFUNDS_MAIL          = 'hdfc_netbanking_refunds_mail';
+    const AXIS_NETBANKING_REFUNDS_MAIL          = 'axis_netbanking_refunds_mail';
+    const AIRTEL_MONEY_REFUNDS_MAIL             = 'airtel_money_refunds_mail';
+    const ICICI_NETBANKING_REFUNDS_MAIL         = 'icici_netbanking_refunds_mail';
+    const FEDERAL_NETBANKING_REFUNDS_MAIL       = 'axis_netbanking_refunds_mail';
+    const KOTAK_NETBANKING_REFUNDS_MAIL         = 'kotak_netbanking_refunds_mail';
+    const RBL_NETBANKING_REFUNDS_MAIL           = 'rbl_netbanking_refunds_mail';
+    const INDUSIND_NETBANKING_REFUNDS_MAIL      = 'indusind_netbanking_refunds_mail';
 
     const PAYU_MONEY_REFUNDS_MAIL          = 'payu_money_refunds_mail';
     const ICICI_UPI_REFUNDS_MAIL           = 'icici_upi_refunds_mail';
