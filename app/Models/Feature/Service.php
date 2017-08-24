@@ -4,8 +4,7 @@ namespace RZP\Models\Feature;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use Razorpay\Trace\Logger as Trace;
-use RZP\Models\Merchant;
+
 
 class Service extends Base\Service
 {
@@ -37,26 +36,9 @@ class Service extends Base\Service
     {
         $feature = $this->repo->feature->findByEntityIdAndNameOrFail($entityId, $featureName);
 
-        $this->trace->info(TraceCode::FEATURE_DELETE_REQUEST, $feature->toArrayPublic());
+        (new Core)->delete($entityId, $feature);
 
-        // Workflow
-
-        list($original, $dirty) = [
-            ['feature' => $featureName],
-            ['feature' => null],
-        ];
-
-        $this->app['workflow']
-             ->setEntity($feature->getEntity())
-             ->handle($original, $dirty);
-
-        $this->repo->feature->delete($feature);
-
-        (new Core)->notifyOnSlack($feature, true);
-
-        //we create tag also along with feature.
-        (new Merchant\Service)->deleteTag($entityId, $featureName);
-
+        // Returning all the updated features to client on delete.
         return $this->getFeatures($entityId);
     }
 
