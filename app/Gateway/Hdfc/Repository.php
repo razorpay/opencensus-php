@@ -107,15 +107,15 @@ class Repository extends Base\Repository
 
     public function persistAfterAuthNotEnrolled($model, $data)
     {
-        return $this->persistData($model, $data);
+        return $this->persistCallbackData($model, $data);
     }
 
     public function persistAfterAuthEnrolled($model, $data)
     {
-        return $this->persistData($model, $data);
+        return $this->persistCallbackData($model, $data);
     }
 
-    protected function persistData($model, $data)
+    protected function persistCallbackData($model, $data)
     {
         $status = Payment\Status::AUTHORIZED;
 
@@ -135,6 +135,11 @@ class Repository extends Base\Repository
             'postdate'               => $data['postdate'],
             'gateway_transaction_id' => $data['tranid'],
         ];
+
+        if (empty($data['amt']) === false)
+        {
+            $attributes['amount'] = $data['amt'];
+        }
 
         $model->fill($attributes);
 
