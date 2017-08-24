@@ -208,6 +208,25 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedFirstDataTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::FIRST_DATA_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'first_data',
+            'gateway_acquirer'          => 'icic',
+            'card'                      => 1,
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'random',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedBladeTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::BLADE_RAZORPAY_TERMINAL;
