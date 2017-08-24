@@ -107,15 +107,15 @@ class Repository extends Base\Repository
 
     public function persistAfterAuthNotEnrolled($model, $data)
     {
-        return $this->persistEnrollData($model, $data);
+        return $this->persistData($model, $data);
     }
 
     public function persistAfterAuthEnrolled($model, $data)
     {
-        return $this->persistEnrollData($model, $data);
+        return $this->persistData($model, $data);
     }
 
-    protected function persistEnrollData($model, $data)
+    protected function persistData($model, $data)
     {
         $status = Payment\Status::AUTHORIZED;
 
