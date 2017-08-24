@@ -39,7 +39,7 @@ class Gateway extends Base\Gateway
 
         try
         {
-            $data = $this->threeDSecure($input);
+            return $this->threeDSecure($input);
         }
         catch (ThreeDSecureAuthenticationFailureException $e)
         {
@@ -53,114 +53,37 @@ class Gateway extends Base\Gateway
         {
             $authenticationStatus = AuthenticationStatus::U;
         }
-
-        // If it's an array then we need to run the 3dsecure
-        // flow for authenticating
-        if (is_array($data))
-        {
-            return $data;
-        }
-
-        if ($authenticationStatus === null)
-        {
-            $authenticationStatus = $data;
-        }
-
-        //
-        // Decide to go ahead with authorization or not
-        // based on authentication status
-        //
-        $ret = $this->shouldAuthorize($authenticationStatus);
-
-        if ($ret === false)
-        {
-            if ($authenticationStatus === AuthenticationStatus::F)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-            }
-        }
-
-        $input['authenticate_status'] = $authenticationStatus;
-
-        return $this->runGatewayAuthorization($input);
-    }
-
-    protected function runGatewayAuthorization(array $input)
-    {
-        //TODO DO something
-        $eci = ECI::getValue($input['authenticate_status'], $input['card']['network_code']);
-
-        if (isset($input['gateway']['transaction']['eci']))
-        {
-            $this->trace->info(TraceCode::BLADE_AUTH_ECI, $input['gateway']);
-
-            // Commenting just for
-            // assert ((int) $eci === (int) $input['gateway']['transaction']['eci']);
-        }
-    }
-
-    protected function shouldAuthorize(string $authenticationStatus)
-    {
-        if ($authenticationStatus === AuthenticationStatus::Y)
-        {
-            return true;
-        }
-
-        return false;
     }
 
     protected function threeDSecure(array $input)
     {
-        $cardCache = Cache::get('card_cache', []);
+        //TODO make card range cache
 
-        $enrolled = null;
+        // Send card enrollment verification request
+        $veres = $this->sendVereq($input);
 
-        foreach ($cardCache as $range)
-        {
-            if (($range['begin'] <= $input['card']['number']) and
-                ($input['card']['number'] <= $range['end']))
-            {
-                if ($range['action'] !== 'A')
-                {
-                    $enrolled = Enrolled::N;
-                }
-            }
-        }
-
-        if ($enrolled === null)
-        {
-            // Send card enrollment verification request
-            $veres = $this->sendVereq($input);
-
-            // Process verification response
-            $enrolled = $this->processVeres($veres);
-        }
+        // Process verification response
+        $enrolled = $this->processVeres($veres);
 
         //
         // Determine card enrollment status and take next action
         //
+
         if ($enrolled === Enrolled::Y)
         {
             // Card is enrolled
             // send Pareq
             return $this->sendPareq($input, $veres);
         }
-        else if ($enrolled === Enrolled::U)
-        {
-            // Could not be checked due to some issue
-            return AuthenticationStatus::U;
-        }
         else if ($enrolled === Enrolled::N)
         {
             // Card not enrolled for 3dsecure
-            return AuthenticationStatus::N;
+            //TODO add ECI check
+            return null;
         }
-
-        if (is_array($enrolled))
+        else
         {
-            // if it's an array then simply return.
-            return $enrolled;
+            //TODO throw exception
         }
     }
 
@@ -185,16 +108,13 @@ class Gateway extends Base\Gateway
 
         $authenticateStatus = ParesStatus::getAuthenticationStatus($status);
 
-        if ($authenticateStatus === AuthenticationStatus::F)
+        if ($authenticateStatus !== AuthenticationStatus::Y)
         {
             throw new ThreeDSecureAuthenticationFailureException(
                 ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED);
         }
 
-        $input['gateway'] = $gatewayInput;
-        $input['authenticate_status'] = $authenticateStatus;
-
-        return $this->runGatewayAuthorization($input);
+        return null;
     }
 
     protected function processPares(string $pares)
@@ -603,61 +523,6 @@ class Gateway extends Base\Gateway
             throw new Exception\BadRequestValidationFailureException(
                     'ID mismatch', 'id');
         }
-    }
-
-    protected function verifyXmlSign($pares)
-    {
-        $doc = new DOMDocument();
-        $arTests = ['SIGN_TEST' => './firmas/sign-basic-test_mio.xml'];
-
-        foreach ($arTests as $testName => $testFile)
-        {
-            $doc->load($testFile);
-            $objXMLSecDSig = new XMLSecurityDSig();
-            $objDSig = $objXMLSecDSig->locateSignature($doc);
-
-            if (! $objDSig)
-            {
-                throw new Exception("Cannot locate Signature Node");
-            }
-        }
-
-        $objXMLSecDSig->canonicalizeSignedInfo();
-        $objXMLSecDSig->idKeys = ['wsu:Id'];
-        $objXMLSecDSig->idNS = [
-            'wsu' => 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd'];
-
-        $retVal = $objXMLSecDSig->validateReference();
-
-        if (! $retVal)
-        {
-           throw new Exception("Reference Validation Failed");
-        }
-
-        $objKey = $objXMLSecDSig->locateKey();
-
-        if (! $objKey )
-        {
-           throw new Exception("We have no idea about the key");
-        }
-        $key = null;
-        $objKeyInfo = XMLSecEnc::staticLocateKeyInfo($objKey, $objDSig);
-
-        if ((! $objKeyInfo->key) and (empty($key) === true))
-        {
-           $objKey->loadKey('i.pem', TRUE);
-        }
-
-        if ($objXMLSecDSig->verify($objKey))
-        {
-           print "Signature validateddd!";
-        }
-        else
-        {
-           print "Failure!!!!!!!!";
-        }
-
-        print "\n";
     }
 
     protected function processVeres($veres)
