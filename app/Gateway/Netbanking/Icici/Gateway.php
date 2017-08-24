@@ -238,8 +238,6 @@ class Gateway extends Base\Gateway
             $data[RequestFields::RETURN_URL]  = $this->app['config']->get('app.url');
         }
 
-        $this->setTpvFieldIfNeeded($additionalData, $input);
-
         $data = array_merge($data, $additionalData);
 
         return $data;
