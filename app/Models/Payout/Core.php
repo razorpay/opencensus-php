@@ -39,7 +39,7 @@ class Core extends Base\Core
      * @param  Merchant\Entity $merchant
      * @return Payout\Entity
      */
-    public function directPayout(array $input, Merchant\Entity $merchant): array
+    public function directPayout(array $input, Merchant\Entity $merchant): Entity
     {
         $payout = $this->createPayout($input, $merchant);
 
