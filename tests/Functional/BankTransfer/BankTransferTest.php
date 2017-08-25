@@ -269,10 +269,10 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferNotify()
     {
-        $this->testBankTransferProcess();
-
         $accountNumber = $this->bankAccount['account_number'];
         $ifsc = $this->bankAccount['ifsc'];
+
+        $this->processBankTransfer($accountNumber, $ifsc);
 
         // Created bank transfer is an expected one, but initially not marked as notified
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
@@ -298,10 +298,10 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferNotifyAgain()
     {
-        $this->testBankTransferProcess();
-
         $accountNumber = $this->bankAccount['account_number'];
         $ifsc = $this->bankAccount['ifsc'];
+
+        $this->processBankTransfer($accountNumber, $ifsc);
 
         // Created bank transfer is an expected one, but initially not marked as notified
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
