@@ -252,15 +252,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getMerchantTerminal($id)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->postMerchantTerminal($id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function postMerchantTerminal($id)
     {
         $input = Input::all();
