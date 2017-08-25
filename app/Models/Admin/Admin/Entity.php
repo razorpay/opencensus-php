@@ -9,11 +9,12 @@ use Hash;
 use Carbon\Carbon;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Org;
+use RZP\Models\Merchant;
 use RZP\Models\Admin\Base;
 use RZP\Models\Base\Traits\RevisionableTrait;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use RZP\Models\Admin\Permission\Name as Permission;
+use RZP\Models\Admin\Permission;
 
 class Entity extends Base\Entity
 {
@@ -177,7 +178,7 @@ class Entity extends Base\Entity
     ];
 
     protected $attributePermissions = [
-        self::EMAIL      => Permission::VIEW_ADMIN_EMAIL,
+        self::EMAIL      => Permission\Name::EDIT_ADMIN,
     ];
 
     protected static function boot()
