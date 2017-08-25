@@ -94,24 +94,24 @@ class RawApiRequest
             $adminToken = $adminUser->token;
         }
 
+        $merchantId = $this->resolveMerchantId($input, $adminToken);
+
+        if (isset($merchantId)) {
+            /**
+             * Setting X-Razorpay-Account header in case of market place routes.
+             * The handling of this header is already taken care in api
+             */
+            $accountId = $input['account_id'] ?? null;
+
+            if (empty($accountId) === false) {
+                $this->params['headers'][self::RAZORPAY_ACCOUNT_HEADER] = $accountId;
+            }
+        }
+
         // Setup credentials based on auth
         switch ($input['auth'])
         {
             case 'proxy':
-                $merchantId = $this->resolveMerchantId($input, $adminToken);
-
-                if (isset($merchantId)) {
-                    /**
-                     * Setting X-Razorpay-Account header in case of market place routes.
-                     * The handling of this header is already taken care in api
-                     */
-                    $accountId = $input['account_id'] ?? null;
-
-                    if (empty($accountId) === false) {
-                        $this->params['headers'][self::RAZORPAY_ACCOUNT_HEADER] = $accountId;
-                    }
-                }
-
                 $this->setApiCredentials($input['mode'], $merchantId);
                 break;
 
@@ -121,14 +121,10 @@ class RawApiRequest
                     $this->params['headers']['X-Admin-Token'] = $adminToken;
                 }
 
-                $merchantId = $this->resolveMerchantId($input, $adminToken);
-
                 $this->setApiCredentials($input['mode'], $merchantId);
                 break;
 
             case 'admin':
-                $merchantId = $this->resolveMerchantId($input, $adminToken);
-
                 $this->setAdminCredentials($adminToken, $input['mode'], $merchantId);
                 break;
 
