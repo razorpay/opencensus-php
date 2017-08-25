@@ -1,6 +1,7 @@
 <?php
 namespace RZP\Tests\Functional\Workflow;
 
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Fixtures\Entity\WorkflowAction;
 
 return [
@@ -18,7 +19,7 @@ return [
                     [
                         'id'                => 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID,
                         'state'             => 'open',
-                        'admin_id'          => 'admin_RzrpySprAdmnId',
+                        'admin_id'          => 'admin_' . Org::SUPER_ADMIN,
                         'admin'             => [],
                         'approved'          => false,
                         'current_level'     => 1,
@@ -28,4 +29,28 @@ return [
             ],
         ],
     ],
+    'testWorkflowMakerRequests' => [
+        'request' => [
+            'method'    => 'GET',
+            'url'       => '/w-actions?duty=maker&type=maker',
+            'content'   => [],
+        ],
+        'response'      => [
+            'content'   => [
+                'entity'    => 'collection',
+                'items'     => [
+                    [
+                        'id'                => 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID,
+                        'state'             => 'open',
+                        'admin_id'          => 'admin_' . Org::SUPER_ADMIN,
+                        'entity_name'       => 'admin',
+                        'admin'             => [],
+                        'approved'          => false,
+                        'current_level'     => 1,
+                        'permission_name'   => 'edit_admin',
+                    ],
+                ],
+            ]
+        ]
+    ]
 ];

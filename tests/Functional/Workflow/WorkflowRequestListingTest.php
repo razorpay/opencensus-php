@@ -40,4 +40,22 @@ class WorkflowRequestListingTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testWorkflowMakerRequests()
+    {
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
+        $this->startTest();
+
+        $this->ba->adminAuth('test', Org::CHECKER_TOKEN, 'org_' . Org::RZP_ORG);
+
+        $this->testData[__FUNCTION__]['response']['content'] = [
+            "entity" => "collection",
+            "count"  => 0,
+            "items"  => [],
+        ];
+
+        $this->startTest();
+
+    }
 }
