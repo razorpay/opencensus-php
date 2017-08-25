@@ -215,7 +215,7 @@ class Gateway extends Base\Gateway
         //
         // For recurring payments, we use E - Mandate
         //
-        if ($input['terminal']->isNonRecurring() === false)
+        if ($input['terminal']->isNon3DSRecurring() === true)
         {
             $eMandateData = $this->getEMandateRequestData($input);
 
@@ -242,7 +242,8 @@ class Gateway extends Base\Gateway
         //
         // Second recurring payment
         //
-        if (empty($token->getGatewayToken()) === false)
+        if ((empty($token) === false) and
+            (empty($token->getGatewayToken()) === false))
         {
             $data = [
                 RequestFields::EMD_PAYMENT_DATE => $date,
