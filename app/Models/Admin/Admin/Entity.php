@@ -177,10 +177,6 @@ class Entity extends Base\Entity
         self::PASSWORD_CONFIRMATION
     ];
 
-    protected $attributePermissions = [
-        self::EMAIL      => Permission\Name::EDIT_ADMIN,
-    ];
-
     protected static function boot()
     {
         parent::boot();
