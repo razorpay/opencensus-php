@@ -385,7 +385,7 @@ class Core extends Base\Core
     public function getMerchantConfirmedOwner($merchant)
     {
         return $merchant->users()->where('role', '=', 'owner')
-            ->whereNotNull('confirm_token')
+            ->whereNull('confirm_token')
             ->first();
     }
 }
