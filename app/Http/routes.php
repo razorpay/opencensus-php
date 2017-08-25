@@ -110,7 +110,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/user/logout', 'AdminController@getLogout');
         Route::get('/admin/user/keepalive', 'AdminController@getKeepAlive');
         Route::get('/admin/merchant/list', 'AdminController@getMerchantList');
-        Route::get('/admin/merchant/{id}', 'AdminController@getMerchant');
         Route::get('/admin/merchant/{id}/details', 'AdminController@getMerchantDetails');
 
         Route::post('/admin/features/{entityType}/{entityId}', 'AdminController@addEntityFeatures');

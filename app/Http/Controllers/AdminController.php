@@ -243,15 +243,6 @@ class AdminController extends Controller
         return redirect('/');
     }
 
-    public function getMerchant($id)
-    {
-        ApiRequest::addHeader('X-Razorpay-Account', $id);
-
-        list($error, $data) = (new Admin\Service)->fetchFullMerchantDetails($id);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function postMerchantTerminal($id)
     {
         $input = Input::all();

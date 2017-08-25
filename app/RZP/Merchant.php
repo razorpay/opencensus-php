@@ -75,13 +75,6 @@ class Merchant extends Entity
         return $this->request('PUT', $relativeUrl, $params);
     }
 
-    public function fetchTerminals()
-    {
-        $relativeUrl = $this->getEntityUrl().$this->id.'/terminals';
-
-        return $this->request('GET', $relativeUrl);
-    }
-
     public function setTerminal($params)
     {
         $relativeUrl = $this->getEntityUrl().$this->id.'/terminals';
