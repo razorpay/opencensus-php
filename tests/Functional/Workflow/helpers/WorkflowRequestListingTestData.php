@@ -52,5 +52,27 @@ return [
                 ],
             ]
         ]
-    ]
+    ],
+    'testWorkflowClosedRequests' => [
+        'request' => [
+            'method'    => 'GET',
+            'url'       => '/w-actions?duty=maker&type=closed',
+            'content'   => [],
+        ],
+        'response'      => [
+            'content'   => [
+                'entity'    => 'collection',
+                'items'     => [
+                    [
+                        'state'             => 'closed',
+                        'admin_id'          => 'admin_' . Org::MAKER_ADMIN,
+                        'entity_name'       => 'admin',
+                        'admin'             => [],
+                        'approved'          => false,
+                        'current_level'     => 1,
+                    ],
+                ],
+            ]
+        ]
+    ],
 ];

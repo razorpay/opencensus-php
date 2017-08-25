@@ -806,6 +806,7 @@ final class FactoryData
             'current_level'     => 1,
             'state'             => \RZP\Models\Workflow\Action\State\Entity::OPEN,
             'org_id'            => \RZP\Tests\Functional\Fixtures\Entity\Org::RZP_ORG,
+            'permission_id'     => 'factory:RZP\Models\Admin\Permission\Entity',
         ]);
 
         $factory(\RZP\Models\Workflow\Action\State\Entity::class,[
