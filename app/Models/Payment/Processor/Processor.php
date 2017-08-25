@@ -82,10 +82,12 @@ class Processor
      */
     protected $merchant;
     protected $trace;
+
     /**
      * @var Payment\Entity
      */
     protected $payment;
+
     /**
      * @var Terminal\Entity
      */
@@ -728,11 +730,6 @@ class Processor
         $gatewayData['terminal'] = $terminal;
 
         $gatewayData['merchant'] = $this->payment->merchant;
-
-        if ($this->payment->getGlobalOrLocalTokenEntity() !== null)
-        {
-            $gatewayData['token'] = $this->payment->getGlobalOrLocalTokenEntity();
-        }
 
         $eventCode = TraceCode::PAYMENT_CALL_GATEWAY_FUNC . '::' . strtoupper($action);
 

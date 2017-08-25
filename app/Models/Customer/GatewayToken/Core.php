@@ -21,6 +21,9 @@ class Core extends Base\Core
 
         $gatewayToken->setReference($reference);
 
+        // TODO: Set recurring for the older ones by DB update!
+        $gatewayToken->setRecurring($token->isRecurring());
+
         return $this->repo->saveOrFail($gatewayToken);
     }
 }

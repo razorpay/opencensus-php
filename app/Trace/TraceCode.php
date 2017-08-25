@@ -142,6 +142,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_ENTITIES_COUNT_UNEXPECTED             = 'GATEWAY_ENTITIES_COUNT_UNEXPECTED';
     const GATEWAY_ENTITY_UNEXPECTED_ACTION              = 'GATEWAY_ENTITY_UNEXPECTED_ACTION';
     const CHANGING_FILE_PERMISSION                      = 'CHANGING_FILE_PERMISSION';
+    const GATEWAY_FIRST_RECURRING                       = 'GATEWAY_FIRST_RECURRING';
 
     const MPESA_GATEWAY_PARAM_ARRAY                     = 'MPESA_GATEWAY_PARAM_ARRAY';
 
@@ -190,7 +191,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const CARD_NUMBER_SCRUBBED                          = 'CARD_NUMBER_SCRUBBED';
     const ORDERS_MULTIPLE_AUTHORIZED_REFUNDS            = 'ORDERS_MULTIPLE_AUTHORIZED_REFUNDS';
     const REFUND_EXCEPTION                              = 'REFUND_EXCEPTION';
-    const GATEWAY_TOKEN_ALREADY_PRESENT                 = 'GATEWAY_TOKEN_ALREADY_PRESENT';
+    const GATEWAY_TOKEN_TOO_MANY_PRESENT                = 'GATEWAY_TOKEN_TOO_MANY_PRESENT';
 
     const CANCEL_INVOICE                                = 'CANCEL_INVOICE';
     const INVOICE_EXPIRE_VIA_CRON_FAILED                = 'INVOICE_EXPIRE_VIA_CRON_FAILED';

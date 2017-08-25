@@ -16,6 +16,7 @@ use RZP\Gateway\Base\AESCrypto;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Customer\Token;
+use RZP\Models\Customer\GatewayToken;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 
@@ -81,19 +82,17 @@ class Gateway extends Base\Gateway
 
         $acquirerData = $this->getAcquirerData($gatewayPayment);
 
-        return $this->getCallbackResponseData($input, $acquirerData);
-    }
+        $recurringData = [];
 
-    protected function getAcquirerData($gatewayPayment)
-    {
-        $acquirerData = [
-            'acquirer' => [
-                Payment\Entity::REFERENCE1 => $gatewayPayment->getBankPaymentId(),
-                Token\Entity::GATEWAY_TOKEN => $gatewayPayment->getSiRefId()
-            ]
-        ];
+        // TODO: Assumed to be first recurring. Do we need to change here?
+        if ($input['terminal']->isRecurring() === true)
+        {
+            $recurringData = $this->getRecurringData($gatewayPayment);
+        }
 
-        return $acquirerData;
+        $callbackData = array_merge($acquirerData, $recurringData);
+
+        return $this->getCallbackResponseData($input, $callbackData);
     }
 
     public function verify(array $input)
@@ -217,14 +216,36 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentRequestData(array $input)
     {
-        $encryptedString = $this->getEncryptedString($input);
+        $defaultRequestData = $this->createDefaultRequestData($input);
 
-        $data = $this->createDefaultRequestData($input);
+        $requestData = $this->getAuthorizeRequestData($input);
 
-        $data[RequestFields::ENCRYPTED_STRING] = $encryptedString;
-        $data[RequestFields::SPID]             = $this->getSpid();
+        //
+        // For recurring payments, we use E-Mandate
+        //
+        if ($this->isFirstRecurring($input) === true)
+        {
+            $eMandateData = $this->getEMandateRequestData($input);
 
-        return $data;
+            $requestData = array_merge($requestData, $eMandateData);
+        }
+        else if ($this->isSecondRecurringPayment($input) === true)
+        {
+            $siDebitData = $this->getSIDebitRequestData($input);
+
+            $requestData = array_merge($requestData, $siDebitData);
+        }
+
+        $this->traceGatewayPaymentRequest($requestData, $input);
+
+        $encryptedString = $this->getEncryptedString($requestData);
+
+        $requestData = [
+            RequestFields::ENCRYPTED_STRING => $encryptedString,
+            RequestFields::SPID             => $this->getSpid(),
+        ];
+
+        return array_merge($defaultRequestData, $requestData);
     }
 
     protected function getVerifyRequestData(Verify $verify)
@@ -257,22 +278,8 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function getEncryptedString(array $input)
+    protected function getEncryptedString(array $data)
     {
-        $data = $this->getAuthorizeRequestData($input);
-
-        //
-        // For recurring payments, we use E - Mandate
-        //
-        if ($input['terminal']->isRecurring() === true)
-        {
-            $eMandateData = $this->getEMandateRequestData($input);
-
-            $data = array_merge($eMandateData, $data);
-        }
-
-        $this->traceGatewayPaymentRequest($data, $input);
-
         $queryString = urldecode(http_build_query($data));
 
         $masterKey = $this->getSecret();
@@ -288,36 +295,45 @@ class Gateway extends Base\Gateway
 
         $token = $input['token'];
 
-        //
-        // Second recurring payment
-        //
-        if ((empty($token) === false) and
-            (empty($token->getGatewayToken()) === false))
+        if ($this->isSecondRecurringPaymentRequest($input) === true)
         {
+            if ($token->getGatewayToken() === null)
+            {
+                // TODO: Throw an exception
+            }
+
             $data = [
-                RequestFields::EMD_PAYMENT_DATE => $date,
-                RequestFields::REFERENCE_ID     => $token->getGatewayToken()
+                RequestFields::SI_PAYMENT_DATE     => $date,
+                RequestFields::SI_REFERENCE_NUMBER => $token->getGatewayToken(),
             ];
         }
         else
         {
-            //
-            // As and when merchant makes a request for a year
-            //
-            $endDate = Carbon::now(Timezone::IST)->addYear()->format('Y-m-d');
+            $endDate = Carbon::now(Timezone::IST)
+                             ->addYears(Base\Recurring::MAX_END_DATE_FROM_NOW)
+                             ->format('Y-m-d');
 
             $data = [
-                RequestFields::STANDING_INSTRUCTIONS => Action::SUBSCRIPTION,
-                RequestFields::EMD_PAYMENT_DATE      => $date,
-                RequestFields::PAYMENT_TYPE          => Action::RECURRING,
-                RequestFields::PAYMENT_FREQ          => '20',
-                RequestFields::NUM_INSTALLMENTS      => '',
-                RequestFields::AUTO_PAY_AMOUNT       => $input['payment']['amount'] + 1,
-                RequestFields::SI_END_DATE           => $endDate
+                RequestFields::SI                  => 'Y',
+                // TODO: How do we get the start date in case of charge-at-will?
+                RequestFields::SI_PAYMENT_DATE     => $date,
+                // Recurring
+                RequestFields::SI_PAYMENT_TYPE     => 'R',
+                RequestFields::SI_PAYMENT_FREQ     => Frequency::AS_AND_WHEN,
+                RequestFields::SI_NUM_INSTALLMENTS => '',
+                // TODO: Should we get this from the token instead?
+                RequestFields::SI_AUTO_PAY_AMOUNT  => (int) (Base\Recurring::MAX_AMOUNT / 100),
+                // TODO: Should we accept this from the merchant?
+                RequestFields::SI_END_DATE         => $endDate,
             ];
         }
 
         return $data;
+    }
+
+    protected function getSIDebitRequestData()
+    {
+        // TODO: Fill this function up
     }
 
     protected function getAuthorizeRequestData(array $input)
@@ -354,20 +370,12 @@ class Gateway extends Base\Gateway
 
     protected function createDefaultRequestData(array $input)
     {
-        $amount = $input['payment'][Payment\Entity::AMOUNT] / 100;
-
-        $data = [
+        $defaultData = [
             RequestFields::MODE     => Action::PAY,
             RequestFields::PAYEE_ID => $this->getPid(),
         ];
 
-        if ((isset($input['token']) === true) and
-            (empty($input['token']->getGatewayToken()) === false))
-        {
-            $data[RequestFields::MODE] = Action::STANDING_INSTRUCTIONS;
-        }
-
-        return $data;
+        return $defaultData;
     }
 
     protected function setTpvFieldIfNeeded(array & $additionalData, array $input)
@@ -625,6 +633,26 @@ class Gateway extends Base\Gateway
 
     protected function getUrlType()
     {
-        return $this->getBankingType() . '_QUERY' ;
+        return $this->getBankingType() . '_QUERY';
+    }
+
+    protected function getRecurringData($gatewayPayment)
+    {
+        if ($gatewayPayment->getSIStatus() === 'Y')
+        {
+            $recurringStatus = Token\RecurringStatus::CONFIRMED;
+        }
+        else
+        {
+            $recurringStatus = Token\RecurringStatus::REJECTED;
+        }
+
+        $recurringData = [
+            Token\Entity::RECURRING_STATUS           => $recurringStatus,
+            Token\Entity::GATEWAY_TOKEN                     => $gatewayPayment->getSIReferenceId(),
+            Token\Entity::RECURRING_FAILURE_REASON   => $gatewayPayment->getSIMessage(),
+        ];
+
+        return $recurringData;
     }
 }

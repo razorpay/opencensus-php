@@ -58,6 +58,14 @@ class CreateTokens extends Migration {
             $table->boolean(Token::RECURRING)
                   ->default(0);
 
+            // TODO: Add the below two additions to queries.txt
+
+            $table->string(Token::RECURRING_STATUS, 32)
+                  ->nullable();
+
+            $table->text(Token::RECURRING_FAILURE_REASON)
+                  ->nullable();
+
             $table->integer(Token::USED_COUNT)
                   ->default(0);
 

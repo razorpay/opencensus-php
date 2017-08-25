@@ -11,24 +11,27 @@ class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
 
-    const MERCHANT_ID           = 'merchant_id';
-    const CUSTOMER_ID           = 'customer_id';
-    const TERMINAL_ID           = 'terminal_id';
-    const TOKEN                 = 'token';
-    const METHOD                = 'method';
-    const CARD_ID               = 'card_id';
-    const CARD                  = 'card';
-    const BANK                  = 'bank';
-    const WALLET                = 'wallet';
-    const GATEWAY_TOKEN         = 'gateway_token';
-    const GATEWAY_TOKEN2        = 'gateway_token2';
-    const RECURRING             = 'recurring';
-    const USED_COUNT            = 'used_count';
-    const USED_AT               = 'used_at';
-    const EXPIRED_AT            = 'expired_at';
-    const CREATED_AT            = 'created_at';
-    const UPDATED_AT            = 'updated_at';
-    const DELETED_AT            = 'deleted_at';
+    const MERCHANT_ID               = 'merchant_id';
+    const CUSTOMER_ID               = 'customer_id';
+    const TERMINAL_ID               = 'terminal_id';
+    const TOKEN                     = 'token';
+    const METHOD                    = 'method';
+    const CARD_ID                   = 'card_id';
+    const CARD                      = 'card';
+    const BANK                      = 'bank';
+    const WALLET                    = 'wallet';
+    const GATEWAY_TOKEN             = 'gateway_token';
+    const GATEWAY_TOKEN2            = 'gateway_token2';
+    const RECURRING                 = 'recurring';
+    // TODO: Finalize the attribute names.
+    const RECURRING_STATUS          = 'recurring_status';
+    const RECURRING_FAILURE_REASON  = 'recurring_failure_reason';
+    const USED_COUNT                = 'used_count';
+    const USED_AT                   = 'used_at';
+    const EXPIRED_AT                = 'expired_at';
+    const CREATED_AT                = 'created_at';
+    const UPDATED_AT                = 'updated_at';
+    const DELETED_AT                = 'deleted_at';
 
     protected static $sign      = 'token';
 
@@ -36,7 +39,7 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
-    protected $fillable = array(
+    protected $fillable = [
         self::ID,
         self::BANK,
         self::WALLET,
@@ -46,9 +49,9 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TOKEN2,
         self::RECURRING,
         self::EXPIRED_AT,
-    );
+    ];
 
-    protected $visible = array(
+    protected $visible = [
         self::ID,
         self::MERCHANT_ID,
         self::BANK,
@@ -62,14 +65,16 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TOKEN,
         self::GATEWAY_TOKEN2,
         self::RECURRING,
+        self::RECURRING_STATUS,
+        self::RECURRING_FAILURE_REASON,
         self::USED_COUNT,
         self::USED_AT,
         self::EXPIRED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::ENTITY,
         self::TOKEN,
@@ -78,34 +83,41 @@ class Entity extends Base\PublicEntity
         self::METHOD,
         self::CARD,
         self::RECURRING,
+        self::RECURRING_STATUS,
+        self::RECURRING_FAILURE_REASON,
         self::USED_AT,
         self::CREATED_AT
-    );
+    ];
 
-    protected $defaults = array(
-        self::WALLET         => null,
-        self::BANK           => null,
-        self::CARD_ID        => null,
-        self::GATEWAY_TOKEN2 => null,
-        self::RECURRING      => false,
-        self::USED_AT        => null,
-        self::USED_COUNT     => 0,
-        self::EXPIRED_AT     => null,
-    );
+    protected $defaults = [
+        self::WALLET                    => null,
+        self::BANK                      => null,
+        self::CARD_ID                   => null,
+        self::GATEWAY_TOKEN2            => null,
+        self::RECURRING                 => false,
+        self::USED_AT                   => null,
+        self::USED_COUNT                => 0,
+        self::EXPIRED_AT                => null,
+        self::RECURRING_STATUS          => null,
+        self::RECURRING_FAILURE_REASON  => null,
+    ];
 
-    protected $publicSetters = array(
+    protected $publicSetters = [
         self::ID,
         self::ENTITY,
         self::CARD,
-        self::RECURRING);
+        self::RECURRING,
+        self::RECURRING_STATUS,
+        self::RECURRING_FAILURE_REASON,
+    ];
 
-    protected $casts = array(
+    protected $casts = [
         self::RECURRING     => 'bool',
-    );
+    ];
 
-    protected static $generators = array(
+    protected static $generators = [
         self::TOKEN
-    );
+    ];
 
     public function customer()
     {
@@ -202,6 +214,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CUSTOMER_ID);
     }
 
+    public function getRecurringStatus()
+    {
+        return $this->getAttribute(self::RECURRING_STATUS);
+    }
+
     public function isLocal()
     {
         return ($this->getMerchantId() !== Account::SHARED_ACCOUNT);
@@ -222,6 +239,18 @@ class Entity extends Base\PublicEntity
     public function setRecurring($recurring)
     {
         $this->setAttribute(self::RECURRING, $recurring);
+    }
+
+    public function setRecurringStatus($recurringStatus)
+    {
+        RecurringStatus::validateRecurringStatus($recurringStatus);
+
+        $this->setAttribute(self::RECURRING_STATUS, $recurringStatus);
+    }
+
+    public function setRecurringFailureReason($recurringFailureReason)
+    {
+        $this->setAttribute(self::RECURRING_FAILURE_REASON, $recurringFailureReason);
     }
 
     public function setUsedAt($timestamp)
@@ -269,6 +298,22 @@ class Entity extends Base\PublicEntity
         if ($this->isRecurring() === false)
         {
             unset($array[self::RECURRING]);
+        }
+    }
+
+    protected function setPublicRecurringStatusAttribute(array & $array)
+    {
+        if ($this->isRecurring() === false)
+        {
+            unset($array[self::RECURRING_STATUS]);
+        }
+    }
+
+    protected function setPublicRecurringFailureReasonAttribute(array & $array)
+    {
+        if ($this->isRecurring() === false)
+        {
+            unset($array[self::RECURRING_FAILURE_REASON]);
         }
     }
 

@@ -280,6 +280,7 @@ class PublicErrorDescription
     const BAD_REQUEST_ORDER_INVALID_OFFER                                       = 'Offer applied not valid for order';
     const BAD_REQUEST_UNSUPPORTED_CHARACTER_SET                                 = 'Error occurred because of invalid data';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_HASH                                 = 'Hash Data is invalid.';
+    const BAD_REQUEST_TOKEN_INVALID_RECURRING_STATUS                            = 'Invalid recurring status passed for token.';
 
     const BAD_REQUEST_GATEWAY_REFUND_ABSENT                                     = 'Refund not done on the gateway side.';
     const BAD_REQUEST_INVALID_GATEWAY                                           = 'Invalid gateway provided for the request';
@@ -297,7 +298,7 @@ class PublicErrorDescription
     const BAD_REQUEST_SUBSCRIPTION_SAVE_CARD_DISABLED                           = 'Subscription payment cannot be made with Flash Checkout disabled';
     const BAD_REQUEST_SUBSCRIPTION_PAYMENT_WITHOUT_SAVING                       = 'Subscription payment cannot be made without saving the card';
     const BAD_REQUEST_SUBSCRIPTION_ANOTHER_OPERATION_IN_PROGRESS                = 'Request failed because another subscription operation is in progress';
-    const BAD_REQUEST_SUBSCRIPTION_INVALID_STATUS                               = 'Invalid status passed in the query params';
+    const BAD_REQUEST_SUBSCRIPTION_INVALID_STATUS                               = 'Invalid status passed for the subscription';
 
     const BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE                                = 'Invoice status cannot be retrieved now';
     const BAD_REQUEST_PAYMENT_NOT_AUTHORIZED                                    = 'Payment is not in authorized state';

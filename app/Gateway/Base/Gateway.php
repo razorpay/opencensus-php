@@ -392,6 +392,30 @@ class Gateway
         return false;
     }
 
+    protected function isFirstRecurring($input)
+    {
+        // TODO: Should we have direct auth check too here, for s2s callback?
+
+        $publicAuth = $this->app['basicauth']->isPublicAuth();
+        $paymentRecurring = $input['payment']['recurring'];
+        $terminalRecurring = $input['terminal']->isRecurring();
+        $tokenRecurring = $input['token'] ? $input['token']->isRecurring() : null;
+
+        $this->trace->info(
+            TraceCode::GATEWAY_FIRST_RECURRING,
+            [
+                'public_auth'           => $publicAuth,
+                'payment_recurring'     => $paymentRecurring,
+                'terminal_recurring'    => $terminalRecurring,
+                'token_recurring'       => $tokenRecurring,
+            ]);
+
+        return (($publicAuth === true) and
+                ($paymentRecurring === true) and
+                ($terminalRecurring === true) and
+                ($tokenRecurring === false));
+    }
+
     public function generateRefunds($input)
     {
         $paymentIds = array_map(function($row)

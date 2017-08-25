@@ -1428,7 +1428,10 @@ trait Authorize
         //
         if (empty($input[Payment\Entity::TOKEN]) === false)
         {
-            $this->preProcessPaymentFromSavedMethodLocal($customer, $payment, $input, $gatewayInput);
+            //
+            // TODO: Throw exception is token is set and method is netbanking?
+            //
+            $this->preProcessPaymentFromSavedCardLocal($customer, $payment, $input, $gatewayInput);
         }
         else
         {
@@ -1477,7 +1480,7 @@ trait Authorize
         // If token is set, then pay using global saved card
         if (empty($input[Payment\Entity::TOKEN]) === false)
         {
-            $this->preProcessPaymentFromSavedMethodGlobal($customer, $payment, $input, $gatewayInput);
+            $this->preProcessPaymentFromSavedCardGlobal($customer, $payment, $input, $gatewayInput);
         }
         else
         {
@@ -1486,7 +1489,7 @@ trait Authorize
         }
     }
 
-    protected function preProcessPaymentFromSavedMethodLocal(Customer\Entity $customer,
+    protected function preProcessPaymentFromSavedCardLocal(Customer\Entity $customer,
                                                            Payment\Entity $payment,
                                                            array & $input,
                                                            array & $gatewayInput)
@@ -1515,7 +1518,7 @@ trait Authorize
         //else @todo for wallets
     }
 
-    protected function preProcessPaymentFromSavedMethodGlobal(Customer\Entity $customer,
+    protected function preProcessPaymentFromSavedCardGlobal(Customer\Entity $customer,
                                                             Payment\Entity $payment,
                                                             array & $input,
                                                             array & $gatewayInput)
@@ -1610,8 +1613,7 @@ trait Authorize
             // save local saved card for local customer
             $token = $this->savePaymentMethod($customer, $payment, $savedLocalCard->getId());
         }
-        else if (($payment->isNetbanking() === true) and
-                 (Payment\Gateway::isRecurringSupportedOnBank($payment->getBank()) === true))
+        else if ($payment->isNetbanking() === true)
         {
             // save netbanking bank locally for local customer
             $token = $this->savePaymentMethod($customer, $payment);
@@ -1661,7 +1663,8 @@ trait Authorize
         }
     }
 
-    protected function savePaymentMethod(Customer\Entity $customer, Payment\Entity $payment, $savedCardId = null): Token\Entity
+    protected function savePaymentMethod(
+        Customer\Entity $customer, Payment\Entity $payment, $savedCardId = null): Token\Entity
     {
         $this->trace->info(
             TraceCode::PAYMENT_SAVE_METHOD,
@@ -1674,9 +1677,9 @@ trait Authorize
                 'card_id'     => $savedCardId
             ]);
 
-        $saveMethodInput = array(
-            'method' => $payment->getMethod(),
-        );
+        $saveMethodInput = [
+            Token\Entity::METHOD => $payment->getMethod()
+        ];
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -1900,10 +1903,8 @@ trait Authorize
         return $data;
     }
 
-    protected function updateTokenOnAuthorized()
+    protected function updateTokenOnAuthorized(Payment\Entity $payment, array $data)
     {
-        $payment = $this->payment;
-
         $token = $payment->getGlobalOrLocalTokenEntity();
 
         $this->trace->info(
@@ -1914,8 +1915,10 @@ trait Authorize
                 'global_token_id' => $payment->getGlobalTokenId()
             ]);
 
-        // update token stats, assuming same token is not getting used in
-        // multiple payments, actually we should locking
+        //
+        // Update token stats. Assuming same token is not getting
+        // used in multiple payments. Actually we should be locking.
+        //
         if ($token !== null)
         {
             $createdAt = $payment->getCreatedAt();
@@ -1924,10 +1927,24 @@ trait Authorize
 
             $token->incrementUsedCount();
 
-            if (($payment->isCard() === true) and
+            if ((($payment->isCard() === true) or
+                 ($payment->isNetbanking() === true)) and
                 ($payment->isRecurring() === true))
             {
-                $token->setRecurring(true);
+                if ($this->shouldSetTokenRecurring($payment, $data) === true)
+                {
+                    $token->setRecurring(true);
+
+                    //
+                    // Currently we require the recurring details to be
+                    // updated only for netbanking.
+                    // No details need to be updated for credit cards.
+                    //
+                    if ($payment->isNetbanking() === true)
+                    {
+                        $this->updateTokenRecurringDetails($token, $data);
+                    }
+                }
 
                 $this->createAndSetTerminalInGatewayToken($payment, $token);
 
@@ -1940,6 +1957,77 @@ trait Authorize
             }
 
             $this->repo->saveOrFail($token);
+        }
+    }
+
+    protected function shouldSetTokenRecurring(Payment\Entity $payment, array $data)
+    {
+        if ($payment->isCard() === true)
+        {
+            return true;
+        }
+
+        if ($payment->isNetbanking() === true)
+        {
+            if ((empty($data[Token\Entity::RECURRING_STATUS]) === false) and
+                ($data[Token\Entity::RECURRING_STATUS] === Token\RecurringStatus::CONFIRMED))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function updateTokenRecurringDetails(Token\Entity $token, array $data)
+    {
+        //
+        // We update the token details and not gateway token details
+        // because the merchant is exposed to only the token.
+        // If we have two gateway tokens and a single token, which
+        // gateway token's details do we return back?
+        // On the other hand, if we have two gateway tokens for
+        // the same token and we store the recurring details in the
+        // token entity, we will end up overriding the recurring_status
+        // and other details. So, we need to ensure that we don't reuse
+        // the same token.
+        // Anyway, currently, we don't reuse the same token for NB.
+        // The customer always gets a new token if they want to
+        // subscribe to another subscription.
+        // If we don't use the same token again, there's no issue
+        // since there will always be only one terminal.
+        // Gateway Tokens purpose was to handle multiple terminals
+        // for same token only.
+        //
+
+        if ($token->getRecurringStatus() !== null)
+        {
+            // TODO: Decide whether we want to override it here.
+            return;
+        }
+
+        if (empty($data[Token\Entity::RECURRING_STATUS]) === true)
+        {
+            // TODO: Throw an exception
+            // We should always have a recurring status, especially
+            // if there's no recurring status set yet.
+        }
+
+        $recurringStatus = $data[Token\Entity::RECURRING_STATUS];
+
+        $token->setRecurringStatus($recurringStatus);
+
+        if ($recurringStatus === Token\RecurringStatus::REJECTED)
+        {
+            if (empty($data[Token\Entity::RECURRING_FAILURE_REASON]) === true)
+            {
+                // TODO: Throw an exception
+                // If it's rejected, there must always be a reason.
+            }
+
+            $recurringFailureReason = $data[Token\Entity::RECURRING_FAILURE_REASON];
+
+            $token->setRecurringFailureReason($recurringFailureReason);
         }
     }
 
@@ -1957,6 +2045,13 @@ trait Authorize
         }
         else if ($gatewayTokensCount === 1)
         {
+            if ($payment->isNetbanking() === true)
+            {
+                // TODO: throw an exception since for e-mandate
+                // since we do not reuse the tokens. Every new
+                // registration requires a new token to be created.
+            }
+
             $gatewayToken = $gatewayTokens->first();
 
             $gatewayToken->terminal()->associate($payment->terminal);
@@ -1970,7 +2065,7 @@ trait Authorize
             // screw up with the flow. Going to just trace as critical.
             //
             $this->trace->critical(
-                TraceCode::GATEWAY_TOKEN_ALREADY_PRESENT,
+                TraceCode::GATEWAY_TOKEN_TOO_MANY_PRESENT,
                 [
                     'payment_id'            => $payment->getId(),
                     'payment_terminal_id'   => $payment->terminal->getId(),
@@ -3097,7 +3192,7 @@ trait Authorize
                 $this->repo->saveOrFail($payment->terminal);
             }
 
-            $this->updateAssociatedPaymentEntities($payment);
+            $this->updateAssociatedPaymentEntities($payment, $data);
 
             $customProperties = $payment->toArrayTraceRelevant();
 
@@ -3132,12 +3227,14 @@ trait Authorize
 
     }
 
-    protected function updateAssociatedPaymentEntities(Payment\Entity $payment)
+    protected function updateAssociatedPaymentEntities(Payment\Entity $payment, array $data)
     {
-        $this->updateTokenOnAuthorized();
+        $this->updateTokenOnAuthorized($payment, $data);
 
+        //
         // If payment has an associated order
         // set the order to be paid
+        //
         $this->updateAuthorizedOrderStatus($payment);
     }
 

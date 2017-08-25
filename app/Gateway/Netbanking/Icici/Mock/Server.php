@@ -69,16 +69,16 @@ class Server extends Base\Mock\Server
             $response[ResponseFields::BANK_PAYMENT_ID] = 9999999999;
         }
 
-        if ((isset($input[RequestFields::STANDING_INSTRUCTIONS]) === true) and
-            ($input[RequestFields::STANDING_INSTRUCTIONS] === Action::SUBSCRIPTION))
+        if ((isset($input[RequestFields::SI]) === true) and
+            ($input[RequestFields::SI] === Action::SUBSCRIPTION))
         {
             $response[ResponseFields::REFERENCE_ID] = uniqid();
             $response[ResponseFields::SI_STATUS]    = Confirmation::YES;
             $response[ResponseFields::SI_MESSAGE]   = 'Success';
         }
-        else if (isset($input[RequestFields::REFERENCE_ID]) === true)
+        else if (isset($input[RequestFields::SI_REFERENCE_NUMBER]) === true)
         {
-            $response[ResponseFields::REFERENCE_ID] = $input[RequestFields::REFERENCE_ID];
+            $response[ResponseFields::REFERENCE_ID] = $input[RequestFields::SI_REFERENCE_NUMBER];
         }
 
         return $response;

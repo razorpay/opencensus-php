@@ -15,21 +15,21 @@ class Validator extends Base\Validator
     ];
 
     protected static $authDecryptedRules = [
-        RequestFields::AMOUNT                => 'required',
-        RequestFields::CONFIRMATION          => 'required|in:Y,N',
-        RequestFields::CURRENCY_CODE         => 'required',
-        RequestFields::PAYMENT_ID            => 'required',
-        RequestFields::ITEM_CODE             => 'required',
-        RequestFields::RETURN_URL            => 'required',
-        RequestFields::ACCOUNT_NO            => 'sometimes',
-        RequestFields::STANDING_INSTRUCTIONS => 'sometimes',
-        RequestFields::EMD_PAYMENT_DATE      => 'sometimes',
-        RequestFields::PAYMENT_TYPE          => 'sometimes',
-        RequestFields::PAYMENT_FREQ          => 'sometimes',
-        RequestFields::NUM_INSTALLMENTS      => 'sometimes',
-        RequestFields::AUTO_PAY_AMOUNT       => 'sometimes',
-        RequestFields::SI_END_DATE           => 'sometimes',
-        RequestFields::REFERENCE_ID          => 'sometimes',
+        RequestFields::AMOUNT              => 'required',
+        RequestFields::CONFIRMATION        => 'required|in:Y,N',
+        RequestFields::CURRENCY_CODE       => 'required',
+        RequestFields::PAYMENT_ID          => 'required',
+        RequestFields::ITEM_CODE           => 'required',
+        RequestFields::RETURN_URL          => 'required',
+        RequestFields::ACCOUNT_NO          => 'sometimes',
+        RequestFields::SI                  => 'sometimes',
+        RequestFields::SI_PAYMENT_DATE     => 'sometimes',
+        RequestFields::SI_PAYMENT_TYPE     => 'sometimes',
+        RequestFields::SI_PAYMENT_FREQ     => 'sometimes',
+        RequestFields::SI_NUM_INSTALLMENTS => 'sometimes',
+        RequestFields::SI_AUTO_PAY_AMOUNT  => 'sometimes',
+        RequestFields::SI_END_DATE         => 'sometimes',
+        RequestFields::SI_REFERENCE_NUMBER => 'sometimes',
     ];
 
     protected static $verifyRules = [

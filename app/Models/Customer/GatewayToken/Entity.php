@@ -6,13 +6,16 @@ use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    const MERCHANT_ID   = 'merchant_id';
-    const TERMINAL_ID   = 'terminal_id';
-    const TOKEN_ID      = 'token_id';
-    const REFERENCE     = 'reference';
-    const ACCESS_TOKEN  = 'access_token';
-    const REFRESH_TOKEN = 'refresh_token';
-    const RECURRING     = 'recurring';
+    const MERCHANT_ID               = 'merchant_id';
+    const TERMINAL_ID               = 'terminal_id';
+    const TOKEN_ID                  = 'token_id';
+    const REFERENCE                 = 'reference';
+    const ACCESS_TOKEN              = 'access_token';
+    const REFRESH_TOKEN             = 'refresh_token';
+    const RECURRING                 = 'recurring';
+
+    const RECURRING_STATUS          = 'recurring_status';
+    const RECURRING_FAILURE_REASON  = 'recurring_failure_reason';
 
     protected static $sign = 'gt';
 
@@ -82,6 +85,11 @@ class Entity extends Base\PublicEntity
     public function setReference($reference)
     {
         $this->setAttribute(self::REFERENCE, $reference);
+    }
+
+    public function setRecurring($recurring)
+    {
+        $this->setAttribute(self::RECURRING, $recurring);
     }
 
     // -------------------- End Setters --------------------

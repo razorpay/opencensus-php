@@ -21,14 +21,19 @@ class Entity extends Base\Entity
     const DATE                  = 'date';
     const REFUND_ID             = 'refund_id';
     const REFERENCE1            = 'reference1';
-    const SI_REF_ID             = 'si_ref_id';
-    const SI_STATUS             = 'si_status';
-    const SI_MSG                = 'si_message';
     const ACCOUNT_NUMBER        = 'account_number';
     //Credit Account number is the bank account to which money is transferred.
     const CREDIT_ACCOUNT_NUMBER = 'credit_account_number';
     const INT_PAYMENT_ID        = 'int_payment_id';
     const CAPS_PAYMENT_ID       = 'caps_payment_id';
+
+    //
+    // Recurring specific fields
+    //
+
+    const SI_REF_ID             = 'si_ref_id';
+    const SI_STATUS             = 'si_status';
+    const SI_MSG                = 'si_message';
 
     protected $entity = 'netbanking';
 
@@ -153,11 +158,6 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::REFERENCE1);
     }
 
-    public function getSiRefId()
-    {
-        return $this->getAttribute(self::SI_REF_ID);
-    }
-
     public function getReceived()
     {
         return $this->getAttribute(self::RECEIVED);
@@ -166,5 +166,20 @@ class Entity extends Base\Entity
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
+    }
+
+    public function getSIReferenceId()
+    {
+        return $this->getAttribute(self::SI_REF_ID);
+    }
+
+    public function getSIStatus()
+    {
+        return $this->getAttribute(self::SI_STATUS);
+    }
+
+    public function getSIMessage()
+    {
+        return $this->getAttribute(self::SI_MSG);
     }
 }

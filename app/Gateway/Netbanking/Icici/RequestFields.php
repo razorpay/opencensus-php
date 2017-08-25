@@ -18,13 +18,41 @@ class RequestFields
     const PAYMENT_DATE          = 'Pmt_Date';
     const SHOW_ON_SAME_PAGE     = 'ShowOnSamePage';
 
-    // E-Mandate Request Fields
-    const STANDING_INSTRUCTIONS = 'SI';
-    const EMD_PAYMENT_DATE      = 'PMT_DT';
-    const PAYMENT_TYPE          = 'PMT_TY';
-    const PAYMENT_FREQ          = 'PMT_FRQ';
-    const NUM_INSTALLMENTS      = 'NO_INST';
-    const AUTO_PAY_AMOUNT       = 'AUTO_PAY_AMOUNT';
+    // ---------- E-Mandate Request Fields ----------
+
+    const SI                    = 'SI';
+
+    /**
+     * Payment date to be scheduled. Can be future or current.
+     * If current, a hot payment is made.
+     */
+    const SI_PAYMENT_DATE       = 'PMT_DT';
+
+    /**
+     * This will be either one-time or recurring
+     * We would always use this for recurring.
+     */
+    const SI_PAYMENT_TYPE       = 'PMT_TY';
+
+    const SI_PAYMENT_FREQ       = 'PMT_FRQ';
+
+    /**
+     * Total number of installments.
+     * Should be blank for as and when frequency.
+     */
+    const SI_NUM_INSTALLMENTS   = 'NO_INST';
+
+    /**
+     * Recurring amount. This should be the maximum amount.
+     * Only an amount lesser than this can be charged.
+     */
+    const SI_AUTO_PAY_AMOUNT    = 'AUTO_PAY_AMOUNT';
+
+    /**
+     * This is only for as and when frequency.
+     * No recurring charge can be made after this date.
+     */
     const SI_END_DATE           = 'SI_END_DATE';
-    const REFERENCE_ID          = 'RID';
+
+    const SI_REFERENCE_NUMBER   = 'RID';
 }
