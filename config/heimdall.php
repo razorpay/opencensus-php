@@ -36,7 +36,11 @@ return [
             Permission::VIEW_MERCHANT         => [
                 'description' => 'View a particular merchant details',
                 'assignable'  => true,
-            ]
+            ],
+            Permission::VIEW_MERCHANT_EMAIL   => [
+                'description' => 'View Merchant Email',
+                'assignable'  => true,
+            ],
         ],
 
         PermissionCategory::MERCHANT_DETAIL => [
@@ -369,15 +373,19 @@ return [
                 'workflow'    => true
             ],
             Permission::EDIT_ADMIN        => [
-                'description' => 'create workflow',
+                'description' => 'edit admin',
                 'assignable'  => true,
                 'workflow'    => true
             ],
             Permission::DELETE_ADMIN      => [
-                'description' => 'create workflow',
+                'description' => 'delete admin',
                 'assignable'  => true,
                 'workflow'    => true
             ],
+            Permission::VIEW_ADMIN_EMAIL  => [
+                'description' => 'view admin email',
+                'assignable'  => true,
+            ]
         ],
 
         // Permissions
