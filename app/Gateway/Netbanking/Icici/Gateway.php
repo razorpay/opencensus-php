@@ -252,14 +252,19 @@ class Gateway extends Base\Gateway
         }
         else
         {
+            //
+            // As and when merchant makes a request for a year
+            //
+            $endDate = Carbon::now(Timezone::IST)->addYear()->format('Y-m-d');
+
             $data = [
                 RequestFields::STANDING_INSTRUCTIONS => Action::SUBSCRIPTION,
                 RequestFields::EMD_PAYMENT_DATE      => $date,
                 RequestFields::PAYMENT_TYPE          => Action::RECURRING,
-                RequestFields::PAYMENT_FREQ          => '20', // as and when presented
-                RequestFields::NUM_INSTALLMENTS      => '0', // random
+                RequestFields::PAYMENT_FREQ          => '20',
+                RequestFields::NUM_INSTALLMENTS      => '',
                 RequestFields::AUTO_PAY_AMOUNT       => $input['payment']['amount'] + 1,
-                RequestFields::SI_END_DATE           => '0', // cannot be null
+                RequestFields::SI_END_DATE           => $endDate
             ];
         }
 
