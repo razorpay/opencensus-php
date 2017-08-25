@@ -381,4 +381,9 @@ class Core extends Base\Core
             }
         }
     }
+
+    public function getMerchantOwner($merchant)
+    {
+        return $merchant->users()->where('role', '=', 'owner')->first();
+    }
 }

@@ -1230,4 +1230,50 @@ class Service extends Base\Service
             }
         }
     }
+
+    public function getMerchantDetails($merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
+            $merchantId, ['methods', Entity::GROUPS, Entity::ADMINS, 'users']);
+
+        //need to set Merchant here cause fetchMerchantDetails expects a merchant in ba.
+        $this->app['basicauth']->setMerchant($merchant);
+
+        //merchant to array public
+        $data = $merchant->toArrayPublic();
+
+        //merchant confirmed details
+        $data['confirmed'] = $this->getMerchantConfirmed($merchant);
+
+        //fetch formatted merchant details.
+        $data['merchant_details'] = (new Detail\Service)->fetchMerchantDetails();
+
+        $data['tags'] = $merchant->tagNames();
+
+        return $data;
+    }
+
+    /**
+     * Will provide if merchant is confirmed or not.
+     *
+     * @param $merchant
+     * @return bool
+     */
+    public function getMerchantConfirmed($merchant)
+    {
+        $parentId = $merchant->getParentId();
+
+        // Market place subaccounts are confirmed.
+        if(!empty($parentId))
+        {
+            return true;
+        }
+        else
+        {
+            $owner = $this->core()->getMerchantOwner($merchant);
+
+            // true if an owner is present
+            return !empty($owner);
+        }
+    }
 }
