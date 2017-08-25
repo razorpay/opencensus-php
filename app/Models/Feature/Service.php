@@ -38,8 +38,7 @@ class Service extends Base\Service
 
         (new Core)->delete($entityId, $feature);
 
-        // Returning all the updated features to client on delete.
-        return $this->getFeatures($entityId);
+        return $feature->toArrayPublic();
     }
 
     public function multiAssignFeature($input)

@@ -53,13 +53,13 @@ class FeaturesTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $resultData = [
-            "assigned_features" => [],
-            "all_features"      => [],
+            "id"            => (string) $features->first()->getId(),
+            "name"          => 'dummy',
+            "entity_id"     => '10000000000000',
+            "entity_type"   => 'merchant'
         ];
 
         $this->assertArraySelectiveEquals($resultData, $content);
-
-        $this->assertEquals($content['assigned_features'], []);
 
         $this->ba->appAuth();
     }
