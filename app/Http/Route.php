@@ -148,8 +148,9 @@ final class Route
         'merchant_beneficiary_file'               => ['get',      'merchants/beneficiary/file',                     'MerchantController@getMerchantBeneficiaryFile'                     ],
         'merchant_post_beneficiary_file'          => ['post',     'merchants/beneficiary/file/bank',                'MerchantController@postMerchantBeneficiaryFile'                    ],
         'merchant_notify_holiday'                 => ['post',     'merchants/notify/holiday',                       'MerchantController@postMerchantsNotifyHoliday'                     ],
-        'merchant_invoice_update_gstin'           => ['put',      'merchants/{id}/invoice/gstin',                    'MerchantInvoiceController@updateGstin'                             ],
-        'merchant_create_invoice_entities'        => ['post',     'merchants/invoice/create',                      'MerchantInvoiceController@postCreateInvoiceEntities'               ],
+        'merchant_invoice_update_gstin'           => ['put',      'merchants/{id}/invoice/gstin',                   'MerchantInvoiceController@updateGstin'                             ],
+        'merchant_create_invoice_entities'        => ['post',     'merchants/invoice/create',                       'MerchantInvoiceController@postCreateInvoiceEntities'               ],
+        'merchant_details_fetch'                  => ['get',      'merchants/details/{id}',                         'MerchantController@getMerchantDetails'                             ],
         'balance_fetch'                           => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'credits_create'                          => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
         'credits_fetch_by_id'                     => ['get',      'merchants/{mid}/credits/{id}',                   'MerchantController@getCreditsLog'                                  ],
@@ -1122,6 +1123,7 @@ final class Route
         'pricing_create_plan',
         'merchant_get_pricing',
         'merchant_invoice_update_gstin',
+        'merchant_details_fetch'
     ];
 
     public static $routePermission = [
@@ -1243,6 +1245,7 @@ final class Route
         'pricing_create_plan'              => Permission::CREATE_PRICING_PLAN,
         'merchant_get_pricing'             => Permission::VIEW_MERCHANT_PRICING,
         'merchant_invoice_update_gstin'    => '*',
+        'merchant_details_fetch'           => '*',
     ];
 
     public static $direct = [
