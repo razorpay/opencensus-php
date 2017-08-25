@@ -2006,10 +2006,12 @@ app
 
       $scope.deleteFeature = function(featureName) {
         var request = $http.delete('/admin/generic', {
-          route_name: 'feature_delete',
-          url_params: {
-            '{entityId}': $scope.merchant.id,
-            '{featureName}': featureName,
+          params: {
+            route_name: 'feature_delete',
+            url_params: {
+              '{entityId}': $scope.merchant.id,
+              '{featureName}': featureName,
+            },
           },
         });
         request.success(function(data) {
@@ -2019,10 +2021,10 @@ app
                 action_id: data.data.id,
               });
             }
-            $scope.merchant.details.allowedFeatures = data.data.all_features;
-            $scope.merchant.details.features = getFeatureNames(
-              data.data.assigned_features
-            );
+            var features = $scope.merchant.details.features;
+            $scope.merchant.details.features = features.filter(function(item) {
+              return item.id !== data.data.id;
+            });
           } else {
             $scope.alerts.resetAlerts(true);
             angular.forEach(data.errors, function(value) {
