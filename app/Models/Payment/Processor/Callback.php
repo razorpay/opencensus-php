@@ -274,11 +274,32 @@ trait Callback
         else
         {
             $data = $this->callGatewayFunction(Payment\Action::CALLBACK, $input);
+
+            if (($this->payment->isRecurring() === true) and
+                (isset($data['acquirer'][Token\Entity::GATEWAY_TOKEN]) === true))
+            {
+                $this->updateGatewayToken($data['acquirer']);
+            }
         }
 
         $this->callGatewayFunction(Payment\Action::DEBIT, $input);
 
         return $data;
+    }
+
+    protected function updateGatewayToken(array $data)
+    {
+        $token = $this->payment->getGlobalOrLocalTokenEntity();
+
+        if ((empty($token) === true) or
+            ($token->getGatewayToken() !== null))
+        {
+            return;
+        }
+
+        $token->setGatewayToken($data[Token\Entity::GATEWAY_TOKEN]);
+
+        $token->saveOrFail();
     }
 
     protected function checkForRecentFailedPayment($payment)

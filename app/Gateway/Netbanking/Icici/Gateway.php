@@ -77,16 +77,23 @@ class Gateway extends Base\Gateway
 
         $this->repo->saveOrFail($gatewayPayment);
 
-        if (isset($input['token']) === true)
-        {
-            $this->handleTokenUpdate($input['token'], $attrs);
-        }
-
         $this->checkCallbackStatus($attrs, $content);
 
         $acquirerData = $this->getAcquirerData($gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
+    }
+
+    protected function getAcquirerData($gatewayPayment)
+    {
+        $acquirerData = [
+            'acquirer' => [
+                Payment\Entity::REFERENCE1 => $gatewayPayment->getBankPaymentId(),
+                Token\Entity::GATEWAY_TOKEN => $gatewayPayment->getSiRefId()
+            ]
+        ];
+
+        return $acquirerData;
     }
 
     public function verify(array $input)
@@ -257,7 +264,7 @@ class Gateway extends Base\Gateway
         //
         // For recurring payments, we use E - Mandate
         //
-        if ($input['terminal']->isNon3DSRecurring() === true)
+        if ($input['terminal']->isRecurring() === true)
         {
             $eMandateData = $this->getEMandateRequestData($input);
 
@@ -277,7 +284,7 @@ class Gateway extends Base\Gateway
 
     protected function getEMandateRequestData($input)
     {
-        $date = Carbon::now(Timezone::IST)->toDateTimeString();
+        $date = Carbon::now(Timezone::IST)->format('Y-m-d');
 
         $token = $input['token'];
 
@@ -409,18 +416,6 @@ class Gateway extends Base\Gateway
             Base\Entity::SI_STATUS       => $content[ResponseFields::SI_STATUS] ?? null,
             Base\Entity::SI_MSG          => $content[ResponseFields::SI_MESSAGE] ?? null,
         ];
-    }
-
-    protected function handleTokenUpdate(Token\Entity $token, array $attrs)
-    {
-        if ($token->getGatewayToken() !== null)
-        {
-            return;
-        }
-
-        $token->setGatewayToken($attrs[Base\Entity::SI_REF_ID]);
-
-        $token->saveOrFail();
     }
 
     protected function checkCallbackStatus(array $attrs, array $content)

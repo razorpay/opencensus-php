@@ -153,6 +153,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::REFERENCE1);
     }
 
+    public function getSiRefId()
+    {
+        return $this->getAttribute(self::SI_REF_ID);
+    }
+
     public function getReceived()
     {
         return $this->getAttribute(self::RECEIVED);
