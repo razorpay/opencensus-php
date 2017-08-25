@@ -461,10 +461,20 @@ class Gateway extends Base\Gateway
     {
         if ($this->mode === Mode::TEST)
         {
-            return $this->getTestMerchantId2();
+            if ($this->input['terminal']->isNonRecurring())
+            {
+                return $this->getTestMerchantId2();
+            }
+
+            return $this->getTestRecurringMerchantId2();
         }
 
         return $this->getLiveMerchantId2();
+    }
+
+    protected function getTestRecurringMerchantId2()
+    {
+        return $this->config['test_merchant_id2_rec'];
     }
 
     /**
