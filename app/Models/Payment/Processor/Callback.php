@@ -133,9 +133,20 @@ trait Callback
 
     /**
      * This means the payment has already been processed but
-     * we are hitting callback again. This could be due to
-     * browser refresh by the customer or s2s callback notification being
-     * delivered by the gateway before browser hits the callback route etc.
+     * we are hitting callback again.
+     *
+     * This could be due to browser refresh by the customer or
+     * s2s callback notification being delivered by the gateway before
+     * browser hits the callback route etc.
+     *
+     * @TODO
+     * Another case that needs to be explicitly handled is the
+     * case of a payment authorizaion occurring due to
+     * a pending authorization corporate netbanking payment
+     * that was marked failed due to the pending status.
+     *
+     * Once a checker approval comes in callback will be fired
+     * which must be accepted and sent as success.
      */
     protected function processPaymentCallbackSecondTime($payment)
     {
@@ -219,7 +230,14 @@ trait Callback
                 // Reload in case it's processed by another thread.
                 $this->repo->reload($payment);
 
-                if ($payment->isCreated() === false)
+                $isCorporatePayment = $payment->terminal->isCorporate();
+
+                // In case of non - corporate payments, this case is fine.
+                // In case of corporate and payment already having been authorized
+                if ((($payment->isCreated() === false) and
+                    ($isCorporatePayment === false)) or
+                    (($isCorporatePayment === true) and
+                    ($payment->hasBeenAuthorized() === true)))
                 {
                     return $this->processPaymentCallbackSecondTime($payment);
                 }
@@ -329,9 +347,14 @@ trait Callback
         $this->lockForUpdateAndReload($this->payment);
 
         $payment = $this->payment;
+
         $status = $payment->getStatus();
 
-        if ($status !== Status::CREATED)
+        $isCorporatePayment = $payment->terminal->isCorporate();
+
+        // In case of corporate payments, process this.
+        if (($status !== Status::CREATED) and
+            ($isCorporatePayment === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED,

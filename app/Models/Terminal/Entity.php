@@ -647,6 +647,11 @@ class Entity extends Base\PublicEntity
         return ($this->isTypeApplicable(Type::NON_RECURRING) === true);
     }
 
+    public function isRecurring()
+    {
+        return ($this->isNonRecurring() === false);
+    }
+
     public function is3DSRecurring()
     {
         return ($this->isTypeApplicable(Type::RECURRING_3DS) === true);

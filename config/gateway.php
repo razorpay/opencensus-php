@@ -273,14 +273,25 @@ return [
     ],
 
     'netbanking_icici' => [
-        'test_hash_secret'      => env('NETBANKING_ICICI_GATEWAY_TEST_HASH_SECRET'),
-        'test_merchant_id'      => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID'),
-        'test_merchant_id2'     => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID2'),
-        'test_merchant_id2_rec' => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID2_REC'),
-        'live_hash_secret'      => env('NETBANKING_ICICI_LIVE_HASH_SECRET'),
-        'live_hash_secret_tpv'  => env('NETBANKING_ICICI_LIVE_HASH_SECRET_BROKER'),
-        'live_merchant_id2'     => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID'),
-        'live_merchant_id2_tpv' => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID_BROKER'),
+        //retail netbanking
+        'test_hash_secret'       => env('NETBANKING_ICICI_GATEWAY_TEST_HASH_SECRET'),
+        'test_merchant_id'       => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID'),
+        'test_merchant_id2'      => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID2'),
+        'test_merchant_id2_rec'  => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID2_REC'),
+
+        'live_hash_secret'       => env('NETBANKING_ICICI_LIVE_HASH_SECRET'),
+        'live_merchant_id2'      => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID'),
+
+        //retail tpv
+        'live_hash_secret_tpv'   => env('NETBANKING_ICICI_LIVE_HASH_SECRET_BROKER'),
+        'live_merchant_id2_tpv'  => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID_BROKER'),
+
+        //corporate netbanking
+        'test_hash_secret_corp'  => env('NETBANKING_ICICI_GATEWAY_TEST_HASH_SECRET_CORP'),
+        'test_merchant_id2_corp' => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID2_CORP'),
+
+        'live_hash_secret_corp'  => env('NETBANKING_ICICI_GATEWAY_LIVE_HASH_SECRET_CORP'),
+        'live_merchant_id2_corp' => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID2_CORP'),
     ],
 
     'netbanking_axis' => [

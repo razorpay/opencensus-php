@@ -2,7 +2,9 @@
 
 namespace RZP\Gateway\Netbanking\Icici\Mock;
 
+use RZP\Exception;
 use RZP\Gateway\Base;
+
 use phpseclib\Crypt\AES;
 use RZP\Gateway\Netbanking\Icici\Status;
 use RZP\Gateway\Netbanking\Icici\Action;
@@ -27,11 +29,16 @@ class Server extends Base\Mock\Server
 
         $this->content($postData);
 
-        $content = $this->formatResponseData($postData);
+        $content = $this->formatResponseData($postData, $input);
 
         $callbackUrl = $decryptedData['RU'] . '?' . http_build_query($content);
 
         return $callbackUrl;
+    }
+
+    public function getBankingType($input)
+    {
+        return ($input['PID'] === 'random_pid_corp') ? 'corporate' : 'retail';
     }
 
     public function verify($input)
@@ -77,26 +84,41 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    protected function formatResponseData(array $postData)
+    protected function formatResponseData(array $postData, array $input)
     {
-        $masterKey = $this->getGatewayInstance()->getSecret();
-
         $httpQuery = http_build_query($postData);
 
-        $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
+        $bankingType = $this->getBankingType($input);
+
+        $aes = $this->getAesCrypto($input);
 
         $content['ES'] = base64_encode($aes->encryptString($httpQuery));
+
+        // response as sent back for corporate payment
+        if ($bankingType === 'corporate')
+        {
+            $content['Payopt'] = 'ICI';
+
+            $content['var1']   = 'xyz';
+        }
 
         $this->content($content, 'hash');
 
         return $content;
     }
 
+    protected function getAesCrypto($input)
+    {
+        $bankingType = $this->getBankingType($input);
+
+        $masterKey = $this->getGatewayInstance($bankingType)->getSecret();
+
+        return new Base\AESCrypto(AES::MODE_ECB, $masterKey);
+    }
+
     protected function decryptData(array $input)
     {
-        $masterKey = $this->getGatewayInstance()->getSecret();
-
-        $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
+        $aes = $this->getAesCrypto($input);
 
         $decryptedString = $aes->decryptString(base64_decode($input['ES']));
 
@@ -118,7 +140,7 @@ class Server extends Base\Mock\Server
     {
         $this->content($responseArray);
 
-        if (empty($responseArray) === true)
+        if (is_array($responseArray) === false)
         {
             return $responseArray;
         }
@@ -136,6 +158,20 @@ class Server extends Base\Mock\Server
 
     protected function createResponseArray(array $input)
     {
+        $bankingType = $this->getBankingType($input);
+
+        if ($bankingType === 'corporate')
+        {
+            return [
+                ResponseFields::BILL_REF_NUM => $input[RequestFields::PAYMENT_ID],
+                ResponseFields::PAYMENTID    => '..',
+                ResponseFields::CONSUMER_CODE => $input[RequestFields::ITEM_CODE],
+                ResponseFields::UC_AMOUNT    => $input[RequestFields::AMOUNT],
+                ResponseFields::STATUS       => Status::Y,
+                ResponseFields::CURRENCY     => $input[RequestFields::CURRENCY_CODE],
+            ];
+        }
+
         return [
             ResponseFields::ITEM_CODE    => $input[RequestFields::ITEM_CODE],
             ResponseFields::PAYMENT_ID   => $input[RequestFields::PAYMENT_ID],
