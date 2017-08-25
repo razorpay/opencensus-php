@@ -213,6 +213,12 @@ return [
         'merchant_get_features'             => 'merchants/{id}/features',
         'merchant_update_features'          => 'merchants/{id}/features',
 
+        // Referrals
+        'merchant_fetch_referrals'          => [
+            'url'       => 'referrals',
+            'routeName' => 'referred_merchants_list'
+        ],
+
         // Activation
         'merchant_activation_save'          => [
             'url'       => 'merchant/activation',
@@ -551,6 +557,7 @@ return [
         'refund_verify_failed'              => 'refunds/{id}/retry',
 
         // Tags
+        'merchant_get_tags'                 => 'merchants/{id}/tags',
         'merchant_tag_add'                  => 'merchants/{id}/tags',
         'merchant_tag_delete'               => 'merchants/{id}/tags/{tagName}',
 

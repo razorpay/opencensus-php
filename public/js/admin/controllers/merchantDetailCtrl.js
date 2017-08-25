@@ -1910,7 +1910,7 @@ app
               $scope.selected_admins = [];
 
               // Re-populated array with selected admin ids
-              merchantAdmins.items.map(function(admin) {
+              merchantAdmins.map(function(admin) {
                 $scope.selected_admins.push(admin.id);
               });
 
@@ -2139,6 +2139,7 @@ app
         'credit_card',
         'jiomoney',
         'openwallet',
+        'sbibuddy',
       ];
       $scope.methods = {};
 

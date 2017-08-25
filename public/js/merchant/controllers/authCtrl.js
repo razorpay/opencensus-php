@@ -610,6 +610,18 @@ app
                 var role =
                   userDetails.merchants &&
                   userDetails.merchants[userDetails.id].role;
+                if ($state.params.next !== undefined) {
+                  var next = $state.params.next;
+                  var parser = document.createElement('a');
+                  parser.href = $state.params.next;
+
+                  var hostname = parser.hostname || window.location.hostname;
+
+                  if (/^(beta-auth|auth).razorpay.(com|dev)$/.test(hostname)) {
+                    window.location.href = parser.href;
+                    return false;
+                  }
+                }
                 $scope.goToDashboard(role);
               } else {
                 $scope.isLoggedIn = true;
