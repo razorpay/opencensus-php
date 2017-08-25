@@ -144,6 +144,8 @@ class Gateway extends Base\Gateway
 
         $content = $this->parseGatewayResponse($response);
 
+        $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, $content);
+
         $this->verifySecureHash($content);
 
         $this->createWalletRefundEntity($content, $input);
@@ -833,7 +835,8 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
             [
                 'request'  => $request,
-                'api_type' => ApiName::GETREQUESTSTATUS
+                'api_type' => ApiName::GETREQUESTSTATUS,
+                'refund_id' => $input['refund']['id'],
             ]);
 
         return $request;
@@ -905,6 +908,24 @@ class Gateway extends Base\Gateway
     }
 
     protected function isSuccessFullyRefundedOnGateway(array $gatewayRefundData, array $input): bool
+    {
+        if (is_sequential_array($gatewayRefundData) === true)
+        {
+            foreach ($gatewayRefundData as $data)
+            {
+                if ($this->isSuccessFulRefund($data, $input) === true)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        return ($this->isSuccessFulRefund($gatewayRefundData, $input) === true);
+    }
+
+    protected function isSuccessfulRefund(array $gatewayRefundData, array $input): bool
     {
         return (($gatewayRefundData[ResponseFields::TXN_STATUS] === ResponseCode::SUCCESS) and
                 ($input['refund']['amount'] === intval($gatewayRefundData[ResponseFields::REFUND_AMOUNT])));

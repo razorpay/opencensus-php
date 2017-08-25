@@ -1028,6 +1028,16 @@ class Service extends Base\Service
     }
 
     /**
+     * used for fetching referred merchants of a particular merchant
+     */
+    public function fetchReferredMerchants()
+    {
+        $merchantId = $this->merchant->getId();
+
+        return $this->repo->merchant->fetchReferredMerchants($merchantId);
+    }
+
+    /**
      * used for getting tags of the merchant
      * @param string $id
      */

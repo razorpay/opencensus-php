@@ -56,6 +56,7 @@ final class Route
         'batch_retry'                             => ['post',     'batches/{id}/retry',                             'BatchController@retryBatch'                                        ],
         'batch_download_file'                     => ['get',      'batches/{id}/download',                          'BatchController@downloadBatch'                                     ],
         'payment_capture'                         => ['post',     'payments/{id}/capture',                          'PaymentController@postCapture'                                     ],
+        'payment_bulk_capture'                    => ['post',     'payments/capture/bulk',                          'PaymentController@postBulkCapture'                                 ],
         'payment_fetch_transfers'                 => ['get',      'payments/{id}/transfers',                        'PaymentController@getTransfers'                                    ],
         'payment_transfer'                        => ['post',     'payments/{id}/transfers',                        'PaymentController@postTransfer'                                    ],
         'payment_verify'                          => ['get',      'payments/{id}/verify',                           'PaymentController@getVerify'                                       ],
@@ -139,6 +140,7 @@ final class Route
         'merchant_live_enable'                    => ['post',     'merchants/{id}/live/enable',                     'MerchantController@postLiveEnable'                                 ],
         'merchant_live_disable'                   => ['post',     'merchants/{id}/live/disable',                    'MerchantController@postLiveDisable'                                ],
         'merchant_actions'                        => ['put',      'merchants/{id}/action',                          'MerchantController@putAction'                                      ],
+        'merchant_fetch_referrals'                => ['get',      'referrals',                                      'MerchantController@getReferredMerchants'                           ],
         'merchant_get_tags'                       => ['get',      'merchants/{id}/tags',                            'MerchantController@getTags'                                        ],
         'merchant_tag_add'                        => ['post',     'merchants/{id}/tags',                            'MerchantController@addTags'                                        ],
         'merchant_tag_delete'                     => ['delete',   'merchants/{id}/tags/{tagName}',                  'MerchantController@deleteTag'                                      ],
@@ -151,6 +153,7 @@ final class Route
         'merchant_invoice_update_gstin'           => ['put',      'merchants/{id}/invoice/gstin',                   'MerchantInvoiceController@updateGstin'                             ],
         'merchant_create_invoice_entities'        => ['post',     'merchants/invoice/create',                       'MerchantInvoiceController@postCreateInvoiceEntities'               ],
         'merchant_details_fetch'                  => ['get',      'merchants/details/{id}',                         'MerchantController@getMerchantDetails'                             ],
+        'merchant_invoice_add_bulk'               => ['post',     'merchants/invoice/bulk',                         'MerchantInvoiceController@postMultipleEntities'                    ],
         'balance_fetch'                           => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'credits_create'                          => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
         'credits_fetch_by_id'                     => ['get',      'merchants/{mid}/credits/{id}',                   'MerchantController@getCreditsLog'                                  ],
@@ -241,6 +244,7 @@ final class Route
         'adj_add'                                 => ['post',     'adjustments',                                    'AdjustmentController@postAdjustment'                               ],
         'adj_add_reverse'                         => ['post',     'adjustments/reversal',                           'AdjustmentController@postReverseAdjustments'                       ],
         'adj_add_bulk'                            => ['post',     'adjustments/bulk',                               'AdjustmentController@postMultipleAdjustments'                      ],
+        'adj_add_fee'                             => ['post',     'adjustments/fees',                               'AdjustmentController@postFeesAdjustment'                           ],
         'mock_hdfc_enroll'                        => ['post',     'gateway/mock_hdfc/enroll',                       'MockGatewayController@enroll'                                      ],
         'mock_hdfc_payment'                       => ['post',     'gateway/mock_hdfc/payment',                      'MockGatewayController@payment'                                     ],
         'mock_hdfc_auth_enrolled'                 => ['post',     'gateway/mock_hdfc/auth_enrolled',                'MockGatewayController@authEnrolled'                                ],
@@ -275,8 +279,8 @@ final class Route
         'send_test_newsletter'                    => ['post',     'admin/newsletter/test',                          'AdminController@postSendTestNewsletter'                            ],
         'send_newsletter'                         => ['post',     'admin/newsletter/mail',                          'AdminController@postSendNewsletter'                                ],
         'gateway_payment_callback_axis'           => ['post',     'callback/axis',                                  'GatewayController@callbackAxis'                                    ],
-        'gateway_payment_callback_get'            => ['post',     'callback/{gateway}',                             'GatewayController@callbackGateway'                                 ],
-        'gateway_payment_callback_post'           => ['get',      'callback/{gateway}',                             'GatewayController@callbackGateway'                                 ],
+        'gateway_payment_callback_get'            => ['get',      'callback/{gateway}',                             'GatewayController@callbackGateway'                                 ],
+        'gateway_payment_callback_post'           => ['post',     'callback/{gateway}',                             'GatewayController@callbackGateway'                                 ],
         'gateway_payment_callback_kotak'          => ['get',      'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotak'                                   ],
         'gateway_payment_callback_kotak_cancel'   => ['post',     'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotakCancel'                             ],
         'reconciliate'                            => ['post',     'reconciliate',                                   'ReconciliatorController@postReconciliation'                        ],
@@ -583,7 +587,8 @@ final class Route
         'risk_get'                                => ['get',      'risk/{id}',                                      'RiskController@get'                                                ],
         // Dispute routes
         'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
-        'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                            ],
+        'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                          ],
+        'merchant_payout'                         => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
     ];
 
     public static $public = [
@@ -854,6 +859,7 @@ final class Route
         'payment_force_authorize',
         'payment_capture_reminder',
         'payment_capture_gateway_manual',
+        'payment_bulk_capture',
         'payment_refund_authorized',
         'payment_verify_multiple',
         'payment_authorize_time_out',
@@ -982,6 +988,7 @@ final class Route
         'risk_fetch_multiple',
         'risk_get',
         'merchant_create_invoice_entities',
+        'merchant_payout',
     ];
 
     public static $proxy = [
@@ -1006,6 +1013,7 @@ final class Route
         'merchant_delete_config_logo',
         'merchant_fetch_config',
         'merchant_sub_create',
+        'merchant_fetch_referrals',
         'customer_delete',
         'customer_create_token',
         'device_verify_token',
@@ -1117,6 +1125,7 @@ final class Route
         'workflow_action_get_multiple',
         'merchants_update_hold_funds',
         'adj_add',
+        'adj_add_fee',
         'payment_authorize_refund',
         'admin_change_password',
         'pricing_create_plan',
@@ -1124,6 +1133,7 @@ final class Route
         'merchant_invoice_update_gstin',
         'merchant_details_fetch',
         'merchant_get_terminals',
+        'merchant_invoice_add_bulk',
     ];
 
     public static $routePermission = [
@@ -1209,6 +1219,7 @@ final class Route
         'merchant_fetch_bank_account'      => Permission::VIEW_MERCHANT_BANK_ACCOUNTS,
         'merchant_edit'                    => '*', // permission handled in code
         'adj_add'                          => Permission::ADD_MERCHANT_ADJUSTMENT,
+        'adj_add_fee'                      => Permission::ADD_MERCHANT_ADJUSTMENT,
         'merchant_add_bank_account'        => Permission::EDIT_MERCHANT_BANK_DETAIL,
         'merchant_activate'                => Permission::EDIT_ACTIVATE_MERCHANT,
         'admin_fetch_terminal_by_id'       => '*',
@@ -1245,6 +1256,7 @@ final class Route
         'merchant_get_pricing'             => Permission::VIEW_MERCHANT_PRICING,
         'merchant_invoice_update_gstin'    => '*',
         'merchant_details_fetch'           => '*',
+        'merchant_invoice_add_bulk'        => '*',
     ];
 
     public static $direct = [
@@ -1330,6 +1342,7 @@ final class Route
             'schedule_process_tasks',
             'virtual_account_refund_excess',
             'merchant_create_invoice_entities',
+            'merchant_payout',
         ],
 
         'kotak' => [
@@ -1429,6 +1442,7 @@ final class Route
         'schedule_assign',
         'admin_dummy_account_test',
         'merchant_invoice_update_gstin',
+        'merchant_invoice_add_bulk',
     ];
 
     const RAZORPAYJS_ROUTES = [

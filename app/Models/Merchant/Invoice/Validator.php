@@ -11,6 +11,7 @@ class Validator extends Base\Validator
         Entity::MONTH       => 'required|integer|between:1,12',
         Entity::YEAR        => 'required|digits:4',
         Entity::TYPE        => 'required|string',
+        Entity::DESCRIPTION => 'sometimes|string|nullable',
         Entity::AMOUNT      => 'required|integer',
         Entity::TAX         => 'required|integer',
         Entity::AMOUNT_DUE  => 'sometimes|integer|min:0',
@@ -26,6 +27,11 @@ class Validator extends Base\Validator
         Entity::YEAR        => 'sometimes|digits:4',
         'merchant_ids'      => 'sometimes|array',
         'merchant_ids.*'    => 'sometimes|string|size:14',
+    ];
+
+    protected static $bulkCreateRules = [
+        'invoice_entities'      => 'required|array',
+        'invoice_entities.*'    => 'required|array',
     ];
 
     protected static $createValidators = [

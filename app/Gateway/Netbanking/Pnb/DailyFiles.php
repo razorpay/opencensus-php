@@ -5,6 +5,7 @@ namespace RZP\Gateway\Netbanking\Pnb;
 use Mail;
 use Carbon\Carbon;
 
+use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Constants\MailTags;
 use RZP\Gateway\Netbanking\Base;
@@ -12,7 +13,7 @@ use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 
 class DailyFiles extends Base\DailyFiles
 {
-    protected $emailIdsToSendTo = '';
+    protected $emailIdsToSendTo = 'pnb.netbanking.refunds@razorpay.com';
 
     public function generate($from, $to, $email = null)
     {
@@ -80,5 +81,87 @@ class DailyFiles extends Base\DailyFiles
         $dailyFileMail = new DailyFileMail($data);
 
         Mail::queue($dailyFileMail);
+    }
+
+    /**
+     * We need to send them all the payments where
+     * amount = amount - amount_refunded
+     * And all the refunds that happened at T-1
+     * but the payments were authorized before T-1
+     *
+     * @param integer $from
+     * @param integer $to
+     */
+    protected function getClaimsData($from, $to)
+    {
+        $claims = [];
+
+        $status = [
+            Payment\Status::AUTHORIZED,
+            Payment\Status::CAPTURED,
+        ];
+
+        $payments = $this->repo->payment
+                               ->fetchPaymentsWithStatus($from,
+                                                         $to,
+                                                         $this->gateway,
+                                                         $status);
+
+        foreach ($payments as $payment)
+        {
+            $refundAmount = $payment[Payment\Entity::AMOUNT_REFUNDED];
+
+            $amountToClaim = $payment[Payment\Entity::AMOUNT] - $refundAmount;
+
+            $payment[Payment\Entity::AMOUNT] = $amountToClaim;
+            $payment[Constants::CLAIM_TYPE]  = Constants::DEBIT;
+            $payment[Constants::TXN_DETAIL]  = Constants::PAYMENT;
+
+            $claims[] = $payment;
+        }
+
+        $refunds = $this->repo->refund
+                              ->fetchRefundsForPnbClaims($from, $to);
+
+        foreach ($refunds as $refund)
+        {
+            $refund[Payment\Entity::ID]    = $refund['payment']['id'];
+            $refund[Constants::CLAIM_TYPE] = Constants::CREDIT;
+            $refund[Constants::TXN_DETAIL] = Constants::REFUND;
+            $refund['terminal']            = $refund['payment']['terminal'];
+
+            $claims[] = $refund;
+        }
+
+        if (count($claims) === 0)
+        {
+            return [
+                'total_amount'    => 0,
+                'count'           => 0,
+                'url'             => '',
+                'name'            => '',
+                'local_file_path' => '',
+                'signed_url'      => '',
+                'file_name'       => '',
+             ];
+        }
+
+        $data = [];
+
+        foreach ($claims as $claim)
+        {
+            $col['payment'] = $claim;
+            $col['terminal'] = $claim->terminal->toArray();
+
+            $data[] = $col;
+        }
+
+        $input['data'] = $data;
+
+        $gateway = $this->gateway;
+
+        $action = 'generateClaims';
+
+        return $this->app['gateway']->call($gateway, $action, $input, $this->mode);
     }
 }

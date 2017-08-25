@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use Config;
+use Conner\Tagging\Taggable;
 use RZP\Models\User;
 use RZP\Models\Base;
 use RZP\Models\Emi;
@@ -17,7 +18,7 @@ use RZP\Models\Admin\Permission\Name as Permission;
 
 class Entity extends Base\PublicEntity
 {
-    use \Conner\Tagging\Taggable;
+    use Taggable;
 
     const ID                        = 'id';
     const ORG_ID                    = 'org_id';
@@ -58,9 +59,16 @@ class Entity extends Base\PublicEntity
     // Coupon Related Data for display only
     const COUPON_CODE               = 'coupon_code';
 
-    // constants
+    //
+    // Configs
+    //
+
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
     const SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 3;
+    // 30 minutes in seconds
+    const MIN_AUTO_REFUND_DELAY = 1800;
+    // 10 days in seconds
+    const MAX_AUTO_REFUND_DELAY = 864000;
 
     /**
      * Refers to methods relation and not a property;
@@ -88,6 +96,7 @@ class Entity extends Base\PublicEntity
 
     protected $embeddedRelations = [
         self::GROUPS,
+        self::ADMINS,
     ];
 
     protected $fillable = [

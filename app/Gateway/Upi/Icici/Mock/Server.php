@@ -85,8 +85,6 @@ class Server extends Base\Mock\Server
 
     protected function getRefundResponseContent(array $input)
     {
-        $vpa = $input['payeeVA'];
-
         return [
             // Conditional Fields
             Fields::MERCHANT_ID           => $input['merchantId'],

@@ -35,7 +35,6 @@ class Type
         self::CARD_LTE_2K   => self::CARD_LTE_2K_DESCRIPTION,
         self::CARD_GT_2K    => self::CARD_GT_2K_DESCRIPTION,
         self::NON_CARD      => self::NON_CARD_DESCRIPTION,
-        self::ADJUSTMENT    => 'Adjustment',
     ];
 
     public static function getAllTypes(): array

@@ -258,7 +258,7 @@ class Repository extends Base\Repository
         $paymentCreatedAt = $this->dbColumn(Entity::CREATED_AT);
         $merchantId       = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
-        $minCreatedAt = Carbon::now()->subMinutes(30)->timestamp;
+        $minCreatedAt = Carbon::now()->subSeconds(Merchant\Entity::MIN_AUTO_REFUND_DELAY)->timestamp;
 
         $rawCondition = '(' . time() . ' - ' . $paymentCreatedAt . ') > ' . Merchant\Entity::AUTO_REFUND_DELAY;
 
