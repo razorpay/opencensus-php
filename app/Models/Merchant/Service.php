@@ -1270,7 +1270,7 @@ class Service extends Base\Service
         }
         else
         {
-            $owner = $this->core()->getMerchantOwner($merchant);
+            $owner = $this->core()->getMerchantConfirmedOwner($merchant);
 
             // true if an owner is present
             return !empty($owner);
