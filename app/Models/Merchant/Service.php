@@ -128,7 +128,7 @@ class Service extends Base\Service
             }
             catch (\Throwable $e)
             {
-                $result = ['message'=> $e->getMessage()];
+                $result = ['message' => $e->getMessage()];
             }
         }
 
@@ -1246,7 +1246,7 @@ class Service extends Base\Service
         $data['confirmed'] = $this->getMerchantConfirmed($merchant);
 
         //fetch formatted merchant details.
-        $data['merchant_details'] = (new Detail\Service)->fetchMerchantDetails();
+        $data['merchant_details'] = (new Detail\Service)->getMerchantDetailsForAdmin();
 
         $data['tags'] = $merchant->tagNames();
 

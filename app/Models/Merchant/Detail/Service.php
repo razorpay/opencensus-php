@@ -95,7 +95,8 @@ class Service extends Base\Service
 
         $eventAttributes['activation_progress'] = $activationProgress;
 
-        $this->app['eventManager']->trackEvents($this->merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
+        $this->app['eventManager']
+            ->trackEvents($this->merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
 
         return $response;
     }
@@ -343,5 +344,67 @@ class Service extends Base\Service
         $response['activated'] = (int) $merchantDetails->merchant->isActivated();
 
         return $response;
+    }
+
+    private function getFieldsToStepMap() : array
+    {
+        // Here we can send market plance steps if needed.
+        // for the current merchant detail API its only normal accounts.
+        return Merchant\Constants::STEP_MAP;
+    }
+
+    private function getStepsList()
+    {
+        $stepsList = array_values($this->getFieldsToStepMap());
+
+        return array_values(array_unique($stepsList));
+    }
+
+    public function calculateSteps($merchantDetails)
+    {
+        $stepFinished = [];
+
+        $stepMap = $this->getFieldsToStepMap();
+
+        $requiredFields = $merchantDetails['verification']['required_fields'] ?? [];
+
+        foreach ($requiredFields as $key)
+        {
+            if (isset($stepMap[$key]) === true)
+            {
+                $stepFinished[] = $stepMap[$key];
+            }
+        }
+
+        return $stepFinished;
+    }
+
+    public function getMerchantDetailsForAdmin()
+    {
+        $merchantDetails = $this->fetchMerchantDetails();
+
+        //formatting the data as required by the controller.
+        //getsteps for the current merchant.
+        $steps = $this->getStepsList();
+
+        if($merchantDetails['can_submit'] === true)
+        {
+            $merchantDetails['steps_finished'] = $steps;
+        }
+        else
+        {
+            $unfinishedSteps = $this->calculateSteps($merchantDetails);
+
+            if(count($unfinishedSteps) !== 0)
+            {
+                $unfinishedSteps = array_unique($unfinishedSteps);
+
+                $finishedSteps = array_values(array_diff($steps, $unfinishedSteps));
+
+                $merchantDetails['steps_finished'] = $finishedSteps;
+            }
+        }
+
+        return $merchantDetails;
     }
 }
