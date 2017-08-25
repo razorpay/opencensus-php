@@ -11,7 +11,6 @@ use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Balance;
-use RZP\Models\Admin\Permission\Name as Permission;
 
 class Repository extends Base\Repository
 {

@@ -796,7 +796,6 @@ final class Route
         'merchant_create_terminal',
         'merchant_daily_report',
         'merchant_delete_terminal',
-        'merchant_get_terminals',
         'merchant_copy_terminal',
         'merchant_activate',
         'merchant_send_activation_mail',
@@ -1123,7 +1122,8 @@ final class Route
         'pricing_create_plan',
         'merchant_get_pricing',
         'merchant_invoice_update_gstin',
-        'merchant_details_fetch'
+        'merchant_details_fetch',
+        'merchant_get_terminals',
     ];
 
     public static $routePermission = [
@@ -1236,7 +1236,6 @@ final class Route
         'merchant_edit_config'             => Permission::ASSIGN_MERCHANT_HANDLE,
         'merchant_fetch'                   => '*',
         'merchant_get_terminals'           => '*',
-        'merchant_get_pricing'             => '*',
         'merchant_activation_details'      => '*',
         'merchant_fetch_users'             => '*',
         'admin_change_password'            => '*',
@@ -1246,6 +1245,7 @@ final class Route
         'merchant_get_pricing'             => Permission::VIEW_MERCHANT_PRICING,
         'merchant_invoice_update_gstin'    => '*',
         'merchant_details_fetch'           => '*',
+        'merchant_get_terminals'           => '*',
     ];
 
     public static $direct = [
