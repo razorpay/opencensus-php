@@ -78,4 +78,18 @@ class WorkflowRequestListingTest extends TestCase
 
         $this->startTest();
     }
+
+    /**
+     * Workflow will be created on editadmin cause of default workflow
+     */
+    public function testAdminCheckedRequests()
+    {
+        $workflow = $this->editAdmin('org_' . Org::RZP_ORG, 'admin_' . Org::SUPER_ADMIN);
+
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
+        $this->approveWorkflowAction($workflow['id']);
+
+        $this->startTest();
+    }
 }

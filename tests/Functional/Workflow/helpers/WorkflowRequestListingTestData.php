@@ -2,6 +2,7 @@
 namespace RZP\Tests\Functional\Workflow;
 
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Fixtures\Entity\Workflow;
 use RZP\Tests\Functional\Fixtures\Entity\WorkflowAction;
 
 return [
@@ -74,5 +75,28 @@ return [
                 ],
             ]
         ]
+    ],
+    'testAdminCheckedRequests' => [
+        'request' => [
+            'method'    => 'GET',
+            'url'       => '/w-actions?duty=admin_checked&type=all',
+            'content'   => [],
+        ],
+        'response'      => [
+            'content'   => [
+                'entity'    => 'collection',
+                'items'     => [
+                    [
+                        'state'             => 'open',
+                        'admin_id'          => 'admin_' . Org::SUPER_ADMIN,
+                        'entity_name'       => 'admin',
+                        'admin'             => [],
+                        'approved'          => false,
+                        'current_level'     => 2,
+                        'workflow_id'       => 'workflow_' . Workflow::DEFAULT_WORKFLOW_ID,
+                    ],
+                ],
+            ]
+        ],
     ],
 ];

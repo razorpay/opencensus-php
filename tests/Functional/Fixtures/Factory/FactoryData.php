@@ -813,5 +813,10 @@ final class FactoryData
             'id'                => $faker->uniqueid,
             'name'              => \RZP\Models\Workflow\Action\State\Entity::OPEN,
         ]);
+
+        $factory(\RZP\Models\Workflow\Action\Checker\Entity::class,[
+            'id'                => $faker->uniqueid,
+            'name'              => \RZP\Models\Workflow\Action\State\Entity::OPEN,
+        ]);
     }
 }
