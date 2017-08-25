@@ -103,6 +103,7 @@ return [
         'pricing_create_plan'               => 'pricing',
         'merchant_get_pricing'              => 'merchants/{id}/pricing',
         'merchant_get_terminals'            => 'merchants/{id}/terminals',
+        'merchant_details_fetch'            => 'merchants/details/{id}',
     ],
 
     // auth
