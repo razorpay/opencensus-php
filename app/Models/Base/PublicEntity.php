@@ -64,7 +64,7 @@ class PublicEntity extends UniqueIdEntity
     protected $public           = [];
 
     /**
-     *
+     * Attribute level permission for entity.
      */
     protected $attributePermissions = [];
 
@@ -617,6 +617,7 @@ class PublicEntity extends UniqueIdEntity
 
             $permissions = $admin->getPermissionsList();
 
+            // filtering out attributes based on admin permissions.
             $attributes = array_diff($this->attributePermissions, $permissions);
 
             $array = array_diff_key($array, $attributes);

@@ -12,7 +12,6 @@ use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Role;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
-use RZP\Models\Admin\Permission\Name as Permission;
 
 class Entity extends Base\Entity
 {
