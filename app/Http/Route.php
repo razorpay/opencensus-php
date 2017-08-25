@@ -1245,7 +1245,6 @@ final class Route
         'merchant_get_pricing'             => Permission::VIEW_MERCHANT_PRICING,
         'merchant_invoice_update_gstin'    => '*',
         'merchant_details_fetch'           => '*',
-        'merchant_get_terminals'           => '*',
     ];
 
     public static $direct = [
