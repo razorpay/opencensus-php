@@ -736,9 +736,7 @@ class Terminal extends Base
             'netbanking'                => 1,
             'gateway'                   => 'netbanking_corporation',
             'gateway_merchant_id'       => 'abcd',
-            'gateway_terminal_id'       => 'abcde',
-            'gateway_terminal_password' => 'abcdef',
-            'card'                      => 1
+            'gateway_secure_secret'     => 'secure_secret'
         ];
 
         return parent::create($attributes);
@@ -753,8 +751,7 @@ class Terminal extends Base
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'netbanking_corporation',
             'gateway_merchant_id'       => 'abcd',
-            'gateway_terminal_id'       => 'abcde',
-            'gateway_terminal_password' => 'abcdef'
+            'gateway_secure_secret'     => 'secure_secret'
         ];
 
         return parent::create($attributes);

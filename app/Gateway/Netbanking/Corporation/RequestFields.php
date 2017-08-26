@@ -10,6 +10,7 @@ class RequestFields
     const PAYMENT_ID           = 'OTC';
     const MODE_OF_TRANSACTION  = 'MD';
     const FUND_TRANSFER        = 'TT';
+    const ACCOUNT_NUMBER       = 'AcctNo';
 
     const VERIFY_DATA                   = 'data';
     const VERIFY_MERCHANT_CODE          = 'mercode';

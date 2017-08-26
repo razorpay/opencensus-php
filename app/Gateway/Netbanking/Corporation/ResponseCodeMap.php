@@ -9,8 +9,6 @@ class ResponseCodeMap extends Base\ResponseCodeMap
     const SUCCESS_CODE = 'S';
     const FAILURE_CODE = 'F';
 
-    const FUND_TRANSFER = 'T';
-
     const RESULT_SUCCESS  = 'EXECUTED';
     const RESULT_REJECTED = 'REJECTED';
     const RESULT_FAILURE  = 'FAILURE';

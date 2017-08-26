@@ -38,10 +38,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->createGatewayPaymentEntity($content);
 
-        $request = array(
-            'url' => $this->getUrl('pay'),
-            'method' => 'post',
-            'content' => $content);
+        $request = $this->getStandardRequestArray($content);
 
         $this->traceGatewayPaymentRequest($request, $input);
 
@@ -94,17 +91,17 @@ class Gateway extends Base\Gateway
     {
         $data = array(
             // Setting this as the merchant code shared with us
-            'CustID'            => $this->getMerchantId(),
-            'MerCD'             => $this->getMerchantId(),
-            'AMT'               => $input['payment']['amount'] / 100,
-            'OTC'               => $input['payment']['id'],
-            'MD'                => 'P',
-            'TT'                => 'T',
+            RequestFields::CUSTOMER_ID          => $this->getMerchantId(),
+            RequestFields::MERCHANT_CODE        => $this->getMerchantId(),
+            RequestFields::AMOUNT               => $input['payment']['amount'] / 100,
+            RequestFields::PAYMENT_ID           => $input['payment']['id'],
+            RequestFields::MODE_OF_TRANSACTION  => Constants::MODE_OF_TRANSACTION_PAYMENT,
+            RequestFields::FUND_TRANSFER        => Constants::FUND_TRANSFER,
         );
 
         if ($input['merchant']->isTPVRequired())
         {
-            $data['AcctNo'] = $input['order']['account_number'];
+            $data[RequestFields::ACCOUNT_NUMBER] = $input['order']['account_number'];
         }
 
         return $data;
@@ -131,15 +128,13 @@ class Gateway extends Base\Gateway
 
     protected function saveCallbackResponse($content)
     {
-        $data = [
-            NetbankingEntity::RECEIVED => true
-        ] + $content;
+        $content[NetbankingEntity::RECEIVED] = true;
 
         $gatewayPayment = $this->getRepository()->findByPaymentIdAndActionOrFail(
                                     $content[ResponseFields::PAYMENT_ID],
                                     Action::AUTHORIZE);
 
-        $gatewayPayment = $this->updateGatewayPaymentEntity($gatewayPayment, $data);
+        $gatewayPayment = $this->updateGatewayPaymentEntity($gatewayPayment, $content);
 
         return $gatewayPayment;
     }
@@ -214,12 +209,11 @@ class Gateway extends Base\Gateway
             $attributes[Base\Entity::STATUS] = $content[ResponseFields::STATUS];
         }
 
-        if (isset($content[ResponseFields::BANK_REF_NUMBER]) === true)
+        if (isset($content[ResponseFields::BANK_REF_NUMBER]) === true and
+            empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true
+        )
         {
-            if (empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true)
-            {
-                $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_REF_NUMBER];
-            }
+            $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_REF_NUMBER];
         }
 
         return $attributes;
@@ -269,6 +263,9 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
         }
+
+        // Setting this back to a callback request once the verification in callback is done
+        // parent::callback($input);
     }
 
     protected function parseVerifyResponse($content)
@@ -340,7 +337,7 @@ class Gateway extends Base\Gateway
 
     public function getMerchantId()
     {
-        $mid = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
+        $mid = $this->getLiveMerchantId();
 
         if ($this->mode === Mode::TEST)
         {

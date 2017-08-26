@@ -9,6 +9,7 @@ use RZP\Gateway\Paytm;
 use RZP\Gateway\Netbanking\Corporation\RequestFields;
 use RZP\Gateway\Netbanking\Corporation\ResponseFields;
 use RZP\Gateway\Netbanking\Corporation\ResponseCodeMap;
+use RZP\Gateway\Netbanking\Corporation\Constants;
 
 use Carbon\Carbon;
 
@@ -26,11 +27,11 @@ class Server extends Base\Mock\Server
 
         $callbackUrl = $this->route->getUrl('gateway_payment_callback_corporation');
 
-        $request = array(
-            'url' => $callbackUrl,
-            'content' => $response,
-            'method' => 'post',
-        );
+        $request = [
+            'url'       => $callbackUrl,
+            'content'   => $response,
+            'method'    => 'post',
+        ];
 
         return $this->makePostResponse($request);
     }
@@ -50,7 +51,7 @@ class Server extends Base\Mock\Server
             ResponseFields::PAYMENT_ID          => $input[RequestFields::PAYMENT_ID],
             ResponseFields::CUSTOMER_ID         => $input[RequestFields::MERCHANT_CODE],
             ResponseFields::AMOUNT              => $input[RequestFields::AMOUNT],
-            ResponseFields::FUND_TRANSFER       => ResponseCodeMap::FUND_TRANSFER,
+            ResponseFields::FUND_TRANSFER       => Constants::FUND_TRANSFER,
             ResponseFields::BANK_REF_NUMBER     => self::BANK_REF_NUMBER,
             ResponseFields::STATUS              => ResponseCodeMap::SUCCESS_CODE,
         ];
@@ -76,12 +77,12 @@ class Server extends Base\Mock\Server
         $datetime = Carbon::now(Timezone::IST)->format('dmY\THis');
 
         $data = [
-            ResponseFields::VERIFY_MERCHANT_CODE => $input[RequestFields::VERIFY_MERCHANT_CODE],
-            ResponseFields::VERIFY_PAYMENT_ID => $input[RequestFields::VERIFY_PAYMENT_ID],
-            ResponseFields::VERIFY_AMOUNT => $input[RequestFields::VERIFY_AMOUNT],
-            ResponseFields::VERIFY_BANK_REF_NUMBER => $input[RequestFields::VERIFY_BANK_REF_NUMBER],
-            ResponseFields::VERIFY_RESULT => ResponseCodeMap::RESULT_SUCCESS,
-            ResponseFields::VERIFY_RESULTMESSAGE => ResponseCodeMap::RESULT_SUCCESS,
+            ResponseFields::VERIFY_MERCHANT_CODE     => $input[RequestFields::VERIFY_MERCHANT_CODE],
+            ResponseFields::VERIFY_PAYMENT_ID        => $input[RequestFields::VERIFY_PAYMENT_ID],
+            ResponseFields::VERIFY_AMOUNT            => $input[RequestFields::VERIFY_AMOUNT],
+            ResponseFields::VERIFY_BANK_REF_NUMBER   => $input[RequestFields::VERIFY_BANK_REF_NUMBER],
+            ResponseFields::VERIFY_RESULT            => ResponseCodeMap::RESULT_SUCCESS,
+            ResponseFields::VERIFY_RESULTMESSAGE     => ResponseCodeMap::RESULT_SUCCESS,
             ResponseFields::VERIFY_PAYMENT_DATE_TIME => $datetime,
         ];
 
