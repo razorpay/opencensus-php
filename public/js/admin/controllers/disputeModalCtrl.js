@@ -9,7 +9,8 @@ app.controller('DisputeModalCtrl', [
   'dateFactory',
   '$modalInstance',
   'current',
-  function($scope, $http, dateFactory, $modalInstance, current) {
+  'mode',
+  function($scope, $http, dateFactory, $modalInstance, current, mode) {
     $scope.currency = current.currency || 'INR';
 
     if (current.entity && current.entity === 'dispute') {
@@ -42,7 +43,7 @@ app.controller('DisputeModalCtrl', [
         url_params: {
           '{type}': 'dispute_reason',
         },
-        mode: 'test',
+        mode: mode,
       };
       var request = $http.get('/admin/generic', {
         params: data,
