@@ -86,6 +86,60 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
+    /**
+     * Called for cron or API to
+     * create a payout for a merchant
+     *
+     * @param  array           $input
+     * @return array
+     */
+    public function merchantPayout(array $input)
+    {
+        $merchantId = $input[Entity::MERCHANT_ID];
+
+        $bankAccountId = $input[Entity::DESTINATION_ID];
+
+        $customerId = $input[Entity::CUSTOMER_ID];
+
+        $merchant = $this->repo->merchant->findByPublicId($merchantId);
+
+        if (isset($input[Entity::AMOUNT]) === true)
+        {
+            $amount = $input[Entity::AMOUNT];
+        }
+        else
+        {
+            $amount = $merchant->balance->getBalance();
+        }
+
+        if ((isset($input[Entity::MIN_AMOUNT]) === true) and
+            ($amount < $input[Entity::MIN_AMOUNT]))
+        {
+            return ['message' =>
+                'amount to be transferred is less than' . $input[Entity::MIN_AMOUNT]];
+
+        }
+
+        if (isset($input[Entity::MODULO]) === true)
+        {
+            $moduloAmount = $amount % $input[Entity::MODULO];
+
+            $amount = $amount - $moduloAmount;
+        }
+
+        $payoutInput = [
+            Entity::CUSTOMER_ID    => $customerId,
+            Entity::AMOUNT         => $amount,
+            Entity::CURRENCY       => 'INR',
+            Entity::METHOD         => Method::FUND_TRANSFER,
+            Entity::DESTINATION    => $bankAccountId,
+        ];
+
+        $response = $this->directPayout($payoutInput, $merchant);
+
+        return $response;
+    }
+
     protected function createPayout(array $input, Merchant\Entity $merchant): Entity
     {
         $this->validateMerchantStatus($merchant);
@@ -289,54 +343,5 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD);
         }
-    }
-
-    public function merchantPayout($input)
-    {
-        $merchantId = $input[Entity::MERCHANT_ID];
-
-        $bankAccountId = $input[Entity::DESTINATION_ID];
-
-        $customerId = $input[Entity::CUSTOMER_ID];
-
-        $merchant = $this->repo->merchant->fetchById($merchantId);
-
-        if (isset($input[Entity::AMOUNT]) === true)
-        {
-            $amount = $input[Entity::AMOUNT];
-        }
-        else
-        {
-            $amount = $merchant->balance->getBalance();
-        }
-
-        if ((isset($input[Entity::MIN_AMOUNT]) === true) and
-            ($amount > $input[Entity::MIN_AMOUNT]))
-        {
-            if (isset($input[Entity::MODULO]) === true)
-            {
-                $moduloAmount = $amount % $input[Entity::MODULO];
-
-                $amount = $amount - $moduloAmount;
-            }
-
-            $payoutInput = [
-                Entity::CUSTOMER_ID    => $customerId,
-                Entity::AMOUNT         => $amount,
-                Entity::CURRENCY       => 'INR',
-                Entity::METHOD         => Method::FUND_TRANSFER,
-                Entity::DESTINATION_ID => $bankAccountId,
-            ];
-
-            $payout = $this->directPayout($payoutInput, $merchant);
-        }
-        else
-        {
-            $response = [
-                'message' => 'amount to be transferred is less than' . $input[Entity::MIN_AMOUNT]
-            ];
-        }
-
-        return $response;
     }
 }

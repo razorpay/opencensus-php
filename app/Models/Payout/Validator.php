@@ -19,8 +19,8 @@ class Validator extends Base\Validator
 
     protected static $merchantRules = [
         Entity::MERCHANT_ID    => 'required|string',
-        Entity::CUSTOMER_ID    => 'required|public_id',
-        Entity::DESTINATION_ID => 'required|public_id',
+        Entity::CUSTOMER_ID    => 'required|string',
+        Entity::DESTINATION_ID => 'required|string',
         Entity::AMOUNT         => 'sometimes|integer|max:100000000',
         Entity::MIN_AMOUNT     => 'sometimes|integer',
         Entity::MODULO         => 'sometimes|integer',
