@@ -185,9 +185,10 @@ trait Callback
             $input['customer'] = $this->repo->customer->getGlobalCustomerForPayment($payment);
         }
 
-        if ($payment->getGlobalTokenId() !== null)
+        $token = $this->repo->token->getGlobalOrLocalTokenEntityOfPayment($payment);
+
+        if ($token !== null)
         {
-            $token = $this->repo->token->getGlobalOrLocalTokenEntityOfPayment($payment);
             $input['token'] = $token->toArray();
         }
 

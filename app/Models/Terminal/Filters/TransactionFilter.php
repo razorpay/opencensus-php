@@ -277,13 +277,9 @@ class TransactionFilter extends Terminal\Filter
                         ]);
                 }
             }
-            else if ($payment->isMethodCardOrEmi() === true)
+            else
             {
                 return ($terminal->is3DSRecurring() === true);
-            }
-            else if ($payment->isNetbanking() === true)
-            {
-                return ($terminal->isRecurring() === true);
             }
         }
 

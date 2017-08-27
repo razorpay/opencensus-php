@@ -22,4 +22,12 @@ class Repository extends Base\Repository
                     ->where(Entity::INT_PAYMENT_ID, '=', $intPaymentId)
                     ->firstOrFail();
     }
+
+    public function findBySIRefIdAndActionOrFail(string $siRefId, string $action)
+    {
+        return $this->newQuery()
+                    ->where(Entity::SI_REF_ID, '=', $siRefId)
+                    ->where('action', '=', $action)
+                    ->firstOrFail();
+    }
 }

@@ -16,7 +16,6 @@ use RZP\Gateway\Base\AESCrypto;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Customer\Token;
-use RZP\Models\Customer\GatewayToken;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 
@@ -45,17 +44,96 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        $content = $this->getPaymentRequestData($input);
+        if ($this->isSecondRecurringPayment($input) === true)
+        {
+            //
+            // NOTE: Ensure that we don't send back anything at all.
+            // Otherwise it goes into 2-step flow.
+            //
+            return $this->authorizeSecondRecurring($input);
+        }
+
+        $requestData = $this->getAuthorizeRequestData($input);
 
         $entity = [RequestFields::AMOUNT => $input['payment'][Payment\Entity::AMOUNT] / 100];
 
         $this->createGatewayPaymentEntity($entity);
 
-        $request = $this->getStandardRequestArray($content, 'post', $this->getUrlType());
+        $request = $this->getStandardRequestArray($requestData, 'post', $this->getUrlType());
 
         $this->traceGatewayPaymentRequest($request, $input);
 
         return $request;
+    }
+
+    protected function authorizeSecondRecurring(array $input)
+    {
+        $gatewayToken = $input['token']->getGatewayToken();
+
+        if ($gatewayToken === null)
+        {
+            // TODO: Throw an exception
+            // If it's second recurring, we should already
+            // be having the gateway token at this point.
+        }
+
+        $requestData = $this->getSecondRecurringRequestData($input, $gatewayToken);
+
+        $request = $this->getStandardRequestArray($requestData, 'post', $this->getUrlType());
+
+        $this->trace->info(
+            TraceCode::GATEWAY_RECURRING_DEBIT_REQUEST,
+            [
+                'payment_id' => $input['payment']['id'],
+                'request'    => $request
+            ]);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_RECURRING_DEBIT_RESPONSE,
+            [
+                'payment_id' => $input['payment']['id'],
+                'response'   => $response->body
+            ]);
+
+        $responseArray = $this->getResponseArray($response);
+
+        // TODO: Save the gateway payment entity here first.
+
+        $this->checkSecondRecurringStatus($responseArray);
+    }
+
+    protected function checkSecondRecurringStatus(array $response)
+    {
+        // TODO: To check the values of Status in case of both
+        // success and failures. We may have to create error mappings
+        // accordingly.
+
+        if ((empty($response[ResponseFields::STATUS]) === true) or
+            ($response[ResponseFields::STATUS] !== Status::SUCCESS))
+        {
+            // TODO: Throw an exception
+        }
+    }
+
+    protected function getSecondRecurringRequestData(array $input, string $gatewayToken)
+    {
+        $gatewayPayment = $this->repo->findBySIRefIdAndActionOrFail($gatewayToken, Action::AUTHORIZE);
+
+        $baseRequestData = $this->getBaseRequestData(Action::STANDING_INSTRUCTIONS);
+        $verifyRequestData = $this->getBaseVerifyRequestData($gatewayPayment, $input);
+
+        $paymentDate = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST)
+                             ->format('Y-m-d');
+
+        $recurringRequestData = [
+            RequestFields::SI_REFERENCE_NUMBER  => $gatewayToken,
+            // Being overridden on verifyRequestData
+            RequestFields::PAYMENT_DATE         => $paymentDate,
+        ];
+
+        return array_merge($baseRequestData, $verifyRequestData, $recurringRequestData);
     }
 
     public function callback(array $input)
@@ -84,8 +162,7 @@ class Gateway extends Base\Gateway
 
         $recurringData = [];
 
-        // TODO: Assumed to be first recurring. Do we need to change here?
-        if ($input['terminal']->isRecurring() === true)
+        if ($this->isFirstRecurring($input))
         {
             $recurringData = $this->getRecurringData($gatewayPayment);
         }
@@ -118,9 +195,9 @@ class Gateway extends Base\Gateway
 
     public function sendPaymentVerifyRequest(Verify $verify)
     {
-        $content = $this->getVerifyRequestData($verify);
+        $requestData = $this->getVerifyRequestData($verify);
 
-        $request = $this->getStandardRequestArray($content, 'post', $this->getUrlType());
+        $request = $this->getStandardRequestArray($requestData, 'post', $this->getUrlType());
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
@@ -142,7 +219,17 @@ class Gateway extends Base\Gateway
 
         $this->preProcessVerifyResponse($verify->verifyResponseBody);
 
-        $verify->verifyResponseContent = $this->getResponseArray($verify);
+        try
+        {
+            $verify->verifyResponseContent = $this->getResponseArray($verify->verifyResponseBody);
+        }
+        catch (\Exception $e)
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify,
+                PaymentVerify\Action::RETRY);
+        }
     }
 
     public function verifyPayment(Verify $verify)
@@ -214,11 +301,11 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getPaymentRequestData(array $input)
+    protected function getAuthorizeRequestData(array $input)
     {
-        $defaultRequestData = $this->createDefaultRequestData($input);
+        $baseRequestData = $this->getBaseRequestData(Action::PAY);
 
-        $requestData = $this->getAuthorizeRequestData($input);
+        $requestData = $this->getBaseAuthorizeRequestData($input);
 
         //
         // For recurring payments, we use E-Mandate
@@ -228,12 +315,6 @@ class Gateway extends Base\Gateway
             $eMandateData = $this->getEMandateRequestData($input);
 
             $requestData = array_merge($requestData, $eMandateData);
-        }
-        else if ($this->isSecondRecurringPayment($input) === true)
-        {
-            $siDebitData = $this->getSIDebitRequestData($input);
-
-            $requestData = array_merge($requestData, $siDebitData);
         }
 
         $this->traceGatewayPaymentRequest($requestData, $input);
@@ -245,37 +326,41 @@ class Gateway extends Base\Gateway
             RequestFields::SPID             => $this->getSpid(),
         ];
 
-        return array_merge($defaultRequestData, $requestData);
+        return array_merge($baseRequestData, $requestData);
     }
 
     protected function getVerifyRequestData(Verify $verify)
     {
-        $input = $verify->input;
+        $baseRequestData = $this->getBaseRequestData(Action::INQUIRY);
 
-        $payment = $verify->payment;
-
-        $data = $this->createDefaultRequestData($input);
-
-        $paymentDate = Carbon::createFromTimestamp($payment['created_at'],
-                                                   Timezone::IST)
-                                                   ->format('Y-m-d');
-
-        $data[RequestFields::PAYMENT_DATE] = $paymentDate;
-
-        $data[RequestFields::MODE]  = Action::INQUIRY;
-
-        $additionalData = $this->getPaymentReferenceData($input);
+        $requestData = $this->getBaseVerifyRequestData($verify->payment, $verify->input);
 
         if ($this->isCorporateBanking() === true)
         {
-            $data[RequestFields::SHOW_ON_SAME_PAGE]  = Status::Y;
-            // This is a dummy url that is being set to use the api
-            $data[RequestFields::RETURN_URL]  = $this->app['config']->get('app.url');
+            $corporateData = [
+                RequestFields::SHOW_ON_SAME_PAGE    => Status::Y,
+                // This is a dummy url that is being set to use the api
+                RequestFields::RETURN_URL           => $this->app['config']->get('app.url')
+            ];
+
+            $requestData = array_merge($requestData, $corporateData);
         }
 
-        $data = array_merge($data, $additionalData);
+        return array_merge($baseRequestData, $requestData);
+    }
 
-        return $data;
+    protected function getBaseVerifyRequestData($gatewayPayment, $input)
+    {
+        $paymentDate = Carbon::createFromTimestamp($gatewayPayment['created_at'], Timezone::IST)
+                             ->format('Y-m-d');
+
+        $data = [
+            RequestFields::PAYMENT_DATE => $paymentDate,
+        ];
+
+        $additionalData = $this->getPaymentReferenceData($input);
+
+        return array_merge($data, $additionalData);
     }
 
     protected function getEncryptedString(array $data)
@@ -331,12 +416,7 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function getSIDebitRequestData()
-    {
-        // TODO: Fill this function up
-    }
-
-    protected function getAuthorizeRequestData(array $input)
+    protected function getBaseAuthorizeRequestData(array $input)
     {
         $callbackUrl = '%22' . $input['callbackUrl'] . '%22';
 
@@ -368,10 +448,10 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function createDefaultRequestData(array $input)
+    protected function getBaseRequestData(string $mode)
     {
         $defaultData = [
-            RequestFields::MODE     => Action::PAY,
+            RequestFields::MODE     => $mode,
             RequestFields::PAYEE_ID => $this->getPid(),
         ];
 
@@ -420,7 +500,10 @@ class Gateway extends Base\Gateway
             Base\Entity::RECEIVED        => true,
             Base\Entity::STATUS          => $content[ResponseFields::PAID],
             Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_PAYMENT_ID],
-            Base\Entity::SI_REF_ID       => $content[ResponseFields::REFERENCE_ID] ?? null,
+            // TODO: Find out which one is sent and fix this accordingly.
+            Base\Entity::SI_REF_ID       => $content[ResponseFields::REFERENCE_ID] ??
+                                            $content[ResponseFields::SCHEDULE_ID] ??
+                                            null,
             Base\Entity::SI_STATUS       => $content[ResponseFields::SI_STATUS] ?? null,
             Base\Entity::SI_MSG          => $content[ResponseFields::SI_MESSAGE] ?? null,
         ];
@@ -525,32 +608,27 @@ class Gateway extends Base\Gateway
 
     /**
      * In case of corporate payments the verify response returned is an
-     * ill formed xml. To parse the same, we will reploace the offending keys
-     * with an appropriate parsable version of the same.
-     * */
-    protected function preProcessVerifyResponse(&$content)
+     * ill formed xml. To parse the same, we will replace the offending keys
+     * with an appropriate parse-able version of the same.
+     *
+     * @param $content
+     */
+    protected function preProcessVerifyResponse(& $content)
     {
+        // TODO: Figure out if this is useless.
+        // BILL_REF_NUM AND US_BILL_REF_NUM have the same values.
+
         // successful case
         $content = str_replace(ResponseFields::BILL_REF_NUM, ResponseFields::US_BILL_REF_NUM, $content);
 
         $content = str_replace(ResponseFields::CONSUMER_CODE, ResponseFields::US_CONSUMER_CODE, $content);
     }
 
-    protected function getResponseArray(Verify $verify)
+    protected function getResponseArray(string $response)
     {
-        try
-        {
-            $xml = (array) simplexml_load_string($verify->verifyResponseBody);
+        $xml = (array) simplexml_load_string($response);
 
-            return $xml['@attributes'];
-        }
-        catch (\Exception $e)
-        {
-            throw new Exception\PaymentVerificationException(
-                $verify->getDataToTrace(),
-                $verify,
-                PaymentVerify\Action::RETRY);
-        }
+        return $xml['@attributes'];
     }
 
     public function getSpid()
@@ -574,7 +652,7 @@ class Gateway extends Base\Gateway
 
             if ($this->input['terminal']->isRecurring() === true)
             {
-                return $this->getTestRecurringMerchantId2();
+                return $this->getTestMerchantId2Recurring();
             }
 
             return $this->getTestMerchantId2();
@@ -583,7 +661,7 @@ class Gateway extends Base\Gateway
         return $this->getLiveMerchantId2();
     }
 
-    protected function getTestRecurringMerchantId2()
+    protected function getTestMerchantId2Recurring()
     {
         return $this->config['test_merchant_id2_rec'];
     }
@@ -645,12 +723,15 @@ class Gateway extends Base\Gateway
         else
         {
             $recurringStatus = Token\RecurringStatus::REJECTED;
+            // TODO: We should have a mapping here with our internal error codes.
+            // We cannot show the message as it is.
+            $recurringFailureReason = $gatewayPayment->getSIMessage();
         }
 
         $recurringData = [
             Token\Entity::RECURRING_STATUS           => $recurringStatus,
-            Token\Entity::GATEWAY_TOKEN                     => $gatewayPayment->getSIReferenceId(),
-            Token\Entity::RECURRING_FAILURE_REASON   => $gatewayPayment->getSIMessage(),
+            Token\Entity::GATEWAY_TOKEN              => $gatewayPayment->getSIRefId(),
+            Token\Entity::RECURRING_FAILURE_REASON   => $recurringFailureReason ?? null,
         ];
 
         return $recurringData;

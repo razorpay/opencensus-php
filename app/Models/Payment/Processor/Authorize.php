@@ -762,6 +762,12 @@ trait Authorize
         else if ($payment->isNetbanking() === true)
         {
             $this->validateRecurringNetbanking($payment);
+
+            // TODO: Validate that the payment amount is less than
+            // the token's max amount
+
+            // TODO: Validate that the current time is less than
+            // the token's expired_at
         }
 
         //
@@ -1431,7 +1437,7 @@ trait Authorize
             //
             // TODO: Throw exception is token is set and method is netbanking?
             //
-            $this->preProcessPaymentFromSavedCardLocal($customer, $payment, $input, $gatewayInput);
+            $this->preProcessPaymentFromSavedMethodLocal($customer, $payment, $input, $gatewayInput);
         }
         else
         {
@@ -1480,7 +1486,7 @@ trait Authorize
         // If token is set, then pay using global saved card
         if (empty($input[Payment\Entity::TOKEN]) === false)
         {
-            $this->preProcessPaymentFromSavedCardGlobal($customer, $payment, $input, $gatewayInput);
+            $this->preProcessPaymentFromSavedMethodGlobal($customer, $payment, $input, $gatewayInput);
         }
         else
         {
@@ -1489,7 +1495,7 @@ trait Authorize
         }
     }
 
-    protected function preProcessPaymentFromSavedCardLocal(Customer\Entity $customer,
+    protected function preProcessPaymentFromSavedMethodLocal(Customer\Entity $customer,
                                                            Payment\Entity $payment,
                                                            array & $input,
                                                            array & $gatewayInput)
@@ -1518,7 +1524,7 @@ trait Authorize
         //else @todo for wallets
     }
 
-    protected function preProcessPaymentFromSavedCardGlobal(Customer\Entity $customer,
+    protected function preProcessPaymentFromSavedMethodGlobal(Customer\Entity $customer,
                                                             Payment\Entity $payment,
                                                             array & $input,
                                                             array & $gatewayInput)
@@ -1689,6 +1695,7 @@ trait Authorize
         }
         else if ($payment->isMethod(Payment\Method::NETBANKING))
         {
+            // TODO: We need to set max_amount and expired_at also
             $saveMethodInput[Token\Entity::BANK] = $payment->getBank();
         }
         else if ($payment->isMethod(Payment\Method::WALLET))
@@ -1789,10 +1796,12 @@ trait Authorize
     {
         assert ($payment->getCallbackUrl() !== null);
 
+        //
         // This would be normal request data at this point.
         // But since we will be redirecting to merchant's callback url
         // we need to push the request data into coproto structure
         // so that controller can then redirect peacefully.
+        //
         $content = $returnData;
 
         $returnData = [
@@ -1942,7 +1951,7 @@ trait Authorize
                     //
                     if ($payment->isNetbanking() === true)
                     {
-                        $this->updateTokenRecurringDetails($token, $data);
+                        $this->updateTokenRecurringDetails($payment, $token, $data);
                     }
                 }
 
@@ -1979,7 +1988,7 @@ trait Authorize
         return false;
     }
 
-    protected function updateTokenRecurringDetails(Token\Entity $token, array $data)
+    protected function updateTokenRecurringDetails(Payment\Entity $payment, Token\Entity $token, array $data)
     {
         //
         // We update the token details and not gateway token details
@@ -1999,6 +2008,26 @@ trait Authorize
         // Gateway Tokens purpose was to handle multiple terminals
         // for same token only.
         //
+
+        //
+        // Throwing an exception here since currently we do
+        // this only for netbanking.
+        //
+        if ($payment->isNetbanking() === false)
+        {
+            // TODO: Throw an exception
+        }
+
+        //
+        // Throwing an exception here because we don't allow
+        // re-authentication on netbanking recurring tokens.
+        // Hence, there will never be a case where we want to update
+        // any of the recurring details in non-first recurring.
+        //
+        if ($payment->isSecondRecurring() === true)
+        {
+            // TODO: Throw an exception
+        }
 
         if ($token->getRecurringStatus() !== null)
         {
@@ -2028,6 +2057,19 @@ trait Authorize
             $recurringFailureReason = $data[Token\Entity::RECURRING_FAILURE_REASON];
 
             $token->setRecurringFailureReason($recurringFailureReason);
+        }
+
+        if ($recurringStatus === Token\RecurringStatus::CONFIRMED)
+        {
+            //
+            // Not all netbanking recurring have a gateway token.
+            //
+            if (empty($data[Token\Entity::GATEWAY_TOKEN]) === false)
+            {
+                $gatewayToken = $data[Token\Entity::GATEWAY_TOKEN];
+
+                $token->setGatewayToken($gatewayToken);
+            }
         }
     }
 

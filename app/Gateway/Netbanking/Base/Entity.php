@@ -168,7 +168,7 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::STATUS);
     }
 
-    public function getSIReferenceId()
+    public function getSIRefId()
     {
         return $this->getAttribute(self::SI_REF_ID);
     }
