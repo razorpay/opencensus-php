@@ -1070,7 +1070,7 @@ class DatabaseSeeder extends Seeder
                 'card'                      => '0',
                 'netbanking'                => '1',
                 'gateway_merchant_id'       => 'test_merchant_netbanking_corporation',
-                'gateway_secure_secret'     => Crypt::encrypt('test_account_netbanking_corporation_secret'),
+                'gateway_secure_secret'     => Crypt::encrypt('test_account_netbanking_corp_secret'),
                 'created_at'                => time(),
                 'updated_at'                => time(),
                 )
@@ -1084,7 +1084,7 @@ class DatabaseSeeder extends Seeder
                 'card'                  => '0',
                 'netbanking'            => '1',
                 'gateway_merchant_id'   => 'demo_merchant_netbanking_corporation',
-                'gateway_secure_secret' => Crypt::encrypt('test_account_netbanking_corporation_secret'),
+                'gateway_secure_secret' => Crypt::encrypt('test_account_netbanking_corp_secret'),
                 'created_at'            => time(),
                 'updated_at'            => time(),
                 )
