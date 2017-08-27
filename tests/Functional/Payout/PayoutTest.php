@@ -52,6 +52,30 @@ class PayoutTest extends TestCase
         return $payout;
     }
 
+    public function testCreateMerchantPayout(): array
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $payout = $this->getLastEntity('payout', true);
+
+        $payoutAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
+        // Verify attempt entity
+        $this->assertEquals($payout['id'], $payoutAttempt['source']);
+        $this->assertEquals($payout['merchant_id'], $payoutAttempt['merchant_id']);
+        $this->assertEquals($payout['destination'], 'ba_' . $payoutAttempt['bank_account_id']);
+
+        // Verify transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('txn_' . $payout['transaction_id'], $txn['id']);
+
+        return $payout;
+    }
+
+
     public function testCreatePayoutFundsOnHold()
     {
         $this->ba->privateAuth();

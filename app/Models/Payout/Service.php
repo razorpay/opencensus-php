@@ -46,8 +46,8 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('merchant', $input);
 
-        $data = (new Payout\Core)->merchantPayout($input);
+        $payout = (new Payout\Core)->merchantPayout($input);
 
-        return $data;
+        return $payout->toArrayPublic();
     }
 }

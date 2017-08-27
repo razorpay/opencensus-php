@@ -40,6 +40,33 @@ return [
         ],
     ],
 
+    'testCreateMerchantPayout' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout',
+            'content' => [
+                'amount'         => 1000,
+                'merchant_id'    => '10000000000000',
+                'customer_id'    => 'cust_100000customer',
+                'destination_id' => 'ba_1000000lcustba',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'payout',
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'customer_id' => 'cust_100000customer',
+                'method'      => 'fund_transfer',
+                'destination' => 'ba_1000000lcustba',
+                'service_tax' => 92,
+                'tax'         => 92,
+                'fees'        => 602,
+                'notes'       => []
+            ],
+        ],
+    ],
+
     'testCreatePayoutFundsOnHold' => [
         'request' => [
             'method'  => 'POST',
