@@ -37,6 +37,13 @@ class Encryptor extends AESCrypto
         {
             $pair = explode(self::KEY_VALUE_SEPARATOR, $value);
 
+            // Incase the value sent from the gateway does not
+            // follow it's own convention and does not add the separator
+            if(count($pair) !== 2)
+            {
+                continue;
+            }
+
             $data[$pair[0]] = $pair[1];
         }
 

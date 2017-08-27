@@ -47,6 +47,29 @@ class NetbankingCorporationGatewayTest extends TestCase
         $this->assertArrayHasKey('bank_payment_id', $payment);
     }
 
+    /**
+     * Test a payment that was tampered with in the authorize step
+     * This case should throw PaymentVerificationException during verify broken
+     */
+    public function testTamperedPayment()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockFailedVerifyResponse();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $payment = $this->doNetbankingCorporationAuthAndCapturePayment();
+            });
+
+        // Assert that we don't save any information into the netbanking entity
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertTestResponse($gatewayPayment, 'testPaymentFailedNetbankingEntity');
+    }
+
     public function testPaymentVerify()
     {
         $payment = $this->doNetbankingCorporationAuthAndCapturePayment();
@@ -107,5 +130,16 @@ class NetbankingCorporationGatewayTest extends TestCase
         $payment = $this->doAuthAndCapturePayment($payment);
 
         return $payment;
+    }
+
+    protected function mockFailedVerifyResponse()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content = [];
+            }
+        });
     }
 }

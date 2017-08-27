@@ -2,6 +2,9 @@
 
 use RZP\Gateway\Netbanking\Corporation\Mock\Server;
 use RZP\Gateway\Netbanking\Corporation;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 return [
     'testPayment' => [
@@ -42,5 +45,28 @@ return [
         'received'        => true,
         'bank'            => 'CORP',
         'status'          => Corporation\ResponseCodeMap::SUCCESS_CODE
+    ],
+
+    'testTamperedPayment' => [
+        'response' => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+        ],
+    ],
+
+    'testPaymentFailedNetbankingEntity' => [
+        'bank_payment_id' => null,
+        'received'        => false,
+        'bank'            => 'CORP',
+        'status'          => null
     ],
 ];

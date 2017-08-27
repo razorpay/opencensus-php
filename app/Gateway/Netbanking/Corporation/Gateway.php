@@ -2,6 +2,8 @@
 
 namespace RZP\Gateway\Netbanking\Corporation;
 
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Constants\Mode;
 use RZP\Models\Terminal;
 use RZP\Models\Payment\Action;
@@ -318,7 +320,9 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        if ($content[ResponseFields::VERIFY_RESULT] === ResponseCodeMap::RESULT_SUCCESS)
+        if (isset($content[ResponseFields::VERIFY_RESULT]) and
+            $content[ResponseFields::VERIFY_RESULT] === ResponseCodeMap::RESULT_SUCCESS
+        )
         {
             $verify->gatewaySuccess = true;
         }
