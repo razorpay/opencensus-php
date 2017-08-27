@@ -116,7 +116,7 @@ class Core extends Base\Core
             ($amount < $input[Entity::MIN_AMOUNT]))
         {
             return ['message' =>
-                'amount to be transferred is less than' . $input[Entity::MIN_AMOUNT]];
+                'amount to be transferred is less than ' . $input[Entity::MIN_AMOUNT]];
 
         }
 
@@ -135,9 +135,9 @@ class Core extends Base\Core
             Entity::DESTINATION    => $bankAccountId,
         ];
 
-        $response = $this->directPayout($payoutInput, $merchant);
+        $payout = $this->directPayout($payoutInput, $merchant);
 
-        return $response;
+        return $payout->toArrayPublic();
     }
 
     protected function createPayout(array $input, Merchant\Entity $merchant): Entity

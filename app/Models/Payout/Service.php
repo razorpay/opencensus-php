@@ -48,6 +48,6 @@ class Service extends Base\Service
 
         $payout = (new Payout\Core)->merchantPayout($input);
 
-        return $payout->toArrayPublic();
+        return $payout;
     }
 }
