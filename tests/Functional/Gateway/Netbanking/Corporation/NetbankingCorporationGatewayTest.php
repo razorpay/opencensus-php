@@ -9,6 +9,8 @@ use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
+use RZP\Gateway\Netbanking\Corporation;
+
 class NetbankingCorporationGatewayTest extends TestCase
 {
     use PaymentTrait;
@@ -62,6 +64,25 @@ class NetbankingCorporationGatewayTest extends TestCase
             function()
             {
                 $payment = $this->doNetbankingCorporationAuthAndCapturePayment();
+            });
+
+        // Assert that we don't save any information into the netbanking entity
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertTestResponse($gatewayPayment, 'testPaymentFailedNetbankingEntity');
+    }
+
+    public function testAuthorizeFailed()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockFailedCallbackResponse();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doNetbankingCorporationAuthAndCapturePayment();
             });
 
         // Assert that we don't save any information into the netbanking entity
@@ -139,6 +160,17 @@ class NetbankingCorporationGatewayTest extends TestCase
             if ($action === 'verify')
             {
                 $content = [];
+            }
+        });
+    }
+
+    protected function mockFailedCallbackResponse()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content[Corporation\ResponseFields::STATUS] = Corporation\ResponseCodeMap::RESULT_REJECTED;
             }
         });
     }
