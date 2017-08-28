@@ -35,53 +35,59 @@ export default class SubscriptionDetailsContainer extends Component {
   state = {};
 
   componentWillMount() {
-    this.fetchSubscriptionDetails(this.props.id);
-    if (this.props.invoice_id) {
-      this.fetchInvoice(this.props.invoice_id);
-    }
-    if (this.props.payment_id) {
-      this.fetchPayment(this.props.payment_id);
-    }
+    this.fetchAll(this.props);
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.id !== nextProps.id) {
-      this.props.fetchItem(nextProps.id);
-    }
+    this.fetchAll(nextProps);
+  }
+
+  fetchAll(nextProps) {
+    let { id, invoice_id, payment_id } = nextProps;
+
+    id && this.fetchSubscriptionDetails(id);
+    invoice_id && this.fetchInvoice(invoice_id);
+    payment_id && this.fetchPayment(payment_id);
   }
 
   fetchInvoice(id) {
-    this.props.expandSlider();
-    this.setState({ secView: 'invoice' });
-    this.props
-      .fetchInvoice(id)
-      .then(invoice => {
-        this.setState({
-          invoice,
+    let { invoice } = this.props;
+    if (!invoice || invoice.id !== id) {
+      this.props.expandSlider();
+      this.setState({ secView: 'invoice' });
+      this.props
+        .fetchInvoice(id)
+        .then(invoice => {
+          this.setState({
+            invoice,
+          });
+        })
+        .catch(({ errors }) => {
+          this.setState({
+            errors,
+          });
         });
-      })
-      .catch(({ errors }) => {
-        this.setState({
-          errors,
-        });
-      });
+    }
   }
 
   fetchPayment(id) {
-    this.props.expandSlider();
-    this.setState({ secView: 'payment' });
-    this.props
-      .fetchPayment(id)
-      .then(payment => {
-        this.setState({
-          payment,
+    let { payment } = this.props;
+    if (!payment || payment.id !== id) {
+      this.props.expandSlider();
+      this.setState({ secView: 'payment' });
+      this.props
+        .fetchPayment(id)
+        .then(payment => {
+          this.setState({
+            payment,
+          });
+        })
+        .catch(({ errors }) => {
+          this.setState({
+            errors,
+          });
         });
-      })
-      .catch(({ errors }) => {
-        this.setState({
-          errors,
-        });
-      });
+    }
   }
 
   fetchSubscriptionDetails(id) {
@@ -173,11 +179,7 @@ export default class SubscriptionDetailsContainer extends Component {
 
   secClose = () => {
     let { compactSlider, history, location } = this.props;
-
     compactSlider();
-    setTimeout(
-      () => history.push(location.pathname.replace(/\/[^\/]+\/?$/, '')),
-      150
-    );
+    history.push(location.pathname.replace(/\/[^\/]+\/?$/, ''));
   };
 }

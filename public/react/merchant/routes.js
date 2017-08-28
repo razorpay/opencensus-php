@@ -39,10 +39,9 @@ function matcher(routeMap, pathname) {
   for (let route in routeMap) {
     var match = matchPath(pathname, route);
     if (match) {
-      var MatchedComponent = routeMap[route];
       return {
         match,
-        component: props => <MatchedComponent {...match.params} {...props} />,
+        component: routeMap[route],
       };
     }
   }
