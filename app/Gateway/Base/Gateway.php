@@ -570,7 +570,7 @@ class Gateway
     }
 
     protected function traceGatewayPaymentRequest(
-        $request,
+        array $request,
         $input,
         $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
     {
