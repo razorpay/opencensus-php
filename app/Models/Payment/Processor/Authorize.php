@@ -1997,9 +1997,9 @@ trait Authorize
             }
             else
             {
-                // TODO: Throw an exception
                 // We should always have a recurring status, especially
                 // if there's no recurring status set yet.
+                throw new Exception\LogicException('The recurring status should always be set for token update');
             }
         }
 
@@ -2053,8 +2053,8 @@ trait Authorize
         {
             if (empty($data[Token\Entity::RECURRING_FAILURE_REASON]) === true)
             {
-                // TODO: Throw an exception
                 // If it's rejected, there must always be a reason.
+                throw new Exception\LogicException('The SI request must be rejected with a reason');
             }
 
             $recurringFailureReason = $data[Token\Entity::RECURRING_FAILURE_REASON];
