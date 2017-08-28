@@ -445,19 +445,16 @@ class Repository extends Base\Repository
 
     public function fetchRefundsForPnbClaims($from, $to)
     {
+        $pId = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $rPaymentId = $this->dbColumn(Entity::PAYMENT_ID);
+
+        $pAuthorizedAt = $this->repo->payment->dbColumn(Payment\Entity::AUTHORIZED_AT);
+
         return $this->newQuery()
                     ->select($this->dbColumn('*'))
-                    ->join(Table::PAYMENT, function ($join) use ($from)
-                    {
-                        $pId = $this->repo->payment->dbColumn(Payment\Entity::ID);
-
-                        $rPaymentId = $this->dbColumn(Entity::PAYMENT_ID);
-
-                        $pAuthorizedAt = $this->repo->payment->dbColumn(Payment\Entity::AUTHORIZED_AT);
-
-                        $join->on($rPaymentId, '=', $pId)
-                            ->where($pAuthorizedAt, '<=', $from);
-                    })
+                    ->join(Table::PAYMENT, $rPaymentId, '=', $pId)
+                    ->where($pAuthorizedAt, '<=', $from)
                     ->whereBetween($this->dbColumn(Entity::CREATED_AT), [$from, $to])
                     ->with(['payment','payment.terminal'])
                     ->get();
