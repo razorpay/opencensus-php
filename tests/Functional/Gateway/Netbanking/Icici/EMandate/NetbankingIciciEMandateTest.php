@@ -136,6 +136,26 @@ class NetbankingIciciEMandateTest extends TestCase
             {
                 $this->doAuthPayment($payment);
             });
+
+        // TODO: Add assertions
+    }
+
+    public function testSiRecurringMessageNotSet()
+    {
+        $payment = $this->payment;
+
+        $this->mockSiRecurringMessageNotSet();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
+
+        // TODO: Add assertions
     }
 
     protected function assertEMandateRejectedToken()
@@ -210,6 +230,16 @@ class NetbankingIciciEMandateTest extends TestCase
             {
                 // This maps to a null recurring status
                 $content['SCHSTATUS'] = 'C';
+            });
+    }
+
+    protected function mockSiRecurringMessageNotSet()
+    {
+        $this->mockServerContentFunction(
+            function(&$content, $action = null)
+            {
+                $content['SCHSTATUS'] = 'N';
+                $content['SCHMSG'] = '';
             });
     }
 

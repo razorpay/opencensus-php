@@ -722,6 +722,7 @@ class Gateway extends Base\Gateway
     {
         $siStatus = $gatewayPayment->getSIStatus();
 
+        // This null check is used in the test cases
         $recurringStatus = self::SI_STATUS_TO_RECURRING_STATUS_MAP[$siStatus] ?? null;
 
         // TODO: We should have a mapping here with our internal error codes.
@@ -729,9 +730,9 @@ class Gateway extends Base\Gateway
         $recurringFailureReason = $gatewayPayment->getSIMessage();
 
         $recurringData = [
-            Token\Entity::RECURRING_STATUS           => $recurringStatus,
-            Token\Entity::GATEWAY_TOKEN              => $gatewayPayment->getSIRefId(),
-            Token\Entity::RECURRING_FAILURE_REASON   => $recurringFailureReason ?? null,
+            Token\Entity::RECURRING_STATUS         => $recurringStatus,
+            Token\Entity::GATEWAY_TOKEN            => $gatewayPayment->getSIRefId(),
+            Token\Entity::RECURRING_FAILURE_REASON => $recurringFailureReason ?? null,
         ];
 
         return $recurringData;
