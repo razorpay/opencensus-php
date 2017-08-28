@@ -94,8 +94,6 @@ class DailyFiles extends Base\DailyFiles
      */
     protected function getClaimsData($from, $to)
     {
-/*                sd('yo');
-*/
         $claims = [];
 
         $status = [
