@@ -312,6 +312,8 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::VERIFY_ENROLLMENT_RESPONSE, $veres);
 
+        //TODO : check if iReqDetail validation needs to be done
+        //Test case 42e-11-VERes
         (new JitValidator)->rules(Validator::$veresRules)
                           ->input($veres)
                           ->validate();

@@ -7,6 +7,7 @@ use RZP\Gateway\Blade\Mock\Xml\Response;
 
 class Server extends Base\Mock\Server
 {
+
     public function authorize($input)
     {
         parent::authorize($input);
@@ -38,6 +39,9 @@ class Server extends Base\Mock\Server
                 return $responseClass->differentMessageResponse($paymentId);
             case CardNumber::BLANK_MEESGAE:
                 return $responseClass->blankMessageResponse($paymentId);
+            case CardNumber::INVALID_VERSION:
+                return $responseClass->invalidVersionFormat($paymentId);
+
         }
     }
 }

@@ -128,4 +128,22 @@ class BladeGatewayTest extends TestCase
                 ]);
             });
     }
+
+    public function testInvalidVersion()
+    {
+        $this->runRequestResponseFlow(
+            $data = $this->testData['testInvalidVersion'],
+            function()
+            {
+                $payment = $this->defaultAuthPayment([
+                    'card' => [
+                        'number'       => CardNumber::INVALID_VERSION,
+                        'expiry_month' => '02',
+                        'expiry_year'  => '21',
+                        'cvv'          => 123,
+                        'name'         => 'Test Card'
+                    ]
+                ]);
+            });
+    }
 }

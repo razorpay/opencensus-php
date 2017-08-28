@@ -58,4 +58,52 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testInvalidVersion' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'The message. v e res.version must be at least 3 characters.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testEmptyVersion' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'The message. v e res.version must be at least 3 characters.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testEmptyVersionShort' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => 'The message. v e res.version must be at least 3 characters.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
 ];
