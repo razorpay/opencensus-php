@@ -442,12 +442,4 @@ class Repository extends Base\Repository
                     ->inRandomOrder()
                     ->get();
     }
-
-    public function fetchRefundsExcludingPayments($from, $to, array $exclusions)
-    {
-        return $this->newQuery()
-                    ->whereBetween(Entity::CREATED_AT, [$from, $to])
-                    ->whereNotIn(Entity::PAYMENT_ID, $exclusions)
-                    ->get();
-    }
 }

@@ -87,8 +87,6 @@ class DailyFiles extends Base\DailyFiles
     {
         $claims = [];
 
-        $exclusions = [];
-
         $status = [
             Payment\Status::AUTHORIZED,
             Payment\Status::CAPTURED,
@@ -103,15 +101,9 @@ class DailyFiles extends Base\DailyFiles
 
         foreach ($payments as $payment)
         {
-            $refundAmount = $payment['amount_refunded'];
+            $refundAmount = $payment[Payment\Entity::AMOUNT_REFUNDED];
 
-            $amountToClaim = $payment['amount'] - $refundAmount;
-
-            // these refunds are to be excluded
-            if ($refundAmount > 0)
-            {
-                $exclusions[] = $payment['id'];
-            }
+            $amountToClaim = $payment[Payment\Entity::AMOUNT] - $refundAmount;
 
             // not to include payments where
             // full refund has happened
@@ -120,19 +112,20 @@ class DailyFiles extends Base\DailyFiles
                 continue;
             }
 
-            $payment[Constants::CLAIM_TYPE] = Constants::DEBIT;
-            $payment[Constants::TXN_DETAIL] = Constants::PAYMENT;
+            $payment[Payment\Entity::AMOUNT] = $amountToClaim;
+            $payment[Constants::CLAIM_TYPE]  = Constants::DEBIT;
+            $payment[Constants::TXN_DETAIL]  = Constants::PAYMENT;
 
             $claims[] = $payment;
         }
 
         $refunds = $this->repo->refund
-                              ->fetchRefundsExcludingPayments($from,
-                                                              $to,
-                                                              $exclusions);
+                              ->findBetweenTimestamps(strtotime('-1 day', $from),
+                                                      strtotime('-1 day', $to));
 
         foreach ($refunds as $refund)
         {
+            $refund[Payment\Entity::ID]    = $refund->getPaymentId();
             $refund[Constants::CLAIM_TYPE] = Constants::CREDIT;
             $refund[Constants::TXN_DETAIL] = Constants::REFUND;
 
