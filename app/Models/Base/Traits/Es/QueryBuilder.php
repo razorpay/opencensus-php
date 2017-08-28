@@ -97,7 +97,7 @@ trait QueryBuilder
         $this->addMust($query, $clause);
     }
 
-    public function  buildQueryForNotes(array & $query, string $value)
+    public function buildQueryForNotes(array & $query, string $value)
     {
         //
         // - Notes search is again on an specific object (unlike 'q') and so

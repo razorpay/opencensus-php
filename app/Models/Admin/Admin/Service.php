@@ -559,12 +559,12 @@ class Service extends Base\Service
             $groupIds = $admin->groups()->get()->getIds();
 
             $input[Merchant\Entity::GROUPS] = $groupIds;
+
+            // Adds following to $input so all merchant to which this admin
+            // has direct access to can be filtered.
+
+            $input[Merchant\Entity::ADMINS] = [$admin->getId()];
         }
-
-        // Adds following to $input so all merchant to which this admin
-        // has direct access to can be filtered.
-
-        $input[Merchant\Entity::ADMINS] = [$admin->getId()];
 
         // We would want to receive the ES payload
 

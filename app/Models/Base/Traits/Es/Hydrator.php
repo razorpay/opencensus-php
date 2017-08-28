@@ -15,22 +15,20 @@ trait Hydrator
 {
     protected function hydrate(array $items): PublicCollection
     {
-        $class = $this->getEntityClass();
+        $entity = $this->getEntityObject();
 
-        $instance = new $class;
-
-        $hydrator = function (array $item) use ($instance)
+        $hydrator = function (array $item) use ($entity)
                     {
                         $this->preProcessForHydration($item);
 
-                        $model = $instance->newFromBuilder($item);
+                        $model = $entity->newFromBuilder($item);
 
                         $this->postProcessForHydration($model, $item);
 
                         return $model;
                     };
 
-        return $instance->newCollection(array_map($hydrator, $items));
+        return $entity->newCollection(array_map($hydrator, $items));
     }
 
     // ----------------------------------------------------------------------

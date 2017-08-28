@@ -122,7 +122,7 @@ class MerchantSync extends Job implements ShouldQueue
     {
         foreach ($ids as $id)
         {
-            $job = new EsSync($this->mode, Merchant\EsRepository::UPDATE, E::MERCHANT, $id);
+            $job = new EsSync($this->mode, EsRepository::UPDATE, E::MERCHANT, $id);
 
             (new DispatchRouter)->dispatchOn($job, DispatchRouter::ES_V2);
         }

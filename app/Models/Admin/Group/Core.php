@@ -43,6 +43,7 @@ class Core extends Base\Core
 
         $payload = [Entity::ID => $group->getId()];
 
+        // If the parent (groups) hierarchy changed
         (new Merchant\Core)->syncEventToEs(MerchantSync::GROUP_EDIT, $payload);
 
         return $group;

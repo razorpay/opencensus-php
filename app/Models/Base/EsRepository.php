@@ -222,9 +222,6 @@ class EsRepository extends \Razorpay\Spine\Repository
      */
     public function buildQueryAndGetEsRequestParams(array $params): array
     {
-        // Initializes query to empty array, which follows formation of the same
-        // using methods defined in QueryBuilder.
-
         $query = [];
 
         list($from, $size, $source) = $this->extractQueryMetaFromParams($params);

@@ -458,7 +458,7 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Modifies query to lazy load details, admins, groups and features.
+     * Modifies query to eager load details, admins, groups and features.
      * Also projects to find only needed attributes.
      *
      * @param \RZP\Base\BuilderEx $query

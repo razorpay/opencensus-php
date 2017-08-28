@@ -196,7 +196,7 @@ class EsRepository extends Base\EsRepository
      */
     protected function addQueryForAcl(array & $query, array $params)
     {
-        $admins = $params[Entity::ADMINS] ?? null;
+        $admins = $params[Entity::ADMINS] ?? [];
         $groups = $params[Entity::GROUPS] ?? [];
 
         $aclQuery = [];
