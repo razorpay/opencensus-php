@@ -762,12 +762,6 @@ trait Authorize
         else if ($payment->isNetbanking() === true)
         {
             $this->validateRecurringNetbanking($payment);
-
-            // TODO: Validate that the payment amount is less than
-            // the token's max amount
-
-            // TODO: Validate that the current time is less than
-            // the token's expired_at
         }
 
         //
@@ -886,6 +880,19 @@ trait Authorize
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED);
+        }
+
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        if ($token === null)
+        {
+            return;
+        }
+
+        if ($token->getMaxAmount() < $payment->getAmount())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_GREATER_THAN_TOKEN_MAX_AMOUNT);
         }
     }
 

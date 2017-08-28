@@ -210,6 +210,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MERCHANT_ID);
     }
 
+    public function getMaxAmount()
+    {
+        return $this->getAttribute(self::MAX_AMOUNT);   
+    }
+
     public function getCardId()
     {
         return $this->getAttribute(self::CARD_ID);
