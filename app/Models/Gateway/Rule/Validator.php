@@ -114,7 +114,8 @@ class Validator extends Base\Validator
             return;
         }
 
-        if (Gateway::isMethodSupported($method, $gateway) === false)
+        if (($gateway !== Gateway::SHARP) and
+            (Gateway::isMethodSupported($method, $gateway) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Gateway ' . $gateway . ' does not support ' . $method . ' method');
