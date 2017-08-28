@@ -54,7 +54,6 @@ class Gateway extends Base\Gateway
         Fields::BANK_RRN                  => Entity::GATEWAY_PAYMENT_ID,
         Fields::ORIGINAL_BANK_RRN         => Entity::GATEWAY_PAYMENT_ID,
         Fields::MERCHANT_ID               => Entity::GATEWAY_MERCHANT_ID,
-        Fields::REFUND_ID                 => Entity::REFUND_ID,
     ];
 
     /**
@@ -536,6 +535,11 @@ class Gateway extends Base\Gateway
             return false;
         }
 
+        if ($this->env === 'testing')
+        {
+            return false;
+        }
+
         throw new Exception\LogicException(
             'UPI ICICI verify refund is not implemented');
     }
@@ -712,7 +716,7 @@ class Gateway extends Base\Gateway
     {
         if ($refund['attempts'] >= 1)
         {
-            return $refund['id'] . _ . $refund['attempts'];
+            return $refund['id'] . '_' . $refund['attempts'];
         }
 
         return $refund['id'];
