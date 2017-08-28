@@ -148,7 +148,7 @@ export default class ReportsContainer extends Component {
       });
     }
 
-    if (user.tags.indexOf('Rpp_report') !== -1) {
+    if (user.tags.indexOf('Rpp_Report') !== -1) {
       this.entityOptions.push({
         value: 'rpp_report',
         id: 'rpp_report',
