@@ -736,12 +736,4 @@ class Repository extends \Razorpay\Spine\Repository
                 'Unique id not generated for the entity');
         }
     }
-
-    public function findManyByIdsWithRelations(array $entityIds, $relations = [])
-    {
-        return $this->newQuery()
-            ->whereIn(Common::ID, $entityIds)
-            ->with($relations)
-            ->get();
-    }
 }

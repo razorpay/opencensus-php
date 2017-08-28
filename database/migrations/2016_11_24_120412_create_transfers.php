@@ -68,7 +68,7 @@ class CreateTransfers extends Migration
 
             $table->char(Entity::TRANSACTION_ID, Entity::ID_LENGTH);
 
-            $table->char(Entity::RECIPIENT_SETTLEMENT_ID, Entity::ID_LENGTH)
+            $table->char(Entity::RECIPIENT_SETTLEMENT_ID, Settlement\Entity::ID_LENGTH)
                 ->nullable()
                 ->default(null);
 
@@ -89,9 +89,9 @@ class CreateTransfers extends Migration
                   ->on_delete('restrict');
 
             $table->foreign(Entity::RECIPIENT_SETTLEMENT_ID)
-                ->references(Settlement\Entity::ID)
-                ->on(Table::SETTLEMENT)
-                ->on_delete('restrict');
+                  ->references(Settlement\Entity::ID)
+                  ->on(Table::SETTLEMENT)
+                  ->on_delete('restrict');
         });
 
         Schema::table(Table::PAYMENT, function($table)
@@ -128,6 +128,14 @@ class CreateTransfers extends Migration
             $table->dropForeign
             (
                 Table::TRANSFER . '_' . Entity::MERCHANT_ID . '_foreign'
+            );
+        });
+
+        Schema::table(Table::TRANSFER, function($table)
+        {
+            $table->dropForeign
+            (
+                Table::TRANSFER . '_' . Entity::RECIPIENT_SETTLEMENT_ID . '_foreign'
             );
         });
 

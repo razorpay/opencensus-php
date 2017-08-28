@@ -96,8 +96,6 @@ trait SettlementTrait
             $setlAttempts->push($bankTransferAtpt);
         }
 
-        $this->updateSettlementIdInTransfer($txns);
-
         return [$settlements, $txnsSettledCount, $setlAttempts];
     }
 
@@ -151,21 +149,26 @@ trait SettlementTrait
         $filteredTxnIds = [];
         foreach ($txns as $txn)
         {
-            if (($txn->getType() === Entity::PAYMENT) and ($txn->merchant->isLinkedAccount() === true))
+            if (($txn->isTypePayment()) and ($txn->merchant->isLinkedAccount() === true))
             {
                 $filteredTxnIds[] = $txn->getId();
             }
         }
 
+        if (empty($filteredTxnIds) === true)
+        {
+            return;
+        }
+
         $relations = ['source', 'source.transfer'];
-        $filteredTxns = $this->repo->transaction->findManyByIdsWithRelations($filteredTxnIds, $relations);
+        $filteredTxns = $this->repo->transaction->findManyWithRelations($filteredTxnIds, $relations);
 
         foreach ($filteredTxns as $txn)
         {
             $settlementId = $txn->getSettlementId();
             $transfer = $txn->source->transfer;
             $transfer->setRecipientSettlementId($settlementId);
-            $transfer->saveOrFail();
+            $this->repo->saveOrFail($transfer);
         }
     }
 
@@ -200,6 +203,8 @@ trait SettlementTrait
                                                     $setl,
                                                     $setlTxns->count(),
                                                     $bankTransferAtpt);
+
+                $this->updateSettlementIdInTransfer($setlTxns);
 
                 return [$setl, $bankTransferAtpt];
             });

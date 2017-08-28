@@ -2401,8 +2401,6 @@ UPDATE hdfc
     WHERE gateway_payment_id IS NULL AND created_at <= 1502841600 AND action IN ('1', '4');
 
 ALTER TABLE transfers
-    ADD COLUMN recipient_settlement_id CHAR(14) DEFAULT NULL AFTER transaction_id;
-
-ALTER TABLE transfers
-    ADD CONSTRAINT transfer_recipient_settlement_id_foreign FOREIGN KEY(recipient_settlement_id)
+    ADD COLUMN recipient_settlement_id CHAR(14) DEFAULT NULL AFTER transaction_id,
+    ADD CONSTRAINT transfers_recipient_settlement_id_foreign FOREIGN KEY(recipient_settlement_id)
     REFERENCES settlements(id) ON DELETE RESTRICT;
