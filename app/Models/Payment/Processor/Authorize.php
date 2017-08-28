@@ -1938,7 +1938,7 @@ trait Authorize
 
             if ((($payment->isCard() === true) or
                  ($payment->isNetbanking() === true)) and
-                ($payment->isRecurring() === true))
+                 ($payment->isRecurring() === true))
             {
                 if ($this->shouldSetTokenRecurring($payment, $data) === true)
                 {

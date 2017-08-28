@@ -3,21 +3,23 @@
 namespace RZP\Gateway\Netbanking\Icici;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use phpseclib\Crypt\AES;
-use RZP\Models\Payment\Verify as PaymentVerify;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Verify;
+use RZP\Models\Customer\Token;
 use RZP\Gateway\Base\AESCrypto;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
-use RZP\Models\Customer\Token;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Models\Payment\Verify as PaymentVerify;
+use RZP\Gateway\Netbanking\Icici\Recurring\Type;
+use RZP\Gateway\Netbanking\Icici\Recurring\Frequency;
 
 class Gateway extends Base\Gateway
 {
@@ -77,6 +79,10 @@ class Gateway extends Base\Gateway
             // be having the gateway token at this point.
         }
 
+        $entity = [RequestFields::AMOUNT => $input['payment'][Payment\Entity::AMOUNT] / 100];
+
+        $gatewayPayment = $this->createGatewayPaymentEntity($entity);
+
         $requestData = $this->getSecondRecurringRequestData($input, $gatewayToken);
 
         $request = $this->getStandardRequestArray($requestData, 'post', $this->getUrlType());
@@ -97,7 +103,13 @@ class Gateway extends Base\Gateway
                 'response'   => $response->body
             ]);
 
-        $responseArray = $this->getResponseArray($response);
+        $responseArray = json_decode($response->body, true);
+
+        $attrs = $this->getCallbackAttributes($responseArray);
+
+        $gatewayPayment->fill($attrs);
+
+        $this->repo->saveOrFail($gatewayPayment);
 
         // TODO: Save the gateway payment entity here first.
 
@@ -130,7 +142,7 @@ class Gateway extends Base\Gateway
         $recurringRequestData = [
             RequestFields::SI_REFERENCE_NUMBER  => $gatewayToken,
             // Being overridden on verifyRequestData
-            RequestFields::PAYMENT_DATE         => $paymentDate,
+            RequestFields::SI_PAYMENT_DATE      => $paymentDate,
         ];
 
         return array_merge($baseRequestData, $verifyRequestData, $recurringRequestData);
@@ -354,9 +366,14 @@ class Gateway extends Base\Gateway
         $paymentDate = Carbon::createFromTimestamp($gatewayPayment['created_at'], Timezone::IST)
                              ->format('Y-m-d');
 
-        $data = [
-            RequestFields::PAYMENT_DATE => $paymentDate,
-        ];
+        $data = [];
+
+        if ($this->action === Action::VERIFY)
+        {
+            $data[] = [
+                RequestFields::PAYMENT_DATE => $paymentDate,
+            ];
+        }
 
         $additionalData = $this->getPaymentReferenceData($input);
 
@@ -399,12 +416,13 @@ class Gateway extends Base\Gateway
                              ->format('Y-m-d');
 
             $data = [
-                RequestFields::SI                  => 'Y',
+                RequestFields::SI                  => Confirmation::YES,
                 // TODO: How do we get the start date in case of charge-at-will?
                 RequestFields::SI_PAYMENT_DATE     => $date,
                 // Recurring
-                RequestFields::SI_PAYMENT_TYPE     => 'R',
+                RequestFields::SI_PAYMENT_TYPE     => Type::RECURRING,
                 RequestFields::SI_PAYMENT_FREQ     => Frequency::AS_AND_WHEN,
+                // Num installments = empty when charge at will
                 RequestFields::SI_NUM_INSTALLMENTS => '',
                 // TODO: Should we get this from the token instead?
                 RequestFields::SI_AUTO_PAY_AMOUNT  => (int) (Base\Recurring::MAX_AMOUNT / 100),
@@ -498,8 +516,8 @@ class Gateway extends Base\Gateway
     {
         return [
             Base\Entity::RECEIVED        => true,
-            Base\Entity::STATUS          => $content[ResponseFields::PAID],
-            Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_PAYMENT_ID],
+            Base\Entity::STATUS          => $content[ResponseFields::PAID] ?? $content[ResponseFields::STATUS],
+            Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_PAYMENT_ID] ?? null,
             // TODO: Find out which one is sent and fix this accordingly.
             Base\Entity::SI_REF_ID       => $content[ResponseFields::REFERENCE_ID] ??
                                             $content[ResponseFields::SCHEDULE_ID] ??

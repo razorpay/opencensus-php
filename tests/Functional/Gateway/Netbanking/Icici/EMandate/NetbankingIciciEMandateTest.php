@@ -54,8 +54,8 @@ class NetbankingIciciEMandateTest extends TestCase
         //
         // Second auth payment for the recurring product
         //
-        $this->doAuthPayment($payment);
-
+        //
+        $this->doS2SRecurringPayment($payment);
 
         $this->assertEMandateEntities(false);
     }
@@ -64,12 +64,11 @@ class NetbankingIciciEMandateTest extends TestCase
     {
         $netbanking = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals('9999999999', $netbanking['bank_payment_id']);
-        $this->assertNotNull($netbanking['bank_payment_id']);
         $this->assertNotNull($netbanking['si_ref_id']);
 
         if ($initial === true)
         {
+            $this->assertEquals('9999999999', $netbanking['bank_payment_id']);
             $this->assertEquals('Y', $netbanking['si_status']);
             $this->assertEquals('Success', $netbanking['si_message']);
         }
@@ -79,5 +78,8 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $this->assertEquals($payment['token_id'], $token['id']);
         $this->assertEquals($netbanking['si_ref_id'], $token['gateway_token']);
+
+        $this->assertEquals(true, $token['recurring']);
+        $this->assertEquals('confirmed', $token['recurring_status']);
     }
 }

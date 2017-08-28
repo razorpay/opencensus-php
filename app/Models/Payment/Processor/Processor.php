@@ -731,6 +731,11 @@ class Processor
 
         $gatewayData['merchant'] = $this->payment->merchant;
 
+        if ($this->payment->getGlobalOrLocalTokenEntity() !== null)
+        {
+            $gatewayData['token'] = $this->payment->getGlobalOrLocalTokenEntity();
+        }
+
         $eventCode = TraceCode::PAYMENT_CALL_GATEWAY_FUNC . '::' . strtoupper($action);
 
         // Do not track payment when Gateway verify is called

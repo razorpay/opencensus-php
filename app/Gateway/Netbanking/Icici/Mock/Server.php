@@ -21,6 +21,11 @@ class Server extends Base\Mock\Server
 
         $this->validateAuthorizeInput($input);
 
+        if ($this->isSecondRecurring($input))
+        {
+            return $this->handleSecondRecurring($input);
+        }
+
         $decryptedData = $this->decryptData($input);
 
         $this->validateActionInput($decryptedData, 'auth_decrypted');
@@ -36,9 +41,30 @@ class Server extends Base\Mock\Server
         return $callbackUrl;
     }
 
+    protected function handleSecondRecurring(array $input)
+    {
+        $response = [
+            ResponseFields::ITEM_CODE    => $input[RequestFields::ITEM_CODE],
+            ResponseFields::PAYMENT_ID   => $input[RequestFields::PAYMENT_ID],
+            ResponseFields::AMOUNT       => $input[RequestFields::AMOUNT],
+            ResponseFields::CURRENCY     => $input[RequestFields::CURRENCY_CODE],
+            ResponseFields::REFERENCE_ID => $input[RequestFields::SI_REFERENCE_NUMBER],
+            ResponseFields::STATUS       => Confirmation::YES
+        ];
+
+        $this->content($postData, 'second_recurring');
+
+        return $this->makeResponse($response);
+    }
+
     public function getBankingType($input)
     {
         return ($input['PID'] === 'random_pid_corp') ? 'corporate' : 'retail';
+    }
+
+    protected function isSecondRecurring(array $content)
+    {
+        return ($content[RequestFields::MODE] === Action::STANDING_INSTRUCTIONS);
     }
 
     public function verify($input)
@@ -70,7 +96,7 @@ class Server extends Base\Mock\Server
         }
 
         if ((isset($input[RequestFields::SI]) === true) and
-            ($input[RequestFields::SI] === Action::SUBSCRIPTION))
+            ($input[RequestFields::SI] === Confirmation::YES))
         {
             $response[ResponseFields::REFERENCE_ID] = uniqid();
             $response[ResponseFields::SI_STATUS]    = Confirmation::YES;

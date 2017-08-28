@@ -407,7 +407,7 @@ class Gateway
         $publicAuth = $this->app['basicauth']->isPublicAuth();
         $paymentRecurring = $input['payment']['recurring'];
         $terminalRecurring = $input['terminal']->isRecurring();
-        $tokenRecurring = isset($input['token']) ? $input['token']->isRecurring() : null;
+        $tokenRecurring = $input['token']->isRecurring() ?? null;
 
         $this->trace->info(
             TraceCode::GATEWAY_FIRST_RECURRING,
@@ -909,8 +909,13 @@ class Gateway
 
     protected function isSecondRecurringPayment(array $input)
     {
-        if (($input['payment']['recurring'] === true) and
-            ($input['terminal']->isNon3DSRecurring() === true))
+        //
+        // Recurring is updated to true only after the registration
+        // of the customer's SI request is approved. This is a valid
+        // way of ensuring that this is a 2nd recurring payment
+        //
+        if (($input['token']->isRecurring() === true) and
+            ($input['terminal']->isRecurring() === true))
         {
             return true;
         }
