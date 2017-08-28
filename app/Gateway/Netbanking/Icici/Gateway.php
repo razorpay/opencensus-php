@@ -35,6 +35,11 @@ class Gateway extends Base\Gateway
         RequestFields::AMOUNT  => 'amount'
     ];
 
+    const SI_STATUS_TO_RECURRING_STATUS_MAP = [
+        'Y' => Token\RecurringStatus::CONFIRMED,
+        'N' => Token\RecurringStatus::REJECTED
+    ];
+
     public function setGatewayParams($input, $mode, $terminal)
     {
         parent::setGatewayParams($input, $mode, $terminal);
@@ -715,17 +720,13 @@ class Gateway extends Base\Gateway
 
     protected function getRecurringData($gatewayPayment)
     {
-        if ($gatewayPayment->getSIStatus() === 'Y')
-        {
-            $recurringStatus = Token\RecurringStatus::CONFIRMED;
-        }
-        else
-        {
-            $recurringStatus = Token\RecurringStatus::REJECTED;
-            // TODO: We should have a mapping here with our internal error codes.
-            // We cannot show the message as it is.
-            $recurringFailureReason = $gatewayPayment->getSIMessage();
-        }
+        $siStatus = $gatewayPayment->getSIStatus();
+
+        $recurringStatus = self::SI_STATUS_TO_RECURRING_STATUS_MAP[$siStatus] ?? null;
+
+        // TODO: We should have a mapping here with our internal error codes.
+        // We cannot show the message as it is.
+        $recurringFailureReason = $gatewayPayment->getSIMessage();
 
         $recurringData = [
             Token\Entity::RECURRING_STATUS           => $recurringStatus,

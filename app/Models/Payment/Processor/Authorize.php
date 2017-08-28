@@ -1991,11 +1991,13 @@ trait Authorize
 
         if ($payment->isNetbanking() === true)
         {
+            $token = $payment->getGlobalOrLocalTokenEntity();
+
             if (empty($data[Token\Entity::RECURRING_STATUS]) === false)
             {
                 return true;
             }
-            else
+            else if (empty($token->getRecurringStatus()) === true)
             {
                 // We should always have a recurring status, especially
                 // if there's no recurring status set yet.

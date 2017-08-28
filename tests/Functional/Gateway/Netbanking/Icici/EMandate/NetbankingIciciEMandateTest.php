@@ -122,6 +122,22 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEquals('9999999999', $netbanking['bank_payment_id']);
     }
 
+    public function testSiRecurringStatusNotSet()
+    {
+        $payment = $this->payment;
+
+        $this->mockSiRecurringStatusNotSet();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
+    }
+
     protected function assertEMandateRejectedToken()
     {
         // Assert that the token was rejected
@@ -184,6 +200,16 @@ class NetbankingIciciEMandateTest extends TestCase
             function(&$content, $action = null)
             {
                 $content['PAID'] = 'N';
+            });
+    }
+
+    protected function mockSiRecurringStatusNotSet()
+    {
+        $this->mockServerContentFunction(
+            function(&$content, $action = null)
+            {
+                // This maps to a null recurring status
+                $content['SCHSTATUS'] = 'C';
             });
     }
 
