@@ -37,22 +37,9 @@ class Gateway extends Base\Gateway
 
         $authenticationStatus = null;
 
-        try
-        {
-            return $this->threeDSecure($input);
-        }
-        catch (ThreeDSecureAuthenticationFailureException $e)
-        {
-            throw $e;
-        }
-        catch (Exception\GatewayErrorException $e)
-        {
-            $authenticationStatus = AuthenticationStatus::U;
-        }
-        catch (Exception\GatewayTimeoutException $e)
-        {
-            $authenticationStatus = AuthenticationStatus::U;
-        }
+        $resp = $this->threeDSecure($input);
+
+        return $resp;
     }
 
     protected function threeDSecure(array $input)
@@ -77,13 +64,17 @@ class Gateway extends Base\Gateway
         }
         else if ($enrolled === Enrolled::N)
         {
-            // Card not enrolled for 3dsecure
-            //TODO add ECI check
+            // TODO get $eci
+            $this->validateEci($eci, Card\Network::MC);
+
             return null;
         }
         else
         {
-            //TODO throw exception
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
+                $enrolled,
+                'Invalid enroll response');
         }
     }
 
@@ -115,6 +106,44 @@ class Gateway extends Base\Gateway
         }
 
         return null;
+    }
+
+    protected function validateEci($eci, $networkCode)
+    {
+        $eciRaw = $eci ?? '07';
+
+        // NOTE: Make sure PHP return correct int on conversion
+        // Example: '012' should be converted to decimal 12 not octal 12
+        $eci = (int) $eciRaw;
+
+        switch ($networkCode)
+        {
+            case Card\Network::VISA:
+
+                if ($eci === 7)
+                {
+                    $desc = 'ECI value shouldn\'t be 7.';
+                }
+
+                break;
+
+            case Card\Network::MC:
+
+                if (($eci === 7) or ($eci === 0))
+                {
+                    $desc = 'ECI value shouldn\'t be 7 or 0. ECI: ' . $eci;
+                }
+
+                break;
+        }
+
+        if (isset($desc) === true)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
+                $eciRaw,
+                $desc);
+        }
     }
 
     protected function processPares(string $pares)
