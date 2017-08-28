@@ -2409,3 +2409,7 @@ ALTER TABLE payments
 # Query for adding sbibuddy column in merchant_banks table
 ALTER TABLE merchant_banks
     ADD COLUMN sbibuddy TINYINT(1) NOT NULL DEFAULT 0 AFTER jiomoney;
+
+ALTER TABLE tokens
+   ADD COLUMN recurring_status VARCHAR(32) AFTER recurring,
+   ADD COLUMN recurring_failure_reason TEST AFTER recurring_status;
