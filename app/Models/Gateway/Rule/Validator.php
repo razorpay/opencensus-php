@@ -146,6 +146,15 @@ class Validator extends Base\Validator
     {
         $method = $input[Entity::METHOD];
 
+        $gateway = $input[Entity::GATEWAY];
+
+        // skip issuer validation if gateway is sharp, as sharp is test gateway and works
+        // for everything
+        if ($gateway === Gateway::SHARP)
+        {
+            return;
+        }
+
         switch($method)
         {
             case Method::CARD:
@@ -272,9 +281,10 @@ class Validator extends Base\Validator
 
         $gateway = $input[Entity::GATEWAY];
 
-        // Don't validate if method is not card/emi or if network is null
+        // Don't validate if method is not card/emi or if network is null or gateway is
+        // sharp
         if ((in_array($method, [Method::CARD, Method::EMI], true) === false) or
-            ($network === null))
+            ($network === null) or ($gateway === Gateway::SHARP))
         {
             return;
         }
