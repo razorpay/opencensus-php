@@ -39,7 +39,7 @@ export default class AddOnsListContainer extends ListContainer {
     this.props.closeModal();
   };
 
-  actionOnAddOns = type => {
+  actionOnAddOns = (type, id) => {
     switch (type) {
       case 'delete':
         break; // dispatcher call
@@ -50,6 +50,26 @@ export default class AddOnsListContainer extends ListContainer {
 
   render() {
     let { loading, items, error } = this.props;
+    items = [
+      {
+        id: 'add_12323asdad1ad',
+        date: 1523232123,
+        amount: 123232,
+        name: 'flash',
+        status: 'success',
+        short_url: '/addon/12323',
+        isEditable: true,
+      },
+      {
+        id: 'add_12323asbblod1d',
+        date: 1523232123,
+        amount: 219232,
+        name: 'batman',
+        status: 'success',
+        short_url: '/addon/12223',
+        isEditable: false,
+      },
+    ];
     let statusMsg = {};
 
     if (error) {

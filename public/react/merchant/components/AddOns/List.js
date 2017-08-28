@@ -2,60 +2,45 @@ import { NavLink } from 'react-router-dom';
 import TableBody from 'rzp/ui/TableBody';
 import Time from 'rzp/ui/Time';
 import Amount from 'rzp/ui/Amount';
-import CopyLink from 'merchant/components/Invoices/CopyLink';
-import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
+import { AddOnStatusLabel } from 'merchant/components/StatusLabel';
 import EntityItemRow from 'merchant/containers/EntityItemRow';
 import { getCustomerDisplayName } from 'rzp/utils/rzp-utils';
 
 const AddOnsListItem = props => {
   let { addon, onAction } = props;
-  let customer = addon.customer_details;
 
   return (
     <EntityItemRow id={addon.id}>
       <td>
-        <code>
+        <NavLink to={`/addons/${addon.id}`}>
           {addon.id}
-        </code>
+        </NavLink>
       </td>
       <td>
-        <Time value={addon.date} />
+        {addon.name}
       </td>
       <td class="text-right">
         <Amount value={addon.amount} />
       </td>
       <td>
-        {addon.receipt}
+        <Time value={addon.date} format="MMM DD  YYYY, hh:mm a" />
       </td>
-      <td>
-        {getCustomerDisplayName({
-          name: customer.customer_name,
-          contact: customer.customer_contact,
-          email: customer.customer_email,
-        })}
+      <td class="text-center">
+        <button
+          class="btn btn-xs btn-transparent"
+          disabled={!addon.isEditable}
+          onClick={() => props.onAction('edit', addon.id)}
+        >
+          <i class="icon icon-edit" />
+        </button>
       </td>
-      <td>
-        {addon.short_url && <CopyLink url={addon.short_url} />}
-      </td>
-      <td>
-        <InvoiceStatusLabel status={addon.status} />
-      </td>
-      <td>
-        <div class="row-action">
-          <div class="btn-group">
-            <button
-              data-tip={
-                !addon.isEditable ? 'Paid invoice cannot be edited' : null
-              }
-              class="btn btn-xs btn-default"
-              disabled={!addon.isEditable}
-              onClick={props.onAction}
-            >
-              <i class="icon icon-edit" />
-              <span>edit</span>
-            </button>
-          </div>
-        </div>
+      <td class="text-center">
+        <button
+          class="btn btn-xs btn-transparent"
+          onClick={() => props.onAction('delete', addon.id)}
+        >
+          <i class="icon icon-close text-danger" />
+        </button>
       </td>
     </EntityItemRow>
   );
@@ -63,25 +48,17 @@ const AddOnsListItem = props => {
 
 export default props => {
   let { type, addons, isLoading } = props;
-  let label = type === 'link' ? 'Payment Link' : 'Invoice';
-
   return (
     <div class="table-responsive">
       <table class="table table-hover">
         <thead>
           <tr>
-            <th>
-              {label} Id
-            </th>
-            <th>
-              {label} Date
-            </th>
-            <th class="text-right">Amount</th>
-            <th>Receipt No.</th>
-            <th>Customer</th>
-            <th>Payment Link</th>
-            <th>Status</th>
-            <th>Actions</th>
+            <th>Add-on Id</th>
+            <th>Name</th>
+            <th class="text-right">Amount/Unit (INR)</th>
+            <th>Created on</th>
+            <th class="text-center">Edit Details</th>
+            <th class="text-center">Remove</th>
           </tr>
         </thead>
         <TableBody
@@ -93,7 +70,7 @@ export default props => {
           {addons.map(addon =>
             <AddOnsListItem
               key={addon.id}
-              addons={addon}
+              addon={addon}
               onEditClick={() => props.onEdit(addon)}
               onDeleteClick={() => props.onDelete(addon)}
             />
