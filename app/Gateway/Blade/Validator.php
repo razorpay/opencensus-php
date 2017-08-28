@@ -1,24 +1,25 @@
 <?php
 
-namespace App\Gateway\Blade;
+namespace RZP\Gateway\Blade;
 
 use App\Gateway\Base;
 use RZP\Exception;
 
-class Validator extends Base\Validator
+class Validator
 {
     // Using array because of complex regex
-    public static $VEresRules = [
+    public static $veresRules = [
         'Message'                                       => 'required|array',
         'Message.@attributes.id'                        => 'required|max:128',
-        'Message.VERes.version'                         => ['required', 'min:3', 'regex:/^(?:(\d+))\.?(?:(\d+)\.)?(\*|\d+)$/', 'version:1.0.2,=='],
         'Message.VERes.CH'                              => 'required|array',
         'Message.VERes.CH.enrolled'                     => 'required|in:Y,N,U',
+        'Message.VERes.version'                         => ['required','min:3','regex:"(1.0.[2-9])|(1.[1-9].[0-9])"'],
         'Message.VERes.CH.acctID'                       => 'required_if:Message.VERes.CH.enrolled,Y|min:1|max:28',
         'Message.VERes.IReq'                            => 'if_present_then:Message.VERes.CH.enrolled,N|array',
         'Message.VERes.IReq.iReqCode'                   => 'required_with:Message.VERes.IReq|',
         'Message.VERes.IReq.iReqDetail'                 => 'sometimes',
-        'Message.VERes.url'                             => 'required_if:Message.VERes.CH.enrolled,Y|url|url_scheme:http,https|max:2048',
+        'Message.VERes.vendorCode'                      => 'sometimes',
+        'Message.VERes.url'                             => 'required_if:Message.VERes.CH.enrolled,Y|url|max:2048',
         'Message.VERes.protocol'                        => 'required_if:Message.VERes.CH.enrolled,Y|min:0|max:12|in:ThreeDSecure',
         'Message.VERes.Extension'                       => 'sometimes',
         'Message.VERes.Extension.@attributes.id'        => 'required_with:Message.VERes.Extension',
@@ -28,7 +29,7 @@ class Validator extends Base\Validator
     public static $CRresRules = [
         'Message'                                       => 'required|array',
         'Message.@attributes.id'                        => 'required|max:128',
-        'Message.CRRes.version'                         => ['required', 'min:3', 'regex:/^(?:(\d+))\.?(?:(\d+)\.)?(\*|\d+)$/', 'version:1.0.2,=='],
+        'Message.CRRes.version'                         => ['required','min:3','regex:"(1.0.[2-9])|(1.[1-9].[0-9])"'],
         'Message.CRRes.CR'                              => 'sometimes|array',
         'Message.CRRes.serialNumber'                    => 'sometimes|digits_between:1,20',
         'Message.CRRes.IReq'                            => 'sometimes|array',
@@ -41,7 +42,7 @@ class Validator extends Base\Validator
         'Message'                                                                       => 'required|array',
         'Message.@attributes.id'                                                        => 'required|max:128',
         'Message.PARes.@attributes.id'                                                  => 'required|max:128',
-        'Message.PARes.version'                                                         => ['required', 'regex:/^(?:(\d+))\.?(?:(\d+)\.)?(\*|\d+)$/', 'version:1.0.2,=='],
+        'Message.PARes.version'                                                         => ['required','min:3','regex:"(1.0.[2-9])|(1.[1-9].[0-9])"'],
         'Message.PARes.TX'                                                              => 'required|array',
         'Message.PARes.TX.time'                                                         => 'required|date_format:Ymd H:i:s',
         'Message.PARes.TX.status'                                                       => 'required|size:1|in:Y,N,U,A|',

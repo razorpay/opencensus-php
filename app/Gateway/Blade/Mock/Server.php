@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Blade\Mock;
 
 use RZP\Gateway\Base;
+use RZP\Gateway\Blade\Mock\Xml\Response;
 
 class Server extends Base\Mock\Server
 {
@@ -14,6 +15,29 @@ class Server extends Base\Mock\Server
 
         $parsedInput = json_decode(json_encode($parsedInput), true);
 
-        return $this->makeResponse('<?xml version="1.0" encoding="UTF-8"?><ThreeDSecure><Message id="' . $parsedInput['Message']['@attributes']['id'] . '"><VERes><version>1.0.2</version><CH><enrolled>Y</enrolled><acctID>471054133</acctID></CH><url>https://www.acs.com</url><protocol>ThreeDSecure</protocol></VERes></Message></ThreeDSecure>');
+        $response = $this->getResponse($parsedInput);
+
+        return $this->makeResponse($response);
+    }
+
+    protected function getResponse(array $input)
+    {
+        $responseClass = new Response();
+
+        $paymentId = $input['Message']['@attributes']['id'];
+
+        $cardNo = $input['Message']['VEReq']['pan'];
+
+        switch($cardNo)
+        {
+            case CardNumber::VALID_ENROLL_NUMBER:
+                return $responseClass->enrolledValidResponse($paymentId);
+            case CardNumber::VALID_NOT_ENROLL_NUMBER:
+                return $responseClass->notEnrolledValidResponse($paymentId);
+            case CardNumber::INVALID_MEESGAE:
+                return $responseClass->differentMessageResponse($paymentId);
+            case CardNumber::BLANK_MEESGAE:
+                return $responseClass->blankMessageResponse($paymentId);
+        }
     }
 }

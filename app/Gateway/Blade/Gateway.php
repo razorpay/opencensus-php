@@ -8,13 +8,14 @@ use GuzzleHttp;
 use DOMDocument;
 
 use RZP\Exception;
-use RZP\Exception\ThreeDSecureAuthenticationFailureException;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Lib\Formatters\Xml;
+use RZP\Base\JitValidator;
 use RZP\Models\Currency\Currency;
+use RZP\Exception\ThreeDSecureAuthenticationFailureException;
 
 class Gateway extends Base\Gateway
 {
@@ -64,8 +65,10 @@ class Gateway extends Base\Gateway
         }
         else if ($enrolled === Enrolled::N)
         {
-            // TODO get $eci
-            $this->validateEci($eci, Card\Network::MC);
+            // TODO get $eci, no sample resp have eci value
+            //$this->validateEci($eci, Card\Network::MC);
+
+            $this->validateVaresForNotEnrolledResponse($veres);
 
             return null;
         }
@@ -76,6 +79,12 @@ class Gateway extends Base\Gateway
                 $enrolled,
                 'Invalid enroll response');
         }
+    }
+
+    protected function validateVaresForNotEnrolledResponse(\SimpleXMLElement $veres)
+    {
+
+
     }
 
     public function callback(array $input)
@@ -295,22 +304,25 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function validateVERes($VEres)
+    protected function validateVERes($veres)
     {
-        $VEres = json_decode(json_encode($VEres), true);
+        $paymentId = $this->input['payment']['public_id'];
 
-        $this->trace->info(TraceCode::VERIFY_ENROLLMENT_RESPONSE, $VEres);
+        $veres = json_decode(json_encode($veres), true);
 
-        //TODO Fix this
-        //validate(Validator::$VEresRules, $VEres, false);
+        $this->trace->info(TraceCode::VERIFY_ENROLLMENT_RESPONSE, $veres);
 
-        if ($VEres['Message']['@attributes']['id'] !== $this->input['payment']['public_id'])
+        (new JitValidator)->rules(Validator::$veresRules)
+                          ->input($veres)
+                          ->validate();
+
+
+        if ($veres['Message']['@attributes']['id'] !== $paymentId)
         {
             throw new Exception\BadRequestValidationFailureException(
-                    'ID mismatch', 'id');
+                'ID mismatch',
+                $paymentId);
         }
-
-        $dotted_veres = array_dot($VEres);
     }
 
     public function sendCRReq()
