@@ -83,6 +83,15 @@ class DailyFiles extends Base\DailyFiles
         Mail::queue($dailyFileMail);
     }
 
+    /**
+     * We need to send them all the payments where
+     * amount = amount - amount_refunded
+     * And all the refunds that happened at T-1
+     * but the payments were authorized before T-1
+     *
+     * @param integer $from
+     * @param integer $to
+     */
     protected function getClaimsData($from, $to)
     {
         $claims = [];
@@ -90,7 +99,6 @@ class DailyFiles extends Base\DailyFiles
         $status = [
             Payment\Status::AUTHORIZED,
             Payment\Status::CAPTURED,
-            Payment\Status::REFUNDED
         ];
 
         $payments = $this->repo->payment
@@ -105,13 +113,6 @@ class DailyFiles extends Base\DailyFiles
 
             $amountToClaim = $payment[Payment\Entity::AMOUNT] - $refundAmount;
 
-            // not to include payments where
-            // full refund has happened
-            if ($amountToClaim === 0)
-            {
-                continue;
-            }
-
             $payment[Payment\Entity::AMOUNT] = $amountToClaim;
             $payment[Constants::CLAIM_TYPE]  = Constants::DEBIT;
             $payment[Constants::TXN_DETAIL]  = Constants::PAYMENT;
@@ -120,8 +121,7 @@ class DailyFiles extends Base\DailyFiles
         }
 
         $refunds = $this->repo->refund
-                              ->findBetweenTimestamps(strtotime('-1 day', $from),
-                                                      strtotime('-1 day', $to));
+                              ->fetchRefundsForPnbClaims($from, $to);
 
         foreach ($refunds as $refund)
         {
