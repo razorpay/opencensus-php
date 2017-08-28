@@ -68,8 +68,6 @@ class Gateway extends Base\Gateway
             // TODO get $eci, no sample resp have eci value
             //$this->validateEci($eci, Card\Network::MC);
 
-            $this->validateVaresForNotEnrolledResponse($veres);
-
             return null;
         }
         else
@@ -81,14 +79,9 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function validateVaresForNotEnrolledResponse(\SimpleXMLElement $veres)
-    {
-
-
-    }
-
     public function callback(array $input)
     {
+        sd('s');
         parent::callback($input);
 
         $pares = $input['gateway']['PaRes'];
@@ -649,16 +642,6 @@ class Gateway extends Base\Gateway
         $certFile = $this->config['mpi_ssl_client_pem'];
         $keyFile = $this->config['mpi_ssl_client_key'];
 
-        // $id = $input['payment']['public_id'];
-
-        // $content = array(
-        //     'pan' => $input['card']['number'],
-        //     'message_id' => $id,
-        //     ''
-        // );
-
-        // $content = array_merge($content, $creds);
-
         $xml = $this->getVereqXmlString($input);
 
         $headers = [
@@ -704,7 +687,7 @@ class Gateway extends Base\Gateway
                     'Merchant' => [
                         'acqBIN'  => $creds['acq_bin'],
                         'merID'   => $creds['merchant_id'],
-                        // todo: make it dynamic
+                        // TODOD: make it dynamic
                         'name'    => 'Razorpay Software Pvt Ltd',
                         'country' => '356',
                         'url'     => 'https://razorpay.com',
@@ -724,66 +707,6 @@ class Gateway extends Base\Gateway
                 ]
             ]
         ];
-
-        if (isset($recurring) === true)
-        {
-            $content['Message']['PAReq']['Purchase']['Recur'] = [
-                'frequency' => '',
-                'endRecur'  => '',
-            ];
-        }
-
-        if (isset($emi) === true)
-        {
-            $content['Message']['PAReq']['Purchase']['install'] = $emi;
-        }
-
-        // if (empty($input['payment']['notes']['installments']) === false)
-        // {
-        //     $installments = '<install>'. $input['payment']['notes']['installments'] . '</install>';
-        // }
-
-        // if (empty($input['payment']['notes']['recurring_frequency']) === false)
-        // {
-        //     $recurring = '<Recur>
-        //                 <frequency>'.$input['payment']['notes']['recurring_frequency'].'</frequency>
-        //                 <endRecur>'.$input['payment']['notes']['recurring_expiry'] .'</endRecur>
-        //                 </Recur>';
-        // }
-
-        /* Currency is INR (356 - ISO 4217 numeric value) for now
-        // TODO: Make it dynamic with INR as default
-        $xml = '<?xml version="1.0" encoding="UTF-8"?>'.
-                '<ThreeDSecure>
-                    <Message id="'.$mid.'">
-                        <PAReq>
-                          <version>'.self::VERSION.'</version>
-                          <Merchant>
-                            <acqBIN>'.$creds['acq_bin'].'</acqBIN>
-                            <merID>'.$creds['merchant_id'].'</merID>
-                            <name>Razorpay Payments</name>
-                            <country>356</country>
-                            <url>https://razorpay.com/</url>
-                          </Merchant>
-                          <Purchase>
-                            <xid>'.$xid.'</xid>
-                            <date>'.$date.'</date>
-                            <amount>'.($input['payment']['amount']/100).'</amount>
-                            <purchAmount>'.$input['payment']['amount'].'</purchAmount>
-                            <currency>356</currency>
-                            <exponent>2</exponent>
-                            '.$recurring.'
-                            '.$installments.'
-                          </Purchase>
-                          <CH>
-                            <acctID>'.$veres->Message->VERes->CH->acctID.'</acctID>
-                            <expiry>'.$expiry.'</expiry>
-                          </CH>
-                        </PAReq>
-                    </Message>
-                </ThreeDSecure>';
-
-        */
 
         $xml = Xml::create('ThreeDSecure', $content);
 
