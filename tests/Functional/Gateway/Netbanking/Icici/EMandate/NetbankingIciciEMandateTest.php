@@ -158,6 +158,28 @@ class NetbankingIciciEMandateTest extends TestCase
         // TODO: Add assertions
     }
 
+    public function testAuthSecondRecurringNullGatewayToken()
+    {
+        $payment = $this->payment;
+
+        $this->mockSiRecurringGatewayTokenNotSet();
+
+        $this->doAuthPayment($payment);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockSiRecurringGatewayTokenNotSet(false);
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
+
+        // TODO: Assert entities
+    }
+
     protected function assertEMandateRejectedToken()
     {
         // Assert that the token was rejected
@@ -252,6 +274,18 @@ class NetbankingIciciEMandateTest extends TestCase
                 {
                     $content['SCHSTATUS'] = 'N';
                     $content['SCHMSG'] = 'Failure';
+                }
+            });
+    }
+
+    protected function mockSiRecurringGatewayTokenNotSet($set = true)
+    {
+        $this->mockServerContentFunction(
+            function(&$content, $action = null) use ($set)
+            {
+                if ($set === true)
+                {
+                    $content['RID'] = '';
                 }
             });
     }
