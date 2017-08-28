@@ -11,4 +11,6 @@ class Status
     const REVERSED   = 'Reversed';
     const IN_PROCESS = 'IN PROCESS';
     const ERROR      = 'Error';
+
+    const Y = 'Y';
 }
