@@ -35,6 +35,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_CAPTURE_SUCCESS                       = 'PAYMENT_CAPTURE_SUCCESS';
     const PAYMENT_CAPTURE_FAILURE                       = 'PAYMENT_CAPTURE_FAILURE';
     const PAYMENT_CAPTURE_FORCED                        = 'PAYMENT_CAPTURE_FORCED';
+    const PAYMENT_CAPTURE_BULK_REQUEST                  = 'PAYMENT_CAPTURE_BULK_REQUEST';
+    const PAYMENT_CAPTURE_BULK_RESPONSE                 = 'PAYMENT_CAPTURE_BULK_RESPONSE';
+    const PAYMENT_CAPTURE_BULK_FAILURE                  = 'PAYMENT_CAPTURE_BULK_FAILURE';
     const PAYMENT_ALREADY_CAPTURED                      = 'PAYMENT_ALREADY_CAPTURED';
     const PAYMENT_PAYOUT_REQUEST                        = 'PAYMENT_PAYOUT_REQUEST';
     const PAYMENT_AUTO_CAPTURE                          = 'PAYMENT_AUTO_CAPTURE';

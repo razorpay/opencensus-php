@@ -200,11 +200,11 @@ class Service extends Base\Service
         }
 
         $data = [
-            'count' => $count,
-            'success' => $success,
-            'failure' => $failure,
+            'count'            => $count,
+            'success'          => $success,
+            'failure'          => $failure,
             'failure_payments' => $failurePayments,
-            'success_refunds' => $successRefunds,
+            'success_refunds'  => $successRefunds,
         ];
 
         $this->trace->info(
@@ -398,9 +398,82 @@ class Service extends Base\Service
      */
     public function capture($id, $input)
     {
-        $payment = $this->getNewProcessor()->capture($id, $input);
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $payment = $this->getNewProcessor()->capture($payment, $input);
 
         return $payment->toArrayPublic();
+    }
+
+    /**
+     * Captures payments in bulk
+     *
+     * @param  array  $input
+     *
+     * @return array
+     */
+    public function captureInBulk(array $input)
+    {
+        $this->trace->info(
+            TraceCode::PAYMENT_CAPTURE_BULK_REQUEST,
+            $input
+        );
+
+        (new Payment\Validator)->validateInput('bulk_capture', $input);
+
+        $payments = $input['payment_ids'];
+
+        $success = $failure = 0;
+
+        $failurePayments = [];
+
+        foreach ($payments as $paymentId)
+        {
+            try
+            {
+                $payment = $this->repo->payment->findByPublicId($paymentId);
+
+                $merchant = $payment->merchant;
+
+                $captureInput = [
+                    Payment\Entity::AMOUNT   => $payment->getAmount(),
+                    Payment\Entity::CURRENCY => $payment->getCurrency()
+                ];
+
+                $payment = $this->getNewProcessor($merchant)
+                                ->capture($payment, $captureInput);
+
+                $success++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::INFO,
+                    TraceCode::PAYMENT_CAPTURE_BULK_FAILURE,
+                    [
+                        'payment_id' => $paymentId
+                    ]);
+
+                $failure++;
+
+                $failurePayments[] = $paymentId;
+            }
+        }
+
+        $data = [
+            'count'            => count($payments),
+            'success'          => $success,
+            'failure'          => $failure,
+            'failure_payments' => $failurePayments,
+        ];
+
+        $this->trace->info(
+            TraceCode::PAYMENT_CAPTURE_BULK_RESPONSE,
+            $data
+        );
+
+        return $data;
     }
 
     /**

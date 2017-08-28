@@ -116,6 +116,18 @@ class PaymentController extends Controller
         return ApiResponse::json($payment);
     }
 
+    /**
+     * Captures authorized payment in bulk
+     */
+    public function postBulkCapture()
+    {
+        $input = Request::all();
+
+        $data = $this->service('payment')->captureInBulk($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getPaymentStatusForAsyncPayments($id)
     {
         $data = $this->service('payment')->fetchStatus($id);
