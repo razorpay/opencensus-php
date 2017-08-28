@@ -49,7 +49,7 @@ class Server extends Base\Mock\Server
             ResponseFields::AMOUNT       => $input[RequestFields::AMOUNT],
             ResponseFields::CURRENCY     => $input[RequestFields::CURRENCY_CODE],
             ResponseFields::REFERENCE_ID => $input[RequestFields::SI_REFERENCE_NUMBER],
-            ResponseFields::STATUS       => Confirmation::YES
+            ResponseFields::STATUS       => Status::SUCCESS
         ];
 
         $this->content($postData, 'second_recurring');

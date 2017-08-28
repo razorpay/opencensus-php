@@ -117,9 +117,6 @@ class Selector extends Base\Core
 
         $filteredTerminals = $terminals;
 
-        // TODO: Remove this
-        $verbose = true;
-
         foreach (self::$filters as $filter)
         {
             $filterRules = $this->getRulesForFiltering($rules);

@@ -49,8 +49,7 @@ class Gateway extends Base\Gateway
         if ($this->isSecondRecurringPayment($input) === true)
         {
             //
-            // NOTE: Ensure that we don't send back anything at all.
-            // Otherwise it goes into 2-step flow.
+            // We return nothing here, to avoid 2 step flow
             //
             return $this->authorizeSecondRecurring($input);
         }
@@ -74,9 +73,8 @@ class Gateway extends Base\Gateway
 
         if ($gatewayToken === null)
         {
-            // TODO: Throw an exception
-            // If it's second recurring, we should already
-            // be having the gateway token at this point.
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_GATEWAY_TOKEN_EMPTY);
         }
 
         $entity = [RequestFields::AMOUNT => $input['payment'][Payment\Entity::AMOUNT] / 100];
@@ -111,8 +109,6 @@ class Gateway extends Base\Gateway
 
         $this->repo->saveOrFail($gatewayPayment);
 
-        // TODO: Save the gateway payment entity here first.
-
         $this->checkSecondRecurringStatus($responseArray);
     }
 
@@ -125,7 +121,8 @@ class Gateway extends Base\Gateway
         if ((empty($response[ResponseFields::STATUS]) === true) or
             ($response[ResponseFields::STATUS] !== Status::SUCCESS))
         {
-            // TODO: Throw an exception
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
     }
 
@@ -391,45 +388,33 @@ class Gateway extends Base\Gateway
         return base64_encode($aes->encryptString($queryString));
     }
 
-    protected function getEMandateRequestData($input)
+    /**
+     * This method fetches the request parameters for the initial SI request
+     *
+     * @param array $input
+     */
+    protected function getEMandateRequestData(array $input)
     {
         $date = Carbon::now(Timezone::IST)->format('Y-m-d');
 
-        $token = $input['token'];
+        $endDate = Carbon::now(Timezone::IST)
+                         ->addYears(Base\Recurring::MAX_END_DATE_FROM_NOW)
+                         ->format('Y-m-d');
 
-        if ($this->isSecondRecurringPaymentRequest($input) === true)
-        {
-            if ($token->getGatewayToken() === null)
-            {
-                // TODO: Throw an exception
-            }
-
-            $data = [
-                RequestFields::SI_PAYMENT_DATE     => $date,
-                RequestFields::SI_REFERENCE_NUMBER => $token->getGatewayToken(),
-            ];
-        }
-        else
-        {
-            $endDate = Carbon::now(Timezone::IST)
-                             ->addYears(Base\Recurring::MAX_END_DATE_FROM_NOW)
-                             ->format('Y-m-d');
-
-            $data = [
-                RequestFields::SI                  => Confirmation::YES,
-                // TODO: How do we get the start date in case of charge-at-will?
-                RequestFields::SI_PAYMENT_DATE     => $date,
-                // Recurring
-                RequestFields::SI_PAYMENT_TYPE     => Type::RECURRING,
-                RequestFields::SI_PAYMENT_FREQ     => Frequency::AS_AND_WHEN,
-                // Num installments = empty when charge at will
-                RequestFields::SI_NUM_INSTALLMENTS => '',
-                // TODO: Should we get this from the token instead?
-                RequestFields::SI_AUTO_PAY_AMOUNT  => (int) (Base\Recurring::MAX_AMOUNT / 100),
-                // TODO: Should we accept this from the merchant?
-                RequestFields::SI_END_DATE         => $endDate,
-            ];
-        }
+        $data = [
+            RequestFields::SI                  => Confirmation::YES,
+            // TODO: How do we get the start date in case of charge-at-will?
+            RequestFields::SI_PAYMENT_DATE     => $date,
+            // Recurring
+            RequestFields::SI_PAYMENT_TYPE     => Type::RECURRING,
+            RequestFields::SI_PAYMENT_FREQ     => Frequency::AS_AND_WHEN,
+            // Num installments = empty when charge at will
+            RequestFields::SI_NUM_INSTALLMENTS => '',
+            // TODO: Should we get this from the token instead?
+            RequestFields::SI_AUTO_PAY_AMOUNT  => (int) (Base\Recurring::MAX_AMOUNT / 100),
+            // TODO: Should we accept this from the merchant?
+            RequestFields::SI_END_DATE         => $endDate,
+        ];
 
         return $data;
     }
