@@ -44,8 +44,6 @@ class Gateway extends Base\Gateway
 
         $request = $this->getAuthorizeRequestArray($input);
 
-        $this->traceGatewayPaymentRequest($request, $input);
-
         $contentToSave = $this->getAuthorizeWalletContentToSave($input['payment']);
 
         $this->createGatewayPaymentEntity($contentToSave, Action::AUTHORIZE);
@@ -55,6 +53,8 @@ class Gateway extends Base\Gateway
 
     public function callback(array $input)
     {
+        parent::callback($input);
+
         $data = $this->decryptResponse($input['gateway']);
 
         $this->trace->info(
@@ -135,6 +135,15 @@ class Gateway extends Base\Gateway
         ];
 
         $request = $this->getStandardRequestArray($content);
+
+        $this->traceGatewayPaymentRequest(
+            $request,
+            $input,
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'payload' => $data
+            ]
+        );
 
         return $request;
     }
@@ -392,6 +401,16 @@ class Gateway extends Base\Gateway
     protected function decryptResponse(array $input): array
     {
         $decryptedInput = $this->getEncryptor()->decryptString($input[ResponseFields::ENCRYPTED_DATA]);
+
+        if(empty($decryptedInput) === true)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_DECRYPTION_FAILED,
+                null,
+                null,
+                ['encrypted_data' => $input[ResponseFields::ENCRYPTED_DATA]]
+            );
+        }
 
         parse_str($decryptedInput, $data);
 

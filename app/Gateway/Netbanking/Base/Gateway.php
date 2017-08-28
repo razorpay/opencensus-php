@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Base;
 
+use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Gateway\Netbanking;
@@ -140,5 +141,21 @@ class Gateway extends \RZP\Gateway\Base\Gateway
                 Payment\Entity::REFERENCE1 => $gatewayPayment->getBankPaymentId()
             ]
         ];
+    }
+
+    protected function traceGatewayPaymentRequest(
+        array $request,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST,
+        array $extraData = [])
+    {
+        $this->trace->info(
+            $traceCode,
+            [
+                'request'    => $request,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+                'extra_data' => $extraData
+            ]);
     }
 }
