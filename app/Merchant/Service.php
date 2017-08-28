@@ -769,16 +769,6 @@ class Service extends Base\Service
         return [$error, null];
     }
 
-    public function fetchReferredMerchants($merchantId)
-    {
-        $tag = "ref-$merchantId";
-
-        return Merchant\Entity::select(['id', 'name', 'activated', 'created_at', 'email'])
-                              ->withAnyTag($tag)
-                              ->whereNull('suspended_at')
-                              ->get();
-    }
-
     /**
      * Makes sure that the hex color is in proper
      * format for the API. Just drops the first
