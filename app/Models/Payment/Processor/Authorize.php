@@ -1953,20 +1953,17 @@ trait Authorize
         {
             if ($this->shouldSetTokenRecurring($payment, $data) === true)
             {
-                if ($data[Token\Entity::RECURRING_STATUS] === Token\RecurringStatus::CONFIRMED)
-                {
-                    $token->setRecurring(true);
-                }
+                $token->setRecurring(true);
+            }
 
-                //
-                // Currently we require the recurring details to be
-                // updated only for netbanking.
-                // No details need to be updated for credit cards.
-                //
-                if ($payment->isNetbanking() === true)
-                {
-                    $this->updateTokenRecurringDetails($payment, $token, $data);
-                }
+            //
+            // Currently we require the recurring details to be
+            // updated only for netbanking.
+            // No details need to be updated for credit cards.
+            //
+            if ($payment->isNetbanking() === true)
+            {
+                $this->updateTokenRecurringDetails($payment, $token, $data);
             }
 
             $this->createAndSetTerminalInGatewayToken($payment, $token);
@@ -1993,15 +1990,17 @@ trait Authorize
         {
             $token = $payment->getGlobalOrLocalTokenEntity();
 
-            if (empty($data[Token\Entity::RECURRING_STATUS]) === false)
+            //
+            // The idea is that for netbanking payments, we first check if the
+            // recurring status is set, and if it is, we ensure that it is confirmed
+            // before updating recurring to true. Or else we throw a LogicException
+            // if token's recurring status is not set. In the generic case that doesn't
+            // come under either of the above cases, we don't update recurring to false.
+            //
+            if ((empty($data[Token\Entity::RECURRING_STATUS]) === false) and
+                ($data[Token\Entity::RECURRING_STATUS] === Token\RecurringStatus::CONFIRMED))
             {
                 return true;
-            }
-            else if (empty($token->getRecurringStatus()) === true)
-            {
-                // We should always have a recurring status, especially
-                // if there's no recurring status set yet.
-                throw new Exception\LogicException('The recurring status should always be set for token update');
             }
         }
 
@@ -2048,6 +2047,12 @@ trait Authorize
         }
 
         $recurringStatus = $data[Token\Entity::RECURRING_STATUS];
+
+        if (empty($recurringStatus) === true)
+        {
+            // This is to ensure that if the recurring status is not already set, we set it now
+            throw new Exception\LogicException('The recurring status should always be set for token update');
+        }
 
         $token->setRecurringStatus($recurringStatus);
 
