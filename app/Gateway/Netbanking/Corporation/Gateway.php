@@ -149,6 +149,8 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getVerifyRequestData($verify->input);
 
+        parent::verify($this->input);
+
         $request = $this->getStandardRequestArray($content);
 
         $this->trace->info(
@@ -208,7 +210,7 @@ class Gateway extends Base\Gateway
 
         if ($this->shouldStatusBeUpdated($gatewayPayment) === true)
         {
-            $attributes[Base\Entity::STATUS] = $content[ResponseFields::STATUS];
+            $attributes[Base\Entity::STATUS] = $content[ResponseFields::VERIFY_RESULT];
         }
 
         if (isset($content[ResponseFields::BANK_REF_NUMBER]) === true and
@@ -248,8 +250,6 @@ class Gateway extends Base\Gateway
      */
     protected function verifyCallback(array $input)
     {
-        parent::verify($input);
-
         $verify = new Verify($this->gateway, $input);
 
         $this->sendPaymentVerifyRequest($verify);
@@ -267,7 +267,7 @@ class Gateway extends Base\Gateway
         }
 
         // Setting this back to a callback request once the verification in callback is done
-        // parent::callback($input);
+        parent::callback($input);
     }
 
     protected function parseVerifyResponse($content)
@@ -284,7 +284,7 @@ class Gateway extends Base\Gateway
         // the response from the gateway in the callback request.
         // But, if we're calling this method from the verify request,
         // we'll have to fetch the bank ref number from the netbanking repo.
-        if(isset($input['gateway']) === false)
+        if($this->action === 'verify')
         {
             $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 

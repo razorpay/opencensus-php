@@ -4,9 +4,10 @@ namespace RZP\Gateway\Netbanking\Corporation;
 
 class Url
 {
-    const LIVE_DOMAIN   = 'http://210.212.195.74:7777';
+    // TODO: Add live domain later
+    const LIVE_DOMAIN   = '';
     const TEST_DOMAIN   = 'http://210.212.195.74:7777';
 
-    const AUTHORIZE           = '/RetailBank/OLT';
+    const AUTHORIZE     = '/RetailBank/OLT';
     const VERIFY        = '/RetailBank/OLTDVER';
 }
