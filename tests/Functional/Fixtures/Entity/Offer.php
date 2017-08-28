@@ -28,8 +28,8 @@ class Offer extends Base
     public function createWallet(array $attributes = [])
     {
         $walletAttributes = [
-            'payment_method'      => 'wallet',
-            'payment_network'     => 'olamoney',
+            'payment_method' => 'wallet',
+            'issuer'         => 'olamoney',
         ];
 
         $attributes = array_merge($walletAttributes, $attributes);

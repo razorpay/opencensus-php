@@ -999,7 +999,7 @@ return [
                     [
                         'name'            => 'Test Offer',
                         'payment_method'  => 'wallet',
-                        'payment_network' => 'olamoney',
+                        'issuer'          => 'olamoney',
                         'display_text'    => 'Some display text',
                     ]
                 ]
