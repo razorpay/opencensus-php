@@ -751,8 +751,11 @@ class Service extends Base\Service
 
     public function refundOldAuthorizedPayments()
     {
-        // Since we are taking 12 am of today, we only need to subtract 4 days from today
+        //
+        // Since we are taking 12 am of today,
+        // we only need to subtract 4 days from today
         // to arrive at 5 days before.
+        //
         $seconds = Merchant\Entity::AUTO_REFUND_DELAY_DEFAULT;
 
         $date = Carbon::today(Timezone::IST);
@@ -760,9 +763,11 @@ class Service extends Base\Service
 
         $payments = $this->repo->payment->getAuthorizedPaymentsBeforeTimestamp($ts, false);
 
+        //
         // We fetch all the authorized payments eligible for refund.
         // Payments are identified on the basis of merchant auto_refund_delay
-        // Maximum delay can be 5 days
+        // Maximum delay can be 10 days
+        //
         $payments2 = $this->repo->payment->getAuthorizedPaymentsWithAutoRefundDelay();
 
         $payments = $payments->merge($payments2);

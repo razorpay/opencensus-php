@@ -148,8 +148,10 @@ class Validator extends Base\Validator
 
         $gateway = $input[Entity::GATEWAY];
 
-        // skip issuer validation if gateway is sharp, as sharp is test gateway and works
-        // for everything
+        //
+        // skip issuer validation if gateway is sharp,
+        // as sharp is test gateway and works for everything
+        //
         if ($gateway === Gateway::SHARP)
         {
             return;
