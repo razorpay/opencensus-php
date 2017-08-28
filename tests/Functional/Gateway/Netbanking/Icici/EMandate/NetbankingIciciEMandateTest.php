@@ -42,6 +42,9 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEMandateEntities();
     }
 
+    /**
+     * This is the case that the payment failed, but the SI
+     */
     public function testEMandateInitialPaymentFailure()
     {
         $data = $this->testData[__FUNCTION__];
@@ -109,12 +112,13 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEquals($payment['token_id'], $token['id']);
         $this->assertEquals(null, $token['gateway_token']);
         $this->assertNotNull($netbanking['si_ref_id']);
-        $this->assertEquals('N', $netbanking['si_status']);
+
+        // The payment failed, but the SI request passed.
+        $this->assertEquals('Y', $netbanking['si_status']);
 
         $this->assertNotNull($netbanking['si_ref_id']);
 
         $this->assertEquals('9999999999', $netbanking['bank_payment_id']);
-        $this->assertEquals('Failure', $netbanking['si_message']);
     }
 
     protected function mockSiPaymentFailure()
@@ -122,7 +126,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->mockServerContentFunction(
             function(&$content, $action = null)
             {
-                $content['SCHSTATUS'] = 'N';
+                $content['PAID'] = 'N';
                 $content['SCHMSG'] = 'Failure';
             });
     }

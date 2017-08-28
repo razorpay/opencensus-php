@@ -502,7 +502,7 @@ class Gateway extends Base\Gateway
         return [
             Base\Entity::RECEIVED        => true,
             Base\Entity::STATUS          => $content[ResponseFields::PAID] ?? $content[ResponseFields::STATUS],
-            Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_PAYMENT_ID] ?? null,
+            Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_PAYMENT_ID],
             // TODO: Find out which one is sent and fix this accordingly.
             Base\Entity::SI_REF_ID       => $content[ResponseFields::REFERENCE_ID] ??
                                             $content[ResponseFields::SCHEDULE_ID] ??
@@ -516,13 +516,6 @@ class Gateway extends Base\Gateway
     {
         if ((isset($attrs[ResponseFields::LC_STATUS]) === false) or
             ($attrs[ResponseFields::LC_STATUS] !== Confirmation::YES))
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
-
-        if ((isset($content[ResponseFields::SI_STATUS]) === true) and
-                 ($content[ResponseFields::SI_STATUS] !== Confirmation::YES))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED);

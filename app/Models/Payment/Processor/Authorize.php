@@ -1938,7 +1938,7 @@ trait Authorize
 
             if ((($payment->isCard() === true) or
                  ($payment->isNetbanking() === true)) and
-                 ($payment->isRecurring() === true))
+                ($payment->isRecurring() === true))
             {
                 if ($this->shouldSetTokenRecurring($payment, $data) === true)
                 {
@@ -1951,6 +1951,7 @@ trait Authorize
                     //
                     if ($payment->isNetbanking() === true)
                     {
+                        // TODO: Discuss the flow here, because this needs to be updated when payment fails as well
                         $this->updateTokenRecurringDetails($payment, $token, $data);
                     }
                 }
