@@ -598,6 +598,7 @@ class SubscriptionChargeTest extends TestCase
 
         $invoice = $this->getLastEntity('invoice', true);
         $this->assertEquals('halted', $invoice['subscription_status']);
+        $this->assertEquals($subscription['id'], $invoice['subscription_id']);
 
         $this->chargeSubscriptionInvoiceManually($invoice);
         // Successful test charge marks the subscrition as active again

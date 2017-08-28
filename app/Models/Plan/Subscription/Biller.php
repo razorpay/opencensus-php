@@ -23,9 +23,9 @@ class Biller extends Base\Core
         if ($data['activated'] === true)
         {
             //
-            // We fire this webhook in sync --
-            // otherwise charge webhook might go before this
-            // since our queue doesn't maintain order.
+            // This might need to be changed, to fire webhook
+            // in sync. Otherwise charge webhook might go before
+            // this since our queue doesn't maintain order.
             //
             (new Core)->fireWebhookForStatusUpdate($subscription, Status::ACTIVE);
         }
