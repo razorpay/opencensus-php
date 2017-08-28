@@ -301,7 +301,8 @@ class Entity extends Base\PublicEntity
 
     protected function setPublicRecurringAttribute(array & $array)
     {
-        if ($this->isRecurring() === false)
+        if (($this->isRecurring() === false) and
+            (empty($this->getRecurringStatus()) === true))
         {
             unset($array[self::RECURRING]);
         }
@@ -309,7 +310,8 @@ class Entity extends Base\PublicEntity
 
     protected function setPublicRecurringStatusAttribute(array & $array)
     {
-        if ($this->isRecurring() === false)
+        if (($this->isRecurring() === false) and
+            (empty($this->getRecurringStatus()) === true))
         {
             unset($array[self::RECURRING_STATUS]);
         }
@@ -317,7 +319,8 @@ class Entity extends Base\PublicEntity
 
     protected function setPublicRecurringFailureReasonAttribute(array & $array)
     {
-        if ($this->isRecurring() === false)
+        if (($this->isRecurring() === false) and
+            (empty($this->getRecurringStatus()) === true))
         {
             unset($array[self::RECURRING_FAILURE_REASON]);
         }

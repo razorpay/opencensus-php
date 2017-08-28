@@ -1917,6 +1917,11 @@ trait Authorize
     {
         $token = $payment->getGlobalOrLocalTokenEntity();
 
+        if ($token === null)
+        {
+            return;
+        }
+
         $this->trace->info(
             TraceCode::PAYMENT_UPDATE_TOKEN,
             [
@@ -1929,46 +1934,45 @@ trait Authorize
         // Update token stats. Assuming same token is not getting
         // used in multiple payments. Actually we should be locking.
         //
-        if ($token !== null)
+        $createdAt = $payment->getCreatedAt();
+
+        $token->setUsedAt($createdAt);
+
+        $token->incrementUsedCount();
+
+        if ((($payment->isCard() === true) or
+             ($payment->isNetbanking() === true)) and
+            ($payment->isRecurring() === true))
         {
-            $createdAt = $payment->getCreatedAt();
-
-            $token->setUsedAt($createdAt);
-
-            $token->incrementUsedCount();
-
-            if ((($payment->isCard() === true) or
-                 ($payment->isNetbanking() === true)) and
-                ($payment->isRecurring() === true))
+            if ($this->shouldSetTokenRecurring($payment, $data) === true)
             {
-                if ($this->shouldSetTokenRecurring($payment, $data) === true)
+                if ($data[Token\Entity::RECURRING_STATUS] === Token\RecurringStatus::CONFIRMED)
                 {
                     $token->setRecurring(true);
-
-                    //
-                    // Currently we require the recurring details to be
-                    // updated only for netbanking.
-                    // No details need to be updated for credit cards.
-                    //
-                    if ($payment->isNetbanking() === true)
-                    {
-                        // TODO: Discuss the flow here, because this needs to be updated when payment fails as well
-                        $this->updateTokenRecurringDetails($payment, $token, $data);
-                    }
                 }
 
-                $this->createAndSetTerminalInGatewayToken($payment, $token);
-
                 //
-                // This is being done simply. Can be removed.
-                // Shouldn't be required now since we are using
-                // gateway_token for terminal.
+                // Currently we require the recurring details to be
+                // updated only for netbanking.
+                // No details need to be updated for credit cards.
                 //
-                $token->terminal()->associate($payment->terminal);
+                if ($payment->isNetbanking() === true)
+                {
+                    $this->updateTokenRecurringDetails($payment, $token, $data);
+                }
             }
 
-            $this->repo->saveOrFail($token);
+            $this->createAndSetTerminalInGatewayToken($payment, $token);
+
+            //
+            // This is being done simply. Can be removed.
+            // Shouldn't be required now since we are using
+            // gateway_token for terminal.
+            //
+            $token->terminal()->associate($payment->terminal);
         }
+
+        $this->repo->saveOrFail($token);
     }
 
     protected function shouldSetTokenRecurring(Payment\Entity $payment, array $data)
@@ -1980,10 +1984,15 @@ trait Authorize
 
         if ($payment->isNetbanking() === true)
         {
-            if ((empty($data[Token\Entity::RECURRING_STATUS]) === false) and
-                ($data[Token\Entity::RECURRING_STATUS] === Token\RecurringStatus::CONFIRMED))
+            if (empty($data[Token\Entity::RECURRING_STATUS]) === false)
             {
                 return true;
+            }
+            else
+            {
+                // TODO: Throw an exception
+                // We should always have a recurring status, especially
+                // if there's no recurring status set yet.
             }
         }
 
@@ -2011,14 +2020,6 @@ trait Authorize
         // for same token only.
         //
 
-        //
-        // Throwing an exception here since currently we do
-        // this only for netbanking.
-        //
-        if ($payment->isNetbanking() === false)
-        {
-            // TODO: Throw an exception
-        }
 
         //
         // Throwing an exception here because we don't allow
@@ -2035,13 +2036,6 @@ trait Authorize
         {
             // TODO: Decide whether we want to override it here.
             return;
-        }
-
-        if (empty($data[Token\Entity::RECURRING_STATUS]) === true)
-        {
-            // TODO: Throw an exception
-            // We should always have a recurring status, especially
-            // if there's no recurring status set yet.
         }
 
         $recurringStatus = $data[Token\Entity::RECURRING_STATUS];

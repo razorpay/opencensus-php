@@ -80,6 +80,19 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEMandateEntities(false);
     }
 
+    public function testEMandateSiRejected()
+    {
+        $this->mockRejectedToken();
+
+        $this->doAuthPayment($this->payment);
+
+        $token = $this->getLastEntity('token', true);
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['token_id'], $token['id']);
+        $this->assertEquals(false, $token['recurring']);
+        $this->assertEquals('rejected', $token['recurring_status']);
+    }
 
     public function testScheduledPaymentWithRejectedToken()
     {
@@ -150,7 +163,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEquals(null, $token['gateway_token']);
         $this->assertNotNull($netbanking['si_ref_id']);
 
-        $this->assertEquals('N', $netbanking['si_status']);
+        $this->assertEquals('Y', $netbanking['si_status']);
 
         $this->assertNotNull($netbanking['si_ref_id']);
 
@@ -163,8 +176,6 @@ class NetbankingIciciEMandateTest extends TestCase
             function(&$content, $action = null)
             {
                 $content['PAID'] = 'N';
-                $content['SCHSTATUS'] = 'N';
-                $content['SCHMSG'] = 'Failure';
             });
     }
 
