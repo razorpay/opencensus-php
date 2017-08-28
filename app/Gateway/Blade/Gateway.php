@@ -81,14 +81,18 @@ class Gateway extends Base\Gateway
 
     public function callback(array $input)
     {
-        sd('s');
         parent::callback($input);
 
         $pares = $input['gateway']['PaRes'];
 
         $corePares = (array) $this->processPares($pares);
 
+        (new JitValidator)->rules(Validator::$paresRules)
+                          ->input($corePares)
+                          ->validate();
+
         $txnAttributes = (array) $corePares['TX'];
+
         $purchaseAttributes = (array) $corePares['Purchase'];
 
         $gatewayInput = [
@@ -97,6 +101,7 @@ class Gateway extends Base\Gateway
         ];
 
         $status = $txnAttributes['status'];
+
         $xid = $purchaseAttributes['xid'];
 
         $authenticateStatus = ParesStatus::getAuthenticationStatus($status);
@@ -199,9 +204,9 @@ class Gateway extends Base\Gateway
         // Validate Payer Authentication Response
         $this->validatePARes($paresObject);
 
-        $PARes = $paresObject->Message->PARes;
+        $pares = $paresObject->Message->PARes;
 
-        return $PARes;
+        return $pares;
     }
 
     protected function validatePARes($PAres)

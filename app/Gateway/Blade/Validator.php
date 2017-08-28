@@ -55,7 +55,7 @@ class Validator
         'Message.PARes.Purchase.currency'                                               => 'required|string|size:3',
         'Message.PARes.Purchase.date'                                                   => 'required|date_format:Ymd H:i:s',
         'Message.PARes.Purchase.exponent'                                               => 'required|digits_between:1,1',
-        'Message.PARes.IReq'                                                            => 'if_present_then:Message.PARes.TX.status,U|array',
+        'Message.PARes.IReq'                                                            => 'sometimes|array',
         'Message.PARes.IReq.iReqCode'                                                   => 'required_with:Message.PARes.IReq|min:1|max:3',
         'Message.PARes.IReq.iReqDetail'                                                 => 'required_with:Message.PARes.IReq|max:2048',
         'Message.PARes.IReq.vendorCode'                                                 => 'sometimes|max:256',
