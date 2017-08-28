@@ -165,7 +165,7 @@ class Entity extends Base\PublicEntity
 
     public function recipientSettlement()
     {
-        return $this->belongsTo('RZP\Models\Settlement\Entity', 'recipient_settlement_id', 'id');
+        return $this->belongsTo(Settlement\Entity::class, 'recipient_settlement_id', 'id');
     }
 
     // -------------------- End Relations -----------------------
@@ -387,13 +387,11 @@ class Entity extends Base\PublicEntity
         $attributes[self::SOURCE] = $entity::getSignedId($sourceId);
     }
 
-    public function setPublicRecipientSettlementIdAttribute(array & $array)
+    public function setPublicRecipientSettlementIdAttribute(array & $attributes)
     {
-        if (isset($array[self::RECIPIENT_SETTLEMENT_ID]))
-        {
-            $array[self::RECIPIENT_SETTLEMENT_ID] =
-                Settlement\Entity::getIdPrefix() . $this->getAttribute(self::RECIPIENT_SETTLEMENT_ID);
-        }
+        $setld = $this->getAttribute(self::RECIPIENT_SETTLEMENT_ID);
+
+        $attributes[self::RECIPIENT_SETTLEMENT_ID] = Settlement\Entity::getSignedIdOrNull($setld);
     }
 
     public function toArrayReport()
