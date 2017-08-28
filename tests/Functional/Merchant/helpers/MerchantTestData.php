@@ -435,7 +435,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Auto refund delay should be between 1 and 5 days',
+                    'description' => 'Auto refund delay should be between 1 and 10 days',
                 ],
             ],
             'status_code' => 400,

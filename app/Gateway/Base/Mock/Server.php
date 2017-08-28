@@ -121,12 +121,17 @@ class Server extends Base\Core
         //     'Unexpected referer value. Referer: ' . $referer);
     }
 
-    protected function getGatewayInstance()
+    protected function getGatewayInstance($bankingType = null)
     {
         $class = $this->getGatewayNamespace() . '\Gateway';
 
         $gateway = new $class;
         $gateway->setMode(Mode::TEST);
+
+        if (isset($bankingType) === true)
+        {
+            $gateway->setBankingType($bankingType);
+        }
 
         return $gateway;
     }

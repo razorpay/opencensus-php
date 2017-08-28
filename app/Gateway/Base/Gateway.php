@@ -300,6 +300,16 @@ class Gateway
         }
     }
 
+    public function getAction()
+    {
+        return $this->action;
+    }
+
+    public function getMode()
+    {
+        return $this->mode;
+    }
+
     protected function assertPaymentId($expectedPaymentId, $actualPaymentId)
     {
         if ($actualPaymentId !== $expectedPaymentId)
@@ -560,7 +570,7 @@ class Gateway
     }
 
     protected function traceGatewayPaymentRequest(
-        $request,
+        array $request,
         $input,
         $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
     {
@@ -683,14 +693,9 @@ class Gateway
     {
         $urlClass = $this->getGatewayNamespace() . '\Url';
 
-        $domainConstantName = strtoupper($this->mode).'_DOMAIN';
+        $domainType = $this->domainType ?? $this->mode;
 
-        if ($this->domainType !== null)
-        {
-            $domainType = strtoupper($this->domainType);
-
-            $domainConstantName = $domainType.'_DOMAIN';
-        }
+        $domainConstantName = strtoupper($domainType).'_DOMAIN';
 
         return constant($urlClass . '::' .$domainConstantName);
     }
@@ -704,18 +709,13 @@ class Gateway
 
     protected function getUrl($type = null)
     {
-        $url = $this->getUrlDomain();
+        $urlDomain = $this->getUrlDomain();
 
-        if ($type === null)
-        {
-            $type = $this->action;
-        }
+        $type = $type ?? $this->action;
 
         $type = strtoupper($type);
 
-        $url .= $this->getRelativeUrl($type);
-
-        return $url;
+        return $urlDomain . $this->getRelativeUrl($type);
     }
 
     protected function loadGatewayConfig()
@@ -804,10 +804,10 @@ class Gateway
         return $orderedData;
     }
 
-    protected function getStandardRequestArray($content = [], $method = 'post')
+    protected function getStandardRequestArray($content = [], $method = 'post', $type = null)
     {
         $request = array(
-            'url'       => $this->getUrl(),
+            'url'       => $this->getUrl($type),
             'method'    => $method,
             'content'   => $content,
         );
