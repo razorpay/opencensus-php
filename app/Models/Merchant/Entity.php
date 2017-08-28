@@ -87,6 +87,7 @@ class Entity extends Base\PublicEntity
 
     protected $embeddedRelations = [
         self::GROUPS,
+        self::ADMINS,
     ];
 
     protected $fillable = [
