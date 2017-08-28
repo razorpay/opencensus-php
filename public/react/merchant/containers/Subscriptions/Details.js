@@ -54,7 +54,10 @@ export default class SubscriptionDetailsContainer extends Component {
     let { invoice } = this.props;
     if (!invoice || invoice.id !== id) {
       this.props.expandSlider();
-      this.setState({ secView: 'invoice' });
+      this.setState({
+        secView: 'invoice',
+        invoiceErrors: null,
+      });
       this.props
         .fetchInvoice(id)
         .then(invoice => {
@@ -62,9 +65,9 @@ export default class SubscriptionDetailsContainer extends Component {
             invoice,
           });
         })
-        .catch(({ errors }) => {
+        .catch(({ invoiceErrors }) => {
           this.setState({
-            errors,
+            invoiceErrors,
           });
         });
     }
@@ -74,7 +77,10 @@ export default class SubscriptionDetailsContainer extends Component {
     let { payment } = this.props;
     if (!payment || payment.id !== id) {
       this.props.expandSlider();
-      this.setState({ secView: 'payment' });
+      this.setState({
+        secView: 'payment',
+        paymentErrors: null,
+      });
       this.props
         .fetchPayment(id)
         .then(payment => {
@@ -82,9 +88,9 @@ export default class SubscriptionDetailsContainer extends Component {
             payment,
           });
         })
-        .catch(({ errors }) => {
+        .catch(({ paymentErrors }) => {
           this.setState({
-            errors,
+            paymentErrors,
           });
         });
     }
@@ -139,17 +145,15 @@ export default class SubscriptionDetailsContainer extends Component {
 
   render() {
     let { entity, plan, customer } = this.props;
-    let { invoice, payment, secView } = this.state;
-    let errors = this.state.errors;
-    let isLoading = this.state.isLoading;
-    let statusMsg = {};
-
-    if (errors) {
-      statusMsg = {
-        type: 'error',
-        message: errors,
-      };
-    }
+    let {
+      isLoading,
+      invoice,
+      payment,
+      secView,
+      errors,
+      invoiceErrors,
+      paymentErrors,
+    } = this.state;
 
     return (
       <div class="multi-content">
@@ -158,19 +162,21 @@ export default class SubscriptionDetailsContainer extends Component {
           plan={plan}
           customer={customer}
           isLoading={isLoading}
-          statusMsg={statusMsg}
+          statusMsg={makeErrorStatus(errors)}
           onCancelClick={this.cancelSubscription}
         />
         {secView === 'invoice' &&
           <InvoiceDetail
             invoice={invoice}
             onClose={this.secClose}
+            statusMsg={makeErrorStatus(invoiceErrors)}
             isLoading={secView && !invoice}
           />}
         {secView === 'payment' &&
           <PaymentDetail
             payment={payment}
             onClose={this.secClose}
+            statusMsg={makeErrorStatus(paymentErrors)}
             isLoading={secView && !payment}
           />}
       </div>
@@ -182,4 +188,13 @@ export default class SubscriptionDetailsContainer extends Component {
     compactSlider();
     history.push(location.pathname.replace(/\/[^\/]+\/?$/, ''));
   };
+}
+
+function makeErrorStatus(message) {
+  return (
+    message && {
+      type: 'error',
+      message: invoiceErrors,
+    }
+  );
 }
