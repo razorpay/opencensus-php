@@ -804,7 +804,8 @@ class Service extends Base\Service
                 $this->trace->info(
                     TraceCode::PAYMENT_AUTO_REFUND,
                     [
-                        'payment_id' => $payment->getId(),
+                        'payment_id'        => $payment->getId(),
+                        'refund_id'         => $refund->getId(),
                         'auto_refund_delay' => $merchant->getAutoRefundDelay()
                     ]);
 
