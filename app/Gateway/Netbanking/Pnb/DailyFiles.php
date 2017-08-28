@@ -94,6 +94,8 @@ class DailyFiles extends Base\DailyFiles
      */
     protected function getClaimsData($from, $to)
     {
+/*                sd('yo');
+*/
         $claims = [];
 
         $status = [
@@ -125,9 +127,12 @@ class DailyFiles extends Base\DailyFiles
 
         foreach ($refunds as $refund)
         {
-            $refund[Payment\Entity::ID]    = $refund->getPaymentId();
+            $payment = $refund->payment;
+
+            $refund[Payment\Entity::ID]    = $payment->getId();
             $refund[Constants::CLAIM_TYPE] = Constants::CREDIT;
             $refund[Constants::TXN_DETAIL] = Constants::REFUND;
+            $refund['terminal']            = $payment->terminal;
 
             $claims[] = $refund;
         }

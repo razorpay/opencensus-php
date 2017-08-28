@@ -170,7 +170,7 @@ class NetbankingPnbGatewayTest extends TestCase
             });
     }
 
-    public function testDailyFileGeneration()
+    public function testPnbDailyFileGeneration()
     {
         Mail::fake();
 
@@ -185,7 +185,7 @@ class NetbankingPnbGatewayTest extends TestCase
         $this->checkMailQueue();
     }
 
-    public function testDailyFileGenerationEmpty()
+    public function testPnbDailyFileGenerationEmpty()
     {
         Mail::fake();
 
@@ -259,10 +259,11 @@ class NetbankingPnbGatewayTest extends TestCase
 
         $this->doAuthAndCapturePayment($this->payment);
 
-        $payments = $this->getEntities('payment', [], true);
+        $payments = $this->getEntities('payment', ['count' => 3], true);
 
         $createdAt = Carbon::yesterday(Timezone::IST)->addHours(10)
                                                       ->addMinutes(30)
+                                                      ->subDays(2)
                                                       ->timestamp;
 
         foreach ($payments['items'] as $payment)
@@ -271,6 +272,27 @@ class NetbankingPnbGatewayTest extends TestCase
                                                               'authorized_at' => $createdAt + 10,
                                                               'captured_at'   => $createdAt + 20]);
         }
+
+        $p1 = $this->doAuthAndCapturePayment($this->payment);
+
+        $p2 = $this->doAuthAndCapturePayment($this->payment);
+
+        $payments1 = $this->getEntities('payment', ['count' => 2], true);
+
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(10)
+                                                      ->addMinutes(30)
+                                                      ->timestamp;
+
+        foreach ($payments1['items'] as $payment)
+        {
+            $this->fixtures->edit('payment', $payment['id'], ['created_at'    => $createdAt,
+                                                              'authorized_at' => $createdAt + 10,
+                                                              'captured_at'   => $createdAt + 20]);
+        }
+
+        $payments['items'] = array_merge($payments1['items'], $payments['items']);
+
+        $payments['count'] = count($payments['items']);
 
         return $payments;
     }
@@ -288,7 +310,7 @@ class NetbankingPnbGatewayTest extends TestCase
         // 2 refunds + 1 total line
         assert(count($refundsFileContents) === 3);
 
-        assert(count($claimsFileContents) === 2);
+        assert(count($claimsFileContents) === 4);
     }
 
     protected function checkEmptyRefundTextData($data)
@@ -300,7 +322,7 @@ class NetbankingPnbGatewayTest extends TestCase
         $claimsFileContents = file($data['netbanking_pnb']['claims']);
 
         // 3 claims
-        assert(count($claimsFileContents) === 3);
+        assert(count($claimsFileContents) === 2);
     }
 
     protected function checkMailQueue()
@@ -311,14 +333,14 @@ class NetbankingPnbGatewayTest extends TestCase
         $testData = [
             'subject' => 'Pnb Netbanking claims and refund files for '.$date,
                 'amount' => [
-                    'claims'  => 1000.0,
+                    'claims'  => 1500.0,
                     'refunds' => 500.0,
-                    'total'   => 500.0,
+                    'total'   => 1000.0,
                 ],
                 'count'   => [
-                    'claims'  => 2,
+                    'claims'  => 4,
                     'refunds' => 3,
-                    'total'   => 5
+                    'total'   => 7
                 ]
         ];
 
@@ -339,14 +361,14 @@ class NetbankingPnbGatewayTest extends TestCase
         $testData = [
             'subject' => 'Pnb Netbanking claims and refund files for '.$date,
                 'amount' => [
-                    'claims'  => 1500.0,
+                    'claims'  => 1000.0,
                     'refunds' => 0,
-                    'total'   => 1500.0,
+                    'total'   => 1000.0,
                 ],
                 'count'   => [
-                    'claims'  => 3,
+                    'claims'  => 2,
                     'refunds' => 0,
-                    'total'   => 3
+                    'total'   => 2
                 ]
         ];
 

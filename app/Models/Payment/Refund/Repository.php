@@ -456,7 +456,7 @@ class Repository extends Base\Repository
                         $pAuthorizedAt = $this->repo->payment->dbColumn(Payment\Entity::AUTHORIZED_AT);
 
                         $join->on($rPaymentId, '=', $pId)
-                            ->where($pAuthorizedAt, '<', $from);
+                            ->where($pAuthorizedAt, '<=', $from);
                     })
                     ->whereBetween($this->dbColumn(Entity::CREATED_AT), [$from, $to])
                     ->get();
