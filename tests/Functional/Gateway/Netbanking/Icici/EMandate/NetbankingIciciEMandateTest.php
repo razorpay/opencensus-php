@@ -86,12 +86,7 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $this->doAuthPayment($this->payment);
 
-        $token = $this->getLastEntity('token', true);
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals($payment['token_id'], $token['id']);
-        $this->assertEquals(false, $token['recurring']);
-        $this->assertEquals('rejected', $token['recurring_status']);
+        $this->assertEMandateRejectedToken();
     }
 
     public function testScheduledPaymentWithRejectedToken()
@@ -104,8 +99,6 @@ class NetbankingIciciEMandateTest extends TestCase
 
         // Assert that the token was rejected
         $netbanking = $this->getLastEntity('netbanking', true);
-        $this->assertEquals('N', $netbanking['si_status']);
-        $this->assertEquals('Failure', $netbanking['si_message']);
 
         $paymentEntity = $this->getLastEntity('payment', true);
 
@@ -127,6 +120,21 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertNull($netbanking['si_message']);
         $this->assertNull($netbanking['si_status']);
         $this->assertEquals('9999999999', $netbanking['bank_payment_id']);
+    }
+
+    protected function assertEMandateRejectedToken()
+    {
+        // Assert that the token was rejected
+        $netbanking = $this->getLastEntity('netbanking', true);
+        $this->assertEquals('N', $netbanking['si_status']);
+        $this->assertEquals('Failure', $netbanking['si_message']);
+
+        $token = $this->getLastEntity('token', true);
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['token_id'], $token['id']);
+        $this->assertEquals(false, $token['recurring']);
+        $this->assertEquals('rejected', $token['recurring_status']);
     }
 
     protected function assertEMandateEntities($initial = true)
