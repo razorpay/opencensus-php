@@ -17,6 +17,8 @@ class NetbankingIciciEMandateTest extends TestCase
 
         parent::setUp();
 
+        $this->gateway = 'netbanking_icici';
+
         $this->fixtures->create('terminal:shared_netbanking_icici_recurring_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
@@ -40,6 +42,22 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEMandateEntities();
     }
 
+    public function testEMandateInitialPaymentFailure()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockSiPaymentFailure();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthPayment($this->payment);
+            });
+
+        $this->assertEMandateInitialFailEntities();
+    }
+
     public function testEMandateScheduledPayment()
     {
         $payment = $this->payment;
@@ -53,7 +71,6 @@ class NetbankingIciciEMandateTest extends TestCase
 
         //
         // Second auth payment for the recurring product
-        //
         //
         $this->doS2SRecurringPayment($payment);
 
@@ -81,5 +98,32 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $this->assertEquals(true, $token['recurring']);
         $this->assertEquals('confirmed', $token['recurring_status']);
+    }
+
+    protected function assertEMandateInitialFailEntities()
+    {
+        $netbanking = $this->getLastEntity('netbanking', true);
+        $token = $this->getLastEntity('token', true);
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['token_id'], $token['id']);
+        $this->assertEquals(null, $token['gateway_token']);
+        $this->assertNotNull($netbanking['si_ref_id']);
+        $this->assertEquals('N', $netbanking['si_status']);
+
+        $this->assertNotNull($netbanking['si_ref_id']);
+
+        $this->assertEquals('9999999999', $netbanking['bank_payment_id']);
+        $this->assertEquals('Failure', $netbanking['si_message']);
+    }
+
+    protected function mockSiPaymentFailure()
+    {
+        $this->mockServerContentFunction(
+            function(&$content, $action = null)
+            {
+                $content['SCHSTATUS'] = 'N';
+                $content['SCHMSG'] = 'Failure';
+            });
     }
 }
