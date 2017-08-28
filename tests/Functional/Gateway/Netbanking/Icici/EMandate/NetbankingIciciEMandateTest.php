@@ -136,6 +136,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEquals($netbanking['si_ref_id'], $token['gateway_token']);
 
         $this->assertEquals(true, $token['recurring']);
+        $this->assertEquals(100000, $token['max_amount']);
         $this->assertEquals('confirmed', $token['recurring_status']);
     }
 

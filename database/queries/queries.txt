@@ -2412,4 +2412,5 @@ ALTER TABLE merchant_banks
 
 ALTER TABLE tokens
    ADD COLUMN recurring_status VARCHAR(32) AFTER recurring,
-   ADD COLUMN recurring_failure_reason TEST AFTER recurring_status;
+   ADD COLUMN recurring_failure_reason TEXT AFTER recurring_status,
+   ADD COLUMN max_amount INTEGER AFTER recurring_failure_reason;

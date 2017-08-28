@@ -1695,8 +1695,9 @@ trait Authorize
         }
         else if ($payment->isMethod(Payment\Method::NETBANKING))
         {
-            // TODO: We need to set max_amount and expired_at also
+            // TODO: We need to get this from user input - hard coding for now
             $saveMethodInput[Token\Entity::BANK] = $payment->getBank();
+            $saveMethodInput[Token\Entity::MAX_AMOUNT] = 100000;
         }
         else if ($payment->isMethod(Payment\Method::WALLET))
         {

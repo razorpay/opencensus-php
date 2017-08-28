@@ -24,6 +24,7 @@ class Entity extends Base\PublicEntity
     const GATEWAY_TOKEN2            = 'gateway_token2';
     const RECURRING                 = 'recurring';
     // TODO: Finalize the attribute names.
+    const MAX_AMOUNT                = 'max_amount';
     const RECURRING_STATUS          = 'recurring_status';
     const RECURRING_FAILURE_REASON  = 'recurring_failure_reason';
     const USED_COUNT                = 'used_count';
@@ -49,6 +50,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TOKEN2,
         self::RECURRING,
         self::EXPIRED_AT,
+        self::MAX_AMOUNT
     ];
 
     protected $visible = [
@@ -72,6 +74,7 @@ class Entity extends Base\PublicEntity
         self::EXPIRED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::MAX_AMOUNT,
     ];
 
     protected $public = [
@@ -86,7 +89,8 @@ class Entity extends Base\PublicEntity
         self::RECURRING_STATUS,
         self::RECURRING_FAILURE_REASON,
         self::USED_AT,
-        self::CREATED_AT
+        self::CREATED_AT,
+        self::MAX_AMOUNT,
     ];
 
     protected $defaults = [
@@ -100,6 +104,7 @@ class Entity extends Base\PublicEntity
         self::EXPIRED_AT                => null,
         self::RECURRING_STATUS          => null,
         self::RECURRING_FAILURE_REASON  => null,
+        self::MAX_AMOUNT                => 0,
     ];
 
     protected $publicSetters = [
@@ -113,6 +118,7 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::RECURRING     => 'bool',
+        self::MAX_AMOUNT    => 'int',
     ];
 
     protected static $generators = [
