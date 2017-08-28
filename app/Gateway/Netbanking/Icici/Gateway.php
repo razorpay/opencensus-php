@@ -370,7 +370,7 @@ class Gateway extends Base\Gateway
 
         if ($this->action === Action::VERIFY)
         {
-            $data[] = [
+            $data = [
                 RequestFields::PAYMENT_DATE => $paymentDate,
             ];
         }

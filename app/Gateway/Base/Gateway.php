@@ -407,7 +407,7 @@ class Gateway
         $publicAuth = $this->app['basicauth']->isPublicAuth();
         $paymentRecurring = $input['payment']['recurring'];
         $terminalRecurring = $input['terminal']->isRecurring();
-        $tokenRecurring = $input['token']->isRecurring() ?? null;
+        $tokenRecurring = (isset($input['token']) === true) ? $input['token']->isRecurring() : null;
 
         $this->trace->info(
             TraceCode::GATEWAY_FIRST_RECURRING,
@@ -914,7 +914,8 @@ class Gateway
         // of the customer's SI request is approved. This is a valid
         // way of ensuring that this is a 2nd recurring payment
         //
-        if (($input['token']->isRecurring() === true) and
+        if ((isset($input['token']) === true) and
+            ($input['token']->isRecurring() === true) and
             ($input['terminal']->isRecurring() === true))
         {
             return true;
