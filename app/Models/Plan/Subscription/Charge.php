@@ -531,6 +531,10 @@ class Charge extends Base\Core
      */
     protected function setEndedAtIfApplicable(Entity $subscription)
     {
+        //
+        // TODO: paid_count = total_count to mark subscription as completed won't work
+        // because of unpaid cycles that might be present
+        //
         if ($subscription->getPaidCount() === $subscription->getTotalCount())
         {
             //

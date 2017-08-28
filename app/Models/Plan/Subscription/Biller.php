@@ -50,6 +50,10 @@ class Biller extends Base\Core
             // We need to update the charge_at of the subscription so that the
             // flow continues as it is even if the subscription is in halted state.
             //
+            //
+            // TODO: We need to mark the subscription as completed if
+            // all the invoices are created.
+            //
             (new Charge)->updateNextRunAtForSubscription($subscription);
 
             return;

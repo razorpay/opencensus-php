@@ -2004,6 +2004,8 @@ trait Authorize
             // after capture, we should not roll back the capture status and other
             // operations that we would have done as part of capture.
             //
+            // TODO: Add a comment explaining why it's not in capture flow and is outside of it.
+            //
 
             if ($payment->hasSubscription() === false)
             {

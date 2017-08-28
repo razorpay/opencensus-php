@@ -446,6 +446,12 @@ class Core extends Base\Core
             return;
         }
 
+        // This is required here because we don't run handleCaptureSuccess in the normal capture flow.
+        // TODO: We should add this in the normal capture flow after checking for some conditions
+        // so that if a merchant manually captures an authorized payment from the dashboard, everything
+        // would still work fine. This retry route allows the merchant to retry an invoice. But there's
+        // nothing stopping him from trying capture the actual payment itself. We should update the subscription
+        // like in the retry flow itself!
         (new Charge)->handleCaptureSuccess($subscription, $capturedPayment, $invoice);
     }
 
