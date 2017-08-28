@@ -32,7 +32,7 @@ class Server extends Base\Mock\Server
 
         $postData = $this->createPostData($decryptedData);
 
-        $this->content($postData);
+        $this->content($postData, 'auth');
 
         $content = $this->formatResponseData($postData, $input);
 
@@ -44,12 +44,14 @@ class Server extends Base\Mock\Server
     protected function handleSecondRecurring(array $input)
     {
         $response = [
-            ResponseFields::ITEM_CODE    => $input[RequestFields::ITEM_CODE],
-            ResponseFields::PAYMENT_ID   => $input[RequestFields::PAYMENT_ID],
-            ResponseFields::AMOUNT       => $input[RequestFields::AMOUNT],
-            ResponseFields::CURRENCY     => $input[RequestFields::CURRENCY_CODE],
-            ResponseFields::REFERENCE_ID => $input[RequestFields::SI_REFERENCE_NUMBER],
-            ResponseFields::STATUS       => Status::SUCCESS
+            ResponseFields::ITEM_CODE       => $input[RequestFields::ITEM_CODE],
+            ResponseFields::PAYMENT_ID      => $input[RequestFields::PAYMENT_ID],
+            ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT],
+            ResponseFields::CURRENCY        => $input[RequestFields::CURRENCY_CODE],
+            ResponseFields::REFERENCE_ID    => $input[RequestFields::SI_REFERENCE_NUMBER],
+            ResponseFields::PAYMENT_DATE    => $input[RequestFields::SI_PAYMENT_DATE],
+            ResponseFields::BANK_PAYMENT_ID => 9999999999,
+            ResponseFields::STATUS          => Status::SUCCESS
         ];
 
         $this->content($postData, 'second_recurring');

@@ -43,7 +43,7 @@ class NetbankingIciciEMandateTest extends TestCase
     }
 
     /**
-     * This is the case that the payment failed, but the SI
+     * This is the case that the payment failed
      */
     public function testEMandateInitialPaymentFailure()
     {
@@ -80,6 +80,42 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEMandateEntities(false);
     }
 
+
+    public function testScheduledPaymentWithRejectedToken()
+    {
+        $payment = $this->payment;
+
+        $this->mockRejectedToken();
+
+        $this->doAuthPayment($payment);
+
+        // Assert that the token was rejected
+        $netbanking = $this->getLastEntity('netbanking', true);
+        $this->assertEquals('N', $netbanking['si_status']);
+        $this->assertEquals('Failure', $netbanking['si_message']);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $payment['token'] = $paymentEntity['token_id'];
+
+        $this->mockRejectedToken(false);
+
+        //
+        // Second auth payment for the recurring product.
+        // Since an invalid recurring token is used here, the
+        // payment will go through like a regular non-recurring payment.
+        // This is because it is not a "First Recurring" payment/
+        //
+        $this->doS2SRecurringPayment($payment);
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $this->assertNull($netbanking['si_ref_id']);
+        $this->assertNull($netbanking['si_message']);
+        $this->assertNull($netbanking['si_status']);
+        $this->assertEquals('9999999999', $netbanking['bank_payment_id']);
+    }
+
     protected function assertEMandateEntities($initial = true)
     {
         $netbanking = $this->getLastEntity('netbanking', true);
@@ -113,8 +149,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEquals(null, $token['gateway_token']);
         $this->assertNotNull($netbanking['si_ref_id']);
 
-        // The payment failed, but the SI request passed.
-        $this->assertEquals('Y', $netbanking['si_status']);
+        $this->assertEquals('N', $netbanking['si_status']);
 
         $this->assertNotNull($netbanking['si_ref_id']);
 
@@ -127,7 +162,21 @@ class NetbankingIciciEMandateTest extends TestCase
             function(&$content, $action = null)
             {
                 $content['PAID'] = 'N';
+                $content['SCHSTATUS'] = 'N';
                 $content['SCHMSG'] = 'Failure';
+            });
+    }
+
+    protected function mockRejectedToken($apply = true)
+    {
+        $this->mockServerContentFunction(
+            function(&$content, $action = null) use ($apply)
+            {
+                if ($apply === true)
+                {
+                    $content['SCHSTATUS'] = 'N';
+                    $content['SCHMSG'] = 'Failure';
+                }
             });
     }
 }

@@ -71,6 +71,10 @@ class Gateway extends Base\Gateway
     {
         $gatewayToken = $input['token']->getGatewayToken();
 
+        //
+        // This case is thrown when the token passed in has not been
+        // approved for second recurring payment.
+        //
         if ($gatewayToken === null)
         {
             throw new Exception\GatewayErrorException(
