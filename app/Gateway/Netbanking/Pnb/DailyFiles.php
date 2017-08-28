@@ -125,12 +125,10 @@ class DailyFiles extends Base\DailyFiles
 
         foreach ($refunds as $refund)
         {
-            $payment = $refund->payment;
-
-            $refund[Payment\Entity::ID]    = $payment->getId();
+            $refund[Payment\Entity::ID]    = $refund['payment']['id'];
             $refund[Constants::CLAIM_TYPE] = Constants::CREDIT;
             $refund[Constants::TXN_DETAIL] = Constants::REFUND;
-            $refund['terminal']            = $payment->terminal;
+            $refund['terminal']            = $refund['payment']['terminal'];
 
             $claims[] = $refund;
         }

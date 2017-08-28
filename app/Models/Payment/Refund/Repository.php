@@ -459,6 +459,7 @@ class Repository extends Base\Repository
                             ->where($pAuthorizedAt, '<=', $from);
                     })
                     ->whereBetween($this->dbColumn(Entity::CREATED_AT), [$from, $to])
+                    ->with(['payment','payment.terminal'])
                     ->get();
     }
 }
