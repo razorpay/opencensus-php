@@ -398,30 +398,6 @@ class EventTrackerClient extends AbstractEventClient
             $this->trace->error(TraceCode::LUMBERJACK_ASYNC_REQUEST_FAILED, $eventData);
         }
 
-        try
-        {
-            $request  = [
-                'method'    => 'post',
-                'url'       => $url,
-                'headers'   => $headers,
-                'content'   => json_encode($eventData),
-                'options'   => [
-                    'timeout'   => self::REQUEST_TIMEOUT
-                ]
-            ];
-
-            $job = new RequestJob($request);
-
-            $this->dispatch($job);
-        }
-        catch (Exception $e)
-        {
-            $errorContext = [
-                'class'     => get_class($this),
-                'message'   => $e->getMessage(),
-            ];
-
-            $this->trace->error(TraceCode::EVENT_QUEUE_SEND_FAILED, $errorContext);
-        }
+        parent::sendEventRequest($headers, $url, $eventData);
     }
 }
