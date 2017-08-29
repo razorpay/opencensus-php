@@ -2031,17 +2031,6 @@ trait Authorize
         // for same token only.
         //
 
-        //
-        // Throwing an exception here because we don't allow
-        // re-authentication on netbanking recurring tokens.
-        // Hence, there will never be a case where we want to update
-        // any of the recurring details in non-first recurring.
-        //
-        if ($payment->isSecondRecurring() === true)
-        {
-            throw new Exception\LogicException('Authentication of a second recurring payment is not allowed');
-        }
-
         if ($token->getRecurringStatus() !== null)
         {
             // TODO: Decide whether we want to override it here.
