@@ -1022,6 +1022,7 @@ class DatabaseSeeder extends Seeder
         $this->createAmexTerminals();
         $this->createCybersourceTerminals();
         $this->createBilldeskGatewayTerminals();
+        $this->createNetbankingBobTerminals();
         $this->createNetbankingHdfcTerminals();
         $this->createMobikwikTerminals();
         $this->createPayzappTerminals();
@@ -1075,6 +1076,35 @@ class DatabaseSeeder extends Seeder
                 'gateway_terminal_id'   => 'demo_terminal_netbanking_hdfc',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_netbanking_hdfc_terminal_pass'),
                 'recurring'             => 1,
+                'created_at'            => time(),
+                'updated_at'            => time(),
+                )
+            );
+    }
+
+    protected function createNetbankingBobTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => '22BOfBaroda2m8',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_BOB,
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_bob',
+                'gateway_secure_secret' => Crypt::encrypt('test_account_netbanking_bob_hash_secret'),
+                'created_at'            => time(),
+                'updated_at'            => time(),
+                )
+            );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => Terminal\Shared::NETBANKING_BOB_TERMINAL,
+                'merchant_id'           => Account::DEMO_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_HDFC,
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'demo_merchant_netbanking_bob',
+                'gateway_secure_secret' => Crypt::encrypt('demo_account_netbanking_bob_hash_secret'),
                 'created_at'            => time(),
                 'updated_at'            => time(),
                 )

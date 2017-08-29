@@ -28,6 +28,7 @@ class Gateway
     const NETBANKING_AIRTEL  = 'netbanking_airtel';
     const NETBANKING_AXIS    = 'netbanking_axis';
     const NETBANKING_FEDERAL = 'netbanking_federal';
+    const NETBANKING_BOB     = 'netbanking_bob';
     const NETBANKING_HDFC    = 'netbanking_hdfc';
     const NETBANKING_ICICI   = 'netbanking_icici';
     const NETBANKING_INDUSIND= 'netbanking_indusind';
@@ -197,6 +198,7 @@ class Gateway
             self::BILLDESK,
             self::EBS,
             self::NETBANKING_ICICI,
+            self::NETBANKING_BOB,
             self::NETBANKING_HDFC,
             self::NETBANKING_KOTAK,
             self::NETBANKING_AIRTEL,
@@ -489,6 +491,7 @@ class Gateway
     public static $netbankingToGatewayMap = [
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
+        IFSC::BARB => Gateway::NETBANKING_BOB,
         IFSC::AIRP => Gateway::NETBANKING_AIRTEL,
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,

@@ -130,6 +130,7 @@ class Entity
     const UPI_IDFC              = 'upi_idfc';
     const NETBANKING_AXIS       = 'netbanking_axis';
     const NETBANKING_HDFC       = 'netbanking_hdfc';
+    const NETBANKING_BOB        = 'netbanking_bob';
     const NETBANKING_ICICI      = 'netbanking_icici';
     const NETBANKING_KOTAK      = 'netbanking_kotak';
     const NETBANKING_AIRTEL     = 'netbanking_airtel';
@@ -231,6 +232,7 @@ class Entity
         self::WALLET_SBIBUDDY       => \RZP\Gateway\Wallet\Sbibuddy::class,
         self::NETBANKING_AXIS       => \RZP\Gateway\Netbanking\Axis::class,
         self::NETBANKING_HDFC       => \RZP\Gateway\Netbanking\Hdfc::class,
+        self::NETBANKING_BOB        => \RZP\Gateway\Netbanking\Bob::class,
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Kotak::class,
         self::NETBANKING_ICICI      => \RZP\Gateway\Netbanking\Icici::class,
         self::NETBANKING_AIRTEL     => \RZP\Gateway\Netbanking\Airtel::class,
