@@ -44,8 +44,7 @@ class NewApplicationForm extends Component {
   componentWillMount() {
     let id = this.props.match.params.id;
     if (!id) return;
-    // fetch from state (or api)
-    // this.setState({edit: true})
+    this.setState({ edit: true });
     var appDetails = this.props.applications.filter(app => app.id === id);
     if (appDetails.length) {
       const data = appDetails[0];
@@ -121,7 +120,7 @@ class NewApplicationForm extends Component {
       ],
     };
     return this.props
-      .updateApplication(payload)
+      .updateApplication(this.state.details.id, payload)
       .then(application => {
         this.props.showNotification({
           type: 'success',

@@ -63,8 +63,9 @@ export const createApplication = params => {
     payload: application.create(params),
   };
 };
-export const updateApplication = params => {
-  let application = new Application();
+export const updateApplication = (id, params) => {
+  debugger;
+  let application = new Application({ id });
 
   return {
     type: UPDATE_APPLICATION,
