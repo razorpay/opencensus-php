@@ -85,4 +85,27 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         ],
     ],
+
+    'testVerifyMismatch' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\PaymentVerificationException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+        ],
+    ],
+
+    'testAuthFailedVerifySuccessEntity' => [
+        'bank_payment_id' => 'AB1234',
+        'received'        => false,
+        'bank'            => 'CORP',
+        'status'          => 'EXECUTED'
+    ],
 ];

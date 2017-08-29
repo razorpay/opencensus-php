@@ -91,6 +91,27 @@ class NetbankingCorporationGatewayTest extends TestCase
         $this->assertTestResponse($gatewayPayment, 'testPaymentFailedNetbankingEntity');
     }
 
+    public function testAuthFailedVerifySuccess()
+    {
+        $this->testAuthorizeFailed();
+
+        $data = $this->testData['testVerifyMismatch'];
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            }
+        );
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertTestResponse($gatewayPayment, 'testAuthFailedVerifySuccessEntity');
+    }
+
     public function testPaymentVerify()
     {
         $payment = $this->doNetbankingCorporationAuthAndCapturePayment();
