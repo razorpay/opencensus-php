@@ -22,6 +22,8 @@ class Options
         'method',
         'network',
         'bank',
+        'incompatible',
+        'pharma'
     ];
 
     // Filters to be skipped for any merchant
