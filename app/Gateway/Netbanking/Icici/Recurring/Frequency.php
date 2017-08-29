@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Netbanking\Icici\Recurring;
+namespace RZP\Gateway\Netbanking\Icici;
 
 class Frequency
 {

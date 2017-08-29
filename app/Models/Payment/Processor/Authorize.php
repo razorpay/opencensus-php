@@ -49,6 +49,11 @@ trait Authorize
      */
     protected $type;
 
+    /**
+     * @param Payment\Entity $payment
+     * @param array $input
+     * @return array
+     */
     public function authorize(Payment\Entity $payment, array $input): array
     {
         $this->verifyMerchantIsLiveForLiveRequest();
