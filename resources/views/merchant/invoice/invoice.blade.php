@@ -96,7 +96,8 @@
   <div class="foot-note text-left">
     <ol>
       <li>To get the GST input you are requested to update your GST no. in your dashboard, ignore if already GST upated</li>
-      <li>All the invoice, Debit & Credit note values are inclusive of GST.</li>
+      <li>All the invoice, Debit &amp; Credit note values are inclusive of GST.</li>
+      <li>In case of GST no. is not updated then we will generate SGST &amp; CGST invoice.</li>
     </ol>
   </div>
 
