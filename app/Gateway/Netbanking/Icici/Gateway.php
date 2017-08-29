@@ -399,9 +399,11 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * This method fetches the request parameters for the initial SI request
+     * This method gets the request data pertaining
+     * to the E - Mandate registration step.
      *
      * @param array $input
+     * @return array
      */
     protected function getEMandateRequestData(array $input)
     {
@@ -620,9 +622,6 @@ class Gateway extends Base\Gateway
      */
     protected function preProcessVerifyResponse(& $content)
     {
-        // TODO: Figure out if this is useless.
-        // BILL_REF_NUM AND US_BILL_REF_NUM have the same values.
-
         // successful case
         $content = str_replace(ResponseFields::BILL_REF_NUM, ResponseFields::US_BILL_REF_NUM, $content);
 

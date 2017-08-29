@@ -142,7 +142,7 @@ class NetbankingIciciEMandateTest extends TestCase
                 $this->doAuthPayment($payment);
             });
 
-        // TODO: Add assertions
+        $this->assertEMandateInitialTokenSaveFailed();
     }
 
     public function testSiRecurringMessageNotSet()
@@ -160,7 +160,7 @@ class NetbankingIciciEMandateTest extends TestCase
                 $this->doAuthPayment($payment);
             });
 
-        // TODO: Add assertions
+        $this->assertEMandateInitialTokenSaveFailed('N');
     }
 
     public function testAuthSecondRecurringNullGatewayToken()
@@ -182,7 +182,22 @@ class NetbankingIciciEMandateTest extends TestCase
                 $this->doAuthPayment($payment);
             });
 
-        // TODO: Assert entities
+        $token = $this->getLastEntity('token', true);
+        $payment = $this->getLastEntity('payment', true);
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals($payment['token_id'], $token['id']);
+
+        // gateway token is set to null
+        $this->assertEquals(null, $token['gateway_token']);
+        $this->assertEquals(true, $token['recurring']);
+        $this->assertEquals('confirmed', $token['recurring_status']);
+
+        $this->assertNotNull($netbanking['si_ref_id']);
+        $this->assertEquals('Y', $netbanking['si_status']);
+        $this->assertNotNull($netbanking['si_ref_id']);
+
+        $this->assertEquals('9999999999', $netbanking['bank_payment_id']);
     }
 
 
@@ -266,6 +281,23 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEquals(true, $token['recurring']);
         $this->assertEquals(100000, $token['max_amount']);
         $this->assertEquals('confirmed', $token['recurring_status']);
+    }
+
+    protected function assertEMandateInitialTokenSaveFailed($expectedSiStatus = 'C')
+    {
+        $token = $this->getLastEntity('token', true);
+        $payment = $this->getLastEntity('payment', true);
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals($payment['token_id'], $token['id']);
+
+        $this->assertEquals(null, $token['gateway_token']);
+
+        $this->assertNotNull($netbanking['si_ref_id']);
+        $this->assertEquals($expectedSiStatus, $netbanking['si_status']);
+        $this->assertNotNull($netbanking['si_ref_id']);
+
+        $this->assertEquals('9999999999', $netbanking['bank_payment_id']);
     }
 
     protected function assertEMandateInitialFailEntities()
