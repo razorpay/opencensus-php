@@ -40,6 +40,9 @@ class Gateway extends Base\Gateway
         'N' => Token\RecurringStatus::REJECTED
     ];
 
+    // Payment type recurring
+    const RECURRING = 'R';
+
     public function setGatewayParams($input, $mode, $terminal)
     {
         parent::setGatewayParams($input, $mode, $terminal);
@@ -415,7 +418,7 @@ class Gateway extends Base\Gateway
             // TODO: How do we get the start date in case of charge-at-will?
             RequestFields::SI_PAYMENT_DATE     => $date,
             // Recurring
-            RequestFields::SI_PAYMENT_TYPE     => Type::RECURRING,
+            RequestFields::SI_PAYMENT_TYPE     => self::RECURRING,
             RequestFields::SI_PAYMENT_FREQ     => Frequency::AS_AND_WHEN,
             // Num installments = empty when charge at will
             RequestFields::SI_NUM_INSTALLMENTS => '',
