@@ -584,7 +584,8 @@ final class Route
         'risk_get'                                => ['get',      'risk/{id}',                                      'RiskController@get'                                                ],
         // Dispute routes
         'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
-        'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                            ],
+        'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                          ],
+        'merchant_payout'                         => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
     ];
 
     public static $public = [
@@ -986,6 +987,7 @@ final class Route
         'risk_fetch_multiple',
         'risk_get',
         'merchant_create_invoice_entities',
+        'merchant_payout',
     ];
 
     public static $proxy = [
@@ -1331,6 +1333,7 @@ final class Route
             'schedule_process_tasks',
             'virtual_account_refund_excess',
             'merchant_create_invoice_entities',
+            'merchant_payout',
         ],
 
         'kotak' => [

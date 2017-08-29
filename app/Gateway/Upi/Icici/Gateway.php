@@ -54,7 +54,6 @@ class Gateway extends Base\Gateway
         Fields::BANK_RRN                  => Entity::GATEWAY_PAYMENT_ID,
         Fields::ORIGINAL_BANK_RRN         => Entity::GATEWAY_PAYMENT_ID,
         Fields::MERCHANT_ID               => Entity::GATEWAY_MERCHANT_ID,
-        Fields::REFUND_ID                 => Entity::REFUND_ID,
     ];
 
     /**
@@ -678,13 +677,19 @@ class Gateway extends Base\Gateway
             Fields::SUBMERCHANT_ID                  => $this->getSubMerchantId($input),
             Fields::TERMINAL_ID                     => $this->getTerminalId($input),
             Fields::ORIGINAL_BANK_RRN_REQ           => $gatewayPayment->getGatewayPaymentId(),
-            Fields::MERCHANT_TRAN_ID                => $refund['id'],
+            Fields::MERCHANT_TRAN_ID                => $this->getRefundId($refund),
             Fields::ORIGINAL_MERCHANT_TRAN_ID       => $payment['id'],
             Fields::REFUND_AMOUNT                   => $this->formatAmount($refund['amount']),
             Fields::PAYEE_VA                        => strtolower($payment['vpa']),
             Fields::NOTE                            => 'Razorpay Refund ' . $refund['id'],
             Fields::ONLINE_REFUND                   => 'Y',
         ];
+
+        // ICICI has confirmed that the vpa is not a mandatory field now.
+        if ($input['merchant']['id'] === Merchant\Account::DEMO_PAGE_ACCOUNT)
+        {
+            unset($data[Fields::PAYEE_VA]);
+        }
 
         $content = $this->transformRequestArrayToContent($data);
 
@@ -699,6 +704,23 @@ class Gateway extends Base\Gateway
             ]);
 
         return $request;
+    }
+
+    /**
+     * This is done in order to fix duplicate
+     * merchant transaction id issue in case
+     * refund is retried multiple times
+     *
+     * @return string
+     */
+    protected function getRefundId(array $refund)
+    {
+        if ($refund['attempts'] >= 1)
+        {
+            return $refund['id'] . '_' . $refund['attempts'];
+        }
+
+        return $refund['id'];
     }
 
 
