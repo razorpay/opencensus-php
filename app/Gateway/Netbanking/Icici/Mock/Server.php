@@ -43,7 +43,7 @@ class Server extends Base\Mock\Server
 
     protected function handleSecondRecurring(array $input)
     {
-        $response = [
+        $responseArray = [
             ResponseFields::ITEM_CODE       => $input[RequestFields::ITEM_CODE],
             ResponseFields::PAYMENT_ID      => $input[RequestFields::PAYMENT_ID],
             ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT],
@@ -54,7 +54,9 @@ class Server extends Base\Mock\Server
             ResponseFields::STATUS          => Status::SUCCESS
         ];
 
-        $this->content($postData, 'second_recurring');
+        $this->content($responseArray, 'second_recurring');
+
+        $response = $this->createXmlResponse($responseArray);
 
         return $this->makeResponse($response);
     }

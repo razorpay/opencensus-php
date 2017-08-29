@@ -110,7 +110,7 @@ class Gateway extends Base\Gateway
                 'response'   => $response->body
             ]);
 
-        $responseArray = json_decode($response->body, true);
+        $responseArray = $this->getResponseArray($response->body);
 
         $attrs = $this->getCallbackAttributes($responseArray);
 
