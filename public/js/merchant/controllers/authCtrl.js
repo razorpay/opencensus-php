@@ -26,7 +26,6 @@ app
       organization,
       transformRequestAsFormPost,
       $window,
-      $cookies,
       $localStorage
     ) {
       $scope.toArray = function(obj) {
