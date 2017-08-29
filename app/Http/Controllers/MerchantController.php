@@ -723,6 +723,20 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getReferredMerchants()
+    {
+        $response = (new Merchant\Service)->fetchReferredMerchants();
+
+        return ApiResponse::json($response);
+    }
+
+    public function getTags($id)
+    {
+        $response = (new Merchant\Service)->getTags($id);
+
+        return ApiResponse::json($response);
+    }
+
     public function addTags($id)
     {
         $input = Request::all();

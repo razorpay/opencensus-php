@@ -8,8 +8,8 @@ use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Pricing\FeeCalculator;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class Processor extends Base\Core
 {
@@ -50,6 +50,20 @@ class Processor extends Base\Core
         {
             $merchantId = $this->merchant->getId();
 
+            $invoiceExists = $this->checkInvoiceExists($merchantId);
+
+            if ($invoiceExists === true)
+            {
+                $this->trace->info(TraceCode::MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED,
+                    [
+                        'merchant'  => $merchantId,
+                        'month'     => $this->month,
+                        'year'      => $this->year,
+                    ]);
+
+                return;
+            }
+
             // get transactions
             $this->txns = $this->repo
                          ->transaction
@@ -67,13 +81,25 @@ class Processor extends Base\Core
             $this->trace->traceException(
                 $e,
                 Trace::CRITICAL,
-                TraceCode::MERCHANT_INVOICE_GENERATION_FAILED,
+                TraceCode::MERCHANT_INVOICE_ENTITY_CREATION_FAILED,
                 [
                     'merchant_id'   => $this->merchant->getId(),
                     'month'         => $this->month,
                     'year'          => $this->year,
                 ]);
         }
+    }
+
+    protected function checkInvoiceExists(string $merchantId): bool
+    {
+        $entities = $this->repo->merchant_invoice->fetchInvoiceReportData($merchantId, $this->month, $this->year);
+
+        if ($entities->count() > 0)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function createInvoiceBreakup()

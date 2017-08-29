@@ -18,7 +18,7 @@ use RZP\Gateway\Upi\Base;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Gateway\Utility;
-use RZP\Trace\Trace;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Upi\Icici\ResponseCodeMap;
 

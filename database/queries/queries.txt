@@ -2399,3 +2399,13 @@ UPDATE hdfc
 UPDATE hdfc
     SET gateway_payment_id = gateway_transaction_id
     WHERE gateway_payment_id IS NULL AND created_at <= 1502841600 AND action IN ('1', '4');
+
+# Adding index on payments.updated_at, payments.captured_at
+# Useful for analytics queries
+ALTER TABLE payments
+    ADD INDEX payments_updated_at_index (updated_at),
+    ADD INDEX payments_captured_at_index (captured_at);
+
+# Query for adding sbibuddy column in merchant_banks table
+ALTER TABLE merchant_banks
+    ADD COLUMN sbibuddy TINYINT(1) NOT NULL DEFAULT 0 AFTER jiomoney;

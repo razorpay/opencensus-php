@@ -3,10 +3,10 @@
 namespace RZP\Models\Terminal\Filters;
 
 use RZP\Models\Base;
-use RZP\Trace\Trace;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\Rule;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Feature\Constants as Feature;
 
 class RuleFilter extends Terminal\Filter
@@ -29,8 +29,7 @@ class RuleFilter extends Terminal\Filter
 
             $merchant = $this->input['merchant'];
 
-            if (($this->rules->isEmpty() === true) or
-                ($merchant->isFeatureEnabled(Feature::RULE_FILTER) === false))
+            if ($this->rules->isEmpty() === true)
             {
                 return $terminals;
             }
@@ -41,7 +40,10 @@ class RuleFilter extends Terminal\Filter
 
             foreach ($ruleGroups as $group => $rules)
             {
-                $this->filterTerminalsForGroup($terminals, $rules, $verbose);
+                if ($this->shouldUseRuleGroup($group) === true)
+                {
+                    $this->filterTerminalsForGroup($terminals, $rules, $verbose);
+                }
             }
 
             return $terminals;
@@ -54,6 +56,8 @@ class RuleFilter extends Terminal\Filter
                                   [
                                       'terminal_ids' => array_pluck($terminals, 'id'),
                                   ]);
+
+            return $terminals;
         }
     }
 
@@ -177,12 +181,33 @@ class RuleFilter extends Terminal\Filter
         {
             $traceData = array_map(function (array $terminals)
             {
-                return array_pluck($terminals, 'id', 'gateway');
+                return array_pluck($terminals, 'gateway', 'id');
             }, $data);
 
             $traceData['group'] = $group;
 
             $this->trace->info(TraceCode::TERMINAL_SELECTION_FOR_RULE_GROUP, $traceData);
         }
+    }
+
+    /**
+     * Checks if a particular rule group should be used for filtering, based on feature
+     * check or if the corresponding filter property is being skipped for all merchants
+     *
+     * @param  string $group Group name
+     * @return bool          Whether to use the particular rule group for filtering
+     */
+    protected function shouldUseRuleGroup(string $group): bool
+    {
+        if ($this->input['merchant']->isFeatureEnabled(Feature::RULE_FILTER) === true)
+        {
+            return true;
+        }
+
+        $filterProperty = $this->options->getFilterPropertyForRuleGroup($group);
+
+        $globalSkippedFilters = $this->options->getGlobalSkippedFilters();
+
+        return (in_array($filterProperty, $globalSkippedFilters, true) === true);
     }
 }

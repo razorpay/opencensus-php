@@ -372,6 +372,24 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
+    public function createSharedSbibuddyTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::SBIBUDDY_RAZORPAY_TERMINAL;
+
+        $attributes = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'wallet_sbibuddy',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'sbibuddy_merchant',
+            'gateway_secure_secret'     => 'secret',
+        ];
+
+        return parent::create($attributes);
+    }
+
     public function createSharedCybersourceHdfcTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::CYBERSOURCE_HDFC_TERMINAL;

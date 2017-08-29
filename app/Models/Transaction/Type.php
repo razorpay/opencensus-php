@@ -9,6 +9,7 @@ class Type
     const REFUND        = 'refund';
     const PAYOUT        = 'payout';
     const PAYMENT       = 'payment';
+    const DISPUTE       = 'dispute';
     const TRANSFER      = 'transfer';
     const REVERSAL      = 'reversal';
     const ADJUSTMENT    = 'adjustment';

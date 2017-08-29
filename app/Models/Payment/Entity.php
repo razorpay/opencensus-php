@@ -1974,6 +1974,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Transfer\Entity', self::TRANSFER_ID);
     }
 
+    public function disputes()
+    {
+        return $this->hasMany(\RZP\Models\Dispute\Entity::class);
+    }
+
 // --------------- Relation to other entity section ends -----------------------
 
     public function refundAmount($amount, $baseAmount)

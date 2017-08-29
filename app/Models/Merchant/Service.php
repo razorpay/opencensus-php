@@ -1028,6 +1028,27 @@ class Service extends Base\Service
     }
 
     /**
+     * used for fetching referred merchants of a particular merchant
+     */
+    public function fetchReferredMerchants()
+    {
+        $merchantId = $this->merchant->getId();
+
+        return $this->repo->merchant->fetchReferredMerchants($merchantId);
+    }
+
+    /**
+     * used for getting tags of the merchant
+     * @param string $id
+     */
+    public function getTags($id)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        return $merchant->tagNames();
+    }
+
+    /**
      * used for adding tags to merchant
      * @param string $id
      * @param array $input which contains the tags of the merchant
