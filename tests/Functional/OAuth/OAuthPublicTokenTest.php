@@ -74,4 +74,22 @@ class OAuthPublicTokenTest extends OAuthTestCase
 
         $this->startTest();
     }
+
+    public function testOAuthPublicTokenInvalidScope()
+    {
+        $tokenData = [
+            'type'   => 'access_token',
+            'scopes' => ['dummy'],
+        ];
+
+        $token = factory(Token\Entity::class)->create($tokenData);
+
+        $publicToken = $token->getPublicTokenWithPrefix();
+
+        $this->ba->publicAuth();
+
+        $this->ba->oauthPublicToken($publicToken);
+
+        $this->startTest();
+    }
 }

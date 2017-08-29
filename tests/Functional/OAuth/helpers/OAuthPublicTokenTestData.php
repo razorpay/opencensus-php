@@ -66,4 +66,20 @@ return [
         ],
     ],
 
+    'testOAuthPublicTokenInvalidScope' => [
+        'request'  => [
+            'url'    => '/v1/preferences',
+            'method' => 'get',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_OAUTH_SCOPE_INVALID,
+                ],
+            ],
+            'status_code' => 401,
+        ],
+    ],
+
 ];
