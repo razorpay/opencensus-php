@@ -158,13 +158,12 @@ class OAuth
 
     protected function parseOAuthServerResponse(array $response)
     {
-        $route = $this->router->currentRouteName();
+        $tokenScopes = $response[OAuthToken::SCOPES];
 
-        $this->resolveScopes($response[OAuthToken::SCOPES]);
+        // Store the scopes defined on the token
+        $this->ba->withScopes($tokenScopes);
 
-        $routeScopes = Scopes::getScopesForRoute($route);
-
-        if ($this->areScopesAllowed($routeScopes) === false)
+        if ($this->areScopesAllowed($tokenScopes) === false)
         {
             return ApiResponse::oauthInvalidScope();
         }
@@ -186,17 +185,30 @@ class OAuth
         $this->ba->setOAuthClientId($response[OAuthToken::CLIENT_ID]);
     }
 
-    protected function areScopesAllowed(array $routeScopes) : bool
+    /**
+     * Check if a token has enough scopes to access a route
+     *
+     * @param array $tokenScopes
+     *
+     * @return bool
+     */
+    protected function areScopesAllowed(array $tokenScopes): bool
     {
-        foreach ($routeScopes as $scope)
-        {
-            if ($this->ba->hasScope($scope) === true)
-            {
-                return true;
-            }
-        }
+        $route = $this->router->currentRouteName();
 
-        return false;
+        //
+        // Fetch the scopes defined for the current route, including defaults
+        // like 'read_only' and 'read_write'
+        //
+        $routeScopes = Scopes::getScopesForRoute($route);
+
+        //
+        // Atleast one of the scopes defined for the route should have been
+        // attached to the token.
+        //
+        $commonScopes = array_intersect($routeScopes, $tokenScopes);
+
+        return (count($commonScopes) > 0);
     }
 
     /**
@@ -213,7 +225,7 @@ class OAuth
      *
      * @param array $tokenScopes
      */
-    protected function resolveScopes(array $tokenScopes)
+    protected function resolveTokenScopes(array $tokenScopes)
     {
         //
         // Save scopes on BasicAuth so endpoints can check

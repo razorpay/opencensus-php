@@ -1198,12 +1198,6 @@ class BasicAuth
      */
     public function hasScope(string $scope) : bool
     {
-        if (($scope === '*') or
-            ($scope === '*.*'))
-        {
-            return true;
-        }
-
         $allScopes = $this->scopes ?? [];
 
         return (in_array($scope, $allScopes, true) === true);
