@@ -256,13 +256,10 @@ trait Support
         // even for RuPay
         if ($input['card']['network'] === 'RuPay')
         {
-            $data['udf5'] = 'PaymentID';
-        }
-
-        if ($input['merchant']->getId() === '5ubLZpACTmD8D4')
-        {
-            $data['udf5'] = 'TrackID';
-            $data['transid'] = $this->model->payment_id;
+            if ($input['payment']['id'] !== '8VuFZfdSWGLXPI')
+            {
+                $data['udf5'] = 'PaymentID';
+            }
         }
     }
 
