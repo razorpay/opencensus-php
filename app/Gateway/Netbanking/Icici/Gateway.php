@@ -373,23 +373,23 @@ class Gateway extends Base\Gateway
         $paymentDate = Carbon::createFromTimestamp($gatewayPayment['created_at'], Timezone::IST)
                              ->format('Y-m-d');
 
-        $data = [];
+        $data = $this->getPaymentReferenceData($input);
 
         if ($this->action === Action::VERIFY)
         {
-            $data = [
-                RequestFields::PAYMENT_DATE => $paymentDate,
-            ];
+            $data[RequestFields::PAYMENT_DATE] = $paymentDate;
 
+            //
+            // For payments that were done via the recurring flow, we
+            // send the SI request reference ID in the verify request
+            //
             if ($gatewayPayment->getSIRefId() !== null)
             {
                 $data[RequestFields::SI_REFERENCE_NUMBER] = $gatewayPayment->getSIRefId();
             }
         }
 
-        $additionalData = $this->getPaymentReferenceData($input);
-
-        return array_merge($data, $additionalData);
+        return $data;
     }
 
     protected function getEncryptedString(array $data)
