@@ -35,12 +35,16 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const PAYMENT_CAPTURE_SUCCESS                       = 'PAYMENT_CAPTURE_SUCCESS';
     const PAYMENT_CAPTURE_FAILURE                       = 'PAYMENT_CAPTURE_FAILURE';
     const PAYMENT_CAPTURE_FORCED                        = 'PAYMENT_CAPTURE_FORCED';
+    const PAYMENT_CAPTURE_BULK_REQUEST                  = 'PAYMENT_CAPTURE_BULK_REQUEST';
+    const PAYMENT_CAPTURE_BULK_RESPONSE                 = 'PAYMENT_CAPTURE_BULK_RESPONSE';
+    const PAYMENT_CAPTURE_BULK_FAILURE                  = 'PAYMENT_CAPTURE_BULK_FAILURE';
     const PAYMENT_ALREADY_CAPTURED                      = 'PAYMENT_ALREADY_CAPTURED';
     const PAYMENT_PAYOUT_REQUEST                        = 'PAYMENT_PAYOUT_REQUEST';
     const PAYMENT_AUTO_CAPTURE                          = 'PAYMENT_AUTO_CAPTURE';
     const PAYMENT_AUTO_CAPTURE_FAILED                   = 'PAYMENT_AUTO_CAPTURE_FAILED';
     const PAYMENT_AUTO_REFUND                           = 'PAYMENT_AUTO_REFUND';
     const PAYMENT_AUTO_REFUND_CRON                      = 'PAYMENT_AUTO_REFUND_CRON';
+    const REFUND_FROM_AUTHORIZED_REQUEST                = 'REFUND_FROM_AUTHORIZED_REQUEST';
     const PAYMENT_QUEUE_CAPTURE_REQUEST                 = 'PAYMENT_QUEUE_CAPTURE_REQUEST';
     const PAYMENT_QUEUE_CAPTURE_SUCCESS                 = 'PAYMENT_QUEUE_CAPTURE_SUCCESS';
     const PAYMENT_QUEUE_CAPTURE_FAILURE                 = 'PAYMENT_QUEUE_CAPTURE_FAILURE';
@@ -123,6 +127,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ORDER_REFUNDED                                = 'ORDER_REFUNDED';
     const WEBHOOK_EDIT                                  = 'WEBHOOK_EDIT';
     const REFUND_AUTHORIZE_BULK                         = 'REFUND_AUTHORIZE_BULK';
+    const REFUND_PROCESSED                              = 'REFUND_PROCESSED';
     const PAYMENT_STATUS_FAILED                         = 'PAYMENT_STATUS_FAILED';
     const ORDER_STATUS_AUTHORIZED                       = 'ORDER_STATUS_AUTHORIZED';
     const PAYMENT_STATUS_AUTHORIZED                     = 'PAYMENT_STATUS_AUTHORIZED';
@@ -535,6 +540,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_SUSPEND                          = 'MERCHANT_SUSPEND';
     const MERCHANT_UNSUSPEND                        = 'MERCHANT_UNSUSPEND';
 
+    const MERCHANT_PAYOUT_FAILURE                   = 'MERCHANT_PAYOUT_FAILURE';
+
     const PRICING_PLAN_CREATE_ATTEMPT               = 'PRICING_PLAN_CREATE_ATTEMPT';
     const PRICING_PLAN_CREATE_SUCCESS               = 'PRICING_PLAN_CREATE_SUCCESS';
     const PRICING_PLAN_RULE_ADD_ATTEMPT             = 'PRICING_PLAN_RULE_ADD_ATTEMPT';
@@ -940,6 +947,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::MERCHANT_DETAIL_MIGRATE_FAILED            => 'Failed to migrate Merchant Detail',
 
         self::MERCHANT_ORG_NOT_GIVEN                    => 'Merchant Org Id is not passed to API on creation',
+
+        self::MERCHANT_PAYOUT_FAILURE                   => 'Failed to create merchant payout',
 
         self::OFFER_IIN_DOES_NOT_EXISTS                 => 'IIN does not exists for the offer create request',
         self::OFFER_DEACTIVATE                          => 'Deactivating the expired offer',

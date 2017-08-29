@@ -73,7 +73,6 @@ class Entity extends Base\PublicEntity
         self::RECEIPT,
         self::TRANSACTION_ID,
         self::BATCH_ID,
-        self::GATEWAY_REFUNDED,
         self::ARN,
         self::ACQUIRER_DATA,
         self::ATTEMPTS,

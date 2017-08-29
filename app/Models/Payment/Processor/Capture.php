@@ -28,17 +28,17 @@ trait Capture
      *
      * @return Payment\Entity   Payment\Entity object
      */
-    public function capture($id, array $input = array())
+    public function capture(Payment\Entity $payment, array $input = array())
     {
         $this->trace->info(
             TraceCode::PAYMENT_CAPTURE_REQUEST,
             [
-                'payment_id' => $id,
-                'input' => $input,
+                'payment_id' => $payment->getPublicId(),
+                'input'      => $input,
             ]
         );
 
-        $payment = $this->retrieve($id);
+        $this->setPayment($payment);
 
         // set the input currency if missing and payment currency is INR
         if ((isset($input['currency']) === false) and

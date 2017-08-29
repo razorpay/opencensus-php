@@ -52,6 +52,28 @@ class PayoutTest extends TestCase
         return $payout;
     }
 
+    public function testCreateMerchantPayout()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateMerchantPayoutWithModulo()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testCreateMerchantPayoutWithMinAmount()
+    {
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+
     public function testCreatePayoutFundsOnHold()
     {
         $this->ba->privateAuth();
