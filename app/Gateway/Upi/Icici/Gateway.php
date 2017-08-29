@@ -425,7 +425,7 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
-        $request = $this->getPaymentVerifyRequestArray($input);
+        $request = $this->getVerifyRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
 
