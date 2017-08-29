@@ -527,7 +527,9 @@ class Gateway extends Base\Gateway
     public function verifyRefund(array $input)
     {
         $refundIds = [
-            '82NPrjC1TwVNb1'
+            '8Q8AmBCfmOcvB8',
+            '8QzbBD25Fbd5wq',
+            '8QzbE8dtTRvBw9',
         ];
 
         if (in_array($input['refund']['id'], $refundIds, true) === true)
