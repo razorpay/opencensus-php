@@ -451,11 +451,33 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getPaymentVerifyRequestArray(array $input): array
+    protected function sendRefundVerifyRequest(array $input)
+    {
+        $request = $this->getVerifyRequestArray($input, 'refund');
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->response = $response;
+
+        $content = $this->parseGatewayResponse($response->body);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            [
+                'raw_content' => $response->body,
+                'content' => $content,
+                'gateway' => 'upi_icici',
+                'refund_id' => $input['refund']['id'],
+            ]);
+
+        return $content;
+    }
+
+    protected function getVerifyRequestArray(array $input, string $entity = 'payment'): array
     {
         $data = [
             'merchantId'        => $this->getMerchantId(),
-            'merchantTranId'    => $input['payment']['id'],
+            'merchantTranId'    => $input[$entity]['id'],
             'subMerchantId'     => $this->getSubMerchantId($input),
             'terminalId'        => '1234',
         ];
@@ -527,17 +549,11 @@ class Gateway extends Base\Gateway
 
     public function verifyRefund(array $input)
     {
-        $refundIds = [
-            '82NPrjC1TwVNb1'
-        ];
+        parent::verify($input);
 
-        if (in_array($input['refund']['id'], $refundIds, true) === true)
-        {
-            return false;
-        }
+        $content = $this->sendRefundVerifyRequest($input);
 
-        throw new Exception\LogicException(
-            'UPI ICICI verify refund is not implemented');
+        return false;
     }
 
     /**
