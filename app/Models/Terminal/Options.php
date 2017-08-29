@@ -23,7 +23,8 @@ class Options
         'network',
         'bank',
         'incompatible',
-        'pharma'
+        'pharma',
+        'category',
     ];
 
     // Filters to be skipped for any merchant
