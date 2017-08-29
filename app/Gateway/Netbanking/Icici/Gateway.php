@@ -380,6 +380,11 @@ class Gateway extends Base\Gateway
             $data = [
                 RequestFields::PAYMENT_DATE => $paymentDate,
             ];
+
+            if ($gatewayPayment->getSIRefId() !== null)
+            {
+                $data[RequestFields::SI_REFERENCE_NUMBER] = $gatewayPayment->getSIRefId();
+            }
         }
 
         $additionalData = $this->getPaymentReferenceData($input);

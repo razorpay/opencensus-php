@@ -79,6 +79,11 @@ class Server extends Base\Mock\Server
 
         $responseArray = $this->createResponseArray($input);
 
+        if (empty($input[RequestFields::SI_REFERENCE_NUMBER]) === false)
+        {
+            $responseArray[ResponseFields::REFERENCE_ID] = $input[RequestFields::SI_REFERENCE_NUMBER];
+        }
+
         $response = $this->createXmlResponse($responseArray);
 
         return $this->makeResponse($response);

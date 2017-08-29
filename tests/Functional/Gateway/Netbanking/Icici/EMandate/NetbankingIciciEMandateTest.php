@@ -286,6 +286,20 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEquals('9999999999', $netbanking['bank_payment_id']);
     }
 
+    public function testPaymentVerify()
+    {
+        $payment = $this->payment;
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $verify = $this->verifyPayment($payment['id']);
+
+        // When the payment is a recurring payment, then we send RID in the verify request
+        $this->assertNotNull($verify['gateway']['verifyResponseContent']['RID']);
+    }
+
     protected function assertEMandateRejectedToken()
     {
         // Assert that the token was rejected
