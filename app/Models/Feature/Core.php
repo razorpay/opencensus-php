@@ -47,8 +47,8 @@ class Core extends Base\Core
         ];
 
         $this->app['workflow']
-            ->setEntity($feature->getEntity())
-            ->handle($original, $dirty);
+             ->setEntity($feature->getEntity())
+             ->handle($original, $dirty);
 
         $this->repo->feature->delete($feature);
 
@@ -57,6 +57,7 @@ class Core extends Base\Core
         //we create tag also along with feature.
         (new Merchant\Service)->deleteTag($entityId, $feature->getName());
     }
+
     public function notifyOnSlack($feature, $featureDeleted = false)
     {
         $message = $feature->getDashboardEntityLinkForSlack($feature->getName());
