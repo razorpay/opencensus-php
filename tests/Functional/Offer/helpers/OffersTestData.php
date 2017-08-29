@@ -74,6 +74,36 @@ return [
         ]
     ],
 
+    'testCreateOfferWithNullMethodAndInvalidIssuer' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer',
+                'issuer'              => 'XXXX',
+                'percent_rate'        => 1000,
+                'processing_time'     => 86400,
+                'starts_at'           => 1519457070,
+                'ends_at'             => 1550993070,
+                'display_text'        => 'Some more details',
+                'terms'               => 'Some more details'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid Issuer name : XXXX',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
+    ],
+
     'testCreateCardOfferWithMaxPaymentCount' => [
         'request' => [
             'content' => [
@@ -249,7 +279,7 @@ return [
             'content' => [
                 'name'            => 'Test Offer',
                 'payment_method'  => 'netbanking',
-                'issuer' => 'UTIB',
+                'issuer'          => 'UTIB',
                 'percent_rate'    => 1000,
                 'max_cashback'    => 200,
                 'min_amount'      => 500,
@@ -269,7 +299,7 @@ return [
                 'active'          => true,
                 'name'            => 'Test Offer',
                 'payment_method'  => 'netbanking',
-                'issuer' => 'UTIB',
+                'issuer'          => 'UTIB',
                 'percent_rate'    => 1000,
                 'processing_time' => 172800,
                 'starts_at'       => 1519457070,
@@ -285,7 +315,7 @@ return [
             'content' => [
                 'name'            => 'Test Offer',
                 'payment_method'  => 'wallet',
-                'issuer' => 'airtelmoney',
+                'issuer'          => 'airtelmoney',
                 'flat_cashback'   => 300,
                 'min_amount'      => 500,
                 'processing_time' => 172800,
@@ -304,7 +334,7 @@ return [
                 'active'          => true,
                 'name'            => 'Test Offer',
                 'payment_method'  => 'wallet',
-                'issuer' => 'airtelmoney',
+                'issuer'          => 'airtelmoney',
                 'processing_time' => 172800,
                 'starts_at'       => 1519457070,
                 'ends_at'         => 1550993070,

@@ -29,6 +29,11 @@ class OffersTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateOfferWithNullMethodAndInvalidIssuer()
+    {
+        $this->startTest();
+    }
+
     public function testCreateCardOfferWithIin()
     {
         $this->startTest();
