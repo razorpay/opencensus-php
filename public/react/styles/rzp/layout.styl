@@ -21,6 +21,12 @@ body {
 .icon {
   vertical-align: text-bottom;
   font-size: 110%;
+  line-height: 0.8;
+
+  &--formal {
+    background-color: #FAFBFC;
+    border: 1px solid #DFE1EC;
+  }
 }
 
 .layout {
@@ -244,6 +250,7 @@ body {
   max-width: 800px;
   margin: auto;
   min-height: 300px;
+  background-color: #fff;
 }
 
 // React Modal Style Overrides
@@ -461,6 +468,7 @@ tr:hover .row-action.btn-group {
 
   .pair-label, .pair-value, .pair-separator {
     display: table-cell;
+    vertical-align: top;
   }
   .pair-label {
     width: 39%;
@@ -480,6 +488,15 @@ tr:hover .row-action.btn-group {
 
     > span {
       vertical-align: top;
+    }
+
+    // check icon looks mis-aligned without negative margin
+    > .icon {
+      margin-left: -3px;
+    }
+
+    textarea {
+      resize: vertical;
     }
 
     // For nested values
@@ -502,6 +519,8 @@ tr:hover .row-action.btn-group {
   background-color: transparent;
   border: none;
   padding: 0;
+  word-break: break-word;
+  display: inline-block;
 }
 
 .list-table {
@@ -564,12 +583,11 @@ tr:hover .row-action.btn-group {
       }
 
       > .icon {
-        padding: 4px;
-        border: 2px solid;
+        padding: 4px 4px 0;
       }
 
       .icon + strong {
-        margin-left: 5px;
+        margin-left: 16px;
       }
 
       > .close {
@@ -601,7 +619,10 @@ tr:hover .row-action.btn-group {
   }
 
   .PowerSelect__TriggerStatus {
-    border-top-color: #777;
+    padding-left: 0;
+    &::before {
+      border-top-color: #777;
+    }
   }
 
   .PowerSelect__TriggerLabel {
@@ -722,6 +743,41 @@ tr:hover .row-action.btn-group {
 
   .add-note {
     padding-left: 0;
+  }
+}
+
+.SliderPanel__Body {
+  .note {
+    .icon-close {
+      right: -3px;
+    }
+    .key{
+      padding-right: 32px;
+    }
+  }
+
+  label {
+    font-weight: normal;
+    line-height: 29px;
+  }
+
+  .btn-toolbar {
+    padding: 8px;
+    margin-left: 0;
+    margin-right: 0;
+
+    .btn {
+      padding: 8px 12px;
+    }
+
+    >.btn-half {
+      width: 48%;
+      margin-left: 0;
+    }
+
+    > .btn-half + .btn {
+      margin-left: 4%;
+    }
   }
 }
 

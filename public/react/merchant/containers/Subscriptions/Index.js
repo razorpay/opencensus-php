@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Route, Switch, NavLink } from 'react-router-dom';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 import SubscriptionsList from 'merchant/containers/Subscriptions/List';
 import PlansList from 'merchant/containers/Plans/List';
@@ -12,7 +13,7 @@ export default class PaymentLinksContainer extends Component {
           <NavLink to="/subscriptions">Subscriptions</NavLink>
           <NavLink to="/plans">Plans</NavLink>
         </header>
-
+        <TestModeBanner />
         <content>
           <Switch>
             <Route path="/subscriptions" component={SubscriptionsList} />

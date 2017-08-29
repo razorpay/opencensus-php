@@ -76,9 +76,9 @@ class Service extends Base\Service
 
     private function resolveRoute($input)
     {
-        $routeName = $input['route_name'];
+        $routeName = $input['route_name'] ?? null;
 
-        if (! isset($routeName))
+        if (empty($routeName) === true)
         {
             throw new \Razorpay\Api\Errors\BadRequestError(
                 'Route mapping not found',

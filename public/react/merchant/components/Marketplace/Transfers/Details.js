@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import CheckIcon from 'rzp/ui/CheckIcon';
 import Spinner from 'rzp/ui/Spinner';
 import ListToggler from 'rzp/ui/Toggler/ListToggler';
 import DataTable from 'rzp/ui/Table/DataTable';
@@ -11,7 +12,14 @@ import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import { reversalId, amount, createdAt } from 'rzp/ui/item/pair';
 
 // Below keys are not to be shown through OtherDetail component
-const shownByDefault = ['id', 'entity', 'source', 'notes', 'created_at'];
+const shownByDefault = {
+  id: '',
+  entity: '',
+  source: '',
+  notes: '',
+  created_at: '',
+  on_hold: '',
+};
 
 const keysNotShown = entity => {
   var keys = [];
@@ -26,7 +34,7 @@ const keysNotShown = entity => {
     if (
       entity.hasOwnProperty(key) &&
       payload[key] !== undefined &&
-      shownByDefault.indexOf(key) < 0 &&
+      !shownByDefault.hasOwnProperty(key) &&
       entity[key] !== null
     ) {
       keys.push(key);
@@ -83,6 +91,11 @@ export default ({
                   />
                 ))}
 
+                <EntityDetailRow
+                  label="On Hold"
+                  value={() => <CheckIcon value={transfer.on_hold} />}
+                />
+
                 {/* Notes */}
                 <NestedEntityDetailRow label="Notes" value={transfer.notes} />
 
@@ -99,12 +112,14 @@ export default ({
 
                 {reversals
                   ? <ListToggler
-                      show={true}
-                      label="Reversals"
+                      label="Recently created Reversals"
+                      subLabel="to this transfer"
+                      loading={reversals.loading}
                       totalItems={reversals.items.length}
-                      onToggleClick={() => onToggleReversalsList(transfer.id)}
                     >
                       <DataTable
+                        customClass="reversals-table"
+                        progressLoader={true}
                         title="Reversals"
                         columns={[reversalId, amount, createdAt]}
                         items={reversals.items}

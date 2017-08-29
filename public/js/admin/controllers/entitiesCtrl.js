@@ -98,6 +98,7 @@ app.controller('EntitiesCtrl', [
       'wallet_airtelmoney',
       'wallet_freecharge',
       'wallet_jiomoney',
+      'wallet_sbibuddy',
       'wallet_openwallet',
       'wallet_mpesa',
     ];
@@ -111,6 +112,7 @@ app.controller('EntitiesCtrl', [
       'airtelmoney',
       'freecharge',
       'jiomoney',
+      'sbibuddy',
       'ezeclick',
       'openwallet',
       'mpesa',
@@ -134,6 +136,7 @@ app.controller('EntitiesCtrl', [
       'wallet',
       'upi',
       'transfer',
+      'bank_transfer',
     ];
     // This is the list of available filters
     // len==1 means a text input, rest are drop-downs
@@ -164,14 +167,33 @@ app.controller('EntitiesCtrl', [
         vpc_TxnResponseCode: ['Txn Response Code'],
         vpc_3DSstatus: ['all', 'Y', 'N', 'U', 'A'],
       },
+      balance: {},
       bank_account: {
         deleted: booleanList,
         entity_id: ['Entity Id'],
         merchant_id: ['Merchant Id'],
         type: ['all', 'customer', 'merchant'],
       },
-      balance: {},
-      ebs: {},
+      bank_transfer: {
+        merchant_id: ['Merchant Id'],
+        payment_id: ['Payment ID'],
+        utr: ['UTR'],
+        virtual_account_id: ['Virtual Account ID'],
+        mode: ['all', 'neft', 'rtgs', 'ift', 'imps'],
+        payer_account: ['Payer Account'],
+        payer_ifsc: ['Payer IFSC'],
+        payee_account: ['Payee Account'],
+        payee_ifsc: ['Payee IFSC'],
+        amount: ['Amount'],
+      },
+      batch: {
+        merchant_id: ['Merchant Id'],
+        status: ['all', 'created', 'processing', 'processed'],
+      },
+      batch_fund_transfer: {
+        type: ['all', 'settlement', 'payout'],
+        date: ['Date'],
+      },
       billdesk: {
         AuthStatus: ['all', '0001', '0300', '0002', '0399', 'NA'],
         BankReferenceNo: ['Bank Reference No'],
@@ -180,10 +202,6 @@ app.controller('EntitiesCtrl', [
         RefStatus: ['Refund Status'],
         RefundId: ['Billdesk Refund Id'],
         TxnReferenceNo: ['Txn Reference No'],
-      },
-      batch: {
-        merchant_id: ['Merchant Id'],
-        status: ['all', 'created', 'processing', 'processed'],
       },
       card: {
         global_card_id: ['Global Card Id'],
@@ -232,6 +250,9 @@ app.controller('EntitiesCtrl', [
         ref: ['Reference'],
         capture_ref: ['Capture Reference'],
       },
+      ebs: {
+        payment_id: ['Payment ID'],
+      },
       fee_breakup: {
         transaction_id: ['Transaction Id'],
         pricing_rule_id: ['Pricing Rule Id'],
@@ -246,9 +267,12 @@ app.controller('EntitiesCtrl', [
         caps_payment_id: ['Caps Payment ID'],
         gateway_transaction_id: ['Gateway Transaction ID'],
       },
-      batch_fund_transfer: {
-        type: ['all', 'settlement', 'payout'],
-        date: ['Date'],
+      dispute: {
+        merchant_id: ['Merchant ID'],
+        payment_id: ['Payment ID'],
+        status: ['open', 'under_review', 'won', 'lost'],
+        phase: ['chargeback', 'pre_arbitration', 'arbitration'],
+        amount: ['Amount'],
       },
       emi_plan: {
         bank: ['Bank'],
@@ -328,6 +352,7 @@ app.controller('EntitiesCtrl', [
         airtelmoney: booleanList2,
         freecharge: booleanList2,
         jiomoney: booleanList2,
+        sbibuddy: booleanList2,
         pricing_plan_id: ['Pricing Plan Id'],
         parent_id: ['Marketplace Parent Id'],
         receipt_email_enabled: booleanList,
@@ -350,7 +375,12 @@ app.controller('EntitiesCtrl', [
         airtelmoney: booleanList,
         freecharge: booleanList,
         jiomoney: booleanList,
+        sbibuddy: booleanList,
         merchant_id: ['Merchant Id'],
+      },
+      mobikwik: {
+        payment_id: ['Payment Id'],
+        received: booleanList,
       },
       netbanking: {
         bank_payment_id: ['Bank Reference Id'],
@@ -414,20 +444,24 @@ app.controller('EntitiesCtrl', [
       pricing: {
         plan_id: ['Plan Id'],
       },
-      mobikwik: {
-        payment_id: ['Payment Id'],
-        received: booleanList,
-      },
       refund: {
+        amount: ['Amount'],
+        batch_id: ['Batch Id'],
+        gateway: gatewayList,
         merchant_id: ['Merchant Id'],
         payment_id: ['Payment Id'],
         status: ['all', 'created', 'failed', 'processed'],
         transaction_id: ['Transaction Id'],
-        batch_id: ['Batch Id'],
       },
       reversal: {
         merchant_id: ['Merchant Id'],
         transfer_id: ['Transfer Id'],
+      },
+      risk: {
+        fraud_type: ['suspected', 'confirmed'],
+        source: ['bank', 'gateway', 'maxmind', 'manual', 'internal'],
+        merchant_id: ['Merchant Id'],
+        payment_id: ['Payment Id'],
       },
       settlement: {
         batch_fund_transfer_id: ['Batch Fund Transfer Id'],
@@ -485,13 +519,21 @@ app.controller('EntitiesCtrl', [
         token: ['Token'],
         wallet: walletList,
       },
-      wallet: {
-        payment_id: ['Payment Id'],
-        wallet: walletList,
-      },
       upi: {
         payment_id: ['Payment Id'],
         bank: upiBankList,
+      },
+      user: {
+        email: ['Email'],
+      },
+      virtual_account: {
+        merchant_id: ['Merchant ID'],
+        status: ['all', 'active', 'closed', 'paid'],
+        customer_id: ['Customer ID'],
+      },
+      wallet: {
+        payment_id: ['Payment Id'],
+        wallet: walletList,
       },
       webhook: {
         merchant_id: ['Merchant Id'],

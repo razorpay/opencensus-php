@@ -7,7 +7,7 @@ import RZPLogoPNG from 'styles/assets/logo.png';
 
 const TRANSACTIONS_ROUTES_REGEX = /^\/(payments|refunds|orders|batch-refunds)/;
 const ACCOUNTS_ROUTES_REGEX = /^\/(profile|activation|credits|addfunds|referrals)/;
-const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys)/;
+const SETTINGS_ROUTES_REGEX = /^\/(config|webhooks|keys|applications|applications\/new)/;
 const INVOICES_ROUTES_REGEX = /^\/(invoices|items)/;
 const INVOICES_ROUTES_OLD_REGEX = /^\/(invoices|items|customers)/;
 const MARKETPLACE_ROUTES_REGEX = /^\/route\/(payments|transfers|reversals|accounts)/;
@@ -88,7 +88,7 @@ export default class Sidebar extends Component {
                   <MainNavLink
                     label="Transactions"
                     id="transactions-nav"
-                    icon="icon icon-transactions text-primary"
+                    icon="icon icon-repeat text-primary"
                     to={routes.transactions}
                     notMyRole="sellerapp"
                   />
@@ -103,7 +103,7 @@ export default class Sidebar extends Component {
 
                   <MainNavLink
                     label="Invoices"
-                    icon="icon icon-invoices text-warning"
+                    icon="icon icon-notes text-warning"
                     to={routes.invoices}
                     featureEnabled="Invoice"
                     notMyRole="sellerapp"
@@ -150,13 +150,13 @@ export default class Sidebar extends Component {
 
                   <MainNavLink
                     label="Reports"
-                    icon="icon icon-reports text-danger"
+                    icon="icon icon-books text-danger"
                     to="/reports"
                     notMyRole="sellerapp support"
                   />
                   <MainNavLink
                     label="Manage Team"
-                    icon="icon icon-team text-info"
+                    icon="icon icon-city text-info"
                     to="/team"
                     myRole="owner"
                     beta={true}

@@ -11,7 +11,7 @@
     </div>
     <div class="row wrapper actions-wrapper">
       <div class="list-group">
-        <a href="{{'/admin/merchant/' + merchant.details.id + '/login'}}" dynamic-tooltip="view_merchant_login" ng-show="admin.permissions.indexOf('view_merchant_login') !== -1" target="_blank" class="list-group-item" dynamic-tooltip="view_merchant_login">
+        <a href="{{'/admin/merchant/' + merchant.id + '/login'}}" dynamic-tooltip="view_merchant_login" ng-show="admin.permissions.indexOf('view_merchant_login') !== -1" target="_blank" class="list-group-item" dynamic-tooltip="view_merchant_login">
           Login as Merchant
         </a>
         <a ui-sref="app.merchants.activation({id: merchant.details.id})" dynamic-tooltip="view_activation_form" ng-show="admin.permissions.indexOf('view_activation_form') !== -1" class="list-group-item see-activation-form">
@@ -529,6 +529,10 @@
             Jiomoney
           </div>
           <div class="list-group-item">
+            <span class="pull-right" tooltip="{{merchant.details.methods.sbibuddy == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.sbibuddy == true, 'fa-times text-danger':merchant.details.methods.sbibuddy == false}"></i></span>
+            SBI Buddy
+          </div>
+          <div class="list-group-item">
             <span class="pull-right" tooltip="{{merchant.details.methods.upi == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.upi == true, 'fa-times text-danger':merchant.details.methods.upi == false}"></i></span>
             UPI
           </div>
@@ -974,6 +978,7 @@
              <option value="wallet_airtelmoney">Airtelmoney</option>
              <option value="wallet_freecharge">Freecharge</option>
              <option value="wallet_jiomoney">Jiomoney</option>
+             <option value="wallet_sbibuddy">SBI Buddy</option>
              <option value="mobikwik">Mobikwik</option><
              <option value="billdesk">Billdesk</option>
              <option value="ebs">EBS</option>
@@ -1001,7 +1006,6 @@
              <option value="hdfc" selected>HDFC</option>
              <option value="axis">Axis</option>
              <option value="icic">ICICI</option>
-             <option value="hdfc">HDFC</option>
           </select>
         </div>
       </div>
@@ -1103,6 +1107,15 @@
         <label for="tpv" class="col-lg-3 control-label">TPV</label>
         <div class="col-lg-9" >
           <select class="form-control m-b" name="tpv" ng-model="terminal.tpv">
+             <option value="1">Yes</option>
+             <option value="0" selected>No</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" >
+        <label for="corporate" class="col-lg-3 control-label">Corporate</label>
+        <div class="col-lg-9" >
+          <select class="form-control m-b" name="corporate" ng-model="terminal.corporate">
              <option value="1">Yes</option>
              <option value="0" selected>No</option>
           </select>

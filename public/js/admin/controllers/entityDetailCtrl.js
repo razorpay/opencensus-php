@@ -134,6 +134,39 @@ app
         });
       };
 
+      // Dispute specific actions
+      $scope.dispute = {
+        edit: function(data) {
+          var params = {
+            route_name: 'dispute_edit',
+            url_params: {
+              '{id}': $scope.entity.id,
+            },
+            mode: $scope.mode,
+            body: data,
+          };
+
+          var request = $http({
+            method: 'patch',
+            url: '/admin/generic',
+            data: params,
+          });
+          request
+            .success(function(data) {
+              if (data.success) {
+                window.location.reload();
+              } else {
+                angular.forEach(data.errors, function(value) {
+                  $scope.alerts.addAlert('danger', value);
+                });
+              }
+            })
+            .error(function() {
+              $scope.alerts.addAlert('danger', null, true);
+            });
+        },
+      };
+
       // Offer Specific actions
       $scope.offer = {
         edit: function(offer) {
@@ -489,6 +522,23 @@ app
             $scope.offer.edit(offer);
           }, $.noop);
         },
+        disputeEdit: function(dispute) {
+          var modalInstance = $modal.open({
+            templateUrl: 'disputeModalContent.html',
+            controller: 'DisputeModalCtrl',
+            resolve: {
+              current: function() {
+                return Object.assign({}, dispute);
+              },
+              mode: function() {
+                return $scope.mode;
+              },
+            },
+          });
+          modalInstance.result.then(function(dispute) {
+            $scope.dispute.edit(dispute);
+          }, $.noop);
+        },
         iinEdit: function(iin) {
           var modalInstance = $modal.open({
             templateUrl: 'editIin.html',
@@ -578,7 +628,8 @@ app
       $scope.onRetryRefund = function onRetryRefund(e) {
         e.preventDefault();
 
-        var entityType = $scope.loadType, entityId = $scope.entity.id;
+        var entityType = $scope.loadType,
+          entityId = $scope.entity.id;
 
         if (entityType !== 'refund' || $scope.isRetryRefundProcessing) {
           return;

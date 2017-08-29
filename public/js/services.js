@@ -304,7 +304,8 @@ angular
     '$timeout',
     '$idle',
     function($q, $http, $timeout, $idle) {
-      var _identity, _authenticated = false;
+      var _identity,
+        _authenticated = false;
       return {
         isIdentityResolved: function() {
           return angular.isDefined(_identity);
@@ -647,6 +648,12 @@ angular
           draft: 'bg-light',
           issued: 'bg-info',
           expired: 'bg-danger',
+
+          // dispute
+          open: 'bg-primary',
+          under_review: 'bg-warning',
+          won: 'bg-success',
+          lost: 'bg-danger',
         };
 
         return mapper[status];
@@ -797,7 +804,11 @@ angular
       return function(key, value) {
         var entity = key.substr(0, key.length - 3);
         var isTimestamp = function(key) {
-          return key.substr(-3) === '_at' || key === 'next_run';
+          return (
+            key.substr(-3) === '_at' ||
+            key.substr(-3) === '_on' ||
+            key === 'next_run'
+          );
         };
         // These have their own views
         var specialEntities = ['merchant_id', 'payment_id'];
@@ -1068,11 +1079,13 @@ angular
           axis_migs: 'Axis Migs',
           cybersource: 'Cybersource',
           amex: 'Amex',
+          sharp: 'Sharp',
         },
         gatewayEmiMap: {
           amex: 'Amex',
           hdfc: 'FSS',
           first_data: 'First Data',
+          sharp: 'Sharp',
         },
         gatewayNBMap: {
           netbanking_hdfc: 'HDFC Netbanking',
@@ -1081,21 +1094,30 @@ angular
           netbanking_axis: 'Axis Netbanking',
           netbanking_federal: 'Federal Netbanking',
           netbanking_airtel: 'Airtel Netbanking',
+          netbanking_rbl: 'RBL netbanking',
+          netbanking_indusind: 'IndusInd netbanking',
           billdesk: 'Billdesk',
           ebs: 'Ebs',
+          sharp: 'Sharp',
         },
         gatewayWalletMap: {
+          mobikwik: 'Mobikwik',
           wallet_airtelmoney: 'Airtelmoney',
           wallet_freecharge: 'Freecharge',
           wallet_jiomoney: 'Jiomoney',
           wallet_olamoney: 'Olamoney',
           wallet_payumoney: 'Payumoney',
           wallet_payzapp: 'Payzapp',
+          wallet_mpesa: 'Mpesa',
+          wallet_sbibuddy: 'SbiBuddy',
+          wallet_openwallet: 'Openwallet',
+          sharp: 'Sharp',
         },
         gatewayUpiMap: {
           upi_idfc: 'IDFC UPI',
           upi_icici: 'ICICI UPI',
           upi_mindgate: 'Mindgate/HDFC UPI',
+          sharp: 'Sharp',
         },
         walletMap: {
           payzapp: 'Payzapp',

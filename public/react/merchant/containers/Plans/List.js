@@ -9,6 +9,8 @@ import * as ModalActions from 'rzp/modules/modals';
 import { luminateRow } from 'merchant/modules/app';
 import PlanCreation from 'merchant/containers/Plans/New';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { NavLink } from 'react-router-dom';
+
 import {
   planId,
   planName,
@@ -44,13 +46,12 @@ export default class PlansListContainer extends ListContainer {
         <HeaderAction>
           <ShowWhen notMyRole="support">
             <div class="btn-toolbar">
-              <button
-                class="pull-right btn btn-primary"
-                onClick={() => this.showPlanModal()}
-              >
-                <i class="icon icon-plus" />
-                <span>New Plan</span>
-              </button>
+              <NavLink to="/plans/new">
+                <button class="pull-right btn btn-primary">
+                  <i class="icon icon-plus" />
+                  <span>New Plan</span>
+                </button>
+              </NavLink>
             </div>
           </ShowWhen>
         </HeaderAction>

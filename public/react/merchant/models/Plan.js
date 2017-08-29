@@ -1,4 +1,5 @@
 import GenericEntity from './GenericEntity';
+import Subscription from './Subscription';
 
 export default class Plan extends GenericEntity {
   listRouteName = 'plan_fetch_multiple';
@@ -9,6 +10,23 @@ export default class Plan extends GenericEntity {
 
   getRouteName() {
     return this.isNew ? 'plan_create' : 'plan_update';
+  }
+
+  fetchSubscriptions() {
+    let data = {};
+
+    data.query_params = JSON.stringify({
+      plan_id: this.id,
+    });
+
+    data.route_name = 'subscription_fetch_multiple';
+    return this.makeGenericAjaxCall({ data }).then(response => {
+      response.data.items = response.data.items.map(item =>
+        new Subscription(item).deserialize()
+      );
+
+      return response;
+    });
   }
 
   serializeProperty(prop) {

@@ -34,8 +34,9 @@ export const updateEntity = (state, action) => {
 export const makeEntityReducer = (
   fetchActionName,
   actionHandlers = {},
-  initialState = defaultInitialState
+  initialState
 ) => {
+  initialState = { ...defaultInitialState, ...initialState };
   const defaultHandlers = {
     [`${fetchActionName}::PENDING`]: entityFetchPendingState,
     [`${fetchActionName}::SUCCESS`]: entityFetchSuccessState,
