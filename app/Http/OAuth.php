@@ -16,6 +16,9 @@ class OAuth
 {
     const PUBLIC_TOKEN_LENGTH = 29;
 
+    /**
+     * @var OAuthServer
+     */
     protected $server;
 
     /**
