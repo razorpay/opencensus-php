@@ -685,6 +685,12 @@ class Gateway extends Base\Gateway
             Fields::ONLINE_REFUND                   => 'Y',
         ];
 
+        // ICICI has confirmed that the vpa is not a mandatory field now.
+        if ($input['merchant']['id'] === Merchant\Account::DEMO_PAGE_ACCOUNT)
+        {
+            unset($data[Fields::PAYEE_VA]);
+        }
+
         $content = $this->transformRequestArrayToContent($data);
 
         $request = $this->getStandardRequestArray($content);
