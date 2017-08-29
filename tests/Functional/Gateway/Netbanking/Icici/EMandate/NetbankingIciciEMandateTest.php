@@ -195,7 +195,6 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $this->assertNotNull($netbanking['si_ref_id']);
         $this->assertEquals('Y', $netbanking['si_status']);
-        $this->assertNotNull($netbanking['si_ref_id']);
 
         $this->assertEquals('9999999999', $netbanking['bank_payment_id']);
     }
@@ -242,6 +241,49 @@ class NetbankingIciciEMandateTest extends TestCase
         // Assert that the merchant and terminal are the same
         $this->assertEquals($gatewayToken1['merchant_id'], $gatewayToken2['merchant_id']);
         $this->assertEquals($gatewayToken1['terminal_id'], $gatewayToken2['terminal_id']);
+    }
+
+    public function testDebitRequestFailure()
+    {
+        $payment = $this->payment;
+
+        $this->doAuthPayment($payment);
+
+        $token1 = $this->getLastEntity('token', true);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockDebitRequestFailure();
+
+        $payment['token'] = $token1['id'];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doS2SRecurringPayment($payment);
+            });
+
+        $token2 = $this->getLastEntity('token', true);
+        $payment = $this->getLastEntity('payment', true);
+
+        // Asserting that the failed second recurring payment was
+        // made with the same token id as above
+        $this->assertEquals($token1['id'], $token2['id']);
+        $this->assertEquals($payment['token_id'], $token2['id']);
+
+        // Asserting that the payment was attempted with a valid token
+        $this->assertNotNull($token2['gateway_token']);
+        $this->assertEquals(true, $token2['recurring']);
+        $this->assertEquals('confirmed', $token2['recurring_status']);
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        // Reference ID sent across will sent back
+        $this->assertNotNull($netbanking['si_ref_id']);
+        $this->assertEquals(null, $netbanking['si_status']);
+
+        $this->assertEquals('9999999999', $netbanking['bank_payment_id']);
     }
 
     protected function assertEMandateRejectedToken()
@@ -295,7 +337,6 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $this->assertNotNull($netbanking['si_ref_id']);
         $this->assertEquals($expectedSiStatus, $netbanking['si_status']);
-        $this->assertNotNull($netbanking['si_ref_id']);
 
         $this->assertEquals('9999999999', $netbanking['bank_payment_id']);
     }
@@ -308,7 +349,6 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $this->assertEquals($payment['token_id'], $token['id']);
         $this->assertEquals(null, $token['gateway_token']);
-        $this->assertNotNull($netbanking['si_ref_id']);
 
         $this->assertEquals('Y', $netbanking['si_status']);
 
@@ -367,6 +407,18 @@ class NetbankingIciciEMandateTest extends TestCase
                 if ($set === true)
                 {
                     $content['RID'] = '';
+                }
+            });
+    }
+
+    protected function mockDebitRequestFailure()
+    {
+        $this->mockServerContentFunction(
+            function(&$content, $action = null)
+            {
+                if ($action === 'second_recurring')
+                {
+                    $content['STATUS'] = 'FAILURE';
                 }
             });
     }
