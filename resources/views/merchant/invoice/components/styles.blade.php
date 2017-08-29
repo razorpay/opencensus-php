@@ -19,9 +19,13 @@ body * {
   -o-box-sizing: border-box;
 }
 
-.invoice-box {
+.foot-note, .invoice-box {
+
   max-width:800px;
   margin:auto;
+}
+
+.invoice-box {
   padding:30px;
   border:1px solid #eee;
   box-shadow:0 0 10px rgba(0, 0, 0, .15);
@@ -47,6 +51,7 @@ body * {
   font-size: 10px;
   text-align: center;
   margin-top: 10px;
+  margin-bottom: 10px;
 }
 
 .invoice-box table{
@@ -232,6 +237,7 @@ div.bank-details table td {
 
   .foot-note {
 
+    margin-bottom: 0;
     page-break-after: always;
   }
 }
