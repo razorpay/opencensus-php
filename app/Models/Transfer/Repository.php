@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Transfer;
 
-use RZP\Constants\Entity as E;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 
