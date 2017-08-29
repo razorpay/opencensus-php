@@ -147,20 +147,7 @@ class Gateway extends Base\Gateway
 
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
-        $content = $this->getVerifyRequestData($verify->input);
-
-        parent::verify($this->input);
-
-        $request = $this->getStandardRequestArray($content);
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            [
-                'gateway'    => $this->gateway,
-                'request'    => $request,
-                'payment_id' => $verify->input['payment']['id'],
-            ]
-        );
+        $request = $this->getVerifyRequest($verify->input);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -170,7 +157,8 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
                 'gateway'    => $this->gateway,
-                'response'   => $verify->verifyResponseContent,
+                'response'   => $response->body,
+                'decrypted'  => $verify->verifyResponseContent,
                 'payment_id' => $verify->input['payment']['id'],
             ]
         );
@@ -213,11 +201,11 @@ class Gateway extends Base\Gateway
             $attributes[Base\Entity::STATUS] = $content[ResponseFields::VERIFY_RESULT];
         }
 
-        if (isset($content[ResponseFields::BANK_REF_NUMBER]) === true and
+        if (isset($content[ResponseFields::VERIFY_BANK_REF_NUMBER]) === true and
             empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true
         )
         {
-            $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_REF_NUMBER];
+            $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::VERIFY_BANK_REF_NUMBER];
         }
 
         return $attributes;
@@ -277,7 +265,7 @@ class Gateway extends Base\Gateway
         return $this->getEncryptor()->decryptData($data[ResponseFields::VERIFY_DATA]);
     }
 
-    protected function getVerifyRequestData(array $input)
+    protected function getVerifyRequest(array $input)
     {
         // If we're calling the double verification request from callback,
         // we'll have the 'gateway' attribute filled, because we already got
@@ -306,12 +294,26 @@ class Gateway extends Base\Gateway
 
         $encryptedString = $this->getEncryptor()->encryptData($data);
 
-        $data = [
+        $content = [
             RequestFields::VERIFY_MERCHANT_CODE => $this->getMerchantId(),
             RequestFields::VERIFY_DATA          => $encryptedString
         ];
 
-        return $data;
+        parent::verify($this->input);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            [
+                'gateway'    => $this->gateway,
+                'request'    => $request,
+                'content'    => $data,
+                'payment_id' => $input['payment']['id'],
+            ]
+        );
+
+        return $request;
     }
 
     protected function checkGatewaySuccess($verify)

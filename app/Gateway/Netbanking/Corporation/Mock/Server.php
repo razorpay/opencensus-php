@@ -82,7 +82,7 @@ class Server extends Base\Mock\Server
             ResponseFields::VERIFY_MERCHANT_CODE     => $input[RequestFields::VERIFY_MERCHANT_CODE],
             ResponseFields::VERIFY_PAYMENT_ID        => $input[RequestFields::VERIFY_PAYMENT_ID],
             ResponseFields::VERIFY_AMOUNT            => $input[RequestFields::VERIFY_AMOUNT],
-            ResponseFields::VERIFY_BANK_REF_NUMBER   => $input[RequestFields::VERIFY_BANK_REF_NUMBER],
+            ResponseFields::VERIFY_BANK_REF_NUMBER   => self::BANK_REF_NUMBER,
             ResponseFields::VERIFY_RESULT            => ResponseCodeMap::RESULT_SUCCESS,
             ResponseFields::VERIFY_RESULTMESSAGE     => ResponseCodeMap::RESULT_SUCCESS,
             ResponseFields::VERIFY_PAYMENT_DATE_TIME => $datetime,
