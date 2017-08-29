@@ -96,7 +96,7 @@ trait SettlementTrait
             $setlAttempts->push($bankTransferAtpt);
         }
 
-        $this->updateSettlementIdInTransfer($setlTxns);
+        $this->updateSettlementIdInTransfer($txns);
 
         return [$settlements, $txnsSettledCount, $setlAttempts];
     }
