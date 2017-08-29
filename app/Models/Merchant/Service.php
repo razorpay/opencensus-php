@@ -42,6 +42,26 @@ class Service extends Base\Service
 
     const COUPON_RESPONSE = 'apply_coupon';
 
+    const AGGREGATOR_MERCHANT_MAP = [
+        '7gzS06VLFt2ucC' => [
+            '8WRYAzKnZFEL8j',
+            '8WRsdBzEuPB4Cj',
+            '8WS16nPFUjFjE8',
+            '8WS6hQVEhE6qJe',
+            '8WSBDHF67M3lfT',
+            '8WSFe1eyHp2olq',
+            '8WSKbaqEl0IxbW',
+            '8WSPU9d9Kl1vUu',
+            '8WT489MEcqDrkV',
+            '8WYjnC9vcXHGf7',
+            '8WYpGzg48LGJ0C',
+            '8WYu5oZz9CEKRF',
+            '8WYz6DP3DdHQD7',
+            '8WZ4FEuk597NVH',
+            '8WZ8TlJGxlHK54',
+        ],
+    ];
+
     /**
      * Creates a merchant and saves in database
      *
@@ -1155,9 +1175,16 @@ class Service extends Base\Service
      */
     public function getSubmerchants(): array
     {
-        $merchant = $this->merchant;
+        $merchantId = $this->merchant->getId();
 
-        return [ $merchant->getId() ];
+        $merchantIds = [$merchantId];
+
+        if (isset(self::AGGREGATOR_MERCHANT_MAP[$merchantId]) === true)
+        {
+            $merchantIds = array_merge($merchantIds, self::AGGREGATOR_MERCHANT_MAP[$merchantId]);
+        }
+
+        return $merchantIds;
     }
 
     /**
