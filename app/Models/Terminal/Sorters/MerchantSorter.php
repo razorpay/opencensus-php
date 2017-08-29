@@ -55,7 +55,7 @@ class MerchantSorter extends Terminal\Sorter
             {
                 $genericCategoryTerminals[] = $terminal;
             }
-            else if (empty($terminalCategory) === true)
+            else
             {
                 $nonCategoryTerminals[] = $terminal;
             }
