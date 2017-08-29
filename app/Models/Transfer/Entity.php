@@ -104,12 +104,12 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::FEES,
         self::SERVICE_TAX,
+        self::TAX,
         self::ON_HOLD,
         self::ON_HOLD_UNTIL,
         self::RECIPIENT_SETTLEMENT_ID,
         self::RECIPIENT_SETTLEMENT,
         self::CREATED_AT,
-        self::TAX
     ];
 
     protected $publicSetters = [
@@ -488,6 +488,8 @@ class Entity extends Base\PublicEntity
         $data[self::SETTLEMENT_UTR]          = $utr;
         $data[self::SETTLEMENT_STATUS]       = $settlementStatus;
         $data[self::TAX]                     = $tax;
+
+        $data[self::ON_HOLD] = $this->getOnHold() ? "true" : "false";
 
         return $data;
     }

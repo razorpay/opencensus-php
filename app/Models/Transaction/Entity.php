@@ -93,12 +93,12 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::FEE,
         self::SERVICE_TAX,
+        self::TAX,
         self::ON_HOLD,
         self::SETTLED,
         self::CREATED_AT,
         self::SETTLED_AT,
         self::SETTLEMENT_ID,
-        self::TAX,
     ];
 
     protected $publicSetters = array(
@@ -635,10 +635,7 @@ class Entity extends Base\PublicEntity
 
         unset($reportTxn[self::ID]);
 
-        $tax = $reportTxn[self::TAX];
-
-         // Add tax key at the end to maintain order of columns in the report
-        unset($reportTxn[self::TAX]);
+        unset($reportTxn[self::SERVICE_TAX]);
 
         $reportTxn[Payment\Entity::DESCRIPTION] = null;
         $reportTxn[Payment\Entity::NOTES] = null;
@@ -724,8 +721,6 @@ class Entity extends Base\PublicEntity
 
             $this->fillPaymentDetails($payment, $reportTxn);
         }
-
-        $reportTxn[self::TAX] = $tax;
 
         return $reportTxn;
     }

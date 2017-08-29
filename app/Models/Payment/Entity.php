@@ -268,12 +268,12 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::FEE,
         self::SERVICE_TAX,
+        self::TAX,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
         self::ACQUIRER_DATA,
         // self::SUBSCRIPTION_ID,
         self::CREATED_AT,
-        self::TAX,
     ];
 
     /**
@@ -1919,10 +1919,7 @@ class Entity extends Base\PublicEntity
     {
         $data = parent::toArrayReport();
 
-        $tax = $data[self::TAX];
-
-        // Add tax key at the end to maintain order of columns in the report
-        unset($data[self::TAX]);
+        unset($data[self::SERVICE_TAX]);
 
         unset($data[self::CUSTOMER_ID]);
         unset($data[self::TOKEN_ID]);
@@ -1943,8 +1940,6 @@ class Entity extends Base\PublicEntity
         {
             $data['invoice_id'] = $this->getInvoiceId();
         }
-
-        $data[self::TAX] = $tax;
 
         return $data;
     }
