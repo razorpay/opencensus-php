@@ -717,12 +717,7 @@ class Gateway extends Base\Gateway
      */
     protected function getRefundId(array $refund)
     {
-        if ($refund['attempts'] >= 1)
-        {
-            return $refund['id'] . '_' . $refund['attempts'];
-        }
-
-        return $refund['id'];
+        return $refund['id'] . ($refund['attempts'] ?: '');
     }
 
 
