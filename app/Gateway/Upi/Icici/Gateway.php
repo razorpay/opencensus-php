@@ -462,7 +462,7 @@ class Gateway extends Base\Gateway
         $content = $this->parseGatewayResponse($response->body);
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
             [
                 'raw_content' => $response->body,
                 'content' => $content,
@@ -552,6 +552,12 @@ class Gateway extends Base\Gateway
         parent::verify($input);
 
         $content = $this->sendRefundVerifyRequest($input);
+
+        if (($content['status'] === Status::SUCCESS) or
+            ($content['status'] === Status::PENDING))
+        {
+            return true;
+        }
 
         return false;
     }
