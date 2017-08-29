@@ -119,8 +119,6 @@ trait Authorize
 
         $request = [];
 
-        $retry = false;
-
         //
         // We are attempting to rotate across multiple terminals to get a successful payment here.
         // For each of the terminals tried, we want to record the terminal metrics using recordTerminalAudit()
@@ -165,8 +163,6 @@ trait Authorize
                 {
                     $request = $this->callGatewayAuthorize($terminalGatewayInput);
                 }
-
-                $retry = false;
 
                 break;
             }
@@ -2042,7 +2038,7 @@ trait Authorize
         //
         if ($payment->isSecondRecurring() === true)
         {
-            // TODO: Throw an exception
+            throw new Exception\LogicException('Authentication of a second recurring payment is not allowed');
         }
 
         if ($token->getRecurringStatus() !== null)
