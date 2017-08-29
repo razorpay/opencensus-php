@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import Spinner from 'rzp/ui/Spinner';
+import Banner from 'rzp/ui/Banner';
 import { titleCase } from 'rzp/utils/rzp-utils';
 import CopyLink from 'merchant/components/Invoices/CopyLink';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -56,6 +57,8 @@ export default props => {
   let isCancelled = status === 'cancelled';
   let isExpired = status === 'expired';
 
+  let invoiceCTA = { url: '/invoices/' + invoice.id, text: 'View Invoice' };
+
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading
@@ -88,6 +91,13 @@ export default props => {
             </div>
 
             <div class="SliderPanel__Body">
+              <Banner
+                message={
+                  'Following is the summary of the invoice.' +
+                  'See invoice to view all details.'
+                }
+                cta={invoiceCTA}
+              />
               <div class="panel-body">
                 <div class="list-group details-row-container">
                   <EntityDetailRow
