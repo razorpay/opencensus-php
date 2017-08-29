@@ -2,6 +2,7 @@
 
 namespace RZP\Services;
 
+use App;
 use Carbon\Carbon;
 use Exception;
 use RZP\Constants\Mode;
@@ -23,6 +24,8 @@ class EventTrackerClient extends AbstractEventClient
     protected $config;
 
     protected $mock;
+
+    protected $sns;
 
     const TRACK_EVENT_URL_PATTERN = 'track';
 
@@ -54,6 +57,8 @@ class EventTrackerClient extends AbstractEventClient
         $this->config = $app['config']->get('applications.lumberjack');
 
         $this->mock = $this->config['mock'];
+
+        $this->sns = $app['sns'];
     }
 
     /**
@@ -362,6 +367,61 @@ class EventTrackerClient extends AbstractEventClient
         catch (Exception $e)
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::EVENT_TRACK_FAILED);
+        }
+    }
+
+    /**
+     * Dispatch a job request
+     *
+     * @param array $headers
+     * @param string $url
+     * @param array $eventData
+     */
+    protected function sendEventRequest(array $headers, string $url, array $eventData)
+    {
+        try
+        {
+            if (empty($eventData['events'][0]['properties']['merchant_id']) !== true)
+            {
+                $merchantId = $eventData['events'][0]['properties']['merchant_id'];
+
+                if ($merchantId === '2aTeFCKTYWwfrF')
+                {
+                    $this->sns->publish(json_encode($eventData), 'lumberjack');
+
+                    return;
+                }
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::LUMBERJACK_ASYNC_REQUEST_FAILED, $eventData);
+        }
+
+        try
+        {
+            $request  = [
+                'method'    => 'post',
+                'url'       => $url,
+                'headers'   => $headers,
+                'content'   => json_encode($eventData),
+                'options'   => [
+                    'timeout'   => self::REQUEST_TIMEOUT
+                ]
+            ];
+
+            $job = new RequestJob($request);
+
+            $this->dispatch($job);
+        }
+        catch (Exception $e)
+        {
+            $errorContext = [
+                'class'     => get_class($this),
+                'message'   => $e->getMessage(),
+            ];
+
+            $this->trace->error(TraceCode::EVENT_QUEUE_SEND_FAILED, $errorContext);
         }
     }
 }
