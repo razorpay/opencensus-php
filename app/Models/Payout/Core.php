@@ -94,15 +94,13 @@ class Core extends Base\Core
      * @param  array           $input
      * @return array
      */
-    public function merchantPayout(array $input): array
+    public function merchantPayout(array $input, Merchant\Entity $merchant): array
     {
-        $merchantId = $input[Entity::MERCHANT_ID];
+        $merchantId = $merchant->getId();
 
         $bankAccountId = $input[Entity::DESTINATION_ID];
 
         $customerId = $input[Entity::CUSTOMER_ID];
-
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         if (isset($input[Entity::AMOUNT]) === true)
         {

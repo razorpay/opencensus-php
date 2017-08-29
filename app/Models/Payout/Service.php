@@ -46,7 +46,9 @@ class Service extends Base\Service
     {
         (new Validator)->validateInput('merchant', $input);
 
-        $payout = (new Payout\Core)->merchantPayout($input);
+        $merchant = $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
+
+        $payout = (new Payout\Core)->merchantPayout($input, $merchant);
 
         return $payout;
     }
