@@ -79,9 +79,8 @@ class NewApplicationForm extends Component {
 
   openPreviewPage = () => {
     // open in a popup
-    const popupUrl = `http://authorize.razorpay.dev:28095/authorize?response_type=code&client_id=${this
-      .state.details.clients.prod
-      .id}&redirect_uri=http://localhost&scope=read_only`;
+    const popupUrl = `http://authorize.razorpay.dev:28095/authorize?response_type=code&client_id=${this.state.details.clients.prod.id}&redirect_uri=http://localhost&scope=read_only`;
+
     window.open(popupUrl, 'PopupPreview');
   };
 
@@ -110,14 +109,14 @@ class NewApplicationForm extends Component {
     const payload = {
       name: props.name,
       website: props.website,
-      clients: [
+      client_details: [
         {
-          id: props.clients.dev.id,
-          redirect_url: props.clients.dev.redirect_url,
+          id: props.client_details.dev.id,
+          redirect_url: props.client_details.dev.redirect_url,
         },
         {
-          id: props.clients.prod.id,
-          redirect_url: props.clients.prod.redirect_url,
+          id: props.client_details.prod.id,
+          redirect_url: props.client_details.prod.redirect_url,
         },
       ],
     };
@@ -229,7 +228,7 @@ class NewApplicationForm extends Component {
                   <label class="col-md-2 control-label">Client ID</label>
                   <div class="col-md-4">
                     <Field
-                      name="clients.dev.id"
+                      name="client_details.dev.id"
                       component={InputField}
                       disabled={true}
                       class="form-control copy-field"
@@ -239,7 +238,7 @@ class NewApplicationForm extends Component {
                   <label class="col-md-2 control-label">Client Secret</label>
                   <div class="col-md-4">
                     <Field
-                      name="clients.dev.secret"
+                      name="client_details.dev.secret"
                       disabled={true}
                       type={this.state.showDevSecret ? 'text' : 'password'}
                       component={InputField}
@@ -260,7 +259,7 @@ class NewApplicationForm extends Component {
                   <label class="col-md-2 control-label">Redirect URIs</label>
                   <div class="col-md-10">
                     <Field
-                      name="clients.dev.redirect_url"
+                      name="client_details.dev.redirect_url"
                       component={TaggedInput}
                       class="form-control tagged-input"
                       placeholder="http://test-app.com/"
@@ -284,7 +283,7 @@ class NewApplicationForm extends Component {
                   <label class="col-md-2 control-label">Client ID</label>
                   <div class="col-md-4">
                     <Field
-                      name="clients.prod.id"
+                      name="client_details.prod.id"
                       component={InputField}
                       disabled={true}
                       class="form-control copy-field"
@@ -294,7 +293,7 @@ class NewApplicationForm extends Component {
                   <label class="col-md-2 control-label">Client Secret</label>
                   <div class="col-md-4">
                     <Field
-                      name="clients.prod.secret"
+                      name="client_details.prod.secret"
                       disabled={true}
                       component={InputField}
                       type={this.state.showProdSecret ? 'text' : 'password'}
@@ -315,7 +314,7 @@ class NewApplicationForm extends Component {
                   <label class="col-md-2 control-label">Redirect URIs</label>
                   <div class="col-md-10">
                     <Field
-                      name="clients.prod.redirect_url"
+                      name="client_details.prod.redirect_url"
                       component={TaggedInput}
                       class="form-control tagged-input"
                       placeholder="http://test-app.com/"
