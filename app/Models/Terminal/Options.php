@@ -22,18 +22,27 @@ class Options
         'method',
         'network',
         'bank',
+        'incompatible',
+        'pharma',
+        'category',
     ];
 
     // Filters to be skipped for any merchant
     protected $globalSkippedFilters = [
         'amount',
+        'iin',
+        'billdesk_category',
+        'billdesk_merchant',
     ];
 
     // Maps the rule group name to the corresponding filter property.
     // This is temporary and will be used only in the migration phase
     // until all merchants are using rule filters
     protected $ruleGroupToFilterPropertyMap = [
-        'min_amount_filter' => 'amount'
+        'min_amount_filter'        => 'amount',
+        'prepaid_iin_filter'       => 'iin',
+        'billdesk_category_filter' => 'billdesk_category',
+        'billdesk_merchant_filter' => 'billdesk_merchant',
     ];
 
     public function __construct()

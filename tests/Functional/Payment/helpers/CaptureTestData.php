@@ -15,6 +15,17 @@ return [
         ],
     ],
 
+    'testBulkCapture' => [
+        'response' => [
+            'content' => [
+                'count'   => 0,
+                'success' => 0,
+                'failure' => 0,
+                'failure_payments' => []
+            ],
+        ],
+    ],
+
     'testCaptureTwice' => [
         'response' => [
             'content' => [

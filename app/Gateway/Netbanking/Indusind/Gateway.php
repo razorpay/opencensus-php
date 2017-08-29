@@ -191,6 +191,11 @@ class Gateway extends Base\Gateway
 
         if ($this->action === Action::AUTHORIZE)
         {
+            if ($input['merchant']->isTPVRequired())
+            {
+                $data[RequestFields::ACCOUNT_NUMBER] = $input['order']['account_number'];
+            }
+
             $data[RequestFields::RETURN_URL] = $input['callbackUrl'];
         }
         else

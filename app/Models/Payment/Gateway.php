@@ -44,6 +44,7 @@ class Gateway
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
     const WALLET_FREECHARGE  = 'wallet_freecharge';
     const WALLET_JIOMONEY    = 'wallet_jiomoney';
+    const WALLET_SBIBUDDY    = 'wallet_sbibuddy';
     const WALLET_MPESA       = 'wallet_mpesa';
     const WALLET_OLAMONEY    = 'wallet_olamoney';
     const WALLET_OPENWALLET  = 'wallet_openwallet';
@@ -215,6 +216,7 @@ class Gateway
             self::WALLET_AIRTELMONEY,
             self::WALLET_FREECHARGE,
             self::WALLET_JIOMONEY,
+            self::WALLET_SBIBUDDY,
             self::WALLET_OPENWALLET,
             self::WALLET_MPESA,
         ],
@@ -353,6 +355,7 @@ class Gateway
         Wallet::AIRTELMONEY => Gateway::WALLET_AIRTELMONEY,
         Wallet::FREECHARGE  => Gateway::WALLET_FREECHARGE,
         Wallet::JIOMONEY    => Gateway::WALLET_JIOMONEY,
+        Wallet::SBIBUDDY    => Gateway::WALLET_SBIBUDDY,
         Wallet::OPENWALLET  => Gateway::WALLET_OPENWALLET,
         Wallet::MPESA       => Gateway::WALLET_MPESA,
     ];
@@ -401,6 +404,7 @@ class Gateway
         self::WALLET_OLAMONEY,
         self::WALLET_FREECHARGE,
         self::WALLET_JIOMONEY,
+        self::WALLET_SBIBUDDY,
         self::WALLET_MPESA,
         self::UPI_ICICI,
         self::UPI_IDFC,

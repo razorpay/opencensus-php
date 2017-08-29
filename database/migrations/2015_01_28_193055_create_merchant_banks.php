@@ -56,6 +56,9 @@ class CreateMerchantBanks extends Migration
             $table->tinyInteger(Methods::JIOMONEY)
                   ->default(0);
 
+            $table->tinyInteger(Methods::SBIBUDDY)
+                  ->default(0);
+
             $table->tinyInteger(Methods::MPESA)
                   ->default(0);
 
