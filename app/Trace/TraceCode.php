@@ -535,6 +535,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_SUSPEND                          = 'MERCHANT_SUSPEND';
     const MERCHANT_UNSUSPEND                        = 'MERCHANT_UNSUSPEND';
 
+    const MERCHANT_PAYOUT_FAILURE                   = 'MERCHANT_PAYOUT_FAILURE';
+
     const PRICING_PLAN_CREATE_ATTEMPT               = 'PRICING_PLAN_CREATE_ATTEMPT';
     const PRICING_PLAN_CREATE_SUCCESS               = 'PRICING_PLAN_CREATE_SUCCESS';
     const PRICING_PLAN_RULE_ADD_ATTEMPT             = 'PRICING_PLAN_RULE_ADD_ATTEMPT';
@@ -939,6 +941,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::MERCHANT_DETAIL_MIGRATE_FAILED            => 'Failed to migrate Merchant Detail',
 
         self::MERCHANT_ORG_NOT_GIVEN                    => 'Merchant Org Id is not passed to API on creation',
+
+        self::MERCHANT_PAYOUT_FAILURE                   => 'Failed to create merchant payout',
 
         self::OFFER_IIN_DOES_NOT_EXISTS                 => 'IIN does not exists for the offer create request',
         self::OFFER_DEACTIVATE                          => 'Deactivating the expired offer',

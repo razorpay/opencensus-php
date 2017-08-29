@@ -18,12 +18,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $merchantRules = [
-        Entity::MERCHANT_ID    => 'required|string',
-        Entity::CUSTOMER_ID    => 'required|string',
-        Entity::DESTINATION_ID => 'required|string',
+        Entity::MERCHANT_ID    => 'required|string|size:14',
+        Entity::CUSTOMER_ID    => 'required|public_id',
+        Entity::DESTINATION_ID => 'required|public_id',
         Entity::AMOUNT         => 'sometimes|integer|max:100000000',
-        Entity::MIN_AMOUNT     => 'sometimes|integer',
-        Entity::MODULO         => 'sometimes|integer',
+        Entity::MIN_AMOUNT     => 'sometimes|integer|min:100',
+        Entity::MODULO         => 'sometimes|integer|min:100',
     ];
 
     protected static $createValidators = [

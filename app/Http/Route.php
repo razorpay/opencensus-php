@@ -1330,6 +1330,7 @@ final class Route
             'schedule_process_tasks',
             'virtual_account_refund_excess',
             'merchant_create_invoice_entities',
+            'merchant_payout',
         ],
 
         'kotak' => [

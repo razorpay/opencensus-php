@@ -11,6 +11,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Transaction;
@@ -93,7 +94,7 @@ class Core extends Base\Core
      * @param  array           $input
      * @return array
      */
-    public function merchantPayout(array $input)
+    public function merchantPayout(array $input): array
     {
         $merchantId = $input[Entity::MERCHANT_ID];
 
@@ -101,7 +102,7 @@ class Core extends Base\Core
 
         $customerId = $input[Entity::CUSTOMER_ID];
 
-        $merchant = $this->repo->merchant->findByPublicId($merchantId);
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         if (isset($input[Entity::AMOUNT]) === true)
         {
@@ -115,11 +116,21 @@ class Core extends Base\Core
         if ((isset($input[Entity::MIN_AMOUNT]) === true) and
             ($amount < $input[Entity::MIN_AMOUNT]))
         {
+            $this->trace->info(
+                TraceCode::MERCHANT_PAYOUT_FAILURE,
+                [
+                    'message'     => 'amount is less than min amount',
+                    'merchant_id' => $merchantId,
+                    'input'       => $input,
+                ]);
+
             return ['message' =>
                 'amount to be transferred is less than ' . $input[Entity::MIN_AMOUNT]];
 
         }
 
+        // Modulo will convert the amount into multiples
+        // of modulo value
         if (isset($input[Entity::MODULO]) === true)
         {
             $moduloAmount = $amount % $input[Entity::MODULO];
