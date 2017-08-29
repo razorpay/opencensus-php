@@ -14,9 +14,6 @@ class Entity extends Base\PublicEntity
     const REFRESH_TOKEN             = 'refresh_token';
     const RECURRING                 = 'recurring';
 
-    const RECURRING_STATUS          = 'recurring_status';
-    const RECURRING_FAILURE_REASON  = 'recurring_failure_reason';
-
     protected static $sign = 'gt';
 
     protected $entity = 'gateway_token';

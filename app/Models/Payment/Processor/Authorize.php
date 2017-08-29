@@ -748,6 +748,9 @@ trait Authorize
             return;
         }
 
+        // TODO: Shouldn't we validate that the this token can be
+        // used for recurring if it is a second recurring payment?'
+
         $merchant = $payment->merchant;
 
         $this->verifyFeatureForRecurring($merchant, $payment);
@@ -1989,8 +1992,6 @@ trait Authorize
 
         if ($payment->isNetbanking() === true)
         {
-            $token = $payment->getGlobalOrLocalTokenEntity();
-
             //
             // The idea is that for netbanking payments, we first check if the
             // recurring status is set, and if it is, we ensure that it is confirmed
@@ -2029,7 +2030,6 @@ trait Authorize
         // for same token only.
         //
 
-
         //
         // Throwing an exception here because we don't allow
         // re-authentication on netbanking recurring tokens.
@@ -2057,6 +2057,10 @@ trait Authorize
 
         $token->setRecurringStatus($recurringStatus);
 
+        //
+        // We update the recurring failure reason of the token
+        // only if the gateway returned a rejected response
+        //
         if ($recurringStatus === Token\RecurringStatus::REJECTED)
         {
             if (empty($data[Token\Entity::RECURRING_FAILURE_REASON]) === true)
@@ -2092,6 +2096,9 @@ trait Authorize
 
         $gatewayTokensCount = $gatewayTokens->count();
 
+        //
+        // This is the case that the payment is a first recurring payment
+        //
         if ($gatewayTokensCount === 0)
         {
             (new GatewayToken\Core)->create($payment, $token, $reference);
@@ -2101,7 +2108,7 @@ trait Authorize
             if ($payment->isNetbanking() === true)
             {
                 // TODO: throw an exception since for e-mandate
-                // since we do not reuse the tokens. Every new
+                // we do not reuse the tokens. Every new
                 // registration requires a new token to be created.
             }
 
