@@ -535,11 +535,6 @@ class Gateway extends Base\Gateway
             return false;
         }
 
-        if ($this->env === 'testing')
-        {
-            return false;
-        }
-
         throw new Exception\LogicException(
             'UPI ICICI verify refund is not implemented');
     }
