@@ -41,4 +41,15 @@ class Service extends Base\Service
 
         return $data;
     }
+
+    public function merchantPayout(array $input)
+    {
+        (new Validator)->validateInput('merchant', $input);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($input[Entity::MERCHANT_ID]);
+
+        $payout = (new Payout\Core)->merchantPayout($input, $merchant);
+
+        return $payout;
+    }
 }
