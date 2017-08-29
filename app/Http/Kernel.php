@@ -38,6 +38,7 @@ class Kernel extends HttpKernel {
      * @var array
      */
     protected $routeMiddleware = [
+        'cors'          => 'App\Http\Middleware\Cors',
         'auth'          => 'App\Http\Middleware\Authenticate',
         'auth.basic'    => 'Illuminate\Auth\Middleware\AuthenticateWithBasicAuth',
         'auth.internal' => 'App\Http\Middleware\InternalAuth',
@@ -48,6 +49,7 @@ class Kernel extends HttpKernel {
         'slack'         => 'App\Http\Middleware\Slack',
         'admin_access'  => 'App\Http\Middleware\AdminAccess',
         'verified'      => 'App\Http\Middleware\Verified',
+        'auth.oauth'    => 'App\Http\Middleware\OAuth',
     ];
 
 }
