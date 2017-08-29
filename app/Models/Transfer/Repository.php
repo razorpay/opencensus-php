@@ -37,27 +37,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    /**
-     * Fetch all Marketplace transfers from a payment to a account ID
-     *
-     * @param  string          $paymentId
-     * @param  string          $accountId
-     * @param  Merchant\Entity $marketplace
-     */
-    public function fetchBySourcePaymentToAccountAndMerchant(
-        string $paymentId,
-        string $accountId,
-        Merchant\Entity $marketplace)
-    {
-        return $this->newQuery()
-                    ->where(Entity::SOURCE_TYPE, E::PAYMENT)
-                    ->where(Entity::SOURCE_ID, $paymentId)
-                    ->where(Entity::TO_TYPE, 'merchant')
-                    ->where(Entity::TO_ID, $accountId)
-                    ->merchantId($marketplace->getId())
-                    ->get();
-    }
-
     protected function addQueryParamSource($query, $params)
     {
         $sourceId = $params[Entity::SOURCE];
