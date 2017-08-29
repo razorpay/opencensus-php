@@ -45,6 +45,14 @@ class Core extends Base\Core
 
         $existingToken = $this->validateExistingToken($token);
 
+        //
+        // For cards, we check if there's already an existing
+        // token with the same customer, and simply return that
+        // instead of creating a new token altogether.
+        // However, for netbanking, we don't do this check,
+        // because netbanking tokens are newly created for each
+        // and every new first recurring payment, for now.
+        //
         if ($existingToken !== null)
         {
             return $existingToken;

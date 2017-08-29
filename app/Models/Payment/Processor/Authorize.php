@@ -1953,7 +1953,8 @@ trait Authorize
 
         if ((($payment->isCard() === true) or
              ($payment->isNetbanking() === true)) and
-            ($payment->isRecurring() === true))
+            ($payment->isRecurring() === true) and
+            ($payment->isSecondRecurring() === false))
         {
             if ($this->shouldSetTokenRecurring($payment, $data) === true)
             {
@@ -2107,9 +2108,9 @@ trait Authorize
         {
             if ($payment->isNetbanking() === true)
             {
-                // TODO: throw an exception since for e-mandate
                 // we do not reuse the tokens. Every new
                 // registration requires a new token to be created.
+                throw new Exception\LogicException('Tokens cannot be reused in netbanking payments');
             }
 
             $gatewayToken = $gatewayTokens->first();

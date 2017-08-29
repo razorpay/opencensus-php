@@ -11,6 +11,12 @@ class NetbankingIciciEMandateTest extends TestCase
 {
     use PaymentTrait;
 
+    protected $gateway;
+
+    protected $fixtures;
+
+    protected $payment;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/NetbankingIciciEMandateTestData.php';
@@ -68,7 +74,6 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->doAuthPayment($payment);
 
         $paymentEntity = $this->getLastEntity('payment', true);
-        $tokenEntity   = $this->getLastEntity('token', true);
 
         $payment['token'] = $paymentEntity['token_id'];
 
@@ -178,6 +183,50 @@ class NetbankingIciciEMandateTest extends TestCase
             });
 
         // TODO: Assert entities
+    }
+
+
+    /**
+     * This test case tests the netbanking first recurring flow.
+     * In netbanking recurring payments, we create a new token
+     * for each and every new first recurring payment.
+     * We also create a new gateway token for each of them as well,
+     * even if the customer, merchant and terminal are all the same
+     */
+    public function testTwoEMandateRegistrationPayments()
+    {
+        $payment = $this->payment;
+
+        // First E Mandate registration payment
+        $this->doAuthPayment($payment);
+
+        $token1 = $this->getLastEntity('token', true);
+        $gatewayToken1 = $this->getLastEntity('gateway_token', true);
+
+        // Second E Mandate registration payment
+        $this->doAuthPayment($payment);
+
+        $token2 = $this->getLastEntity('token', true);
+        $gatewayToken2 = $this->getLastEntity('gateway_token', true);
+
+        // Assert that both the tokens are different
+        // Also assert their gateway_tokens are different
+        $this->assertNotEquals($token1['id'], $token2['id']);
+        $this->assertNotEquals($token1['gateway_token'], $token2['gateway_token']);
+
+        // Assert that the customer, merchant and terminal are the same
+        $this->assertEquals($token1['customer_id'], $token2['customer_id']);
+        $this->assertEquals($token1['merchant_id'], $token2['merchant_id']);
+        $this->assertEquals($token1['terminal_id'], $token2['terminal_id']);
+
+        // Assert that both the gateway tokens are different
+        // Also assert that their token id's are different
+        $this->assertNotEquals($gatewayToken1['id'], $gatewayToken2['id']);
+        $this->assertNotEquals($gatewayToken1['token_id'], $gatewayToken2['token_id']);
+
+        // Assert that the merchant and terminal are the same
+        $this->assertEquals($gatewayToken1['merchant_id'], $gatewayToken2['merchant_id']);
+        $this->assertEquals($gatewayToken1['terminal_id'], $gatewayToken2['terminal_id']);
     }
 
     protected function assertEMandateRejectedToken()
