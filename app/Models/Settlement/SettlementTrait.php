@@ -96,6 +96,8 @@ trait SettlementTrait
             $setlAttempts->push($bankTransferAtpt);
         }
 
+        $this->updateSettlementIdInTransfer($setlTxns);
+
         return [$settlements, $txnsSettledCount, $setlAttempts];
     }
 
@@ -131,15 +133,11 @@ trait SettlementTrait
     }
 
     /**
-     * [Marketplace] Updates the recipient's settlement id in the transfer entity
+     * [Marketplace] Updates the recipient's settlement id in the transfer entity.
      *
-     * Details -
-     *  1. Payment received by a master merchant has to be transferred to multiple child merchants
-     *  2. Internal transfer entity for master merchant's account is created
-     *  3. Internal transfer triggers corresponding payment entities for child merchants
-     *  4. Step 2 and 3 triggers transaction for each transfer/payment entity created
-     *  5. When the transactions for these payments are settled, the settlement id will be
-     *     updated for the transfer entity which initiated these payments.
+     *  When the transactions for the internal payments (payments triggered by the transfer
+     *  from master merchant to the linked account) are settled, the settlement_id of those
+     *  transactions will be updated for the transfer entity that initiated these payments.
      *
      * @param $setl
      * @param $setlTxns
@@ -160,15 +158,24 @@ trait SettlementTrait
             return;
         }
 
-        $relations = ['source', 'source.transfer'];
-        $filteredTxns = $this->repo->transaction->findManyWithRelations($filteredTxnIds, $relations);
-
-        foreach ($filteredTxns as $txn)
+        try
         {
-            $settlementId = $txn->getSettlementId();
-            $transfer = $txn->source->transfer;
-            $transfer->setRecipientSettlementId($settlementId);
-            $this->repo->saveOrFail($transfer);
+            $relations = ['source', 'source.transfer'];
+            $filteredTxns = $this->repo->transaction->findManyWithRelations($filteredTxnIds, $relations);
+
+            foreach ($filteredTxns as $txn)
+            {
+                $settlementId = $txn->getSettlementId();
+                $transfer = $txn->source->transfer;
+                $transfer->setRecipientSettlementId($settlementId);
+                $this->repo->saveOrFail($transfer);
+            }
+
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex, Trace::CRITICAL, TraceCode::TRANSFER_UPDATE_SETTLEMENT_ID_FAILED, $filteredTxnIds);
         }
     }
 
@@ -203,8 +210,6 @@ trait SettlementTrait
                                                     $setl,
                                                     $setlTxns->count(),
                                                     $bankTransferAtpt);
-
-                $this->updateSettlementIdInTransfer($setlTxns);
 
                 return [$setl, $bankTransferAtpt];
             });
