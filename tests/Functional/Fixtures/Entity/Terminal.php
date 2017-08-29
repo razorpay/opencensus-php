@@ -961,6 +961,16 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
+    public function createSharedNetbankingIndusindTpvTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'               => Shared::NETBANKING_INDUSIND_TPV_TERMINAL,
+            'network_category' => 'securities'
+        ];
+
+        return $this->createSharedNetbankingIndusindTerminal($attributes);
+    }
+
     public function createSharedNetbankingPnbTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;

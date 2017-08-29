@@ -52,6 +52,41 @@ class NetbankingIndusindGatewayTest extends TestCase
         $this->assertEquals($gatewayPayment['bank_payment_id'], $payment['reference1']);
     }
 
+    public function testTpvPayment()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_indusind_tpv_terminal');
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $order = $this->startTest();
+
+        $this->payment['order_id'] = $order['id'];
+
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['terminal_id'], $terminal->getId());
+
+        $this->fixtures->merchant->disableTPV();
+
+        $gatewayEntity = $this->getLastEntity('netbanking', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentNetbankingEntity'], $gatewayEntity);
+
+        $this->assertEquals($gatewayEntity['account_number'],
+                            $data['request']['content']['account_number']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertArraySelectiveEquals($data['request']['content'], $order);
+    }
+
     public function testPaymentVerify()
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
