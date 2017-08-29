@@ -167,7 +167,7 @@ class TransactionController extends Controller
             // return PDF::html('merchant.invoice', $data);//->download('invoice.pdf');
 
             //->download('invoice.pdf');
-            return Response::view($isGstApplicable ? 'merchant.invoice' : 'merchant.invoice_old', $data);
+            return Response::view($isGstApplicable ? 'merchant.invoice.invoice' : 'merchant.invoice_old', $data);
         }
         else
         {

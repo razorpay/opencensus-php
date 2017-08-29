@@ -5,307 +5,114 @@
   <title>Razorpay - Tax Invoice</title>
 
   <style>
-
-  html, body {
-
-    margin: 0;
-    padding: 0;
-    width: 100%;
-  }
-
-  body {
-
-    font-family:'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
-    font-size:14px;
-  }
-
-  body * {
-
-    box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    -o-box-sizing: border-box;
-  }
-
-  .invoice-box {
-    max-width:800px;
-    margin:auto;
-    padding:30px;
-    border:1px solid #eee;
-    box-shadow:0 0 10px rgba(0, 0, 0, .15);
-    line-height:24px;
-    color:#555;
-    position: relative;
-  }
-
-  .invoice-box div.page-title {
-
-    position: absolute;
-    top: 0;
-    left: 0;
-    padding: 2px;
-    width: 100%;
-    text-transform: uppercase;
-    text-align: center;
-  }
-
-  .foot-note {
-
-    font-size: 12px;
-    text-align: center;
-    margin-top: 10px;
-  }
-
-  .invoice-box table{
-    width:100%;
-    line-height:inherit;
-    text-align:left;
-    border-collapse: collapse;
-  }
-
-  .invoice-box table th {
-
-    background-color: #eee;
-    border-bottom: 1px solid #ddd;
-  }
-
-  .invoice-box table td, .invoice-box table th{
-    padding:5px 8px;
-    vertical-align:top;
-  }
-
-  .invoice-box table td.sno {
-
-    padding: 5px 12px;
-  }
-
-  .invoice-box table td.tax,
-  .invoice-box table td.amount,
-  .invoice-box table td.grand-total {
-
-    white-space: nowrap;
-  }
-
-  .invoice-box table tr.top table td{
-    padding-bottom:20px;
-  }
-
-  .invoice-box table tr.top table td.title{
-    font-size:45px;
-    line-height:45px;
-    color:#333;
-  }
-
-  .invoice-box table tr.top table td.title img.logo{
-
-    display: block;
-    width:100%;
-    max-width:200px;
-  }
-
-  .invoice-box table tr.information table td{
-    padding-bottom:40px;
-  }
-
-  .invoice-box table th.heading td{
-    background:#eee;
-    border-bottom:1px solid #ddd;
-    font-weight:bold;
-  }
-
-  .invoice-box table tr.details td{
-    padding-bottom:20px;
-  }
-
-  .invoice-box table tr.item td{
-    border-bottom:1px solid #eee;
-  }
-
-  .invoice-box table tr.item.last td{
-    border-bottom:none;
-  }
-
-  .invoice-box table tr.total td {
-    border-top:2px solid #eee;
-    font-weight:bold;
-  }
-
-  .invoice-box table tr.total td.empty {
-
-    border-top: none;
-  }
-
-  .text-right {
-
-    text-align: right;
-  }
-
-  .font-bold {
-
-    font-weight: bold;
-  }
-
-  /*
-  .code {
-
-    font-family: "Courier New", Courier, monospace;
-  }*/
-
-  div.bank-details {
-
-    width: 100%;
-  }
-
-  div.bank-details table {
-
-    margin: 10px auto;
-  }
-
-  div.bank-details table thead th {
-
-    background-color: transparent;
-    font-weight: bold;
-  }
-
-  div.bank-details table td.lesser-width {
-
-    width: 1%;
-    white-space: nowrap;
-  }
-
-  div.bank-details table td {
-
-    vertical-align: middle;
-  }
-
-  @media only print {
-
-    body {
-
-      font-size: 9pt;
-      line-height: 12pt;
-    }
-
-    .invoice-box table td {
-
-      padding: 0 2px;
-    }
-
-    .invoice-box table th {
-
-      padding-left: 0;
-      padding-right: 0;
-    }
-
-    .invoice-box table tr.top table td{
-
-      padding-bottom:10px;
-    }
-
-    .invoice-box table tr.information table td{
-
-      padding-bottom:20px;
-    }
-
-    .invoice-box table td.sno, .invoice-box table th.sno {
-
-      padding: 0 12px;
-    }
-
-    div.bank-details table td.lesser-width.seperator {
-
-      padding: 2px;
-    }
-
-    .foot-note {
-
-      page-break-after: always;
-    }
-  }
-
-  @media only screen and (max-width: 600px) {
-    .invoice-box table tr.top table td{
-      width:100%;
-      display:block;
-      text-align:center;
-    }
-
-    .invoice-box table tr.information table td{
-      width:100%;
-      display:block;
-      text-align:center;
-    }
-  }
+    @include('merchant/invoice/components/styles')
   </style>
 </head>
 
 <body>
-  @foreach($pages as $pageName => $pageValue)
+
+  @foreach($Summary as $pageName => $pageValue)
+  <?php $rows = isset($pageValue['rows']) ? $pageValue['rows'] : [];
+        $rowsSize = sizeOf($rows);
+        $hasPage = $rowsSize > 0; ?>
+
+  @if ($hasPage)
   <div class="invoice-box">
     <div class="page-title">
       {{{ $pageName }}}
     </div>
     <table cellpadding="0" cellspacing="0">
-      <tr class="top">
+
+      @include('merchant/invoice/components/pageheader')
+      <tr>
+        <td colspan="2" class="text-center">
+          This Invoice summary is for billing period <b>{{{ $dates['startDate']}}}</b> - <b>{{{$dates['billingDate']}}}</b>
+        </td>
+      </tr>
+      <tr>
+        <td colspan="2" class="text-center">
+          Greetings from Razorpay, we're writing to provide you with an electronic invoice for use of Payment Gatweay Service. Additional information regarding your bill are available below.
+        </td>
+      </tr>
+      <tr>
         <td colspan="2">
           <table>
-            <tr>
-              <td class="title">
-                <img class="logo" src="https://cdn.razorpay.com/logo-small.png">
-              </td>
+            <thead>
+              <tr class="heading">
+                <th class="sno">
+                  #
+                </th>
+                <th class="doc-no">
+                  Document No.
+                </th>
+                <th class="doc-date">
+                  Document Date
+                </th>
+                <th class="description">
+                  Description
+                </th>
+                <th class="amount text-right">
+                  Amount
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach($rows as $rowIndex => $rowItem)
 
-              <td class="text-right">
-                Invoice #: {{{$invoice_id}}}<br>
-                Created: {{{$dates['billingDate']}}}<br>
-              </td>
-            </tr>
+              <?php $isTotalRow = $rowItem['Description'] === "Total"; ?>
+              @if (!$isTotalRow)
+              <tr class="item <?php echo(($rowsSize === 1 || $rowsSize - 2 === $rowIndex) ? "last" : "")?>">
+                <td class="sno">
+                  {{{ $rowIndex + 1 }}}.
+                </td>
+                <td class="doc-no">
+                  {{{ $rowItem['Document No.'] }}}
+                </td>
+                <td class="doc-date">
+                  {{{ $rowItem['Document Date'] }}}
+                </td>
+              @else
+              <tr class="total">
+                <td class="empty" colspan="3"></td>
+              @endif
+                <td class="description <?php echo($isTotalRow ? "text-right" : "") ?>">
+                  {{{ $rowItem['Description'] }}}
+                </td>
+                <td class="amount text-right">
+                  @include('components/currency',
+                           ['value' => $rowItem['Amount']])
+                </td>
+              </tr>
+              @endforeach
+            </tbody>
           </table>
         </td>
       </tr>
+    </table>
+  </div>
+  @endif
 
-      <tr class="information">
-        <td colspan="2">
-          <table>
-            <tr>
-              <td>
-                <b>From:</b><br/>
-                Razorpay Software Pvt. Ltd.<br/>
-                #22, 1st Floor, SJR Cyder,<br/>
-                Laskar Hosur Road, Adugodi,<br/>
-                Bangalore, Karnataka - 560 030.<br/>
-                GSTIN - 29AAGCR4375J1ZU<br/>
-                Pan No. - AAGCR4375J<br/>
-                CIN No. - U72200KA2013PTC097389
-              </td>
+  @endforeach
+  <div class="foot-note text-left">
+    <ol>
+      <li>To get the GST input you are requested to update your GST no. in your dashboard, ignore if already GST upated</li>
+      <li>All the invoice, Debit & Credit note values are inclusive of GST.</li>
+    </ol>
+  </div>
 
-              <td class="text-right">
-                <b>Issued To:</b><br/>
-                {{{$merchant['name']}}} [{{{$merchant['id']}}}]<br>
-                @if ($merchant_details['business_registered_address'])
-                {{{$merchant_details['business_registered_address']}}}<br/>
-                @endif
-                @if ($merchant_details['business_registered_city'])
-                {{{$merchant_details['business_registered_city']}}}
-                @if ($merchant_details['business_registered_pin'])
-                -
-                @else
-                <br/>
-                @endif
-                @endif
-                @if ($merchant_details['business_registered_pin'])
-                {{{$merchant_details['business_registered_pin']}}}<br/>
-                @endif
-                @if ($merchant_details['business_registered_state'])
-                {{{$merchant_details['business_registered_state']}}}<br/>
-                @endif
-                @if (!empty($gst))
-                <span class="code">GSTIN - {{{$gst}}}</span>
-                @endif
-              </td>
-            </tr>
-          </table>
-        </td>
-      </tr>
+  @foreach($pages as $pageName => $pageValue)
+  <?php $rows = isset($pageValue['rows']) ? $pageValue['rows'] : [];
+        $rowsSize = sizeOf($rows);
+        $hasPage = $rowsSize > 0; ?>
+
+  @if ($hasPage)
+  <div class="invoice-box">
+    <div class="page-title">
+      {{{ $pageName }}}
+    </div>
+    <table cellpadding="0" cellspacing="0">
+
+      @include('merchant/invoice/components/pageheader')
 
       <tr>
         <td colspan="2">
@@ -334,8 +141,6 @@
             </thead>
 
             <tbody>
-              <?php $rows = isset($pageValue['rows']) ? $pageValue['rows'] : []; $rowsSize = sizeOf($rows); ?>
-
               @foreach($rows as $rowIndex => $rowItem)
 
               <?php $isTotalRow = $rowItem['Description'] === "Total"; ?>
@@ -467,7 +272,9 @@
   <div class="foot-note">
     Note: This is an auto generated invoice, no signature required.
   </div>
+  @endif
+
   @endforeach
-  <script>window.print();</script>
+  <script>//window.print();</script>
 </body>
 </html>
