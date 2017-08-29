@@ -251,16 +251,6 @@ trait Support
         {
             $data['udf5'] = 'PaymentID';
         }
-
-        // However if it's Rupay, then udf5 need to be PaymentID
-        // even for RuPay
-        if ($input['card']['network'] === 'RuPay')
-        {
-            if ($input['payment']['id'] !== '8VuFZfdSWGLXPI')
-            {
-                $data['udf5'] = 'PaymentID';
-            }
-        }
     }
 
     protected function verifyAndSaveSupportResponse($type, $input)
