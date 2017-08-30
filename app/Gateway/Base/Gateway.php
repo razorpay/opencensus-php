@@ -909,14 +909,8 @@ class Gateway
 
     protected function isSecondRecurringPayment(array $input)
     {
-        //
-        // Recurring is updated to true only after the registration
-        // of the customer's SI request is approved. This is a valid
-        // way of ensuring that this is a 2nd recurring payment
-        //
-        if ((isset($input['token']) === true) and
-            ($input['token']->isRecurring() === true) and
-            ($input['terminal']->isRecurring() === true))
+        if (($input['payment']['recurring'] === true) and
+            ($input['terminal']->isNon3DSRecurring() === true))
         {
             return true;
         }

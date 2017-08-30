@@ -48,7 +48,7 @@ class Server extends Base\Mock\Server
             ResponseFields::PAYMENT_ID      => $input[RequestFields::PAYMENT_ID],
             ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT],
             ResponseFields::CURRENCY        => $input[RequestFields::CURRENCY_CODE],
-            ResponseFields::REFERENCE_ID    => $input[RequestFields::SI_REFERENCE_NUMBER],
+            ResponseFields::SI_REFERENCE_ID => $input[RequestFields::SI_REFERENCE_NUMBER],
             ResponseFields::PAYMENT_DATE    => $input[RequestFields::SI_PAYMENT_DATE],
             ResponseFields::BANK_PAYMENT_ID => 9999999999,
             ResponseFields::STATUS          => Status::SUCCESS
@@ -81,7 +81,7 @@ class Server extends Base\Mock\Server
 
         if (empty($input[RequestFields::SI_REFERENCE_NUMBER]) === false)
         {
-            $responseArray[ResponseFields::REFERENCE_ID] = $input[RequestFields::SI_REFERENCE_NUMBER];
+            $responseArray[ResponseFields::SI_REFERENCE_ID] = $input[RequestFields::SI_REFERENCE_NUMBER];
         }
 
         $response = $this->createXmlResponse($responseArray);
@@ -107,13 +107,13 @@ class Server extends Base\Mock\Server
         if ((isset($input[RequestFields::SI]) === true) and
             ($input[RequestFields::SI] === Confirmation::YES))
         {
-            $response[ResponseFields::REFERENCE_ID] = uniqid();
+            $response[ResponseFields::SI_REFERENCE_ID] = uniqid();
             $response[ResponseFields::SI_STATUS]    = Confirmation::YES;
             $response[ResponseFields::SI_MESSAGE]   = 'Success';
         }
         else if (isset($input[RequestFields::SI_REFERENCE_NUMBER]) === true)
         {
-            $response[ResponseFields::REFERENCE_ID] = $input[RequestFields::SI_REFERENCE_NUMBER];
+            $response[ResponseFields::SI_REFERENCE_ID] = $input[RequestFields::SI_REFERENCE_NUMBER];
         }
 
         return $response;

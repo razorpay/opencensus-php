@@ -23,8 +23,8 @@ class ResponseFields
     const US_CONSUMER_CODE = 'CONSUMER_CODE';
     const UC_AMOUNT        = 'AMOUNT';
 
-    const REFERENCE_ID    = 'RID';
-    const SCHEDULE_ID     = 'SCHEDULEID';
+    const SI_REFERENCE_ID = 'RID';
+    const SI_SCHEDULE_ID  = 'SCHEDULEID';
     const SI_STATUS       = 'SCHSTATUS';
     const SI_MESSAGE      = 'SCHMSG';
 }

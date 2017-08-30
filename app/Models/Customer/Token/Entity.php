@@ -304,6 +304,13 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    /**
+     * If the token is not recurring enabled, and
+     * recurring status is empty, we don't return recurring
+     * variables associated with the token entity.
+     *
+     * @param array $array
+     */
     protected function setPublicRecurringAttribute(array & $array)
     {
         if (($this->isRecurring() === false) and

@@ -510,7 +510,7 @@ class Gateway extends Base\Gateway
             Base\Entity::STATUS          => $content[ResponseFields::PAID] ?? $content[ResponseFields::STATUS],
             Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_PAYMENT_ID],
             // TODO: Find out which one is sent and fix this accordingly.
-            Base\Entity::SI_REF_ID       => $content[ResponseFields::REFERENCE_ID] ??
+            Base\Entity::SI_REF_ID       => $content[ResponseFields::SI_REFERENCE_ID] ??
                                             $content[ResponseFields::SCHEDULE_ID] ??
                                             null,
             Base\Entity::SI_STATUS       => $content[ResponseFields::SI_STATUS] ?? null,
@@ -701,6 +701,22 @@ class Gateway extends Base\Gateway
             case $this->config['live_merchant_id2_corp'];
                 return $this->config['live_hash_secret_corp'];
         }
+    }
+
+    protected function isSecondRecurringPayment(array $input)
+    {
+        //
+        // of the customer's SI request is approved. This is a valid
+        // way of ensuring that this is a 2nd recurring payment
+        //
+        if ((isset($input['token']) === true) and
+            ($input['token']->isRecurring() === true) and
+            ($input['terminal']->isRecurring() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     protected function setDomainType()

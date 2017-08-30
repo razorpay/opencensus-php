@@ -189,7 +189,7 @@ trait Callback
 
         if ($token !== null)
         {
-            $input['token'] = $token->toArray();
+            $input['token'] = $token;
         }
 
         if ($payment->hasCard())
