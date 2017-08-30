@@ -123,7 +123,7 @@ class Gateway extends Base\Gateway
         return null;
     }
 
-    protected function getVeresAttributesToSave(array $veres)
+    protected function getVeresAttributesToSave($veres)
     {
         $attributes = [];
 
