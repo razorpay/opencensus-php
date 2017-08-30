@@ -127,8 +127,7 @@ class TransactionController extends Controller
 
     public function getInvoiceReport($mode)
     {
-
-        $errorMsg = "Oops!, Something went wrong!, Please try again later";
+        $errorMsg = 'Invoice has not be generated for this period.';
 
         $this->checkMode($mode);
 
