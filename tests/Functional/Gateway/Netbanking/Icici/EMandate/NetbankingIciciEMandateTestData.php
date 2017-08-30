@@ -96,6 +96,22 @@ return [
         ],
     ],
 
+    'testNullSecondRecurringResponse' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::SERVER_ERROR,
+                    'description'   => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\LogicException::class,
+            'internal_error_code'   => ErrorCode::SERVER_ERROR_EMPTY_VERIFY_RESPONSE,
+        ],
+    ],
+
     'testScheduledPaymentWithRejectedToken' => [
         'response'  => [
             'content'     => [

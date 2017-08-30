@@ -58,6 +58,8 @@ class Server extends Base\Mock\Server
 
         $response = $this->createXmlResponse($responseArray);
 
+        $this->content($response, 'second_recurring_xml');
+
         return $this->makeResponse($response);
     }
 

@@ -7,6 +7,7 @@ use phpseclib\Crypt\AES;
 use Razorpay\Api\Request;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
+use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base\AESCrypto;
@@ -632,9 +633,21 @@ class Gateway extends Base\Gateway
 
     protected function getResponseArray(string $response)
     {
-        $xml = (array) simplexml_load_string($response);
+        try
+        {
+            $xml = (array) simplexml_load_string($response);
 
-        return $xml['@attributes'];
+            return $xml['@attributes'];
+        }
+        catch (\Exception $e)
+        {
+            throw new Exception\LogicException(
+                $e->getMessage(),
+                ErrorCode::SERVER_ERROR_EMPTY_VERIFY_RESPONSE,
+                [
+                    'response' => $response
+                ]);
+        }
     }
 
     public function getSpid()

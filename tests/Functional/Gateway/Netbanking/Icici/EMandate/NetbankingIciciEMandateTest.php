@@ -304,6 +304,31 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertNotNull($verify['gateway']['verifyResponseContent']['RID']);
     }
 
+    public function testNullSecondRecurringResponse()
+    {
+        $payment = $this->payment;
+
+        $this->doAuthPayment($payment);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $payment['token'] = $paymentEntity['token_id'];
+
+        $this->mockEmptySecondRecurringResponse();
+
+        $data = $this->testData[__FUNCTION__];
+
+        //
+        // Second auth payment for the recurring product
+        //
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doS2SRecurringPayment($payment);
+            });
+    }
+
     protected function assertEMandateRejectedToken()
     {
         // Assert that the token was rejected
@@ -373,6 +398,18 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertNotNull($netbanking['si_ref_id']);
 
         $this->assertEquals('9999999999', $netbanking['bank_payment_id']);
+    }
+
+    protected function mockEmptySecondRecurringResponse()
+    {
+        $this->mockServerContentFunction(
+            function(&$content, $action = null)
+            {
+                if ($action === 'second_recurring_xml')
+                {
+                    $content = "";
+                }
+            });
     }
 
     protected function mockSiPaymentFailure()
