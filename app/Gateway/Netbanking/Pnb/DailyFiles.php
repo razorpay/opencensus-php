@@ -6,6 +6,7 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Models\Payment;
+use RZP\Models\Payment\Refund;
 use RZP\Constants\Timezone;
 use RZP\Constants\MailTags;
 use RZP\Gateway\Netbanking\Base;
@@ -109,9 +110,7 @@ class DailyFiles extends Base\DailyFiles
 
         foreach ($payments as $payment)
         {
-            $refundAmount = $payment[Payment\Entity::AMOUNT_REFUNDED];
-
-            $amountToClaim = $payment[Payment\Entity::AMOUNT] - $refundAmount;
+            $amountToClaim = $payment[Payment\Entity::AMOUNT] - $payment[Payment\Entity::AMOUNT_REFUNDED];
 
             $payment[Payment\Entity::AMOUNT] = $amountToClaim;
             $payment[Constants::CLAIM_TYPE]  = Constants::DEBIT;
@@ -123,9 +122,10 @@ class DailyFiles extends Base\DailyFiles
         $refunds = $this->repo->refund
                               ->fetchRefundsForPnbClaims($from, $to, $this->gateway);
 
+
         foreach ($refunds as $refund)
         {
-            $refund[Payment\Entity::ID]    = $refund['payment']['id'];
+            $refund[Refund\Entity::ID]     = $refund['payment']['id'];
             $refund[Constants::CLAIM_TYPE] = Constants::CREDIT;
             $refund[Constants::TXN_DETAIL] = Constants::REFUND;
             $refund['terminal']            = $refund['payment']['terminal'];
