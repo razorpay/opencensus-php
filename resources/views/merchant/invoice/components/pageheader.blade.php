@@ -7,8 +7,8 @@
               </td>
 
               <td class="text-right">
-                Invoice #: {{{$invoice_id}}}<br>
-                Created: {{{$dates['billingDate']}}}<br>
+                Invoice #: {{{$invoice_number}}}<br>
+                Created: {{{$invoice_date}}}<br>
               </td>
             </tr>
           </table>
@@ -21,7 +21,7 @@
             <tr>
               <td>
                 <b>Issued To:</b><br/>
-                {{{$merchant['name']}}} [{{{$merchant['id']}}}]<br>
+                {{{$merchant['name']}}} [{{{$merchant_id}}}]<br>
                 @if ($merchant_details['business_registered_address'])
                 {{{$merchant_details['business_registered_address']}}}<br/>
                 @endif
