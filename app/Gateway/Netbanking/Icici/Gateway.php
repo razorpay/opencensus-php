@@ -4,6 +4,7 @@ namespace RZP\Gateway\Netbanking\Icici;
 
 use Carbon\Carbon;
 use phpseclib\Crypt\AES;
+use Razorpay\Api\Request;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
@@ -354,6 +355,13 @@ class Gateway extends Base\Gateway
 
             $requestData = array_merge($requestData, $corporateData);
         }
+
+        // If the SI reference ID is not empty
+//        TODO: Check why adding this to the request causes a verification failure
+//        if (empty($verify->payment->getSIRefId()) === false)
+//        {
+//            $requestData[RequestFields::SI] = Status::Y;
+//        }
 
         return array_merge($baseRequestData, $requestData);
     }
