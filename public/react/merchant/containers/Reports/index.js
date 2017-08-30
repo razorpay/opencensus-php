@@ -13,7 +13,17 @@ import { PowerSelect, TypeAhead } from 'react-power-select';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 function validYear(current) {
-  return current.year() >= 2015 && current.year() <= 2017;
+  return current._d.getTime() <= Date.now() && current.year() >= 2015;
+}
+
+function validateInvoiceMonthYear(current) {
+  const currDate = new Date(),
+    tillPrevMonth =
+      currDate.getFullYear() === current.year()
+        ? current.month() < currDate.getMonth()
+        : true;
+
+  return validYear(current) && tillPrevMonth;
 }
 
 const selector = formValueSelector('generateReports');
@@ -37,6 +47,7 @@ const selector = formValueSelector('generateReports');
     entity: 'payment',
     type: 'daily',
     date: moment(),
+    invoiceDate: moment().subtract(1, 'months'), // Invoice date can not be current month
   },
 })
 export default class ReportsContainer extends Component {
@@ -180,7 +191,7 @@ export default class ReportsContainer extends Component {
   }
 
   prepareGenerateReport = values => {
-    let { entity, type, date } = values;
+    let { entity, type, date, invoiceDate } = values;
     const account_id =
       this.props.user.isMarketplaceEnabled &&
       this.linkedAccountOptions.indexOf(this.props.entity) !== -1
@@ -195,8 +206,8 @@ export default class ReportsContainer extends Component {
     if (entity === 'invoice') {
       return Promise.resolve(
         window.open(
-          `/${this.props
-            .mode}/reports/invoice?year=${data.year}&month=${data.month}`,
+          `/${this.props.mode}/reports/invoice?year=${data.year}` +
+            `&month=${invoiceDate.month() + 1}`,
           '_blank'
         )
       );
@@ -441,11 +452,15 @@ export default class ReportsContainer extends Component {
                   <div class="col-sm-4 col-xs-12">
                     <div class="form-group">
                       <Field
-                        name="date"
+                        name="invoiceDate"
                         component={ReduxDatetime}
                         dateFormat="MMM, YYYY"
                         closeOnSelect={true}
-                        isValidDate={validYear}
+                        isValidDate={
+                          entity === 'invoice'
+                            ? validateInvoiceMonthYear
+                            : validYear
+                        }
                         placeholder="Select Year-Month"
                         timeFormat={false}
                       />
