@@ -748,6 +748,7 @@ trait Authorize
             return;
         }
 
+        sd($payment->getGlobalOrLocalTokenEntity());
         // TODO: Shouldn't we validate that the this token can be
         // used for recurring if it is a second recurring payment?'
 
@@ -1951,10 +1952,14 @@ trait Authorize
 
         $token->incrementUsedCount();
 
-        if ((($payment->isCard() === true) or
-             ($payment->isNetbanking() === true)) and
-            ($payment->isRecurring() === true) and
-            ($payment->isSecondRecurring() === false))
+        //
+        // For netbanking payments, we create a new token for every single new first recurring payment.
+        // For second recurring payments, we do not update the old token entity.
+        //
+        if (($payment->isRecurring() === true) and
+            (($payment->isCard()) or
+            (($payment->isNetbanking()) and
+             ($payment->isSecondRecurring() === false))))
         {
             if ($this->shouldSetTokenRecurring($payment, $data) === true)
             {
