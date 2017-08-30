@@ -20,7 +20,7 @@ function validateInvoiceMonthYear(current) {
   const currDate = new Date(),
     tillPrevMonth =
       currDate.getFullYear() === current.year()
-        ? current.month() < currDate.getMonth()
+        ? current.month() < 6 // 6 = July
         : true;
 
   return validYear(current) && tillPrevMonth;
@@ -37,6 +37,7 @@ const selector = formValueSelector('generateReports');
       entity: selector(state, 'entity'),
       type: selector(state, 'type'),
       date: selector(state, 'date'),
+      invoiceDate: selector(state, 'invoiceDate'),
     };
   },
   { generateReport, fetchAccounts, ...NotificationsActions }
@@ -47,7 +48,7 @@ const selector = formValueSelector('generateReports');
     entity: 'payment',
     type: 'daily',
     date: moment(),
-    invoiceDate: moment().subtract(1, 'months'), // Invoice date can not be current month
+    invoiceDate: moment().set('month', 5), // Select June. Invoice date can not be july or after
   },
 })
 export default class ReportsContainer extends Component {
@@ -97,6 +98,13 @@ export default class ReportsContainer extends Component {
     this.setState({
       entity: this.entityOptions[1],
     });
+  }
+
+  componentWillReceiveProps(nextProps) {
+    // set the date to 1st of current month otherwise e.g, if 30 Aug changes to Feb then date becomes 30, making it select March!
+    if (this.props.type === 'daily' && nextProps.type === 'monthly') {
+      this.props.change('date', this.props.date.startOf('month'));
+    }
   }
 
   getEntityLabel(value) {
@@ -452,7 +460,7 @@ export default class ReportsContainer extends Component {
                   <div class="col-sm-4 col-xs-12">
                     <div class="form-group">
                       <Field
-                        name="invoiceDate"
+                        name={entity === 'invoice' ? 'invoiceDate' : 'date'}
                         component={ReduxDatetime}
                         dateFormat="MMM, YYYY"
                         closeOnSelect={true}
