@@ -73,7 +73,7 @@ class ClaimsFile extends Base\RefundFile
             $amount = number_format($row['payment']['amount'] / 100, 2, '.', '');
 
             $data[] = [
-                $row['payment']['account_number'],
+                $row['gateway']['account_number'],
                 $row['payment']['currency'],
                 Constants::SERVICE_OUTLET,
                 str_pad($row['payment'][Constants::CLAIM_TYPE], 2, ' ', STR_PAD_LEFT),
