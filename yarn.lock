@@ -5043,12 +5043,11 @@ react-dates@^7.0.1:
     react-moment-proptypes "^1.2.1"
     react-portal "^3.0.0"
 
-react-datetime@^2.10.1:
-  version "2.10.1"
-  resolved "https://registry.yarnpkg.com/react-datetime/-/react-datetime-2.10.1.tgz#25ba863551ae6e5ae80d8a7f99d359ea063c4a38"
+react-datetime@^2.8.10:
+  version "2.9.0"
+  resolved "https://registry.yarnpkg.com/react-datetime/-/react-datetime-2.9.0.tgz#9ec80060cbb8e5c5d8f98f0acebb6f4712ce449a"
   dependencies:
     "@types/react" ">=15"
-    create-react-class "^15.5.2"
     object-assign "^3.0.0"
     prop-types "^15.5.7"
     react-onclickoutside "^5.9.0"
