@@ -519,10 +519,9 @@ app
           postMethods[i] = methods[i] ? 1 : 0;
         }
 
-        msg =
-          typeof msg !== 'undefined'
-            ? msg
-            : 'Methods edited successfully: ' + JSON.stringify(methods);
+        msg = typeof msg !== 'undefined'
+          ? msg
+          : 'Methods edited successfully: ' + JSON.stringify(methods);
 
         var data = {
           route_name: 'merchant_put_payment_methods',
@@ -684,8 +683,7 @@ app
 
         if (entity === 'broking') {
           ajaxParams.headers = {
-            Accept:
-              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           };
         }
 
@@ -707,8 +705,7 @@ app
 
             if (entity === 'broking') {
               var blob = new Blob([data], {
-                type:
-                  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
               });
               return saveAs(blob, 'broking_report.xlsx');
             }
@@ -1762,10 +1759,9 @@ app
           var adminObj = {
             id: admin.id,
             name: admin.name,
-            role:
-              admin.roles.length && admin.roles[0].name
-                ? admin.roles[0].name
-                : '--',
+            role: admin.roles.length && admin.roles[0].name
+              ? admin.roles[0].name
+              : '--',
           };
 
           $scope.adminMap[admin.id] = adminObj; // create mapping id - name
@@ -1882,40 +1878,79 @@ app
           });
       }
 
-      function generateMerchant() {
-        var request = $http.get('/admin/merchant/' + $scope.merchant.id);
+      function fetchTerminals() {
+        var data = {
+          route_name: 'merchant_get_terminals',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+        };
+        var request = $http.get('/admin/generic', {
+          params: data,
+        });
+
         request
           .success(function(data) {
-            $scope.alerts.resetAlerts(true);
-
             if (data.success) {
-              $scope.merchant = data.data;
+              $scope.merchant.terminals = data.data;
               sortTerminals();
-              $scope.scheduleKeys = [
-                'schedule_name',
-                'type',
-                'method',
-                'schedule_id',
-                'next_run_at',
-              ];
-              $scope.merchant.id = data.data.details.id;
-              $scope.merchant.details.activation_progress =
-                data.data.details.merchant_details.activation_progress;
-              $scope.referer = getReferer($scope.merchant.details.tags);
-              $scope.marketplace = data.data.details.parent_id;
-              $scope.merchant.details.international =
-                data.data.details.international;
-
-              var merchantAdmins = data.data.details.admins || [];
-              $scope.selected_admins = [];
-
-              // Re-populated array with selected admin ids
-              merchantAdmins.map(function(admin) {
-                $scope.selected_admins.push(admin.id);
+            } else {
+              $scope.alerts.resetAlerts(true);
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
               });
+            }
+          })
+          .error(function() {
+            $scope.alerts.resetAlerts(true);
+            $scope.alerts.addAlert('danger', null);
+          });
+      }
 
-              fetchBalance();
-              getMerchantFeatures();
+      function fetchPricingPlans() {
+        var data = {
+          route_name: 'merchant_get_pricing',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+        };
+        var request = $http.get('/admin/generic', {
+          params: data,
+        });
+
+        request
+          .success(function(data) {
+            if (data.success) {
+              $scope.merchant.pricing_plan = data.data;
+            } else {
+              $scope.alerts.resetAlerts(true);
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
+          })
+          .error(function() {
+            $scope.alerts.resetAlerts(true);
+            $scope.alerts.addAlert('danger', null);
+          });
+      }
+
+      function fetchScheduleTasks() {
+        var data = {
+          route_name: 'admin_fetch_entity_multiple',
+          url_params: {
+            '{type}': 'schedule_task',
+          },
+          merchant_id: $scope.merchant.id,
+        };
+        var request = $http.get('/admin/generic', {
+          params: data,
+        });
+
+        request
+          .success(function(data) {
+            if (data.success) {
+              $scope.merchant.schedule_tasks = data.data;
 
               $scope.hasSettlementSchedule = false;
               if ($scope.merchant.schedule_tasks) {
@@ -1929,11 +1964,73 @@ app
                   }
                 }
               }
+            } else {
+              $scope.alerts.resetAlerts(true);
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
+          })
+          .error(function() {
+            $scope.alerts.resetAlerts(true);
+            $scope.alerts.addAlert('danger', null);
+          });
+      }
+
+      function generateMerchant() {
+        var data = {
+          route_name: 'merchant_details_fetch',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+        };
+        var request = $http.get('/admin/generic', {
+          params: data,
+        });
+        request
+          .success(function(data) {
+            $scope.alerts.resetAlerts(true);
+
+            if (data.success) {
+              $scope.merchant.details = data.data;
+              fetchTerminals();
+              admin.identity().then(function(adminData) {
+                if (
+                  adminData.permissions.indexOf('view_merchant_pricing') !== -1
+                ) {
+                  fetchPricingPlans();
+                }
+              });
+              fetchScheduleTasks();
+
+              $scope.scheduleKeys = [
+                'schedule_name',
+                'type',
+                'method',
+                'schedule_id',
+                'next_run_at',
+              ];
+              $scope.merchant.id = $scope.merchant.details.id;
+              $scope.merchant.details.activation_progress =
+                $scope.merchant.details.merchant_details.activation_progress;
+              $scope.referer = getReferer($scope.merchant.details.tags);
+              $scope.marketplace = $scope.merchant.details.parent_id;
+
+              var merchantAdmins = $scope.merchant.details.admins || [];
+              $scope.selected_admins = [];
+
+              // Re-populated array with selected admin ids
+              merchantAdmins.map(function(admin) {
+                $scope.selected_admins.push(admin.id);
+              });
+
+              fetchBalance();
+              getMerchantFeatures();
 
               $scope.merchant.creditsLogMode = 'live';
               getCreditsLog($scope.merchant.creditsLogMode);
 
-              if (data.data.details.confirmed === false) {
+              if ($scope.merchant.details.confirmed === false) {
                 $scope.unconfirmed = true;
                 $scope.alerts.addAlert('danger', 'Merchant not confirmed');
               }
@@ -2747,8 +2844,7 @@ app
               merctech_tel_after: '+91-8003393912',
               merctech_fax: '',
               merctech_email: 'harshil@razorpay.com',
-              merctech_addr:
-                '35, Vishnupuri, Opp. Malviya Nagar P.O., Jagatpura Road, Jaipur - 302017, Rajasthan',
+              merctech_addr: '35, Vishnupuri, Opp. Malviya Nagar P.O., Jagatpura Road, Jaipur - 302017, Rajasthan',
               merctech_web_addr: current.website || '',
               merctech_return_url: 'https://api.razorpay.com',
               mercsetup_auth: 'Y',
