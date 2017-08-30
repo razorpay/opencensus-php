@@ -102,10 +102,9 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $this->doAuthPayment($payment);
 
-        // Assert that the token was rejected
-        $netbanking = $this->getLastEntity('netbanking', true);
-
         $paymentEntity = $this->getLastEntity('payment', true);
+
+        $netbanking1 = $this->getLastEntity('netbanking', true);
 
         $payment['token'] = $paymentEntity['token_id'];
 
@@ -115,16 +114,21 @@ class NetbankingIciciEMandateTest extends TestCase
         // Second auth payment for the recurring product.
         // Since an invalid recurring token is used here, the
         // payment will go through like a regular non-recurring payment.
-        // This is because it is not a "First Recurring" payment/
+        // This is because it is not a "Second Recurring" payment
         //
-        $this->doS2SRecurringPayment($payment);
+        $data = $this->testData[__FUNCTION__];
 
-        $netbanking = $this->getLastEntity('netbanking', true);
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doS2SRecurringPayment($payment);
+            });
 
-        $this->assertNull($netbanking['si_ref_id']);
-        $this->assertNull($netbanking['si_message']);
-        $this->assertNull($netbanking['si_status']);
-        $this->assertEquals('9999999999', $netbanking['bank_payment_id']);
+        $netbanking2 = $this->getLastEntity('netbanking', true);
+
+        // Asserting that no new payment was created
+        $this->assertEquals($netbanking1['payment_id'], $netbanking2['payment_id']);
     }
 
     public function testSiRecurringStatusNotSet()
@@ -179,7 +183,7 @@ class NetbankingIciciEMandateTest extends TestCase
             $data,
             function() use ($payment)
             {
-                $this->doAuthPayment($payment);
+                $this->doS2SRecurringPayment($payment);
             });
 
         $token = $this->getLastEntity('token', true);

@@ -91,8 +91,24 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'                 => RZP\Exception\GatewayErrorException::class,
+            'class'                 => RZP\Exception\BadRequestException::class,
             'internal_error_code'   => ErrorCode::BAD_REQUEST_GATEWAY_TOKEN_EMPTY,
+        ],
+    ],
+
+    'testScheduledPaymentWithRejectedToken' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\BadRequestException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING,
         ],
     ],
 ];

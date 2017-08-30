@@ -748,10 +748,6 @@ trait Authorize
             return;
         }
 
-        sd($payment->getGlobalOrLocalTokenEntity());
-        // TODO: Shouldn't we validate that the this token can be
-        // used for recurring if it is a second recurring payment?'
-
         $merchant = $payment->merchant;
 
         $this->verifyFeatureForRecurring($merchant, $payment);
@@ -892,6 +888,24 @@ trait Authorize
         if ($token === null)
         {
             return;
+        }
+
+        //
+        // For netbanking payments, we ensure that if it is a second recurring payment,
+        // it must contain a recurring enabled token with an associated gateway token.
+        //
+        if ($payment->isSecondRecurring())
+        {
+            if ($token->isRecurring() === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING, null, $payment->toArray());
+            }
+            else if (empty($token->getGatewayToken()) === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_GATEWAY_TOKEN_EMPTY,  null, $payment->toArray());
+            }
         }
 
         if ($token->getMaxAmount() < $payment->getAmount())

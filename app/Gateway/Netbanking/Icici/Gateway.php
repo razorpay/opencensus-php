@@ -75,23 +75,11 @@ class Gateway extends Base\Gateway
 
     protected function authorizeSecondRecurring(array $input)
     {
-        $gatewayToken = $input['token']->getGatewayToken();
-
-        //
-        // This case is thrown when the token passed in has not been
-        // approved for second recurring payment.
-        //
-        if ($gatewayToken === null)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_GATEWAY_TOKEN_EMPTY);
-        }
-
         $entity = [RequestFields::AMOUNT => $input['payment'][Payment\Entity::AMOUNT] / 100];
 
         $gatewayPayment = $this->createGatewayPaymentEntity($entity);
 
-        $requestData = $this->getSecondRecurringRequestData($input, $gatewayToken);
+        $requestData = $this->getSecondRecurringRequestData($input);
 
         $request = $this->getStandardRequestArray($requestData, 'post', $this->getUrlType());
 
@@ -136,8 +124,10 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getSecondRecurringRequestData(array $input, string $gatewayToken)
+    protected function getSecondRecurringRequestData(array $input)
     {
+        $gatewayToken = $input['token']->getGatewayToken();
+
         $gatewayPayment = $this->repo->findBySIRefIdAndActionOrFail($gatewayToken, Action::AUTHORIZE);
 
         $baseRequestData = $this->getBaseRequestData(Action::STANDING_INSTRUCTIONS);
