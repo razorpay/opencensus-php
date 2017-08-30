@@ -2,7 +2,6 @@
 
 namespace RZP\Services;
 
-use App;
 use Carbon\Carbon;
 use Exception;
 use RZP\Models\Base;
