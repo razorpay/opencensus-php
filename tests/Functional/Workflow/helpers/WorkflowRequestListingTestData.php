@@ -39,6 +39,7 @@ return [
         'response'      => [
             'content'   => [
                 'entity'    => 'collection',
+                'count'     => 1,
                 'items'     => [
                     [
                         'id'                => 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID,
@@ -63,6 +64,7 @@ return [
         'response'      => [
             'content'   => [
                 'entity'    => 'collection',
+                'count'     => 1,
                 'items'     => [
                     [
                         'state'             => 'closed',
@@ -85,6 +87,7 @@ return [
         'response'      => [
             'content'   => [
                 'entity'    => 'collection',
+                'count'     => 1,
                 'items'     => [
                     [
                         'state'             => 'open',
