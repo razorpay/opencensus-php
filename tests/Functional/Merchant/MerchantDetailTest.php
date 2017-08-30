@@ -260,6 +260,17 @@ class MerchantDetailTest extends TestCase
 
     public function testMerchantDetailsFetch()
     {
+        $merchant = $this->fixtures->create('merchant', ['id' => '10000000000002',
+                                                         'email' => 'razorpay@razorpay.com']);
+
+        $this->fixtures->create('merchant:add_payment_banks', ['merchant_id' => '10000000000002']);
+
+        $this->fixtures->merchant->enableInternational('10000000000002');
+
+        $admin = $this->ba->getAdmin();
+
+        $merchant->admins()->attach($admin);
+
         $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
 
         $this->startTest();

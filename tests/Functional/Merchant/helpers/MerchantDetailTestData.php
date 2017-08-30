@@ -345,18 +345,21 @@ return [
     ],
     'testMerchantDetailsFetch' => [
         'request' => [
-            'url'       => '/merchants/details/10000000000000',
+            'url'       => '/merchants/details',
             'method'    => 'GET',
             'content'   => [],
+            'server' => [
+                'HTTP_' . \RZP\Http\BasicAuth\BasicAuth::ACCOUNT_HEADER_KEY => '10000000000002',
+            ],
         ],
         'response' => [
             'content' => [
-                'id'                        => '10000000000000',
+                'id'                        => '10000000000002',
                 'entity'                    => 'merchant',
                 'activated'                 => false,
                 'live'                      => false,
                 'methods'                   => [
-                    'merchant_id'   => '10000000000000',
+                    'merchant_id'   => '10000000000002',
                     'banks'         => [],
                     'amex'          => false,
                 ],
@@ -370,7 +373,7 @@ return [
                 'confirmed'                 => false,
                 'logo_url'                  => null,
                 'merchant_details'          => [
-                    'contact_email'         => 'test@razorpay.com',
+                    'contact_email'         => 'razorpay@razorpay.com',
                     'gstin'                 => null,
                     'p_gstin'               => null,
                     'activation_progress'   => 0,
