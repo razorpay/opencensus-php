@@ -8,9 +8,4 @@ use RZP\Gateway\Blade;
 class Gateway extends Blade\Gateway
 {
     use Base\Mock\GatewayTrait;
-
-    public function authorize(array $input)
-    {
-        parent::authorize($input);
-    }
 }

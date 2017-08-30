@@ -155,8 +155,11 @@ return [
     ],
 
     'blade' => [
-        'mpi_ssl_client_key'   => env('CTH_CLIENT_CERT_KEY', 'key'),
-        'mpi_ssl_client_pem'   => env('CTH_CLIENT_CERT', 'cert'),
+        'cert_dir_name'               => env('BLADE_CERT_DIR_NAME'),
+        'live_visa_certificate'       => env('BLADE_LIVE_VISA_CERTIFICATE'),
+        'live_visa_pem'               => env('BLADE_LIVE_VISA_PEM'),
+        'live_mastercard_certificate' => env('BLADE_LIVE_MASTERCARD_CERTIFICATE'),
+        'live_mastercard_pem'         => env('BLADE_LIVE_MASTERCARD_PEM'),
     ],
 
     'ebs' => [

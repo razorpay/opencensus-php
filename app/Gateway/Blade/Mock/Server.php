@@ -3,22 +3,71 @@
 namespace RZP\Gateway\Blade\Mock;
 
 use RZP\Gateway\Base;
+use Lib\Formatters\Xml;
 use RZP\Gateway\Blade\Mock\Xml\Response;
 
 class Server extends Base\Mock\Server
 {
+    public function acs(array $input)
+    {
+        $this->validateAuthenticateInput($input);
+
+        $response = [
+            F::MD => $input[F::MD],
+            F::PA_RES => 'eNpVUttygjAQfc9XMP0AkiAw',
+            F::TERM_URL => $input[F::TERM_URL]
+        ];
+
+        $this->content($response, 'acs');
+
+        return $response;
+    }
 
     public function authorize($input)
     {
-        parent::authorize($input);
+        $input = $this->xmlToArray($input);
 
-        $parsedInput = simplexml_load_string($input);
+        // $this->validateAuthInput($input);
+        $VERes = $this->getDefaultVERes($input);
 
-        $parsedInput = json_decode(json_encode($parsedInput), true);
+        $this->switchAuthorizeCases($input, $VERes);
 
-        $response = $this->getResponse($parsedInput);
+        return $this->makeXmlResponse($VERes);
+    }
 
-        return $this->makeResponse($response);
+    protected function getDefaultVERes($input)
+    {
+        $content = $input;
+
+        unset($content['Message']['VEReq']);
+
+        $content['Message']['VERes'] = [
+            'version' => '1.0.2',
+            'CH'  => [
+                'enrolled' => 'Y',
+                'acctID'   => CardNumber::getAccId($input['Message']['VEReq']['pan']),
+            ],
+            'url' => $this->route->getUrl('mock_acs', ['gateway' => 'cybersource']),
+            'protocol' => 'ThreeDSecure'
+        ];
+
+        return $content;
+    }
+
+    protected function switchAuthorizeCases($input, &$response)
+    {
+
+    }
+
+    protected function makeXmlResponse($content)
+    {
+        $xml = Xml::create('ThreeDSecure', $content);
+
+        $response = parent::makeResponse($xml);
+
+        $response->headers->set('Content-Type', 'text/xml; charset=UTF-8');
+
+        return $response;
     }
 
     protected function getResponse(array $input)
@@ -42,6 +91,23 @@ class Server extends Base\Mock\Server
             case CardNumber::INVALID_VERSION:
                 return $responseClass->invalidVersionFormat($paymentId);
 
+        }
+    }
+
+    protected function xmlToArray($xml)
+    {
+        $e = null;
+        $res = null;
+
+        try
+        {
+            $res = simplexml_load_string($xml);
+
+            return json_decode(json_encode($res), true);
+        }
+        catch (\Exception $e)
+        {
+            assertTrue('XML decode failed');
         }
     }
 }

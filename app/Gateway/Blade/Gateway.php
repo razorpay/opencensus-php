@@ -8,6 +8,7 @@ use GuzzleHttp;
 use DOMDocument;
 
 use RZP\Exception;
+use Requests_Hooks;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -34,24 +35,18 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        $data = null;
-
-        $authenticationStatus = null;
-
-        $resp = $this->threeDSecure($input);
-
-        return $resp;
+        return $this->authenticate($input);
     }
 
-    protected function threeDSecure(array $input)
+    protected function authenticate(array $input)
     {
-        //TODO make card range cache
+        // TODO: Add card range cache
 
         // Send card enrollment verification request
-        $veres = $this->sendVereq($input);
+        $response = $this->sendVerifyEnrollmentRequest($input);
 
         // Process verification response
-        $enrolled = $this->processVeres($veres);
+        $enrolled = $this->processVerifyEnrollmentResponse($input, $response);
 
         $attributes = $this->getVeresAttributesToSave($veres);
 
@@ -60,25 +55,19 @@ class Gateway extends Base\Gateway
         //
         // Determine card enrollment status and take next action
         //
-        if ($enrolled === Enrolled::Y)
+        switch ($enrolled)
         {
-            // Card is enrolled
-            // send Pareq
-            return $this->sendPareq($input, $veres);
-        }
-        else if ($enrolled === Enrolled::N)
-        {
-            // TODO get $eci, no sample resp have eci value
-            //$this->validateEci($eci, Card\Network::MC);
+            case Enrolled::Y:
+                return $this->getPayerAuthenticationRequest($input, $response);
 
-            return null;
-        }
-        else
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
-                $enrolled,
-                'Invalid enroll response');
+            case Enrolled::N:
+                return null;
+
+            default:
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
+                    $enrolled,
+                    'Invalid enroll response');
         }
     }
 
@@ -349,26 +338,22 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function validateVERes($veres)
+    protected function validateVERes($input, $response)
     {
-        $paymentId = $this->input['payment']['public_id'];
-
-        $veres = json_decode(json_encode($veres), true);
-
-        $this->trace->info(TraceCode::VERIFY_ENROLLMENT_RESPONSE, $veres);
+        $this->trace->info(TraceCode::VERIFY_ENROLLMENT_RESPONSE, $response);
 
         //TODO : check if iReqDetail validation needs to be done
         //Test case 42e-11-VERes
         (new JitValidator)->rules(Validator::$veresRules)
-                          ->input($veres)
+                          ->input($response)
                           ->validate();
 
 
-        if ($veres['Message']['@attributes']['id'] !== $paymentId)
+        if ($response['Message']['@attributes']['id'] !== $input['payment']['public_id'])
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'ID mismatch',
-                $paymentId);
+            throw new Exception\GatewayErrorException(
+                // TODO: throw fatal code
+                $input['payment']['public_id']);
         }
     }
 
@@ -613,65 +598,55 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function processVeres($veres)
+    protected function processVerifyEnrollmentResponse($input, $response)
     {
-        if ($veres instanceof \SimpleXMLElement)
+        $this->validateVERes($input, $response);
+
+        $VERes = $response['Message']['VERes'];
+
+        if ((isset($VERes['Error']) === true) and
+            (count($VERes['Error']) !== 0))
         {
-            $this->validateVERes($veres);
+            $msg = 'Error message: ' . $error['errorMessage'] . ' ' .
+                   'Error detail: ' . $error['errorDetail'];
 
-            $VERes = $veres->Message->VERes;
-
-            $error = (array) $VERes->Error;
-
-            if (count($error) !== 0)
-            {
-                $msg = 'Error message: ' . $error['errorMessage'] . ' ' .
-                       'Error detail: ' . $error['errorDetail'];
-
-                throw new Exception\GatewayErrorException(
-                    ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
-                    $error['errorCode'],
-                    $msg);
-            }
-
-            $CH = (array) $VERes->CH;
-
-            return $CH['enrolled'];
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+                $error['errorCode'],
+                $msg);
         }
 
-        return $veres;
+        $ch = $VERes['CH'];
+
+        return $ch['enrolled'];
     }
 
-    protected function sendPareq($input, $veres)
+    protected function getPayerAuthenticationRequest($input, $response)
     {
-        $creds = $this->getCreds();
+        $url = $response['Message']['VERes']['url'];
 
-        $url = $veres->Message->VERes->url;
-
-        $xml = $this->getPareqXmlString($input, $veres, $creds);
-
-        $content = [
-            'PaReq'     => $xml,
-            'TermUrl'   => $input['callbackUrl'],
-            'MD'        => $input['payment']['public_id']
-        ];
+        $pareq = $this->getPayerAuthenticationContent($input, $response);
 
         $request = [
             'url'       => $url,
             'method'    => 'post',
-            'content'   => $content
+            'content'   => [
+                'PaReq'     => $pareq,
+                'TermUrl'   => $input['callbackUrl'],
+                'MD'        => $input['payment']['id']
+            ]
         ];
 
         return $request;
     }
 
-    protected function sendVereq($input)
+    protected function sendVerifyEnrollmentRequest($input)
     {
-        $request = $this->getVereqRequestArray($input);
+        $request = $this->getVerifyEnrollmentRequestArray($input);
 
-        $xml = $this->sendGatewayRequest($request);
+        $response = $this->sendGatewayRequest($request);
 
-        $body = $xml->body;
+        $body = $response->body;
 
         $valid = $this->validateXml($body);
 
@@ -684,45 +659,97 @@ class Gateway extends Base\Gateway
             return Enrolled::U;
         }
 
-        return simplexml_load_string($body);
+        return $this->xmlToArray($body);
     }
 
-    protected function getVereqRequestArray($input)
+    protected function getVerifyEnrollmentRequestArray($input)
     {
-        $url = Url::CTH_DS;
+        $content = $this->getVEReqContent($input);
 
-        $certFile = $this->config['mpi_ssl_client_pem'];
-        $keyFile = $this->config['mpi_ssl_client_key'];
+        $options = $this->getRequestOptions();
 
-        $xml = $this->getVereqXmlString($input);
+        $type = $input['card']['network'];
 
-        $headers = [
-            'Content-Type' => 'application/xml; charset=utf-8',
-            'Accept' => $this->app['request']->header('Accept'),
-            'User-Agent' => $this->app['request']->header('User-Agent')
-        ];
-
-        $options = [
-            'headers'   => $headers,
-            //TODO fix me
-            //'cert'      => [$certFile, ''],
-            //'ssl_key'   => [$keyFile, ''],
-            'verify'    => false,
-            'debug'     => false,
-            'timeout'   => 30
-        ];
-
-        $request = [
-            'content'   => $xml,
-            'url'       => $url,
-            'method'    => 'POST',
-            'options'   => $options
-        ];
+        $request = $this->getStandardRequestArray($content, 'POST', $type, $options);
 
         return $request;
     }
 
-    protected function getPareqXmlString($input, $veres, $creds)
+    protected function getClientCertificate()
+    {
+        $gatewayCertPath = $this->getGatewayCertDirPath();
+
+        $clientCertPath = $gatewayCertPath . '/' .
+                          $this->getClientCertificateName();
+
+        if (file_exists($clientCertPath) === false)
+        {
+            // TODO: Select client certificates from terminals
+
+            // $this->trace->info(
+                // TraceCode::CLIENT_CERTIFICATE_FILE_GENERATED,
+                // [
+                    // 'clientCertPath' => $clientCertPath
+                // ]);
+        }
+
+        return $clientCertPath;
+    }
+
+    protected function getClientSslKey()
+    {
+        $gatewayCertPath = $this->getGatewayCertDirPath();
+
+        $clientCertPath = $gatewayCertPath . '/' .
+                          $this->getClientSslKeyName();
+
+        if (file_exists($clientCertPath) === false)
+        {
+            // TODO: Select client certificates from terminals
+
+            // $this->trace->info(
+                // TraceCode::CLIENT_CERTIFICATE_FILE_GENERATED,
+                // [
+                    // 'clientCertPath' => $clientCertPath
+                // ]);
+        }
+
+        return $clientCertPath;
+    }
+
+    public function getClientCertificateName()
+    {
+        switch ($this->input['card']['network'])
+        {
+            case Card\Network::MC:
+                $certName = $this->config['live_mastercard_certificate'];
+                break;
+
+            case Card\Network::VISA:
+                $certName = $this->config['live_visa_certificate'];
+                break;
+        }
+
+        return $certName;
+    }
+
+    public function getClientSslKeyName()
+    {
+        switch ($this->input['card']['network'])
+        {
+            case Card\Network::MC:
+                $certName = $this->config['live_mastercard_pem'];
+                break;
+
+            case Card\Network::VISA:
+                $certName = $this->config['live_visa_pem'];
+                break;
+        }
+
+        return $certName;
+    }
+
+    protected function getPayerAuthenticationContent($input, $response)
     {
         // Format YYYYMMDD HH:MM:SS
         $date = Carbon::createFromTimestamp($input['payment']['created_at'], 'Asia/Kolkata')->format('Ymd H:m:s');
@@ -737,24 +764,25 @@ class Gateway extends Base\Gateway
                 'PAReq' => [
                     'version' => self::VERSION,
                     'Merchant' => [
-                        'acqBIN'  => $creds['acq_bin'],
-                        'merID'   => $creds['merchant_id'],
-                        // TODOD: make it dynamic
-                        'name'    => 'Razorpay Software Pvt Ltd',
-                        'country' => '356',
-                        'url'     => 'https://razorpay.com',
+                        'acqBIN'      => $this->getAcquirerBin($input),
+                        'merID'       => $this->getMerchantId($input),
+                        // TODO: Make it dynamic
+                        'name'        => $input['merchant']->getBillingLabel(),
+                        // TODO: Use country class
+                        'country'     => '356',
+                        'url'         => 'https://razorpay.com',
                     ],
                     'Purchase' => [
-                        'xid'     => $this->generateXid($input),
-                        'date'    => $date,
-                        'amount'  => $this->getFormattedAmount($input['payment']),
+                        'xid'         => $this->generateXid($input),
+                        'date'        => $date,
+                        'amount'      => $this->getFormattedAmount($input['payment']),
                         'purchAmount' => $input['payment']['amount'],
-                        'currency' => Currency::getIsoCode($input['payment']['currency']),
-                        'exponent' => '2',
+                        'currency'    => Currency::getIsoCode($input['payment']['currency']),
+                        'exponent'    => '2',
                     ],
                     'CH' => [
-                        'acctID' => $veres->Message->VERes->CH->acctID,
-                        'expiry' => $this->getFormattedCardExpiry($input['card']),
+                        'acctID'      => $response['Message']['VERes']['CH']['acctID'],
+                        'expiry'      => $this->getFormattedCardExpiry($input['card']),
                     ]
                 ]
             ]
@@ -792,7 +820,7 @@ class Gateway extends Base\Gateway
         return $year . $month;
     }
 
-    protected function getVereqXmlString($input)
+    protected function getVEReqContent($input)
     {
         $creds = $this->getCreds();
 
@@ -808,9 +836,9 @@ class Gateway extends Base\Gateway
                     'version' => self::VERSION,
                     'pan'     => $input['card']['number'],
                     'Merchant' => [
-                        'acqBIN' => $creds['acq_bin'],
-                        'merID'  => $creds['merchant_id'],
-                        'password' => $creds['password'],
+                        'acqBIN' => $this->getAcquirerBin($input),
+                        'merID'  => $this->getMerchantId($input),
+                        // 'password' => $creds['password'],
                     ],
                     'Browser' => [
                         'deviceCategory' => DeviceCategory::DESKTOP,
@@ -846,6 +874,44 @@ class Gateway extends Base\Gateway
         }
 
         return $creds;
+    }
+
+    protected function getAcquirerBin($input)
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return '11111111111';
+        }
+
+        switch ($input['card']['network'])
+        {
+            case Card\Network::MC:
+                $certName = $this->config['live_mastercard_acq_bin'];
+                break;
+
+            case Card\Network::VISA:
+                $certName = $this->config['live_visa_acq_bin'];
+                break;
+        }
+    }
+
+    protected function getMerchantId($input)
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return '12AB,cd/34-EF  -g,5/H-67';
+        }
+
+        switch ($input['card']['network'])
+        {
+            case Card\Network::MC:
+                $certName = $this->config['live_mastercard_merchant_id'];
+                break;
+
+            case Card\Network::VISA:
+                $certName = $this->config['live_visa_merchant_id'];
+                break;
+        }
     }
 
     /**
@@ -924,25 +990,61 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function postCurlRequest(string $url,string $txt, $certFile, $keyFile)
+    protected function getStandardRequestArray($content = [], $method = 'post', $type = null, $options = [])
     {
-        $curl_resource = curl_init();
+        $request = parent::getStandardRequestArray($content, $method, $type);
 
-        curl_setopt($curl_resource, CURLOPT_URL, $url);
-        curl_setopt($curl_resource, CURLOPT_POST, 1);
-        curl_setopt($curl_resource, CURLOPT_POSTFIELDS, $txt);
-        curl_setopt($curl_resource, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($curl_resource, CURLOPT_HEADER, true);
-        curl_setopt($curl_resource, CURLOPT_SSLCERT, $certFile);
-        curl_setopt($curl_resource, CURLOPT_SSLCERTPASSWD, '');
-        curl_setopt($curl_resource, CURLOPT_SSLKEY, $keyFile);
-        curl_setopt($curl_resource, CURLOPT_SSL_VERIFYPEER, true);
-        curl_setopt($curl_resource, CURLOPT_SSL_VERIFYHOST, 2);
-        curl_setopt($curl_resource, CURLOPT_SSLCERTTYPE, 'PEM');
+        $request['headers'] = [
+            'Content-Type' => 'application/xml; charset=utf-8',
+            'Accept' => $this->app['request']->header('Accept'),
+            'User-Agent' => $this->app['request']->header('User-Agent')
+        ];
 
-        $output = curl_exec($curl_resource);
-        curl_close($curl_resource);
+        $request['options']['timeout'] = 10;
+        $request['options']['connect_timeout'] = 10;
 
-        return $output;
+        return $request;
+    }
+
+    protected function getUrl($type = null)
+    {
+        $urlDomain = $this->getUrlDomain($type);
+
+        return $urlDomain;
+    }
+
+    protected function getUrlDomain($type = null)
+    {
+        $urlClass = $this->getGatewayNamespace() . '\Url';
+
+        $domainType = $this->mode;
+
+        $domainConstantName = strtoupper($domainType).'_'.strtoupper($type).'_DS';
+
+        return constant($urlClass . '::' .$domainConstantName);
+    }
+
+    protected function getRequestOptions()
+    {
+        $hooks = new Requests_Hooks();
+
+        $hooks->register('curl.before_send', [$this, 'setCurlOptions']);
+
+        $options = [
+            'hooks' => $hooks
+        ];
+
+        return $options;
+    }
+
+    public function setCurlOptions($curl)
+    {
+        curl_setopt($curl, CURLOPT_SSLCERT, $this->getClientCertificate());
+
+        curl_setopt($curl, CURLOPT_SSLKEY, $this->getClientSslKey());
+
+        curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
+
+        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
     }
 }
