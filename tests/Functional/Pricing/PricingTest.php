@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use RZP\Models\Transaction;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -22,13 +23,15 @@ class PricingTest extends TestCase
 
     public function testCreatePricingPlan()
     {
-        $this->ba->adminAuth('test', null, 'org_100000razorpay');
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
         $this->startTest();
     }
 
     public function testCreatePricingPlanWithMinAndMaxFee()
     {
-        $this->ba->adminAuth('test', null, 'org_100000razorpay');
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
         $this->startTest();
     }
 
@@ -216,7 +219,7 @@ class PricingTest extends TestCase
 
         $testData['response']['content']['id'] = $content['id'];
 
-        $this->ba->adminAuth('test', null, 'org_100000razorpay');
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
 
         $this->startTest($testData);
     }
@@ -234,7 +237,7 @@ class PricingTest extends TestCase
 
     public function testMerchantGetPricingPlanNoPlanAssigned()
     {
-        $this->ba->adminAuth('test', null, 'org_100000razorpay');
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
 
         $content = $this->startTest();
 
@@ -252,7 +255,7 @@ class PricingTest extends TestCase
                 'id' => '1FcXNxsHt5dOPI',
                 'pricing_plan_id' => '1ycviEdCgurrFI'));
 
-        $this->ba->adminAuth('test', null, 'org_100000razorpay');
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
 
         $this->startTest();
     }
@@ -341,7 +344,7 @@ class PricingTest extends TestCase
 
     public function testCreatePricingPlanWithInvalidMinAndMaxFee()
     {
-        $this->ba->adminAuth('test', null, 'org_100000razorpay');
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
 
         $this->startTest();
     }

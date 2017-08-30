@@ -343,4 +343,53 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+    'testMerchantDetailsFetch' => [
+        'request' => [
+            'url'       => '/merchants/details/10000000000000',
+            'method'    => 'GET',
+            'content'   => [],
+        ],
+        'response' => [
+            'content' => [
+                'id'                        => '10000000000000',
+                'entity'                    => 'merchant',
+                'activated'                 => false,
+                'live'                      => false,
+                'methods'                   => [
+                    'merchant_id'   => '10000000000000',
+                    'banks'         => [],
+                    'amex'          => false,
+                ],
+
+                'convert_currency'          => null,
+                'org_id'                    => \RZP\Tests\Functional\Fixtures\Entity\Org::RZP_ORG,
+                'groups'                    => [],
+                'admins'                    => [],
+                'transaction_report_email'  => [],
+                'tags'                      => [],
+                'confirmed'                 => false,
+                'logo_url'                  => null,
+                'merchant_details'          => [
+                    'contact_email'         => 'test@razorpay.com',
+                    'gstin'                 => null,
+                    'p_gstin'               => null,
+                    'activation_progress'   => 0,
+                    'can_submit'            => false,
+                    'steps_finished'        => [],
+                    'activated'             => 0,
+                    'verification'          => [
+                        'status'                => 'disabled',
+                        'disabled_reason'       => 'required_fields',
+                        'activation_progress'   => 3,
+                    ],
+                ],
+                'auto_capture_late_auth'    => false,
+                'fee_bearer'                => 'platform',
+                'fee_model'                 => 'prepaid',
+                'international'             => true,
+                'max_payment_amount'        => 50000000,
+                'suspended_at'              => null,
+            ],
+        ],
+    ],
 ];

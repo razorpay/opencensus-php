@@ -1273,7 +1273,7 @@ class Service extends Base\Service
     {
         $parentId = $merchant->getParentId();
 
-        // Market place subaccounts are confirmed.
+        // Market place sub accounts are confirmed.
         if(!empty($parentId))
         {
             return true;
