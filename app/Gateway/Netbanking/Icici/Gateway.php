@@ -519,7 +519,7 @@ class Gateway extends Base\Gateway
             Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_PAYMENT_ID],
             // TODO: Find out which one is sent and fix this accordingly.
             Base\Entity::SI_REF_ID       => $content[ResponseFields::SI_REFERENCE_ID] ??
-                                            $content[ResponseFields::SCHEDULE_ID] ??
+                                            $content[ResponseFields::SI_SCHEDULE_ID] ??
                                             null,
             Base\Entity::SI_STATUS       => $content[ResponseFields::SI_STATUS] ?? null,
             Base\Entity::SI_MSG          => $content[ResponseFields::SI_MESSAGE] ?? null,
