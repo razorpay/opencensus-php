@@ -611,7 +611,7 @@ class PublicEntity extends UniqueIdEntity
     public function getValidatedArray(array $array)
     {
         if (($this->auth->isAdminAuth() === true) and
-            !empty($this->attributePermissions))
+            (empty($this->attributePermissions) === false))
         {
             $admin = $this->auth->getAdmin();
 
