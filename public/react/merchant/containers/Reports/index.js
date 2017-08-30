@@ -20,7 +20,7 @@ function validateInvoiceMonthYear(current) {
   const currDate = new Date(),
     tillPrevMonth =
       currDate.getFullYear() === current.year()
-        ? current.month() < currDate.getMonth()
+        ? current.month() < 6 // 6 = July
         : true;
 
   return validYear(current) && tillPrevMonth;
@@ -48,7 +48,7 @@ const selector = formValueSelector('generateReports');
     entity: 'payment',
     type: 'daily',
     date: moment(),
-    invoiceDate: moment().subtract(1, 'months'), // Invoice date can not be current month
+    invoiceDate: moment().set('month', 5), // Select June. Invoice date can not be july or after
   },
 })
 export default class ReportsContainer extends Component {
