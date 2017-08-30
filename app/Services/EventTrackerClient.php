@@ -381,6 +381,9 @@ class EventTrackerClient extends AbstractEventClient
     {
         try
         {
+            //
+            // Enable it for demo merchant only for testing
+            //
             if (empty($eventData['events'][0]['properties']['merchant_id']) !== true)
             {
                 $merchantId = $eventData['events'][0]['properties']['merchant_id'];
