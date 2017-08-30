@@ -39,6 +39,9 @@ class CreateMerchantInvoices extends Migration
 
             $table->string(Invoice::TYPE, 20);
 
+            $table->string(Invoice::DESCRIPTION)
+                  ->nullable();
+
             $table->integer(Invoice::AMOUNT);
 
             $table->integer(Invoice::TAX);
@@ -67,8 +70,6 @@ class CreateMerchantInvoices extends Migration
                   ->references(Merchant::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
-
-            $table->unique([Invoice::MERCHANT_ID, Invoice::YEAR, Invoice::MONTH, Invoice::TYPE]);
         });
     }
 

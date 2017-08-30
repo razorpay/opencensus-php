@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 
 class Entity extends Base\PublicEntity
 {
@@ -18,6 +19,7 @@ class Entity extends Base\PublicEntity
     const TYPE              = 'type';
     const AMOUNT            = 'amount';
     const TAX               = 'tax';
+    const DESCRIPTION       = 'description';
     const AMOUNT_DUE        = 'amount_due';
     const CREATED_AT        = 'created_at';
     const UPDATED_AT        = 'updated_at';
@@ -32,6 +34,7 @@ class Entity extends Base\PublicEntity
         self::YEAR,
         self::GSTIN,
         self::TYPE,
+        self::DESCRIPTION,
         self::AMOUNT,
         self::TAX,
     ];
@@ -44,6 +47,7 @@ class Entity extends Base\PublicEntity
         self::YEAR,
         self::GSTIN,
         self::TYPE,
+        self::DESCRIPTION,
         self::AMOUNT,
         self::TAX,
         self::CREATED_AT,
@@ -66,6 +70,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT        => 0,
         self::TAX           => 0,
         self::AMOUNT_DUE    => 0,
+        self::DESCRIPTION   => null,
     ];
 
     protected static $generators = [
@@ -100,6 +105,20 @@ class Entity extends Base\PublicEntity
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
+    }
+
+    public function getDescription()
+    {
+        $description = $this->getAttribute(self::DESCRIPTION);
+
+        if (empty($description) === false)
+        {
+            return $description;
+        }
+
+        $type = $this->getAttribute(self::TYPE);
+
+        return Type::getDescriptionFromType($type);
     }
 
     public function getTax()
