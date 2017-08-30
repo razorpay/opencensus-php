@@ -2013,6 +2013,14 @@ app
               $scope.merchant.id = $scope.merchant.details.id;
               $scope.merchant.details.activation_progress =
                 $scope.merchant.details.merchant_details.activation_progress;
+              $scope.merchant.details.activated_dashboard =
+                $scope.merchant.details.merchant_details.activated;
+              $scope.merchant.details.locked =
+                $scope.merchant.details.merchant_details.locked;
+              $scope.merchant.details.submitted =
+                $scope.merchant.details.merchant_details.submitted;
+              $scope.merchant.details.submitted_at =
+                $scope.merchant.details.merchant_details.submitted_at;
               $scope.referer = getReferer($scope.merchant.details.tags);
               $scope.marketplace = $scope.merchant.details.parent_id;
 
