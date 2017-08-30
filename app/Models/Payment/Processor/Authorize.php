@@ -880,7 +880,11 @@ trait Authorize
         if (Payment\Gateway::isRecurringSupportedOnBank($bank) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED);
+                ErrorCode::BAD_REQUEST_PAYMENT_BANK_RECURRING_NOT_SUPPORTED,
+                Payment\Entity::BANK,
+                [
+                    'payment' => $payment->toArray(),
+                ]);
         }
 
         $token = $payment->getGlobalOrLocalTokenEntity();
@@ -894,24 +898,53 @@ trait Authorize
         // For netbanking payments, we ensure that if it is a second recurring payment,
         // it must contain a recurring enabled token with an associated gateway token.
         //
+        $this->validateSecondRecurringNetbanking($token, $payment);
+
+        $this->validateTokenMaxAmount($token, $payment);
+    }
+
+    /**
+     * @param $token
+     * @param $payment
+     * @throws Exception\BadRequestException
+     */
+    protected function validateSecondRecurringNetbanking($token, $payment)
+    {
         if ($payment->isSecondRecurring())
         {
             if ($token->isRecurring() === false)
             {
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING, null, $payment->toArray());
+                    ErrorCode::BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING,
+                    Token\Entity::RECURRING,
+                    [
+                        'payment' => $payment->toArray(),
+                    ]);
             }
             else if (empty($token->getGatewayToken()) === true)
             {
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_GATEWAY_TOKEN_EMPTY,  null, $payment->toArray());
+                    ErrorCode::BAD_REQUEST_GATEWAY_TOKEN_EMPTY,
+                    Token\Entity::GATEWAY_TOKEN,
+                    [
+                        'payment' => $payment->toArray(),
+                        'token'   => $token->toArray(),
+                    ]);
             }
         }
+    }
 
+    protected function validateTokenMaxAmount($token, $payment)
+    {
         if ($token->getMaxAmount() < $payment->getAmount())
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_GREATER_THAN_TOKEN_MAX_AMOUNT);
+                ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_GREATER_THAN_TOKEN_MAX_AMOUNT,
+                Token\Entity::MAX_AMOUNT,
+                [
+                    'payment' => $payment->toArray(),
+                    'token'   => $token->toArray(),
+                ]);
         }
     }
 
@@ -2061,7 +2094,13 @@ trait Authorize
         if (empty($recurringStatus) === true)
         {
             // This is to ensure that if the recurring status is not already set, we set it now
-            throw new Exception\LogicException('The recurring status should always be set for token update');
+            throw new Exception\LogicException(
+                'The recurring status should always be set for token update',
+                null,
+                [
+                    'token'          => $token->toArray(),
+                    'gateway_data'   => $data
+                ]);
         }
 
         $token->setRecurringStatus($recurringStatus);
@@ -2075,7 +2114,13 @@ trait Authorize
             if (empty($data[Token\Entity::RECURRING_FAILURE_REASON]) === true)
             {
                 // If it's rejected, there must always be a reason.
-                throw new Exception\LogicException('The SI request must be rejected with a reason');
+                throw new Exception\LogicException(
+                    'The SI request must be rejected with a reason',
+                    null,
+                    [
+                        'token'        => $token->toArray(),
+                        'gateway_data' => $data,
+                    ]);
             }
 
             $recurringFailureReason = $data[Token\Entity::RECURRING_FAILURE_REASON];
@@ -2118,7 +2163,13 @@ trait Authorize
             {
                 // we do not reuse the tokens. Every new
                 // registration requires a new token to be created.
-                throw new Exception\LogicException('Tokens cannot be reused in netbanking payments');
+                throw new Exception\LogicException(
+                    'Tokens cannot be reused in netbanking payments',
+                    null,
+                    [
+                        'payment'        => $payment->toArray(),
+                        'gateway_tokens' => $gatewayTokens->toArray(),
+                    ]);
             }
 
             $gatewayToken = $gatewayTokens->first();

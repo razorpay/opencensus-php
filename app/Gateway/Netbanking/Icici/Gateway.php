@@ -138,9 +138,8 @@ class Gateway extends Base\Gateway
                              ->format('Y-m-d');
 
         $recurringRequestData = [
-            RequestFields::SI_REFERENCE_NUMBER  => $gatewayToken,
-            // Being overridden on verifyRequestData
-            RequestFields::SI_PAYMENT_DATE      => $paymentDate,
+            RequestFields::SI_REFERENCE_NUMBER   => $gatewayToken,
+            RequestFields::SI_DEBIT_PAYMENT_DATE => $paymentDate,
         ];
 
         return array_merge($baseRequestData, $verifyRequestData, $recurringRequestData);
@@ -358,10 +357,10 @@ class Gateway extends Base\Gateway
 
         // If the SI reference ID is not empty
 //        TODO: Check why adding this to the request causes a verification failure
-//        if (empty($verify->payment->getSIRefId()) === false)
-//        {
-//            $requestData[RequestFields::SI] = Status::Y;
-//        }
+        if (empty($verify->payment->getSIRefId()) === false)
+        {
+            $requestData[RequestFields::SI] = Status::Y;
+        }
 
         return array_merge($baseRequestData, $requestData);
     }

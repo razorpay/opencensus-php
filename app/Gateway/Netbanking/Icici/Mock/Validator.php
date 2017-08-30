@@ -8,16 +8,16 @@ use RZP\Gateway\Netbanking\Icici\RequestFields;
 class Validator extends Base\Validator
 {
     protected static $authRules = [
-        RequestFields::MODE                => 'required|alpha|in:P,SI',
-        RequestFields::PAYEE_ID            => 'required|string',
-        RequestFields::SPID                => 'sometimes_if:MD,P|string',
-        RequestFields::ENCRYPTED_STRING    => 'sometimes_if:MD,P|string',
-        RequestFields::SI_PAYMENT_DATE     => 'sometimes_if:MD,SI',
-        RequestFields::PAYMENT_ID          => 'sometimes_if:MD,SI',
-        RequestFields::ITEM_CODE           => 'sometimes_if:MD,SI',
-        RequestFields::AMOUNT              => 'sometimes_if:MD,SI',
-        RequestFields::CURRENCY_CODE       => 'sometimes_if:MD,SI',
-        RequestFields::SI_REFERENCE_NUMBER => 'sometimes_if:MD,SI',
+        RequestFields::MODE                  => 'required|alpha|in:P,SI',
+        RequestFields::PAYEE_ID              => 'required|string',
+        RequestFields::SPID                  => 'sometimes_if:MD,P|string',
+        RequestFields::ENCRYPTED_STRING      => 'sometimes_if:MD,P|string',
+        RequestFields::SI_DEBIT_PAYMENT_DATE => 'sometimes_if:MD,SI',
+        RequestFields::PAYMENT_ID            => 'sometimes_if:MD,SI',
+        RequestFields::ITEM_CODE             => 'sometimes_if:MD,SI',
+        RequestFields::AMOUNT                => 'sometimes_if:MD,SI',
+        RequestFields::CURRENCY_CODE         => 'sometimes_if:MD,SI',
+        RequestFields::SI_REFERENCE_NUMBER   => 'sometimes_if:MD,SI',
     ];
 
     protected static $authDecryptedRules = [
@@ -50,5 +50,6 @@ class Validator extends Base\Validator
         RequestFields::RETURN_URL          => 'sometimes|string',
         RequestFields::SHOW_ON_SAME_PAGE   => 'sometimes|string',
         RequestFields::SI_REFERENCE_NUMBER => 'sometimes|string',
+        RequestFields::SI                  => 'sometimes|string',
     ];
 }

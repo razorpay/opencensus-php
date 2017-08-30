@@ -4,7 +4,6 @@ namespace RZP\Gateway\Netbanking\Icici;
 
 class Url
 {
-
     const RETAIL_LIVE_DOMAIN    = 'https://shopping.icicibank.com/corp/BANKAWAY?';
     const RETAIL_TEST_DOMAIN    = 'https://shopping.icicibank.com/corp/BANKAWAY?';
 

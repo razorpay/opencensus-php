@@ -49,7 +49,7 @@ class Server extends Base\Mock\Server
             ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT],
             ResponseFields::CURRENCY        => $input[RequestFields::CURRENCY_CODE],
             ResponseFields::SI_REFERENCE_ID => $input[RequestFields::SI_REFERENCE_NUMBER],
-            ResponseFields::PAYMENT_DATE    => $input[RequestFields::SI_PAYMENT_DATE],
+            ResponseFields::PAYMENT_DATE    => $input[RequestFields::SI_DEBIT_PAYMENT_DATE],
             ResponseFields::BANK_PAYMENT_ID => 9999999999,
             ResponseFields::STATUS          => Status::SUCCESS
         ];
