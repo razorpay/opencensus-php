@@ -1879,20 +1879,47 @@ app
       }
 
       function fetchTerminals() {
-        var data = {
-          route_name: 'merchant_get_terminals',
-          url_params: {
-            '{id}': $scope.merchant.id,
-          },
-        };
+        var items = [];
+        var count = 0;
+        // test mode
         var request = $http.get('/admin/generic', {
-          params: data,
+          params: {
+            route_name: 'merchant_get_terminals',
+            url_params: {
+              '{id}': $scope.merchant.id,
+            },
+            mode: 'test',
+          },
+        });
+        request.success(function(data) {
+          if (data.success) {
+            $scope.merchant.terminals = data.data;
+            items = data.data.items;
+            count = data.data.count;
+          }
         });
 
+        // live mode
+        var request = $http.get('/admin/generic', {
+          params: {
+            route_name: 'merchant_get_terminals',
+            url_params: {
+              '{id}': $scope.merchant.id,
+            },
+            mode: 'live',
+          },
+        });
         request
           .success(function(data) {
             if (data.success) {
-              $scope.merchant.terminals = data.data;
+              if (count !== 0 && items.length !== 0) {
+                items.concat(data.data.items);
+                count += data.data.count;
+                $scope.merchant.terminals.items = items;
+                $scope.merchant.terminals.count = count;
+              } else {
+                $scope.merchant.terminals = data.data;
+              }
               sortTerminals();
             } else {
               $scope.alerts.resetAlerts(true);
