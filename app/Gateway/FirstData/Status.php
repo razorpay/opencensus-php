@@ -18,7 +18,7 @@ class Status
     // original preauth transaction and not a credit transaction.
     //
     // If that transaction is voided, refund was successful.
-    const VALID_REFUND_STATES = [
+    const SUCCESSFUL_REFUND_STATES = [
         self::SETTLED,
         self::CAPTURED,
         self::VOIDED,

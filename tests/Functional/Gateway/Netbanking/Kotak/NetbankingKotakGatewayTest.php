@@ -67,6 +67,18 @@ class NetbankingKotakGatewayTest extends TestCase
     {
         $this->fixtures->merchant->enableTPV();
 
+        $this->fixtures->create('gateway_rule', [
+            'method'           => 'netbanking',
+            'merchant_id'      => '100000Razorpay',
+            'gateway'          => 'netbanking_kotak',
+            'issuer'           => 'KKBK',
+            'type'             => 'filter',
+            'filter_type'      => 'select',
+            'category2'        => 'securities',
+            'network_category' => 'securities',
+            'group'            => 'tpv_filter',
+        ]);
+
         $order = $this->createTpvOrderForBank('KKBK');
 
         $payment = $this->doNetbankingKotakAuthAndCapturePayment($order);

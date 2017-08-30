@@ -4,56 +4,54 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
-use RZP\Models\Admin;
-use RZP\Models\Admin\Org;
-use RZP\Models\Admin\Org\FieldMap;
+use RZP\Constants\Entity as E;
 
 class OrganizationController extends Controller
 {
-    public function postOrganization(Org\Service $orgService)
+    public function postOrganization()
     {
         $input = Request::all();
 
-        $data = $orgService->create($input);
+        $data = $this->service(E::ORG)->create($input);
 
         return ApiResponse::json($data);
     }
 
-    public function getOrganization(Org\Service $orgService, $id)
+    public function getOrganization($id)
     {
-        $data = $orgService->fetch($id);
+        $data = $this->service(E::ORG)->fetch($id);
 
         return ApiResponse::json($data);
     }
 
-    public function getOrganizationByHostname(Org\Service $orgService, $hostname)
+    public function getOrganizationByHostname($hostname)
     {
-        $data = $orgService->fetchByHostname($hostname);
+        $data = $this->service(E::ORG)->fetchByHostname($hostname);
 
         return ApiResponse::json($data);
     }
 
-    public function getOrganizations(Org\Service $orgService)
-    {
-        $input = Request::all();
-
-        $data = $orgService->fetchMultiple($input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function putOrganization(Org\Service $orgService, string $id)
+    public function getOrganizations()
     {
         $input = Request::all();
 
-        $data = $orgService->edit($id, $input);
+        $data = $this->service(E::ORG)->fetchMultiple($input);
 
         return ApiResponse::json($data);
     }
 
-    public function deleteOrganization(Org\Service $orgService, string $id)
+    public function putOrganization(string $id)
     {
-        $data = $orgService->delete($id);
+        $input = Request::all();
+
+        $data = $this->service(E::ORG)->edit($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function deleteOrganization(string $id)
+    {
+        $data = $this->service(E::ORG)->delete($id);
 
         return ApiResponse::json($data);
     }
@@ -62,7 +60,7 @@ class OrganizationController extends Controller
 
     public function getAdmin($id, $adminId)
     {
-        $data = (new Admin\Admin\Service)->getAdmin($id, $adminId);
+        $data = $this->service(E::ADMIN)->getAdmin($id, $adminId);
 
         return ApiResponse::json($data);
     }
@@ -71,7 +69,7 @@ class OrganizationController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Admin\Admin\Service)->getAdminByAppAuth($id, $input);
+        $data = $this->service(E::ADMIN)->getAdminByAppAuth($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -80,14 +78,14 @@ class OrganizationController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Admin\Admin\Service)->createAdmin($id, $input);
+        $data = $this->service(E::ADMIN)->createAdmin($id, $input);
 
         return ApiResponse::json($data);
     }
 
     public function deleteAdmin($id, $adminId)
     {
-        $data = (new Admin\Admin\Service)->deleteAdmin($id, $adminId);
+        $data = $this->service(E::ADMIN)->deleteAdmin($id, $adminId);
 
         return ApiResponse::json($data);
     }
@@ -96,7 +94,7 @@ class OrganizationController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Admin\Admin\Service)->fetchMultiple($id, $input);
+        $data = $this->service(E::ADMIN)->fetchMultiple($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -105,7 +103,7 @@ class OrganizationController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Admin\Admin\Service)->fetchMultipleOnAppAuth($input);
+        $data = $this->service(E::ADMIN)->fetchMultipleOnAppAuth($input);
 
         return ApiResponse::json($data);
     }
@@ -114,14 +112,14 @@ class OrganizationController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Admin\Admin\Service)->editAdmin($id, $adminId, $input);
+        $data = $this->service(E::ADMIN)->editAdmin($id, $adminId, $input);
 
         return ApiResponse::json($data);
     }
 
     public function logoutAdmin()
     {
-        $data = (new Admin\Admin\Service)->logout();
+        $data = $this->service(E::ADMIN)->logout();
 
         return ApiResponse::json($data);
     }
@@ -130,7 +128,7 @@ class OrganizationController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Admin\AdminLead\Service)->sendInvitation($orgId, $input);
+        $data = $this->service(E::ADMIN_LEAD)->sendInvitation($orgId, $input);
 
         return ApiResponse::json($data);
     }
@@ -139,7 +137,7 @@ class OrganizationController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Admin\AdminLead\Service)->editInvitation(
+        $data = $this->service(E::ADMIN_LEAD)->editInvitation(
             $orgId, $id, $input);
 
         return ApiResponse::json($data);
@@ -147,14 +145,14 @@ class OrganizationController extends Controller
 
     public function getAdminLeadMultiple(string $orgId)
     {
-        $data = (new Admin\AdminLead\Service)->getInvitations($orgId);
+        $data = $this->service(E::ADMIN_LEAD)->getInvitations($orgId);
 
         return ApiResponse::json($data);
     }
 
     public function verifyAdminLead(string $token)
     {
-        $data = (new Admin\AdminLead\Service)->verify($token);
+        $data = $this->service(E::ADMIN_LEAD)->verify($token);
 
         return ApiResponse::json($data);
     }
@@ -166,28 +164,28 @@ class OrganizationController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Admin\Role\Service)->create($id, $input);
+        $data = $this->service(E::ROLE)->create($id, $input);
 
         return ApiResponse::json($data);
     }
 
     public function getRole(string $id, string $roleId)
     {
-        $data = (new Admin\Role\Service)->getRole($id, $roleId);
+        $data = $this->service(E::ROLE)->getRole($id, $roleId);
 
         return ApiResponse::json($data);
     }
 
     public function getMultipleRoles(string $id)
     {
-        $data = (new Admin\Role\Service)->getMultipleRoles($id);
+        $data = $this->service(E::ROLE)->getMultipleRoles($id);
 
         return ApiResponse::json($data);
     }
 
     public function deleteRole(string $id, string $roleId)
     {
-        $data = (new Admin\Role\Service)->deleteRole($id, $roleId);
+        $data = $this->service(E::ROLE)->deleteRole($id, $roleId);
 
         return ApiResponse::json($data);
     }
@@ -196,7 +194,7 @@ class OrganizationController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Admin\Role\Service)->putRole($id, $roleId, $input);
+        $data = $this->service(E::ROLE)->putRole($id, $roleId, $input);
 
         return ApiResponse::json($data);
     }
@@ -208,14 +206,14 @@ class OrganizationController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Admin\Group\Service)->createGroup($id, $input);
+        $data = $this->service(E::GROUP)->createGroup($id, $input);
 
         return ApiResponse::json($data);
     }
 
     public function getGroup(string $id, string $groupId)
     {
-        $data = (new Admin\Group\Service)->getGroup($id, $groupId);
+        $data = $this->service(E::GROUP)->getGroup($id, $groupId);
 
         return ApiResponse::json($data);
     }
@@ -224,7 +222,7 @@ class OrganizationController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Admin\Group\Service)->fetchMultiple($id, $input);
+        $data = $this->service(E::GROUP)->fetchMultiple($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -237,7 +235,7 @@ class OrganizationController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Admin\Group\Service)->fetchEligibleParents($id, $groupId, $input);
+        $data = $this->service(E::GROUP)->fetchEligibleParents($id, $groupId, $input);
 
         return ApiResponse::json($data);
     }
@@ -246,14 +244,14 @@ class OrganizationController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Admin\Group\Service)->editGroup($id, $groupId, $input);
+        $data = $this->service(E::GROUP)->editGroup($id, $groupId, $input);
 
         return ApiResponse::json($data);
     }
 
     public function deleteGroup(string $id, string $groupId)
     {
-        $data = (new Admin\Group\Service)->deleteGroup($id, $groupId);
+        $data = $this->service(E::GROUP)->deleteGroup($id, $groupId);
 
         return ApiResponse::json($data);
     }
@@ -266,7 +264,7 @@ class OrganizationController extends Controller
     {
         $input = Request::all();
 
-        $data = (new FieldMap\Service)->createFieldMapForEntity($orgId, $input);
+        $data = $this->service(E::ORG_FIELD_MAP)->createFieldMapForEntity($orgId, $input);
 
         return ApiResponse::json($data);
     }
@@ -275,35 +273,35 @@ class OrganizationController extends Controller
     {
         $input = Request::all();
 
-        $data = (new FieldMap\Service)->editFieldMapForEntity($orgId, $id, $input);
+        $data = $this->service(E::ORG_FIELD_MAP)->editFieldMapForEntity($orgId, $id, $input);
 
         return ApiResponse::json($data);
     }
 
     public function getOrgFieldMapMultiple(string $orgId)
     {
-        $data = (new FieldMap\Service)->fetchMultiple($orgId);
+        $data = $this->service(E::ORG_FIELD_MAP)->fetchMultiple($orgId);
 
         return ApiResponse::json($data);
     }
 
     public function getOrgFieldMap(string $orgId, string $id)
     {
-        $data = (new FieldMap\Service)->getFieldsForEntity($orgId, $id);
+        $data = $this->service(E::ORG_FIELD_MAP)->getFieldsForEntity($orgId, $id);
 
         return ApiResponse::json($data);
     }
 
     public function getOrgFieldMapByEntity(string $orgId, string $entity)
     {
-        $data = (new FieldMap\Service)->getByEntity($orgId, $entity);
+        $data = $this->service(E::ORG_FIELD_MAP)->getByEntity($orgId, $entity);
 
         return ApiResponse::json($data);
     }
 
     public function deleteOrgFieldMap(string $orgId, string $id)
     {
-        $data = (new FieldMap\Service)->deleteFieldMapForEntity($orgId, $id);
+        $data = $this->service(E::ORG_FIELD_MAP)->deleteFieldMapForEntity($orgId, $id);
 
         return ApiResponse::json($data);
     }
@@ -316,28 +314,28 @@ class OrganizationController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Admin\Permission\Service)->createPermission($input);
+        $data = $this->service(E::PERMISSION)->createPermission($input);
 
         return ApiResponse::json($data);
     }
 
     public function deletePermission(string $permId)
     {
-        $data = (new Admin\Permission\Service)->deletePermission($permId);
+        $data = $this->service(E::PERMISSION)->deletePermission($permId);
 
         return ApiResponse::json($data);
     }
 
     public function getPermission(string $id)
     {
-        $data = (new Admin\Permission\Service)->getPermission($id);
+        $data = $this->service(E::PERMISSION)->getPermission($id);
 
         return ApiResponse::json($data);
     }
 
     public function getRolesForPermission(string $id)
     {
-        $data = (new Admin\Permission\Service)->getRolesForPermission($id);
+        $data = $this->service(E::PERMISSION)->getRolesForPermission($id);
 
         return ApiResponse::json($data);
     }
@@ -346,7 +344,7 @@ class OrganizationController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Admin\Permission\Service)->editPermission($id, $input);
+        $data = $this->service(E::PERMISSION)->editPermission($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -355,7 +353,7 @@ class OrganizationController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Admin\Permission\Service)->getMultiplePermissions($orgId, $input);
+        $data = $this->service(E::PERMISSION)->getMultiplePermissions($orgId, $input);
 
         return ApiResponse::json($data);
     }
@@ -365,13 +363,13 @@ class OrganizationController extends Controller
         switch ($type)
         {
             case 'assignable':
-                $data = (new Admin\Permission\Service)->getAssignablePermissions();
+                $data = $this->service(E::PERMISSION)->getAssignablePermissions();
 
                 break;
 
             case 'all':
             default:
-                $data = (new Admin\Permission\Service)->getAllPermissions();
+                $data = $this->service(E::PERMISSION)->getAllPermissions();
 
                 break;
         }
@@ -384,38 +382,38 @@ class OrganizationController extends Controller
     /**
     * Admin related functons
     */
-    public function postAuthenticate(Admin\Admin\Service $adminService, string $id)
+    public function postAuthenticate(string $id)
     {
         $input = Request::all();
 
-        $response = $adminService->authenticate($id, $input);
+        $response = $this->service(E::ADMIN)->authenticate($id, $input);
 
         return ApiResponse::json($response);
     }
 
-    public function postForgotPassword(Admin\Admin\Service $adminService, string $orgId)
+    public function postForgotPassword(string $orgId)
     {
         $input = Request::all();
 
-        $response = $adminService->forgotPassword($orgId, $input);
+        $response = $this->service(E::ADMIN)->forgotPassword($orgId, $input);
 
         return ApiResponse::json($response);
     }
 
-    public function postResetPassword(Admin\Admin\Service $adminService, string $orgId)
+    public function postResetPassword(string $orgId)
     {
         $input = Request::all();
 
-        $response = $adminService->resetPassword($orgId, $input);
+        $response = $this->service(E::ADMIN)->resetPassword($orgId, $input);
 
         return ApiResponse::json($response);
     }
 
-    public function postChangePassword(Admin\Admin\Service $adminService)
+    public function postChangePassword()
     {
         $input = Request::all();
 
-        $response = $adminService->changePassword($input);
+        $response = $this->service(E::ADMIN)->changePassword($input);
 
         return ApiResponse::json($response);
     }
@@ -424,7 +422,7 @@ class OrganizationController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Admin\Admin\Service)->loginWithOAuth($input);
+        $data = $this->service(E::ADMIN)->loginWithOAuth($input);
 
         return ApiResponse::json($data);
     }
@@ -433,14 +431,14 @@ class OrganizationController extends Controller
     {
         $input = Request::all();
 
-        $responseStatus = (new Admin\Service)->processMailgunCallback($type, $input);
+        $responseStatus = $this->service(E::ADMIN)->processMailgunCallback($type, $input);
 
         return ApiResponse::json([], $responseStatus);
     }
 
     public function getMerchantIds($id, $adminId)
     {
-        $merchantIds = (new Admin\Admin\Service)->getMerchantIds($id, $adminId);
+        $merchantIds = $this->service(E::ADMIN)->getMerchantIds($id, $adminId);
 
         return ApiResponse::json($merchantIds);
     }
@@ -449,14 +447,14 @@ class OrganizationController extends Controller
     {
         $input = Request::all();
 
-        $response = (new Admin\Admin\Service)->getMerchants($id, $adminId, $input);
+        $response = $this->service(E::ADMIN)->getMerchants($id, $adminId, $input);
 
         return ApiResponse::json($response);
     }
 
-    public function postLockBulkAccounts(Admin\Admin\Service $adminService)
+    public function postLockBulkAccounts()
     {
-        $response = $adminService->lockUnusedAccounts();
+        $response = $this->service(E::ADMIN)->lockUnusedAccounts();
 
         return ApiResponse::json($response);
     }
@@ -470,7 +468,7 @@ class OrganizationController extends Controller
 
             $input = Request::all();
 
-            $response = (new Admin\Admin\Service)->searchAuditLogs($id, $input);
+            $response = $this->service(E::ADMIN)->searchAuditLogs($id, $input);
 
             return ApiResponse::json($response);
         }

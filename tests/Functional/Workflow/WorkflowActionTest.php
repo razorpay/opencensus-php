@@ -40,16 +40,16 @@ class WorkflowActionTest extends TestCase
     public function testCreateWorkflowAction()
     {
         // Editing checker admin as maker.
-        $this->ba->adminAuth('test', Org::MAKER_TOKEN, 'org_' . Org::RZP_ORG);
+        $this->ba->adminAuth('test', Org::MAKER_TOKEN, Org::RZP_ORG_SIGNED);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, 'org_' . Org::RZP_ORG, 'admin_' . Org::CHECKER_ADMIN);
+        $url = sprintf($url, Org::RZP_ORG_SIGNED, Org::CHECKER_ADMIN_SIGNED);
 
         // Assign url
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $this->testData[__FUNCTION__]['response']['org_id'] = 'org_' . Org::RZP_ORG;
+        $this->testData[__FUNCTION__]['response']['org_id'] = Org::RZP_ORG_SIGNED;
 
         $this->testData[__FUNCTION__]['response']['entity_id'] = Org::CHECKER_ADMIN;
 
@@ -58,11 +58,11 @@ class WorkflowActionTest extends TestCase
 
     public function testCreateWorkflowActionInprogress()
     {
-        $this->editAdmin('org_' . Org::RZP_ORG, 'admin_' . Org::CHECKER_ADMIN);
+        $this->editAdmin(Org::RZP_ORG_SIGNED, Org::CHECKER_ADMIN_SIGNED);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, 'org_' . Org::RZP_ORG, 'admin_' . Org::CHECKER_ADMIN);
+        $url = sprintf($url, Org::RZP_ORG_SIGNED, Org::CHECKER_ADMIN_SIGNED);
 
         // Assign url
         $this->testData[__FUNCTION__]['request']['url'] = $url;
@@ -83,7 +83,7 @@ class WorkflowActionTest extends TestCase
 
         $this->testData[__FUNCTION__]['response']['content']['entity_name'] = 'admin';
 
-        $this->testData[__FUNCTION__]['response']['content']['org_id'] = 'org_' . Org::RZP_ORG;
+        $this->testData[__FUNCTION__]['response']['content']['org_id'] = Org::RZP_ORG_SIGNED;
 
         $this->startTest();
     }
@@ -97,7 +97,7 @@ class WorkflowActionTest extends TestCase
 
         $this->setDefaultActionIdInUrl();
 
-        $this->testData[__FUNCTION__]['response']['content']['org_id'] = 'org_' . Org::RZP_ORG;
+        $this->testData[__FUNCTION__]['response']['content']['org_id'] = Org::RZP_ORG_SIGNED;
 
         $this->testData[__FUNCTION__]['response']['content']['id'] = $defaultWorkflowActionId;
 
@@ -110,21 +110,22 @@ class WorkflowActionTest extends TestCase
      */
     public function testWorkflowActionDiff()
     {
-        //adding in relations too just to check diff correctly.
+        // adding in relations too just to check diff correctly.
         $content = [
             "name"  => "Checker checker",
             "roles" => [
-                "role_" . Org::CHECKER_ROLE,
-                "role_" . Org::MAKER_ROLE,
+                Org::CHECKER_ROLE_SIGNED,
+                Org::MAKER_ROLE_SIGNED,
             ],
             "groups" => [
-                "grp_" . Org::DEFAULT_GRP,
+                Org::DEFAULT_GRP_SIGNED,
             ],
         ];
 
         // we have a default workflow for edit admin so this will trigger wf action.
-        $workflowAction = $this->editAdmin('org_' . Org::RZP_ORG,
-            'admin_' . Org::CHECKER_ADMIN,
+        $workflowAction = $this->editAdmin(
+            Org::RZP_ORG_SIGNED,
+            Org::CHECKER_ADMIN_SIGNED,
             $content);
 
         //After Indexing into ES the document is not available in Real Time so a sec delay.
@@ -168,7 +169,7 @@ class WorkflowActionTest extends TestCase
 
         $this->setDefaultActionIdInUrl(Org::DEFAULT_TOKEN);
 
-        $this->testData[__FUNCTION__]['response']['content']['checkers'][0]['admin_id'] = 'admin_' . Org::SUPER_ADMIN;
+        $this->testData[__FUNCTION__]['response']['content']['checkers'][0]['admin_id'] = Org::SUPER_ADMIN_SIGNED;
 
         $this->testData[__FUNCTION__]['response']['content']['checkers'][0]['action_id'] = $defaultWorkflowActionId;
 
@@ -190,7 +191,7 @@ class WorkflowActionTest extends TestCase
 
         $defaultWorkflowActionId = 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID;
 
-        $this->ba->adminAuth('test', $adminToken, 'org_' . Org::RZP_ORG);
+        $this->ba->adminAuth('test', $adminToken, Org::RZP_ORG_SIGNED);
 
         $url = $this->testData[$functionName]['request']['url'];
 
@@ -203,7 +204,7 @@ class WorkflowActionTest extends TestCase
     public function testWorkflowActionRejection()
     {
         //This will create a wf action in Mysql and ES,not using default workflow.
-        $workflow = $this->editAdmin('org_' . Org::RZP_ORG, 'admin_' . Org::CHECKER_ADMIN);
+        $workflow = $this->editAdmin('org_' . Org::RZP_ORG, Org::CHECKER_ADMIN_SIGNED);
 
         //ES is not so Real Time
         sleep(1);
@@ -220,13 +221,13 @@ class WorkflowActionTest extends TestCase
     public function testWorkflowActionExecuteLastApproval()
     {
         //This will create a wf action in Mysql and ES,not using default workflow.
-        $workflow = $this->editAdmin('org_' . Org::RZP_ORG, 'admin_' . Org::CHECKER_ADMIN);
+        $workflow = $this->editAdmin(Org::RZP_ORG_SIGNED, Org::CHECKER_ADMIN_SIGNED);
 
         sleep(1);
 
         $this->approveWorkflowAction($workflow['id']);
 
-        $this->ba->adminAuth('test', Org::MAKER_TOKEN, 'org_' . Org::RZP_ORG);
+        $this->ba->adminAuth('test', Org::MAKER_TOKEN, Org::RZP_ORG_SIGNED);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 

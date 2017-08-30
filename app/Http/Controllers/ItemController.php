@@ -2,34 +2,23 @@
 
 namespace RZP\Http\Controllers;
 
-use Request;
-
 use ApiResponse;
-use RZP\Models\Item;
+use Request;
 
 class ItemController extends Controller
 {
-    protected $service;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->service = new Item\Service;
-    }
-
     public function createItem()
     {
         $input = Request::all();
 
-        $item = $this->service('item')->create($input);
+        $item = $this->service()->create($input);
 
         return ApiResponse::json($item);
     }
 
     public function getItem($id)
     {
-        $item = $this->service('item')->fetch($id);
+        $item = $this->service()->fetch($id);
 
         return ApiResponse::json($item);
     }
@@ -38,7 +27,7 @@ class ItemController extends Controller
     {
         $input = Request::all();
 
-        $items = $this->service('item')->fetchMultiple($input);
+        $items = $this->service()->fetchMultiple($input);
 
         return ApiResponse::json($items);
     }
@@ -47,14 +36,14 @@ class ItemController extends Controller
     {
         $input = Request::all();
 
-        $item = $this->service('item')->update($id, $input);
+        $item = $this->service()->update($id, $input);
 
         return ApiResponse::json($item);
     }
 
     public function deleteItem($id)
     {
-        $response = $this->service('item')->delete($id);
+        $response = $this->service()->delete($id);
 
         return ApiResponse::json($response);
     }

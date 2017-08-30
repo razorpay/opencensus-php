@@ -20,7 +20,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->create($input);
+        $data = $this->service()->create($input);
 
         return ApiResponse::json($data);
     }
@@ -29,7 +29,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->createSubMerchant($input);
+        $data = $this->service()->createSubMerchant($input);
 
         return ApiResponse::json($data);
     }
@@ -38,7 +38,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->edit($id, $input);
+        $data = $this->service()->edit($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -51,7 +51,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->editEmail($id, $input);
+        $data = $this->service()->editEmail($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -60,7 +60,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->editConfig($input);
+        $data = $this->service()->editConfig($input);
 
         return ApiResponse::json($data);
     }
@@ -71,7 +71,7 @@ class MerchantController extends Controller
         {
             $input['logo'] = Request::file("logo");
 
-            $data = (new Merchant\Service)->editConfig($input);
+            $data = $this->service()->editConfig($input);
 
             return ApiResponse::json($data);
         }
@@ -85,7 +85,7 @@ class MerchantController extends Controller
 
     public function deleteMerchantConfigLogo()
     {
-        $data = (new Merchant\Service)->deleteMerchantLogo();
+        $data = $this->service()->deleteMerchantLogo();
 
         return ApiResponse::json($data);
     }
@@ -93,7 +93,7 @@ class MerchantController extends Controller
     // This is on Internal Auth
     public function getMerchant($id)
     {
-        $data = (new Merchant\Service)->fetch($id);
+        $data = $this->service()->fetch($id);
 
         return ApiResponse::json($data);
     }
@@ -102,21 +102,21 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->fetchMultiple($input);
+        $data = $this->service()->fetchMultiple($input);
 
         return ApiResponse::json($data);
     }
 
     public function postCreateKeys($merchantId)
     {
-        $data = (new Merchant\Service)->createKey($merchantId);
+        $data = $this->service()->createKey($merchantId);
 
         return ApiResponse::json($data);
     }
 
     public function getKeys($merchantId)
     {
-        $data = (new Merchant\Service)->fetchKeys($merchantId);
+        $data = $this->service()->fetchKeys($merchantId);
 
         return ApiResponse::json($data);
     }
@@ -132,7 +132,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $keys = (new Merchant\Service)->updateKey($merchantId, $keyId, $input);
+        $keys = $this->service()->updateKey($merchantId, $keyId, $input);
 
         return ApiResponse::json($keys);
     }
@@ -141,7 +141,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->assignPricingPlan($id, $input);
+        $data = $this->service()->assignPricingPlan($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -150,7 +150,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->assignSettlementSchedule($id, $input);
+        $data = $this->service()->assignSettlementSchedule($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -159,14 +159,14 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->migrateMerchantToSettlementSchedules($input);
+        $data = $this->service()->migrateMerchantToSettlementSchedules($input);
 
         return ApiResponse::json($data);
     }
 
     public function getPricingPlan($id)
     {
-        $data = (new Merchant\Service)->getPricingPlan($id);
+        $data = $this->service()->getPricingPlan($id);
 
         return ApiResponse::json($data);
     }
@@ -175,7 +175,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Terminal\Service)->createTerminal($id, $input);
+        $data = $this->service(E::TERMINAL)->createTerminal($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -184,7 +184,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Terminal\Service)->copyTerminal($mid, $tid, $input);
+        $data = $this->service(E::TERMINAL)->copyTerminal($mid, $tid, $input);
 
         return ApiResponse::json($data);
     }
@@ -193,21 +193,21 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Terminal\Service)->getTerminals($mid, $input);
+        $data = $this->service(E::TERMINAL)->getTerminals($mid, $input);
 
         return ApiResponse::json($data);
     }
 
     public function getTerminal($mid, $tid)
     {
-        $data = (new Terminal\Service)->getTerminal($mid, $tid);
+        $data = $this->service(E::TERMINAL)->getTerminal($mid, $tid);
 
         return ApiResponse::json($data);
     }
 
     public function deleteTerminal($mid, $tid)
     {
-        $data = (new Terminal\Service)->deleteTerminal($mid, $tid);
+        $data = $this->service(E::TERMINAL)->deleteTerminal($mid, $tid);
 
         return ApiResponse::json($data);
     }
@@ -216,14 +216,14 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Terminal\Service)->modifyTerminal($mid, $tid, $input);
+        $data = $this->service(E::TERMINAL)->modifyTerminal($mid, $tid, $input);
 
         return ApiResponse::json($data);
     }
 
     public function postActivate($id)
     {
-        $data = (new Merchant\Service)->activate($id);
+        $data = $this->service()->activate($id);
 
         return ApiResponse::json($data);
     }
@@ -232,21 +232,21 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->sendActivationEmail($input);
+        $data = $this->service()->sendActivationEmail($input);
 
         return ApiResponse::json($data);
     }
 
     public function postLiveEnable($id)
     {
-        $data = (new Merchant\Service)->liveEnable($id);
+        $data = $this->service()->liveEnable($id);
 
         return ApiResponse::json($data);
     }
 
     public function postLiveDisable($id)
     {
-        $data = (new Merchant\Service)->liveDisable($id);
+        $data = $this->service()->liveDisable($id);
 
         return ApiResponse::json($data);
     }
@@ -255,7 +255,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->action($id, $input);
+        $data = $this->service()->action($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -264,14 +264,14 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->addBankAccount($id, $input);
+        $data = $this->service()->addBankAccount($id, $input);
 
         return ApiResponse::json($data);
     }
 
     public function getBankAccount($id)
     {
-        $data = (new Merchant\Service)->getBankAccount($id);
+        $data = $this->service()->getBankAccount($id);
 
         return ApiResponse::json($data);
     }
@@ -279,28 +279,28 @@ class MerchantController extends Controller
     /** Fetches merchant's own Bank Account details */
     public function getOwnBankAccount()
     {
-        $data = (new Merchant\Service)->getOwnBankAccount();
+        $data = $this->service()->getOwnBankAccount();
 
         return ApiResponse::json($data);
     }
 
     public function postGenerateTestBankAccounts()
     {
-        $data = (new Merchant\Service)->generateTestBankAccounts();
+        $data = $this->service()->generateTestBankAccounts();
 
         return ApiResponse::json($data);
     }
 
     public function getBanksPublic()
     {
-        $data = (new Merchant\Service)->getEnabledBanks();
+        $data = $this->service()->getEnabledBanks();
 
         return ApiResponse::json($data);
     }
 
     public function getBanks($id)
     {
-        $data = (new Merchant\Service)->getBanks($id);
+        $data = $this->service()->getBanks($id);
 
         return ApiResponse::json($data);
     }
@@ -309,7 +309,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->setPaymentBanks($id, $input);
+        $data = $this->service()->setPaymentBanks($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -318,14 +318,14 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->setPaymentMethods($merchantId, $input);
+        $data = $this->service()->setPaymentMethods($merchantId, $input);
 
         return ApiResponse::json($data);
     }
 
     public function getAccountBalance()
     {
-        $data = (new Merchant\Service)->fetchBalance();
+        $data = $this->service()->fetchBalance();
 
         return ApiResponse::json($data);
     }
@@ -333,7 +333,7 @@ class MerchantController extends Controller
     // This is on proxy Auth
     public function getAccountConfig()
     {
-        $data = (new Merchant\Service)->fetchConfig();
+        $data = $this->service()->fetchConfig();
 
         return ApiResponse::json($data);
     }
@@ -342,14 +342,14 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->editAmountCredits($id, $input);
+        $data = $this->service()->editAmountCredits($id, $input);
 
         return ApiResponse::json($data);
     }
 
     public function getPaymentMethods()
     {
-        $data = (new Merchant\Service)->getPaymentMethods();
+        $data = $this->service()->getPaymentMethods();
 
         return ApiResponse::json($data);
     }
@@ -358,28 +358,28 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->getCheckoutPreferences($input);
+        $data = $this->service()->getCheckoutPreferences($input);
 
         return ApiResponse::json($data);
     }
 
     public function patchMerchantBeneficiaryCode()
     {
-        $data = (new Merchant\Service)->patchMerchantBeneficiaryCode();
+        $data = $this->service()->patchMerchantBeneficiaryCode();
 
         return ApiResponse::json($data);
     }
 
     public function getMerchantBeneficiaryFile()
     {
-        $data = (new Merchant\Service)->getMerchantBeneficiaryFile();
+        $data = $this->service()->getMerchantBeneficiaryFile();
 
         return ApiResponse::json($data);
     }
 
     public function getMerchantWebhooks($id)
     {
-        $data = (new Merchant\Service)->getMerchantWebhooks($id);
+        $data = $this->service()->getMerchantWebhooks($id);
 
         return ApiResponse::json($data);
     }
@@ -388,7 +388,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->createWebhook($input);
+        $data = $this->service()->createWebhook($input);
 
         return ApiResponse::json($data);
     }
@@ -397,21 +397,21 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->editWebhook($id, $input);
+        $data = $this->service()->editWebhook($id, $input);
 
         return ApiResponse::json($data);
     }
 
     public function getWebhook($id)
     {
-        $data = (new Merchant\Service)->getWebhook($id);
+        $data = $this->service()->getWebhook($id);
 
         return ApiResponse::json($data);
     }
 
     public function getWebhooks()
     {
-        $data = (new Merchant\Service)->getWebhooks();
+        $data = $this->service()->getWebhooks();
 
         return ApiResponse::json($data);
     }
@@ -420,7 +420,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->postMerchantBeneficiaryFile($input);
+        $data = $this->service()->postMerchantBeneficiaryFile($input);
 
         return ApiResponse::json($data);
     }
@@ -429,7 +429,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $prefs = (new Merchant\Service)->getCheckoutPreferences($input);
+        $prefs = $this->service()->getCheckoutPreferences($input);
 
         $data = $this->getCheckoutCommon($input);
 
@@ -514,7 +514,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response = (new \RZP\Models\Merchant\Service)->sendDailyReportForAllMerchants($input);
+        $response = $this->service()->sendDailyReportForAllMerchants($input);
 
         return ApiResponse::json($response);
     }
@@ -530,7 +530,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->notifyMerchantsHoliday($input);
+        $data = $this->service()->notifyMerchantsHoliday($input);
 
         return ApiResponse::json($data);
     }
@@ -539,7 +539,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->updateMethodsForMultipleMerchants($input);
+        $data = $this->service()->updateMethodsForMultipleMerchants($input);
 
         return ApiResponse::json($data);
     }
@@ -548,7 +548,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->updateHoldFundsForMultipleMerchants($input);
+        $data = $this->service()->updateHoldFundsForMultipleMerchants($input);
 
         return ApiResponse::json($data);
     }
@@ -557,14 +557,14 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->updateBankAccountForMultipleMerchants($input);
+        $data = $this->service()->updateBankAccountForMultipleMerchants($input);
 
         return ApiResponse::json($data);
     }
 
     public function getOffers(string $mid)
     {
-        $data = (new Merchant\Service)->getOffers($mid);
+        $data = $this->service()->getOffers($mid);
 
         return ApiResponse::json($data);
     }
@@ -573,14 +573,14 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->addOrRemoveMerchantFeatures($input);
+        $data = $this->service()->addOrRemoveMerchantFeatures($input);
 
         return ApiResponse::json($data);
     }
 
     public function getMerchantFeatures($id)
     {
-        $data = (new Merchant\Service)->getMerchantFeatures();
+        $data = $this->service()->getMerchantFeatures();
 
         return ApiResponse::json($data);
     }
@@ -634,7 +634,7 @@ class MerchantController extends Controller
     // Activation Form Handlers
     public function getActivationDetails()
     {
-        $response = (new Detail\Service)->fetchMerchantDetails();
+        $response = $this->service(E::MERCHANT_DETAIL)->fetchMerchantDetails();
 
         return ApiResponse::json($response);
     }
@@ -643,7 +643,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response = (new Detail\Service)->uploadActivationFileMerchant($input);
+        $response = $this->service(E::MERCHANT_DETAIL)->uploadActivationFileMerchant($input);
 
         return ApiResponse::json($response);
     }
@@ -652,14 +652,14 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response = (new Detail\Service)->uploadActivationFileAdmin($merchantId, $input);
+        $response = $this->service(E::MERCHANT_DETAIL)->uploadActivationFileAdmin($merchantId, $input);
 
         return ApiResponse::json($response);
     }
 
     public function getActivationFiles(string $id)
     {
-        $response = (new Detail\Service)->fetchActivationFiles($id);
+        $response = $this->service(E::MERCHANT_DETAIL)->fetchActivationFiles($id);
 
         return ApiResponse::json($response);
     }
@@ -668,7 +668,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response = (new Detail\Service)->saveMerchantDetails($input);
+        $response = $this->service(E::MERCHANT_DETAIL)->saveMerchantDetails($input);
 
         return ApiResponse::json($response);
     }
@@ -677,7 +677,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response = (new Detail\Service)->editMerchantDetails($id, $input);
+        $response = $this->service(E::MERCHANT_DETAIL)->editMerchantDetails($id, $input);
 
         return ApiResponse::json($response);
     }
@@ -702,14 +702,14 @@ class MerchantController extends Controller
 
     public function getUsers($id)
     {
-        $data = (new Merchant\Service)->getUsers($id);
+        $data = $this->service()->getUsers($id);
 
         return ApiResponse::json($data);
     }
 
     public function getGSTDetails()
     {
-        $response = (new Merchant\Service)->getGSTDetails();
+        $response = $this->service()->getGSTDetails();
 
         return ApiResponse::json($response);
     }
@@ -718,21 +718,21 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response = (new Merchant\Service)->editGSTDetails($input);
+        $response = $this->service()->editGSTDetails($input);
 
         return ApiResponse::json($response);
     }
 
     public function getReferredMerchants()
     {
-        $response = (new Merchant\Service)->fetchReferredMerchants();
+        $response = $this->service()->fetchReferredMerchants();
 
         return ApiResponse::json($response);
     }
 
     public function getTags($id)
     {
-        $response = (new Merchant\Service)->getTags($id);
+        $response = $this->service()->getTags($id);
 
         return ApiResponse::json($response);
     }
@@ -741,14 +741,14 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response = (new Merchant\Service)->addTags($id, $input);
+        $response = $this->service()->addTags($id, $input);
 
         return ApiResponse::json($response);
     }
 
     public function deleteTag($id, $tagName)
     {
-        $response = (new Merchant\Service)->deleteTag($id, $tagName);
+        $response = $this->service()->deleteTag($id, $tagName);
 
         return ApiResponse::json($response);
     }
@@ -757,7 +757,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        $response = (new Merchant\Service)->markGratisTransactionPostpaid($input);
+        $response = $this->service()->markGratisTransactionPostpaid($input);
 
         return ApiResponse::json($response);
     }

@@ -28,9 +28,9 @@ return [
 
     'testInvoiceNew' => [
         'Tax Invoice' => [
-            'Comission on Card Payments <= INR 2,000' => [
+            'Commission on Card Payments <= INR 2,000' => [
                 'GST.SAC Code'  => '997158',
-                'Description'   => 'Comission on Card Payments <= INR 2,000',
+                'Description'   => 'Commission on Card Payments <= INR 2,000',
                 'Amount'        => 500,
                 'SGST @ 9%'     => 11,
                 'CGST @ 9%'     => 11,
@@ -38,9 +38,9 @@ return [
                 'Tax Total'     => 22,
                 'Grand Total'   => 522,
             ],
-            'Comission on Card Payments > INR 2,000' => [
+            'Commission on Card Payments > INR 2,000' => [
                 'GST.SAC Code'  => '997158',
-                'Description'   => 'Comission on Card Payments > INR 2,000',
+                'Description'   => 'Commission on Card Payments > INR 2,000',
                 'Amount'        => 500,
                 'SGST @ 9%'     => 11,
                 'CGST @ 9%'     => 11,
@@ -48,9 +48,9 @@ return [
                 'Tax Total'     => 22,
                 'Grand Total'   => 522,
             ],
-            'Comission on All Methods Except Cards' => [
+            'Commission on All Methods Except Cards' => [
                 'GST.SAC Code'  => '997158',
-                'Description'   => 'Comission on All Methods Except Cards',
+                'Description'   => 'Commission on All Methods Except Cards',
                 'Amount'        => 500,
                 'SGST @ 9%'     => 11,
                 'CGST @ 9%'     => 11,
@@ -69,26 +69,48 @@ return [
                 'Grand Total'   => 1566,
             ],
         ],
-        'Tax Credit Note' => [
+        'Tax Debit Note' => [
             'Adjustment against extra commission' => [
                 'GST.SAC Code'  => '997158',
                 'Description'   => 'Adjustment against extra commission',
-                'Amount'        => -45000,
-                'SGST @ 9%'     => -900,
-                'CGST @ 9%'     => -900,
+                'Amount'        => 450,
+                'SGST @ 9%'     => 9,
+                'CGST @ 9%'     => 9,
                 'IGST @ 18%'    => 0,
-                'Tax Total'     => -1800,
-                'Grand Total'   => -46800,
+                'Tax Total'     => 18,
+                'Grand Total'   => 468,
             ],
             'Total' => [
                 'GST.SAC Code'  => '',
                 'Description'   => 'Total',
-                'Amount'        => -45000,
-                'SGST @ 9%'     => -900,
-                'CGST @ 9%'     => -900,
+                'Amount'        => 450,
+                'SGST @ 9%'     => 9,
+                'CGST @ 9%'     => 9,
                 'IGST @ 18%'    => 0,
-                'Tax Total'     => -1800,
-                'Grand Total'   => -46800,
+                'Tax Total'     => 18,
+                'Grand Total'   => 468,
+            ],
+        ],
+        'Tax Credit Note' => [
+            'Adjustment against uncharged fee' => [
+                'GST.SAC Code'  => '997158',
+                'Description'   => 'Adjustment against uncharged fee',
+                'Amount'        => 250,
+                'SGST @ 9%'     => 4,
+                'CGST @ 9%'     => 4,
+                'IGST @ 18%'    => 0,
+                'Tax Total'     => 8,
+                'Grand Total'   => 258,
+            ],
+            'Total' => [
+                'GST.SAC Code'  => '',
+                'Description'   => 'Total',
+                'Amount'        => 250,
+                'SGST @ 9%'     => 4,
+                'CGST @ 9%'     => 4,
+                'IGST @ 18%'    => 0,
+                'Tax Total'     => 8,
+                'Grand Total'   => 258,
             ],
         ],
     ],
