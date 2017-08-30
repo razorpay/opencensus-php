@@ -121,18 +121,12 @@ class CreateTransfers extends Migration
             (
                 Table::TRANSFER . '_' . Entity::TRANSACTION_ID . '_foreign'
             );
-        });
 
-        Schema::table(Table::TRANSFER, function($table)
-        {
             $table->dropForeign
             (
                 Table::TRANSFER . '_' . Entity::MERCHANT_ID . '_foreign'
             );
-        });
 
-        Schema::table(Table::TRANSFER, function($table)
-        {
             $table->dropForeign
             (
                 Table::TRANSFER . '_' . Entity::RECIPIENT_SETTLEMENT_ID . '_foreign'

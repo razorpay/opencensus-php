@@ -165,7 +165,7 @@ class Entity extends Base\PublicEntity
 
     public function recipientSettlement()
     {
-        return $this->belongsTo(Settlement\Entity::class, 'recipient_settlement_id', 'id');
+        return $this->belongsTo(Settlement\Entity::class, self::RECIPIENT_SETTLEMENT_ID, Settlement\Entity::ID);
     }
 
     // -------------------- End Relations -----------------------

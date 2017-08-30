@@ -133,21 +133,20 @@ trait SettlementTrait
     }
 
     /**
-     * [Marketplace] Updates the recipient's settlement id in the transfer entity.
+     * [Route] Updates the recipient's settlement id in the transfer entity.
      *
      *  When the transactions for the internal payments (payments triggered by the transfer
      *  from master merchant to the linked account) are settled, the settlement_id of those
      *  transactions will be updated for the transfer entity that initiated these payments.
      *
-     * @param $setl
-     * @param $setlTxns
+     * @param $txns
      */
     protected function updateSettlementIdInTransfer($txns)
     {
         $filteredTxnIds = [];
         foreach ($txns as $txn)
         {
-            if (($txn->isTypePayment()) and ($txn->merchant->isLinkedAccount() === true))
+            if (($txn->isTypePayment() === true) and ($txn->merchant->isLinkedAccount() === true))
             {
                 $filteredTxnIds[] = $txn->getId();
             }
@@ -166,13 +165,16 @@ trait SettlementTrait
             foreach ($filteredTxns as $txn)
             {
                 $settlementId = $txn->getSettlementId();
+
                 $transfer = $txn->source->transfer;
+
                 $transfer->setRecipientSettlementId($settlementId);
+
                 $this->repo->saveOrFail($transfer);
             }
 
         }
-        catch (\Exception $ex)
+        catch (\Throwable $ex)
         {
             $this->trace->traceException(
                 $ex, Trace::CRITICAL, TraceCode::TRANSFER_UPDATE_SETTLEMENT_ID_FAILED, $filteredTxnIds);
