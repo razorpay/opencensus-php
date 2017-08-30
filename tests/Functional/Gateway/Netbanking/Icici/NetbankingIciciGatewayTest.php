@@ -29,7 +29,7 @@ class NetbankingIciciGatewayTest extends TestCase
 
         $this->setMockGatewayTrue();
 
-        $this->fixtures->create('terminal:shared_netbanking_icici_terminal');
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_netbanking_icici_terminal');
     }
 
     public function testPayment()
@@ -47,6 +47,31 @@ class NetbankingIciciGatewayTest extends TestCase
 
         // Asserts that bank payment id exists in response and is an int
         $this->assertEquals(9999999999, $gatewayPayment['bank_payment_id']);
+    }
+
+    public function testPaymentCorporate()
+    {
+        $this->fixtures->terminal->edit($this->sharedTerminal->getId(), ['corporate' => 1]);
+
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $content = $this->verifyPayment($payment['id']);
+
+        $this->assertTestResponse($payment, 'testPayment');
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentNetbankingEntity'], $gatewayPayment);
+
+        // Asserts that bank payment id exists in response and is an int
+        $this->assertEquals(9999999999, $gatewayPayment['bank_payment_id']);
+
+        assert($content['payment']['verified'] === 1);
+
+        $this->fixtures->terminal->edit($this->sharedTerminal->getId(), ['corporate' => 0]);
     }
 
     public function testPaymentVerify()
@@ -179,17 +204,48 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testEmptyVerifyResponse()
     {
-        $data = $this->testData['testFailedPaymentEmptyVerify'];
+        $data = $this->testData['testVerifyMismatch'];
 
         $this->testFailedAuthPayment();
 
-        $this->mockNullVerifyResponse();
+        $this->mockStringVerifyResponse();
 
         $payment = $this->getLastEntity('payment', true);
 
-        $verify = $this->verifyPayment($payment['id']);
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
 
-        $this->assertArraySelectiveEquals($data, $verify);
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals(true, $netbanking['received']);
+        $this->assertEquals('N', $netbanking['status']);
+    }
+
+    public function testStringIndexOutOfRangeVerifyResponse()
+    {
+        $data = $this->testData['testVerifyMismatch'];
+
+        $this->testFailedAuthPayment();
+
+        $this->mockStringVerifyResponse('String index out of range: -17');
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals(true, $netbanking['received']);
+        $this->assertEquals('N', $netbanking['status']);
     }
 
     public function testAuthResponseDecryptionFailure()
@@ -305,11 +361,11 @@ class NetbankingIciciGatewayTest extends TestCase
         });
     }
 
-    protected function mockNullVerifyResponse()
+    protected function mockStringVerifyResponse(string $response = '')
     {
-        $this->mockServerContentFunction(function(&$content, $action = null)
+        $this->mockServerContentFunction(function(&$content, $action = null) use ($response)
         {
-            $content = "";
+            $content = $response;
         });
     }
 

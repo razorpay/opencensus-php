@@ -247,6 +247,16 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->create('terminal:shared_hdfc_terminal');
         $this->fixtures->create('terminal:shared_axis_terminal');
 
+        $this->fixtures->create('gateway_rule', [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'axis_migs',
+            'type'          => 'filter',
+            'filter_type'   => 'select',
+            'group'         => 'prepaid_iin_filter',
+            'iins'          => ['457392'],
+        ]);
+
         $this->mockTokenex();
 
         $payment = $this->getDefaultPaymentArray();
@@ -772,6 +782,18 @@ class TerminalSelectionTest extends TestCase
               'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
               'network_category' => 'corporate']);
 
+        $this->fixtures->create('gateway_rule', [
+            'method'           => 'netbanking',
+            'merchant_id'      => '100000Razorpay',
+            'gateway'          => 'billdesk',
+            'issuer'           => 'ICIC',
+            'type'             => 'filter',
+            'filter_type'      => 'reject',
+            'network_category' => 'corporate',
+            'shared_terminal'  => 1,
+            'group'            => 'billdesk_category_filter',
+        ]);
+
         $payment = $this->getDefaultNetbankingPaymentArray();
 
         $payment['bank'] = 'ICIC';
@@ -900,6 +922,18 @@ class TerminalSelectionTest extends TestCase
 
         $this->fixtures->create('terminal:shared_netbanking_icici_terminal');
 
+        $this->fixtures->create('gateway_rule', [
+            'method'           => 'netbanking',
+            'merchant_id'      => '100000Razorpay',
+            'gateway'          => 'billdesk',
+            'category2'        => 'mutual_funds',
+            'issuer'           => 'ICIC',
+            'type'             => 'filter',
+            'filter_type'      => 'reject',
+            'shared_terminal'  => '0',
+            'group'            => 'billdesk_category_filter',
+        ]);
+
         $payment = $this->getDefaultNetbankingPaymentArray();
         $payment['bank'] = 'SBIN';
         $this->doAuthAndCapturePayment($payment);
@@ -933,6 +967,17 @@ class TerminalSelectionTest extends TestCase
 
         $this->fixtures->create('terminal:shared_netbanking_icici_terminal');
 
+        $this->fixtures->create('gateway_rule', [
+            'method'           => 'netbanking',
+            'merchant_id'      => '100000Razorpay',
+            'gateway'          => 'billdesk',
+            'category2'        => 'housing',
+            'issuer'           => 'ICIC',
+            'type'             => 'filter',
+            'filter_type'      => 'reject',
+            'group'            => 'billdesk_category_filter',
+        ]);
+
         $payment = $this->getDefaultNetbankingPaymentArray();
         $payment['bank'] = 'ICIC';
         $this->doAuthAndCapturePayment($payment);
@@ -957,6 +1002,19 @@ class TerminalSelectionTest extends TestCase
              ['id' => 'ShrdNbBdkTmnl3',
               'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
               'network_category' => 'insurance']);
+
+        $this->fixtures->create('gateway_rule', [
+            'method'           => 'netbanking',
+            'merchant_id'      => '100000Razorpay',
+            'gateway'          => 'billdesk',
+            'category2'        => 'insurance',
+            'issuer'           => 'SBIN',
+            'type'             => 'filter',
+            'filter_type'      => 'reject',
+            'network_category' => 'insurance',
+            'shared_terminal'  => '1',
+            'group'            => 'billdesk_category_filter',
+        ]);
 
         $payment = $this->getDefaultNetbankingPaymentArray();
         $payment['bank'] = 'SBIN';

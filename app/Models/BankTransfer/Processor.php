@@ -83,7 +83,7 @@ class Processor extends Base\Core
 
         $this->trace->info(
                 TraceCode::BANK_TRANSFER_PROCESSING_SUCCESSFUL,
-                $bankTransfer->toArrayPublic());
+                $bankTransfer->toArray());
 
         return $bankTransfer;
     }
@@ -166,7 +166,7 @@ class Processor extends Base\Core
             TraceCode::BANK_TRANSFER_PROCESS_DUPLICATE_UTR,
             [
                 'message'           => 'Duplicate UTR received',
-                'existing_transfer' => $duplicateBankTransfer->toArrayPublic(),
+                'existing_transfer' => $duplicateBankTransfer->toArray(),
                 'received_utr'      => $bankTransfer->getUtr(),
             ]
         );
@@ -189,7 +189,7 @@ class Processor extends Base\Core
                 TraceCode::BANK_TRANSFER_PROCESSING_FAILED,
                 [
                     'message'      => 'Invalid account number',
-                    'bankTransfer' => $bankTransfer->toArrayPublic(),
+                    'bankTransfer' => $bankTransfer->toArray(),
                 ]
             );
 
@@ -249,7 +249,7 @@ class Processor extends Base\Core
         {
             $this->trace->info(
                 TraceCode::BANK_TRANSFER_RESERVED_ACCOUNT,
-                $bankTransfer->toArrayPublic()
+                $bankTransfer->toArray()
             );
 
             return true;

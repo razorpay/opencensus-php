@@ -246,6 +246,22 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchReferredMerchants($merchantId)
+    {
+        $tag = "ref-$merchantId";
+
+        return $this->newQuery()
+                    ->select(
+                        Entity::ID,
+                        Entity::NAME,
+                        Entity::ACTIVATED,
+                        Entity::CREATED_AT,
+                        Entity::EMAIL)
+                    ->withAnyTag($tag)
+                    ->whereNull(Entity::SUSPENDED_AT)
+                    ->get();
+    }
+
     public function fetchMerchantsByFilter(array $merchantIds, array $input)
     {
         $merchantCreatedAt = $this->repo->merchant->dbColumn(Entity::CREATED_AT);

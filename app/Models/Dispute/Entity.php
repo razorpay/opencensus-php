@@ -243,4 +243,9 @@ class Entity extends Base\PublicEntity
     {
         return (in_array($this->getStatus(), Status::getClosedStatuses(), true) === true);
     }
+
+    public function isLost(): bool
+    {
+        return ($this->getStatus() === Status::LOST);
+    }
 }

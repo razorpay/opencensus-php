@@ -49,6 +49,13 @@ class Creator extends Base\Core
     protected $columnFormat = [];
 
     /**
+     * Headers should be presnt/absent in excel/csv file
+     *
+     * @var bool headers
+     */
+    protected $headers = true;
+
+    /**
      * File Path of Local File
      *
      * @var string filePath
@@ -280,6 +287,20 @@ class Creator extends Base\Core
     public function metadata(array $metadata)
     {
         $this->file->setMetadata($metadata);
+
+        return $this;
+    }
+
+    /**
+     * Set the header flag for excel/csv files
+     *
+     * @param bool $header headers value
+     *
+     * @return Creator
+     */
+    public function headers(bool $headers)
+    {
+        $this->headers = $headers;
 
         return $this;
     }
@@ -649,6 +670,7 @@ class Creator extends Base\Core
             $this->content,
             $fileNameWithoutExt,
             $this->columnFormat,
+            $this->headers,
             $this->file->getExtension(),
             $this->getStorageDir());
 

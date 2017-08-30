@@ -39,7 +39,13 @@ class Core extends Base\Core
 
         $dispute = $this->repo->transaction(function() use ($dispute)
         {
-            $this->handleDeductAtOnset($dispute);
+            if ($dispute->getDeductAtOnset() === true)
+            {
+                // entity id is required to create associated transaction
+                $dispute->generateId();
+
+                $this->deductDisputedAmount($dispute);
+            }
 
             $this->repo->saveOrFail($dispute->payment);
 
@@ -100,28 +106,28 @@ class Core extends Base\Core
 
     protected function handleDisputeClosure(Entity $dispute)
     {
-        if ($dispute->isClosed() === true)
-        {
-            $dispute->setResolvedAt(Carbon::now()->getTimestamp());
-
-            $payment = $dispute->payment;
-
-            $payment->setDisputed(false);
-
-            $this->repo->saveOrFail($payment);
-        }
-    }
-
-    protected function handleDeductAtOnset(Entity $dispute)
-    {
-        if ($dispute->getDeductAtOnset() === false)
+        if ($dispute->isClosed() === false)
         {
             return;
         }
 
-        // entity id is required to create associated transaction
-        $dispute->generateId();
+        $dispute->setResolvedAt(Carbon::now()->getTimestamp());
 
+        $payment = $dispute->payment;
+
+        $payment->setDisputed(false);
+
+        $this->repo->saveOrFail($payment);
+
+        if (($dispute->isLost() === true) and
+            ($dispute->getAmountDeducted() === 0))
+        {
+            $this->deductDisputedAmount($dispute);
+        }
+    }
+
+    protected function deductDisputedAmount(Entity $dispute)
+    {
         $dispute->setAmountDeducted($dispute->getAmount());
 
         $txn = (new Transaction\Core)->createFromDispute($dispute);

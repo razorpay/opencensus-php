@@ -2400,6 +2400,24 @@ UPDATE hdfc
     SET gateway_payment_id = gateway_transaction_id
     WHERE gateway_payment_id IS NULL AND created_at <= 1502841600 AND action IN ('1', '4');
 
+# Adding index on payments.updated_at, payments.captured_at
+# Useful for analytics queries
+ALTER TABLE payments
+    ADD INDEX payments_updated_at_index (updated_at),
+    ADD INDEX payments_captured_at_index (captured_at);
+
+# Query for adding sbibuddy column in merchant_banks table
+ALTER TABLE merchant_banks
+    ADD COLUMN sbibuddy TINYINT(1) NOT NULL DEFAULT 0 AFTER jiomoney;
+
+ALTER TABLE merchant_invoice
+    DROP INDEX `merchant_invoice_merchant_id_year_month_type_unique`,
+    ADD COLUMN description VARCHAR(255) DEFAULT NULL AFTER `type`;
+
+UPDATE hdfc
+    SET gateway_transaction_id = null
+    WHERE enroll_result = "3" AND gateway_payment_id = gateway_transaction_id AND gateway_payment_id is NOT NULL AND status = 'captured';
+
 ALTER TABLE transfers
     ADD COLUMN recipient_settlement_id CHAR(14) DEFAULT NULL AFTER transaction_id,
     ADD CONSTRAINT transfers_recipient_settlement_id_foreign FOREIGN KEY(recipient_settlement_id)

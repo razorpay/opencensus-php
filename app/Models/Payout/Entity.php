@@ -46,6 +46,12 @@ class Entity extends Base\PublicEntity
     // Public attribute
     const DESTINATION            = 'destination';
 
+    // These are used while creating merchant payouts.
+    // Min amount refers to the minimum amount payout has to be
+    // Modulo refers to the multiples in which amount should be
+    const MIN_AMOUNT             = 'min_amount';
+    const MODULO                 = 'modulo';
+
     protected $entity = 'payout';
 
     protected $table  = Table::PAYOUT;

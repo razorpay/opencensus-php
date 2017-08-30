@@ -616,7 +616,7 @@ class Gateway extends Base\Gateway
         $errorMessage = SoapMethod::getErrorMessage($method);
 
         throw new Exception\GatewayErrorException(
-            ErrorCode::GATEWAY_ERROR_SOAP_ERROR, null, $errorMessage, $e);
+            ErrorCode::GATEWAY_ERROR_SOAP_ERROR, null, $errorMessage, [], $e);
     }
 
     protected function checkGatewayResponse(string $status)

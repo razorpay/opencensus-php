@@ -691,7 +691,7 @@ class MerchantFeeTest extends TestCase
             "emi" => "1fq0O3demix3tt"]);
     }
 
-    public function testIntrastateGstForCard()
+    public function testInterstateGstForCard()
     {
         $this->fee->setPricingRepo($this->getMockMaxFeePricingRepo());
 
@@ -702,7 +702,7 @@ class MerchantFeeTest extends TestCase
             'merchant_detail',
             [
                 'merchant_id' => $merchant->getId(),
-                'gstin' => '29kjsngjk2139',
+                'gstin' => '20kjsngjk2139',
             ]);
 
         foreach ($this->testData[__FUNCTION__] as $data)
