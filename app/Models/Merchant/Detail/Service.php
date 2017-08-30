@@ -293,9 +293,6 @@ class Service extends Base\Service
 
         $response = $merchantDetails->toArrayPublic();
 
-        // List of all the required fields which are not set
-        $detailsKeys = array_keys($merchantDetailsArr);
-
         $requiredFields = [];
 
         $validationFields = ValidationFields::DASHBOARD_FIELDS;
@@ -348,8 +345,8 @@ class Service extends Base\Service
 
     private function getFieldsToStepMap() : array
     {
-        // Here we can send market plance steps if needed.
-        // for the current merchant detail API its only normal accounts.
+        // Here we can send marketplace steps if needed.
+        // For the current merchant detail API its only normal accounts.
         return Merchant\Constants::STEP_MAP;
     }
 
@@ -381,10 +378,18 @@ class Service extends Base\Service
 
     public function getMerchantDetailsForAdmin()
     {
+        // Formatting the data as required by the controller.
         $merchantDetails = $this->fetchMerchantDetails();
 
-        //formatting the data as required by the controller.
-        //getsteps for the current merchant.
+        // Finished steps will be calculated based on required fields.
+        $this->calculateFinishedSteps($merchantDetails);
+
+        return $merchantDetails;
+    }
+
+    private function calculateFinishedSteps(array & $merchantDetails)
+    {
+        // Get steps for the current merchant.
         $steps = $this->getStepsList();
 
         if($merchantDetails['can_submit'] === true)
@@ -393,6 +398,7 @@ class Service extends Base\Service
         }
         else
         {
+            // By checking merchant details unfinished steps will be calculated.
             $unfinishedSteps = $this->calculateSteps($merchantDetails);
 
             if(count($unfinishedSteps) !== 0)
@@ -404,7 +410,5 @@ class Service extends Base\Service
                 $merchantDetails['steps_finished'] = $finishedSteps;
             }
         }
-
-        return $merchantDetails;
     }
 }

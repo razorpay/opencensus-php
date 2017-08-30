@@ -3,7 +3,7 @@
 namespace RZP\Models\Merchant;
 
 /**
- * General constants for Invoice Model
+ * General constants for Merchant Model.
  */
 final class Constants
 {

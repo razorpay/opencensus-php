@@ -1246,16 +1246,16 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
             $merchantId, ['methods', Entity::GROUPS, Entity::ADMINS, 'users']);
 
-        //need to set Merchant here cause fetchMerchantDetails expects a merchant in ba.
+        // Need to set Merchant here cause fetchMerchantDetails expects a merchant in ba.
         $this->app['basicauth']->setMerchant($merchant);
 
-        //merchant to array public
+        // Merchant to array public
         $data = $merchant->toArrayPublic();
 
-        //merchant confirmed details
+        // Merchant confirmed details
         $data['confirmed'] = $this->getMerchantConfirmed($merchant);
 
-        //fetch formatted merchant details.
+        // Fetch formatted merchant details.
         $data['merchant_details'] = (new Detail\Service)->getMerchantDetailsForAdmin();
 
         $data['tags'] = $merchant->tagNames();
@@ -1274,7 +1274,7 @@ class Service extends Base\Service
         $parentId = $merchant->getParentId();
 
         // Market place sub accounts are confirmed.
-        if(!empty($parentId))
+        if (empty($parentId) === false)
         {
             return true;
         }
@@ -1282,7 +1282,7 @@ class Service extends Base\Service
         {
             $owner = $this->core()->getMerchantConfirmedOwner($merchant);
 
-            // true if an owner is present
+            // True if an confirmed owner is present.
             return !empty($owner);
         }
     }
