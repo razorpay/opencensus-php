@@ -25,7 +25,7 @@ class DailyFiles extends Base\DailyFiles
         $amount = [
             'claims'  => $claimData['total_amount'],
             'refunds' => $refundData['total_amount'],
-            'total'   => $claimData['total_amount'] - $refundData['total_amount'],
+            'total'   => $claimData['total_amount'],
         ];
 
         $count = [

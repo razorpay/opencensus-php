@@ -364,7 +364,7 @@ class NetbankingPnbGatewayTest extends TestCase
                 'amount' => [
                     'claims'  => 500.0,
                     'refunds' => 500.0,
-                    'total'   => 0.0,
+                    'total'   => 500.0,
                 ],
                 'count'   => [
                     'claims'  => 4,
