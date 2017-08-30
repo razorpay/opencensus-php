@@ -68,7 +68,7 @@
             <div class="border-bottom m-b"></div>
             <div class="description" ng-class="{'desc-active': descActive}" ng-if="action_details && allowFieldEdit">
               <div class="bg-white" ng-click="setDescActive();alerts.resetAlerts();"></div>
-              <textarea class="form-control wrapper-xs" rows="4" ng-model="action_details.description" id="desc-textarea" style="height: 36px;">
+              <textarea class="form-control wrapper-xs" rows="4" ng-model="action_details.description" id="desc-textarea" style="height: 90%;">
               </textarea>
               <span class="desc-remove-icon glyphicon glyphicon-remove"
                     ng-click="setDescInactive()"
@@ -79,7 +79,9 @@
                 <span class="description-text">
                   {{ action_details.description || "Click to add a description" }}
                 </span>
-                <span class="desc-edit-icon"><i class="fa fa-pencil"></i></span>
+                <span class="desc-edit-icon" style="float: right; margin-right: 10px;">
+                  <i class="fa fa-pencil">
+                  </i></span>
                 <div class="clearfix"></div>
               </div>
               <button class="pull-right btn btn-info save-desc-btn" type="submit" ng-click="saveDesc()">{{descActive ? (descStatus === "saving" ? "Saving" : "Save") : "Click to edit"}}</button>
