@@ -465,15 +465,16 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
             [
                 'raw_content' => $response->body,
-                'content' => $content,
-                'gateway' => 'upi_icici',
-                'refund_id' => $input['refund']['id'],
+                'content'     => $content,
+                'gateway'     => 'upi_icici',
+                'refund_id'   => $input['refund']['id'],
             ]);
 
         return $content;
     }
 
-    protected function getVerifyRequestArray(array $input, string $entity = 'payment'): array
+
+    protected function getPaymentVerifyRequestArray(array $input)
     {
         $data = [
             'merchantId'        => $this->getMerchantId(),
@@ -482,13 +483,7 @@ class Gateway extends Base\Gateway
             'terminalId'        => '1234',
         ];
 
-        $content = $this->transformRequestArrayToContent($data);
-
-        $request = $this->getStandardRequestArray($content);
-
-        $request['headers'] = [
-            'Content-Type' => 'text/plain'
-        ];
+        $request = $this->getRequest($data);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
@@ -498,6 +493,41 @@ class Gateway extends Base\Gateway
             ]);
 
         return $request;
+    }
+
+    protected function getRefundVerifyRequestArray(array $input)
+    {
+        $data = [
+            'merchantId'        => $this->getMerchantId(),
+            'merchantTranId'    => $input['refund']['id'] . ($input['refund']['attempts'] - 1),
+            'subMerchantId'     => $this->getSubMerchantId($input),
+            'terminalId'        => '1234',
+        ];
+
+        $request = $this->getRequest($data);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
+            [
+                'request' => $request,
+                'decrypted_content' => $data
+            ]);
+
+        return $request;
+    }
+
+    protected function getRequest(array $data): array
+    {
+        $content = $this->transformRequestArrayToContent($data);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $request['headers'] = [
+            'Content-Type' => 'text/plain'
+        ];
+
+        return $request;
+
     }
 
     protected function verifyPayment(Verify $verify): string
