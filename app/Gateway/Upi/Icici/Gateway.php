@@ -436,9 +436,9 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY,
             [
                 'raw_content' => $response->body,
-                'content' => $content,
-                'gateway' => 'upi_icici',
-                'payment_id' => $input['payment']['id'],
+                'content'     => $content,
+                'gateway'     => 'upi_icici',
+                'payment_id'  => $input['payment']['id'],
             ]);
 
         $verify->verifyResponse = $this->response;
@@ -477,7 +477,7 @@ class Gateway extends Base\Gateway
     {
         $data = [
             'merchantId'        => $this->getMerchantId(),
-            'merchantTranId'    => $input[$entity]['id'],
+            'merchantTranId'    => $input['payment']['id'],
             'subMerchantId'     => $this->getSubMerchantId($input),
             'terminalId'        => '1234',
         ];
