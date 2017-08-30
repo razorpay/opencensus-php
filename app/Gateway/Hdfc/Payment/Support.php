@@ -251,6 +251,22 @@ trait Support
         {
             $data['udf5'] = 'PaymentID';
         }
+
+        //
+        // For Rupay Cards, gateway_transaction_id and gateway_payment_id are always different
+        // unlike cases for other card types.
+        // Previously we didn't stored transaction Id,
+        // and we populated gateway_payment_id in gateway_transaction_id for older payments
+        // This need to be done till data is fixed for older payments
+        //
+        if ($input['card']['network'] === 'RuPay')
+        {
+            if ($data['transid'] === null)
+            {
+                $data['transid'] = $this->model->getGatewayPaymentId();
+                $data['udf5'] = 'PaymentID';
+            }
+        }
     }
 
     protected function verifyAndSaveSupportResponse($type, $input)
