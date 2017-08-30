@@ -121,7 +121,7 @@ class DailyFiles extends Base\DailyFiles
         }
 
         $refunds = $this->repo->refund
-                              ->fetchRefundsForPnbClaims($from, $to);
+                              ->fetchRefundsForPnbClaims($from, $to, $this->gateway);
 
         foreach ($refunds as $refund)
         {
