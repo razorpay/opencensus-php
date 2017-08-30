@@ -150,8 +150,9 @@ final class Route
         'merchant_beneficiary_file'               => ['get',      'merchants/beneficiary/file',                     'MerchantController@getMerchantBeneficiaryFile'                     ],
         'merchant_post_beneficiary_file'          => ['post',     'merchants/beneficiary/file/bank',                'MerchantController@postMerchantBeneficiaryFile'                    ],
         'merchant_notify_holiday'                 => ['post',     'merchants/notify/holiday',                       'MerchantController@postMerchantsNotifyHoliday'                     ],
-        'merchant_invoice_update_gstin'           => ['put',      'merchants/{id}/invoice/gstin',                    'MerchantInvoiceController@updateGstin'                             ],
-        'merchant_create_invoice_entities'        => ['post',     'merchants/invoice/create',                      'MerchantInvoiceController@postCreateInvoiceEntities'               ],
+        'merchant_invoice_update_gstin'           => ['put',      'merchants/{id}/invoice/gstin',                   'MerchantInvoiceController@updateGstin'                             ],
+        'merchant_create_invoice_entities'        => ['post',     'merchants/invoice/create',                       'MerchantInvoiceController@postCreateInvoiceEntities'               ],
+        'merchant_invoice_add_bulk'               => ['post',     'merchants/invoice/bulk',                         'MerchantInvoiceController@postMultipleEntities'                    ],
         'balance_fetch'                           => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'credits_create'                          => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
         'credits_fetch_by_id'                     => ['get',      'merchants/{mid}/credits/{id}',                   'MerchantController@getCreditsLog'                                  ],
@@ -242,6 +243,7 @@ final class Route
         'adj_add'                                 => ['post',     'adjustments',                                    'AdjustmentController@postAdjustment'                               ],
         'adj_add_reverse'                         => ['post',     'adjustments/reversal',                           'AdjustmentController@postReverseAdjustments'                       ],
         'adj_add_bulk'                            => ['post',     'adjustments/bulk',                               'AdjustmentController@postMultipleAdjustments'                      ],
+        'adj_add_fee'                             => ['post',     'adjustments/fees',                               'AdjustmentController@postFeesAdjustment'                           ],
         'mock_hdfc_enroll'                        => ['post',     'gateway/mock_hdfc/enroll',                       'MockGatewayController@enroll'                                      ],
         'mock_hdfc_payment'                       => ['post',     'gateway/mock_hdfc/payment',                      'MockGatewayController@payment'                                     ],
         'mock_hdfc_auth_enrolled'                 => ['post',     'gateway/mock_hdfc/auth_enrolled',                'MockGatewayController@authEnrolled'                                ],
@@ -1124,10 +1126,12 @@ final class Route
         'workflow_action_get_multiple',
         'merchants_update_hold_funds',
         'adj_add',
+        'adj_add_fee',
         'payment_authorize_refund',
         'admin_change_password',
         'pricing_create_plan',
         'merchant_invoice_update_gstin',
+        'merchant_invoice_add_bulk',
     ];
 
     public static $routePermission = [
@@ -1213,6 +1217,7 @@ final class Route
         'merchant_fetch_bank_account'      => Permission::VIEW_MERCHANT_BANK_ACCOUNTS,
         'merchant_edit'                    => '*', // permission handled in code
         'adj_add'                          => Permission::ADD_MERCHANT_ADJUSTMENT,
+        'adj_add_fee'                      => Permission::ADD_MERCHANT_ADJUSTMENT,
         'merchant_add_bank_account'        => Permission::EDIT_MERCHANT_BANK_DETAIL,
         'merchant_activate'                => Permission::EDIT_ACTIVATE_MERCHANT,
         'admin_fetch_terminal_by_id'       => '*',
@@ -1248,6 +1253,7 @@ final class Route
         'invitation_fetch'                 => '*',
         'pricing_create_plan'              => Permission::CREATE_PRICING_PLAN,
         'merchant_invoice_update_gstin'    => '*',
+        'merchant_invoice_add_bulk'        => '*',
     ];
 
     public static $direct = [
@@ -1433,6 +1439,7 @@ final class Route
         'schedule_assign',
         'admin_dummy_account_test',
         'merchant_invoice_update_gstin',
+        'merchant_invoice_add_bulk',
     ];
 
     const RAZORPAYJS_ROUTES = [
