@@ -127,23 +127,36 @@ class TransactionController extends Controller
 
     public function getInvoiceReport($mode)
     {
+        $errorMsg = 'Oops!, We are not able to generate the Invoice for this period.';
+
         $this->checkMode($mode);
 
         $input = Input::all();
 
-        list($error, $data) = (new Api\Service)->getInvoiceReportData($mode, $input);
-
         $month = intval($input['month']);
+
         $year = intval($input['year']);
 
         // GST is applicable from 1st July 2017
         $isGstApplicable = (($year >= 2017) and ($month >= 7));
 
-        if ($error === null)
+        if ($isGstApplicable) {
+            $input['format'] = 'new';
+        }
+
+        list($error, $data) = (new Api\Service)->getInvoiceReportData($mode, $input);
+
+        if ($error === null && sizeOf($data) !== 0)
         {
             $merchantId = $data['merchant_id'];
 
             list($error, $merchant) = (new Merchant\Service)->fetchMerchantFromApi($merchantId);
+
+            if ($error !== null) {
+
+              return AppResponse::validationErrorResponse($errorMsg);
+            }
+
             $data['merchant'] = $merchant;
 
             $merchantDetails = (new MerchantDetails\Service)->fetchDetails($merchantId);
@@ -159,11 +172,13 @@ class TransactionController extends Controller
             // return PDF::url('http://google.com');
             // PDF::setOutputMode('F');
             // return PDF::html('merchant.invoice', $data);//->download('invoice.pdf');
-            return Response::view('merchant.invoice', $data);//->download('invoice.pdf');
+
+            //->download('invoice.pdf');
+            return Response::view($isGstApplicable ? 'merchant.invoice.invoice' : 'merchant.invoice_old', $data);
         }
         else
         {
-            return AppResponse::validationErrorResponse($error);
+            return AppResponse::validationErrorResponse($errorMsg);
         }
     }
     /**
