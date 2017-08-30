@@ -425,7 +425,7 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
-        $request = $this->getVerifyRequestArray($input);
+        $request = $this->getPaymentVerifyRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -453,7 +453,7 @@ class Gateway extends Base\Gateway
 
     protected function sendRefundVerifyRequest(array $input)
     {
-        $request = $this->getVerifyRequestArray($input, 'refund');
+        $request = $this->getRefundVerifyRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -497,9 +497,16 @@ class Gateway extends Base\Gateway
 
     protected function getRefundVerifyRequestArray(array $input)
     {
+        $attempts = '';
+
+        if ($input['refund']['attempts'] !== 2)
+        {
+            $attempts = $input['refund']['attempts'] - 1;
+        }
+
         $data = [
             'merchantId'        => $this->getMerchantId(),
-            'merchantTranId'    => $input['refund']['id'] . ($input['refund']['attempts'] - 1),
+            'merchantTranId'    => $input['refund']['id'] . $attempts,
             'subMerchantId'     => $this->getSubMerchantId($input),
             'terminalId'        => '1234',
         ];
