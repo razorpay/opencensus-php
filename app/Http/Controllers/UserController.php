@@ -197,4 +197,35 @@ class UserController extends Controller
 
         return AppResponse::jsonResponse($error, $data);
     }
+
+    /**
+     * Fetch data for the currently active user session
+     *
+     * @return mixed
+     */
+    public function getSessionData()
+    {
+        $queryParams = Input::all();
+
+        list($error, $data) = (new User\Service)->getSessionData($queryParams);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    /**
+     * The auth-service gets details of the currently logged in user
+     * using this route (once it has the token)
+     *
+     * @param string $token
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getDetailsFromToken(string $token)
+    {
+        list($error, $data) = (new User\Service)->getDetailsFromSessionToken($token);
+
+        $response = AppResponse::jsonResponse($error, $data);
+
+        return $response;
+    }
 }

@@ -3,8 +3,6 @@ import ajax from 'merchant/utils/ajax';
 import { getFixedINRAmount, isBlank } from 'rzp/utils/rzp-utils';
 
 export default class Referral extends Entity {
-  resourceUrl = '/referrals';
-
   fetchAll(params = {}) {
     let {
       id,
@@ -12,8 +10,9 @@ export default class Referral extends Entity {
       appendModeInQueryParam,
       ...data
     } = params;
+    data.route_name = 'merchant_fetch_referrals';
 
-    return ajax(this.resourceUrl, {
+    return ajax('/user/generic', {
       appendModeInURL,
       appendModeInQueryParam,
       data,

@@ -68,7 +68,8 @@
             <div class="border-bottom m-b"></div>
             <div class="description" ng-class="{'desc-active': descActive}" ng-if="action_details && allowFieldEdit">
               <div class="bg-white" ng-click="setDescActive();alerts.resetAlerts();"></div>
-              <textarea class="form-control wrapper-xs" rows="4" ng-model="action_details.description" id="desc-textarea"></textarea>
+              <textarea class="form-control wrapper-xs" rows="4" ng-model="action_details.description" id="desc-textarea" style="height: 36px;">
+              </textarea>
               <span class="desc-remove-icon glyphicon glyphicon-remove"
                     ng-click="setDescInactive()"
                     style="right: 10px;"

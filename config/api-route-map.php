@@ -213,6 +213,12 @@ return [
         'merchant_get_features'             => 'merchants/{id}/features',
         'merchant_update_features'          => 'merchants/{id}/features',
 
+        // Referrals
+        'merchant_fetch_referrals'          => [
+            'url'       => 'referrals',
+            'routeName' => 'referred_merchants_list'
+        ],
+
         // Activation
         'merchant_activation_save'          => [
             'url'       => 'merchant/activation',
