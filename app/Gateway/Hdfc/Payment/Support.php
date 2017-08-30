@@ -251,19 +251,6 @@ trait Support
         {
             $data['udf5'] = 'PaymentID';
         }
-
-        // However if it's Rupay, then udf5 need to be PaymentID
-        // even for RuPay
-        if ($input['card']['network'] === 'RuPay')
-        {
-            $data['udf5'] = 'PaymentID';
-        }
-
-        if ($input['merchant']->getId() === '5ubLZpACTmD8D4')
-        {
-            $data['udf5'] = 'TrackID';
-            $data['transid'] = $this->model->payment_id;
-        }
     }
 
     protected function verifyAndSaveSupportResponse($type, $input)

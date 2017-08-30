@@ -169,13 +169,24 @@ class Gateway extends Base\Gateway
     protected function saveCallbackResponse(array $input, array $response)
     {
         $content = [
-            'received' => true,
-            'externalTransactionId' => $response[ResponseFields::EXTERNAL_TRANSACTION_ID],
-            'orderId'  => $response[ResponseFields::ORDER_ID],
-            'transactionId' => $response[ResponseFields::TRANSACTION_ID],
-            'statusCode' => $response[ResponseFields::STATUS_CODE],
-            'errorDescription' => $response[ResponseFields::ERROR_DESCRIPTION] ?? null
+            Entity::RECEIVED                        => true,
+            ResponseFields::ORDER_ID                => $response[ResponseFields::ORDER_ID],
+            ResponseFields::STATUS_CODE             => $response[ResponseFields::STATUS_CODE],
+            ResponseFields::EXTERNAL_TRANSACTION_ID => $response[ResponseFields::EXTERNAL_TRANSACTION_ID] ?? null,
+            ResponseFields::TRANSACTION_ID          => $response[ResponseFields::TRANSACTION_ID] ?? null,
+            ResponseFields::ERROR_DESCRIPTION       => $response[ResponseFields::ERROR_DESCRIPTION] ?? null,
         ];
+
+        // These fields are available based on whether the transaction was success or not
+        if ($response[ResponseFields::STATUS_CODE] === ResponseCodeMap::SUCCESS_CODE)
+        {
+            assert($content[ResponseFields::EXTERNAL_TRANSACTION_ID] !== null);
+            assert($content[ResponseFields::TRANSACTION_ID] !== null);
+        }
+        else
+        {
+            assert($content[ResponseFields::ERROR_DESCRIPTION] !== null);
+        }
 
         // Order ID in the wallet API is mapped to our payment ID
         $wallet = $this->repo->findByPaymentIdAndAction(

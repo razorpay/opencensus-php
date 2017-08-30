@@ -289,11 +289,11 @@ class Processor extends Base\Core
             'failure ids'               => $failureEntityIds,
         ];
 
-        $this->trace->error(
-            TraceCode::SETTLEMENT_RECONCILIATION_FAILED, $summary);
-
         if ($failureCount > 0)
         {
+            $this->trace->error(
+                TraceCode::SETTLEMENT_RECONCILIATION_FAILED, $summary);
+
             if ($totalCount === $failureCount)
             {
                 $failureRemark = 'All settlements failed.';
