@@ -37,6 +37,7 @@ const selector = formValueSelector('generateReports');
       entity: selector(state, 'entity'),
       type: selector(state, 'type'),
       date: selector(state, 'date'),
+      invoiceDate: selector(state, 'invoiceDate'),
     };
   },
   { generateReport, fetchAccounts, ...NotificationsActions }
@@ -452,7 +453,7 @@ export default class ReportsContainer extends Component {
                   <div class="col-sm-4 col-xs-12">
                     <div class="form-group">
                       <Field
-                        name="invoiceDate"
+                        name={entity === 'invoice' ? 'invoiceDate' : 'date'}
                         component={ReduxDatetime}
                         dateFormat="MMM, YYYY"
                         closeOnSelect={true}
