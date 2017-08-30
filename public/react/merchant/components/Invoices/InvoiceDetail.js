@@ -94,7 +94,7 @@ export default props => {
               <Banner
                 message={
                   'Following is the summary of the invoice.' +
-                  'See invoice to view all details.'
+                  ' See invoice to view all details.'
                 }
                 cta={invoiceCTA}
               />

@@ -4,35 +4,33 @@ import { Link } from 'react-router-dom';
 export default ({ message, cta, ...otherProps }) => {
   /*
    * @param {string} message
-   * @param {function/object}
-   * @returns {component}
+   * @param {function/object} cta
    *
    * The component looks like bootstrap alert
    * (https://getbootstrap.com/docs/3.3/components/#alerts) , but takes an argument
-   * called `cta`. when cta is a function , the function is called and the return
+   * called `cta`(Call to Action). when cta is a function , the function is called and the return
    * value will be embedded as cta (can be used to put components), when `cta` is a
-   * dictionary, the following keys are must - "text" and one of "url" or "onClick"
+   * dictionary, the following keys are must - "text" and one of "url" or "onClick",
+   * otherwise cta will not be displayed
    */
 
   let hasCta = !!cta,
     getCtaElement = null;
 
-  const classes = ['alert', 'alert-warning'];
-
   if (hasCta) {
     if (typeof cta === 'function') {
       getCtaElement = cta;
     } else if (typeof cta === 'object') {
-      const ctaKeys = Object.keys(cta),
-        hasUrl = ctaKeys.indexOf('url') >= 0,
-        hasOnClick = ctaKeys.indexOf('onClick') >= 0;
-      if (!(ctaKeys.indexOf('text') >= 0) || !(hasUrl || hasOnClick)) {
+      const hasUrl = cta.hasOwnProperty('url'),
+        hasOnClick =
+          cta.hasOwnProperty('onClick') && typeof cta.onClick === 'function';
+
+      if (!cta.hasOwnProperty('text') || !(hasUrl || hasOnClick)) {
         hasCta = false;
       } else {
         const props = {
           className: 'btn btn-primary',
           ...(hasOnClick && { onClick: cta.onClick }),
-          ...otherProps,
         };
 
         getCtaElement = () =>
