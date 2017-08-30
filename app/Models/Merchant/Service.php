@@ -1241,24 +1241,31 @@ class Service extends Base\Service
         }
     }
 
-    public function getMerchantDetails($merchantId)
+    public function getMerchantDetails()
     {
-        $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
-            $merchantId, ['methods', Entity::GROUPS, Entity::ADMINS, 'users']);
+        $data = [];
 
-        // Need to set Merchant here cause fetchMerchantDetails expects a merchant in ba.
-        $this->app['basicauth']->setMerchant($merchant);
+        /**
+         * Merchant needs to be set using X-Razorpay-account header.
+         * Setting Merchant in header validates admin access to
+         * that merchant in admin access middleware.
+         */
+        if (empty($this->merchant) === false)
+        {
+            $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
+                $this->merchant->getId(), ['methods', Entity::GROUPS, Entity::ADMINS]);
 
-        // Merchant to array public
-        $data = $merchant->toArrayPublic();
+            // Merchant to array public
+            $data = $merchant->toArrayPublic();
 
-        // Merchant confirmed details
-        $data['confirmed'] = $this->getMerchantConfirmed($merchant);
+            // Merchant confirmed details
+            $data['confirmed'] = $this->getMerchantConfirmed($merchant);
 
-        // Fetch formatted merchant details.
-        $data['merchant_details'] = (new Detail\Service)->getMerchantDetailsForAdmin();
+            // Fetch formatted merchant details.
+            $data['merchant_details'] = (new Detail\Service)->getMerchantDetailsForAdmin();
 
-        $data['tags'] = $merchant->tagNames();
+            $data['tags'] = $merchant->tagNames();
+        }
 
         return $data;
     }

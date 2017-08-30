@@ -347,17 +347,26 @@ class Service extends Base\Service
     {
         // Here we can send marketplace steps if needed.
         // For the current merchant detail API its only normal accounts.
-        return Merchant\Constants::STEP_MAP;
+        $isLinkedAccount = $this->merchant->isLinkedAccount();
+
+        if ($isLinkedAccount === true)
+        {
+            return Merchant\Constants::STEP_MAP_ACCOUNT;
+        }
+        else
+        {
+            return Merchant\Constants::STEP_MAP;
+        }
     }
 
-    private function getStepsList()
+    private function getStepsList() : array
     {
         $stepsList = array_values($this->getFieldsToStepMap());
 
         return array_values(array_unique($stepsList));
     }
 
-    public function calculateSteps($merchantDetails)
+    private function calculateSteps($merchantDetails) : array
     {
         $stepFinished = [];
 
@@ -376,7 +385,7 @@ class Service extends Base\Service
         return $stepFinished;
     }
 
-    public function getMerchantDetailsForAdmin()
+    public function getMerchantDetailsForAdmin() : array
     {
         // Formatting the data as required by the controller.
         $merchantDetails = $this->fetchMerchantDetails();

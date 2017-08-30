@@ -152,7 +152,7 @@ final class Route
         'merchant_notify_holiday'                 => ['post',     'merchants/notify/holiday',                       'MerchantController@postMerchantsNotifyHoliday'                     ],
         'merchant_invoice_update_gstin'           => ['put',      'merchants/{id}/invoice/gstin',                   'MerchantInvoiceController@updateGstin'                             ],
         'merchant_create_invoice_entities'        => ['post',     'merchants/invoice/create',                       'MerchantInvoiceController@postCreateInvoiceEntities'               ],
-        'merchant_details_fetch'                  => ['get',      'merchants/details/{id}',                         'MerchantController@getMerchantDetails'                             ],
+        'merchant_details_fetch'                  => ['get',      'merchants/details',                              'MerchantController@getMerchantDetails'                             ],
         'merchant_invoice_add_bulk'               => ['post',     'merchants/invoice/bulk',                         'MerchantInvoiceController@postMultipleEntities'                    ],
         'balance_fetch'                           => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'credits_create'                          => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
