@@ -519,9 +519,10 @@ app
           postMethods[i] = methods[i] ? 1 : 0;
         }
 
-        msg = typeof msg !== 'undefined'
-          ? msg
-          : 'Methods edited successfully: ' + JSON.stringify(methods);
+        msg =
+          typeof msg !== 'undefined'
+            ? msg
+            : 'Methods edited successfully: ' + JSON.stringify(methods);
 
         var data = {
           route_name: 'merchant_put_payment_methods',
@@ -683,7 +684,8 @@ app
 
         if (entity === 'broking') {
           ajaxParams.headers = {
-            Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            Accept:
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           };
         }
 
@@ -705,7 +707,8 @@ app
 
             if (entity === 'broking') {
               var blob = new Blob([data], {
-                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                type:
+                  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
               });
               return saveAs(blob, 'broking_report.xlsx');
             }
@@ -1759,9 +1762,10 @@ app
           var adminObj = {
             id: admin.id,
             name: admin.name,
-            role: admin.roles.length && admin.roles[0].name
-              ? admin.roles[0].name
-              : '--',
+            role:
+              admin.roles.length && admin.roles[0].name
+                ? admin.roles[0].name
+                : '--',
           };
 
           $scope.adminMap[admin.id] = adminObj; // create mapping id - name
@@ -1877,49 +1881,50 @@ app
             $scope.alerts.addAlert('danger', null);
           });
       }
+      function fetchTerminalRequest(request_mode) {
+        var request = $http.get('/admin/generic', {
+          params: {
+            route_name: 'merchant_get_terminals',
+            url_params: {
+              '{id}': $scope.merchant.id,
+            },
+            mode: request_mode,
+          },
+        });
 
+        return request;
+      }
       function fetchTerminals() {
         var items = [];
         var count = 0;
         // test mode
-        var request = $http.get('/admin/generic', {
-          params: {
-            route_name: 'merchant_get_terminals',
-            url_params: {
-              '{id}': $scope.merchant.id,
-            },
-            mode: 'test',
-          },
-        });
-        request.success(function(data) {
-          if (data.success) {
-            $scope.merchant.terminals = data.data;
-            items = data.data.items;
-            count = data.data.count;
-          }
-        });
-
-        // live mode
-        var request = $http.get('/admin/generic', {
-          params: {
-            route_name: 'merchant_get_terminals',
-            url_params: {
-              '{id}': $scope.merchant.id,
-            },
-            mode: 'live',
-          },
-        });
-        request
+        var liveTerminalRequest = fetchTerminalRequest('live');
+        liveTerminalRequest
           .success(function(data) {
             if (data.success) {
-              if (count !== 0 && items.length !== 0) {
-                items.concat(data.data.items);
-                count += data.data.count;
-                $scope.merchant.terminals.items = items;
-                $scope.merchant.terminals.count = count;
-              } else {
-                $scope.merchant.terminals = data.data;
-              }
+              $scope.merchant.terminals.items = $scope.merchant.terminals.items.concat(
+                data.data.items
+              );
+              sortTerminals();
+            } else {
+              $scope.alerts.resetAlerts(true);
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
+          })
+          .error(function() {
+            $scope.alerts.resetAlerts(true);
+            $scope.alerts.addAlert('danger', null);
+          });
+
+        var testTerminalRequest = fetchTerminalRequest('test');
+        testTerminalRequest
+          .success(function(data) {
+            if (data.success) {
+              $scope.merchant.terminals.items = $scope.merchant.terminals.items.concat(
+                data.data.items
+              );
               sortTerminals();
             } else {
               $scope.alerts.resetAlerts(true);
@@ -2007,9 +2012,8 @@ app
       function generateMerchant() {
         var data = {
           route_name: 'merchant_details_fetch',
-          url_params: {
-            '{id}': $scope.merchant.id,
-          },
+          account_id: $scope.merchant.id,
+          merchant_id: $scope.merchant.id,
         };
         var request = $http.get('/admin/generic', {
           params: data,
@@ -2020,6 +2024,10 @@ app
 
             if (data.success) {
               $scope.merchant.details = data.data;
+              $scope.merchant.terminals = {
+                items: [],
+                count: 0,
+              };
               fetchTerminals();
               admin.identity().then(function(adminData) {
                 if (
@@ -2879,7 +2887,8 @@ app
               merctech_tel_after: '+91-8003393912',
               merctech_fax: '',
               merctech_email: 'harshil@razorpay.com',
-              merctech_addr: '35, Vishnupuri, Opp. Malviya Nagar P.O., Jagatpura Road, Jaipur - 302017, Rajasthan',
+              merctech_addr:
+                '35, Vishnupuri, Opp. Malviya Nagar P.O., Jagatpura Road, Jaipur - 302017, Rajasthan',
               merctech_web_addr: current.website || '',
               merctech_return_url: 'https://api.razorpay.com',
               mercsetup_auth: 'Y',
