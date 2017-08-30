@@ -53,10 +53,13 @@ class Gateway extends Base\Gateway
         // Process verification response
         $enrolled = $this->processVeres($veres);
 
+        $attributes = $this->getVeresAttributesToSave($veres);
+
+        $this->createGatewayPaymentEntity($attributes, $input);
+
         //
         // Determine card enrollment status and take next action
         //
-
         if ($enrolled === Enrolled::Y)
         {
             // Card is enrolled
@@ -83,9 +86,14 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], Action::AUTHORIZE);
+
         $pares = $input['gateway']['PaRes'];
 
         $corePares = (array) $this->processPares($pares);
+
+        $this->updateGatewayPaymentFromCallbackResponse($gatewayPayment, $corePares);
 
         (new JitValidator)->rules(Validator::$paresRules)
                           ->input($corePares)
@@ -113,6 +121,45 @@ class Gateway extends Base\Gateway
         }
 
         return null;
+    }
+
+    protected function getVeresAttributesToSave(array $veres)
+    {
+        $attributes = [];
+
+        // TODO fill attributes
+
+        return $attributes;
+    }
+
+    protected function updateGatewayPaymentFromCallbackResponse(
+        Entity $gatewayPayment,
+        array $resp)
+    {
+        // TODO : Fill it
+    }
+
+    protected function createGatewayPaymentEntity(array $attributes, array $input)
+    {
+        $gatewayPayment = $this->getNewGatewayPaymentEntity();
+
+        $paymentId = $input['payment']['id'];
+        $amount    = $input['payment']['amount'];
+        $currency  = $input['payment']['currency'];
+
+        $gatewayPayment->setPaymentId($paymentId);
+
+        $gatewayPayment->setAmount($amount);
+
+        $gatewayPayment->setCurrency($currency);
+
+        $gatewayPayment->setAction($this->action);
+
+        $gatewayPayment->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return $gatewayPayment;
     }
 
     protected function validateEci($eci, $networkCode)
