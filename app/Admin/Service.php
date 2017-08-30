@@ -436,12 +436,6 @@ class Service extends Base\Service
             $merchant['confirmed'] = (empty($confirmedPrimaryOwner) === false);
         }
 
-        $tags = Merchant\Entity::select(['merchants.id'])
-                                ->with('tagged')
-                                ->where('merchants.id', $id)
-                                ->get()
-                                ->toArray();
-
         $merchantDetail = (new MerchantDetails\Service)->fetchDetails($id);
 
         $merchant['merchant_details'] = $merchantDetail;
@@ -452,7 +446,6 @@ class Service extends Base\Service
             'steps_finished'      => $merchantDetail['steps_finished'],
             'locked'              => $merchantDetail['locked'],
             'submitted'           => $merchantDetail['submitted'],
-            'tags'                => $tags[0]['tags'],
             'submitted_at'        => $merchantDetail['submitted_at'],
             'activated_dashboard' => $merchant['activated']
         ] + $merchant;
