@@ -28,7 +28,7 @@
       @include('merchant/invoice/components/pageheader')
       <tr>
         <td colspan="2" class="text-center">
-          This Invoice summary is for billing period <b>{{{ $dates['startDate']}}}</b> - <b>{{{$dates['billingDate']}}}</b>
+          This Invoice summary is for billing period <b>{{{ $dates['startDate']}}}</b> - <b>{{{$dates['endDate']}}}</b>
         </td>
       </tr>
       <tr>
