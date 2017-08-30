@@ -53,15 +53,13 @@ class FeaturesTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $resultData = [
-            "id"            => (string)$features->first()->getId(),
+            "id"            => (string) $features->first()->getId(),
             "name"          => 'dummy',
             "entity_id"     => '10000000000000',
             "entity_type"   => 'merchant'
         ];
 
         $this->assertArraySelectiveEquals($resultData, $content);
-
-        $this->ba->appAuth();
     }
 
     public function testDeleteNonExistentFeatureFromMerchant()
@@ -69,8 +67,6 @@ class FeaturesTest extends TestCase
         $this->ba->adminAuth('test', null, 'org_100000razorpay');
 
         $this->startTest();
-
-        $this->ba->appAuth();
     }
 
     public function testMultiAssignFeature()

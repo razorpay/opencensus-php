@@ -47,7 +47,7 @@ return [
                 'currency'       => 'INR',
                 'receipt'        => 'rcptid42',
                 'method'         => 'netbanking',
-                'bank'           => 'INDBP',
+                'bank'           => 'INDB',
                 'account_number' => '0040304030403040',
             ],
             'method'    => 'POST',

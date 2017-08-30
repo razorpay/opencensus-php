@@ -442,4 +442,24 @@ class Repository extends Base\Repository
                     ->inRandomOrder()
                     ->get();
     }
+
+    public function fetchRefundsForPnbClaims($from, $to, $gateway)
+    {
+        $pId = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $rPaymentId = $this->dbColumn(Entity::PAYMENT_ID);
+
+        $pGateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        $pAuthorizedAt = $this->repo->payment->dbColumn(Payment\Entity::AUTHORIZED_AT);
+
+        return $this->newQuery()
+                    ->select($this->dbColumn('*'))
+                    ->join(Table::PAYMENT, $rPaymentId, '=', $pId)
+                    ->where($pAuthorizedAt, '<=', $from)
+                    ->where($pGateway, '=', $gateway)
+                    ->whereBetween($this->dbColumn(Entity::CREATED_AT), [$from, $to])
+                    ->with(['payment','payment.terminal'])
+                    ->get();
+    }
 }

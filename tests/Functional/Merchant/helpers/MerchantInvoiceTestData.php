@@ -38,6 +38,14 @@ return [
         ],
     ],
 
+    'testFeeAdjustment' => [
+        'merchant_id'   => '10000000000000',
+        'gstin'         => '29kjsngjk213922',
+        'type'          => 'adjustment',
+        'amount'        => -1300,
+        'tax'           => 0,
+    ],
+
     'testInvoiceEntityCreateForGivenMerchant' => [
         'non_card'      => [
             'amount'    => 1000,
@@ -55,6 +63,5 @@ return [
             'gstin'     => '29kjsngjk213922',
         ],
     ],
-
 ];
 

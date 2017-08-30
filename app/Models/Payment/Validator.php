@@ -71,6 +71,11 @@ class Validator extends Base\Validator
         Entity::CURRENCY          => 'required|in:INR,USD',
     ];
 
+    protected static $bulkCaptureRules = [
+        'payment_ids'             => 'required|array',
+        'payment_ids.*'           => 'required|public_id',
+    ];
+
     protected static $refundRules = [
         'amount'                  => 'sometimes|integer',
         'notes'                   => 'sometimes|notes',

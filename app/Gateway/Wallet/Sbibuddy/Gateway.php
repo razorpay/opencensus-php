@@ -44,8 +44,6 @@ class Gateway extends Base\Gateway
 
         $request = $this->getAuthorizeRequestArray($input);
 
-        $this->traceGatewayPaymentRequest($request, $input);
-
         $contentToSave = $this->getAuthorizeWalletContentToSave($input['payment']);
 
         $this->createGatewayPaymentEntity($contentToSave, Action::AUTHORIZE);
@@ -55,6 +53,8 @@ class Gateway extends Base\Gateway
 
     public function callback(array $input)
     {
+        parent::callback($input);
+
         $data = $this->decryptResponse($input['gateway']);
 
         $this->trace->info(
@@ -136,6 +136,15 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
+        $this->traceGatewayPaymentRequest(
+            $request,
+            $input,
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'payload' => $data
+            ]
+        );
+
         return $request;
     }
 
@@ -160,13 +169,24 @@ class Gateway extends Base\Gateway
     protected function saveCallbackResponse(array $input, array $response)
     {
         $content = [
-            'received' => true,
-            'externalTransactionId' => $response[ResponseFields::EXTERNAL_TRANSACTION_ID],
-            'orderId'  => $response[ResponseFields::ORDER_ID],
-            'transactionId' => $response[ResponseFields::TRANSACTION_ID],
-            'statusCode' => $response[ResponseFields::STATUS_CODE],
-            'errorDescription' => $response[ResponseFields::ERROR_DESCRIPTION] ?? null
+            Entity::RECEIVED                        => true,
+            ResponseFields::ORDER_ID                => $response[ResponseFields::ORDER_ID],
+            ResponseFields::STATUS_CODE             => $response[ResponseFields::STATUS_CODE],
+            ResponseFields::EXTERNAL_TRANSACTION_ID => $response[ResponseFields::EXTERNAL_TRANSACTION_ID] ?? null,
+            ResponseFields::TRANSACTION_ID          => $response[ResponseFields::TRANSACTION_ID] ?? null,
+            ResponseFields::ERROR_DESCRIPTION       => $response[ResponseFields::ERROR_DESCRIPTION] ?? null,
         ];
+
+        // These fields are available based on whether the transaction was success or not
+        if ($response[ResponseFields::STATUS_CODE] === ResponseCodeMap::SUCCESS_CODE)
+        {
+            assert($content[ResponseFields::EXTERNAL_TRANSACTION_ID] !== null);
+            assert($content[ResponseFields::TRANSACTION_ID] !== null);
+        }
+        else
+        {
+            assert($content[ResponseFields::ERROR_DESCRIPTION] !== null);
+        }
 
         // Order ID in the wallet API is mapped to our payment ID
         $wallet = $this->repo->findByPaymentIdAndAction(
@@ -392,6 +412,16 @@ class Gateway extends Base\Gateway
     protected function decryptResponse(array $input): array
     {
         $decryptedInput = $this->getEncryptor()->decryptString($input[ResponseFields::ENCRYPTED_DATA]);
+
+        if(empty($decryptedInput) === true)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_DECRYPTION_FAILED,
+                null,
+                null,
+                ['encrypted_data' => $input[ResponseFields::ENCRYPTED_DATA]]
+            );
+        }
 
         parse_str($decryptedInput, $data);
 
