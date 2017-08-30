@@ -397,13 +397,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
-    public function deleteEntityFeature($entityId, $featureName)
-    {
-        list($error, $response) = (new Admin\Service)->deleteEntityFeature($entityId, $featureName);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
     /**
      * Confirm a user account manually
      */

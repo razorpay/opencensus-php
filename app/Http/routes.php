@@ -114,8 +114,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/merchant/{id}/details', 'AdminController@getMerchantDetails');
 
         Route::post('/admin/features/{entityType}/{entityId}', 'AdminController@addEntityFeatures');
-        Route::delete('/admin/features/{entityId}/{featureName}', 'AdminController@deleteEntityFeature')
-                ->name('admin_delete_features');
 
         Route::get('/admin/merchant/{id}/login', 'AdminController@getMerchantLogin')
                ->name('admin_merchant_login');
