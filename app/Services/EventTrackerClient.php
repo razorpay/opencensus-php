@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
+use RZP\Models\Merchant\Account;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Analytics\Entity as Analytics;
 
@@ -371,7 +372,8 @@ class EventTrackerClient extends AbstractEventClient
     }
 
     /**
-     * Dispatch a job request
+     * Dispatch a job request via SQS for normal flow
+     * For DEMO merchant dispatch using SNS
      *
      * @param array $headers
      * @param string $url
@@ -384,11 +386,11 @@ class EventTrackerClient extends AbstractEventClient
             //
             // Enable it for demo merchant only for testing
             //
-            if (empty($eventData['events'][0]['properties']['merchant_id']) !== true)
+            if (empty($eventData['events'][0]['properties']['merchant_id']) === false)
             {
                 $merchantId = $eventData['events'][0]['properties']['merchant_id'];
 
-                if ($merchantId === '2aTeFCKTYWwfrF')
+                if ($merchantId === Account::DEMO_PAGE_ACCOUNT)
                 {
                     $this->sns->publish(json_encode($eventData), 'lumberjack');
 
