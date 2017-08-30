@@ -40,6 +40,7 @@ body * {
   top: 0;
   left: 0;
   padding: 2px;
+  padding-bottom: 20px;
   width: 100%;
   text-transform: uppercase;
   text-align: center;

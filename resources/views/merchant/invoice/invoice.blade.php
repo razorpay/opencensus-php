@@ -11,6 +11,8 @@
 
 <body>
 
+  @if($Summary)
+
   @foreach($Summary as $pageName => $pageValue)
   <?php $rows = isset($pageValue['rows']) ? $pageValue['rows'] : [];
         $rowsSize = sizeOf($rows);
@@ -93,6 +95,7 @@
   @endif
 
   @endforeach
+
   <div class="foot-note text-left">
     <ol>
       <li>To get the GST input you are requested to update your GST no. in your dashboard, ignore if already GST upated</li>
@@ -100,6 +103,11 @@
       <li>In case of GST no. is not updated then we will generate SGST &amp; CGST invoice.</li>
     </ol>
   </div>
+
+  @endif
+
+
+  @if($pages)
 
   @foreach($pages as $pageName => $pageValue)
   <?php $rows = isset($pageValue['rows']) ? $pageValue['rows'] : [];
@@ -276,6 +284,9 @@
   @endif
 
   @endforeach
+  
   <script>window.print();</script>
+  
+  @endif
 </body>
 </html>

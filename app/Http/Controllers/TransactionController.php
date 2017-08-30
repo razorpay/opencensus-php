@@ -128,6 +128,8 @@ class TransactionController extends Controller
     public function getInvoiceReport($mode)
     {
 
+        $errorMsg = "Oops!, Something went wrong!, Please try again later";
+
         $this->checkMode($mode);
 
         $input = Input::all();
@@ -145,11 +147,17 @@ class TransactionController extends Controller
 
         list($error, $data) = (new Api\Service)->getInvoiceReportData($mode, $input);
 
-        if ($error === null)
+        if ($error === null && sizeOf($data) !== 0)
         {
             $merchantId = $data['merchant_id'];
 
             list($error, $merchant) = (new Merchant\Service)->fetchMerchantFromApi($merchantId);
+
+            if ($error !== null) {
+
+              return AppResponse::validationErrorResponse($errorMsg);
+            }
+
             $data['merchant'] = $merchant;
 
             $merchantDetails = (new MerchantDetails\Service)->fetchDetails($merchantId);
@@ -171,7 +179,7 @@ class TransactionController extends Controller
         }
         else
         {
-            return AppResponse::validationErrorResponse($error);
+            return AppResponse::validationErrorResponse($errorMsg);
         }
     }
     /**
