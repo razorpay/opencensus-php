@@ -16,7 +16,7 @@ class AccountController extends Controller
     {
     	$input = Request::all();
 
-        $response = $this->service->uploadFiles($id, $input);
+        $response = $this->service()->uploadFiles($id, $input);
 
         return ApiResponse::json($response);
     }
@@ -25,7 +25,7 @@ class AccountController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service->updateDetails($id, $input);
+        $response = $this->service()->updateDetails($id, $input);
 
         return ApiResponse::json($response);
     }

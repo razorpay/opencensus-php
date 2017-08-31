@@ -24,7 +24,7 @@ class Entity extends Merchant\Entity
 
     public function scopeMerchantId($query, $merchantId)
     {
-        $merchantIdColumn = $this->getAttributeWithTableName(Entity::PARENT_ID);
+        $merchantIdColumn = $this->dbColumn(Entity::PARENT_ID);
 
         $query->where($merchantIdColumn, '=', $merchantId);
     }

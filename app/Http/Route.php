@@ -582,9 +582,9 @@ final class Route
         'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                          ],
 
         // Account API routes
-        'account_fetch'                           => ['get',      'accounts',                                       'AccountController@get'                                             ],
-        'account_fetch_multiple'                  => ['get',      'accounts/{id}',                                  'AccountController@list'                                            ],
         'account_create'                          => ['post',     'accounts',                                       'AccountController@create'                                          ],
+        'account_fetch'                           => ['get',      'accounts',                                       'AccountController@list'                                            ],
+        'account_fetch_multiple'                  => ['get',      'accounts/{id}',                                  'AccountController@get'                                             ],
         'account_create_files'                    => ['post',     'accounts/{id}/files',                            'AccountController@postAccountFiles'                                ],
         'account_edit'                            => ['patch',    'accounts/{id}',                                  'AccountController@update'                                          ],
         'account_edit_details'                    => ['patch',    'accounts/{id}/details',                          'AccountController@patchAccountDetails'                             ],
