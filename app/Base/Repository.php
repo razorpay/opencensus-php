@@ -169,11 +169,11 @@ class Repository extends \Razorpay\Spine\Repository
 
         $dirty = $entity->getDirty();
 
-        $esAction = $entity->exists ? EsRepository::UPDATE : EsRepository::CREATE;
+        $action = $entity->exists ? EsRepository::UPDATE : EsRepository::CREATE;
 
         $entity->saveOrFail($options);
 
-        $this->syncToEs($entity, $esAction, $dirty);
+        $this->syncToEs($entity, $action, $dirty);
     }
 
     public function deleteOrFail($entity)
@@ -563,7 +563,11 @@ class Repository extends \Razorpay\Spine\Repository
             return;
         }
 
-        $mode = $this->app['rzp.mode'];
+        //
+        // Model::getConnection returns the database connection for the model
+        // which equals one of the Mode values.
+        //
+        $mode = $entity->getConnection();
 
         $tracePayload = [
             'action'    => $action,

@@ -101,18 +101,6 @@ class Index extends Command
             throw new LogicException('EsSync: Es repo not found.');
         }
 
-        //
-        // There are some entities for which es updates has to be synced
-        // to both _test and _live suffixed index, similar to how it happens
-        // in database. But in one time indexing we intentionally don't want
-        // to do that.
-        //
-
-        if (method_exists($this->esRepo, 'disableSync') === true)
-        {
-            $this->esRepo->disableSync();
-        }
-
         // 3. If index name is passed in option, will use that. Useful in
         //    cases of first time indexing with mapping changes. We create the
         //    new index do indexing and then switch and then again do delta indexing.

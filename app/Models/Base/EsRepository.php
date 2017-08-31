@@ -107,34 +107,14 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $this->indexPrefix = $app['config']->get('database.es_entity_index_prefix');
 
-        $this->setIndexName();
-    }
-
-    /**
-     * Sets index name corresponding to this Es repository.
-     * Format: <prefix>_<entity>_<mode>
-     */
-    public function setIndexName()
-    {
+        //
+        // Sets index name for this repository
+        // Format: <prefix_><entity>_<mode>
+        //
         $index = "{$this->indexPrefix}{$this->entity}_{$this->mode}";
 
         $this->setIndexNameByValue($index);
-    }
 
-    /**
-     * This is used for cases where both _test and _live
-     * suffixed indices needs to be updated if either of former
-     * get updated.
-     *
-     * Ref: EsRepositoryUpdateTestAndLive
-     */
-    public function setIndexNameForAlternateMode()
-    {
-        $mode = Mode::getAlternateMode($this->mode);
-
-        $index = "{$this->indexPrefix}{$this->entity}_{$mode}";
-
-        $this->setIndexNameByValue($index);
     }
 
     public function setIndexNameByValue(string $indexName)

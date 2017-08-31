@@ -11,12 +11,9 @@ use RZP\Constants\Timezone;
 use RZP\Exception\LogicException;
 use RZP\Models\Admin\Admin\Entity as AdminEntity;
 use RZP\Models\Merchant\Detail\Entity as DetailEntity;
-use RZP\Models\Base\Traits\Es\EsRepositoryUpdateTestAndLive;
 
 class EsRepository extends Base\EsRepository
 {
-    use EsRepositoryUpdateTestAndLive;
-
     // --------------- Fields ------------------------------
 
     protected $indexedFields = [

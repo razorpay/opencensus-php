@@ -31,6 +31,10 @@ trait RepositoryUpdateTestAndLive
             {
                 $exists = $entity->exists;
 
+                $action = $exists ? EsRepository::UPDATE : EsRepository::CREATE;
+
+                $dirty  = $entity->getDirty();
+
                 if ($exists)
                 {
                     //
@@ -52,13 +56,21 @@ trait RepositoryUpdateTestAndLive
 
                 $this->validateEntitiesMatch($liveEntity, $testEntity);
 
+                // Syncs to ES if applies
+                $this->syncToEs($liveEntity, $action, $dirty);
+                $this->syncToEs($testEntity, $action, $dirty);
+
                 return $liveEntity;
             });
 
+        //
         // Now that the entity has been updated in both live and test databases,
         // update the entity (in-memory) passed as argument in this function
+        //
         $attributes = $liveEntity->getAttributes();
+
         $entity->setRawAttributes($attributes, true);
+
         $entity->exists = true;
     }
 
@@ -169,6 +181,10 @@ trait RepositoryUpdateTestAndLive
             $res2 = $testEntity->delete();
 
             $this->validateEntitiesMatch($liveEntity, $testEntity);
+
+            // Syncs to ES if applies
+            $this->syncToEs($liveEntity, EsRepository::DELETE);
+            $this->syncToEs($testEntity, EsRepository::DELETE);
 
             return $res1;
         });
