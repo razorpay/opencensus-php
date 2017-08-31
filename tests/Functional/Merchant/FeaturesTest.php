@@ -147,14 +147,10 @@ class FeaturesTest extends TestCase
     private function addFeatureToMode1AndVerifyMode2($addToMode)
     {
         $featureName = "dummy";
-        if ($addToMode = 'test')
-        {
-            $this->ba->appAuthTest();
-        }
-        else
-        {
-            $this->ba->appAuthLive();
-        }
+
+        $method = 'appAuth' . studly_case($addToMode);
+
+        $this->ba->$method();
 
         $request = [
             'url'     => '/features',
@@ -169,8 +165,10 @@ class FeaturesTest extends TestCase
                 'entity_id'   => '10000000000000'
             ]
         ];
+
         $content = $this->makeRequestAndGetContent($request);
-        if ($addToMode = 'test')
+
+        if ($addToMode === 'test')
         {
             $this->ba->appAuthLive();
         }
@@ -178,6 +176,7 @@ class FeaturesTest extends TestCase
         {
             $this->ba->appAuthTest();
         }
+
         $request          = [
             'url'    => '/features/10000000000000',
             'method' => 'get',
@@ -186,7 +185,9 @@ class FeaturesTest extends TestCase
                 'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
             ],
         ];
+
         $content          = $this->makeRequestAndGetContent($request);
+
         $assignedFeatures = array_map(
             function ($feature)
             {
@@ -194,7 +195,8 @@ class FeaturesTest extends TestCase
             },
             $content["assigned_features"]
         );
-        if ($addToMode = 'test')
+
+        if ($addToMode === 'test')
         {
             // Check if not in array
             $this->assertFalse(in_array($featureName, $assignedFeatures));
