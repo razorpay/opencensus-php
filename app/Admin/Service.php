@@ -533,9 +533,7 @@ class Service extends Base\Service
 
             if ((isset($input['fee_bearer'])) and ($input['fee_bearer'] === 'customer'))
             {
-                $merchant = Merchant\Entity::findOrFail($id);
-
-                $currentTags = $merchant->tags;
+                $currentTags = (new Merchant\Service)->getMerchantTags($id);
 
                 $this->addTagToMerchant($id, 'feebearer');
 
@@ -1156,7 +1154,7 @@ class Service extends Base\Service
 
             (new Merchant\Service)->addMerchantTagsOnAPI($merchantId, $inputTags);
 
-            $merchant['tags'] = $merchant->tags;
+            $merchant['tags'] = (new Merchant\Service)->getMerchantTags($merchantId);
 
             $this->logActionToSlack($merchant, Actions::TAGGED, ['tags' => $input['tags']]);
 
@@ -1212,46 +1210,6 @@ class Service extends Base\Service
         return array($error, null);
     }
 
-    public function deleteEntityFeature($entityId, $featureName)
-    {
-        try
-        {
-            $this->deleteFeature($entityId, $featureName);
-
-            $this->setApiCredentials();
-
-            $features = $this->api->feature->getFeatures($entityId);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        if (empty($error))
-        {
-            $this->removeMerchantTag($entityId, $featureName);
-
-            return [null, $features];
-        }
-
-        return [$error, null];
-    }
-
-    public function deleteFeature($entityId, $featureName)
-    {
-        $deleteFeature = [
-            'route_name' => 'feature_delete',
-            'url_params' => [
-                '{entityId}'    => $entityId,
-                '{featureName}' => $featureName
-            ],
-        ];
-
-        $genericService = new Generic\Service;
-
-        list($error, $data) = $genericService->call('DELETE', $deleteFeature);
-    }
-
     private function removeMerchantTag($entityId, $featureName)
     {
         $merchant = Merchant\Entity::findOrFail($entityId);
@@ -1267,9 +1225,11 @@ class Service extends Base\Service
 
         $featureNames = $this->getFeatureNames($features['assigned_features']);
 
-        $merchant->retag(array_merge($featureNames, $merchant->tags));
+        $merchantTags = (new Merchant\Service)->getMerchantTags($merchant->id);
 
-        (new Merchant\Service)->addMerchantTagsOnAPI($merchant->id, array_merge($featureNames, $merchant->tags));
+        $merchant->retag(array_merge($featureNames, $merchantTags));
+
+        (new Merchant\Service)->addMerchantTagsOnAPI($merchant->id, array_merge($featureNames, $merchantTags));
     }
 
     private function getFeatureNames($features)

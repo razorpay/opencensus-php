@@ -213,6 +213,12 @@ return [
         'merchant_get_features'             => 'merchants/{id}/features',
         'merchant_update_features'          => 'merchants/{id}/features',
 
+        // Referrals
+        'merchant_fetch_referrals'          => [
+            'url'       => 'referrals',
+            'routeName' => 'referred_merchants_list'
+        ],
+
         // Activation
         'merchant_activation_save'          => [
             'url'       => 'merchant/activation',
@@ -346,6 +352,36 @@ return [
         'reversal_fetch'           => [
             'url'       => 'reversals/{id}',
             'routeName' => 'marketplace_read'
+        ],
+
+        // OAuth routes
+        'oauth_application_create'   => [
+            'url'       => 'oauth/applications',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_application_fetch_multiple'   => [
+            'url'       => 'oauth/applications',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_application_fetch'   => [
+            'url'       => 'oauth/applications/{id}',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_application_delete'  => [
+            'url'       => 'oauth/applications/{id}',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_application_update'  => [
+            'url'       => 'oauth/applications/{id}',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_token_fetch_multiple'  => [
+            'url'       => 'oauth/tokens/',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_token_revoke'  => [
+            'url'       => 'oauth/tokens/{id}/revoke',
+            'routeName' => 'oauth_read'
         ],
 
         // GST
@@ -521,6 +557,7 @@ return [
         'refund_verify_failed'              => 'refunds/{id}/retry',
 
         // Tags
+        'merchant_get_tags'                 => 'merchants/{id}/tags',
         'merchant_tag_add'                  => 'merchants/{id}/tags',
         'merchant_tag_delete'               => 'merchants/{id}/tags/{tagName}',
 

@@ -8,6 +8,20 @@ export const isEmail = email => {
   return emailRegExp.test(email);
 };
 
+export const isUrl = (url) => {
+  url = url || '';
+
+  let urlRegExp = /^(https?:\/\/)(\w|\-)+(\.{1}(\w|\-)+)*\.[a-z]{2,}(:[0-9]{1,5})?(\/.*)?/;
+  return urlRegExp.test(url);
+};
+
+export const isDeepLink = (url) => {
+  url = url || '';
+
+  let urlRegExp = /[A-Za-z]+:\/\/.*/;
+  return urlRegExp.test(url);
+};
+
 export const isPhone = phone => {
   phone = phone || '';
   let phoneRegExp = new RegExp(/^$|\+?[0-9]{8,15}$/);
@@ -46,3 +60,5 @@ const makeValidator = (truthyFn, defaultMessage) => (
 export const required = makeValidator(isPresent, 'Required');
 export const email = makeValidator(isEmail, 'Invalid Email');
 export const phone = makeValidator(isPhone, 'Invalid Contact');
+export const url = makeValidator(isUrl, 'Invalid Url');
+export const deepLink = makeValidator(isDeepLink, 'Invalid Link');

@@ -21,6 +21,8 @@
     "file-loader": "^0.11.1",
     "gulp": "^3.9.1",
     "gulp-concat-multi": "^1.0.1",
+    "gulp-iconfont": "^8.0.1",
+    "gulp-iconfont-css": "^2.1.0",
     "gulp-plumber": "^1.1.0",
     "gulp-rev": "^7.1.2",
     "gulp-stylus": "^2.6.0",

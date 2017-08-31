@@ -118,23 +118,6 @@ class Entity extends Base\Entity
     }
 
     /**
-     * An aggregator is defined as a merchant
-     * Which can create other merchants without sending
-     * them confirmation emails. All these merchants are also
-     * created with the same email address
-     * return boolean
-     */
-    public function isAggregator()
-    {
-        return in_array(self::AGGREGATOR, $this->tagNames());
-    }
-
-    public function isMarketplace()
-    {
-        return in_array(self::MARKETPLACE, $this->tagNames());
-    }
-
-    /**
      * Take care while calling this method
      *
      * @param array $input array with new email address

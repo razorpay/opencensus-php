@@ -21,16 +21,7 @@ export default ({ plan, isLoading, statusMsg, subscriptions }) => {
           </div>
         : <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
-              <i
-                class="fa fa-list-ul text-info"
-                style={{
-                  padding: '4px 4px 3px',
-                  border: '2px solid',
-                  marginRight: '5px',
-                  verticalAlign: 'middle',
-                }}
-              />
-              {' '}
+              <i class="icon icon-plan text-main icon--formal" />{' '}
               <strong>{plan.id}</strong>
             </div>
 
@@ -42,35 +33,38 @@ export default ({ plan, isLoading, statusMsg, subscriptions }) => {
                 <EntityDetailRow
                   label="Plan Description"
                   value={() => {
-                    return <span class="pre">{plan.item.description}</span>;
+                    return (
+                      <span class="pre">
+                        {plan.item.description}
+                      </span>
+                    );
                   }}
                 />
 
                 <EntityDetailRow
                   label="Billing Amount"
-                  value={() => (
+                  value={() =>
                     <Amount
                       currency={plan.item.currency}
                       value={plan.item.amount}
-                    />
-                  )}
+                    />}
                 />
 
                 <EntityDetailRow
                   label="Billing Frequency"
-                  value={() => (
-                    <span>{getIntervalCycle(plan.interval, plan.period)}</span>
-                  )}
+                  value={() =>
+                    <span>
+                      {getIntervalCycle(plan.interval, plan.period)}
+                    </span>}
                 />
 
                 <EntityDetailRow
                   label="Created At"
-                  value={() => (
+                  value={() =>
                     <Time
                       value={plan.created_at}
                       format="DD MMM YYYY, hh:mm:ss a"
-                    />
-                  )}
+                    />}
                 />
 
                 <NestedEntityDetailRow label="Notes" value={plan.notes} />
@@ -100,7 +94,6 @@ export default ({ plan, isLoading, statusMsg, subscriptions }) => {
                       label="Subscriptions"
                       value="No Subscriptions"
                     />}
-
               </div>
             </div>
           </div>}

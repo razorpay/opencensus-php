@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Route, Switch, NavLink } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
-
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 import PaymentsList from 'merchant/containers/Payments/List';
 import RefundsList from 'merchant/containers/Refunds/List';
 import BatchUpload from 'merchant/containers/Refunds/BatchUpload';
@@ -14,7 +14,9 @@ export default class TransactionsContainer extends Component {
       <tabbed-container>
         <header id="transactions-header">
           <NavLink to="/payments">Payments</NavLink>
-          <NavLink to="/refunds" exact>Refunds</NavLink>
+          <NavLink to="/refunds" exact>
+            Refunds
+          </NavLink>
           <ShowWhen
             featureEnabled="Batchrefunds"
             myRole="owner manager operations admin finance"
@@ -30,7 +32,7 @@ export default class TransactionsContainer extends Component {
           </ShowWhen>
           <NavLink to="/orders">Orders</NavLink>
         </header>
-
+        <TestModeBanner />
         <content>
           <Switch>
             <Route path="/refunds/batchupload" component={BatchUpload} />

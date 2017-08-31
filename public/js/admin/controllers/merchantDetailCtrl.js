@@ -519,9 +519,10 @@ app
           postMethods[i] = methods[i] ? 1 : 0;
         }
 
-        msg = typeof msg !== 'undefined'
-          ? msg
-          : 'Methods edited successfully: ' + JSON.stringify(methods);
+        msg =
+          typeof msg !== 'undefined'
+            ? msg
+            : 'Methods edited successfully: ' + JSON.stringify(methods);
 
         var data = {
           route_name: 'merchant_put_payment_methods',
@@ -683,7 +684,8 @@ app
 
         if (entity === 'broking') {
           ajaxParams.headers = {
-            Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            Accept:
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           };
         }
 
@@ -705,7 +707,8 @@ app
 
             if (entity === 'broking') {
               var blob = new Blob([data], {
-                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                type:
+                  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
               });
               return saveAs(blob, 'broking_report.xlsx');
             }
@@ -1759,7 +1762,10 @@ app
           var adminObj = {
             id: admin.id,
             name: admin.name,
-            role: admin.roles[0].name,
+            role:
+              admin.roles.length && admin.roles[0].name
+                ? admin.roles[0].name
+                : '--',
           };
 
           $scope.adminMap[admin.id] = adminObj; // create mapping id - name
@@ -1999,15 +2005,26 @@ app
       }
 
       $scope.deleteFeature = function(featureName) {
-        var request = $http.delete(
-          '/admin/features/' + $scope.merchant.id + '/' + featureName
-        );
+        var request = $http.delete('/admin/generic', {
+          params: {
+            route_name: 'feature_delete',
+            url_params: {
+              '{entityId}': $scope.merchant.id,
+              '{featureName}': featureName,
+            },
+          },
+        });
         request.success(function(data) {
           if (data.success) {
-            $scope.merchant.details.allowedFeatures = data.data.all_features;
-            $scope.merchant.details.features = getFeatureNames(
-              data.data.assigned_features
-            );
+            if (utils.isWorkflow(data.data)) {
+              $state.go('app.workflows.actions.detail', {
+                action_id: data.data.id,
+              });
+            }
+            var features = $scope.merchant.details.features;
+            $scope.merchant.details.features = features.filter(function(item) {
+              return item.id !== data.data.id;
+            });
           } else {
             $scope.alerts.resetAlerts(true);
             angular.forEach(data.errors, function(value) {
@@ -2133,6 +2150,7 @@ app
         'credit_card',
         'jiomoney',
         'openwallet',
+        'sbibuddy',
       ];
       $scope.methods = {};
 
@@ -2740,7 +2758,8 @@ app
               merctech_tel_after: '+91-8003393912',
               merctech_fax: '',
               merctech_email: 'harshil@razorpay.com',
-              merctech_addr: '35, Vishnupuri, Opp. Malviya Nagar P.O., Jagatpura Road, Jaipur - 302017, Rajasthan',
+              merctech_addr:
+                '35, Vishnupuri, Opp. Malviya Nagar P.O., Jagatpura Road, Jaipur - 302017, Rajasthan',
               merctech_web_addr: current.website || '',
               merctech_return_url: 'https://api.razorpay.com',
               mercsetup_auth: 'Y',

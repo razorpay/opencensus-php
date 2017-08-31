@@ -211,18 +211,6 @@ class MerchantController extends Controller
     }
 
     /**
-     * Completely dashboard side function
-     */
-    public function getReferredMerchants()
-    {
-        $id = Auth::user()->currentMerchant()->id;
-
-        $data = (new Merchant\Service)->fetchReferredMerchants($id);
-
-        return AppResponse::jsonResponse([], $data);
-    }
-
-    /**
      * Registers a new sub-merchant account
      * This will automatically have the correct
      * referral field and dashboard users added.

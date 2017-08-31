@@ -43,6 +43,15 @@ class AppResponse
         return Response::json($response, 404);
     }
 
+    public static function unauthorizedResponse($error)
+    {
+        $response = [
+            'success'   => false,
+            'data'      => $error
+        ];
+        return Response::json($response, 401);
+    }
+
     public static function validationErrorResponse($error)
     {
         $response = [

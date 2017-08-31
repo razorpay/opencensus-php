@@ -18,8 +18,7 @@ import LineItemTable from './LineItemTable';
 import CustomerCreation from 'merchant/containers/Customers/New';
 import IssueConfirmModal from './IssueConfirmModal';
 import AddInternalNoteModal from './AddInternalNoteModal';
-import InvoiceBreadcrumbNav
-  from 'merchant/components/Invoices/InvoiceBreadcrumbNav';
+import InvoiceBreadcrumbNav from 'merchant/components/Invoices/InvoiceBreadcrumbNav';
 import InvoiceInfo from 'merchant/components/Invoices/InvoiceInfo';
 import InvoiceNotes from 'merchant/components/Invoices/InvoiceNotes';
 import InvoiceLogo from 'merchant/components/Invoices/InvoiceLogo';
@@ -313,16 +312,16 @@ export default class InvoicesNewContainer extends Component {
     let invoice = this.props.invoice;
     this.context.confirm({
       header: 'Delete Invoice?',
-      message: () => (
+      message: () =>
         <div class="text-semi-muted">
           <p>
             The Invoice will be deleted. There is no coming back!. Are you sure?
           </p>
           <div>
-            If you have added any item or customer, you can still use them in other invoices.
+            If you have added any item or customer, you can still use them in
+            other invoices.
           </div>
-        </div>
-      ),
+        </div>,
       affirmativeLabel: 'Yes, Delete',
       affirmativePendingLabel: 'Deleting...',
       abortLabel: "No, don't!",
@@ -352,13 +351,13 @@ export default class InvoicesNewContainer extends Component {
     let invoice = this.props.invoice;
     this.context.confirm({
       header: 'Cancel Invoice?',
-      message: () => (
+      message: () =>
         <div class="text-semi-muted">
           <p>
-            The Invoice will be cancelled and the customer will not be able to pay for it.
+            The Invoice will be cancelled and the customer will not be able to
+            pay for it.
           </p>
-        </div>
-      ),
+        </div>,
       affirmativeLabel: 'Yes, Cancel',
       affirmativePendingLabel: 'Cancelling...',
       abortLabel: "No, don't!",
@@ -474,9 +473,7 @@ export default class InvoicesNewContainer extends Component {
                       <div class="invoice">
                         {isTestMode &&
                           <div class="alert-sm alert-warning testmode-warning">
-                            Invoice is created in
-                            {' '}
-                            <b>Test Mode</b>
+                            Invoice is created in <b>Test Mode</b>
                             . Only test payments can be made for this invoice
                           </div>}
                         <InvoiceLogo
@@ -525,7 +522,9 @@ export default class InvoicesNewContainer extends Component {
                                     value={invoice.amount_due}
                                     currency={invoice.currency}
                                   />
-                                : <span>₹ {invoiceTotal}</span>}
+                                : <span>
+                                    ₹ {invoiceTotal}
+                                  </span>}
                             </h3>
                           </div>
                         </div>
@@ -565,9 +564,14 @@ export default class InvoicesNewContainer extends Component {
 
                             {customer &&
                               <div class="inv__customerdetails">
-                                {customer.name && <div>{customer.contact}</div>}
+                                {customer.name &&
+                                  <div>
+                                    {customer.contact}
+                                  </div>}
                                 {customer.name || customer.contact
-                                  ? <div>{customer.email}</div>
+                                  ? <div>
+                                      {customer.email}
+                                    </div>
                                   : ''}
                               </div>}
                           </div>
@@ -729,7 +733,7 @@ export default class InvoicesNewContainer extends Component {
                                 onClick={this.deleteInvoice}
                                 disabled={this.state.isSaving}
                               >
-                                <i class="icon icon-done" />
+                                <i class="icon icon-close" />
                                 <span>Delete Invoice</span>
                               </button>}
                             {isIssued &&
@@ -739,7 +743,7 @@ export default class InvoicesNewContainer extends Component {
                                 onClick={this.cancelInvoice}
                                 disabled={this.state.isSaving}
                               >
-                                <i class="icon icon-done" />
+                                <i class="icon icon-close" />
                                 <span>Cancel Invoice</span>
                               </button>}
                           </div>
