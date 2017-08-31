@@ -26,6 +26,7 @@
     <table cellpadding="0" cellspacing="0">
 
       @include('merchant/invoice/components/pageheader')
+
       <tr>
         <td colspan="2" class="text-center">
           This Invoice summary is for the billing period <b>{{{ $dates['startDate']}}}</b> - <b>{{{$dates['endDate']}}}</b>
@@ -100,7 +101,7 @@
     <ol>
       <li>To get GST input, please make sure that you have updated your GSTIN in your Razorpay Dashboard.</li>
       <li>All the Invoice, Debit &amp; Credit note values are inclusive of GST.</li>
-      <li>In case your GST no. is not updated then we will generate an SGST &amp; CGST invoice.</li>
+      <li>In case your GSTIN is not updated then we will generate an SGST &amp; CGST invoice.</li>
     </ol>
   </div>
 
