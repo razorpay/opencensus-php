@@ -69,8 +69,7 @@ class CreateTransfers extends Migration
             $table->char(Entity::TRANSACTION_ID, Entity::ID_LENGTH);
 
             $table->char(Entity::RECIPIENT_SETTLEMENT_ID, Settlement\Entity::ID_LENGTH)
-                ->nullable()
-                ->default(null);
+                ->nullable();
 
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
