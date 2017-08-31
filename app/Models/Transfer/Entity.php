@@ -67,13 +67,13 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::FEES,
         self::SERVICE_TAX,
-        self::TAX,
         self::ON_HOLD,
         self::ON_HOLD_UNTIL,
         self::TRANSACTION_ID,
         self::RECIPIENT_SETTLEMENT_ID,
         self::CREATED_AT,
-        self::UPDATED_AT
+        self::UPDATED_AT,
+        self::TAX,
     ];
 
     protected $public = [
@@ -87,12 +87,12 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::FEES,
         self::SERVICE_TAX,
-        self::TAX,
         self::ON_HOLD,
         self::ON_HOLD_UNTIL,
         self::RECIPIENT_SETTLEMENT_ID,
         self::RECIPIENT_SETTLEMENT,
-        self::CREATED_AT
+        self::CREATED_AT,
+        self::TAX
     ];
 
     protected $publicSetters = [
