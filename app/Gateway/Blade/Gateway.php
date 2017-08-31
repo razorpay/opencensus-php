@@ -76,38 +76,29 @@ class Gateway extends Base\Gateway
         parent::callback($input);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], Action::AUTHORIZE);
+                                $input['payment']['id'], Action::AUTHORIZE);
 
-        $pares = $input['gateway']['PaRes'];
+        $PARes = $this->getPayerAuthenticationResponse($input);
 
-        $corePares = (array) $this->processPares($pares);
+        $this->updateGatewayPaymentFromCallbackResponse($gatewayPayment, $PARes);
 
-        $this->updateGatewayPaymentFromCallbackResponse($gatewayPayment, $corePares);
-
+        // Validate in getPayerAuthenticationResponse
         (new JitValidator)->rules(Validator::$paresRules)
-                          ->input($corePares)
+                          ->input($PARes)
                           ->validate();
 
-        $txnAttributes = (array) $corePares['TX'];
+        $txnStatus = $PARes['TX']['status'];
 
-        $purchaseAttributes = (array) $corePares['Purchase'];
-
-        $gatewayInput = [
-            'purchase'    => $purchaseAttributes,
-            'transaction' => $txnAttributes
-        ];
-
-        $status = $txnAttributes['status'];
-
-        $xid = $purchaseAttributes['xid'];
-
-        $authenticateStatus = ParesStatus::getAuthenticationStatus($status);
+        $authenticateStatus = ParesStatus::getAuthenticationStatus($txnStatus);
 
         if ($authenticateStatus !== AuthenticationStatus::Y)
         {
+            // Throw GatewayErrorException with authentication failed error code
             throw new ThreeDSecureAuthenticationFailureException(
                 ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED);
         }
+
+        // TODO: Validate ECI here
 
         return null;
     }
@@ -189,12 +180,24 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function processPares(string $pares)
+    protected function getPayerAuthenticationResponse(array $input)
     {
+        $pares = $input['gateway']['PaRes'];
         $pares = base64_decode($pares);
-        $pares = gzinflate(substr($pares, 2));
 
-        $dom = $this->loadXmlViaDom($pares);
+        //
+        // @ref http://forums.devshed.com/php-development-5/zlip-text-string-452797.html
+        // Where you see 10 in the substr, replace with 2, the encoder is
+        // using the older encoding method mentioned in RFC1950!
+        // When PHP 5.3 comes out, you will have the function gzdecode(),
+        // which will handle any type of header, but for now you have to
+        // use gzinflate() with substr() (2 or 10) depending on the encoder,
+        // Java defaults to (2) byte header, server based encoding HTTP GZIP
+        // defaults to (10) byte header, even if the data is enclosed in a HTTP 1.1 CHUNKED stream.
+        //
+        $paresXml = gzinflate(substr($pares, 2));
+
+        $dom = $this->loadXmlViaDom($paresXml);
 
         $adapter = new XmlseclibsAdapter;
 
@@ -235,106 +238,108 @@ class Gateway extends Base\Gateway
         }
 
         // Convert to an object
-        $paresObject = simplexml_load_string($pares);
+        $PaRes = $this->xmlToArray($paresXml);
 
         // Validate Payer Authentication Response
-        $this->validatePARes($paresObject);
+        $this->validatePayerAuthenticationResponse($input, $PaRes);
 
-        $pares = $paresObject->Message->PARes;
+        $PARes = $PaRes['Message']['PARes'];
 
-        return $pares;
+        return $PARes;
     }
 
-    protected function validatePARes($PAres)
+    protected function validatePayerAuthenticationResponse($input, $PaRes)
     {
-        $PAres = json_decode(json_encode($PAres), true);
+        $this->trace->info('PAResBase', $PaRes);
 
-        $this->trace->info('PAResBase', $PAres);
-
-        if (empty($PAres['Message']) === true)
+        if (empty($PaRes['Message']) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
-                    'Message element not found', 'message');
+                'Message element not found', 'message');
         }
 
-        validate(Validator::$PAresRules, $PAres, false);
+        (new JitValidator)->rules(Validator::$PAresRules)
+                          ->input($PaRes)
+                          ->strict(false)
+                          ->validate();
 
-        $dotted_pares = array_dot($PAres);
+        // TODO: Fix this
+        $dotted_pares = array_dot($PaRes);
 
-        $difference = array_diff($PAres, Validator::$PAresRules);
+        $difference = array_diff($PaRes, Validator::$PAresRules);
 
         foreach ($difference as $key => $value)
         {
 
         }
 
-        $PAResBase = $PAres['Message']['PARes'];
+        $PARes = $PaRes['Message']['PARes'];
 
-        if (in_array($PAResBase['TX']['status'], [ParesStatus::Y, ParesStatus::A], true))
+        if (in_array($PARes['TX']['status'], [ParesStatus::Y, ParesStatus::A], true))
         {
-            Validator::validateLastFour($this->input['card']['last4'], $PAResBase['pan']);
+            Validator::validateLastFour($input['card']['last4'], $PARes['pan']);
         }
 
-        $xid = '000000'.$this->input['payment']['id'];
-        $xid = base64_encode($xid);
+        $expectedXid = $this->generateXid($input);
 
-        if ($PAResBase['Purchase']['xid'] !== $xid)
+        if ($PARes['Purchase']['xid'] !== $expectedXid)
         {
             throw new Exception\BadRequestValidationFailureException(
                     'Value mismatch', 'xid');
         }
 
-        $purchaseDate = Carbon::createFromTimestamp($this->input['payment']['created_at'], 'Asia/Kolkata')
+        $purchaseDate = Carbon::createFromTimestamp($input['payment']['created_at'], 'Asia/Kolkata')
                                 ->format('Ymd H:m:s');
 
-        if ($PAResBase['Purchase']['date'] !== $purchaseDate)
+        if ($PARes['Purchase']['date'] !== $purchaseDate)
         {
             throw new Exception\BadRequestValidationFailureException(
                     'Value mismatch', 'xid');
         }
 
-        $currency = (int) $PAResBase['Purchase']['currency'];
+        $currency = (int) $PARes['Purchase']['currency'];
 
+        // TODO: Use payment currency to validate this
         if ($currency !== 356)
         {
             throw new Exception\BadRequestValidationFailureException(
-                    'Invalid currency code', 'xid');
+                'Invalid currency code', 'xid');
         }
 
-        $amount = (int) $PAResBase['Purchase']['purchAmount'];
+        $amount = (int) $PARes['Purchase']['purchAmount'];
 
-        if ($amount !== $this->input['payment']['amount'])
+        if ($amount !== $input['payment']['amount'])
         {
             throw new Exception\BadRequestValidationFailureException(
-                    'Amount mismatch', 'amount');
+                'Amount mismatch', 'amount');
         }
 
-        $exponent = (int) $PAResBase['Purchase']['exponent'];
+        $exponent = (int) $PARes['Purchase']['exponent'];
 
+        // Move it to currency and then validate
         if ($exponent !== 2)
         {
             throw new Exception\BadRequestValidationFailureException(
-                    'Exponent mismatch', 'exponent');
+                'Exponent mismatch', 'exponent');
         }
 
-        if ($PAres['Message']['@attributes']['id'] !== $this->input['payment']['public_id'])
+        if ($PAres['Message']['@attributes']['id'] !== $input['payment']['public_id'])
         {
             throw new Exception\BadRequestValidationFailureException(
-                    'ID mismatch', 'id');
+                'ID mismatch', 'id');
         }
 
-        $this->validateCredentials($PAResBase);
+        $this->validateCredentials($input, $PARes);
     }
 
-    protected function validateCredentials($PARes)
+    protected function validateCredentials($input, $PARes)
     {
-        $credentials = $this->getCreds();
-
-        if (($PARes['Merchant']['acqBIN'] !== $credentials['acq_bin']) or
-            ($PARes['Merchant']['merID'] !== $credentials['merchant_id']))
+        if (($PARes['Merchant']['acqBIN'] !== $this->getAcquirerBin($input)) or
+            ($PARes['Merchant']['merID'] !== $this->getMerchantId($input)))
         {
+            // TODO: Throw critical error
             throw new Exception\BadRequestValidationFailureException(
-                    'Credentials mismatch');
+                'Credentials mismatch');
         }
     }
 
@@ -348,7 +353,6 @@ class Gateway extends Base\Gateway
                           ->input($response)
                           ->validate();
 
-
         if ($response['Message']['@attributes']['id'] !== $input['payment']['public_id'])
         {
             throw new Exception\GatewayErrorException(
@@ -357,245 +361,9 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function sendCRReq()
-    {
-        $this->messageId = 'rzp_' . \Str::random();
-
-        $request = $this->getCrreqRequestArray();
-
-        $xml = $this->sendGatewayRequest($request);
-
-        $valid = $this->validateXml($xml);
-
-        if ($valid === false)
-        {
-            $this->trace->warning(
-                TraceCode::BLADE_VERES_PARSE_FAILURE,
-                ['message' => 'Malformed xml: ' . $xml]);
-
-            return Enrolled::U;
-        }
-
-        $parsedXml = simplexml_load_string($xml);
-
-        $CRres = json_decode(json_encode($parsedXml), true);
-
-        $this->validateCrreq($CRres);
-
-        $cSerial = Cache::get('cache_serial', null);
-        $cache = Cache::get('card_cache', []);
-
-        $serial = null;
-
-        if (isset($CRres['Message']['CRRes']['serialNumber']))
-        {
-            $serial = $CRres['Message']['CRRes']['serialNumber'];
-        }
-
-        $this->validateCR($CRres);
-
-        if (($serial !== null) and
-            (isset($CRres['Message']['CRRes']['IReq']) === false))
-        {
-            // if ($cSerial === null)
-            // {
-            //     if (!$this->isSequentialArray($CRres['Message']['CRRes']['CR']))
-            //     {
-            //         $CR[] = $CRres['Message']['CRRes']['CR'];
-            //     }
-            //     else
-            //     {
-            //         $CR = $CRres['Message']['CRRes']['CR'];
-            //     }
-
-            //     foreach ($CRres['Message']['CRRes']['CR'] as $CR)
-            //     {
-            //         $cache[$CR['begin'] . '-' . $CR['end']] = $CR;
-            //     }
-            // }
-            // else
-            // {
-            //     if (empty($cache) === false)
-            //     {
-            //         if (isset($CRres['Message']['CRRes']['CR'][0]))
-            //         {
-            //             foreach ($CRres['Message']['CRRes']['CR'] as $CR)
-            //             {
-            //                 if (isset($cardCache[$CR['begin'] . '-' . $CR['end']]))
-            //                 {
-            //                     $cardCache[$CR['begin'] . '-' . $CR['end']] = $CR;
-            //                 }
-            //             }
-            //         }
-            //         else
-            //         {
-            //             if (isset($CRres['Message']['CRRes']['CR']))
-            //             {
-            //                 $CR = $CRres['Message']['CRRes']['CR'];
-
-            //                 if (isset($cardCache[$CR['begin'] . '-' . $CR['end']]))
-            //                 {
-            //                     $cache[$CR['begin'] . '-' . $CR['end']] = $CR;
-            //                 }
-            //             }
-            //         }
-            //     }
-            // }
-
-            if (isset($CRres['Message']['CRRes']['CR']))
-            {
-                if (!$this->isSequentialArray($CRres['Message']['CRRes']['CR']))
-                {
-                    $CR[] = $CRres['Message']['CRRes']['CR'];
-                }
-                else
-                {
-                    $CR = $CRres['Message']['CRRes']['CR'];
-                }
-
-                foreach ($CRres['Message']['CRRes']['CR'] as $CR)
-                {
-                    $cache[$CR['begin'] . '-' . $CR['end']] = $CR;
-                }
-            }
-        }
-
-        if (isset($CRres['Message']['CRRes']['IReq']) === false)
-        {
-            Cache::forever('card_cache', $cache);
-            Cache::forever('cache_serial', $serial);
-        }
-
-        if ($serial === null)
-        {
-            Cache::forever('card_cache', []);
-            Cache::forever('cache_serial', null);
-        }
-
-        // if (empty($CRres['Message']['CRRes']['serialNumber']) === false)
-        // {
-        //     Cache::forever('blade_serial_number', $CRres['Message']['CRRes']['serialNumber']);
-        // }
-        // else
-        // {
-        //     Cache::forever('blade_serial_number', null);
-        //     Cache::forever('blade_card_cache', []);
-        // }
-    }
-
     protected function isSequentialArray(array $array)
     {
         return array_keys($array) === range(0, count($array) - 1);
-    }
-
-    protected function validateCR(array $CRres)
-    {
-        if (isset($CRres['Message']['CRRes']['CR']))
-        {
-            if (!$this->isSequentialArray($CRres['Message']['CRRes']['CR']))
-            {
-                $CR[] = $CRres['Message']['CRRes']['CR'];
-            }
-            else
-            {
-                $CR = $CRres['Message']['CRRes']['CR'];
-            }
-
-            foreach ($CRres['Message']['CRRes']['CR'] as $CR)
-            {
-                if ((isset($CR['begin']) === false) or
-                    (isset($CR['end']) === false) or
-                    (isset($CR['action']) === false))
-                {
-                    throw new Exception\BadRequestValidationFailureException(
-                        'Invalid value in CR');
-                }
-
-                $beginLength = strlen($CR['begin']);
-                $endLength = strlen($CR['end']);
-
-                if ((is_numeric($CR['begin']) === false) or
-                    (is_numeric($CR['end']) === false) or
-                    ($beginLength > 19) or ($beginLength < 13) or
-                    ($endLength > 19) or ($endLength < 13) or
-                    ($beginLength !== $endLength) or
-                    (in_array($CR['action'], ['A', 'D']) === false))
-                {
-                    throw new Exception\BadRequestValidationFailureException(
-                        'Invalid value in CR');
-                }
-            }
-        }
-    }
-
-    public function getCrreqRequestArray()
-    {
-        $url = Url::CTH_DS;
-
-        $certFile = $this->config['mpi_ssl_client_pem'];
-        $keyFile = $this->config['mpi_ssl_client_key'];
-
-        $serialNumber = Cache::get('cache_serial', null);
-        $messageId = $this->messageId;
-
-        $creds = $this->getCreds();
-
-        $s = '';
-        if ($serialNumber !== null)
-        {
-            $s = '
-                <serialNumber>'.$serialNumber.'</serialNumber>';
-        }
-
-        $xml = ''.
-            '<?xml version="1.0" encoding="UTF-8"?>
-            <ThreeDSecure>
-              <Message id="' . $messageId . '">
-                <CRReq>
-                  <version>1.0.2</version>
-                  <Merchant>
-                    <acqBIN>' . $creds['acq_bin'] . '</acqBIN>
-                    <merID>' . $creds['merchant_id'] . '</merID>
-                    <password>' . $creds['password'] . '</password>
-                  </Merchant>' . $s . '
-                </CRReq>
-              </Message>
-            </ThreeDSecure>';
-
-        $headers = [
-            'Content-Type' => 'application/xml; charset=utf-8'
-        ];
-
-        $options = [
-            'body'      => $xml,
-            'headers'   => $headers,
-            'cert'      => [$certFile, ''],
-            'ssl_key'   => [$keyFile, ''],
-            'verify'    => false,
-            'debug'     => false,
-            'timeout'   => 30
-        ];
-
-        $request = [
-            'url'       => $url,
-            'method'    => 'POST',
-            'options'   => $options
-        ];
-
-        return $request;
-    }
-
-    protected function validateCrreq(array $CRres)
-    {
-        $this->trace->info('CRres', $CRres);
-
-        validate(Validator::$CRresRules, $CRres, false);
-
-        if ($CRres['Message']['@attributes']['id'] !== $this->messageId)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                    'ID mismatch', 'id');
-        }
     }
 
     protected function processVerifyEnrollmentResponse($input, $response)
@@ -984,7 +752,7 @@ class Gateway extends Base\Gateway
                     throw new Exception\BadRequestException(
                         ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR);
             }
-
+            // Throw Critical for now
             throw new Exception\BadRequestValidationFailureException(
                     'Invalid XML');
         }
