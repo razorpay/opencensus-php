@@ -33,13 +33,16 @@ trait GenerateRefundFile
                         $gateway
                     );
 
+        return $refunds;
+    }
+
+    public function checkIfValidDataAvailable(PublicCollection $entites)
+    {
         if ($refunds->isEmpty() === true)
         {
             throw new GatewayFileException(
                     FailureCode::NO_DATA_FOR_FILE_GENERATION);
         }
-
-        return $refunds;
     }
 
     /**
@@ -183,7 +186,7 @@ trait GenerateRefundFile
      *
      * @return bool Whether gateway_file entity can be processed again or not
      */
-    protected function canProcess(): bool
+    protected function canRetry(): bool
     {
         if ($this->gatewayFile->isAcknowledged() === true)
         {
