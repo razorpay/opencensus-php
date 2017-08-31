@@ -75,14 +75,9 @@ class Gateway extends Base\Gateway
         parent::callback($input);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-                                $input['payment']['id'], Base\Action::AUTHORIZE);
+            $input['payment']['id'], Base\Action::AUTHORIZE);
 
-        $PARes = $this->getPayerAuthenticationResponse($input);
-
-        // Validate in getPayerAuthenticationResponse
-        (new Validator)->rules(Validator::$paresRules)
-                       ->input($PARes)
-                       ->validate();
+        $PARes = $this->validateAndGetPayerAuthenticationResponse($input);
 
         $this->updateGatewayPaymentFromCallbackResponse($gatewayPayment, $PARes);
 
@@ -99,7 +94,7 @@ class Gateway extends Base\Gateway
 
         // TODO: Validate ECI here
 
-        return null;
+        return $this->getCallbackResponseData($input);
     }
 
     protected function getVeresAttributesToSave(array $response)
@@ -196,7 +191,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getPayerAuthenticationResponse(array $input)
+    protected function validateAndGetPayerAuthenticationResponse(array $input)
     {
         $pares = $input['gateway']['PaRes'];
         $pares = base64_decode($pares);
@@ -216,6 +211,8 @@ class Gateway extends Base\Gateway
         $dom = $this->loadXmlViaDom($paresXml);
 
         $adapter = new XmlseclibsAdapter;
+
+        $ret = false;
 
         try
         {
@@ -264,74 +261,65 @@ class Gateway extends Base\Gateway
         return $PARes;
     }
 
-    protected function validatePayerAuthenticationResponse($input, $PaRes)
+    protected function validatePayerAuthenticationResponse($input, $paRes)
     {
-        $this->trace->info('PAResBase', $PaRes);
-
-        if (empty($PaRes['Message']) === true)
+        if (empty($paRes['Message']) === true)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
                 'Message element not found');
         }
 
-        (new Validator)->rules(Validator::$PAresRules)
-                       ->input($PaRes)
+        (new Validator)->rules(Validator::$paresRules)
+                       ->input($paRes)
                        ->strict(false)
                        ->validate();
 
-        // TODO: Fix this
-        $dottedPares = array_dot($PaRes);
+        $pARes = $paRes['Message']['PARes'];
 
-        $difference = array_diff($PaRes, Validator::$PAresRules);
-
-        foreach ($difference as $key => $value)
+        if (in_array($pARes['TX']['status'], [ParesStatus::Y, ParesStatus::A], true))
         {
-
-        }
-
-        $PARes = $PaRes['Message']['PARes'];
-
-        if (in_array($PARes['TX']['status'], [ParesStatus::Y, ParesStatus::A], true))
-        {
-            Validator::validateLastFour($input['card']['last4'], $PARes['pan']);
+            Validator::validateLastFour($input['card']['last4'], $pARes['pan']);
         }
 
         $expectedXid = $this->generateXid($input);
 
-        if ($PARes['Purchase']['xid'] !== $expectedXid)
+        if ($pARes['Purchase']['xid'] !== $expectedXid)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                '',
                 'Value mismatch for xid',
                 [
                     'expected' => $expectedXid,
-                    'actual'   => $PARes['Purchase']['xid']
+                    'actual'   => $pARes['Purchase']['xid']
                 ]
             );
         }
 
         $purchaseDate = Carbon::createFromTimestamp($input['payment']['created_at'], 'Asia/Kolkata')
-                                ->format('Ymd H:m:s');
+            ->format('Ymd H:m:s');
 
-        if ($PARes['Purchase']['date'] !== $purchaseDate)
+        if ($pARes['Purchase']['date'] !== $purchaseDate)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                '',
                 'Value mismatch',
                 [
                     'expected' => $purchaseDate,
-                    'actual'   => $PARes['Purchase']['date']
+                    'actual'   => $pARes['Purchase']['date']
                 ]);
         }
 
-        $currency = $PARes['Purchase']['currency'];
+        $currency = $pARes['Purchase']['currency'];
 
         // TODO: Use payment currency to validate this
         if ($currency !== Currency::getIsoCode($input['payment']['currency']))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                '',
                 'Invalid currency code',
                 [
                     'expected' => $input['payment']['currency'],
@@ -339,12 +327,13 @@ class Gateway extends Base\Gateway
                 ]);
         }
 
-        $amount = (int) $PARes['Purchase']['purchAmount'];
+        $amount = (int) $pARes['Purchase']['purchAmount'];
 
         if ($amount !== $input['payment']['amount'])
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                '',
                 'Amount mismatch',
                 [
                     'expected' => $input['payment']['amount'],
@@ -352,13 +341,14 @@ class Gateway extends Base\Gateway
                 ]);
         }
 
-        $exponent = (int) $PARes['Purchase']['exponent'];
+        $exponent = (int) $pARes['Purchase']['exponent'];
 
         // Move it to currency and then validate
         if ($exponent !== Currency::getExponent($input['payment']['currency']))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                '',
                 'Exponent mismatch',
                 [
                     'expected' => Currency::getExponent($input['payment']['currency']),
@@ -366,18 +356,19 @@ class Gateway extends Base\Gateway
                 ]);
         }
 
-        if ($PAres['Message']['@attributes']['id'] !== $input['payment']['public_id'])
+        if ($pARes['@attributes']['id'] !== $input['payment']['public_id'])
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                '',
                 'Payment ID mismatch',
                 [
                     'actual'   => $input['payment']['public_id'],
-                    'expected' => $PAres['Message']['@attributes']['id']
+                    'expected' => $pARes['@attributes']['id']
                 ]);
         }
 
-        $this->validateCredentials($input, $PARes);
+        $this->validateCredentials($input, $pARes);
     }
 
     protected function validateCredentials($input, $PARes)
@@ -387,6 +378,7 @@ class Gateway extends Base\Gateway
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                '',
                 'Credentials mismatch');
         }
     }
@@ -405,6 +397,7 @@ class Gateway extends Base\Gateway
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                '',
                 'Invalid payment id received',
                 [
                     'expected' => $input['payment']['public_id'],
@@ -618,9 +611,9 @@ class Gateway extends Base\Gateway
 
     private function generateXid(array $input)
     {
-        $xid = str_pad($input['payment']['id'], 18, '0', STR_PAD_LEFT);
+        $xid = str_pad($input['payment']['id'], 28, '0', STR_PAD_LEFT);
 
-        return base64_encode($xid);
+        return $xid;
     }
 
     private function getFormattedAmount(array $payment)

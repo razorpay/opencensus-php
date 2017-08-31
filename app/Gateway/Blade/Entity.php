@@ -121,4 +121,24 @@ class Entity extends Base\Entity
     {
         $this->setAttribute(self::ACQUIRER, $acquirer);
     }
+
+    public function setXid(string $xid)
+    {
+        $this->setAttribute(self::XID, $xid);
+    }
+
+    public function setCavv(string $cavv)
+    {
+        $this->setAttribute(self::CAVV, $cavv);
+    }
+
+    public function setCavvAlgorithm(string $cavvAlgo)
+    {
+        $this->setAttribute(self::CAVV_ALGORITHM, $cavvAlgo);
+    }
+
+    public function setEci(string $eci)
+    {
+        $this->setAttribute(self::ECI, $eci);
+    }
 }

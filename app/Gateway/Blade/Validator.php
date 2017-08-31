@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Blade;
 
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Base\JitValidator;
 
 class Validator extends JitValidator
@@ -35,7 +36,7 @@ class Validator extends JitValidator
         'Message.CRRes.IReq.vendorCode'                 => 'sometimes|max:256',
     ];
 
-    public static $PAresRules = [
+    public static $paresRules = [
         'Message'                                                                       => 'required|array',
         'Message.@attributes.id'                                                        => 'required|max:128',
         'Message.PARes.@attributes.id'                                                  => 'required|max:128',
@@ -43,8 +44,8 @@ class Validator extends JitValidator
         'Message.PARes.TX'                                                              => 'required|array',
         'Message.PARes.TX.time'                                                         => 'required|date_format:Ymd H:i:s',
         'Message.PARes.TX.status'                                                       => 'required|size:1|in:Y,N,U,A|',
-        'Message.PARes.TX.eci'                                                          => 'required_if:Message.PARes.TX.status,Y,A|size_in:0,2',
-        'Message.PARes.TX.cavv'                                                         => 'required_if:Message.PARes.TX.status,Y,A|size_wo_whitespace:28|cavv',
+        'Message.PARes.TX.eci'                                                          => 'required_if:Message.PARes.TX.status,Y,A|between:0,2',
+        'Message.PARes.TX.cavv'                                                         => 'required_if:Message.PARes.TX.status,Y,A|size:28', //TODO add cavv custom validator
         'Message.PARes.TX.cavvAlgorithm'                                                => 'required_with:Message.PARes.TX.cavv|in:0,1,2,3',
         'Message.PARes.Purchase'                                                        => 'required|array',
         'Message.PARes.Purchase.xid'                                                    => 'required|size:28',
@@ -64,7 +65,6 @@ class Validator extends JitValidator
         'Message.PARes.Extension.@attributes.id'                                        => 'required_with:Message.PARes.Extension',
         'Message.PARes.Extension.@attributes.critical'                                  => 'sometimes|critical',
         'Message.Signature'                                                             => 'sometimes|array',
-        'Message.Signature.@attributes.xmlns'                                           => 'required|url',
         'Message.Signature.SignedInfo'                                                  => 'sometimes|array',
         'Message.Signature.SignedInfo.@attributes.xmlns'                                => 'sometimes',
         'Message.Signature.SignedInfo.CanonicalizationMethod'                           => 'sometimes',
@@ -91,6 +91,7 @@ class Validator extends JitValidator
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_CARD_INVALID_NUMBER,
+                '',
                 'Invalid PAN provided in pares' . $actual);
         }
     }
