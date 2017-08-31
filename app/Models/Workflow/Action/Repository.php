@@ -63,15 +63,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function findByAdminIdAndOrgId($adminId, $orgId, $relations = [])
-    {
-        return $this->newQuery()
-                    ->where(Entity::ADMIN_ID, '=', $adminId)
-                    ->where(Entity::ORG_ID, '=', $orgId)
-                    ->with($relations)
-                    ->firstOrFailPublic();
-    }
-
     public function findActionsForChecker(
         array $roleIds,
         array $relations = [])

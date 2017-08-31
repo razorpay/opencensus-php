@@ -57,9 +57,9 @@ final class FactoryData
             'month'             => 8,
             'year'              => 2017,
             'gstin'             => '29kjsngjk213922',
-            'amount'            => 500,
+            'amount'            => 50000,
             'amount_due'        => 0,
-            'tax'               => 22,
+            'tax'               => 2200,
         ]);
 
         $factory(\RZP\Models\Merchant\Balance\Entity::class, [
@@ -806,9 +806,15 @@ final class FactoryData
             'current_level'     => 1,
             'state'             => \RZP\Models\Workflow\Action\State\Entity::OPEN,
             'org_id'            => \RZP\Tests\Functional\Fixtures\Entity\Org::RZP_ORG,
+            'permission_id'     => 'factory:RZP\Models\Admin\Permission\Entity',
         ]);
 
         $factory(\RZP\Models\Workflow\Action\State\Entity::class,[
+            'id'                => $faker->uniqueid,
+            'name'              => \RZP\Models\Workflow\Action\State\Entity::OPEN,
+        ]);
+
+        $factory(\RZP\Models\Workflow\Action\Checker\Entity::class,[
             'id'                => $faker->uniqueid,
             'name'              => \RZP\Models\Workflow\Action\State\Entity::OPEN,
         ]);

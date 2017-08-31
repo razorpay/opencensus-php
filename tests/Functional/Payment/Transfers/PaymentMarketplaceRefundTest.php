@@ -32,7 +32,7 @@ class PaymentMarketplaceRefundTest extends TestCase
     /**
      * Try refunding a transfer payment using account auth.
      * Transfer payments can only be refunded via Reversals.
-     * Direct refunds should failsta
+     * Direct refunds should fail
      */
     public function testRefundTransferPayment()
     {
@@ -58,13 +58,6 @@ class PaymentMarketplaceRefundTest extends TestCase
         {
             $this->refundPayment($transferPayment['id']);
         });
-    }
-
-
-
-    public function testRefundAmountGreaterThanTransferred()
-    {
-        ; // ?
     }
 
     public function testFullRefund()
