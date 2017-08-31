@@ -268,10 +268,10 @@ class Entity extends Base\PublicEntity
         return 0;
     }
 
-    public function getServiceTax()
-    {
-        return 0;
-    }
+//    public function getServiceTax()
+//    {
+//        return 0;
+//    }
 
     public function getTax()
     {

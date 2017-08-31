@@ -48,7 +48,7 @@ class BrokerTransactionReport extends BasicEntityReport
     const BANK_REF_NO       = 'Bank Ref No';
     const GROSS_TXN_AMOUNT  = 'Gross Txn Amount';
     const TXN_CHARGES       = 'Txn Charges';
-    const SERVICE_TAX       = 'Service Tax';
+    const TAX               = 'Tax';
     const SB_CESS           = 'SB Cess';
     const KK_CESS           = 'Krishi Kalyan Cess';
     const TOTAL_CHARGEABLE  = 'Total Chargeable';
@@ -116,7 +116,7 @@ class BrokerTransactionReport extends BasicEntityReport
                 self::BANK_REF_NO        => $this->getTxnBankReferenceNo($txn),
                 self::GROSS_TXN_AMOUNT   => ($txn->getAmount() / 100),
                 self::TXN_CHARGES        => $feesBreakup['Txn Charges'],
-                self::SERVICE_TAX        => $feesBreakup['Service Tax'],
+                self::TAX                => $feesBreakup['Service Tax'],
                 self::SB_CESS            => $feesBreakup['SB Cess'],
                 self::KK_CESS            => $feesBreakup['Krishi Kalyan Cess'],
                 self::TOTAL_CHARGEABLE   => $feesBreakup['Total Chargeable'],
@@ -252,7 +252,7 @@ class BrokerTransactionReport extends BasicEntityReport
     {
         $fees = [
             'Txn Charges'        => 0,
-            'Service Tax'        => 0,
+            'Tax'                => 0,
             'SB Cess'            => 0,
             'Krishi Kalyan Cess' => 0,
             'Total Chargeable'   => 0,

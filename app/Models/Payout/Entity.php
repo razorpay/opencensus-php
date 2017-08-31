@@ -29,7 +29,7 @@ class Entity extends Base\PublicEntity
     const CURRENCY               = 'currency';
     const NOTES                  = 'notes';
     const FEES                   = 'fees';
-    const SERVICE_TAX            = 'service_tax';
+    //const SERVICE_TAX            = 'service_tax';
     const TAX                    = 'tax';
     const PAYMENT_ID             = 'payment_id';
     const TRANSACTION_ID         = 'transaction_id';
@@ -85,7 +85,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::METHOD,
         self::FEES,
-        self::SERVICE_TAX,
+        //self::SERVICE_TAX,
         self::TAX,
         self::PAYMENT_ID,
         self::TRANSACTION_ID,
@@ -111,7 +111,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::NOTES,
         self::FEES,
-        self::SERVICE_TAX,
+        //self::SERVICE_TAX,
         self::TAX,
         self::STATUS,
         self::UTR,
@@ -136,14 +136,15 @@ class Entity extends Base\PublicEntity
     protected $amounts = [
         self::AMOUNT,
         self::FEES,
-        self::SERVICE_TAX,
+        //self::SERVICE_TAX,
         self::TAX,
     ];
 
     protected $casts = [
         self::AMOUNT      => 'int',
         self::FEES        => 'int',
-        self::SERVICE_TAX => 'int',
+        //self::SERVICE_TAX => 'int',
+        self::TAX         => 'int',
     ];
 
     protected $dates = [
@@ -193,10 +194,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEES);
     }
 
-    public function getServiceTax()
-    {
-        return $this->getAttribute(self::SERVICE_TAX);
-    }
+//    public function getServiceTax()
+//    {
+//        return $this->getAttribute(self::SERVICE_TAX);
+//    }
 
     public function getTax()
     {
@@ -278,10 +279,10 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CHANNEL, $channel);
     }
 
-    public function setServiceTax($serviceTax)
-    {
-        $this->setAttribute(self::SERVICE_TAX, $serviceTax);
-    }
+//    public function setServiceTax($serviceTax)
+//    {
+//        $this->setAttribute(self::SERVICE_TAX, $serviceTax);
+//    }
 
     public function setTax($tax)
     {

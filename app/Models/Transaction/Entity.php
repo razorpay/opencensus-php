@@ -23,7 +23,7 @@ class Entity extends Base\PublicEntity
     const CREDIT              = 'credit';
     const CURRENCY            = 'currency';
     const FEE                 = 'fee';
-    const SERVICE_TAX         = 'service_tax';
+    //const SERVICE_TAX         = 'service_tax';
     const TAX                 = 'tax';
     const PRICING_RULE_ID     = 'pricing_rule_id';
     const BALANCE             = 'balance';
@@ -66,7 +66,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_FEE,
         self::GATEWAY_SERVICE_TAX,
         self::GATEWAY_SETTLED_AT,
-        self::SERVICE_TAX,
+        //self::SERVICE_TAX,
         self::TAX,
         self::GRATIS,
         self::FEE_CREDITS,
@@ -129,7 +129,7 @@ class Entity extends Base\PublicEntity
         self::ON_HOLD               => 0,
         self::SETTLED               => 0,
         self::PRICING_RULE_ID       => null,
-        self::SERVICE_TAX           => null,
+        //self::SERVICE_TAX           => null,
         self::TAX                   => null,
         self::FEE_MODEL             => Merchant\FeeModel::NA,
         self::FEE_BEARER            => Merchant\FeeBearer::NA,
@@ -141,7 +141,7 @@ class Entity extends Base\PublicEntity
         self::DEBIT,
         self::CREDIT,
         self::FEE,
-        self::SERVICE_TAX,
+        //self::SERVICE_TAX,
         self::TAX,
     );
 
@@ -150,7 +150,7 @@ class Entity extends Base\PublicEntity
         self::DEBIT               => 'int',
         self::AMOUNT              => 'int',
         self::FEE                 => 'int',
-        self::SERVICE_TAX         => 'int',
+        //self::SERVICE_TAX         => 'int',
         self::TAX                 => 'int',
         self::BALANCE             => 'int',
         self::GATEWAY_AMOUNT      => 'int',
@@ -337,10 +337,10 @@ class Entity extends Base\PublicEntity
         return (int) $gatewaySettledAt;
     }
 
-    protected function getServiceTaxAttribute()
-    {
-        return (int) $this->attributes[self::SERVICE_TAX];
-    }
+//    protected function getServiceTaxAttribute()
+//    {
+//        return (int) $this->attributes[self::SERVICE_TAX];
+//    }
 
     protected function getTaxAttribute()
     {
@@ -402,10 +402,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CHANNEL);
     }
 
-    public function getServiceTax()
-    {
-        return $this->getAttribute(self::SERVICE_TAX);
-    }
+//    public function getServiceTax()
+//    {
+//        return $this->getAttribute(self::SERVICE_TAX);
+//    }
 
     public function getTax()
     {
@@ -442,10 +442,10 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::GATEWAY_FEE, $gatewayFee);
     }
 
-    public function setGatewayServiceTax($gatewayServiceTax)
-    {
-        $this->setAttribute(self::GATEWAY_SERVICE_TAX, $gatewayServiceTax);
-    }
+//    public function setGatewayServiceTax($gatewayServiceTax)
+//    {
+//        $this->setAttribute(self::GATEWAY_SERVICE_TAX, $gatewayServiceTax);
+//    }
 
     public function setSettledAt($settledAt)
     {
@@ -535,12 +535,12 @@ class Entity extends Base\PublicEntity
         $array[self::SETTLEMENT_ID] = $sign . $array[self::SETTLEMENT_ID];
     }
 
-    public function setServiceTax($servicetax)
-    {
-        assertTrue($servicetax >= 0);
-
-        $this->setAttribute(self::SERVICE_TAX, $servicetax);
-    }
+//    public function setServiceTax($servicetax)
+//    {
+//        assertTrue($servicetax >= 0);
+//
+//        $this->setAttribute(self::SERVICE_TAX, $servicetax);
+//    }
 
     public function setTax($tax)
     {
@@ -635,7 +635,7 @@ class Entity extends Base\PublicEntity
 
         unset($reportTxn[self::ID]);
 
-        unset($reportTxn[self::SERVICE_TAX]);
+        //unset($reportTxn[self::SERVICE_TAX]);
 
         $reportTxn[Payment\Entity::DESCRIPTION] = null;
         $reportTxn[Payment\Entity::NOTES] = null;
