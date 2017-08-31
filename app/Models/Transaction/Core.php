@@ -25,6 +25,7 @@ use RZP\Models\Transfer;
 use RZP\Models\Feature;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\FeeModel;
+use RZP\Constants\Entity as E;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
@@ -690,6 +691,25 @@ class Core extends Base\Core
             (new Pricing\Fee)->calculateMerchantFees($transfer);
 
         $settledAt = time();
+
+        //
+        // For transfers from a payment, if the source payment is not
+        // settled yet, delay the settled_at timestamp to avoid this txn
+        // from being picked up for settlement immediately.
+        //
+        // Without this, the transfer txn would get picked up for settlement
+        // before the payment txn, leading to a overall negative settlement
+        // that is then skipped.
+        //
+        if ($transfer->getSourceType() === E::PAYMENT)
+        {
+            $paymentTxn = $transfer->source->transaction;
+
+            if ($paymentTxn->isSettled() === false)
+            {
+                $settledAt = $paymentTxn->getSettledAt();
+            }
+        }
 
         $amountPlusFees = abs($amount + $fee);
 
