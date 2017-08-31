@@ -92,8 +92,6 @@ export default class ReportsContainer extends Component {
     this.setState({
       entity: this.entityOptions[1],
     });
-
-    this.validateInvoiceMonthYear = this.validateInvoiceMonthYear.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
