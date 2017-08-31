@@ -58,9 +58,9 @@ class Refund extends TypeProcessor
         $input = [
             Entity::RECEIPT => $row[self::CANCELLATION_ID . '_' . self::MERCHANT_REFERENCE],
             Entity::NOTES   => [
-                'reservation_id' => $row[self::MERCHANT_REFERENCE],
-                'receipt'        => $row[self::CANCELLATION_ID],
-                'refund_type'    => $row[self::REFUND_TYPE],
+                'reservation_id'  => $row[self::MERCHANT_REFERENCE],
+                'cancellation_id' => $row[self::CANCELLATION_ID],
+                'refund_type'     => $row[self::REFUND_TYPE],
             ],
         ];
 
@@ -82,9 +82,9 @@ class Refund extends TypeProcessor
             Entity::AMOUNT  => intval($row[self::REFUND_AMOUNT] * 100),
             Entity::RECEIPT => $row[self::CANCELLATION_ID . '_' . self::MERCHANT_REFERENCE],
             Entity::NOTES   => [
-                'reservation_id' => $row[self::MERCHANT_REFERENCE],
-                'receipt'        => $row[self::CANCELLATION_ID],
-                'refund_type'    => $row[self::REFUND_TYPE],
+                'reservation_id'  => $row[self::MERCHANT_REFERENCE],
+                'cancellation_id' => $row[self::CANCELLATION_ID],
+                'refund_type'     => $row[self::REFUND_TYPE],
             ],
         ];
 
