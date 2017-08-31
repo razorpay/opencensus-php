@@ -18,6 +18,7 @@ class Entity extends Base\Entity
     const ENROLLED               = 'enrolled';
     const CURRENCY               = 'currency';
     const MER_ID                 = 'merID';
+    const ACC_ID                 = 'accID';
 
     protected $fields = [
         self::ID,
@@ -31,7 +32,7 @@ class Entity extends Base\Entity
         self::XID,
         self::MER_ID,
         self::CREATED_AT,
-        self::UPDATED_AT
+        self::UPDATED_AT,
     ];
 
     protected $fillable = [

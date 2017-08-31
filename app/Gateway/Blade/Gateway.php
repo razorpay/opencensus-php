@@ -102,11 +102,11 @@ class Gateway extends Base\Gateway
         return null;
     }
 
-    protected function getVeresAttributesToSave($response)
+    protected function getVeresAttributesToSave(array $response)
     {
         $attributes = [];
 
-        $ch = $response['VERes']['CH']['enrolled'];
+        $ch = $response['Message']['VERes']['CH'];
 
         $attributes[Entity::ENROLLED] = $ch['enrolled'];
 

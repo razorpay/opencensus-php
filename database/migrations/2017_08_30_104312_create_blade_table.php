@@ -49,6 +49,9 @@ class CreateBladeTable extends Migration
             $table->char(Blade::CAVV, 40)
                   ->nullable();
 
+            $table->char(Blade::ACC_ID, 40)
+                  ->nullable();
+
             $table->char(Blade::CAVV_ALGORITHM, 1)
                   ->nullable();
 
