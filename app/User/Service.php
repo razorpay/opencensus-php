@@ -983,8 +983,6 @@ class Service extends Base\Service
 
         $userDetails = $genericUser->toArray();
 
-        $this->getTags($userDetails);
-
         $merchants = $userDetails['merchants'];
 
         $data['user'] = $userDetails;
@@ -1030,7 +1028,7 @@ class Service extends Base\Service
                 {
                     $data['current'] = $currentMerchantId;
 
-                    $data['tags'] = $merchant['tags'];
+                    $data['tags'] = (new Merchant\Service)->getMerchantTags($currentMerchantId);
                 }
             }
 
@@ -1066,36 +1064,6 @@ class Service extends Base\Service
         }
 
         return [[], $data];
-    }
-
-    protected function getTags(array & $userDetails)
-    {
-        if (empty($userDetails) === true)
-        {
-            return;
-        }
-
-        $merchants = $userDetails['merchants'];
-
-        $merchantIds = array_column($merchants, 'id');
-
-        $data = Merchant\Entity::select(['merchants.id'])
-                                ->with('tagged')
-                                ->whereIn('merchants.id', $merchantIds)
-                                ->get()
-                                ->toArray();
-
-        foreach ($merchants as & $merchant)
-        {
-            $key = array_search($merchant['id'], array_column($data, 'id'));
-
-            if ($key !== false)
-            {
-                $merchant = array_merge($merchant, $data[$key]);
-            }
-        }
-
-        $userDetails['merchants'] = $merchants;
     }
 
     public function loginOnApi(array $input)

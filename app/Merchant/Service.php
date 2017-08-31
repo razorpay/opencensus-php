@@ -491,13 +491,7 @@ class Service extends Base\Service
     {
         list($error, $merchant) = $this->fetchMerchantFromApi($merchantId);
 
-        $tags = Merchant\Entity::select(['id'])
-                                ->with('tagged')
-                                ->where('id', $merchantId)
-                                ->get()
-                                ->toArray();
-
-        return array_merge($merchant, $tags[0]);
+        return $merchant;
     }
 
     public function fetchMerchantFromApi($merchantId)
