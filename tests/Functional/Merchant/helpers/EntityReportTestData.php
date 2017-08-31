@@ -28,9 +28,9 @@ return [
 
     'testInvoiceNew' => [
         'Tax Invoice' => [
-            'Comission on Card Payments <= INR 2,000' => [
+            'Commission on Card Payments <= INR 2,000' => [
                 'GST.SAC Code'  => '997158',
-                'Description'   => 'Comission on Card Payments <= INR 2,000',
+                'Description'   => 'Commission on Card Payments <= INR 2,000',
                 'Amount'        => 500,
                 'SGST @ 9%'     => 11,
                 'CGST @ 9%'     => 11,
@@ -38,9 +38,9 @@ return [
                 'Tax Total'     => 22,
                 'Grand Total'   => 522,
             ],
-            'Comission on Card Payments > INR 2,000' => [
+            'Commission on Card Payments > INR 2,000' => [
                 'GST.SAC Code'  => '997158',
-                'Description'   => 'Comission on Card Payments > INR 2,000',
+                'Description'   => 'Commission on Card Payments > INR 2,000',
                 'Amount'        => 500,
                 'SGST @ 9%'     => 11,
                 'CGST @ 9%'     => 11,
@@ -48,9 +48,9 @@ return [
                 'Tax Total'     => 22,
                 'Grand Total'   => 522,
             ],
-            'Comission on All Methods Except Cards' => [
+            'Commission on All Methods Except Cards' => [
                 'GST.SAC Code'  => '997158',
-                'Description'   => 'Comission on All Methods Except Cards',
+                'Description'   => 'Commission on All Methods Except Cards',
                 'Amount'        => 500,
                 'SGST @ 9%'     => 11,
                 'CGST @ 9%'     => 11,
