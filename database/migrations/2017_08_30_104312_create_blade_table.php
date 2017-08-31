@@ -40,7 +40,8 @@ class CreateBladeTable extends Migration
             $table->string(Blade::CURRENCY, 3)
                   ->nullable();
 
-            $table->char(Blade::STATUS, 20);
+            $table->char(Blade::STATUS, 1)
+                  ->nullable();
 
             $table->char(Blade::XID, 40)
                   ->nullable();
