@@ -96,7 +96,7 @@ class Service extends Base\Service
         $eventAttributes['activation_progress'] = $activationProgress;
 
         $this->app['eventManager']
-            ->trackEvents($this->merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
+             ->trackEvents($this->merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
 
         return $response;
     }
@@ -345,8 +345,7 @@ class Service extends Base\Service
 
     private function getFieldsToStepMap() : array
     {
-        // Here we can send marketplace steps if needed.
-        // For the current merchant detail API its only normal accounts.
+        // Fetching Action Form details schema based on account type.
         $isLinkedAccount = $this->merchant->isLinkedAccount();
 
         if ($isLinkedAccount === true)
