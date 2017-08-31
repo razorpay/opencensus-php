@@ -23,8 +23,9 @@ class Transfer extends Base
         }
 
         $defaultValues = [
-            'to_type'   => 'merchant',
-            'to_id'     => $account->getId(),
+            'to_type'                   => 'merchant',
+            'to_id'                     => $account->getId(),
+            'recipient_settlement_id'   => null
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

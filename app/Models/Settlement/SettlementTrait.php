@@ -14,6 +14,7 @@ use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
 use RZP\Models\Payment;
+use Razorpay\Trace\Logger as Trace;
 
 trait SettlementTrait
 {
@@ -133,7 +134,7 @@ trait SettlementTrait
     }
 
     /**
-     * [Route] Updates the recipient's settlement id in the transfer entity.
+     * [Marketplace] Updates the recipient's settlement id in the transfer entity.
      *
      *  When the transactions for the internal payments (payments triggered by the transfer
      *  from master merchant to the linked account) are settled, the settlement_id of those
@@ -165,6 +166,11 @@ trait SettlementTrait
             foreach ($filteredTxns as $txn)
             {
                 $settlementId = $txn->getSettlementId();
+
+                if ($settlementId === null)
+                {
+                    continue;
+                }
 
                 $transfer = $txn->source->transfer;
 

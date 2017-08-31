@@ -67,13 +67,13 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::FEES,
         self::SERVICE_TAX,
+        self::TAX,
         self::ON_HOLD,
         self::ON_HOLD_UNTIL,
         self::TRANSACTION_ID,
+        self::RECIPIENT_SETTLEMENT_ID,
         self::CREATED_AT,
-        self::UPDATED_AT,
-        self::TAX,
-        self::RECIPIENT_SETTLEMENT_ID
+        self::UPDATED_AT
     ];
 
     protected $public = [
@@ -87,12 +87,12 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::FEES,
         self::SERVICE_TAX,
+        self::TAX,
         self::ON_HOLD,
         self::ON_HOLD_UNTIL,
-        self::CREATED_AT,
-        self::TAX,
         self::RECIPIENT_SETTLEMENT_ID,
-        self::RECIPIENT_SETTLEMENT
+        self::RECIPIENT_SETTLEMENT,
+        self::CREATED_AT
     ];
 
     protected $publicSetters = [
@@ -165,7 +165,7 @@ class Entity extends Base\PublicEntity
 
     public function recipientSettlement()
     {
-        return $this->belongsTo(Settlement\Entity::class, self::RECIPIENT_SETTLEMENT_ID, Settlement\Entity::ID);
+        return $this->belongsTo(Settlement\Entity::class);
     }
 
     // -------------------- End Relations -----------------------
@@ -318,7 +318,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ON_HOLD_UNTIL, $holdUntil);
     }
 
-    public function setRecipientSettlementId($recipientSettlementId)
+    public function setRecipientSettlementId(string $recipientSettlementId)
     {
         $this->setAttribute(self::RECIPIENT_SETTLEMENT_ID, $recipientSettlementId);
     }
