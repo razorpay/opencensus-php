@@ -14,7 +14,6 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Lib\Formatters\Xml;
-use RZP\Base\JitValidator;
 use RZP\Models\Currency\Currency;
 use RZP\Exception\ThreeDSecureAuthenticationFailureException;
 
@@ -83,7 +82,7 @@ class Gateway extends Base\Gateway
         $this->updateGatewayPaymentFromCallbackResponse($gatewayPayment, $PARes);
 
         // Validate in getPayerAuthenticationResponse
-        (new JitValidator)->rules(Validator::$paresRules)
+        (new Validator)->rules(Validator::$paresRules)
                           ->input($PARes)
                           ->validate();
 
@@ -259,7 +258,7 @@ class Gateway extends Base\Gateway
                 'Message element not found');
         }
 
-        (new JitValidator)->rules(Validator::$PAresRules)
+        (new Validator)->rules(Validator::$PAresRules)
                           ->input($PaRes)
                           ->strict(false)
                           ->validate();

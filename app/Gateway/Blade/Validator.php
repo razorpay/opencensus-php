@@ -2,10 +2,10 @@
 
 namespace RZP\Gateway\Blade;
 
-use App\Gateway\Base;
 use RZP\Exception;
+use RZP\Base\JitValidator;
 
-class Validator
+class Validator extends JitValidator
 {
     // Using array because of complex regex
     public static $veresRules = [
@@ -93,5 +93,12 @@ class Validator
                 ErrorCode::GATEWAY_ERROR_CARD_INVALID_NUMBER,
                 'Invalid PAN provided in pares' . $actual);
         }
+    }
+
+    protected function processValidationFailure($messages, $operation, $input)
+    {
+        throw new Exception\GatewayErrorException(
+            ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
+            $messages);
     }
 }
