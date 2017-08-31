@@ -49,6 +49,6 @@ export default class User {
   }
 
   get isGSTEnabled() {
-    return (this.tags || []).indexOf('gst_invoice') !== -1;
+    return (this.tags || []).indexOf('Gst_invoice') !== -1;
   }
 }
