@@ -79,12 +79,12 @@ class Gateway extends Base\Gateway
 
         $PARes = $this->getPayerAuthenticationResponse($input);
 
-        $this->updateGatewayPaymentFromCallbackResponse($gatewayPayment, $PARes);
-
         // Validate in getPayerAuthenticationResponse
         (new Validator)->rules(Validator::$paresRules)
-                          ->input($PARes)
-                          ->validate();
+                       ->input($PARes)
+                       ->validate();
+
+        $this->updateGatewayPaymentFromCallbackResponse($gatewayPayment, $PARes);
 
         $txnStatus = $PARes['TX']['status'];
 
@@ -106,7 +106,14 @@ class Gateway extends Base\Gateway
     {
         $attributes = [];
 
-        // TODO fill attributes
+        $ch = $response['VERes']['CH']['enrolled'];
+
+        $attributes[Entity::ENROLLED] = $ch['enrolled'];
+
+        if (empty($ch['acctID']) === false)
+        {
+            $attributes[Entity::ACC_ID] = $ch['acctID'];
+        }
 
         return $attributes;
     }
@@ -115,7 +122,17 @@ class Gateway extends Base\Gateway
         Entity $gatewayPayment,
         array $resp)
     {
-        // TODO : Fill it
+        $gatewayPayment->setXid($resp['Purchase']['xid']);
+
+        $gatewayPayment->setCavv($resp['TX']['cavv']);
+
+        $gatewayPayment->setCavvAlgorithm($resp['TX']['cavvAlgorithm']);
+
+        $gatewayPayment->setStatus($resp['TX']['status']);
+
+        $gatewayPayment->setEci($resp['TX']['eci']);
+
+        $this->repo->saveOrFail($gatewayPayment);
     }
 
     protected function createGatewayPaymentEntity(array $attributes, array $input)
@@ -259,12 +276,12 @@ class Gateway extends Base\Gateway
         }
 
         (new Validator)->rules(Validator::$PAresRules)
-                          ->input($PaRes)
-                          ->strict(false)
-                          ->validate();
+                       ->input($PaRes)
+                       ->strict(false)
+                       ->validate();
 
         // TODO: Fix this
-        $dotted_pares = array_dot($PaRes);
+        $dottedPares = array_dot($PaRes);
 
         $difference = array_diff($PaRes, Validator::$PAresRules);
 
@@ -368,7 +385,6 @@ class Gateway extends Base\Gateway
         if (($PARes['Merchant']['acqBIN'] !== $this->getAcquirerBin($input)) or
             ($PARes['Merchant']['merID'] !== $this->getMerchantId($input)))
         {
-            // TODO: Throw critical error
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
                 'Credentials mismatch');
