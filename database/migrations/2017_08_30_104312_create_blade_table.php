@@ -6,8 +6,8 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Gateway\Blade\Entity as Blade;
-use RZP\Models\Refund\Entity as Refund;
 use RZP\Models\Payment\Entity as Payment;
+use RZP\Models\Payment\Refund\Entity as Refund;
 
 class CreateBladeTable extends Migration
 {
