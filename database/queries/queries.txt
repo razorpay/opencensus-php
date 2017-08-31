@@ -2415,7 +2415,7 @@ ALTER TABLE merchant_invoice
     ADD COLUMN description VARCHAR(255) DEFAULT NULL AFTER `type`;
 
 ALTER TABLE transfers
-    ADD COLUMN recipient_settlement_id CHAR(14) DEFAULT NULL AFTER transaction_id,
+    ADD COLUMN recipient_settlement_id CHAR(14) AFTER transaction_id,
     ADD CONSTRAINT transfers_recipient_settlement_id_foreign FOREIGN KEY(recipient_settlement_id)
     REFERENCES settlements(id) ON DELETE RESTRICT;
 
