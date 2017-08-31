@@ -85,7 +85,8 @@ class Validator extends Base\Validator
             return;
         }
 
-        if (in_array($method, [Payment\Method::NETBANKING, Payment\Method::WALLET], true) === true)
+        if ((empty($method) === false) and
+            (in_array($method, [Payment\Method::CARD, Payment\Method::EMI], true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 "Payment network should be sent only for card offers");
@@ -147,7 +148,7 @@ class Validator extends Base\Validator
     {
         if (empty($method) === true)
         {
-            return ;
+            return;
         }
 
         if (in_array($method, Payment\Method::getAllPaymentMethods(), true) === false)
@@ -173,7 +174,7 @@ class Validator extends Base\Validator
         if ((IFSC::exists($issuer) === false) and (Wallet::exists($issuer) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Invalid Issuer name : '. $issuer);
+                "Invalid issuer name : $issuer", $attribute);
         }
     }
 
@@ -183,7 +184,7 @@ class Validator extends Base\Validator
 
         if (empty($iins) === true)
         {
-            return ;
+            return;
         }
 
         if (is_associative_array($iins) === true)
@@ -196,7 +197,7 @@ class Validator extends Base\Validator
 
         if (empty($paymentMethod) === true)
         {
-            return ;
+            return;
         }
 
         $allowedPaymentMethods = [Payment\Method::CARD, Payment\Method::EMI];
@@ -204,7 +205,7 @@ class Validator extends Base\Validator
         if (in_array($paymentMethod, $allowedPaymentMethods, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Iins can be only edited for card offer');
+                'Iins can be only edited for card / emi offer');
         }
     }
 

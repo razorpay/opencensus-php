@@ -1070,8 +1070,27 @@ return [
             ],
             [
                 'offer' => [
+                    'issuer'              => 'HDFC',
+                    'error_message'       => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+                    'display_text'        => 'Some display text',
+                    'terms'               => 'Some terms',
+                ],
+                'response' => [
+                    'content' => [
+                        'offers' => [
+                            [
+                                'name'            => 'Test Offer',
+                                'issuer'          => 'HDFC',
+                                'display_text'    => 'Some display text',
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            [
+                'offer' => [
                     'payment_method'      => 'wallet',
-                    'payment_network'     => 'airtelmoney',
+                    'issuer'              => 'airtelmoney',
                     'error_message'       => 'Payment method used is not eligible for offer. Please try with a different payment method.',
                     'display_text'        => 'Some display text',
                     'terms'               => 'Some terms',
@@ -1088,26 +1107,10 @@ return [
                             [
                                 'name'            => 'Test Offer',
                                 'payment_method'  => 'wallet',
-                                'payment_network' => 'airtelmoney',
+                                'issuer'          => 'airtelmoney',
                                 'display_text'    => 'Some display text',
                             ]
                         ]
-                    ]
-                ]
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'methods' => [
-                    'entity' => 'methods',
-                    'card'   => true
-                ],
-                'offers' => [
-                    [
-                        'name'            => 'Test Offer',
-                        'payment_method'  => 'card',
-                        'payment_network' => 'VISA',
-                        'display_text'    => 'Some display text',
                     ]
                 ]
             ],

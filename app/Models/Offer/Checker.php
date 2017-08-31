@@ -27,7 +27,7 @@ class Checker extends Base\Core
     /**
      * Properties used to check if offer is applicable on payment
      */
-    const CHECK_PROPERTIES = [
+    const PROPERTIES_TO_CHECK = [
         Entity::PAYMENT_METHOD,
         Entity::PAYMENT_METHOD_TYPE,
         Entity::PAYMENT_NETWORK,
@@ -67,7 +67,7 @@ class Checker extends Base\Core
 
         $checkResult = false;
 
-        foreach (self::CHECK_PROPERTIES as $property)
+        foreach (self::PROPERTIES_TO_CHECK as $property)
         {
             $checkMethod = 'check' . studly_case($property);
 
@@ -104,7 +104,8 @@ class Checker extends Base\Core
 
         // Return true if no payment method type specified on offer
         // Means offer is valid on both credit/debit cards
-        if (($offerPaymentMethodType === null) or ($this->payment->isMethodCardOrEmi() === false))
+        if (($offerPaymentMethodType === null) or
+            ($this->payment->isMethodCardOrEmi() === false))
         {
             return true;
         }
@@ -176,7 +177,7 @@ class Checker extends Base\Core
                 return ($offerIssuer === $wallet);
 
             default:
-                return true;
+                return false;
         }
     }
 
@@ -202,6 +203,12 @@ class Checker extends Base\Core
                 break;
             }
         }
+
+        $this->traceCheckResult(TraceCode::OFFER_CARD_IIN_CHECK, [
+            'result'     => $result,
+            'offer_iins' => $offerIins,
+            'card_iin'   => $card->getIin()
+        ]);
 
         return $result;
     }

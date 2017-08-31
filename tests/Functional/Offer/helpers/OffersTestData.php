@@ -93,7 +93,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid Issuer name : XXXX',
+                    'description' => 'Invalid issuer name : XXXX',
                 ]
             ],
             'status_code' => 400
@@ -498,7 +498,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid Issuer name : airtelhoney',
+                    'description' => 'Invalid issuer name : airtelhoney',
                 ]
             ],
             'status_code' => 400
@@ -531,7 +531,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid Issuer name : XXXX'
+                    'description' => 'Invalid issuer name : XXXX'
                 ]
             ],
             'status_code' => 400,
@@ -599,7 +599,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid Issuer name : HDFD'
+                    'description' => 'Invalid issuer name : HDFD'
                 ]
             ],
             'status_code' => 400,
@@ -741,7 +741,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Iins can be only edited for card offer'
+                    'description' => 'Iins can be only edited for card / emi offer'
                 ]
             ],
             'status_code' => 400
