@@ -24,6 +24,11 @@ class TestCase extends ParentTestCase
     protected $ba;
 
     /**
+     * @var Database
+     */
+    protected $db;
+
+    /**
      * To denote whether to simulate unit tests with
      * environment being in cloud
      *
@@ -35,15 +40,10 @@ class TestCase extends ParentTestCase
     {
         parent::setUp();
 
-//      $this->markTestSkipped();
-
         $this->initialSetup();
 
         // Instantiate auth class
         $this->ba = new Authorization($this);
-
-        // Enable filters
-        //$this->app['router']->enableFilters();
     }
 
     public function initialSetup()
@@ -61,7 +61,9 @@ class TestCase extends ParentTestCase
     public function tearDown()
     {
         if ($this->db !== null)
+        {
             $this->db->tearDown();
+        }
 
         parent::tearDown();
     }
