@@ -1,19 +1,25 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-export default ({ message, cta, ...otherProps }) => {
-  /*
-   * @param {string} message
-   * @param {function/object} cta
-   *
-   * The component looks like bootstrap alert
-   * (https://getbootstrap.com/docs/3.3/components/#alerts) , but takes an argument
-   * called `cta`(Call to Action). when cta is a function , the function is called and the return
-   * value will be embedded as cta (can be used to put components), when `cta` is a
-   * dictionary, the following keys are must - "text" and one of "url" or "onClick",
-   * otherwise cta will not be displayed
-   */
+/*
+ * Input:
+ * @param {String} message
+ * @param {Function/Object} cta
+ *
+ * Description:
+ * The component looks like bootstrap alert
+ * (https://getbootstrap.com/docs/3.3/components/#alerts) , but takes an argument
+ * called `cta`(Call to Action). when cta is a function , the function is called and the return
+ * value will be embedded as cta (can be used to put components), when `cta` is a
+ * dictionary, the following keys are must - "text" and one of "url" or "onClick",
+ * otherwise cta will not be displayed
+ *
+ * Example:
+ * const myCta = {"url": "http://example.com/", "text": "Action"}
+ * <Banner message="my message" cta={myCta}/>
+ */
 
+export default ({ message, cta, ...otherProps }) => {
   let hasCta = !!cta,
     getCtaElement = null;
 

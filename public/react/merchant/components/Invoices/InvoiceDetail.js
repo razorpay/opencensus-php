@@ -1,16 +1,12 @@
-import { NavLink } from 'react-router-dom';
 import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import Spinner from 'rzp/ui/Spinner';
 import Banner from 'rzp/ui/Banner';
-import { titleCase } from 'rzp/utils/rzp-utils';
 import CopyLink from 'merchant/components/Invoices/CopyLink';
 import ShowWhen from 'merchant/components/ShowWhen';
-import LineItemReadOnlyTable from './LineItemReadOnlyTable';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
-import NestedDetailRow from 'merchant/components/NestedDetailRow';
 
 const notificationClassMap = {
   sent: 'text-success',
@@ -21,7 +17,7 @@ const getCustomerDetail = invoice => ({
   Name: invoice.customer_details.customer_name,
   Email: (
     <span>
-      {invoice.customer_details.customer_email}
+      {invoice.customer_details.customer_email || '--'}
       {invoice.email_status
         ? <span
             style={{ marginLeft: '10px' }}
@@ -34,7 +30,7 @@ const getCustomerDetail = invoice => ({
   ),
   Phone: (
     <span>
-      {invoice.customer_details.customer_contact}
+      {invoice.customer_details.customer_contact || '--'}
       {invoice.sms_status
         ? <span
             style={{ marginLeft: '10px' }}
@@ -118,7 +114,7 @@ export default props => {
                   />
                   <EntityDetailRow
                     label="Summary"
-                    value={invoice.description || '-'}
+                    value={invoice.description || '--'}
                   />
                   <EntityDetailRow label="Receipt" value={invoice.receipt} />
                   <NestedEntityDetailRow

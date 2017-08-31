@@ -1,7 +1,9 @@
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailToggler from 'rzp/ui/Toggler/NestedEntityDetailToggler';
 
-export default ({ label, value = {}, placeholder = '--' }) => {
+export default ({ label, value = {} }) => {
+  const placeholder = '--';
+
   if (Object.keys(value).length) {
     return (
       <NestedEntityDetailToggler label={label} show={false}>
