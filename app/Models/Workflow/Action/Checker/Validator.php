@@ -29,20 +29,20 @@ class Validator extends Base\Validator
 
         return;
 
-        $action = (new Action\Repository)->findOrFailPublic(
-            $input[Entity::ACTION_ID]);
+        // $action = (new Action\Repository)->findOrFailPublic(
+        //     $input[Entity::ACTION_ID]);
 
-        if ($action->getAdminId() === $input[Entity::ADMIN_ID])
-        {
-            $data = [
-                'action_id' => $action->getId(),
-                'admin_id'  => $admin->getId(),
-            ];
+        // if ($action->getAdminId() === $input[Entity::ADMIN_ID])
+        // {
+        //     $data = [
+        //         'action_id' => $action->getId(),
+        //         'admin_id'  => $admin->getId(),
+        //     ];
 
-            throw new Exception\BadRequestValidationFailureException(
-                ErrorCode::BAD_REQUEST_WORKFLOW_INVALID_CHECKER, null,
-                $data);
-        }
+        //     throw new Exception\BadRequestValidationFailureException(
+        //         ErrorCode::BAD_REQUEST_WORKFLOW_INVALID_CHECKER, null,
+        //         $data);
+        // }
     }
 
     public function validateActionId(array $input)

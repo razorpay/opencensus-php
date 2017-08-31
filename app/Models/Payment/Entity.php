@@ -754,6 +754,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::DISPUTED, $disputed);
     }
 
+    public function decrementAmountTransferred(int $amount)
+    {
+        $this->decrement(self::AMOUNT_TRANSFERRED, $amount);
+    }
+
 // ----------------------- Setters Ends-----------------------------------------
 
 // ----------------------- Mutator ---------------------------------------------

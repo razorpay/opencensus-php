@@ -98,6 +98,22 @@ return [
         'entity'               => 'wallet'
     ],
 
+    'testInsufficientFundsPayment' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment failed due to insufficient balance in wallet',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE
+        ],
+    ],
+
 
     'testRefundFailedPaymentEntity' => [
         'action'               => 'refund',

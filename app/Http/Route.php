@@ -150,8 +150,9 @@ final class Route
         'merchant_beneficiary_file'               => ['get',      'merchants/beneficiary/file',                     'MerchantController@getMerchantBeneficiaryFile'                     ],
         'merchant_post_beneficiary_file'          => ['post',     'merchants/beneficiary/file/bank',                'MerchantController@postMerchantBeneficiaryFile'                    ],
         'merchant_notify_holiday'                 => ['post',     'merchants/notify/holiday',                       'MerchantController@postMerchantsNotifyHoliday'                     ],
-        'merchant_invoice_update_gstin'           => ['put',      'merchants/{id}/invoice/gstin',                    'MerchantInvoiceController@updateGstin'                             ],
-        'merchant_create_invoice_entities'        => ['post',     'merchants/invoice/create',                      'MerchantInvoiceController@postCreateInvoiceEntities'               ],
+        'merchant_invoice_update_gstin'           => ['put',      'merchants/{id}/invoice/gstin',                   'MerchantInvoiceController@updateGstin'                             ],
+        'merchant_create_invoice_entities'        => ['post',     'merchants/invoice/create',                       'MerchantInvoiceController@postCreateInvoiceEntities'               ],
+        'merchant_invoice_add_bulk'               => ['post',     'merchants/invoice/bulk',                         'MerchantInvoiceController@postMultipleEntities'                    ],
         'balance_fetch'                           => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'credits_create'                          => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
         'credits_fetch_by_id'                     => ['get',      'merchants/{mid}/credits/{id}',                   'MerchantController@getCreditsLog'                                  ],
@@ -242,6 +243,7 @@ final class Route
         'adj_add'                                 => ['post',     'adjustments',                                    'AdjustmentController@postAdjustment'                               ],
         'adj_add_reverse'                         => ['post',     'adjustments/reversal',                           'AdjustmentController@postReverseAdjustments'                       ],
         'adj_add_bulk'                            => ['post',     'adjustments/bulk',                               'AdjustmentController@postMultipleAdjustments'                      ],
+        'adj_add_fee'                             => ['post',     'adjustments/fees',                               'AdjustmentController@postFeesAdjustment'                           ],
         'mock_hdfc_enroll'                        => ['post',     'gateway/mock_hdfc/enroll',                       'MockGatewayController@enroll'                                      ],
         'mock_hdfc_payment'                       => ['post',     'gateway/mock_hdfc/payment',                      'MockGatewayController@payment'                                     ],
         'mock_hdfc_auth_enrolled'                 => ['post',     'gateway/mock_hdfc/auth_enrolled',                'MockGatewayController@authEnrolled'                                ],
@@ -472,16 +474,11 @@ final class Route
         'workflow_get_multiple'                   => ['get',      'orgs/{orgId}/workflows',                         'WorkflowController@getWorkflowMultiple'                            ],
         'workflow_update'                         => ['put',      'workflows/{id}',                                 'WorkflowController@updateWorkflow'                                 ],
         'workflow_delete'                         => ['delete',   'workflows/{id}',                                 'WorkflowController@deleteWorkflow'                                 ],
-        'workflow_step_get_multiple'              => ['get',      'workflows/{id}/steps',                           'WorkflowController@getWorkflowSteps'                               ],
         'workflow_action_get_multiple'            => ['get',      'w-actions',                                      'WorkflowController@getActionMultiple'                              ],
         'workflow_action_update'                  => ['put',      'w-actions/{id}',                                 'WorkflowController@updateWorkflowAction'                           ],
         'action_checker_create'                   => ['post',     'w-actions/{id}/checkers',                        'WorkflowController@postActionChecker'                              ],
         'workflow_action_details'                 => ['get',      'w-actions/{id}/details',                         'WorkflowController@getActionDetails'                               ],
-        'workflow_action_states'                  => ['get',      'w-actions/{id}/states',                          'WorkflowController@getActionStates'                                ],
         'workflow_action_close'                   => ['put',      'w-actions/close/{id}',                           'WorkflowController@closeWorkflowAction'                            ],
-        'action_checker_multiple'                 => ['get',      'w-actions/{id}/checkers',                        'WorkflowController@getActionCheckerMultiple'                       ],
-        'action_checker_get'                      => ['get',      'w-actions/{id}/checker/{checkerId}',             'WorkflowController@getActionChecker'                               ],
-        // 'action_diff_create'                      => ['post',     'w-actions/{id}/diff',                            'WorkflowController@postActionDiff'                                 ],
         'action_diff_get'                         => ['get',      'w-actions/{id}/diff',                            'WorkflowController@getActionDiff'                                  ],
         'action_request_execute'                  => ['post',     'w-actions/{id}/execute',                         'WorkflowController@postExecuteAction'                              ],
         'action_comment_create'                   => ['post',     'w-actions/{id}/comments',                        'WorkflowController@postActionComment'                              ],
@@ -584,7 +581,8 @@ final class Route
         'risk_get'                                => ['get',      'risk/{id}',                                      'RiskController@get'                                                ],
         // Dispute routes
         'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
-        'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                            ],
+        'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                          ],
+        'merchant_payout'                         => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
     ];
 
     public static $public = [
@@ -986,6 +984,7 @@ final class Route
         'risk_fetch_multiple',
         'risk_get',
         'merchant_create_invoice_entities',
+        'merchant_payout',
     ];
 
     public static $proxy = [
@@ -1108,24 +1107,22 @@ final class Route
         'workflow_get_multiple',
         'workflow_update',
         'workflow_delete',
-        'workflow_step_get_multiple',
         'action_checker_create',
-        'action_checker_multiple',
-        'action_checker_get',
         'action_diff_get',
         'action_request_execute',
         'action_comment_create',
         'workflow_action_update',
-        'workflow_action_states',
         'workflow_action_details',
         'workflow_action_close',
         'workflow_action_get_multiple',
         'merchants_update_hold_funds',
         'adj_add',
+        'adj_add_fee',
         'payment_authorize_refund',
         'admin_change_password',
         'pricing_create_plan',
         'merchant_invoice_update_gstin',
+        'merchant_invoice_add_bulk',
     ];
 
     public static $routePermission = [
@@ -1182,16 +1179,12 @@ final class Route
         'workflow_get_multiple'            => Permission::VIEW_ALL_WORKFLOW,
         'workflow_update'                  => Permission::EDIT_WORKFLOW,
         'workflow_delete'                  => Permission::DELETE_WORKFLOW,
-        'workflow_step_get_multiple'       => '*',
         'action_checker_create'            => '*',
-        'action_checker_multiple'          => '*',
-        'action_checker_get'               => '*',
         'action_diff_get'                  => '*',
         'action_request_execute'           => '*',
         'action_comment_create'            => '*',
         'workflow_action_close'            => '*',
         'workflow_action_update'           => '*',
-        'workflow_action_states'           => '*',
         'workflow_action_details'          => '*',
         'workflow_action_get_multiple'     => '*',
         'credits_fetch_multiple'           => Permission::VIEW_MERCHANT_CREDITS_LOG,
@@ -1211,6 +1204,7 @@ final class Route
         'merchant_fetch_bank_account'      => Permission::VIEW_MERCHANT_BANK_ACCOUNTS,
         'merchant_edit'                    => '*', // permission handled in code
         'adj_add'                          => Permission::ADD_MERCHANT_ADJUSTMENT,
+        'adj_add_fee'                      => Permission::ADD_MERCHANT_ADJUSTMENT,
         'merchant_add_bank_account'        => Permission::EDIT_MERCHANT_BANK_DETAIL,
         'merchant_activate'                => Permission::EDIT_ACTIVATE_MERCHANT,
         'admin_fetch_terminal_by_id'       => '*',
@@ -1246,6 +1240,7 @@ final class Route
         'invitation_fetch'                 => '*',
         'pricing_create_plan'              => Permission::CREATE_PRICING_PLAN,
         'merchant_invoice_update_gstin'    => '*',
+        'merchant_invoice_add_bulk'        => '*',
     ];
 
     public static $direct = [
@@ -1331,6 +1326,7 @@ final class Route
             'schedule_process_tasks',
             'virtual_account_refund_excess',
             'merchant_create_invoice_entities',
+            'merchant_payout',
         ],
 
         'kotak' => [
@@ -1430,6 +1426,7 @@ final class Route
         'schedule_assign',
         'admin_dummy_account_test',
         'merchant_invoice_update_gstin',
+        'merchant_invoice_add_bulk',
     ];
 
     const RAZORPAYJS_ROUTES = [

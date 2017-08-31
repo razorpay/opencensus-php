@@ -119,6 +119,11 @@ class Entity extends Base\Entity
         return $this->getAttribute('gateway_transaction_id');
     }
 
+    public function getGatewayPaymentId()
+    {
+        return $this->getAttribute('gateway_payment_id');
+    }
+
     public function getAuthCode()
     {
         return $this->getAttribute('auth');
