@@ -189,6 +189,12 @@ class EntityReportTest extends TestCase
                 'tax' => -1800, 'Description' => 'Adjustment against extra commission'
             ]);
 
+        $this->fixtures->create('merchant_invoice',
+            [
+                'type' => Invoice\Type::ADJUSTMENT, 'amount' => 25000,
+                'tax' => 800, 'Description' => 'Adjustment against uncharged fee'
+            ]);
+
         $dt = Carbon::today(Timezone::IST);
         $input = [
             'year'      => $dt->year,
@@ -203,7 +209,7 @@ class EntityReportTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $requiredFields = ['Tax Invoice', 'Tax Credit Note'];
+        $requiredFields = ['Tax Invoice', 'Tax Debit Note', 'Tax Credit Note'];
         $keyedEntries = [];
 
         foreach ($requiredFields as $key)
@@ -232,7 +238,7 @@ class EntityReportTest extends TestCase
 
         $lastRowOfSummary = array_pop($invoiceEntries['Summary']['Invoice Summary']['rows']);
 
-        $this->assertEquals(-45234, $lastRowOfSummary['Amount']);
+        $this->assertEquals(1356, $lastRowOfSummary['Amount']);
     }
 
     public function testPaymentReportWithoutAcquirerData()
