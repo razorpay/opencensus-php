@@ -150,9 +150,9 @@ class InvoiceReport extends BaseReport
         {
             $type = $entity->getType();
 
-            $tax = $entity->getTax();
+            $tax = abs($entity->getTax() / 100);
 
-            $amount = $entity->getAmount();
+            $amount = abs($entity->getAmount() / 100);
 
             // Current row
             $row = $this->getNewRow();
@@ -182,27 +182,24 @@ class InvoiceReport extends BaseReport
 
             if ($type === Invoice\Type::ADJUSTMENT)
             {
-                if (($row[self::AMOUNT] < 0) or ($row[self::TAX_TOTAL] < 0))
+                if (($entity->getAmount() < 0) or ($entity->getTax() < 0))
                 {
-                    $this->creditNoteData[] = $row;
-                    $this->totalCreditNoteAmountDue += $entity->getAmountDue();
+                    $this->debitNoteData[] = $row;
                 }
                 else
                 {
-                    $this->debitNoteData[] = $row;
-                    $this->totalDebitNoteAmountDue += $entity->getAmountDue();
+                    $this->creditNoteData[] = $row;
                 }
             }
             else
             {
                 $this->reportData[] = $row;
-                $this->totalInvoiceAmountDue += $entity->getAmountDue();
             }
         }
     }
 
     protected function groupDataForSummaryByPageType(
-        array $allRows, string $pageType, $amountDue, string $pageDescription)
+        array $allRows, string $pageType, string $pageDescription, & $summaryAmount)
     {
         if (empty($allRows) === true)
         {
@@ -214,38 +211,43 @@ class InvoiceReport extends BaseReport
         $allRows[] = $finalRow;
 
         $this->invoiceReport[self::PAGES][$pageType] = [
-            self::ROWS                  => $allRows,
-            self::TOTAL_AMOUNT_DUE      => $amountDue,
-            self::TOTAL_AMOUNT_PAID     => $finalRow[self::GRAND_TOTAL] - $amountDue,
+            self::ROWS => $allRows,
         ];
+
+        $amount = $finalRow[self::GRAND_TOTAL];
 
         // Add row for summary page
         $this->invoiceReport[self::SUMMARY][self::SUMMARY_TITLE][self::ROWS][] = [
             self::DOCUMENT_NO       => $this->invoiceNo,
             self::DOCUMENT_DATE     => $this->invoiceDate,
             self::DESCRIPTION       => $pageDescription,
-            self::AMOUNT            => $finalRow[self::GRAND_TOTAL],
+            self::AMOUNT            => $amount,
         ];
+
+        if ($pageType === self::TAX_DEBIT_NOTE)
+        {
+            $summaryAmount -= $amount;
+        }
+        else
+        {
+            $summaryAmount += $amount;
+        }
     }
 
     protected function groupData()
     {
-        $this->groupDataForSummaryByPageType(
-            $this->reportData, self::TAX_INVOICE, $this->totalInvoiceAmountDue, 'Monthly Invoice');
+        $summaryAmount = 0;
 
         $this->groupDataForSummaryByPageType(
-            $this->debitNoteData, self::TAX_DEBIT_NOTE, $this->totalDebitNoteAmountDue, self::TAX_DEBIT_NOTE);
+            $this->reportData, self::TAX_INVOICE, 'Monthly Invoice', $summaryAmount);
 
         $this->groupDataForSummaryByPageType(
-            $this->creditNoteData, self::TAX_CREDIT_NOTE, $this->totalCreditNoteAmountDue, self::TAX_CREDIT_NOTE);
+            $this->debitNoteData, self::TAX_DEBIT_NOTE, self::TAX_DEBIT_NOTE, $summaryAmount);
+
+        $this->groupDataForSummaryByPageType(
+            $this->creditNoteData, self::TAX_CREDIT_NOTE, self::TAX_CREDIT_NOTE, $summaryAmount);
 
         // Add final row for the summary page
-        $summaryAmount = 0;
-        foreach ($this->invoiceReport[self::SUMMARY][self::SUMMARY_TITLE][self::ROWS] as $row)
-        {
-            $summaryAmount += $row[self::AMOUNT];
-        }
-
         $this->invoiceReport[self::SUMMARY][self::SUMMARY_TITLE][self::ROWS][] = [
             self::DOCUMENT_NO       => '',
             self::DOCUMENT_DATE     => '',
