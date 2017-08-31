@@ -57,9 +57,9 @@ final class FactoryData
             'month'             => 8,
             'year'              => 2017,
             'gstin'             => '29kjsngjk213922',
-            'amount'            => 500,
+            'amount'            => 50000,
             'amount_due'        => 0,
-            'tax'               => 22,
+            'tax'               => 2200,
         ]);
 
         $factory(\RZP\Models\Merchant\Balance\Entity::class, [
