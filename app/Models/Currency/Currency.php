@@ -111,6 +111,8 @@ class Currency
         self::USD => 100,
     ];
 
+    const EXPONENT = [];
+
     const SYMBOL = [
         self::INR => '₹',
         self::USD => '$',
@@ -124,5 +126,10 @@ class Currency
     public static function getSymbol(string $currency)
     {
         return self::SYMBOL[$currency] ?? '';
+    }
+
+    public static function getExponent(string $currency)
+    {
+        return self::EXPONENT[$currency] ?? 2;
     }
 }

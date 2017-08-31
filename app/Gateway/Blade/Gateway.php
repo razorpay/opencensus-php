@@ -297,10 +297,10 @@ class Gateway extends Base\Gateway
                     'Value mismatch', 'xid');
         }
 
-        $currency = (int) $PARes['Purchase']['currency'];
+        $currency = $PARes['Purchase']['currency'];
 
         // TODO: Use payment currency to validate this
-        if ($currency !== 356)
+        if ($currency !== Currency::getIsoCode($input['payment']['currency']))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid currency code', 'xid');
@@ -317,7 +317,7 @@ class Gateway extends Base\Gateway
         $exponent = (int) $PARes['Purchase']['exponent'];
 
         // Move it to currency and then validate
-        if ($exponent !== 2)
+        if ($exponent !== Currency::getExponent($input['payment']['currency']))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Exponent mismatch', 'exponent');
