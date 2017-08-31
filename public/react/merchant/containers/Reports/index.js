@@ -48,7 +48,7 @@ const selector = formValueSelector('generateReports');
     entity: 'payment',
     type: 'daily',
     date: moment(),
-    invoiceDate: moment().set('month', 5), // Select June. Invoice date can not be july or after
+    invoiceDate: moment().set('month', 5).startOf('month'), // Select June. Invoice date can not be july or after
   },
 })
 export default class ReportsContainer extends Component {
@@ -214,7 +214,7 @@ export default class ReportsContainer extends Component {
     if (entity === 'invoice') {
       return Promise.resolve(
         window.open(
-          `/${this.props.mode}/reports/invoice?year=${data.year}` +
+          `/${this.props.mode}/reports/invoice?year=${invoiceDate.year()}` +
             `&month=${invoiceDate.month() + 1}`,
           '_blank'
         )
