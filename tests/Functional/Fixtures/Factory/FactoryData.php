@@ -780,9 +780,9 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Workflow\Entity::class, [
-           'id'      => $faker->uniqueid,
-            'org_id' => '100000razorpay',
-            'name'   => $faker->name,
+            'id'        => $faker->uniqueid,
+            'org_id'    => '100000razorpay',
+            'name'      => $faker->name,
         ]);
 
         $factory(\RZP\Models\Workflow\Step\Entity::class,[
