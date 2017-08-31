@@ -6,7 +6,6 @@ use App;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class EsRepository extends \Razorpay\Spine\Repository

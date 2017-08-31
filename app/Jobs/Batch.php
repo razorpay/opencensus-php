@@ -5,9 +5,9 @@ namespace RZP\Jobs;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Batch as BatchModel;
+use Razorpay\Trace\Logger as Trace;
 
 /**
  * Represents asynchronous Batch job.

@@ -50,8 +50,6 @@ class Core extends Base\Core
 
         $reversal = $this->create($input);
 
-        $reversal->transfer()->associate($transfer);
-
         $reversal->merchant()->associate($merchant);
 
         $txn = (new Transaction\Core)->createFromReversal($reversal);
@@ -59,6 +57,8 @@ class Core extends Base\Core
         $this->repo->saveOrFail($txn);
 
         $reversal->transaction()->associate($txn);
+
+        $reversal->entity()->associate($transfer);
 
         $this->repo->saveOrFail($reversal);
 
@@ -118,7 +118,8 @@ class Core extends Base\Core
     protected function traceSuccess(Entity $reversal)
     {
         $traceMessage = [
-            'transfer_id'       => $reversal->getTransferId(),
+            'entity_type'       => $reversal->getEntityType(),
+            'entity_id'         => $reversal->getEntityId(),
             'reversal_id'       => $reversal->getId(),
             'refund_amount'     => $reversal->getAmount()
         ];

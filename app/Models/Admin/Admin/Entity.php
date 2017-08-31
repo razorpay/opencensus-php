@@ -61,6 +61,11 @@ class Entity extends Base\Entity
         self::OLD_PASSWORDS
     ];
 
+    protected $embeddedRelations = [
+        self::ROLES,
+        self::GROUPS,
+    ];
+
     protected $revisionEnabled = true;
 
     protected $revisionCreationsEnabled = true;
@@ -100,7 +105,6 @@ class Entity extends Base\Entity
         self::NAME,
         self::USERNAME,
         self::EMAIL,
-        self::REMEMBER_TOKEN,
         self::OAUTH_PROVIDER_ID,
         self::USER_TYPE,
         self::EMPLOYEE_CODE,
@@ -143,6 +147,10 @@ class Entity extends Base\Entity
         self::ROLES,
         self::GROUPS,
         self::MERCHANTS,
+    ];
+
+    protected $hidden = [
+        self::REMEMBER_TOKEN
     ];
 
     protected $casts = [

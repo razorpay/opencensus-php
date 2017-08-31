@@ -39,9 +39,16 @@ class CreateMerchantInvoices extends Migration
 
             $table->string(Invoice::TYPE, 20);
 
+            $table->string(Invoice::DESCRIPTION)
+                  ->nullable();
+
             $table->integer(Invoice::AMOUNT);
 
             $table->integer(Invoice::TAX);
+
+            $table->integer(Invoice::AMOUNT_DUE)
+                  ->unsigned()
+                  ->default(0);
 
             $table->integer(Invoice::CREATED_AT);
 

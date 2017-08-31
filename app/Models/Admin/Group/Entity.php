@@ -24,6 +24,9 @@ class Entity extends Base\Entity
 
     const DELETED_AT       = 'deleted_at';
 
+    const PARENTS          = 'parents';
+    const SUB_GROUPS       = 'sub_groups';
+
     protected $entity = 'group';
 
     protected static $sign = 'grp';
@@ -50,8 +53,8 @@ class Entity extends Base\Entity
         'admins',
         'roles',
         'merchants',
-        'sub_groups',
-        'parents',
+        self::SUB_GROUPS,
+        self::PARENTS,
     ];
 
     protected $diff = [
@@ -62,6 +65,11 @@ class Entity extends Base\Entity
     protected $publicSetters = [
         self::ID,
         self::ORG_ID,
+    ];
+
+    protected $embeddedRelations = [
+        self::SUB_GROUPS,
+        self::PARENTS,
     ];
 
     // Immediate higher groups which have access to this

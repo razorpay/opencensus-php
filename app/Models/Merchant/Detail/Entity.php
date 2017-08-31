@@ -288,6 +288,11 @@ class Entity extends Base\PublicEntity
     {
         $gstin = $this->getGstin() ?? $this->getPGstin();
 
+        return self::getBusinessStateCodeFromGstin($gstin);
+    }
+
+    public static function getBusinessStateCodeFromGstin(string $gstin = null)
+    {
         if (empty($gstin) === true)
         {
             return null;

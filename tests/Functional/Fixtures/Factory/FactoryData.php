@@ -50,6 +50,18 @@ final class FactoryData
             'gateway_secure_secret'     => null,
         ]);
 
+        $factory(\RZP\Models\Merchant\Invoice\Entity::class, [
+            'id'                => $faker->uniqueid,
+            'merchant_id'       => '10000000000000',
+            'invoice_number'    => $faker->name,
+            'month'             => 8,
+            'year'              => 2017,
+            'gstin'             => '29kjsngjk213922',
+            'amount'            => 50000,
+            'amount_due'        => 0,
+            'tax'               => 2200,
+        ]);
+
         $factory(\RZP\Models\Merchant\Balance\Entity::class, [
             'id'                        => $faker->uniqueid,
             'balance'                   => 0,
@@ -758,13 +770,15 @@ final class FactoryData
             'phase'              => \RZP\Models\Dispute\Phase::CHARGEBACK,
             'raised_on'          => $faker->timestamp,
             'expires_on'         => $faker->timestamp,
-            'deduct_at_onset'    => 1,
+            'deduct_at_onset'    => 0,
+            'amount_deducted'    => 0,
+            'amount_reversed'    => 0,
             'currency'           => 'INR',
             'status'             => \RZP\Models\Dispute\Status::OPEN,
             'reason_code'        => 'SOMETHING_BAD',
             'reason_description' => 'Something went wrong'
         ]);
-        
+
         $factory(\RZP\Models\Workflow\Entity::class, [
            'id'      => $faker->uniqueid,
             'org_id' => '100000razorpay',
@@ -780,6 +794,29 @@ final class FactoryData
             'level'            => 1,
             'created_at'       => $faker->timestamp,
             'updated_at'       => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\Workflow\Action\Entity::class,[
+            'id'                => $faker->uniqueid,
+            'entity_id'         => \RZP\Tests\Functional\Fixtures\Entity\Org::MAKER_ADMIN,
+            'entity_name'       => 'admin',
+            'title'             => 'a workflow action',
+            'workflow_id'       => \RZP\Tests\Functional\Fixtures\Entity\Workflow::DEFAULT_WORKFLOW_ID,
+            'approved'          => false,
+            'current_level'     => 1,
+            'state'             => \RZP\Models\Workflow\Action\State\Entity::OPEN,
+            'org_id'            => \RZP\Tests\Functional\Fixtures\Entity\Org::RZP_ORG,
+            'permission_id'     => 'factory:RZP\Models\Admin\Permission\Entity',
+        ]);
+
+        $factory(\RZP\Models\Workflow\Action\State\Entity::class,[
+            'id'                => $faker->uniqueid,
+            'name'              => \RZP\Models\Workflow\Action\State\Entity::OPEN,
+        ]);
+
+        $factory(\RZP\Models\Workflow\Action\Checker\Entity::class,[
+            'id'                => $faker->uniqueid,
+            'name'              => \RZP\Models\Workflow\Action\State\Entity::OPEN,
         ]);
     }
 }

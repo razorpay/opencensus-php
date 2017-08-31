@@ -372,6 +372,24 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
+    public function createSharedSbibuddyTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::SBIBUDDY_RAZORPAY_TERMINAL;
+
+        $attributes = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'wallet_sbibuddy',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'sbibuddy_merchant',
+            'gateway_secure_secret'     => 'secret',
+        ];
+
+        return parent::create($attributes);
+    }
+
     public function createSharedCybersourceHdfcTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::CYBERSOURCE_HDFC_TERMINAL;
@@ -413,6 +431,28 @@ class Terminal extends Base
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedHdfcRecurringTerminals(array $attributes = [])
+    {
+        $attributes = [
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'hdfc',
+            'card'                      => 1,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_acquirer'          => 'hdfc',
+            'gateway_merchant_id'       => 'shared_merchant_hdfc',
+            'gateway_terminal_id'       => 'shared_terminal_hdfc',
+            'gateway_terminal_password' => 'shared_account_hdfc_terminal_pass',
+        ];
+
+        // Add fss recurring supports both 3ds and non3ds terminal;
+        $attributes['id'] = 'FssRecurringTl';
+
+        $attributes['type'] = 6;
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
@@ -919,6 +959,16 @@ class Terminal extends Base
         $attributes = array_merge($defaultValues, $attributes);
 
         return parent::create($attributes);
+    }
+
+    public function createSharedNetbankingIndusindTpvTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'               => Shared::NETBANKING_INDUSIND_TPV_TERMINAL,
+            'network_category' => 'securities'
+        ];
+
+        return $this->createSharedNetbankingIndusindTerminal($attributes);
     }
 
     public function createSharedNetbankingPnbTerminal(array $attributes = [])

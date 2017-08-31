@@ -7,19 +7,19 @@ use RZP\Error\ErrorCode;
 
 class PublicEntity extends UniqueIdEntity
 {
-    const ENTITY = 'entity';
+    const ENTITY                = 'entity';
 
-    const PUBLIC_ID = 'public_id';
+    const PUBLIC_ID             = 'public_id';
 
-    const ADMIN = 'admin';
+    const ADMIN                 = 'admin';
 
-    const MERCHANT_ID = 'merchant_id';
+    const MERCHANT_ID           = 'merchant_id';
 
     /**
      * General constant used as key for hold of collection of ids
      * in various cases.
-     */
-    const IDS = 'ids';
+    */
+    const IDS                   = 'ids';
 
     protected static $sign      = '';
 
@@ -74,6 +74,8 @@ class PublicEntity extends UniqueIdEntity
         self::ID,
         self::ENTITY,
     ];
+
+    protected $embeddedRelations = [];
 
     public function toArrayPublic()
     {
@@ -200,28 +202,40 @@ class PublicEntity extends UniqueIdEntity
 
     public function relationsToArrayPublic()
     {
-        $array = [];
         $public = array_flip($this->public);
 
         $relations = $this->relations;
 
+        // Snake case relation's keys
+
         foreach ($relations as $key => $value)
         {
-            $newKey = snake_case($key);
-            if ($newKey !== $key)
+            $snakeCaseKey = snake_case($key);
+
+            if ($snakeCaseKey !== $key)
             {
-                $relations[$newKey] = $value;
+                $relations[$snakeCaseKey] = $value;
+
                 unset($relations[$key]);
             }
         }
 
         $publicRelations = array_intersect_key($relations, $public);
 
+        $array = [];
+
         foreach ($publicRelations as $key => $value)
         {
             if (PublicCollection::isPublicCollection($value) === true)
             {
-                $array[$key] = $value->toArrayPublicEmbedded();
+                if ($this->isRelationEmbeddedInResponse($key) === true)
+                {
+                    $array[$key] = $value->toArrayPublicEmbedded();
+                }
+                else
+                {
+                    $array[$key] = $value->toArrayPublic();
+                }
             }
             else if (static::isPublicEntity($value) === true)
             {
@@ -234,6 +248,11 @@ class PublicEntity extends UniqueIdEntity
         }
 
         return $array;
+    }
+
+    public function isRelationEmbeddedInResponse(string $key)
+    {
+        return in_array($key, $this->embeddedRelations);
     }
 
     public function setPublicIdAttribute(array & $array)

@@ -586,3 +586,26 @@ UPDATE `tagging_tagged` SET `taggable_type` = 'merchant' WHERE `taggable_type` =
 # Type 4 terminals are Non-3DS for recurring
 # FirstData N3DS terminals are always in Purchase mode
 UPDATE terminals SET mode=2 WHERE gateway='first_data' AND type=4;
+
+UPDATE hdfc
+SET gateway_transaction_id = 8160981421672291, gateway_payment_id = 7696205411672290
+WHERE id = 8402808
+LIMIT 1;
+
+# Reversal migration
+UPDATE reversals
+    SET entity_type='transfer', entity_id=transfer_id
+    WHERE transfer_id IS NOT NULL;
+
+# Update ARNs of fss manual refunds
+UPDATE refunds SET reference1 = "74332747231616391536152", status = "processed", gateway_refunded = 1, updated_at = 1503555446 WHERE id = "8EEK8vsA2jrkPK";
+UPDATE refunds SET reference1 = "74332747231613891536147", status = "processed", gateway_refunded = 1, updated_at = 1503555446 WHERE id = "8EEOD9QSO1rage";
+UPDATE refunds SET reference1 = "74332747231611991536132", status = "processed", gateway_refunded = 1, updated_at = 1503555446 WHERE id = "8HRhxHD4D2KTJf";
+UPDATE refunds SET reference1 = "74332747231611991536132", status = "processed", gateway_refunded = 1, updated_at = 1503555446 WHERE id = "8HRrVtl2nckjPl";
+UPDATE refunds SET reference1 = "75503727231014848144501", status = "processed", gateway_refunded = 1, updated_at = 1503555446 WHERE id = "8OxmZfpmVywQjR";
+UPDATE refunds SET reference1 = "75503727235014912824224", status = "processed", gateway_refunded = 1, updated_at = 1503555446 WHERE id = "897lDRdq5x9QL1";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, updated_at = 1503555446 WHERE id = "8GLpbEovh2CQdt";
+
+UPDATE hdfc
+    SET gateway_transaction_id = null
+    WHERE enroll_result = "3" AND gateway_payment_id = gateway_transaction_id AND gateway_payment_id is NOT NULL AND status = 'captured';

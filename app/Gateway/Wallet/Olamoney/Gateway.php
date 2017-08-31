@@ -374,7 +374,13 @@ class Gateway extends Base\Gateway
         }
 
         throw new Exception\LogicException(
-            'Unrecognized verify refund status: ' . $content[ResponseFields::STATUS]);
+            'Unrecognized verify refund status',
+            null,
+            [
+                'status'     => $content[ResponseFields::STATUS],
+                'payment_id' => $input['refund']['payment_id'],
+                'refund_id'  => $input['refund']['id'],
+            ]);
     }
 
     protected function getDebitRequestArray(array $input)

@@ -3,8 +3,6 @@
 namespace RZP\Models\Dispute;
 
 use RZP\Models\Base;
-use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
 
 class Service extends Base\Service
 {

@@ -52,23 +52,6 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateActionBelongsToAdminOrg($action, $admin)
-    {
-        if ($admin->getOrgId() !== $action->admin->getOrgId())
-        {
-            $data = [
-                'admin'      => $admin->getId(),
-                'admin_org'  => $admin->getOrgId(),
-                'action'     => $action->getId(),
-                'action_org' => $action->getOrgId(),
-            ];
-
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND, null,
-                $data);
-        }
-    }
-
     public function validateCloseAction($admin)
     {
         $action = $this->entity;

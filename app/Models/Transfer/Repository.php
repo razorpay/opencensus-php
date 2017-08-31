@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Transfer;
 
-use RZP\Constants\Entity as E;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 
@@ -34,27 +33,6 @@ class Repository extends Base\Repository
                     ->where(Entity::SOURCE_TYPE, $type)
                     ->where(Entity::SOURCE_ID, $paymentId)
                     ->merchantId($merchant->getId())
-                    ->get();
-    }
-
-    /**
-     * Fetch all Marketplace transfers from a payment to a account ID
-     *
-     * @param  string          $paymentId
-     * @param  string          $accountId
-     * @param  Merchant\Entity $marketplace
-     */
-    public function fetchBySourcePaymentToAccountAndMerchant(
-        string $paymentId,
-        string $accountId,
-        Merchant\Entity $marketplace)
-    {
-        return $this->newQuery()
-                    ->where(Entity::SOURCE_TYPE, E::PAYMENT)
-                    ->where(Entity::SOURCE_ID, $paymentId)
-                    ->where(Entity::TO_TYPE, E::ACCOUNT)
-                    ->where(Entity::TO_ID, $accountId)
-                    ->merchantId($marketplace->getId())
                     ->get();
     }
 

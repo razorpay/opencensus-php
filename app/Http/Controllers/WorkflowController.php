@@ -14,17 +14,6 @@ use RZP\Models\Workflow\Action\Checker;
 
 class WorkflowController extends Controller
 {
-
-    // Not being used
-    public function postActionDiff(string $id)
-    {
-        $input = Request::all();
-
-        $result = (new Differ\Service)->create($id, $input);
-
-        return ApiResponse::json($result);
-    }
-
     public function getActionDiff(string $id)
     {
         $result = (new Differ\Service)->get($id);
@@ -69,29 +58,6 @@ class WorkflowController extends Controller
         $data = (new Action\Service)->closeAction($id);
 
         return $this->getActionDetails($id);
-    }
-
-    public function getActionCheckerMultiple(string $id)
-    {
-        $input = Request::all();
-
-        $data = (new Checker\Service)->fetchMultiple($id, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function getActionChecker(string $id, string $checkerId)
-    {
-        $data = (new Checker\Service)->get($id, $checkerId);
-
-        return ApiResponse::json($data);
-    }
-
-    public function getActionStates(string $id)
-    {
-        $data = (new Action\Service)->getStatesOfAction($id);
-
-        return ApiResponse::json($data);
     }
 
     public function updateWorkflowAction(string $id)
@@ -150,25 +116,11 @@ class WorkflowController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getWorkflowSteps(string $id)
-    {
-        $data = (new Workflow\Step\Service)->fetchMultiple($id);
-
-        return ApiResponse::json($data);
-    }
-
     public function postActionComment(string $actionId)
     {
         $input = Request::all();
 
         $result = (new Comment\Service)->create($actionId, $input);
-
-        return ApiResponse::json($result);
-    }
-
-    public function getActionComments(string $actionId)
-    {
-        $result = (new Comment\Service)->fetchByActionId($actionId);
 
         return ApiResponse::json($result);
     }

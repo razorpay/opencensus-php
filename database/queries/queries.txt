@@ -2345,6 +2345,11 @@ ALTER TABLE gateway_rules
 ALTER TABLE fund_transfer_attempts
     ADD COLUMN narration VARCHAR(255) DEFAULT NULL AFTER utr;
 
+ALTER TABLE merchant_invoice
+    ADD COLUMN amount_due INT(11) NOT NULL DEFAULT 0 AFTER tax,
+    ADD UNIQUE INDEX `merchant_invoice_merchant_id_year_month_type_unique` (`merchant_id`, `year`, `month`, `type`),
+    DROP INDEX `merchant_invoice_merchant_id_year_month_index`;
+
 # Pre deployment of branch: invoices_callback
 
 ALTER TABLE invoices
@@ -2367,3 +2372,44 @@ ALTER TABLE invoices
 ALTER TABLE hdfc
     ADD COLUMN gateway_payment_id bigint(20) unsigned AFTER gateway_transaction_id,
     ADD INDEX hdfc_gateway_payment_id_index (gateway_payment_id);
+
+# Add index on refund amount
+ALTER TABLE refunds
+    ADD INDEX refunds_amount_index (amount);
+
+ALTER TABLE refunds
+    ADD COLUMN receipt VARCHAR(255) DEFAULT NULL AFTER notes,
+    ADD UNIQUE INDEX refunds_merchant_id_receipt_unique (merchant_id, receipt);
+
+# Reversal Migration
+ALTER TABLE reversals
+    ADD COLUMN `entity_id` CHAR(14) AFTER `merchant_id`
+    ADD COLUMN `entity_type` VARCHAR(255) AFTER `entity_id`,;
+
+ALTER TABLE reversals
+    ADD INDEX reversals_entity_id_index (entity_id),
+    DROP FOREIGN KEY reversals_transfer_id_foreign,
+    DROP INDEX reversals_transfer_id_foreign,
+    DROP COLUMN transfer_id;
+
+UPDATE hdfc
+    SET gateway_payment_id = gateway_transaction_id
+    WHERE gateway_payment_id IS NULL AND created_at > 1502841600 AND action IN ('1', '4');
+
+UPDATE hdfc
+    SET gateway_payment_id = gateway_transaction_id
+    WHERE gateway_payment_id IS NULL AND created_at <= 1502841600 AND action IN ('1', '4');
+
+# Adding index on payments.updated_at, payments.captured_at
+# Useful for analytics queries
+ALTER TABLE payments
+    ADD INDEX payments_updated_at_index (updated_at),
+    ADD INDEX payments_captured_at_index (captured_at);
+
+# Query for adding sbibuddy column in merchant_banks table
+ALTER TABLE merchant_banks
+    ADD COLUMN sbibuddy TINYINT(1) NOT NULL DEFAULT 0 AFTER jiomoney;
+
+ALTER TABLE merchant_invoice
+    DROP INDEX `merchant_invoice_merchant_id_year_month_type_unique`,
+    ADD COLUMN description VARCHAR(255) DEFAULT NULL AFTER `type`;

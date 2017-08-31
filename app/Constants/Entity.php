@@ -140,6 +140,7 @@ class Entity
     const NETBANKING_PNB        = 'netbanking_pnb';
     const WALLET_PAYZAPP        = 'wallet_payzapp';
     const WALLET_JIOMONEY       = 'wallet_jiomoney';
+    const WALLET_SBIBUDDY       = 'wallet_sbibuddy';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
     const WALLET_PAYUMONEY      = 'wallet_payumoney';
     const WALLET_FREECHARGE     = 'wallet_freecharge';
@@ -229,6 +230,7 @@ class Entity
         self::WALLET_PAYZAPP        => \RZP\Gateway\Wallet\Payzapp::class,
         self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Olamoney::class,
         self::WALLET_JIOMONEY       => \RZP\Gateway\Wallet\Jiomoney::class,
+        self::WALLET_SBIBUDDY       => \RZP\Gateway\Wallet\Sbibuddy::class,
         self::NETBANKING_AXIS       => \RZP\Gateway\Netbanking\Axis::class,
         self::NETBANKING_HDFC       => \RZP\Gateway\Netbanking\Hdfc::class,
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Kotak::class,
@@ -286,6 +288,7 @@ class Entity
         self::WALLET_AIRTELMONEY    => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_JIOMONEY       => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_SBIBUDDY       => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_MPESA          => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Base::class,

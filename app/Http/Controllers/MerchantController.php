@@ -503,7 +503,7 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        return (new Report\Types\InvoiceReport)->getInvoiceV2($input);
+        return (new Report\Types\InvoiceReport)->getInvoiceReport($input);
     }
 
     /**
@@ -719,6 +719,20 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = (new Merchant\Service)->editGSTDetails($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getReferredMerchants()
+    {
+        $response = (new Merchant\Service)->fetchReferredMerchants();
+
+        return ApiResponse::json($response);
+    }
+
+    public function getTags($id)
+    {
+        $response = (new Merchant\Service)->getTags($id);
 
         return ApiResponse::json($response);
     }

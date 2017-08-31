@@ -13,7 +13,9 @@ class PaymentController extends Controller
 {
     public function getPayment($id)
     {
-        $payment = $this->service('payment')->fetch($id);
+        $input = Request::all();
+
+        $payment = $this->service('payment')->fetch($id, $input);
 
         return ApiResponse::json($payment);
     }
@@ -112,6 +114,18 @@ class PaymentController extends Controller
         $payment = $this->service('payment')->capture($id, $input);
 
         return ApiResponse::json($payment);
+    }
+
+    /**
+     * Captures authorized payment in bulk
+     */
+    public function postBulkCapture()
+    {
+        $input = Request::all();
+
+        $data = $this->service('payment')->captureInBulk($input);
+
+        return ApiResponse::json($data);
     }
 
     public function getPaymentStatusForAsyncPayments($id)

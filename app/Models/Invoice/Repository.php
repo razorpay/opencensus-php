@@ -12,6 +12,7 @@ use RZP\Models\Payment;
 use RZP\Base\BuilderEx;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
+use RZP\Models\LineItem;
 use RZP\Error\ErrorCode;
 use RZP\Models\Plan\Subscription;
 
@@ -19,10 +20,18 @@ class Repository extends Base\Repository
 {
     protected $entity = 'invoice';
 
+    protected $expands = [
+
+        // Note: Dotted notation works and expands both line_items
+        // followed by taxes of it.
+
+        Entity::LINE_ITEMS . '.' . LineItem\Entity::TAXES,
+    ];
+
     protected $entityFetchParamRules = [
-        Entity::PAYMENT_ID  => 'sometimes|string|min:14|max:18',
-        Entity::RECEIPT     => 'sometimes|string|min:1|max:40',
-        Entity::CUSTOMER_ID => 'sometimes|string|min:14|max:19',
+        Entity::PAYMENT_ID        => 'sometimes|string|min:14|max:18',
+        Entity::RECEIPT           => 'sometimes|string|min:1|max:40',
+        Entity::CUSTOMER_ID       => 'sometimes|string|min:14|max:19',
     ];
 
     protected $proxyFetchParamRules = [
@@ -37,13 +46,13 @@ class Repository extends Base\Repository
         Entity::NOTES             => 'sometimes|notes_fetch',
         Entity::SUBSCRIPTION_ID   => 'sometimes|string|min:14|max:18',
         EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
-        // TODO: Enable this once the expand pr is back merged.
-        // EsRepository::SEARCH_HITS => 'sometimes|boolean',
+        EsRepository::SEARCH_HITS => 'sometimes|boolean',
+        self::EXPAND . '.*'       => 'string|in:payments,',
     ];
 
     protected $appFetchParamRules = [
-        Entity::MERCHANT_ID => 'sometimes|alpha_num',
-        Entity::ORDER_ID    => 'sometimes|string|max:20',
+        Entity::MERCHANT_ID       => 'sometimes|alpha_num',
+        Entity::ORDER_ID          => 'sometimes|string|max:20',
     ];
 
     protected $signedIds = [
@@ -79,6 +88,7 @@ class Repository extends Base\Repository
      * @param Merchant\Entity $merchant
      * @param string|null     $userId
      * @param string|null     $userRole
+     * @param array           $input
      *
      * @return Entity
      * @throws Exception\BadRequestException
@@ -87,9 +97,10 @@ class Repository extends Base\Repository
         string $id,
         Merchant\Entity $merchant,
         string $userId = null,
-        string $userRole = null)
+        string $userRole = null,
+        array $input = [])
     {
-        $invoice = $this->findByPublicIdAndMerchant($id, $merchant);
+        $invoice = $this->findByPublicIdAndMerchant($id, $merchant, $input);
 
         //
         // If userId is set and userRole is sellerapp we throw 403 if invoice's

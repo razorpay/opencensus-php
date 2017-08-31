@@ -165,7 +165,10 @@ class Gateway extends Base\Gateway
             }
 
             throw new Exception\LogicException(
-                'Data tampering found.', null, [
+                'Data tampering found.',
+                null,
+                [
+                    'payment_id'      => $input['payment']['id'],
                     'callback_result' => $this->approval,
                     'verify_result'   => $verify->gatewaySuccess,
                 ]);
@@ -373,7 +376,12 @@ class Gateway extends Base\Gateway
 
         // For refunds older than this, verification is not possible.
         throw new Exception\LogicException(
-                'Verification is not possible for older refunds.');
+                'Verification is not possible for older refunds.',
+                null,
+                [
+                    'payment_id' => $input['refund']['payment_id'],
+                    'refund_id'  => $input['refund']['id'],
+                ]);
     }
 
     // First Data is not returning approval code in some cases.
@@ -1306,7 +1314,7 @@ class Gateway extends Base\Gateway
     }
 
     protected function traceGatewayPaymentRequest(
-        $request,
+        array $request,
         $input,
         $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
     {

@@ -3,7 +3,6 @@
 namespace RZP\Models\Batch;
 
 use RZP\Models\Base;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Jobs\DispatchRouter;

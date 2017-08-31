@@ -106,12 +106,17 @@ class Filter extends Base\Core
     {
         $merchant = $this->input['merchant'];
 
-        $skippedFilters = $this->options->getSkippedFilters();
+        $featureSkippedFilters = $this->options->getFeatureSkippedFilters();
 
-        $isFilterSkipped = in_array($property, $skippedFilters, true);
+        $globalSkippedFilters = $this->options->getGlobalSkippedFilters();
+
+        $isFilterSkipped = in_array($property, $featureSkippedFilters, true);
 
         $featureEnabled = $merchant->isFeatureEnabled(Feature::RULE_FILTER);
 
-        return (($isFilterSkipped === true) and ($featureEnabled === true));
+        $isFilterSkippedGlobally = in_array($property, $globalSkippedFilters, true);
+
+        return (($isFilterSkippedGlobally === true) or
+                (($isFilterSkipped === true) and ($featureEnabled === true)));
     }
 }

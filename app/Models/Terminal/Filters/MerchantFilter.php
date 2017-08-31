@@ -66,7 +66,6 @@ class MerchantFilter extends Terminal\Filter
         'pharma',
         'cryptocurrency',
         'gateway',
-        'wallet',
         'shared_terminal',
     ];
 
@@ -412,52 +411,6 @@ class MerchantFilter extends Terminal\Filter
                 {
                     return false;
                 }
-            }
-        }
-
-        return true;
-    }
-
-    public function walletFilter(Terminal\Entity $terminal, $applicableTerminals) : bool
-    {
-        //
-        // For wallets, payments have to go through their assigned terminal
-        // because gateway has requested it and gives cashbacks, settlements
-        // nuances based on the terminal
-        //
-        $gateway = $terminal->getGateway();
-
-        // Filter only applicable for wallets
-        if ($this->input['payment']->getMethod() !== Method::WALLET)
-        {
-            return true;
-        }
-
-        // wallets for which only direct assigned terminal must be accessed.
-        $wallets = [
-            Gateway::WALLET_FREECHARGE,
-            Gateway::WALLET_AIRTELMONEY,
-        ];
-
-        if (in_array($gateway, $wallets, true) === false)
-        {
-            return true;
-        }
-
-        // If the wallet terminal is not shared, return the terminal
-        if ($terminal->isShared() === false)
-        {
-            return true;
-        }
-
-        // Removes shared terminals for airtelmoney and freecharge gateways if any
-        // direct terminals for these same gateways are present
-        foreach ($applicableTerminals as $currentTerminal)
-        {
-            if ((in_array($currentTerminal->getGateway(), $wallets, true) === true) and
-                ($currentTerminal->isShared() === false))
-            {
-                return false;
             }
         }
 

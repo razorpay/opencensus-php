@@ -287,7 +287,7 @@ class TerminalRuleFilterTest extends TestCase
         ];
 
         $options = new Terminal\Options;
-        $options->setSkippedFilters(self::FILTERS_SKIPPED_FOR_TEST);
+        $options->setFeatureSkippedFilters(self::FILTERS_SKIPPED_FOR_TEST);
 
         $selector = new Terminal\Selector($input, $options);
         $selectedTerminals = $selector->select();
