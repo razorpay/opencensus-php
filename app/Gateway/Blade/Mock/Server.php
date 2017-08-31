@@ -19,7 +19,7 @@ class Server extends Base\Mock\Server
         $this->content($paResContent, 'pares');
 
         $response = [
-            'MD'       => $input['MD'],
+            'MD'      => $input['MD'],
             'PaRes'   => $this->getPaResXml($paResContent),
             'TermUrl' => $input['TermUrl']
         ];
@@ -62,12 +62,12 @@ class Server extends Base\Mock\Server
         unset($content['Message']['VEReq']);
 
         $content['Message']['VERes'] = [
-            'version' => '1.0.2',
-            'CH'  => [
+            'version'  => '1.0.2',
+            'CH'       => [
                 'enrolled' => 'Y',
                 'acctID'   => CardNumber::getAccId($input['Message']['VEReq']['pan']),
             ],
-            'url' => $this->route->getUrl('mock_acs', ['gateway' => 'blade']),
+            'url'      => $this->route->getUrl('mock_acs', ['gateway' => 'blade']),
             'protocol' => 'ThreeDSecure'
         ];
 
@@ -110,13 +110,11 @@ class Server extends Base\Mock\Server
                 return $responseClass->blankMessageResponse($paymentId);
             case CardNumber::INVALID_VERSION:
                 return $responseClass->invalidVersionFormat($paymentId);
-
         }
     }
 
     protected function xmlToArray($xml)
     {
-        $e = null;
         $res = null;
 
         try

@@ -194,7 +194,7 @@ class Gateway extends Base\Gateway
         // use gzinflate() with substr() (2 or 10) depending on the encoder,
         // Java defaults to (2) byte header, server based encoding HTTP GZIP
         // defaults to (10) byte header, even if the data is enclosed in a HTTP 1.1 CHUNKED stream.
-        //
+
         $paresXml = gzinflate(substr($pares, 2));
 
         $dom = $this->loadXmlViaDom($paresXml);
