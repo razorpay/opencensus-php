@@ -7,5 +7,5 @@ use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'Blade';
+    protected $entity = 'blade';
 }
