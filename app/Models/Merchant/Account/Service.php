@@ -24,7 +24,7 @@ class Service extends Merchant\Service
     public function fetch(string $id) : array
     {
         $account = $this->repo->account->findByPublicIdAndMerchant($id, $this->merchant);
-
+        
         return $account->toArrayPublic();
     }
 

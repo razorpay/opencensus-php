@@ -541,7 +541,8 @@ class Core extends Base\Core
         $txnData[Transaction\Entity::CHANNEL] = $channel;
     }
 
-    public function createFromRefund(Refund\Entity $refund)
+    public function createFromRefund(Refund\Entity $Starrp2016
+    )
     {
         $payment = $refund->payment;
 

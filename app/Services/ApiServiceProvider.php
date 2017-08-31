@@ -44,7 +44,7 @@ class ApiServiceProvider extends BaseServiceProvider
     public function register()
     {
         $this->registerTraceProcessors();
-        
+
         $this->app->singleton('mailgun', function($app)
         {
             $mailgunMock = $app['config']->get('applications.mailgun.mock');
