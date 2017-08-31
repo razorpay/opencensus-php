@@ -48,7 +48,7 @@ class Gateway extends Base\Gateway
         // Process verification response
         $enrolled = $this->processVerifyEnrollmentResponse($input, $response);
 
-        $attributes = $this->getVeresAttributesToSave($veres);
+        $attributes = $this->getVeresAttributesToSave($response);
 
         $this->createGatewayPaymentEntity($attributes, $input);
 
@@ -76,7 +76,7 @@ class Gateway extends Base\Gateway
         parent::callback($input);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-                                $input['payment']['id'], Action::AUTHORIZE);
+                                $input['payment']['id'], Base\Action::AUTHORIZE);
 
         $PARes = $this->getPayerAuthenticationResponse($input);
 
@@ -103,7 +103,7 @@ class Gateway extends Base\Gateway
         return null;
     }
 
-    protected function getVeresAttributesToSave($veres)
+    protected function getVeresAttributesToSave($response)
     {
         $attributes = [];
 

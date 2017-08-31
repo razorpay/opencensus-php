@@ -12,15 +12,35 @@ class Server extends Base\Mock\Server
     {
         $this->validateAuthenticateInput($input);
 
+        // TODO: vaidate PaReq
+
+        $paResContent = $this->getPaResContent($input);
+
+        $this->content($paResContent, 'pares');
+
         $response = [
-            F::MD => $input[F::MD],
-            F::PA_RES => 'eNpVUttygjAQfc9XMP0AkiAw',
-            F::TERM_URL => $input[F::TERM_URL]
+            'MD'       => $input['MD'],
+            'PaRes'   => $this->getPaResXml($paResContent),
+            'TermUrl' => $input['TermUrl']
         ];
 
         $this->content($response, 'acs');
 
         return $response;
+    }
+
+    private function getPaResContent($input)
+    {
+        // Implement
+    }
+
+    private function getPaResXml($content)
+    {
+        $xml = Xml::create('ThreeDSecure', $content);
+
+        // TODO: Sign XML here
+
+        return $xml;
     }
 
     public function authorize($input)
@@ -47,7 +67,7 @@ class Server extends Base\Mock\Server
                 'enrolled' => 'Y',
                 'acctID'   => CardNumber::getAccId($input['Message']['VEReq']['pan']),
             ],
-            'url' => $this->route->getUrl('mock_acs', ['gateway' => 'cybersource']),
+            'url' => $this->route->getUrl('mock_acs', ['gateway' => 'blade']),
             'protocol' => 'ThreeDSecure'
         ];
 
