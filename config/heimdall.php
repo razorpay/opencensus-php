@@ -382,10 +382,6 @@ return [
                 'assignable'  => true,
                 'workflow'    => true
             ],
-            Permission::VIEW_ADMIN_EMAIL  => [
-                'description' => 'view admin email',
-                'assignable'  => true,
-            ]
         ],
 
         // Permissions
