@@ -3,8 +3,6 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
-use RZP\Models\Payment;
-use RZP\Models\Card;
 use Request;
 
 class RefundController extends Controller
@@ -13,14 +11,14 @@ class RefundController extends Controller
     {
         $input = Request::all();
 
-        $refund = $this->service('refund')->create($input);
+        $refund = $this->service()->create($input);
 
         return ApiResponse::json($refund);
     }
 
     public function getRefund($id)
     {
-        $refunds = $this->service('refund')->fetch($id);
+        $refunds = $this->service()->fetch($id);
 
         return ApiResponse::json($refunds);
     }
@@ -29,7 +27,7 @@ class RefundController extends Controller
     {
         $input = Request::all();
 
-        $refunds = $this->service('refund')->fetchMultiple($input);
+        $refunds = $this->service()->fetchMultiple($input);
 
         return ApiResponse::json($refunds);
     }
@@ -38,14 +36,14 @@ class RefundController extends Controller
     {
         $input = Request::all();
 
-        $refundExcel = $this->service('refund')->getRefundsFile($input);
+        $refundExcel = $this->service()->getRefundsFile($input);
 
         return ApiResponse::json($refundExcel);
     }
 
     public function postRefundVerify($ids)
     {
-        $data = $this->service('refund')->verify($ids);
+        $data = $this->service()->verify($ids);
 
         return ApiResponse::json($data);
     }
@@ -55,21 +53,21 @@ class RefundController extends Controller
      */
     public function postRefundsTransactions()
     {
-        $summary = $this->service('refund')->createMissingTransactions();
+        $summary = $this->service()->createMissingTransactions();
 
         return ApiResponse::json($summary);
     }
 
     public function postGatewayRefundedTransactions()
     {
-        $data = $this->service('refund')->createMissingTransactionsForGatewayRefunded();
+        $data = $this->service()->createMissingTransactionsForGatewayRefunded();
 
         return ApiResponse::json($data);
     }
 
     public function postManualGatewayRefund($refundIds)
     {
-        $data = $this->service('refund')->manualGatewayRefund($refundIds);
+        $data = $this->service()->manualGatewayRefund($refundIds);
 
         return ApiResponse::json($data);
     }
@@ -90,7 +88,7 @@ class RefundController extends Controller
      */
     public function postGatewayRefundRecord($gateway)
     {
-        $data = $this->service('refund')->createGatewayRefundRecords($gateway);
+        $data = $this->service()->createGatewayRefundRecords($gateway);
 
         return ApiResponse::json($data);
     }
@@ -107,14 +105,14 @@ class RefundController extends Controller
      */
     public function postCreateBilldeskCancelledRefunds()
     {
-        $data = $this->service('refund')->createBilldeskCancelledRefunds();
+        $data = $this->service()->createBilldeskCancelledRefunds();
 
         return ApiResponse::json($data);
     }
 
     public function postGatewayValidateRefund(string $gateway)
     {
-        $data = $this->service('refund')->validateUnknownGatewayRefunds($gateway);
+        $data = $this->service()->validateUnknownGatewayRefunds($gateway);
 
         return ApiResponse::json($data);
     }
@@ -123,14 +121,14 @@ class RefundController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('refund')->retryFailedRefunds($input);
+        $data = $this->service()->retryFailedRefunds($input);
 
         return ApiResponse::json($data);
     }
 
     public function postRefundRetry($id)
     {
-        $data = $this->service('refund')->retry($id);
+        $data = $this->service()->retry($id);
 
         return ApiResponse::json($data);
     }
