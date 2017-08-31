@@ -150,7 +150,6 @@ class Name
     const EDIT_MERCHANT_OFFER                 = 'edit_merchant_offer';
     const ASSIGN_MERCHANT_HANDLE              = 'assign_merchant_handle';
     const VIEW_MERCHANT_PRICING               = 'view_merchant_pricing';
-    const VIEW_MERCHANT_EMAIL                 = 'view_merchant_email';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,

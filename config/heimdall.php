@@ -37,10 +37,6 @@ return [
                 'description' => 'View a particular merchant details',
                 'assignable'  => true,
             ],
-            Permission::VIEW_MERCHANT_EMAIL   => [
-                'description' => 'View Merchant Email',
-                'assignable'  => true,
-            ],
         ],
 
         PermissionCategory::MERCHANT_DETAIL => [
