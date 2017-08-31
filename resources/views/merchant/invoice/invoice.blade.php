@@ -198,6 +198,7 @@
               </tr>
               @endforeach
 
+              {{--
               @if (isset($pageValue['total_amount_paid']))
               <tr>
                 <td colspan="4"></td>
@@ -218,6 +219,7 @@
                            ['value' => $pageValue['total_amount_due']])
               </tr>
               @endif
+              --}}
 
             <tbody>
           </table>
