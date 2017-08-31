@@ -352,6 +352,13 @@ app.controller('EntitiesCtrl', [
         jiomoney: booleanList,
         merchant_id: ['Merchant Id'],
       },
+      merchant_invoice: {
+        merchant_id: ['Merchant Id'],
+        invoice_number: ['Invoice No.'],
+        gstin: ['GSTIN'],
+        month: ['Month'],
+        year: ['Year'],
+      },
       mobikwik: {
         payment_id: ['Payment Id'],
         received: booleanList,
