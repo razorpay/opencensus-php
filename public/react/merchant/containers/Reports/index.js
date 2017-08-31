@@ -16,16 +16,6 @@ function validYear(current) {
   return current._d.getTime() <= Date.now() && current.year() >= 2015;
 }
 
-function validateInvoiceMonthYear(current) {
-  const currDate = new Date(),
-    tillPrevMonth =
-      currDate.getFullYear() === current.year()
-        ? current.month() < 6 // 6 = July
-        : true;
-
-  return validYear(current) && tillPrevMonth;
-}
-
 const selector = formValueSelector('generateReports');
 
 @connect(
@@ -94,6 +84,10 @@ export default class ReportsContainer extends Component {
       });
     }
 
+    if (user.isGSTEnabled) {
+      this.props.change('invoiceDate', moment().subtract('months', 1));
+    }
+
     // Select default report type
     this.setState({
       entity: this.entityOptions[1],
@@ -104,6 +98,11 @@ export default class ReportsContainer extends Component {
     // set the date to 1st of current month otherwise e.g, if 30 Aug changes to Feb then date becomes 30, making it select March!
     if (this.props.type === 'daily' && nextProps.type === 'monthly') {
       this.props.change('date', this.props.date.startOf('month'));
+    } else if (
+      this.props.entity !== 'invoice' &&
+      nextProps.entity === 'invoice'
+    ) {
+      this.props.change('invoiceDate', this.props.invoiceDate.startOf('month'));
     }
   }
 
@@ -268,6 +267,20 @@ export default class ReportsContainer extends Component {
           message: 'No data found for given time range',
         });
       });
+  };
+
+  validateInvoiceMonthYear = current => {
+    const isGSTEnabled = this.props.user.isGSTEnabled;
+
+    const currDate = new Date(),
+      tillPrevMonth =
+        currDate.getFullYear() === current.year()
+          ? isGSTEnabled
+            ? current.month() < currDate.getMonth()
+            : current.month() < 6 // 6 = July
+          : true;
+
+    return validYear(current) && tillPrevMonth;
   };
 
   render() {
@@ -466,7 +479,7 @@ export default class ReportsContainer extends Component {
                         closeOnSelect={true}
                         isValidDate={
                           entity === 'invoice'
-                            ? validateInvoiceMonthYear
+                            ? this.validateInvoiceMonthYear
                             : validYear
                         }
                         placeholder="Select Year-Month"
