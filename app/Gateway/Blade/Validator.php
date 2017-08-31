@@ -89,8 +89,9 @@ class Validator
 
         if ($expectedLastFour !== $actualLastFour)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                    'Invalid PAN provided in pares', 'PAN', $actual);
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_CARD_INVALID_NUMBER,
+                'Invalid PAN provided in pares' . $actual);
         }
     }
 }
