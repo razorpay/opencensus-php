@@ -7,6 +7,7 @@ use Redirect;
 use ApiResponse;
 use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Gateway;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Gateway\Rule;
@@ -97,14 +98,25 @@ class GatewayController extends Controller
         switch ($gateway)
         {
             // Standard Cases
-            case 'upi_mindgate':
-            case 'wallet_freecharge':
-            case 'billdesk':
+            case Gateway::UPI_MINDGATE:
+            case Gateway::WALLET_FREECHARGE:
+            case Gateway::BILLDESK:
+            case Gateway::NETBANKING_AXIS:
+            // test value sent for axis earlier
+            case 'axis_corporate':
+            // "BID=500193224&Paid=Y&TRANDATETIME=28/08/2017+17:23:07&AMT=1.00&ITC=000000006211&PRN=8WQJtaPV8yFUvf"
+
+                // TODO : Remove before prod merge. temporary hack for testing.
+                if ($gateway === 'axis_corporate')
+                {
+                    $gateway = Gateway::NETBANKING_AXIS;
+                }
+
                 $data = $this->processServerCallback($input, $gateway);
                 break;
 
             // Only logs the response
-            case 'wallet_olamoney':
+            case Gateway::WALLET_OLAMONEY:
                 break;
 
             //Special case because gateway is upi_mindgate
@@ -114,7 +126,7 @@ class GatewayController extends Controller
                 break;
 
             // Special case because we need the raw request body
-            case 'upi_icici':
+            case Gateway::UPI_ICICI:
                 $input = Request::getContent();
 
                 $data = $this->processServerCallback($input, $gateway);

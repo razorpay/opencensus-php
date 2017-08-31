@@ -67,7 +67,20 @@ class Gateway extends Base\Gateway
                            ['gateway_response' => $input['gateway'],
                             'payment_id'       => $input['payment']['id']]);
 
-        $content = $this->getDataFromResponse($input['gateway'], $input);
+        // Response parameters are different for callback received via browser redirect
+        // as opposed to those received from server. This is being resolved using the param
+        // received from server.
+
+        // One possible change is to set a param for the response received via
+        // S2S callback and change approporiately here.
+        if (isset($input['gateway'][ResponseFields::TRAN_DATE_TIME]) === true)
+        {
+            $content = $input['gateway'];
+        }
+        else
+        {
+            $content = $this->getDataFromEncryptedResponse($input['gateway'], $input);
+        }
 
         $this->assertPaymentId($input['payment']['id'],
              $content[RequestFields::MERCHANT_REFERENCE]);
@@ -76,10 +89,6 @@ class Gateway extends Base\Gateway
             $input['payment']['id'], Action::AUTHORIZE);
 
         $attrs = $this->getCallbackAttributes($content);
-
-               $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK,
-                           ['content' => $content,
-                            'attrs'   => $attrs]);
 
         $gatewayEntity->fill($attrs);
 
@@ -288,7 +297,7 @@ class Gateway extends Base\Gateway
         return $queryString;
     }
 
-    protected function getDataFromResponse(array $encryptedResponse, array $input)
+    protected function getDataFromEncryptedResponse(array $encryptedResponse, array $input)
     {
         $encryptedString = $encryptedResponse[ResponseFields::ENCRYPTED_STRING];
 
@@ -339,7 +348,7 @@ class Gateway extends Base\Gateway
     {
         return [
             'received'        => true,
-            'status'          => $content[ResponseFields::STATUS],
+            'status'          => $content[ResponseFields::PAID] ?? $content[ResponseFields::STATUS],
             'bank_payment_id' => $content[ResponseFields::BANK_REFERENCE_ID],
         ];
     }
@@ -508,5 +517,10 @@ class Gateway extends Base\Gateway
         {
             return $this->config['test_hash_secret_corporate'];
         }
+    }
+
+    public function getPaymentIdFromServerCallback($input)
+    {
+        return $input[ResponseFields::MERCHANT_REFERENCE];
     }
 }

@@ -66,6 +66,9 @@ trait Callback
 
     public function s2sCallback($payment, array $gatewayInput)
     {
+        // TODO : Should not get triggered for corporate payments as
+        // payment actual processing is pending.
+
         // Return if payment is auto captured
         if ($payment->getAutoCaptured())
         {
@@ -94,7 +97,14 @@ trait Callback
                 // Reload in case it's processed by another thread.
                 $this->repo->reload($payment);
 
-                if ($payment->isCreated() === false)
+                $isCorporatePayment = $payment->terminal->isCorporate();
+
+                // In case of non - corporate payments, this case is fine.
+                // In case of corporate and payment already having been authorized
+                if ((($payment->isCreated() === false) and
+                    ($isCorporatePayment === false)) or
+                    (($isCorporatePayment === true) and
+                    ($payment->hasBeenAuthorized() === true)))
                 {
                     $this->app['segment']->trackPayment(
                         $payment, ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
