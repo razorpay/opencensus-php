@@ -32,6 +32,9 @@ class PublicErrorDescription
     const GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR                            = 'Payment failed because card holder couldn\'t be authenticated';
     const GATEWAY_ERROR_FALSE_AUTHORIZE                                         = 'The payment was wrongly authorized';
     const GATEWAY_ERROR_REFUND_DUPLICATE_REQUEST                                = 'Duplicate Refund Request';
+    const GATEWAY_ERROR_PREMATURE_SI_EXECUTION                                  = 'SI execution before scheduled date';
+    const GATEWAY_ERROR_SI_EXECUTION_ALREADY_DONE                               = 'SI execution already done';
+    const GATEWAY_ERROR_MERCHANT_NOT_ENABLED_FOR_STANDING_INSTRUCTION           = 'Merchant not enabled for for SI';
 
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                              = 'The reset link has expired or invalid';
     const BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLWOED                               = 'Password Change is not allowed for this Org';

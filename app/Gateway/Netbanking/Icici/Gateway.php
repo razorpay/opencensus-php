@@ -120,15 +120,17 @@ class Gateway extends Base\Gateway
      */
     protected function checkSecondRecurringStatus(array $response)
     {
-        // TODO: To check the values of Status in case of both
-        // success and failures. We may have to create error mappings
-        // accordingly.
-
         if ((empty($response[ResponseFields::STATUS]) === true) or
             ($response[ResponseFields::STATUS] !== Status::LCF_SUCCESS))
         {
+            $errorCode = SiStatusCode::getInternalErrorCode($response[ResponseFields::STATUS]);
+
+            $gatewayErrorCode = $response[ResponseFields::PAID];
+
+            $gatewayErrorDesc = $response[ResponseFields::STATUS];
+
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+                $errorCode, $gatewayErrorCode, $gatewayErrorDesc);
         }
     }
 

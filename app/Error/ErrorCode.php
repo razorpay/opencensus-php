@@ -100,6 +100,11 @@ class ErrorCode
 
     const GATEWAY_ERROR_CALLBACK_EMPTY_INPUT                                        = 'GATEWAY_ERROR_CALLBACK_EMPTY_INPUT';
 
+    const GATEWAY_ERROR_MERCHANT_NOT_ENABLED_FOR_STANDING_INSTRUCTION               = 'GATEWAY_ERROR_MERCHANT_NOT_ENABLED_FOR_STANDING_INSTRUCTION';
+    const GATEWAY_ERROR_MERCHANT_IP_NOT_WHITELISTED                                 = 'GATEWAY_ERROR_MERCHANT_IP_NOT_WHITELISTED';
+    const GATEWAY_ERROR_PREMATURE_SI_EXECUTION                                      = 'GATEWAY_ERROR_PREMATURE_SI_EXECUTION';
+    const GATEWAY_ERROR_SI_EXECUTION_ALREADY_DONE                                   = 'GATEWAY_ERROR_SI_EXECUTION_ALREADY_DONE';
+
 // Generic bad requests
     const BAD_REQUEST_INVALID_ID                                                    = 'BAD_REQUEST_INVALID_ID';
     const BAD_REQUEST_INVALID_IDS                                                   = 'BAD_REQUEST_INVALID_IDS';
