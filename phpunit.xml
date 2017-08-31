@@ -14,6 +14,10 @@
           <directory>./tests/</directory>
       </testsuite>
   </testsuites>
+  <listeners>
+     <!-- Uncomment and enable this listener below to print out run times for each test -->
+    <!--<listener class="\RZP\Tests\Listeners\TestTimer" />-->
+  </listeners>
   <filter>
     <whitelist>
       <directory suffix=".php">./app/</directory>
