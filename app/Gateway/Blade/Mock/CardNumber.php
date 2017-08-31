@@ -11,19 +11,13 @@ class CardNumber
     const BLANK_MEESGAE           = '5257834104683413';
     const INVALID_VERSION         = '5110731267079214';
 
-    const CARD_ACC_ID_MAP = [
-        self::ENROLLED_13_DIGIT_PAN => 'abcdef',
-    ];
-
     public static function getAccId($cardNumber)
     {
-        return self::CARD_ACC_ID_MAP[$cardNumber];
+        return base64_encode($cardNumber);
     }
 
-    public static function getCardNumber($accId)
+    public static function getCardNumberFromAccId($accId)
     {
-        $flipped = array_flip(self::CARD_ACC_ID_MAP);
-
-        return $flipped[$accId];
+        return base64_decode($accId);
     }
 }
