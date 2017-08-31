@@ -214,7 +214,7 @@ export default class ReportsContainer extends Component {
     if (entity === 'invoice') {
       return Promise.resolve(
         window.open(
-          `/${this.props.mode}/reports/invoice?year=${data.year}` +
+          `/${this.props.mode}/reports/invoice?year=${invoiceDate.year()}` +
             `&month=${invoiceDate.month() + 1}`,
           '_blank'
         )
