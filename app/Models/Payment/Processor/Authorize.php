@@ -2369,7 +2369,7 @@ trait Authorize
         // A hacky way to do this would be to override the cron auth
         // with merchant auth. This might cause other issues though.
         //
-        if ($this->app['basicauth']->isPrivilegeAuth() === false)
+        if ($this->app['basicauth']->isProxyOrPrivilegeAuth() === false)
         {
             if ($payment->hasSubscription() === true)
             {

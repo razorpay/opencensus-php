@@ -140,6 +140,14 @@ class Core extends Base\Core
 
     public function testCharge(Entity $subscription, $input)
     {
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_TEST_CHARGE_REQUEST,
+            [
+                'subscription_id' => $subscription->getId(),
+                'status'          => $subscription->getStatus(),
+                'input'           => $input,
+            ]);
+
         $subscription->getValidator()->validateInput('manual_test_charge', $input);
 
         $subscription->getValidator()->validateTestSubscriptionChargeable();
