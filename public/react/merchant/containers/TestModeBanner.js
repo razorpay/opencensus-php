@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
 import LocalStorageService from 'rzp/utils/localStorage';
+import Banner from 'rzp/ui/Banner';
 
 @connect(state => state.session)
 export default class TestModeBanner extends Component {
@@ -19,21 +20,23 @@ export default class TestModeBanner extends Component {
     }
 
     return (
-      <div class="alert alert-warning TestModeBanner">
-        You are in <b>Test Mode</b>, so only test data is shown.{' '}
-        {user.isActivated
-          ? <span>
-              Switch to <a onClick={this.switchToLiveMode}>Live mode</a> to see
-              real transaction data.
-            </span>
-          : null}
-        {!user.isActivated &&
-          <ShowWhen myRole="owner manager admin">
-            <span>
-              {' '}<Link to="/activation">Activate your account</Link> to start
-              making live transactions.
-            </span>
-          </ShowWhen>}
+      <div className="TestModeBanner">
+        <Banner className="TestModeBanner">
+          You are in <b>Test Mode</b>, so only test data is shown.{' '}
+          {user.isActivated
+            ? <span>
+                Switch to <a onClick={this.switchToLiveMode}>Live mode</a> to
+                see real transaction data.
+              </span>
+            : null}
+          {!user.isActivated &&
+            <ShowWhen myRole="owner manager admin">
+              <span>
+                {' '}<Link to="/activation">Activate your account</Link> to
+                start making live transactions.
+              </span>
+            </ShowWhen>}
+        </Banner>
       </div>
     );
   }
