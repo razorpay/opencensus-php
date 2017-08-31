@@ -314,6 +314,7 @@ class Gateway extends Base\Gateway
             // Whereas, the retail verify success is success
             else
             {
+//                TODO: Not all SI based payments are mapped to this success status
                 $verify->gatewaySuccess = ($status === Status::SUCCESS);
             }
         }
@@ -364,11 +365,12 @@ class Gateway extends Base\Gateway
             $requestData = array_merge($requestData, $corporateData);
         }
 
-        // If the SI reference ID is not empty
+        // If the SI reference ID is not empty, we know that this is a recurring payment
 //        TODO: Check why adding this to the request causes a verification failure
         if (empty($verify->payment->getSIRefId()) === false)
         {
             $requestData[RequestFields::SI] = Status::Y;
+            $requestData[RequestFields::SI_AUTO_PAY_AMOUNT] = (int) $verify->input['token']->getMaxAmount();
         }
 
         return array_merge($baseRequestData, $requestData);

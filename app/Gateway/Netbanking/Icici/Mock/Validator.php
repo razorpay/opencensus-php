@@ -51,5 +51,6 @@ class Validator extends Base\Validator
         RequestFields::SHOW_ON_SAME_PAGE   => 'sometimes|string',
         RequestFields::SI_REFERENCE_NUMBER => 'sometimes|string',
         RequestFields::SI                  => 'sometimes|string',
+        RequestFields::SI_AUTO_PAY_AMOUNT  => 'sometimes|numeric',
     ];
 }
