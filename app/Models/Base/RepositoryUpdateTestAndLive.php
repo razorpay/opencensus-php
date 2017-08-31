@@ -5,6 +5,7 @@ namespace RZP\Models\Base;
 use Config;
 use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Models\Base\Repository;
 
 trait RepositoryUpdateTestAndLive
 {
@@ -18,7 +19,7 @@ trait RepositoryUpdateTestAndLive
      */
     public function saveOrFail($entity, array $options = array())
     {
-        if ($this->entityShouldSync($entity) === false)
+        if ($this->entityShouldSync($entity, Repository::SAVE) === false)
         {
             return parent::saveOrFail($entity, $options);
         }
@@ -156,7 +157,7 @@ trait RepositoryUpdateTestAndLive
 
     public function delete($entity)
     {
-        if ($this->entityShouldSync($entity) === false)
+        if ($this->entityShouldSync($entity, Repository::DELETE) === false)
         {
             return parent::delete($entity);
         }
@@ -186,7 +187,7 @@ trait RepositoryUpdateTestAndLive
 
     public function forceDelete($entity)
     {
-        if ($this->entityShouldSync($entity) === false)
+        if ($this->entityShouldSync($entity, Repository::DELETE) === false)
         {
             return parent::forceDelete($entity);
         }
@@ -293,15 +294,19 @@ trait RepositoryUpdateTestAndLive
     * - For cases where we want to sync based on conditions: define
     *   function `shouldSync` in the entity's repository class, returning
     *   `boolean`
-    *   Example: `Schedule\Repository::shouldSync()`
+    *   Example: `Schedule\Repository::shouldSync($entity)`
+    * - $action param can be used to achieve different syncing behavior for
+    *   different actions. Example values - 'save', 'delete', etc
     *
-    * @param PublicEntity $entity
+    * @param PublicEntity   $entity
+    * @param string         $action
+    *
     * @return bool
     */
-    protected function entityShouldSync($entity) : bool
+    protected function entityShouldSync($entity, $action = null) : bool
     {
         $shouldSync = ((method_exists($this, 'shouldSync') === false) or
-                       ($this->shouldSync($entity) === true));
+                       ($this->shouldSync($entity, $action) === true));
 
         return $shouldSync;
     }
