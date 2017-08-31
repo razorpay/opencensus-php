@@ -269,7 +269,7 @@ final class FactoryData
             'merchant_id'       => '10000000000000',
             'credit_card'       => '1',
             'debit_card'        => '1',
-            'banks'             => '[]',
+            'disabled_banks'    => '[]',
             'paytm'             => '0',
         ]);
 
