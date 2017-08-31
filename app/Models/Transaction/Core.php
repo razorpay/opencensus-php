@@ -729,8 +729,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Create transaction and update balances for a reverse transfer
-     * on a Marketplace payment refund
+     * Create transaction and update balances for a reversal
      *
      * @param  Reversal\Entity   $reversal
      * @return Entity
