@@ -421,7 +421,6 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_TRANSFER_MORE_THAN_ONE_CUSTOMER                   = 'Payment cannot be transferred to more than one customer';
     const BAD_REQUEST_PAYMENT_TRANSFER_MULTIPLE_ENTITY_TYPES_GIVEN              = 'Payment cannot be transferred to multiple types of entities';
     const BAD_REQUEST_PAYMENT_TRANSFER_CURRENCY_MISMATCH                        = 'Transfer request currency must be same as payment currency';
-    const BAD_REQUEST_PAYMENT_MULTIPLE_TRANSFERS_TO_SAME_ACCOUNT                = 'Payment cannot be transferred to the same account more than one time';
 
     const BAD_REQUEST_TRANSFER_INVALID_ACCOUNT_ID                               = 'Account ID provided for transfer is invalid';
     const BAD_REQUEST_TRANSFER_ACCOUNT_NOT_ACTIVATED                            = 'The account needs to be activated by Razorpay before you can make transfers in live mode';

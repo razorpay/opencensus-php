@@ -155,18 +155,8 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::ROUTE);
     }
 
-    public function getState() : string
-    {
-        return $this->getAttribute(self::STATE);
-    }
-
     public function getPayload()
     {
         return $this->getAttribute(self::PAYLOAD);
-    }
-
-    public function getPermission()
-    {
-        return $this->getAttribute(self::PERMISSION);
     }
 }

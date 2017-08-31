@@ -69,6 +69,30 @@ class SbibuddyGatewayTest extends TestCase
         $this->assertTestResponse($wallet, 'testFailedPaymentWalletEntity');
     }
 
+    public function testInsufficientFundsPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('sbibuddy');
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            $content[ResponseFields::STATUS_CODE] = ResponseCodeMap::INSUFFICIENT_BALANCE;
+
+            $content[ResponseFields::ERROR_DESCRIPTION] = ResponseCodeMap::$codes[
+                ResponseCodeMap::INSUFFICIENT_BALANCE
+            ];
+
+            unset($content[ResponseFields::EXTERNAL_TRANSACTION_ID]);
+            unset($content[ResponseFields::PROCESSOR_ID]);
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testRefundPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('sbibuddy');

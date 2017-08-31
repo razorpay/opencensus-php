@@ -344,6 +344,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     //Adjustments
     const ADJUSTMENT_CREATE_REQUEST                     = 'ADJUSTMENT_CREATE_REQUEST';
+    const FEE_ADJUSTMENT_CREATE_REQUEST                 = 'FEE_ADJUSTMENT_CREATE_REQUEST';
     const ADJUSTMENT_CREATE_SUCCESS                     = 'ADJUSTMENT_CREATE_SUCCESS';
 
     const VERIFY_LOCKED_PAYMENTS                        = 'VERIFY_LOCKED_PAYMENTS';
@@ -587,8 +588,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKENEX_RESPONSE                          = 'TOKENEX_RESPONSE';
     const TOKENEX_RETRY                             = 'TOKENEX_RETRY';
     const RAVEN_REQUEST                             = 'RAVEN_REQUEST';
-    const RAVEN_ASYNC_REQUEST_FAILED                = 'RAVEN_ASYNC_REQUEST_FAILED';
     const RAVEN_RESPONSE                            = 'RAVEN_RESPONSE';
+    const RAVEN_ASYNC_REQUEST_FAILED                = 'RAVEN_ASYNC_REQUEST_FAILED';
+    const LUMBERJACK_ASYNC_REQUEST_FAILED           = 'LUMBERJACK_ASYNC_REQUEST_FAILED';
 
     const EXCHANGE_REQUEST                          = 'EXCHANGE_REQUEST';
     const EXCHANGE_RESPONSE                         = 'EXCHANGE_RESPONSE';
@@ -805,7 +807,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     // Trace code for Merchant Invoices
     const MERCHANT_INVOICE_ENTITY_CREATION_FAILED       = 'MERCHANT_INVOICE_ENTITY_CREATION_FAILED';
+    const MERCHANT_INVOICE_BULK_CREATE                  = 'MERCHANT_INVOICE_BULK_CREATE';
     const MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED      = 'MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED';
+    const MERCHANT_INVOICE_REPORT_REQUEST               = 'MERCHANT_INVOICE_REPORT_REQUEST';
 
     const DUMMY_JOB = 'DUMMY_JOB';
 

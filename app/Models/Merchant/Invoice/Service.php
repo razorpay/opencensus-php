@@ -8,6 +8,11 @@ class Service extends Base\Service
 {
     public function createInvoiceEntities(array $input)
     {
-        return (new Core())->queueCreateInvoiceEntities($input);
+        return (new Core)->queueCreateInvoiceEntities($input);
+    }
+
+    public function createMulitpleInvoiceEntities(array $input)
+    {
+        (new Core)->createMulitpleInvoiceEntities($input);
     }
 }
