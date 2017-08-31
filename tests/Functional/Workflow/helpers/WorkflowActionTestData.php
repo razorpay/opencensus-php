@@ -184,4 +184,35 @@ return [
             ],
         ],
     ],
+    'testWorkflowCloseAction' => [
+        'request' => [
+            'method'    => 'PUT',
+            'url'       => '/w-actions/close/%s',
+        ],
+        'response' => [
+            'content' => [
+                "state"         => "closed",
+                "approved"      => false,
+            ]
+        ]
+    ],
+    'testWorkflowCanOnlyBeClosedByMaker' => [
+        'request' => [
+            'method'    => 'PUT',
+            'url'       => '/w-actions/close/%s',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'An action can only be closed by maker',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_CLOSE_UNAUTHORIZED,
+        ],
+    ]
 ];

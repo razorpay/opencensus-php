@@ -203,7 +203,7 @@ class WorkflowActionTest extends TestCase
 
     public function testWorkflowActionRejection()
     {
-        //This will create a wf action in Mysql and ES,not using default workflow.
+        // This will create a wf action in Mysql and ES, not using default workflow.
         $workflow = $this->editAdmin('org_' . Org::RZP_ORG, Org::CHECKER_ADMIN_SIGNED);
 
         //ES is not so Real Time
@@ -220,7 +220,7 @@ class WorkflowActionTest extends TestCase
 
     public function testWorkflowActionExecuteLastApproval()
     {
-        //This will create a wf action in Mysql and ES,not using default workflow.
+        // This will create a wf action in Mysql and ES, not using default workflow.
         $workflow = $this->editAdmin(Org::RZP_ORG_SIGNED, Org::CHECKER_ADMIN_SIGNED);
 
         sleep(1);
@@ -232,6 +232,37 @@ class WorkflowActionTest extends TestCase
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
         $url = sprintf($url, $workflow['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testWorkflowCloseAction()
+    {
+        // This will create a wf action in Mysql and ES, not using default workflow.
+        $workflow = $this->editAdmin(Org::RZP_ORG_SIGNED, Org::CHECKER_ADMIN_SIGNED);
+
+        sleep(1);
+
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $workflow['id']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testWorkflowCanOnlyBeClosedByMaker()
+    {
+        // This will create a wf action in Mysql and ES, not using default workflow.
+        $workflow = $this->editAdmin(Org::RZP_ORG_SIGNED, Org::CHECKER_ADMIN_SIGNED);
+
+        sleep(1);
+
+        // Try to close as a different user
+        $this->ba->adminAuth('test', Org::MAKER_TOKEN, Org::RZP_ORG_SIGNED);
+
+        $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $workflow['id']);
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
