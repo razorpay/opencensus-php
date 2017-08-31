@@ -150,8 +150,8 @@ final class Route
         'merchant_beneficiary_file'               => ['get',      'merchants/beneficiary/file',                     'MerchantController@getMerchantBeneficiaryFile'                     ],
         'merchant_post_beneficiary_file'          => ['post',     'merchants/beneficiary/file/bank',                'MerchantController@postMerchantBeneficiaryFile'                    ],
         'merchant_notify_holiday'                 => ['post',     'merchants/notify/holiday',                       'MerchantController@postMerchantsNotifyHoliday'                     ],
-        'merchant_invoice_update_gstin'           => ['put',      'merchants/{id}/invoice/gstin',                    'MerchantInvoiceController@updateGstin'                             ],
-        'merchant_create_invoice_entities'        => ['post',     'merchants/invoice/create',                      'MerchantInvoiceController@postCreateInvoiceEntities'               ],
+        'merchant_invoice_update_gstin'           => ['put',      'merchants/{id}/invoice/gstin',                   'MerchantInvoiceController@updateGstin'                             ],
+        'merchant_create_invoice_entities'        => ['post',     'merchants/invoice/create',                       'MerchantInvoiceController@postCreateInvoiceEntities'               ],
         'balance_fetch'                           => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'credits_create'                          => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
         'credits_fetch_by_id'                     => ['get',      'merchants/{mid}/credits/{id}',                   'MerchantController@getCreditsLog'                                  ],
@@ -565,9 +565,9 @@ final class Route
         'promotion_create'                        => ['post',     'promotions',                                     'PromotionController@create'                                        ],
         'promotion_update'                        => ['patch',    'promotions/{id}',                                'PromotionController@update'                                        ],
         //coupon routes
-        'coupon_create'                           => ['post',     'coupons',                                         'CouponController@create'                                          ],
-        'coupon_apply'                            => ['post',     'coupons/apply',                                   'CouponController@apply'                                           ],
-        'coupon_delete'                           => ['delete',   'coupons/{id}',                                    'CouponController@delete'                                          ],
+        'coupon_create'                           => ['post',     'coupons',                                        'CouponController@create'                                           ],
+        'coupon_apply'                            => ['post',     'coupons/apply',                                  'CouponController@apply'                                            ],
+        'coupon_delete'                           => ['delete',   'coupons/{id}',                                   'CouponController@delete'                                           ],
         // Merchant invitation routes
         'invitation_create'                       => ['post',     'invitations',                                    'InvitationController@create'                                       ],
         'invitation_fetch_by_token'               => ['get',      'invitations/token/{token}',                      'InvitationController@fetchByToken'                                 ],

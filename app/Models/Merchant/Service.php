@@ -1177,14 +1177,9 @@ class Service extends Base\Service
     {
         $merchantId = $this->merchant->getId();
 
-        $merchantIds = [$merchantId];
+        $merchants = $this->fetchReferredMerchants();
 
-        if (isset(self::AGGREGATOR_MERCHANT_MAP[$merchantId]) === true)
-        {
-            $merchantIds = array_merge($merchantIds, self::AGGREGATOR_MERCHANT_MAP[$merchantId]);
-        }
-
-        return $merchantIds;
+        return array_merge([$merchantId], $merchants->pluck('id')->toArray());
     }
 
     /**
