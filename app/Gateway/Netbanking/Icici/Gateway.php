@@ -112,6 +112,12 @@ class Gateway extends Base\Gateway
         $this->checkSecondRecurringStatus($responseArray);
     }
 
+    /*
+     * PAID tells us whether the payment was a success. Can be a Y or N.
+     * STATUS gives us more information on the success / failure case.
+     *
+     * @param array $response
+     */
     protected function checkSecondRecurringStatus(array $response)
     {
         // TODO: To check the values of Status in case of both
@@ -119,7 +125,7 @@ class Gateway extends Base\Gateway
         // accordingly.
 
         if ((empty($response[ResponseFields::STATUS]) === true) or
-            ($response[ResponseFields::STATUS] !== Status::SUCCESS))
+            ($response[ResponseFields::STATUS] !== Status::LCF_SUCCESS))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
@@ -515,7 +521,7 @@ class Gateway extends Base\Gateway
     {
         return [
             Base\Entity::RECEIVED        => true,
-            Base\Entity::STATUS          => $content[ResponseFields::PAID] ?? $content[ResponseFields::STATUS],
+            Base\Entity::STATUS          => $content[ResponseFields::PAID],
             Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_PAYMENT_ID],
             // TODO: Find out which one is sent and fix this accordingly.
             Base\Entity::SI_REF_ID       => $content[ResponseFields::SI_REFERENCE_ID] ??

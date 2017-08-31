@@ -51,7 +51,8 @@ class Server extends Base\Mock\Server
             ResponseFields::SI_REFERENCE_ID => $input[RequestFields::SI_REFERENCE_NUMBER],
             ResponseFields::PAYMENT_DATE    => $input[RequestFields::SI_DEBIT_PAYMENT_DATE],
             ResponseFields::BANK_PAYMENT_ID => 9999999999,
-            ResponseFields::STATUS          => Status::SUCCESS
+            ResponseFields::PAID            => Confirmation::YES,
+            ResponseFields::STATUS          => Status::LCF_SUCCESS
         ];
 
         $this->content($responseArray, 'second_recurring');

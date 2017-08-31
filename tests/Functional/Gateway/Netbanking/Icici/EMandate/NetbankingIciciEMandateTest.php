@@ -85,6 +85,38 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEMandateEntities(false);
     }
 
+    public function testEMandateScheduledPaymentFailure()
+    {
+        $payment = $this->payment;
+
+        $this->doAuthPayment($payment);
+
+        $this->assertEMandateEntities();
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $payment['token'] = $paymentEntity['token_id'];
+
+        $this->mockScheduledPaymentFailure();
+
+        $data = $this->testData[__FUNCTION__];
+
+        //
+        // Second auth payment for the recurring product
+        //
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doS2SRecurringPayment($payment);
+            });
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        // For failed payments, si requests and debit requests, the status is a N
+        $this->assertEquals('N', $netbanking['status']);
+    }
+
     public function testEMandateSiRejected()
     {
         $this->mockRejectedToken();
@@ -329,6 +361,19 @@ class NetbankingIciciEMandateTest extends TestCase
             });
     }
 
+    protected function mockScheduledPaymentFailure()
+    {
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                if ($action === 'second_recurring')
+                {
+                    $content['PAID'] = 'N';
+                    $content['STATUS'] = 'PaymentDateOverdue';
+                }
+            });
+    }
+
     protected function assertEMandateRejectedToken()
     {
         // Assert that the token was rejected
@@ -366,6 +411,9 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEquals(true, $token['recurring']);
         $this->assertEquals(100000, $token['max_amount']);
         $this->assertEquals('confirmed', $token['recurring_status']);
+
+        // For successful payments, si requests and debit requests, the status is a Y
+        $this->assertEquals('Y', $netbanking['status']);
     }
 
     protected function assertEMandateInitialTokenSaveFailed($expectedSiStatus = 'C')
