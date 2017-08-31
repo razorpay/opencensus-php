@@ -22,15 +22,6 @@ class Repository extends BaseRepository
                     ->get();
     }
 
-    public function fetchByActionId(string $actionId)
-    {
-        Action\Entity::verifyIdAndSilentlyStripSign($actionId);
-
-        return $this->newQuery()
-                    ->where(self::ACTION_ID, '=', $actionId)
-                    ->get();
-    }
-
     public function findByIdAndOrgIdWithRelations($id, $orgId, $relations = [])
     {
         Org\Entity::verifyIdAndSilentlyStripSign($orgId);
