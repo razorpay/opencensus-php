@@ -94,12 +94,19 @@ export default class ReportsContainer extends Component {
     this.setState({
       entity: this.entityOptions[1],
     });
+
+    this.validateInvoiceMonthYear = this.validateInvoiceMonthYear.bind(this);
   }
 
   componentWillReceiveProps(nextProps) {
     // set the date to 1st of current month otherwise e.g, if 30 Aug changes to Feb then date becomes 30, making it select March!
     if (this.props.type === 'daily' && nextProps.type === 'monthly') {
       this.props.change('date', this.props.date.startOf('month'));
+    } else if (
+      this.props.entity !== 'invoice' &&
+      nextProps.entity === 'invoice'
+    ) {
+      this.props.change('invoiceDate', this.props.invoiceDate.startOf('month'));
     }
   }
 
@@ -476,7 +483,7 @@ export default class ReportsContainer extends Component {
                         closeOnSelect={true}
                         isValidDate={
                           entity === 'invoice'
-                            ? this.validateInvoiceMonthYear.bind(this)
+                            ? this.validateInvoiceMonthYear
                             : validYear
                         }
                         placeholder="Select Year-Month"
