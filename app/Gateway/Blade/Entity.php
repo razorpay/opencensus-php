@@ -8,35 +8,36 @@ use RZP\Constants;
 class Entity extends Base\Entity
 {
     const ID                     = 'id';
+    const ACQUIRER               = 'acquirer';
     const AMOUNT                 = 'amount';
-    const PARES_STATUS           = 'pares_status';
     const STATUS                 = 'status';
     const CAVV                   = 'cavv';
+    const CAVV_ALGORITHM         = 'cavv_algorithm';
     const ECI                    = 'eci';
     const XID                    = 'xid';
-    const VERES_ENROLLED         = 'veresEnrolled';
+    const ENROLLED               = 'enrolled';
     const CURRENCY               = 'currency';
+    const MER_ID                 = 'merID';
 
     protected $fields = [
         self::ID,
-        self::VERES_ENROLLED,
+        self::ENROLLED,
         self::AMOUNT,
         self::CURRENCY,
         self::STATUS,
         self::ECI,
-        self::PARES_STATUS,
         self::CAVV,
+        self::CAVV_ALGORITHM,
         self::XID,
+        self::MER_ID,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
 
     protected $fillable = [
-        self::VERES_ENROLLED,
+        self::ENROLLED,
         self::ECI,
-        self::PARES_STATUS,
         self::CAVV,
-        self::PARES_STATUS,
         self::XID,
         self::STATUS,
         self::RECEIVED
@@ -90,14 +91,9 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::XID);
     }
 
-    public function getParesStatus()
+    public function getEnrolled()
     {
-        return $this->getAttribute(self::PARES_STATUS);
-    }
-
-    public function getVeresEnrolled()
-    {
-        return $this->getAttribute(self::VERES_ENROLLED);
+        return $this->getAttribute(self::ENROLLED);
     }
 
     public function setStatus($status)
