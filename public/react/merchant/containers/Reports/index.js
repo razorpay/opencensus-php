@@ -16,16 +16,6 @@ function validYear(current) {
   return current._d.getTime() <= Date.now() && current.year() >= 2015;
 }
 
-function validateInvoiceMonthYear(current) {
-  const currDate = new Date(),
-    tillPrevMonth =
-      currDate.getFullYear() === current.year()
-        ? current.month() < 6 // 6 = July
-        : true;
-
-  return validYear(current) && tillPrevMonth;
-}
-
 const selector = formValueSelector('generateReports');
 
 @connect(
@@ -92,6 +82,12 @@ export default class ReportsContainer extends Component {
         merchantAccounts: merchantAccounts,
         merchantSelected: merchantAccounts[0],
       });
+    }
+
+    this.isGSTEnabled = user.isGSTEnabled;
+
+    if (this.isGSTEnabled) {
+      this.props.change('invoiceDate', moment().subtract('months', 1));
     }
 
     // Select default report type
@@ -268,6 +264,20 @@ export default class ReportsContainer extends Component {
           message: 'No data found for given time range',
         });
       });
+  };
+
+  validateInvoiceMonthYear = current => {
+    const isGSTEnabled = this.isGSTEnabled;
+
+    const currDate = new Date(),
+      tillPrevMonth =
+        currDate.getFullYear() === current.year()
+          ? isGSTEnabled
+            ? current.month() < currDate.getMonth()
+            : current.month() < 6 // 6 = July
+          : true;
+
+    return validYear(current) && tillPrevMonth;
   };
 
   render() {
@@ -466,7 +476,7 @@ export default class ReportsContainer extends Component {
                         closeOnSelect={true}
                         isValidDate={
                           entity === 'invoice'
-                            ? validateInvoiceMonthYear
+                            ? this.validateInvoiceMonthYear.bind(this)
                             : validYear
                         }
                         placeholder="Select Year-Month"
