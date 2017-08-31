@@ -381,9 +381,9 @@ class Gateway extends Base\Gateway
 
         //TODO : check if iReqDetail validation needs to be done
         //Test case 42e-11-VERes
-        (new JitValidator)->rules(Validator::$veresRules)
-                          ->input($response)
-                          ->validate();
+        (new Validator)->rules(Validator::$veresRules)
+                       ->input($response)
+                       ->validate();
 
         if ($response['Message']['@attributes']['id'] !== $input['payment']['public_id'])
         {

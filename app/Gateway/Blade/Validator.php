@@ -98,7 +98,7 @@ class Validator extends JitValidator
     protected function processValidationFailure($messages, $operation, $input)
     {
         throw new Exception\GatewayErrorException(
-            ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
+            ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
             $messages);
     }
 }
