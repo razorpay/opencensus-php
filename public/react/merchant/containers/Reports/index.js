@@ -84,9 +84,7 @@ export default class ReportsContainer extends Component {
       });
     }
 
-    this.isGSTEnabled = user.isGSTEnabled;
-
-    if (this.isGSTEnabled) {
+    if (user.isGSTEnabled) {
       this.props.change('invoiceDate', moment().subtract('months', 1));
     }
 
@@ -274,7 +272,7 @@ export default class ReportsContainer extends Component {
   };
 
   validateInvoiceMonthYear = current => {
-    const isGSTEnabled = this.isGSTEnabled;
+    const isGSTEnabled = this.props.user.isGSTEnabled;
 
     const currDate = new Date(),
       tillPrevMonth =
