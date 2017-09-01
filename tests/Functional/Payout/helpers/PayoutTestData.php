@@ -30,7 +30,7 @@ return [
                 'customer_id' => 'cust_100000customer',
                 'method'      => 'fund_transfer',
                 'destination' => 'ba_1000000lcustba',
-                'service_tax' => 92,
+                //'service_tax' => 92,
                 'tax'         => 92,
                 'fees'        => 602,
                 'notes'       => [
@@ -59,7 +59,7 @@ return [
                 'customer_id' => 'cust_100000customer',
                 'method'      => 'fund_transfer',
                 'destination' => 'ba_1000000lcustba',
-                'service_tax' => 92,
+                //'service_tax' => 92,
                 'tax'         => 92,
                 'fees'        => 602,
                 'notes'       => []
@@ -87,7 +87,7 @@ return [
                 'customer_id' => 'cust_100000customer',
                 'method'      => 'fund_transfer',
                 'destination' => 'ba_1000000lcustba',
-                'service_tax' => 92,
+                //'service_tax' => 92,
                 'tax'         => 92,
                 'fees'        => 602,
                 'notes'       => []
