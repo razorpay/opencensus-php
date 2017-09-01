@@ -331,7 +331,8 @@ class Handler extends ExceptionHandler
         {
             $data = $e->getData();
 
-            if (method_exists($data, 'toArray'))
+            if ((is_object($data) === true) and
+                (method_exists($data, 'toArray') === true))
             {
                 $data = $data->toArray();
             }
