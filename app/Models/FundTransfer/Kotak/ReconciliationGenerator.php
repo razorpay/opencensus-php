@@ -180,15 +180,15 @@ class ReconciliationGenerator
         {
             $from = Carbon::createFromFormat('Y-m-d', $input['on'], Timezone::IST)->setTime(0,0,0);
 
-            $startTimestamp = $from->timestamp;
+            $startTimestamp = $from->getTimestamp();
 
-            $endTimestamp = $from->addDay()->timestamp - 1;
+            $endTimestamp = $from->addDay()->getTimestamp() - 1;
         }
         else
         {
-            $startTimestamp = Carbon::today("Asia/Kolkata")->timestamp;
+            $startTimestamp = Carbon::today("Asia/Kolkata")->getTimestamp();
 
-            $endTimestamp = Carbon::tomorrow("Asia/Kolkata")->timestamp - 1;
+            $endTimestamp = Carbon::tomorrow("Asia/Kolkata")->getTimestamp() - 1;
         }
 
         return [$startTimestamp, $endTimestamp];

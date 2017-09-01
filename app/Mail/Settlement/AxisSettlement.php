@@ -22,7 +22,6 @@ class AxisSettlement extends Base
             'bhupendra.kambli@axisbank.com',
             'ganesh.kotian@axisbank.com',
             'lavania.peter@axisbank.com',
-            'mangesh.bosle@axisbank.com',
             'prasad.shinde@axisbank.com',
             'anushree.mahapadi@axisbank.com',
             'sona.hindalekar@axisbank.com',
@@ -44,7 +43,7 @@ class AxisSettlement extends Base
 
     protected function addMailData()
     {
-        $this->data['body'] = 'Kindly approve attached transaction details.';
+        $this->data['body'] = 'Kindly approve the attached transaction details.';
 
         $this->with($this->data);
 
@@ -55,7 +54,7 @@ class AxisSettlement extends Base
     {
         $today = Carbon::today(Timezone::IST)->format('d-m-Y');
 
-        $subject = "Razorpay Axis Settlement File for $today";
+        $subject = "Axis Transfer File for $today";
 
         $this->subject($subject);
 

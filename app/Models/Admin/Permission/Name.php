@@ -69,6 +69,7 @@ class Name
     const DELETE_TERMINAL                     = 'delete_terminal';
     const EDIT_TERMINAL                       = 'edit_terminal';
     const CREATE_SETTLEMENTS_RECONCILE        = 'create_settlements_reconcile';
+    const RETRY_SETTLEMENT                    = 'retry_settlement';
     const CREATE_RECONCILIATE                 = 'create_reconciliate';
     const VIEW_ACTIVATION_FORM                = 'view_activation_form';
     const EDIT_MERCHANT_LOCK_ACTIVATION       = 'edit_merchant_lock_activation';

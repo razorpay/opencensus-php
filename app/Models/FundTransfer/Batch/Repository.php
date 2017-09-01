@@ -5,6 +5,7 @@ namespace RZP\Models\FundTransfer\Batch;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Base;
+use RZP\Models\Settlement;
 
 class Repository extends Base\Repository
 {
@@ -28,7 +29,7 @@ class Repository extends Base\Repository
     {
         if (isset($params['date']))
         {
-            $timestamp = Carbon::createFromFormat('dmY', $params['date'], Timezone::IST)->timestamp;
+            $timestamp = Carbon::createFromFormat('dmY', $params['date'], Timezone::IST)->getTimestamp();
 
             $query->where(Daily\Entity::DATE, '=', $params['date']);
         }

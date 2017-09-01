@@ -235,7 +235,7 @@ class ReconciliationTest extends TestCase
             'content' => []
         ];
 
-        $this->ba->appAuthMode();
+        $this->ba->adminAuth();
 
         $this->runRequestResponseFlow($data, function() use ($request)
         {

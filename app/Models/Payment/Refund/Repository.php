@@ -421,7 +421,7 @@ class Repository extends Base\Repository
         $pId = $pRepo->dbColumn(Payment\Entity::ID);
         $pGateway = $pRepo->dbColumn(Payment\Entity::GATEWAY);
 
-        $timeLimit = Carbon::now(Timezone::IST)->subMinutes(30)->timestamp;
+        $timeLimit = Carbon::now(Timezone::IST)->subMinutes(30)->getTimestamp();
 
         // TODO: If the number of gateways exceeds by half of total,
         // inverse the `whereIn` condition.
