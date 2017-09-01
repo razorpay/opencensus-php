@@ -1,6 +1,8 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
+import { TypeAhead } from 'react-power-select';
+import { findBy } from 'rzp/utils/rzp-utils';
 import AsyncButton from 'react-async-button';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import { showNotification } from 'rzp/modules/notifications';
@@ -8,7 +10,11 @@ import { closeModal } from 'rzp/modules/modals';
 import { luminateRow } from 'merchant/modules/app';
 import { saveVirtualAccount } from 'merchant/modules/virtualaccounts';
 import { fetchConfig } from 'merchant/modules/config';
+import { fetchCustomersForAutocomplete } from 'merchant/modules/customers';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
+import CustomerCreation from 'merchant/containers/Customers/New';
+import QuickAddComponent from 'rzp/ui/Select/QuickAdd';
+import * as ModalActions from 'rzp/modules/modals';
 
 const VirtualAccountDetails = ({ virtualAccount }) => {
   let bankAccount = virtualAccount.receivers[0];
@@ -20,17 +26,29 @@ const VirtualAccountDetails = ({ virtualAccount }) => {
 
       <div class="form-group">
         <div class="text-muted">Account Number</div>
-        <div><b>{bankAccount.account_number}</b></div>
+        <div>
+          <b>
+            {bankAccount.account_number}
+          </b>
+        </div>
       </div>
 
       <div class="form-group">
         <div class="text-muted">Beneficiary Name</div>
-        <div><b>{virtualAccount.name}</b></div>
+        <div>
+          <b>
+            {virtualAccount.name}
+          </b>
+        </div>
       </div>
 
       <div class="form-group">
         <div class="text-muted">IFSC Code</div>
-        <div><b>{bankAccount.ifsc}</b></div>
+        <div>
+          <b>
+            {bankAccount.ifsc}
+          </b>
+        </div>
       </div>
 
       <CustomClipboard
@@ -47,8 +65,11 @@ const VirtualAccountDetails = ({ virtualAccount }) => {
 const selector = formValueSelector('createVirtualAccount');
 @connect(
   state => {
+    const customers = state.customers.items;
     return {
       descriptor: selector(state, 'descriptor'),
+      customers,
+      customer: findBy(customers, 'id', selector(state, 'customer_id')),
       ...state.config.config,
     };
   },
@@ -58,6 +79,8 @@ const selector = formValueSelector('createVirtualAccount');
     showNotification,
     saveVirtualAccount,
     fetchConfig,
+    fetchCustomersForAutocomplete,
+    ...ModalActions,
   }
 )
 @reduxForm({
@@ -68,6 +91,16 @@ export default class CreateVirtualAccount extends Component {
 
   componentWillMount() {
     this.props.fetchConfig();
+    this.props.fetchCustomersForAutocomplete();
+  }
+
+  componentWillReceiveProps(nextProps) {
+    // Prepoluate field (Just to display in customer selection. Actual value is props.customer_id, and it's already init through redux-form)
+    if (!this.state.customerId && this.props.customer !== nextProps.customer) {
+      this.setState({
+        customerId: nextProps.customer,
+      });
+    }
   }
 
   save = props => {
@@ -85,8 +118,55 @@ export default class CreateVirtualAccount extends Component {
       });
   };
 
+  selectCustomerAndCloseModal = customer => {
+    this.props.change('customer_id', customer.id);
+    this.props.closeModal();
+    setTimeout(this.props.showCreateVAModal, 500); // To open create virtual account modal automatically with pre-selected customer name
+  };
+
+  quickCreateCustomer = ({ searchTerm = '' }) => {
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <CustomerCreation
+          saveLabel="Create and add this customer"
+          onSave={this.selectCustomerAndCloseModal}
+          customer={{
+            name: searchTerm,
+          }}
+        />
+      ),
+    });
+  };
+
+  handleChange = () => {
+    setTimeout(() =>
+      document
+        .getElementsByClassName('virtual-account-powerselect__Menu')[0]
+        .parentNode.classList.add('super-impose')
+    );
+  };
+
+  handleSelect = ({ option }) => {
+    // For setting in redux-form
+    if (option) {
+      this.props.change('customer_id', option.id);
+    } else {
+      this.props.untouch('createVirtualAccount', 'customer_id');
+    }
+
+    // For display purpose only in TypeAhead
+    this.setState({ customerId: option });
+  };
+
   render() {
-    const { handleSubmit, handle = '', descriptor = '' } = this.props;
+    const {
+      handleSubmit,
+      untouch,
+      handle = '',
+      descriptor = '',
+      customers = [],
+    } = this.props;
     const { virtualAccount } = this.state;
 
     return (
@@ -105,16 +185,49 @@ export default class CreateVirtualAccount extends Component {
             ? <VirtualAccountDetails virtualAccount={virtualAccount} />
             : <form onSubmit={handleSubmit(this.save)}>
                 <div class="form-group">
-                  <label>Account Description</label>
+                  <label>Customer (Optional)</label>
+                  <TypeAhead
+                    options={customers}
+                    disabled={!customers.length}
+                    class="virtual-account-powerselect"
+                    placeholder={`${!customers.length
+                      ? 'Loading...'
+                      : 'Select a customer'}`}
+                    showClear={true}
+                    selected={this.state.customerId}
+                    selectedOptionLabelPath="selectedDisplayName"
+                    optionComponent={({ option }) => {
+                      return (
+                        <div class="custom-powerselect-options">
+                          {option.name &&
+                            <b>
+                              {option.name} :{' '}
+                            </b>}
+                          {option.email || option.contact}
+                        </div>
+                      );
+                    }}
+                    onClick={this.handleChange}
+                    onChange={this.handleSelect}
+                    afterOptionsComponent={select =>
+                      <QuickAddComponent
+                        {...select}
+                        onClick={this.quickCreateCustomer}
+                      />}
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label>Account Description (Optional)</label>
                   <Field
                     name="description"
                     class="form-control"
                     component="input"
                     required={true}
-                    autoFocus={true}
                   />
                   <small class="help-block">
-                    Account description is only displayed on the dashboard and is not shared with the customer.
+                    Account description is only displayed on the dashboard and
+                    is not shared with the customer.
                   </small>
                 </div>
 
@@ -137,7 +250,8 @@ export default class CreateVirtualAccount extends Component {
                         }}
                       />
                       <small class="help-block">
-                        Descriptor will be a part of the account number generated.
+                        Descriptor will be a part of the account number
+                        generated.
                       </small>
                     </div>
                   : null}
@@ -147,12 +261,15 @@ export default class CreateVirtualAccount extends Component {
                     ? <div class="pull-left">
                         <div>Account Number</div>
                         <b>
-                          RZRP{handle}{descriptor}
+                          RZRP{handle}
+                          {descriptor}
                         </b>
                       </div>
                     : null}
                   <AsyncButton
-                    class={`btn btn-primary ${handle ? 'pull-right' : 'btn-block'}`}
+                    class={`btn btn-primary ${handle
+                      ? 'pull-right'
+                      : 'btn-block'}`}
                     text="Create"
                     pendingText="Creating..."
                     onClick={handleSubmit(this.save)}

@@ -35,9 +35,9 @@ class Authenticate {
 	 */
 	public function handle($request, Closure $next)
 	{
-		if ($this->auth->guest())
+		if ($this->auth->guest() === true)
 		{
-			if ($request->ajax())
+			if ($request->ajax() === true)
 			{
 				return response('Unauthorized.', 401);
 			}

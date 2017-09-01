@@ -56,6 +56,16 @@ export default props => {
                   />
 
                   <EntityDetailRow
+                    label="Customer Id"
+                    value={virtualaccount.customer_id}
+                  />
+
+                  <EntityDetailRow
+                    label="Customer Id"
+                    value={virtualaccount.customer_id}
+                  />
+
+                  <EntityDetailRow
                     label="Created At"
                     value={() =>
                       <Time

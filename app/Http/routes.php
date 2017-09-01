@@ -37,6 +37,10 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/password/reset', 'PasswordController@postRemind');
         Route::post('/password/reset/{token}', 'PasswordController@postReset');
         Route::get('/invitations/token/{token}', 'InvitationsController@fetchByToken');
+      
+        // Adding the following here since auth:user middleware should be after cors
+        Route::options('/session', 'UserController@getSessionData')->middleware(['cors', 'auth:user']);
+        Route::get('/session', 'UserController@getSessionData')->middleware(['cors', 'auth:user']);
     });
 
     Route::group(['middleware' => 'auth:user', 'prefix' => 'user'], function()
@@ -71,7 +75,6 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::get('/keys/csv', 'MerchantController@getCsv');
         Route::get('/apihost', 'MerchantController@getApihost');
-        Route::get('/referrals', 'MerchantController@getReferredMerchants')->name('referred_merchants_list');
         Route::get('/{mode}/reports/broking', 'TransactionController@getTransactionBrokingReport')->name('reports_broking');
         Route::get('/{mode}/reports/invoice', 'TransactionController@getInvoiceReport')->name('reports_invoice');
         Route::get('/{mode}/reports/{entity}', 'TransactionController@getResourceReport')->name('reports_entity');
@@ -111,8 +114,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/merchant/{id}/details', 'AdminController@getMerchantDetails');
 
         Route::post('/admin/features/{entityType}/{entityId}', 'AdminController@addEntityFeatures');
-        Route::delete('/admin/features/{entityId}/{featureName}', 'AdminController@deleteEntityFeature')
-                ->name('admin_delete_features');
 
         Route::get('/admin/merchant/{id}/login', 'AdminController@getMerchantLogin')
                ->name('admin_merchant_login');
@@ -177,3 +178,9 @@ Route::group(['middleware' => ['auth.cron']], function()
     Route::post('/{mode}/analytics/aggregations/day', 'AdminController@updateDayAggregations');
     Route::post('/{mode}/analytics/aggregations/{type}', 'TransactionController@updateTypeAggregations');
 });
+
+Route::group(['middleware' => ['auth.oauth']], function()
+{
+    Route::get('/user/token/{token}/details', 'UserController@getDetailsFromToken');
+});
+

@@ -1210,46 +1210,6 @@ class Service extends Base\Service
         return array($error, null);
     }
 
-    public function deleteEntityFeature($entityId, $featureName)
-    {
-        try
-        {
-            $this->deleteFeature($entityId, $featureName);
-
-            $this->setApiCredentials();
-
-            $features = $this->api->feature->getFeatures($entityId);
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        if (empty($error))
-        {
-            $this->removeMerchantTag($entityId, $featureName);
-
-            return [null, $features];
-        }
-
-        return [$error, null];
-    }
-
-    public function deleteFeature($entityId, $featureName)
-    {
-        $deleteFeature = [
-            'route_name' => 'feature_delete',
-            'url_params' => [
-                '{entityId}'    => $entityId,
-                '{featureName}' => $featureName
-            ],
-        ];
-
-        $genericService = new Generic\Service;
-
-        list($error, $data) = $genericService->call('DELETE', $deleteFeature);
-    }
-
     private function removeMerchantTag($entityId, $featureName)
     {
         $merchant = Merchant\Entity::findOrFail($entityId);

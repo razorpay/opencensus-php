@@ -6,7 +6,7 @@ const QuickAdd = ({ select, label, appendSearchTerm, onClick }) => {
       class="quick-create"
       onClick={() => {
         onClick(select);
-        select.close();
+        select.close && select.close();
       }}
     >
       <i class="icon icon-plus" />

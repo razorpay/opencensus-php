@@ -304,7 +304,8 @@ angular
     '$timeout',
     '$idle',
     function($q, $http, $timeout, $idle) {
-      var _identity, _authenticated = false;
+      var _identity,
+        _authenticated = false;
       return {
         isIdentityResolved: function() {
           return angular.isDefined(_identity);
@@ -1078,11 +1079,13 @@ angular
           axis_migs: 'Axis Migs',
           cybersource: 'Cybersource',
           amex: 'Amex',
+          sharp: 'Sharp',
         },
         gatewayEmiMap: {
           amex: 'Amex',
           hdfc: 'FSS',
           first_data: 'First Data',
+          sharp: 'Sharp',
         },
         gatewayNBMap: {
           netbanking_hdfc: 'HDFC Netbanking',
@@ -1095,6 +1098,7 @@ angular
           netbanking_indusind: 'IndusInd netbanking',
           billdesk: 'Billdesk',
           ebs: 'Ebs',
+          sharp: 'Sharp',
         },
         gatewayWalletMap: {
           mobikwik: 'Mobikwik',
@@ -1105,12 +1109,15 @@ angular
           wallet_payumoney: 'Payumoney',
           wallet_payzapp: 'Payzapp',
           wallet_mpesa: 'Mpesa',
+          wallet_sbibuddy: 'SbiBuddy',
           wallet_openwallet: 'Openwallet',
+          sharp: 'Sharp',
         },
         gatewayUpiMap: {
           upi_idfc: 'IDFC UPI',
           upi_icici: 'ICICI UPI',
           upi_mindgate: 'Mindgate/HDFC UPI',
+          sharp: 'Sharp',
         },
         walletMap: {
           payzapp: 'Payzapp',
