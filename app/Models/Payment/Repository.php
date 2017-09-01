@@ -958,7 +958,7 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->whereNotNull(Entity::TAX)
-                    //->whereNotNull(Entity::SERVICE_TAX)
+                    //->whereNotNull(Entity:: ̰SERVICE_TAX)
                     ->limit($limit)
                     ->update([Entity::TAX => DB::raw(Entity::TAX)]);
     }
