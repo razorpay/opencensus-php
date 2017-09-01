@@ -9,7 +9,7 @@ class Recurring
      * For charge at will payments, we don't off hand
      * how long the merchant wants the subscription to go on
      */
-    const MAX_END_DATE_FROM_NOW = 10;
+    const MAX_END_YEARS = 10;
 
     /**
      * Maximum amount that we should set the e-mandate

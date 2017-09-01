@@ -421,7 +421,7 @@ class Gateway
         return (($publicAuth === true) and
                 ($paymentRecurring === true) and
                 ($terminalRecurring === true) and
-                ($tokenRecurring === false));
+                ($tokenRecurring !== true));
     }
 
     public function generateRefunds($input)

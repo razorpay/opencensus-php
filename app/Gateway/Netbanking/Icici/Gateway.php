@@ -74,7 +74,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->createGatewayPaymentEntity($entity);
 
-        $requestData = $this->getSecondRecurringRequestData($input);
+        $requestData = $this->getSecondRecurringRequestData($input, $gatewayPayment);
 
         $request = $this->getStandardRequestArray($requestData, 'post', $this->getUrlType());
 
@@ -128,11 +128,9 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getSecondRecurringRequestData(array $input)
+    protected function getSecondRecurringRequestData(array $input, $gatewayPayment)
     {
         $gatewayToken = $input['token']->getGatewayToken();
-
-        $gatewayPayment = $this->repo->findBySIRefIdAndActionOrFail($gatewayToken, Action::AUTHORIZE);
 
         $baseRequestData = $this->getBaseRequestData(Action::STANDING_INSTRUCTIONS);
         $verifyRequestData = $this->getBaseVerifyRequestData($gatewayPayment, $input);
@@ -307,7 +305,7 @@ class Gateway extends Base\Gateway
             }
             else if ($verify->input['payment']['recurring'] === true)
             {
-//                TODO: Not all SI based payments are mapped to this success status - ensure this is right
+                // TODO: Not all SI based payments are mapped to this success status - ensure this is right
                 $verify->gatewaySuccess = ($status !== Status::SI_FAILED);
             }
             // Whereas, the retail verify success is success
@@ -421,7 +419,7 @@ class Gateway extends Base\Gateway
         $date = Carbon::now(Timezone::IST)->format('Y-m-d');
 
         $endDate = Carbon::now(Timezone::IST)
-                         ->addYears(Base\Recurring::MAX_END_DATE_FROM_NOW)
+                         ->addYears(Base\Recurring::MAX_END_YEARS)
                          ->format('Y-m-d');
 
         $data = [
@@ -525,6 +523,9 @@ class Gateway extends Base\Gateway
             Base\Entity::RECEIVED        => true,
             Base\Entity::STATUS          => $content[ResponseFields::PAID],
             Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_PAYMENT_ID],
+            //
+            // These fields are received in the callback of first recurring request
+            //
             // TODO: Find out which one is sent and fix this accordingly.
             Base\Entity::SI_REF_ID       => $content[ResponseFields::SI_REFERENCE_ID] ??
                                             $content[ResponseFields::SI_SCHEDULE_ID] ??
@@ -555,14 +556,14 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $verify->payment;
 
-        $attributes = $this->getAttributesFromPaymentAndContent($gatewayPayment, $content);
+        $attributes = $this->getVerifyAttributesFromPaymentAndContent($gatewayPayment, $content);
 
         $gatewayPayment->fill($attributes);
 
         $this->repo->saveOrFail($gatewayPayment);
     }
 
-    protected function getAttributesFromPaymentAndContent($gatewayPayment, $content)
+    protected function getVerifyAttributesFromPaymentAndContent($gatewayPayment, $content)
     {
         $attributes = [];
 
@@ -570,12 +571,12 @@ class Gateway extends Base\Gateway
 
         if ($this->shouldStatusBeUpdated($gatewayPayment) === true)
         {
-            $attributes[Base\Entity::STATUS] = $this->getConfirmationFromContent($content, $status);
+            $attributes[Base\Entity::STATUS] = $this->getVerifyConfirmationFromContent($content, $status);
         }
 
         if (empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true)
         {
-            $attributes[Base\Entity::BANK_PAYMENT_ID] = $this->getBankPaymentIdFromContent($content, $bankPaymentIdKey);
+            $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[$bankPaymentIdKey] ?? null;
         }
 
         return $attributes;
@@ -599,7 +600,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getConfirmationFromContent($content, $status)
+    protected function getVerifyConfirmationFromContent($content, $status)
     {
         $confirmation = Confirmation::NO;
 
@@ -612,11 +613,6 @@ class Gateway extends Base\Gateway
         }
 
         return $confirmation;
-    }
-
-    protected function getBankPaymentIdFromContent($content, $bankPaymentIdKey)
-    {
-        return $content[$bankPaymentIdKey] ?? null;
     }
 
     protected function getAuthSuccessStatus()
@@ -734,7 +730,7 @@ class Gateway extends Base\Gateway
     protected function isSecondRecurringPayment(array $input)
     {
         //
-        // of the customer's SI request is approved. This is a valid
+        // If the customer's SI request is approved. This is a valid
         // way of ensuring that this is a 2nd recurring payment
         //
         if ((isset($input['token']) === true) and

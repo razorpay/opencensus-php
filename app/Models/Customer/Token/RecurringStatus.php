@@ -11,7 +11,7 @@ class RecurringStatus
     const CONFIRMED = 'confirmed';
     const REJECTED  = 'rejected';
 
-    public static function isRecurringStatusValid($recurringStatus) : bool
+    public static function isRecurringStatusValid($recurringStatus): bool
     {
         return (defined(__CLASS__ . '::' . strtoupper($recurringStatus)));
     }
