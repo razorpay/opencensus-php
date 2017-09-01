@@ -500,6 +500,7 @@ class PublicErrorDescription
     const BAD_REQUEST_TOTAL_LOAD_EXCEEDS_MAX_LOAD                               = 'Load across all gateway rules must be less than 100 percent';
 
     const BAD_REQUEST_INVALID_OAUTH_MAIL_TYPE                                   = 'Invalid type sent for oauth mail.';
+    const BAD_REQUEST_AUTH_SERVICE_ERROR                                        = 'There was an error completing this request';
 
     const BAD_REQUEST_COUPON_LIMIT_REACHED                                      = 'Coupon code limit reached';
     const BAD_REQUEST_COUPON_ALREADY_USED                                       = 'Coupon code already used';

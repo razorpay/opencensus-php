@@ -480,6 +480,8 @@ class ErrorCode
     const SERVER_ERROR_GATEWAY_TOKENS_INVALID_COUNT                                 = 'SERVER_ERROR_GATEWAY_TOKENS_INVALID_COUNT';
     const SERVER_ERROR_LOG_RISK                                                     = 'SERVER_ERROR_LOG_RISK';
 
+    const SERVER_ERROR_AUTH_SERVICE_FAILURE                                         = 'SERVER_ERROR_AUTH_SERVICE_FAILURE';
+
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED                                     = 'BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED';
     const BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS                                  = 'BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS';
@@ -618,6 +620,7 @@ class ErrorCode
     const BAD_REQUEST_TOTAL_LOAD_EXCEEDS_MAX_LOAD                                   = 'BAD_REQUEST_TOTAL_LOAD_EXCEEDS_MAX_LOAD';
 
     const BAD_REQUEST_INVALID_OAUTH_MAIL_TYPE                                       = 'BAD_REQUEST_INVALID_OAUTH_MAIL_TYPE';
+    const BAD_REQUEST_AUTH_SERVICE_ERROR                                            = 'BAD_REQUEST_AUTH_SERVICE_ERROR';
 
     const BAD_REQUEST_COUPON_LIMIT_REACHED                                          = 'BAD_REQUEST_COUPON_LIMIT_REACHED';
     const BAD_REQUEST_COUPON_ALREADY_USED                                           = 'BAD_REQUEST_COUPON_ALREADY_USED';

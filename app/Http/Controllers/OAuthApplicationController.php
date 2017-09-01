@@ -3,10 +3,9 @@
 namespace RZP\Http\Controllers;
 
 use Request;
-use RZP\Base\JitValidator;
-use Trace;
 use ApiResponse;
 use RZP\Models\Merchant;
+use RZP\Base\JitValidator;
 
 use Razorpay\OAuth\Application;
 
@@ -17,21 +16,18 @@ class OAuthApplicationController extends Controller
      */
     protected $auth;
 
-    /**
-     * External Service Class
-     *
-     * @var \Razorpay\OAuth\Application\Service
-     */
-    protected $service = Application\Service::class;
+    protected $authservice;
 
     public function __construct()
     {
         parent::__construct();
 
         $this->auth = $this->app['basicauth'];
+
+        $this->authservice = $this->app['authservice'];
     }
 
-    public function createApplication()
+    public function create()
     {
         $input = Request::all();
 
@@ -41,18 +37,18 @@ class OAuthApplicationController extends Controller
 
         $input[Application\Entity::MERCHANT_ID] = $merchantId;
 
-        $app = $this->service()->createApplication($input);
+        $data = $this->authservice->createApplication($input);
 
-        return ApiResponse::json($app);
+        return ApiResponse::json($data);
     }
 
     public function get(string $id)
     {
         $merchantId = $this->auth->getMerchantId();
 
-        $app = $this->service()->fetch($id, $merchantId);
+        $data = $this->authservice->getApplication($id, $merchantId);
 
-        return ApiResponse::json($app);
+        return ApiResponse::json($data);
     }
 
     public function getMultiple()
@@ -63,18 +59,18 @@ class OAuthApplicationController extends Controller
 
         $input[Application\Entity::MERCHANT_ID] = $merchantId;
 
-        $apps = $this->service()->fetchMultiple($input);
+        $data = $this->authservice->getMultipleApplications($input);
 
-        return ApiResponse::json($apps);
+        return ApiResponse::json($data);
     }
 
     public function delete(string $id)
     {
         $merchantId = $this->auth->getMerchantId();
 
-        $this->service()->delete($id, $merchantId);
+        $data = $this->authservice->deleteApplication($id, $merchantId);
 
-        return ApiResponse::json([]);
+        return ApiResponse::json($data);
     }
 
     public function update(string $id)
@@ -87,9 +83,9 @@ class OAuthApplicationController extends Controller
 
         $input[Application\Entity::MERCHANT_ID] = $merchantId;
 
-        $app = $this->service()->update($id, $input);
+        $data = $this->authservice->updateApplication($id, $input);
 
-        return ApiResponse::json($app);
+        return ApiResponse::json($data);
     }
 
     /**
@@ -103,18 +99,20 @@ class OAuthApplicationController extends Controller
      */
     protected function addOrUploadImageIfApplicable(array & $input)
     {
-        if (isset($input['logo']) === true)
+        if (isset($input[Application\Entity::LOGO]) === true)
         {
+            $logoInput = array_only($input, [Application\Entity::LOGO]);
+
             (new JitValidator)->rules(['logo' => 'sometimes|file'])
-                              ->input($input)
+                              ->input($logoInput)
                               ->validate();
 
             // TODO: Move this out of Merchant namespace, and make generic
-            $logoUrl = (new Merchant\Logo)->setUpMerchantLogo($input);
+            $logoUrl = (new Merchant\Logo)->setUpMerchantLogo($logoInput);
 
             $input[Application\Entity::LOGO_URL] = $logoUrl;
 
-            unset($input['logo']);
+            unset($input[Application\Entity::LOGO]);
         }
     }
 }
