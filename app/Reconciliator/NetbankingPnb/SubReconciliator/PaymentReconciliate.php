@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\NetbankingPnb;
 
 use RZP\Reconciliator\Base;
+use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Pnb\Status;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
