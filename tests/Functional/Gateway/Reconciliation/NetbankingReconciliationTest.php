@@ -169,7 +169,7 @@ class NetbankingReconcilationTest extends TestCase
 
         $payment = $this->createFailedPayment($this->gateway);
 
-        $netbanking = $this->createNetbanking($payment['id'], 'PUNB', 'S');
+        $netbanking = $this->createNetbanking($payment['id'], 'PUNB', 'F');
 
         $fileContents = $this->generateFile('pnb', []);
 
