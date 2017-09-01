@@ -954,15 +954,6 @@ class Repository extends Base\Repository
                     ->sum(Entity::AMOUNT);
     }
 
-    public function updateTax(int $limit = 10000)
-    {
-        return $this->newQuery()
-                    ->whereNotNull(Entity::TAX)
-                    ->whereNotNull(Entity::̰SERVICE_TAX)
-                    ->limit($limit)
-                    ->update([Entity::TAX => DB::raw(Entity::TAX)]);
-    }
-
     public function fetchPendingEMandateRegistration(string $gateway, int $from, int $to)
     {
         $tokenIdColumn = $this->repo->token->dbColumn(Token\Entity::ID);
@@ -1033,4 +1024,5 @@ class Repository extends Base\Repository
                     ->with(['localToken', 'globalToken', 'merchant', 'order'])
                     ->get();
     }
+
 }
