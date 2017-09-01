@@ -176,6 +176,24 @@ class WorkflowActionTest extends TestCase
         $this->startTest();
     }
 
+    public function testWorkflowClosedActionApproveOrRejectShouldFail()
+    {
+        $defaultWorkflowClosedActionId = 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_CLOSED_ACTION_ID;
+
+        $this->fixtures->create('workflow_action:closed_workflow_action');
+
+        $url = sprintf(
+            $this->testData[__FUNCTION__]['request']['url'],
+            $defaultWorkflowClosedActionId);
+
+        // Assign url
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->adminAuth('test');
+
+        $this->startTest();
+    }
+
     public function testWorkflowActionApproveDiffRole()
     {
         $this->setDefaultActionIdInUrl();

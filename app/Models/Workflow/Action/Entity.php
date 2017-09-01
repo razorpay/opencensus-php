@@ -25,6 +25,7 @@ class Entity extends Base\Entity
     const WORKFLOW       = 'workflow';
     const ADMIN          = 'admin';
     const PERMISSION     = 'permission';
+    const ACTION_ID      = 'action_id';
 
     // Public fields from relations
     const PERMISSION_NAME           = 'permission_name';
@@ -124,7 +125,7 @@ class Entity extends Base\Entity
 
     public function state()
     {
-        return $this->hasMany('RZP\Models\Workflow\Action\State\Entity');
+        return $this->hasMany('RZP\Models\Workflow\Action\State\Entity', self::ACTION_ID);
     }
 
     public function org()
@@ -186,21 +187,6 @@ class Entity extends Base\Entity
         return ($state === State\Entity::EXECUTED);
     }
 
-    public function isValid() : bool
-    {
-        // Get the final state in the automata and
-        // check if the action is still open
-        $state = $this->getFinalState();
-
-        if ((empty($state) === true) and
-            ($state->isClosedState() === true))
-        {
-            return false;
-        }
-
-        return true;
-    }
-
     public function incrementCurrentLevel()
     {
         $this->increment(self::CURRENT_LEVEL);
@@ -242,7 +228,7 @@ class Entity extends Base\Entity
         return (in_array($state, State\Entity::OPEN_STATES, true) === true);
     }
 
-    public function isClosed()
+    public function isClosed(): bool
     {
         $state = $this->getState();
 
