@@ -6,18 +6,16 @@ use Carbon\Carbon;
 
 use RZP\Base\JitValidator;
 use RZP\Constants\Timezone;
+use RZP\Exception;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Invoice;
 use RZP\Models\Pricing\Feature;
 use RZP\Models\Pricing\FeeCalculator;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeName;
+use RZP\Trace\TraceCode;
 
 class InvoiceReport extends BaseReport
 {
-    const RZP_GSTIN     = '29AAGCR4375J1ZU';
-    const RZP_PAN_NO    = '29AAGCR4375J1ZU';
-    const RZP_CIN_NO    = 'U72200KA2013PTC097389';
-
     // Corresponds to 15th November 2015 00:00
     //const SWACH_BHARAT_CUTOFF_TIMESTAMP = 1447525800;
     const SWACH_BHARAT_CESS         = 'Swachh Bharat Cess';
@@ -34,22 +32,43 @@ class InvoiceReport extends BaseReport
     const TAX           = 'tax';
     const TOTAL_FEE     = 'total_fee';
 
-    // Invoice Report headings
-    const SL_NO         = 'Sl. No.';
+    // Report headings
     const GST_SAC_CODE  = 'GST.SAC Code';
     const DESCRIPTION   = 'Description';
     const AMOUNT        = 'Amount';
+    const AMOUNT_DUE    = 'Amount Due';
     const SGST          = 'SGST @ 9%';
     const CGST          = 'CGST @ 9%';
     const IGST          = 'IGST @ 18%';
     const TAX_TOTAL     = 'Tax Total';
     const GRAND_TOTAL   = 'Grand Total';
 
+    const PAGES             = 'pages';
+    const SUMMARY           = 'Summary';
+    const SUMMARY_TITLE     = 'Invoice Summary';
+    const TAX_INVOICE       = 'Tax Invoice';
+    const TAX_DEBIT_NOTE    = 'Tax Debit Note';
+    const TAX_CREDIT_NOTE   = 'Tax Credit Note';
+    const ROWS              = 'rows';
+    const TOTAL_AMOUNT_DUE  = 'total_amount_due';
+    const TOTAL_AMOUNT_PAID = 'total_amount_paid';
+    const DOCUMENT_NO       = 'Document No.';
+    const DOCUMENT_DATE     = 'Document Date';
+
     protected $inputRules;
-
     protected $month;
-
     protected $year;
+    protected $invoiceNo;
+    protected $invoiceDate;
+    protected $gstin;
+    protected $taxComponents;
+    protected $reportData = [];
+    protected $debitNoteData = [];
+    protected $creditNoteData = [];
+    protected $invoiceReport = [];
+    protected $totalInvoiceAmountDue = 0;
+    protected $totalDebitNoteAmountDue = 0;
+    protected $totalCreditNoteAmountDue = 0;
 
     public function __construct()
     {
@@ -64,17 +83,22 @@ class InvoiceReport extends BaseReport
 
     public function getInvoiceReport($input)
     {
+        $this->trace->info(TraceCode::MERCHANT_INVOICE_REPORT_REQUEST, $input);
+
         (new JitValidator)->rules($this->inputRules)->input($input)->validate();
 
         $this->month = $input['month'];
 
         $this->year = $input['year'];
 
-        if ((isset($input['format']) === true) and ($input['format'] === 'new'))
+        if ((isset($input['format']) === true) and
+            ($input['format'] === 'new'))
         {
-            $invoiceData = $this->getInvoiceNew($input);
+            $this->getInvoiceNew($input);
 
-            return $invoiceData;
+            $this->groupData();
+
+            return $this->invoiceReport;
         }
         else
         {
@@ -82,47 +106,60 @@ class InvoiceReport extends BaseReport
         }
     }
 
-    protected function getInvoiceNew(array $input): array
+    protected function setInvoiceVariables()
     {
-        $invoiceBreakup = $this->repo->merchant_invoice->fetchInvoiceReportData(
-                                $this->merchant->getId(), $this->month, $this->year);
+        $this->invoiceBreakup = $this->repo->merchant_invoice->fetchInvoiceReportData(
+                                    $this->merchant->getId(), $this->month, $this->year);
 
-        if ($invoiceBreakup->count() === 0)
+        if ($this->invoiceBreakup->count() === 0)
         {
-            // Downloading before the entities are created - may be middle of the month!
-            return [];
+            throw new Exception\RuntimeException(
+                'Invoice not generated yet for merchant ' . $this->merchant->getId() .
+                ' for year ' . $this->year . ' and month ' . $this->month);
         }
 
-        $invoiceNo = $invoiceBreakup[0]->getInvoiceNumber();
+        $this->invoiceNo = $this->invoiceBreakup[0]->getInvoiceNumber();
 
-        $invoiceDate = Carbon::createFromDate(
-                            $this->year, $this->month, 1, Timezone::IST)->endOfMonth()->format('d/m/Y');
+        $this->invoiceDate = Carbon::createFromDate($this->year, $this->month, 1, Timezone::IST)
+                                    ->addMonth()
+                                    ->startOfMonth()
+                                    ->format('d/m/Y');
 
-        $gstin = $invoiceBreakup[0]->getGstin();
+        $this->gstin = $this->invoiceBreakup[0]->getGstin();
 
-        $taxComponents = $this->getTaxComponents($gstin);
+        $this->taxComponents = $this->getTaxComponents($this->gstin);
 
-        $reportData = [];
+        $this->invoiceReport = [
+            self::SUMMARY       => [self::SUMMARY_TITLE => [self::ROWS => []]],
+            'invoice_number'    => $this->invoiceNo,
+            'invoice_date'      => $this->invoiceDate,
+            self::PAGES         => [
+                self::TAX_INVOICE       => [],
+                self::TAX_CREDIT_NOTE   => [],
+                self::TAX_DEBIT_NOTE    => [],
+            ],
+        ];
+    }
 
-        $totalAmountDue = 0;
+    protected function getInvoiceNew(array $input)
+    {
+        $this->setInvoiceVariables();
 
         // Different fee component rows
-        foreach ($invoiceBreakup as $index => $entity)
+        foreach ($this->invoiceBreakup as $index => $entity)
         {
             $type = $entity->getType();
 
-            $tax = $entity->getTax();
+            $tax = abs($entity->getTax() / 100);
 
-            $amount = $entity->getAmount();
+            $amount = abs($entity->getAmount() / 100);
 
             // Current row
             $row = $this->getNewRow();
 
-            $row[self::SL_NO] = $index + 1;
-
             $row[self::GST_SAC_CODE] = Invoice\Type::getGstSacCodeForType($type);
 
-            $row[self::DESCRIPTION] = Invoice\Type::getDescriptionFromType($type);
+            $row[self::DESCRIPTION] = $entity->getDescription();
 
             $row[self::AMOUNT] = $amount;
 
@@ -130,9 +167,7 @@ class InvoiceReport extends BaseReport
 
             $row[self::GRAND_TOTAL] = $tax + $amount;
 
-            $totalAmountDue += $entity->getAmountDue();
-
-            if (count($taxComponents) === 1)
+            if (count($this->taxComponents) === 1)
             {
                 $row[self::IGST] = $tax;
             }
@@ -140,38 +175,90 @@ class InvoiceReport extends BaseReport
             {
                 $taxComponentValue = (int) round($tax / 2);
 
-                // if (($taxComponentValue * 2) !== $tax)  - Do something to adjust the precision error
-
                 $row[self::CGST] = $taxComponentValue;
 
                 $row[self::SGST] = $taxComponentValue;
             }
 
-            $reportData[] = $row;
+            if ($type === Invoice\Type::ADJUSTMENT)
+            {
+                if (($entity->getAmount() < 0) or ($entity->getTax() < 0))
+                {
+                    $this->debitNoteData[] = $row;
+                }
+                else
+                {
+                    $this->creditNoteData[] = $row;
+                }
+            }
+            else
+            {
+                $this->reportData[] = $row;
+            }
+        }
+    }
+
+    protected function groupDataForSummaryByPageType(
+        array $allRows, string $pageType, string $pageDescription, & $summaryAmount)
+    {
+        if (empty($allRows) === true)
+        {
+            return;
         }
 
-        $finalRow = $this->getFinalRow($reportData);
+        $finalRow = $this->getFinalRow($allRows);
 
-        $reportData[] = $finalRow;
+        $allRows[] = $finalRow;
 
-        $finalData = [
-            'rows'                  => $reportData,
-            'total_amount_due'      => $totalAmountDue,
-            'total_amount_paid'     => $finalRow[self::GRAND_TOTAL] - $totalAmountDue,
-            'rzp_gstin'             => self::RZP_GSTIN,
-            'rzp_pan_no'            => self::RZP_PAN_NO,
-            'rzp_cin_no'            => self::RZP_CIN_NO,
-            'invoice_number'        => $invoiceNo,
-            'invoice_date'          => $invoiceDate,
+        $this->invoiceReport[self::PAGES][$pageType] = [
+            self::ROWS => $allRows,
         ];
 
-        return $finalData;
+        $amount = $finalRow[self::GRAND_TOTAL];
+
+        // Add row for summary page
+        $this->invoiceReport[self::SUMMARY][self::SUMMARY_TITLE][self::ROWS][] = [
+            self::DOCUMENT_NO       => $this->invoiceNo,
+            self::DOCUMENT_DATE     => $this->invoiceDate,
+            self::DESCRIPTION       => $pageDescription,
+            self::AMOUNT            => $amount,
+        ];
+
+        if ($pageType === self::TAX_DEBIT_NOTE)
+        {
+            $summaryAmount -= $amount;
+        }
+        else
+        {
+            $summaryAmount += $amount;
+        }
+    }
+
+    protected function groupData()
+    {
+        $summaryAmount = 0;
+
+        $this->groupDataForSummaryByPageType(
+            $this->reportData, self::TAX_INVOICE, 'Monthly Invoice', $summaryAmount);
+
+        $this->groupDataForSummaryByPageType(
+            $this->debitNoteData, self::TAX_DEBIT_NOTE, self::TAX_DEBIT_NOTE, $summaryAmount);
+
+        $this->groupDataForSummaryByPageType(
+            $this->creditNoteData, self::TAX_CREDIT_NOTE, self::TAX_CREDIT_NOTE, $summaryAmount);
+
+        // Add final row for the summary page
+        $this->invoiceReport[self::SUMMARY][self::SUMMARY_TITLE][self::ROWS][] = [
+            self::DOCUMENT_NO       => '',
+            self::DOCUMENT_DATE     => '',
+            self::DESCRIPTION       => 'Total',
+            self::AMOUNT            => $summaryAmount,
+        ];
     }
 
     protected function getNewRow(): array
     {
         return [
-            self::SL_NO         => '',
             self::GST_SAC_CODE  => '',
             self::DESCRIPTION   => '',
             self::AMOUNT        => 0,

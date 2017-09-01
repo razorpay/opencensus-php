@@ -11,6 +11,9 @@ class Constants
     const RZP_REMARK     = 'RAZORPAY';
     const RZP_URL        = 'https://www.razorpay.com';
 
+    const CLAIM_TYPE     = 'claim_type';
+    const TXN_DETAIL     = 'txn_detail';
+
     const CREDIT         = 'C';
     const DEBIT          = 'D';
     const PAYMENT        = 'Payment';

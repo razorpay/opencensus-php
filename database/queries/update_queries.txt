@@ -605,3 +605,13 @@ UPDATE refunds SET reference1 = "74332747231611991536132", status = "processed",
 UPDATE refunds SET reference1 = "75503727231014848144501", status = "processed", gateway_refunded = 1, updated_at = 1503555446 WHERE id = "8OxmZfpmVywQjR";
 UPDATE refunds SET reference1 = "75503727235014912824224", status = "processed", gateway_refunded = 1, updated_at = 1503555446 WHERE id = "897lDRdq5x9QL1";
 UPDATE refunds SET status = "processed", gateway_refunded = 1, updated_at = 1503555446 WHERE id = "8GLpbEovh2CQdt";
+
+UPDATE hdfc
+    SET gateway_transaction_id = null
+    WHERE enroll_result = "3" AND gateway_payment_id = gateway_transaction_id AND gateway_payment_id is NOT NULL AND status = 'captured';
+
+update merchants
+set invoice_code = upper(concat(substr(`id`,1, 8), substr(`id`, -4)));
+
+update merchant_invoice
+set invoice_number = upper(concat(substr(`merchant_id`,1, 8), substr(`merchant_id`, -4), '0717'));

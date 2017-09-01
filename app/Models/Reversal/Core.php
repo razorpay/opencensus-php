@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base;
 use RZP\Models\Transfer;
+use RZP\Models\Dispute;
 use RZP\Models\Transaction;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -62,7 +63,48 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($reversal);
 
-        $this->traceSuccess($reversal);
+        $this->traceSuccess(TraceCode::TRANSFER_REVERSAL_SUCCESS, $reversal);
+
+        return $reversal;
+    }
+
+    /**
+     * Execute inside transaction
+     *
+     * Create a reversal for a Dispute,
+     * and a transaction that updates the Merchant balance
+     *
+     * @param  Dispute\Entity  $dispute
+     * @param  Merchant\Entity $merchant
+     * @param array            $input
+     *
+     * @return Entity
+     */
+    public function createForDispute(
+        Dispute\Entity $dispute,
+        Merchant\Entity $merchant,
+        array $input) : Entity
+    {
+        $this->trace->info(
+            TraceCode::DISPUTE_REVERSAL_REQUEST,
+            [
+                'dispute_id'  => $dispute->getId(),
+                'input'       => $input
+            ]);
+
+        $reversal = $this->create($input);
+
+        $reversal->merchant()->associate($merchant);
+
+        $txn = (new Transaction\Core)->createFromReversal($reversal);
+
+        $this->repo->saveOrFail($txn);
+
+        $reversal->entity()->associate($dispute);
+
+        $this->repo->saveOrFail($reversal);
+
+        $this->traceSuccess(TraceCode::DISPUTE_REVERSAL_SUCCESS, $reversal);
 
         return $reversal;
     }
@@ -77,7 +119,7 @@ class Core extends Base\Core
      * @return Entity
      * @throws Exception\LogicException
      */
-    public function reverse(Transfer\Entity $transfer, array $input, Merchant\Entity $merchant) : Entity
+    public function reverseForTransfer(Transfer\Entity $transfer, array $input, Merchant\Entity $merchant) : Entity
     {
         // Reversals not handled yet for customer wallet - transfer refunds
         // @todo: Change flow to create reversals for both customer/account transfers
@@ -99,7 +141,7 @@ class Core extends Base\Core
                     $reversal = (new Payment\Processor\Processor($merchant))
                                     ->refundPaymentAndReverseTransfer($transfer, $input);
 
-                    $this->traceSuccess($reversal);
+                    $this->traceSuccess(TraceCode::DISPUTE_TRANSFER_SUCCESS, $reversal);
 
                     return $reversal;
                 });
@@ -115,7 +157,7 @@ class Core extends Base\Core
         return $reversal;
     }
 
-    protected function traceSuccess(Entity $reversal)
+    protected function traceSuccess(string $code, Entity $reversal)
     {
         $traceMessage = [
             'entity_type'       => $reversal->getEntityType(),
@@ -124,6 +166,6 @@ class Core extends Base\Core
             'refund_amount'     => $reversal->getAmount()
         ];
 
-        $this->trace->info(TraceCode::TRANSFER_REVERSAL_SUCCESS, $traceMessage);
+        $this->trace->info($code, $traceMessage);
     }
 }

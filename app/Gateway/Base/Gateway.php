@@ -519,9 +519,9 @@ class Gateway
 
     protected function validateResponse($response)
     {
-        if ($response->status_code === 504)
+        if (in_array($response->status_code, [503, 504], true) === true)
         {
-            throw new Exception\GatewayTimeoutException('Response status: 504');
+            throw new Exception\GatewayTimeoutException('Response status: '. $response->status_code);
         }
         else if ($response->status_code >= 500)
         {
@@ -602,7 +602,7 @@ class Gateway
     }
 
     protected function traceGatewayPaymentRequest(
-        $request,
+        array $request,
         $input,
         $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
     {

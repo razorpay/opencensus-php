@@ -183,6 +183,17 @@ class EntityReportTest extends TestCase
         $this->fixtures->create('merchant_invoice', ['type' => Invoice\Type::CARD_LTE_2K]);
         $this->fixtures->create('merchant_invoice', ['type' => Invoice\Type::CARD_GT_2K]);
         $this->fixtures->create('merchant_invoice', ['type' => Invoice\Type::NON_CARD]);
+        $this->fixtures->create('merchant_invoice',
+            [
+                'type' => Invoice\Type::ADJUSTMENT, 'amount' => -45000,
+                'tax' => -1800, 'Description' => 'Adjustment against extra commission'
+            ]);
+
+        $this->fixtures->create('merchant_invoice',
+            [
+                'type' => Invoice\Type::ADJUSTMENT, 'amount' => 25000,
+                'tax' => 800, 'Description' => 'Adjustment against uncharged fee'
+            ]);
 
         $dt = Carbon::today(Timezone::IST);
         $input = [
@@ -193,41 +204,41 @@ class EntityReportTest extends TestCase
 
         $invoiceEntries = $this->fetchInvoice($input);
 
-        $keyedEntries = [];
-        foreach ($invoiceEntries['rows'] as $entry)
-        {
-            unset($entry['Sl. No.']);
-
-            $keyedEntries[$entry['Description']] = $entry;
-        }
+        $this->assertNotEmpty($invoiceEntries['invoice_number']);
+        $this->assertNotEmpty($invoiceEntries['invoice_date']);
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->assertArraySelectiveEquals(
-            $keyedEntries[Invoice\Type::CARD_LTE_2K_DESCRIPTION], $data[Invoice\Type::CARD_LTE_2K_DESCRIPTION]);
-
-        $this->assertArraySelectiveEquals(
-            $keyedEntries[Invoice\Type::CARD_GT_2K_DESCRIPTION], $data[Invoice\Type::CARD_GT_2K_DESCRIPTION]);
-
-        $this->assertArraySelectiveEquals(
-            $keyedEntries[Invoice\Type::NON_CARD_DESCRIPTION], $data[Invoice\Type::NON_CARD_DESCRIPTION]);
-
-        $this->assertArraySelectiveEquals($keyedEntries['Total'], $data['Total']);
-
-        $requiredFields = [
-            'total_amount_due',
-            'total_amount_paid',
-            'rzp_gstin',
-            'rzp_pan_no',
-            'rzp_cin_no',
-            'invoice_number',
-            'invoice_date',
-        ];
+        $requiredFields = ['Tax Invoice', 'Tax Debit Note', 'Tax Credit Note'];
+        $keyedEntries = [];
 
         foreach ($requiredFields as $key)
         {
-            $this->assertNotNull($invoiceEntries[$key]);
+            $this->assertNotEmpty($invoiceEntries['pages'][$key]);
+            $this->assertNotEmpty($invoiceEntries['pages'][$key]['rows']);
+
+            foreach ($invoiceEntries['pages'][$key]['rows'] as $entry)
+            {
+                $description = $entry['Description'];
+
+                $keyedEntries[$description] = $entry;
+
+                $this->assertArraySelectiveEquals($keyedEntries[$description], $data[$key][$description]);
+            }
         }
+
+        $requiredFields = ['Document No.', 'Document Date', 'Description', 'Amount'];
+        foreach ($invoiceEntries['Summary']['Invoice Summary']['rows'] as $row)
+        {
+            foreach ($requiredFields as $key)
+            {
+                $this->assertNotNull($row[$key]);
+            }
+        }
+
+        $lastRowOfSummary = array_pop($invoiceEntries['Summary']['Invoice Summary']['rows']);
+
+        $this->assertEquals(1356, $lastRowOfSummary['Amount']);
     }
 
     public function testPaymentReportWithoutAcquirerData()

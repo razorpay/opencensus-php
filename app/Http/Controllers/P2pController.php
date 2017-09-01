@@ -4,7 +4,6 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
-use RZP\Models\P2p;
 
 class P2pController extends Controller
 {
@@ -12,14 +11,14 @@ class P2pController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('p2p')->create($input);
+        $data = $this->service()->create($input);
 
         return ApiResponse::json($data);
     }
 
     public function getP2p($id)
     {
-        $data = $this->service('p2p')->getById($id);
+        $data = $this->service()->getById($id);
 
         return ApiResponse::json($data);
     }
@@ -28,34 +27,34 @@ class P2pController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('p2p')->getMultiple($input);
+        $data = $this->service()->getMultiple($input);
 
         return ApiResponse::json($data);
     }
 
     public function rejectP2p($id)
     {
-        $data = $this->service('p2p')->reject($id);
+        $data = $this->service()->reject($id);
 
         return ApiResponse::json($data);
     }
 
-    public function postAuthorize(P2p\Service $p2pService, $id)
+    public function postAuthorize($id)
     {
         $input = Request::all();
 
-        $data = $p2pService->authorize($id, $input);
+        $data = $this->service()->authorize($id, $input);
 
         return ApiResponse::json($data);
     }
 
     public function fetchCollectRequests()
     {
-        return $this->service('p2p')->fetchCollectRequests();
+        return $this->service()->fetchCollectRequests();
     }
 
     public function fetchCollectRequestsPrivate($id)
     {
-        return $this->service('p2p')->fetchCollectRequestsForCustomer($id);
+        return $this->service()->fetchCollectRequestsForCustomer($id);
     }
 }

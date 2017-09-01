@@ -22,27 +22,6 @@ class Validator extends Base\Validator
         Entity::REVIEWER_COUNT => 'sometimes|integer|min:1',
     ];
 
-    public function validateOpType(array $input)
-    {
-        $workflowId = $input[Entity::WORKFLOW_ID];
-        $level = $input[Entity::LEVEL];
-
-        $steps = (new Repository)->findByLevelAndWorkflowId(
-            $level, $workflowId);
-
-        foreach ($steps as $step)
-        {
-            $opType = $step->getOpType();
-
-            // opType should match with rest of the steps
-            if ($opType !== $input[Entity::OP_TYPE])
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_WORKFLOW_STEP_OP_MISMATCH);
-            }
-        }
-    }
-
     // Validate all the levels passed in steps array should be incremental value by 1
     public function validateStepLevel(array $steps)
     {

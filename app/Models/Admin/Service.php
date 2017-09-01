@@ -138,6 +138,13 @@ class Service extends Base\Service
         return $result;
     }
 
+    public function generateScorecard(array $input)
+    {
+        $data = (new Scorecard)->generateScorecard($input);
+
+        return $data;
+    }
+
     public function processMailgunCallback($type, $input)
     {
         $validator = new Validator;

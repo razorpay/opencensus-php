@@ -71,6 +71,31 @@ class CaptureTest extends TestCase
         Mail::assertSent(CapturedMail::class);
     }
 
+    public function testBulkCapture()
+    {
+        Mail::fake();
+
+        $count = 3;
+
+        $payments = [];
+
+        for ($i=0; $i < $count; $i++) {
+            $payments[] = $this->defaultAuthPayment();
+        }
+
+        $this->ba->appAuth();
+
+        $this->mockDashboardRequest($count);
+
+        $this->startBulkTest($payments);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['gateway_captured']);
+
+        Mail::assertSent(CapturedMail::class);
+    }
+
     public function testCaptureWithFeeBreakupException()
     {
         $payment = $this->fixtures->create('payment:card_authorized');
@@ -97,7 +122,7 @@ class CaptureTest extends TestCase
 
         try
         {
-            $processor->capture('pay_' .$payment['id'], $params);
+            $processor->capture($payment, $params);
         }
         catch (Exception\LogicException $ex)
         {
@@ -1127,6 +1152,45 @@ class CaptureTest extends TestCase
         $this->assertEquals($transaction['credit_type'], 'default');
         $this->assertEquals($transaction['fee_bearer'], 'platform');
         $this->assertEquals($transaction['fee_model'], 'postpaid');
+    }
+
+    public function startBulkTest(array $payments)
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $name = $trace[1]['function'];
+
+        $testData = $this->testData[$name];
+
+        $this->setBulkRequestData($testData['request'], $payments);
+        $this->setBulkResponseData($testData['response'], $payments);
+
+        return $this->runRequestResponseFlow($testData);
+    }
+
+    /**
+     * Since the response data contains the count of payments in test
+     * it would be better if we set the "count" and "success" dynamically.
+     * This way, in the future, if we added more count to this test,
+     * it would not require us to change the fixture.
+     */
+    protected function setBulkResponseData(& $response, $payments)
+    {
+        $response['content']['count']   = count($payments);
+        $response['content']['success'] = count($payments);
+    }
+
+    protected function setBulkRequestData(& $request, $payments)
+    {
+        $request['content']['payment_ids'] = [];
+
+        foreach ($payments as $payment)
+        {
+            $request['content']['payment_ids'][] = $payment['id'];
+        }
+
+        $url = '/payments/capture/bulk';
+
+        $this->setRequestUrlAndMethod($request, $url, 'POST');
     }
 
     public function startTest($id = null, $amount = null)

@@ -30,49 +30,8 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchWorkflowsWithStepsByPermissions(array $permissionIds, array $options = [])
-    {
-        if (isset($options[Step\Entity::WORKFLOW_ID]) === false)
-        {
-            $options[Step\Entity::WORKFLOW_ID] = [];
-        }
-
-        /*
-            $workflows:
-
-            SELECT *
-            FROM workflows
-            JOIN workflow_permissions ON workflow.id = workflow_permissions.workflow_id
-            WHERE workflow_permissions.permission_id IN ($permissionIds)
-
-            $workflow->steps:
-
-            SELECT *
-            FROM workflow_steps
-            WHERE workflow_steps.id IN ($workflowIds)
-
-            $workflow->permissions:
-
-            SELECT *
-            FROM workflow_permissions
-            WHERE workflow_permissions.id IN ($workflowIds)
-        */
-
-        return $this->newQuery()
-                    ->join(Table::WORKFLOW_PERMISSION, Entity::ID, '=', 'workflow_permissions.workflow_id')
-                    ->with([Entity::STEPS, Entity::PERMISSIONS])
-                    ->whereIn('workflow_permissions.permission_id', $permissionIds)
-                    ->whereNotIn(Entity::ID, $options[Step\Entity::WORKFLOW_ID])
-                    ->get();
-    }
-
     public function fetchWorkflow(Step\Entity $step)
     {
-        if ($step->hasRelation(Step\Entity::WORKFLOW))
-        {
-            return $step->workflow;
-        }
-
         $workflowId = $step->getWorkflowId();
 
         $workflow = $this->findOrFail($workflowId);

@@ -96,10 +96,6 @@ class Core extends Base\Core
     {
         $methods = $this->getPaymentMethods($merchant);
 
-        $supportedBanks = Netbanking::getSupportedBanks($merchant);
-
-        $methods->setBanks($supportedBanks);
-
         return $methods;
     }
 
@@ -124,7 +120,11 @@ class Core extends Base\Core
             $netbankingEnabled = $methods->isNetbankingEnabled();
             if ($netbankingEnabled === true)
             {
-                $data['netbanking'] = $methods->toArrayWithBankNames();
+                $banks = $methods->getSupportedBanks();
+
+                $allSupportedBanks = Netbanking::removeDefaultDisableBanks($banks);
+
+                $data['netbanking'] = $this->getBankNames($allSupportedBanks);
             }
             $data['wallet'] = $methods->getEnabledWallets();
             $data['upi'] = $methods->isUpiEnabled();
@@ -148,6 +148,12 @@ class Core extends Base\Core
         $banks = $this->repo->methods->getMethodsForMerchant($merchant);
 
         return $this->getEnabledDisabledBanks($banks);
+    }
+
+    public function getEnabledBanks($methods)
+    {
+        $enabledDisabledBanks = $this->getEnabledDisabledBanks($methods);
+        return $enabledDisabledBanks['enabled'];
     }
 
     public function validateInternationalPricingForMerchant($merchant, $plan)
@@ -186,8 +192,8 @@ class Core extends Base\Core
             $methods->setOlamoney(true);
             $methods->setFreecharge(true);
             $methods->setAirtelmoney(true);
-
-            $this->setAllPaymentBanks($methods);
+            // Initializing Disabled bank with empty array
+            $methods->setDisabledBanks([]);
         }
 
         $this->repo->saveOrFail($methods);
@@ -195,26 +201,24 @@ class Core extends Base\Core
         return $methods;
     }
 
-    public function setAllPaymentBanks($methods)
-    {
-        $input = [
-            'banks' => Netbanking::getAllBanks()
-        ];
-
-        $this->setPaymentBanks($methods, $input);
-    }
-
     public function setPaymentBanksForMerchant($merchant, $input)
     {
-        $banks = $this->repo->methods->getMethodsForMerchant($merchant);
-
-        if ($banks === null)
+        if ((isset($input['banks']) === false) or
+            (is_array($input['banks']) === false))
         {
-            $banks = new Methods\Entity;
-            $banks->merchant()->associate($merchant);
+            throw new Exception\BadRequestValidationFailureException(
+                'Banks field is not an array');
         }
+        /**
+         *  Converting input new disabled banks based format
+         */
+        $input = [
+            'disabled_banks' => Netbanking::getDisabledBanks($input['banks'])
+        ];
 
-        return $this->setPaymentBanks($banks, $input);
+        $method = $this->repo->methods->getMethodsForMerchant($merchant);
+
+        return $this->disablePaymentBanks($method, $input);
     }
 
     protected function getPaymentMethods(Merchant\Entity $merchant)
@@ -229,35 +233,33 @@ class Core extends Base\Core
         return $methods;
     }
 
-    protected function setPaymentBanks($methods, $input)
+    protected function disablePaymentBanks($methods, $input)
     {
-        (new Validator)->validateInput('addBanks', $input);
+        (new Validator)->validateInput('addDisabledBanks', $input);
 
-        // Setup workflow
         $workflow = $this->app['workflow']
                          ->setEntity($methods->getEntity())
-                         ->setOriginal(['banks' => $methods->getBanks()]);
+                         ->setOriginal(['disabled_banks' => $methods->getDisabledBanks()]);
 
-        $methods->setBanks($input['banks']);
+        $methods->setDisabledBanks($input['disabled_banks']);
 
-        // Trigger workflow
-        $workflow->setDirty(['banks' => $methods->getBanks()])->handle();
+        $workflow->setDirty(['disabled_banks' => $methods->getDisabledBanks()])->handle();
 
         $this->repo->saveOrFail($methods);
 
         return $this->getEnabledDisabledBanks($methods);
     }
 
-    protected function getEnabledDisabledBanks($banks)
+    /**
+     * Method reads disbaled_banks from database and
+     * subtract them from all enabled banks
+     * @param $methods
+     * @return array
+     */
+    protected function getEnabledDisabledBanks(Entity $methods)
     {
-        $enabled = [];
-
-        if ($banks !== null)
-        {
-            $enabled = $banks->getBanks();
-        }
-
-        $disabled = Netbanking::getDisabledBanks($enabled);
+        $disabled = $methods->getDisabledBanks();
+        $enabled = $methods->getEnabledBanks();
 
         $data = array(
             'enabled' => $this->getBankNames($enabled),
@@ -319,6 +321,6 @@ class Core extends Base\Core
 
     protected function getBankNames($banks)
     {
-        return Bank\Name::getNames($banks);
+        return Netbanking::getNames($banks);
     }
 }

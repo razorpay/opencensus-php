@@ -233,6 +233,13 @@ trait Refund
 
     public function refundAuthorizedPayment(Payment\Entity $payment, array $input = [])
     {
+        $this->trace->info(
+            TraceCode::REFUND_FROM_AUTHORIZED_REQUEST,
+            [
+                'payment_id'    => $payment->getId(),
+                'input'         => $input,
+            ]);
+
         $this->setPayment($payment);
 
         if ($this->payment->isAuthorized() === false)
@@ -325,9 +332,26 @@ trait Refund
     public function createTransactionForRefund(
         Payment\Refund\Entity $refund, Payment\Entity $payment, $forceRefundTransaction = false)
     {
+        $this->trace->info(
+            TraceCode::REFUND_TRANSACTION_CREATE_REQUEST,
+            [
+                'refund_id'     => $refund->getId(),
+                'payment_id'    => $payment->getId(),
+                'force'         => $forceRefundTransaction
+            ]);
+
         $gateway = $payment->getGateway();
 
-        assert ($refund->getTransactionId() === null);
+        if ($refund->getTransactionId() !== null)
+        {
+            throw new Exception\LogicException(
+                'Transaction should not already been created for this',
+                null,
+                [
+                    'refund_id'     => $refund->getId(),
+                    'payment_id'    => $payment->getId(),
+                ]);
+        }
 
         // For authAndCapture supported gateways, payment transaction is created only after capture.
         // For gateways which don't support authAndCapture, payment transaction is created after authorization.
@@ -676,6 +700,13 @@ trait Refund
             // as we dont want to to reverse the actions if mail sending fails
             $this->sendRefundNotification($payment);
         }, 120);
+
+        $this->trace->info(
+            TraceCode::REFUND_PROCESSED,
+            [
+                'payment_id'    => $payment->getId(),
+                'refund'        => $this->refund->toArray(),
+            ]);
 
         return $this->refund;
     }
