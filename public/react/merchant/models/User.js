@@ -40,8 +40,8 @@ export default class User {
     return !!parseInt(this.submitted);
   }
 
-  get isNewUIEnabled() {
-    return (this.tags || []).indexOf('Newui') !== -1;
+  get isOldUIEnabled() {
+    return (this.tags || []).indexOf('Oldui') !== -1;
   }
 
   get isMarketplaceEnabled() {

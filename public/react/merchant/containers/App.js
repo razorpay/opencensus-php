@@ -100,12 +100,12 @@ export default class App extends Component {
 
   redirectToRoute(role) {
     let pathname = this.props.history.location.pathname;
-    let isNewUIEnabled = this.props.user.isNewUIEnabled;
+    let isOldUIEnabled = this.props.user.isOldUIEnabled;
 
     if (pathname === '/' || pathname === '/dashboard') {
       switch (role) {
         case 'sellerapp':
-          let url = isNewUIEnabled ? '/paymentlinks' : '/invoices';
+          let url = isOldUIEnabled ? '/invoices' : '/paymentlinks';
           return this.props.history.replace(url);
         case 'support':
           return this.props.history.replace('/payments');
@@ -134,10 +134,11 @@ export default class App extends Component {
               activated: data.activated,
               locked: data.locked,
               submitted: data.submitted,
-              isNewUIEnabled: data.isNewUIEnabled,
+              isOldUIEnabled: data.isOldUIEnabled,
               role: role,
               userEmail: data.user.email,
-              dashboardLink: location.origin +
+              dashboardLink:
+                location.origin +
                 '/admin#/app/merchants/' +
                 data.id +
                 '/detail',
@@ -233,10 +234,6 @@ export default class App extends Component {
         <Sidebar user={user} logoURL={org.main_logo_url} />
         <Content user={user} modeFormatted={modeFormatted} />
         <Footer />
-
-        <ShowWhen myRole="owner">
-          <MerchantTour user={user} />
-        </ShowWhen>
 
         {/* Creates Portal for the comp */}
         <ModalDialog />

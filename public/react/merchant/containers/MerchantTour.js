@@ -4,8 +4,12 @@ import { Tour, TourStep } from 'rzp/ui/Tour';
 import * as ModalActions from 'rzp/modules/modals';
 import LocalStorageService from 'rzp/utils/localStorage';
 import NewUIOnboardingDialog from 'merchant/components/NewUIOnboardingDialog';
+import { toggleTour } from 'merchant/modules/session';
 
-@connect(null, ModalActions)
+@connect(state => state.session, {
+  toggleTour,
+  ...ModalActions,
+})
 export default class MerchantTour extends Component {
   state = {
     isTourActive: false,
@@ -14,13 +18,28 @@ export default class MerchantTour extends Component {
   };
 
   componentWillMount() {
-    let isNewUIEnabled = this.props.user.isNewUIEnabled;
-    let showNewUITour = LocalStorageService.getItem('show_newui_tour');
+    // Identify user already using new ui
+    if (
+      this.props.user.tags.indexOf('Newui') === -1 &&
+      !LocalStorageService.getItem('tour_shown')
+    ) {
+      this.display();
+    }
+  }
 
-    if (isNewUIEnabled && showNewUITour) {
-      this.setState({
-        showOnboardingTour: true,
-      });
+  componentWillReceiveProps(nextProps) {
+    if (this.props.isTourVisible !== nextProps.isTourVisible) {
+      nextProps.isTourVisible ? this.showTour() : this.closeTour();
+    }
+  }
+
+  display = () => {
+    let isOldUIEnabled = this.props.user.isOldUIEnabled;
+
+    if (!isOldUIEnabled) {
+      console.log('NEW UI...');
+
+      this.props.closeModal();
 
       window.setTimeout(() => {
         this.props.openModal({
@@ -34,17 +53,24 @@ export default class MerchantTour extends Component {
         });
       }, 1500);
     }
-  }
+  };
 
   showTour = () => {
     this.props.closeModal();
-    this.setState({ isTourActive: true });
+
+    LocalStorageService.setItem('tour_shown', true);
+    this.setState({
+      isTourActive: true,
+      showOnboardingTour: true,
+    });
   };
 
   closeTour = () => {
-    LocalStorageService.removeItem('show_newui_tour');
-    this.setState({ isTourActive: false });
     this.props.closeModal();
+
+    this.props.toggleTour(false);
+    LocalStorageService.setItem('tour_shown', false);
+    this.setState({ isTourActive: false });
   };
 
   gotoNextTourStep = () => {
@@ -52,7 +78,6 @@ export default class MerchantTour extends Component {
   };
 
   render() {
-    let isNewUIEnabled = this.props.user.isNewUIEnabled;
     let showOnboardingTour = this.state.showOnboardingTour;
 
     return (
@@ -65,15 +90,7 @@ export default class MerchantTour extends Component {
           <TourStep to="#transactions-nav">
             <p>
               <b>Payments</b>
-              ,
-              {' '}
-              <b>Refunds</b>
-              {' '}
-              and
-              {' '}
-              <b>Orders</b>
-              {' '}
-              have moved to Transactions.
+              , <b>Refunds</b> and <b>Orders</b> have moved to Transactions.
             </p>
             <div class="btn-toolbar">
               <button class="btn btn-link" onClick={this.closeTour}>
@@ -91,18 +108,8 @@ export default class MerchantTour extends Component {
           <TourStep to="#myaccount-nav">
             <p>
               <b>Profile</b>
-              ,
-              {' '}
-              <b>Activation</b>
-              ,
-              {' '}
-              <b>Credits</b>
-              {' '}
-              and
-              {' '}
-              <b>Add Funds</b>
-              {' '}
-              are now under My Account.
+              , <b>Activation</b>
+              , <b>Credits</b> and <b>Add Funds</b> are now under My Account.
             </p>
             <div class="btn-toolbar">
               <button class="btn btn-link" onClick={this.closeTour}>
@@ -120,14 +127,8 @@ export default class MerchantTour extends Component {
           <TourStep to="#settings-nav">
             <p>
               <b>Configuration</b>
-              ,
-              {' '}
-              <b>API Keys</b>
-              , and
-              {' '}
-              <b>Webhooks</b>
-              {' '}
-              have moved to Settings.
+              , <b>API Keys</b>
+              , and <b>Webhooks</b> have moved to Settings.
             </p>
             <div class="btn-toolbar">
               <button class="btn btn-link" onClick={this.closeTour}>
@@ -149,9 +150,7 @@ export default class MerchantTour extends Component {
             offset="-15px 30px"
             arrowLeftPos="85%"
           >
-            <p>
-              Prefer the old design? Click here to switch or to give feedback.
-            </p>
+            <p>Click here to give feedback or see the New UI tour again.</p>
             <div class="btn-toolbar">
               <button class="btn btn-link pull-right" onClick={this.closeTour}>
                 Okay, Got it!
