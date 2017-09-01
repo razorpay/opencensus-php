@@ -36,7 +36,7 @@ echo "== route cache =="
 cd "$DASHBOARD_INSTALL_DIR" && php artisan route:cache
 
 # Cache Config
-echo "Config Cache"
+echo "== Config Cache =="
 cd "$DASHBOARD_INSTALL_DIR" && php artisan config:cache
 
 # This clears the mod_php opcache
@@ -44,7 +44,7 @@ echo "== apache restart =="
 sudo service apache2 restart
 
 echo "== opcache cli clear =="
-cd "php $BASEDIR/scripts/clear_cli_opcache.php"
+php $BASEDIR/scripts/clear_cli_opcache.php
 
 # Restart all queue worker processes
 # This ensures that our workers have the new code (and have cleared opcache)
