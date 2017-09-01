@@ -27,8 +27,6 @@ class Authenticate
      */
     protected $ba;
 
-    protected $request;
-
     /**
      * @var OAuth
      */
@@ -60,8 +58,6 @@ class Authenticate
         $router = $this->app['router'];
 
         $route = $router->currentRouteName();
-
-        $this->request = $request;
 
         // Check for disabled routes
         if (in_array($route, Route::DISABLED_ROUTES, true) === true)
@@ -238,14 +234,13 @@ class Authenticate
      */
     private function addTraceDataForMerchantAndAdmin()
     {
-        $ba = $this->ba;
+        $merchantId = $this->ba->getMerchantIdOfKey();
 
-        $merchantId = $ba->getMerchantIdOfKey();
         $data = ['merchant_id' => $merchantId];
 
-        if ($ba->isDashboardApp() === true)
+        if ($this->ba->isDashboardApp() === true)
         {
-            $dashboardHeaders = $ba->getDashboardHeaders();
+            $dashboardHeaders = $this->ba->getDashboardHeaders();
 
             $data = array_merge($data, $dashboardHeaders);
         }

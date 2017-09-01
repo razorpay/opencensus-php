@@ -32,7 +32,7 @@ class OAuthMailTest extends OAuthTestCase
             Application\Entity::NAME => 'Test App'
         ];
 
-        $application = $this->createOAuthApplication($$appData);
+        $application = $this->createOAuthApplication($appData);
 
         $clients = $application->clients()->get()->all();
 

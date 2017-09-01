@@ -56,11 +56,9 @@ class OAuth
      */
     public function hasOAuthPublicToken()
     {
-        $request = $this->request;
+        $keyParam = $this->request->input('key_id');
 
-        $keyParam = $request->input('key_id');
-
-        $key = $keyParam ?? $request->getUser();
+        $key = $keyParam ?? $this->request->getUser();
 
         //
         // If the key was empty or null, return false and allow
