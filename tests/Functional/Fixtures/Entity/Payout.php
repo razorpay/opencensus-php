@@ -26,7 +26,7 @@ class Payout extends Base
 
         $payout->setFees($txn->getFee());
 
-        $payout->setServiceTax($txn->getServiceTax());
+        //$payout->setServiceTax($txn->getServiceTax());
 
         $payout->setTax($txn->getTax());
 

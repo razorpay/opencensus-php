@@ -442,10 +442,10 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::GATEWAY_FEE, $gatewayFee);
     }
 
-//    public function setGatewayServiceTax($gatewayServiceTax)
-//    {
-//        $this->setAttribute(self::GATEWAY_SERVICE_TAX, $gatewayServiceTax);
-//    }
+    public function setGatewayServiceTax($gatewayServiceTax)
+    {
+        $this->setAttribute(self::GATEWAY_SERVICE_TAX, $gatewayServiceTax);
+    }
 
     public function setSettledAt($settledAt)
     {

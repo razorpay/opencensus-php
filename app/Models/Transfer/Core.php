@@ -161,7 +161,7 @@ class Core extends Base\Core
 
         $transfer->setFees($txn->getFee());
 
-        $transfer->setServiceTax($txn->getServiceTax());
+        //$transfer->setServiceTax($txn->getServiceTax());
 
         $transfer->setTax($txn->getTax());
 

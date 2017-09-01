@@ -184,7 +184,7 @@ class Merchant
 
             $details[SetlComponent::TAX]['amount'] += $txn->getTax();
 
-            $details[SetlComponent::FEE]['amount'] += ($txn->getFee() - $txn->getServiceTax());
+            $details[SetlComponent::FEE]['amount'] += ($txn->getFee() - $txn->getTax());
 
             // FeeCredits is either zero or equal to fees.
             $details[SetlComponent::FEE_CREDITS]['amount'] += $txn->getFeeCredits();

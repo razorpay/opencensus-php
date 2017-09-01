@@ -170,18 +170,18 @@ class Core extends Base\Core
 
             $feesSplit = new Base\PublicCollection;
 
-            list($credit, $fee, $serviceTax, $feesSplit) = $this->calculatePostpaidFee($payment, $txn, $merchantBalance);
+            list($credit, $fee, $tax, $feesSplit) = $this->calculatePostpaidFee($payment, $txn, $merchantBalance);
 
             $txn->setCredit($credit);
             $txn->setDebit(0);
             $txn->setFee($fee);
-            $txn->setServiceTax($serviceTax);
+            //$txn->setServiceTax($serviceTax);
             $txn->setFeeModel(FeeModel::POSTPAID);
             $txn->setGratis(false);
             $txn->setCreditType(Transaction\CreditType::DEFAULT);
             $txn->setPricingRule(null);
 
-            $payment->setServiceTax($serviceTax);
+            $payment->setTax($tax);
 
             if ($merchant->isFeeBearerCustomer() === false)
             {
@@ -325,7 +325,7 @@ class Core extends Base\Core
         $txn->setCredit($credit);
         $txn->setDebit(0);
         $txn->setFee($fee);
-        $txn->setServiceTax($tax);
+        //$txn->setServiceTax($tax);
         $txn->setTax($tax);
 
         return [$txn, $feesSplit];

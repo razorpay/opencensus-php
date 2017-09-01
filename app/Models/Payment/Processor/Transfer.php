@@ -34,7 +34,7 @@ trait Transfer
 
         $this->repo->saveOrFail($txn);
 
-        $payment->setServiceTax($txn->getServiceTax());
+        //$payment->setServiceTax($txn->getServiceTax());
 
         $payment->setTax($txn->getTax());
 

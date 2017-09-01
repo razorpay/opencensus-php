@@ -620,7 +620,7 @@ trait Capture
 
         list($txn, $feesSplit) = $txnCore->createOrUpdateFromPaymentCaptured($payment);
 
-        $payment->setServiceTax($txn->getServiceTax());
+        //$payment->setServiceTax($txn->getServiceTax());
 
         $payment->setTax($txn->getTax());
 
