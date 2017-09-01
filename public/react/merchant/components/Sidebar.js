@@ -126,7 +126,7 @@ export default class Sidebar extends Component {
                     label="Customers"
                     icon="icon icon-people text-warning"
                     to="/customers"
-                    featureEnabled="Invoice"
+                    featureEnabled={['Invoice', 'Virtual_Accounts']}
                     notMyRole="sellerapp"
                   />
                   <MainNavLink
