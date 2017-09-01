@@ -2,7 +2,9 @@
 
 namespace RZP\Gateway\Blade\Mock;
 
+use Carbon\Carbon;
 use RZP\Gateway\Base;
+use RZP\Models\Payment;
 use Lib\Formatters\Xml;
 
 class Server extends Base\Mock\Server
@@ -19,7 +21,7 @@ class Server extends Base\Mock\Server
 
         $response = [
             'MD'      => $input['MD'],
-            'PaRes'   => $this->getPaResXml($paResContent),
+            'PaRes'   => base64_encode($this->getPaResXml($paResContent, $input)),
             'TermUrl' => $input['TermUrl']
         ];
 
@@ -33,13 +35,23 @@ class Server extends Base\Mock\Server
         // Implement
     }
 
-    private function getPaResXml($content)
+    private function getPaResXml($content, $input)
     {
-        $xml = Xml::create('ThreeDSecure', $content);
+        $id = $input['MD'];
+        $xid = base64_encode(str_pad($id, 20, '0', STR_PAD_LEFT));
 
+        $this->repo = new Payment\Repository;
+
+        $payment = $this->repo->findByPublicId('pay_' . $id);
+
+        $created = $payment->getCreatedAt();
+
+        $created = Carbon::createFromTimestamp($created, 'Asia/Kolkata')->format('Ymd H:m:s');
+
+        // TODO make it dynamic and from array
         // TODO: Sign XML here
 
-        return $xml;
+        return '<ThreeDSecure><Message id="pay_'.$id.'"><PARes id="a630671711"><version>1.0.2</version><Merchant><acqBIN>11111111111</acqBIN><merID>12AB,cd/34-EF  -g,5/H-67</merID></Merchant><Purchase><xid>'. $xid.'</xid><date>' . $created . '</date><purchAmount>50000</purchAmount><currency>356</currency><exponent>2</exponent></Purchase><pan>4532249047240</pan><TX><time>20160814 06:52:22</time><status>Y</status><cavv>AAABBJg0VhI0VniQEjRWAAAAAAA=</cavv><eci>03</eci><cavvAlgorithm>2</cavvAlgorithm></TX></PARes><Signature xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo xmlns="http://www.w3.org/2000/09/xmldsig#"><CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"></CanonicalizationMethod><SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"></SignatureMethod><Reference URI="#a630671711"><DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"></DigestMethod><DigestValue>iRI4FJUn4qkZIP+x66PKO7DQQ7o=</DigestValue></Reference></SignedInfo><KeyInfo><X509Data></X509Data></KeyInfo></Signature></Message></ThreeDSecure>';
     }
 
     public function authorize($input)

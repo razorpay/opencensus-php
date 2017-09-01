@@ -190,11 +190,8 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function validateAndGetPayerAuthenticationResponse(array $input)
+    protected function validateSignatureAndInflatePares($paresXml)
     {
-        $pares = $input['gateway']['PaRes'];
-        $pares = base64_decode($pares);
-
         //
         // @ref http://forums.devshed.com/php-development-5/zlip-text-string-452797.html
         // Where you see 10 in the substr, replace with 2, the encoder is
@@ -248,6 +245,16 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_XML_SIGNATURE_ERROR);
         }
+
+        return $paresXml;
+    }
+
+    protected function validateAndGetPayerAuthenticationResponse(array $input)
+    {
+        $pares = $input['gateway']['PaRes'];
+        $pares = base64_decode($pares);
+
+        $paresXml = $this->validateSignatureAndInflatePares($pares);
 
         // Convert to an object
         $PaRes = $this->xmlToArray($paresXml);
@@ -354,8 +361,7 @@ class Gateway extends Base\Gateway
                     'actual'   => $exponent
                 ]);
         }
-
-        if ($pARes['@attributes']['id'] !== $input['payment']['public_id'])
+        if ($paRes['Message']['@attributes']['id'] !== $input['payment']['public_id'])
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
