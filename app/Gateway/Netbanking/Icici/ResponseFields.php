@@ -4,6 +4,9 @@ namespace RZP\Gateway\Netbanking\Icici;
 
 class ResponseFields
 {
+    /**
+     * Tells us whether the payment was a success. Can be a Y or N.
+     */
     const PAID             = 'PAID';
     const BANK_PAYMENT_ID  = 'BID';
     const PAYMENT_ID       = 'PRN';
@@ -12,6 +15,10 @@ class ResponseFields
     const CURRENCY_CODE    = 'CRN';
     const CURRENCY         = 'CURRENCY';
     const PAYMENT_DATE     = 'PMTDATE';
+
+    /**
+     * Gives us more information on the success / failure case.
+     */
     const STATUS           = 'STATUS';
     const LC_STATUS        = 'status';
 

@@ -2,10 +2,12 @@
 
 namespace RZP\Gateway\Netbanking\Icici;
 
+use RZP\Models\Customer\Token;
+
 class Status
 {
     const SUCCESS     = 'SUCCESS';
-    const LCF_SUCCESS = 'Success';
+    const SI_SUCCESS  = 'Success';
     const FAILED      = 'FAILED';
     // TODO: Get exact meanings and leave comments on
     // how we get these statuses
@@ -14,4 +16,9 @@ class Status
     const ERROR       = 'Error';
 
     const Y           = 'Y';
+
+    const SI_STATUS_TO_RECURRING_STATUS_MAP = [
+        'Y' => Token\RecurringStatus::CONFIRMED,
+        'N' => Token\RecurringStatus::REJECTED
+    ];
 }

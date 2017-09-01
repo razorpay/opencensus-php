@@ -27,7 +27,7 @@ class SiStatusCode
         self::PREMATURE_SI_EXECUTION      => ErrorCode::GATEWAY_ERROR_PREMATURE_SI_EXECUTION,
         self::SI_EXECUTION_ALREADY_DONE   => ErrorCode::GATEWAY_ERROR_SI_EXECUTION_ALREADY_DONE,
         self::TXN_PARAMETERS_NO_MATCHING  => ErrorCode::BAD_REQUEST_INVALID_PARAMETERS,
-        self::TECHNICAL_ISSUE             => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+        self::TECHNICAL_ISSUE             => ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
     ];
 
     public static function getInternalErrorCode(string $status)

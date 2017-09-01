@@ -33,11 +33,6 @@ class Gateway extends Base\Gateway
         RequestFields::AMOUNT  => 'amount'
     ];
 
-    const SI_STATUS_TO_RECURRING_STATUS_MAP = [
-        'Y' => Token\RecurringStatus::CONFIRMED,
-        'N' => Token\RecurringStatus::REJECTED
-    ];
-
     // Payment type recurring
     const RECURRING = 'R';
 
@@ -120,7 +115,7 @@ class Gateway extends Base\Gateway
     protected function checkSecondRecurringStatus(array $response)
     {
         if ((empty($response[ResponseFields::STATUS]) === true) or
-            ($response[ResponseFields::STATUS] !== Status::LCF_SUCCESS))
+            ($response[ResponseFields::STATUS] !== Status::SI_SUCCESS))
         {
             $errorCode = SiStatusCode::getInternalErrorCode($response[ResponseFields::STATUS]);
 
@@ -656,7 +651,7 @@ class Gateway extends Base\Gateway
         {
             throw new Exception\LogicException(
                 $e->getMessage(),
-                ErrorCode::SERVER_ERROR_EMPTY_VERIFY_RESPONSE,
+                ErrorCode::SERVER_ERROR_EMPTY_RESPONSE,
                 [
                     'response' => $response
                 ]);
@@ -767,7 +762,7 @@ class Gateway extends Base\Gateway
         $siStatus = $gatewayPayment->getSIStatus();
 
         // This null check is used in the test cases
-        $recurringStatus = self::SI_STATUS_TO_RECURRING_STATUS_MAP[$siStatus] ?? null;
+        $recurringStatus = Status::SI_STATUS_TO_RECURRING_STATUS_MAP[$siStatus] ?? null;
 
         // TODO: We should have a mapping here with our internal error codes.
         // We cannot show the message as it is.
