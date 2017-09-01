@@ -193,9 +193,9 @@ class CreatePayments extends Migration
                   ->unsigned()
                   ->nullable();
 
-            $table->integer(Payment::SERVICE_TAX)
-                  ->unsigned()
-                  ->nullable();
+//            $table->integer(Payment::SERVICE_TAX)
+//                  ->unsigned()
+//                  ->nullable();
 
             $table->integer(Payment::TAX)
                   ->unsigned()

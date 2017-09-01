@@ -49,9 +49,9 @@ class CreateTransfers extends Migration
                   ->unsigned()
                   ->default(0);
 
-            $table->integer(Entity::SERVICE_TAX)
-                  ->unsigned()
-                  ->default(0);
+//            $table->integer(Entity::SERVICE_TAX)
+//                  ->unsigned()
+//                  ->default(0);
 
             $table->integer(Entity::TAX)
                   ->unsigned()

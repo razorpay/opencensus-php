@@ -8,7 +8,7 @@ class Name
     const CGST  = 'cgst';
     const SGST  = 'sgst';
 
-    const TAX                       = 'tax';
+    const SERVICE_TAX               = 'service_tax';
     const SWACHH_BHARAT_CESS        = 'swachh_bharat_cess';
     const KRISHI_KALYAN_CESS        = 'krishi_kalyan_cess';
     const TAX                       = 'tax';
