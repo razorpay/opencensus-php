@@ -45,6 +45,15 @@ class Type
         return ((($hexType >> ($pos - 1)) & 1) === 1);
     }
 
+    public static function isApplicableType($types, $type)
+    {
+        if ((isset($types[$type]) === true) and
+            ($types[$type] === '1'))
+        {
+            return true;
+        }
+    }
+
     public static function getValidTypes()
     {
         return self::$types;
@@ -55,15 +64,41 @@ class Type
         return self::$bitPosition[$type];
     }
 
-    public static function getTypeHex($types, $hex)
+    public static function getEnabledType($hex)
     {
-        foreach ($types as $type => $value)
+        $types = [];
+
+        foreach (self::$types as $type)
         {
-            $pos = self::getBitPosition($type);
+            $pos = self::$bitPosition[$type];
+            $value = ($hex >> ($pos - 1)) & 1;
 
-            $value = (($value === true) or ($value === '1')) ? 1 : 0;
+            if ($value)
+            {
+                array_push($types, $type);
+            }
+        }
 
-            // Sets the bit value for the current type.
+        return $types;
+    }
+
+    /**
+     * Takes the hex value and merges it
+     * with the hex value of the events passed.
+     *
+     * @param  array    $events
+     * @param  integer  $hex
+     * @return integer
+     */
+    public static function getHexValue($events, $hex)
+    {
+        foreach ($events as $event => $value)
+        {
+            $pos = Type::getBitPosition($event);
+
+            $value = ($value === '1') ? 1 : 0;
+
+            // Sets the bit value for the current event.
             $hex ^= ((-1 * $value) ^ $hex) & (1 << ($pos - 1));
         }
 

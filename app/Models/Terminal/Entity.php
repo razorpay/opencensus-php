@@ -470,6 +470,25 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::ENABLED] = $status;
     }
 
+    protected function setTypeAttribute($type)
+    {
+        $hex = 0;
+
+        if (isset($this->attributes[self::TYPE]) === true)
+        {
+            $hex = $this->attributes[self::TYPE];
+        }
+
+        $this->attributes[self::TYPE] = Type::getHexValue($type, $hex);
+    }
+
+    protected function getTypeAttribute()
+    {
+        $type = $this->attributes[self::TYPE];
+
+        return Type::getEnabledType($type);
+    }
+
     protected function modifyInternational(& $input)
     {
         if (empty($input[self::INTERNATIONAL]) === true)
@@ -490,25 +509,6 @@ class Entity extends Base\PublicEntity
         if ($isEmi == true)
         {
             $input[self::EMI_SUBVENTION] = $input[self::EMI_SUBVENTION] ?? EmiSubvention::CUSTOMER;
-        }
-    }
-
-    protected function modifyType(& $input)
-    {
-        $hex = 0;
-
-        if (empty($input[self::TYPE]) === false)
-        {
-            // Create flow gives json
-            // Edit flow gives array
-            $inputType = $input[self::TYPE];
-
-            if (is_array($input[Entity::TYPE]) === false)
-            {
-                $inputType = json_decode($input[Entity::TYPE], true);
-            }
-
-            $input[self::TYPE] = Type::getTypeHex($inputType, $hex);
         }
     }
 
