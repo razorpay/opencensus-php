@@ -277,16 +277,9 @@ class TransactionFilter extends Terminal\Filter
                         ]);
                 }
             }
-            else if ($payment->isMethodCardOrEmi())
-            {
-                // For card payments that are first recurring payments,
-                // we check that the terminal is 3DS recurring
-                return ($terminal->is3DSRecurring() === true);
-            }
             else
             {
-                // For netbanking payments, we check that the terminal is recurring
-                return ($terminal->isRecurring());
+                return ($terminal->is3DSRecurring() === true);
             }
         }
 
