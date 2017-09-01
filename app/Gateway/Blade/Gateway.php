@@ -15,7 +15,6 @@ use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Lib\Formatters\Xml;
 use RZP\Models\Currency\Currency;
-use RZP\Exception\ThreeDSecureAuthenticationFailureException;
 
 class Gateway extends Base\Gateway
 {
@@ -241,7 +240,7 @@ class Gateway extends Base\Gateway
                     break;
             }
 
-            throw new ThreeDSecureAuthenticationFailureException($errorCode);
+            throw new Exception\GatewayErrorException($errorCode);
         }
 
         if ($ret === false)
