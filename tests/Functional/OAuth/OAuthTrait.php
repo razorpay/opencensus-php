@@ -12,7 +12,8 @@ trait OAuthTrait
     public function createOAuthApplication(array $attributes = [])
     {
         // Create Application
-        $application = factory(Application\Entity::class)->create($attributes);
+        $application = factory(Application\Entity::class)
+                        ->create($attributes);
 
         // Create dev Client for the Application
         factory(Client\Entity::class)->create(

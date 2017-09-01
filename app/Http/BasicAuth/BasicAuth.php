@@ -193,6 +193,10 @@ class BasicAuth
      * rzp_mode_admin      = 3 + 1 + 4 + 1 + 5
      * rzp_mode_keyId      = 3 + 1 + 4 + 1 + 24
      * rzp_mode_merchantId = 3 + 1 + 4 + 1 + 14
+     *
+     * NOTE: key length 29 is used for OAuth public tokens,
+     * hence DO NOT add 29 as a valid length for basicAuth
+     *
      * @var array
      */
     protected static $validKeyLengths = [
@@ -1111,6 +1115,11 @@ class BasicAuth
         $this->isAdmin = true;
     }
 
+    public function setPublicKey(string $publicKey)
+    {
+        $this->creds['public_key'] = $publicKey;
+    }
+
     protected function setProxyTrue()
     {
         $this->proxy = true;
@@ -1189,12 +1198,6 @@ class BasicAuth
      */
     public function hasScope(string $scope) : bool
     {
-        if (($scope === '*') or
-            ($scope === '*.*'))
-        {
-            return true;
-        }
-
         $allScopes = $this->scopes ?? [];
 
         return (in_array($scope, $allScopes, true) === true);

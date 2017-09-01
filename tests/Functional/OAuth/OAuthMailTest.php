@@ -4,12 +4,9 @@ namespace RZP\Tests\Functional\OAuth;
 
 use Mail;
 
-use RZP\Tests\Functional\OAuth\OAuthTestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
-
-use Razorpay\OAuth\Client;
 use Razorpay\OAuth\Application;
-use RZP\Tests\Functional\OAuth\OAuthTrait;
+
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Mail\OAuth\AppAuthorized as OAuthAppAuthorizedMail;
 
 class OAuthMailTest extends OAuthTestCase
@@ -30,10 +27,12 @@ class OAuthMailTest extends OAuthTestCase
     {
         Mail::fake();
 
-        $application = $this->createOAuthApplication([
-                                                Application\Entity::ID => '10000000000App',
-                                                Application\Entity::NAME => 'Test App'
-                                            ]);
+        $appData = [
+            Application\Entity::ID   => '10000000000App',
+            Application\Entity::NAME => 'Test App'
+        ];
+
+        $application = $this->createOAuthApplication($appData);
 
         $clients = $application->clients()->get()->all();
 

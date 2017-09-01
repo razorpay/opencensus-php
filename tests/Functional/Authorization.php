@@ -46,7 +46,21 @@ class Authorization
     {
         $this->auth = [
             'PHP_AUTH_USER' => $user,
-            'PHP_AUTH_PW' => $pwd
+            'PHP_AUTH_PW'   => $pwd
+        ];
+    }
+
+    public function oauthBearer(string $token)
+    {
+        // TODO
+    }
+
+    public function oauthPublicToken(string $token)
+    {
+        $this->type = 'public';
+
+        $this->auth = [
+            'PHP_AUTH_USER' => $token
         ];
     }
 

@@ -5,7 +5,7 @@ namespace RZP\Http;
 class Scopes
 {
     protected static $scopes = [
-        'transfer_create'                   => ['transfers.write']
+        'transfer_create'           => ['transfer.write']
     ];
 
     /**
@@ -22,11 +22,6 @@ class Scopes
         self::addDefaultScopes($scopes, $route);
 
         return $scopes;
-    }
-
-    public function checkAnyScopesOnRoute(array $tokenScopes, string $route)
-    {
-        // TODO
     }
 
     /**
@@ -50,7 +45,7 @@ class Scopes
         }
         else
         {
-            $defaultScopes[] = 'write_only';
+            $defaultScopes[] = 'read_write';
         }
 
         $scopes = array_merge($scopes, $defaultScopes);

@@ -6,13 +6,12 @@ use Closure;
 use ApiResponse;
 use Illuminate\Foundation\Application;
 
-use RZP\Error\ErrorCode;
-use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Http\Route;
 use RZP\Http\OAuth;
 use RZP\Http\Scopes;
 use RZP\Http\Throttle;
-use RZP\Http\BasicAuth\Type;
+use RZP\Error\ErrorCode;
+use RZP\Http\BasicAuth\BasicAuth;
 
 class Authenticate
 {
@@ -29,6 +28,11 @@ class Authenticate
     protected $ba;
 
     /**
+     * @var OAuth
+     */
+    protected $oauth;
+
+    /**
      * Create a new filter instance.
      *
      * @param Application $app
@@ -38,10 +42,12 @@ class Authenticate
         $this->app = $app;
 
         $this->ba  = $this->app['basicauth'];
+
+        $this->oauth = new OAuth();
     }
 
     /**
-     * Handle an incoming request.
+     * Handle an incoming request
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \Closure  $next
@@ -111,7 +117,20 @@ class Authenticate
         }
         else if (in_array($route, Route::$public, true) === true)
         {
-            $ret = $ba->publicAuth();
+            //
+            // For public routes, OAuth sends a public_token using BasicAuth
+            // We check here if the key is an OAuth public token and
+            // process accordingly.
+            //
+            if ($this->oauth->hasOAuthPublicToken() === true)
+            {
+                $ret = $this->authenticateOAuthPublicToken();
+            }
+            else
+            {
+                // Process via BasicAuth
+                $ret = $ba->publicAuth();
+            }
         }
         else if (in_array($route, Route::$publicCallback, true) === true)
         {
@@ -138,6 +157,8 @@ class Authenticate
     }
 
     /**
+     * Authenticate the request with a OAuth token
+     *
      * @param string $route
      * @param string $bearerToken
      *
@@ -146,60 +167,27 @@ class Authenticate
     protected function authenticateBearerAuth(string $route, string $bearerToken)
     {
         //
-        // Only `private` auth endpoints may be accessed
-        // on OAuth
+        // Only private auth endpoints may be accessed
+        // with OAuth bearer tokens
         //
         if (in_array($route, Route::$private, true) === false)
         {
             return ApiResponse::routeNotFound();
         }
 
-        $oauth = new OAuth;
-
-        list($merchantId, $tokenId, $clientId) = $oauth->resolveToken($bearerToken);
-
-        if ($merchantId === null)
-        {
-            // todo: Change to unauthorized response
-            return ApiResponse::unauthorized(ErrorCode::BAD_REQUEST_ACCESS_DENIED);
-        }
-
-        $routeScopes = Scopes::getScopesForRoute($route);
-
-        $scopeAllowed = $this->checkScopes($routeScopes);
-
-        if ($scopeAllowed === false)
-        {
-            // todo: Change to unauthorized response
-            return ApiResponse::httpMethodNotAllowed();
-        }
-
-        //
-        // Set merchant for the current request
-        // TODO: Move this to a common auth class
-        //
-        $this->ba->setMerchantById($merchantId);
-
-        $this->ba->setMode('test');
-
-        \Database\DefaultConnection::set('test');
-
-        $this->ba->setAccessTokenId($tokenId);
-
-        $this->ba->setOAuthClientId($clientId);
+        return $this->oauth->resolveBearerToken($bearerToken);
     }
 
-    protected function checkScopes(array $routeScopes) : bool
+    /**
+     * Handle authentication for public route that have an
+     * OAuth public token set
+     * Sample token: rzp_test_oauth_8P3XVPteKu4igS
+     *
+     * @return mixed|null ErrorResponse if error, else null
+     */
+    protected function authenticateOAuthPublicToken()
     {
-        foreach ($routeScopes as $scope)
-        {
-            if ($this->ba->hasScope($scope) === true)
-            {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->oauth->resolvePublicToken();
     }
 
     /**
@@ -219,12 +207,14 @@ class Authenticate
 
         $featureCheck = $this->ba->feature();
 
-        $this->addTraceDataForMerchantAndAdmin($this->ba);
+        $this->addTraceDataForMerchantAndAdmin();
 
         if ($featureCheck !== null)
         {
             return $featureCheck;
         }
+
+        return null;
     }
 
     /**
@@ -242,14 +232,15 @@ class Authenticate
      * is being made. Adds dashboard headers details for admin etc. making
      * the request.
      */
-    private function addTraceDataForMerchantAndAdmin($ba)
+    private function addTraceDataForMerchantAndAdmin()
     {
-        $merchantId = $ba->getMerchantIdOfKey();
+        $merchantId = $this->ba->getMerchantIdOfKey();
+
         $data = ['merchant_id' => $merchantId];
 
-        if ($ba->isDashboardApp())
+        if ($this->ba->isDashboardApp() === true)
         {
-            $dashboardHeaders = $ba->getDashboardHeaders();
+            $dashboardHeaders = $this->ba->getDashboardHeaders();
 
             $data = array_merge($data, $dashboardHeaders);
         }
