@@ -1,0 +1,72 @@
+import { NavLink } from 'react-router-dom';
+import Amount from 'rzp/ui/Amount';
+import Time from 'rzp/ui/Time';
+import Spinner from 'rzp/ui/Spinner';
+import { titleCase } from 'rzp/utils/rzp-utils';
+import CopyLink from 'merchant/components/Invoices/CopyLink';
+import ShowWhen from 'merchant/components/ShowWhen';
+import LineItemReadOnlyTable from 'merchant/components/Invoices/LineItemReadOnlyTable';
+import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
+
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
+
+const notificationClassMap = {
+  sent: 'text-success',
+  pending: 'text-warning',
+};
+
+export default props => {
+  let { invoice, isLoading, statusMsg, payments } = props;
+
+  return (
+    <div class="content-wrapper content-sm txn-details">
+      {isLoading
+        ? <div class="page-spinner-container">
+            <Spinner />
+          </div>
+        : <div class="panel panel-default SliderPanel">
+            <div class="panel-heading">
+              {props.onClose &&
+                <button
+                  type="button"
+                  class="close close-secondary"
+                  onClick={props.onClose}
+                >
+                  <i class="icon icon-arrow-back" />
+                  <i class="icon icon-close" />
+                </button>}
+              <i class="icon icon-link text-primary icon--formal" />{' '}
+              <strong>{invoice.id}</strong>
+            </div>
+
+            <div class="SliderPanel__Body">
+              <div class="panel-body">
+                <div class="list-group details-row-container">
+                  <EntityDetailRow
+                    label="Invoice"
+                    value={() =>
+                      <NavLink to={`/invoices/${invoice.id}`} target="_blank">
+                        {invoice.id}
+                        <i class="icon icon-external-link" />
+                      </NavLink>}
+                  />
+                  <EntityDetailRow
+                    label="Invoice Status"
+                    value={() => <InvoiceStatusLabel status={invoice.status} />}
+                  />
+                  <EntityDetailRow
+                    label="Amount"
+                    value={() =>
+                      <Amount
+                        currency={invoice.currency}
+                        value={invoice.amount}
+                      />}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>}
+    </div>
+  );
+};

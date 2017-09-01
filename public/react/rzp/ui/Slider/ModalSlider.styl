@@ -1,16 +1,20 @@
+$slider-width = 500px
+
+.close-secondary {
+  display: none;
+}
+
 .ModalSlider__Overlay.ReactModal__Overlay {
-  width: 525px;
+  width: $slider-width;
   position: fixed;
   top: 51px;
-  right: 0;
+  left: 100%;
+  margin-left: - $slider-width;
   bottom: 0;
-  left: auto;
   box-shadow: 0 0 10px 0 rgba(0,0,0,0.1);
   transform: translateX(90%);
-  transition: transform 300ms linear;
+  transition: .3s, .24s opacity;
   z-index: 2;
-  background-color: #fff;
-  overflow: hidden;
   padding-bottom: 45px;
 
   @media (max-width: 650px) {
@@ -19,12 +23,48 @@
   }
 
   &.ReactModal__Overlay--after-open {
-    transform: translateX(1%);
+    transform: none;
+  }
+
+  &.expanded {
+    @media (min-width: 1280px) {
+      transform: translateX(-100%);
+      .content-wrapper {
+        &:first-child {
+          .panel, .panel-heading {
+            background-color: #FAFAFA;
+          }
+        }
+      }
+    }
+  }
+  .close-secondary {
+    left: 100%;
+    display: block;
+    .icon-arrow-back {
+      display: none;
+    }
+  }
+
+  @media (max-width: 1279px) {
+    .close-secondary {
+      left: 0;
+      margin: 3px 0 0 6px;
+      .icon-arrow-back {
+        display: block;
+      }
+      .icon-close {
+        display: none;
+      }
+    }
+    .content-wrapper:not(:first-child) .panel-heading {
+      padding-left: 50px;
+    }
   }
 
   &.ReactModal__Overlay--before-close {
-    opacity: 1;
-    transform: translateX(90%);
+    opacity: 0;
+    transform: translateX(100%);
   }
 }
 
@@ -36,30 +76,30 @@
     padding: 10px;
     position: absolute;
     top: 16px;
-    right: 10px;
+    margin-left: -53px;
+    left: 100%;
     z-index: 2;
   }
 
   .content-wrapper {
-    padding: 0;
-  }
-
-  .SliderPanel {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    overflow: auto;
+    max-width: none
+    margin: 0
+    min-height: 0;
+    padding: 0
+    position: absolute
+    top: 0
+    bottom: 0
+    background: #fff
+    width: 100%
+    @media (min-width: 1280px) {
+      &+.content-wrapper {
+        left: 100%;
+      }
+    }
   }
 
   .SliderPanel__Body {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 75px;
-    bottom: 0;
-    overflow: auto;
-
     > .panel-body {
       padding-bottom: 80px;
     }

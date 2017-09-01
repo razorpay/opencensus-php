@@ -18,6 +18,12 @@ body {
   outline: 0 !important;
 }
 
+a {
+  .icon {
+    margin-left: 8px;
+  }
+}
+
 .icon {
   vertical-align: text-bottom;
   font-size: 110%;
@@ -251,6 +257,48 @@ body {
   margin: auto;
   min-height: 300px;
   background-color: #fff;
+}
+
+.main-content .multi-content {
+  font-size: 0;
+  max-width: 1200px;
+  margin: 90px auto;
+  background: #fff;
+  border: 1px solid #eee
+  position: relative;
+
+  &:before {
+    z-index: 1;
+    content: '';
+    border-left: 1px solid #eaeff0;
+    height: 100%;
+    top: 0;
+    position: absolute;
+    left: 50%;
+    @media (max-width: 1000px) {
+      content: none;
+    }
+  }
+
+  .content-sm {
+    position: relative;
+    padding: 0 20px;
+    display: inline-block;
+    vertical-align: top;
+    font-size: 14px;
+    width: 50%;
+    @media (max-width: 1000px) {
+      width: 100%
+    }
+    &:only-of-type:before {
+      position: absolute;
+      left: 100%;
+      width: 100%;
+      text-align: center;
+      top: 200px;
+      content: 'Click on an invoice or payment\Ato view its details here.'
+    }
+  }
 }
 
 // React Modal Style Overrides
