@@ -308,7 +308,7 @@ class Gateway extends Base\Gateway
             else if ($verify->input['payment']['recurring'] === true)
             {
 //                TODO: Not all SI based payments are mapped to this success status - ensure this is right
-                $verify->gatewaySuccess = ($status !== Status::FAILED);
+                $verify->gatewaySuccess = ($status !== Status::SI_FAILED);
             }
             // Whereas, the retail verify success is success
             else

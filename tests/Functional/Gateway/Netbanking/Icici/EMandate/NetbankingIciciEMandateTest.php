@@ -334,6 +334,26 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertNotNull($verify['gateway']['verifyResponseContent']['RID']);
     }
 
+    public function testPaymentVerfyFailed()
+    {
+        $payment = $this->payment;
+
+        $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->mockVerifyFailure();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
+    }
+
     public function testNullSecondRecurringResponse()
     {
         $payment = $this->payment;
@@ -497,6 +517,15 @@ class NetbankingIciciEMandateTest extends TestCase
                     $content['SCHSTATUS'] = 'N';
                     $content['SCHMSG'] = 'Failure';
                 }
+            });
+    }
+
+    protected function mockVerifyFailure()
+    {
+        $this->mockServerContentFunction(
+            function(&$content, $action = null)
+            {
+                $content['STATUS'] = 'Failed';
             });
     }
 
