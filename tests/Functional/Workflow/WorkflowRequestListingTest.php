@@ -92,4 +92,22 @@ class WorkflowRequestListingTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testWorkflowSuperAdminAllRequests()
+    {
+        $this->ba->adminAuth('test');
+
+        $this->fixtures->create('workflow_action:closed_workflow_action');
+
+        $this->startTest();
+    }
+
+    public function testWorkflowSuperAdminOpenRequests()
+    {
+        $this->ba->adminAuth('test');
+
+        $this->fixtures->create('workflow_action:closed_workflow_action');
+
+        $this->startTest();
+    }
 }

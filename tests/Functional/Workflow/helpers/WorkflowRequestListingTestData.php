@@ -102,4 +102,43 @@ return [
             ]
         ],
     ],
+    'testWorkflowSuperAdminAllRequests' => [
+        'request' => [
+            'method'    => 'GET',
+            'url'       => '/v1/w-actions?duty=super&type=all',
+            'content'   => [],
+        ],
+        'response' => [
+            'content'   => [
+                'entity'    => 'collection',
+                'count'     => 2,
+                'items'     => [
+                    [
+                        'state'             => 'closed',
+                    ],
+                    [
+                        'state'             => 'open',
+                    ]
+                ]
+            ]
+        ]
+    ],
+    'testWorkflowSuperAdminOpenRequests' => [
+        'request' => [
+            'method'    => 'GET',
+            'url'       => '/v1/w-actions?duty=super&type=open',
+            'content'   => [],
+        ],
+        'response' => [
+            'content'   => [
+                'entity'    => 'collection',
+                'count'     => 1,
+                'items'     => [
+                    [
+                        'state'             => 'open',
+                    ]
+                ]
+            ]
+        ]
+    ]
 ];
