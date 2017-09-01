@@ -45,7 +45,7 @@ return [
         'signed'            => false,
         'verified'          => null,
         'fee'               => 1000,
-        'service_tax'       => 0,
+        //'service_tax'       => 0,
         'tax'               => 0,
         'entity'            => 'payment',
     ],
