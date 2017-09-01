@@ -13,6 +13,7 @@ import { fetchConfig } from 'merchant/modules/config';
 import { fetchCustomersForAutocomplete } from 'merchant/modules/customers';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import CustomerCreation from 'merchant/containers/Customers/New';
+import QuickAddComponent from 'rzp/ui/Select/QuickAdd';
 import * as ModalActions from 'rzp/modules/modals';
 
 const VirtualAccountDetails = ({ virtualAccount }) => {
@@ -93,6 +94,15 @@ export default class CreateVirtualAccount extends Component {
     this.props.fetchCustomersForAutocomplete();
   }
 
+  componentWillReceiveProps(nextProps) {
+    // Prepoluate field (Just to display in customer selection. Actual value is props.customer_id, and it's already init through redux-form)
+    if (!this.state.customerId && this.props.customer !== nextProps.customer) {
+      this.setState({
+        customerId: nextProps.customer,
+      });
+    }
+  }
+
   save = props => {
     return this.props
       .saveVirtualAccount(props)
@@ -129,12 +139,20 @@ export default class CreateVirtualAccount extends Component {
     });
   };
 
+  handleChange = () => {
+    setTimeout(() =>
+      document
+        .getElementsByClassName('virtual-account-powerselect__Menu')[0]
+        .parentNode.classList.add('super-impose')
+    );
+  };
+
   handleSelect = ({ option }) => {
     // For setting in redux-form
     if (option) {
       this.props.change('customer_id', option.id);
     } else {
-      this.props.reset('customer_id');
+      this.props.untouch('createVirtualAccount', 'customer_id');
     }
 
     // For display purpose only in TypeAhead
@@ -144,7 +162,7 @@ export default class CreateVirtualAccount extends Component {
   render() {
     const {
       handleSubmit,
-      reset,
+      untouch,
       handle = '',
       descriptor = '',
       customers = [],
@@ -170,30 +188,32 @@ export default class CreateVirtualAccount extends Component {
                   <label>Customer (Optional)</label>
                   <TypeAhead
                     options={customers}
+                    disabled={!customers.length}
                     class="virtual-account-powerselect"
-                    placeholder="Select a customer"
+                    placeholder={`${!customers.length
+                      ? 'Loading...'
+                      : 'Select a customer'}`}
                     showClear={true}
                     selected={this.state.customerId}
                     selectedOptionLabelPath="selectedDisplayName"
-                    optionLabelPath="displayName"
                     optionComponent={({ option }) => {
                       return (
                         <div class="custom-powerselect-options">
-                          {option.displayName}
+                          {option.name &&
+                            <b>
+                              {option.name} :{' '}
+                            </b>}
+                          {option.email || option.contact}
                         </div>
                       );
                     }}
-                    onClick={() => {
-                      setTimeout(() =>
-                        document
-                          .getElementsByClassName(
-                            'virtual-account-powerselect__Menu'
-                          )[0]
-                          .parentNode.classList.add('super-impose')
-                      );
-                    }}
+                    onClick={this.handleChange}
                     onChange={this.handleSelect}
-                    onQuickAdd={this.quickCreateCustomer}
+                    afterOptionsComponent={select =>
+                      <QuickAddComponent
+                        {...select}
+                        onClick={this.quickCreateCustomer}
+                      />}
                   />
                 </div>
 
@@ -204,7 +224,6 @@ export default class CreateVirtualAccount extends Component {
                     class="form-control"
                     component="input"
                     required={true}
-                    autoFocus={true}
                   />
                   <small class="help-block">
                     Account description is only displayed on the dashboard and
