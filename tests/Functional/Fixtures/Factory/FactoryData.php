@@ -32,6 +32,7 @@ final class FactoryData
             'settlement_schedule'      => 3,
             'fee_bearer'               => \RZP\Models\Merchant\FeeBearer::PLATFORM,
             'risk_rating'              => 3,
+            'invoice_code'             => '123456789011',
         ]);
 
         $factory(\RZP\Models\Terminal\Entity::class, [
