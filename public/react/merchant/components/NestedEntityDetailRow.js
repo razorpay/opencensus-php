@@ -1,8 +1,9 @@
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import NestedEntityDetailToggler
-  from 'rzp/ui/Toggler/NestedEntityDetailToggler';
+import NestedEntityDetailToggler from 'rzp/ui/Toggler/NestedEntityDetailToggler';
 
 export default ({ label, value = {} }) => {
+  const placeholder = '--';
+
   if (Object.keys(value).length) {
     return (
       <NestedEntityDetailToggler label={label} show={false}>
@@ -10,7 +11,7 @@ export default ({ label, value = {} }) => {
           {Object.keys(value).map(key => (
             <div key={key} class="pair-list-item">
               <div class="item-label">{key}</div>
-              <div class="items-value">{value[key]}</div>
+              <div class="items-value">{value[key] || placeholder}</div>
             </div>
           ))}
         </div>
@@ -18,5 +19,5 @@ export default ({ label, value = {} }) => {
     );
   }
 
-  return <EntityDetailRow label={label} value="--" />;
+  return <EntityDetailRow label={label} value={placeholder} />;
 };
