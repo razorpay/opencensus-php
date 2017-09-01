@@ -29,8 +29,6 @@ class OAuthPublicTokenTest extends OAuthTestCase
 
     public function testAuthenticatePublicTokenViaKeyIdParam()
     {
-        $this->ba->publicAuth();
-
         $this->ba->oauthPublicToken($this->publicToken);
 
         $this->startTest();
@@ -38,9 +36,7 @@ class OAuthPublicTokenTest extends OAuthTestCase
 
     public function testOAuthPublicTokenPrivateRoute()
     {
-        $this->ba->privateAuth();
-
-        $this->ba->oauthPublicToken($this->publicToken);
+        $this->ba->privateAuth($this->publicToken);
 
         $this->startTest();
     }
@@ -48,8 +44,6 @@ class OAuthPublicTokenTest extends OAuthTestCase
     public function testOAuthInvalidPublicToken()
     {
         $token = 'rzp_test_oauth_10000000Random';
-
-        $this->ba->publicAuth();
 
         $this->ba->oauthPublicToken($token);
 
@@ -68,8 +62,6 @@ class OAuthPublicTokenTest extends OAuthTestCase
 
         $publicToken = $token->getPublicTokenWithPrefix();
 
-        $this->ba->publicAuth();
-
         $this->ba->oauthPublicToken($publicToken);
 
         $this->startTest();
@@ -85,8 +77,6 @@ class OAuthPublicTokenTest extends OAuthTestCase
         $token = factory(Token\Entity::class)->create($tokenData);
 
         $publicToken = $token->getPublicTokenWithPrefix();
-
-        $this->ba->publicAuth();
 
         $this->ba->oauthPublicToken($publicToken);
 

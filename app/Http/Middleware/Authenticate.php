@@ -44,6 +44,8 @@ class Authenticate
         $this->app = $app;
 
         $this->ba  = $this->app['basicauth'];
+
+        $this->oauth = new OAuth();
     }
 
     /**
@@ -60,8 +62,6 @@ class Authenticate
         $route = $router->currentRouteName();
 
         $this->request = $request;
-
-        $this->oauth = new OAuth($request);
 
         // Check for disabled routes
         if (in_array($route, Route::DISABLED_ROUTES, true) === true)

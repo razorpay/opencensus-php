@@ -35,7 +35,7 @@ class OAuth
      */
     protected $publicToken;
 
-    public function __construct(Request $request)
+    public function __construct()
     {
         $app = App::getFacadeRoot();
 
@@ -45,7 +45,7 @@ class OAuth
 
         $this->server = new OAuthServer();
 
-        $this->request = $request;
+        $this->request = $app['request'];
     }
 
     /**

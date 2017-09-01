@@ -57,6 +57,8 @@ class Authorization
 
     public function oauthPublicToken(string $token)
     {
+        $this->type = 'public';
+
         $this->auth = [
             'PHP_AUTH_USER' => $token
         ];
