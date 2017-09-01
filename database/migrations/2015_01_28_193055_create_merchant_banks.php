@@ -30,6 +30,9 @@ class CreateMerchantBanks extends Migration
             $table->tinyInteger(Methods::AMEX)
                   ->default(0);
 
+            $table->text(Methods::DISABLED_BANKS)
+                  ->nullable();
+
             $table->text(Methods::BANKS);
 
             $table->tinyInteger(Methods::PAYTM)

@@ -610,6 +610,12 @@ UPDATE hdfc
     SET gateway_transaction_id = null
     WHERE enroll_result = "3" AND gateway_payment_id = gateway_transaction_id AND gateway_payment_id is NOT NULL AND status = 'captured';
 
+update merchants
+set invoice_code = upper(concat(substr(`id`,1, 8), substr(`id`, -4)));
+
+update merchant_invoice
+set invoice_number = upper(concat(substr(`merchant_id`,1, 8), substr(`merchant_id`, -4), '0717'));
+
 UPDATE transfers as tr
     JOIN payments as p
         ON p.transfer_id = tr.id

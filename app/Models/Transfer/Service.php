@@ -88,7 +88,7 @@ class Service extends Base\Service
                           ->transfer
                           ->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $reversal = (new Reversal\Core)->reverse($transfer, $input, $this->merchant);
+        $reversal = (new Reversal\Core)->reverseForTransfer($transfer, $input, $this->merchant);
 
         return $reversal->toArrayPublic();
     }
