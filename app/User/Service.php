@@ -389,6 +389,11 @@ class Service extends Base\Service
 
         $user = User\Entity::getUserForConfirmation($token);
 
+        if (empty($user) === true)
+        {
+            return [[static::INVALID_CONFIRMATION_TOKEN], []];
+        }
+
         $user->confirm();
 
         $this->subscribeToMailingList($user);
