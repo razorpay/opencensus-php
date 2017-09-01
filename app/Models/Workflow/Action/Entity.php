@@ -123,24 +123,19 @@ class Entity extends Base\Entity
         return $this->belongsTo('RZP\Models\Admin\Permission\Entity');
     }
 
-    public function state()
-    {
-        return $this->hasMany('RZP\Models\Workflow\Action\State\Entity', self::ACTION_ID);
-    }
+    // public function state()
+    // {
+    //     return $this->hasMany('RZP\Models\Workflow\Action\State\Entity', self::ACTION_ID);
+    // }
 
-    public function org()
-    {
-        return $this->belongsTo('RZP\Models\Admin\Org\Entity');
-    }
+    // public function org()
+    // {
+    //     return $this->belongsTo('RZP\Models\Admin\Org\Entity');
+    // }
 
     public function admin()
     {
         return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
-    }
-
-    public function setApproved(bool $status)
-    {
-        $this->setAttribute(self::APPROVED);
     }
 
     public function setCurrentLevel(int $level)
@@ -163,18 +158,6 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::APPROVED);
     }
 
-    public function getFinalState()
-    {
-        if (empty($this->getId()) === true)
-        {
-            return;
-        }
-
-        $state = (new State\Repository)->getLatestState($this->getId());
-
-        return $state;
-    }
-
     public function getState()
     {
         return $this->getAttribute(self::STATE);
@@ -185,11 +168,6 @@ class Entity extends Base\Entity
         $state = $this->getState();
 
         return ($state === State\Entity::EXECUTED);
-    }
-
-    public function incrementCurrentLevel()
-    {
-        $this->increment(self::CURRENT_LEVEL);
     }
 
     public function getAdminId()
