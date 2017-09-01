@@ -46,7 +46,7 @@ class NodalAccount extends Base\Core
 
         $fileData = $this->createFile($rows);
 
-        // $this->sendAxisTransferMail($fileData);
+        $this->sendAxisTransferMail($fileData);
 
         return ['file' => $fileData['file_path']];
     }
