@@ -319,7 +319,7 @@ class Service extends Base\Service
         return $result;
     }
 
-    protected function removeNetbankingRecurringTokens($tokens)
+    public function removeNetbankingRecurringTokens($tokens)
     {
         //
         // We are creating an array of all the items that do not pass the truth test
