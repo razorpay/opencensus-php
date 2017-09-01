@@ -1403,7 +1403,7 @@ class Gateway extends Base\Gateway
 
     protected function getGatewayCertDirName()
     {
-        return $this->config[static::CERTIFICATE_DIRECTORY_NAME];
+        return $this->config[self::CERTIFICATE_DIRECTORY_NAME];
     }
 
     protected function getServerCertificate()
@@ -1415,15 +1415,11 @@ class Gateway extends Base\Gateway
 
     public function getClientCertificateName()
     {
-        switch ($this->input['card']['network'])
-        {
-            case Card\Network::MC:
-                $certName = $this->config['live_mastercard_certificate'];
-                break;
+        $certName = $this->getStoreId() . '.' . self::CERTIFICATE_FORMAT_P12;
 
-            case Card\Network::VISA:
-                $certName = $this->config['live_visa_certificate'];
-                break;
+        if ($this->isChildStoreId() === true)
+        {
+            $certName = $this->config['client_certificate'];
         }
 
         return $certName;
@@ -1438,13 +1434,29 @@ class Gateway extends Base\Gateway
 
         if (file_exists($clientCertPath) === false)
         {
-            // TODO: Select client certificates from terminals
+            $clientCertFile = fopen($clientCertPath, 'w');
 
-            // $this->trace->info(
-                // TraceCode::CLIENT_CERTIFICATE_FILE_GENERATED,
-                // [
-                    // 'clientCertPath' => $clientCertPath
-                // ]);
+            $encodedCert = $this->terminal[Terminal\Entity::GATEWAY_CLIENT_CERTIFICATE];
+
+            if ($this->isChildStoreId() === true)
+            {
+                $encodedCert = $this->config['live_client_certificate'];
+            }
+
+            if ($this->mode === Mode::TEST)
+            {
+                $encodedCert = $this->config['test_client_certificate'];
+            }
+
+            $key = base64_decode($encodedCert);
+
+            fwrite($clientCertFile, $key);
+
+            $this->trace->info(
+                TraceCode::CLIENT_CERTIFICATE_FILE_GENERATED,
+                [
+                    'clientCertPath' => $clientCertPath
+                ]);
         }
 
         return $clientCertPath;
