@@ -33,6 +33,7 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_ID            = 'transaction_id';
     const RECIPIENT_SETTLEMENT_ID   = 'recipient_settlement_id';
     const RECIPIENT_SETTLEMENT      = 'recipient_settlement';
+    const RECIPIENT_SETTLEMENT_DATE = 'recipient_settlement_date';
 
     // Public Attribute keys for SOURCE_ID and TO_ID
     const SOURCE                = 'source';
@@ -397,6 +398,24 @@ class Entity extends Base\PublicEntity
     public function toArrayReport()
     {
         $data = parent::toArrayReport();
+
+        $settlementId       = null;
+        $settlementDate     = null;
+        $utr                = null;
+
+        $recipientSettlement = $this->recipientSettlement;
+
+        if ($recipientSettlement !== null)
+        {
+            $recipientSettlementDetails = $this->recipientSettlement->toArray();
+            $settlementId               = $recipientSettlementDetails[Settlement\Entity::ID];
+            $settlementDate             = $recipientSettlementDetails[Settlement\Entity::SETTLED_ON];
+            $utr                        = $recipientSettlementDetails[Settlement\Entity::UTR];
+        }
+
+        $data[self::RECIPIENT_SETTLEMENT_ID]    = $settlementId;
+        $data[self::RECIPIENT_SETTLEMENT_DATE]  = $settlementDate;
+        $data[Settlement\Entity::UTR]           = $utr;
 
         $tax = $data[self::TAX];
 
