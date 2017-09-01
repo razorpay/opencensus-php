@@ -33,7 +33,10 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_ID            = 'transaction_id';
     const RECIPIENT_SETTLEMENT_ID   = 'recipient_settlement_id';
     const RECIPIENT_SETTLEMENT      = 'recipient_settlement';
-    const RECIPIENT_SETTLEMENT_DATE = 'recipient_settlement_date';
+
+    // Report fields
+    const SETTLEMENT_DATE           = 'settlement_date';
+    const SETTLEMENT_UTR            = 'settlement_utr';
 
     // Public Attribute keys for SOURCE_ID and TO_ID
     const SOURCE                = 'source';
@@ -399,32 +402,31 @@ class Entity extends Base\PublicEntity
     {
         $data = parent::toArrayReport();
 
-        $settlementId       = null;
-        $settlementDate     = null;
-        $utr                = null;
+        $settlementId   = null;
+        $settlementDate = null;
+        $utr            = null;
 
         $recipientSettlement = $this->recipientSettlement;
 
         if ($recipientSettlement !== null)
         {
-            $recipientSettlementDetails = $this->recipientSettlement->toArray();
+            $recipientSettlementDetails = $recipientSettlement->toArray();
             $settlementId               = $recipientSettlementDetails[Settlement\Entity::ID];
             $settlementDate             = $recipientSettlementDetails[Settlement\Entity::SETTLED_ON];
             $utr                        = $recipientSettlementDetails[Settlement\Entity::UTR];
         }
 
-        $data[self::RECIPIENT_SETTLEMENT_ID]    = $settlementId;
-        $data[self::RECIPIENT_SETTLEMENT_DATE]  = $settlementDate;
-        $data[Settlement\Entity::UTR]           = $utr;
-
         $tax = $data[self::TAX];
 
-        // Add tax key at the end to maintain order of columns in the report
+        // Unset the keys here and set it at the end to maintain order of columns in the report
+        unset($data[self::RECIPIENT_SETTLEMENT_ID]);
         unset($data[self::TAX]);
 
-        $data[self::ON_HOLD] = $this->getOnHold() ? "true" : "false";
-
-        $data[self::TAX] = $tax;
+        $data[self::ON_HOLD]                 = $this->getOnHold() ? "true" : "false";
+        $data[self::RECIPIENT_SETTLEMENT_ID] = $settlementId;
+        $data[self::SETTLEMENT_DATE]         = $settlementDate;
+        $data[self::SETTLEMENT_UTR]          = $utr;
+        $data[self::TAX]                     = $tax;
 
         return $data;
     }
