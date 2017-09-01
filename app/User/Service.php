@@ -915,10 +915,12 @@ class Service extends Base\Service
         $this->cache->put($cacheKey, $data, 10);
 
         $response = [
-            'token' => $token,
-            'email' => $user->email,
-            'name'  => $user->name,
-            'role'  => $currentMerchant->role
+            'token'         => $token,
+            'email'         => $user->email,
+            'name'          => $user->name,
+            'role'          => $currentMerchant->role,
+            'merchant_name' => $currentMerchant->name,
+            'logo'          => $currentMerchant->logo_url
         ];
 
         return [$error, $response];

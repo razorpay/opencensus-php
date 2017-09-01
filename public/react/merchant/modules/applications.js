@@ -64,7 +64,6 @@ export const createApplication = params => {
   };
 };
 export const updateApplication = (id, params) => {
-  debugger;
   let application = new Application({ id });
 
   return {
