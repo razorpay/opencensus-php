@@ -190,6 +190,8 @@ class Checkout
 
             $savedTokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
 
+            $savedTokens = (new Customer\Service)->removeNetbankingRecurringTokens($savedTokens);
+
             $custData =  array(
                 'email'     => $customer->getEmail(),
                 'contact'   => $customer->getContact(),
@@ -325,33 +327,6 @@ class Checkout
             $this->trace->traceException(
                 $ex, Trace::WARNING, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION, $input);
         }
-    }
-
-    protected function removeNetbankingRecurringTokens(array & $data)
-    {
-        $tokens = $data['customer']['tokens'];
-
-        //
-        // We are creating an array of all the items that do not pass the truth test
-        // that the token is recurring and netbanking - as we do not want to show
-        // recurring = netbanking tokens to the merchant via preferences
-        //
-        $tokens = $tokens->reject(
-                    function($token)
-                    {
-                        if (($token->getMethod() === 'netbanking') and
-                            ($token->isRecurring() === true))
-                        {
-                            return true;
-                        }
-
-                        return false;
-                    })
-                    ->toArrayPublic();
-
-        $tokens['items'] = array_values($tokens['items']);
-
-        $data['customer']['tokens'] = $tokens;
     }
 
     /**
