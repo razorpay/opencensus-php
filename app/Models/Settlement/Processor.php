@@ -284,7 +284,6 @@ class Processor extends Base\Core
 
     protected function shouldProcessSettlements()
     {
-        return [true, null];
         if (($this->mode === Mode::TEST) and
             ($this->env === 'testing'))
         {
