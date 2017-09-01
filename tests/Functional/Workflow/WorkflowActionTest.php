@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Workflow;
 
 use RZP\Models\Admin\Permission as AdminPermission;
+use RZP\Models\Base\EsDao;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Admin\Role\Repository as RoleRepository;
 use RZP\Tests\Functional\Fixtures\Entity\WorkflowAction;
@@ -17,11 +18,15 @@ class WorkflowActionTest extends TestCase
     use HeimdallTrait;
     use WorkflowTrait;
 
+    protected $esClient;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__.'/helpers/WorkflowActionTestData.php';
 
         parent::setUp();
+
+        $this->esClient = (new EsDao)->getEsClient()->getClient();
 
         $this->fixtures->workflow_action->setUp();
 
@@ -129,7 +134,7 @@ class WorkflowActionTest extends TestCase
             $content);
 
         //After Indexing into ES the document is not available in Real Time so a sec delay.
-        sleep(1);
+        $this->esClient->indices()->refresh();
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -224,8 +229,8 @@ class WorkflowActionTest extends TestCase
         // This will create a wf action in Mysql and ES, not using default workflow.
         $workflow = $this->editAdmin('org_' . Org::RZP_ORG, Org::CHECKER_ADMIN_SIGNED);
 
-        //ES is not so Real Time
-        sleep(1);
+        //ES is not so Real Time, so need to refresh manually.
+        $this->esClient->indices()->refresh();
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -241,7 +246,8 @@ class WorkflowActionTest extends TestCase
         // This will create a wf action in Mysql and ES, not using default workflow.
         $workflow = $this->editAdmin(Org::RZP_ORG_SIGNED, Org::CHECKER_ADMIN_SIGNED);
 
-        sleep(1);
+        //ES is not so Real Time, so need to refresh manually.
+        $this->esClient->indices()->refresh();
 
         $this->approveWorkflowAction($workflow['id']);
 

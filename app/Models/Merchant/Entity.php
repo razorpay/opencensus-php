@@ -37,6 +37,7 @@ class Entity extends Base\PublicEntity
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
     const CATEGORY2                 = 'category2';
+    const INVOICE_CODE              = 'invoice_code';
     const SCOPE                     = 'scope';
     const FEE_BEARER                = 'fee_bearer';
     const FEE_MODEL                 = 'fee_model';
@@ -90,7 +91,8 @@ class Entity extends Base\PublicEntity
     protected $revisionCreationsEnabled = true;
 
     protected static $generators = [
-        self::TRANSACTION_REPORT_EMAIL
+        self::TRANSACTION_REPORT_EMAIL,
+        self::INVOICE_CODE,
     ];
 
     protected $embeddedRelations = [
@@ -242,6 +244,19 @@ class Entity extends Base\PublicEntity
         $email = array($input[self::EMAIL]);
 
         $this->setAttribute(self::TRANSACTION_REPORT_EMAIL, $email);
+    }
+
+    protected function generateInvoiceCode($input)
+    {
+        $id = $this->getAttribute(self::ID);
+
+        $first8 = substr($id, 0, 8);
+
+        $last4 = substr($id, -4);
+
+        $invoiceCode = strtoupper($first8 . $last4);
+
+        $this->setAttribute(self::INVOICE_CODE, $invoiceCode);
     }
 
     public function isActivated()
@@ -667,6 +682,11 @@ class Entity extends Base\PublicEntity
     public function getOrgId()
     {
         return $this->getAttribute(self::ORG_ID);
+    }
+
+    public function getInvoiceCode()
+    {
+        return $this->getAttribute(self::INVOICE_CODE);
     }
 
     /**

@@ -16,7 +16,7 @@ class EmiFile extends Base\EmiFile
 
     protected $bankName  = 'IndusInd';
 
-    const TYPE = FileStore\Type::INDUSIND_EMI_FILE;
+    protected $type = FileStore\Type::INDUSIND_EMI_FILE;
 
     protected function getEmiData($input)
     {

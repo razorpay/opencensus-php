@@ -32,6 +32,7 @@ final class FactoryData
             'settlement_schedule'      => 3,
             'fee_bearer'               => \RZP\Models\Merchant\FeeBearer::PLATFORM,
             'risk_rating'              => 3,
+            'invoice_code'             => '123456789011',
         ]);
 
         $factory(\RZP\Models\Terminal\Entity::class, [
@@ -54,8 +55,8 @@ final class FactoryData
             'id'                => $faker->uniqueid,
             'merchant_id'       => '10000000000000',
             'invoice_number'    => $faker->name,
-            'month'             => 8,
-            'year'              => 2017,
+            'month'             => Carbon::today(Timezone::IST)->month,
+            'year'              => Carbon::today(Timezone::IST)->year,
             'gstin'             => '29kjsngjk213922',
             'amount'            => 50000,
             'amount_due'        => 0,
@@ -269,7 +270,7 @@ final class FactoryData
             'merchant_id'       => '10000000000000',
             'credit_card'       => '1',
             'debit_card'        => '1',
-            'banks'             => '[]',
+            'disabled_banks'    => '[]',
             'paytm'             => '0',
         ]);
 
