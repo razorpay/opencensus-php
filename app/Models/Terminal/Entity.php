@@ -146,7 +146,6 @@ class Entity extends Base\PublicEntity
         'inputRemoveBlanks',
         self::INTERNATIONAL,
         self::EMI_SUBVENTION,
-        self::TYPE,
     ];
 
     protected $defaults = [
@@ -161,7 +160,9 @@ class Entity extends Base\PublicEntity
         self::SHARED                    => false,
         self::EMI                       => false,
         self::TPV                       => false,
-        self::TYPE                      => 1,
+        self::TYPE                      => [
+            Type::NON_RECURRING => 1
+        ],
         self::MODE                      => Mode::DUAL,
         self::CORPORATE                 => 0,
         self::CURRENCY                  => self::DEFAULT_CURRENCY,

@@ -149,9 +149,6 @@ class Core extends Base\Core
                     'input' => $this->removeSecretFieldsForTrace($input),
                 ]);
 
-            // Modify only required params
-            $terminal->modifyAttribute(Entity::TYPE, $input);
-
             $terminal->edit($input);
 
             $this->repo->saveOrFail($terminal);

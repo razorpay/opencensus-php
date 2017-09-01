@@ -90,15 +90,15 @@ class Type
      * @param  integer  $hex
      * @return integer
      */
-    public static function getHexValue($events, $hex)
+    public static function getHexValue($types, $hex)
     {
-        foreach ($events as $event => $value)
+        foreach ($types as $type => $value)
         {
-            $pos = Type::getBitPosition($event);
+            $pos = Type::getBitPosition($type);
 
             $value = ($value === '1') ? 1 : 0;
 
-            // Sets the bit value for the current event.
+            // Sets the bit value for the current type.
             $hex ^= ((-1 * $value) ^ $hex) & (1 << ($pos - 1));
         }
 

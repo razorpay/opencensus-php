@@ -17,10 +17,9 @@ return [
                 'gateway_terminal_password' => '12345678',
                 'category'                  => '4567',
                 'emi_subvention'            => 'merchant',
-                'type'                      => json_encode(
-                    [
-                        'non_recurring' => (string) 1,
-                    ]),
+                'type'                      => [
+                    'non_recurring' => '1',
+                ],
             ],
             'method' => 'POST'
         ],
@@ -44,10 +43,9 @@ return [
                 'gateway_terminal_id'       => '12345678',
                 'gateway_terminal_password' => '12345678',
                 'category'                  => '4567',
-                'type'                      => json_encode(
-                    [
-                        'non_recurring' => (string) 1,
-                    ]),
+                'type'                      => [
+                    'non_recurring' => '1',
+                ],
             ],
             'method' => 'POST'
         ],
@@ -77,10 +75,9 @@ return [
                 'category'                  => '4567',
                 'emi'                       => '1',
                 'shared'                    => '1',
-                'type'                      => json_encode(
-                    [
-                        'non_recurring' => (string) 1,
-                    ]),
+                'type'                      => [
+                    'non_recurring' => '1',
+                ],
             ],
             'method' => 'POST'
         ],
@@ -104,10 +101,9 @@ return [
                 'gateway_merchant_id'       => '12345',
                 'gateway_terminal_id'       => '12345678',
                 'gateway_terminal_password' => '12345678',
-                'type'                      => json_encode(
-                    [
-                        'non_recurring' => (string) 1,
-                    ]),
+                'type'                      => [
+                    'non_recurring' => '1',
+                ],
             ],
             'url' => '/merchants/10000000000000/terminals',
             'method' => 'POST'
@@ -212,10 +208,9 @@ return [
                 'shared'    => '1',
                 'network_category' => 'education',
                 'gateway_acquirer' => 'hdfc',
-                'type'                      => json_encode(
-                    [
-                        'non_recurring' => (string) 1,
-                    ]),
+                'type'                      => [
+                    'non_recurring' => '1',
+                ],
             ],
             'method' => 'POST'
         ],
@@ -256,17 +251,18 @@ return [
                 'gateway_merchant_id'       => 'randommerchantid',
                 'gateway_acquirer'          => 'icic',
                 'mode'                      => Terminal\Mode::DUAL,
-                'type'                      => json_encode(
-                    [
-                        'non_recurring' => (string) 1,
-                    ]),
+                'type'                      => [
+                    'non_recurring' => '1',
+                ],
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
                 'mode'                      => Terminal\Mode::DUAL,
-                'type'                      => 1,
+                'type'                      => [
+                    'non_recurring'
+                ],
             ]
         ],
     ],
@@ -279,17 +275,18 @@ return [
                 'gateway_merchant_id'       => 'randommerchantid',
                 'gateway_acquirer'          => 'icic',
                 'mode'                      => Terminal\Mode::PURCHASE,
-                'type'                      => json_encode(
-                    [
-                        'recurring_non_3ds' => (string) 1,
-                    ]),
+                'type'                      => [
+                    'recurring_non_3ds' => '1',
+                ],
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
                 'mode'                      => Terminal\Mode::PURCHASE,
-                'type'                      => 4,
+                'type'                      => [
+                    'recurring_non_3ds'
+                ],
             ]
         ],
     ],
@@ -306,17 +303,18 @@ return [
                 'gateway_terminal_id'       => 'randomterminalid',
                 'gateway_terminal_password' => 'randomterminalpassword',
                 'mode'                      => Terminal\Mode::AUTH_CAPTURE,
-                'type'                      => json_encode(
-                    [
-                        'non_recurring' => (string) 1,
-                    ]),
+                'type'                      => [
+                    'non_recurring' => '1',
+                ],
             ],
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
                 'mode'                      => Terminal\Mode::AUTH_CAPTURE,
-                'type'                      => 1,
+                'type'                      => [
+                    'non_recurring'
+                ],
             ]
         ],
     ],
@@ -329,10 +327,9 @@ return [
                 'gateway_merchant_id'       => 'randommerchantid',
                 'gateway_acquirer'          => 'icic',
                 'mode'                      => Terminal\Mode::AUTH_CAPTURE,
-                'type'                      => json_encode(
-                    [
-                        'non_recurring' => (string) 1,
-                    ]),
+                'type'                      => [
+                    'non_recurring' => '1',
+                ],
             ],
             'method' => 'POST'
         ],
@@ -359,10 +356,9 @@ return [
                 'gateway_merchant_id'       => 'randommerchantid',
                 'gateway_acquirer'          => 'icic',
                 'mode'                      => Terminal\Mode::DUAL,
-                'type'                      => json_encode(
-                    [
-                        'recurring_non_3ds' => (string) 1,
-                    ]),
+                'type'                      => [
+                    'recurring_non_3ds' => '1',
+                ],
             ],
             'method' => 'POST'
         ],
@@ -393,10 +389,9 @@ return [
                 'gateway_terminal_id'       => 'randomterminalid',
                 'gateway_terminal_password' => 'randomterminalpassword',
                 'mode'                      => Terminal\Mode::DUAL,
-                'type'                      => json_encode(
-                    [
-                        'non_recurring' => (string) 1,
-                    ]),
+                'type'                      => [
+                    'non_recurring' => '1',
+                ],
             ],
             'method' => 'POST'
         ],
@@ -412,6 +407,116 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testTerminalTypeRecurringNon3DS' => [
+        'request' => [
+            'url' => '/merchants/100000Razorpay/terminals',
+            'content' => [
+                'gateway'                   => 'cybersource',
+                'gateway_merchant_id'       => 'randommerchantid',
+                'gateway_terminal_id'       => 'randommerchantid',
+                'gateway_terminal_password' => 'randommerchantidrandommerchantidrandommerchantidrandommerchantid',
+                'gateway_secure_secret'     => 'secure_secret',
+                'gateway_acquirer'          => 'hdfc',
+                'mode'                      => Terminal\Mode::DUAL,
+                'type'                      => [
+                    'recurring_3ds'     => '0',
+                    'recurring_non_3ds' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'mode'                      => Terminal\Mode::DUAL,
+                'type'                      => [
+                    'recurring_non_3ds'
+                ],
+            ]
+        ],
+    ],
+
+    'testTerminalTypeRecurring3DS' => [
+        'request' => [
+            'url' => '/merchants/100000Razorpay/terminals',
+            'content' => [
+                'gateway'                   => 'cybersource',
+                'gateway_merchant_id'       => 'randommerchantid',
+                'gateway_terminal_id'       => 'randommerchantid',
+                'gateway_terminal_password' => 'randommerchantidrandommerchantidrandommerchantidrandommerchantid',
+                'gateway_secure_secret'     => 'secure_secret',
+                'gateway_acquirer'          => 'hdfc',
+                'mode'                      => Terminal\Mode::DUAL,
+                'type'                      => [
+                    'recurring_3ds'     => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'mode'                      => Terminal\Mode::DUAL,
+                'type'                      => [
+                    'recurring_3ds',
+                ],
+            ]
+        ],
+    ],
+
+    'testTerminalTypeRecurringBoth' => [
+        'request' => [
+            'url' => '/merchants/100000Razorpay/terminals',
+            'content' => [
+                'gateway'                   => 'axis_migs',
+                'gateway_acquirer'          => 'axis',
+                'gateway_merchant_id'       => 'randommerchantid',
+                'gateway_secure_secret'     => 'abcdefghijklmnopqrstuvwxyz123456',
+                'gateway_access_code'       => 'abcdef12',
+                'gateway_terminal_id'       => 'randommerchantid',
+                'gateway_terminal_password' => 'randomuser123',
+                'mode'                      => Terminal\Mode::AUTH_CAPTURE,
+                'type'                      => [
+                    'recurring_3ds'     => '1',
+                    'recurring_non_3ds' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'mode'                      => Terminal\Mode::AUTH_CAPTURE,
+                'type'                      => [
+                    'recurring_3ds',
+                    'recurring_non_3ds',
+                ],
+            ]
+        ],
+    ],
+
+    'testTerminalTypeIvr' => [
+        'request' => [
+            'url' => '/merchants/100000Razorpay/terminals',
+            'content' => [
+                'gateway'                   => 'hdfc',
+                'gateway_acquirer'          => 'hdfc',
+                'gateway_merchant_id'       => '12345',
+                'gateway_terminal_id'       => '12345678',
+                'gateway_terminal_password' => '12345678',
+                'type'                      => [
+                    'ivr'     => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'mode'                      => Terminal\Mode::DUAL,
+                'type'                      => [
+                    'ivr',
+                ],
+            ]
         ],
     ],
 ];
