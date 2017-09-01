@@ -21,7 +21,7 @@ export default class TestModeBanner extends Component {
 
     return (
       <div className="TestModeBanner">
-        <Banner className="TestModeBanner">
+        <Banner>
           You are in <b>Test Mode</b>, so only test data is shown.{' '}
           {user.isActivated
             ? <span>
