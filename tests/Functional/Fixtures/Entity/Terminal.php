@@ -897,7 +897,7 @@ class Terminal extends Base
             'gateway_secure_secret'     => 'razorpay_password',
         ];
 
-        // Add fss recurring supports both 3ds and non3ds terminal;
+        // Recurring supports both 3ds and non3ds terminal;
         $attributes['id'] = 'NIcRecurringTl';
 
         $attributes['type'] = 6;

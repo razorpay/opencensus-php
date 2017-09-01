@@ -2,8 +2,6 @@
 
 namespace RZP\Tests\Functional\Gateway\Netbanking\Icici\EMandate;
 
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 

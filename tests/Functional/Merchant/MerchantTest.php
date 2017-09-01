@@ -14,7 +14,7 @@ use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
-use RZP\Models\Merchant\Methods;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
@@ -25,11 +25,10 @@ use RZP\Tests\Functional\Settlement\SettlementTrait;
 
 class MerchantTest extends TestCase
 {
+    use PaymentTrait;
     use ScheduleTrait;
     use SettlementTrait;
     use InteractsWithSession;
-    use EntityActionTrait;
-    use RequestResponseFlowTrait;
     use HeimdallTrait;
 
     public function setUp()
@@ -37,6 +36,14 @@ class MerchantTest extends TestCase
         $this->testDataFilePath = __DIR__.'/helpers/MerchantTestData.php';
 
         parent::setUp();
+
+        $this->fixtures->create('terminal:shared_netbanking_icici_recurring_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->create('customer');
+
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
 
         $this->ba->appAuth();
     }
@@ -1399,6 +1406,47 @@ class MerchantTest extends TestCase
                    ->first();
 
         $this->assertNotNull($row);
+    }
+
+    public function testCreateNbRecurringTokenPreferencesRoute()
+    {
+        $response = $this->makePreferencesRouteRequest();
+
+        // We expect that 4 tokens are currently returned by the preferences request
+        $this->assertEquals(4, $response['customer']['tokens']['count']);
+
+        $payment = $this->getNetbankingRecurringPaymentArray('ICIC');
+        unset($payment['card']);
+
+        // We create a new nb recurring token via payment
+        $this->doAuthPayment($payment);
+
+        // Asserting that token was created, using Netbanking ICICI's SI Ref ID
+        $netbanking = $this->getLastEntity('netbanking', true);
+        $this->assertEquals('ICIC', $netbanking['bank']);
+        $token = $this->getLastEntity('token', true);
+        $this->assertEquals($netbanking['si_ref_id'], $token['gateway_token']);
+
+        $response = $this->makePreferencesRouteRequest();
+
+        // We expect that the token created above is not sent in the preferences response
+        $this->assertEquals(4, $response['customer']['tokens']['count']);
+    }
+
+    protected function makePreferencesRouteRequest()
+    {
+        $this->ba->publicAuth();
+
+        $request = [
+            'url' => '/preferences',
+            'method' => 'get',
+            'content' => [
+                'contact' => '9918899029',
+                'customer_id' => 'cust_100000customer'
+            ],
+        ];
+
+        return $this->makeRequestAndGetContent($request);
     }
 
     protected function createUserMerchantMapping(string $userId, string $merchantId, string $role)

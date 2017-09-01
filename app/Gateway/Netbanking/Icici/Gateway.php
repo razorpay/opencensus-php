@@ -4,10 +4,8 @@ namespace RZP\Gateway\Netbanking\Icici;
 
 use Carbon\Carbon;
 use phpseclib\Crypt\AES;
-use Razorpay\Api\Request;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
-use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base\AESCrypto;
@@ -112,11 +110,12 @@ class Gateway extends Base\Gateway
         $this->checkSecondRecurringStatus($responseArray);
     }
 
-    /*
+    /**
      * PAID tells us whether the payment was a success. Can be a Y or N.
      * STATUS gives us more information on the success / failure case.
      *
      * @param array $response
+     * @throws Exception\GatewayErrorException
      */
     protected function checkSecondRecurringStatus(array $response)
     {
@@ -311,10 +310,14 @@ class Gateway extends Base\Gateway
             {
                 $verify->gatewaySuccess = ($status === Status::Y);
             }
+            else if ($verify->input['payment']['recurring'] === true)
+            {
+//                TODO: Not all SI based payments are mapped to this success status - ensure this is right
+                $verify->gatewaySuccess = ($status !== Status::FAILED);
+            }
             // Whereas, the retail verify success is success
             else
             {
-//                TODO: Not all SI based payments are mapped to this success status
                 $verify->gatewaySuccess = ($status === Status::SUCCESS);
             }
         }

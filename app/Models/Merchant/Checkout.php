@@ -22,6 +22,7 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Plan\Subscription;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\PublicCollection;
 
 class Checkout
 {
@@ -192,7 +193,7 @@ class Checkout
             $custData =  array(
                 'email'     => $customer->getEmail(),
                 'contact'   => $customer->getContact(),
-                'tokens'    => $savedTokens->toArrayPublic()
+                'tokens'    => $savedTokens
             );
 
             //
@@ -318,12 +319,44 @@ class Checkout
                     }
                 }
             }
+
+            if (isset($data['customer']['tokens']) === true)
+            {
+                $this->removeNetbankingRecurringTokens($data);
+            }
         }
         catch (\Exception $ex)
         {
             $this->trace->traceException(
                 $ex, Trace::WARNING, TraceCode::CHECKOUT_PREFERENCES_EXCEPTION, $input);
         }
+    }
+
+    protected function removeNetbankingRecurringTokens(array & $data)
+    {
+        $tokens = $data['customer']['tokens'];
+
+        //
+        // We are creating an array of all the items that do not pass the truth test
+        // that the token is recurring and netbanking - as we do not want to show
+        // recurring = netbanking tokens to the merchant via preferences
+        //
+        $tokens = $tokens->reject(
+                    function($token)
+                    {
+                        if (($token->getMethod() === 'netbanking') and
+                            ($token->isRecurring() === true))
+                        {
+                            return true;
+                        }
+
+                        return false;
+                    })
+                    ->toArrayPublic();
+
+        $tokens['items'] = array_values($tokens['items']);
+
+        $data['customer']['tokens'] = $tokens;
     }
 
     /**

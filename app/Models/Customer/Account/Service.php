@@ -310,7 +310,7 @@ class Service extends Base\Service
 
             if (($tokens !== null) and ($tokens->count() > 0))
             {
-                $result['tokens'] = $tokens->toArrayPublic();
+                $result['tokens'] = $tokens;
             }
         }
 
