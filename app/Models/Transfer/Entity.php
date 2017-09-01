@@ -83,6 +83,7 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::FEES,
         //self::SERVICE_TAX,
+        self::TAX,
         self::ON_HOLD,
         self::ON_HOLD_UNTIL,
         self::TRANSACTION_ID,

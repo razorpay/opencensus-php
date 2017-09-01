@@ -175,7 +175,7 @@ class Core extends Base\Core
             $txn->setCredit($credit);
             $txn->setDebit(0);
             $txn->setFee($fee);
-            $txn->setServiceTax($serviceTax);
+            //$txn->setServiceTax($serviceTax);
             $txn->setFeeModel(FeeModel::POSTPAID);
             $txn->setGratis(false);
             $txn->setCreditType(Transaction\CreditType::DEFAULT);
@@ -267,7 +267,7 @@ class Core extends Base\Core
             Transaction\Entity::DEBIT               => 0,
             Transaction\Entity::CREDIT              => 0,
             Transaction\Entity::FEE                 => 0,
-            Transaction\Entity::SERVICE_TAX         => 0,
+            //Transaction\Entity::SERVICE_TAX         => 0,
             Transaction\Entity::TAX                 => 0,
             Transaction\Entity::AMOUNT              => $amount,
         ];
@@ -325,7 +325,7 @@ class Core extends Base\Core
         $txn->setCredit($credit);
         $txn->setDebit(0);
         $txn->setFee($fee);
-        $txn->setServiceTax($tax);
+        //$txn->setServiceTax($tax);
         $txn->setTax($tax);
 
         return [$txn, $feesSplit];

@@ -346,6 +346,7 @@ class Entity extends Base\PublicEntity
         self::SAVE                 => false,
         self::FEE                  => null,
         //self::SERVICE_TAX          => null,
+        self::TAX                  => null,
         self::OTP_ATTEMPTS         => null,
         self::OTP_COUNT            => null,
         self::EMI_PLAN_ID          => null,
