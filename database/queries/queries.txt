@@ -2417,3 +2417,9 @@ ALTER TABLE merchant_invoice
 # pre deployment query for PR : 4655
 ALTER TABLE `merchant_banks`
     ADD COLUMN `disabled_banks` TEXT NULL AFTER `banks`;
+
+ALTER TABLE merchant_invoice
+    MODIFY COLUMN invoice_number CHAR(16) NOT NULL;
+
+ALTER TABLE merchants
+    ADD COLUMN invoice_code CHAR(12) DEFAULT NULL AFTER category2;
