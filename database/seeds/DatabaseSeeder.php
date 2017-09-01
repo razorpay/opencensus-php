@@ -418,7 +418,8 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::METHODS)->insert(
                 array(
                     'merchant_id'   => Account::DEMO_ACCOUNT,
-                    'banks'         => json_encode(Netbanking::getAllBanks()),
+                    'banks'         => '[]',
+                    'disabled_banks'=> '[]',
                     'paytm'         => '1',
                     'olamoney'      => '1',
                     'freecharge'    => '1',
@@ -439,7 +440,8 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::METHODS)->insert(
                 array(
                     'merchant_id'   => Account::TEST_ACCOUNT,
-                    'banks'         => json_encode(Netbanking::getAllBanks()),
+                    'banks'         => '[]',
+                    'disabled_banks'=> '[]',
                     'paytm'         => '1',
                     'mobikwik'      => '1',
                     'olamoney'      => '1',

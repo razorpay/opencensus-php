@@ -71,7 +71,7 @@ class MerchantInvoiceTest extends TestCase
                 'gstin'         => '29kjsngjk213900',
             ]);
 
-        $invoiceNumber = '10000000000000/08/2017';
+        $invoiceNumber = '100820171111';
 
         $this->fixtures->create('merchant_invoice',
             [
@@ -284,6 +284,7 @@ class MerchantInvoiceTest extends TestCase
         $this->fixtures->edit('merchant', '10000000000000', [
                                 'activated' => 1,
                                 'activated_at' => Carbon::now(Timezone::IST)->timestamp,
+                                'invoice_code' => 'hello1234567',
                             ]);
 
         $md1 = $this->fixtures->create(

@@ -5,6 +5,7 @@ namespace RZP\Models\Dispute;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Reversal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Transaction;
 
@@ -124,6 +125,30 @@ class Core extends Base\Core
         {
             $this->deductDisputedAmount($dispute);
         }
+
+        if ($this->shouldReverse($dispute) === true)
+        {
+            $this->createReversalAndUpdateDispute($dispute);
+        }
+    }
+
+    protected function createReversalAndUpdateDispute(Entity $dispute)
+    {
+        $input = [
+            Entity::CURRENCY    => $dispute->getCurrency(),
+            Entity::AMOUNT      => $dispute->getAmountDeducted(),
+        ];
+
+        (new Reversal\Core)->createForDispute($dispute, $dispute->merchant, $input);
+
+        $dispute->setAmountReversed($dispute->getAmountDeducted());
+    }
+
+    protected function shouldReverse(Entity $dispute): bool
+    {
+        return (($dispute->isWon() === true) and
+                ($dispute->getAmountDeducted() > 0) and
+                ($dispute->getAmountReversed() === 0));
     }
 
     protected function deductDisputedAmount(Entity $dispute)
