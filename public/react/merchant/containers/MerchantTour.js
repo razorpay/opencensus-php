@@ -21,7 +21,7 @@ export default class MerchantTour extends Component {
     // Identify user already using new ui
     if (
       this.props.user.tags.indexOf('Newui') === -1 &&
-      !LocalStorageService.getItem('tour_shown')
+      LocalStorageService.getItem('tour_shown') === 'false'
     ) {
       this.display();
     }
@@ -47,7 +47,10 @@ export default class MerchantTour extends Component {
           component: (
             <NewUIOnboardingDialog
               onShowChanges={this.showTour}
-              onCancelClick={this.closeTour}
+              onCancelClick={() => {
+                this.closeTour();
+                LocalStorageService.setItem('tour_shown', false);
+              }}
             />
           ),
         });
@@ -69,7 +72,6 @@ export default class MerchantTour extends Component {
     this.props.closeModal();
 
     this.props.toggleTour(false);
-    LocalStorageService.setItem('tour_shown', false);
     this.setState({ isTourActive: false });
   };
 
