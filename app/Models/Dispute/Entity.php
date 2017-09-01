@@ -185,8 +185,8 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::CURRENCY);
     }
-    
-    protected function getStatus()
+
+    public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
     }
@@ -242,5 +242,15 @@ class Entity extends Base\PublicEntity
     public function isClosed(): bool
     {
         return (in_array($this->getStatus(), Status::getClosedStatuses(), true) === true);
+    }
+
+    public function isLost(): bool
+    {
+        return ($this->getStatus() === Status::LOST);
+    }
+
+    public function isWon(): bool
+    {
+        return ($this->getStatus() === Status::WON);
     }
 }

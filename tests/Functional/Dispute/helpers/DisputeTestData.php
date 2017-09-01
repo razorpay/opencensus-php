@@ -286,6 +286,42 @@ return [
         ],
     ],
 
+    'testDisputeEditDeductOnLost' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                'status' => 'lost',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'amount'      => 1000000,
+                'currency'    => 'INR',
+                'phase'       => 'chargeback',
+                'status'      => 'lost'
+            ],
+        ],
+    ],
+
+    'testDisputeEditDoNotDeductOnLostIfDeducted' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                'status' => 'lost',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'merchant_id' => '10000000000000',
+                'amount'      => 1000000,
+                'currency'    => 'INR',
+                'phase'       => 'chargeback',
+                'status'      => 'lost'
+            ],
+        ],
+    ],
+
     'testDisputeEditInvalidStatus' => [
         'request' => [
             'method'  => 'patch',
@@ -356,6 +392,30 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_CANNOT_UPDATE_CLOSED_DISPUTE,
+        ],
+    ],
+
+    'testDisputeReversalWinLogic' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                'status'        => 'won'
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testDisputeReversalLostLogic' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                'status'        => 'lost'
+            ],
+        ],
+        'response' => [
+            'content' => [],
         ],
     ],
 ];

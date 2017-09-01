@@ -4,7 +4,7 @@ namespace RZP\Models\Feature;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use Razorpay\Trace\Logger as Trace;
+
 
 class Service extends Base\Service
 {
@@ -36,22 +36,7 @@ class Service extends Base\Service
     {
         $feature = $this->repo->feature->findByEntityIdAndNameOrFail($entityId, $featureName);
 
-        $this->trace->info(TraceCode::FEATURE_DELETE_REQUEST, $feature->toArrayPublic());
-
-        // Workflow
-
-        list($original, $dirty) = [
-            ['feature' => $featureName],
-            ['feature' => null],
-        ];
-
-        $this->app['workflow']
-             ->setEntity($feature->getEntity())
-             ->handle($original, $dirty);
-
-        $this->repo->feature->delete($feature);
-
-        (new Core)->notifyOnSlack($feature, true);
+        (new Core)->delete($entityId, $feature);
 
         return $feature->toArrayPublic();
     }

@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Mail;
 
+use RZP\Mail\Settlement\AxisSettlement as AxisSettlementMail;
 use RZP\Mail\Settlement\IciciSettlement as IciciSettlementMail;
 use RZP\Mail\Settlement\KotakSettlement as KotakSettlementMail;
 use RZP\Mail\Settlement\KotakPayout as KotakPayoutMail;
@@ -622,7 +623,7 @@ class SettlementTest extends TestCase
         $this->assertSame($content['count'], 4);
     }
 
-    public function testIciciNodalTransferWithGateway()
+    public function testNodalTransferWithGateway()
     {
         Mail::fake();
 
@@ -641,10 +642,10 @@ class SettlementTest extends TestCase
         Carbon::setTestNow($testTime);
 
         $request = [
-            'url'     => '/nodal/transfer/icici',
+            'url'     => '/nodal/transfer',
             'method'  => 'POST',
             'content' => [
-                'gateway' => 'first_data'
+                'gateway' => 'first_data',
             ]
         ];
 
@@ -657,25 +658,25 @@ class SettlementTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function testIciciNodalTransferWithAmount()
+    public function testNodalTransferWithAmount()
     {
         Mail::fake();
 
         $this->ba->appAuth();
 
         $request = [
-            'url'     => '/nodal/transfer/icici',
+            'url'     => '/nodal/transfer',
             'method'  => 'POST',
             'content' => [
-                'amount' => 1076
-            ]
+                'amount'  => 1076,
+                'channel' => 'axis',]
         ];
 
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertNotEquals(null, $content['file']);
 
-        Mail::assertSent(IciciSettlementMail::class);
+        Mail::assertSent(AxisSettlementMail::class);
     }
 
     public function testSettlementWithAccountTransfer()
@@ -860,7 +861,7 @@ class SettlementTest extends TestCase
             [
                 'payment_id'      => $payment->getId(),
                 'amount'          => 5000,
-                'amount_deducted' => 5000,
+                'deduct_at_onset' => 1,
                 'created_at'      => $createdAt,
                 'updated_at'      => $createdAt + 100
             ]);

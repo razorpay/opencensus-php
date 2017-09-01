@@ -2406,5 +2406,23 @@ ALTER TABLE payments
     ADD INDEX payments_updated_at_index (updated_at),
     ADD INDEX payments_captured_at_index (captured_at);
 
+# Query for adding sbibuddy column in merchant_banks table
+ALTER TABLE merchant_banks
+    ADD COLUMN sbibuddy TINYINT(1) NOT NULL DEFAULT 0 AFTER jiomoney;
+
+ALTER TABLE merchant_invoice
+    DROP INDEX `merchant_invoice_merchant_id_year_month_type_unique`,
+    ADD COLUMN description VARCHAR(255) DEFAULT NULL AFTER `type`;
+
+# pre deployment query for PR : 4655
+ALTER TABLE `merchant_banks`
+    ADD COLUMN `disabled_banks` TEXT NULL AFTER `banks`;
+
+ALTER TABLE merchant_invoice
+    MODIFY COLUMN invoice_number CHAR(16) NOT NULL;
+
+ALTER TABLE merchants
+    ADD COLUMN invoice_code CHAR(12) DEFAULT NULL AFTER category2;
+
 ALTER TABLE subscriptions
     ADD COLUMN type TINYINT(1) UNSIGNED DEFAULT 0 AFTER customer_notify;

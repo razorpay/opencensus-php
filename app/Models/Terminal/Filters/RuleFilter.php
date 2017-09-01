@@ -181,7 +181,7 @@ class RuleFilter extends Terminal\Filter
         {
             $traceData = array_map(function (array $terminals)
             {
-                return array_pluck($terminals, 'id', 'gateway');
+                return array_pluck($terminals, 'gateway', 'id');
             }, $data);
 
             $traceData['group'] = $group;

@@ -49,6 +49,11 @@ class PaymentMarketplaceTransferTest extends TestCase
         $this->sendRequest($testData['request']);
 
         $this->startTest();
+
+        $transferEntities = $this->getEntities('transfer', [],true);
+
+        $this->assertEquals($this->payment['id'], $transferEntities['items'][0]['source']);
+        $this->assertEquals($this->payment['id'], $transferEntities['items'][1]['source']);
     }
 
     public function testTransferPaymentAmountGreaterThanCaptured()

@@ -122,13 +122,7 @@ class Processor extends Base\Core
                     Entity::TAX     => $values[Entity::TAX],
                 ];
 
-                $invoiceEntity = (new Entity);
-
-                $invoiceEntity->merchant()->associate($this->merchant);
-
-                $invoiceEntity->build($params);
-
-                $this->repo->saveOrFail($invoiceEntity);
+                (new Core)->create($params, $this->merchant);
             }
         });
     }

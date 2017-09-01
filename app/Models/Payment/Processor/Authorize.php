@@ -2798,7 +2798,7 @@ trait Authorize
 
         $merchantMethods = (new Methods\Core)->getMethods($merchant);
 
-        $merchantBanks = ($merchantMethods === null) ? [] : $merchantMethods->getBanks();
+        $merchantBanks = ($merchantMethods === null) ? [] : $merchantMethods->getSupportedBanks();
 
         $paymentBank = $payment->getBank();
 

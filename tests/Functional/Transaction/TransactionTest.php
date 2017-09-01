@@ -66,20 +66,6 @@ class TransactionTest extends TestCase
         $this->assertEquals($rev['amount'] + $adj['amount'], 0);
     }
 
-    public function testAddAdjustmentWithoutUpdatingEscrowBalance()
-    {
-        $this->setAdminForInternalAuth();
-
-        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
-
-        $adj = $this->startTest();
-
-        $this->ba->addAdminAuthHeaders(null, null);
-
-        $txn = $this->getLastEntity('transaction', true);
-        $this->assertTestResponse($txn, 'txnDataAfterAddingAdjWithNoEscrowUpdate');
-    }
-
     public function testTransactionAfterCapturingPayment()
     {
         $payment = $this->doAuthAndCapturePayment();

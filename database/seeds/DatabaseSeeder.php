@@ -167,6 +167,7 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => self::RAZORPAY_ORG_ID,
+                    'invoice_code'  => '10NodalAount',
                     )
                 );
 
@@ -201,6 +202,7 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => self::RAZORPAY_ORG_ID,
+                    'invoice_code'  => '100AtomAount',
                 ));
 
             DB::table(Table::MERCHANT_DETAIL)->insert(
@@ -234,6 +236,7 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => self::RAZORPAY_ORG_ID,
+                    'invoice_code'  => '1ApiFeeAount',
                     )
                 );
 
@@ -270,6 +273,7 @@ class DatabaseSeeder extends Seeder
                     'fee_bearer'    => 0,
                     'billing_label' => 'Test Account',
                     'org_id'        => self::RAZORPAY_ORG_ID,
+                    'invoice_code'  => '100000000000',
                     )
                 );
 
@@ -346,6 +350,7 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => self::RAZORPAY_ORG_ID,
+                    'invoice_code'  => '100000Rarpay',
                     )
                 );
 
@@ -381,6 +386,7 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => self::RAZORPAY_ORG_ID,
+                    'invoice_code'  => '100DemoAount',
                     )
                 );
 
@@ -418,7 +424,8 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::METHODS)->insert(
                 array(
                     'merchant_id'   => Account::DEMO_ACCOUNT,
-                    'banks'         => json_encode(Netbanking::getAllBanks()),
+                    'banks'         => '[]',
+                    'disabled_banks'=> '[]',
                     'paytm'         => '1',
                     'olamoney'      => '1',
                     'freecharge'    => '1',
@@ -428,6 +435,7 @@ class DatabaseSeeder extends Seeder
                     'airtelmoney'   => '1',
                     'openwallet'    => '1',
                     'jiomoney'      => '1',
+                    'sbibuddy'      => '1',
                     'card'          => '1',
                     'upi'           => '1',
                     'created_at'    => $currentTime,
@@ -438,7 +446,8 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::METHODS)->insert(
                 array(
                     'merchant_id'   => Account::TEST_ACCOUNT,
-                    'banks'         => json_encode(Netbanking::getAllBanks()),
+                    'banks'         => '[]',
+                    'disabled_banks'=> '[]',
                     'paytm'         => '1',
                     'mobikwik'      => '1',
                     'olamoney'      => '1',
@@ -448,6 +457,7 @@ class DatabaseSeeder extends Seeder
                     'airtelmoney'   => '1',
                     'openwallet'    => '1',
                     'jiomoney'      => '1',
+                    'sbibuddy'      => '1',
                     'card'          => '1',
                     'emi'           => '1',
                     'upi'           => '1',
@@ -1037,6 +1047,7 @@ class DatabaseSeeder extends Seeder
         $this->createAirtelmoneyTerminals();
         $this->createFreechargeTerminals();
         $this->createJiomoneyTerminals();
+        $this->createSbibuddyTerminals();
         $this->createOpenwalletTerminals();
         $this->createVodafoneMpesaTerminal();
         $this->createNetbankingRblTerminal();
@@ -1590,6 +1601,38 @@ class DatabaseSeeder extends Seeder
                 'netbanking'                => '0',
                 'gateway_terminal_id'       => 'demo_terminal_jiomoney',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_jiomoney_terminal_pass'),
+                'created_at'                => time(),
+                'updated_at'                => time(),
+            ]
+        );
+    }
+
+    protected function createSbibuddyTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                        => '6tUImiIsb1budy',
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::WALLET_SBIBUDDY,
+                'card'                      => '0',
+                'gateway_terminal_id'       => 'test_terminal_sbibuddy',
+                'gateway_terminal_password' => Crypt::encrypt('test_account_sbibuddy_terminal_pass'),
+                'created_at'                => time(),
+                'updated_at'                => time(),
+                'category'                  => 1000,
+                'shared'                    => '1',
+            ]
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                        => Terminal\Shared::SBIBUDDY_RAZORPAY_TERMINAL,
+                'merchant_id'               => Account::DEMO_ACCOUNT,
+                'gateway'                   => Gateway::WALLET_SBIBUDDY,
+                'card'                      => '0',
+                'netbanking'                => '0',
+                'gateway_terminal_id'       => 'demo_terminal_sbibuddy',
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_sbibuddy_terminal_pass'),
                 'created_at'                => time(),
                 'updated_at'                => time(),
             ]

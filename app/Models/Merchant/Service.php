@@ -128,7 +128,7 @@ class Service extends Base\Service
             }
             catch (\Throwable $e)
             {
-                $result = ['message'=> $e->getMessage()];
+                $result = ['message' => $e->getMessage()];
             }
         }
 
@@ -645,14 +645,9 @@ class Service extends Base\Service
 
     public function getEnabledBanks()
     {
-        $methods = (new Methods\Core)->getMethods($this->merchant);
+        $methods = (new Methods\Core)->getEnabledAndDisabledBanks($this->merchant);
 
-        if ($methods === null)
-        {
-            return [];
-        }
-
-        return $methods->toArrayWithBankNames();
+        return $methods['enabled'];
     }
 
     public function setPaymentBanks($id, $input)
@@ -1025,6 +1020,16 @@ class Service extends Base\Service
         $data = (new Feature\Service)->getFeaturesForEntity($merchant);
 
         return $data;
+    }
+
+    /**
+     * used for fetching referred merchants of a particular merchant
+     */
+    public function fetchReferredMerchants()
+    {
+        $merchantId = $this->merchant->getId();
+
+        return $this->repo->merchant->fetchReferredMerchants($merchantId);
     }
 
     /**

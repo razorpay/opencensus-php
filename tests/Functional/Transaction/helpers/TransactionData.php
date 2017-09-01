@@ -40,28 +40,6 @@ return [
 
     ],
 
-   'testAddAdjustmentWithoutUpdatingEscrowBalance' => [
-        'request' => [
-            'content' => [
-                'merchant_id' => '10000000000000',
-                'amount'        => 100,
-                'description'   => 'random desc',
-                'currency'      => 'INR',
-                'update_escrow' => '0',
-            ],
-            'url'     => '/adjustments',
-            'method'  => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'amount'      => 100,
-                'description' => 'random desc',
-                'channel'     => 'kotak',
-                'currency'    => 'INR',
-            ],
-        ],
-    ],
-
     'txnDataAfterAddingAdjustment' => [
         'entity'          => 'transaction',
         'type'            => 'adjustment',
