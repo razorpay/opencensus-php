@@ -244,7 +244,7 @@ class Repository extends Base\Repository
                     ->join('payments', 'transactions.entity_id', '=', 'payments.id')
                     ->whereNotNull('payments.captured_at')
                     ->betweenTime($from, $to)
-                    ->sum('transactions.tax');
+                    ->sum('transactions.service_tax');
 
         // Total fee includes our cut + tax
         return [
@@ -443,7 +443,7 @@ class Repository extends Base\Repository
                     ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', 'payments.id')
                     ->where(Entity::TYPE, 'payment')
                     ->where(Entity::GRATIS, false)
-                    ->where('transactions.tax', '>', 0)
+                    ->where('transactions.service_tax', '>', 0)
                     ->whereNotNull(Payment\Entity::CAPTURED_AT)
                     ->whereNotIn("transactions.id", function($query)
                         {
@@ -498,10 +498,10 @@ class Repository extends Base\Repository
     public function updateTax(int $limit = 10000)
     {
         return $this->newQuery()
-                    //->whereNull(Entity::TAX)
-                    ->whereNotNull(Entity::TAX)
+                    ->whereNull(Entity::TAX)
+                    ->whereNotNull(Entity::SERVICE_TAX)
                     ->limit($limit)
-                    ->update([Entity::TAX => DB::raw(Entity::TAX)]);
+                    ->update([Entity::TAX => DB::raw(Entity::SERVICE_TAX)]);
     }
 
     public function fetchGratisTransactions(string $merchantId, int $timestamp)

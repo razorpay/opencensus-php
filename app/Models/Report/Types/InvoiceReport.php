@@ -26,7 +26,7 @@ class InvoiceReport extends BaseReport
     const KRISHI_KALYAN_CESS        = 'Krishi Kalyan Cess';
     const KRISHI_KALYAN_CESS_RATE   = 0.005;
 
-    //const SERVICE_TAX   = 'Service Tax';
+    const SERVICE_TAX   = 'Service Tax';
     const RAZORPAY_FEE  = 'razorpay_fee';
     const TAXES         = 'taxes';
     const TAX           = 'tax';
@@ -345,18 +345,18 @@ class InvoiceReport extends BaseReport
      */
     protected function getNonGstTaxes(array $f): array
     {
-        $Tax = intval($f[FeeName::TAX]['sum'] ?? 0);
+        $serviceTax = intval($f[FeeName::SERVICE_TAX]['sum'] ?? 0);
         $swachBharatCess = intval($f[FeeName::SWACHH_BHARAT_CESS]['sum'] ?? 0);
         $krishiKalyanCess = intval($f[FeeName::KRISHI_KALYAN_CESS]['sum'] ?? 0);
 
-        $nonGstTaxes = $Tax + $swachBharatCess + $krishiKalyanCess;
+        $nonGstTaxes = $serviceTax + $swachBharatCess + $krishiKalyanCess;
 
         $taxes = [];
 
         if ($nonGstTaxes > 0)
         {
             $taxes = [
-                self::TAX                => $Tax,
+                self::SERVICE_TAX        => $serviceTax,
                 self::SWACH_BHARAT_CESS  => $swachBharatCess,
                 self::KRISHI_KALYAN_CESS => $krishiKalyanCess,
             ];
