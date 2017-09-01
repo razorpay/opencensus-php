@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use App;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use DB;
@@ -1412,8 +1413,7 @@ class MerchantTest extends TestCase
     {
         $response = $this->makePreferencesRouteRequest();
 
-        // We expect that 4 tokens are currently returned by the preferences request
-        $this->assertEquals(4, $response['customer']['tokens']['count']);
+        $expectedTokenCount = $response['customer']['tokens']['count'];
 
         $payment = $this->getNetbankingRecurringPaymentArray('ICIC');
         unset($payment['card']);
@@ -1430,7 +1430,7 @@ class MerchantTest extends TestCase
         $response = $this->makePreferencesRouteRequest();
 
         // We expect that the token created above is not sent in the preferences response
-        $this->assertEquals(4, $response['customer']['tokens']['count']);
+        $this->assertEquals($expectedTokenCount, $response['customer']['tokens']['count']);
     }
 
     protected function makePreferencesRouteRequest()

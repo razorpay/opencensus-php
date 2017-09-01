@@ -310,11 +310,38 @@ class Service extends Base\Service
 
             if (($tokens !== null) and ($tokens->count() > 0))
             {
+                $tokens = $this->removeNetbankingRecurringTokens($tokens);
+
                 $result['tokens'] = $tokens;
             }
         }
 
         return $result;
+    }
+
+    protected function removeNetbankingRecurringTokens($tokens)
+    {
+        //
+        // We are creating an array of all the items that do not pass the truth test
+        // that the token is recurring and netbanking - as we do not want to show
+        // recurring = netbanking tokens to the merchant via preferences
+        //
+        $tokens = $tokens->reject(
+            function($token)
+            {
+                if (($token->getMethod() === 'netbanking') and
+                    ($token->isRecurring() === true))
+                {
+                    return true;
+                }
+
+                return false;
+            })
+            ->toArrayPublic();
+
+        $tokens['items'] = array_values($tokens['items']);
+
+        return $tokens;
     }
 
     public function updateSmsStatus($id, $input)
