@@ -747,11 +747,23 @@ class SettlementTest extends TestCase
             ]
         ];
 
+        $response = [
+            'recipient_settlement'  => [
+                'entity'        => 'settlement',
+                'amount'        => 5000,
+                'status'        => 'created',
+                'fees'          => 0,
+                'service_tax'   => 0,
+                'utr'           => null,
+                'settled_on'    => null
+            ]
+        ];
+
         $content = $this->makeRequestAndGetContent($request);
 
         $transferResponse = $content['items'][0];
 
-        $this->assertArrayHasKey('recipient_settlement', $transferResponse);
+        $this->assertArraySelectiveEquals($response, $transferResponse);
     }
 
     public function testSettlementAccountTransferOnHold()
