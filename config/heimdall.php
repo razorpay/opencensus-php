@@ -52,7 +52,6 @@ return [
             ],
             Permission::VIEW_MERCHANT_LOGIN => '',
             Permission::VIEW_ACTIVITY => '',
-            Permission::VIEW_MERCHANT_PRICING_RULES => '',
             Permission::VIEW_MERCHANT_HDFC_EXCEL => '',
             Permission::VIEW_BENEFICIARY_FILE => '',
             Permission::VIEW_MERCHANT_SCREENSHOT => [
