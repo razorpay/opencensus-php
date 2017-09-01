@@ -319,11 +319,6 @@ class Checkout
                     }
                 }
             }
-
-            if (isset($data['customer']['tokens']) === true)
-            {
-                $this->removeNetbankingRecurringTokens($data);
-            }
         }
         catch (\Exception $ex)
         {
