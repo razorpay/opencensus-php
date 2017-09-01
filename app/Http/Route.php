@@ -583,6 +583,12 @@ final class Route
         'settings_fetch'                          => ['get',      'settings/{entity}/{id}/{key?}',                  'SettingsController@get'                                            ],
         'settings_upsert'                         => ['post',     'settings/{entity}/{id}',                         'SettingsController@upsert'                                         ],
         'settings_delete'                         => ['delete',   'settings/{entity}/{id}/{key}',                   'SettingsController@delete'                                         ],
+
+        // Onboarding routes
+        'merchant_onboarding'                     => ['get',      'merchants/onboarding',                            'MerchantController@getQuestions',                                  ],
+        'merchant_onboarding_responses'           => ['get',      'merchants/onboarding/responses/',                 'MerchantController@getResponses',                                  ],
+        'merchant_onboarding_feature_responses'   => ['get',      'merchants/onboarding/{feature}/responses/',       'MerchantController@getResponses',                                  ],
+        'merchant_responses_create'               => ['post',     'merchants/onboarding',                            'MerchantController@createResponses',                               ],
     ];
 
     public static $public = [
@@ -1038,6 +1044,10 @@ final class Route
         'invitation_resend',
         'invitation_edit',
         'invitation_delete',
+        'merchant_onboarding',
+        'merchant_responses_create',
+        'merchant_onboarding_responses',
+        'merchant_onboarding_feature_responses'
     ];
 
     // These will run on internal auth with the assurance

@@ -782,6 +782,10 @@ class TraceCode
     const GRATIS_TO_POSTPAID_FAILED                     = 'GRATIS_TO_POSTPAID_FAILED';
     const GRATIS_TO_POSTPAID_RESPONSE                   = 'GRATIS_TO_POSTPAID_RESPONSE';
 
+    // Onboarding merchants
+    const ONBOARDING_FEATURE_DOES_NOT_EXIST             = 'ONBOARDING_FEATURE_DOES_NOT_EXIST';
+    const ONBOARDING_FEATURE_QUESTION_DOES_NOT_EXIST    = 'ONBOARDING_FEATURE_QUESTION_DOES_NOT_EXIST';
+
     const DUMMY_JOB = 'DUMMY_JOB';
 
     protected static $messages = array(

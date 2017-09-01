@@ -13,6 +13,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Merchant\Onboarding;
 
 class MerchantController extends Controller
 {
@@ -728,6 +729,31 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = (new Merchant\Service)->markGratisTransactionPostpaid($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getQuestions(Onboarding\Service $service)
+    {
+        $input = Request::all();
+
+        $response = $service->getQuestions($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function createResponses(Onboarding\Service $service)
+    {
+        $input = Request::all();
+
+        $response = $service->createResponses($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getResponses(Onboarding\Service $service, $feature = null)
+    {
+        $response = $service->getResponses($feature);
 
         return ApiResponse::json($response);
     }
