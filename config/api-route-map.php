@@ -70,7 +70,7 @@ return [
         'admin_get_file'                    => 'files/{fileId}/signed-url',
 
         // Workflows
-        'workflow_get_multiple'             => 'orgs/{orgId}/workflows',
+        'workflow_get_multiple'             => 'workflows',
         'workflow_create'                   => 'workflows',
         'workflow_get'                      => 'workflows/{id}',
         'workflow_update'                   => 'workflows/{id}',
