@@ -31,15 +31,15 @@ return [
         'response'  => [
             'content'     => [
                 'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => 'ID mismatch',
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => 'Payment processing failed due to error at bank or wallet gateway',
                 ],
             ],
-            'status_code' => 400,
+            'status_code' => 502,
         ],
         'exception' => [
-            'class'                 => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'class'                 => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
         ],
     ],
 
@@ -47,15 +47,15 @@ return [
         'response'  => [
             'content'     => [
                 'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => 'The message field is required.',
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => 'Payment processing failed due to error at bank or wallet gateway',
                 ],
             ],
-            'status_code' => 400,
+            'status_code' => 502,
         ],
         'exception' => [
-            'class'                 => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'class'                 => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
         ],
     ],
 
@@ -63,15 +63,15 @@ return [
         'response'  => [
             'content'     => [
                 'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => 'The message. v e res.version must be at least 3 characters.',
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => 'Payment processing failed due to error at bank or wallet gateway',
                 ],
             ],
-            'status_code' => 400,
+            'status_code' => 502,
         ],
         'exception' => [
-            'class'                 => RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'class'                 => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
         ],
     ],
 
@@ -79,14 +79,14 @@ return [
         'response'  => [
             'content'     => [
                 'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => 'The message. v e res.version must be at least 3 characters.',
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => 'Payment processing failed due to error at bank or wallet gateway',
                 ],
             ],
-            'status_code' => 400,
+            'status_code' => 502,
         ],
         'exception' => [
-            'class'                 => RZP\Exception\BadRequestValidationFailureException::class,
+            'class'                 => RZP\Exception\GatewayErrorException::class,
             'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -95,14 +95,14 @@ return [
         'response'  => [
             'content'     => [
                 'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => 'The message. v e res.version must be at least 3 characters.',
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => 'Payment processing failed due to error at bank or wallet gateway',
                 ],
             ],
-            'status_code' => 400,
+            'status_code' => 502,
         ],
         'exception' => [
-            'class'                 => RZP\Exception\BadRequestValidationFailureException::class,
+            'class'                 => RZP\Exception\GatewayErrorException::class,
             'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
