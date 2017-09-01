@@ -360,7 +360,6 @@ return [
                 'live'                      => false,
                 'methods'                   => [
                     'merchant_id'   => '10000000000002',
-                    'banks'         => [],
                     'amex'          => false,
                 ],
 
