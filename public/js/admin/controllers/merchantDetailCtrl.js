@@ -764,15 +764,6 @@ app
       };
 
       $scope.assignTerminal = function(terminal, modalInstance, alerts) {
-        // Set type values to 1 if present
-        var typeKeys = Object.keys(terminal).filter(function(k) {
-          return k.indexOf('type[') === 0;
-        });
-
-        typeKeys.forEach(function(val) {
-          terminal[val] = 1;
-        });
-
         var requestData = {
           method: 'post',
           url: '/admin/merchant/' + $scope.merchant.id + '/terminal',
