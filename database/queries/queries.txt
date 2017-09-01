@@ -2405,3 +2405,6 @@ UPDATE hdfc
 ALTER TABLE payments
     ADD INDEX payments_updated_at_index (updated_at),
     ADD INDEX payments_captured_at_index (captured_at);
+
+ALTER TABLE subscriptions
+    ADD COLUMN type TINYINT(1) UNSIGNED DEFAULT 0 AFTER customer_notify;

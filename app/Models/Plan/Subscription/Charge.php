@@ -162,8 +162,8 @@ class Charge extends Base\Core
             TraceCode::SUBSCRIPTION_BEFORE_CAPTURE_UPDATE,
             [
                 'subscription_details' => $subscription->toArray(),
-                'invoice_details' => $invoice->toArray(),
-                'task_details' => $task->toArray(),
+                'invoice_details'      => $invoice->toArray(),
+                'task_details'         => $task->toArray(),
             ]);
 
         $this->trace->info(
@@ -428,43 +428,20 @@ class Charge extends Base\Core
         if ($subscription->getPaidCount() === 0)
         {
             $billingPeriod['start'] = $subscription->getStartAt();
-
-            $currentTime = Carbon::now(Timezone::IST);
         }
         else
         {
             $billingPeriod['start'] = $task->getNextRunAt();
-
-            // Can't use actual current time here, because this could be
-            // a charge via the test charge route, which simulates a charge
-            // from later in the future. Using charge_at works well, because
-            // we'd only reach this part of the flow if we had already arrived
-            // at the subscription's current charge_at time.
-            $currentTime = Carbon::createFromTimestamp($subscription->getChargeAt(), Timezone::IST);
         }
 
+        $currentTime = Carbon::now(Timezone::IST);
         $lastRun = Carbon::createFromTimestamp($task->getNextRunAt(), Timezone::IST);
-
-        \App::getFacadeRoot()['trace']->info('MISC_TRACE_CODE',
-            [
-                $schedule->toArray(),
-                $currentTime,
-                $lastRun,
-            ]);
-
         $currentEnd = Library::computeFutureRun($schedule, $currentTime, $lastRun, false);
 
         $billingPeriod['end'] = $currentEnd->timestamp;
 
-        \App::getFacadeRoot()['trace']->info('MISC_TRACE_CODE',
-            [
-                $subscription->toArrayPublic(),
-                $task->toArray(),
-                $billingPeriod,
-            ]);
-
         return $billingPeriod;
-    }
+     }
 
     /**
      * This just uses the captured_at.

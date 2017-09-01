@@ -151,6 +151,7 @@ class SubscriptionChargeTest extends TestCase
         while ($expectedPaidCount < $subscription['total_count'])
         {
             $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
             // Subscription got charged
             $this->assertEquals(1, $result['total']);
 

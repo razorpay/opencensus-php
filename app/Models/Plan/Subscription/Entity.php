@@ -34,6 +34,7 @@ class Entity extends Base\PublicEntity
     const ERROR_STATUS      = 'error_status';
     const SCHEDULE_ID       = 'schedule_id';
     const CUSTOMER_NOTIFY   = 'customer_notify';
+    const TYPE              = 'type';
 
     const FAILED_AT         = 'failed_at';
     const AUTHENTICATED_AT  = 'authenticated_at';
@@ -67,6 +68,7 @@ class Entity extends Base\PublicEntity
         self::STATUS            => Status::CREATED,
         self::PAID_COUNT        => 0,
         self::AUTH_ATTEMPTS     => 0,
+        self::TYPE              => 0,
         self::ERROR_STATUS      => null,
         self::ACTIVATED_AT      => null,
         self::FAILED_AT         => null,
@@ -79,6 +81,7 @@ class Entity extends Base\PublicEntity
 
     protected static $generators = [
         self::CHARGE_AT,
+        self::TYPE,
     ];
 
     protected $fillable = [
@@ -302,13 +305,55 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) === Status::COMPLETED);
     }
 
+    public function markImmediate()
+    {
+        $this->markType(Type::HAS_START_AT, false);
+    }
+
+    public function markType(string $type, bool $value)
+    {
+        $currentHex = $this->getType();
+
+        $newHex = Type::getHexWithTypeMarked($currentHex, $type, $value);
+
+        $this->setType($newHex);
+    }
+
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
+    protected function isTypeApplicable(string $type)
+    {
+        $hex = $this->getType();
+
+        return Type::isApplicable($hex, $type);
+    }
+
+    public function isImmediate()
+    {
+        return ($this->isTypeApplicable(Type::HAS_START_AT) === false);
+    }
+
+    public function hasInitialAddon()
+    {
+        return ($this->isTypeApplicable(Type::HAS_ADDONS) === true);
+    }
+
+    public function isTokenCharge()
+    {
+        return (($this->isImmediate() === false) and
+                ($this->hasInitialAddon() === false));
+    }
+
     public function isAuthTxnCharge()
     {
         //
         // This signifies that the auth transaction also
         // includes the first charge of the subscription.
         //
-        return ($this->isAttributeNull(self::START_AT) === true);
+        return ($this->isImmediate() === true);
     }
 
     public function isChangeCardStatus()
@@ -377,6 +422,11 @@ class Entity extends Base\PublicEntity
     public function setEndedAt($endAt)
     {
         $this->setAttribute(self::ENDED_AT, $endAt);
+    }
+
+    public function setType($type)
+    {
+        $this->setAttribute(self::TYPE, $type);
     }
 
     public function setStatus($status)
@@ -479,6 +529,11 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('RZP\Models\Payment\Entity');
     }
 
+    public function invoices()
+    {
+        return $this->hasMany('RZP\Models\Invoice\Entity');
+    }
+
     public function schedule()
     {
         return $this->belongsTo('RZP\Models\Schedule\Entity');
@@ -536,6 +591,19 @@ class Entity extends Base\PublicEntity
         }
 
         $this->setAttribute(self::CHARGE_AT, $chargeAt);
+    }
+
+    public function generateType($input)
+    {
+        if (empty($input[Entity::START_AT]) === false)
+        {
+            $this->markType(Type::HAS_START_AT, true);
+        }
+
+        if (empty($input[Entity::ADDONS]) === false)
+        {
+            $this->markType(Type::HAS_ADDONS, true);
+        }
     }
 
     // --------------------- END GENERATORS ---------------------

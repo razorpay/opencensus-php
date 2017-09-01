@@ -503,27 +503,15 @@ class Core extends Base\Core
 
     protected function getAuthTransactionAmountForNewSubscription(Entity $subscription): int
     {
-        $invoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
-
-        $invoicesCount = $invoices->count();
-
-        if ($invoicesCount === 0)
+        if ($subscription->isTokenCharge() === true)
         {
             $authAmount = Entity::DEFAULT_AUTH_AMOUNT;
         }
-        else if ($invoicesCount === 1)
-        {
-            $authAmount = $invoices->first()->getAmount();
-        }
         else
         {
-            throw new LogicException(
-                'Number of invoices found for subscription does not match 1',
-                ErrorCode::SERVER_ERROR_INCORRECT_NUMBER_OF_INVOICES_FOUND,
-                [
-                    'count'             => $invoicesCount,
-                    'subscription_id'   => $subscription->getId(),
-                ]);
+            $invoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
+
+            $authAmount = $invoices->first()->getAmount();
         }
 
         return $authAmount;
