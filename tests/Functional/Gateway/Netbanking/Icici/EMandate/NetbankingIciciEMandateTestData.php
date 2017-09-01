@@ -32,6 +32,24 @@ return [
         ],
     ],
 
+    'testUnknownReasonSecondRecurringFailure' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            'gateway_error_code'    => 'N',
+            'gateway_error_desc'    => 'Random Error',
+        ],
+    ],
+
     'testDebitRequestFailure' => [
         'response'  => [
             'content'     => [
@@ -130,7 +148,7 @@ return [
         ],
     ],
 
-    'testPaymentVerfyFailed' => [
+    'testPaymentVerifyFailed' => [
         'response'  => [
             'content'     => [
                 'error' => [

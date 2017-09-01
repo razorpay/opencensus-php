@@ -334,7 +334,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertNotNull($verify['gateway']['verifyResponseContent']['RID']);
     }
 
-    public function testPaymentVerfyFailed()
+    public function testPaymentVerifyFailed()
     {
         $payment = $this->payment;
 
@@ -352,6 +352,38 @@ class NetbankingIciciEMandateTest extends TestCase
             {
                 $this->verifyPayment($payment['id']);
             });
+    }
+
+    public function testUnknownReasonSecondRecurringFailure()
+    {
+        $payment = $this->payment;
+
+        $this->doAuthPayment($payment);
+
+        $this->assertEMandateEntities();
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $payment['token'] = $paymentEntity['token_id'];
+
+        $this->mockScheduledPaymentFailure('Random Error');
+
+        $data = $this->testData[__FUNCTION__];
+
+        //
+        // Second auth payment for the recurring product
+        //
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doS2SRecurringPayment($payment);
+            });
+
+        $netbanking = $this->getLastEntity('netbanking', true);
+
+        // For failed payments, si requests and debit requests, the status is a N
+        $this->assertEquals('N', $netbanking['status']);
     }
 
     public function testNullSecondRecurringResponse()
@@ -379,15 +411,15 @@ class NetbankingIciciEMandateTest extends TestCase
             });
     }
 
-    protected function mockScheduledPaymentFailure()
+    protected function mockScheduledPaymentFailure($status = 'PaymentDateOverdue')
     {
         $this->mockServerContentFunction(
-            function(& $content, $action = null)
+            function(& $content, $action = null) use ($status)
             {
                 if ($action === 'second_recurring')
                 {
                     $content['PAID'] = 'N';
-                    $content['STATUS'] = 'PaymentDateOverdue';
+                    $content['STATUS'] = $status;
                 }
             });
     }

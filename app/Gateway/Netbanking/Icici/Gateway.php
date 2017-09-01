@@ -433,7 +433,7 @@ class Gateway extends Base\Gateway
             RequestFields::SI_PAYMENT_FREQ     => Frequency::AS_AND_WHEN,
             // Num installments = empty when charge at will
             RequestFields::SI_NUM_INSTALLMENTS => '',
-            RequestFields::SI_AUTO_PAY_AMOUNT  => (int) $input['token']->getMaxAmount(),
+            RequestFields::SI_AUTO_PAY_AMOUNT  => (int) $input['token']->getMaxAmount() / 100,
             // TODO: Should we accept this from the merchant?
             RequestFields::SI_END_DATE         => $endDate,
         ];
