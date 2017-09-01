@@ -330,7 +330,7 @@ class Gateway extends Base\Gateway
 
         $refundGatewayStatus = (string) $verifyRefundResponse->children('a1', true)->TransactionState;
 
-        return in_array($refundGatewayStatus, Status::VALID_REFUND_STATES, true);
+        return in_array($refundGatewayStatus, Status::SUCCESSFUL_REFUND_STATES, true);
     }
 
     protected function updateOrCreateRefundEntity(array $refundFields, array $input)

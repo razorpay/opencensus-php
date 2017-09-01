@@ -3,11 +3,11 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
-use RZP\Models\Payment;
-use RZP\Models\Card;
-use RZP\Trace\TraceCode;
 use Request;
 use View;
+
+use RZP\Constants\Entity as E;
+use RZP\Trace\TraceCode;
 
 class PaymentController extends Controller
 {
@@ -15,7 +15,7 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $payment = $this->service('payment')->fetch($id, $input);
+        $payment = $this->service()->fetch($id, $input);
 
         return ApiResponse::json($payment);
     }
@@ -27,14 +27,14 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $payments = $this->service('payment')->fetchMultiple($input);
+        $payments = $this->service()->fetchMultiple($input);
 
         return ApiResponse::json($payments);
     }
 
     public function getVerify($id)
     {
-        $data = $this->service('payment')->verify($id);
+        $data = $this->service()->verify($id);
 
         return ApiResponse::json($data);
     }
@@ -47,7 +47,7 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $payment = $this->service('payment')->refund($id, $input);
+        $payment = $this->service()->refund($id, $input);
 
         return ApiResponse::json($payment);
     }
@@ -56,7 +56,7 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $payment = $this->service('payment')->refundAuthorized($id, $input);
+        $payment = $this->service()->refundAuthorized($id, $input);
 
         return ApiResponse::json($payment);
     }
@@ -65,7 +65,7 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $summary = $this->service('payment')->refundAuthorizedInBulk($input);
+        $summary = $this->service()->refundAuthorizedInBulk($input);
 
         return ApiResponse::json($summary);
     }
@@ -74,21 +74,21 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $payment = $this->service('payment')->forceAuthorizeFailed($id, $input);
+        $payment = $this->service()->forceAuthorizeFailed($id, $input);
 
         return ApiResponse::json($payment);
     }
 
     public function postRefundOldAuthorizedPayments()
     {
-        $data = $this->service('payment')->refundOldAuthorizedPayments();
+        $data = $this->service()->refundOldAuthorizedPayments();
 
         return ApiResponse::json($data);
     }
 
     public function postAuthorizeFailedPayment($id)
     {
-        $data = $this->service('payment')->authorizeFailed($id);
+        $data = $this->service()->authorizeFailed($id);
 
         return ApiResponse::json($data);
     }
@@ -97,7 +97,7 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('payment')->fixAuthorizeAt($input);
+        $data = $this->service()->fixAuthorizeAt($input);
 
         return ApiResponse::json($data);
     }
@@ -111,7 +111,7 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $payment = $this->service('payment')->capture($id, $input);
+        $payment = $this->service()->capture($id, $input);
 
         return ApiResponse::json($payment);
     }
@@ -123,14 +123,14 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('payment')->captureInBulk($input);
+        $data = $this->service()->captureInBulk($input);
 
         return ApiResponse::json($data);
     }
 
     public function getPaymentStatusForAsyncPayments($id)
     {
-        $data = $this->service('payment')->fetchStatus($id);
+        $data = $this->service()->fetchStatus($id);
 
         return ApiResponse::json($data);
     }
@@ -139,7 +139,7 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('payment')->cancel($id, $input);
+        $data = $this->service()->cancel($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -148,7 +148,7 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('payment')->payout($id, $input);
+        $data = $this->service()->payout($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -159,49 +159,49 @@ class PaymentController extends Controller
      */
     public function postAutoCapture()
     {
-        $data = $this->service('payment')->autoCaptureOldAuthorizedPayments();
+        $data = $this->service()->autoCaptureOldAuthorizedPayments();
 
         return ApiResponse::json($data);
     }
 
     public function getCardForPayment($id)
     {
-        $card = $this->service('payment')->getCardForPayment($id);
+        $card = $this->service()->getCardForPayment($id);
 
         return ApiResponse::json($card);
     }
 
     public function getRefundsForPayment($paymentId)
     {
-        $refunds = $this->service('payment')->retrieveRefundsForPayment($paymentId);
+        $refunds = $this->service()->retrieveRefundsForPayment($paymentId);
 
         return ApiResponse::json($refunds);
     }
 
     public function getRefundByRefundAndPaymentId($paymentId, $rfndId)
     {
-        $refunds = $this->service('payment')->retrieveRefundByIdAndPaymentId($paymentId, $rfndId);
+        $refunds = $this->service()->retrieveRefundByIdAndPaymentId($paymentId, $rfndId);
 
         return ApiResponse::json($refunds);
     }
 
     public function getTransactionForPayment($paymentId)
     {
-        $transaction = $this->service('payment')->fetchTransactionByPaymentId($paymentId);
+        $transaction = $this->service()->fetchTransactionByPaymentId($paymentId);
 
         return ApiResponse::json($transaction);
     }
 
     public function postTimeout()
     {
-        $data = $this->service('payment')->timeoutOldPayments();
+        $data = $this->service()->timeoutOldPayments();
 
         return ApiResponse::json($data);
     }
 
     public function getCard($id)
     {
-        $data = (new Card\Service)->fetchById($id);
+        $data = $this->service(E::CARD)->fetchById($id);
 
         return ApiResponse::json($data);
     }
@@ -210,7 +210,7 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Card\Service)->getCardRecurring($input);
+        $data = $this->service(E::CARD)->getCardRecurring($input);
 
         return ApiResponse::json($data);
     }
@@ -219,21 +219,21 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Card\Service)->fetchMultiple($input);
+        $data = $this->service(E::CARD)->fetchMultiple($input);
 
         return ApiResponse::json($data);
     }
 
     public function getAuthNotify()
     {
-        $data = $this->service('payment')->notifyAuthorizedPayments();
+        $data = $this->service()->notifyAuthorizedPayments();
 
         return ApiResponse::json($data);
     }
 
     public function getAutoCaptureEmail()
     {
-        $data = $this->service('payment')->deliverAutoCaptureEmail();
+        $data = $this->service()->deliverAutoCaptureEmail();
 
         return ApiResponse::json($data);
     }
@@ -242,7 +242,7 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('payment')->verifyMultiplePayments($filter, $input);
+        $data = $this->service()->verifyMultiplePayments($filter, $input);
 
         return ApiResponse::json($data);
     }
@@ -256,7 +256,7 @@ class PaymentController extends Controller
 
     public function sendReminderMailForAuthorizedPayments()
     {
-        return (new Payment\Service)->sendReminderMerchantMailForAuthorizedPayments();
+        return $this->service()->sendReminderMerchantMailForAuthorizedPayments();
     }
 
     public function postDummyRoute()
@@ -272,35 +272,35 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('payment')->addPaymentMetadata($id, $input);
+        $data = $this->service()->addPaymentMetadata($id, $input);
 
         return ApiResponse::json($data);
     }
 
     public function postCaptureVerify($id)
     {
-        $data = $this->service('payment')->verifyCapture($id);
+        $data = $this->service()->verifyCapture($id);
 
         return ApiResponse::json($data);
     }
 
     public function postManualGatewayCapture($id)
     {
-        $data = $this->service('payment')->manualGatewayCapture($id);
+        $data = $this->service()->manualGatewayCapture($id);
 
         return ApiResponse::json($data);
     }
 
     public function postRefundAuthorizedPaymentsOfPaidOrders()
     {
-        $data = $this->service('payment')->refundAuthorizedPaymentsOfPaidOrders();
+        $data = $this->service()->refundAuthorizedPaymentsOfPaidOrders();
 
         return ApiResponse::json($data);
     }
 
     public function postAuthorizeLockTimeOut($paymentIds)
     {
-        $data = $this->service('payment')->authorizeLockTimeOutPayments($paymentIds);
+        $data = $this->service()->authorizeLockTimeOutPayments($paymentIds);
 
         return ApiResponse::json($data);
     }
@@ -314,7 +314,7 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $transfers = $this->service('payment')->transfer($paymentId, $input);
+        $transfers = $this->service()->transfer($paymentId, $input);
 
         return ApiResponse::json($transfers);
     }
@@ -326,7 +326,7 @@ class PaymentController extends Controller
      */
     public function getTransfers(string $paymentId)
     {
-        $transfers = $this->service('payment')->getTransfers($paymentId);
+        $transfers = $this->service()->getTransfers($paymentId);
 
         return ApiResponse::json($transfers);
     }
@@ -344,7 +344,7 @@ class PaymentController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('payment')->updateOnHold($input);
+        $data = $this->service()->updateOnHold($input);
 
         return ApiResponse::json($data);
     }

@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base;
+use RZP\Models\FundTransfer\Axis;
 use RZP\Models\FundTransfer\Icici;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Payment;
@@ -150,52 +151,11 @@ class Service extends Base\Service
     }
 
     /**
-     * Initiates transfer from ICICI Nodal account
+     * Initiates transfer from one Nodal account to another
      */
     public function postInitiateTransfer($input): array
     {
-        if (isset($input[Payment\Entity::GATEWAY]) === true)
-        {
-            $gateway = $input[Payment\Entity::GATEWAY];
-
-            // TODO: add strict validation for gateway based on channel
-            Payment\Gateway::validateGateway($gateway);
-
-            $from = Carbon::yesterday(Timezone::IST)->timestamp;
-
-            $to = Carbon::today(Timezone::IST)->timestamp - 1;
-
-            // Get the amount for captured payments on gateway for last day
-            $paymentAmount = $this->repo->payment->getCapturedAmountByGateway($gateway, $from, $to);
-
-            // Get the amount for refunds on gateway for last day
-            $refundAmount = $this->repo->refund->getRefundedAmountByGateway($gateway, $from, $to);
-
-            // amount to be transferred in paisa
-            $amount = $paymentAmount - $refundAmount;
-
-            // Transfer 99% of the derived amount
-            $amount = 0.99 * $amount;
-        }
-        else
-        {
-            (new Settlement\Validator)->validateInput('nodal_transfer', $input);
-
-            $amount = $input['amount'];
-        }
-
-        if ($amount > 0)
-        {
-            $amount = number_format($amount / 100, 2, '.', '');
-
-            $response = (new Icici\NodalAccount)->generateTransferFile($amount);
-        }
-        else
-        {
-            $response = [
-                'message' => 'amount to be transferred is zero or negative'
-            ];
-        }
+        $response = (new Core)->postInitiateTransfer($input);
 
         return $response;
     }
