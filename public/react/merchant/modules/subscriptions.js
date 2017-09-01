@@ -16,6 +16,7 @@ const SUBSCRIPTION_EDIT = 'SUBSCRIPTION_EDIT';
 const SUBSCRIPTION_DELETE = 'SUBSCRIPTION_DELETE';
 const SUBSCRIPTION_CANCEL = 'SUBSCRIPTION_CANCEL';
 const SUBSCRIPTION_FETCH = 'SUBSCRIPTION_FETCH';
+const SUBSCRIPTION_INVOICES_FETCH = 'SUBSCRIPTION_INVOICES_FETCH';
 
 export const fetchSubscriptions = params =>
   fetchAll(params, Subscription, 'SUBSCRIPTIONS');
@@ -25,6 +26,15 @@ export const fetchSubscription = id => {
   return {
     type: SUBSCRIPTION_FETCH,
     payload: subscription.fetch(id),
+  };
+};
+
+export const fetchInvoices = subs_id => {
+  let subscription = new Subscription();
+
+  return {
+    type: SUBSCRIPTION_INVOICES_FETCH,
+    payload: subscription.fetchInvoices(subs_id),
   };
 };
 
@@ -63,12 +73,35 @@ export const subscriptionsReducer = makeActionCollectionReducer(
   }
 );
 
+const updateInvoicesEntity = status => (state, action) => {
+  switch (status) {
+    case 'PENDING':
+      return set(state, 'invoices', { loading: true, items: [], error: null });
+    case 'SUCCESS':
+      return set(state, 'invoices', {
+        loading: false,
+        items: action.payload.data.items,
+        error: null,
+      });
+    case 'ERROR':
+      return set(state, 'invoices', {
+        loading: false,
+        items: [],
+        error: action.payload.errors,
+      });
+  }
+};
+
 // Details Reducer
 let entityInitialState = {
   loading: true,
   entity: {},
   plan: {
     item: {},
+  },
+  invoices: {
+    loading: false,
+    items: [],
   },
   customer: {},
   error: null,
@@ -84,6 +117,13 @@ export const subscriptionReducer = makeEntityReducer(
     [`${CUSTOMER_FETCH}::SUCCESS`]: (state, action) => {
       return set(state, 'customer', action.payload);
     },
+    [`${SUBSCRIPTION_INVOICES_FETCH}::SUCCESS`]: updateInvoicesEntity(
+      'SUCCESS'
+    ),
+    [`${SUBSCRIPTION_INVOICES_FETCH}::PENDING`]: updateInvoicesEntity(
+      'PENDING'
+    ),
+    [`${SUBSCRIPTION_INVOICES_FETCH}::ERROR`]: updateInvoicesEntity('ERROR'),
   },
   entityInitialState
 );

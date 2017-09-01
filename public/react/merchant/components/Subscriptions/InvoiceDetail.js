@@ -1,3 +1,4 @@
+import { Component } from 'react';
 import { NavLink } from 'react-router-dom';
 import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
@@ -16,57 +17,82 @@ const notificationClassMap = {
   pending: 'text-warning',
 };
 
-export default props => {
-  let { invoice, isLoading, statusMsg, payments } = props;
+// Note: class is needed for "ref" to work in parent component
+export default class InvoiceDetail extends Component {
+  render() {
+    let { invoice, isLoading, statusMsg, curInvoiceIndex } = this.props;
 
-  return (
-    <div class="content-wrapper content-sm txn-details">
-      {isLoading
-        ? <div class="page-spinner-container">
-            <Spinner />
-          </div>
-        : <div class="panel panel-default SliderPanel">
-            <div class="panel-heading">
-              {props.onClose &&
-                <button
-                  type="button"
-                  class="close close-secondary"
-                  onClick={props.onClose}
-                >
-                  <i class="icon icon-arrow-back" />
-                  <i class="icon icon-close" />
-                </button>}
-              <i class="icon icon-link text-primary icon--formal" />{' '}
-              <strong>{invoice.id}</strong>
+    return (
+      <div class="content-wrapper content-sm txn-details">
+        {isLoading
+          ? <div class="page-spinner-container">
+              <Spinner />
             </div>
+          : Object.keys(invoice).length
+            ? <div class="panel panel-default SliderPanel">
+                <div class="panel-heading">
+                  {this.props.onClose &&
+                    <button
+                      type="button"
+                      class="close close-secondary"
+                      onClick={this.props.onClose}
+                    >
+                      <i class="icon icon-arrow-back" />
+                      <i class="icon icon-close" />
+                    </button>}
+                  <i class="icon icon-link text-primary icon--formal" />{' '}
+                  <span class="txn-details-title">
+                    <div class="txn-details-title--primary">
+                      <Time value={invoice.issued_at} format="MMM DD, YYYY" />
+                    </div>
+                    {curInvoiceIndex &&
+                      <div class="txn-details-title--secondary">
+                        Recurring Payment #{curInvoiceIndex}
+                      </div>}
+                  </span>
+                </div>
 
-            <div class="SliderPanel__Body">
-              <div class="panel-body">
-                <div class="list-group details-row-container">
-                  <EntityDetailRow
-                    label="Invoice"
-                    value={() =>
-                      <NavLink to={`/invoices/${invoice.id}`} target="_blank">
-                        {invoice.id}
-                        <i class="icon icon-external-link" />
-                      </NavLink>}
-                  />
-                  <EntityDetailRow
-                    label="Invoice Status"
-                    value={() => <InvoiceStatusLabel status={invoice.status} />}
-                  />
-                  <EntityDetailRow
-                    label="Amount"
-                    value={() =>
-                      <Amount
-                        currency={invoice.currency}
-                        value={invoice.amount}
-                      />}
-                  />
+                <div class="SliderPanel__Body">
+                  <div class="panel-body">
+                    <div class="list-group details-row-container">
+                      <EntityDetailRow
+                        label="Invoice"
+                        value={() =>
+                          <NavLink
+                            to={`/invoices/${invoice.id}`}
+                            target="_blank"
+                          >
+                            {invoice.id}
+                            <i class="icon icon-external-link" />
+                          </NavLink>}
+                      />
+                      <EntityDetailRow
+                        label="Invoice Status"
+                        value={() =>
+                          <InvoiceStatusLabel status={invoice.status} />}
+                      />
+                      <EntityDetailRow
+                        label="Due at"
+                        value={() =>
+                          <Time
+                            value={1546222273}
+                            format="DD MMM YYYY, hh:mm:ss a"
+                          />}
+                      />
+                      <EntityDetailRow
+                        label="Amount"
+                        value={() =>
+                          <Amount
+                            currency={invoice.currency}
+                            value={invoice.amount}
+                          />}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>}
-    </div>
-  );
-};
+            : <div class="empty-content" />}
+      </div>
+    );
+  }
+}

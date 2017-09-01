@@ -8,7 +8,7 @@ $slider-width = 500px
   width: $slider-width;
   position: fixed;
   top: 51px;
-  left: 100%;
+  right: 0;
   margin-left: - $slider-width;
   bottom: 0;
   box-shadow: 0 0 10px 0 rgba(0,0,0,0.1);
@@ -92,6 +92,21 @@ $slider-width = 500px
     bottom: 0
     background: #fff
     width: 100%
+    @media (max-width: 1279px) {
+      &+.content-wrapper {
+        animation: slideLeft 600ms cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+        transition: transform 600ms cubic-bezier(0.25, 0.1, 0.25, 1);
+
+        &.toggle-slider {
+          transform: translateX(100%);
+        }
+
+        @keyframes slideLeft {
+          from {left: 100%}
+          to {left: 0}
+        }
+      }
+    }
     @media (min-width: 1280px) {
       &+.content-wrapper {
         left: 100%;
