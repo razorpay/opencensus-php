@@ -459,6 +459,13 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_ENROLL_RESPONSE,
+            [
+                'gateway' => 'blade',
+                'response' => $response->body,
+            ]);
+
         $body = $response->body;
 
         $valid = $this->validateXml($body);
@@ -611,9 +618,9 @@ class Gateway extends Base\Gateway
 
     private function generateXid(array $input)
     {
-        $xid = str_pad($input['payment']['id'], 28, '0', STR_PAD_LEFT);
+        $xid = str_pad($input['payment']['id'], 20, '0', STR_PAD_LEFT);
 
-        return $xid;
+        return base64_encode($xid);
     }
 
     private function getFormattedAmount(array $payment)
