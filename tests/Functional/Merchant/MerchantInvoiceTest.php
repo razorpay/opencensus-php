@@ -60,6 +60,8 @@ class MerchantInvoiceTest extends TestCase
         $entities = $this->getEntities('merchant_invoice', [], true);
 
         $this->assertEquals(2, $entities['count']);
+
+        $this->assertEquals(substr($entities['items'][0]['invoice_number'], -4), '0817');
     }
 
     public function testEditGstin()
@@ -141,6 +143,15 @@ class MerchantInvoiceTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceEntities['non_card'], $data['non_card']);
         $this->assertArraySelectiveEquals($invoiceEntities['card_gt_2k'], $data['card_gt_2k']);
         $this->assertArraySelectiveEquals($invoiceEntities['card_lte_2k'], $data['card_lte_2k']);
+
+        $dateString = Carbon::createFromDate(
+                            $entities[0]['year'],
+                            $entities[0]['month'],
+                            1,
+                            Timezone::IST
+                        )->format('my');
+
+        $this->assertEquals(substr($entities[0]['invoice_number'], -4), $dateString);
 
         Carbon::setTestNow();
     }
@@ -233,7 +244,14 @@ class MerchantInvoiceTest extends TestCase
 
         $this->assertTestResponse($merchantInvoice);
 
-        $this->assertNotNull($merchantInvoice[Invoice\Entity::INVOICE_NUMBER]);
+        $dateString = Carbon::createFromDate(
+                            $merchantInvoice['year'],
+                            $merchantInvoice['month'],
+                            1,
+                            Timezone::IST
+                        )->format('my');
+
+        $this->assertEquals(substr($merchantInvoice[Invoice\Entity::INVOICE_NUMBER], -4), $dateString);
     }
 
     public function testInvoiceEntityCreateForGivenMerchant()
