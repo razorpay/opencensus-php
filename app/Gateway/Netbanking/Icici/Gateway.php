@@ -368,7 +368,7 @@ class Gateway extends Base\Gateway
         if (empty($verify->payment->getSIRefId()) === false)
         {
             $requestData[RequestFields::SI] = Status::Y;
-            $requestData[RequestFields::SI_AUTO_PAY_AMOUNT] = (int) $verify->input['token']->getMaxAmount();
+            $requestData[RequestFields::SI_AUTO_PAY_AMOUNT] = (int) $verify->input['token']->getMaxAmount() / 100;
         }
 
         return array_merge($baseRequestData, $requestData);
