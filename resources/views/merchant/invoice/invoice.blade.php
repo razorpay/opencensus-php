@@ -26,14 +26,15 @@
     <table cellpadding="0" cellspacing="0">
 
       @include('merchant/invoice/components/pageheader')
+
       <tr>
         <td colspan="2" class="text-center">
-          This Invoice summary is for billing period <b>{{{ $dates['startDate']}}}</b> - <b>{{{$dates['endDate']}}}</b>
+          This Invoice summary is for the billing period <b>{{{ $dates['startDate']}}}</b> - <b>{{{$dates['endDate']}}}</b>
         </td>
       </tr>
       <tr>
         <td colspan="2" class="text-center">
-          Greetings from Razorpay, we're writing to provide you with an electronic invoice for use of Payment Gatweay Service. Additional information regarding your bill are available below.
+          This document includes the electronic invoice for the use of Razorpay's Service. The summary of this document is as follows and the details are provided below.
         </td>
       </tr>
       <tr>
@@ -98,9 +99,9 @@
 
   <div class="foot-note text-left">
     <ol>
-      <li>To get the GST input you are requested to update your GST no. in your dashboard, ignore if already GST upated</li>
-      <li>All the invoice, Debit &amp; Credit note values are inclusive of GST.</li>
-      <li>In case of GST no. is not updated then we will generate SGST &amp; CGST invoice.</li>
+      <li>To get GST input, please make sure that you have updated your GSTIN in your Razorpay Dashboard.</li>
+      <li>All the Invoice, Debit &amp; Credit note values are inclusive of GST.</li>
+      <li>In case your GSTIN is not updated then we will generate an SGST &amp; CGST invoice.</li>
     </ol>
   </div>
 
@@ -198,6 +199,7 @@
               </tr>
               @endforeach
 
+              {{--
               @if (isset($pageValue['total_amount_paid']))
               <tr>
                 <td colspan="4"></td>
@@ -218,6 +220,7 @@
                            ['value' => $pageValue['total_amount_due']])
               </tr>
               @endif
+              --}}
 
             <tbody>
           </table>
