@@ -47,7 +47,7 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        if ($this->isSecondRecurringPayment($input) === true)
+        if ($this->isSecondRecurringPaymentRequest($input) === true)
         {
             //
             // We return nothing here, to avoid 2 step flow
@@ -94,7 +94,20 @@ class Gateway extends Base\Gateway
                 'response'   => $response->body
             ]);
 
-        $responseArray = $this->getResponseArray($response->body);
+        try
+        {
+            $responseArray = $this->getResponseArray($response->body);
+        }
+        catch (\Exception $e)
+        {
+            throw new Exception\LogicException(
+                $e->getMessage(),
+                ErrorCode::SERVER_ERROR_INVALID_RESPONSE,
+                [
+                    'response' => $response->body
+                ]);
+        }
+
 
         $attrs = $this->getCallbackAttributes($responseArray);
 
@@ -114,8 +127,8 @@ class Gateway extends Base\Gateway
      */
     protected function checkSecondRecurringStatus(array $response)
     {
-        if ((empty($response[ResponseFields::STATUS]) === true) or
-            ($response[ResponseFields::STATUS] !== Status::SI_SUCCESS))
+        if ((empty($response[ResponseFields::PAID]) === true) or
+            ($response[ResponseFields::PAID] !== Confirmation::YES))
         {
             $errorCode = SiStatusCode::getInternalErrorCode($response[ResponseFields::STATUS]);
 
@@ -305,8 +318,8 @@ class Gateway extends Base\Gateway
             }
             else if ($verify->input['payment']['recurring'] === true)
             {
-                // TODO: Not all SI based payments are mapped to this success status - ensure this is right
-                $verify->gatewaySuccess = ($status !== Status::SI_FAILED);
+                // Need to ensure that the status is not a failure status
+                $verify->gatewaySuccess = (Status::isSiStatusFailure($status) === false);
             }
             // Whereas, the retail verify success is success
             else
@@ -372,7 +385,7 @@ class Gateway extends Base\Gateway
         return array_merge($baseRequestData, $requestData);
     }
 
-    protected function getBaseVerifyRequestData($gatewayPayment, $input)
+    protected function getBaseVerifyRequestData(Base\Entity $gatewayPayment, array $input)
     {
         $paymentDate = Carbon::createFromTimestamp($gatewayPayment['created_at'], Timezone::IST)
                              ->format('Y-m-d');
@@ -537,8 +550,8 @@ class Gateway extends Base\Gateway
 
     protected function checkCallbackStatus(array $attrs, array $content)
     {
-        if ((isset($attrs[ResponseFields::LC_STATUS]) === false) or
-            ($attrs[ResponseFields::LC_STATUS] !== Confirmation::YES))
+        if ((isset($attrs[ResponseFields::STATUS_LC]) === false) or
+            ($attrs[ResponseFields::STATUS_LC] !== Confirmation::YES))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
@@ -637,21 +650,9 @@ class Gateway extends Base\Gateway
 
     protected function getResponseArray(string $response)
     {
-        try
-        {
-            $xml = (array) simplexml_load_string($response);
+        $xml = (array) simplexml_load_string($response);
 
-            return $xml['@attributes'];
-        }
-        catch (\Exception $e)
-        {
-            throw new Exception\LogicException(
-                $e->getMessage(),
-                ErrorCode::SERVER_ERROR_EMPTY_RESPONSE,
-                [
-                    'response' => $response
-                ]);
-        }
+        return $xml['@attributes'];
     }
 
     public function getSpid()
@@ -725,22 +726,6 @@ class Gateway extends Base\Gateway
             case $this->config['live_merchant_id2_corp'];
                 return $this->config['live_hash_secret_corp'];
         }
-    }
-
-    protected function isSecondRecurringPayment(array $input)
-    {
-        //
-        // If the customer's SI request is approved. This is a valid
-        // way of ensuring that this is a 2nd recurring payment
-        //
-        if ((isset($input['token']) === true) and
-            ($input['token']->isRecurring() === true) and
-            ($input['terminal']->isRecurring() === true))
-        {
-            return true;
-        }
-
-        return false;
     }
 
     protected function setDomainType()

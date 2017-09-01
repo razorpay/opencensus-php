@@ -580,6 +580,7 @@ class NetbankingIciciEMandateTest extends TestCase
             {
                 if ($action === 'second_recurring')
                 {
+                    $content['PAID'] = 'N';
                     $content['STATUS'] = 'FAILURE';
                 }
             });

@@ -17,10 +17,21 @@ class Status
     const Y           = 'Y';
 
     const SI_SUCCESS  = 'Success';
-    const SI_FAILED   = 'Failed';
+
+    const SI_FAILED_STATUSES = ['Failed', 'NoSuchPaymentScheduled'];
 
     const SI_STATUS_TO_RECURRING_STATUS_MAP = [
         'Y' => Token\RecurringStatus::CONFIRMED,
         'N' => Token\RecurringStatus::REJECTED
     ];
+
+    public static function isSiStatusFailure(string $status)
+    {
+        if (in_array($status, self::SI_FAILED_STATUSES))
+        {
+            return true;
+        }
+
+        return false;
+    }
 }

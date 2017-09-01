@@ -126,7 +126,7 @@ return [
         ],
         'exception' => [
             'class'                 => RZP\Exception\LogicException::class,
-            'internal_error_code'   => ErrorCode::SERVER_ERROR_EMPTY_RESPONSE,
+            'internal_error_code'   => ErrorCode::SERVER_ERROR_INVALID_RESPONSE,
         ],
     ],
 

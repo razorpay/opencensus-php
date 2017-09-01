@@ -20,7 +20,7 @@ class ResponseFields
      * Gives us more information on the success / failure case.
      */
     const STATUS           = 'STATUS';
-    const LC_STATUS        = 'status';
+    const STATUS_LC        = 'status';
 
     const BILL_REF_NUM     = 'BILL REF NUMBER';
     const PAYMENTID        = 'PAYMENTID';

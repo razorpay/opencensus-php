@@ -13,7 +13,7 @@ class Gateway extends Icici\Gateway
     {
         $request = parent::authorize($input);
 
-        if ($this->isSecondRecurringPayment($input) === true)
+        if ($this->isSecondRecurringPaymentRequest($input) === true)
         {
             return $request;
         }
