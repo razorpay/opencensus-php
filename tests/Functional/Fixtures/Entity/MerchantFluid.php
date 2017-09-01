@@ -112,11 +112,10 @@ class MerchantFluid extends Base
 
     public function addPaymentBanks(array $attributes = array())
     {
-        $banks = \RZP\Models\Payment\Processor\Netbanking::getAllBanks();
-
         $defaultValues = array(
             'merchant_id' => $this->getId(),
-            'banks' => $banks,
+            'disabled_banks' => [],
+            'banks'          => '[]',
         );
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -139,11 +138,9 @@ class MerchantFluid extends Base
 
     public function disablePaytm()
     {
-        $banks = \RZP\Models\Payment\Processor\Netbanking::getAllBanks();
-
         $defaultValues = array(
             'merchant_id' => $this->getId(),
-            'banks' => $banks,
+            'disabled_banks' => [],
             'paytm' => '0',
         );
 
