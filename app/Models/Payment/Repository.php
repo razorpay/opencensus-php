@@ -957,10 +957,10 @@ class Repository extends Base\Repository
     public function updateTax(int $limit = 10000)
     {
         return $this->newQuery()
-                    ->whereNull(Entity::TAX)
-                    ->whereNotNull(Entity::SERVICE_TAX)
+                    ->whereNotNull(Entity::TAX)
+                    //->whereNotNull(Entity::SERVICE_TAX)
                     ->limit($limit)
-                    ->update([Entity::TAX => DB::raw(Entity::SERVICE_TAX)]);
+                    ->update([Entity::TAX => DB::raw(Entity::TAX)]);
     }
 
     public function fetchPendingEMandateRegistration(string $gateway, int $from, int $to)

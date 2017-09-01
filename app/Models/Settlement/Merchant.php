@@ -182,7 +182,7 @@ class Merchant
                     throw new Exception\LogicException('Invalid Settlement-component-type:' . $componentType);
             }
 
-            $details[SetlComponent::SERVICE_TAX]['amount'] += $txn->getServiceTax();
+            $details[SetlComponent::TAX]['amount'] += $txn->getTax();
 
             $details[SetlComponent::FEE]['amount'] += ($txn->getFee() - $txn->getServiceTax());
 
@@ -200,7 +200,7 @@ class Merchant
             switch ($componentType)
             {
                 case SetlDetails\Component::FEE:
-                case SetlDetails\Component::SERVICE_TAX:
+                case SetlDetails\Component::TAX:
 
                     $this->createSetlDetailsEntity(
                         $componentType,
@@ -303,7 +303,7 @@ class Merchant
             Settlement\Entity::AMOUNT       => $this->amount,
             Settlement\Entity::STATUS       => Status::CREATED,
             Settlement\Entity::FEES         => $this->fee,
-            Settlement\Entity::SERVICE_TAX  => $this->tax,
+            //Settlement\Entity::SERVICE_TAX  => $this->tax,
             Settlement\Entity::TAX          => $this->tax,
             Settlement\Entity::CHANNEL      => $this->channel,
         ];

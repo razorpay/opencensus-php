@@ -267,7 +267,7 @@ class Entity extends Base\PublicEntity
         self::TOKEN_ID,
         self::NOTES,
         self::FEE,
-        self::SERVICE_TAX,
+        //self::SERVICE_TAX,
         self::TAX,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,

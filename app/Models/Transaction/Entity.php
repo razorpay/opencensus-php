@@ -92,7 +92,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::FEE,
-        self::SERVICE_TAX,
+        //self::SERVICE_TAX,
         self::TAX,
         self::ON_HOLD,
         self::SETTLED,
