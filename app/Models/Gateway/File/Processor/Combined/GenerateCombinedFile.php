@@ -28,6 +28,19 @@ trait GenerateCombinedFile
 
         $claims = $claimFileProcessor->fetchEntities();
 
+        $entities->put('refunds', $refunds);
+
+        $entities->put('claims', $claims);
+
+        return $entities;
+    }
+
+    public function checkIfValidDataAvailable(PublicCollection $entities)
+    {
+        $refunds = $entities->get('refunds');
+
+        $claims = $entities->get('claims');
+
         if (($refunds->isEmpty() === true) and ($claims->isEmpty() === true))
         {
             throw new GatewayFileException(
@@ -39,12 +52,6 @@ trait GenerateCombinedFile
             throw new GatewayFileException(
                 FailureCode::CLAIM_AMOUNT_LESS_THAN_REFUND_AMOUNT);
         }
-
-        $entities->put('refunds', $refunds);
-
-        $entities->put('claims', $claims);
-
-        return $entities;
     }
 
     public function generateData(PublicCollection $entities): array
@@ -142,7 +149,7 @@ trait GenerateCombinedFile
      *
      * @return bool Whether the file can be processed again
      */
-    protected function canProcess(): bool
+    protected function canRetry(): bool
     {
         if ($this->gatewayFile->isAcknowledged() === true)
         {

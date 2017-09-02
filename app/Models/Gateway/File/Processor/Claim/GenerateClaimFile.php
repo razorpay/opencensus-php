@@ -2,12 +2,14 @@
 
 namespace RZP\Models\Gateway\File\Processor\Claim;
 
+use RZP\Exception;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Gateway\Base\Action;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Gateway\File\Status;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Models\Gateway\File\FailureCode;
@@ -43,13 +45,16 @@ trait GenerateClaimFile
             $claims = $this->repo->payment->fetchReconciledPaymentsForTpv($from, $to, $gateway, $statuses, $tpv);
         }
 
+        return $claims;
+    }
+
+    public function checkIfValidDataAvailable(PublicCollection $claims)
+    {
         if ($claims->isEmpty() === true)
         {
             throw new GatewayFileException(
                     FailureCode::NO_DATA_FOR_FILE_GENERATION);
         }
-
-        return $claims;
     }
 
     public function generateData(PublicCollection $claims): array
@@ -135,7 +140,16 @@ trait GenerateClaimFile
         return ;
     }
 
-    protected function canProcess(): bool
+    protected function checkIfRetriable()
+    {
+        if ($this->canRetry() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE);
+        }
+    }
+
+    protected function canRetry(): bool
     {
         if ($this->gatewayFile->isAcknowledged() === true)
         {
