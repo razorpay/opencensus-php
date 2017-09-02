@@ -22,6 +22,8 @@ class Core extends Base\Core
 
         $invoiceEntity->build($input);
 
+        $invoiceEntity->generateInvoiceNumber($input['month'], $input['year']);
+
         $this->repo->saveOrFail($invoiceEntity);
 
         return $invoiceEntity;

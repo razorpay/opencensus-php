@@ -237,7 +237,7 @@ final class Route
         'setl_get_details'                        => ['get',      'settlements/{id}/details',                       'SettlementController@getSettlementDetails',                        ],
         'setl_post_details_old'                   => ['post',     'settlements/details',                            'SettlementController@postSettlementDetailsForOldTxns'              ],
         'setl_combined_report'                    => ['get',      'settlements/report/combined',                    'SettlementController@getSettlementCombinedReport'                  ],
-        'nodal_initiate_transfer'                 => ['post',     'nodal/transfer',                         'SettlementController@postInitiateTransfer'                         ],
+        'nodal_initiate_transfer'                 => ['post',     'nodal/transfer',                                 'SettlementController@postInitiateTransfer'                         ],
         'adj_fetch_by_id'                         => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
         'adj_fetch_multiple'                      => ['get',      'adjustments',                                    'AdjustmentController@getAdjustments'                               ],
         'adj_add'                                 => ['post',     'adjustments',                                    'AdjustmentController@postAdjustment'                               ],
@@ -834,7 +834,6 @@ final class Route
         'pricing_delete_plan_rule_force',
         'setl_initiate',
         'payout_initiate',
-        'setl_retry',
         'setl_file_generate',
         'setl_reconcile',
         'setl_reconcile_h2h',
@@ -1123,6 +1122,7 @@ final class Route
         'pricing_create_plan',
         'merchant_invoice_update_gstin',
         'merchant_invoice_add_bulk',
+        'setl_retry',
     ];
 
     public static $routePermission = [
@@ -1240,6 +1240,7 @@ final class Route
         'invitation_fetch'                 => '*',
         'pricing_create_plan'              => Permission::CREATE_PRICING_PLAN,
         'merchant_invoice_update_gstin'    => '*',
+        'setl_retry'                       => Permission::RETRY_SETTLEMENT,
         'merchant_invoice_add_bulk'        => '*',
     ];
 
@@ -1426,6 +1427,7 @@ final class Route
         'schedule_assign',
         'admin_dummy_account_test',
         'merchant_invoice_update_gstin',
+        'setl_retry',
         'merchant_invoice_add_bulk',
     ];
 

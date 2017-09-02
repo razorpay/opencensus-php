@@ -160,7 +160,7 @@ class Core extends Base\Core
 
     public function sendOtp($input, $merchant)
     {
-        $input[Entity::CONTACT] = Customer\Validator::validateAndParseContact($input[Entity::CONTACT]);
+        $input = Customer\Validator::validateAndParseContactInInput($input);
 
         $data = (new Customer\Raven)->sendOtp($input, $merchant);
 
@@ -173,7 +173,7 @@ class Core extends Base\Core
         Customer\Validator::validateGlobalCustomerCreateInput($input);
 
         // Parse contact
-        $input[Entity::CONTACT] = Customer\Validator::validateAndParseContact($input[Entity::CONTACT]);
+        $input = Customer\Validator::validateAndParseContactInInput($input);
 
         // Verify the otp with raven service
         $this->verifyRavenOtp($input, $merchant);
@@ -224,7 +224,7 @@ class Core extends Base\Core
     {
         Customer\Validator::validateWalletAppCustomerCreateInput($input);
 
-        $input[Entity::CONTACT] = Customer\Validator::validateAndParseContact($input[Entity::CONTACT]);
+        $input = Customer\Validator::validateAndParseContactInInput($input);
 
         (new Customer\Validator)->validateIndianContact($input[Entity::CONTACT]);
 
