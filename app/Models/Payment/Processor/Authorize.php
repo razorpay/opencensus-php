@@ -2020,7 +2020,7 @@ trait Authorize
             //
             if ($payment->isNetbanking() === true)
             {
-                $this->updateTokenRecurringDetails($payment, $token, $data);
+                $this->updateTokenRecurringDetails($token, $data);
             }
 
             $this->createAndSetTerminalInGatewayToken($payment, $token);
@@ -2062,7 +2062,7 @@ trait Authorize
         return false;
     }
 
-    protected function updateTokenRecurringDetails(Payment\Entity $payment, Token\Entity $token, array $data)
+    protected function updateTokenRecurringDetails(Token\Entity $token, array $data)
     {
         //
         // We update the token details and not gateway token details

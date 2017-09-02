@@ -108,7 +108,6 @@ class Gateway extends Base\Gateway
                 ]);
         }
 
-
         $attrs = $this->getCallbackAttributes($responseArray);
 
         $gatewayPayment->fill($attrs);
@@ -137,7 +136,11 @@ class Gateway extends Base\Gateway
             $gatewayErrorDesc = $response[ResponseFields::STATUS];
 
             throw new Exception\GatewayErrorException(
-                $errorCode, $gatewayErrorCode, $gatewayErrorDesc);
+                $errorCode, $gatewayErrorCode, $gatewayErrorDesc,
+                [
+                    'response' => $response,
+                    'gateway'  => $this->gateway,
+                ]);
         }
     }
 
@@ -538,6 +541,7 @@ class Gateway extends Base\Gateway
             Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_PAYMENT_ID],
             //
             // These fields are received in the callback of first recurring request
+            // They are not received in the second recurring payment
             //
             // TODO: Find out which one is sent and fix this accordingly.
             Base\Entity::SI_REF_ID       => $content[ResponseFields::SI_REFERENCE_ID] ??
@@ -554,7 +558,13 @@ class Gateway extends Base\Gateway
             ($attrs[ResponseFields::STATUS_LC] !== Confirmation::YES))
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                null,
+                null,
+                [
+                    'content' => $content,
+                    'gateway' => $this->gateway,
+                ]);
         }
     }
 
