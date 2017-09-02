@@ -7,9 +7,8 @@ use RZP\Gateway\Base;
 
 use phpseclib\Crypt\AES;
 use RZP\Gateway\Netbanking\Icici\Status;
-use RZP\Gateway\Netbanking\Icici\Action;
+use RZP\Gateway\Netbanking\Icici\Mode;
 use RZP\Gateway\Netbanking\Icici\Confirmation;
-use RZP\Gateway\Netbanking\Base as Netbanking;
 use RZP\Gateway\Netbanking\Icici\RequestFields;
 use RZP\Gateway\Netbanking\Icici\ResponseFields;
 
@@ -71,7 +70,7 @@ class Server extends Base\Mock\Server
 
     protected function isSecondRecurring(array $content)
     {
-        return ($content[RequestFields::MODE] === Action::STANDING_INSTRUCTIONS);
+        return ($content[RequestFields::MODE] === Mode::STANDING_INSTRUCTIONS);
     }
 
     public function verify($input)

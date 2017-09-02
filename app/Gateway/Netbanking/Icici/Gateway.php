@@ -4,7 +4,7 @@ namespace RZP\Gateway\Netbanking\Icici;
 
 use Carbon\Carbon;
 use phpseclib\Crypt\AES;
-use RZP\Constants\Mode;
+use RZP\Constants\Mode as RZPMode;
 use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -18,6 +18,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Verify as PaymentVerify;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Base\Action;
 
 class Gateway extends Base\Gateway
 {
@@ -148,7 +149,7 @@ class Gateway extends Base\Gateway
     {
         $gatewayToken = $input['token']->getGatewayToken();
 
-        $baseRequestData = $this->getBaseRequestData(Action::STANDING_INSTRUCTIONS);
+        $baseRequestData = $this->getBaseRequestData(Mode::STANDING_INSTRUCTIONS);
         $verifyRequestData = $this->getBaseVerifyRequestData($gatewayPayment, $input);
 
         $paymentDate = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST)
@@ -334,7 +335,7 @@ class Gateway extends Base\Gateway
 
     protected function getAuthorizeRequestData(array $input)
     {
-        $baseRequestData = $this->getBaseRequestData(Action::PAY);
+        $baseRequestData = $this->getBaseRequestData(Mode::PAY);
 
         $requestData = $this->getBaseAuthorizeRequestData($input);
 
@@ -362,7 +363,7 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequestData(Verify $verify)
     {
-        $baseRequestData = $this->getBaseRequestData(Action::INQUIRY);
+        $baseRequestData = $this->getBaseRequestData(Mode::INQUIRY);
 
         $requestData = $this->getBaseVerifyRequestData($verify->payment, $verify->input);
 
@@ -667,7 +668,7 @@ class Gateway extends Base\Gateway
 
     public function getSpid()
     {
-        if ($this->mode === Mode::TEST)
+        if ($this->mode === RZPMode::TEST)
         {
             return $this->getTestMerchantId();
         }
@@ -677,7 +678,7 @@ class Gateway extends Base\Gateway
 
     public function getPid()
     {
-        if ($this->mode === Mode::TEST)
+        if ($this->mode === RZPMode::TEST)
         {
             if ($this->isCorporateBanking() === true)
             {
