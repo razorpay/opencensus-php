@@ -4,10 +4,10 @@ import { Tour, TourStep } from 'rzp/ui/Tour';
 import * as ModalActions from 'rzp/modules/modals';
 import LocalStorageService from 'rzp/utils/localStorage';
 import NewUIOnboardingDialog from 'merchant/components/NewUIOnboardingDialog';
-import { toggleTour } from 'merchant/modules/session';
+import { showOrHideTour } from 'merchant/modules/session';
 
 @connect(state => state.session, {
-  toggleTour,
+  showOrHideTour,
   ...ModalActions,
 })
 export default class MerchantTour extends Component {
@@ -21,7 +21,7 @@ export default class MerchantTour extends Component {
     // Identify user already using new ui
     if (
       this.props.user.tags.indexOf('Newui') === -1 &&
-      LocalStorageService.getItem('tour_shown') === 'false'
+      !JSON.parse(LocalStorageService.getItem('tour_shown'))
     ) {
       this.display();
     }
@@ -37,10 +37,6 @@ export default class MerchantTour extends Component {
     let isOldUIEnabled = this.props.user.isOldUIEnabled;
 
     if (!isOldUIEnabled) {
-      console.log('NEW UI...');
-
-      this.props.closeModal();
-
       window.setTimeout(() => {
         this.props.openModal({
           size: 'small',
@@ -71,8 +67,8 @@ export default class MerchantTour extends Component {
   closeTour = () => {
     this.props.closeModal();
 
-    this.props.toggleTour(false);
-    this.setState({ isTourActive: false });
+    this.props.showOrHideTour(false);
+    this.setState({ isTourActive: false, activeTourStep: 0 });
   };
 
   gotoNextTourStep = () => {
@@ -152,7 +148,7 @@ export default class MerchantTour extends Component {
             offset="-15px 30px"
             arrowLeftPos="85%"
           >
-            <p>Click here to give feedback or see the New UI tour again.</p>
+            <p>Click here to give feedback or see this UI tour again.</p>
             <div class="btn-toolbar">
               <button class="btn btn-link pull-right" onClick={this.closeTour}>
                 Okay, Got it!

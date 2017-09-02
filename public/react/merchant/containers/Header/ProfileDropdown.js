@@ -4,7 +4,7 @@ import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
 import NewUIOnboardingDialog from 'merchant/components/NewUIOnboardingDialog';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import { openModal, closeModal } from 'rzp/modules/modals';
-import { logout, toggleTour } from 'merchant/modules/session';
+import { logout, showOrHideTour } from 'merchant/modules/session';
 import { fetchConfig } from 'merchant/modules/config';
 import SubmitFeedback from 'merchant/containers/Header/SubmitFeedback';
 
@@ -15,7 +15,7 @@ import SubmitFeedback from 'merchant/containers/Header/SubmitFeedback';
       ...state.config.config,
     };
   },
-  { logout, fetchConfig, closeModal, openModal, toggleTour }
+  { logout, fetchConfig, closeModal, openModal, showOrHideTour }
 )
 export default class ProfileDropdown extends Component {
   componentWillMount() {
@@ -96,14 +96,14 @@ export default class ProfileDropdown extends Component {
             {!user.isOldUIEnabled
               ? <div
                   class="media media-action"
-                  onClick={() => this.props.toggleTour(true)}
+                  onClick={() => this.props.showOrHideTour(true)}
                 >
                   <div class="media-left">
                     <div class="media-object">
                       <i class="icon icon-tour" />
                     </div>
                   </div>
-                  <div class="media-body">Show New UI Tour</div>
+                  <div class="media-body">Show Recent UI Changes</div>
                 </div>
               : null}
             <div class="media media-action" onClick={this.submitFeedback}>

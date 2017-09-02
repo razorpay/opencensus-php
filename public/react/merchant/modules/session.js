@@ -7,7 +7,7 @@ const UPDATE_SESSION = 'UPDATE_SESSION';
 const USER_FETCH = 'USER_FETCH';
 const ORG_FETCH = 'ORG_FETCH';
 export const USER_LOGOUT = 'USER_LOGOUT';
-const TOGGLE_TOUR = 'TOGGLE_TOUR';
+const SHOW_HIDE_TOUR = 'SHOW_HIDE_TOUR';
 
 export const updateSession = payload => {
   return {
@@ -65,9 +65,9 @@ export const submitFeedback = data => {
   };
 };
 
-export const toggleTour = toShowTour => {
+export const showOrHideTour = toShowTour => {
   return {
-    type: TOGGLE_TOUR,
+    type: SHOW_HIDE_TOUR,
     toShowTour,
   };
 };
@@ -98,7 +98,7 @@ export default function(state = initialState, action) {
     case `${ORG_FETCH}::SUCCESS`:
       return set(state, 'org', action.payload.data);
 
-    case 'TOGGLE_TOUR':
+    case 'SHOW_HIDE_TOUR':
       return set(state, 'isTourVisible', action.toShowTour);
 
     default:
