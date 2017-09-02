@@ -164,6 +164,8 @@ trait Authorize
                     $request = $this->callGatewayAuthorize($terminalGatewayInput);
                 }
 
+                $retry = true;
+
                 break;
             }
             catch (Exception\GatewayRequestException $e)
@@ -754,7 +756,7 @@ trait Authorize
 
         //
         // If payment type is card, validate that the card supports recurring
-        // or if payment type is netbanking, validate that the card supports recurring
+        // or if payment type is netbanking, validate that the bank supports recurring
         //
         if ($payment->isCard() === true)
         {
@@ -910,27 +912,29 @@ trait Authorize
      */
     protected function validateSecondRecurringNetbanking($token, $payment)
     {
-        if ($payment->isSecondRecurring())
+        if ($payment->isSecondRecurring() === false)
         {
-            if ($token->isRecurring() === false)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING,
-                    Token\Entity::RECURRING,
-                    [
-                        'payment' => $payment->toArray(),
-                    ]);
-            }
-            else if (empty($token->getGatewayToken()) === true)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_GATEWAY_TOKEN_EMPTY,
-                    Token\Entity::GATEWAY_TOKEN,
-                    [
-                        'payment' => $payment->toArray(),
-                        'token'   => $token->toArray(),
-                    ]);
-            }
+            return;
+        }
+
+        if ($token->isRecurring() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING,
+                Token\Entity::RECURRING,
+                [
+                    'payment' => $payment->toArray(),
+                ]);
+        }
+        else if (empty($token->getGatewayToken()) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_GATEWAY_TOKEN_EMPTY,
+                Token\Entity::GATEWAY_TOKEN,
+                [
+                    'payment' => $payment->toArray(),
+                    'token'   => $token->toArray(),
+                ]);
         }
     }
 

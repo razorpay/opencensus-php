@@ -16,9 +16,11 @@ class Status
 
     const Y           = 'Y';
 
-    const SI_SUCCESS  = 'Success';
+    const SI_SUCCESS            = 'Success';
+    const SI_FAILED             = 'Failed';
+    const PAYMENT_NOT_SCHEDULED = 'NoSuchPaymentScheduled';
 
-    const SI_FAILED_STATUSES = ['Failed', 'NoSuchPaymentScheduled'];
+    const SI_FAILED_STATUSES    = [self::SI_FAILED, self::PAYMENT_NOT_SCHEDULED];
 
     const SI_STATUS_TO_RECURRING_STATUS_MAP = [
         'Y' => Token\RecurringStatus::CONFIRMED,
@@ -27,7 +29,7 @@ class Status
 
     public static function isSiStatusFailure(string $status)
     {
-        if (in_array($status, self::SI_FAILED_STATUSES))
+        if (in_array($status, self::SI_FAILED_STATUSES, true) === true)
         {
             return true;
         }

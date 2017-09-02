@@ -435,6 +435,25 @@ class NetbankingIciciEMandateTest extends TestCase
             });
     }
 
+    public function testPaymentAmountGreaterThanTokenMaxAmount()
+    {
+        $payment = $this->payment;
+        $payment['amount'] = 1000000;
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
+
+        $token = $this->getLastEntity('token', true);
+        $this->assertEquals(100000, $token[Token::MAX_AMOUNT]);
+        $this->assertGreaterThan($token[Token::MAX_AMOUNT], $payment['amount']);
+    }
+
     protected function assertSiNullGatewayToken()
     {
         $token = $this->getLastEntity('token', true);

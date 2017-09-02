@@ -3,22 +3,22 @@
 namespace RZP\Gateway\Netbanking\Icici;
 
 use Carbon\Carbon;
-use phpseclib\Crypt\AES;
-use RZP\Constants\Mode as RZPMode;
-use RZP\Constants\Timezone;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Gateway\Base\AESCrypto;
-use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Constants;
+use RZP\Models\Payment;
+use phpseclib\Crypt\AES;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Verify;
-use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base\Action;
+use RZP\Models\Customer\Token;
+use RZP\Gateway\Base\AESCrypto;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
-use RZP\Models\Customer\Token;
-use RZP\Models\Payment;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Models\Payment\Verify as PaymentVerify;
-use RZP\Trace\TraceCode;
-use RZP\Gateway\Base\Action;
 
 class Gateway extends Base\Gateway
 {
@@ -542,7 +542,6 @@ class Gateway extends Base\Gateway
             Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_PAYMENT_ID],
             //
             // These fields are received in the callback of first recurring request
-            // They are not received in the second recurring payment
             //
             // TODO: Find out which one is sent and fix this accordingly.
             Base\Entity::SI_REF_ID       => $content[ResponseFields::SI_REFERENCE_ID] ??
@@ -668,7 +667,7 @@ class Gateway extends Base\Gateway
 
     public function getSpid()
     {
-        if ($this->mode === RZPMode::TEST)
+        if ($this->mode === Constants\Mode::TEST)
         {
             return $this->getTestMerchantId();
         }
@@ -678,7 +677,7 @@ class Gateway extends Base\Gateway
 
     public function getPid()
     {
-        if ($this->mode === RZPMode::TEST)
+        if ($this->mode === Constants\Mode::TEST)
         {
             if ($this->isCorporateBanking() === true)
             {
