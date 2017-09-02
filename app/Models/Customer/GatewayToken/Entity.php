@@ -58,6 +58,10 @@ class Entity extends Base\PublicEntity
         self::RECURRING         => null,
     ];
 
+    protected $casts = [
+        self::RECURRING => 'bool',
+    ];
+
     // -------------------- Relations --------------------
 
     public function merchant()
