@@ -924,6 +924,23 @@ trait Authorize
         }
 
         //
+        // At this point, the token has been used, and if the payment is a
+        // first recurring payment, we throw an exception here, as it should
+        // not be sent in the first recurring request
+        //
+        if (($token->getUsedAt() !== null) and
+            ($payment->isSecondRecurring() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TOKEN_PASSED_IN_FIRST_RECURRING,
+                Payment\Entity::BANK,
+                [
+                    'payment' => $payment->toArray(),
+                    'token'   => $token->toArray(),
+                ]);
+        }
+
+        //
         // For netbanking payments, we ensure that if it is a second recurring payment,
         // it must contain a recurring enabled token with an associated gateway token.
         //

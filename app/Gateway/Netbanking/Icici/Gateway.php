@@ -550,21 +550,32 @@ class Gateway extends Base\Gateway
 
     protected function getCallbackAttributes(array $content)
     {
-        return [
+        //
+        // BID won't be sent across when the payment has not been scheduled
+        //
+        $data = [
             Base\Entity::RECEIVED        => true,
             Base\Entity::STATUS          => $content[ResponseFields::PAID],
-            // BID won't be sent across when the payment has not been scheduled
             Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_PAYMENT_ID] ?? null,
-            //
-            // These fields are received in the callback of first recurring request
-            //
-            // TODO: Find out which one is sent and fix this accordingly.
-            Base\Entity::SI_REF_ID       => $content[ResponseFields::SI_REFERENCE_ID] ??
-                                            $content[ResponseFields::SI_SCHEDULE_ID] ??
-                                            null,
-            Base\Entity::SI_STATUS       => $content[ResponseFields::SI_STATUS] ?? null,
-            Base\Entity::SI_MSG          => $content[ResponseFields::SI_MESSAGE] ?? null,
         ];
+
+        //
+        // These fields are received in the callback of first recurring request
+        //
+
+        //
+        // For first recurring payment, we get SCHEDULEID in the callback response,
+        // but for second recurring payments, we get RID in the callback response
+        //
+        $recurringData = [
+            Base\Entity::SI_REF_ID => $content[ResponseFields::SI_REFERENCE_ID] ??
+                                      $content[ResponseFields::SI_SCHEDULE_ID] ??
+                                      null,
+            Base\Entity::SI_STATUS => $content[ResponseFields::SI_STATUS] ?? null,
+            Base\Entity::SI_MSG    => $content[ResponseFields::SI_MESSAGE] ?? null,
+        ];
+
+        return array_merge($data, $recurringData);
     }
 
     protected function checkCallbackStatus(array $attrs, array $content)

@@ -401,11 +401,13 @@ final class FactoryData
             'merchant_id' => '10000000000000',
             'customer_id' => '100000customer',
             'wallet'      => 'paytm',
-            'method'      => 'wallet',
-            'bank'        => null,
+            'method'      => 'netbanking',
+            'bank'        => 'ICIC',
             'card_id'     => null,
-            'recurring'   => false,
+            'recurring'   => true,
             'used_count'  => 0,
+            'token'       => $faker->uniqueid,
+            'used_at'     => $faker->timestamp,
         ]);
 
         $factory(\RZP\Models\Customer\AppToken\Entity::class, [

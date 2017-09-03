@@ -456,6 +456,30 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertGreaterThan($token[Token::MAX_AMOUNT], $payment['amount']);
     }
 
+    /**
+     * This test is to ensure that if a token is used for a first recurring
+     * payment, the validate netbanking recurring method should throw an error
+     */
+    public function testTokenPassedInFirstRecurringPayment()
+    {
+        $token = $this->fixtures->create('token');
+
+        $payment = $this->payment;
+        $payment['token'] = 'token_' . $token['id'];
+
+        $data = $this->testData[__FUNCTION__];
+
+        //
+        // Second auth payment for the recurring product
+        //
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthPayment($payment);
+            });
+    }
+
     protected function assertSiNullGatewayToken()
     {
         $token = $this->getLastEntity('token', true);

@@ -110,7 +110,7 @@ class Server extends Base\Mock\Server
         if ((isset($input[RequestFields::SI]) === true) and
             ($input[RequestFields::SI] === Confirmation::YES))
         {
-            $response[ResponseFields::SI_REFERENCE_ID] = uniqid();
+            $response[ResponseFields::SI_SCHEDULE_ID] = uniqid();
             $response[ResponseFields::SI_STATUS]    = Confirmation::YES;
             $response[ResponseFields::SI_MESSAGE]   = 'Success';
         }
