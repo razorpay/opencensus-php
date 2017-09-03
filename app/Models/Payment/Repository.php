@@ -220,28 +220,36 @@ class Repository extends Base\Repository
      * This function is used to fetch the authorized payments where
      * Merchant auto refund delay is null.
      *
-     * @param $timestamp
+     * @param int  $timestamp
+     * @param bool $getDisputed Flag to check whether to get disputed payments
      *
      * @return Base\PublicCollection
      */
-    public function getAuthorizedPaymentsBeforeTimestamp($timestamp)
+    public function getAuthorizedPaymentsBeforeTimestamp(int $timestamp, bool $getDisputed = true): Base\PublicCollection
     {
         $createdAt  = $this->dbColumn(Entity::CREATED_AT);
         $merchantId = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
-        return $this->newQuery()
-                    ->select($this->dbColumn('*'))
-                    ->join(Table::MERCHANT, Entity::MERCHANT_ID, '=', $merchantId)
-                    ->whereNull(Merchant\Entity::AUTO_REFUND_DELAY)
-                    ->status(Payment\Status::AUTHORIZED)
-                    ->where($createdAt, '<=', $timestamp)
-                    ->orderBy(Payment\Entity::MERCHANT_ID)
-                    ->get();
+        $query = $this->newQuery()
+                      ->select($this->dbColumn('*'))
+                      ->join(Table::MERCHANT, Entity::MERCHANT_ID, '=', $merchantId)
+                      ->whereNull(Merchant\Entity::AUTO_REFUND_DELAY)
+                      ->status(Payment\Status::AUTHORIZED)
+                      ->where($createdAt, '<=', $timestamp)
+                      ->orderBy(Payment\Entity::MERCHANT_ID);
+
+        // Check if we should pick disputed payments for refund
+        if ($getDisputed === false)
+        {
+            $query = $query->where(Entity::DISPUTED, '=', 0);
+        }
+
+        return $query->get();
     }
 
     /**
-     * This function is used to fetch the authorized payments with
-     * merchant auto delay delay
+     * This function is used to fetch the authorized payments
+     * that are not disputed with merchant auto delay delay
      *
      * @return Base\PublicCollection
      */
@@ -250,7 +258,7 @@ class Repository extends Base\Repository
         $paymentCreatedAt = $this->dbColumn(Entity::CREATED_AT);
         $merchantId       = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
-        $minCreatedAt = Carbon::now()->subMinutes(30)->timestamp;
+        $minCreatedAt = Carbon::now()->subSeconds(Merchant\Entity::MIN_AUTO_REFUND_DELAY)->getTimestamp();
 
         $rawCondition = '(' . time() . ' - ' . $paymentCreatedAt . ') > ' . Merchant\Entity::AUTO_REFUND_DELAY;
 
@@ -261,6 +269,7 @@ class Repository extends Base\Repository
                     ->whereRaw($rawCondition)
                     ->whereNotNull(Merchant\Entity::AUTO_REFUND_DELAY)
                     ->where($paymentCreatedAt, '<', $minCreatedAt)
+                    ->where(Entity::DISPUTED, '=', 0)
                     ->get();
     }
 
@@ -677,16 +686,16 @@ class Repository extends Base\Repository
 
     public function getYesterdayVolume()
     {
-        $yesterday = Carbon::yesterday(Timezone::IST)->timestamp;
-        $today = Carbon::today(Timezone::IST)->timestamp;
+        $yesterday = Carbon::yesterday(Timezone::IST)->getTimestamp();
+        $today = Carbon::today(Timezone::IST)->getTimestamp();
 
         return $this->getPaymentVolumeBetweenTimestamp($yesterday, $today);
     }
 
     public function getCurrentMonthVolume()
     {
-        $from = Carbon::yesterday(Timezone::IST)->startOfMonth()->timestamp;
-        $to = Carbon::today(Timezone::IST)->timestamp;
+        $from = Carbon::yesterday(Timezone::IST)->startOfMonth()->getTimestamp();
+        $to = Carbon::today(Timezone::IST)->getTimestamp();
 
         return $this->getPaymentVolumeBetweenTimestamp($from, $to);
     }
@@ -712,8 +721,8 @@ class Repository extends Base\Repository
 
     public function getYesterdayTopMerchantVolumeWise()
     {
-        $from = Carbon::yesterday(Timezone::IST)->timestamp;
-        $to = Carbon::today(Timezone::IST)->timestamp;
+        $from = Carbon::yesterday(Timezone::IST)->getTimestamp();
+        $to = Carbon::today(Timezone::IST)->getTimestamp();
 
         $pid = $this->dbColumn(Payment\Entity::MERCHANT_ID);
         $mid = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
@@ -739,8 +748,8 @@ class Repository extends Base\Repository
 
     public function getMonthTopMerchantVolumeWise()
     {
-        $from = Carbon::yesterday(Timezone::IST)->startOfMonth()->timestamp;
-        $to = Carbon::today(Timezone::IST)->timestamp;
+        $from = Carbon::yesterday(Timezone::IST)->startOfMonth()->getTimestamp();
+        $to = Carbon::today(Timezone::IST)->getTimestamp();
 
         $pid = $this->dbColumn(Payment\Entity::MERCHANT_ID);
         $mid = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
@@ -864,7 +873,8 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Gets all authorized payments which belongs to a paid order. All these
+     * Gets all authorized payments which belongs to a
+     * paid order and are not disputed. All these
      * payments are supposed to be refunded.
      *
      * @return Base\PublicCollection
@@ -886,13 +896,14 @@ class Repository extends Base\Repository
 
         $paymentCols      = $this->dbColumn('*');
         $paymentStatus    = $this->dbColumn(Entity::STATUS);
+        $paymentDisputed  = $this->dbColumn(Entity::DISPUTED);
         $paymentOrderId   = $this->dbColumn(Entity::ORDER_ID);
         $paymentCreatedAt = $this->dbColumn(Entity::CREATED_AT);
 
         // For optimization purposes we only pick payments in last 10 days. This picked
         // '10 days' is sufficient filter logically.
 
-        $nowMinus10Days = Carbon::today(Timezone::IST)->subDays(10)->timestamp;
+        $nowMinus10Days = Carbon::today(Timezone::IST)->subDays(10)->getTimestamp();
 
         $results = $this->newQuery()
                         ->join($orderTable, $orderId, '=', $paymentOrderId)
@@ -900,6 +911,7 @@ class Repository extends Base\Repository
                         ->where($paymentCreatedAt, '>', $nowMinus10Days)
                         ->where($orderStatus, Order\Status::PAID)
                         ->where($paymentStatus, Status::AUTHORIZED)
+                        ->where($paymentDisputed, 0)
                         ->with('merchant')
                         ->get();
 

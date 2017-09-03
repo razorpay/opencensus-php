@@ -44,6 +44,7 @@ class Gateway
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
     const WALLET_FREECHARGE  = 'wallet_freecharge';
     const WALLET_JIOMONEY    = 'wallet_jiomoney';
+    const WALLET_SBIBUDDY    = 'wallet_sbibuddy';
     const WALLET_MPESA       = 'wallet_mpesa';
     const WALLET_OLAMONEY    = 'wallet_olamoney';
     const WALLET_OPENWALLET  = 'wallet_openwallet';
@@ -133,9 +134,11 @@ class Gateway
         Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::AMEX,
         Payment\Gateway::WALLET_JIOMONEY,
+        Payment\Gateway::WALLET_SBIBUDDY,
         Payment\Gateway::WALLET_AIRTELMONEY,
         Payment\Gateway::FIRST_DATA,
         Payment\Gateway::UPI_ICICI,
+        Payment\Gateway::WALLET_PAYZAPP,
     ];
 
     public static $channels = [
@@ -215,6 +218,7 @@ class Gateway
             self::WALLET_AIRTELMONEY,
             self::WALLET_FREECHARGE,
             self::WALLET_JIOMONEY,
+            self::WALLET_SBIBUDDY,
             self::WALLET_OPENWALLET,
             self::WALLET_MPESA,
         ],
@@ -353,6 +357,7 @@ class Gateway
         Wallet::AIRTELMONEY => Gateway::WALLET_AIRTELMONEY,
         Wallet::FREECHARGE  => Gateway::WALLET_FREECHARGE,
         Wallet::JIOMONEY    => Gateway::WALLET_JIOMONEY,
+        Wallet::SBIBUDDY    => Gateway::WALLET_SBIBUDDY,
         Wallet::OPENWALLET  => Gateway::WALLET_OPENWALLET,
         Wallet::MPESA       => Gateway::WALLET_MPESA,
     ];
@@ -401,6 +406,7 @@ class Gateway
         self::WALLET_OLAMONEY,
         self::WALLET_FREECHARGE,
         self::WALLET_JIOMONEY,
+        self::WALLET_SBIBUDDY,
         self::WALLET_MPESA,
         self::UPI_ICICI,
         self::UPI_IDFC,
@@ -620,7 +626,11 @@ class Gateway
         if (in_array($gateway, self::$methodMap[Method::WALLET]) === false)
         {
             throw new Exception\LogicException(
-                'Unknown wallet gateway. Gateway: ' . $gateway);
+                'Unknown wallet gateway',
+                null,
+                [
+                    'gateway' => $gateway,
+                ]);
         }
 
         return array_flip(self::$walletToGatewayMap)[$gateway];
@@ -631,7 +641,11 @@ class Gateway
         if (self::isValidGateway($gateway) === false)
         {
             throw new Exception\LogicException(
-                'Unknown gateway. Gateway: ' . $gateway);
+                'Unknown gateway',
+                null,
+                [
+                    'gateway' => $gateway,
+                ]);
         }
     }
 

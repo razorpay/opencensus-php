@@ -56,7 +56,12 @@ trait Inquiry
             $data);
 
         throw new Exception\LogicException(
-            'Unexpected refund verify result received');
+            'Unexpected refund verify result received',
+            null,
+            [
+                'payment_id' => $input['refund']['payment_id'],
+                'refund_id'  => $input['refund']['id'],
+            ]);
     }
 
     protected function getSuccessfulVerifyRefundAttributes($input, $responseData)
@@ -231,6 +236,11 @@ trait Inquiry
             }
         }
 
+        if (empty($content['tranid']) === false)
+        {
+            $gatewayPayment->setGatewayTransactionId($content['tranid']);
+        }
+
         $gatewayPayment->saveOrFail();
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
@@ -258,7 +268,12 @@ trait Inquiry
             else
             {
                 throw new Exception\LogicException(
-                    'Not expecting this result code: ' . $content['result']);
+                    'Not expecting this result code',
+                    null,
+                    [
+                        'result'     => $content['result'],
+                        'payment_id' => $content['trackid'],
+                    ]);
             }
 
             $payment->setStatus($status);
@@ -290,7 +305,12 @@ trait Inquiry
 
             default:
                 throw new Exception\LogicException(
-                    'Unexpected enroll result code: ' . $enrollResult);
+                    'Unexpected enroll result code',
+                    null,
+                    [
+                        'payment_id' => $payment->getPaymentId(),
+                        'result'     => $enrollResult,
+                    ]);
         }
     }
 
@@ -349,12 +369,9 @@ trait Inquiry
 
         $content['action'] = Action::INQUIRY;
 
-        if ($verify->input['merchant']->getId() !== '2aTeFCKTYWwfrF')
-        {
-            $content['transid'] = $payment['gateway_transaction_id'];
-        }
+        $content['transid'] = $payment['payment_id'];
 
-        $content['udf5'] = 'PaymentID';
+        $content['udf5'] = 'TrackID';
 
         $content['amt'] = $verify->input['payment']['amount'] / 100;
         $content['member'] = $verify->input['card']['name'];
@@ -439,7 +456,12 @@ trait Inquiry
             else
             {
                 throw new Exception\LogicException(
-                    'Unexpected action: ' . $paymentAction);
+                    'Unexpected action',
+                    null,
+                    [
+                        'payment_id' => $payment->getPaymentId(),
+                        'action'     => $paymentAction,
+                    ]);
             }
 
             $responseData['result'] = $result;

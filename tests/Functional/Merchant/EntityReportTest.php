@@ -7,6 +7,7 @@ use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant\Invoice;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -51,9 +52,9 @@ class EntityReportTest extends TestCase
         $dt = Carbon::today(Timezone::IST);
 
         $input = [
-            'year' => $dt->year,
+            'year'  => $dt->year,
             'month' => $dt->month,
-            'day' => $dt->day
+            'day'   => $dt->day
         ];
 
         $combinedReport = $this->fetchMonthlyTransactionsReport($input);
@@ -71,10 +72,11 @@ class EntityReportTest extends TestCase
 
         $dt = Carbon::today(Timezone::IST);
 
-        $input = array(
-            'year' => $dt->year,
+        $input = [
+            'year'  => $dt->year,
             'month' => $dt->month,
-            'day' => $dt->day);
+            'day'   => $dt->day
+        ];
 
         $orderReport = $this->fetchReport('order', $input);
 
@@ -113,7 +115,6 @@ class EntityReportTest extends TestCase
         $this->runRequestResponseFlow($data);
     }
 
-
     /**
      * Data for this test case needs to imported separately
      */
@@ -121,11 +122,11 @@ class EntityReportTest extends TestCase
     {
         $dt = Carbon::today(Timezone::IST);
 
-        $input = array(
-            'year' => 2017,
+        $input = [
+            'year'  => 2017,
             'month' => 2,
-            'day' => 3
-        );
+            'day'   => 3
+        ];
 
         $data = $this->fetchReportAsFile('transaction', $input);
 
@@ -138,10 +139,11 @@ class EntityReportTest extends TestCase
 
         $dt = Carbon::today(Timezone::IST);
 
-        $input = array(
-            'year' => $dt->year,
+        $input = [
+            'year'  => $dt->year,
             'month' => $dt->month,
-            'day' => $dt->day);
+            'day'   => $dt->day
+        ];
 
         $data = $this->fetchReportAsFile('transaction', $input);
 
@@ -174,6 +176,69 @@ class EntityReportTest extends TestCase
         $this->assertEquals(0, $invoice['tax']);
         $this->assertEquals(2000, $invoice['razorpay_fee']);
         $this->assertEquals(0, $invoice['taxes']['IGST']);
+    }
+
+    public function testInvoiceNew()
+    {
+        $this->fixtures->create('merchant_invoice', ['type' => Invoice\Type::CARD_LTE_2K]);
+        $this->fixtures->create('merchant_invoice', ['type' => Invoice\Type::CARD_GT_2K]);
+        $this->fixtures->create('merchant_invoice', ['type' => Invoice\Type::NON_CARD]);
+        $this->fixtures->create('merchant_invoice',
+            [
+                'type' => Invoice\Type::ADJUSTMENT, 'amount' => -45000,
+                'tax' => -1800, 'Description' => 'Adjustment against extra commission'
+            ]);
+
+        $this->fixtures->create('merchant_invoice',
+            [
+                'type' => Invoice\Type::ADJUSTMENT, 'amount' => 25000,
+                'tax' => 800, 'Description' => 'Adjustment against uncharged fee'
+            ]);
+
+        $dt = Carbon::today(Timezone::IST);
+        $input = [
+            'year'      => $dt->year,
+            'month'     => $dt->month,
+            'format'    => 'new',
+        ];
+
+        $invoiceEntries = $this->fetchInvoice($input);
+
+        $this->assertNotEmpty($invoiceEntries['invoice_number']);
+        $this->assertNotEmpty($invoiceEntries['invoice_date']);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $requiredFields = ['Tax Invoice', 'Tax Debit Note', 'Tax Credit Note'];
+        $keyedEntries = [];
+
+        foreach ($requiredFields as $key)
+        {
+            $this->assertNotEmpty($invoiceEntries['pages'][$key]);
+            $this->assertNotEmpty($invoiceEntries['pages'][$key]['rows']);
+
+            foreach ($invoiceEntries['pages'][$key]['rows'] as $entry)
+            {
+                $description = $entry['Description'];
+
+                $keyedEntries[$description] = $entry;
+
+                $this->assertArraySelectiveEquals($keyedEntries[$description], $data[$key][$description]);
+            }
+        }
+
+        $requiredFields = ['Document No.', 'Document Date', 'Description', 'Amount'];
+        foreach ($invoiceEntries['Summary']['Invoice Summary']['rows'] as $row)
+        {
+            foreach ($requiredFields as $key)
+            {
+                $this->assertNotNull($row[$key]);
+            }
+        }
+
+        $lastRowOfSummary = array_pop($invoiceEntries['Summary']['Invoice Summary']['rows']);
+
+        $this->assertEquals(177600, $lastRowOfSummary['Amount']);
     }
 
     public function testPaymentReportWithoutAcquirerData()
@@ -255,31 +320,31 @@ class EntityReportTest extends TestCase
         $this->assertEquals(count($combinedReport), 3);
 
         $expectedContent = [
-            // 'Merchant Name' => 'ut',
-            'Merchant ID' => '10000000000000',
-            // 'Txn Id' => 'pay_6w6bmFIqLiOGVj',
-            'Txn State' => 'Sale',
-            // 'Txn Date' => '2016-12-23 03:28',
-            'Client Code' => null,
-            'Merchant Txn Id' => null,
-            'Product' => 'NSE',
-            'Discriminator' => 'NB',
-            'Bank Name' => 'Indian Bank',
-            'Card Type' => null,
-            'Card No' => null,
-            'Card Issuing Bank' => null,
-            // 'Bank Ref No' => 'GJZMBHNV9O',
-            'Gross Txn Amount' => 500,
-            'Txn Charges' => 0,
-            'Service Tax' => 0,
-            'SB Cess' => 0,
+            // 'Merchant Name'     => 'ut',
+            'Merchant ID'        => '10000000000000',
+            // 'Txn Id'            => 'pay_6w6bmFIqLiOGVj',
+            'Txn State'          => 'Sale',
+            // 'Txn Date'          => '2016-12-23 03:28',
+            'Client Code'        => null,
+            'Merchant Txn Id'    => null,
+            'Product'            => 'NSE',
+            'Discriminator'      => 'NB',
+            'Bank Name'          => 'Indian Bank',
+            'Card Type'          => null,
+            'Card No'            => null,
+            'Card Issuing Bank'  => null,
+            // 'Bank Ref No'       => 'GJZMBHNV9O',
+            'Gross Txn Amount'   => 500,
+            'Txn Charges'        => 0,
+            'Service Tax'        => 0,
+            'SB Cess'            => 0,
             'Krishi Kalyan Cess' => 0,
-            'Total Chargeable' => 0,
-            'Net Amount' => 500,
-            'Payment Status' => null,
-            'Settlement Date' => null,
-            'Refund Reference' => null,
-            'Refund Status' => null,
+            'Total Chargeable'   => 0,
+            'Net Amount'         => 500,
+            'Payment Status'     => null,
+            'Settlement Date'    => null,
+            'Refund Reference'   => null,
+            'Refund Status'      => null,
         ];
 
         $saleTxnReports = array_filter($combinedReport, function ($obj)

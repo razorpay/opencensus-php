@@ -19,7 +19,6 @@ return [
                 'name'               => 'test admin',
                 'email'              => 'superadmin@razorpay.com',
                 'username'           => 'harshil',
-                'remember_token'     => 'yes',
                 'employee_code'      => 'rzp_1',
                 'branch_code'        => 'krmgla',
                 'supervisor_code'    => 'shk',

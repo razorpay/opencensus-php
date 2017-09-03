@@ -14,8 +14,8 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Settlement;
 use RZP\Trace\TraceCode;
-use RZP\Trace\Trace;
 use RZP\Constants\MailTags;
+use Razorpay\Trace\Logger as Trace;
 
 class DailyReport extends Base\Core
 {
@@ -216,9 +216,9 @@ class DailyReport extends Base\Core
         // date format = 6th July 2015
         $this->date = $on->format('jS F Y');
 
-        $this->timeLowerLimit = $on->timestamp;
+        $this->timeLowerLimit = $on->getTimestamp();
 
-        $this->timeUpperLimit = $on->addDay()->timestamp;
+        $this->timeUpperLimit = $on->addDay()->getTimestamp();
     }
 
     protected function increaseAllowedSystemLimits()

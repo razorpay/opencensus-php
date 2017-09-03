@@ -1257,7 +1257,7 @@ class BasicAuth
         }
         else
         {
-            $mode = $this->mode;
+            $mode = Mode::TEST;
         }
 
         // Admin token check should always be done in the

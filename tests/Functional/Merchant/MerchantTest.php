@@ -71,7 +71,7 @@ class MerchantTest extends TestCase
 
         $this->assertArrayHasKey('payumoney', $methods);
         $this->assertArrayHasKey('card', $methods);
-        $this->assertArrayHasKey('banks', $methods);
+        $this->assertArrayHasKey('disabled_banks', $methods);
         $this->assertArrayHasKey('debit_card', $methods);
     }
 
@@ -820,6 +820,34 @@ class MerchantTest extends TestCase
 
         $count = count($content['methods']['netbanking']);
         $this->assertEquals(0, $count);
+    }
+
+    public function testGetCheckoutPreferencesForMerchantDisabledBanks()
+    {
+        $this->testSetBanks();
+
+        $this->ba->publicAuth();
+
+        $content = $this->startTest();
+
+        $banks = $content['methods']['netbanking'];
+
+        $this->assertCount(2, $banks);
+    }
+
+    public function testGetCheckoutPreferencesForTpvEnabledMerchant()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $content = $this->startTest();
+
+        $banks = $content['methods']['netbanking'];
+
+        $this->assertCount(21, $banks);
+
+        $this->fixtures->merchant->disableTPV();
     }
 
     public function testGetCheckoutPreferencesWithAllCardGeatewayDowntime()

@@ -76,7 +76,13 @@ class TransactionFilter extends Terminal\Filter
                 return $terminal->isAepsEnabled();
 
             default:
-                throw new Exception\LogicException('Unknown payment method passed.', null, ['method' => $method]);
+                throw new Exception\LogicException(
+                    'Unknown payment method passed.',
+                    null,
+                    [
+                        'terminal_id'   => $terminal->getId(),
+                        'method'        => $method
+                    ]);
         }
     }
 

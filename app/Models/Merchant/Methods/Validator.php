@@ -8,14 +8,17 @@ use RZP\Models\Payment\Processor\Netbanking;
 
 class Validator extends Base\Validator
 {
-    protected static $addBanksRules = array(
-        Entity::BANKS => 'sometimes|array');
 
-    protected static $addBanksValidators = array(
-        Entity::BANKS);
+    protected static $addDisabledBanksRules = [
+        Entity::DISABLED_BANKS => 'sometimes|array'
+    ];
 
-    protected static $setMethodsRules = array(
-        Entity::BANKS          => 'sometimes|array',
+    protected static $addDisabledBanksValidators = [
+        Entity::DISABLED_BANKS
+    ];
+
+    protected static $setMethodsRules = [
+        Entity::DISABLED_BANKS => 'sometimes|array',
         Entity::NETBANKING     => 'sometimes|boolean',
         Entity::AMEX           => 'sometimes|boolean',
         Entity::PAYTM          => 'sometimes|boolean',
@@ -27,6 +30,7 @@ class Validator extends Base\Validator
         Entity::MOBIKWIK       => 'sometimes|boolean',
         Entity::FREECHARGE     => 'sometimes|boolean',
         Entity::JIOMONEY       => 'sometimes|boolean',
+        Entity::SBIBUDDY       => 'sometimes|boolean',
         Entity::EMI            => 'sometimes|boolean',
         Entity::CREDIT_CARD    => 'sometimes|boolean',
         Entity::DEBIT_CARD     => 'sometimes|boolean',
@@ -34,29 +38,35 @@ class Validator extends Base\Validator
         Entity::AEPS           => 'sometimes|boolean',
         Entity::MPESA          => 'sometimes|boolean',
         Entity::BANK_TRANSFER  => 'sometimes|boolean',
-    );
+    ];
 
-    protected static $setMethodsValidators = array(
-        'methodBanks');
+    protected static $setMethodsValidators = [
+        'methodBanks'
+    ];
 
     protected function validateMethodBanks(array $input)
     {
-        if (isset($input['banks']) === false)
+        if (isset($input['disabled_banks']) === false)
         {
             return;
         }
 
-        $this->validateBanks($input);
+        $this->validateDisabledBanks($input);
     }
 
-    protected function validateBanks(array $input)
+    protected function validateDisabledBanks(array $input)
     {
-        if (is_array($input['banks']) === false)
+        if (is_array($input['disabled_banks']) === false)
         {
-            throw new Exception\LogicException('Not an array');
+            throw new Exception\LogicException(
+                'Not an array',
+                null,
+                [
+                    'banks' => $input['disabled_banks'],
+                ]);
         }
 
-        $banks = $input['banks'];
+        $banks = $input['disabled_banks'];
 
         $unsupported = Netbanking::findUnsupportedBanks($banks);
 

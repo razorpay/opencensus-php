@@ -4,18 +4,18 @@ namespace RZP\Models\BankTransfer;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Trace\Trace;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\VirtualAccount\Provider;
 
 class Service extends Base\Service
 {
     protected $validator;
-    protected $processor;
     protected $provider;
     protected $ip;
     protected $mutex;
+    protected $core;
 
     public function __construct()
     {
@@ -25,13 +25,9 @@ class Service extends Base\Service
 
         $this->core = new Core;
 
-        $this->processor = new Processor;
-
         $this->provider = $this->auth->getInternalApp();
 
         $this->ip = $this->app['request']->ip();
-
-        $this->mutex = $this->app['api.mutex'];
     }
 
     public function process(array $input): array
@@ -43,40 +39,13 @@ class Service extends Base\Service
 
         $this->validateProvider();
 
-        try
-        {
-            $this->mutex->acquireAndRelease(
-                $input[Entity::PAYEE_ACCOUNT],
-                function() use ($input)
-                {
-                    $bankTransfer = $this->processor->process($input);
-                },
-                60,
-                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+        $valid = $this->core->process($input);
 
-            $valid = true;
-        }
-        catch (Exception\BadRequestValidationFailureException $ex)
-        {
-            // Returning anything other than a 200 causes Kotak to retry here.
-            //
-            // However, validation failures are due to Kotak sending the request
-            // in wrong format, or (more frequently) the wrong request altogether.
-            // So retrying doesn't help us, and will cause unnecessary errors.
-            // Best to trace, and return false, to stop the request.
-            $this->trace->traceException(
-                $ex, Trace::ERROR, TraceCode::BANK_TRANSFER_PROCESSING_FAILED, $input);
-
-            $valid = false;
-        }
-
-        $data = [
+        return [
             'valid'          => $valid,
             'message'        => null,
             'transaction_id' => $input[Entity::REQ_UTR],
         ];
-
-        return $data;
     }
 
     public function notify(array $input): array
@@ -88,28 +57,10 @@ class Service extends Base\Service
 
         $this->validateProvider();
 
-        // Bank Transfer core does not save to DB in this step.
-        // This is effectively just a modify-and-validate.
-        $this->core->create($input);
-
-        $bankTransfer = $this->repo->bank_transfer->findByUtr($input[Entity::REQ_UTR]);
-
-        if ($bankTransfer !== null)
-        {
-            $this->core->notify($bankTransfer);
-        }
-        else
-        {
-            $this->trace->error(
-                TraceCode::BANK_TRANSFER_UNEXPECTED_NOTIFY,
-                [
-                    'input' => $input,
-                ]
-            );
-        }
+        $success = $this->core->notify($input);
 
         return [
-            'success'        => true,
+            'success'        => $success,
             'message'        => null,
             'transaction_id' => $input[Entity::REQ_UTR],
         ];

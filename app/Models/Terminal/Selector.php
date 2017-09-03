@@ -3,7 +3,9 @@
 namespace RZP\Models\Terminal;
 
 use App;
+use Cache;
 use RZP\Constants\Mode as ConstantMode;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Gateway\Rule;
@@ -36,11 +38,11 @@ class Selector extends Base\Core
         // Boost a gateway terminals based on load distribution of probabilities
         Sorters\TerminalLoadSorter::class,
 
-        // Boosts direct terminals over shared terminals
-        Sorters\ExclusivitySorter::class,
-
         // Sorting based on merchant category
         Sorters\MerchantSorter::class,
+
+        // Boosts direct terminals over shared terminals
+        Sorters\ExclusivitySorter::class,
 
         // Sorting based on older failed attempts
         Sorters\FailedTerminalsSorter::class,
@@ -58,9 +60,11 @@ class Selector extends Base\Core
         $this->options = $options;
     }
 
-    public function select($verbose = false)
+    public function select()
     {
         $allTerminals = $this->getTerminals();
+
+        $verbose = $this->isVerboseLogEnabled();
 
         $this->traceTerminals($allTerminals, 'Terminals fetched from db', $verbose);
 
@@ -157,7 +161,7 @@ class Selector extends Base\Core
     {
         if (($verbose === true) and (empty($terminals) === false))
         {
-            $terminalData = array_pluck($terminals, 'id', 'gateway');
+            $terminalData = array_pluck($terminals, 'gateway', 'id');
 
             $traceData = ['count' => count($terminals), 'terminals' => $terminalData, 'msg' => $msg];
 
@@ -171,6 +175,27 @@ class Selector extends Base\Core
         {
             return ($rule->isFilter() === true);
         });
+    }
+
+    /**
+     * Verbosity of terminal selection logs are determined
+     * by a flag held in cache
+     * @return boolean verbosity flag
+     */
+    protected function isVerboseLogEnabled(): bool
+    {
+        try
+        {
+            $verbose = (bool) Cache::get(ConfigKey::TERMINAL_SELECTION_LOG_VERBOSE);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINAL_CONFIG_FETCH_ERROR);
+
+            $verbose = false;
+        }
+
+        return $verbose;
     }
 
     protected function getRulesForSorting(Base\PublicCollection $rules): Base\PublicCollection

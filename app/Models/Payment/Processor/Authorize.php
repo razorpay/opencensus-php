@@ -39,8 +39,8 @@ use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Customer\GatewayToken;
 use RZP\Models\Upi;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 trait Authorize
 {
@@ -2796,7 +2796,7 @@ trait Authorize
 
         $merchantMethods = (new Methods\Core)->getMethods($merchant);
 
-        $merchantBanks = ($merchantMethods === null) ? [] : $merchantMethods->getBanks();
+        $merchantBanks = ($merchantMethods === null) ? [] : $merchantMethods->getSupportedBanks();
 
         $paymentBank = $payment->getBank();
 

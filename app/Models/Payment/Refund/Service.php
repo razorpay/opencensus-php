@@ -12,12 +12,12 @@ use RZP\Models\Base;
 use RZP\Constants;
 use RZP\Constants\Table;
 use RZP\Models\Payment;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Refund;
 use RZP\Exception;
 use RZP\Models\Transaction;
+use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
@@ -47,7 +47,7 @@ class Service extends Base\Service
         return (new Payment\Service)->refund($paymentId, $input);
     }
 
-    public function getRefundsFile(array $input = array())
+    public function getRefundsFile(array $input = [])
     {
         list($from, $to) = $this->getTimestamps($input);
 
@@ -110,7 +110,13 @@ class Service extends Base\Service
                 break;
 
             default:
-                throw new Exception\LogicException('Invalid method provided for generating refunds file.');
+                throw new Exception\LogicException(
+                    'Invalid method provided for generating refunds file.',
+                    null,
+                    [
+                        'input'     => $input,
+                        'method'    => $method,
+                    ]);
         }
 
         if ($gatewayCode === null)
@@ -206,8 +212,9 @@ class Service extends Base\Service
 
     protected function getTimestamps($input)
     {
-        $from = Carbon::yesterday(Timezone::IST)->timestamp;
-        $to = Carbon::today(Timezone::IST)->timestamp - 1;
+        $from = Carbon::yesterday(Timezone::IST)->getTimestamp();
+        $to = Carbon::today(Timezone::IST)->getTimestamp() - 1;
+
         $frequency = 'daily';
 
         if (isset($input['frequency']))
@@ -221,15 +228,15 @@ class Service extends Base\Service
             {
                 $dt = Carbon::createFromFormat('Y-m-d', $input['on'], Timezone::IST);
 
-                $from = $dt->startOfMonth()->timestamp;
-                $to   = $dt->endOfMonth()->addDay()->timestamp - 1;
+                $from = $dt->startOfMonth()->getTimestamp();
+                $to   = $dt->endOfMonth()->addDay()->getTimestamp() - 1;
             }
             else
             {
                 $dt = Carbon::yesterday(Timezone::IST);
 
-                $from = $dt->startOfMonth()->timestamp;
-                $to   = $dt->endOfMonth()->addDay()->timestamp - 1;
+                $from = $dt->startOfMonth()->getTimestamp();
+                $to   = $dt->endOfMonth()->addDay()->getTimestamp() - 1;
             }
         }
         else
@@ -238,9 +245,9 @@ class Service extends Base\Service
             {
                 $from = Carbon::createFromFormat('Y-m-d', $input['on'], Timezone::IST)->setTime(0,0,0);
 
-                $fromTimeStamp = $from->timestamp;
+                $fromTimeStamp = $from->getTimestamp();
 
-                $to = $from->addDay()->timestamp - 1;
+                $to = $from->addDay()->getTimestamp() - 1;
 
                 $from = $fromTimeStamp;
             }
@@ -503,7 +510,14 @@ class Service extends Base\Service
 
                     if ($transaction === null)
                     {
-                        throw new Exception\LogicException('Transaction did not get created');
+                        throw new Exception\LogicException(
+                            'Transaction did not get created',
+                            null,
+                            [
+                                'refund_id'     => $refundWithoutTxn->getId(),
+                                'payment_id'    => $payment->getId(),
+                                'force'         => $forceRefundTransaction,
+                            ]);
                     }
 
                     //

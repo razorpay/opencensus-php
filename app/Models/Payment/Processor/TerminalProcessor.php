@@ -55,7 +55,7 @@ class TerminalProcessor extends Base\Core
     {
         $options = new Terminal\Options;
 
-        if ($this->payment->isNetbanking() === false)
+        if ($this->payment->isMethodCardOrEmi() === true)
         {
             $failedTerminalIds = $this->getFailedTerminalIds();
 

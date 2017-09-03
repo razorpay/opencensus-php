@@ -54,8 +54,6 @@ class WorkflowTest extends TestCase
 
     public function testCreateWorkflow()
     {
-        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
-
         $defaultAttributes = $this->getDefaultWorkflowArray();
 
         $attributes = array_merge($defaultAttributes, $this->input);
@@ -71,8 +69,6 @@ class WorkflowTest extends TestCase
 
     public function testDeleteWorkflow()
     {
-        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
-
         $workflow = $this->createWorkflow($this->input);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
@@ -100,8 +96,6 @@ class WorkflowTest extends TestCase
      */
     public function testCreateWorkflowWithPermissionWorkflow()
     {
-        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
-
         $this->createWorkflow($this->input);
 
         // To recreate the same workflow using request to test.

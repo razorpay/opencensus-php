@@ -63,6 +63,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_FULLY_REFUNDED                                    = 'The payment has been fully refunded already';
     const BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED               = 'The refund amount provided is greater than amount captured';
     const BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED             = 'The refund amount provided is greater than the unrefunded amount';
+    const BAD_REQUEST_PAYMENT_UNDER_DISPUTE_CANNOT_BE_REFUNDED                  = 'The refund on this payment is blocked due to ongoing dispute investigation';
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT                       = 'Minimum transaction amount allowed is Re. 1';
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_10_MIN_AMOUNT                    = 'Minimum transaction amount allowed is Rs 10';
     const BAD_REQUEST_PAYMENT_AMOUNT_TOO_HIGH                                   = 'The amount may not be greater than 50000000.';
@@ -208,9 +209,8 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_SCHEDULE                                          = 'Schedule cannot be created, it is invalid.';
     const BAD_REQUEST_SCHEDULE_REQUIRED                                         = 'Mandatory param: Schedule not given.';
     const BAD_REQUEST_SCHEDULE_INVALID_PERIOD                                   = 'Invalid period, must be among hourly, daily, weekly, monthly-date, and monthly-week';
-    const BAD_REQUEST_SCHEDULE_HOURLY_DAILY_ANCHOR_NOT_PERMITTED                = 'Setting anchor is not permitted for hourly and daily schedules.';
+    const BAD_REQUEST_SCHEDULE_ANCHOR_NOT_PERMITTED                             = 'Setting anchor is not permitted for the schedule.';
     const BAD_REQUEST_SCHEDULE_HOURLY_HOUR_NOT_PERMITTED                        = 'Setting hour is not permitted for hourly schedules';
-    const BAD_REQUEST_SCHEDULE_WEEKEND_ANCHOR_NOT_PERMITTED                     = 'For weekly periods, only schedules with weekday anchors are permitted.';
     const BAD_REQUEST_SCHEDULE_HOURLY_WITHOUT_INTERVAL                          = 'Hourly schedules require an interval to be set.';
     const BAD_REQUEST_SCHEDULE_IN_USE                                           = 'Cannot delete a schedule that is currently in use by one or more merchants.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_RECEIVER_TYPES                    = 'One or more of the given receiver types is invalid.';
@@ -369,7 +369,6 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_ALREADY_UNDER_DISPUTE                             = 'Payment already has an open dispute';
     const BAD_REQUEST_DISPUTE_AMOUNT_GREATER_THAN_PAYMENT_AMOUNT                = 'Disputed amount cannot be greater than payment amount';
     const BAD_REQUEST_CANNOT_UPDATE_CLOSED_DISPUTE                              = 'This dispute is already closed and cannot be updated';
-    const BAD_REQUEST_INVALID_EXPIRY_TIME                                       = 'The expiry time in input is invalid';
 
     // batch processor related error codes
     const BAD_REQUEST_BATCH_FILE_INVALID_TYPE                                   = 'Incorrect type is used for the uploaded file';
@@ -420,7 +419,6 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_TRANSFER_MORE_THAN_ONE_CUSTOMER                   = 'Payment cannot be transferred to more than one customer';
     const BAD_REQUEST_PAYMENT_TRANSFER_MULTIPLE_ENTITY_TYPES_GIVEN              = 'Payment cannot be transferred to multiple types of entities';
     const BAD_REQUEST_PAYMENT_TRANSFER_CURRENCY_MISMATCH                        = 'Transfer request currency must be same as payment currency';
-    const BAD_REQUEST_PAYMENT_MULTIPLE_TRANSFERS_TO_SAME_ACCOUNT                = 'Payment cannot be transferred to the same account more than one time';
 
     const BAD_REQUEST_TRANSFER_INVALID_ACCOUNT_ID                               = 'Account ID provided for transfer is invalid';
     const BAD_REQUEST_TRANSFER_ACCOUNT_NOT_ACTIVATED                            = 'The account needs to be activated by Razorpay before you can make transfers in live mode';

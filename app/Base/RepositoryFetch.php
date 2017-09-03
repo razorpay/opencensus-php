@@ -5,12 +5,12 @@ namespace RZP\Base;
 use RZP\Constants;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
-use RZP\Models\Base\PublicEntity;
-use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\EsRepository;
+use RZP\Models\Base\PublicEntity;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Base\PublicCollection;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Base\Traits\Es\Hydrator as EsHydrator;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -353,6 +353,27 @@ trait RepositoryFetch
     }
 
     /**
+     * Temporary:
+     * There are clients(including Dashboard) which is sending
+     * skip,count like extra parameters in GET routes. For now
+     * everything which is not expected would be ignored. We'll
+     * keep trace of violations and act on it later.
+     *
+     * @param array $params
+     */
+    protected function modifyFindParams(array $params): array
+    {
+        $filtered = array_only($params, $this->findParamRuleKeys);
+
+        if (count($filtered) !== count($params))
+        {
+            $this->trace->info(TraceCode::EXTRA_QUERY_PARAM_IN_GET_ROUTE, $params);
+        }
+
+        return $filtered;
+    }
+
+    /**
      * Validates query parameters passed during GET by id endpoints.
      * E.g. GET /invoices/inv_123?expand[]=payments
      *
@@ -550,6 +571,8 @@ trait RepositoryFetch
         Merchant\Entity $merchant,
         array $params = []): PublicEntity
     {
+        $params = $this->modifyFindParams($params);
+
         $this->validateFindParams($params);
 
         $expands = $this->getExpandsForQueryFromInput($params);

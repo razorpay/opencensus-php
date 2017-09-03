@@ -6,8 +6,8 @@ use RZP\Exception;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Currency\Currency;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 trait Authorize
 {
@@ -38,7 +38,12 @@ trait Authorize
                 return $this->getFieldsForFormSubmitForRupay();
 
             default:
-                throw new Exception\LogicException('Should not have reached here');
+                throw new Exception\LogicException(
+                    'Should not have reached here',
+                    null,
+                    [
+                        'enroll_status' => $enrollStatus,
+                    ]);
         }
     }
 

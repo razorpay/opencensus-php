@@ -29,7 +29,7 @@ class Validator extends Base\Validator
         Entity::ORG_ID                      => 'sometimes|alpha_num|size:14',
         Entity::GROUPS                      => 'sometimes|array',
         Entity::ADMINS                      => 'sometimes|array',
-        Entity::COUPON_CODE                 => 'sometimes|string'
+        Entity::COUPON_CODE                 => 'sometimes|string',
     ];
 
     protected static $editRules = [
@@ -300,18 +300,18 @@ class Validator extends Base\Validator
         switch ($duration)
         {
             case 'mins':
-                $min = 30;
-                $max = 7200;
+                $min = (int) (Entity::MIN_AUTO_REFUND_DELAY / 60);
+                $max = (int) (Entity::MAX_AUTO_REFUND_DELAY / 60);
                 break;
 
             case 'hours':
-                $min = 1;
-                $max = 120;
+                $min = (int) (ceil(Entity::MIN_AUTO_REFUND_DELAY / 3600));
+                $max = (int) (ceil(Entity::MAX_AUTO_REFUND_DELAY / 3600));
                 break;
 
             case 'days':
-                $min = 1;
-                $max = 5;
+                $min = (int) (ceil(Entity::MIN_AUTO_REFUND_DELAY / 86400));
+                $max = (int) (ceil(Entity::MAX_AUTO_REFUND_DELAY / 86400));
                 break;
 
             default:

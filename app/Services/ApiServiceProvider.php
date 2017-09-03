@@ -6,7 +6,6 @@ use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Http\Mock\Client as MockHttplug;
 use RZP\Models\Admin as Admin;
-use RZP\Constants as Constants;
 use RZP\Gateway\GatewayManager;
 use RZP\Models\Adjustment;
 use RZP\Models\Invoice;
@@ -23,6 +22,7 @@ use RZP\Models\Promotion;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Batch;
+use RZP\Models\Dispute;
 use RZP;
 use Swift_Mailer;
 
@@ -43,6 +43,8 @@ class ApiServiceProvider extends BaseServiceProvider
      */
     public function register()
     {
+        $this->registerTraceProcessors();
+        
         $this->app->singleton('mailgun', function($app)
         {
             $mailgunMock = $app['config']->get('applications.mailgun.mock');
@@ -285,6 +287,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
             'subscription'    => Subscription\Entity::class,
             'promotion'       => Promotion\Entity::class,
+
+            'dispute'         => Dispute\Entity::class,
         ]);
     }
 
@@ -353,5 +357,12 @@ class ApiServiceProvider extends BaseServiceProvider
         {
             return new MockHttplug;
         });
+    }
+
+    protected function registerTraceProcessors()
+    {
+        $apiProcessor = new RZP\Trace\ApiTraceProcessor($this->app);
+
+        $this->app['trace']->pushProcessor($apiProcessor);
     }
 }

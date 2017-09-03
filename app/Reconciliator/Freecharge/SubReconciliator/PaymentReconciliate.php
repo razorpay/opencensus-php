@@ -95,7 +95,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                                     $row[self::COLUMN_SETTLED_AT],
                                     Timezone::IST);
 
-            $gatewaySettledAt = $gatewaySettledAt->timestamp;
+            $gatewaySettledAt = $gatewaySettledAt->getTimestamp();
         }
         catch (\Exception $ex)
         {
@@ -119,10 +119,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         {
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
-                    'message'       => 'Payment amount mismatch',
-                    'row'           => $row,
-                    'gateway'       => get_called_class()
+                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                    'message'         => 'Payment amount mismatch',
+                    'expected_amount' => $this->payment->getAmount(),
+                    'row'             => $row,
+                    'gateway'         => get_called_class()
                 ]);
 
             return false;

@@ -113,7 +113,12 @@ class Server extends Base\Mock\Server
 
             default:
                 throw new Exception\LogicException(
-                    'Hdfc\Mock: Action code not recognized. Action: ' . $this->data['action']);
+                    'Hdfc\Mock: Action code not recognized.',
+                    null,
+                    [
+                        'payment_id' => $this->data['trackid'],
+                        'action'     => $this->data['action'],
+                    ]);
         }
 
         switch ($type)
@@ -190,7 +195,12 @@ class Server extends Base\Mock\Server
 
         if ($gatewayTransaction === null)
         {
-            throw new Exception\LogicException($txnId . ' not found');
+            throw new Exception\LogicException(
+                'Transaction not found',
+                null,
+                [
+                    'transaction_id' => $txnId,
+                ]);
         }
 
         $res = array(
@@ -555,11 +565,6 @@ class Server extends Base\Mock\Server
 
     protected function handleSpecialCardNumber($cardNumber)
     {
-        if (in_array($cardNumber, $this->specialCardNumbers, true) === false)
-        {
-            throw new \LogicException('Card number given here is not special. Number: ' . $cardNumber);
-        }
-
         $error = array();
         $error['error_service_tag'] = null;
 
@@ -583,7 +588,7 @@ class Server extends Base\Mock\Server
                 break;
 
             default:
-                throw new \LogicException('Card number given here is not special. Number: ' . $cardNumber);
+                throw new \LogicException('Card number given here is not special');
         }
 
         $error['error_code_tag'] = $code;

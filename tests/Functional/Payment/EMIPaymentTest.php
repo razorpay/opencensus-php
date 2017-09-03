@@ -103,7 +103,7 @@ class EmiPaymentTest extends TestCase
         $request = array(
             'method' => 'POST',
             'url' => '/emi/generate/excel',
-            'content' => array());
+            'content' => []);
 
         $this->ba->appAuth();
 

@@ -2,14 +2,16 @@
 
 namespace RZP\Services;
 
+use App;
 use Carbon\Carbon;
 use Exception;
-use RZP\Trace\Trace;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
+use RZP\Models\Merchant\Account;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Analytics\Entity as Analytics;
 
 class EventTrackerClient extends AbstractEventClient
@@ -24,7 +26,11 @@ class EventTrackerClient extends AbstractEventClient
 
     protected $mock;
 
+    protected $sns;
+
     const TRACK_EVENT_URL_PATTERN = 'track';
+
+    const SNS_CLIENT = 'lumberjack';
 
     const CONTEXT_KEYS = [
         Analytics::IP,
@@ -54,6 +60,8 @@ class EventTrackerClient extends AbstractEventClient
         $this->config = $app['config']->get('applications.lumberjack');
 
         $this->mock = $this->config['mock'];
+
+        $this->sns = $app['sns'];
     }
 
     /**
@@ -362,6 +370,28 @@ class EventTrackerClient extends AbstractEventClient
         catch (Exception $e)
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::EVENT_TRACK_FAILED);
+        }
+    }
+
+    /**
+     * Dispatch a job request via SQS for normal flow
+     * For DEMO merchant dispatch using SNS
+     *
+     * @param array $headers
+     * @param string $url
+     * @param array $eventData
+     */
+    protected function sendEventRequest(array $headers, string $url, array $eventData)
+    {
+        try
+        {
+            $this->sns->publish(json_encode($eventData), self::SNS_CLIENT);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::LUMBERJACK_ASYNC_REQUEST_FAILED, $eventData);
+
+            parent::sendEventRequest($headers, $url, $eventData);
         }
     }
 }
