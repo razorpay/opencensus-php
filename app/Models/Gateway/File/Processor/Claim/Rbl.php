@@ -11,12 +11,12 @@ use RZP\Models\Gateway\File\Processor;
 use RZP\Gateway\Netbanking\Base\Entity;
 use RZP\Gateway\Netbanking\Rbl\Constants;
 use RZP\Gateway\Netbanking\Rbl\ClaimFields;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Models\Gateway\File\Processor\Base\FileHandler;
 
 class Rbl extends Processor\Base
 {
     use GenerateClaimFile;
-    use FileHandlerTrait;
+    use FileHandler;
 
     const FILE_NAME = 'Rbl_Netbanking_Claims';
     const EXTENSION = FileStore\Format::TXT;

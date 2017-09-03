@@ -7,14 +7,15 @@ use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Processor;
 use RZP\Gateway\Netbanking\Axis\Constants;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Models\Gateway\File\Processor\Base\FileHandler;
 
 class Axis extends Processor\Base
 {
     use GenerateRefundFile;
-    use FileHandlerTrait;
+    use FileHandler;
 
     const FILE_NAME         = 'IConnect_Refund_RAZORPAY';
     const EXTENSION         = FileStore\Format::TXT;
@@ -56,9 +57,9 @@ class Axis extends Processor\Base
             ];
         }
 
-        $initialLine = $this->getInitialLine();
+        $initialLine = $this->getInitialLine('~~');
 
-        $formattedData = $this->getTextData($formattedData, $initialLine);
+        $formattedData = $this->getTextData($formattedData, $initialLine, '~~');
 
         return $formattedData;
     }
@@ -68,29 +69,11 @@ class Axis extends Processor\Base
         return ;
     }
 
-    protected function getInitialLine()
-    {
-        $data = static::HEADERS;
-
-        $line = implode('~~', $data) . "\r\n";
-
-        return $line;
-    }
-
-    protected function getTextData($data, $prependLine = '')
-    {
-        $ignoreLastNewline = true;
-
-        $txt = $this->generateText($data, '~~', $ignoreLastNewline);
-
-        return $prependLine . $txt;
-    }
-
     protected function getFileToWriteNameWithoutExt()
     {
-        $time = Carbon::now('Asia/Kolkata')->format('Ymd');
+        $time = Carbon::now(Timezone::IST)->format('Ymd');
 
-        if ($this->mode === Mode::TEST)
+        if ($this->isTestMode() === true)
         {
             return static::FILE_NAME . '_' . $time . '_' . $this->mode . '_1';
         }

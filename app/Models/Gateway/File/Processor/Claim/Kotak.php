@@ -9,12 +9,12 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Processor;
 use RZP\Gateway\Netbanking\Axis\Constants;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Models\Gateway\File\Processor\Base\FileHandler;
 
 class Kotak extends Processor\Base
 {
     use GenerateClaimFile;
-    use FileHandlerTrait;
+    use FileHandler;
 
     const TPV_FILE_NAME     = 'Kotak_Netbanking_Claim_OTRAZORPAY';
     const NON_TPV_FILE_NAME = 'Kotak_Netbanking_Claim_OSRAZORPAY';
@@ -49,17 +49,6 @@ class Kotak extends Processor\Base
     public function sendMail()
     {
         ;
-    }
-
-    protected function getTextData($data, $prependLine = '')
-    {
-        $ignoreLastNewline = true;
-
-        $txt = $this->generateText($data, '|', $ignoreLastNewline);
-
-        $txt = $prependLine.$txt;
-
-        return $txt;
     }
 
     protected function getFileToWriteNameWithoutExt()

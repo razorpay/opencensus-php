@@ -8,13 +8,13 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Processor;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Gateway\Netbanking\Indusind\RefundFileFields;
+use RZP\Models\Gateway\File\Processor\Base\FileHandler;
 
 class Indusind extends Processor\Base
 {
     use GenerateRefundFile;
-    use FileHandlerTrait;
+    use FileHandler;
 
     const FILE_NAME         = 'PGReconRAZORPAY';
     const EXTENSION         = FileStore\Format::TXT;
@@ -44,17 +44,6 @@ class Indusind extends Processor\Base
         $formattedData = $this->getTextData($formattedData);
 
         return $formattedData;
-    }
-
-    protected function getTextData(array $data, string $prependLine = '')
-    {
-        $ignoreLastNewline = true;
-
-        $txt = $this->generateText($data, '|', $ignoreLastNewline);
-
-        $txt = $prependLine . $txt;
-
-        return $txt;
     }
 
     protected function getFileToWriteNameWithoutExt()
