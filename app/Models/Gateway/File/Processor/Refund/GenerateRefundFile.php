@@ -10,7 +10,6 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Gateway\File\Status;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
@@ -36,7 +35,7 @@ trait GenerateRefundFile
 
     public function checkIfValidDataAvailable(PublicCollection $refunds)
     {
-        if ($entites->isEmpty() === true)
+        if ($refunds->isEmpty() === true)
         {
             throw new GatewayFileException(
                     ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND);

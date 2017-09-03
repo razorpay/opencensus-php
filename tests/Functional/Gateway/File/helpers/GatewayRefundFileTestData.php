@@ -9,11 +9,10 @@ return [
     'testProcessRefundFile' => [
         'request' => [
             'content' => [
-                'type'    => 'refund',
-                'gateway' => 'netbanking_hdfc',
-                'bank'    => 'HDFC',
-                'from'    => Carbon::today(Timezone::IST)->timestamp,
-                'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
+                'type'   => 'refund',
+                'source' => 'hdfc',
+                'from'   => Carbon::today(Timezone::IST)->timestamp,
+                'to'     => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -26,8 +25,7 @@ return [
                 'attempts'            => 1,
                 'sender'              => 'refunds@razorpay.com',
                 'type'                => 'refund',
-                'gateway'             => 'netbanking_hdfc',
-                'bank'                => 'HDFC',
+                'source'              => 'hdfc',
                 'entity'              => 'gateway_file',
                 'admin'               => true
             ]
@@ -37,11 +35,10 @@ return [
     'testProcessGatewayFileWithInvalidType' => [
         'request' => [
             'content' => [
-                'type'    => 'xyz',
-                'gateway' => 'netbanking_hdfc',
-                'bank'    => 'HDFC',
-                'from'    => Carbon::today(Timezone::IST)->timestamp,
-                'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
+                'type'   => 'xyz',
+                'source' => 'hdfc',
+                'from'   => Carbon::today(Timezone::IST)->timestamp,
+                'to'     => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -61,12 +58,11 @@ return [
         ]
     ],
 
-    'testProcessGatewayFileWithInvalidGateway' => [
+    'testProcessGatewayFileWithInvalidSource' => [
         'request' => [
             'content' => [
                 'type'    => 'refund',
-                'gateway' => 'hdfc',
-                'bank'    => 'HDFC',
+                'source'  => 'kotak',
                 'from'    => Carbon::today(Timezone::IST)->timestamp,
                 'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
@@ -77,34 +73,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'hdfc is not a supported gateway for type refund',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => \RZP\Exception\BadRequestValidationFailureException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-        ]
-    ],
-
-    'testProcessGatewayFileWithInvalidBank' => [
-        'request' => [
-            'content' => [
-                'type'    => 'refund',
-                'gateway' => 'netbanking_hdfc',
-                'bank'    => 'ICIC',
-                'from'    => Carbon::today(Timezone::IST)->timestamp,
-                'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
-            ],
-            'url' => '/gateway/files',
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'ICIC is not supported for refund file for netbanking_hdfc gateway',
+                    'description' => 'kotak is not a supported source for type refund',
                 ],
             ],
             'status_code' => 400,
@@ -119,8 +88,7 @@ return [
         'request' => [
             'content' => [
                 'type'       => 'refund',
-                'gateway'    => 'netbanking_hdfc',
-                'bank'       => 'HDFC',
+                'source'     => 'hdfc',
                 'from'       => Carbon::today(Timezone::IST)->timestamp,
                 'to'         => Carbon::tomorrow(Timezone::IST)->timestamp,
                 'recipients' => ['abc']
@@ -132,7 +100,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'recipient email id provided is not valid: abc',
+                    'description' => 'The recipients.0 must be a valid email address.',
                 ],
             ],
             'status_code' => 400,
@@ -147,8 +115,7 @@ return [
         'request' => [
             'content' => [
                 'type'       => 'refund',
-                'gateway'    => 'netbanking_hdfc',
-                'bank'       => 'HDFC',
+                'source'     => 'hdfc',
                 'from'       => Carbon::tomorrow(Timezone::IST)->timestamp,
                 'to'         => Carbon::tomorrow(Timezone::IST)->timestamp,
             ],
@@ -174,8 +141,7 @@ return [
         'request' => [
             'content' => [
                 'type'       => 'refund',
-                'gateway'    => 'netbanking_hdfc',
-                'bank'       => 'HDFC',
+                'source'     => 'hdfc',
                 'from'       => Carbon::today(Timezone::IST)->timestamp,
                 'to'         => Carbon::yesterday(Timezone::IST)->timestamp,
             ],
@@ -201,8 +167,7 @@ return [
         'request' => [
             'content' => [
                 'type'       => 'refund',
-                'gateway'    => 'netbanking_hdfc',
-                'bank'       => 'HDFC',
+                'source'     => 'hdfc',
                 'recipients' => ['test@razorpay.com'],
                 'from'       => Carbon::today(Timezone::IST)->timestamp,
                 'to'         => Carbon::tomorrow(Timezone::IST)->timestamp
@@ -219,8 +184,7 @@ return [
                 'sender'              => 'refunds@razorpay.com',
                 'recipients'          => ['test@razorpay.com'],
                 'type'                => 'refund',
-                'gateway'             => 'netbanking_hdfc',
-                'bank'                => 'HDFC',
+                'source'              => 'hdfc',
                 'entity'              => 'gateway_file',
                 'admin'               => true
             ]
@@ -231,8 +195,7 @@ return [
         'request' => [
             'content' => [
                 'type'    => 'refund',
-                'gateway' => 'netbanking_hdfc',
-                'bank'    => 'HDFC',
+                'source'  => 'hdfc',
                 'from'    => Carbon::today(Timezone::IST)->timestamp,
                 'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
@@ -248,8 +211,7 @@ return [
                 'attempts'            => 1,
                 'sender'              => 'refunds@razorpay.com',
                 'type'                => 'refund',
-                'gateway'             => 'netbanking_hdfc',
-                'bank'                => 'HDFC',
+                'source'              => 'hdfc',
                 'entity'              => 'gateway_file',
                 'admin'               => true
             ]
@@ -260,8 +222,7 @@ return [
         'request' => [
             'content' => [
                 'type'    => 'refund',
-                'gateway' => 'netbanking_hdfc',
-                'bank'    => 'HDFC',
+                'source'  => 'hdfc',
                 'from'    => Carbon::today(Timezone::IST)->timestamp,
                 'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
@@ -277,8 +238,7 @@ return [
                 'attempts'            => 1,
                 'sender'              => 'refunds@razorpay.com',
                 'type'                => 'refund',
-                'gateway'             => 'netbanking_hdfc',
-                'bank'                => 'HDFC',
+                'source'              => 'hdfc',
                 'entity'              => 'gateway_file',
                 'admin'               => true
             ]
@@ -289,8 +249,7 @@ return [
         'request' => [
             'content' => [
                 'type'    => 'refund',
-                'gateway' => 'netbanking_hdfc',
-                'bank'    => 'HDFC',
+                'source'  => 'hdfc',
                 'from'    => Carbon::today(Timezone::IST)->timestamp,
                 'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
@@ -306,8 +265,7 @@ return [
                 'attempts'            => 1,
                 'sender'              => 'refunds@razorpay.com',
                 'type'                => 'refund',
-                'gateway'             => 'netbanking_hdfc',
-                'bank'                => 'HDFC',
+                'source'              => 'hdfc',
                 'entity'              => 'gateway_file',
                 'admin'               => true
             ]
@@ -328,8 +286,7 @@ return [
                 'attempts'            => 2,
                 'sender'              => 'refunds@razorpay.com',
                 'type'                => 'refund',
-                'gateway'             => 'netbanking_hdfc',
-                'bank'                => 'HDFC',
+                'source'              => 'hdfc',
                 'entity'              => 'gateway_file',
                 'admin'               => true
             ]
@@ -350,8 +307,7 @@ return [
                 'attempts'            => 2,
                 'sender'              => 'refunds@razorpay.com',
                 'type'                => 'refund',
-                'gateway'             => 'netbanking_hdfc',
-                'bank'                => 'HDFC',
+                'source'              => 'hdfc',
                 'entity'              => 'gateway_file',
                 'admin'               => true
             ]
@@ -414,8 +370,7 @@ return [
                 'attempts'            => 1,
                 'sender'              => 'refunds@razorpay.com',
                 'type'                => 'refund',
-                'gateway'             => 'netbanking_hdfc',
-                'bank'                => 'HDFC',
+                'source'              => 'hdfc',
                 'entity'              => 'gateway_file',
                 'admin'               => true
             ]
@@ -437,8 +392,7 @@ return [
                 'attempts'            => 1,
                 'sender'              => 'refunds@razorpay.com',
                 'type'                => 'refund',
-                'gateway'             => 'netbanking_hdfc',
-                'bank'                => 'HDFC',
+                'source'              => 'hdfc',
                 'entity'              => 'gateway_file',
                 'admin'               => true
             ]
@@ -448,7 +402,11 @@ return [
     'testGenerateGatewayFilesBulk' => [
         'request' => [
             'content' => [
-                'netbanking_hdfc' => 'HDFC'
+                'sources' => [
+                    'hdfc'
+                ],
+                'from' => Carbon::today(Timezone::IST)->timestamp,
+                'to'   => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
             'url' => '/gateway/files/refund/generate',
             'method' => 'POST'
@@ -466,8 +424,7 @@ return [
                         'attempts'            => 1,
                         'sender'              => 'refunds@razorpay.com',
                         'type'                => 'refund',
-                        'gateway'             => 'netbanking_hdfc',
-                        'bank'                => 'HDFC',
+                        'source'              => 'hdfc',
                         'entity'              => 'gateway_file',
                         'admin'               => true
                     ]
@@ -479,7 +436,11 @@ return [
     'testGenerateGatewayFilesBulkWithInvalidType' => [
         'request' => [
             'content' => [
-                'netbanking_hdfc' => 'HDFC'
+                'sources' => [
+                    'hdfc'
+                ],
+                'from' => Carbon::today(Timezone::IST)->timestamp,
+                'to'   => Carbon::tomorrow(Timezone::IST)->timestamp,
             ],
             'url' => '/gateway/files/xyz/generate',
             'method' => 'POST'

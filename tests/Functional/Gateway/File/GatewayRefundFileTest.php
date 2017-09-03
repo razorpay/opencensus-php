@@ -67,14 +67,7 @@ class GatewayRefundFileTest extends TestCase
         $this->startTest();
     }
 
-    public function testProcessGatewayFileWithInvalidGateway()
-    {
-        $this->ba->appAuth();
-
-        $this->startTest();
-    }
-
-    public function testProcessGatewayFileWithInvalidBank()
+    public function testProcessGatewayFileWithInvalidSource()
     {
         $this->ba->appAuth();
 
@@ -212,8 +205,7 @@ class GatewayRefundFileTest extends TestCase
         Mail::fake();
 
         $gatewayFile = $this->fixtures->create('gateway_file', [
-            'gateway'      => 'netbanking_hdfc',
-            'bank'         => 'HDFC',
+            'source'       => 'hdfc',
             'type'         => 'refund',
             'sender'       => 'refunds@razorpay.com',
             'status'       => 'failed',

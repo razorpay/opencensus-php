@@ -8,8 +8,7 @@ return [
         'request' => [
             'content' => [
                 'type'    => 'refund',
-                'gateway' => 'netbanking_icici',
-                'bank'    => 'ICIC',
+                'source'  => 'icici',
                 'from'    => Carbon::today(Timezone::IST)->timestamp,
                 'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
@@ -24,8 +23,7 @@ return [
                 'attempts'            => 1,
                 'sender'              => 'refunds@razorpay.com',
                 'type'                => 'refund',
-                'gateway'             => 'netbanking_icici',
-                'bank'                => 'ICIC',
+                'source'              => 'icici',
                 'entity'              => 'gateway_file',
                 'admin'               => true
             ],
