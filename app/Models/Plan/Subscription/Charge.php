@@ -420,25 +420,45 @@ class Charge extends Base\Core
 
     protected function getBillingPeriod(Entity $subscription)
     {
+        $invoiceCount = $subscription->invoices()->count();
+
+        // If the subscription started with an addon, and not with a plan amount
+        // then there is an extra invoice, which is to be excluded below.
+        if (($subscription->hasInitialAddon() === true) and
+            ($subscription->isImmediate() === false))
+        {
+            $invoiceCount = $invoiceCount - 1;
+        }
+
         $schedule = $subscription->schedule;
-        $task = $subscription->task;
 
-        $billingPeriod = [];
+        $nextRun = $subscription->getStartAt();
+        $nextRun = Carbon::createFromTimestamp($nextRun, Timezone::IST);
 
-        if ($subscription->getPaidCount() === 0)
+        $start = $nextRun->copy();
+
+        //
+        // We are subtracting one because the
+        // invoice for the current charge has
+        // already been created and associated
+        if ($invoiceCount > 1)
         {
-            $billingPeriod['start'] = $subscription->getStartAt();
-        }
-        else
-        {
-            $billingPeriod['start'] = $task->getNextRunAt();
+            foreach (range(1, $invoiceCount - 1) as $i)
+            {
+                $nextRun = Library::computeFutureRun($schedule, $start, $start, false);
+
+                $start = $nextRun->copy();
+            }
         }
 
-        $currentTime = Carbon::now(Timezone::IST);
-        $lastRun = Carbon::createFromTimestamp($task->getNextRunAt(), Timezone::IST);
-        $currentEnd = Library::computeFutureRun($schedule, $currentTime, $lastRun, false);
+        $end = Library::computeFutureRun($schedule, $nextRun, $nextRun, false);
 
-        $billingPeriod['end'] = $currentEnd->timestamp;
+        $billingPeriod = [
+            'start' => $start->timestamp,
+            'end'   => $end->timestamp,
+        ];
+
+        // \App::getFacadeRoot()['trace']->info('MISC_TRACE_CODE', $billingPeriod);
 
         return $billingPeriod;
      }
