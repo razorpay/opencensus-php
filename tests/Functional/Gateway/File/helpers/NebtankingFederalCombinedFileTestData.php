@@ -7,11 +7,10 @@ return [
     'testGenerateCombinedFile' => [
         'request' => [
             'content' => [
-                'type'    => 'combined',
-                'gateway' => 'netbanking_federal',
-                'bank'    => 'FDRL',
-                'from'    => Carbon::today(Timezone::IST)->timestamp,
-                'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
+                'type'   => 'combined',
+                'source' => 'federal',
+                'from'   => Carbon::today(Timezone::IST)->timestamp,
+                'to'     => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -24,8 +23,7 @@ return [
                 'attempts'            => 1,
                 'sender'              => 'refunds@razorpay.com',
                 'type'                => 'combined',
-                'gateway'             => 'netbanking_federal',
-                'bank'                => 'FDRL',
+                'source'              => 'federal',
                 'entity'              => 'gateway_file',
                 'admin'               => true
             ]

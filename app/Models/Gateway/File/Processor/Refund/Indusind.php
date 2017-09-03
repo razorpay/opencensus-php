@@ -4,20 +4,24 @@ namespace RZP\Models\Gateway\File\Processor\Refund;
 
 use Carbon\Carbon;
 use RZP\Models\Payment;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Processor;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Gateway\Netbanking\Indusind\RefundFileFields;
 
-class NetbankingIndusind extends Processor\Base
+class Indusind extends Processor\Base
 {
     use GenerateRefundFile;
     use FileHandlerTrait;
 
-    const FILE_NAME = 'PGReconRAZORPAY';
-    const EXTENSION = FileStore\Format::TXT;
-    const FILE_TYPE = FileStore\Type::INDUSIND_NETBANKING_REFUND;
+    const FILE_NAME         = 'PGReconRAZORPAY';
+    const EXTENSION         = FileStore\Format::TXT;
+    const FILE_TYPE         = FileStore\Type::INDUSIND_NETBANKING_REFUND;
+    const GATEWAY           = Payment\Gateway::NETBANKING_INDUSIND;
+    const GATEWAY_CODE      = IFSC::INDB;
+    const PAYMENT_ATTRIBUTE = Payment\Entity::BANK;
 
     protected $type = Payment\Entity::BANK;
 

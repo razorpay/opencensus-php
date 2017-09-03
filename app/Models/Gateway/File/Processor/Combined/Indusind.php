@@ -7,7 +7,7 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Processor;
 
-class NetbankingFederal extends Processor\Base
+class Indusind extends Processor\Base
 {
     use GenerateCombinedFile;
 
@@ -22,7 +22,6 @@ class NetbankingFederal extends Processor\Base
         $count = [
             'claims'  => 0,
             'refunds' => 0,
-            'total'   => 0
         ];
 
         $claimsFile = [];
@@ -40,7 +39,7 @@ class NetbankingFederal extends Processor\Base
 
             $count['refunds'] = count($this->data['refunds']);
 
-            $refundsFile = $this->getFileData(FileStore\Type::FEDERAL_NETBANKING_REFUND);
+            $refundsFile = $this->getFileData(FileStore\Type::INDUSIND_NETBANKING_REFUND);
         }
 
         if (isset($this->data['claims']) === true)
@@ -57,12 +56,10 @@ class NetbankingFederal extends Processor\Base
 
         $amount['total'] = $amount['claims'] - $amount['refunds'];
 
-        $count['total'] = $count['refunds'] + $count['claims'];
-
         $date = Carbon::now(Timezone::IST)->format('jS F Y');
 
         return [
-            'bankName'    => 'Federal',
+            'bankName'    => 'Indusind',
             'amount'      => $amount,
             'count'       => $count,
             'claimsFile'  => $claimsFile,

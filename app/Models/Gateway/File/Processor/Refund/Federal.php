@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\File\Processor\Refund;
 
 use Carbon\Carbon;
 use RZP\Models\Payment;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Processor;
@@ -11,16 +12,17 @@ use RZP\Gateway\Netbanking\Federal\Constants;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Gateway\Netbanking\Indusind\RefundFileFields;
 
-class NetbankingFederal extends Processor\Base
+class Federal extends Processor\Base
 {
     use GenerateRefundFile;
     use FileHandlerTrait;
 
-    const FILE_NAME = 'FBK_REFUND';
-    const EXTENSION = FileStore\Format::TXT;
-    const FILE_TYPE = FileStore\Type::FEDERAL_NETBANKING_REFUND;
-
-    protected $type = Payment\Entity::BANK;
+    const FILE_NAME         = 'FBK_REFUND';
+    const EXTENSION         = FileStore\Format::TXT;
+    const FILE_TYPE         = FileStore\Type::FEDERAL_NETBANKING_REFUND;
+    const GATEWAY           = Payment\Gateway::NETBANKING_FEDERAL;
+    const GATEWAY_CODE      = IFSC::FDRL;
+    const PAYMENT_ATTRIBUTE = Payment\Entity::BANK;
 
     protected function formatDataForFile()
     {

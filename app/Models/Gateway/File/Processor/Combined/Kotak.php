@@ -7,7 +7,7 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Processor;
 
-class NetbankingAxis extends Processor\Base
+class Kotak extends Processor\Base
 {
     use GenerateCombinedFile;
 
@@ -19,56 +19,47 @@ class NetbankingAxis extends Processor\Base
             'total'   => 0,
         ];
 
-        $count = [
-            'claims'  => 0,
-            'refunds' => 0,
-            'total'   => 0
-        ];
+        $refundData = [];
 
-        $claimsFile = [];
-        $refundFile = [];
+        $claimData = [];
 
         if (isset($this->data['refunds']) === true)
         {
-            $amount['refunds'] = array_reduce($this->data['refunds'], function ($sum, $item)
+            $refundData['total_amount'] = array_reduce($this->data['refunds'], function ($sum, $item)
             {
                 $sum += ($item['refund']['amount'] / 100);
 
                 return $sum;
             });
 
-            $count['refunds'] = count($this->data['refunds']);
+            $refundFileData = $this->getFileData(FileStore\Type::KOTAK_NETBANKING_REFUND);
 
-            $refundsFile = $this->getFileData(FileStore\Type::AXIS_NETBANKING_REFUND);
+            $refundData = array_merge($refundData, $refundFileData);
         }
 
         if (isset($this->data['claims']) === true)
         {
-            $amount['claims'] = array_reduce($this->data['claims'], function ($sum, $item)
+            $claimData['total_amount'] = array_reduce($this->data['claims'], function ($sum, $item)
             {
                 $sum += ($item['payment']->getAmount() / 100);
 
                 return $sum;
             });
 
-            $count['claims'] = count($this->data['claims']);
+            $claimsFileData = $this->getFileData(FileStore\Type::KOTAK_NETBANKING_CLAIM);
 
-            $claimsFile = $this->getFileData(FileStore\Type::AXIS_NETBANKING_CLAIMS);
+            $claimData = array_merge($claimData, $claimsFileData);
         }
 
-        $amount['total'] = $amount['claims'] - $amount['refunds'];
-
-        $count['total'] = $count['refunds'] + $count['claims'];
-
-        $date = Carbon::now(Timezone::IST)->format('jS F Y');
+        $amount['claims'] = $claimData['total_amount'];
+        $amount['refunds'] = $refundData['total_amount'];
+        $amount['total'] = $claimData['total_amount'] - $refundData['total_amount'];
 
         return [
-            'bankName'    => 'Axis',
+            'bankName'    => 'Kotak',
             'amount'      => $amount,
-            'count'       => $count,
-            'date'        => $date,
-            'claimsFile'  => $claimsFile,
-            'refundsFile' => $refundsFile,
+            'claimsFile'  => $claimData,
+            'refundsFile' => $refundData,
             'emails'      => $this->gatewayFile->getRecipients()
         ];
     }

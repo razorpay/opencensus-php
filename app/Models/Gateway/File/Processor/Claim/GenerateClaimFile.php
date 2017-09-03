@@ -26,7 +26,7 @@ trait GenerateClaimFile
 
         $from = $this->gatewayFile->getFrom();
         $to = $this->gatewayFile->getTo();
-        $gateway = $this->gatewayFile->getGateway();
+        $gateway = static::GATEWAY;
         $tpv = $this->gatewayFile->getTpv();
 
         if ($tpv === null)

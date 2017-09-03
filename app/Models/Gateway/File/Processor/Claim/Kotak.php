@@ -1,32 +1,30 @@
 <?php
 
-namespace RZP\Models\Gateway\File\Processor\Refund;
+namespace RZP\Models\Gateway\File\Processor\Claim;
 
 use Carbon\Carbon;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
-use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Processor;
+use RZP\Gateway\Netbanking\Axis\Constants;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
-class NetbankingKotak extends Processor\Base
+class Kotak extends Processor\Base
 {
-    use GenerateRefundFile;
+    use GenerateClaimFile;
     use FileHandlerTrait;
 
-    const TPV_FILE_NAME     = 'Kotak_Netbanking_Refund_OTRAZORPAY';
-    const NON_TPV_FILE_NAME = 'Kotak_Netbanking_Refund_OSRAZORPAY';
+    const TPV_FILE_NAME     = 'Kotak_Netbanking_Claim_OTRAZORPAY';
+    const NON_TPV_FILE_NAME = 'Kotak_Netbanking_Claim_OSRAZORPAY';
     const EXTENSION         = FileStore\Format::TXT;
-    const FILE_TYPE         = FileStore\Type::KOTAK_NETBANKING_REFUND;
-
-    protected $type = Payment\Entity::BANK;
+    const FILE_TYPE         = FileStore\Type::KOTAK_NETBANKING_CLAIM;
+    const GATEWAY           = Payment\Gateway::NETBANKING_KOTAK;
 
     protected function formatDataForFile()
     {
         $formattedData = [];
-
-        $totalAmount = 0;
 
         foreach ($this->data as $index => $row)
         {
@@ -38,20 +36,12 @@ class NetbankingKotak extends Processor\Base
                 $row['gateway']['merchant_code'],
                 $date,
                 $row['gateway']['int_payment_id'],
-                $row['refund']['amount'] / 100,
+                $row['payment']['amount'] / 100,
                 $row['gateway']['bank_payment_id'],
             ];
-
-            $totalAmount += $row['refund']['amount'] / 100;
         }
 
-        $name = $this->getFileToWriteName();
-
-        // First Line in the file is expected to be of the format
-        // Format : FileName|ItemsCount|TotalAmount(Rs.)|CHECKSUM
-        $initialLine = $name .'|'. count($formattedData) . '|' .$totalAmount . '|CHECKSUM' . "\r\n";
-
-        $formattedData = $this->getTextData($formattedData, $initialLine);
+        $formattedData = $this->getTextData($formattedData);
 
         return $formattedData;
     }
@@ -67,14 +57,9 @@ class NetbankingKotak extends Processor\Base
 
         $txt = $this->generateText($data, '|', $ignoreLastNewline);
 
-        $txt = $prependLine . $txt;
+        $txt = $prependLine.$txt;
 
         return $txt;
-    }
-
-    protected function getFileToWriteName($ext = FileStore\Format::TXT)
-    {
-        return $this->getFileToWriteNameWithoutExt() . '.' . $ext;
     }
 
     protected function getFileToWriteNameWithoutExt()

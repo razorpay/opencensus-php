@@ -5,19 +5,23 @@ namespace RZP\Models\Gateway\File\Processor\Refund;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Models\Gateway\File\Processor;
 use RZP\Gateway\Netbanking\Axis\Constants;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
-class NetbankingAxis extends Processor\Base
+class Axis extends Processor\Base
 {
     use GenerateRefundFile;
     use FileHandlerTrait;
 
-    const FILE_NAME = 'IConnect_Refund_RAZORPAY';
-    const EXTENSION = FileStore\Format::TXT;
-    const FILE_TYPE = FileStore\Type::AXIS_NETBANKING_REFUND;
+    const FILE_NAME         = 'IConnect_Refund_RAZORPAY';
+    const EXTENSION         = FileStore\Format::TXT;
+    const FILE_TYPE         = FileStore\Type::AXIS_NETBANKING_REFUND;
+    const GATEWAY           = Payment\Gateway::NETBANKING_AXIS;
+    const GATEWAY_CODE      = IFSC::UTIB;
+    const PAYMENT_ATTRIBUTE = Payment\Entity::BANK;
 
     const HEADERS = [
         'Payee id', // pid
@@ -29,8 +33,6 @@ class NetbankingAxis extends Processor\Base
         'DATETIME',
         'REFUND Amount',
     ];
-
-    protected $type = Payment\Entity::BANK;
 
     protected function formatDataForFile()
     {

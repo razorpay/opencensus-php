@@ -8,8 +8,7 @@ return [
         'request' => [
             'content' => [
                 'type'    => 'combined',
-                'gateway' => 'netbanking_kotak',
-                'bank'    => 'KKBK',
+                'source'  => 'kotak',
                 'from'    => Carbon::today(Timezone::IST)->timestamp,
                 'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
@@ -24,8 +23,7 @@ return [
                 'attempts'            => 1,
                 'sender'              => 'refunds@razorpay.com',
                 'type'                => 'combined',
-                'gateway'             => 'netbanking_kotak',
-                'bank'                => 'KKBK',
+                'source'              => 'kotak',
                 'entity'              => 'gateway_file',
                 'admin'               => true
             ]
@@ -36,8 +34,7 @@ return [
         'request' => [
             'content' => [
                 'type'    => 'combined',
-                'gateway' => 'netbanking_kotak',
-                'bank'    => 'KKBK',
+                'source'  => 'kotak',
                 'from'    => Carbon::today(Timezone::IST)->timestamp,
                 'to'      => Carbon::tomorrow(Timezone::IST)->timestamp,
                 'tpv'     => '1'
@@ -53,8 +50,7 @@ return [
                 'attempts'            => 1,
                 'sender'              => 'refunds@razorpay.com',
                 'type'                => 'combined',
-                'gateway'             => 'netbanking_kotak',
-                'bank'                => 'KKBK',
+                'source'              => 'kotak',
                 'entity'              => 'gateway_file',
                 'tpv'                 => true,
                 'admin'               => true

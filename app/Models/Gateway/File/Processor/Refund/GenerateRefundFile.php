@@ -23,34 +23,26 @@ trait GenerateRefundFile
         $begin = $this->gatewayFile->getbegin();
         $end = $this->gatewayFile->getEnd();
 
-        $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
-                        static::PAYMENT_TYPE_ATTRIBUTE,
-                        static::GATEWAY_CODE,
-                        $begin,
-                        $end,
-                        static::GATEWAY
-                    );
-
         $tpv = $this->gatewayFile->getTpv();
 
         if ($tpv === null)
         {
             $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
-                            $this->type,
-                            $bank,
+                            static::PAYMENT_ATTRIBUTE,
+                            static::GATEWAY_CODE,
                             $from,
                             $to,
-                            $gateway
+                            static::GATEWAY
                         );
         }
         else
         {
             $refunds = $this->repo->refund->fetchRefundsForTpvBetweenTimestamps(
-                            $this->type,
-                            $bank,
+                            static::PAYMENT_ATTRIBUTE,
+                            static::GATEWAY_CODE,
                             $from,
                             $to,
-                            $gateway,
+                            static::GATEWAY,
                             $tpv
                         );
         }

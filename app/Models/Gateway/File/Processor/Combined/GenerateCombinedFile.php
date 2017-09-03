@@ -130,12 +130,10 @@ trait GenerateCombinedFile
 
     protected function getFileProcesor(string $type)
     {
-        $gateway = $this->gatewayFile->getGateway();
-
-        $bank = $this->gatewayFile->getBank();
+        $source = $this->gatewayFile->getSource();
 
         $processor = $this->app['gateway']
-                          ->getFileProcessor($type, $gateway, $bank)
+                          ->getFileProcessor($type, $source)
                           ->setGatewayFile($this->gatewayFile);
 
         return $processor;

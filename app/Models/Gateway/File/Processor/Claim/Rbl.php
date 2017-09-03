@@ -13,7 +13,7 @@ use RZP\Gateway\Netbanking\Rbl\Constants;
 use RZP\Gateway\Netbanking\Rbl\ClaimFields;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
-class NetbankingRbl extends Processor\Base
+class Rbl extends Processor\Base
 {
     use GenerateClaimFile;
     use FileHandlerTrait;
@@ -21,6 +21,7 @@ class NetbankingRbl extends Processor\Base
     const FILE_NAME = 'Rbl_Netbanking_Claims';
     const EXTENSION = FileStore\Format::TXT;
     const FILE_TYPE = FileStore\Type::RBL_NETBANKING_CLAIM;
+    const GATEWAY   = Payment\Gateway::NETBANKING_RBL;
 
     const SECONDS_PER_DAY = 86400;
 
@@ -30,12 +31,10 @@ class NetbankingRbl extends Processor\Base
         // so forwarding time stamps by 1 day
         list($from, $to) = $this->updateTimeStamps();
 
-        $gateway = $this->gatewayFile->getGateway();
-
-        $claims= $this->repo->payment
-                            ->fetchReconciledPaymentsForGateway($from,
+        $claims = $this->repo->payment
+                             ->fetchReconciledPaymentsForGateway($from,
                                                                 $to,
-                                                                $gateway,
+                                                                static::GATEWAY,
                                                                 $statuses);
 
         return $claims;

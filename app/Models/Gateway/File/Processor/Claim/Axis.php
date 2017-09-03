@@ -4,12 +4,13 @@ namespace RZP\Models\Gateway\File\Processor\Claim;
 
 use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Models\Gateway\File\Processor;
 use RZP\Gateway\Netbanking\Axis\Constants;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
-class NetbankingAxis extends Processor\Base
+class Axis extends Processor\Base
 {
     use GenerateClaimFile;
     use FileHandlerTrait;
@@ -17,6 +18,7 @@ class NetbankingAxis extends Processor\Base
     const FILE_NAME     = 'IConnect_Claim_RAZORPAY';
     const EXTENSION     = FileStore\Format::TXT;
     const FILE_TYPE     = FileStore\Type::AXIS_NETBANKING_CLAIMS;
+    const GATEWAY       = Payment\Gateway::NETBANKING_AXIS;
 
     const HEADERS = [
         'PayeeId', // pid

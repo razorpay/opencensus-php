@@ -8,8 +8,7 @@ return [
         'request' => [
             'content' => [
                 'type'    => 'combined',
-                'gateway' => 'netbanking_rbl',
-                'bank'    => 'RATN',
+                'source'  => 'rbl',
                 'from'    => Carbon::today(Timezone::IST)->timestamp,
                 'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
@@ -24,8 +23,7 @@ return [
                 'attempts'            => 1,
                 'sender'              => 'refunds@razorpay.com',
                 'type'                => 'combined',
-                'gateway'             => 'netbanking_rbl',
-                'bank'                => 'RATN',
+                'source'              => 'rbl',
                 'entity'              => 'gateway_file',
                 'admin'               => true
             ]

@@ -5,19 +5,23 @@ namespace RZP\Models\Gateway\File\Processor\Refund;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Processor;
 use RZP\Gateway\Netbanking\Rbl\Constants;
 use RZP\Gateway\Netbanking\Rbl\RefundFields;
 
-class NetbankingRbl extends Processor\Base
+class Rbl extends Processor\Base
 {
     use GenerateRefundFile;
 
-    const FILE_NAME = 'Rbl_Netbanking_Refunds';
-    const EXTENSION = FileStore\Format::XLSX;
-    const FILE_TYPE = FileStore\Type::RBL_NETBANKING_REFUND;
+    const FILE_NAME         = 'Rbl_Netbanking_Refunds';
+    const EXTENSION         = FileStore\Format::XLSX;
+    const FILE_TYPE         = FileStore\Type::RBL_NETBANKING_REFUND;
+    const GATEWAY           = Payment\Gateway::NETBANKING_RBL;
+    const GATEWAY_CODE      = IFSC::RATN;
+    const PAYMENT_ATTRIBUTE = Payment\Entity::BANK;
 
     const HEADERS = [
         RefundFields::SERIAL_NO,

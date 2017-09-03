@@ -7,7 +7,7 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Processor;
 
-class NetbankingRbl extends Processor\Base
+class Rbl extends Processor\Base
 {
     use GenerateCombinedFile;
 
