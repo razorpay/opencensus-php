@@ -92,6 +92,10 @@ class CreateMerchants extends Migration
 
             $table->tinyInteger(Merchant::RISK_RATING);
 
+            $table->tinyInteger(Merchant::RISK_THRESHOLD)
+                  ->unsigned()
+                  ->nullable();
+
             $table->tinyInteger(Merchant::RECEIPT_EMAIL_ENABLED)
                   ->default(1);
 
@@ -112,6 +116,8 @@ class CreateMerchants extends Migration
             // Columns for Method and Gateway Based Categories
             $table->string(Merchant::CATEGORY2)
                   ->nullable();
+
+            $table->char(Merchant::INVOICE_CODE, 12);
 
             $table->integer(Merchant::CREATED_AT);
 

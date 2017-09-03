@@ -3,8 +3,8 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
-use RZP\Constants\Entity;
 use Request;
+use RZP\Constants\Entity as E;
 
 class SubscriptionController extends Controller
 {
@@ -14,14 +14,14 @@ class SubscriptionController extends Controller
     {
         $input = Request::all();
 
-        $plan = $this->service(Entity::PLAN)->create($input);
+        $plan = $this->service(E::PLAN)->create($input);
 
         return ApiResponse::json($plan);
     }
 
     public function getPlan(string $id)
     {
-        $plan = $this->service(Entity::PLAN)->fetch($id);
+        $plan = $this->service(E::PLAN)->fetch($id);
 
         return ApiResponse::json($plan);
     }
@@ -30,7 +30,7 @@ class SubscriptionController extends Controller
     {
         $input = Request::all();
 
-        $plans = $this->service(Entity::PLAN)->fetchMultiple($input);
+        $plans = $this->service(E::PLAN)->fetchMultiple($input);
 
         return ApiResponse::json($plans);
     }
@@ -43,14 +43,14 @@ class SubscriptionController extends Controller
     {
         $input = Request::all();
 
-        $addon = $this->service(Entity::ADDON)->create($subscriptionId, $input);
+        $addon = $this->service(E::ADDON)->create($subscriptionId, $input);
 
         return ApiResponse::json($addon);
     }
 
     public function getAddon($id)
     {
-        $addon = $this->service(Entity::ADDON)->fetch($id);
+        $addon = $this->service(E::ADDON)->fetch($id);
 
         return ApiResponse::json($addon);
     }
@@ -59,21 +59,21 @@ class SubscriptionController extends Controller
     {
         $input = Request::all();
 
-        $addon = $this->service(Entity::ADDON)->fetchMultiple($input);
+        $addon = $this->service(E::ADDON)->fetchMultiple($input);
 
         return ApiResponse::json($addon);
     }
 
     public function fetchDueAddons($subscriptionId)
     {
-        $addons = $this->service(Entity::ADDON)->fetchDueAddons($subscriptionId);
+        $addons = $this->service(E::ADDON)->fetchDueAddons($subscriptionId);
 
         return ApiResponse::json($addons);
     }
 
     public function deleteAddon($id)
     {
-        $addon = $this->service(Entity::ADDON)->delete($id);
+        $addon = $this->service(E::ADDON)->delete($id);
 
         return ApiResponse::json($addon);
     }

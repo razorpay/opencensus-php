@@ -437,6 +437,34 @@ return [
                 'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
             ],
         ],
+        [
+            'request' => [
+                'content' => [
+                    'type'        => 'sorter',
+                    'merchant_id' => '10000000000000',
+                    'gateway'     => 'hdfc',
+                    'method'      => 'card',
+                    'min_amount'  => 500,
+                    'max_amount'  => 100,
+                    'load'        => 50
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'min_amount should be lesser than max_amount',
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
         // Create wallet sorter rule
         [
             'request' => [
@@ -444,6 +472,7 @@ return [
                     'merchant_id' => '10000000000000',
                     'type'        => 'sorter',
                     'gateway'     => 'wallet_jiomoney',
+                    'issuer'      => 'jiomoney',
                     'method'      => 'wallet',
                     'load'        => 50
                 ],

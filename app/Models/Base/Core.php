@@ -5,7 +5,7 @@ namespace RZP\Models\Base;
 use App;
 use Illuminate\Foundation\Application;
 use RZP\Base\RepositoryManager;
-use RZP\Trace\Trace;
+use RZP\Constants\Mode;
 
 class Core
 {
@@ -133,5 +133,15 @@ class Core
         {
             return $this->$func(...$params);
         };
+    }
+
+    protected function isTestMode(): bool
+    {
+        return ($this->mode === Mode::TEST);
+    }
+
+    protected function isLiveMode(): bool
+    {
+        return ($this->mode === Mode::LIVE);
     }
 }

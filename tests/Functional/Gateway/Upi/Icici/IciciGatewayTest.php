@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Upi\Icici;
 use Cache;
 use Closure;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mail;
 
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
@@ -306,6 +307,37 @@ EOT;
         $this->assertTestResponse($upiEntity, 'testRefundUpiEntity');
     }
 
+    public function testRetryRefund()
+    {
+        $payment = $this->testPaymentWithS2S();
+
+        $this->capturePayment($payment['id'], 50000);
+
+        $refundAmount = 30000;
+
+        $this->mockServerContentFunction(function(& $content, $action)
+        {
+            if ($action === 'refund')
+            {
+                $content['status'] = 'FAILURE';
+            }
+        });
+
+        $refund = $this->refundPayment($payment['id']);
+
+        $this->mockServerContentFunction(function(& $content, $action)
+        {
+            if ($action === 'refund')
+            {
+                $content['status'] = 'SUCCESS';
+            }
+        });
+
+        $refund = $this->retryFailedRefund($refund['id']);
+
+        $this->assertEquals($refund['status'], 'processed');
+    }
+
     public function testPartialRefund()
     {
         $payment = $this->testPaymentWithS2S();
@@ -541,7 +573,7 @@ EOT;
         // up during refund excel generation
         foreach ($refunds['items'] as $refund)
         {
-            $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 5;
+            $createdAt = Carbon::yesterday(Timezone::IST)->timestamp + 5;
             $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
         }
 

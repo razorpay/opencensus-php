@@ -7,8 +7,8 @@ use RZP\Models\Customer;
 use RZP\Models\Customer\AppToken;
 use RZP\Models\Customer\Token;
 use RZP\Models\Customer\GatewayToken;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Exception;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class Service extends Base\Service

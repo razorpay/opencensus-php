@@ -2,11 +2,10 @@
 
 namespace RZP\Models\Feature;
 
-use RZP\Models\Base;
-use RZP\Exception;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
 use Config;
+use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 
 class Core extends Base\Core
 {
@@ -37,6 +36,28 @@ class Core extends Base\Core
         return null;
     }
 
+    public function delete($entityId, $feature)
+    {
+        $this->trace->info(TraceCode::FEATURE_DELETE_REQUEST, $feature->toArrayPublic());
+
+        // Workflow
+        list($original, $dirty) = [
+            ['feature' => $feature->getName()],
+            ['feature' => null],
+        ];
+
+        $this->app['workflow']
+             ->setEntity($feature->getEntity())
+             ->handle($original, $dirty);
+
+        $this->repo->feature->delete($feature);
+
+        (new Core)->notifyOnSlack($feature, true);
+
+        //we create tag also along with feature.
+        (new Merchant\Service)->deleteTag($entityId, $feature->getName());
+    }
+
     public function notifyOnSlack($feature, $featureDeleted = false)
     {
         $message = $feature->getDashboardEntityLinkForSlack($feature->getName());
@@ -52,7 +73,7 @@ class Core extends Base\Core
 
         $user = $this->getInternalUsernameOrEmail();
 
-        $message.= $feature->getEntityId() . ' by ' . $user;
+        $message .= $feature->getEntityId() . ' by ' . $user;
 
         $data = [];
 

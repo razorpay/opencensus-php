@@ -13,14 +13,6 @@ class Repository extends Base\Repository
         Entity::ACTION_ID => 'sometimes|string|max:14',
     ];
 
-    public function fetchStateTransitionsByActionId(string $actionId)
-    {
-        return $this->newQuery()
-                    ->where(Entity::ACTION_ID, '=', $actionId)
-                    ->orderBy(Entity::CREATED_AT)
-                    ->get();
-    }
-
     public function getLatestState(string $actionId)
     {
         return $this->newQuery()

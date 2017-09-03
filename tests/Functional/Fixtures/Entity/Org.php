@@ -8,18 +8,24 @@ use DB;
 
 class Org extends Base
 {
-    const HDFC_ORG       = 'HDFCbankOrgnId';
-    const RZP_ORG        = '100000razorpay';
-    const DEFAULT_GRP    = '1RazorpayGrpId';
-    const ADMIN_ROLE     = 'RzpAdminRoleId';
-    const MANAGER_ROLE   = 'RzpMngerRoleId';
-    const SUPER_ADMIN    = 'RzrpySprAdmnId';
+    const HDFC_ORG                  = 'HDFCbankOrgnId';
+    const RZP_ORG                   = '100000razorpay';
+    const RZP_ORG_SIGNED            = 'org_100000razorpay';
+    const DEFAULT_GRP               = '1RazorpayGrpId';
+    const DEFAULT_GRP_SIGNED        = 'grp_1RazorpayGrpId';
+    const ADMIN_ROLE                = 'RzpAdminRoleId';
+    const MANAGER_ROLE              = 'RzpMngerRoleId';
+    const SUPER_ADMIN               = 'RzrpySprAdmnId';
+    const SUPER_ADMIN_SIGNED        = 'admin_RzrpySprAdmnId';
 
     // Workflow related roles
-    const MAKER_ROLE     = 'RzpMakerRoleId';
-    const MAKER_ADMIN    = 'RzpMakerAdmnId';
-    const CHECKER_ROLE   = 'RzpChekrRoleId';
-    const CHECKER_ADMIN  = 'RzpChekrAdmnId';
+    const MAKER_ROLE                = 'RzpMakerRoleId';
+    const MAKER_ROLE_SIGNED         = 'role_RzpMakerRoleId';
+    const MAKER_ADMIN               = 'RzpMakerAdmnId';
+    const CHECKER_ROLE              = 'RzpChekrRoleId';
+    const CHECKER_ROLE_SIGNED       = 'role_RzpChekrRoleId';
+    const CHECKER_ADMIN             = 'RzpChekrAdmnId';
+    const CHECKER_ADMIN_SIGNED      = 'admin_RzpChekrAdmnId';
 
     const DEFAULT_TOKEN  = 'SecretTokenForRazorpayAdminAuthentication';
 
@@ -51,7 +57,7 @@ class Org extends Base
 
     public function createRazorpayOrg()
     {
-        $now = Carbon::now()->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         $permissions = $this->fixtures->create(
             'permission:default_permissions');
@@ -117,7 +123,7 @@ class Org extends Base
     {
         $org = $attributes['org'];
 
-        $now = Carbon::now()->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         $makerRole = $this->fixtures->create('role', [
             'id'     => self::MAKER_ROLE,

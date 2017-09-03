@@ -76,16 +76,13 @@ class Job
 
         $this->repoManager = $app['repo'];
 
-        // We are reinitializing the request id here, so that we don't trace the request id
-        // for the worker daemon process
-        $app['request']->generateId();
-
         // For jobs, we set the task id to the task_id of the api request which queued the job
         $app['request']->setTaskId($this->taskId);
 
-        // Trace should be resolved from app container after generating request id
-        // and task id for the job.
         $this->trace = $app['trace'];
+
+        // Task Id needs to be set in trace
+        $this->trace->processor('web')->setTaskId($this->taskId);
 
         //
         // Sets application and db mode if $mode is set

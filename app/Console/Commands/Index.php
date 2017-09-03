@@ -5,10 +5,10 @@ namespace RZP\Console\Commands;
 use Illuminate\Console\Command;
 use App;
 
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\EsRepository;
+use Razorpay\Trace\Logger as Trace;
 
 /**
  * Indexes entity into es for search purposes.

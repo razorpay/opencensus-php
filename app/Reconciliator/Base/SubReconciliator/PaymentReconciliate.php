@@ -26,7 +26,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         Orchestrator::NETBANKING_FEDERAL,
         Orchestrator::NETBANKING_RBL,
         Orchestrator::NETBANKING_INDUSIND,
-        Orchestrator::JIOMONEY
+        Orchestrator::JIOMONEY,
+        Orchestrator::VIRTUAL_ACC_KOTAK,
     ];
 
     /*******************
@@ -453,7 +454,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $gatewaySettledAt = $this->getGatewaySettledAt($row);
 
-        $customerDetails = $this->getNbCustomerDetails($row);
+        $customerDetails = $this->getCustomerDetails($row);
 
         $accountDetails = $this->getNbAccountDetails($row);
 
@@ -621,7 +622,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $this->persistGatewayPaymentDate($rowDetails, $gatewayPayment);
 
-        $this->persistNbCustomerDetails($rowDetails, $gatewayPayment);
+        $this->persistCustomerDetails($rowDetails, $gatewayPayment);
 
         $gatewayPayment->saveOrFail();
     }
@@ -669,7 +670,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * @param array        $rowDetails
      * @param PublicEntity $gatewayPayment
      */
-    protected function persistNbCustomerDetails(array $rowDetails, PublicEntity $gatewayPayment)
+    protected function persistCustomerDetails(array $rowDetails, PublicEntity $gatewayPayment)
     {
         if (empty($rowDetails[BaseReconciliate::CUSTOMER_DETAILS]) === true)
         {
@@ -685,7 +686,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         if (empty($customerDetails[BaseReconciliate::CUSTOMER_NAME]) === false)
         {
-            $this->persistNbCustomerName($customerDetails, $gatewayPayment);
+            $this->persistCustomerName($customerDetails, $gatewayPayment);
         }
     }
 
@@ -708,7 +709,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * @param array        $customerDetails
      * @param PublicEntity $gatewayPayment
      */
-    protected function persistNbCustomerName(array $customerDetails, PublicEntity $gatewayPayment)
+    protected function persistCustomerName(array $customerDetails, PublicEntity $gatewayPayment)
     {
         $customerName = $customerDetails[BaseReconciliate::CUSTOMER_NAME];
 
@@ -1276,7 +1277,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * @param $row
      * @return null
      */
-    protected function getNbCustomerDetails($row)
+    protected function getCustomerDetails($row)
     {
         return [];
     }

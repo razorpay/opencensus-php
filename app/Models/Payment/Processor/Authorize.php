@@ -34,12 +34,13 @@ use RZP\Models\Payment\Method;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Models\Pricing;
+use RZP\Models\Risk;
 use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Customer\GatewayToken;
 use RZP\Models\Upi;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 trait Authorize
 {
@@ -189,7 +190,17 @@ trait Authorize
                 //
                 $terminalData['exception'] = $e;
 
-                $this->updatePaymentAuthFailedAndThrowException($e);
+                $this->updatePaymentAuthFailed($e);
+
+                $internalErrorCode = $payment->getInternalErrorCode();
+
+                // TODO: Remove this after testing on prod
+                if ($payment->getMerchantId() === Merchant\Account::DEMO_PAGE_ACCOUNT)
+                {
+                    $this->logRiskFailureForGateway($payment, $internalErrorCode);
+                }
+
+                throw $e;
             }
             finally
             {
@@ -220,13 +231,18 @@ trait Authorize
                 ($e->getSafeRetry() === true));
     }
 
-    protected function updatePaymentAuthFailedAndThrowException($e)
+    protected function updatePaymentAuthFailedAndThrowException(Exception\BaseException $e)
+    {
+        $this->updatePaymentAuthFailed($e);
+
+        throw $e;
+    }
+
+    protected function updatePaymentAuthFailed(Exception\BaseException $e)
     {
         $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
         $this->createAnalyticsLog($this->payment);
-
-        throw $e;
     }
 
     protected function verifyFeesLessThanAmount(Payment\Entity $payment)
@@ -956,9 +972,9 @@ trait Authorize
     {
         if ($payment->shouldRunFraudChecks() === true)
         {
-            $this->validateFraudDetection($payment);
+            $this->validateFraudDetection($payment, $this->merchant);
 
-            $this->validateBlockedCard($payment->card);
+            $this->validateBlockedCard($payment);
         }
     }
 
@@ -975,14 +991,35 @@ trait Authorize
         }
     }
 
-    protected function validateBlockedCard(Card\Entity $card)
+    protected function validateBlockedCard(Payment\Entity $payment)
     {
+        if ($payment->hasCard() === false)
+        {
+            return;
+        }
+
+        $card = $payment->card;
+
         if ($card->isBlocked() === true)
         {
-            $e = new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD);
+            $data = [
+                'payment_id' => $payment->getPublicId(),
+                'card_id'    => $card->getId(),
+            ];
 
-            $this->updatePaymentAuthFailedAndThrowException($e);
+            $e = new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD, null, $data);
+
+            $this->updatePaymentAuthFailed($e);
+
+            $riskData = [
+                Risk\Entity::REASON => Risk\RiskCode::PAYMENT_FAILED_DUE_TO_BLOCKED_CARD,
+                Risk\Entity::FRAUD_TYPE => Risk\Type::CONFIRMED,
+            ];
+
+            (new Risk\Core)->logPaymentForSource($payment, Risk\Source::INTERNAL, $riskData);
+
+            throw $e;
         }
     }
 
@@ -2336,6 +2373,12 @@ trait Authorize
             {
                 $this->fillReturnDataWithSubscription($payment, $returnData);
             }
+            else if ($payment->hasInvoice() === true)
+            {
+                assertTrue($payment->hasBeenCaptured() === true);
+
+                $this->fillReturnDataWithInvoice($payment, $returnData);
+            }
             else if ($payment->hasOrder() === true)
             {
                 if ($payment->order->getPaymentCapture() === true)
@@ -2363,6 +2406,27 @@ trait Authorize
         $data['razorpay_signature'] = $this->getSignature($data);
     }
 
+    protected function fillReturnDataWithInvoice(Payment\Entity $payment, array & $data)
+    {
+        $invoice = $payment->invoice;
+
+        //
+        // Need to refresh invoice entity as in recordCapture() method
+        // post authorization order's invoice association gets updated.
+        // And not payment's invoice association. Also there that's
+        // needed(using order's invoice) as invoice inherits amount_paid
+        // and stuff from order associated.
+        //
+
+        $invoice->refresh();
+
+        $data['razorpay_invoice_id']      = $invoice->getPublicId();
+        $data['razorpay_invoice_status']  = $invoice->getStatus();
+        $data['razorpay_invoice_receipt'] = $invoice->getReceipt();
+
+        $data['razorpay_signature'] = $this->getSignature($data);
+    }
+
     protected function fillReturnDataWithOrder(Payment\Entity $payment, array & $data)
     {
         $data['razorpay_order_id'] = $payment->order->getPublicId();
@@ -2384,7 +2448,7 @@ trait Authorize
 
         if ($wasFailed)
         {
-            $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+            $currentTime = Carbon::now()->getTimestamp();
 
             // If a payment has been authorized 15 minutes after the creation, we do not send a notification.
 
@@ -2732,7 +2796,7 @@ trait Authorize
 
         $merchantMethods = (new Methods\Core)->getMethods($merchant);
 
-        $merchantBanks = ($merchantMethods === null) ? [] : $merchantMethods->getBanks();
+        $merchantBanks = ($merchantMethods === null) ? [] : $merchantMethods->getSupportedBanks();
 
         $paymentBank = $payment->getBank();
 

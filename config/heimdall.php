@@ -135,6 +135,7 @@ return [
             Permission::EDIT_AUTHORIZED_FAILED_PAYMENT => '',
             Permission::VIEW_REFUND_PAYMENTS => '',
             Permission::EDIT_AUTHORIZED_REFUND_PAYMENT => '',
+            Permission::RETRY_REFUND_FAILED => '',
             Permission::EDIT_PAYMENT_REFUND => '',
             Permission::EDIT_PAYMENT_CAPTURE => '',
             Permission::EDIT_MERCHANT_CONFIRM => [
@@ -143,6 +144,7 @@ return [
             ],
             Permission::CREATE_BENEFICIARY_FILE => '',
             Permission::CREATE_NETBANKING_REFUND => '',
+            Permission::CREATE_EMI_FILES => '',
             Permission::CREATE_SETTLEMENT_INITIATE => '',
             Permission::DELETE_TERMINAL => '',
             Permission::EDIT_TERMINAL => '',
@@ -189,6 +191,7 @@ return [
             ],
             Permission::ADD_RECONCILIATION_FILE => '',
             Permission::ADD_SETTLEMENT_RECONCILIATION => '',
+            Permission::RETRY_SETTLEMENT => '',
             Permission::SEND_NEWSLETTER => '',
             Permission::TRIGGER_DUMMY_ERROR => '',
             Permission::MAKE_API_CALL => '',

@@ -46,6 +46,21 @@ if (! function_exists('implode_assoc_array'))
     }
 }
 
+if (! function_exists('utf8_json_decode'))
+{
+    function utf8_json_decode(string $string, bool $assoc = false, int $depth = 512)
+    {
+        $utf8Data = utf8_encode($string);
+
+        $jsonOptions = JSON_UNESCAPED_UNICODE;
+
+        // We can use JSON_UNESCAPED_UNICODE because our schema allows utf-8
+        $array = json_decode($utf8Data, $assoc, $jsonOptions, $depth);
+
+        return $array;
+    }
+}
+
 if (! function_exists('utf8_json_encode'))
 {
     function utf8_array_encode(array $data)

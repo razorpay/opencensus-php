@@ -13,6 +13,7 @@ class Entity extends Base\Entity
         'action',
         'received',
         'gateway_transaction_id',
+        'gateway_payment_id',
         'amount',
         'currency',
         'enroll_result',
@@ -33,6 +34,7 @@ class Entity extends Base\Entity
         'payment_id',
         'refund_id',
         'gateway_transaction_id',
+        'gateway_payment_id',
         'action',
         'received',
         'amount',
@@ -115,6 +117,11 @@ class Entity extends Base\Entity
     public function getTransactionId()
     {
         return $this->getAttribute('gateway_transaction_id');
+    }
+
+    public function getGatewayPaymentId()
+    {
+        return $this->getAttribute('gateway_payment_id');
     }
 
     public function getAuthCode()

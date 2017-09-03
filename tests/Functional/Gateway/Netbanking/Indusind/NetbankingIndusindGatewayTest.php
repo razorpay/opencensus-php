@@ -7,6 +7,7 @@ use Excel;
 use Mockery;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Terminal\Options;
@@ -49,6 +50,41 @@ class NetbankingIndusindGatewayTest extends TestCase
         $this->assertEquals(9999999999, $gatewayPayment['bank_payment_id']);
 
         $this->assertEquals($gatewayPayment['bank_payment_id'], $payment['reference1']);
+    }
+
+    public function testTpvPayment()
+    {
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_indusind_tpv_terminal');
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $order = $this->startTest();
+
+        $this->payment['order_id'] = $order['id'];
+
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['terminal_id'], $terminal->getId());
+
+        $this->fixtures->merchant->disableTPV();
+
+        $gatewayEntity = $this->getLastEntity('netbanking', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentNetbankingEntity'], $gatewayEntity);
+
+        $this->assertEquals($gatewayEntity['account_number'],
+                            $data['request']['content']['account_number']);
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertArraySelectiveEquals($data['request']['content'], $order);
     }
 
     public function testPaymentVerify()
@@ -236,7 +272,7 @@ class NetbankingIndusindGatewayTest extends TestCase
         // up during refund excel generation
         foreach ($refunds['items'] as $refund)
         {
-            $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 10;
+            $createdAt = Carbon::yesterday(Timezone::IST)->timestamp + 10;
             $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
         }
     }
@@ -246,7 +282,7 @@ class NetbankingIndusindGatewayTest extends TestCase
         // Set the transactions to be reconciled today
         $payments = $this->getEntities('payment', [], true);
 
-        $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 10;
+        $createdAt = Carbon::yesterday(Timezone::IST)->timestamp + 10;
 
         foreach ($payments['items'] as $payment)
         {

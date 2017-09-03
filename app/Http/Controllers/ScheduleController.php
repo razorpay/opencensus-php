@@ -4,7 +4,6 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
-use RZP\Models\Schedule;
 
 class ScheduleController extends Controller
 {
@@ -12,21 +11,21 @@ class ScheduleController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('schedule')->createSchedule($input);
+        $data = $this->service()->createSchedule($input);
 
         return ApiResponse::json($data);
     }
 
     public function getSchedule($id)
     {
-        $data = $this->service('schedule')->getScheduleById($id);
+        $data = $this->service()->getScheduleById($id);
 
         return ApiResponse::json($data);
     }
 
     public function deleteSchedule($id)
     {
-        $data = $this->service('schedule')->deleteSchedule($id);
+        $data = $this->service()->deleteSchedule($id);
 
         return ApiResponse::json($data);
     }
@@ -35,7 +34,7 @@ class ScheduleController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('schedule')->getAllSchedules($input);
+        $data = $this->service()->getAllSchedules($input);
 
         return ApiResponse::json($data);
     }
@@ -44,7 +43,7 @@ class ScheduleController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('schedule')->editSchedule($id, $input);
+        $data = $this->service()->editSchedule($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -53,7 +52,7 @@ class ScheduleController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('schedule')->updateNextRun($input);
+        $data = $this->service()->updateNextRun($input);
 
         return ApiResponse::json($data);
     }
@@ -62,7 +61,7 @@ class ScheduleController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('schedule')->processTasks($input);
+        $data = $this->service()->processTasks($input);
 
         return ApiResponse::json($data);
     }

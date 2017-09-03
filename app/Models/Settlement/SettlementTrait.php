@@ -3,6 +3,7 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Mode;
@@ -188,7 +189,7 @@ trait SettlementTrait
     {
         $shouldSettle = true;
 
-        $today = Carbon::today('Asia/Kolkata');
+        $today = Carbon::today(Timezone::IST);
 
         $lastWorkingDay = Holidays::getPreviousWorkingDay($today);
 
@@ -201,7 +202,7 @@ trait SettlementTrait
         }
 
         if (($this->env !== 'testing') and
-            ($merchant->bankAccount->getCreatedAt() > $lastWorkingDay->timestamp))
+            ($merchant->bankAccount->getCreatedAt() > $lastWorkingDay->getTimestamp()))
         {
             $shouldSettle = false;
         }
@@ -211,7 +212,7 @@ trait SettlementTrait
 
     protected function traceSetlInitiating($channel)
     {
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y H:i:s');
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
 
         $this->trace->info(
             TraceCode::SETTLEMENT_INITIATING,

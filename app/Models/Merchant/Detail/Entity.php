@@ -215,6 +215,8 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::SUBMITTED_AT        => null,
         self::ACTIVATION_PROGRESS => 0,
+        self::GSTIN               => null,
+        self::P_GSTIN             => null,
     ];
 
     protected $casts = [
@@ -237,6 +239,19 @@ class Entity extends Base\PublicEntity
     const GST_FIELDS = [
         self::GSTIN,
         self::P_GSTIN
+    ];
+
+    protected $eventFields = [
+        self::BUSINESS_NAME,
+        self::CONTACT_NAME,
+        self::CONTACT_EMAIL,
+        self::CONTACT_MOBILE,
+        self::BUSINESS_TYPE,
+        self::TRANSACTION_VOLUME,
+        self::BUSINESS_REGISTERED_CITY,
+        self::BUSINESS_REGISTERED_STATE,
+        self::BUSINESS_OPERATION_CITY,
+        self::BUSINESS_OPERATION_STATE,
     ];
 
     public function merchant()
@@ -273,6 +288,11 @@ class Entity extends Base\PublicEntity
     {
         $gstin = $this->getGstin() ?? $this->getPGstin();
 
+        return self::getBusinessStateCodeFromGstin($gstin);
+    }
+
+    public static function getBusinessStateCodeFromGstin(string $gstin = null)
+    {
         if (empty($gstin) === true)
         {
             return null;
@@ -293,7 +313,7 @@ class Entity extends Base\PublicEntity
 
     public function getActivationProgress()
     {
-        $this->getAttribute(self::ACTIVATION_PROGRESS);
+        return $this->getAttribute(self::ACTIVATION_PROGRESS);
     }
 
     public function getContactMobile()
@@ -304,5 +324,20 @@ class Entity extends Base\PublicEntity
     public function toArrayGST()
     {
         return array_only($this->toArrayPublic(), self::GST_FIELDS);
+    }
+
+    public function toArrayEvent()
+    {
+        $merchantDetailAttributes = [];
+
+        foreach ($this->eventFields as $eventField)
+        {
+            if ($this->hasAttribute($eventField))
+            {
+                $merchantDetailAttributes[$eventField] = $this->getAttribute($eventField);
+            }
+        }
+
+        return $merchantDetailAttributes;
     }
 }

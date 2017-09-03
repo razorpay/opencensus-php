@@ -57,15 +57,15 @@ class Validator extends Base\Validator
         'purchaseTotals'                       => 'required|array',
         'purchaseTotals.currency'              => 'required|string|size:3|in:INR',
         'purchaseTotals.grandTotalAmount'      => 'required|numeric',
-        'billTo'                               => 'required|array',
-        'billTo.firstName'                     => 'required|string',
-        'billTo.lastName'                      => 'required|string',
-        'billTo.street1'                       => 'required|string',
-        'billTo.city'                          => 'required|string',
-        'billTo.state'                         => 'required|string',
+        'billTo'                               => 'sometimes|array',
+        'billTo.firstName'                     => 'sometimes|string',
+        'billTo.lastName'                      => 'sometimes|string',
+        'billTo.street1'                       => 'sometimes|string',
+        'billTo.city'                          => 'sometimes|string',
+        'billTo.state'                         => 'sometimes|string',
         'billTo.postalCode'                    => 'sometimes|numeric',
         'billTo.country'                       => 'required_with:billTo.postalCode|string|size:2',
-        'billTo.email'                         => 'required|email',
+        'billTo.email'                         => 'sometimes|email',
     ];
 
     protected static $authValidateRules = [

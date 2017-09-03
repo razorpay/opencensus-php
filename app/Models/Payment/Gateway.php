@@ -33,6 +33,7 @@ class Gateway
     const NETBANKING_INDUSIND= 'netbanking_indusind';
     const NETBANKING_KOTAK   = 'netbanking_kotak';
     const NETBANKING_RBL     = 'netbanking_rbl';
+    const NETBANKING_PNB     = 'netbanking_pnb';
     const PAYTM              = 'paytm';
     const SHARP              = 'sharp';
     const UPI_MINDGATE       = 'upi_mindgate';
@@ -43,6 +44,7 @@ class Gateway
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
     const WALLET_FREECHARGE  = 'wallet_freecharge';
     const WALLET_JIOMONEY    = 'wallet_jiomoney';
+    const WALLET_SBIBUDDY    = 'wallet_sbibuddy';
     const WALLET_MPESA       = 'wallet_mpesa';
     const WALLET_OLAMONEY    = 'wallet_olamoney';
     const WALLET_OPENWALLET  = 'wallet_openwallet';
@@ -132,9 +134,11 @@ class Gateway
         Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::AMEX,
         Payment\Gateway::WALLET_JIOMONEY,
+        Payment\Gateway::WALLET_SBIBUDDY,
         Payment\Gateway::WALLET_AIRTELMONEY,
         Payment\Gateway::FIRST_DATA,
         Payment\Gateway::UPI_ICICI,
+        Payment\Gateway::WALLET_PAYZAPP,
     ];
 
     public static $channels = [
@@ -156,6 +160,7 @@ class Gateway
         self::NETBANKING_FEDERAL  => Settlement\Channel::KOTAK,
         self::NETBANKING_RBL      => Settlement\Channel::KOTAK,
         self::NETBANKING_INDUSIND => Settlement\Channel::KOTAK,
+        self::NETBANKING_PNB      => Settlement\Channel::KOTAK,
         self::WALLET_PAYZAPP      => Settlement\Channel::KOTAK,
         self::WALLET_PAYUMONEY    => Settlement\Channel::KOTAK,
         self::WALLET_OLAMONEY     => Settlement\Channel::KOTAK,
@@ -201,6 +206,7 @@ class Gateway
             self::NETBANKING_FEDERAL,
             self::NETBANKING_RBL,
             self::NETBANKING_INDUSIND,
+            self::NETBANKING_PNB,
         ],
 
         Method::WALLET => [
@@ -212,6 +218,7 @@ class Gateway
             self::WALLET_AIRTELMONEY,
             self::WALLET_FREECHARGE,
             self::WALLET_JIOMONEY,
+            self::WALLET_SBIBUDDY,
             self::WALLET_OPENWALLET,
             self::WALLET_MPESA,
         ],
@@ -350,6 +357,7 @@ class Gateway
         Wallet::AIRTELMONEY => Gateway::WALLET_AIRTELMONEY,
         Wallet::FREECHARGE  => Gateway::WALLET_FREECHARGE,
         Wallet::JIOMONEY    => Gateway::WALLET_JIOMONEY,
+        Wallet::SBIBUDDY    => Gateway::WALLET_SBIBUDDY,
         Wallet::OPENWALLET  => Gateway::WALLET_OPENWALLET,
         Wallet::MPESA       => Gateway::WALLET_MPESA,
     ];
@@ -389,6 +397,7 @@ class Gateway
         self::NETBANKING_AXIS,
         self::NETBANKING_FEDERAL,
         self::NETBANKING_INDUSIND,
+        self::NETBANKING_PNB,
         self::WALLET_PAYZAPP,
         self::FIRST_DATA,
         self::CYBERSOURCE,
@@ -397,6 +406,7 @@ class Gateway
         self::WALLET_OLAMONEY,
         self::WALLET_FREECHARGE,
         self::WALLET_JIOMONEY,
+        self::WALLET_SBIBUDDY,
         self::WALLET_MPESA,
         self::UPI_ICICI,
         self::UPI_IDFC,
@@ -416,6 +426,7 @@ class Gateway
         Gateway::CYBERSOURCE,
         Gateway::FIRST_DATA,
         Gateway::AXIS_MIGS,
+        Gateway::HDFC,
     ];
 
     /**
@@ -455,6 +466,7 @@ class Gateway
         IFSC::FDRL,
         IFSC::RATN,
         IFSC::INDB,
+        IFSC::PUNB,
     ];
 
     /**
@@ -484,7 +496,8 @@ class Gateway
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
-        IFSC::RATN => Gateway::NETBANKING_RBL
+        IFSC::RATN => Gateway::NETBANKING_RBL,
+        IFSC::PUNB => Gateway::NETBANKING_PNB,
     ];
 
     /**
@@ -500,7 +513,8 @@ class Gateway
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
         IFSC::RATN => Gateway::NETBANKING_RBL,
-        IFSC::INDB => Gateway::NETBANKING_INDUSIND
+        IFSC::INDB => Gateway::NETBANKING_INDUSIND,
+        IFSC::PUNB => Gateway::NETBANKING_PNB,
     ];
 
     /**
@@ -612,7 +626,11 @@ class Gateway
         if (in_array($gateway, self::$methodMap[Method::WALLET]) === false)
         {
             throw new Exception\LogicException(
-                'Unknown wallet gateway. Gateway: ' . $gateway);
+                'Unknown wallet gateway',
+                null,
+                [
+                    'gateway' => $gateway,
+                ]);
         }
 
         return array_flip(self::$walletToGatewayMap)[$gateway];
@@ -623,7 +641,11 @@ class Gateway
         if (self::isValidGateway($gateway) === false)
         {
             throw new Exception\LogicException(
-                'Unknown gateway. Gateway: ' . $gateway);
+                'Unknown gateway',
+                null,
+                [
+                    'gateway' => $gateway,
+                ]);
         }
     }
 

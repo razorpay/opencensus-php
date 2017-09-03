@@ -248,7 +248,7 @@ class Service extends Base\Service
 
         $tokenAttributes = [
             'token'      => str_random(40),
-            'expires_at' => Carbon::now()->addDays(30)->timestamp
+            'expires_at' => Carbon::now()->addDays(30)->getTimestamp()
         ];
 
         $token = $this->core()->createAuthToken($admin, $tokenAttributes);
@@ -564,11 +564,11 @@ class Service extends Base\Service
 
     public function lockUnusedAccounts()
     {
-        $timestamp = Carbon::now()->subDays(30)->timestamp;
+        $timestamp = Carbon::now()->subDays(30)->getTimestamp();
 
         $unactivatedAccounts = $this->repo->admin->lockUnactivatedAccounts($timestamp);
 
-        $timestamp = Carbon::now()->subDays(90)->timestamp;
+        $timestamp = Carbon::now()->subDays(90)->getTimestamp();
 
         $unusedAccounts = $this->repo->admin->lockUnusedAccounts($timestamp);
 

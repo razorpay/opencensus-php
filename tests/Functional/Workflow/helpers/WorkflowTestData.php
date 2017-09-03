@@ -17,7 +17,7 @@ return [
                 'name'   => "Test workflow",
                 'levels' => [
                     [
-                        'op_type' => 'and',
+                        'op_type' => 'or',
                         'level'   => 1
                     ]
                 ]
@@ -125,7 +125,7 @@ return [
             'content' => [
                 'levels' => [
                     [
-                        'op_type' => 'and',
+                        'op_type' => 'or',
                         'level'   => 1
                     ],
                 ],

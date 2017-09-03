@@ -22,11 +22,12 @@ use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Processor\Notify;
 use RZP\Models\Payment\Status;
 use RZP\Models\Pricing;
+use RZP\Models\Risk;
 use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Transfer\Core as TransferCore;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class Processor
 {
@@ -77,9 +78,18 @@ class Processor
      */
     const ASYNC_PAYMENT_TIMEOUT = 300;
 
+    /**
+     * @var Merchant\Entity
+     */
     protected $merchant;
     protected $trace;
+    /**
+     * @var Payment\Entity
+     */
     protected $payment;
+    /**
+     * @var Terminal\Entity
+     */
     protected $terminal;
     protected $selectedTerminals;
     protected $mode;
@@ -90,7 +100,13 @@ class Processor
     protected $mutex;
     protected $request;
     protected $methods;
+    /**
+     * @var Payment\Refund\Entity
+     */
     protected $refund;
+    /**
+     * @var Order\Entity
+     */
     protected $order;
     protected $segment;
 
@@ -276,7 +292,11 @@ class Processor
         if ($merchant->isActivated() === false)
         {
             throw new Exception\LogicException(
-                'A non-activated merchant is making live request. Blasphemy!');
+                'A non-activated merchant is making live request. Blasphemy!',
+                null,
+                [
+                    'merchant_id' => $merchant->getId(),
+                ]);
         }
     }
 
@@ -603,6 +623,29 @@ class Processor
 
             $notifier = $notifier->trigger(Payment\Event::FAILED);
         }
+    }
+
+    /**
+     * Checks for risk failures and creates log in risk table
+     *
+     * @param        $payment Payment\Entity
+     * @param string $internalErrorCode
+     */
+    public function logRiskFailureForGateway(
+        Payment\Entity $payment,
+        string $internalErrorCode)
+    {
+        $riskData = Risk\FailureCodeMap::getRiskDataForError($internalErrorCode);
+
+        // If it is not error raised due to fraud failure, ignore everything
+        if (empty($riskData) === true)
+        {
+            return;
+        }
+
+        $source = $riskData[Risk\Entity::SOURCE];
+
+        (new Risk\Core)->logPaymentForSource($payment, $source, $riskData);
     }
 
     protected function setTwoFactorAuthAfterCallbackException(Exception\BaseException $exception)
@@ -1272,7 +1315,7 @@ class Processor
 
         $shouldRefundAt = $createdAt + $autoRefundDelay;
 
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         $this->trace->info(
             TraceCode::LATE_AUTHORIZE_AUTO_CAPTURE,

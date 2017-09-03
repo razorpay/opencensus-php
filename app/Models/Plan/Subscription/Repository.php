@@ -75,7 +75,7 @@ class Repository extends Base\Repository
 
     public function getSubscriptionsToExpire()
     {
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         return $this->newQuery()
                     ->whereNotNull(Entity::START_AT)
@@ -93,7 +93,7 @@ class Repository extends Base\Repository
 
         $subscriptionAttrs = $this->dbColumn('*');
 
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         return $this->newQuery()
                     ->select($subscriptionAttrs)

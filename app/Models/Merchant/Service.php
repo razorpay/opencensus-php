@@ -6,6 +6,7 @@ use DB;
 use Mail;
 use Config;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Exception;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
@@ -127,7 +128,7 @@ class Service extends Base\Service
             }
             catch (\Throwable $e)
             {
-                $result = ['message'=> $e->getMessage()];
+                $result = ['message' => $e->getMessage()];
             }
         }
 
@@ -287,6 +288,20 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $keyData = (new Key\Core)->createFirstKey($merchant, $this->mode);
+
+        if ($this->mode === MODE::LIVE)
+        {
+            $action = Merchant\Action::LIVE_KEYS_CREATED;
+        }
+        elseif ($this->mode === MODE::TEST)
+        {
+            $action = Merchant\Action::TEST_KEYS_CREATED;
+        }
+
+        if ($action !== null)
+        {
+            $this->app['eventManager']->trackEvents($merchant, $action, $merchant->toArrayEvent());
+        }
 
         return $keyData;
     }
@@ -630,14 +645,9 @@ class Service extends Base\Service
 
     public function getEnabledBanks()
     {
-        $methods = (new Methods\Core)->getMethods($this->merchant);
+        $methods = (new Methods\Core)->getEnabledAndDisabledBanks($this->merchant);
 
-        if ($methods === null)
-        {
-            return [];
-        }
-
-        return $methods->toArrayWithBankNames();
+        return $methods['enabled'];
     }
 
     public function setPaymentBanks($id, $input)
@@ -774,11 +784,11 @@ class Service extends Base\Service
     {
         if (isset($input['on']))
         {
-            $today = Carbon::createFromTimestamp($input['on'], 'Asia/Kolkata');
+            $today = Carbon::createFromTimestamp($input['on'], Timezone::IST);
         }
         else
         {
-            $today = Carbon::today('Asia/Kolkata');
+            $today = Carbon::today(Timezone::IST);
         }
 
         if (Holidays::isWorkingDay($today) === false)
@@ -789,14 +799,14 @@ class Service extends Base\Service
         $from = Holidays::getPreviousWorkingDay($today);
 
         $newBeneficiaryCount = $this->repo->bank_account->getCountOfBankAccountsCreatedBetween(
-                                                        $from->timestamp,
-                                                        $today->timestamp);
+                                                        $from->getTimestamp(),
+                                                        $today->getTimestamp());
 
         if ($newBeneficiaryCount > 0)
         {
             (new BankAccount\BeneficiaryFile)->generateBetweenTimestamps(
-                                                        $from->timestamp,
-                                                        $today->timestamp);
+                                                        $from->getTimestamp(),
+                                                        $today->getTimestamp());
         }
 
         $message = "Merchant Beneficiary file generated. Beneficiary added since".
@@ -1010,6 +1020,61 @@ class Service extends Base\Service
         $data = (new Feature\Service)->getFeaturesForEntity($merchant);
 
         return $data;
+    }
+
+    /**
+     * used for fetching referred merchants of a particular merchant
+     */
+    public function fetchReferredMerchants()
+    {
+        $merchantId = $this->merchant->getId();
+
+        return $this->repo->merchant->fetchReferredMerchants($merchantId);
+    }
+
+    /**
+     * used for getting tags of the merchant
+     * @param string $id
+     */
+    public function getTags($id)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        return $merchant->tagNames();
+    }
+
+    /**
+     * used for adding tags to merchant
+     * @param string $id
+     * @param array $input which contains the tags of the merchant
+     */
+    public function addTags($id, $input)
+    {
+        (new Validator)->validateInput('addTags', $input);
+
+        $this->trace->info(TraceCode::MERCHANT_TAGS_ADD, $input);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $tags = $input['tags'];
+
+        $merchant->retag($tags);
+
+        return $merchant->tagNames();
+    }
+
+    /**
+     * used for deleting a single tag of a merchant
+     * @param string $id
+     * @param string $tagName tag which has to be deleted
+     */
+    public function deleteTag($id, $tagName)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $merchant->untag($tagName);
+
+        return $merchant->tagNames();
     }
 
     public function markGratisTransactionPostpaid($input)
