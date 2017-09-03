@@ -7,6 +7,7 @@ use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Customer\Token\Entity as Token;
 use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Models\Customer\Token\MaxAmount as TokenMaxAmount;
 use RZP\Models\Customer\GatewayToken\Entity as GatewayToken;
 
 class NetbankingIciciEMandateTest extends TestCase
@@ -437,8 +438,9 @@ class NetbankingIciciEMandateTest extends TestCase
 
     public function testPaymentAmountGreaterThanTokenMaxAmount()
     {
+        // Create a payment with twice the maximum amount
         $payment = $this->payment;
-        $payment['amount'] = 1000000;
+        $payment['amount'] = 2 * TokenMaxAmount::ONE_LAC_RUPEES;
 
         $data = $this->testData[__FUNCTION__];
 
@@ -450,7 +452,7 @@ class NetbankingIciciEMandateTest extends TestCase
             });
 
         $token = $this->getLastEntity('token', true);
-        $this->assertEquals(100000, $token[Token::MAX_AMOUNT]);
+        $this->assertEquals(TokenMaxAmount::ONE_LAC_RUPEES, $token[Token::MAX_AMOUNT]);
         $this->assertGreaterThan($token[Token::MAX_AMOUNT], $payment['amount']);
     }
 
@@ -524,7 +526,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEquals($netbanking[Netbanking::SI_REF_ID], $token[Token::GATEWAY_TOKEN]);
         $this->assertEquals($payment[Payment::TOKEN_ID], $token[Token::ID]);
         $this->assertEquals(true, $token[Token::RECURRING]);
-        $this->assertEquals(100000, $token[Token::MAX_AMOUNT]);
+        $this->assertEquals(TokenMaxAmount::ONE_LAC_RUPEES, $token[Token::MAX_AMOUNT]);
         $this->assertEquals('confirmed', $token[Token::RECURRING_STATUS]);
         $this->assertEquals(null, $token[Token::RECURRING_FAILURE_REASON]);
         $this->assertEquals($usedCount, $token[Token::USED_COUNT]);

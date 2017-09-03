@@ -754,6 +754,8 @@ trait Authorize
 
         $this->verifyFeatureForRecurring($merchant, $payment);
 
+        $token = $this->assertTokenIsRecurringAndReturnToken($payment);
+
         //
         // If payment type is card, validate that the card supports recurring
         // or if payment type is netbanking, validate that the bank supports recurring
@@ -764,7 +766,7 @@ trait Authorize
         }
         else if ($payment->isNetbanking() === true)
         {
-            $this->validateRecurringNetbanking($payment);
+            $this->validateRecurringNetbanking($payment, $token);
         }
 
         //
@@ -780,6 +782,33 @@ trait Authorize
         {
             $this->verifyAggregatorIfApplicable($merchant);
         }
+    }
+
+    protected function assertTokenIsRecurringAndReturnToken(Payment\Entity $payment)
+    {
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        if ($token === null)
+        {
+            return null;
+        }
+
+        //
+        // Second recurring payments have to be enabled for recurring
+        //
+        if (($payment->isSecondRecurring()) and
+            ($token->isRecurring() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING,
+                Token\Entity::RECURRING,
+                [
+                    'payment' => $payment->toArray(),
+                    'token'   => $token->toArray()
+                ]);
+        }
+
+        return $token;
     }
 
     protected function verifyFeatureForRecurring(Merchant\Entity $merchant, Payment\Entity $payment)
@@ -875,7 +904,7 @@ trait Authorize
         }
     }
 
-    protected function validateRecurringNetbanking(Payment\Entity $payment)
+    protected function validateRecurringNetbanking(Payment\Entity $payment, Token\Entity $token)
     {
         $bank = $payment->getBank();
 
@@ -888,8 +917,6 @@ trait Authorize
                     'payment' => $payment->toArray(),
                 ]);
         }
-
-        $token = $payment->getGlobalOrLocalTokenEntity();
 
         if ($token === null)
         {
@@ -910,23 +937,14 @@ trait Authorize
      * @param $payment
      * @throws Exception\BadRequestException
      */
-    protected function validateSecondRecurringNetbanking($token, $payment)
+    protected function validateSecondRecurringNetbanking(Token\Entity $token, Payment\Entity $payment)
     {
         if ($payment->isSecondRecurring() === false)
         {
             return;
         }
 
-        if ($token->isRecurring() === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING,
-                Token\Entity::RECURRING,
-                [
-                    'payment' => $payment->toArray(),
-                ]);
-        }
-        else if (empty($token->getGatewayToken()) === true)
+        if (empty($token->getGatewayToken()) === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_GATEWAY_TOKEN_EMPTY,
@@ -938,7 +956,7 @@ trait Authorize
         }
     }
 
-    protected function validateTokenMaxAmount($token, $payment)
+    protected function validateTokenMaxAmount(Token\Entity $token, Payment\Entity $payment)
     {
         if ($token->getMaxAmount() < $payment->getAmount())
         {
@@ -946,8 +964,10 @@ trait Authorize
                 ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_GREATER_THAN_TOKEN_MAX_AMOUNT,
                 Token\Entity::MAX_AMOUNT,
                 [
-                    'payment' => $payment->toArray(),
-                    'token'   => $token->toArray(),
+                    'payment'        => $payment->toArray(),
+                    'token'          => $token->toArray(),
+                    'payment_amount' => $payment->getAmount(),
+                    'token_amount'   => $token->getMaxAmount()
                 ]);
         }
     }
@@ -1758,9 +1778,9 @@ trait Authorize
         }
         else if ($payment->isMethod(Payment\Method::NETBANKING))
         {
-            // TODO: We need to get this from user input - hard coding for now
             $saveMethodInput[Token\Entity::BANK] = $payment->getBank();
-            $saveMethodInput[Token\Entity::MAX_AMOUNT] = 100000;
+            // TODO: We need to get this from user input - hard coding for now
+            $saveMethodInput[Token\Entity::MAX_AMOUNT] = Token\MaxAmount::ONE_LAC_RUPEES;
         }
         else if ($payment->isMethod(Payment\Method::WALLET))
         {
@@ -1997,6 +2017,7 @@ trait Authorize
         // Update token stats. Assuming same token is not getting
         // used in multiple payments. Actually we should be locking.
         //
+
         $createdAt = $payment->getCreatedAt();
 
         $token->setUsedAt($createdAt);
@@ -2066,7 +2087,7 @@ trait Authorize
         return false;
     }
 
-    protected function updateTokenRecurringDetails(Token\Entity $token, array $data)
+    protected function updateTokenRecurringDetails(Token\Entity $token, array $gatewayData)
     {
         //
         // We update the token details and not gateway token details
@@ -2087,13 +2108,23 @@ trait Authorize
         // for same token only.
         //
 
+        //
+        // This should throw an exception because the method above is called
+        // only when the payment is a first recurring payment. If the recurring status
+        // is not null, there was something wrong with the way the token was created.
+        //
         if ($token->getRecurringStatus() !== null)
         {
-            // TODO: Decide whether we want to override it here.
-            return;
+            throw new Exception\LogicException(
+                'Recurring status cannot be set during first recurring payment',
+                null,
+                [
+                    'token'        => $token->toArray(),
+                    'gateway_data' => $gatewayData
+                ]);
         }
 
-        $recurringStatus = $data[Token\Entity::RECURRING_STATUS];
+        $recurringStatus = $gatewayData[Token\Entity::RECURRING_STATUS];
 
         if (empty($recurringStatus) === true)
         {
@@ -2103,7 +2134,7 @@ trait Authorize
                 null,
                 [
                     'token'          => $token->toArray(),
-                    'gateway_data'   => $data
+                    'gateway_data'   => $gatewayData
                 ]);
         }
 
@@ -2115,7 +2146,7 @@ trait Authorize
         //
         if ($recurringStatus === Token\RecurringStatus::REJECTED)
         {
-            if (empty($data[Token\Entity::RECURRING_FAILURE_REASON]) === true)
+            if (empty($gatewayData[Token\Entity::RECURRING_FAILURE_REASON]) === true)
             {
                 // If it's rejected, there must always be a reason.
                 throw new Exception\LogicException(
@@ -2123,11 +2154,11 @@ trait Authorize
                     null,
                     [
                         'token'        => $token->toArray(),
-                        'gateway_data' => $data,
+                        'gateway_data' => $gatewayData,
                     ]);
             }
 
-            $recurringFailureReason = $data[Token\Entity::RECURRING_FAILURE_REASON];
+            $recurringFailureReason = $gatewayData[Token\Entity::RECURRING_FAILURE_REASON];
 
             $token->setRecurringFailureReason($recurringFailureReason);
         }
@@ -2137,9 +2168,9 @@ trait Authorize
             //
             // Not all netbanking recurring have a gateway token.
             //
-            if (empty($data[Token\Entity::GATEWAY_TOKEN]) === false)
+            if (empty($gatewayData[Token\Entity::GATEWAY_TOKEN]) === false)
             {
-                $gatewayToken = $data[Token\Entity::GATEWAY_TOKEN];
+                $gatewayToken = $gatewayData[Token\Entity::GATEWAY_TOKEN];
 
                 $token->setGatewayToken($gatewayToken);
             }

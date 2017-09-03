@@ -379,7 +379,6 @@ class Gateway extends Base\Gateway
         }
 
         // If the SI reference ID is not empty, we know that this is a recurring payment
-//        TODO: Check why adding this to the request causes a verification failure
         if (empty($verify->payment->getSIRefId()) === false)
         {
             $requestData[RequestFields::SI] = Status::Y;
