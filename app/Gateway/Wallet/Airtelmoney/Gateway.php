@@ -516,7 +516,7 @@ class Gateway extends Base\Gateway
 
     protected function getEpochTime($date, $format)
     {
-        return Carbon::createFromFormat($format, (string) $date)->timestamp;
+        return Carbon::createFromFormat($format, (string) $date)->getTimestamp();
     }
 
     protected function handleRequestFailure($content)

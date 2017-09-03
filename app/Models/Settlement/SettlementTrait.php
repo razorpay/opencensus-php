@@ -202,7 +202,7 @@ trait SettlementTrait
         }
 
         if (($this->env !== 'testing') and
-            ($merchant->bankAccount->getCreatedAt() > $lastWorkingDay->timestamp))
+            ($merchant->bankAccount->getCreatedAt() > $lastWorkingDay->getTimestamp()))
         {
             $shouldSettle = false;
         }

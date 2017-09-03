@@ -16,8 +16,8 @@ class Cycle
     const DAILY   = 'daily';
 
     const ONE_YEAR          = 1;
-    const MONTHS_IN_YEAR    = 12;
-    const WEEKS_IN_YEAR     = 52;
+    const MONTHS_IN_YEAR    = Carbon::MONTHS_PER_YEAR;
+    const WEEKS_IN_YEAR     = Carbon::WEEKS_PER_YEAR;
     // TODO: This can be 366 too. Fix.
     const DAYS_IN_YEAR      = 365;
 
@@ -153,7 +153,7 @@ class Cycle
             $start = $nextRun;
         }
 
-        $end = $start->timestamp;
+        $end = $start->getTimestamp();
 
         return $end;
     }

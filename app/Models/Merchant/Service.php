@@ -799,14 +799,14 @@ class Service extends Base\Service
         $from = Holidays::getPreviousWorkingDay($today);
 
         $newBeneficiaryCount = $this->repo->bank_account->getCountOfBankAccountsCreatedBetween(
-                                                        $from->timestamp,
-                                                        $today->timestamp);
+                                                        $from->getTimestamp(),
+                                                        $today->getTimestamp());
 
         if ($newBeneficiaryCount > 0)
         {
             (new BankAccount\BeneficiaryFile)->generateBetweenTimestamps(
-                                                        $from->timestamp,
-                                                        $today->timestamp);
+                                                        $from->getTimestamp(),
+                                                        $today->getTimestamp());
         }
 
         $message = "Merchant Beneficiary file generated. Beneficiary added since".
