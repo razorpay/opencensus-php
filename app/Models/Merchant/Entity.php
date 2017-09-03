@@ -1113,6 +1113,7 @@ class Entity extends Base\PublicEntity
             self::ACTIVATED    => $this->getAttribute(self::ACTIVATED),
             self::ARCHIVED_AT  => $this->getAttribute(self::ARCHIVED_AT),
             self::SUSPENDED_AT => $this->getAttribute(self::SUSPENDED_AT),
+            self::LOGO_URL     => $this->getAttribute(self::LOGO_URL),
             self::CREATED_AT   => $this->getAttribute(self::CREATED_AT),
             self::UPDATED_AT   => $this->getAttribute(self::UPDATED_AT),
         ];
