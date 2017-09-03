@@ -102,6 +102,23 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * Getting the initial payment associated with the token
+     * TODO: Come up with a more generic solution that is forward compatible
+     *
+     * @param $tokenId
+     * @return mixed
+     */
+    public function fetchIntitialNbSiPaymentByToken($tokenId)
+    {
+        return $this->newQuery()
+                    ->whereIn('status', [Payment\Status::AUTHORIZED, Payment\Status::CAPTURED])
+                    ->where(Payment\Entity::METHOD, '=', Payment\Method::NETBANKING)
+                    ->where(Payment\Entity::TOKEN_ID, '=', $tokenId)
+                    ->get()
+                    ->first();
+    }
+
     public function fetchCapturedForGatewayBetweenTimestamp($from, $to, $gateway)
     {
         return $this->newQuery()

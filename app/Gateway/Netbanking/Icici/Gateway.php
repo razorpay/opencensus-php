@@ -75,6 +75,10 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->createGatewayPaymentEntity($entity);
 
+        //
+        // Payment must be made with the same payment id as the one used for initiation
+        // Amount can be any value - so long as the PRN, ITC, RID are all the same as the SI initiation request
+        //
         $requestData = $this->getSecondRecurringRequestData($input, $gatewayPayment);
 
         $request = $this->getStandardRequestArray($requestData, 'post', $this->getUrlType());
@@ -475,7 +479,18 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentReferenceData(array $input)
     {
-        $prn = $input['payment'][Payment\Entity::ID];
+        if (($this->isSecondRecurringPaymentRequest($input)) and
+            ($this->action === Action::AUTHORIZE))
+        {
+            $prn = $this->app['repo']
+                        ->payment
+                        ->fetchIntitialNbSiPaymentByToken($input['token']['id'])
+                        ->getId();
+        }
+        else
+        {
+            $prn = $input['payment'][Payment\Entity::ID];
+        }
 
         $amount = $input['payment'][Payment\Entity::AMOUNT] / 100;
 
@@ -538,7 +553,8 @@ class Gateway extends Base\Gateway
         return [
             Base\Entity::RECEIVED        => true,
             Base\Entity::STATUS          => $content[ResponseFields::PAID],
-            Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_PAYMENT_ID],
+            // BID won't be sent across when the payment has not been scheduled
+            Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_PAYMENT_ID] ?? null,
             //
             // These fields are received in the callback of first recurring request
             //

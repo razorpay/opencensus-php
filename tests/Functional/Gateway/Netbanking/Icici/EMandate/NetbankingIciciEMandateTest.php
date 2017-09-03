@@ -120,7 +120,7 @@ class NetbankingIciciEMandateTest extends TestCase
         // For failed payments, si requests and debit requests, the status is a N
         $this->assertEquals(true, $netbanking[Netbanking::RECEIVED]);
         $this->assertEquals('N', $netbanking[Netbanking::STATUS]);
-        $this->assertEquals('9999999999', $netbanking[Netbanking::BANK_PAYMENT_ID]);
+        $this->assertEquals(null, $netbanking[Netbanking::BANK_PAYMENT_ID]);
     }
 
     /**
@@ -487,6 +487,7 @@ class NetbankingIciciEMandateTest extends TestCase
                 {
                     $content['PAID'] = 'N';
                     $content['STATUS'] = $status;
+                    unset($content['BID']);
                 }
             });
     }
