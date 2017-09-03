@@ -4,11 +4,11 @@ namespace RZP\Models\Gateway\File\Processor\Refund;
 
 use Mail;
 use Carbon\Carbon;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
@@ -22,21 +22,19 @@ trait GenerateRefundFile
     {
         $from = $this->gatewayFile->getFrom();
         $to = $this->gatewayFile->getTo();
-        $gateway = $this->gatewayFile->getGateway();
-        $bank = $this->gatewayFile->getBank();
 
         $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
-                        $this->type,
-                        $bank,
+                        static::PAYMENT_ATTRIBUTE,
+                        static::GATEWAY_CODE,
                         $from,
                         $to,
-                        $gateway
+                        static::GATEWAY
                     );
 
         return $refunds;
     }
 
-    public function checkIfValidDataAvailable(PublicCollection $entites)
+    public function checkIfValidDataAvailable(PublicCollection $refunds)
     {
         if ($refunds->isEmpty() === true)
         {
@@ -51,7 +49,7 @@ trait GenerateRefundFile
      */
     public function generateData(PublicCollection $refunds): array
     {
-        $gateway = $this->gatewayFile->getGateway();
+        $gateway = static::GATEWAY;
 
         foreach ($refunds as $refund)
         {
@@ -141,13 +139,11 @@ trait GenerateRefundFile
     {
         try
         {
-            $gateway = $this->gatewayFile->getGateway();
-
             $recipients = $this->gatewayFile->getRecipients();
 
             $mailData = $this->formatDataForMail();
 
-            $refundFileMail = new RefundFileMail($mailData, $gateway, $recipients);
+            $refundFileMail = new RefundFileMail($mailData, static::GATEWAY, $recipients);
 
             Mail::send($refundFileMail);
 

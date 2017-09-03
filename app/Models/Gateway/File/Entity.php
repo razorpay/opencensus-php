@@ -8,8 +8,7 @@ use RZP\Models\FileStore;
 class Entity extends Base\PublicEntity
 {
     const TYPE                = 'type';
-    const GATEWAY             = 'gateway';
-    const BANK                = 'bank';
+    const SOURCE              = 'source';
     const FILE_ID             = 'file_id';
     const SENDER              = 'sender';
     const RECIPIENTS          = 'recipients';
@@ -31,8 +30,7 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::TYPE,
-        self::GATEWAY,
-        self::BANK,
+        self::SOURCE,
         self::SENDER,
         self::RECIPIENTS,
         self::FROM,
@@ -43,8 +41,7 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::TYPE,
-        self::GATEWAY,
-        self::BANK,
+        self::SOURCE,
         self::FILE_ID,
         self::SENDER,
         self::RECIPIENTS,
@@ -100,14 +97,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
-    public function getGateway()
+    public function getSource()
     {
-        return $this->getAttribute(self::GATEWAY);
-    }
-
-    public function getBank()
-    {
-        return $this->getAttribute(self::BANK);
+        return $this->getAttribute(self::SOURCE);
     }
 
     public function getSender()

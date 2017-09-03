@@ -12,14 +12,14 @@ class Validator extends Base\Validator
     const TIME_RANGE = 'time_range';
 
     protected static $createRules = [
-        Entity::TYPE       => 'required|string|custom',
-        Entity::GATEWAY    => 'required|string',
-        Entity::BANK       => 'required|string',
-        Entity::SENDER     => 'filled|email',
-        Entity::RECIPIENTS => 'filled|array|custom',
-        Entity::FROM       => 'required|epoch',
-        Entity::TO         => 'required|epoch',
-        Entity::SCHEDULED  => 'filled|boolean'
+        Entity::TYPE              => 'required|string|custom',
+        Entity::SOURCE            => 'required|string',
+        Entity::SENDER            => 'filled|email',
+        Entity::RECIPIENTS        => 'filled|array',
+        Entity::RECIPIENTS . '.*' => 'email',
+        Entity::FROM              => 'required|epoch',
+        Entity::TO                => 'required|epoch',
+        Entity::SCHEDULED         => 'filled|boolean',
     ];
 
     protected static $acknowledgeRules = [
@@ -27,8 +27,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $createValidators = [
-        Entity::GATEWAY,
-        Entity::BANK,
+        Entity::SOURCE,
         self::TIME_RANGE,
     ];
 
@@ -41,53 +40,18 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateGateway(array $input)
+    protected function validateSource(array $input)
     {
         $type = $input[Entity::TYPE];
 
-        $gateway = $input[Entity::GATEWAY];
+        $source = $input[Entity::SOURCE];
 
-        $supportedGatewaysForType = array_keys(Constants::GATEWAY_SUPPORTED_BANKS[$type]);
+        $supportedSourceForType = Constants::SUPPORTED_SOURCES[$type];
 
-        if (in_array($gateway, $supportedGatewaysForType, true) === false)
+        if (in_array($source, $supportedSourceForType, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                "$gateway  s not a supported gateway for type");
-        }
-    }
-
-    protected function validateBank(array $input)
-    {
-        $type = $input[Entity::TYPE];
-
-        $bank = $input[Entity::BANK];
-
-        $gateway = $input[Entity::GATEWAY];
-
-        $supportedBanks = Constants::GATEWAY_SUPPORTED_BANKS[$type][$gateway];
-
-        if (in_array($bank, $supportedBanks, true) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                "$bank is not supported for $type and $gateway");
-        }
-    }
-
-    protected function validateRecipients(string $attribute, array $recipients)
-    {
-        if (is_associative_array($recipients) === true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'data provided is not a valid array');
-        }
-
-        foreach ($recipients as $email)
-        {
-            if ($this->isValidEmail($email) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    "email id provided is not valid: $email");
-            }
+                "$source  is not a supported source for type");
         }
     }
 
@@ -110,10 +74,5 @@ class Validator extends Base\Validator
                 'from cannot be after to');
 
         }
-    }
-
-    protected function isValidEmail(string $email)
-    {
-        return filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
     }
 }

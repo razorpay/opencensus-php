@@ -34,7 +34,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Executines the steps required in generating and sending mail for
+     * Executes the steps required in generating and sending mail for
      * a gateway_file entity
      *
      * @param  Entity $gatewayFile Gateway file entity to be processed
@@ -43,15 +43,13 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::GATEWAY_FILE_PROCESSING, [
             'id'      => $gatewayFile->getId(),
-            'gateway' => $gatewayFile->getGateway(),
-            'bank'    => $gatewayFile->getBank()
+            'source' => $gatewayFile->getSource(),
         ]);
 
         $type = $gatewayFile->getType();
-        $gateway = $gatewayFile->getGateway();
-        $bank = $gatewayFile->getBank();
+        $source = $gatewayFile->getSource();
 
-        $processor = $this->app['gateway']->getFileProcessor($type, $gateway, $bank);
+        $processor = $this->app['gateway']->getFileProcessor($type, $source);
 
         $processor->process($gatewayFile);
     }
@@ -105,7 +103,11 @@ class Core extends Base\Core
      * @param  array  $data Array containing gateway => bank mapping for
      * @return PublicCollection     Collection of gateway_file entities created
      */
-    public function generateGatewayFiles(string $type, array $data): Base\PublicCollection
+    public function generateGatewayFiles(
+                        string $type,
+                        array $sources,
+                        int $from,
+                        int $to): Base\PublicCollection
     {
         if (Type::isValidType($type) === false)
         {
@@ -115,11 +117,17 @@ class Core extends Base\Core
 
         $gatewayFiles = new Base\PublicCollection;
 
-        foreach ($data as $gateway => $bank)
+        foreach ($sources as $source)
         {
-            $params = $this->getGatewayFileCreationParams($type, $gateway, $bank);
+            $params = [
+                Entity::TYPE      => $type,
+                Entity::SOURCE    => $source,
+                Entity::FROM      => $from,
+                Entity::TO        => $to,
+                Entity::SCHEDULED => 1,
+            ];
 
-            // We just create the entity here and process it in a separate state.
+            // We just create the entity here and process it in a separate step.
             // Hence the "halt" flag is passed as true
             $gatewayFile = $this->create($params, true);
 
@@ -130,23 +138,5 @@ class Core extends Base\Core
         }
 
         return $gatewayFiles;
-    }
-
-    protected function getGatewayFileCreationParams(string $type, string $gateway, string $bank): array
-    {
-        // TODO: Change this later
-        $from = Carbon::today('Asia/Kolkata')->timestamp;
-        $to = Carbon::tomorrow('Asia/Kolkata')->timestamp - 1;
-
-        $params = [
-            Entity::TYPE      => $type,
-            Entity::GATEWAY   => $gateway,
-            Entity::BANK      => $bank,
-            Entity::FROM      => $from,
-            Entity::TO        => $to,
-            Entity::SCHEDULED => 1,
-        ];
-
-        return $params;
     }
 }

@@ -8,15 +8,16 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Models\Gateway\File\Processor;
 
-class NetbankingHdfc extends Processor\Base
+class Hdfc extends Processor\Base
 {
     use GenerateRefundFile;
 
-    const FILE_NAME     = 'HDFC_Netbanking_Refunds';
-    const EXTENSION     = FileStore\Format::XLSX;
-    const FILE_TYPE     = FileStore\Type::HDFC_NETBANKING_REFUND;
-
-    protected $type = Payment\Entity::BANK;
+    const FILE_NAME         = 'HDFC_Netbanking_Refunds';
+    const EXTENSION         = FileStore\Format::XLSX;
+    const FILE_TYPE         = FileStore\Type::HDFC_NETBANKING_REFUND;
+    const PAYMENT_ATTRIBUTE = Payment\Entity::BANK;
+    const GATEWAY           = Payment\Gateway::NETBANKING_HDFC;
+    const GATEWAY_CODE      = IFSC::HDFC;
 
     /**
      * Formats the data fetched from database as per HDFC netbanking refund file format

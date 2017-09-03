@@ -31,7 +31,13 @@ class Service extends Base\Service
 
     public function generateGatewayFiles(string $type, array $input)
     {
-        $gatewayFiles = (new Core)->generateGatewayFiles($type, $input);
+        $sources = $input['sources'];
+
+        $from = $input[Entity::FROM];
+
+        $to = $input[Entity::TO];
+
+        $gatewayFiles = (new Core)->generateGatewayFiles($type, $sources, $from, $to);
 
         return $gatewayFiles->toArrayAdmin();
     }

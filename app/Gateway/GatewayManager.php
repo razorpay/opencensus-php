@@ -164,9 +164,9 @@ class GatewayManager extends \Illuminate\Support\Manager
         return $recon;
     }
 
-    public function getFileProcessor(string $type, string $gateway, string $bank)
+    public function getFileProcessor(string $type, string $source)
     {
-        $driver = $this->getFileProcessorDriver($type, $gateway, $bank);
+        $driver = $this->getFileProcessorDriver($type, $source);
 
         if (isset($this->fileProcessors[$driver]) === true)
         {
@@ -180,24 +180,11 @@ class GatewayManager extends \Illuminate\Support\Manager
         return $this->fileProcessors[$driver];
     }
 
-    protected function getFileProcessorDriver(string $type, string $gateway, string $bank): string
+    protected function getFileProcessorDriver(string $type, string $source): string
     {
         $baseNamespace = 'RZP\\Models\\Gateway\\File\\Processor\\';
 
-        $driverNameSpace = $baseNamespace . studly_case($type) . '\\';
-
-        // If type is not emi, we use only the gateway name to get the processor class name
-        // else for emi we use the bank name as gateway value will be ALL
-        // Hacky way but works for current scenario. Will need to evolve if different
-        // use case comes up
-        if ($type !== Type::EMI)
-        {
-            $driverNameSpace .= studly_case($gateway);
-        }
-        else
-        {
-             $driverNameSpace .= $bank;
-        }
+        $driverNameSpace = $baseNamespace . studly_case($type) . '\\' . studly_case($source);
 
         return $driverNameSpace;
     }
