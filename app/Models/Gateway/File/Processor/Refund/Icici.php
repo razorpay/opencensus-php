@@ -12,14 +12,12 @@ class Icici extends Processor\Base
 {
     use GenerateRefundFile;
 
-    const FILE_NAME         = 'Icici_Netbanking_Refunds';
-    const EXTENSION         = FileStore\Format::XLSX;
-    const FILE_TYPE         = FileStore\Type::ICICI_NETBANKING_REFUND;
-    const GATEWAY           = Payment\Gateway::NETBANKING_ICICI;
-    const GATEWAY_CODE      = IFSC::ICIC;
-    const PAYMENT_ATTRIBUTE = Payment\Entity::BANK;
-
-    protected $type = Payment\Entity::BANK;
+    const FILE_NAME              = 'Icici_Netbanking_Refunds';
+    const EXTENSION              = FileStore\Format::XLSX;
+    const FILE_TYPE              = FileStore\Type::ICICI_NETBANKING_REFUND;
+    const GATEWAY                = Payment\Gateway::NETBANKING_ICICI;
+    const GATEWAY_CODE           = IFSC::ICIC;
+    const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
 
     protected function formatDataForFile()
     {

@@ -9,6 +9,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
