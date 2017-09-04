@@ -30,13 +30,8 @@ abstract class Base extends Core
     public function process(File\Entity $gatewayFile)
     {
         $this->gatewayFile = $gatewayFile;
-        // We check if the gateway file entity is at a state where it can be processed
-        // again
-        if ($this->canRetry() === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE);
-        }
+
+        $this->checkIfRetriable();
 
         try
         {
@@ -89,10 +84,19 @@ abstract class Base extends Core
         $this->repo->saveOrFail($this->gatewayFile);
     }
 
-    abstract protected function canRetry(): bool;
+    /**
+     * If it is a retry attempt for an existing gateway file, we check if it is
+     * in a valid state to be reried depending on the type of the gateway file
+     */
+    abstract protected function checkIfRetriable();
 
     abstract public function fetchEntities(): PublicCollection;
 
+    /**
+     * Checks if the entity data fetched is not empty and satisfies the criteria
+     * for generating the file
+     * @param  PublicCollection $entites Entities required to generate the file
+     */
     abstract public function checkIfValidDataAvailable(PublicCollection $entites);
 
     abstract public function generateData(PublicCollection $entites): array;

@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Gateway\File;
 
-use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Gateway;
 use RZP\Mail\Base\Constants as MailConstants;
 

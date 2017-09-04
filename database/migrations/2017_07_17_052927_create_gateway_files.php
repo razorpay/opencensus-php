@@ -67,6 +67,10 @@ class CreateGatewayFiles extends Migration
             $table->integer(GatewayFile::CREATED_AT);
 
             $table->integer(GatewayFile::UPDATED_AT);
+
+            $table->index(GatewayFile::SOURCE);
+            $table->index(GatewayFile::TYPE);
+            $table->index(GatewayFile::STATUS);
         });
     }
 
@@ -77,12 +81,6 @@ class CreateGatewayFiles extends Migration
      */
     public function down()
     {
-        Schema::table(Table::GATEWAY_FILE, function ($table)
-        {
-            $table->dropForeign(
-                Table::GATEWAY_FILE . '_' . GatewayFile::FILE_ID . '_foreign');
-        });
-
         Schema::drop(Table::GATEWAY_FILE);
     }
 }

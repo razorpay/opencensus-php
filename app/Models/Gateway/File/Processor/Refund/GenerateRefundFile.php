@@ -4,12 +4,14 @@ namespace RZP\Models\Gateway\File\Processor\Refund;
 
 use Mail;
 use Carbon\Carbon;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Gateway\File\Status;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Models\Gateway\File\FailureCode;
@@ -24,7 +26,7 @@ trait GenerateRefundFile
         $to = $this->gatewayFile->getTo();
 
         $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
-                        static::PAYMENT_ATTRIBUTE,
+                        static::PAYMENT_TYPE_ATTRIBUTE,
                         static::GATEWAY_CODE,
                         $from,
                         $to,
@@ -45,7 +47,6 @@ trait GenerateRefundFile
 
     /**
      * Fetches all necessary refund related data required for generating the file
-     * If no refunds are found, we throw an exception with the appropriate error message
      */
     public function generateData(PublicCollection $refunds): array
     {
@@ -166,11 +167,13 @@ trait GenerateRefundFile
         }
     }
 
-    protected function getFileToWriteNameWithoutExt()
+    protected function checkIfRetriable()
     {
-        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
-
-        return static::FILE_NAME . '_' . $this->mode . '_' . $time;
+        if ($this->canRetry() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE);
+        }
     }
 
     /**

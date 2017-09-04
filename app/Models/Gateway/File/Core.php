@@ -42,7 +42,7 @@ class Core extends Base\Core
     public function process(Entity $gatewayFile)
     {
         $this->trace->info(TraceCode::GATEWAY_FILE_PROCESSING, [
-            'id'      => $gatewayFile->getId(),
+            'id'     => $gatewayFile->getId(),
             'source' => $gatewayFile->getSource(),
         ]);
 
@@ -59,22 +59,15 @@ class Core extends Base\Core
      * status to acknowledged and also fills in additional details like acknowledgement
      * timestamp and whether it is partially processed
      *
-     * @param  string $id   gateway_file id to acknowledge
-     * @param  array  $data Additional data for ack requesyt
-     * @return [type]       [description]
+     * @param  Entity $gatewayFile   gateway_file entity to acknowledge
+     * @param  array  $data          Additional data for ack request
+     * @return Entuty                Acknowledged gateway file entuty
      */
-    public function acknowledge(string $id, array $data): Entity
+    public function acknowledge(Entity $gatewayFile, array $data): Entity
     {
-        $this->trace->info(TraceCode::GATEWAY_ACKNOWLEDGE_REQUEST, [
-            'id'   => $id,
-            'data' => $data,
-        ]);
-
-        $gatewayFile = $this->repo->gateway_file->findOrFailPublic($id);
-
         // Only gateway_file entities for which we have sent a mail successfully
         // can be acknowledged
-        if ($this->gatewayFile->isMailSent() === false)
+        if ($gatewayFile->isMailSent() === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Cannot acknoewledge given gateway_file entity');

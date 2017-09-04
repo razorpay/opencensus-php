@@ -3,19 +3,27 @@
 namespace RZP\Models\Gateway\File;
 
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
     public function create(array $input)
     {
-        $gatewayFile = (new Core)->create($input);
+        $gatewayFile = $this->core()->create($input);
 
         return $gatewayFile->toArrayAdmin();
     }
 
     public function acknowledge(string $id, array $data)
     {
-        $gatewayFile = (new Core)->acknowledge($id, $data);
+        $this->trace->info(TraceCode::GATEWAY_ACKNOWLEDGE_REQUEST, [
+            'id'   => $id,
+            'data' => $data,
+        ]);
+
+        $gatewayFile = $this->repo->gateway_file->findOrFailPublic($id);
+
+        $gatewayFile = $this->core()->acknowledge($gatewayFile, $data);
 
         return $gatewayFile->toArrayAdmin();
     }
@@ -24,7 +32,7 @@ class Service extends Base\Service
     {
         $gatewayFile = $this->repo->gateway_file->findOrFailPublic($id);
 
-        (new Core)->process($gatewayFile);
+        $this->core()->process($gatewayFile);
 
         return $gatewayFile->toArrayAdmin();
     }
@@ -37,7 +45,7 @@ class Service extends Base\Service
 
         $to = $input[Entity::TO];
 
-        $gatewayFiles = (new Core)->generateGatewayFiles($type, $sources, $from, $to);
+        $gatewayFiles = $this->core()->generateGatewayFiles($type, $sources, $from, $to);
 
         return $gatewayFiles->toArrayAdmin();
     }

@@ -4,13 +4,25 @@ namespace RZP\Models\Gateway\File;
 
 class Type
 {
+    const EMI      = 'emi';
     const CLAIM    = 'claim';
     const REFUND   = 'refund';
-    const EMI      = 'emi';
     const COMBINED = 'combined';
+
+    public static function getValidTypes(): array
+    {
+        return [
+            self::EMI,
+            self::CLAIM,
+            self::REFUND,
+            self::COMBINED
+        ];
+    }
 
     public static function isValidType(string $type)
     {
-        return (defined(__CLASS__ . '::' . strtoupper($type)) === true);
+        $validTypes = self::getValidTypes();
+
+        return (in_array($type, $validTypes, true) === true);
     }
 }

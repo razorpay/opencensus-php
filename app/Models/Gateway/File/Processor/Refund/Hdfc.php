@@ -6,18 +6,19 @@ use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Processor;
 
 class Hdfc extends Processor\Base
 {
     use GenerateRefundFile;
 
-    const FILE_NAME         = 'HDFC_Netbanking_Refunds';
-    const EXTENSION         = FileStore\Format::XLSX;
-    const FILE_TYPE         = FileStore\Type::HDFC_NETBANKING_REFUND;
-    const PAYMENT_ATTRIBUTE = Payment\Entity::BANK;
-    const GATEWAY           = Payment\Gateway::NETBANKING_HDFC;
-    const GATEWAY_CODE      = IFSC::HDFC;
+    const FILE_NAME              = 'HDFC_Netbanking_Refunds';
+    const EXTENSION              = FileStore\Format::XLSX;
+    const FILE_TYPE              = FileStore\Type::HDFC_NETBANKING_REFUND;
+    const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
+    const GATEWAY                = Payment\Gateway::NETBANKING_HDFC;
+    const GATEWAY_CODE           = IFSC::HDFC;
 
     /**
      * Formats the data fetched from database as per HDFC netbanking refund file format
@@ -63,5 +64,12 @@ class Hdfc extends Processor\Base
         ];
 
         return $mailData;
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::FILE_NAME . '_' . $this->mode . '_' . $time;
     }
 }
