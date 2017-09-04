@@ -281,6 +281,7 @@ class Service extends Base\Service
 
         $options = [
             'manual' => true,
+            'queue'  => false,
         ];
 
         if ($capture === true)
@@ -291,6 +292,12 @@ class Service extends Base\Service
         {
             $this->core->charge($subscription, $invoice, $options);
         }
+
+        // Subscription is charged by passing a payload of reference ids
+        // to a helper class (Charge). We use a payload, because for cron
+        // charges, we queue the job. We don't for manual though, so
+        // reloading at this stage ensures that updated values are returned.
+        $this->repo->reload($invoice);
 
         return $invoice->toArrayPublic();
     }

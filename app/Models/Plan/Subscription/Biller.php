@@ -23,7 +23,8 @@ class Biller extends Base\Core
      * @param  Entity $subscription
      * @param  array  $options      List of options for use by merchant, that alter
      *                              the flow of charge.
-     *                              - manual: Charges in syc rather than in queue
+     *                              - manual: Leaves auth_attempts, pending status unchanged
+     *                              - queue: Charges in queue, rather than in sync
      *                              - success: For test charge, allows testing failures
      */
     public function createInvoiceAndCharge(Entity $subscription, array $options = [])

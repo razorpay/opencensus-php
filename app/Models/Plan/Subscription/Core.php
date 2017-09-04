@@ -152,6 +152,8 @@ class Core extends Base\Core
 
         $subscription->getValidator()->validateInput('manual_test_charge', $input);
 
+        $input['queue'] = true;
+
         $subscription->getValidator()->validateTestSubscriptionChargeable();
 
         //
@@ -337,14 +339,17 @@ class Core extends Base\Core
      *
      * @param Entity         $subscription
      * @param Invoice\Entity $invoice
-     * @param bool           $manual
+     * @param bool           $options   List of options for use by merchant, that alter the flow of charge.
+     *                                  - manual: Leaves auth_attempts, pending status unchanged
+     *                                  - queue: Charges in queue, rather than in sync
+     *                                  - success: For test charge, allows testing failures
      *
      * @return bool
      * @throws LogicException
      */
     public function charge(Entity $subscription, Invoice\Entity $invoice, array $options = [])
     {
-        $manual = (bool) ($options['manual'] ?? false);
+        $manual = boolval($options['manual'] ?? false);
 
         $recurringPayload = $this->constructRecurringPayload($subscription, $invoice);
 
@@ -358,7 +363,7 @@ class Core extends Base\Core
             // across rather than the mode.
             'key_id'            => $this->app['basicauth']->getPublicKey(),
             'manual'            => $manual,
-            'success'           => (bool) ($options['success'] ?? true),
+            'success'           => boolval($options['success'] ?? true),
         ];
 
         $this->trace->info(
@@ -382,7 +387,9 @@ class Core extends Base\Core
                 ]);
         }
 
-        if ($manual === false)
+        $queue  = boolval($options['queue'] ?? true);
+
+        if ($queue === false)
         {
             return (new Charge)->fireCharge($queuePayload);
 
@@ -402,7 +409,7 @@ class Core extends Base\Core
 
     public function retryCapture(Entity $subscription, Invoice\Entity $invoice, array $options = [])
     {
-        $manual = (bool) ($options['manual'] ?? false);
+        $manual = boolval($options['manual'] ?? false);
 
         $payments = $invoice->payments;
 
