@@ -4,20 +4,20 @@ namespace RZP\Models\Plan\Subscription;
 
 class Type
 {
-    // An amount that is charged in the auth transaction
-    const HAS_ADDONS     = 'has_addons';
-
     // Subscription starts at a later, future time
-    const HAS_START_AT   = 'has_start_at';
+    const IMMEDIATE = 'immediate';
+
+    // An amount that is charged in the auth transaction
+    const UPFRONT   = 'upfront';
 
     protected static $types = [
-        self::HAS_START_AT,
-        self::HAS_ADDONS,
+        self::IMMEDIATE,
+        self::UPFRONT,
     ];
 
     protected static $bitPosition = [
-        self::HAS_START_AT     => 1,
-        self::HAS_ADDONS => 2,
+        self::IMMEDIATE  => 1,
+        self::UPFRONT    => 2,
     ];
 
     /**

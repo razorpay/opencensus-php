@@ -424,8 +424,8 @@ class Charge extends Base\Core
 
         // If the subscription started with an addon, and not with a plan amount
         // then there is an extra invoice, which is to be excluded below.
-        if (($subscription->hasInitialAddon() === true) and
-            ($subscription->isImmediate() === false))
+        if (($subscription->hadUpfrontAmount() === true) and
+            ($subscription->wasImmediate() === false))
         {
             $invoiceCount = $invoiceCount - 1;
         }

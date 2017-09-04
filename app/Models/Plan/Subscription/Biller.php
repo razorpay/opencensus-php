@@ -199,7 +199,7 @@ class Biller extends Base\Core
         // includes the first charge.
         //
         if (($first === false) or
-            (($first === true) and ($subscription->isImmediate() === true)))
+            (($first === true) and ($subscription->wasImmediate() === true)))
         {
             // TODO: The amount may differ in the case of pro-rate.
 

@@ -305,11 +305,6 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) === Status::COMPLETED);
     }
 
-    public function markImmediate()
-    {
-        $this->markType(Type::HAS_START_AT, false);
-    }
-
     public function markType(string $type, bool $value)
     {
         $currentHex = $this->getType();
@@ -331,20 +326,20 @@ class Entity extends Base\PublicEntity
         return Type::isApplicable($hex, $type);
     }
 
-    public function isImmediate()
+    public function wasImmediate()
     {
-        return ($this->isTypeApplicable(Type::HAS_START_AT) === false);
+        return ($this->isTypeApplicable(Type::IMMEDIATE) === true);
     }
 
-    public function hasInitialAddon()
+    public function hadUpfrontAmount()
     {
-        return ($this->isTypeApplicable(Type::HAS_ADDONS) === true);
+        return ($this->isTypeApplicable(Type::UPFRONT) === true);
     }
 
-    public function isTokenCharge()
+    public function isFutureNotUpfront()
     {
-        return (($this->isImmediate() === false) and
-                ($this->hasInitialAddon() === false));
+        return (($this->wasImmediate() === false) and
+                ($this->hadUpfrontAmount() === false));
     }
 
     public function isAuthTxnCharge()
@@ -353,7 +348,7 @@ class Entity extends Base\PublicEntity
         // This signifies that the auth transaction also
         // includes the first charge of the subscription.
         //
-        return ($this->isImmediate() === true);
+        return ($this->wasImmediate() === true);
     }
 
     public function isChangeCardStatus()
@@ -595,14 +590,14 @@ class Entity extends Base\PublicEntity
 
     public function generateType($input)
     {
-        if (empty($input[Entity::START_AT]) === false)
+        if (empty($input[Entity::START_AT]) === true)
         {
-            $this->markType(Type::HAS_START_AT, true);
+            $this->markType(Type::IMMEDIATE, true);
         }
 
         if (empty($input[Entity::ADDONS]) === false)
         {
-            $this->markType(Type::HAS_ADDONS, true);
+            $this->markType(Type::UPFRONT, true);
         }
     }
 
