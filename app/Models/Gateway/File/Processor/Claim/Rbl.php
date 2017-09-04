@@ -23,23 +23,6 @@ class Rbl extends Processor\Base
     const FILE_TYPE = FileStore\Type::RBL_NETBANKING_CLAIM;
     const GATEWAY   = Payment\Gateway::NETBANKING_RBL;
 
-    const SECONDS_PER_DAY = 86400;
-
-    protected function fetchReconciledPayments(array $statuses)
-    {
-        // Payments made yesterday are reconciled today,
-        // so forwarding time stamps by 1 day
-        list($from, $to) = $this->updateTimeStamps();
-
-        $claims = $this->repo->payment
-                             ->fetchReconciledPaymentsForGateway($from,
-                                                                $to,
-                                                                static::GATEWAY,
-                                                                $statuses);
-
-        return $claims;
-    }
-
     protected function formatDataForFile()
     {
         $formattedData = [];
@@ -113,13 +96,6 @@ class Rbl extends Processor\Base
         }
 
         return $row['gateway'][Entity::ERROR_MESSAGE];
-    }
-
-    protected function updateTimeStamps()
-    {
-        $tsDifference = static::SECONDS_PER_DAY;
-
-        return [$this->gatewayFile->getFrom() + $tsDifference, $this->gatewayFile->getTo() + $tsDifference];
     }
 
     protected function getFileToWriteNameWithoutExt()

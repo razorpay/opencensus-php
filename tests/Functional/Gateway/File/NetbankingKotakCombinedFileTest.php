@@ -34,7 +34,7 @@ class NetbankingKotakCombinedFileTest extends TestCase
         $transaction = $this->getLastEntity('transaction', true);
 
         $this->fixtures->edit('transaction', $transaction['id'], [
-            'reconciled_at' => Carbon::now(Timezone::IST)->timestamp
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
         ]);
 
         $refund = $this->refundPayment($payment['id']);
@@ -113,7 +113,7 @@ class NetbankingKotakCombinedFileTest extends TestCase
         $transaction = $this->getLastEntity('transaction', true);
 
         $this->fixtures->edit('transaction', $transaction['id'], [
-            'reconciled_at' => Carbon::now(Timezone::IST)->timestamp
+            'reconciled_at' => Carbon::tomorrow(Timezone::IST)->addHours(8)->timestamp
         ]);
 
         $refund = $this->refundPayment($payment['id']);

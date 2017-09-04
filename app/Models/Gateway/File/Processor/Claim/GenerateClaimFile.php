@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Gateway\File\Processor\Claim;
 
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
@@ -11,6 +12,7 @@ use RZP\Gateway\Base\Action;
 use RZP\Models\Gateway\File\Status;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Gateway\File\Constants;
 use RZP\Exception\GatewayFileException;
 use RZP\Models\Gateway\File\FailureCode;
 
@@ -29,23 +31,50 @@ trait GenerateClaimFile
         $gateway = static::GATEWAY;
         $tpv = $this->gatewayFile->getTpv();
 
-        if ($tpv === null)
+        if ($this->shouldFetchReconciledPayments() === true)
         {
-            if ($gateway === Payment\Gateway::NETBANKING_RBL)
-            {
-                $claims = $this->fetchReconciledPayments($statuses);
-            }
-            else
-            {
-                $claims = $this->repo->payment->fetchPaymentsWithStatus($from, $to, $gateway, $statuses);
-            }
+            $claims = $this->fetchReconciledPayments($statuses);
         }
         else
         {
-            $claims = $this->repo->payment->fetchReconciledPaymentsForTpv($from, $to, $gateway, $statuses, $tpv);
+            $claims = $this->repo->payment->fetchPaymentsWithStatus($from, $to, static::GATEWAY, $statuses);
         }
 
         return $claims;
+    }
+
+    protected function fetchReconciledPayments(array $statuses)
+    {
+        $from = Carbon::createFromTimestamp($this->gatewayFile->getFrom())->addDay()->timestamp;
+        $to = Carbon::createFromTimestamp($this->gatewayFile->getTo())->addDay()->timestamp;
+        $tpv = $this->gatewayFile->getTpv();
+
+        if ($tpv === null)
+        {
+            $claims = $this->repo->payment
+                                 ->fetchReconciledPaymentsForGateway($from,
+                                                                    $to,
+                                                                    static::GATEWAY,
+                                                                    $statuses);
+        }
+        else
+        {
+            $claims = $this->repo->payment->fetchReconciledPaymentsForTpv(
+                            $from,
+                            $to,
+                            static::GATEWAY,
+                            $statuses,
+                            $tpv);
+        }
+
+        return $claims;
+    }
+
+    protected function shouldFetchReconciledPayments(): bool
+    {
+        $source = $this->gatewayFile->getSource();
+
+        return (in_array($source, [Constants::KOTAK, Constants::RBL], true) === true);
     }
 
     public function checkIfValidDataAvailable(PublicCollection $claims)
