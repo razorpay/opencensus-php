@@ -754,7 +754,7 @@ class SettlementTest extends TestCase
                 'amount'        => 5000,
                 'status'        => 'created',
                 'fees'          => 0,
-                'service_tax'   => 0,
+                'tax'           => 0,
                 'utr'           => null,
                 'settled_on'    => null
             ]
