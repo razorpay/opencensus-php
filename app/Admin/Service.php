@@ -407,35 +407,6 @@ class Service extends Base\Service
         return [[], $data];
     }
 
-    public function fetchFullMerchantDetails($id)
-    {
-        $details = null;
-
-        $error = [];
-
-        $this->setAdminCredentials();
-
-        if ($id !== '10NodalAccount')
-        {
-            $details = $this->fetchMerchantDetails($id);
-        }
-
-        $terminal = $this->fetchMerchantTerminal($id);
-
-        $pricingPlan = $this->fetchMerchantPricing($id);
-
-        $scheduleTasks = $this->fetchMerchantSchedule($id);
-
-        $data = [
-                    'details'        => $details,
-                    'terminals'      => $terminal,
-                    'pricing_plan'   => $pricingPlan,
-                    'schedule_tasks' => $scheduleTasks
-                ];
-
-        return [$error, $data];
-    }
-
     public function fetchMerchantDetails($id)
     {
         $response = [];
@@ -465,12 +436,6 @@ class Service extends Base\Service
             $merchant['confirmed'] = (empty($confirmedPrimaryOwner) === false);
         }
 
-        $tags = Merchant\Entity::select(['merchants.id'])
-                                ->with('tagged')
-                                ->where('merchants.id', $id)
-                                ->get()
-                                ->toArray();
-
         $merchantDetail = (new MerchantDetails\Service)->fetchDetails($id);
 
         $merchant['merchant_details'] = $merchantDetail;
@@ -481,7 +446,6 @@ class Service extends Base\Service
             'steps_finished'      => $merchantDetail['steps_finished'],
             'locked'              => $merchantDetail['locked'],
             'submitted'           => $merchantDetail['submitted'],
-            'tags'                => $tags[0]['tags'],
             'submitted_at'        => $merchantDetail['submitted_at'],
             'activated_dashboard' => $merchant['activated']
         ] + $merchant;
@@ -627,35 +591,6 @@ class Service extends Base\Service
         return $error;
     }
 
-    public function fetchMerchantTerminal($id)
-    {
-        $this->setApiCredentials();
-
-        $liveTerminals = $this->api->merchant->setId($id)->fetchTerminals()->toArray();
-
-        $this->setApiCredentials(null, 'test');
-
-        $testTerminals = $this->api->merchant->setId($id)->fetchTerminals()->toArray();
-
-        foreach ($testTerminals['items'] as &$item)
-        {
-            $item['mode'] = 'test';
-        }
-
-        foreach ($liveTerminals['items'] as &$item)
-        {
-            $item['mode'] = 'live';
-        }
-
-        $response = array(
-            'entity'    => 'collection',
-            'count'     => $liveTerminals['count'] + $testTerminals['count'],
-            'items'     => array_merge($liveTerminals['items'], $testTerminals['items'])
-        );
-
-        return $response;
-    }
-
     public function postMerchantTerminal($id, $input)
     {
         $error = (new Merchant\Validator)->validateInput('terminal', $input)->messages();
@@ -703,24 +638,6 @@ class Service extends Base\Service
         $gateway_client_certificate = file_get_contents($certificateFile->getPathname());
 
         return base64_encode($gateway_client_certificate);
-    }
-
-    public function fetchMerchantPricing($id)
-    {
-        $this->setApiCredentials();
-
-        $response = $this->api->merchant->fetch($id)->fetchPricing()->toArray();
-
-        return $response;
-    }
-
-    public function fetchMerchantSchedule($id)
-    {
-        $this->setApiCredentials(null, 'live');
-
-        $response = $this->api->admin->fetchMultipleEntities('schedule_task', ['merchant_id' => $id])->toArray();
-
-        return $response;
     }
 
     /**
@@ -914,26 +831,6 @@ class Service extends Base\Service
         $this->logActionToSlack($id, Actions::HDFC_EXCEL);
 
         return [[], $file];
-    }
-
-    public function fetchPricingPlan($id)
-    {
-        $errors = array();
-
-        $response = array();
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $response = $this->api->pricing->fetch($id)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return array($errors, $response);
     }
 
     public function fetchMultipleEntities($mode, $entity, $input)
