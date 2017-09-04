@@ -150,6 +150,7 @@ class PermissionTest extends TestCase
         $perm = $this->fixtures->create(
             'permission');
 
+        //attaching permission with workflow enabled to org.
         (new Permission\Repository)->attach($perm, 'orgs', [$this->org->getId()], ['enable_workflow' => true]);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
@@ -164,15 +165,18 @@ class PermissionTest extends TestCase
 
         $permIds = $this->org->permissions()->allRelatedIds()->toArray();
 
+        $workflowIds = $this->org->workflow_permissions()->allRelatedIds()->toArray();
+
         $rzpOrg = (new OrgRepo)->findOrFailPublic(Org::RZP_ORG);
 
         $rzpPerms = $rzpOrg->permissions()->allRelatedIds()->toArray();
 
         $this->assertNotContains($permId, $permIds);
 
-        $this->assertContains($permId, $rzpPerms);
+        // asseritn removal of workflow permission.
+        $this->assertNotContains($permId, $workflowIds);
 
-        $this->startTest();
+        $this->assertContains($permId, $rzpPerms);
     }
 
     public function testGetRolesForPermission()
