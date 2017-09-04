@@ -615,11 +615,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const RECON_FILE_LINK                           = 'RECON_FILE_LINK';
     const IIN_INSERT_FAILED                         = 'IIN_INSERT_FAILED';
 
-
-    const MERCHANT_FILE_REQUEST                     = 'MERCHANT_FILE_REQUEST';
-    const MERCHANT_FILE_DETAILS                     = 'MERCHANT_FILE_DETAILS';
-    const MERCHANT_FILE_SKIP                        = 'MERCHANT_FILE_SKIP';
-
     //Trace code for Transaction Migration
     const TRANSACTION_MIGRATION_TAX_MISTMATCH           = 'TRANSACTION_MIGRATION_TAX_MISTMATCH';
     const TRANSACTION_MIGRATION_FEE_MISTMATCH           = 'TRANSACTION_MIGRATION_FEE_MISTMATCH';
@@ -803,9 +798,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_INVOICE_ENTITY_CREATION_FAILED       = 'MERCHANT_INVOICE_ENTITY_CREATION_FAILED';
     const MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED      = 'MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED';
 
-    // IRCTC Error codes
-    const IRCTC_REFUND_TYPE_INVALID                     = 'IRCTC_REFUND_TYPE_INVALID';
-
     const DUMMY_JOB = 'DUMMY_JOB';
 
     protected static $messages = array(
@@ -954,11 +946,6 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
         self::GRATIS_TO_POSTPAID_INPUT                  => 'Mark gratis transactions as postpaid request',
         self::GRATIS_TO_POSTPAID_FAILED                 => 'Transaction conversion from gratis to postpaid failed',
-        self::GRATIS_TO_POSTPAID_RESPONSE               => 'Gratis to postpaid response',
-        self::MERCHANT_FILE_REQUEST                     => 'Merchant file request',
-        self::MERCHANT_FILE_DETAILS                     => 'Merchant file details',
-        self::MERCHANT_FILE_SKIP                        => 'Merchant skip file',
-        self::IRCTC_REFUND_TYPE_INVALID                 => 'Refund type should be R or C Type',
     );
 
     /**
