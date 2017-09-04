@@ -537,13 +537,17 @@ class Repository extends Base\Repository
     {
         $serialized = parent::serializeForIndexing($entity);
 
+        //
         // The serialized merchant document in ES contains following
         // additional values:
+        // - List of tag names
         // - List of admins who have access to this merchant,
         // - List of groups which this merchant belongs to as well as their
         //   recursive parents hierarchy.
         // - Few additional attributes consumed by clients.
+        //
 
+        $serialized[Entity::TAGS]            = $entity->tagNames();
         $serialized[Entity::MERCHANT_DETAIL] = $entity->merchantDetail->toArray();
         $serialized[Entity::ADMINS]          = $entity->admins->pluck(Common::ID)->all();
 

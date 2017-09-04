@@ -6,6 +6,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 use RZP\Constants\Es;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Group;
 use RZP\Constants\Entity as E;
@@ -41,6 +42,8 @@ class MerchantSync extends Job implements ShouldQueue
     {
         parent::handle();
 
+        $this->trace->info(TraceCode::ES_SYNC_MERCHANT_REQUEST, $this->getTraceData());
+
         $handler = 'handle' . studly_case($this->event);
 
         if (method_exists($this, $handler) === false)
@@ -52,9 +55,7 @@ class MerchantSync extends Job implements ShouldQueue
 
         $repo = $this->repoManager->merchant;
 
-        $repo->setEsRepoIfExist();
-
-        $this->esRepo = $repo->getEsRepo();
+        $this->esRepo = $repo->setAndGetEsRepoIfExist();
 
         try
         {

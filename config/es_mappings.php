@@ -231,6 +231,9 @@ return [
                 'analyzer'        => 'standard',
                 'search_analyzer' => 'standard',
             ],
+            'tags' => [
+                'type' => 'keyword',
+            ],
             'parent_id' => [
                 'type' => 'keyword',
             ],

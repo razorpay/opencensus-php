@@ -85,7 +85,6 @@ class Entity extends Base\PublicEntity
      */
     const SUB_ACCOUNTS              = 'sub_accounts';
 
-
     /**
      * Refers to methods relation and not a property;
      */
@@ -99,6 +98,7 @@ class Entity extends Base\PublicEntity
 
     const ROLE                      = 'role';
     const PIVOT                     = 'pivot';
+    const TAGS                      = 'tags';
 
     protected $entity = 'merchant';
 

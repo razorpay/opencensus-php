@@ -651,8 +651,8 @@ trait RepositoryFetch
      * Filter fetch operation by merchantId. Super important for
      * private auth calls.
      *
-     * @param [type] $query      [description]
-     * @param [type] $merchantId [description]
+     * @param BuilderEx $query
+     * @param string    $merchantId
      */
     protected function addCommonQueryParamMerchantId($query, $merchantId)
     {
@@ -711,7 +711,7 @@ trait RepositoryFetch
      * Add default params to the param list required
      * for fetch operation.
      *
-     * @param array $params Input params
+     * @param array $params
      */
     protected function addDefaultParams(array & $params)
     {
@@ -737,7 +737,7 @@ trait RepositoryFetch
      * Add `count` param specifying number of
      * records to fetch.
      *
-     * @param array $params Input Params
+     * @param array $params
      */
     protected function addDefaultParamCount(array & $params)
     {

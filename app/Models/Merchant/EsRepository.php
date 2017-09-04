@@ -54,6 +54,7 @@ class EsRepository extends Base\EsRepository
         Entity::EMAIL,
         Entity::BILLING_LABEL,
         Entity::WEBSITE,
+        Entity::TAGS,
     ];
 
     protected $esFetchParams = [

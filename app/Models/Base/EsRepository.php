@@ -7,6 +7,8 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Exception\ServerErrorException;
 
 class EsRepository extends \Razorpay\Spine\Repository
 {
@@ -269,12 +271,13 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $res = $this->esDao->bulkUpdate($params);
 
-        $error = $res['errors'] ?? true;
+        $errors = $res['errors'] ?? true;
 
-        if ($error === true)
+        if ($errors === true)
         {
-            $this->trace->error(
-                TraceCode::ES_BULK_UPDATE_FAILED,
+            throw new ServerErrorException(
+                'Errors in bulkUpdate response',
+                ErrorCode::SERVER_ERROR_ES_OPERATION_ERRORED,
                 [
                     'params' => $params,
                     'res'    => $res,

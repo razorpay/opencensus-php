@@ -425,13 +425,10 @@ class Repository extends \Razorpay\Spine\Repository
         }
     }
 
-    /**
-     * Gets $esRepo
-     *
-     * @return EsRepository|null
-     */
-    public function getEsRepo()
+    public function setAndGetEsRepoIfExist()
     {
+        $this->setEsRepoIfExist();
+
         return $this->esRepo;
     }
 
@@ -546,14 +543,20 @@ class Repository extends \Razorpay\Spine\Repository
      * Syncs model changes to es.
      * Upserts in case of addition/updates and deletes es document otherwise.
      *
+     * - $dirtyCheck: By default true, if set to false in some specific cases,
+     *                doesn't do dirty check. E.g. in case of relations getting
+     *                updated and this method gets called on the entity.
+     *
      * @param Models\Base\PublicEntity $entity
      * @param string                   $action
      * @param array                    $dirty
+     * @param bool                     $dirtyCheck
      */
-    protected function syncToEs(
+    public function syncToEs(
         Models\Base\PublicEntity $entity,
         string $action,
-        array $dirty = [])
+        array $dirty = [],
+        bool $dirtyCheck = true)
     {
         $this->setEsRepoIfExist();
 
@@ -564,10 +567,11 @@ class Repository extends \Razorpay\Spine\Repository
         }
 
         //
-        // Model::getConnection returns the database connection for the model
-        // which equals one of the Mode values.
+        // Model::getConnectionName returns the database connection for the
+        // model which equals one of the Mode values. But that will not be set
+        // for new entities, so use rzp.mode in those cases.
         //
-        $mode = $entity->getConnection();
+        $mode = $entity->getConnectionName() ?: $this->app['rzp.mode'];
 
         $tracePayload = [
             'action'    => $action,
@@ -604,10 +608,11 @@ class Repository extends \Razorpay\Spine\Repository
      *
      * @param string $action
      * @param array  $dirty
+     * @param bool   $dirtyCheck
      *
      * @return bool
      */
-    public function isEsSyncNeeded(string $action, array $dirty): bool
+    public function isEsSyncNeeded(string $action, array $dirty, bool $dirtyCheck = true): bool
     {
         $esFields = $this->esRepo->getIndexedFields();
 
@@ -624,7 +629,7 @@ class Repository extends \Razorpay\Spine\Repository
             return false;
         }
 
-        if ($action === EsRepository::DELETE)
+        if (($action === EsRepository::DELETE) or ($dirtyCheck === false))
         {
             return true;
         }

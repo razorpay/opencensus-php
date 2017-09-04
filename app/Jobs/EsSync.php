@@ -96,9 +96,7 @@ class EsSync extends Job implements ShouldQueue
     {
         $this->repo = $this->repoManager->{$this->entity};
 
-        $this->repo->setEsRepoIfExist();
-
-        $this->esRepo = $this->repo->getEsRepo();
+        $this->esRepo = $this->repo->setAndGetEsRepoIfExist();
 
         if ($this->esRepo === null)
         {
