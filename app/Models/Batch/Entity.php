@@ -192,9 +192,9 @@ class Entity extends Base\PublicEntity
         return $this->getId();
     }
 
-    public function getFileKeyWithExt(): string
+    public function getFileKeyWithExt(string $clientExtension = FileStore\Format::XLSX): string
     {
-        return $this->getFileKey() . '.' . FileStore\Format::XLSX;
+        return $this->getFileKey() . '.' . $clientExtension;
     }
 
     /**

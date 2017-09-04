@@ -385,6 +385,7 @@ class Core extends Base\Core
         $merchant->getValidator()->validateInput('create_batch', $input);
 
 
+
 //        s($input);
 //
 //        $att = $input['attachment'];

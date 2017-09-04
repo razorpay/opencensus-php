@@ -4,8 +4,12 @@ namespace RZP\Models\Batch;
 
 class Type
 {
-    const REFUND       = 'refund';
-    const PAYMENT_LINK = 'payment_link';
+    const REFUND           = 'refund';
+    const PAYMENT_LINK     = 'payment_link';
+
+    // IRCTC Batch Types
+    const IRCTC_REFUND     = 'irctc_refund';
+    const IRCTC_SETTLEMENT = 'irctc_settlement';
 
     /**
      * Following batch types get processed via CRON job, CRON currently runs
