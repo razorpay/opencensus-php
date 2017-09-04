@@ -35,7 +35,11 @@ import Configuration from 'merchant/containers/Configuration';
 import ApiKeys from 'merchant/containers/Keys/List';
 import Webhooks from 'merchant/containers/Webhooks/List';
 
-import { setBaseLocation, setActiveEntity } from 'merchant/modules/app';
+import {
+  setBaseLocation,
+  setActiveEntity,
+  setSecActiveEntity,
+} from 'merchant/modules/app';
 import { openSlider } from 'rzp/modules/slider';
 
 // Can be removed with old navigation removal
@@ -88,20 +92,34 @@ const RefundsTabbedContainer = () => {
 };
 
 @withRouter
-@connect(null, { setBaseLocation, setActiveEntity, openSlider })
+@connect(null, {
+  setBaseLocation,
+  setActiveEntity,
+  setSecActiveEntity,
+  openSlider,
+})
 export default class Content extends Component {
   setBaseLocation = location => {
-    let { setBaseLocation, setActiveEntity } = this.props;
+    let { setBaseLocation, setActiveEntity, setSecActiveEntity } = this.props;
     var matchResult = matchDetail(location.pathname);
 
     if (matchResult) {
       this.detailView = matchResult.component;
-      this.detailProps = matchResult.match.params;
+
+      const params = matchResult.match.params;
+      setActiveEntity(params.id);
+
+      this.detailProps = params;
+
       setActiveEntity(matchResult.match.params.id);
+      if (Object.keys(params > 1)) {
+        setSecActiveEntity(params[Object.keys(params)[1]]);
+      }
     } else {
       this.detailView = null;
       this.detailProps = null;
       setActiveEntity(null);
+      setSecActiveEntity(null);
 
       this.baseLocation = location;
       setBaseLocation(location);

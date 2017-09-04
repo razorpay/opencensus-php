@@ -69,6 +69,7 @@ const selector = formValueSelector('createVirtualAccount');
     return {
       descriptor: selector(state, 'descriptor'),
       customers,
+      customersLoading: state.customers.loading,
       customer: findBy(customers, 'id', selector(state, 'customer_id')),
       ...state.config.config,
     };
@@ -165,6 +166,7 @@ export default class CreateVirtualAccount extends Component {
       untouch,
       handle = '',
       descriptor = '',
+      customersLoading,
       customers = [],
     } = this.props;
     const { virtualAccount } = this.state;
@@ -188,9 +190,9 @@ export default class CreateVirtualAccount extends Component {
                   <label>Customer (Optional)</label>
                   <TypeAhead
                     options={customers}
-                    disabled={!customers.length}
+                    disabled={customersLoading}
                     class="virtual-account-powerselect"
-                    placeholder={`${!customers.length
+                    placeholder={`${customersLoading
                       ? 'Loading...'
                       : 'Select a customer'}`}
                     showClear={true}

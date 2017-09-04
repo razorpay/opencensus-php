@@ -120,20 +120,25 @@ export default props => {
                   {payment.wallet
                     ? <EntityDetailRow label="Wallet" value={payment.wallet} />
                     : null}
-                  {payment.method === 'card'
-                    ? <ListGroupToggler
-                        label="Card Details"
-                        onToggleClick={() => props.onToggleCardDetails(payment)}
-                      >
-                        {Object.keys(card.details).map(key =>
-                          <EntityDetailRow
-                            key={key}
-                            label={titleCase(key)}
-                            value={card.details[key]}
-                          />
-                        )}
-                      </ListGroupToggler>
-                    : null}
+                  {
+                    do {
+                      if (card && payment.method === 'card') {
+                        <ListGroupToggler
+                          label="Card Details"
+                          onToggleClick={() =>
+                            props.onToggleCardDetails(payment)}
+                        >
+                          {Object.keys(card.details).map(key =>
+                            <EntityDetailRow
+                              key={key}
+                              label={titleCase(key)}
+                              value={card.details[key]}
+                            />
+                          )}
+                        </ListGroupToggler>;
+                      }
+                    }
+                  }
 
                   <EntityDetailRow
                     label="Refund Status"
@@ -203,24 +208,35 @@ export default props => {
                         format="DD MMM YYYY, hh:mm:ss a"
                       />}
                   />
-                  {payment.refund_status
-                    ? <ListToggler
-                        label="Recently created Refunds"
-                        subLabel="to this payment"
-                        loading={refunds.loading}
-                        totalItems={refunds.items.length}
-                      >
-                        <DataTable
-                          customClass="refunds-table"
-                          progressLoader={true}
-                          title="Refunds"
-                          columns={[refundId, amount]}
-                          items={refunds.items}
-                          loading={refunds.loading}
-                          showHeaders={false}
-                        />
-                      </ListToggler>
-                    : <EntityDetailRow label="Refunds" value="No Refunds" />}
+                  {
+                    do {
+                      if (refunds) {
+                        if (payment.refund_status) {
+                          <ListToggler
+                            label="Recently created Refunds"
+                            subLabel="to this payment"
+                            loading={refunds.loading}
+                            totalItems={refunds.items.length}
+                          >
+                            <DataTable
+                              customClass="refunds-table"
+                              progressLoader={true}
+                              title="Refunds"
+                              columns={[refundId, amount]}
+                              items={refunds.items}
+                              loading={refunds.loading}
+                              showHeaders={false}
+                            />
+                          </ListToggler>;
+                        } else {
+                          <EntityDetailRow
+                            label="Refunds"
+                            value="No Refunds"
+                          />;
+                        }
+                      }
+                    }
+                  }
                 </div>
                 <ShowWhen myRole="owner manager operations admin">
                   <div>
