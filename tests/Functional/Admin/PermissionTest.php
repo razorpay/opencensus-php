@@ -60,11 +60,17 @@ class PermissionTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['orgs'] = $orgs;
 
+        $this->testData[__FUNCTION__]['request']['content']['workflow_orgs'] = $orgs;
+
         $result = $this->startTest();
 
         $permId = Permission\Entity::verifyIdAndStripSign($result['id']);
 
         $permIds = $this->org->permissions()->allRelatedIds()->toArray();
+
+        $workflowPermIds = $this->org->workflow_permissions()->allRelatedIds()->toArray();
+
+        $this->assertContains($permId, $workflowPermIds);
 
         $this->assertContains($permId, $permIds);
     }
@@ -144,7 +150,7 @@ class PermissionTest extends TestCase
         $perm = $this->fixtures->create(
             'permission');
 
-        (new Permission\Repository)->attach($perm, 'orgs', [$this->org->getId()]);
+        (new Permission\Repository)->attach($perm, 'orgs', [$this->org->getId()], ['enable_workflow' => true]);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
