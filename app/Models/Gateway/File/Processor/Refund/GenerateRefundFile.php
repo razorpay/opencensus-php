@@ -4,7 +4,6 @@ namespace RZP\Models\Gateway\File\Processor\Refund;
 
 use Mail;
 use Carbon\Carbon;
-use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
@@ -164,15 +163,6 @@ trait GenerateRefundFile
 
             throw new GatewayFileException(
                 FailureCode::ERROR_SENDING_MAIL);
-        }
-    }
-
-    protected function checkIfRetriable()
-    {
-        if ($this->canRetry() === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE);
         }
     }
 

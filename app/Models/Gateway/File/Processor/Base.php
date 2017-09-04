@@ -18,8 +18,6 @@ abstract class Base extends Core
 {
     protected $gatewayFile;
 
-    protected $data = [];
-
     /**
      * We perform the following steps to process the gateway_file entity
      * 1. Generate the required data
@@ -88,7 +86,16 @@ abstract class Base extends Core
      * If it is a retry attempt for an existing gateway file, we check if it is
      * in a valid state to be reried depending on the type of the gateway file
      */
-    abstract protected function checkIfRetriable();
+    protected function checkIfRetriable()
+    {
+        if ($this->canRetry() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE);
+        }
+    }
+
+    abstract protected function canRetry(): bool;
 
     abstract public function fetchEntities(): PublicCollection;
 
