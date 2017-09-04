@@ -57,14 +57,11 @@ class Biller extends Base\Core
                 ]);
 
             //
-            // We need to update the charge_at of the subscription so that the
-            // flow continues as it is even if the subscription is in halted state.
+            // Some attributes of the subscription still need
+            // to be updated, so that the flow continues as it
+            // is even if the subscription is in halted state.
             //
-            //
-            // TODO: We need to mark the subscription as completed if
-            // all the invoices are created.
-            //
-            (new Charge)->updateNextRunAtForSubscription($subscription);
+            $this->handleHaltedSubscription($subscription);
 
             return;
         }
@@ -133,6 +130,30 @@ class Biller extends Base\Core
 
                 return ['invoice' => $invoice, 'activated' => $activated];
             });
+    }
+
+    protected function handleHaltedSubscription(Entity $subscription)
+    {
+        $charge = (new Charge);
+
+        $task = $subscription->task;
+
+        $charge->updateSubscriptionTimeFields($subscription);
+
+        $charge->updateScheduleTask($task);
+
+        $this->repo->transaction(
+            function() use ($subscription, $task)
+            {
+                $this->repo->saveOrFail($subscription);
+
+                $this->repo->saveOrFail($task);
+            });
+
+        if ($subscription->isCompleted() === true)
+        {
+            (new Core)->fireWebhookForStatusUpdate($subscription, Status::COMPLETED);
+        }
     }
 
     protected function activateSubscription(Entity $subscription)

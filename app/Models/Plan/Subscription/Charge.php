@@ -194,17 +194,13 @@ class Charge extends Base\Core
         // before incrementing the paid count, since the logic
         // is dependent on that.
         //
-        $this->setCurrentPeriod($subscription);
-
-        $this->setInvoiceBillingPeriod($subscription, $invoice);
-
-        $this->setNextChargeAt($subscription);
+        $this->updateSubscriptionTimeFields($subscription);
 
         $this->updateScheduleTask($task);
 
         $this->incrementPaidCount($subscription);
 
-        $this->setEndedAtIfApplicable($subscription);
+        $this->setInvoiceBillingPeriod($subscription, $invoice);
 
         if ($oldStatus === Status::AUTHENTICATED)
         {
@@ -247,6 +243,15 @@ class Charge extends Base\Core
         // to charge the subscription.
         //
         // $this->sendInvoiceEmail($invoice);
+    }
+
+    public function updateSubscriptionTimeFields(Entity $subscription)
+    {
+        $this->setCurrentPeriod($subscription);
+
+        $this->setNextChargeAt($subscription);
+
+        $this->setEndedAtIfApplicable($subscription);
     }
 
     public function handleAuthorizationOrCaptureFailure(
@@ -306,18 +311,6 @@ class Charge extends Base\Core
         });
 
         (new Core)->fireWebhookForStatusUpdate($subscription, $subscription->getStatus(), $payment);
-    }
-
-    public function updateNextRunAtForSubscription(Entity $subscription)
-    {
-        $this->updateScheduleTask($subscription->task);
-        $subscription->setChargeAt($subscription->task->getNextRunAt());
-
-        $this->repo->transaction(function() use ($subscription)
-        {
-            $this->repo->saveOrFail($subscription);
-            $this->repo->saveOrFail($subscription->task);
-        });
     }
 
     protected function validateInvoiceStatusBeforeCharging(
@@ -507,7 +500,7 @@ class Charge extends Base\Core
      * @param Task\Entity $task
      * @param bool        $retry
      */
-    protected function updateScheduleTask(Task\Entity $task, $retry = false)
+    public function updateScheduleTask(Task\Entity $task, $retry = false)
     {
         if ($retry === true)
         {

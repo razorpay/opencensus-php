@@ -302,6 +302,13 @@ trait SubscriptionTrait
         });
     }
 
+    protected function assertInvoiceCount($count, $subscriptionId)
+    {
+        $invoices = $this->getEntities('invoice', ['subscription_id' => $subscriptionId], true);
+
+        $this->assertEquals($count, $invoices['count']);
+    }
+
     protected function chargeSubscriptionsViaCron($timestamp = null)
     {
         if ($timestamp !== null)
