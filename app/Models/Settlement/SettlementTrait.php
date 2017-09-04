@@ -140,9 +140,9 @@ trait SettlementTrait
      *  from master merchant to the linked account) are settled, the settlement_id of those
      *  transactions will be updated for the transfer entity that initiated these payments.
      *
-     * @param $txns
+     * @param Base\PublicCollection $txns
      */
-    protected function updateSettlementIdInTransfer($txns)
+    protected function updateSettlementIdInTransfer(Base\PublicCollection $txns)
     {
         $filteredTxnIds = [];
         foreach ($txns as $txn)
