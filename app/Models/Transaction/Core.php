@@ -175,7 +175,7 @@ class Core extends Base\Core
             $txn->setCredit($credit);
             $txn->setDebit(0);
             $txn->setFee($fee);
-            //$txn->setServiceTax($serviceTax);
+            $txn->setServiceTax($serviceTax);
             $txn->setFeeModel(FeeModel::POSTPAID);
             $txn->setGratis(false);
             $txn->setCreditType(Transaction\CreditType::DEFAULT);
