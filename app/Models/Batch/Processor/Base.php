@@ -329,6 +329,26 @@ class Base extends BaseModel\Core
         }
     }
 
+    public function validateAndGetEntries(array $input, \SplFileInfo $file, string $clientExtension)
+    {
+        $entries = $this->parseFile($file, $clientExtension);
+
+        $this->batch->getValidator()
+                    ->validateEntries($entries, $input, $this->merchant);
+
+        return $entries;
+    }
+
+    protected function parseFile(\SplFileInfo $file, string $clientExtension)
+    {
+        if ($clientExtension === 'txt')
+        {
+            return $this->parseTextFile($file, '|');
+        }
+
+        return $this->parseExcelSheets($file);
+    }
+
     public function saveInputFile(UploadedFile $file, string $clientExtension): \SplFileInfo
     {
         $this->trace->info(TraceCode::BATCH_UPLOADING_FILE, $this->batch->toArray());
@@ -420,5 +440,10 @@ class Base extends BaseModel\Core
         }
 
         $this->inputFileLocalPath = $filePath;
+    }
+
+    public function getHeadings()
+    {
+        return $this->batch->getHeaders();
     }
 }

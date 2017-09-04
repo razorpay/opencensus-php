@@ -36,13 +36,12 @@ class Core extends Base\Core
 
             $clientExtension = $file->getClientOriginalExtension();
 
-            $file = Processor\Base::get($batch)->saveInputFile($file, $clientExtension);
+            $processor = Processor\Base::get($batch);
 
-            $entries = $this->parseExcelSheets($file);
+            $file = $processor->saveInputFile($file, $clientExtension);
 
-            $batch->getValidator()
-                  ->validateEntries($entries, $input, $this->merchant);
-
+            $entries = $processor->validateAndGetEntries($input, $file, $clientExtension);
+            
             $this->fillBatchEntityWithInputFileDetails($batch, $entries);
 
             $this->repo->saveOrFail($batch);
@@ -89,7 +88,7 @@ class Core extends Base\Core
     public function downloadBatch(Entity $batch): string
     {
         $file = ($batch->getStatus() === Status::CREATED) ?
-                    $batch->inputFile() : $batch->outputFile();
+            $batch->inputFile() : $batch->outputFile();
 
         // Backward compatibility:
         // - If file relation exists use that else to handle BC
@@ -150,7 +149,7 @@ class Core extends Base\Core
     /**
      * Process a particular batch entity.
      *
-     * @param Entity  $batch
+     * @param Entity $batch
      * @param boolean $bubbleEx - When called iteratively over batch collection
      *                            we don't break execution. But when called via
      *                            API for individual batch we bubble exception
@@ -199,14 +198,14 @@ class Core extends Base\Core
      * - Aggregate sum of amount field
      *
      * @param Entity $batch
-     * @param array  $entries
+     * @param array $entries
      */
     protected function fillBatchEntityWithInputFileDetails(
         Entity $batch,
         array $entries)
     {
         $totalAmount = array_sum(array_column($entries, Header::AMOUNT));
-        $totalCount  = count($entries);
+        $totalCount = count($entries);
 
         $batch->setAmount($totalAmount);
         $batch->setTotalCount($totalCount);
@@ -239,7 +238,7 @@ class Core extends Base\Core
      * others are processed via CRON.
      *
      * @param Entity $batch
-     * @param array  $input
+     * @param array $input
      */
     protected function dispatchOnQueueForProcessingIfApplicable(
         Entity $batch,
