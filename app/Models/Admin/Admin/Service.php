@@ -314,8 +314,11 @@ class Service extends Base\Service
             $adminId, $orgId, ['groups', 'roles', 'roles.permissions']);
 
         $roles = $admin->roles;
-        $permissions = [];
+
+        $permissions = new Base\PublicCollection();
+
         $roleNames = [];
+
         $groupRules = [];
 
         foreach ($admin->groups as $group)
@@ -326,20 +329,11 @@ class Service extends Base\Service
             ];
         }
 
-        $permissions = null;
-
         foreach ($roles as $role)
         {
             $roleNames[] = $role['name'];
 
-            if ($permissions === null)
-            {
-                $permissions = $role->permissions->pluck('name');
-            }
-            else
-            {
-                $permissions = $permissions->merge($role->permissions->pluck('name'));
-            }
+            $permissions->push($role->permissions->pluck('name'));
         }
 
         $admin = $admin->toArrayPublic();
