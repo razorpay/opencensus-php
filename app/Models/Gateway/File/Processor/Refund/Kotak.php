@@ -8,7 +8,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Processor;
-use RZP\Models\Gateway\File\Processor\Base\FileHandler;
+use RZP\Models\Gateway\File\Processor\FileHandler;
 
 class Kotak extends Processor\Base
 {

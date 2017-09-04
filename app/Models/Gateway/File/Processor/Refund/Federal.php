@@ -9,13 +9,13 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Processor;
 use RZP\Gateway\Netbanking\Federal\Constants;
-use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
+use RZP\Models\Gateway\File\Processor\FileHandler;
 use RZP\Gateway\Netbanking\Indusind\RefundFileFields;
 
 class Federal extends Processor\Base
 {
     use GenerateRefundFile;
-    use FileHandlerTrait;
+    use FileHandler;
 
     const FILE_NAME         = 'FBK_REFUND';
     const EXTENSION         = FileStore\Format::TXT;
@@ -49,13 +49,6 @@ class Federal extends Processor\Base
         $formattedData = $this->getTextData($formattedData);
 
         return $formattedData;
-    }
-
-    protected function getTextData($data)
-    {
-        $txt = $this->generateText($data, '|', true);
-
-        return $txt;
     }
 
     protected function getFileToWriteNameWithoutExt()

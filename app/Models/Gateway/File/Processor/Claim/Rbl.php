@@ -11,7 +11,7 @@ use RZP\Models\Gateway\File\Processor;
 use RZP\Gateway\Netbanking\Base\Entity;
 use RZP\Gateway\Netbanking\Rbl\Constants;
 use RZP\Gateway\Netbanking\Rbl\ClaimFields;
-use RZP\Models\Gateway\File\Processor\Base\FileHandler;
+use RZP\Models\Gateway\File\Processor\FileHandler;
 
 class Rbl extends Processor\Base
 {

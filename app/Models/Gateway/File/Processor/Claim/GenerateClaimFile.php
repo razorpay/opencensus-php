@@ -169,15 +169,6 @@ trait GenerateClaimFile
         return ;
     }
 
-    protected function checkIfRetriable()
-    {
-        if ($this->canRetry() === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE);
-        }
-    }
-
     protected function canRetry(): bool
     {
         if ($this->gatewayFile->isAcknowledged() === true)
