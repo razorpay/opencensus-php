@@ -248,30 +248,7 @@ class Service extends Base\Service
         {
             $merchants = $this->getMerchants($orgId, $adminId, $input)->toArray();
 
-            $merchantIds = array_column($merchants, 'id');
-
-            $data = Merchant\Entity::select(['merchants.id'])
-                                    ->with('tagged')
-                                    ->whereIn('merchants.id', $merchantIds);
-
-            if (isset($input['tags']))
-            {
-                $data = $data->withAllTags($input['tags']);
-            }
-
-            $data = $data->get()->toArray();
-
-            foreach ($merchants as $merchant)
-            {
-                $key = array_search($merchant['id'], array_column($data, 'id'));
-
-                if ($key !== false)
-                {
-                    unset($data[$key]['referrer']);
-
-                    $response[] = array_merge($merchant, $data[$key]);
-                }
-            }
+            $response = $merchants;
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
