@@ -63,7 +63,6 @@
             <th data-type="numeric">Registration Date</th>
             <th data-type="numeric">Submission Date</th>
             <th ng-show="merchant_type_request==archived" data-type="numeric">Archival Date</th>
-            <th>Tags</th>
           </tr>
           </thead>
           <tbody>
@@ -82,9 +81,6 @@
             <td data-value="{{row.created_at}}">{{row.created_at*1000 | date:'medium'}}</td>
             <td data-value="{{(row.submitted_at ? row.submitted_at : row.updated_at)}}">{{(row.submitted_at ? row.submitted_at : row.updated_at)*1000 | date:'medium'}}</td>
             <td data-value="{{row.archived_at}} " ng-show="merchant_type_request==archived" data-hide="phone,tablet" data-type="numeric">{{row.archived_at * 1000| date:'medium'}}</td>
-            <td>
-              {{row.tags.join()}}
-            </td>
           </tr>
           <tr ng-show="merchants.length == 0">
             <td colspan="7">No Merchants</td>
