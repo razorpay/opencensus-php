@@ -774,5 +774,7 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = (new Merchant\Service)->sendOAuthMail($input, $type);
+
+        return ApiResponse::json($response);
     }
 }
