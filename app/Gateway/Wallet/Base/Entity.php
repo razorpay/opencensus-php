@@ -30,7 +30,7 @@ class Entity extends Base\Entity
 
     protected $entity = 'wallet';
 
-    protected $fields = array(
+    protected $fields = [
         self::ID,
         self::PAYMENT_ID,
         self::WALLET,
@@ -51,9 +51,9 @@ class Entity extends Base\Entity
         self::REFUND_ID,
         self::REFERENCE1,
         self::REFERENCE2,
-    );
+    ];
 
-    protected $fillable = array(
+    protected $fillable = [
         self::PAYMENT_ID,
         self::WALLET,
         self::RECEIVED,
@@ -74,7 +74,11 @@ class Entity extends Base\Entity
         self::REFUND_ID,
         self::REFERENCE1,
         self::REFERENCE2,
-    );
+    ];
+
+    protected $casts = [
+        self::AMOUNT => 'string',
+    ];
 
     public function getStatusCode()
     {
@@ -94,11 +98,6 @@ class Entity extends Base\Entity
     public function getAction()
     {
         return $this->getAttribute(self::ACTION);
-    }
-
-    public function getAmountAttribute()
-    {
-        return (float) $this->attributes[self::AMOUNT];
     }
 
     public function getGatewayPaymentId()
