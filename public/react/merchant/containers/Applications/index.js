@@ -51,7 +51,8 @@ export default class ApplicationContainer extends Component {
 
   revokeAccess = token => {
     this.context.confirm({
-      message: `Are you sure you want to revoke access to ${token.application.name}?`,
+      message: `Are you sure you want to revoke access to ${token.application
+        .name}?`,
       affirmativeLabel: 'Revoke Access',
       affirmativePendingLabel: 'Revoking Access...',
       action: () =>
@@ -84,14 +85,14 @@ export default class ApplicationContainer extends Component {
             <strong>Connected Applications</strong>
           </div>
           {tokens.length
-            ? tokens.map(data => (
+            ? tokens.map(data =>
                 <AppDetails
                   data={data}
                   key={data.id}
                   type={'connected'}
                   onBtnClick={this.revokeAccess}
                 />
-              ))
+              )
             : <NoConnectedApps />}
           <div class="clearfix" />
         </div>
@@ -101,13 +102,13 @@ export default class ApplicationContainer extends Component {
           </div>
           <div class="text-center content-body">
             <NewAppLink />
-            {createdApps.map(data => (
+            {createdApps.map(data =>
               <AppDetails
                 data={data}
                 key={data.id}
                 onBtnClick={this.deleteApp}
               />
-            ))}
+            )}
             <div class="clearfix" />
           </div>
         </div>
