@@ -270,6 +270,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CREDIT_TYPE);
     }
 
+    public function getSettlementId()
+    {
+        return $this->getAttribute(self::SETTLEMENT_ID);
+    }
+
 /* ----------------------------- Accessors -----------------------------------*/
 
     protected function getApiFeeAttribute()
