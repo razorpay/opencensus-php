@@ -406,14 +406,13 @@ class Entity extends Base\PublicEntity
         $settlementDate = null;
         $utr            = null;
 
-        $recipientSettlement = $this->recipientSettlement;
-
-        if ($recipientSettlement !== null)
+        if (isset($data[self::RECIPIENT_SETTLEMENT]))
         {
-            $recipientSettlementDetails = $recipientSettlement->toArray();
-            $settlementId               = $recipientSettlementDetails[Settlement\Entity::ID];
-            $settlementDate             = $recipientSettlementDetails[Settlement\Entity::SETTLED_ON];
-            $utr                        = $recipientSettlementDetails[Settlement\Entity::UTR];
+            $recipientSettlement        = $data[self::RECIPIENT_SETTLEMENT];
+            $settlementId               = $recipientSettlement[Settlement\Entity::ID];
+            $settlementDate             = $recipientSettlement[Settlement\Entity::SETTLED_ON];
+            $utr                        = $recipientSettlement[Settlement\Entity::UTR];
+            unset($data[self::RECIPIENT_SETTLEMENT]);
         }
 
         $tax = $data[self::TAX];
@@ -422,7 +421,7 @@ class Entity extends Base\PublicEntity
         unset($data[self::RECIPIENT_SETTLEMENT_ID]);
         unset($data[self::TAX]);
 
-        $data[self::ON_HOLD]                 = $this->getOnHold() ? "true" : "false";
+        $data[self::ON_HOLD]                 = $this->getOnHold();
         $data[self::RECIPIENT_SETTLEMENT_ID] = $settlementId;
         $data[self::SETTLEMENT_DATE]         = $settlementDate;
         $data[self::SETTLEMENT_UTR]          = $utr;
