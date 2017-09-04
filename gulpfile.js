@@ -26,21 +26,18 @@ const iconfontCss = require('gulp-iconfont-css');
 const revMap = {};
 let isDevelopment = false;
 
-// functions and variables to be passed to blade.php.tmpl file
-const tmplData = {
-  asset: function(path) {
-    if (path in revMap) {
-      path = revMap[path];
-    }
-    return `/${path}`;
-  },
-};
+function revIt(path) {
+  if (path in revMap) {
+    path = revMap[path];
+  }
+  return `/${path}`;
+}
 
 // minimal string interpolation for processing tmpl
 function interpolate(template, pattern) {
-  pattern = pattern || /\{\{([^\}]+)\}\}/g;
+  pattern = pattern || /\{\{asset\(['|"]([^\}]+)['|"]\)\}\}/g;
   return template.replace(pattern, (match, keypath) => {
-    return new Function('_', 'return _.' + keypath.trim())(tmplData);
+    return revIt(keypath);
   });
 }
 
