@@ -16,7 +16,9 @@ export default function AppDetails(props) {
             }}
             class="btn btn-default"
           >
-            <span>{isConnected ? 'Revoke Access' : 'Delete Application'}</span>
+            <span>
+              {isConnected ? 'Revoke Access' : 'Delete Application'}
+            </span>
           </button>
         </div>
         <div
@@ -31,14 +33,16 @@ export default function AppDetails(props) {
           </div>
           <div class="app-details-container">
             <div class="app-name">
-              <strong>{isConnected ? data.application.name : data.name}</strong>
+              <strong>
+                {isConnected ? data.application.name : data.name}
+              </strong>
             </div>
-            {!isConnected && <div class="app-id">App ID: {data.id}</div>}
+            {!isConnected &&
+              <div class="app-id">
+                App ID: {data.id}
+              </div>}
             <div class="app-created-on">
-              {isConnected ? 'Approved' : 'Created'}
-              {' '}
-              on:
-              {' '}
+              {isConnected ? 'Approved' : 'Created'} on:{' '}
               <Time value={data.created_at} format="DD MMM YYYY" />
             </div>
           </div>

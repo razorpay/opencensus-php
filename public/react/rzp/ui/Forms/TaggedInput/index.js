@@ -5,7 +5,7 @@ export default class TaggedInput extends Component {
   handleOptionsChange = (value, select) => {
     if (value.length > 1 && value.charAt(value.length - 1) === ',') {
       let data = this.props.input.value.slice();
-      let result = value.slice(0, -1)
+      let result = value.slice(0, -1);
       if (this.props.validator(result)) {
         data.push(result);
 
@@ -31,7 +31,9 @@ export default class TaggedInput extends Component {
             onSearchInputChange((event, { select }));
           }
         }}
-        onChange={({options}) => {this.props.input.onChange(options);}}
+        onChange={({ options }) => {
+          this.props.input.onChange(options);
+        }}
         {...rest}
       />
     );
@@ -39,5 +41,5 @@ export default class TaggedInput extends Component {
 }
 
 TaggedInput.propTypes = {
-  validator: PropTypes.func.isRequired
-}
+  validator: PropTypes.func.isRequired,
+};
