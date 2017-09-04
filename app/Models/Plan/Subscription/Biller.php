@@ -154,6 +154,8 @@ class Biller extends Base\Core
 
         $lineItems = $this->getLineItemsForInvoiceInput($subscription, $addons, $first);
 
+        // TODO: Validate that all the items have the same currency?
+
         $invoiceInput = [
             Invoice\Entity::LINE_ITEMS      => $lineItems,
             Invoice\Entity::CURRENCY        => $plan->item->getCurrency(),

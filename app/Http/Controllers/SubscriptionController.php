@@ -55,7 +55,7 @@ class SubscriptionController extends Controller
         return ApiResponse::json($addon);
     }
 
-    public function getAddons($subscriptionId)
+    public function getAddons()
     {
         $input = Request::all();
 

@@ -49,7 +49,7 @@ class Service extends Base\Service
 
     public function delete(string $id): array
     {
-        $addon = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
+        $addon = $this->repo->addon->findByPublicIdAndMerchant($id, $this->merchant);
 
         $addon = $this->core->delete($addon);
 

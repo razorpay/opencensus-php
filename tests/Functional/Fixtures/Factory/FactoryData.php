@@ -585,7 +585,7 @@ final class FactoryData
             'merchant_id'       => '10000000000000',
             'item_id'           => '1000000000item',
             'invoice_id'        => '1000000invoice',
-            'subscription_id'   => '10subscription,'
+            'subscription_id'   => '10subscription',
         ]);
 
         $factory(\RZP\Models\Device\Entity::class, [

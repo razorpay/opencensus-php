@@ -1083,6 +1083,16 @@ class SubscriptionChargeTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testSubscriptionChargeWithDueAddon()
+    {
+        // TODO: Fill this up
+    }
+
+    public function testSubscriptionChargeWithDeletedAddon()
+    {
+        // TODO: Fill this up
+    }
+
     public function testToArrayPublicConversion()
     {
         $this->doAuthTxnForSubscriptionWithAddOn();
