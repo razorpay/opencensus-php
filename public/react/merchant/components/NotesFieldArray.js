@@ -29,7 +29,7 @@ export default ({ fields, onAdd }) => {
                 name={`notes[${index}][key]`}
                 component={InputField}
                 class="form-control"
-                placeholder="Key"
+                placeholder="Title (key)"
                 validate={required(index)}
               />
             </div>
@@ -40,7 +40,7 @@ export default ({ fields, onAdd }) => {
                 component={AutoResizeTextarea}
                 rows="2"
                 class="form-control"
-                placeholder="Value"
+                placeholder="Description (value)"
               />
             </div>
           </li>

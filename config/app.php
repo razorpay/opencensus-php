@@ -250,5 +250,7 @@ return array(
         'Slack'           => Maknz\Slack\Facades\Slack::class,
         'Trace'           => App\Trace\Facade::class,
         'Uuid'            => App\Facades\Uuid::class,
-    )
+    ),
+
+    'cdn_dashboard_url' => env('CDN_DASHBOARD_URL'),
 );

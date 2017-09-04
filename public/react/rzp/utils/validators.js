@@ -8,14 +8,14 @@ export const isEmail = email => {
   return emailRegExp.test(email);
 };
 
-export const isUrl = (url) => {
+export const isUrl = url => {
   url = url || '';
 
   let urlRegExp = /^(https?:\/\/)(\w|\-)+(\.{1}(\w|\-)+)*\.[a-z]{2,}(:[0-9]{1,5})?(\/.*)?/;
   return urlRegExp.test(url);
 };
 
-export const isDeepLink = (url) => {
+export const isDeepLink = url => {
   url = url || '';
 
   let urlRegExp = /[A-Za-z]+:\/\/.*/;
