@@ -1973,7 +1973,9 @@ app
           url_params: {
             '{type}': 'schedule_task',
           },
-          merchant_id: $scope.merchant.id,
+          query_params: {
+            merchant_id: $scope.merchant.id,
+          },
         };
         var request = $http.get('/admin/generic', {
           params: data,
