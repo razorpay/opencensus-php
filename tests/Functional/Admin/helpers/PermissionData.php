@@ -141,6 +141,14 @@ return [
         'response'  => [
             'content'   => [],
         ]
-
+    ],
+    'testGetPermissionsByType' => [
+        'request'   => [
+            'url'       => '/permissions/get/%s',
+            'method'    => 'GET',
+        ],
+        'response'  => [
+            'content'   => [],
+        ],
     ]
 ];

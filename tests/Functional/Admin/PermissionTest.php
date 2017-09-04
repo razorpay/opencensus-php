@@ -223,4 +223,39 @@ class PermissionTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testGetPermissionsByType()
+    {
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
+
+        $this->setPermissionType('assignable');
+
+        $this->startTest();
+
+        $this->setPermissionType('all');
+
+        $this->startTest();
+    }
+
+    public function setPermissionType($type)
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+
+        $function = $trace[1]['function'];
+
+        $url = '/permissions/get/' . $type;
+
+        $this->testData[$function]['request']['url'] = $url;
+
+        if ($type === 'assignable')
+        {
+            $permissionCount = count($this->getPermissions($type));
+        }
+        else
+        {
+            $permissionCount = $this->getTotalPermissionCount();
+        }
+
+        $this->testData[$function]['response']['content']['count'] = $permissionCount;
+    }
 }
