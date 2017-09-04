@@ -204,4 +204,23 @@ class PermissionTest extends TestCase
 
         $this->assertCount(2, $result['items']);
     }
+
+    public function testGetMultipleWorkflowPermForRazorpayOrg()
+    {
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, Org::RZP_ORG_SIGNED);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $rzpOrg = (new OrgRepo)->findOrFailPublic(Org::RZP_ORG);
+
+        $workflowPermissionCount = $rzpOrg->workflow_permissions()->count();
+
+        $this->testData[__FUNCTION__]['response']['content']['count'] = $workflowPermissionCount;
+
+        $this->startTest();
+    }
 }

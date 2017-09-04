@@ -132,5 +132,15 @@ return [
             'content' => [],
             'status_code' => 200,
         ]
+    ],
+    'testGetMultipleWorkflowPermForRazorpayOrg' => [
+        'request'   => [
+            'url'       => '/orgs/%s/permissions?type=workflow',
+            'method'    => 'GET',
+        ],
+        'response'  => [
+            'content'   => [],
+        ]
+
     ]
 ];
