@@ -755,10 +755,14 @@ class Service extends Base\Service
 
                 $user = $merchant->primaryOwner();
 
-                $userEditData = [
-                    'contact_mobile' => $input['contact_mobile'],
-                    'name'           => $input['contact_name']
-                ];
+                //
+                // We need to handle for non-existence of keys in $input as those
+                // are all optional for MerchantDetails edit.
+                //
+                $userEditData['contact_mobile'] = $input['contact_mobile'] ?? null;
+                $userEditData['name']           = $input['contact_name'] ?? null;
+
+                $userEditData = array_filter($userEditData);
 
                 $user->edit($userEditData, 'preSignup');
 

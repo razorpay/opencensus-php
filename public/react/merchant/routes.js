@@ -24,6 +24,8 @@ const entityMap = {
   '/virtualaccounts/:id': VirtualAccountDetails,
   '/plans/new': PlanNew,
   '/plans/:id': PlanDetails,
+  '/subscriptions/:id(sub_.+)/:invoice_id(inv_.+)': SubscriptionDetails,
+  '/subscriptions/:id(sub_.+)': SubscriptionDetails,
   '/subscriptions/:id': SubscriptionDetails,
   '/route/transfers/:id': TransferDetails,
 };
@@ -36,11 +38,9 @@ function matcher(routeMap, pathname) {
   for (let route in routeMap) {
     var match = matchPath(pathname, route);
     if (match) {
-      var MatchedComponent = routeMap[route];
       return {
         match,
-        component: props =>
-          <MatchedComponent id={match.params.id} {...props} />,
+        component: routeMap[route],
       };
     }
   }

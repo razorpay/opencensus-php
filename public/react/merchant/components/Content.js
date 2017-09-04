@@ -35,7 +35,11 @@ import Configuration from 'merchant/containers/Configuration';
 import ApiKeys from 'merchant/containers/Keys/List';
 import Webhooks from 'merchant/containers/Webhooks/List';
 
-import { setBaseLocation, setActiveEntity } from 'merchant/modules/app';
+import {
+  setBaseLocation,
+  setActiveEntity,
+  setSecActiveEntity,
+} from 'merchant/modules/app';
 import { openSlider } from 'rzp/modules/slider';
 
 // Can be removed with old navigation removal
@@ -43,7 +47,9 @@ const TabbedContent = ({ headerId, navLabel, path, to, component }) => {
   return (
     <tabbed-container>
       <header id={headerId}>
-        <NavLink to={to}>{navLabel}</NavLink>
+        <NavLink to={to}>
+          {navLabel}
+        </NavLink>
       </header>
       <content>
         <Route path={path || to} component={component} />
@@ -57,7 +63,9 @@ const RefundsTabbedContainer = () => {
   return (
     <tabbed-container>
       <header id="transactions-header">
-        <NavLink to="/refunds" exact>Refunds</NavLink>
+        <NavLink to="/refunds" exact>
+          Refunds
+        </NavLink>
         <ShowWhen
           featureEnabled="Batchrefunds"
           myRole="owner manager operations admin finance"
@@ -84,18 +92,34 @@ const RefundsTabbedContainer = () => {
 };
 
 @withRouter
-@connect(null, { setBaseLocation, setActiveEntity, openSlider })
+@connect(null, {
+  setBaseLocation,
+  setActiveEntity,
+  setSecActiveEntity,
+  openSlider,
+})
 export default class Content extends Component {
   setBaseLocation = location => {
-    let { setBaseLocation, setActiveEntity } = this.props;
+    let { setBaseLocation, setActiveEntity, setSecActiveEntity } = this.props;
     var matchResult = matchDetail(location.pathname);
 
     if (matchResult) {
       this.detailView = matchResult.component;
+
+      const params = matchResult.match.params;
+      setActiveEntity(params.id);
+
+      this.detailProps = params;
+
       setActiveEntity(matchResult.match.params.id);
+      if (Object.keys(params > 1)) {
+        setSecActiveEntity(params[Object.keys(params)[1]]);
+      }
     } else {
       this.detailView = null;
+      this.detailProps = null;
       setActiveEntity(null);
+      setSecActiveEntity(null);
 
       this.baseLocation = location;
       setBaseLocation(location);
@@ -129,14 +153,13 @@ export default class Content extends Component {
                 <Route path="/plans" component={Subscriptions} />
                 <Route
                   path="/customers"
-                  render={() => (
+                  render={() =>
                     <TabbedContent
                       headerId="invoicing-header"
                       to="/customers"
                       navLabel="Customers"
                       component={Customers}
-                    />
-                  )}
+                    />}
                 />
 
                 <Route path="/route" component={Marketplace} />
@@ -165,26 +188,24 @@ export default class Content extends Component {
 
                 <Route
                   path="/payments"
-                  render={() => (
+                  render={() =>
                     <TabbedContent
                       to="/payments"
                       navLabel="Payments"
                       component={PaymentsList}
-                    />
-                  )}
+                    />}
                 />
 
                 <Route path="/refunds" component={RefundsTabbedContainer} />
 
                 <Route
                   path="/orders"
-                  render={() => (
+                  render={() =>
                     <TabbedContent
                       to="/orders"
                       navLabel="Orders"
                       component={OrdersList}
-                    />
-                  )}
+                    />}
                 />
 
                 <Route path="/settlements" component={Settlements} />
@@ -203,87 +224,79 @@ export default class Content extends Component {
 
                 <Route
                   path="/profile"
-                  render={() => (
+                  render={() =>
                     <TabbedContent
                       to="/profile"
                       navLabel="Profile"
                       component={Profile}
-                    />
-                  )}
+                    />}
                 />
                 <Route
                   path="/activation"
-                  render={() => (
+                  render={() =>
                     <TabbedContent
                       to="/activation"
                       navLabel="Activation"
                       component={Activation}
-                    />
-                  )}
+                    />}
                 />
                 <Route
                   path="/addfunds"
-                  render={() => (
+                  render={() =>
                     <TabbedContent
                       to="/addfunds"
                       navLabel="Add Funds"
                       component={AddFunds}
-                    />
-                  )}
+                    />}
                 />
                 <Route
                   path="/credits"
-                  render={() => (
+                  render={() =>
                     <TabbedContent
                       to="/credits"
                       headerId="myaccount-header"
                       navLabel="Credits"
                       component={Credits}
-                    />
-                  )}
+                    />}
                 />
                 <Route
                   path="/referrals"
-                  render={() => (
+                  render={() =>
                     <TabbedContent
                       to="/referrals"
                       headerId="myaccount-header"
                       navLabel="Referrals"
                       component={Referrals}
-                    />
-                  )}
+                    />}
                 />
 
                 <Route
                   path="/config"
-                  render={() => (
+                  render={() =>
                     <TabbedContent
                       to="/config"
                       navLabel="Configuration"
                       component={Configuration}
-                    />
-                  )}
+                    />}
                 />
                 <Route
                   path="/keys"
-                  render={() => (
+                  render={() =>
                     <TabbedContent
                       to="/keys"
                       navLabel={`API Keys ( ${this.props.modeFormatted} Mode )`}
                       component={ApiKeys}
-                    />
-                  )}
+                    />}
                 />
                 <Route
                   path="/webhooks"
-                  render={() => (
+                  render={() =>
                     <TabbedContent
                       to="/webhooks"
                       headerId="settings-header"
                       navLabel="Webhooks"
                       component={Webhooks}
-                    />
-                  )}
+                    />}
                 />
 
                 <Redirect to="/dashboard" />
@@ -316,8 +329,10 @@ export default class Content extends Component {
 
     if (DetailView) {
       DetailView = BaseView
-        ? <Slider closeUrl={this.baseLocation}> <DetailView /> </Slider>
-        : <DetailView />;
+        ? <Slider closeUrl={this.baseLocation}>
+            {' '}<DetailView {...this.detailProps} />{' '}
+          </Slider>
+        : <DetailView {...this.detailProps} />;
     }
 
     return (
