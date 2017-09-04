@@ -1239,9 +1239,67 @@ class Service extends Base\Service
         }
     }
 
+    public function getMerchantDetails()
+    {
+        $data = [];
+
+        /**
+         * Merchant needs to be set using X-Razorpay-account header.
+         * Setting Merchant in header validates admin access to
+         * that merchant in admin access middleware.
+         */
+        if (empty($this->merchant) === false)
+        {
+            $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
+                $this->merchant->getId(), ['methods', Entity::GROUPS, Entity::ADMINS]);
+
+            // Merchant to array public
+            $data = $merchant->toArrayPublic();
+
+            // Merchant confirmed details
+            $data['confirmed'] = $this->getMerchantConfirmed($merchant);
+
+            // Fetch formatted merchant details.
+            $data['merchant_details'] = (new Detail\Service)->getMerchantDetailsForAdmin();
+
+            $data['tags'] = $merchant->tagNames();
+        }
+
+        return $data;
+    }
+    /**
+     * Will provide if merchant is confirmed or not.
+     *
+     * @param $merchant
+     * @return bool
+     */
+    public function getMerchantConfirmed($merchant)
+    {
+        $parentId = $merchant->getParentId();
+
+        // Market place sub accounts are confirmed.
+        if (empty($parentId) === false)
+        {
+            return true;
+        }
+        else
+        {
+            $owner = $this->core()->getMerchantConfirmedOwner($merchant);
+
+            // True if an confirmed owner is present.
+            return !empty($owner);
+        }
+    }
+
     /**
      * Sends a mail to the merchant when an action is taken
      * on oauth access to his account
+     *
+     * @param array  $input
+     * @param string $type
+     *
+     * @return array
+     * @throws Exception\BadRequestException
      */
     public function sendOAuthMail(array $input, string $type): array
     {
@@ -1256,12 +1314,12 @@ class Service extends Base\Service
         $application = $client->application->toArrayPublic();
 
         $data = [
-            'merchant' => $merchant->toArrayPublic(),
-            'user' => $user,
+            'merchant'    => $merchant->toArrayPublic(),
+            'user'        => $user,
             'application' => $application
-            ];
+        ];
 
-        $mailer = 'RZP\\Mail\\OAuth\\'.studly_case($type);
+        $mailer = 'RZP\\Mail\\OAuth\\' . studly_case($type);
 
         if (class_exists($mailer) === false)
         {

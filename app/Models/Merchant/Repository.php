@@ -239,17 +239,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    /**
-     * Fetches the merchants with its relations (admin, groups)
-     */
-    public function findManyByIdsWithRelations(array $merchantIds)
-    {
-        return $this->newQuery()
-                    ->whereIn(Entity::ID, $merchantIds)
-                    ->with(['admins'])
-                    ->get();
-    }
-
     public function fetchMerchantsByOrgId($orgId)
     {
         return $this->newQuery()

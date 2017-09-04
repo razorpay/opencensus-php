@@ -1196,16 +1196,16 @@
         },
         {
             "name": "giggsey/libphonenumber-for-php",
-            "version": "8.7.1",
+            "version": "8.8.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/giggsey/libphonenumber-for-php.git",
-                "reference": "9395508cb66af96a07453df073195e6e3767b42d"
+                "reference": "54c69fcb45c3a39d9a206398f57fe18809401eda"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/9395508cb66af96a07453df073195e6e3767b42d",
-                "reference": "9395508cb66af96a07453df073195e6e3767b42d",
+                "url": "https://api.github.com/repos/giggsey/libphonenumber-for-php/zipball/54c69fcb45c3a39d9a206398f57fe18809401eda",
+                "reference": "54c69fcb45c3a39d9a206398f57fe18809401eda",
                 "shasum": ""
             },
             "require": {
@@ -1260,7 +1260,7 @@
                 "phonenumber",
                 "validation"
             ],
-            "time": "2017-08-03T09:07:02+00:00"
+            "time": "2017-08-22T10:35:52+00:00"
         },
         {
             "name": "giggsey/locale",
@@ -4865,16 +4865,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "1.0.5",
+            "version": "1.0.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "5f01b840d2f4c0f1a0ee8bf7062fee6f3b2356aa"
+                "reference": "68e2b1beebbac88c2b67e1344c03f555e6209168"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/5f01b840d2f4c0f1a0ee8bf7062fee6f3b2356aa",
-                "reference": "5f01b840d2f4c0f1a0ee8bf7062fee6f3b2356aa",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/68e2b1beebbac88c2b67e1344c03f555e6209168",
+                "reference": "68e2b1beebbac88c2b67e1344c03f555e6209168",
                 "shasum": ""
             },
             "require": {
@@ -4908,7 +4908,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2017-07-20T12:32:52+00:00"
+            "time": "2017-09-01T14:33:53+00:00"
         },
         {
             "name": "razorpay/oauth",
