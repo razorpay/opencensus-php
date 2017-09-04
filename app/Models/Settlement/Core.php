@@ -30,9 +30,9 @@ class Core extends Base\Core
 
             $channel = Channel::getChannelFromGateway($gateway);
 
-            $from = Carbon::yesterday(Timezone::IST)->timestamp;
+            $from = Carbon::yesterday(Timezone::IST)->getTimestamp();
 
-            $to = Carbon::today(Timezone::IST)->timestamp - 1;
+            $to = Carbon::today(Timezone::IST)->getTimestamp() - 1;
 
             // Get the amount for captured payments on gateway for last day
             $paymentAmount = $this->repo->payment->getCapturedAmountByGateway($gateway, $from, $to);

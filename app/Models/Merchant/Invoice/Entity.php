@@ -73,10 +73,6 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION   => null,
     ];
 
-    protected static $generators = [
-        self::INVOICE_NUMBER,
-    ];
-
     public function merchant()
     {
         return $this->belongsTo(\RZP\Models\Merchant\Entity::class);
@@ -143,12 +139,8 @@ class Entity extends Base\PublicEntity
      *
      * @return string Beneficiary code in 10 characters.
      */
-    protected function generateInvoiceNumber()
+    public function generateInvoiceNumber(int $month, int $year)
     {
-        $year = $this->getYear();
-
-        $month = $this->getMonth();
-
         $dateString = Carbon::createFromDate($year, $month, 1, Timezone::IST)->format('my');
 
         $invoiceNumber = $this->merchant->getInvoiceCode() . $dateString;

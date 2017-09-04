@@ -238,7 +238,7 @@ class EntityReportTest extends TestCase
 
         $lastRowOfSummary = array_pop($invoiceEntries['Summary']['Invoice Summary']['rows']);
 
-        $this->assertEquals(1356, $lastRowOfSummary['Amount']);
+        $this->assertEquals(177600, $lastRowOfSummary['Amount']);
     }
 
     public function testPaymentReportWithoutAcquirerData()
