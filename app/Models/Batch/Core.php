@@ -32,7 +32,11 @@ class Core extends Base\Core
 
         $this->repo->transaction(function () use ($batch, $input)
         {
-            $file = Processor\Base::get($batch)->saveInputFile($input[Entity::FILE]);
+            $file = $input[Entity::FILE];
+
+            $clientExtension = $file->getClientOriginalExtension();
+
+            $file = Processor\Base::get($batch)->saveInputFile($file, $clientExtension);
 
             $entries = $this->parseExcelSheets($file);
 
@@ -241,7 +245,7 @@ class Core extends Base\Core
         Entity $batch,
         array $input)
     {
-        if (Type::isQueueGroup($batch->getType()) == false)
+        if (Type::isQueueGroup($batch->getType()) === false)
         {
             return;
         }

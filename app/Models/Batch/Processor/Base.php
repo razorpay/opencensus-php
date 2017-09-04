@@ -26,11 +26,6 @@ class Base extends BaseModel\Core
     const MUTEX_LOCK_TIMEOUT = 2500;
 
     /**
-     * XLSX mime type
-     */
-    const XLSX_MIME_TYPE     = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-
-    /**
      * The MUTEX instance
      */
     protected $mutex;
@@ -334,7 +329,7 @@ class Base extends BaseModel\Core
         }
     }
 
-    public function saveInputFile(UploadedFile $file): \SplFileInfo
+    public function saveInputFile(UploadedFile $file, string $clientExtension): \SplFileInfo
     {
         $this->trace->info(TraceCode::BATCH_UPLOADING_FILE, $this->batch->toArray());
 
@@ -346,9 +341,9 @@ class Base extends BaseModel\Core
 
         $file = $file->move(
                         $this->batch->getLocalSaveDir(),
-                        $this->batch->getFileKeyWithExt());
+                        $this->batch->getFileKeyWithExt($clientExtension));
 
-        $ufh = $this->saveFile($file->getPathname(), FileStore\Type::BATCH_INPUT);
+        $ufh = $this->saveFile($file->getPathname(), FileStore\Type::BATCH_INPUT, $clientExtension);
 
         $this->batch->setUploadFileUrl($ufh->getUrl());
 
@@ -371,20 +366,21 @@ class Base extends BaseModel\Core
     /**
      * @param string $filePath
      * @param string $type
+     * @param string $clientExtension
      *
      * @return FileStore\Creator
      *
      * @throws Exception\LogicException
      */
-    protected function saveFile(string $filePath, string $type): FileStore\Creator
+    protected function saveFile(string $filePath, string $type, string $clientExtension = FileStore\Format::XLSX): FileStore\Creator
     {
         $name = $this->batch->getFilePrefix() . $this->batch->getFileKey();
 
         return (new FileStore\Creator)
                     ->localFilePath($filePath)
-                    ->mime(self::XLSX_MIME_TYPE)
+                    ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$clientExtension][0])
                     ->name($name)
-                    ->extension(FileStore\Format::XLSX)
+                    ->extension($clientExtension)
                     ->entity($this->batch)
                     ->merchant($this->merchant)
                     ->type($type)
