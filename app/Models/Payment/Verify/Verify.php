@@ -92,12 +92,21 @@ class Verify extends Base\Core
     const GATEWAY_BLOCK_TIME = 900; // 15 minutes
 
 
+    /**
+     * Time interval after which timeout count will be reset
+     */
     const GATEWAY_TIMEOUT_BUCKET_INTERVAL = 120; // 2 minutes
 
-
+    /**
+     * No of Timeout that should occur in GATEWAY_TIMEOUT_BUCKET_INTERVAL
+     * for gayeway to be blocked
+     */
     const GATEWAY_TIMEOUT_THRESHOLD = 10;
 
 
+    /**
+     * Cache key prefix for storing gatway timeot values
+     */
     const GATEWAY_TIMEOUT_CACHE_KEY_PREFIX = 'verify_timeout_block';
 
     /**
