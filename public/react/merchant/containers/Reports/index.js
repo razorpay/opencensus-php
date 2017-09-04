@@ -38,7 +38,7 @@ const selector = formValueSelector('generateReports');
     entity: 'payment',
     type: 'daily',
     date: moment(),
-    invoiceDate: moment().subtract('months', 1).startOf('month'), // Merchant can not download invoice of current month
+    invoiceDate: moment().subtract(1, 'months').startOf('month'), // Merchant can not download invoice of current month
   },
 })
 export default class ReportsContainer extends Component {
