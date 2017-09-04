@@ -71,7 +71,10 @@ class RawApiRequest
         {
             $queryParams = json_decode(Request::query('query_params'), true);
 
-            $this->path .= '?' . http_build_query($queryParams);
+            if (is_array($queryParams))
+            {
+                $this->path .= '?' . http_build_query($queryParams);
+            }
         }
         // This block is supposed to handle internal generic calls
         // not the ones coming from frontend/xhr.
@@ -79,7 +82,10 @@ class RawApiRequest
         {
             $queryParams = $input['query_params'];
 
-            $this->path .= '?' . http_build_query($queryParams);
+            if (is_array($queryParams))
+            {
+                $this->path .= '?' . http_build_query($queryParams);
+            }
         }
     }
 
