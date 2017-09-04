@@ -47,7 +47,7 @@ trait RequestResponseFlowTrait
         }
 
         $this->processAndAssertStatusCode($data, $response);
-//        sd($response->getContent());
+
         return $this->processAndAssertResponseData($data, $response);
     }
 
