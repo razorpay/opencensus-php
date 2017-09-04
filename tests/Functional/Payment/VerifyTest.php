@@ -27,6 +27,10 @@ class VerifyTest extends TestCase
         $this->payment = $this->fixtures->create('payment:captured');
 
         $this->ba->cronAuth();
+
+        $this->gateway = 'ebs';
+
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_ebs_terminal');
     }
 
     protected function setupRedisMock($paymentArray = [])
@@ -39,6 +43,44 @@ class VerifyTest extends TestCase
 
         Redis::shouldReceive('hSet')
             ->andReturn(null);
+
+        Redis::shouldReceive('incr')
+            ->andReturn(1);
+
+        Redis::shouldReceive('set')
+            ->andReturnUsing(
+                function ($arg) use ($paymentArray)
+                {
+                    foreach ($paymentArray as $payment)
+                    {
+                        if ($payment['id'] . '_verify' === $arg)
+                        {
+                            return null;
+                        }
+                    }
+                    return true;
+                });
+
+        Redis::shouldReceive('get')
+            ->andReturn(true);
+    }
+
+    protected function setupRedisMockForBlockedGateway($paymentArray = [])
+    {
+        Redis::shouldReceive('hGetAll')
+            ->andReturn(
+                [],
+                [
+                    'ebs'=> Carbon::now()->getTimestamp() + 900
+                ]);
+        Redis::shouldReceive('hDel')
+            ->andReturn([]);
+
+        Redis::shouldReceive('hSet')
+            ->andReturn(null);
+
+        Redis::shouldReceive('incr')
+            ->andReturn(101);
 
         Redis::shouldReceive('set')
             ->andReturnUsing(
@@ -1067,6 +1109,82 @@ class VerifyTest extends TestCase
 
         $resultData = [
             'filter'  => $filter,
+        ];
+
+        $this->assertContent($content, $resultData);
+    }
+
+    protected function createFailedPayment($data)
+    {
+
+        $this->getErrorInCallback();
+
+        $payment = $this->getDefaultNetbankingPaymentArray('ANDB');
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $payment = $this->doAuthAndCapturePayment($payment);
+            }
+        );
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->resetMockServer();
+
+        return $payment;
+    }
+
+    public function testTimeoutPaymentVerifyAndBlockGateway()
+    {
+        $this->setupRedisMockForBlockedGateway();
+
+        $data = $this->testData['testTimeoutPaymentVerify'];
+
+        $payment = $this->createFailedPayment($data);
+
+        $this->getTimeoutInVerify();
+
+        $this->ba->cronAuth();
+
+        $request = [
+            'url'    => '/payments/verify/payments_failed',
+            'method' => 'post'
+        ];
+
+        $time = Carbon::now(Timezone::IST);
+
+        $time->addMinutes(15);
+
+        Carbon::setTestNow($time);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $resultData = [
+            'timeout' => 1,
+            'filter'  => 'payments_failed',
+        ];
+
+        $this->assertContent($content, $resultData);
+
+        $payment = $this->createFailedPayment($data);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $resultData = ['filter'  => 'payments_failed'];
+
+        $this->assertContent($content, $resultData);
+
+        $time->addMinutes(25);
+
+        Carbon::setTestNow($time);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $resultData = [
+            'authorized' => 2,
+            'filter'     => 'payments_failed',
         ];
 
         $this->assertContent($content, $resultData);
