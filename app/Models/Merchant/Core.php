@@ -10,6 +10,7 @@ use RZP\Constants\Mode;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Batch;
 use RZP\Models\Transaction;
 use RZP\Models\BankAccount;
 use RZP\Models\Admin\Action;
@@ -384,14 +385,32 @@ class Core extends Base\Core
     {
         $merchant->getValidator()->validateInput('create_batch', $input);
 
+        $attachments = $input['attachment'];
 
+        foreach ($attachments as $key => $attachment)
+        {
+            $fileDetails = (new FileProcessor)->getFileDetails($attachment);
 
-//        s($input);
-//
-//        $att = $input['attachment'];
-//        $file = (new FileProcessor)->getFileDetails($att[0]);
-//        s($file);
-//        s($att[0]->getClientFilename());
+            $allFilesDetails[] = $fileDetails;
+
+            $attachments[$key]['file_name'] = $fileDetails['file_name'];
+        }
+
+        $merchant->getValidator()->validateAttachment($allFilesDetails);
+
+        foreach ($attachments as $attachment)
+        {
+            $batchInput = [
+                'file' => $attachment,
+                'type' => Batch\Type::getMerchantBatchType($merchant, $attachment['file_name'])
+            ];
+
+            //$batch = $this->batchCore->cre
+        }
+
+        $job = new BatchJob($this->mode, $batch->getId(), $input);
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
 
     }
 }

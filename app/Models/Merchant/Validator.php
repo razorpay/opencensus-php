@@ -117,7 +117,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $createBatchRules = [
-        'attachment'   => 'required|array|custom',
+        'attachment'   => 'required|array',
     ];
 
     protected function validateHandle($attribute, $handle)
@@ -210,20 +210,11 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateAttachment(string $attribute, array $attachments)
+    public function validateAttachment(array $allFilesDetails)
     {
         $merchant = $this->entity->getName();
 
-        $allFilesDetails = [];
-
         $fileDetailsValidator = 'validate' . studly_case($merchant) . 'FileDetails';
-
-        foreach ($attachments as $attachment)
-        {
-            $fileDetails = (new FileProcessor)->getFileDetails($attachment);
-
-            $allFilesDetails[] = $fileDetails;
-        }
 
         $this->$fileDetailsValidator($allFilesDetails);
     }
@@ -248,7 +239,7 @@ class Validator extends Base\Validator
             },
             ARRAY_FILTER_USE_BOTH
         );
-        
+
         if (count($files) < 1 or count($files) > 2)
         {
             throw new Exception\BadRequestValidationFailureException(
