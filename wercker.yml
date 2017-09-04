@@ -84,6 +84,9 @@ deploy:
       - script:
           name: create commit.txt
           code: git rev-parse HEAD > public/commit.txt
+      - script:
+          name: S3 Sync
+          code: node scripts/s3sync.js
       - nhuray/aws-code-deploy:
           key: $AWS_KEY
           secret: $AWS_SECRET
@@ -91,9 +94,6 @@ deploy:
           application-name: dashboard
           deployment-group-name: $WERCKER_DEPLOYTARGET_NAME
           s3-bucket: "rzp-code-deploy"
-      - script:
-          name: S3 Sync
-          code: node scripts/s3sync.js
 
     after-steps:
       - slack-notifier:
