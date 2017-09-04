@@ -51,7 +51,7 @@ class Validator extends Base\Validator
         if (in_array($source, $supportedSourceForType, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                "$source  is not a supported source for type");
+                "$source is not a supported source for type");
         }
     }
 
