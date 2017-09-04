@@ -440,9 +440,11 @@ class Charge extends Base\Core
         // If there's just one invoice, this is first charge period.
         if ($invoiceCount > 1)
         {
+            //
             // We are subtracting one because the
             // invoice for the current charge has
             // already been created and associated
+            //
             foreach (range(1, $invoiceCount - 1) as $i)
             {
                 $nextRun = Library::computeFutureRun($schedule, $start, $start, false);

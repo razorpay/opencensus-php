@@ -152,11 +152,15 @@ class Core extends Base\Core
 
         $subscription->getValidator()->validateInput('manual_test_charge', $input);
 
-        $retry = (bool) ($input['retry'] ?? false);
+        $subscription->getValidator()->validateTestSubscriptionChargeable();
 
-        $subscription->getValidator()->validateTestSubscriptionChargeable($retry);
-
-        if ($retry === true)
+        //
+        // If subscription is in pending state, the only charge the merchant can attempt
+        // here is a retry charge. This flow thus simulates the work of the retry cron.
+        // For any other (valid) status, we actually create a new invoice and update the
+        // subscription, thus simulating the work of the charge cron.
+        //
+        if ($subscription->getStatus() === Status::PENDING)
         {
             $this->retry($subscription, $input);
         }

@@ -170,37 +170,12 @@ class Validator extends Base\Validator
         return [$valid, $traceCode];
     }
 
-    public function validateTestSubscriptionChargeable(bool $retry = false)
+    public function validateTestSubscriptionChargeable()
     {
         $subscription = $this->entity;
 
-        $validStates = Status::$cronChargeableStatuses;
-
-        if (($retry === true) and
-            ($subscription->getStatus() !== Status::PENDING))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SUBSCRIPTION_NOT_IN_PENDING_STATE,
-                'status',
-                [
-                    'subscription_id'       => $subscription->getId(),
-                    'subscription_status'   => $subscription->getStatus(),
-                ]);
-        }
-
-        if (($retry === false) and
-            (in_array($subscription->getStatus(), Status::$cronChargeableStatuses, true) === false))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SUBSCRIPTION_NOT_IN_ACTIVE_OR_HALTED_STATE,
-                'status',
-                [
-                    'subscription_id'       => $subscription->getId(),
-                    'subscription_status'   => $subscription->getStatus(),
-                ]);
-        }
-
-        if ($subscription->hasEnded() === true)
+        if (($subscription->hasEnded() === true) or
+            (in_array($subscription->getStatus(), Status::$manualTestChargeableStatuses, true) === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_NOT_TEST_CHARGEABLE,

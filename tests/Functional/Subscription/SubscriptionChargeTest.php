@@ -582,13 +582,44 @@ class SubscriptionChargeTest extends TestCase
         $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('authenticated', $subscription['status']);
 
+        $oldSubcription = $subscription;
+
         // First test charge marks the subscrition as active
-        $subscription = $this->chargeSubscriptionManuallyTestMode($subscription['id']);
+        // Billing period has been updated, paid count increased
+        $subscription = $this->chargeSubscriptionManuallyTestMode($oldSubcription['id']);
         $this->assertEquals('active', $subscription['status']);
+        $this->assertEquals(1, $subscription['paid_count']);
+        $this->assertEquals($oldSubcription['charge_at'], $subscription['current_start']);
+
+        $oldSubcription = $subscription;
 
         // Failed test charge marks the subscrition as pending
-        $subscription = $this->chargeSubscriptionManuallyTestMode($subscription['id'], false);
+        // Paid count remains the same, billing period remains the same
+        // Charge_at increments by only one day
+        $subscription = $this->chargeSubscriptionManuallyTestMode($oldSubcription['id'], false);
         $this->assertEquals('pending', $subscription['status']);
+        $this->assertEquals(1, $subscription['paid_count']);
+        $this->assertEquals(1, $subscription['auth_attempts']);
+        $this->assertEquals($oldSubcription['current_start'], $subscription['current_start']);
+        $this->assertEquals($oldSubcription['charge_at']+(24*60*60), $subscription['charge_at']);
+
+        $invoice = $this->getLastEntity('invoice', true);
+        $this->assertEquals($subscription['id'], $invoice['subscription_id']);
+
+        $oldSubcription = $subscription;
+
+        // Another charge acts as a retry, makes not real difference.
+        $subscription = $this->chargeSubscriptionManuallyTestMode($oldSubcription['id'], false);
+        $this->assertEquals('pending', $subscription['status']);
+        $this->assertEquals(1, $subscription['paid_count']);
+        $this->assertEquals(2, $subscription['auth_attempts']);
+        $this->assertEquals($oldSubcription['current_start'], $subscription['current_start']);
+        $this->assertEquals($oldSubcription['charge_at']+(24*60*60), $subscription['charge_at']);
+
+        // Retry does not cause a new invoice to be created
+        $newInvoice = $this->getLastEntity('invoice', true);
+        $this->assertEquals($subscription['id'], $newInvoice['subscription_id']);
+        $this->assertEquals($invoice['id'], $newInvoice['id']);
 
         // More failed test charges marks the subscrition as halted
         while($subscription['auth_attempts'] < self::MAX_AUTH_ATTEMPTS)
@@ -597,14 +628,38 @@ class SubscriptionChargeTest extends TestCase
         }
         $this->assertEquals('halted', $subscription['status']);
 
+        // Retry does not cause a new invoice to be created
+        $newInvoice = $this->getLastEntity('invoice', true);
+        $this->assertEquals($subscription['id'], $newInvoice['subscription_id']);
+        $this->assertEquals($invoice['id'], $newInvoice['id']);
+
+        $oldSubcription = $subscription;
+
+        // Another test charge leaves the subscriptions status unchanged
+        // But since subscription is halted anyway, billing period is updated
+        $subscription = $this->chargeSubscriptionManuallyTestMode($subscription['id'], false);
+        $this->assertEquals('halted', $subscription['status']);
+        $this->assertEquals(1, $subscription['paid_count']);
+        $this->assertEquals(4, $subscription['auth_attempts']);
+
         $invoice = $this->getLastEntity('invoice', true);
         $this->assertEquals('halted', $invoice['subscription_status']);
         $this->assertEquals($subscription['id'], $invoice['subscription_id']);
+        $this->assertNotEquals($newInvoice['id'], $invoice['id']);
 
         $this->chargeSubscriptionInvoiceManually($invoice);
         // Successful test charge marks the subscrition as active again
         $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('active', $subscription['status']);
+        $this->assertEquals(2, $subscription['paid_count']);
+
+        $oldSubcription = $subscription;
+
+        // Subsequent successful charges update billing period and paid count
+        $subscription = $this->chargeSubscriptionManuallyTestMode($oldSubcription['id']);
+        $this->assertEquals('active', $subscription['status']);
+        $this->assertEquals(3, $subscription['paid_count']);
+        $this->assertEquals($oldSubcription['charge_at'], $subscription['current_start']);
 
         while($subscription['paid_count'] < $subscription['total_count'])
         {
