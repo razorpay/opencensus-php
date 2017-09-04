@@ -755,11 +755,11 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function processFile()
+    public function createBatches($id)
     {
         $input = Request::all();
 
-        $response = (new Merchant\FileProcessor\Orchestrator)->initiateFileProcessing($input);
+        $response = (new Merchant\Service)->createBatches($id, $input);
 
         return ApiResponse::json($response);
     }

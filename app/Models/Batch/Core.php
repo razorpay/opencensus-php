@@ -241,7 +241,7 @@ class Core extends Base\Core
         Entity $batch,
         array $input)
     {
-        if (Type::isQueueGroup($batch->getType()) == false)
+        if (Type::isQueueGroup($batch->getType()) === false)
         {
             return;
         }

@@ -4,23 +4,21 @@ namespace RZP\Models\Merchant;
 
 use Config;
 use ApiResponse;
-use RZP\Exception;
+
 use RZP\Models\Base;
-use RZP\Models\User;
-use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Models\Terminal;
-use RZP\Error\ErrorCode;
+use RZP\Models\Transaction;
 use RZP\Models\BankAccount;
 use RZP\Models\Admin\Action;
+use RZP\Models\Admin\AdminLead;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
+use RZP\Reconciliator\FileProcessor;
 use RZP\Models\Schedule\Task as ScheduleTask;
-use RZP\Models\Admin\AdminLead;
-use RZP\Models\Transaction;
+
 
 class Core extends Base\Core
 {
@@ -380,5 +378,19 @@ class Core extends Base\Core
                 );
             }
         }
+    }
+
+    public function createBatches(Entity $merchant, array $input)
+    {
+        $merchant->getValidator()->validateInput('create_batch', $input);
+
+
+//        s($input);
+//
+//        $att = $input['attachment'];
+//        $file = (new FileProcessor)->getFileDetails($att[0]);
+//        s($file);
+//        s($att[0]->getClientFilename());
+
     }
 }

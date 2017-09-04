@@ -1133,6 +1133,15 @@ class Service extends Base\Service
         return $users;
     }
 
+    public function createBatches(string $merchantId, array $input)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $batches = (new Merchant\Core)->createBatches($merchant, $input);
+
+        return $batches;
+    }
+
     /**
      * Return all submerchants of the master merchant (for aggregator model only)
      *
