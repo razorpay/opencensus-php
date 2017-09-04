@@ -13,7 +13,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Credits;
-use RZP\Models\Merchant\Onboarding;
+use RZP\Models\Merchant\Onboarding\Service as OnboardingService;
 
 class MerchantController extends Controller
 {
@@ -733,7 +733,7 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function getQuestions(Onboarding\Service $service)
+    public function getQuestions(OnboardingService $service)
     {
         $input = Request::all();
 
@@ -742,7 +742,7 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function createResponses(Onboarding\Service $service)
+    public function createResponses(OnboardingService $service)
     {
         $input = Request::all();
 
@@ -751,7 +751,7 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function getResponses(Onboarding\Service $service, $feature = null)
+    public function getResponses(OnboardingService $service, $feature = null)
     {
         $response = $service->getResponses($feature);
 

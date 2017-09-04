@@ -3,114 +3,148 @@
 namespace RZP\Models\Merchant\Onboarding;
 
 use RZP\Models\Feature\Constants as FeatureConstants;
-use RZP\Models\Base;
 
 class Constants
 {
-    const USE_CASE                              = 'use_case';
-    const SETTLING_TO                           = 'settling_to';
-    const SIGNED_AGREEMENT_WITH_THIRD_PARTY     = 'singed_agreement_with_third_party';
+    // Keys used to define the question names
     const BUSINESS_MODEL                        = 'business_model';
-    const SAMPLE_PLANS                          = 'sample_plans';
-    const WEBSITE_DETAILS                       = 'website_details';
     const EXPECTED_MONTHLY_REVENUE              = 'expected_monthly_revenue';
+    const ONBOARDING                            = 'onboarding';
+    const SETTLING_TO                           = 'settling_to';
+    const SIGNED_AGREEMENT_WITH_THIRD_PARTY     = 'signed_agreement_with_third_party';
+    const SAMPLE_PLANS                          = 'sample_plans';
+    const USE_CASE                              = 'use_case';
+    const WEBSITE_DETAILS                       = 'website_details';
+
+    // Keys required to define each question referred by the above-mentioned constants
+    const ID                                     = 'id';
+    const QUESTION                               = 'question';
+    const DESCRIPTION                            = 'description';
+    const RESPONSE_TYPE                          = 'response_type';
+    const AVAILABLE_RESPONSES                    = 'available_responses';
+    const MANDATORY                              = 'mandatory';
 
     // Constants used in API request params and responses
     const FEATURES                              = 'features';
     const MERCHANT                              = 'merchant';
-    const QUESTIONS                             = 'questions';
 
+    /*
+     * Note: If the RESPONSE_TYPE is file, then,
+     * a corresponding entry should be made in the class 'Models/Filestore/Type'
+     */
+
+    // Stores the details for each question irrespective of the feature that it belongs to
     public static $questionMap = [
         self::USE_CASE => [
-            'id'                    => self::USE_CASE,
-            'question'              => 'What is your use case?',
-            'description'           => '',
-            'response_type'         => 'textarea',
-            'available_responses'   => [ ],
-            'mandatory'             => true
+            self::ID                    => self::USE_CASE,
+            self::QUESTION              => 'What is your use case?',
+            self::DESCRIPTION           => '',
+            self::RESPONSE_TYPE         => 'textarea',
+            self::AVAILABLE_RESPONSES   => [ ],
+            self::MANDATORY             => true
         ],
+
         self::SETTLING_TO => [
-            'id'                    => self::SETTLING_TO,
-            'question'              => 'Who are you settling to?',
-            'description'           => '',
-            'response_type'         => 'radio',
-            'available_responses'   => [
+            self::ID                    => self::SETTLING_TO,
+            self::QUESTION              => 'Who are you settling to?',
+            self::DESCRIPTION           => '',
+            self::RESPONSE_TYPE         => 'radio',
+            self::AVAILABLE_RESPONSES   => [
                 'Third party businesses',
                 'Own bank accounts',
                 'Individuals'
             ],
-            'mandatory'             => true
+            self::MANDATORY             => true
         ],
+
         self::SIGNED_AGREEMENT_WITH_THIRD_PARTY => [
-            'id'                    => self::SIGNED_AGREEMENT_WITH_THIRD_PARTY,
-            'question'              => 'Please upload a copy of a signed agreement with the third party',
-            'description'           => '',
-            'response_type'         => 'file',
-            'available_responses'   => [ ],
-            'mandatory'             => false
+            self::ID                    => self::SIGNED_AGREEMENT_WITH_THIRD_PARTY,
+            self::QUESTION              => 'Please upload a copy of a signed agreement with the third party',
+            self::DESCRIPTION           => '',
+            self::RESPONSE_TYPE         => 'file',
+            self::AVAILABLE_RESPONSES   => [ ],
+            self::MANDATORY             => false
         ],
+
         self::BUSINESS_MODEL => [
-            'id'                    => self::BUSINESS_MODEL,
-            'question'              => 'What is your business model and requirement?',
-            'description'           => '',
-            'response_type'         => 'textarea',
-            'available_responses'   => [ ],
-            'mandatory'             => true
+            self::ID                    => self::BUSINESS_MODEL,
+            self::QUESTION              => 'What is your business model and requirement?',
+            self::DESCRIPTION           => '',
+            self::RESPONSE_TYPE         => 'textarea',
+            self::AVAILABLE_RESPONSES   => [ ],
+            self::MANDATORY             => true
         ],
+
         self::SAMPLE_PLANS => [
-            'id'                    => self::SAMPLE_PLANS,
-            'question'              => 'Sample plans',
-            'description'           => '',
-            'response_type'         => 'textarea',
-            'available_responses'   => [ ],
-            'mandatory'             => true
+            self::ID                    => self::SAMPLE_PLANS,
+            self::QUESTION              => 'Sample plans',
+            self::DESCRIPTION           => '',
+            self::RESPONSE_TYPE         => 'textarea',
+            self::AVAILABLE_RESPONSES   => [ ],
+            self::MANDATORY             => true
         ],
+
         self::WEBSITE_DETAILS => [
-            'id'                    => self::WEBSITE_DETAILS,
-            'question'              => 'Is website live? If yes, link to the page with more details',
-            'description'           => '',
-            'response_type'         => 'text',
-            'available_responses'   => [ ],
-            'mandatory'             => true
+            self::ID                    => self::WEBSITE_DETAILS,
+            self::QUESTION              => 'Is website live? If yes, link to the page with more details',
+            self::DESCRIPTION           => '',
+            self::RESPONSE_TYPE         => 'textarea',
+            self::AVAILABLE_RESPONSES   => [ ],
+            self::MANDATORY             => true
         ],
+
         self::EXPECTED_MONTHLY_REVENUE => [
-            'id'                    => self::EXPECTED_MONTHLY_REVENUE,
-            'question'              => 'Expected monthly revenue using this feature?',
-            'description'           => '',
-            'response_type'         => 'number',
-            'available_responses'   => [ ],
-            'mandatory'             => true
+            self::ID                    => self::EXPECTED_MONTHLY_REVENUE,
+            self::QUESTION              => 'Expected monthly revenue using this feature?',
+            self::DESCRIPTION           => '',
+            self::RESPONSE_TYPE         => 'number',
+            self::AVAILABLE_RESPONSES   => [ ],
+            self::MANDATORY             => true
         ]
     ];
 
+    // Stores the mapping of the features to their corresponding questions
     public static $featureQuestionsMap = [
         FeatureConstants::MARKETPLACE => [
             self::USE_CASE,
             self::SETTLING_TO,
             self::SIGNED_AGREEMENT_WITH_THIRD_PARTY
         ],
+
         FeatureConstants::SUBSCRIPTIONS => [
             self::BUSINESS_MODEL,
             self::SAMPLE_PLANS,
             self::WEBSITE_DETAILS
         ],
+
         FeatureConstants::VIRTUAL_ACCOUNTS => [
             self::USE_CASE,
             self::EXPECTED_MONTHLY_REVENUE
         ]
     ];
 
-    public static function getFeatureQuestions($featureName)
+    /**
+     * Returns a nested structure of the questions for the feature param passed along
+     * with all the details for each question
+     *
+     * @param string $featureName
+     *
+     * @return array
+     */
+    public static function getFeatureQuestions(string $featureName)
     {
         $response = [];
+
         if (key_exists($featureName, self::$featureQuestionsMap))
         {
             $questions = self::$featureQuestionsMap[$featureName];
+
             foreach ($questions as $question)
             {
                 $response[$question] = self::$questionMap[$question];
             }
         }
+
         return $response;
     }
 }

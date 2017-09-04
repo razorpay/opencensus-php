@@ -5,6 +5,8 @@ namespace RZP\Models\Merchant\Onboarding;
 use RZP\Models\Base;
 use RZP\Models\Settings;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
+use RZP\Models\FileStore;
 
 class Service extends Base\Service
 {
@@ -20,7 +22,7 @@ class Service extends Base\Service
 
             if (count($questionMap) > 0)
             {
-                $response[Constants::QUESTIONS][$feature] = $questionMap;
+                $response[Constants::ONBOARDING][$feature] = $questionMap;
             }
         }
 
@@ -37,9 +39,11 @@ class Service extends Base\Service
 
         $featureQuestionsMap = Constants::$featureQuestionsMap;
 
-        $userResponses = $input['responses'];
+        $userResponses = $input[Constants::ONBOARDING];
 
         $settingsMap = [];
+
+        $merchant = $this->merchant;
 
         foreach ($userResponses as $featureName => $userQuestionMaps)
         {
@@ -50,20 +54,32 @@ class Service extends Base\Service
                 continue;
             }
 
-            $questionMap = $featureQuestionsMap[$featureName];
+            $questionsMap = Constants::getFeatureQuestions($featureName);
 
             foreach ($userQuestionMaps as $userQuestion => $userResponse)
             {
                 // Ignore, if the question key sent is not found in the Constants defined
-                if (in_array($userQuestion, $questionMap) === false)
+                if (array_key_exists($userQuestion, $questionsMap) === false)
                 {
                     $this->trace->info(TraceCode::ONBOARDING_FEATURE_QUESTION_DOES_NOT_EXIST, [$featureName, $userQuestion]);
                     continue;
                 }
 
-                $settingKey   = implode(".", [$featureName, $userQuestion]);
+                // example settingKey = "onboarding.marketplace.use_case"
+                $settingKey   = implode(".", [Constants::ONBOARDING, $featureName, $userQuestion]);
 
                 $settingValue = json_encode($userResponse);
+
+                if ($questionsMap[$userQuestion]['response_type'] === 'file')
+                {
+                    $file = $userResponse;
+                    $extension = $file->extension();
+                    $fileName = 'api/' . $merchant->getId() . '/' . $settingKey;
+
+                    $file = $this->createFile($extension, $file, $fileName, $settingKey, $merchant);
+                    s($file);
+                    $settingValue = FileStore\Entity::verifyIdAndSilentlyStripSign($file['id']);
+                }
 
                 $settingsMap[$settingKey] = $settingValue;
             }
@@ -94,5 +110,26 @@ class Service extends Base\Service
         }
 
         return $response;
+    }
+
+    protected function createFile(string $extension,
+                                  $file,
+                                  string $fileName,
+                                  string $type,
+                                  Merchant\Entity $merchant,
+                                  string $store = FileStore\Store::S3)
+    {
+        $creator = new FileStore\Creator;
+
+        $file = $creator->extension($extension)
+            ->localFile($file)
+            ->name($fileName)
+            ->store($store)
+            ->type($type)
+            ->merchant($merchant)
+            ->save()
+            ->get();
+
+        return $file;
     }
 }

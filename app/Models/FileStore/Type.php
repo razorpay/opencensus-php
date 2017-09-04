@@ -69,6 +69,8 @@ class Type
     const ACTIVATION_BUCKET_CONFIG              = 'activation_bucket_config';
     const H2H_BUCKET_CONFIG                     = 'h2h_bucket_config';
 
+    const ONBOARDING_MARKETPLACE_AGREEMENT      = 'onboarding.marketplace.signed_agreement_with_third_party';
+
     /**
      * Map of types allowed for each entity.
      */
@@ -121,6 +123,10 @@ class Type
         Constants\Entity::BATCH_FUND_TRANSFER => [
             self::FUND_TRANSFER_DEFAULT,
             self::FUND_TRANSFER_H2H,
+        ],
+
+        Constants\Entity::MERCHANT_ONBOARDING => [
+            self::ONBOARDING_MARKETPLACE_AGREEMENT
         ],
     ];
 
