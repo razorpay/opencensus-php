@@ -215,6 +215,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TOTAL_COUNT);
     }
 
+    public function getPlanChargeInvoicesCount()
+    {
+        $invoiceCount = $this->invoices()->count();
+
+        // If the subscription started with an addon, and not with a plan
+        // amount then there is an extra invoice, which is to be excluded.
+        if (($this->hadUpfrontAmount() === true) and
+            ($this->wasImmediate() === false))
+        {
+            $invoiceCount = $invoiceCount - 1;
+        }
+
+        return $invoiceCount;
+    }
+
     public function getPaidCount()
     {
         return $this->getAttribute(self::PAID_COUNT);

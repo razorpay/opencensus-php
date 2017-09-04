@@ -420,15 +420,7 @@ class Charge extends Base\Core
 
     protected function getBillingPeriod(Entity $subscription)
     {
-        $invoiceCount = $subscription->invoices()->count();
-
-        // If the subscription started with an addon, and not with a plan amount
-        // then there is an extra invoice, which is to be excluded below.
-        if (($subscription->hadUpfrontAmount() === true) and
-            ($subscription->wasImmediate() === false))
-        {
-            $invoiceCount = $invoiceCount - 1;
-        }
+        $planChargeInvoiceCount = $subscription->getPlanChargeInvoicesCount();
 
         $schedule = $subscription->schedule;
 
@@ -438,14 +430,14 @@ class Charge extends Base\Core
         $start = $nextRun->copy();
 
         // If there's just one invoice, this is first charge period.
-        if ($invoiceCount > 1)
+        if ($planChargeInvoiceCount > 1)
         {
             //
             // We are subtracting one because the
             // invoice for the current charge has
             // already been created and associated
             //
-            foreach (range(1, $invoiceCount - 1) as $i)
+            foreach (range(1, $planChargeInvoiceCount - 1) as $i)
             {
                 $nextRun = Library::computeFutureRun($schedule, $start, $start, false);
 
@@ -551,11 +543,9 @@ class Charge extends Base\Core
      */
     protected function setEndedAtIfApplicable(Entity $subscription)
     {
-        //
-        // TODO: paid_count = total_count to mark subscription as completed won't work
-        // because of unpaid cycles that might be present
-        //
-        if ($subscription->getPaidCount() === $subscription->getTotalCount())
+        $planChargeInvoiceCount = $subscription->getPlanChargeInvoicesCount();
+
+        if ($planChargeInvoiceCount >= $subscription->getTotalCount())
         {
             //
             // If the last charge of the subscription is on 20th August,
