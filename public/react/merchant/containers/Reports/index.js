@@ -38,7 +38,8 @@ const selector = formValueSelector('generateReports');
     entity: 'payment',
     type: 'daily',
     date: moment(),
-    invoiceDate: moment().set('month', 5).startOf('month'), // Select June. Invoice date can not be july or after
+    invoiceDate: moment().subtract('months', 1), // Merchant can not download invoice of
+    // current month
   },
 })
 export default class ReportsContainer extends Component {
@@ -84,8 +85,12 @@ export default class ReportsContainer extends Component {
       });
     }
 
-    if (user.isGSTEnabled) {
-      this.props.change('invoiceDate', moment().subtract('months', 1));
+    if (user.isGSTDisabled) {
+      // If GST is disabled, Select June. Invoice date can not be july or after
+      this.props.change(
+        'invoiceDate',
+        moment().set('month', 5).startOf('month')
+      );
     }
 
     // Select default report type
@@ -270,7 +275,7 @@ export default class ReportsContainer extends Component {
   };
 
   validateInvoiceMonthYear = current => {
-    const isGSTEnabled = this.props.user.isGSTEnabled;
+    const isGSTEnabled = !this.props.user.isGSTDisabled;
 
     const currDate = new Date(),
       tillPrevMonth =

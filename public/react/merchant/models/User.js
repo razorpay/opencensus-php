@@ -48,7 +48,7 @@ export default class User {
     return (this.tags || []).indexOf('Marketplace') !== -1;
   }
 
-  get isGSTEnabled() {
-    return (this.tags || []).indexOf('Gst_Invoice') !== -1;
+  get isGSTDisabled() {
+    return (this.tags || []).indexOf('Gst_Invoice_Disabled') !== -1;
   }
 }
