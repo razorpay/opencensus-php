@@ -91,6 +91,15 @@ class Verify extends Base\Core
      */
     const GATEWAY_BLOCK_TIME = 900; // 15 minutes
 
+
+    const GATEWAY_TIMEOUT_BUCKET_INTERVAL = 120; // 2 minutes
+
+
+    const GATEWAY_TIMEOUT_THRESHOLD = 10;
+
+
+    const GATEWAY_TIMEOUT_CACHE_KEY_PREFIX = 'verify_timeout_block';
+
     /**
      * Cache key used to store gateway block info in hash map
      */
@@ -507,7 +516,7 @@ class Verify extends Base\Core
             switch ($action)
             {
                 case Action::BLOCK:
-                    $this->blockGatewayAfterInvalidVerifyResponse($payment->getGateway());
+                    $this->blockGatewayForVerify($payment->getGateway());
 
                     break;
 
@@ -530,6 +539,8 @@ class Verify extends Base\Core
         }
         catch (Exception\GatewayTimeoutException $e)
         {
+            $this->checkForPreviousTimeoutAndBlockGatewayIfApplicable($payment);
+
             $this->updateVerifyBucket($payment, $filter, self::NEXT);
 
             $this->trace->info(
@@ -564,7 +575,27 @@ class Verify extends Base\Core
         return $result;
     }
 
-    protected function blockGatewayAfterInvalidVerifyResponse(string $gateway)
+    protected function checkForPreviousTimeoutAndBlockGatewayIfApplicable(Payment\Entity $payment)
+    {
+        $currentTimestamp = Carbon::now()->getTimestamp();
+
+        $currentTimestampBucket = $currentTimestamp / self::GATEWAY_TIMEOUT_BUCKET_INTERVAL;
+
+        $gateway = $payment->getGateway();
+
+        $key = self::GATEWAY_TIMEOUT_CACHE_KEY_PREFIX;
+
+        $key .= $gateway . '_' . $currentTimestampBucket;
+
+        $timedOutPaymentsCount = (int) $this->redis->incr($key);
+
+        if ($timedOutPaymentsCount >= self::GATEWAY_TIMEOUT_THRESHOLD)
+        {
+            $this->blockGatewayForVerify($gateway);
+        }
+    }
+
+    protected function blockGatewayForVerify(string $gateway)
     {
         $this->redis->hSet(
             self::GATEWAY_BLOCK_CACHE_KEY,
