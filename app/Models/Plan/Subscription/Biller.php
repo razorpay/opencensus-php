@@ -139,9 +139,12 @@ class Biller extends Base\Core
 
         $task = $subscription->task;
 
-        $charge->updateSubscriptionTimeFields($subscription);
-
+        // Schedule task needs to be updated before setting time
+        // fields in subscription, as the next_run_at of
+        // schedule_task is used to set subscription charge_at
         $charge->updateScheduleTask($task);
+
+        $charge->updateSubscriptionTimeFields($subscription);
 
         $this->repo->transaction(
             function() use ($subscription, $task)

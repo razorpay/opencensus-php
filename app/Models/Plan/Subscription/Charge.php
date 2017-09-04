@@ -194,9 +194,13 @@ class Charge extends Base\Core
         // before incrementing the paid count, since the logic
         // is dependent on that.
         //
-        $this->updateSubscriptionTimeFields($subscription);
 
+        // Schedule task needs to be updated before setting time
+        // fields in subscription, as the next_run_at of
+        // schedule_task is used to set subscription charge_at
         $this->updateScheduleTask($task);
+
+        $this->updateSubscriptionTimeFields($subscription);
 
         $this->incrementPaidCount($subscription);
 
@@ -438,6 +442,7 @@ class Charge extends Base\Core
             }
         }
 
+        // Cannot pass start here, as computeFutureRun will modify the value
         $end = Library::computeFutureRun($schedule, $nextRun, $nextRun, false);
 
         $billingPeriod = [
@@ -478,9 +483,8 @@ class Charge extends Base\Core
      */
     protected function setNextChargeAt(Entity $subscription)
     {
-        $currentEnd = $subscription->getCurrentEnd();
+        $nextChargeAt = $subscription->task->getNextRunAt();
 
-        $nextChargeAt = $currentEnd;
         $endAt = $subscription->getEndAt();
 
         if ($nextChargeAt > $endAt)
@@ -488,6 +492,10 @@ class Charge extends Base\Core
             $nextChargeAt = null;
         }
 
+        //
+        // Charge_At cannot simply be set to current_end, as
+        // current_end is not updated in case of failed charges.
+        //
         $subscription->setChargeAt($nextChargeAt);
     }
 

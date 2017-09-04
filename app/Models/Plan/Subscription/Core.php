@@ -538,7 +538,7 @@ class Core extends Base\Core
                     'Number of invoices found for subscription does not match 1',
                     ErrorCode::SERVER_ERROR_INCORRECT_NUMBER_OF_INVOICES_FOUND,
                     [
-                        'count'             => $invoicesCount,
+                        'count'             => $invoices->count(),
                         'subscription_id'   => $subscription->getId(),
                     ]);
             }
