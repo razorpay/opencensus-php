@@ -24,7 +24,7 @@ WHERE id = '6zPgaO5CD69eyQ';
 # Then, we tried to create refund entities in wallet. But, the initial
 # refund was created with a different refund ID and API has a different
 # refund ID now. So, we are updating refunds and transactions
-# to have the initial refund ID>>> by which it was created in freecharge server.
+# to have the initial refund ID by which it was created in freecharge server.
 UPDATE refunds SET id = '771SQPecHvrK7I' WHERE id = '7BiQoKEHqETd8B';
 UPDATE transactions SET entity_id = '771SQPecHvrK7I' WHERE id = '7BiQok8pD0Mvic';
 
