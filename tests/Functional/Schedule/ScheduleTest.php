@@ -3,10 +3,10 @@
 namespace RZP\Tests\Functional\Schedule;
 
 use Carbon\Carbon;
+use RZP\Models\Schedule\Anchor;
 use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
 use RZP\Tests\Functional\Helpers\Subscription\SubscriptionTrait;
 
@@ -14,7 +14,6 @@ class ScheduleTest extends TestCase
 {
     use ScheduleTrait;
     use SubscriptionTrait;
-   // use RequestResponseFlowTrait;
     use PaymentTrait;
 
     public function setUp()
@@ -54,7 +53,7 @@ class ScheduleTest extends TestCase
 
         $response = $this->createSchedule($input);
 
-        $this->assertEquals(Carbon::MONDAY, $response['anchor']);
+        $this->assertEquals(Anchor::MONTHLY_WEEK_DAY, $response['anchor']);
     }
 
     public function testScheduleInvalidPeriod()

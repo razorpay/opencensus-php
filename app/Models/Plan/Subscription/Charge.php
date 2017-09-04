@@ -407,7 +407,7 @@ class Charge extends Base\Core
 
         $currentChargeAt = Carbon::createFromTimestamp($currentChargeAt);
 
-        $nextChargeAt = $currentChargeAt->addDay()->timestamp;
+        $nextChargeAt = $currentChargeAt->addDay()->getTimestamp();
 
         $subscription->setChargeAt($nextChargeAt);
     }
@@ -459,8 +459,6 @@ class Charge extends Base\Core
             'start' => $start->timestamp,
             'end'   => $end->timestamp,
         ];
-
-        // \App::getFacadeRoot()['trace']->info('MISC_TRACE_CODE', $billingPeriod);
 
         return $billingPeriod;
      }
