@@ -42,6 +42,7 @@ class Validator extends Base\Validator
 
     protected static $manualTestChargeRules = [
         'success' => 'sometimes|boolean',
+        'retry'   => 'sometimes|boolean',
     ];
 
     public function validateEndAtAfterGenerating()
@@ -169,11 +170,26 @@ class Validator extends Base\Validator
         return [$valid, $traceCode];
     }
 
-    public function validateTestSubscriptionChargeable()
+    public function validateTestSubscriptionChargeable(bool $retry = false)
     {
         $subscription = $this->entity;
 
-        if (in_array($subscription->getStatus(), Status::$manualTestChargeableStatuses, true) === false)
+        $validStates = Status::$cronChargeableStatuses;
+
+        if (($retry === true) and
+            ($subscription->getStatus() !== Status::PENDING))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_NOT_IN_PENDING_STATE,
+                'status',
+                [
+                    'subscription_id'       => $subscription->getId(),
+                    'subscription_status'   => $subscription->getStatus(),
+                ]);
+        }
+
+        if (($retry === false) and
+            (in_array($subscription->getStatus(), Status::$cronChargeableStatuses, true) === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_NOT_IN_ACTIVE_OR_HALTED_STATE,

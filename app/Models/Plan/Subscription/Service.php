@@ -165,21 +165,9 @@ class Service extends Base\Service
 
         foreach ($subscriptionsToRetry as $subscription)
         {
-            $errorStatus = $subscription->getErrorStatus();
-
-            if ($errorStatus === null)
-            {
-                throw new LogicException(
-                    'Only subscriptions with an error status should be retried!',
-                    null,
-                    [
-                        'subscription_id' => $subscription->getId(),
-                    ]);
-            }
-
             try
             {
-                $this->core->retry($subscription, $errorStatus);
+                $this->core->retry($subscription);
 
                 $success++;
             }

@@ -51,13 +51,15 @@ class Core extends Base\Core
         return (new Creator)->create($input, $plan, $customer);
     }
 
-    public function retry(Entity $subscription, string $errorStatus)
+    public function retry(Entity $subscription, array $options = [])
     {
+        $errorStatus = $subscription->getErrorStatus();
+
         $invoice = $this->repo->invoice->fetchIssuedAndNotHaltedInvoiceForSubscription($subscription);
 
         if ($errorStatus === Status::AUTH_FAILURE)
         {
-            $this->charge($subscription, $invoice);
+            $this->charge($subscription, $invoice, $options);
         }
         else if ($errorStatus === Status::CAPTURE_FAILURE)
         {
@@ -150,9 +152,18 @@ class Core extends Base\Core
 
         $subscription->getValidator()->validateInput('manual_test_charge', $input);
 
-        $subscription->getValidator()->validateTestSubscriptionChargeable();
+        $retry = (bool) ($input['retry'] ?? false);
 
-        (new Biller)->createInvoiceAndCharge($subscription, $input);
+        $subscription->getValidator()->validateTestSubscriptionChargeable($retry);
+
+        if ($retry === true)
+        {
+            $this->retry($subscription, $input);
+        }
+        else
+        {
+            (new Biller)->createInvoiceAndCharge($subscription, $input);
+        }
 
         $this->repo->reload($subscription);
 
