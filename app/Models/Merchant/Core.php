@@ -381,4 +381,18 @@ class Core extends Base\Core
             }
         }
     }
+
+    /**
+     * If a merchant user has a role as owner and has confirm_token set to null
+     * then the user will be considered as a confirmed owner.
+     *
+     * @param $merchant
+     * @return mixed
+     */
+    public function getMerchantConfirmedOwner(Merchant\Entity $merchant)
+    {
+        return $merchant->users()->where(Merchant\Detail\Entity::ROLE, '=', User\Role::OWNER)
+                                 ->whereNull(User\Entity::CONFIRM_TOKEN)
+                                 ->first();
+    }
 }
