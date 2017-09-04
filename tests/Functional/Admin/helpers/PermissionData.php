@@ -108,9 +108,11 @@ return [
             'content'   => [
                 'description'   => 'test description 2',
                 'orgs'          => [
-                    'org_100000razorpay'
+                    'org_100000razorpay',
                 ],
-                'workflow_orgs' => [],
+                'workflow_orgs' => [
+                    'org_100000razorpay',
+                ],
             ],
         ],
         'response' => [

@@ -145,13 +145,16 @@ class PermissionTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * Testing editing org permission with workflow Org and Org.
+     * Here default org is also added as workflow org in request.
+     */
     public function testEditPermissionWithOrg()
     {
-        $perm = $this->fixtures->create(
-            'permission');
+        // Create a permission.
+        $perm = $this->fixtures->create('permission');
 
-        //attaching permission with workflow enabled to org.
-        (new Permission\Repository)->attach($perm, 'orgs', [$this->org->getId()], ['enable_workflow' => true]);
+        $perm->orgs()->attach($this->org->getId());
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -165,16 +168,16 @@ class PermissionTest extends TestCase
 
         $permIds = $this->org->permissions()->allRelatedIds()->toArray();
 
-        $workflowIds = $this->org->workflow_permissions()->allRelatedIds()->toArray();
-
         $rzpOrg = (new OrgRepo)->findOrFailPublic(Org::RZP_ORG);
 
         $rzpPerms = $rzpOrg->permissions()->allRelatedIds()->toArray();
 
+        $rzpWorkflowPerms = $rzpOrg->workflow_permissions()->allRelatedIds()->toArray();
+
         $this->assertNotContains($permId, $permIds);
 
-        // asseritn removal of workflow permission.
-        $this->assertNotContains($permId, $workflowIds);
+        // asserting removal of workflow permission.
+        $this->assertContains($permId, $rzpWorkflowPerms);
 
         $this->assertContains($permId, $rzpPerms);
     }
