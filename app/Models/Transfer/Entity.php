@@ -88,7 +88,6 @@ class Entity extends Base\PublicEntity
         self::RECIPIENT_SETTLEMENT_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::TAX,
     ];
 
     protected $public = [

@@ -75,10 +75,10 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::STATUS,
         self::FEES,
+        self::TAX,
         self::UTR,
         self::SETTLED_ON,
         self::CREATED_AT,
-        self::TAX,
     ];
 
     protected $defaults = [
