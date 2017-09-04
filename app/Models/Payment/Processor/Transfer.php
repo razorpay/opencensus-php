@@ -5,8 +5,8 @@ namespace RZP\Models\Payment\Processor;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 trait Transfer
 {
@@ -35,6 +35,8 @@ trait Transfer
         $this->repo->saveOrFail($txn);
 
         $payment->setServiceTax($txn->getServiceTax());
+
+        $payment->setTax($txn->getTax());
 
         if ($this->merchant->isFeeBearerCustomer() === false)
         {

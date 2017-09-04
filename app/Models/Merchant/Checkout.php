@@ -20,7 +20,7 @@ use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Plan\Subscription;
-use RZP\Trace\Trace;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 
 class Checkout

@@ -5,6 +5,7 @@ namespace RZP\Models\FundTransfer\Batch;
 use RZP\Models\Base;
 use RZP\Models\FileStore\Entity as FileStore;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 /**
  * This entity contains aggregated settlement/payout data.
@@ -28,6 +29,7 @@ class Entity extends Base\PublicEntity
     const PROCESSED_COUNT       = 'processed_count';
     const TRANSACTION_COUNT     = 'transaction_count';
     const SERVICE_TAX           = 'service_tax';
+    const TAX                   = 'tax';
     const URLS                  = 'urls';
     const INITIATED_AT          = 'initiated_at';
     const TXT_FILE_ID           = 'txt_file_id';
@@ -51,6 +53,7 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_COUNT,
         self::TRANSACTION_COUNT,
         self::SERVICE_TAX,
+        self::TAX,
         self::INITIATED_AT,
         self::API_FEE,
         self::GATEWAY_FEE,
@@ -74,6 +77,7 @@ class Entity extends Base\PublicEntity
         self::PROCESSED_COUNT,
         self::TRANSACTION_COUNT,
         self::SERVICE_TAX,
+        self::TAX,
         self::URLS,
         self::INITIATED_AT,
         self::TXT_FILE_ID,
@@ -106,6 +110,7 @@ class Entity extends Base\PublicEntity
         self::FEES                  => 'int',
         self::DATE                  => 'int',
         self::SERVICE_TAX           => 'int',
+        self::TAX                   => 'int',
         self::API_FEE               => 'int',
         self::GATEWAY_FEE           => 'int',
         self::INITIATED_AT          => 'int',
@@ -121,7 +126,7 @@ class Entity extends Base\PublicEntity
 
     protected function generateDate($input)
     {
-        $timestamp = Carbon::today('Asia/Kolkata')->timestamp;
+        $timestamp = Carbon::today(Timezone::IST)->getTimestamp();
 
         $this->setAttribute(self::DATE, $timestamp);
     }
@@ -162,6 +167,11 @@ class Entity extends Base\PublicEntity
         $this->increment(self::SERVICE_TAX, $value);
     }
 
+    public function incrementTax($value)
+    {
+        $this->increment(self::TAX, $value);
+    }
+
     public function incrementTotalCount()
     {
         $this->increment(self::TOTAL_COUNT);
@@ -195,6 +205,13 @@ class Entity extends Base\PublicEntity
     public function setFees($fees)
     {
         $this->setAttribute(self::FEES, $fees);
+    }
+
+    public function setTax($tax)
+    {
+        assertTrue($tax >= 0);
+
+        $this->setAttribute(self::TAX, $tax);
     }
 
     public function setServiceTax($servicetax)

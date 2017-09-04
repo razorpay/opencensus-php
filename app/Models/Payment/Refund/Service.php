@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Refund;
 
 use Config;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
@@ -11,22 +12,29 @@ use RZP\Models\Base;
 use RZP\Constants;
 use RZP\Constants\Table;
 use RZP\Models\Payment;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Refund;
 use RZP\Exception;
 use RZP\Models\Transaction;
+use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
     /**
-     * We get the last 100 days refunds created of a gateway.
+     * We get the last 10 days refunds created of a gateway.
      * We run the cron for this once a day.
      */
-    const GATEWAY_REFUND_RECORDS_TIME_LIMIT = 8640000;
+    const GATEWAY_REFUND_RECORDS_TIME_LIMIT = 864000;
 
     const MAX_REFUND_RETRY_ATTEMPTS = 3;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
 
     public function create(array $input)
     {
@@ -39,7 +47,7 @@ class Service extends Base\Service
         return (new Payment\Service)->refund($paymentId, $input);
     }
 
-    public function getRefundsFile(array $input = array())
+    public function getRefundsFile(array $input = [])
     {
         list($from, $to) = $this->getTimestamps($input);
 
@@ -102,7 +110,13 @@ class Service extends Base\Service
                 break;
 
             default:
-                throw new Exception\LogicException('Invalid method provided for generating refunds file.');
+                throw new Exception\LogicException(
+                    'Invalid method provided for generating refunds file.',
+                    null,
+                    [
+                        'input'     => $input,
+                        'method'    => $method,
+                    ]);
         }
 
         if ($gatewayCode === null)
@@ -198,8 +212,9 @@ class Service extends Base\Service
 
     protected function getTimestamps($input)
     {
-        $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
-        $to = Carbon::today('Asia/Kolkata')->timestamp - 1;
+        $from = Carbon::yesterday(Timezone::IST)->getTimestamp();
+        $to = Carbon::today(Timezone::IST)->getTimestamp() - 1;
+
         $frequency = 'daily';
 
         if (isset($input['frequency']))
@@ -211,28 +226,28 @@ class Service extends Base\Service
         {
             if (isset($input['on']))
             {
-                $dt = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata');
+                $dt = Carbon::createFromFormat('Y-m-d', $input['on'], Timezone::IST);
 
-                $from = $dt->startOfMonth()->timestamp;
-                $to   = $dt->endOfMonth()->addDay()->timestamp - 1;
+                $from = $dt->startOfMonth()->getTimestamp();
+                $to   = $dt->endOfMonth()->addDay()->getTimestamp() - 1;
             }
             else
             {
-                $dt = Carbon::yesterday('Asia/Kolkata');
+                $dt = Carbon::yesterday(Timezone::IST);
 
-                $from = $dt->startOfMonth()->timestamp;
-                $to   = $dt->endOfMonth()->addDay()->timestamp - 1;
+                $from = $dt->startOfMonth()->getTimestamp();
+                $to   = $dt->endOfMonth()->addDay()->getTimestamp() - 1;
             }
         }
         else
         {
             if (isset($input['on']))
             {
-                $from = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata')->setTime(0,0,0);
+                $from = Carbon::createFromFormat('Y-m-d', $input['on'], Timezone::IST)->setTime(0,0,0);
 
-                $fromTimeStamp = $from->timestamp;
+                $fromTimeStamp = $from->getTimestamp();
 
-                $to = $from->addDay()->timestamp - 1;
+                $to = $from->addDay()->getTimestamp() - 1;
 
                 $from = $fromTimeStamp;
             }
@@ -495,7 +510,14 @@ class Service extends Base\Service
 
                     if ($transaction === null)
                     {
-                        throw new Exception\LogicException('Transaction did not get created');
+                        throw new Exception\LogicException(
+                            'Transaction did not get created',
+                            null,
+                            [
+                                'refund_id'     => $refundWithoutTxn->getId(),
+                                'payment_id'    => $payment->getId(),
+                                'force'         => $forceRefundTransaction,
+                            ]);
                     }
 
                     //
@@ -647,61 +669,71 @@ class Service extends Base\Service
 
     public function retryFailedRefunds($input)
     {
-        $this->trace->info(TraceCode::REFUND_RETRY_INITIATED);
+        $this->trace->info(
+            TraceCode::REFUND_RETRY_INITIATED,
+            $input);
 
-        $gateways = (array) ($input['gateways'] ?? Payment\Gateway::REFUND_RETRY_GATEWAYS);
-
-        $status = [];
-
-        $attempts = self::MAX_REFUND_RETRY_ATTEMPTS;
-
-        //
-        // Every combination of gateway / refund needs to be processed
-        // Get the appropriate refunds and pass them as part of the refund
-        // Get refunds that have failed and those that have not been
-        // retried more than 3. Post every retry update last retried at.
-        //
-        $refunds = $this->repo->refund->fetchRefundsByGatewayAndAttempts($gateways, $attempts);
-
-        $success = $failure = 0;
-
-        foreach ($refunds as $refund)
-        {
-            $refundId = $refund->getId();
-
-            try
+        // Adding a lock for 15 minutes to avoid race conditions on the cron.
+        // This cron is only executed once a day for now.
+        $summary = $this->mutex->acquireAndRelease(
+            'refund_retry_failed',
+            function() use ($input)
             {
-                $processor = $this->getNewProcessor($refund->merchant);
+                $gateways = (array) ($input['gateways'] ?? Payment\Gateway::REFUND_RETRY_GATEWAYS);
 
-                $status[$refundId] = $processor->processRefundRetry($refund);
+                //
+                // Every combination of gateway / refund needs to be processed
+                // Get the appropriate refunds and pass them as part of the refund
+                // Get refunds that have failed and those that have not been
+                // retried more than 3. Post every retry update last retried at.
+                //
+                $refunds = $this->repo
+                                ->refund
+                                ->fetchRefundsByGatewayAndAttempts($gateways, self::MAX_REFUND_RETRY_ATTEMPTS);
 
-                $success++;
-            }
-            catch (\Throwable $e)
-            {
-                $this->trace->traceException(
-                    $e,
-                    Trace::DEBUG,
-                    TraceCode::PAYMENT_VERIFY_REFUND_EXCEPTION,
-                    [
-                        'refund_id' => $refundId,
-                        'refund_attempts' => $refund->getAttempts()
-                    ]);
+                $status = [];
 
-                $failure++;
-            }
-        }
+                $success = $failure = 0;
 
-        $summary = [
-            'successful'    => $success,
-            'failure'       => $failure,
-            'status'        => $status,
-        ];
+                foreach ($refunds as $refund)
+                {
+                    $refundId = $refund->getId();
+
+                    try
+                    {
+                        $processor = $this->getNewProcessor($refund->merchant);
+
+                        $status[$refundId] = $processor->processRefundRetry($refund);
+
+                        $success++;
+                    }
+                    catch (\Throwable $e)
+                    {
+                        $this->trace->traceException(
+                            $e,
+                            Trace::DEBUG,
+                            TraceCode::PAYMENT_VERIFY_REFUND_EXCEPTION,
+                            [
+                                'refund_id' => $refundId,
+                                'refund_attempts' => $refund->getAttempts()
+                            ]);
+
+                        $failure++;
+                    }
+                }
+
+                return [
+                    'successful'    => $success,
+                    'failure'       => $failure,
+                    'status'        => $status,
+                ];
+            },
+            900,
+            ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
 
         $this->trace->info(
             TraceCode::REFUND_RETRY_RESULT,
             [
-                $status,
                 'summary' => $summary
             ]);
 

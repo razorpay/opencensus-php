@@ -30,7 +30,7 @@ class Merchant
     protected $txns;
     protected $setlDetails;
     protected $fee;
-    protected $serviceTax;
+    protected $tax;
     protected $setlTime;
     protected $setlDetailAmounts;
     protected $scheduleTasks;
@@ -79,7 +79,7 @@ class Merchant
         $amount,
         $fee,
         $apiFee,
-        $serviceTax,
+        $tax,
         $setlTime,
         array $setlDetailAmounts): array
     {
@@ -88,7 +88,7 @@ class Merchant
         $this->fee = $fee;
         $this->txns = $txns;
 
-        $this->serviceTax = $serviceTax;
+        $this->tax = $tax;
         $this->setlTime = $setlTime;
         $this->setlDetailAmounts = $setlDetailAmounts;
 
@@ -124,33 +124,6 @@ class Merchant
         ];
 
         $this->repo->transaction->settled($this->txns, $values);
-    }
-
-    protected function collectApiFees($apiFee): array
-    {
-        $this->amount = $apiFee;
-        $this->fee = 0;
-        $this->txns = new Base\PublicCollection;
-        $this->setlDetails = new Base\PublicCollection;
-        $this->serviceTax = 0;
-
-        $adjInput = array(
-            'description' => 'Settlement for ' . time(),
-            'amount' => $apiFee,
-            'currency' => 'INR',
-        );
-
-        $adj = (new Adjustment\Core)->createAdjustment($adjInput, $this->merchant);
-
-        $this->txns->push($adj->transaction);
-
-        $setl = $this->createSetlEntityAndTxn();
-
-        (new Transaction\Core)->updateBalances($this->setlTransaction, false);
-
-        $this->saveChangesToDb();
-
-        return [$setl, $adj->transaction];
     }
 
     public function createSettlementDetails($setl)
@@ -196,6 +169,7 @@ class Merchant
                 case Transaction\Type::REFUND:
                 case Transaction\Type::PAYOUT:
                 case Transaction\Type::TRANSFER:
+                case Transaction\Type::DISPUTE:
                     $details[$componentType]['amount'] -= $txn->getAmount();
                     break;
 
@@ -203,6 +177,7 @@ class Merchant
                     $details[$componentType]['amount'] += $txn->getCredit();
                     $details[$componentType]['amount'] -= $txn->getDebit();
                     break;
+
                 default:
                     throw new Exception\LogicException('Invalid Settlement-component-type:' . $componentType);
             }
@@ -328,7 +303,8 @@ class Merchant
             Settlement\Entity::AMOUNT       => $this->amount,
             Settlement\Entity::STATUS       => Status::CREATED,
             Settlement\Entity::FEES         => $this->fee,
-            Settlement\Entity::SERVICE_TAX  => $this->serviceTax,
+            Settlement\Entity::SERVICE_TAX  => $this->tax,
+            Settlement\Entity::TAX          => $this->tax,
             Settlement\Entity::CHANNEL      => $this->channel,
         ];
 

@@ -59,6 +59,14 @@ class Core extends Base\Core
 
         $this->repo->terminal->addMerchantToTerminal($terminal, $merchantId);
 
+        $this->trace->info(
+            TraceCode::TERMINAL_ADD_MERCHANT,
+            [
+                'terminal_id'      => $terminal->getId(),
+                'merchant_id'      => $merchantId,
+                'merchant_id_list' => $subMerchantsIds,
+            ]);
+
         return $terminal;
     }
 

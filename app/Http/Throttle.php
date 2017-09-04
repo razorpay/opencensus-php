@@ -57,10 +57,12 @@ class Throttle
 
     protected function getIdentifier($auth)
     {
+        $routeName = $this->request->route()->getName();
+
         switch ($auth)
         {
             case Type::ADMIN_AUTH:
-                return $this->request->header(BasicAuth::ADMIN_TOKEN_HEADER);
+                return $routeName . $this->request->header(BasicAuth::ADMIN_TOKEN_HEADER);
 
             /**
              * Primary rate-limiting where we rate-limit

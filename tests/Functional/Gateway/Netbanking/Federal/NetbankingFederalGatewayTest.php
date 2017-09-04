@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Federal;
 
 use Mail;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\TestCase;
@@ -229,7 +230,7 @@ class NetbankingFederalGatewayTest extends TestCase
 
         $payments = $this->getEntities('payment', [], true);
 
-        $createdAt = Carbon::yesterday('Asia/Kolkata')->addHours(10)
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(10)
                                                       ->addMinutes(30)
                                                       ->timestamp;
 
@@ -259,7 +260,7 @@ class NetbankingFederalGatewayTest extends TestCase
 
         $refunds = $this->getEntities('refund', [], true);
 
-        $createdAt = Carbon::yesterday('Asia/Kolkata')->addHours(10)
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(10)
                                                       ->addMinutes(45)
                                                       ->timestamp;
 
@@ -271,7 +272,7 @@ class NetbankingFederalGatewayTest extends TestCase
 
     protected function checkMailQueue()
     {
-        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+        $date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
         $testData = [
             'subject' => 'Federal Netbanking claims and refund files for '.$date,

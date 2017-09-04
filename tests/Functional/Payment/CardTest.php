@@ -78,6 +78,16 @@ class CardTest extends TestCase
         {
             $this->doAuthPayment($payment);
         });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $riskEntity = $this->getLastEntity('risk', true);
+
+        $this->assertEquals($payment['id'], $riskEntity['payment_id']);
+
+        $this->assertEquals('PAYMENT_FAILED_DUE_TO_BLOCKED_CARD', $riskEntity['reason']);
+
+        $this->assertNull($riskEntity['risk_score']);
     }
 
     public function testSupportedCardNetworks()
@@ -235,7 +245,7 @@ class CardTest extends TestCase
 
         $testData = $this->testData[$func];
 
-        $this->replaceDefualtValues($testData['request']['content']);
+        $this->replaceDefaultValues($testData['request']['content']);
 
         return $this->runRequestResponseFlow($testData);
     }

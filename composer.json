@@ -11,6 +11,8 @@
         "mailgun/mailgun-php": "~2.0",
         "aws/aws-sdk-php-laravel": "3.1.0",
         "symfony/event-dispatcher": "~2.2",
+        "symfony/http-kernel": "3.2.13",
+        "symfony/http-foundation": "3.2.13",
         "cebe/markdown": "~1.0.1",
         "elasticsearch/elasticsearch": "^5.2",
         "razorpay/ifsc": "~1.0",
@@ -36,7 +38,9 @@
         "schuppo/password-strength": "~1.5",
         "razorpay/slack-laravel": "1.3.9",
         "laravel/tinker": "1.0.1",
-        "graham-campbell/throttle": "^5.3"
+        "graham-campbell/throttle": "^5.3",
+        "rtconner/laravel-tagging": "~2.2",
+        "razorpay/trace": "~2.0"
     },
     "repositories": [
         {
@@ -46,6 +50,10 @@
         {
             "type": "vcs",
             "url": "git@github.com:razorpay/upi-clients.git"
+        },
+        {
+            "type": "vcs",
+            "url": "git@github.com:razorpay/trace.git"
         }
     ],
     "require-dev": {
@@ -56,7 +64,8 @@
         "codacy/coverage": "dev-master",
         "tijsverkoyen/css-to-inline-styles": "2.*",
         "orchestra/testbench": "3.*",
-        "php-http/mock-client": "^0.3.3"
+        "php-http/mock-client": "^0.3.3",
+        "symfony/dom-crawler": "3.*"
     },
     "autoload": {
         "classmap": [

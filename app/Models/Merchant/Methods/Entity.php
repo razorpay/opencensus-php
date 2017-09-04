@@ -3,8 +3,7 @@
 namespace RZP\Models\Merchant\Methods;
 
 use RZP\Models\Base;
-use RZP\Models\Feature;
-use RZP\Exception;
+use RZP\Models\Payment\Processor\Netbanking as NetbankingProcessor;
 
 class Entity extends Base\PublicEntity
 {
@@ -12,6 +11,7 @@ class Entity extends Base\PublicEntity
     const CARD              = 'card';
     const NETBANKING        = 'netbanking';
     const AMEX              = 'amex';
+    const DISABLED_BANKS    = 'disabled_banks';
     const BANKS             = 'banks';
     const MOBIKWIK          = 'mobikwik';
     const OLAMONEY          = 'olamoney';
@@ -21,6 +21,7 @@ class Entity extends Base\PublicEntity
     const AIRTELMONEY       = 'airtelmoney';
     const FREECHARGE        = 'freecharge';
     const JIOMONEY          = 'jiomoney';
+    const SBIBUDDY          = 'sbibuddy';
     const OPENWALLET        = 'openwallet';
     const MPESA             = 'mpesa';
     const EMI               = 'emi';
@@ -43,7 +44,7 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::MERCHANT_ID,
         self::AMEX,
-        self::BANKS,
+        self::DISABLED_BANKS,
         self::PAYTM,
         self::PAYZAPP,
         self::PAYUMONEY,
@@ -52,6 +53,7 @@ class Entity extends Base\PublicEntity
         self::MOBIKWIK,
         self::OLAMONEY,
         self::JIOMONEY,
+        self::SBIBUDDY,
         self::OPENWALLET,
         self::MPESA,
         self::EMI,
@@ -67,7 +69,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::CARD,
         self::AMEX,
-        self::BANKS,
+        self::DISABLED_BANKS,
         self::PAYTM,
         self::PAYZAPP,
         self::PAYUMONEY,
@@ -76,6 +78,7 @@ class Entity extends Base\PublicEntity
         self::MOBIKWIK,
         self::OLAMONEY,
         self::JIOMONEY,
+        self::SBIBUDDY,
         self::OPENWALLET,
         self::MPESA,
         self::EMI,
@@ -91,7 +94,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::CARD,
         self::AMEX,
-        self::BANKS,
+        self::DISABLED_BANKS,
         self::PAYTM,
         self::PAYZAPP,
         self::PAYUMONEY,
@@ -100,6 +103,7 @@ class Entity extends Base\PublicEntity
         self::MOBIKWIK,
         self::OLAMONEY,
         self::JIOMONEY,
+        self::SBIBUDDY,
         self::OPENWALLET,
         self::MPESA,
         self::EMI,
@@ -122,9 +126,11 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY       => false,
         self::FREECHARGE     => false,
         self::JIOMONEY       => false,
+        self::SBIBUDDY       => false,
         self::OPENWALLET     => false,
         self::MPESA          => false,
-        self::BANKS          => [],
+        self::DISABLED_BANKS => [],
+        self::BANKS          => '[]',
         self::EMI            => false,
         self::UPI            => true,
         self::AEPS           => false,
@@ -143,6 +149,7 @@ class Entity extends Base\PublicEntity
         self::AIRTELMONEY,
         self::FREECHARGE,
         self::JIOMONEY,
+        self::SBIBUDDY,
         self::OPENWALLET,
         self::MPESA,
     );
@@ -179,6 +186,7 @@ class Entity extends Base\PublicEntity
         self::AIRTELMONEY   => 'bool',
         self::FREECHARGE    => 'bool',
         self::JIOMONEY      => 'bool',
+        self::SBIBUDDY      => 'bool',
         self::OPENWALLET    => 'bool',
         self::MPESA         => 'bool',
         self::EMI           => 'bool',
@@ -311,6 +319,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::JIOMONEY);
     }
 
+    public function isSbibuddyEnabled()
+    {
+        return $this->getAttribute(self::SBIBUDDY);
+    }
+
     public function isEmiEnabled()
     {
         return $this->getAttribute(self::EMI);
@@ -350,9 +363,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMEX);
     }
 
-    public function getBanks()
+    public function getEnabledBanks()
     {
-        return $this->getAttribute(self::BANKS);
+        return NetbankingProcessor::getEnabledBanks($this->getDisabledBanks());
+    }
+
+    public function getDisabledBanks()
+    {
+        return $this->getAttribute(self::DISABLED_BANKS);
     }
 
     public function getPaytm()
@@ -382,6 +400,11 @@ class Entity extends Base\PublicEntity
     public function getFreecharge()
     {
         return $this->getAttribute(self::FREECHARGE);
+    }
+
+    public function getSbibuddy()
+    {
+        return $this->getAttribute(self::SBIBUDDY);
     }
 
     public function getOpenwallet()
@@ -423,9 +446,9 @@ class Entity extends Base\PublicEntity
         return $walletsStatus;
     }
 
-    public function setBanks(array $banks)
+    public function setDisabledBanks(array $banks)
     {
-        $this->setAttribute(self::BANKS, $banks);
+        $this->setAttribute(self::DISABLED_BANKS, $banks);
     }
 
     public function setAmex($amex)
@@ -468,6 +491,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FREECHARGE, $value);
     }
 
+    public function setSbibuddy($value)
+    {
+        $this->setAttribute(self::SBIBUDDY, $value);
+    }
+
     public function setOpenwallet($value)
     {
         $this->setAttribute(self::OPENWALLET, $value);
@@ -500,37 +528,18 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::EMI, $emi);
     }
 
-    protected function getBanksAttribute()
+    protected function getDisabledBanksAttribute()
     {
-        return json_decode($this->attributes[self::BANKS], true);
-    }
-
-    protected function setBanksAttribute(array $banks)
-    {
-        $this->attributes[self::BANKS] = json_encode($banks);
-    }
-
-    public function toArrayWithBankNames()
-    {
-        $banks = $this->getBanks();
-
-        $names = \RZP\Models\Payment\Processor\Netbanking::getNames($banks);
-
-        // Unsetting AIRP for now
-        unset($names['AIRP']);
-
-        //
-        // Disabling HDFC netbanking for FxKart's two accounts
-        // Ref: https://razorpay.slack.com/archives/C0432SCD5/p1497018993519190
-        //
-        $fxKartMerchantIds = ['7dTJ1BmaZs62wG', '7b0Hl7t1Q5EnHo'];
-
-        if (in_array($this->getMerchantId(), $fxKartMerchantIds, true) === true)
+        if (empty($this->attributes[self::DISABLED_BANKS]) === true)
         {
-            unset($names['HDFC']);
+            return [];
         }
+        return json_decode($this->attributes[self::DISABLED_BANKS], true);
+    }
 
-        return $names;
+    protected function setDisabledBanksAttribute(array $banks)
+    {
+        $this->attributes[self::DISABLED_BANKS] = json_encode(array_values($banks));
     }
 
     public function getWalletAttribute()
@@ -543,6 +552,15 @@ class Entity extends Base\PublicEntity
         }
 
         return $wallets;
+    }
+
+    public function getSupportedBanks()
+    {
+        $banks = NetbankingProcessor::getSupportedBanks($this->merchant);
+
+        $supportedBanks = array_diff($banks, $this->getDisabledBanks());
+
+        return $supportedBanks;
     }
 
     public static function getAllMethodNames()

@@ -6,6 +6,7 @@ use Cache;
 use Carbon\Carbon;
 use Hash;
 use Mail;
+use Mockery;
 
 use RZP\Mail\Admin\Account as AdminMail;
 use RZP\Models\Admin\Admin;
@@ -982,5 +983,47 @@ class AdminTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
+    }
+
+    public function testConfigKeys()
+    {
+        $this->ba->appAuth();
+
+        $request = $this->testData['testConfigKeysSet']['request'];
+
+        $this->assertArraySelectiveEquals(
+                $this->testData['testConfigKeysSet']['response'],
+                $this->makeRequestAndGetContent($request)
+            );
+
+        $request = $this->testData['testConfigKeysFetch']['request'];
+
+        $this->assertArraySelectiveEquals(
+                $this->testData['testConfigKeysFetch']['response'],
+                $this->makeRequestAndGetContent($request)
+            );
+    }
+
+    public function testConfigKeysSetSensitive()
+    {
+        // Test to ensure that sensitive config keys do not get traced
+        // Skipped because there are currently no sensitive config keys
+        $this->markTestSkipped('No sensitive config keys at the moment');
+
+        $this->ba->appAuth();
+
+        $trace = Mockery::mock('RZP\Trace\Trace')->makePartial();
+        $trace->shouldNotReceive('info');
+        $this->app->instance('trace', $trace);
+
+        $request = [
+            'method'  => 'PUT',
+            'url'     => '/config/keys',
+            'content' => [
+                'sensitive_config_key' => '1',
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
     }
 }

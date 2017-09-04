@@ -53,4 +53,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         return null;
     }
+
+    protected function shouldAttemptForceAuthorizeFailed()
+    {
+        return true;
+    }
 }

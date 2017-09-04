@@ -7,19 +7,19 @@ use RZP\Error\ErrorCode;
 
 class PublicEntity extends UniqueIdEntity
 {
-    const ENTITY = 'entity';
+    const ENTITY                = 'entity';
 
-    const PUBLIC_ID = 'public_id';
+    const PUBLIC_ID             = 'public_id';
 
-    const ADMIN = 'admin';
+    const ADMIN                 = 'admin';
 
-    const MERCHANT_ID = 'merchant_id';
+    const MERCHANT_ID           = 'merchant_id';
 
     /**
      * General constant used as key for hold of collection of ids
      * in various cases.
-     */
-    const IDS = 'ids';
+    */
+    const IDS                   = 'ids';
 
     protected static $sign      = '';
 
@@ -33,6 +33,21 @@ class PublicEntity extends UniqueIdEntity
      * @var array
      */
     protected $amounts          = [];
+
+    /**
+     * Usage:
+     * - Base/EloquentEx.php: to serialize attributes with $dates fields casted to int,
+     * - Base/PublicEntity.php: formatDateFieldsForReport(): to format $dates fields
+     *   converted to a uniform string format across reports.
+     *
+     * Also refer Base/Entity.php::getDates().
+     *
+     * @var array
+     */
+    protected $dates            = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    ];
 
     /**
      * For an entity which is being exposed outside,
@@ -59,6 +74,8 @@ class PublicEntity extends UniqueIdEntity
         self::ID,
         self::ENTITY,
     ];
+
+    protected $embeddedRelations = [];
 
     public function toArrayPublic()
     {
@@ -103,16 +120,16 @@ class PublicEntity extends UniqueIdEntity
 
         unset($array[self::ENTITY]);
 
-        $this->formatAmountFieldsForReport($array);
-
-        $this->formatDateFieldsForReport($array);
-
         // Remove fields hidden in reports
 
         foreach ($this->getHiddenInReport() as $key)
         {
             unset($array[$key]);
         }
+
+        $this->formatAmountFieldsForReport($array);
+
+        $this->formatDateFieldsForReport($array);
 
         return $array;
     }
@@ -132,7 +149,17 @@ class PublicEntity extends UniqueIdEntity
     {
         foreach ($this->dates as $key)
         {
-            if (isset($report[$key]) === true)
+            //
+            // Adding a is_numeric check here because we want
+            // to format the dates only if they are in epoch
+            // format and not in some other date format already.
+            //
+            // For example: settled_on of settlements and payouts
+            // is formatted to `d/m/Y` in accessors. We don't
+            // have to format anything there for the report.
+            //
+            if ((isset($report[$key]) === true) and
+                (is_numeric($report[$key]) === true))
             {
                 $report[$key] = $this->getDateInFormatDMYHMS($key);
             }
@@ -175,28 +202,40 @@ class PublicEntity extends UniqueIdEntity
 
     public function relationsToArrayPublic()
     {
-        $array = [];
         $public = array_flip($this->public);
 
         $relations = $this->relations;
 
+        // Snake case relation's keys
+
         foreach ($relations as $key => $value)
         {
-            $newKey = snake_case($key);
-            if ($newKey !== $key)
+            $snakeCaseKey = snake_case($key);
+
+            if ($snakeCaseKey !== $key)
             {
-                $relations[$newKey] = $value;
+                $relations[$snakeCaseKey] = $value;
+
                 unset($relations[$key]);
             }
         }
 
         $publicRelations = array_intersect_key($relations, $public);
 
+        $array = [];
+
         foreach ($publicRelations as $key => $value)
         {
             if (PublicCollection::isPublicCollection($value) === true)
             {
-                $array[$key] = $value->toArrayPublicEmbedded();
+                if ($this->isRelationEmbeddedInResponse($key) === true)
+                {
+                    $array[$key] = $value->toArrayPublicEmbedded();
+                }
+                else
+                {
+                    $array[$key] = $value->toArrayPublic();
+                }
             }
             else if (static::isPublicEntity($value) === true)
             {
@@ -209,6 +248,11 @@ class PublicEntity extends UniqueIdEntity
         }
 
         return $array;
+    }
+
+    public function isRelationEmbeddedInResponse(string $key)
+    {
+        return in_array($key, $this->embeddedRelations);
     }
 
     public function setPublicIdAttribute(array & $array)

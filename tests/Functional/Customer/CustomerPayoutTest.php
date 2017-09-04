@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Customer;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -35,7 +36,7 @@ class CustomerPayoutTest extends TestCase
     {
         $this->testAddCustomerBankAccount();
 
-        (new Carbon('Asia/Kolkata'))->setTimestamp(time() + 1);
+        (new Carbon(Timezone::IST))->setTimestamp(time() + 1);
 
         $this->testAddCustomerBankAccount();
 

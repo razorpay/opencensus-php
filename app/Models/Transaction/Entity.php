@@ -9,6 +9,7 @@ use RZP\Models\Payment\Refund;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant;
+use RZP\Models\Dispute;
 
 class Entity extends Base\PublicEntity
 {
@@ -22,6 +23,7 @@ class Entity extends Base\PublicEntity
     const CURRENCY            = 'currency';
     const FEE                 = 'fee';
     const SERVICE_TAX         = 'service_tax';
+    const TAX                 = 'tax';
     const PRICING_RULE_ID     = 'pricing_rule_id';
     const BALANCE             = 'balance';
     const GATEWAY_AMOUNT      = 'gateway_amount';
@@ -50,7 +52,7 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'transaction';
 
-    protected $fillable = array(
+    protected $fillable = [
         self::ENTITY_ID,
         self::TYPE,
         self::MERCHANT_ID,
@@ -64,6 +66,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_SERVICE_TAX,
         self::GATEWAY_SETTLED_AT,
         self::SERVICE_TAX,
+        self::TAX,
         self::GRATIS,
         self::FEE_CREDITS,
         self::BALANCE,
@@ -75,10 +78,10 @@ class Entity extends Base\PublicEntity
         self::FEE_BEARER,
         self::CREDIT_TYPE,
         self::ON_HOLD,
-        self::SETTLED_AT,
-        self::SERVICE_TAX);
+        self::SETTLED_AT
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::ENTITY,
         self::ENTITY_ID,
@@ -93,7 +96,9 @@ class Entity extends Base\PublicEntity
         self::SETTLED,
         self::CREATED_AT,
         self::SETTLED_AT,
-        self::SETTLEMENT_ID);
+        self::SETTLEMENT_ID,
+        self::TAX,
+    ];
 
     protected $publicSetters = array(
         self::ID,
@@ -102,6 +107,8 @@ class Entity extends Base\PublicEntity
         self::SETTLEMENT_ID);
 
     protected $dates = array(
+        self::CREATED_AT,
+        self::UPDATED_AT,
         self::SETTLED_AT,
     );
 
@@ -122,6 +129,7 @@ class Entity extends Base\PublicEntity
         self::SETTLED               => 0,
         self::PRICING_RULE_ID       => null,
         self::SERVICE_TAX           => null,
+        self::TAX                   => null,
         self::FEE_MODEL             => Merchant\FeeModel::NA,
         self::FEE_BEARER            => Merchant\FeeBearer::NA,
         self::CREDIT_TYPE           => CreditType::DEFAULT,
@@ -133,20 +141,7 @@ class Entity extends Base\PublicEntity
         self::CREDIT,
         self::FEE,
         self::SERVICE_TAX,
-    );
-
-    protected $reportAttributes = array(
-        self::CREATED_AT,
-        self::AMOUNT,
-        self::DEBIT,
-        self::CREDIT,
-        self::FEE,
-        self::SERVICE_TAX,
-        self::SETTLED_AT,
-        self::SETTLEMENT_ID,
-        Payment\Entity::DESCRIPTION,
-        Payment\Entity::NOTES,
-        self::PAYMENT_ID,
+        self::TAX,
     );
 
     protected $casts = [
@@ -155,6 +150,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT              => 'int',
         self::FEE                 => 'int',
         self::SERVICE_TAX         => 'int',
+        self::TAX                 => 'int',
         self::BALANCE             => 'int',
         self::GATEWAY_AMOUNT      => 'int',
         self::GATEWAY_FEE         => 'int',
@@ -274,6 +270,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CREDIT_TYPE);
     }
 
+    public function getSettlementId()
+    {
+        return $this->getAttribute(self::SETTLEMENT_ID);
+    }
+
 /* ----------------------------- Accessors -----------------------------------*/
 
     protected function getApiFeeAttribute()
@@ -335,6 +336,11 @@ class Entity extends Base\PublicEntity
         return (int) $this->attributes[self::SERVICE_TAX];
     }
 
+    protected function getTaxAttribute()
+    {
+        return (int) $this->attributes[self::TAX];
+    }
+
     protected function setFeeBearerAttribute($bearer)
     {
         $this->attributes[self::FEE_BEARER] = Merchant\FeeBearer::getValueForBearerString($bearer);
@@ -393,6 +399,11 @@ class Entity extends Base\PublicEntity
     public function getServiceTax()
     {
         return $this->getAttribute(self::SERVICE_TAX);
+    }
+
+    public function getTax()
+    {
+        return $this->getAttribute(self::TAX);
     }
 
     public function getPricingRule()
@@ -525,6 +536,13 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SERVICE_TAX, $servicetax);
     }
 
+    public function setTax($tax)
+    {
+        assertTrue($tax >= 0);
+
+        $this->setAttribute(self::TAX, $tax);
+    }
+
     public function setFeeBearer($bearer)
     {
         $this->setAttribute(self::FEE_BEARER, $bearer);
@@ -570,6 +588,11 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::TRANSFER);
     }
 
+    public function isTypeDispute()
+    {
+        return ($this->getType() === Type::DISPUTE);
+    }
+
     public function isGratis()
     {
         return $this->getAttribute(self::GRATIS);
@@ -595,11 +618,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FEE_BEARER) === Merchant\FeeBearer::CUSTOMER;
     }
 
+    public function isPostpaid()
+    {
+        return ($this->getAttribute(self::FEE_MODEL) === Merchant\FeeModel::POSTPAID);
+    }
+
     public function toArrayReport()
     {
         $reportTxn = parent::toArrayReport();
 
         unset($reportTxn[self::ID]);
+
+        $tax = $reportTxn[self::TAX];
+
+         // Add tax key at the end to maintain order of columns in the report
+        unset($reportTxn[self::TAX]);
 
         $reportTxn[Payment\Entity::DESCRIPTION] = null;
         $reportTxn[Payment\Entity::NOTES] = null;
@@ -616,7 +649,7 @@ class Entity extends Base\PublicEntity
         // while we only want to provide date.
         $reportTxn[self::SETTLED_AT] = $this->getDateInFormatDMY(self::SETTLED_AT);
 
-        if ($this->isTypePayment())
+        if ($this->isTypePayment() === true)
         {
             $payment = $this->source;
 
@@ -631,7 +664,7 @@ class Entity extends Base\PublicEntity
 
             $this->fillPaymentDetails($payment, $reportTxn);
         }
-        else if ($this->isTypeRefund())
+        else if ($this->isTypeRefund() === true)
         {
             $refund = $this->source;
 
@@ -648,19 +681,31 @@ class Entity extends Base\PublicEntity
 
             $this->fillPaymentDetails($payment, $reportTxn);
         }
-        else if ($this->isTypeSettlement())
+        else if ($this->isTypeSettlement() === true)
         {
             $settlement = $this->source;
 
             $reportTxn['settlement_utr'] = $settlement->getUtr();
             $reportTxn[self::SETTLED] = null;
         }
-        else if ($this->isTypeAdjustment())
+        else if ($this->isTypeAdjustment() === true)
         {
             $adjustment = $this->source;
 
             $reportTxn[Adjustment\Entity::DESCRIPTION] = $adjustment->getDescription();
         }
+        else if ($this->isTypeDispute() === true)
+        {
+            $dispute = $this->source;
+
+            $payment = $dispute->payment;
+
+            $reportTxn[Dispute\Entity::PAYMENT_ID] = $payment->getPublicId();
+
+            $this->fillPaymentDetails($payment, $reportTxn);
+        }
+
+        $reportTxn[self::TAX] = $tax;
 
         return $reportTxn;
     }

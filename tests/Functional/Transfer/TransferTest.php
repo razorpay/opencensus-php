@@ -2,18 +2,14 @@
 
 namespace RZP\Tests\Functional\Transfer;
 
-use Carbon\Carbon;
-
 use RZP\Constants\Entity;
-use RZP\Models\Reversal;
-use RZP\Models\Payment;
 use RZP\Models\Transfer;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class TransferTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use PaymentTrait;
 
     const STANDARD_PRICING_PLAN_ID  = '1A0Fkd38fGZPVC';
 
@@ -65,9 +61,9 @@ class TransferTest extends TestCase
         $response = $this->startTest($data);
 
         $expected = [
-            'id'          => $reversal['id'],
-            'transfer_id' => $transfer['id'],
-            'amount'      => $transfer['amount']
+            'id'            => $reversal['id'],
+            'transfer_id'   => $transfer['id'],
+            'amount'        => $transfer['amount']
         ];
 
         $this->assertArraySelectiveEquals($expected, $response);
@@ -84,7 +80,7 @@ class TransferTest extends TestCase
         // When Transfer Fee = 0, zero pricing
         $this->assertEquals($transfer['amount'], $this->getBalance($this->linkedAccountId));
 
-        $this->checkTransferAndTxnRecords($transfer, ['fees' => 0, 'service_tax' => 0]);
+        $this->checkTransferAndTxnRecords($transfer, ['fees' => 0, 'service_tax' => 0, 'tax' => 0]);
 
         $this->checkPaymentAndTxnRecords($transfer);
     }
@@ -97,18 +93,19 @@ class TransferTest extends TestCase
 
         $transfer = $this->createTransfer('account');
 
-        $serviceTax = 4;
-        $expectedFee = 20 + $serviceTax;
+        $tax = 4;
+        $expectedFee = 20 + $tax;
 
         $transferData = [
-            'fees'        => $expectedFee,
-            'service_tax' => $serviceTax
+            'fees'  => $expectedFee,
+            'tax'   => $tax
         ];
 
         $txnData = [
             'amount'      => $transfer['amount'],
             'fee'         => $expectedFee,
-            'service_tax' => $serviceTax,
+            'service_tax' => $tax,
+            'tax'         => $tax,
             'debit'       => $transfer['amount'] + $expectedFee
         ];
 
@@ -214,7 +211,7 @@ class TransferTest extends TestCase
 
         $this->runRequestResponseFlow($this->testData[__FUNCTION__], function() use ($transfer, $body)
         {
-            $this->patchTransfer('account', 'trf_' . $transfer['id'], $body);
+            $this->patchTransfer('account', Transfer\Entity::getSignedId($transfer['id']), $body);
         });
     }
 
@@ -313,6 +310,27 @@ class TransferTest extends TestCase
         });
     }
 
+    public function testPaymentAfterTransferReversal()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/' . $payment->getPublicId() . '/transfers';
+
+        $this->ba->privateAuth();
+
+        $transfers = $this->startTest();
+
+        $payment = $this->getEntityById('payment', $payment->getId(), true);
+        $this->assertEquals(1000, $payment['amount_transferred']);
+
+        $this->createReversal($transfers['items'][0]['id'], 200);
+
+        $payment = $this->getEntityById('payment', $payment['id'], true);
+        $this->assertEquals(800, $payment['amount_transferred']);
+    }
+
     public function testLiveTransferFundsOnHold()
     {
         $this->fixtures->merchant->holdFunds();
@@ -380,7 +398,6 @@ class TransferTest extends TestCase
         return $this->makeRequestAndGetContent($request);
     }
 
-    // @todo: Refactor for transfer pricing calc
     protected function checkReversals($amount = null)
     {
         $accOldBalance = $this->getBalance($this->linkedAccountId);
@@ -488,6 +505,7 @@ class TransferTest extends TestCase
             'settled'       => false,
             'fee'           => 0,
             'service_tax'   => 0,
+            'tax'           => 0,
         ];
 
         if (empty($txnData) === false)
@@ -522,6 +540,7 @@ class TransferTest extends TestCase
             'settled'       => false,
             'fee'           => 0,
             'service_tax'   => 0,
+            'tax'           => 0,
         ];
 
         if (empty($txnData) === false)

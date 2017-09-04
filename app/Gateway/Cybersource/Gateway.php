@@ -9,12 +9,14 @@ use SoapVar;
 use SoapFault;
 use SoapClient;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Gateway\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Utility;
@@ -393,7 +395,7 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getVerifyRequestContent($input, 'refund');
 
-        $targetDate = Carbon::createFromTimestamp($input['refund']['last_attempted_at'], 'Asia/Kolkata')
+        $targetDate = Carbon::createFromTimestamp($input['refund']['last_attempted_at'], Timezone::IST)
                             ->format('Ymd');
 
         $request['content'][F::TARGET_DATE] = $targetDate;
@@ -403,7 +405,7 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequestContent(array $input, $entity)
     {
-        $targetDate = Carbon::createFromTimestamp($input[$entity]['created_at'], 'Asia/Kolkata')
+        $targetDate = Carbon::createFromTimestamp($input[$entity]['created_at'], Timezone::IST)
                             ->format('Ymd');
 
         $content = [
@@ -591,7 +593,13 @@ class Gateway extends Base\Gateway
 
         // @codeCoverageIgnoreStart
         // Adding this as a defensive code, code should never reach here.
-        throw new Exception\LogicException('Unexpected response');
+        throw new Exception\LogicException(
+            'Unexpected response',
+            null,
+            [
+                'payment_id'  => $input['payment']['id'],
+                'reason_code' => $response[F::REASON_CODE],
+            ]);
         // @codeCoverageIgnoreEnd
     }
 
@@ -1084,7 +1092,8 @@ class Gateway extends Base\Gateway
         $content[F::MERCHANT_REFERENCE_CODE] = $input['payment']['id'];
 
         $content[F::CC_AUTH_SERVICE] = [
-            F::RUN => 'true'
+            F::RUN => 'true',
+            F::RECONCILIATION_ID => $input['payment']['id'],
         ];
 
         $content[F::INVOICE_HEADER] = [
@@ -1134,6 +1143,17 @@ class Gateway extends Base\Gateway
 
         $content[F::BILL_TO] = $this->getBillingInfo($input);
 
+        //
+        // We are doing this because not all the terminals have this configuration
+        // from CYBS end. This is to decrease the cases of "Do Not Honour" which was
+        // happening because of the AVS checks at the issuer end.
+        //
+        if (($input['terminal']['gateway_terminal_id'] === 'RAZORPAYCYBS') or
+            ($input['terminal']['gateway_terminal_id'] === 'hdfc_89050055'))
+        {
+            unset($content[F::BILL_TO]);
+        }
+
         $request = $this->getStandardSoapRequest($content);
 
         return $request;
@@ -1170,7 +1190,8 @@ class Gateway extends Base\Gateway
             F::ECI_RAW            => $gatewayPayment->getEci(),
             F::PARES_STATUS       => $gatewayPayment->getParesStatus(),
             F::VERES_ENROLLED     => $gatewayPayment->getVeresEnrolled(),
-            F::COMMERCE_INDICATOR => $gatewayPayment->getCommerceIndicator()
+            F::COMMERCE_INDICATOR => $gatewayPayment->getCommerceIndicator(),
+            F::RECONCILIATION_ID  => $input['payment']['id'],
         ];
 
         $cardNetwork = $input['card']['network_code'];
@@ -1201,7 +1222,8 @@ class Gateway extends Base\Gateway
 
         $content[F::CC_CREDIT_SERVICE] = [
             F::RUN                => 'true',
-            F::CAPTURE_REQUEST_ID => $gatewayPayment->getCaptureRequestId()
+            F::CAPTURE_REQUEST_ID => $gatewayPayment->getCaptureRequestId(),
+            F::RECONCILIATION_ID  => $input['refund']['id'],
         ];
 
         $content[F::INVOICE_HEADER] = [
@@ -1239,8 +1261,8 @@ class Gateway extends Base\Gateway
         $content[F::MERCHANT_REFERENCE_CODE] = $input['refund']['id'];
 
         $content[F::CC_AUTH_REVERSAL_SERVICE] = [
-            F::RUN              => 'true',
-            F::AUTH_REQUEST_ID  => $gatewayPayment->getRequestId()
+            F::RUN                => 'true',
+            F::AUTH_REQUEST_ID    => $gatewayPayment->getRequestId()
         ];
 
         $content[F::PURCHASE_TOTALS] = [
@@ -1275,7 +1297,8 @@ class Gateway extends Base\Gateway
 
         $content[F::CC_CAPTURE_SERVICE] = [
             F::RUN => 'true',
-            F::AUTH_REQUEST_ID => $gatewayPayment->getRequestId()
+            F::AUTH_REQUEST_ID => $gatewayPayment->getRequestId(),
+            F::RECONCILIATION_ID  => $input['payment']['id'],
         ];
 
         $content[F::INVOICE_HEADER] = [
@@ -1535,7 +1558,7 @@ class Gateway extends Base\Gateway
     // Logging
 
     protected function traceGatewayPaymentRequest(
-        $request,
+        array $request,
         $input,
         $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
     {
@@ -1635,7 +1658,13 @@ class Gateway extends Base\Gateway
             ($actualXid !== $expectedXid))
         {
             throw new Exception\LogicException(
-                'Invalid XID given');
+                'Invalid XID given',
+                null,
+                [
+                    'payment_id'   => $gatewayPayment->getPaymentId(),
+                    'expected_xid' => $expectedXid,
+                    'actual_xid'   => $actualXid,
+                ]);
         }
     }
 

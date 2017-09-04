@@ -12,6 +12,7 @@ class Table
     const CARD                  = 'cards';
     const PLAN                  = 'plans';
     const ITEM                  = 'items';
+    const RISK                  = 'risk';
     const USER                  = 'users';
     const OFFER                 = 'offers';
     const ORDER                 = 'orders';
@@ -30,6 +31,7 @@ class Table
     const PAYMENT               = 'payments';
     const WEBHOOK               = 'webhooks';
     const FEATURE               = 'features';
+    const DISPUTE               = 'disputes';
     const ADDRESS               = 'addresses';
     const MERCHANT              = 'merchants';
     const EMI_PLAN              = 'emi_plans';
@@ -56,11 +58,13 @@ class Table
     const MERCHANT_USERS        = 'merchant_users';
     const MERCHANT_OFFER        = 'merchant_offer';
     const LINE_ITEM_TAX         = 'line_item_taxes';
+    const DISPUTE_REASON        = 'dispute_reasons';
     const VIRTUAL_ACCOUNT       = 'virtual_accounts';
     const MERCHANT_DETAIL       = 'merchant_details';
     const CUSTOMER_BALANCE      = 'customer_balance';
     const MERCHANT_TERMINAL     = 'merchant_terminal';
     const MERCHANT_PROMOTION    = 'merchant_promotion';
+    const MERCHANT_INVOICE      = 'merchant_invoice';
     const CREDIT_TRANSACTION    = 'credit_transaction';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const BATCH_FUND_TRANSFER   = 'daily_settlements';

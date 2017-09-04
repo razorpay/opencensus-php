@@ -3,6 +3,7 @@
 namespace RZP\Mail\Admin;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
@@ -41,7 +42,7 @@ class Scorecard extends Mailable
 
     protected function addSubject()
     {
-        $date = Carbon::yesterday('Asia/Kolkata')->format('d-m-y');
+        $date = Carbon::yesterday(Timezone::IST)->format('d-m-y');
 
         $subject = 'Razorpay | Scorecard for ' . $date;
 

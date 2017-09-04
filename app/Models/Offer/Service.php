@@ -3,7 +3,6 @@
 namespace RZP\Models\Offer;
 
 use RZP\Models\Base;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class Service extends Base\Service

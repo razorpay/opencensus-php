@@ -10,6 +10,8 @@ use RZP\Reconciliator;
 
 class ReconciliatorController extends Controller
 {
+    protected $service = Reconciliator\Service::class;
+
     public function postReconciliation()
     {
         $input = Request::all();
@@ -21,7 +23,7 @@ class ReconciliatorController extends Controller
 
     public function postReconciliateCancelledTransactions($gateway)
     {
-        $summary = (new Reconciliator\Service)->reconciliateCancelledTransactions($gateway);
+        $summary = $this->service()->reconciliateCancelledTransactions($gateway);
 
         return ApiResponse::generateResponse($summary);
     }

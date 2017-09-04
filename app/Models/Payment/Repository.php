@@ -4,6 +4,7 @@ namespace RZP\Models\Payment;
 
 use DB;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Exception;
@@ -31,7 +32,8 @@ class Repository extends Base\Repository
     protected $entityFetchParamRules = [
         Entity::EMAIL              => 'sometimes|email',
         Entity::ORDER_ID           => 'sometimes|string|size:20',
-        Entity::TRANSFERRED        => 'sometimes|boolean|in:0,1'
+        Entity::TRANSFERRED        => 'sometimes|boolean|in:0,1',
+        self::EXPAND . '.*'        => 'string|in:card,',
     ];
 
     // These are proxy allowed params to search on.
@@ -134,15 +136,30 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchEmiPaymentsBetween($from, $to, $bank)
+    public function fetchEmiPaymentsWithCardTerminalsBetween($from, $to, $bank)
     {
+        $tRepo = $this->repo->terminal;
+
+        $tTableName = $tRepo->getTableName();
+
+        $terminalEmi = $tRepo->dbColumn(Terminal\Entity::EMI);
+
+        $paymentTerminalId = $this->dbColumn(Entity::TERMINAL_ID);
+
+        $paymentData = $this->dbColumn('*');
+
+        $terminalId = $tRepo->dbColumn(Terminal\Entity::ID);
+
         return $this->newQuery()
+                    ->join($tTableName, $paymentTerminalId, '=', $terminalId)
                     ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
                     ->where(Entity::STATUS, '=', Status::CAPTURED)
                     ->where(Entity::BANK, '=', $bank)
                     ->where(Entity::METHOD, '=', Method::EMI)
+                    ->where($terminalEmi, '=', false)
                     ->with('card.globalCard')
                     ->with('emiPlan')
+                    ->select($paymentData)
                     ->get();
     }
 
@@ -203,28 +220,36 @@ class Repository extends Base\Repository
      * This function is used to fetch the authorized payments where
      * Merchant auto refund delay is null.
      *
-     * @param $timestamp
+     * @param int  $timestamp
+     * @param bool $getDisputed Flag to check whether to get disputed payments
      *
      * @return Base\PublicCollection
      */
-    public function getAuthorizedPaymentsBeforeTimestamp($timestamp)
+    public function getAuthorizedPaymentsBeforeTimestamp(int $timestamp, bool $getDisputed = true): Base\PublicCollection
     {
         $createdAt  = $this->dbColumn(Entity::CREATED_AT);
         $merchantId = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
-        return $this->newQuery()
-                    ->select($this->dbColumn('*'))
-                    ->join(Table::MERCHANT, Entity::MERCHANT_ID, '=', $merchantId)
-                    ->whereNull(Merchant\Entity::AUTO_REFUND_DELAY)
-                    ->status(Payment\Status::AUTHORIZED)
-                    ->where($createdAt, '<=', $timestamp)
-                    ->orderBy(Payment\Entity::MERCHANT_ID)
-                    ->get();
+        $query = $this->newQuery()
+                      ->select($this->dbColumn('*'))
+                      ->join(Table::MERCHANT, Entity::MERCHANT_ID, '=', $merchantId)
+                      ->whereNull(Merchant\Entity::AUTO_REFUND_DELAY)
+                      ->status(Payment\Status::AUTHORIZED)
+                      ->where($createdAt, '<=', $timestamp)
+                      ->orderBy(Payment\Entity::MERCHANT_ID);
+
+        // Check if we should pick disputed payments for refund
+        if ($getDisputed === false)
+        {
+            $query = $query->where(Entity::DISPUTED, '=', 0);
+        }
+
+        return $query->get();
     }
 
     /**
-     * This function is used to fetch the authorized payments with
-     * merchant auto delay delay
+     * This function is used to fetch the authorized payments
+     * that are not disputed with merchant auto delay delay
      *
      * @return Base\PublicCollection
      */
@@ -233,7 +258,7 @@ class Repository extends Base\Repository
         $paymentCreatedAt = $this->dbColumn(Entity::CREATED_AT);
         $merchantId       = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
 
-        $minCreatedAt = Carbon::now()->subMinutes(30)->timestamp;
+        $minCreatedAt = Carbon::now()->subSeconds(Merchant\Entity::MIN_AUTO_REFUND_DELAY)->getTimestamp();
 
         $rawCondition = '(' . time() . ' - ' . $paymentCreatedAt . ') > ' . Merchant\Entity::AUTO_REFUND_DELAY;
 
@@ -244,6 +269,7 @@ class Repository extends Base\Repository
                     ->whereRaw($rawCondition)
                     ->whereNotNull(Merchant\Entity::AUTO_REFUND_DELAY)
                     ->where($paymentCreatedAt, '<', $minCreatedAt)
+                    ->where(Entity::DISPUTED, '=', 0)
                     ->get();
     }
 
@@ -271,28 +297,30 @@ class Repository extends Base\Repository
     /**
      * Return Payments object(s) which should be verified
      *
-     * @param array  $minMaxArray    Min/Max array
-     * @param string $verifyBoundary array of [VERIFY_BUCKET and timestamp] values
-     * @param string $verifyStatus   value for filter of VerifyStatus
-     * @param string $paymentStatus  value for filter of paymentStatus
-     * @param bool   $random         Db should take param in random value or not
-     * @param int    $rowsToFetch    Rows to fetch
+     * @param array        $minMaxArray      Min/Max array
+     * @param array|string $verifyBoundary   Array of [VERIFY_BUCKET and timestamp] values
+     * @param string       $verifyStatus     Value for filter of VerifyStatus
+     * @param string       $paymentStatus    Value for filter of paymentStatus
+     * @param int          $rowsToFetch      Rows to fetch
+     * @param array        $disabledGateways Gateways for which verify should be skipped
+     * @param bool         $random           Db should take param in random value or not
      *
-     * @return Collection of Payment
+     * @return array
      */
     public function getPaymentsToVerify(
                         array $minMaxArray,
                         array $verifyBoundary,
                         $verifyStatus = null,
                         $paymentStatus = null,
-                        bool $random = true,
-                        int $rowsToFetch = 100)
+                        int $rowsToFetch = 100,
+                        array $disabledGateways = [],
+                        bool $random = true)
     {
-        $verifyDisabledGateways = Payment\Gateway::$verifyDisabled;
-
         $query = $this->newQuery()
                       ->whereNotNull(Payment\Entity::GATEWAY)
-                      ->whereNotIn(Payment\Entity::GATEWAY, $verifyDisabledGateways);
+                      ->whereNotIn(
+                          Payment\Entity::GATEWAY,
+                          $disabledGateways);
 
         if ($verifyStatus !== null)
         {
@@ -358,14 +386,14 @@ class Repository extends Base\Repository
      */
     protected function addWhereConditionsUsingMinimumTime(array $minMaxArray, BuilderEx $query)
     {
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         $query->where(Payment\Entity::CREATED_AT, '<=', $currentTime - $minMaxArray['min']);
     }
 
     protected function addWhereClauseForMinAndMaxTime(array $minMaxArray, array & $whereConditions)
     {
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         if ($minMaxArray['max'] !== null)
         {
@@ -390,7 +418,7 @@ class Repository extends Base\Repository
                                                     array $verifyBoundaries,
                                                     BuilderEx $query)
     {
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         $whereConditions = [];
 
@@ -658,16 +686,16 @@ class Repository extends Base\Repository
 
     public function getYesterdayVolume()
     {
-        $yesterday = Carbon::yesterday('Asia/Kolkata')->timestamp;
-        $today = Carbon::today('Asia/Kolkata')->timestamp;
+        $yesterday = Carbon::yesterday(Timezone::IST)->getTimestamp();
+        $today = Carbon::today(Timezone::IST)->getTimestamp();
 
         return $this->getPaymentVolumeBetweenTimestamp($yesterday, $today);
     }
 
     public function getCurrentMonthVolume()
     {
-        $from = Carbon::yesterday('Asia/Kolkata')->startOfMonth()->timestamp;
-        $to = Carbon::today('Asia/Kolkata')->timestamp;
+        $from = Carbon::yesterday(Timezone::IST)->startOfMonth()->getTimestamp();
+        $to = Carbon::today(Timezone::IST)->getTimestamp();
 
         return $this->getPaymentVolumeBetweenTimestamp($from, $to);
     }
@@ -693,8 +721,8 @@ class Repository extends Base\Repository
 
     public function getYesterdayTopMerchantVolumeWise()
     {
-        $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
-        $to = Carbon::today('Asia/Kolkata')->timestamp;
+        $from = Carbon::yesterday(Timezone::IST)->getTimestamp();
+        $to = Carbon::today(Timezone::IST)->getTimestamp();
 
         $pid = $this->dbColumn(Payment\Entity::MERCHANT_ID);
         $mid = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
@@ -720,8 +748,8 @@ class Repository extends Base\Repository
 
     public function getMonthTopMerchantVolumeWise()
     {
-        $from = Carbon::yesterday('Asia/Kolkata')->startOfMonth()->timestamp;
-        $to = Carbon::today('Asia/Kolkata')->timestamp;
+        $from = Carbon::yesterday(Timezone::IST)->startOfMonth()->getTimestamp();
+        $to = Carbon::today(Timezone::IST)->getTimestamp();
 
         $pid = $this->dbColumn(Payment\Entity::MERCHANT_ID);
         $mid = $this->repo->merchant->dbColumn(Merchant\Entity::ID);
@@ -845,7 +873,8 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Gets all authorized payments which belongs to a paid order. All these
+     * Gets all authorized payments which belongs to a
+     * paid order and are not disputed. All these
      * payments are supposed to be refunded.
      *
      * @return Base\PublicCollection
@@ -867,13 +896,14 @@ class Repository extends Base\Repository
 
         $paymentCols      = $this->dbColumn('*');
         $paymentStatus    = $this->dbColumn(Entity::STATUS);
+        $paymentDisputed  = $this->dbColumn(Entity::DISPUTED);
         $paymentOrderId   = $this->dbColumn(Entity::ORDER_ID);
         $paymentCreatedAt = $this->dbColumn(Entity::CREATED_AT);
 
         // For optimization purposes we only pick payments in last 10 days. This picked
         // '10 days' is sufficient filter logically.
 
-        $nowMinus10Days = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;
+        $nowMinus10Days = Carbon::today(Timezone::IST)->subDays(10)->getTimestamp();
 
         $results = $this->newQuery()
                         ->join($orderTable, $orderId, '=', $paymentOrderId)
@@ -881,6 +911,7 @@ class Repository extends Base\Repository
                         ->where($paymentCreatedAt, '>', $nowMinus10Days)
                         ->where($orderStatus, Order\Status::PAID)
                         ->where($paymentStatus, Status::AUTHORIZED)
+                        ->where($paymentDisputed, 0)
                         ->with('merchant')
                         ->get();
 
@@ -894,6 +925,7 @@ class Repository extends Base\Repository
                     ->statusSuccess()
                     ->selectRaw('SUM(' . Entity::AMOUNT . ') AS amount' . ','.
                        'COUNT(*) AS count')
+                    ->where(Entity::METHOD, '!=', Method::TRANSFER)
                     ->first();
 
         return $vol;
@@ -917,5 +949,14 @@ class Repository extends Base\Repository
                     ->where(Entity::GATEWAY, '=', $gateway)
                     ->whereBetween(Entity::CAPTURED_AT, [$from, $to])
                     ->sum(Entity::AMOUNT);
+    }
+
+    public function updateTax(int $limit = 10000)
+    {
+        return $this->newQuery()
+                    ->whereNull(Entity::TAX)
+                    ->whereNotNull(Entity::SERVICE_TAX)
+                    ->limit($limit)
+                    ->update([Entity::TAX => DB::raw(Entity::SERVICE_TAX)]);
     }
 }

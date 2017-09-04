@@ -43,7 +43,7 @@ class SupportTest extends TestCase
             ]
         );
 
-        $this->replaceDefualtValues($testData['request']['content']);
+        $this->replaceDefaultValues($testData['request']['content']);
 
         $payment = $this->runRequestResponseFlow($testData);
 

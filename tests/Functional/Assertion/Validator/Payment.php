@@ -22,6 +22,7 @@ class Payment extends Validator
         Entity::REFUND_STATUS       => 'sometimes|',
         Entity::DESCRIPTION         => 'sometimes|',
         Entity::CARD_ID             => 'sometimes|',
+        Entity::CARD                => 'sometimes|',
         Entity::TRANSFER_ID         => 'sometimes|',
         Entity::BANK                => 'sometimes|',
         Entity::WALLET              => 'sometimes|',
@@ -36,9 +37,11 @@ class Payment extends Validator
         Entity::FEE                 => 'required_if:status,captured,refunded|nullable|integer',
         Entity::ACQUIRER_DATA       => 'sometimes|array',
         Entity::SERVICE_TAX         => 'sometimes|',
+        Entity::TAX                 => 'sometimes|',
         Entity::CREATED_AT          => 'sometimes|',
         Entity::INVOICE_ID          => 'sometimes|nullable|string|size:18',
         Entity::CUSTOMER_ID         => 'sometimes|nullable|string|size:19',
         Entity::TOKEN_ID            => 'sometimes|nullable|string|size:20',
+        Entity::DISPUTED            => 'sometimes|boolean',
     );
 }

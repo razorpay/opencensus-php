@@ -6,8 +6,8 @@ use Config;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FileStore\Formatter;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -47,6 +47,13 @@ class Creator extends Base\Core
      * @var array columnFormat
      */
     protected $columnFormat = [];
+
+    /**
+     * Headers should be presnt/absent in excel/csv file
+     *
+     * @var bool headers
+     */
+    protected $headers = true;
 
     /**
      * File Path of Local File
@@ -285,6 +292,20 @@ class Creator extends Base\Core
     }
 
     /**
+     * Set the header flag for excel/csv files
+     *
+     * @param bool $header headers value
+     *
+     * @return Creator
+     */
+    public function headers(bool $headers)
+    {
+        $this->headers = $headers;
+
+        return $this;
+    }
+
+    /**
      * Set the id of File Store entity
      *
      * @param string $id id value
@@ -359,6 +380,7 @@ class Creator extends Base\Core
      * upload it to service specified and creates file store entity
      *
      * @return Creator object
+     * @throws Exception\LogicException
      */
     public function save()
     {
@@ -648,6 +670,7 @@ class Creator extends Base\Core
             $this->content,
             $fileNameWithoutExt,
             $this->columnFormat,
+            $this->headers,
             $this->file->getExtension(),
             $this->getStorageDir());
 
@@ -671,6 +694,13 @@ class Creator extends Base\Core
             if ($filePermission !== '777')
             {
                 (new Utility)->callFileOperation('chmod', [$this->filePath, 0777]);
+
+                $this->trace->debug(
+                    TraceCode::CHANGING_FILE_PERMISSION,
+                    [
+                        'file_path'                 => $this->filePath,
+                        'current_file_permission'   => $filePermission,
+                    ]);
             }
         }
         catch (\Throwable $e)
@@ -680,7 +710,7 @@ class Creator extends Base\Core
                  Trace::WARNING,
                  TraceCode::FILE_PERMISSION_CHANGE_FAILED,
                  [
-                     'path' => $fullPath
+                     'path' => $this->filePath
                  ]);
         }
     }

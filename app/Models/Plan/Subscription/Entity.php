@@ -3,6 +3,7 @@
 namespace RZP\Models\Plan\Subscription;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Models\Base;
 use RZP\Models\Customer;
@@ -40,13 +41,18 @@ class Entity extends Base\PublicEntity
 
     // Input Keys
 
-    //
-    // Add-on needs to be at a subscription level because
-    // the add-on amount can change based on the subscription period.
-    // For example: if the subscription is for 3 months, add-on amount can
-    // be 1000rs and if subscription is for 1yr, add-on amount can be 500rs.
-    //
+    /**
+     * Add-on needs to be at a subscription level because
+     * the add-on amount can change based on the subscription period.
+     * For example: if the subscription is for 3 months, add-on amount can
+     * be 1000rs and if subscription is for 1yr, add-on amount can be 500rs.
+     */
     const ADDONS = 'addons';
+
+    /**
+     * This key is used to search in subscriptions fetch multiple
+     */
+    const CUSTOMER_EMAIL = 'customer_email';
 
     protected static $sign = 'sub';
 
@@ -383,7 +389,7 @@ class Entity extends Base\PublicEntity
         {
             $timestampKey = $status . '_at';
 
-            $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+            $currentTime = Carbon::now()->getTimestamp();
 
             $this->setAttribute($timestampKey, $currentTime);
         }
@@ -564,9 +570,27 @@ class Entity extends Base\PublicEntity
 
         if ($this->getStartAt() !== null)
         {
-            $startAt = Carbon::createFromTimestamp($this->getStartAt(), 'Asia/Kolkata');
+            $startAt = Carbon::createFromTimestamp($this->getStartAt(), Timezone::IST);
 
-            $anchor = $startAt->{Anchor::CHECKS[$period]};
+            $anchor = Anchor::getAnchor($period, $startAt);
+
+            //
+            // Commenting this out for now, since we are not
+            // clear on what should be the behaviour.
+            // If the subscription is starting on Feb 28th,
+            // we'll end up charging on March 31st, April 30th
+            // and so on. This may not be the expected behaviour.
+            // Also, there will be subscriptions which should
+            // always be charged on 28th of every month.
+            // If we implement the below block, there will be no
+            // way to do something like start_at = 28th Feb,
+            // charge on 28th of every month.
+            //
+            // if (($period === Plan\Cycle::MONTHLY) and
+            //     ($startAt->lastOfMonth() === true))
+            // {
+            //     $anchor = -1;
+            // }
         }
 
         return $anchor;

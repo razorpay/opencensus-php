@@ -9,6 +9,7 @@ use RZP\Models\Settlement\Holidays;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use AWS;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 trait SettlementTrait
 {
@@ -17,7 +18,7 @@ trait SettlementTrait
      **/
     protected function getDaysForSettlementHolidayTests()
     {
-        $date = Carbon::today('Asia/Kolkata')->subDays(30);
+        $date = Carbon::today(Timezone::IST)->subDays(30);
 
         $holidayDate = Holidays::getNextSettlementHoliday($date)->addHours(7);
 
@@ -35,7 +36,7 @@ trait SettlementTrait
      **/
     protected function getDaysForSettlementNonHolidayTests()
     {
-        $prevWorkingDay = Holidays::getPreviousWorkingDay((Carbon::today('Asia/Kolkata'))->subDays(25));
+        $prevWorkingDay = Holidays::getPreviousWorkingDay((Carbon::today(Timezone::IST))->subDays(25));
 
         $paymentCreatedOn = $prevWorkingDay->copy();
 
@@ -50,7 +51,6 @@ trait SettlementTrait
         $deleteUrls = [
             '/settlements/file/setl_initiate',
             '/settlements/file/reconcile',
-            '/settlements/file/return',
         ];
 
         $this->ba->appAuth();
@@ -113,7 +113,7 @@ trait SettlementTrait
             ]
         ];
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -174,51 +174,6 @@ trait SettlementTrait
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertFileNotExists($setlReconciliationFile);
-
-        return $content;
-    }
-
-    protected function generateSetlReturnFile($setlData)
-    {
-        $items = $setlData;
-
-        $content = [];
-
-        foreach ($items as $item)
-        {
-            $content[] = [
-                'id' => 'setl_' . $item['id'],
-                'refer_utr' => '1'
-            ];
-        }
-
-        $request = [
-            'url' => '/settlements/return/generate',
-            'content' => $content,
-        ];
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertArrayHasKey('setlReturnFile', $content);
-
-        return $content['setlReturnFile'];
-    }
-
-    protected function processSetlReturns($setlReturnFile)
-    {
-        $uploadedFile = $this->createUploadedFile($setlReturnFile);
-
-        $request = [
-            'url' => '/settlements/return',
-            'files' => [
-//                'setlReturnFile' => $uploadedFile
-                'file' => $uploadedFile,
-            ],
-        ];
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertFileNotExists($setlReturnFile);
 
         return $content;
     }

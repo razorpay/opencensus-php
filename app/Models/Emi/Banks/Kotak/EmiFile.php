@@ -3,6 +3,7 @@
 namespace RZP\Models\Emi\Banks\Kotak;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Emi;
 use RZP\Models\FileStore;
 use RZP\Models\Emi\Banks\Base;
@@ -15,7 +16,7 @@ class EmiFile extends Base\EmiFile
 
     protected $bankName  = 'Kotak';
 
-    const TYPE = FileStore\Type::KOTAK_EMI_FILE;
+    protected $type = FileStore\Type::KOTAK_EMI_FILE;
 
     protected function getEmiData($input)
     {
@@ -23,7 +24,7 @@ class EmiFile extends Base\EmiFile
 
         foreach ($input as $emiPayment)
         {
-            $date = Carbon::createFromTimestamp($emiPayment->getCaptureTimestamp(), 'Asia/Kolkata')->format('M d,Y h:i:s A');
+            $date = Carbon::createFromTimestamp($emiPayment->getCaptureTimestamp(), Timezone::IST)->format('M d,Y h:i:s A');
 
             $emiPlan = $emiPayment->emiPlan;
 

@@ -6,13 +6,13 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Exception;
-use RZP\Trace\Trace;
 use RZP\Models\Batch;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\FileStore;
 use RZP\Models\Base as BaseModel;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -235,7 +235,7 @@ class Base extends BaseModel\Core
         $this->batch->setSuccessCount($successCount);
         $this->batch->setFailureCount($failureCount);
 
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         $this->batch->setProcessedAt($now);
 

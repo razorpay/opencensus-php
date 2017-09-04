@@ -17,6 +17,8 @@ class Category
     const GROCERY         = 'grocery';
     const ECOMMERCE       = 'ecommerce';
     const EDUCATION       = 'education';
+    const GAMING          = 'gaming';
+    const GOVERNMENT      = 'government';
     const GOVT_EDUCATION  = 'govt_education';
     const PVT_EDUCATION   = 'pvt_education';
     const UTILITIES       = 'utilities';
@@ -52,6 +54,8 @@ class Category
         self::COMMODITIES,
         self::GROCERY,
         self::ECOMMERCE,
+        self::GAMING,
+        self::GOVERNMENT,
         self::GOVT_EDUCATION,
         self::PVT_EDUCATION,
         self::UTILITIES,
@@ -99,6 +103,7 @@ class Category
 
     /**
      * By default Check for the name that is mentioned as is.
+     * On Adding a new Key, a default should mandatorily be present
      * If it is renamed, then the new name that is mentioned will be
      * used to check for a network category
      *
@@ -107,19 +112,23 @@ class Category
     const CATEGORIES = [
         Method::NETBANKING => [
             self::DEFAULT => self::ECOMMERCE,
-            IFSC::KKBK => [
+            Gateway::NETBANKING_KOTAK => [
                 // In Kotak, a utilities terminal needs to be added
                 // which will be used to accept lending as well.
                 self::DEFAULT   => self::ECOMMERCE,
                 self::UTILITIES => self::UTILITIES,
                 self::LENDING   => self::UTILITIES,
                 // self::FOREX     => self::FINANCE,
-            ]
+            ],
+            Gateway::BILLDESK => [
+                self::DEFAULT => self::ECOMMERCE,
+                self::FOREX   => self::HOUSING,
+            ],
         ],
         Method::CARD => [
             self::DEFAULT        => self::ECOMMERCE,
             self::PHARMA         => self::ECOMMERCE,
-            Network::AMEX     => [
+            Gateway::AMEX     => [
                 self::DEFAULT        => self::RETAIL_SERVICES,
                 self::GROCERY        => 'sup_hypermrkt_deptstore',
                 self::ECOMMERCE      => self::RETAIL_SERVICES,
@@ -137,11 +146,9 @@ class Category
         return in_array($category, self::CATEGORIES_ALL, true);
     }
 
-    public static function isNetworkCategoryValid($input)
+    public static function isNetworkCategoryValid(string $networkCategory, string $method, string $gateway): bool
     {
-        $category = $input[Entity::NETWORK_CATEGORY];
-
-        if ($category === self::INVALID)
+        if ($networkCategory === self::INVALID)
         {
             return false;
         }
@@ -150,13 +157,9 @@ class Category
         // get the values array and check in array
         $allCategories = array_combine(self::CATEGORIES_ALL, self::CATEGORIES_ALL);
 
-        $method = self::getMethod($input);
-
-        $network = self::getNetwork($input);
-
-        if (isset(self::CATEGORIES[$method][$network]) === true)
+        if (isset(self::CATEGORIES[$method][$gateway]) === true)
         {
-            foreach (self::CATEGORIES[$method][$network] as $category2 => $networkCategory)
+            foreach (self::CATEGORIES[$method][$gateway] as $category2 => $networkCategory)
             {
                 $allCategories[$category2] = $networkCategory;
             }
@@ -165,15 +168,15 @@ class Category
         // No need to worry about duplicates. we only need values
         $values = array_values($allCategories);
 
-        return in_array($category, $values, true);
+        return in_array($networkCategory, $values, true);
     }
 
-    public static function getDefaultForMethodAndNetwork($method, $network)
+    public static function getDefaultForMethodAndGateway($method, $gateway)
     {
-        return self::getCategoryForMethodAndNetwork($method, $network, self::DEFAULT);
+        return self::getCategoryForMethodAndGateway($method, $gateway, self::DEFAULT);
     }
 
-    public static function getCategoryForMethodAndNetwork($method, $network, $category2)
+    public static function getCategoryForMethodAndGateway($method, $gateway, $category2)
     {
         $networkCategory = self::getDefaultNetworkCategory($category2);
 
@@ -182,9 +185,9 @@ class Category
             $networkCategory = self::CATEGORIES[$method][$category2];
         }
 
-        if (isset(self::CATEGORIES[$method][$network][$category2]) === true)
+        if (isset(self::CATEGORIES[$method][$gateway][$category2]) === true)
         {
-            $networkCategory = self::CATEGORIES[$method][$network][$category2];
+            $networkCategory = self::CATEGORIES[$method][$gateway][$category2];
         }
 
         return $networkCategory;
@@ -222,40 +225,5 @@ class Category
         }
 
         return $networkCategory;
-    }
-
-    protected static function getNetwork($input)
-    {
-        $network = null;
-
-        if ($input[Entity::GATEWAY] === Gateway::AMEX)
-        {
-            $network = Network::AMEX;
-        }
-
-        return $network;
-    }
-
-    protected static function getMethod($input)
-    {
-        if ((isset($input[Entity::CARD]) === true) and
-            (empty($input[Entity::CARD]) === false))
-        {
-            return Method::CARD;
-        }
-
-        if ((isset($input[Entity::NETBANKING]) === true) and
-            (empty($input[Entity::NETBANKING]) === false))
-        {
-            return Method::NETBANKING;
-        }
-
-        if ((isset($input[Entity::EMI]) === true) and
-            (empty($input[Entity::EMI]) === false))
-        {
-            return Method::EMI;
-        }
-
-        return null;
     }
 }

@@ -3,8 +3,10 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base;
+use RZP\Models\FundTransfer\Axis;
 use RZP\Models\FundTransfer\Icici;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Payment;
@@ -46,7 +48,7 @@ class Service extends Base\Service
 
         $versionV2RolloutTimestamp = 1489170600; // Date 1st March 2017 IST
 
-        $currentTimestamp = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTimestamp = Carbon::now()->getTimestamp();
 
         if ($batch->getCreatedAt() < $versionV2RolloutTimestamp)
         {
@@ -131,11 +133,6 @@ class Service extends Base\Service
         return (new Kotak\Service)->generateSettlementReconciliation($input);
     }
 
-    public function returnSettlements($input)
-    {
-        return (new Kotak\Service)->returnSettlements($input);
-    }
-
     public function generateSettlementReturn($input)
     {
         return (new Kotak\Service)->generateSettlementReturn($input);
@@ -154,125 +151,12 @@ class Service extends Base\Service
     }
 
     /**
-     * Initiates transfer from ICICI Nodal account
+     * Initiates transfer from one Nodal account to another
      */
     public function postInitiateTransfer($input): array
     {
-        if (isset($input[Payment\Entity::GATEWAY]) === true)
-        {
-            $gateway = $input[Payment\Entity::GATEWAY];
-
-            // TODO: add strict validation for gateway based on channel
-            Payment\Gateway::validateGateway($gateway);
-
-            $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
-
-            $to = Carbon::today('Asia/Kolkata')->timestamp - 1;
-
-            // Get the amount for captured payments on gateway for last day
-            $paymentAmount = $this->repo->payment->getCapturedAmountByGateway($gateway, $from, $to);
-
-            // Get the amount for refunds on gateway for last day
-            $refundAmount = $this->repo->refund->getRefundedAmountByGateway($gateway, $from, $to);
-
-            // amount to be transferred in paisa
-            $amount = $paymentAmount - $refundAmount;
-
-            // Transfer 99% of the derived amount
-            $amount = 0.99 * $amount;
-        }
-        else
-        {
-            (new Settlement\Validator)->validateInput('nodal_transfer', $input);
-
-            $amount = $input['amount'];
-        }
-
-        if ($amount > 0)
-        {
-            $amount = number_format($amount / 100, 2, '.', '');
-
-            $response = (new Icici\NodalAccount)->generateTransferFile($amount);
-        }
-        else
-        {
-            $response = [
-                'message' => 'amount to be transferred is zero or negative'
-            ];
-        }
+        $response = (new Core)->postInitiateTransfer($input);
 
         return $response;
-    }
-
-    public function calculatePrevousSettlementFees()
-    {
-        $settlements = $this->repo->settlement->getSettlementWithFeesAsNullOrZero();
-
-        $totalFees = 0;
-        $totalCount = 0;
-
-        foreach ($settlements as $setl)
-        {
-            $txns = $setl->setlTransactions;
-
-            $fees = 0;
-
-            foreach ($txns as $txn)
-            {
-                $fees += $txn->getFee();
-            }
-
-            $setl->setFees($fees);
-
-            $this->repo->saveOrFail($setl);
-
-            $totalFees += $fees;
-            $totalCount += $setl->count();
-        }
-
-        return ['fees' => $totalFees, 'count' => $totalCount];
-    }
-
-    public function calculatePreviousSettlementServiceTax()
-    {
-        $settlements = $this->repo->settlement->getSettlementWithServiceTaxNullOrZero();
-
-        $totalServiceTax = 0;
-        $totalCount = 0;
-
-        $this->repo->beginTransaction();
-
-        try
-        {
-            foreach ($settlements as $setl)
-            {
-                $txns = $setl->setlTransactions;
-                $tax = 0;
-
-                foreach ($txns as $txn)
-                {
-                    $tax += $txn->getServiceTax();
-                }
-
-                $setl->setServiceTax($tax);
-
-                $this->repo->saveOrFail($setl);
-
-                $totalServiceTax += $tax;
-                $totalCount ++;
-            }
-
-            $this->repo->commit();
-       }
-       catch (\Exception $e)
-       {
-            $this->repo->rollback();
-            throw new Exception\RuntimeException(
-                        'Failed generating Service Tax',
-                       $e->getTrace());
-       }
-
-        return ['tax' => $totalServiceTax, 'settlement_count' => $totalCount];
-
     }
 }

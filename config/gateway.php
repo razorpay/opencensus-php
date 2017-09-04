@@ -30,6 +30,7 @@ return [
         'netbanking_federal',
         'netbanking_rbl',
         'netbanking_indusind',
+        'netbanking_pnb',
         'sharp',
         'wallet_olamoney',
         'upi_idfc',
@@ -42,6 +43,7 @@ return [
         'wallet_airtelmoney',
         'wallet_freecharge',
         'wallet_jiomoney',
+        'wallet_sbibuddy',
         'wallet_openwallet',
         'wallet_mpesa',
     ],
@@ -64,6 +66,7 @@ return [
     'mock_netbanking_federal'  => env('NETBANKING_FEDERAL_MOCK'),
     'mock_netbanking_rbl'      => env('NETBANKING_RBL_MOCK'),
     'mock_netbanking_indusind' => env('NETBANKING_INDUSIND_MOCK'),
+    'mock_netbanking_pnb'      => env('NETBANKING_PNB_MOCK'),
     'mock_billdesk'            => env('BILLDESK_MOCK'),
     'mock_ebs'                 => env('EBS_MOCK'),
     'mock_wallet_olamoney'     => env('OLAMONEY_MOCK'),
@@ -71,6 +74,7 @@ return [
     'mock_wallet_payumoney'    => env('PAYUMONEY_MOCK'),
     'mock_wallet_airtelmoney'  => env('AIRTELMONEY_MOCK'),
     'mock_wallet_jiomoney'     => env('JIOMONEY_MOCK'),
+    'mock_wallet_sbibuddy'     => env('SBIBUDDY_MOCK'),
     'mock_upi_mindgate'        => env('UPI_MINDGATE_MOCK'),
     'mock_upi_icici'           => env('UPI_ICICI_MOCK'),
     'mock_upi_idfc'            => env('UPI_IDFC_MOCK'),
@@ -239,13 +243,20 @@ return [
         'test_hash_secret'      => env('JIOMONEY_WALLET_TEST_HASH_SECRET')
     ],
 
+    'wallet_sbibuddy' => [
+        'test_merchant_id'      => env('SBIBUDDY_WALLET_TEST_MERCHANT_ID'),
+        'test_hash_secret'      => env('SBIBUDDY_WALLET_TEST_HASH_SECRET')
+    ],
+
     'wallet_mpesa' => [
-        'test_merchant_id' => env('MPESA_WALLET_TEST_MERCHANT_ID'),
-        'test_hash_secret' => env('MPESA_WALLET_TEST_HASH_SECRET'),
-        'test_user_id'     => env('MPESA_WALLET_TEST_USER_ID'),
-        'test_password'    => env('MPESA_WALLET_TEST_PASSWORD'),
-        'live_user_id'     => env('MPESA_WALLET_LIVE_USER_ID'),
-        'live_password'    => env('MPESA_WALLET_LIVE_PASSWORD'),
+        'test_merchant_id'  => env('MPESA_WALLET_TEST_MERCHANT_ID'),
+        'test_merchant_id2' => env('MPESA_WALLET_TEST_MERCHANT_ID2'),
+        'test_hash_secret'  => env('MPESA_WALLET_TEST_HASH_SECRET'),
+        'test_user_id'      => env('MPESA_WALLET_TEST_USER_ID'),
+        'test_password'     => env('MPESA_WALLET_TEST_PASSWORD'),
+        'live_user_id'      => env('MPESA_WALLET_LIVE_USER_ID'),
+        'live_password'     => env('MPESA_WALLET_LIVE_PASSWORD'),
+        'live_hash_secret'  => env('MPESA_WALLET_LIVE_HASH_SECRET'),
     ],
 
     'netbanking_hdfc' => [
@@ -263,13 +274,24 @@ return [
     ],
 
     'netbanking_icici' => [
-        'test_hash_secret'      => env('NETBANKING_ICICI_GATEWAY_TEST_HASH_SECRET'),
-        'test_merchant_id'      => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID'),
-        'test_merchant_id2'     => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID2'),
-        'live_hash_secret'      => env('NETBANKING_ICICI_LIVE_HASH_SECRET'),
-        'live_hash_secret_tpv'  => env('NETBANKING_ICICI_LIVE_HASH_SECRET_BROKER'),
-        'live_merchant_id2'     => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID'),
-        'live_merchant_id2_tpv' => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID_BROKER'),
+        //retail netbanking
+        'test_hash_secret'       => env('NETBANKING_ICICI_GATEWAY_TEST_HASH_SECRET'),
+        'test_merchant_id'       => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID'),
+        'test_merchant_id2'      => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID2'),
+
+        'live_hash_secret'       => env('NETBANKING_ICICI_LIVE_HASH_SECRET'),
+        'live_merchant_id2'      => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID'),
+
+        //retail tpv
+        'live_hash_secret_tpv'   => env('NETBANKING_ICICI_LIVE_HASH_SECRET_BROKER'),
+        'live_merchant_id2_tpv'  => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID_BROKER'),
+
+        //corporate netbanking
+        'test_hash_secret_corp'  => env('NETBANKING_ICICI_GATEWAY_TEST_HASH_SECRET_CORP'),
+        'test_merchant_id2_corp' => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID2_CORP'),
+
+        'live_hash_secret_corp'  => env('NETBANKING_ICICI_GATEWAY_LIVE_HASH_SECRET_CORP'),
+        'live_merchant_id2_corp' => env('NETBANKING_ICICI_GATEWAY_LIVE_MERCHANT_ID2_CORP'),
     ],
 
     'netbanking_axis' => [
@@ -301,6 +323,11 @@ return [
         'test_merchant_id'  => env('NETBANKING_INDUSIND_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'  => env('NETBANKING_INDUSIND_GATEWAY_TEST_HASH_SECRET'),
         'live_hash_secret'  => env('NETBANKING_INDUSIND_GATEWAY_LIVE_HASH_SECRET'),
+    ],
+
+    'netbanking_pnb' => [
+        'test_hash_secret'  => env('NETBANKING_PNB_GATEWAY_TEST_HASH_SECRET'),
+        'live_hash_secret'  => env('NETBANKING_PNB_GATEWAY_LIVE_HASH_SECRET'),
     ],
 
     'sharp' => [

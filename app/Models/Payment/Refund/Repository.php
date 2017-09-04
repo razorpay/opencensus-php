@@ -11,6 +11,7 @@ use RZP\Models\Payment\Refund;
 use RZP\Exception;
 use RZP\Constants\Table;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 class Repository extends Base\Repository
 {
@@ -25,11 +26,13 @@ class Repository extends Base\Repository
     ];
 
     protected $appFetchParamRules = array(
+        Entity::AMOUNT          => 'sometimes|integer',
         Entity::MERCHANT_ID     => 'sometimes|alpha_dash',
         Entity::TRANSACTION_ID  => 'sometimes|alpha_dash|min:14|max:18',
         Entity::BATCH_ID        => 'sometimes|alpha_dash|min:14|max:20',
         Entity::NOTES           => 'sometimes|notes_fetch',
         Entity::STATUS          => 'sometimes|string|max:30',
+        Payment\Entity::GATEWAY => 'sometimes|string|max:30'
     );
 
     protected $signedIds = [
@@ -37,6 +40,42 @@ class Repository extends Base\Repository
         Entity::PAYMENT_ID,
         Entity::TRANSACTION_ID,
     ];
+
+    protected function addQueryParamGateway($query, $params)
+    {
+        $gateway = $params[Payment\Entity::GATEWAY];
+
+        Payment\Gateway::validateGateway($gateway);
+
+        $this->joinQueryPayment($query);
+
+        $query->where(Payment\Entity::GATEWAY, '=', $gateway);
+
+        $query->select($query->getModel()->getTable().'.*');
+    }
+
+    protected function joinQueryPayment($query)
+    {
+        $joins = $query->getQuery()->joins;
+
+        $joins = ($joins) ?? [];
+
+        foreach ($joins as $join)
+        {
+            if ($join->table === $this->repo->payment->getTableName())
+            {
+                return;
+            }
+        }
+
+        $paymentId = $this->repo->payment->dbColumn(Payment\Entity::ID);
+        $refundPaymentId = $this->dbColumn(Refund\Entity::PAYMENT_ID);
+
+        $paymentTable = $this->repo->payment->getTableName();
+
+        $query->join($paymentTable, $paymentId, '=', $refundPaymentId);
+    }
+
 
     public function findOrFailPublicByParams($id, $merchantId, $paymentId = null)
     {
@@ -382,7 +421,7 @@ class Repository extends Base\Repository
         $pId = $pRepo->dbColumn(Payment\Entity::ID);
         $pGateway = $pRepo->dbColumn(Payment\Entity::GATEWAY);
 
-        $timeLimit = Carbon::now('Asia/Kolkata')->subMinutes(30)->timestamp;
+        $timeLimit = Carbon::now(Timezone::IST)->subMinutes(30)->getTimestamp();
 
         // TODO: If the number of gateways exceeds by half of total,
         // inverse the `whereIn` condition.
@@ -401,6 +440,26 @@ class Repository extends Base\Repository
                     ->with(['payment','payment.terminal'])
                     ->limit(50)
                     ->inRandomOrder()
+                    ->get();
+    }
+
+    public function fetchRefundsForPnbClaims($from, $to, $gateway)
+    {
+        $pId = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $rPaymentId = $this->dbColumn(Entity::PAYMENT_ID);
+
+        $pGateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        $pAuthorizedAt = $this->repo->payment->dbColumn(Payment\Entity::AUTHORIZED_AT);
+
+        return $this->newQuery()
+                    ->select($this->dbColumn('*'))
+                    ->join(Table::PAYMENT, $rPaymentId, '=', $pId)
+                    ->where($pAuthorizedAt, '<=', $from)
+                    ->where($pGateway, '=', $gateway)
+                    ->whereBetween($this->dbColumn(Entity::CREATED_AT), [$from, $to])
+                    ->with(['payment','payment.terminal'])
                     ->get();
     }
 }

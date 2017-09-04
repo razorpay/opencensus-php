@@ -8,7 +8,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Mail\Mailer as MailerContract;
 use Illuminate\Contracts\Queue\Factory as Queue;
 use Illuminate\Mail\Mailable as BaseMailable;
-use RZP\Trace\Trace;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 
 class Mailable extends BaseMailable
@@ -69,7 +69,8 @@ class Mailable extends BaseMailable
                                    [
                                         'from'    => $this->from,
                                         'to'      => $this->to,
-                                        'subject' => $this->subject
+                                        'subject' => $this->subject,
+                                        'mailable' => get_class($this)
                                    ]);
 
             // After logging the exception caught, we rethrw it so that the

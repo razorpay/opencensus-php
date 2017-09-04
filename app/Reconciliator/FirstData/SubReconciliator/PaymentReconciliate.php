@@ -113,10 +113,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         {
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
-                    'message'       => 'Payment amount mismatch',
-                    'row'           => $row,
-                    'gateway'       => get_called_class()
+                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                    'message'         => 'Payment amount mismatch',
+                    'expected_amount' => $this->payment->getAmount(),
+                    'row'             => $row,
+                    'gateway'         => get_called_class()
                 ]);
 
             return false;

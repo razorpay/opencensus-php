@@ -3,15 +3,15 @@
 namespace RZP\Models\Payment\Processor;
 
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Models\Base;
-use RZP\Models\Base\PublicCollection;
 use RZP\Models\Payment;
-use RZP\Models\Merchant;
-use RZP\Models\Reversal\Entity as ReversalEntity;
-use RZP\Models\Reversal\Core as ReversalCore;
 use RZP\Models\Transfer;
+use RZP\Error\ErrorCode;
+use RZP\Constants\Entity as E;
 use RZP\Models\Transaction;
+use RZP\Models\Base\PublicCollection;
+use RZP\Models\Reversal\Core as ReversalCore;
+use RZP\Models\Reversal\Entity as ReversalEntity;
 
 trait Reversal
 {
@@ -35,7 +35,19 @@ trait Reversal
         // If amount is not sent in input,
         // reverse the entire transfer amount pending
         //
-        $input['amount'] = $input['amount'] ?? $transfer->getAmountUnreversed();
+        $input[ReversalEntity::AMOUNT] = $input[ReversalEntity::AMOUNT] ?? $transfer->getAmountUnreversed();
+
+        //
+        // If the transfer source was a payment, we decrement the payment.amount_transferred
+        // with the amount of the reversal. This is to allow further transfers to be made on
+        // the payment
+        //
+        if ($transfer->getSourceType() === E::PAYMENT)
+        {
+            $sourcePayment = $transfer->source;
+
+            $sourcePayment->decrementAmountTransferred($input[ReversalEntity::AMOUNT]);
+        }
 
         // Refund the transfer payment - this debits the account balance
         $this->mutex->acquireAndRelease($transferPayment->getId(), function() use ($input, $transferPayment)
@@ -113,6 +125,8 @@ trait Reversal
                                  ->transfer
                                  ->findByPublicIdAndMerchant($reversal['transfer'], $this->merchant);
             }
+
+            unset($reversal['transfer']);
 
             $this->mutex->acquireAndRelease(
                 $transfer->getId(),
@@ -234,7 +248,13 @@ trait Reversal
 
             if ($transferCount === 0)
             {
-                throw new Exception\LogicException('Zero transfers found for reversal');
+                throw new Exception\LogicException(
+                    'Zero transfers found for reversal',
+                    null,
+                    [
+                        'payment_id'    => $payment->getId(),
+                        'refund_type'   => $refundType,
+                    ]);
             }
 
             if ($transferCount > 1)
@@ -266,7 +286,13 @@ trait Reversal
         }
         else
         {
-            throw new Exception\LogicException('Payment transfer reversal - Invalid refund type : ' . $refundType);
+            throw new Exception\LogicException(
+                'Payment transfer reversal - Invalid refund type',
+                null,
+                [
+                    'refund_type'   => $refundType,
+                    'payment_id'    => $payment->getId(),
+                ]);
         }
 
         return $reverseAll;

@@ -41,6 +41,10 @@ class CreateSettlements extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->integer(Settlement::TAX)
+                  ->unsigned()
+                  ->nullable();
+
             $table->string(Settlement::STATUS);
 
             $table->char(Settlement::TRANSACTION_ID, Settlement::ID_LENGTH)
@@ -81,6 +85,8 @@ class CreateSettlements extends Migration
             $table->index(Settlement::STATUS);
 
             $table->index(Settlement::CREATED_AT);
+
+            $table->index(Settlement::UPDATED_AT);
 
             $table->foreign(Settlement::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

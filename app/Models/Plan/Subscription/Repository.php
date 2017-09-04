@@ -4,11 +4,13 @@ namespace RZP\Models\Plan\Subscription;
 
 use Carbon\Carbon;
 
+use RZP\Constants;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use RZP\Models\Schedule\Task;
+use RZP\Models\Customer;
 
 class Repository extends Base\Repository
 {
@@ -20,7 +22,8 @@ class Repository extends Base\Repository
     ];
 
     protected $proxyFetchParamRules = [
-        Entity::CUSTOMER_ID => 'filled|string|min:14|max:19',
+        Entity::CUSTOMER_ID     => 'filled|string|min:14|max:19',
+        Entity::CUSTOMER_EMAIL  => 'filled|string|min:1|max:255'
     ];
 
     protected $appFetchParamRules = [
@@ -38,19 +41,6 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID,
         Entity::TOKEN_ID,
     ];
-
-    protected function validateStatus($attribute, $value)
-    {
-        if (Status::isStatusValid($value) === false)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_SUBSCRIPTION_INVALID_STATUS,
-                Entity::STATUS,
-                [
-                    'status' => $value
-                ]);
-        }
-    }
 
     public function getSubscriptionsToCharge()
     {
@@ -85,7 +75,7 @@ class Repository extends Base\Repository
 
     public function getSubscriptionsToExpire()
     {
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         return $this->newQuery()
                     ->whereNotNull(Entity::START_AT)
@@ -103,7 +93,7 @@ class Repository extends Base\Repository
 
         $subscriptionAttrs = $this->dbColumn('*');
 
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         return $this->newQuery()
                     ->select($subscriptionAttrs)
@@ -115,5 +105,51 @@ class Repository extends Base\Repository
                                   ->orWhere(Entity::CURRENT_END, '<', $currentTime);
                         })
                     ->with(['plan', 'merchant']);
+    }
+
+    protected function validateStatus($attribute, $value)
+    {
+        if (Status::isStatusValid($value) === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_INVALID_STATUS,
+                Entity::STATUS,
+                [
+                    'status' => $value
+                ]);
+        }
+    }
+
+    protected function addQueryParamCustomerEmail($query, $params)
+    {
+        $this->joinQueryCustomer($query);
+
+        $customerEmail = $this->repo->customer->dbColumn(Customer\Entity::EMAIL);
+
+        $query->where($customerEmail, '=', $params[Entity::CUSTOMER_EMAIL]);
+
+        $query->select($this->getTableName() . '.*');
+    }
+
+    protected function joinQueryCustomer($query)
+    {
+        $joins = $query->getQuery()->joins;
+
+        $joins = $joins ?: [];
+
+        $customerTable = Table::getTableNameForEntity(Constants\Entity::CUSTOMER);
+
+        foreach ($joins as $join)
+        {
+            if ($join->table === $customerTable)
+            {
+                return;
+            }
+        }
+
+        $subscriptionCustomerId = $this->dbColumn(Entity::CUSTOMER_ID);
+        $customerId = $this->repo->customer->dbColumn(Customer\Entity::ID);
+
+        $query->join($customerTable, $subscriptionCustomerId, '=', $customerId);
     }
 }

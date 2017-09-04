@@ -27,7 +27,6 @@ class PublicErrorDescription
     const GATEWAY_ERROR_PROCESSING_DECLINED                                     = 'Payment failed due to processing error on gateway';
     const GATEWAY_ERROR_SYSTEM_BUSY                                             = 'Gateway system is busy, please retry.';
     const GATEWAY_ERROR_COMMUNICATION_ERROR                                     = 'Gateway experienced a communication error.';
-    const GATEWAY_ERROR_CARD_HOLDER_DIDNT_RETURN_FROM_RUPAY                     = 'Cardholder did not return from RuPay.';
     const GATEWAY_ERROR_USER_INACTIVE                                           = 'User is inactive.';
     const GATEWAY_ERROR_PAYMENT_BIN_CHECK_FAILED                                = 'Card rejected by bank.';
     const GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR                            = 'Payment failed because card holder couldn\'t be authenticated';
@@ -64,6 +63,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_FULLY_REFUNDED                                    = 'The payment has been fully refunded already';
     const BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED               = 'The refund amount provided is greater than amount captured';
     const BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED             = 'The refund amount provided is greater than the unrefunded amount';
+    const BAD_REQUEST_PAYMENT_UNDER_DISPUTE_CANNOT_BE_REFUNDED                  = 'The refund on this payment is blocked due to ongoing dispute investigation';
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_MIN_AMOUNT                       = 'Minimum transaction amount allowed is Re. 1';
     const BAD_REQUEST_PAYMENT_AMOUNT_LESS_THAN_10_MIN_AMOUNT                    = 'Minimum transaction amount allowed is Rs 10';
     const BAD_REQUEST_PAYMENT_AMOUNT_TOO_HIGH                                   = 'The amount may not be greater than 50000000.';
@@ -74,6 +74,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_CVV_NOT_PROVIDED                             = 'Payment Exception: Card cvv not provided';
     const BAD_REQUEST_PAYMENT_CARD_INVALID_CVV                                  = 'Payment failed due to incorrect card CVV';
     const BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED                 = 'Payment failed because cardholder couldn\'t be authenticated';
+    const BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_NOT_AVAILABLE                 = 'Payment failed because cardholder couldn\'t be authenticated';
     const BAD_REQUEST_PAYMENT_NET_BANKING_NOT_ENABLED                           = 'Net banking is not enabled for the merchant';
     const BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED                              = 'Wallet is not supported';
     const BAD_REQUEST_PAYMENT_WALLET_NOT_PROVIDED                               = 'Wallet is not provided';
@@ -112,12 +113,12 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CARD_AMEX_CVV_LENGTH_MUST_BE_FOUR                 = 'The American Express card cvv length must be 4 digits';
     const BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED                    = 'International card is not allowed.';
     const BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED                      = 'Recurring is not supported on this card';
-    const BAD_REQUEST_PAYMENT_BLOCKED_BY_BANK_DUE_TO_RISK_CHECKS_FAILURE        = 'Payment was blocked by bank because it failed certain risk checks';
     const BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD                              = 'Payment was blocked because of fraud';
     const BAD_REQUEST_PAYMENT_FAILED_BECAUSE_SESSION_EXPIRED                    = 'Payment processing failed because session expired due to taking too much time. Please try the payment again.';
     const BAD_REQUEST_PAYMENT_TIMED_OUT                                         = 'Payment was not completed on time.';
     const BAD_REQUEST_PAYMENT_TIMED_OUT_AT_GATEWAY                              = 'Payment was not completed on time.';
     const BAD_REQUEST_PAYMENT_TIMED_OUT_AT_WALLET_PAYMENT_PAGE                  = 'Payment was not completed on time.';
+    const BAD_REQUEST_PAYMENT_UPI_REQUEST_TIMED_OUT                             = 'Payment failed because upi request timed out.';
     const BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED                              = 'Refund is currently not supported for this payment method';
     const BAD_REQUEST_PAYMENT_PARTIAL_REFUND_NOT_SUPPORTED                      = 'Partial refund is currently not supported for this payment method';
     const BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH                  = 'Capture amount must be equal to the amount authorized';
@@ -206,9 +207,8 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_SCHEDULE                                          = 'Schedule cannot be created, it is invalid.';
     const BAD_REQUEST_SCHEDULE_REQUIRED                                         = 'Mandatory param: Schedule not given.';
     const BAD_REQUEST_SCHEDULE_INVALID_PERIOD                                   = 'Invalid period, must be among hourly, daily, weekly, monthly-date, and monthly-week';
-    const BAD_REQUEST_SCHEDULE_HOURLY_DAILY_ANCHOR_NOT_PERMITTED                = 'Setting anchor is not permitted for hourly and daily schedules.';
+    const BAD_REQUEST_SCHEDULE_ANCHOR_NOT_PERMITTED                             = 'Setting anchor is not permitted for the schedule.';
     const BAD_REQUEST_SCHEDULE_HOURLY_HOUR_NOT_PERMITTED                        = 'Setting hour is not permitted for hourly schedules';
-    const BAD_REQUEST_SCHEDULE_WEEKEND_ANCHOR_NOT_PERMITTED                     = 'For weekly periods, only schedules with weekday anchors are permitted.';
     const BAD_REQUEST_SCHEDULE_HOURLY_WITHOUT_INTERVAL                          = 'Hourly schedules require an interval to be set.';
     const BAD_REQUEST_SCHEDULE_IN_USE                                           = 'Cannot delete a schedule that is currently in use by one or more merchants.';
     const BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_RECEIVER_TYPES                    = 'One or more of the given receiver types is invalid.';
@@ -217,6 +217,7 @@ class PublicErrorDescription
     const BAD_REQUEST_VIRTUAL_ACCOUNT_DESCRIPTOR_SANS_HANDLE                    = 'Descriptor field cannot be used as merchant handle is not set for your account.';
     const BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED                                = 'The merchant has already been activated';
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED                                    = 'The merchant has not been activated. This action can only be taken for activated merchants';
+    const BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION                      = 'The merchant must be unarchived before being activated.';
     const BAD_REQUEST_MERCHANT_CANNOT_BE_ARCHIVED                               = 'The merchant cannot be archived';
     const BAD_REQUEST_MERCHANT_ALREADY_ARCHIVED                                 = 'The merchant has already been archived.';
     const BAD_REQUEST_MERCHANT_NOT_ARCHIVED                                     = 'The merchant has not been archived. This action can only be taken for archived merchants';
@@ -235,6 +236,7 @@ class PublicErrorDescription
     const BAD_REQUEST_GATEWAY_TERMINAL_MAX_LIMIT_REACHED                        = 'Max terminal count limit reached for this merchant';
     const BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS                                = 'A record with same gateway merchant id (mid) exists';
     const BAD_REQUEST_MERCHANT_TERMINAL_EXISTS_FOR_GATEWAY                      = 'A terminal for this gateway for this merchant already exists';
+
     const BAD_REQUEST_PAYMENT_VERIFICATION_FAILED                               = 'Payment verification with gateway failed';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_CLICKING_CANCEL                       = 'Payment declined by gateway. Most probably due to customer clicking the cancel button on 3dSecure page';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY                               = 'Payment declined';
@@ -247,6 +249,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER                      = 'Payment processing via netbanking cancelled by user by clicking cancel on bank transfer page';
     const BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED                     = 'Payment processing failed due to 3dsecure or OTP authentication failure';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK                      = 'Payment processing failed by bank due to risk';
+    const BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY_DUE_TO_RISK                   = 'Payment processing failed by gateway due to risk';
     const BAD_REQUEST_PAYMENT_CARD_NOT_ENROLLED_FOR_3DSECURE                    = 'Payment processing failed because card is not enrolled for the required 3dsecure authentication';
     const BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED             = 'Payment processing failed because OTP validation attempts limit exceeded';
     const BAD_REQUEST_PAYMENT_OTP_INCORRECT                                     = 'Payment processing failed because of incorrect OTP';
@@ -361,6 +364,9 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_PROBLEM_IN_UPDATING                               = 'Problem in updating payment';
     const BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                          = 'The fees calculated for payment is greater than the payment amount. Please provide a higher amount';
     const BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED                               = 'Payment created long back and cannot be cancelled now';
+    const BAD_REQUEST_PAYMENT_ALREADY_UNDER_DISPUTE                             = 'Payment already has an open dispute';
+    const BAD_REQUEST_DISPUTE_AMOUNT_GREATER_THAN_PAYMENT_AMOUNT                = 'Disputed amount cannot be greater than payment amount';
+    const BAD_REQUEST_CANNOT_UPDATE_CLOSED_DISPUTE                              = 'This dispute is already closed and cannot be updated';
 
     // batch processor related error codes
     const BAD_REQUEST_BATCH_FILE_INVALID_TYPE                                   = 'Incorrect type is used for the uploaded file';
@@ -411,7 +417,6 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_TRANSFER_MORE_THAN_ONE_CUSTOMER                   = 'Payment cannot be transferred to more than one customer';
     const BAD_REQUEST_PAYMENT_TRANSFER_MULTIPLE_ENTITY_TYPES_GIVEN              = 'Payment cannot be transferred to multiple types of entities';
     const BAD_REQUEST_PAYMENT_TRANSFER_CURRENCY_MISMATCH                        = 'Transfer request currency must be same as payment currency';
-    const BAD_REQUEST_PAYMENT_MULTIPLE_TRANSFERS_TO_SAME_ACCOUNT                = 'Payment cannot be transferred to the same account more than one time';
 
     const BAD_REQUEST_TRANSFER_INVALID_ACCOUNT_ID                               = 'Account ID provided for transfer is invalid';
     const BAD_REQUEST_TRANSFER_ACCOUNT_NOT_ACTIVATED                            = 'The account needs to be activated by Razorpay before you can make transfers in live mode';
@@ -488,7 +493,6 @@ class PublicErrorDescription
 
     const BAD_REQUEST_SUPERADMIN_ACCESS_REQUIRED                                = 'This service can only be accessed by superadmins';
 
-    const BAD_REQUEST_GATEWAY_RULE_EXISTS                                       = 'Gateway rule already exists for the given criteria';
     const BAD_REQUEST_TOTAL_LOAD_EXCEEDS_MAX_LOAD                               = 'Load across all gateway rules must be less than 100 percent';
 
     const BAD_REQUEST_COUPON_LIMIT_REACHED                                      = 'Coupon code limit reached';
@@ -497,4 +501,6 @@ class PublicErrorDescription
     const BAD_REQUEST_COUPON_NOT_VALID_FOR_MERCHANT                             = 'Coupon code not valid for this merchant';
     const BAD_REQUEST_COUPON_NOT_APPLICABLE                                     = 'Coupon code is not applicable right now';
     const BAD_REQUEST_COUPON_EXPIRED                                            = 'Coupon code is expired';
+
+    const BAD_REQUEST_SNS_PUBLISH_FAILED                                        = 'Sns Publish failed';
 }

@@ -43,6 +43,7 @@ class Base
         'webhook'           => \RZP\Models\Merchant\Webhook\Entity::class,
         'payment'           => \RZP\Models\Payment\Entity::class,
         'pricing'           => \RZP\Models\Pricing\Entity::class,
+        'dispute'           => \RZP\Models\Dispute\Entity::class,
         'customer'          => \RZP\Models\Customer\Entity::class,
         'merchant'          => \RZP\Models\Merchant\Entity::class,
         'terminal'          => \RZP\Models\Terminal\Entity::class,
@@ -58,6 +59,7 @@ class Base
         'fee_breakup'       => \RZP\Models\Transaction\FeeBreakup\Entity::class,
         'schedule_task'     => \RZP\Models\Schedule\Task\Entity::class,
         'gateway_token'     => \RZP\Models\Customer\GatewayToken\Entity::class,
+        'risk'              => \RZP\Models\Risk\Entity::class,
 
         'atom'              => \RZP\Gateway\Atom\Entity::class,
         'hdfc'              => \RZP\Gateway\Hdfc\Entity::class,

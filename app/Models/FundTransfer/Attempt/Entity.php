@@ -19,6 +19,7 @@ class Entity extends Base\PublicEntity
     const BANK_STATUS_CODE       = 'bank_status_code';
     const STATUS                 = 'status';
     const UTR                    = 'utr';
+    const NARRATION              = 'narration';
     const REMARKS                = 'remarks';
     const DATE_TIME              = 'date_time';
     const CMS_REF_NO             = 'cms_ref_no';
@@ -32,6 +33,7 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::VERSION,
         self::STATUS,
+        self::NARRATION,
     ];
 
     protected $visible = [
@@ -45,6 +47,7 @@ class Entity extends Base\PublicEntity
         self::BANK_STATUS_CODE,
         self::STATUS,
         self::UTR,
+        self::NARRATION,
         self::REMARKS,
         self::DATE_TIME,
         self::CMS_REF_NO,
@@ -94,6 +97,11 @@ class Entity extends Base\PublicEntity
     public function getRemarks()
     {
         return $this->getAttribute(self::REMARKS);
+    }
+
+    public function getNarration()
+    {
+        return $this->getAttribute(self::NARRATION);
     }
 
     public function getUtr()
@@ -199,16 +207,12 @@ class Entity extends Base\PublicEntity
 
     public function isPendingReconciliation()
     {
-        $status = $this->getStatus();
-
-        return in_array($status, [Status::PENDING_RECONCILIATION, Status::CREATED], true);
-
-        // return ($this->getStatus() === Status::PENDING_RECONCILIATION);
+        return ($this->getStatus() === Status::PENDING_RECONCILIATION);
     }
 
     public function isStatusFailed()
     {
-        return $this->getStatus() === Status::FAILED;
+        return ($this->getStatus() === Status::FAILED);
     }
 
     // ---------------------------- public setters -----------------------------

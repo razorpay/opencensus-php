@@ -46,11 +46,6 @@ class Repository extends Base\Repository
                       ->with('merchant', 'merchant.bankAccount', 'setlTransactions')
                       ->get();
 
-        foreach ($setls as $setl)
-        {
-            assert(in_array($setl->getId(), $setlIds));
-        }
-
         return $setls;
     }
 
@@ -62,7 +57,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getSettlementWithServiceTaxNullOrZero()
+    public function getSettlementWithTaxNullOrZero()
     {
         return $this->newQuery()
                     ->where(Entity::SERVICE_TAX, '=', '0')

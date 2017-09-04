@@ -303,7 +303,7 @@ class ErrorCode
      * @var array
      */
     public static $errorMap = array(
-        self::FSS0001   => Error\ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+        self::FSS0001   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_NOT_AVAILABLE,
         self::FSS00002  => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST,
 
         self::GW00150   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_MISSING_DATA,
@@ -320,14 +320,14 @@ class ErrorCode
         self::GW00164   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_ZIP,
         self::GV00104   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ID,
         self::GW00165   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_ID,
-        self::GW00166   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_NUMBER,
+        self::GW00166   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_NUMBER_NOT_LEGITIMATE,
         self::GW00167   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_CURRENCY,
         self::GW00170   => Error\ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
         self::GW00171   => Error\ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
         self::GW00176   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_CAPTURE_FAILED,
         self::GW00177   => Error\ErrorCode::GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH,
         self::GW00181   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INSUFFICIENT_BALANCE,
-        self::GW00183   => Error\ErrorCode::GATEWAY_ERROR_CARD_MISSING_CVV,
+        self::GW00183   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_CVV_NOT_PROVIDED,
         self::GW00201   => Error\ErrorCode::GATEWAY_ERROR_SUPPORT_AUTH_NOT_FOUND,
         self::GW00205   => Error\ErrorCode::GATEWAY_ERROR_INVALID_SUBSEQUENT_PAYMENT,
         self::GW00258   => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_DENIED_NEGATIVE_BIN,

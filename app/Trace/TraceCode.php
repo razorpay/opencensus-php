@@ -4,7 +4,7 @@ namespace RZP\Trace;
 
 use RZP\Exception\InvalidArgumentException;
 
-class TraceCode
+class TraceCode extends \Razorpay\Trace\TraceCode
 {
     /*
      * Payment component error messages
@@ -35,12 +35,16 @@ class TraceCode
     const PAYMENT_CAPTURE_SUCCESS                       = 'PAYMENT_CAPTURE_SUCCESS';
     const PAYMENT_CAPTURE_FAILURE                       = 'PAYMENT_CAPTURE_FAILURE';
     const PAYMENT_CAPTURE_FORCED                        = 'PAYMENT_CAPTURE_FORCED';
+    const PAYMENT_CAPTURE_BULK_REQUEST                  = 'PAYMENT_CAPTURE_BULK_REQUEST';
+    const PAYMENT_CAPTURE_BULK_RESPONSE                 = 'PAYMENT_CAPTURE_BULK_RESPONSE';
+    const PAYMENT_CAPTURE_BULK_FAILURE                  = 'PAYMENT_CAPTURE_BULK_FAILURE';
     const PAYMENT_ALREADY_CAPTURED                      = 'PAYMENT_ALREADY_CAPTURED';
     const PAYMENT_PAYOUT_REQUEST                        = 'PAYMENT_PAYOUT_REQUEST';
     const PAYMENT_AUTO_CAPTURE                          = 'PAYMENT_AUTO_CAPTURE';
     const PAYMENT_AUTO_CAPTURE_FAILED                   = 'PAYMENT_AUTO_CAPTURE_FAILED';
     const PAYMENT_AUTO_REFUND                           = 'PAYMENT_AUTO_REFUND';
     const PAYMENT_AUTO_REFUND_CRON                      = 'PAYMENT_AUTO_REFUND_CRON';
+    const REFUND_FROM_AUTHORIZED_REQUEST                = 'REFUND_FROM_AUTHORIZED_REQUEST';
     const PAYMENT_QUEUE_CAPTURE_REQUEST                 = 'PAYMENT_QUEUE_CAPTURE_REQUEST';
     const PAYMENT_QUEUE_CAPTURE_SUCCESS                 = 'PAYMENT_QUEUE_CAPTURE_SUCCESS';
     const PAYMENT_QUEUE_CAPTURE_FAILURE                 = 'PAYMENT_QUEUE_CAPTURE_FAILURE';
@@ -94,6 +98,7 @@ class TraceCode
     const TERMINAL_ANALYTICS_SAVE_FAILED                = 'TERMINAL_ANALYTICS_SAVE_FAILED';
     const TERMINAL_CREATE_REQUEST                       = 'TERMINAL_CREATE_REQUEST';
     const TERMINAL_REMOVE_FROM_MERCHANT                 = 'TERMINAL_REMOVE_FROM_MERCHANT';
+    const TERMINAL_ADD_MERCHANT                         = 'TERMINAL_ADD_MERCHANT';
     const TERMINAL_COPY                                 = 'TERMINAL_COPY';
     const TERMINAL_REASSIGN_MERCHANT                    = 'TERMINAL_REASSIGN_MERCHANT';
     const VERIFY_REFUND_TRANSACTION_CREATED             = 'VERIFY_REFUND_TRANSACTION_CREATED';
@@ -122,6 +127,7 @@ class TraceCode
     const ORDER_REFUNDED                                = 'ORDER_REFUNDED';
     const WEBHOOK_EDIT                                  = 'WEBHOOK_EDIT';
     const REFUND_AUTHORIZE_BULK                         = 'REFUND_AUTHORIZE_BULK';
+    const REFUND_PROCESSED                              = 'REFUND_PROCESSED';
     const PAYMENT_STATUS_FAILED                         = 'PAYMENT_STATUS_FAILED';
     const ORDER_STATUS_AUTHORIZED                       = 'ORDER_STATUS_AUTHORIZED';
     const PAYMENT_STATUS_AUTHORIZED                     = 'PAYMENT_STATUS_AUTHORIZED';
@@ -140,6 +146,7 @@ class TraceCode
     const RECON_FILE_LINK_NOT_FOUND                     = 'RECON_FILE_LINK_NOT_FOUND';
     const GATEWAY_ENTITIES_COUNT_UNEXPECTED             = 'GATEWAY_ENTITIES_COUNT_UNEXPECTED';
     const GATEWAY_ENTITY_UNEXPECTED_ACTION              = 'GATEWAY_ENTITY_UNEXPECTED_ACTION';
+    const CHANGING_FILE_PERMISSION                      = 'CHANGING_FILE_PERMISSION';
 
     const MPESA_GATEWAY_PARAM_ARRAY                     = 'MPESA_GATEWAY_PARAM_ARRAY';
 
@@ -170,6 +177,8 @@ class TraceCode
     const DASHBOARD_JOB_ERROR                           = 'DASHBOARD_JOB_ERROR';
 
     const TERMINAL_SELECTION                            = 'TERMINAL_SELECTION';
+    const TERMINAL_SELECTION_FOR_RULE_GROUP             = 'TERMINAL_SELECTION_FOR_RULE_GROUP';
+    const TERMINAL_RULE_FILTER_EXCEPTION                = 'TERMINAL_RULE_FILTER_EXCEPTION';
     const TERMINAL_SELECTION_MISMATCH                   = 'TERMINAL_SELECTION_MISMATCH';
     const TERMINAL_FAILURE                              = 'TERMINAL_FAILURE';
     const TERMINAL_EDIT                                 = 'TERMINAL_EDIT';
@@ -335,6 +344,7 @@ class TraceCode
 
     //Adjustments
     const ADJUSTMENT_CREATE_REQUEST                     = 'ADJUSTMENT_CREATE_REQUEST';
+    const FEE_ADJUSTMENT_CREATE_REQUEST                 = 'FEE_ADJUSTMENT_CREATE_REQUEST';
     const ADJUSTMENT_CREATE_SUCCESS                     = 'ADJUSTMENT_CREATE_SUCCESS';
 
     const VERIFY_LOCKED_PAYMENTS                        = 'VERIFY_LOCKED_PAYMENTS';
@@ -343,6 +353,7 @@ class TraceCode
     const PAYMENT_VERIFY_ALREADY_AUTHORIZED             = 'PAYMENT_VERIFY_ALREADY_AUTHORIZED';
 
     const PAYMENT_UPDATE_AMOUNT_PAIDOUT                 = 'PAYMENT_UPDATE_AMOUNT_PAIDOUT';
+    const PAYMENT_WALLET_LOW_BALANCE                    = 'PAYMENT_WALLET_LOW_BALANCE';
 
     const FILE_DELETING                                 = 'FILE_DELETING';
     const DIRECTORY_DELETING                            = 'DIRECTORY_DELETING';
@@ -431,6 +442,7 @@ class TraceCode
     const GATEWAY_CHECKSUM_VERIFY_REQUEST           = 'GATEWAY_CHECKSUM_VERIFY_REQUEST';
     const GATEWAY_CHECKSUM_VERIFY_FAILED            = 'GATEWAY_CHECKSUM_VERIFY_FAILED';
     const GATEWAY_SOAP_REQUEST                      = 'GATEWAY_SOAP_REQUEST';
+    const GATEWAY_SOAP_FAULT                        = 'GATEWAY_SOAP_FAULT';
     const GATEWAY_REQUEST_TIMEOUT                   = 'GATEWAY_REQUEST_TIMEOUT';
     const GATEWAY_RUPAY_CALLBACK                    = 'GATEWAY_RUPAY_CALLBACK';
     const GATEWAY_HDFC_CALLBACK_EMPTY               = 'GATEWAY_HDFC_CALLBACK_EMPTY';
@@ -449,6 +461,7 @@ class TraceCode
     const GATEWAY_FIRST_DATA_UNEXPECTED             = 'GATEWAY_FIRST_DATA_UNEXPECTED';
     const GATEWAY_DOWNTIME_SORTING                  = 'GATEWAY_DOWNTIME_SORTING';
     const GATEWAY_DOWNTIME_SORTING_FAILED           = 'GATEWAY_DOWNTIME_SORTING_FAILED';
+    const GATEWAY_DOWNTIME_WEBHOOK                  = 'GATEWAY_DOWNTIME_WEBHOOK';
 
     const SETTLEMENT_INITIATING                     = 'SETTLEMENT_INITIATING';
     const SETTLEMENT_INITIATED                      = 'SETTLEMENT_INITIATED';
@@ -520,6 +533,7 @@ class TraceCode
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
     const MERCHANT_ORG_NOT_GIVEN                    = 'MERCHANT_ORG_NOT_GIVEN';
     const MERCHANT_SAVE_ACTIVATION_DETAILS          = 'MERCHANT_SAVE_ACTIVATION_DETAILS';
+    const MERCHANT_TAGS_ADD                         = 'MERCHANT_TAGS_ADD';
 
     const MERCHANT_BALANCE_DEBIT_FAILURE            = 'MERCHANT_BALANCE_DEBIT_FAILURE';
 
@@ -527,6 +541,8 @@ class TraceCode
     const MERCHANT_UNARCHIVE                        = 'MERCHANT_UNARCHIVE';
     const MERCHANT_SUSPEND                          = 'MERCHANT_SUSPEND';
     const MERCHANT_UNSUSPEND                        = 'MERCHANT_UNSUSPEND';
+
+    const MERCHANT_PAYOUT_FAILURE                   = 'MERCHANT_PAYOUT_FAILURE';
 
     const PRICING_PLAN_CREATE_ATTEMPT               = 'PRICING_PLAN_CREATE_ATTEMPT';
     const PRICING_PLAN_CREATE_SUCCESS               = 'PRICING_PLAN_CREATE_SUCCESS';
@@ -562,6 +578,8 @@ class TraceCode
     const MISC_TRACE_CODE                           = 'MISC_TRACE_CODE';
     const REFUND_TRANSACTION_FAILED                 = 'REFUND_TRANSACTION_FAILED';
     const CREDITS_TRANSACTION_FAILED                = 'CREDITS_TRANSACTION_FAILED';
+    const REDIS_KEY_SET                             = 'REDIS_KEY_SET';
+    const TERMINAL_CONFIG_FETCH_ERROR               = 'TERMINAL_CONFIG_FETCH_ERROR';
 
     const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';
 
@@ -570,6 +588,8 @@ class TraceCode
     const TOKENEX_RETRY                             = 'TOKENEX_RETRY';
     const RAVEN_REQUEST                             = 'RAVEN_REQUEST';
     const RAVEN_RESPONSE                            = 'RAVEN_RESPONSE';
+    const RAVEN_ASYNC_REQUEST_FAILED                = 'RAVEN_ASYNC_REQUEST_FAILED';
+    const LUMBERJACK_ASYNC_REQUEST_FAILED           = 'LUMBERJACK_ASYNC_REQUEST_FAILED';
 
     const EXCHANGE_REQUEST                          = 'EXCHANGE_REQUEST';
     const EXCHANGE_RESPONSE                         = 'EXCHANGE_RESPONSE';
@@ -636,6 +656,7 @@ class TraceCode
      * Trace code for critical info
      */
     const PAYMENT_NOTES_INVALID                         = 'PAYMENT_NOTES_INVALID';
+    const EXTRA_QUERY_PARAM_IN_GET_ROUTE                = 'EXTRA_QUERY_PARAM_IN_GET_ROUTE';
 
     // Trace codes for Segment integration
 
@@ -652,14 +673,15 @@ class TraceCode
     const FORCE_AUTH_FAILED_PAYMENT                     = 'FORCE_AUTH_FAILED_PAYMENT';
     const PAYMENT_FAILED_EXPECTED_GATEWAY_SUCCESS       = 'PAYMENT_FAILED_EXPECTED_GATEWAY_SUCCESS';
     const PAYMENT_ALREADY_AUTHORIZED                    = 'PAYMENT_ALREADY_AUTHORIZED';
-    const LUMBERJACK_TRACK_FAILED                       = 'LUMBERJACK_TRACK_FAILED';
-    const LUMBERJACK_CONTEXT_FETCH_FAILED               = 'LUMBERJACK_CONTEXT_FETCH_FAILED';
-    const LUMBERJACK_EMPTY_EVENTS                       = 'LUMBERJACK_EMPTY_EVENTS';
-    const LUMBERJACK_POST_FAILED                        = 'LUMBERJACK_POST_FAILED';
-    const LUMBERJACK_QUEUE_SEND_FAILED                  = 'LUMBERJACK_QUEUE_SEND_FAILED';
-    const LUMBERJACK_MISSING_PAYMENT_PROPERTY           = 'LUMBERJACK_MISSING_PAYMENT_PROPERTY';
-    const LUMBERJACK_MISSING_TERMINAL_DATA              = 'LUMBERJACK_MISSING_TERMINAL_DATA';
-    const LUMBERJACK_MISSING_PAYMENT_CONTEXT            = 'LUMBERJACK_MISSING_PAYMENT_CONTEXT';
+
+    // Trace codes for events
+    const EVENT_TRACK_FAILED                            = 'EVENT_TRACK_FAILED';
+    const EVENT_CONTEXT_FETCH_FAILED                    = 'EVENT_CONTEXT_FETCH_FAILED';
+    const EVENT_MISSING_PAYMENT_PROPERTY                = 'EVENT_MISSING_PAYMENT_PROPERTY';
+    const EVENT_MISSING_TERMINAL_DATA                   = 'EVENT_MISSING_TERMINAL_DATA';
+    const EVENT_MISSING_PAYMENT_CONTEXT                 = 'EVENT_MISSING_PAYMENT_CONTEXT';
+    const EVENT_QUEUE_SEND_FAILED                       = 'EVENT_QUEUE_SEND_FAILED';
+    const EVENT_POST_FAILED                             = 'EVENT_POST_FAILED';
 
     // Trace code for features
 
@@ -697,6 +719,7 @@ class TraceCode
     const TRANSFER_EDIT_SUCCESS                         = 'TRANSFER_EDIT_SUCCESS';
     const TRANSFER_REVERSAL_REQUEST                     = 'TRANSFER_REVERSAL_REQUEST';
     const TRANSFER_REVERSAL_SUCCESS                     = 'TRANSFER_REVERSAL_SUCCESS';
+    const TRANSFER_UPDATE_SETTLEMENT_ID_FAILED          = 'TRANSFER_UPDATE_SETTLEMENT_ID_FAILED';
 
 // Trace Code for Gateway Absence StatusCake
     const GATEWAY_DOWNTIME_STATUSCODE_MISSING_TOKEN     = 'GATEWAY_DOWNTIME_STATUSCODE_MISSING_TOKEN';
@@ -762,9 +785,10 @@ class TraceCode
     const GATEWAY_RULE_CREATE_REQUEST                   = 'GATEWAY_RULE_CREATE_REQUEST';
     const GATEWAY_RULE_DELETE_REQUEST                   = 'GATEWAY_RULE_DELETE_REQUEST';
     const GATEWAY_RULE_UPDATE_REQUEST                   = 'GATEWAY_RULE_UPDATE_REQUEST';
-    const GATEWAY_RULES_POST_FILTER                     = 'GATEWAY_RULES_POST_FILTER';
+    const GATEWAY_SORTER_RULES                          = 'GATEWAY_SORTER_RULES';
     const GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS        = 'GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS';
     const GATEWAY_LOAD_SORTING_FALLBACK                 = 'GATEWAY_LOAD_SORTING_FALLBACK';
+    const GATEWAY_FILTER_RULES                          = 'GATEWAY_FILTER_RULES';
 
     // Trace codes for tax and tax groups crud
     const TAX_GROUP_CREATE_REQUEST                      = 'TAX_GROUP_CREATE_REQUEST';
@@ -774,9 +798,21 @@ class TraceCode
     const TAX_UPDATE_REQUEST                            = 'TAX_UPDATE_REQUEST';
     const TAX_DELETE_REQUEST                            = 'TAX_DELETE_REQUEST';
 
+    // Trace codes for dispute entity
+    const DISPUTE_CREATE_REQUEST                        = 'DISPUTE_CREATE_REQUEST';
+    const DISPUTE_EDIT_REQUEST                          = 'DISPUTE_EDIT_REQUEST';
+    const DISPUTE_REVERSAL_REQUEST                      = 'DISPUTE_REVERSAL_REQUEST';
+    const DISPUTE_REVERSAL_SUCCESS                      = 'DISPUTE_REVERSAL_SUCCESS';
+    const DISPUTE_TRANSFER_SUCCESS                      = 'DISPUTE_TRANSFER_SUCCESS';
     const GRATIS_TO_POSTPAID_INPUT                      = 'GRATIS_TO_POSTPAID_INPUT';
     const GRATIS_TO_POSTPAID_FAILED                     = 'GRATIS_TO_POSTPAID_FAILED';
     const GRATIS_TO_POSTPAID_RESPONSE                   = 'GRATIS_TO_POSTPAID_RESPONSE';
+
+    // Trace code for Merchant Invoices
+    const MERCHANT_INVOICE_ENTITY_CREATION_FAILED       = 'MERCHANT_INVOICE_ENTITY_CREATION_FAILED';
+    const MERCHANT_INVOICE_BULK_CREATE                  = 'MERCHANT_INVOICE_BULK_CREATE';
+    const MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED      = 'MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED';
+    const MERCHANT_INVOICE_REPORT_REQUEST               = 'MERCHANT_INVOICE_REPORT_REQUEST';
 
     const DUMMY_JOB = 'DUMMY_JOB';
 
@@ -920,6 +956,8 @@ class TraceCode
         self::MERCHANT_DETAIL_MIGRATE_FAILED            => 'Failed to migrate Merchant Detail',
 
         self::MERCHANT_ORG_NOT_GIVEN                    => 'Merchant Org Id is not passed to API on creation',
+
+        self::MERCHANT_PAYOUT_FAILURE                   => 'Failed to create merchant payout',
 
         self::OFFER_IIN_DOES_NOT_EXISTS                 => 'IIN does not exists for the offer create request',
         self::OFFER_DEACTIVATE                          => 'Deactivating the expired offer',

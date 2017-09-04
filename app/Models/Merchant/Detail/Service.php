@@ -56,7 +56,7 @@ class Service extends Base\Service
         return $signedUrls[$fileStoreId];
     }
 
-    public function saveMerchantDetails(array $input): array
+    public function saveMerchantDetails(array $input)
     {
         $this->trace->info(
                 TraceCode::MERCHANT_SAVE_ACTIVATION_DETAILS,
@@ -64,34 +64,47 @@ class Service extends Base\Service
 
         $merchantDetails = $this->getMerchantDetails($this->merchant, $input);
 
+        $merchantDetails->getValidator()->validateIsNotLocked();
+
+        $merchantDetails->edit($input);
+
         return $this->repo->transaction(function() use ($input, $merchantDetails)
         {
-            $merchantDetails->getValidator()->validateIsNotLocked();
-
-            $merchantDetails->edit($input);
 
             $this->repo->saveOrFail($merchantDetails);
 
             $response = $this->createResponse($merchantDetails);
+
+            $eventAttributes = $this->merchant->toArrayEvent();
 
             if ($this->canSubmit($input, $response) === true)
             {
                 $this->markSubmitted($merchantDetails);
+
+                $this->app['eventManager']->trackEvents($this->merchant, Merchant\Action::SUBMITTED, $eventAttributes);
             }
 
             $response = $this->createResponse($merchantDetails);
 
-            $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
+            $autoActivated = $this->autoActivateMerchantIfApplicable($merchantDetails);
+
+            $activationProgress = $response['verification']['activation_progress'];
+
+            $merchantDetails->setActivationProgress($activationProgress);
 
             $this->repo->saveOrFail($merchantDetails);
 
-            $autoActivated = $this->autoActivateMerchantIfApplicable($merchantDetails);
-
-            if ((isset($input['submit'])) and (intval($input['submit']) === 1))
+            if ($this->canSubmit($input, $response) === true)
             {
                 (new Detail\Core)->fireActivationTrigger($merchantDetails);
             }
+
             $response['auto_activated'] = $autoActivated;
+
+            $eventAttributes['activation_progress'] = $activationProgress;
+
+            $this->app['eventManager']
+                 ->trackEvents($this->merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
 
             return $response;
         });
@@ -113,10 +126,11 @@ class Service extends Base\Service
     /**
      * Upload the file passed in $input for $merchant
      *
-     * @param  Merchant\Entity $merchant     Merchant Entity
-     * @param  array           $input        Input with the file
-     * @param  boolean         $validateLock If true, blocks edits if the form is locked. Can be set to false
-     *                                       to bypass locked forms
+     * @param  Merchant\Entity $merchant          Merchant Entity
+     * @param  array           $input
+     *                                            Input with the file
+     * @param  boolean         $validateLock      If true, blocks edits if the form is locked. Can be set to false
+     *                                            to bypass locked forms
      *
      * @return array
      */
@@ -208,7 +222,7 @@ class Service extends Base\Service
         {
             $this->trace->info(
                 TraceCode::MERCHANT_DETAIL_DOES_NOT_EXIST,
-                [ 'merchant_id' => $merchant->getId()]);
+                [ 'merchant_id'    => $merchant->getId() ]);
 
             $merchantDetails = $this->createMerchantDetails($merchant, $input);
         }
@@ -251,7 +265,7 @@ class Service extends Base\Service
 
     protected function markSubmitted($merchantDetails)
     {
-        $submittedAt = Carbon::now('Asia/Kolkata')->timestamp;
+        $submittedAt = Carbon::now()->getTimestamp();
 
         $input = [
             Entity::SUBMITTED     => 1,
@@ -323,9 +337,9 @@ class Service extends Base\Service
         foreach ($validationFields as $key)
         {
             if ((array_key_exists($key, $merchantDetailsArr) === false) or
-               (is_null($merchantDetailsArr[$key]) === true) or
+                (is_null($merchantDetailsArr[$key]) === true) or
                 ((is_bool($merchantDetailsArr[$key]) !== true) and
-                    (empty($merchantDetailsArr[$key]) === true)))
+                 (empty($merchantDetailsArr[$key]) === true)))
             {
                 $requiredFields[] = $key;
             }
@@ -359,6 +373,58 @@ class Service extends Base\Service
         return $response;
     }
 
+    private function getFieldsToStepMap() : array
+    {
+        // Fetching Action Form details schema based on account type.
+        $isLinkedAccount = $this->merchant->isLinkedAccount();
+
+        if ($isLinkedAccount === true)
+        {
+            return Merchant\Constants::STEP_MAP_ACCOUNT;
+        }
+        else
+        {
+            return Merchant\Constants::STEP_MAP;
+        }
+    }
+
+    private function getStepsList() : array
+    {
+        $stepsList = array_values($this->getFieldsToStepMap());
+
+        return array_values(array_unique($stepsList));
+    }
+
+    private function calculateSteps($merchantDetails) : array
+    {
+        $stepFinished = [];
+
+        $stepMap = $this->getFieldsToStepMap();
+
+        $requiredFields = $merchantDetails['verification']['required_fields'] ?? [];
+
+        foreach ($requiredFields as $key)
+        {
+            if (isset($stepMap[$key]) === true)
+            {
+                $stepFinished[] = $stepMap[$key];
+            }
+        }
+
+        return $stepFinished;
+    }
+
+    public function getMerchantDetailsForAdmin() : array
+    {
+        // Formatting the data as required by the controller.
+        $merchantDetails = $this->fetchMerchantDetails();
+
+        // Finished steps will be calculated based on required fields.
+        $this->calculateFinishedSteps($merchantDetails);
+
+        return $merchantDetails;
+    }
+
     /**
      * Checks and auto activates the merchant if possible, after form submission
      *
@@ -388,5 +454,31 @@ class Service extends Base\Service
         }
 
         return false;
+    }
+
+
+    private function calculateFinishedSteps(array & $merchantDetails)
+    {
+        // Get steps for the current merchant.
+        $steps = $this->getStepsList();
+
+        if($merchantDetails['can_submit'] === true)
+        {
+            $merchantDetails['steps_finished'] = $steps;
+        }
+        else
+        {
+            // By checking merchant details unfinished steps will be calculated.
+            $unfinishedSteps = $this->calculateSteps($merchantDetails);
+
+            if(count($unfinishedSteps) !== 0)
+            {
+                $unfinishedSteps = array_unique($unfinishedSteps);
+
+                $finishedSteps = array_values(array_diff($steps, $unfinishedSteps));
+
+                $merchantDetails['steps_finished'] = $finishedSteps;
+            }
+        }
     }
 }

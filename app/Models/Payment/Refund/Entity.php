@@ -3,11 +3,11 @@
 namespace RZP\Models\Payment\Refund;
 
 use RZP\Models\Base;
-use RZP\Models\Currency;
 use RZP\Models\Payment;
-use RZP\Models\Batch;
+use RZP\Models\Currency;
 use RZP\Models\Transaction\Channel;
 use RZP\Models\Base\Traits\NotesTrait;
+use Razorpay\Spine\DataTypes\Dictionary;
 
 class Entity extends Base\PublicEntity
 {
@@ -21,6 +21,10 @@ class Entity extends Base\PublicEntity
     const BASE_AMOUNT            = 'base_amount';
     const STATUS                 = 'status';
     const NOTES                  = 'notes';
+
+    //merchant reference number for refund if provided by merchant
+    const RECEIPT                = 'receipt';
+
     const TRANSACTION_ID         = 'transaction_id';
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
     const BATCH_ID               = 'batch_id';
@@ -52,7 +56,8 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::AMOUNT,
         self::CURRENCY,
-        self::NOTES
+        self::NOTES,
+        self::RECEIPT,
     ];
 
     protected $visible = [
@@ -65,9 +70,9 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::GATEWAY_REFUNDED,
         self::NOTES,
+        self::RECEIPT,
         self::TRANSACTION_ID,
         self::BATCH_ID,
-        self::GATEWAY_REFUNDED,
         self::ARN,
         self::ACQUIRER_DATA,
         self::ATTEMPTS,
@@ -83,6 +88,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::PAYMENT_ID,
         self::NOTES,
+        self::RECEIPT,
         self::ACQUIRER_DATA,
         self::CREATED_AT
     ];
@@ -95,6 +101,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_REFUNDED  => null,
         self::ATTEMPTS          => null,
         self::LAST_ATTEMPTED_AT => null,
+        self::RECEIPT           => null,
     ];
 
     protected $casts = [
@@ -114,6 +121,12 @@ class Entity extends Base\PublicEntity
     protected $amounts = [
         self::AMOUNT,
         self::BASE_AMOUNT,
+    ];
+
+    protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::LAST_ATTEMPTED_AT,
     ];
 
     public function payment()
@@ -267,6 +280,11 @@ class Entity extends Base\PublicEntity
         return 0;
     }
 
+    public function getTax()
+    {
+        return 0;
+    }
+
     protected function getAcquirerDataAttribute()
     {
         $acquirerData = [];
@@ -282,13 +300,7 @@ class Entity extends Base\PublicEntity
                 break;
         }
 
-        if (empty($acquirerData) === true)
-        {
-            // Show the field as an empty object on json_encoded response
-            $acquirerData = new \stdClass;
-        }
-
-        return $acquirerData;
+        return (new Dictionary($acquirerData));
     }
 
     public function setGatewayRefunded($gatewayRefunded)
@@ -387,6 +399,26 @@ class Entity extends Base\PublicEntity
     public function setReference2(string $value)
     {
         $this->setAttribute(self::REFERENCE2, $value);
+    }
+
+    public function setReceipt(string $value)
+    {
+        $this->setAttribute(self::RECEIPT, $value);
+    }
+
+    public function setUtr(string $value)
+    {
+        $this->setAttribute(self::REFERENCE1, $value);
+    }
+
+    public function setRemarks(string $value)
+    {
+        $this->setAttribute(self::REFERENCE2, $value);
+    }
+
+    public function isStatusFailed()
+    {
+        return ($this->getStatus() === Status::FAILED);
     }
 
     public function getGateway()

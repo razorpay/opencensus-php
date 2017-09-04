@@ -4,6 +4,7 @@ namespace RZP\Models\FundTransfer\Kotak;
 
 use App;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Excel;
 use RZP\Exception;
 use RZP\Models\FileStore\Accessor;
@@ -135,7 +136,7 @@ class ReconciliationGenerator
 
     protected function addNewFields(array $data, bool $generateFailedReconciliations = false)
     {
-        $date = Carbon::now('Asia/Kolkata');
+        $date = Carbon::now(Timezone::IST);
 
         foreach ($data as &$row)
         {
@@ -177,17 +178,17 @@ class ReconciliationGenerator
     {
         if (isset($input['on']) === true)
         {
-            $from = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata')->setTime(0,0,0);
+            $from = Carbon::createFromFormat('Y-m-d', $input['on'], Timezone::IST)->setTime(0,0,0);
 
-            $startTimestamp = $from->timestamp;
+            $startTimestamp = $from->getTimestamp();
 
-            $endTimestamp = $from->addDay()->timestamp - 1;
+            $endTimestamp = $from->addDay()->getTimestamp() - 1;
         }
         else
         {
-            $startTimestamp = Carbon::today("Asia/Kolkata")->timestamp;
+            $startTimestamp = Carbon::today("Asia/Kolkata")->getTimestamp();
 
-            $endTimestamp = Carbon::tomorrow("Asia/Kolkata")->timestamp - 1;
+            $endTimestamp = Carbon::tomorrow("Asia/Kolkata")->getTimestamp() - 1;
         }
 
         return [$startTimestamp, $endTimestamp];

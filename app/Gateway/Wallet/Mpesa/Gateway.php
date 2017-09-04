@@ -2,15 +2,18 @@
 
 namespace RZP\Gateway\Wallet\Mpesa;
 
+use SoapFault;
 use SoapClient;
 use SoapHeader;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use Lib\PhoneBook;
 use SimpleXMLElement;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Utility;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Base\Verify;
@@ -263,17 +266,6 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
-    protected function checkApiSuccess(Verify $verify)
-    {
-        $verify->apiSuccess = true;
-
-        if (($verify->input['payment']['status'] === 'created') or
-            ($verify->input['payment']['status'] === 'failed'))
-        {
-            $verify->apiSuccess = false;
-        }
-    }
-
     protected function checkGatewaySuccess(Verify $verify)
     {
         $verify->gatewaySuccess = false;
@@ -361,7 +353,9 @@ class Gateway extends Base\Gateway
         $amount = $input['payment']['amount'] / 100;
 
         $gatewayParam = [
-            RequestFields::MERCHANT_CODE         => $this->getMerchantId(),
+            // This is to maintain the backward compatibility
+            // In old terminals, `merchant_id2` will be empty, hence assigning `gateway_merchant_id`
+            RequestFields::MERCHANT_CODE         => $this->getMerchantId2() ?: $this->getMerchantId(),
             RequestFields::TRANSACTION_DATE      => $this->getFormattedDate(),
             RequestFields::TRANSACTION_REFERENCE => $input['payment']['id'],
             RequestFields::TRANSACTION_TYPE      => Constants::WALLET,
@@ -369,6 +363,16 @@ class Gateway extends Base\Gateway
             RequestFields::RETURN_URL            => $input['callbackUrl'],
             RequestFields::NARRATION             => Constants::NARRATION
         ];
+
+        // This is to maintain the backward compatibility
+        // Current terminals have only `gateway_merchant_id` assigned
+        // New terminals will have `gateway_merchant_id` and `gateway_merchant_id2`
+        // with values swaped. If it's an old terminal then `merchant_id2` will be empty
+        // and filler3 should not be sent in that case.
+        if (empty($this->getMerchantId2()) === false)
+        {
+            $gatewayParam[RequestFields::FILLER3] = $this->getMerchantId();
+        }
 
         $this->trace->info(TraceCode::MPESA_GATEWAY_PARAM_ARRAY, $gatewayParam);
 
@@ -388,7 +392,8 @@ class Gateway extends Base\Gateway
         $amount = $input['payment']['amount'] / 100;
 
         $queryData = [
-            RequestFields::MERCHANT_CODE             => $this->getMerchantId(),
+            // This is to maintain the backward compatibility
+            RequestFields::MERCHANT_CODE             => $this->getMerchantId2() ?: $this->getMerchantId(),
             RequestFields::QUERY_TRANSACTION_DATE    => $this->getFormattedDate(),
             RequestFields::COM_TRANSACTION_ID        => $gatewayPaymentId,
             RequestFields::QUERY_TRANSACTION_REF     => $paymentId,
@@ -435,7 +440,7 @@ class Gateway extends Base\Gateway
 
         return [
             RequestFields::COMMON_SERVICE_DATA => $data,
-            RequestFields::MERCHANT_ID         => $this->getMerchantId()
+            RequestFields::MERCHANT_ID         => $this->getMerchantId2()
         ];
     }
 
@@ -448,7 +453,8 @@ class Gateway extends Base\Gateway
         $contact = $input['payment']['contact'];
 
         $data = [
-            RequestFields::MERCHANT_CODE         => $this->getMerchantId(),
+            // This is to maintain the backward compatibility
+            RequestFields::MERCHANT_CODE         => $this->getMerchantId2() ?: $this->getMerchantId(),
             RequestFields::TRANSACTION_DATE      => $this->getFormattedDate(),
             RequestFields::TRANSACTION_REFERENCE => $input['payment']['id'],
             RequestFields::TRANSACTION_TYPE      => Constants::WALLET,
@@ -476,7 +482,8 @@ class Gateway extends Base\Gateway
         $amount = $input['refund']['amount'] / 100;
 
         $data = [
-            RequestFields::MERCHANT_CODE         => $this->getMerchantId(),
+            // This is to maintain the backward compatibility
+            RequestFields::MERCHANT_CODE         => $this->getMerchantId2() ?: $this->getMerchantId(),
             RequestFields::COM_TRANSACTION_ID    => $gatewayPaymentId ?? "",
             RequestFields::QUERY_TRANSACTION_REF => $input['payment']['id'],
             RequestFields::S2S_AMOUNT            => $amount,
@@ -561,9 +568,28 @@ class Gateway extends Base\Gateway
                 ],
             ]);
 
-        $client = $this->getSoapClientObject();
+        try
+        {
+            $client = $this->getSoapClientObject();
 
-        $response = $client->__soapCall($method, [$soapRoot => $data]);
+            $response = $client->__soapCall($method, [$soapRoot => $data]);
+        }
+        catch (SoapFault $e)
+        {
+            if (isset($client) === true)
+            {
+                $this->trace->error(
+                    TraceCode::GATEWAY_SOAP_FAULT,
+                    [
+                        'payment_id'    => $this->input['payment']['id'],
+                        'gateway'       => $this->gateway,
+                        'soap_method'   => $method,
+                        'soap_response' => $client->__getLastResponse()
+                    ]);
+            }
+
+            $this->handleSoapFault($e, $method);
+        }
 
         return json_decode(json_encode($response), true);
     }
@@ -578,6 +604,19 @@ class Gateway extends Base\Gateway
         ];
 
         return $headers;
+    }
+
+    protected function handleSoapFault(SoapFault $e, string $method)
+    {
+        if (Utility::checkSoapTimeout($e) === true)
+        {
+            throw new Exception\GatewayTimeoutException($e->getMessage(), $e);
+        }
+
+        $errorMessage = SoapMethod::getErrorMessage($method);
+
+        throw new Exception\GatewayErrorException(
+            ErrorCode::GATEWAY_ERROR_SOAP_ERROR, null, $errorMessage, [], $e);
     }
 
     protected function checkGatewayResponse(string $status)
@@ -630,7 +669,7 @@ class Gateway extends Base\Gateway
     {
         $file = $this->getWsdlFile();
 
-        $soapClient = new SoapClient($file);
+        $soapClient = new SoapClient($file, ['trace' => 1]);
 
         $headers = $this->getSoapHeaders();
 
@@ -663,7 +702,7 @@ class Gateway extends Base\Gateway
 
     protected function getFormattedDate()
     {
-        return Carbon::now('Asia/Kolkata')->format(self::DATE_FORMAT);
+        return Carbon::now(Timezone::IST)->format(self::DATE_FORMAT);
     }
 
     protected function getMerchantId()
@@ -673,6 +712,18 @@ class Gateway extends Base\Gateway
         if ($this->mode === Mode::TEST)
         {
             $merchantId = $this->config['test_merchant_id'];
+        }
+
+        return $merchantId;
+    }
+
+    protected function getMerchantId2()
+    {
+        $merchantId = $this->terminal['gateway_merchant_id2'];
+
+        if ($this->mode === Mode::TEST)
+        {
+            $merchantId = $this->config['test_merchant_id2'];
         }
 
         return $merchantId;
@@ -700,5 +751,14 @@ class Gateway extends Base\Gateway
         }
 
         return $password;
+    }
+
+    /**
+     * We are picking up the live secret from the config variable
+     * @return mixed
+     */
+    protected function getLiveSecret()
+    {
+        return $this->config['live_hash_secret'];
     }
 }

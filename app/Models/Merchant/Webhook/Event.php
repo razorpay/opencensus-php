@@ -157,7 +157,6 @@ class Event
     ];
 
     public static $eventsToFeatureMap = [
-        self::INVOICE_PAID              => Feature\Constants::INVOICE,
         self::SUBSCRIPTION_ACTIVATED    => Feature\Constants::SUBSCRIPTIONS,
         self::SUBSCRIPTION_PENDING      => Feature\Constants::SUBSCRIPTIONS,
         self::SUBSCRIPTION_HALTED       => Feature\Constants::SUBSCRIPTIONS,

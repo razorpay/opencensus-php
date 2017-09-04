@@ -46,6 +46,10 @@ class CreateTransactions extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->integer(Transaction::TAX)
+                  ->unsigned()
+                  ->nullable();
+
             $table->char(Transaction::PRICING_RULE_ID, Transaction::ID_LENGTH)
                   ->nullable();
 
@@ -140,6 +144,8 @@ class CreateTransactions extends Migration
             $table->index(Transaction::GRATIS);
 
             $table->index(Transaction::CREATED_AT);
+
+            $table->index(Transaction::UPDATED_AT);
 
             $table->foreign(Transaction::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)

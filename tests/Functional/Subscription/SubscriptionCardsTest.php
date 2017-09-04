@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Subscription;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mockery;
 
 use RZP\Error\ErrorCode;
@@ -329,7 +330,7 @@ class SubscriptionCardsTest extends TestCase
 
         // --------------------------------------------------------------------
 
-        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, 'Asia/Kolkata');
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, Timezone::IST);
 
         Carbon::setTestNow($chargeAt);
 
@@ -569,7 +570,7 @@ class SubscriptionCardsTest extends TestCase
 
         // --------------------------------------------------------------------
 
-        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, 'Asia/Kolkata');
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, Timezone::IST);
 
         Carbon::setTestNow($chargeAt);
 
@@ -743,7 +744,7 @@ class SubscriptionCardsTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
-        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, 'Asia/Kolkata');
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, Timezone::IST);
 
         Carbon::setTestNow($chargeAt);
 
@@ -860,7 +861,7 @@ class SubscriptionCardsTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
-        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, 'Asia/Kolkata');
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, Timezone::IST);
 
         Carbon::setTestNow($chargeAt);
 

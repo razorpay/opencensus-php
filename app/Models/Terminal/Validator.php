@@ -3,12 +3,14 @@
 namespace RZP\Models\Terminal;
 
 use RZP\Base;
-use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Models\Card;
-use RZP\Models\Payment;
-use RZP\Models\Merchant;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Merchant;
+use RZP\Models\Payment;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Method;
 
 class Validator extends Base\Validator
 {
@@ -32,8 +34,10 @@ class Validator extends Base\Validator
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
         Entity::SHARED                      => 'sometimes|boolean',
         Entity::TYPE                        => 'sometimes|integer|max:7',
+        Entity::MODE                        => 'sometimes|in:1,2,3',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::TPV                         => 'sometimes_if:netbanking,1|boolean',
+        Entity::CORPORATE                   => 'sometimes_if:netbanking,1|boolean',
         Entity::EMI_SUBVENTION              => 'sometimes|in:customer,merchant',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
@@ -55,6 +59,7 @@ class Validator extends Base\Validator
         Entity::NETWORK_CATEGORY,
         Entity::CURRENCY,
         Entity::GATEWAY_ACQUIRER,
+        Entity::MODE,
     ];
 
     protected static $reassignRules = [
@@ -105,6 +110,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string|min:5',
         Entity::GATEWAY_CLIENT_CERTIFICATE  => 'sometimes|min:20',
         Entity::TYPE                        => 'sometimes|integer|max:7',
+        Entity::MODE                        => 'sometimes|integer|in:2,3',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12',
@@ -151,6 +157,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_ID         => 'sometimes',
         Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes',
         Entity::CARD                        => 'sometimes|boolean|in:1',
+        Entity::TYPE                        => 'sometimes|integer|in:1,6',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
     ];
 
@@ -224,7 +231,6 @@ class Validator extends Base\Validator
     ];
 
     protected static $netbankingIciciTerminalRules = [
-        Entity::TYPE                 => 'required',
         Entity::GATEWAY              => 'required|in:netbanking_icici',
         Entity::GATEWAY_MERCHANT_ID  => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2 => 'required|string',
@@ -237,9 +243,16 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD => 'required|string',
     ];
 
+    protected static $walletSbibuddyTerminalRules = [
+        Entity::GATEWAY                   => 'required|in:wallet_sbibuddy',
+        Entity::GATEWAY_MERCHANT_ID       => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET     => 'required|string',
+    ];
+
     protected static $walletMpesaTerminalRules = [
         Entity::GATEWAY                     => 'required|in:wallet_mpesa',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2        => 'required|string',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
     ];
 
@@ -265,6 +278,25 @@ class Validator extends Base\Validator
         Entity::GATEWAY                     => 'required|in:netbanking_federal',
     ];
 
+    protected static $netbankingRblTerminalRules = [
+        Entity::GATEWAY                      => 'required|in:netbanking_rbl',
+        Entity::GATEWAY_MERCHANT_ID          => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE          => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET        => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID2         => 'required|string',
+    ];
+
+    protected static $netbankingIndusindTerminalRules = [
+        Entity::GATEWAY                       => 'required|in:netbanking_indusind',
+        Entity::GATEWAY_MERCHANT_ID           => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET         => 'required|string',
+    ];
+
+    protected static $netbankingPnbTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:netbanking_pnb',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+    ];
+
     protected function validateGateway($input)
     {
         if (Payment\Gateway::isValidGateway($input['gateway']) === false)
@@ -275,14 +307,17 @@ class Validator extends Base\Validator
         }
 
         unset(
-            $input['card'],
-            $input['shared'],
-            $input['netbanking'],
-            $input['merchant_id'],
-            $input['category'],
-            $input['tpv'],
+            $input[Entity::TPV],
+            $input[Entity::CARD],
+            $input[Entity::SHARED],
+            $input[Entity::CATEGORY],
+            $input[Entity::CORPORATE],
+            $input[Entity::NETBANKING],
+            $input[Entity::MERCHANT_ID],
             $input[Entity::NETWORK_CATEGORY],
-            $input[Entity::GATEWAY_ACQUIRER]);
+            $input[Entity::GATEWAY_ACQUIRER],
+            $input[Entity::MODE],
+            $input[Entity::TYPE]);
 
         $op = $input['gateway'] . '_terminal';
 
@@ -294,6 +329,76 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateMode($input)
+    {
+        // Adding this for backward compatibility
+        // Will remove when dashboard starts sending both fields
+        // Tests will also need to be updated
+        if ((isset($input[Entity::MODE]) === false) or
+            (isset($input[Entity::TYPE]) === false))
+        {
+            return;
+        }
+
+        $gateway = $input[Entity::GATEWAY];
+
+        $type = $input[Entity::TYPE];
+
+        $mode = (int) $input[Entity::MODE];
+
+        // FirstData N3DS terminals are always in purchase mode
+        //
+        $isFirstDataNon3DS = (($gateway === Gateway::FIRST_DATA) and
+                              (Type::isApplicable($type, Type::RECURRING_NON_3DS)));
+
+        // Most non-card gateways have terminals only in purchase mode
+        //
+        // Exceptions are Sharp (which is a test gateway),
+        // OpenWallet (which is a mock gateway), and Atom.
+        $nonCardPurchaseExceptions = [
+            Gateway::SHARP,
+            Gateway::ATOM,
+            Gateway::WALLET_OPENWALLET
+        ];
+
+        $isNonCardNonMockGateway = ((Gateway::isMethodSupported(Payment\Method::CARD, $gateway)) and
+                                    (in_array($gateway, $nonCardPurchaseExceptions, true)));
+
+        // Migs, Amex, and OpenWallet terminals are always in auth-capture mode
+        //
+        $authCaptureOnly = [
+            Gateway::AXIS_MIGS,
+            Gateway::AMEX,
+            Gateway::WALLET_OPENWALLET
+        ];
+
+        $isAuthCaptureOnlyGateway = (in_array($gateway, $authCaptureOnly, true));
+
+        if ((($isFirstDataNon3DS === true) or ($isNonCardNonMockGateway === true)) and
+            ($mode !== Mode::PURCHASE))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'FirstData Non-3DS terminals must be in Purchase mode',
+                Entity::GATEWAY);
+        }
+        else if (($isAuthCaptureOnlyGateway === true) and
+                 ($mode !== Mode::AUTH_CAPTURE))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $input['gateway'] . ' terminals must be in AuthCapture mode',
+                Entity::GATEWAY);
+        }
+        else if (($isFirstDataNon3DS === false) and
+                 ($isNonCardNonMockGateway === false) and
+                 ($isAuthCaptureOnlyGateway === false) and
+                 ($mode !== Mode::DUAL))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $input['gateway'] . ' terminals must be in Dual mode',
+                Entity::GATEWAY);
+        }
+    }
+
     protected function validateEmi($input)
     {
         if (!isset($input[Entity::EMI]) or ($input[Entity::EMI] !== '1'))
@@ -301,16 +406,25 @@ class Validator extends Base\Validator
             return;
         }
 
-        if ($input[Entity::MERCHANT_ID] != Merchant\Account::SHARED_ACCOUNT)
+        if ($input[Entity::MERCHANT_ID] !== Merchant\Account::SHARED_ACCOUNT)
         {
             throw new Exception\LogicException(
-                'EMI Terminals can only be added to shared merchant account');
+                'EMI Terminals can only be added to shared merchant account',
+                null,
+                [
+                    'input' => $input
+                ]);
         }
 
-        if (!isset($input[Entity::SHARED]) or ($input[Entity::SHARED] !== '1'))
+        if ((isset($input[Entity::SHARED]) === false) or
+            ($input[Entity::SHARED] !== '1'))
         {
             throw new Exception\LogicException(
-                'EMI Terminals must be shared terminals');
+                'EMI Terminals must be shared terminals',
+                null,
+                [
+                    'input' => $input
+                ]);
         }
     }
 
@@ -363,7 +477,14 @@ class Validator extends Base\Validator
             ($count > Entity::MAX_TERMINALS_COUNT))
         {
             throw new Exception\LogicException(
-                'Terminal count should not exceed max count');
+                'Terminal count should not exceed max count',
+                null,
+                [
+                    'count'                 => $count,
+                    'max'                   => Entity::MAX_TERMINALS_COUNT,
+                    'terminal_id'           => $newTerminal->getId(),
+                    'terminal_merchant_id'  => $newTerminal->getMerchantId(),
+                ]);
         }
         else if (($newTerminal->getMerchantId() !== Merchant\Account::SHARED_ACCOUNT) and
                  ($count === Entity::MAX_TERMINALS_COUNT))
@@ -395,7 +516,13 @@ class Validator extends Base\Validator
             return;
         }
 
-        if (Category::isNetworkCategoryValid($input) === false)
+        $networkCategory = $input[Entity::NETWORK_CATEGORY];
+
+        $method = self::getMethod($input);
+
+        $gateway = $input[Entity::GATEWAY];
+
+        if (Category::isNetworkCategoryValid($networkCategory, $method, $gateway) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Category provided invalid for gateway',
@@ -434,5 +561,25 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Editing not defined for used terminal of gateway: ' . $terminal->getGateway());
         }
+    }
+
+    protected static function getMethod($input)
+    {
+        if (empty($input[Entity::CARD]) === false)
+        {
+            return Method::CARD;
+        }
+
+        if (empty($input[Entity::NETBANKING]) === false)
+        {
+            return Method::NETBANKING;
+        }
+
+        if (empty($input[Entity::EMI]) === false)
+        {
+            return Method::EMI;
+        }
+
+        return null;
     }
 }

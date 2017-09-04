@@ -6,11 +6,12 @@ use AWS;
 use App;
 use Excel;
 use Config;
-use RZP\Trace\Trace;
 use Carbon\Carbon;
 use RZP\Exception;
-use RZP\Models\FileStore\Storage\AwsS3\Handler;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Models\FileStore\Storage\AwsS3\Handler;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 trait FileHandlerTrait
@@ -524,7 +525,7 @@ trait FileHandlerTrait
 
     protected function getFileToReadNameWithoutExt()
     {
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
 
         $mode = $this->getMode();
 
@@ -621,7 +622,7 @@ trait FileHandlerTrait
 
     protected function getFileToWriteNameWithoutExt()
     {
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
 
         $mode = $this->getMode();
 
@@ -728,7 +729,7 @@ trait FileHandlerTrait
             mkdir($dir, 0777);
         }
 
-        $time = Carbon::now('Asia/Kolkata')->format('H:i:s');
+        $time = Carbon::now(Timezone::IST)->format('H:i:s');
 
         $mode = $this->getMode();
 
@@ -802,7 +803,7 @@ trait FileHandlerTrait
         return array(
             'gid'   => '10000',
             'uid'   => '10001',
-            'mtime' => Carbon::now()->timestamp,
+            'mtime' => Carbon::now()->getTimestamp(),
             'mode'  => '33188'
         );
     }

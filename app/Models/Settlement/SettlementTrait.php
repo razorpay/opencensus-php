@@ -3,6 +3,7 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Mode;
@@ -11,6 +12,9 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Entity;
+use RZP\Models\Payment;
+use Razorpay\Trace\Logger as Trace;
 
 trait SettlementTrait
 {
@@ -62,7 +66,7 @@ trait SettlementTrait
             $merchant = $txns[$i]->merchant;
 
             // Settlement amount
-            list($setlTxns, $setlAmount, $setlFee, $setlApiFee, $serviceTax, $setlGatewayFee) =
+            list($setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $setlGatewayFee) =
                 $this->getSettlementAmountsForMerchant($txns, $i, $txnsCount, $merchant);
 
             //
@@ -84,7 +88,7 @@ trait SettlementTrait
             }
 
             list($setl, $bankTransferAtpt) = $this->settleForMerchant(
-                $merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $serviceTax);
+                $merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax);
 
             $txnsSettledCount += $setlTxns->count();
 
@@ -93,13 +97,15 @@ trait SettlementTrait
             $setlAttempts->push($bankTransferAtpt);
         }
 
+        $this->updateSettlementIdInTransfer($txns);
+
         return [$settlements, $txnsSettledCount, $setlAttempts];
     }
 
     protected function getSettlementAmountsForMerchant($txns, & $i, $txnsCount, $merchant): array
     {
         $setlAmount = $setlGatewayFee = $setlApiFee = 0;
-        $setlFee = $serviceTax = 0;
+        $setlFee = $tax = 0;
 
         $setlTxns = new Base\PublicCollection;
 
@@ -118,17 +124,71 @@ trait SettlementTrait
             $setlGatewayFee += $txn->getGatewayFee();
             $setlApiFee     += $txn->getApiFee();
             $setlFee        += $txn->getFee();
-            $serviceTax     += $txn->getServiceTax();
+            $tax            += $txn->getServiceTax();
 
             $setlTxns->push($txn);
             $i++;
         }
 
-        return [$setlTxns, $setlAmount, $setlFee, $setlApiFee, $serviceTax, $setlGatewayFee];
+        return [$setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax, $setlGatewayFee];
+    }
+
+    /**
+     * [Marketplace] Updates the recipient's settlement id in the transfer entity.
+     *
+     *  When the transactions for the internal payments (payments triggered by the transfer
+     *  from master merchant to the linked account) are settled, the settlement_id of those
+     *  transactions will be updated for the transfer entity that initiated these payments.
+     *
+     * @param Base\PublicCollection $txns
+     */
+    protected function updateSettlementIdInTransfer(Base\PublicCollection $txns)
+    {
+        $filteredTxnIds = [];
+        foreach ($txns as $txn)
+        {
+            if (($txn->isTypePayment() === true) and ($txn->merchant->isLinkedAccount() === true))
+            {
+                $filteredTxnIds[] = $txn->getId();
+            }
+        }
+
+        if (empty($filteredTxnIds) === true)
+        {
+            return;
+        }
+
+        try
+        {
+            $relations = ['source', 'source.transfer'];
+            $filteredTxns = $this->repo->transaction->findManyWithRelations($filteredTxnIds, $relations);
+
+            foreach ($filteredTxns as $txn)
+            {
+                $settlementId = $txn->getSettlementId();
+
+                if ($settlementId === null)
+                {
+                    continue;
+                }
+
+                $transfer = $txn->source->transfer;
+
+                $transfer->setRecipientSettlementId($settlementId);
+
+                $this->repo->saveOrFail($transfer);
+            }
+
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex, Trace::CRITICAL, TraceCode::TRANSFER_UPDATE_SETTLEMENT_ID_FAILED, $filteredTxnIds);
+        }
     }
 
     protected function settleForMerchant(
-        $merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $serviceTax): array
+        $merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $tax): array
     {
         // create settlement and update batch settlement entity in transaction
         $merchantSettler = new Merchant($merchant, $channel, $this->repo);
@@ -142,7 +202,7 @@ trait SettlementTrait
                 $setlAmount,
                 $setlFee,
                 $setlApiFee,
-                $serviceTax,
+                $tax,
                 $setlDetailAmounts)
             {
                 list($setl, $bankTransferAtpt) = $merchantSettler->settle(
@@ -150,7 +210,7 @@ trait SettlementTrait
                                                     $setlAmount,
                                                     $setlFee,
                                                     $setlApiFee,
-                                                    $serviceTax,
+                                                    $tax,
                                                     $this->setlTime,
                                                     $setlDetailAmounts);
 
@@ -188,7 +248,7 @@ trait SettlementTrait
     {
         $shouldSettle = true;
 
-        $today = Carbon::today('Asia/Kolkata');
+        $today = Carbon::today(Timezone::IST);
 
         $lastWorkingDay = Holidays::getPreviousWorkingDay($today);
 
@@ -201,7 +261,7 @@ trait SettlementTrait
         }
 
         if (($this->env !== 'testing') and
-            ($merchant->bankAccount->getCreatedAt() > $lastWorkingDay->timestamp))
+            ($merchant->bankAccount->getCreatedAt() > $lastWorkingDay->getTimestamp()))
         {
             $shouldSettle = false;
         }
@@ -211,7 +271,7 @@ trait SettlementTrait
 
     protected function traceSetlInitiating($channel)
     {
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y H:i:s');
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y H:i:s');
 
         $this->trace->info(
             TraceCode::SETTLEMENT_INITIATING,

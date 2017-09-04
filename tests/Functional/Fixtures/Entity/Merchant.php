@@ -55,6 +55,19 @@ class Merchant extends Base
         $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => Account::ATOM_ACCOUNT, 'balance' => '1000000']);
     }
 
+    public function createEventAccount()
+    {
+        $merchant = $this->fixtures->create('merchant', [
+            'id'        => '100001Razorpay',
+            'name'      => 'TestMerchant',
+            'email'     => 'abc.def@gmail.com',
+            'website'   => 'http://goyette.net/',
+            'category'  => 1100,
+        ]);
+
+        return $merchant;
+    }
+
     public function createApiFeeAccount()
     {
         $apiMerchant = $this->fixtures->create('merchant', ['id' => Account::API_FEE_ACCOUNT]);
@@ -152,11 +165,10 @@ class Merchant extends Base
 
     public function createAddPaymentBanks(array $attributes = array())
     {
-        $banks = \RZP\Models\Payment\Processor\Netbanking::getAllBanks();
-
         $defaultValues = array(
-            'merchant_id' => '10000000000000',
-            'banks' => $banks,
+            'merchant_id'    => '10000000000000',
+            'disabled_banks' => [],
+            'banks'          => '[]',
         );
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -356,7 +368,7 @@ class Merchant extends Base
         return $this->edit($id, ['category' => $category]);
     }
 
-    public function editCategory2($category, $id='10000000000000')
+    public function editCategory2($category, $id = '10000000000000')
     {
         return $this->edit($id, ['category2' => $category]);
     }

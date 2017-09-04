@@ -73,16 +73,6 @@ class Entity extends Base\Entity
         $this->attributes[self::NAME] = $state;
     }
 
-    public function setName(string $state)
-    {
-        $this->setAttribute(self::NAME, $state);
-    }
-
-    public function getName() : string
-    {
-        return $this->getAttribute(self::NAME);
-    }
-
     public function action()
     {
         return $this->belongsTo('RZP\Models\Workflow\Action\Entity');

@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use DB;
 use Mail;
 use Illuminate\Http\UploadedFile;
@@ -69,7 +70,7 @@ class MerchantTest extends TestCase
 
         $this->assertArrayHasKey('payumoney', $methods);
         $this->assertArrayHasKey('card', $methods);
-        $this->assertArrayHasKey('banks', $methods);
+        $this->assertArrayHasKey('disabled_banks', $methods);
         $this->assertArrayHasKey('debit_card', $methods);
     }
 
@@ -705,8 +706,8 @@ class MerchantTest extends TestCase
 
         $this->testAddBankAccount();
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(5)->timestamp + 5;
-        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(5)->timestamp + 10;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(5)->timestamp + 5;
+        $capturedAt = Carbon::today(Timezone::IST)->subDays(5)->timestamp + 10;
 
         $capturedPayments = $this->fixtures->times(4)->create(
             'payment:captured',
@@ -820,6 +821,34 @@ class MerchantTest extends TestCase
         $this->assertEquals(0, $count);
     }
 
+    public function testGetCheckoutPreferencesForMerchantDisabledBanks()
+    {
+        $this->testSetBanks();
+
+        $this->ba->publicAuth();
+
+        $content = $this->startTest();
+
+        $banks = $content['methods']['netbanking'];
+
+        $this->assertCount(2, $banks);
+    }
+
+    public function testGetCheckoutPreferencesForTpvEnabledMerchant()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $content = $this->startTest();
+
+        $banks = $content['methods']['netbanking'];
+
+        $this->assertCount(21, $banks);
+
+        $this->fixtures->merchant->disableTPV();
+    }
+
     public function testGetCheckoutPreferencesWithAllCardGeatewayDowntime()
     {
         $this->ba->publicAuth();
@@ -929,7 +958,7 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $startsAt = Carbon::yesterday('Asia/Kolkata')->timestamp;
+        $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
 
         $offer = $this->fixtures->create('offer:wallet', [
                 'checkout_display' => true,
@@ -945,7 +974,7 @@ class MerchantTest extends TestCase
     {
         $this->ba->publicAuth();
 
-        $startsAt = Carbon::yesterday('Asia/Kolkata')->timestamp;
+        $startsAt = Carbon::yesterday(Timezone::IST)->timestamp;
 
         $testData = $this->testData[__FUNCTION__];
 

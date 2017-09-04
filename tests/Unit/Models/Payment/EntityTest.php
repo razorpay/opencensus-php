@@ -2,6 +2,7 @@
 namespace RZP\Tests\Unit\Models\Payment;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Payment;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Base\PublicCollection;
@@ -78,7 +79,7 @@ class EntityTest extends TestCase
 
         $actual = $payment->toArrayHosted();
 
-        $createdAt = Carbon::createFromTimestamp($payment->getCreatedAt(), 'Asia/Kolkata');
+        $createdAt = Carbon::createFromTimestamp($payment->getCreatedAt(), Timezone::IST);
 
         $formattedCreatedAt = $createdAt->format(Payment\Entity::HOSTED_TIME_FORMAT);
 

@@ -12,6 +12,7 @@ class Validator extends Base\Validator
         Entity::STATUS          => 'required|in:created,failed,processed',
         Entity::FEES            => 'sometimes',
         Entity::SERVICE_TAX     => 'sometimes',
+        Entity::TAX             => 'sometimes',
         Entity::CHANNEL         => 'required|string|custom',
     ];
 
@@ -20,7 +21,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $nodalTransferRules = [
-        Entity::AMOUNT => 'required|integer|min:100|max:10000000000',
+        Entity::AMOUNT  => 'required|integer|min:100|max:10000000000',
+        Entity::CHANNEL => 'required|string'
     ];
 
     protected static $retryRules = [

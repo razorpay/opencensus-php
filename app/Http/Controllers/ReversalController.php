@@ -5,15 +5,8 @@ namespace RZP\Http\Controllers;
 use ApiResponse;
 use Request;
 
-use RZP\Models\Reversal;
-
 class ReversalController extends Controller
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     public function getReversal(string $id)
     {
         $reversal = $this->service()->fetch($id);

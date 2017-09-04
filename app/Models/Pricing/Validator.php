@@ -23,7 +23,8 @@ class Validator extends Base\Validator
         Entity::PAYMENT_METHOD      => 'required|string',
         Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card|nullable|in:debit,credit',
         Entity::PAYMENT_NETWORK     => 'sometimes|nullable|alpha',
-        Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card|nullable|alpha|max:10',
+        Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card,emi|nullable|alpha|max:10',
+        Entity::EMI_DURATION        => 'sometimes|nullable|integer|in:3,6,9,12,18,24',
         Entity::INTERNATIONAL       => 'sometimes|in:0,1',
         Entity::AMOUNT_RANGE_ACTIVE => 'sometimes|in:0,1',
         Entity::AMOUNT_RANGE_MIN    => 'required_only_if:amount_range_active,1|nullable|integer|min:0',
@@ -31,7 +32,7 @@ class Validator extends Base\Validator
         Entity::PERCENT_RATE        => 'sometimes|integer|max:10000',
         Entity::FIXED_RATE          => 'sometimes|integer|max:100000',
         Entity::MIN_FEE             => 'sometimes|integer|max:100000',
-        Entity::MAX_FEE             => 'sometimes|nullable|integer|max:100000'
+        Entity::MAX_FEE             => 'sometimes|nullable|integer|max:100000',
     ];
 
     protected static $addPlanRuleValidators = [
@@ -296,7 +297,8 @@ class Validator extends Base\Validator
                 ($rule[Entity::AMOUNT_RANGE_ACTIVE] === $newRule[Entity::AMOUNT_RANGE_ACTIVE]) and
                 ($rule[Entity::AMOUNT_RANGE_MIN] === $newRule[Entity::AMOUNT_RANGE_MIN]) and
                 ($rule[Entity::AMOUNT_RANGE_MAX] === $newRule[Entity::AMOUNT_RANGE_MAX]) and
-                ($rule[Entity::FEATURE] === $newRule[Entity::FEATURE]))
+                ($rule[Entity::FEATURE] === $newRule[Entity::FEATURE]) and
+                ($rule[Entity::EMI_DURATION] === $newRule[Entity::EMI_DURATION]))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED);
@@ -308,6 +310,7 @@ class Validator extends Base\Validator
                 ($rule[Entity::PAYMENT_ISSUER] === $newRule[Entity::PAYMENT_ISSUER]) and
                 ($rule[Entity::INTERNATIONAL] === $newRule[Entity::INTERNATIONAL]) and
                 ($rule[Entity::FEATURE] === $newRule[Entity::FEATURE]) and
+                ($rule[Entity::EMI_DURATION] === $newRule[Entity::EMI_DURATION]) and
                 (isset($newRule[Entity::AMOUNT_RANGE_ACTIVE]) === true) and
                 (isset($rule[Entity::AMOUNT_RANGE_ACTIVE]) === true))
             {

@@ -4,11 +4,11 @@ namespace RZP\Gateway\AxisMigs;
 
 use Str;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Exception;
-use RZP\Gateway\AxisMigs;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Payment;
@@ -206,6 +206,12 @@ class Gateway extends Base\Gateway
 
     protected function canForceRefund(array $input)
     {
+        // Hardcoding id to do a manual full refund
+        if ($input['refund']['id'] === '882zf69e2bMnED')
+        {
+            return true;
+        }
+
         $isRefundRequired = $this->isRefundRequired($input, false);
 
         if ($isRefundRequired === false)
@@ -403,7 +409,12 @@ class Gateway extends Base\Gateway
         if ($input['refund']['created_at'] < 1494268200)
         {
             throw new Exception\LogicException(
-                'Unable to verify migs refund');
+                'Unable to verify migs refund',
+                null,
+                [
+                    'payment_id'    => $input['refund']['payment_id'],
+                    'refund_id'     => $input['refund']['id'],
+                ]);
         }
 
         $content = $this->sendVerifyRequest($input, 'refund');
@@ -416,7 +427,7 @@ class Gateway extends Base\Gateway
         //    retried
         if ($content['vpc_DRExists'] === 'N')
         {
-            if ($input['refund']['created_at'] > Carbon::now('Asia/Kolkata')->subDays(5)->timestamp)
+            if ($input['refund']['created_at'] > Carbon::now(Timezone::IST)->subDays(5)->getTimestamp())
             {
                 return false;
             }
@@ -433,7 +444,12 @@ class Gateway extends Base\Gateway
         else if ($content['vpc_FoundMultipleDRs'] === 'Y')
         {
             throw new Exception\LogicException(
-                'Shouldn\'t reach here');
+                'Shouldn\'t reach here',
+                null,
+                [
+                    'payment_id' => $input['refund']['payment_id'],
+                    'refund_id'  => $input['refund']['id'],
+                ]);
         }
 
         return false;
@@ -751,7 +767,7 @@ class Gateway extends Base\Gateway
     protected function getVerifyRequestContent($input, $entity)
     {
         $content = [
-            'vpc_Command'       => AxisMigs\Command::QUERYDR,
+            'vpc_Command'       => Command::QUERYDR,
             'vpc_MerchTxnRef'   => $input[$entity]['id'],
         ];
 
@@ -761,7 +777,7 @@ class Gateway extends Base\Gateway
     protected function getPaymentRefundRequestContent($input, $payment)
     {
         $content = [
-            'vpc_Command'       => AxisMigs\Command::REFUND,
+            'vpc_Command'       => Command::REFUND,
             'vpc_Amount'        => $input['refund']['amount'],
             'vpc_Currency'      => $input['currency'],
             'vpc_MerchTxnRef'   => $input['refund']['id'],
@@ -774,7 +790,7 @@ class Gateway extends Base\Gateway
     protected function getPaymentReversalRequestContent($input, $payment)
     {
         $content = [
-            'vpc_Command'       => AxisMigs\Command::REVERSAL,
+            'vpc_Command'       => Command::REVERSAL,
             'vpc_Currency'      => $input['payment']['currency'],
             'vpc_MerchTxnRef'   => $input['refund']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
@@ -839,10 +855,15 @@ class Gateway extends Base\Gateway
 
     protected function postAmaTransactionRequest(array & $content, $input)
     {
+        $traceContent = $content;
+
+        unset($traceContent['vpc_CardNum']);
+        unset($traceContent['vpc_CardExp']);
+
         $this->trace->info(
             TraceCode::GATEWAY_SUPPORT_REQUEST,
             ['action' => 'Support action request array',
-            'content' => $content]);
+            'content' => $traceContent]);
 
         $this->addAmaTransactionFields($content, $input);
 
@@ -1022,6 +1043,7 @@ class Gateway extends Base\Gateway
     protected function getApiErrorCode($input)
     {
         $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
+        $message = $input['gateway']['vpc_Message'] ?? null;
 
         if ($this->isSessionExpired($input))
         {
@@ -1040,9 +1062,9 @@ class Gateway extends Base\Gateway
         }
 
         // Check for mapped TxnResponseCode value
-        if ((isset(AxisMigs\TxnResponseCode::$map[$txnResponseCode])))
+        if (TxnResponseCode::isErrorCodeMapped($txnResponseCode))
         {
-            return AxisMigs\TxnResponseCode::$map[$txnResponseCode];
+            return TxnResponseCode::getErrorCodeMapped($txnResponseCode, $message);
         }
         else
         {
@@ -1063,12 +1085,13 @@ class Gateway extends Base\Gateway
         $txnResponseCode = $input['gateway']['vpc_TxnResponseCode'];
         $message = $input['gateway']['vpc_Message'];
 
-        if ((isset(AxisMigs\TxnResponseCode::$map[$txnResponseCode])) and
+        if ((isset(TxnResponseCode::$map[$txnResponseCode])) and
             ($txnResponseCode === 'Aborted') and
             ($message === 'Your Session has expired'))
         {
-                return true;
+            return true;
         }
+
         return false;
     }
 
@@ -1100,9 +1123,9 @@ class Gateway extends Base\Gateway
         $code = Error\ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
 
         if (($txnResponseCode !== null) and
-            (isset(TxnResponseCode::$map[$txnResponseCode]) === true))
+            (TxnResponseCode::isErrorCodeMapped($txnResponseCode) === true))
         {
-            $code = TxnResponseCode::$map[$txnResponseCode];
+            $code = TxnResponseCode::getErrorCodeMapped($txnResponseCode, $msg);
         }
 
         if ($this->action === Base\Action::REFUND)
