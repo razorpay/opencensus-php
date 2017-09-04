@@ -1024,5 +1024,4 @@ class Repository extends Base\Repository
                     ->with(['localToken', 'globalToken', 'merchant', 'order'])
                     ->get();
     }
-
 }

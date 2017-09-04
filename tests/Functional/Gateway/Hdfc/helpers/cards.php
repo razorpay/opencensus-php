@@ -55,7 +55,6 @@ return [
                 'two_factor_auth' => TwoFactorAuth::NOT_APPLICABLE,
                 'captured' => false,
                 'fee' => null,
-                //'service_tax' => null,
                 'tax' => null,
             ],
         ],

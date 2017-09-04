@@ -495,15 +495,6 @@ class Repository extends Base\Repository
         return $transaction;
     }
 
-//    public function updateTax(int $limit = 10000)
-//    {
-//        return $this->newQuery()
-//                    ->whereNull(Entity::TAX)
-//                    ->whereNotNull(Entity::SERVICE_TAX)
-//                    ->limit($limit)
-//                    ->update([Entity::TAX => DB::raw(Entity::SERVICE_TAX)]);
-//    }
-
     public function fetchGratisTransactions(string $merchantId, int $timestamp)
     {
         $createdAt = $this->dbColumn(Entity::CREATED_AT);

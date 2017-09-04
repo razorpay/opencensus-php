@@ -303,7 +303,6 @@ class Merchant
             Settlement\Entity::AMOUNT       => $this->amount,
             Settlement\Entity::STATUS       => Status::CREATED,
             Settlement\Entity::FEES         => $this->fee,
-            //Settlement\Entity::SERVICE_TAX  => $this->tax,
             Settlement\Entity::TAX          => $this->tax,
             Settlement\Entity::CHANNEL      => $this->channel,
         ];
