@@ -182,6 +182,17 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    public function getHeaders(): array
+    {
+        if ($this->getStatus() === Status::CREATED)
+        {
+            return Header::getInputHeaders($this->getType());
+        }
+        else
+        {
+            return Header::getOutHeaders($this->getType());
+        }
+    }
     /**
      * Returns key for file. Id is being used for key.
      *
