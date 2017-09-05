@@ -52,6 +52,9 @@ class Reconciliate
     const ARN                   = 'arn';
     const ACCOUNT_DETAILS       = 'account_details';
     const ACCOUNT_NUMBER        = 'account_number';
+    const ACCOUNT_TYPE          = 'account_type';
+    const ACCOUNT_SUBTYPE       = 'account_subtype';
+    const ACCOUNT_BRANCHCODE    = 'account_branchcode';
     const CREDIT_ACCOUNT_NUMBER = 'credit_account_number';
 
     /*************************

@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\NetbankingCorporation;
 
 use RZP\Reconciliator\Base;
+use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Corporation\Status;
 
@@ -33,5 +34,15 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     protected function getCustomerDetails($row)
     {
         return [];
+    }
+
+    protected function getNbAccountDetails($row)
+    {
+        return [
+            BaseReconciliate::ACCOUNT_NUMBER     => $row[Constants::ACCOUNT_NUMBER],
+            BaseReconciliate::ACCOUNT_TYPE       => $row[Constants::ACCOUNT_TYPE],
+            BaseReconciliate::ACCOUNT_SUBTYPE    => $row[Constants::ACCOUNT_SUB_TYPE],
+            BaseReconciliate::ACCOUNT_BRANCHCODE => $row[Constants::BRANCH_CODE],
+        ];
     }
 }
