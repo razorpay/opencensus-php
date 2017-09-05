@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 
 use RZP\Models\Merchant\Account;
@@ -469,12 +470,12 @@ class Merchant extends Base
 
         foreach (range(11, 27) as $i)
         {
-            $data = [
+            $attributes = [
                 'id'     => "100000000000{$i}",
                 'org_id' => self::RZP_ORG_ID,
             ];
 
-            $groups[$i] = $this->fixtures->create('group', $data);
+            $groups[$i] = $this->fixtures->create('group', $attributes);
         }
 
         //
@@ -506,12 +507,25 @@ class Merchant extends Base
 
         foreach (range(11, 20) as $i)
         {
-            $data = [
+            $attributes = [
                 'id'     => "100000000000{$i}",
                 'org_id' => self::RZP_ORG_ID,
             ];
 
-            $admins[$i] = $this->fixtures->create('admin', $data);
+            $admins[$i] = $this->fixtures->create('admin', $attributes);
+
+            $now       = Carbon::now();
+            $createdAt = $now->timestamp;
+            $expiresAt = $now->addDay()->timestamp;
+
+            $attributes = [
+                'admin_id'   => "100000000000{$i}",
+                'token'      => "100000000000{$i}",
+                'created_at' => $createdAt,
+                'expires_at' => $expiresAt,
+            ];
+
+            $this->fixtures->create('admin_token', $attributes);
         }
 
         //
@@ -548,14 +562,14 @@ class Merchant extends Base
 
         $merchants = [];
 
-        $merchants[11] = $this->createMerchantWithDetails(self::RZP_ORG_ID, '10000000000011');
+        $merchants[11] = $this->createMerchantWithDetails(self::RZP_ORG_ID, '10000000000011', ['name' => 'jitendra ojha']);
 
-        $merchants[11]->groups()->sync(['10000000000027', '10000000000024']);
+        $merchants[11]->groups()->sync(['10000000000027']);
 
-        $merchants[12] = $this->createMerchantWithDetails(self::RZP_ORG_ID, '10000000000012');
+        $merchants[12] = $this->createMerchantWithDetails(self::RZP_ORG_ID, '10000000000012', ['name' => 'jitendra selva']);
 
-        $merchants[12]->groups()->sync(['10000000000024']);
-        $merchants[12]->admins()->sync(['10000000000014']);
+        $merchants[12]->groups()->sync(['10000000000021']);
+        $merchants[12]->admins()->sync(['10000000000012']);
 
         // Create index by calling the artisan command
         Artisan::call('rzp:index_create', ['entity' => 'merchant', 'index' => 'testing_merchant_test', '--reindex' => true]);
