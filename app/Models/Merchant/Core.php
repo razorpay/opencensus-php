@@ -11,9 +11,11 @@ use RZP\Constants\Mode;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Jobs\IrctcBatch;
 use RZP\Models\Transaction;
 use RZP\Models\BankAccount;
 use RZP\Models\Admin\Action;
+use RZP\Jobs\DispatchRouter;
 use RZP\Models\Admin\AdminLead;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
@@ -428,8 +430,12 @@ class Core extends Base\Core
 
             $batch = (new Batch\Core)->create($params);
 
-            $batches[$type] = $batch->getPublicId();
+            $batches[$type] = $batch->getId();
         }
+
+        $job = new IrctcBatch($this->mode, $batches);
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
 
         return $batches;
     }
