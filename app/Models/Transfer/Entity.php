@@ -38,7 +38,7 @@ class Entity extends Base\PublicEntity
     const RECIPIENT_SETTLEMENT    = 'recipient_settlement';
 
     // Report fields
-    const SETTLEMENT_INITIATED_ON = 'SETTLEMENT_INITIATED_ON';
+    const SETTLEMENT_INITIATED_ON  = 'settlement_initiated_on';
     const SETTLEMENT_UTR           = 'settlement_utr';
     const SETTLEMENT_STATUS        = 'settlement_status';
 
@@ -430,7 +430,7 @@ class Entity extends Base\PublicEntity
 
         $data[self::ON_HOLD]                  = $this->getOnHold() ? "true" : "false";
         $data[self::RECIPIENT_SETTLEMENT_ID]  = $settlementId;
-        $data[self::SETTLEMENT_INITIATED_ON] = $settlementInitiatedOn;
+        $data[self::SETTLEMENT_INITIATED_ON]  = $settlementInitiatedOn;
         $data[self::SETTLEMENT_UTR]           = $utr;
         $data[self::SETTLEMENT_STATUS]        = $settlementStatus;
         $data[self::TAX]                      = $tax;
