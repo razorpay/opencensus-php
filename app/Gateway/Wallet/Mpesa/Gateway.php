@@ -752,4 +752,13 @@ class Gateway extends Base\Gateway
 
         return $password;
     }
+
+    /**
+     * We are picking up the live secret from the config variable
+     * @return mixed
+     */
+    protected function getLiveSecret()
+    {
+        return $this->config['live_hash_secret'];
+    }
 }

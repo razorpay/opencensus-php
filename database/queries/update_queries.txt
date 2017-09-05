@@ -647,3 +647,13 @@ WHERE merchant_invoice.gstin IS NULL
   AND merchant_details.p_gstin IS NOT NULL;
 
 ########
+
+# Adding the settlement id in the transfers table>>>
+UPDATE transfers as tr
+    JOIN payments as p
+        ON p.transfer_id = tr.id
+    JOIN transactions as txn
+        ON txn.entity_id = p.id
+    SET recipient_settlement_id = txn.settlement_id
+    WHERE txn.type = 'payment'
+    AND p.transfer_id IS NOT NULL

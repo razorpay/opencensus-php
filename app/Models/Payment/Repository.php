@@ -925,6 +925,7 @@ class Repository extends Base\Repository
                     ->statusSuccess()
                     ->selectRaw('SUM(' . Entity::AMOUNT . ') AS amount' . ','.
                        'COUNT(*) AS count')
+                    ->where(Entity::METHOD, '!=', Method::TRANSFER)
                     ->first();
 
         return $vol;

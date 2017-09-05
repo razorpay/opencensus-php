@@ -524,7 +524,7 @@ class Service extends Base\Service
 
         $responseHash = [];
 
-        $merchants = $this->repo->merchant->findManyByIdsWithRelations($merchantIds);
+        $merchants = $this->repo->merchant->findManyWithRelations($merchantIds, ['admins']);
 
         foreach ($merchants as $merchant)
         {
