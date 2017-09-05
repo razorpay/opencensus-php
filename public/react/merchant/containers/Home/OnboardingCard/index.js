@@ -4,8 +4,7 @@ import LocalStorageService from 'rzp/utils/localStorage';
 import ActivationStep from './ActivationStep';
 import KeyGenerationStep from './KeyGenerationStep';
 import PaymentsReceivedStep from './PaymentsReceivedStep';
-import OnboardingIllustrationPNG
-  from 'styles/assets/onboarding-illustration.svg';
+import OnboardingIllustrationPNG from 'styles/assets/onboarding-illustration.svg';
 
 @connect(state => state.session)
 export default class OnboardingCard extends Component {
@@ -38,7 +37,7 @@ export default class OnboardingCard extends Component {
     let { user, mode, modeFormatted, payments = [] } = this.props;
     let { isFirstStep, showOnboarding } = this.state;
 
-    if (!showOnboarding || !user.isNewUIEnabled) {
+    if (!showOnboarding || user.isOldUIEnabled) {
       return null;
     }
 
@@ -54,7 +53,8 @@ export default class OnboardingCard extends Component {
                 Welcome to Razorpay. Let's get started.
               </div>
               <p>
-                Dashboard is your one stop for all your payments. Using dashboard, here are some of the things you can do:
+                Dashboard is your one stop for all your payments. Using
+                dashboard, here are some of the things you can do:
               </p>
               <ul class="row">
                 <li class="col-sm-4">Complete Activation Process</li>
@@ -81,7 +81,8 @@ export default class OnboardingCard extends Component {
                 : null}
               <div class="media-heading">Your Next Steps...</div>
               <p>
-                Your Razorpay account is created. Now, you can browse through the dashboard or do the following:
+                Your Razorpay account is created. Now, you can browse through
+                the dashboard or do the following:
               </p>
               <div class="row">
                 <div class="col-sm-6" style={{ paddingRight: 0 }}>
@@ -101,18 +102,13 @@ export default class OnboardingCard extends Component {
 
               {user.isActivated
                 ? <div style={{ marginTop: '12px' }}>
-                    You may now
-                    {' '}
+                    You may now{' '}
                     <a onClick={this.closeOnboarding}>close this card</a>
-                    . You can access the
-                    {' '}
-                    <a>documentation</a>
-                    {' '}
-                    from topbar, if needed.
+                    . You can access the <a>documentation</a> from topbar, if
+                    needed.
                   </div>
                 : null}
             </div>}
-
       </div>
     );
   }

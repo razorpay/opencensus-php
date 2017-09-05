@@ -29,13 +29,19 @@ build:
           code: php artisan cache:clear; php artisan clear-compiled
 
       - script:
-          name: Install js dependencies
-          code: yarn install
+          name: node version
+          code: node -v
+
+      - npm-install
 
       - script:
           name: gulp
           code: gulp
           fail-on-warnings: true
+
+      - script:
+          name: Gzip
+          code: node scripts/gzip.js
 
       - script:
           name: Run artisan migrate
@@ -78,6 +84,9 @@ deploy:
       - script:
           name: create commit.txt
           code: git rev-parse HEAD > public/commit.txt
+      - script:
+          name: S3 Sync
+          code: node scripts/s3sync.js
       - nhuray/aws-code-deploy:
           key: $AWS_KEY
           secret: $AWS_SECRET
@@ -85,6 +94,7 @@ deploy:
           application-name: dashboard
           deployment-group-name: $WERCKER_DEPLOYTARGET_NAME
           s3-bucket: "rzp-code-deploy"
+
     after-steps:
       - slack-notifier:
           url: $SLACK_URL

@@ -1,11 +1,11 @@
 @font-face {
 	font-family: "icons";
-	src: url('./icons.eot');
-	src: url('./icons.eot?#iefix') format('eot'),
-		url('./icons.woff2') format('woff2'),
-		url('./icons.woff') format('woff'),
-		url('./icons.ttf') format('truetype'),
-		url('./icons.svg#icons') format('svg');
+	src: url('../fonts/icons.eot');
+	src: url('../fonts/icons.eot?#iefix') format('eot'),
+		url('../fonts/icons.woff2') format('woff2'),
+		url('../fonts/icons.woff') format('woff'),
+		url('../fonts/icons.ttf') format('truetype'),
+		url('../fonts/icons.svg#icons') format('svg');
 }
 
 .icon:before {
@@ -197,10 +197,14 @@
 	content: "\E02C";
 }
 
-.icon-undo:before {
+.icon-tour:before {
 	content: "\E02D";
 }
 
-.icon-wallet:before {
+.icon-undo:before {
 	content: "\E02E";
+}
+
+.icon-wallet:before {
+	content: "\E02F";
 }
