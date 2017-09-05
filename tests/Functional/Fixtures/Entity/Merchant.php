@@ -558,12 +558,12 @@ class Merchant extends Base
         $merchants[12]->admins()->sync(['10000000000014']);
 
         // Create index by calling the artisan command
-        Artisan::call('rzp:index_create', ['entity' => 'merchant', 'index' => 'tests_merchant_test', '--reindex' => true]);
-        Artisan::call('rzp:index_create', ['entity' => 'merchant', 'index' => 'tests_merchant_live', '--reindex' => true]);
+        Artisan::call('rzp:index_create', ['entity' => 'merchant', 'index' => 'testing_merchant_test', '--reindex' => true]);
+        Artisan::call('rzp:index_create', ['entity' => 'merchant', 'index' => 'testing_merchant_live', '--reindex' => true]);
 
         // Sync these merchants created just now via fixtures to ES.
-        Artisan::call('rzp:index', ['--mode' => 'test', '--entity' => 'merchant', '--index' => 'tests_merchant_test']);
-        Artisan::call('rzp:index', ['--mode' => 'live', '--entity' => 'merchant', '--index' => 'tests_merchant_live']);
+        Artisan::call('rzp:index', ['--mode' => 'test', '--entity' => 'merchant', '--index' => 'testing_merchant_test']);
+        Artisan::call('rzp:index', ['--mode' => 'live', '--entity' => 'merchant', '--index' => 'testing_merchant_live']);
 
         unset($merchants);
     }
