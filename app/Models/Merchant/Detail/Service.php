@@ -3,16 +3,14 @@
 namespace RZP\Models\Merchant\Detail;
 
 use Carbon\Carbon;
-use Throwable;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail;
-use RZP\Models\Merchant\Detail\ValidationFields;
-use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\Action as Action;
+use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 
 class Service extends Base\Service
@@ -36,7 +34,7 @@ class Service extends Base\Service
 
         foreach (Entity::UPLOADED_FIELDS as $key)
         {
-            if (isset($merchantDetails[$key]))
+            if (isset($merchantDetails[$key]) === true)
             {
                 $signedUrls[$key] = $this->getSignedUrl($merchantDetails[$key], $id);
             }
@@ -318,8 +316,9 @@ class Service extends Base\Service
             $parentMerchant = $merchant->parent;
 
             //
-            // If the linked account's parent was flagged by admins
-            // linked accounts need to add additional KYC details and documents
+            // If the linked account's parent was flagged by admins,
+            // linked accounts need to add additional KYC details and
+            // documents before allowing the merchant to submit the form
             //
             if ($parentMerchant->linkedAccountsRequireKyc() === true)
             {
@@ -437,8 +436,7 @@ class Service extends Base\Service
         // Auto-activation is attempted if the following conditions are met
         //
         if (($merchantDetails->isSubmitted() === true) and
-            ($this->merchant->isLinkedAccount() === true) and
-            ($this->merchant->linkedAccountsRequireKyc() === false))
+            ($this->merchant->isLinkedAccount() === true))
         {
             $bankCore = (new BankAccount\Core);
 

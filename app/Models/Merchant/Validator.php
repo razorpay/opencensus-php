@@ -235,7 +235,7 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
         }
 
-        // Don't validate these attributes for Marketplace accounts
+        // Don't validate these rest of the attributes for Marketplace accounts
         if ($merchant->isLinkedAccount() === true)
         {
             return;

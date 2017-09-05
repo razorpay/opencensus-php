@@ -121,10 +121,9 @@ class Activate extends Base\Core
      *
      * @param Entity $merchant
      *
-     * @return array
      * @throws Exception\BadRequestException
      */
-    public function autoActivate(Entity $merchant): array
+    public function autoActivate(Entity $merchant)
     {
         (new Merchant\Validator)->validateBeforeActivate($merchant);
 
@@ -141,8 +140,6 @@ class Activate extends Base\Core
                 'type'        => 'auto_activate',
                 'merchant_id' => $merchant->getId()
             ]);
-
-        return $merchant->toArrayPublic();
     }
 
     /**
