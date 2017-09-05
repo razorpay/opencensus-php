@@ -20,7 +20,6 @@ class Selector extends Base\Core
 
     protected static $filters = [
         Filters\TransactionFilter::class,
-        Filters\MerchantFilter::class,
         Filters\RuleFilter::class,
     ];
 

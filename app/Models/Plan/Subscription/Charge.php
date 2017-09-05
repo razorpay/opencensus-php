@@ -394,7 +394,7 @@ class Charge extends Base\Core
 
         $currentChargeAt = Carbon::createFromTimestamp($currentChargeAt);
 
-        $nextChargeAt = $currentChargeAt->addDay()->timestamp;
+        $nextChargeAt = $currentChargeAt->addDay()->getTimestamp();
 
         $subscription->setChargeAt($nextChargeAt);
     }
@@ -425,7 +425,7 @@ class Charge extends Base\Core
         $lastRun = Carbon::createFromTimestamp($task->getNextRunAt(), Timezone::IST);
         $currentEnd = Library::computeFutureRun($schedule, $currentTime, $lastRun, false);
 
-        $billingPeriod['end'] = $currentEnd->timestamp;
+        $billingPeriod['end'] = $currentEnd->getTimestamp();
 
         return $billingPeriod;
     }
