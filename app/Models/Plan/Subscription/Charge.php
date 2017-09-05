@@ -198,7 +198,7 @@ class Charge extends Base\Core
         // Schedule task needs to be updated before setting time
         // fields in subscription, as the next_run_at of
         // schedule_task is used to set subscription charge_at
-        $this->updateScheduleTask($task);
+        $this->updateScheduleTask($subscription);
 
         $this->updateSubscriptionTimeFields($subscription);
 
@@ -253,7 +253,7 @@ class Charge extends Base\Core
     {
         $this->setCurrentPeriod($subscription);
 
-        $this->setNextChargeAt($subscription);
+        $subscription->setChargeAt($subscription->task->getNextRunAt());
 
         $this->setEndedAtIfApplicable($subscription);
     }
@@ -284,8 +284,8 @@ class Charge extends Base\Core
         if ($authAttempts < self::MAX_AUTH_ATTEMPTS)
         {
             $subscription->setStatus(Status::PENDING);
-            $this->incrementChargeAtByOneDay($subscription);
-            $this->updateScheduleTask($subscription->task, true);
+            $this->updateScheduleTask($subscription, true);
+            $subscription->setChargeAt($subscription->task->getNextRunAt());
         }
         else if ($authAttempts === self::MAX_AUTH_ATTEMPTS)
         {
@@ -293,7 +293,7 @@ class Charge extends Base\Core
             // go into halted or cancelled state.
             $subscription->setStatus(Status::HALTED);
             $invoice->setSubscriptionStatus(Invoice\Status::HALTED);
-            $this->updateScheduleTask($subscription->task);
+            $this->updateScheduleTask($subscription);
             $subscription->setChargeAt($subscription->task->getNextRunAt());
         }
         else
@@ -393,22 +393,6 @@ class Charge extends Base\Core
         $subscription->resetAuthAttempts();
     }
 
-    /**
-     * This function is only called during an auth_failure.
-     *
-     * @param Entity $subscription
-     */
-    protected function incrementChargeAtByOneDay(Entity $subscription)
-    {
-        $currentChargeAt = $subscription->getChargeAt();
-
-        $currentChargeAt = Carbon::createFromTimestamp($currentChargeAt);
-
-        $nextChargeAt = $currentChargeAt->addDay()->getTimestamp();
-
-        $subscription->setChargeAt($nextChargeAt);
-    }
-
     protected function setInvoiceBillingPeriod(Entity $subscription, Invoice\Entity $invoice)
     {
         $invoice->setBillingStart($subscription->getCurrentStart());
@@ -472,34 +456,6 @@ class Charge extends Base\Core
     }
 
     /**
-     * Gets the current period's end and assigns that to charge_at.
-     * If the current period's end is greater than the end_at of the subscription,
-     * we set the charge_at to null.
-     *
-     * We cannot take the current charge_at and just add the interval to it
-     * for the next charge_at because charge_at can be modified during auth failures.
-     *
-     * @param Entity $subscription
-     */
-    protected function setNextChargeAt(Entity $subscription)
-    {
-        $nextChargeAt = $subscription->task->getNextRunAt();
-
-        $endAt = $subscription->getEndAt();
-
-        if ($nextChargeAt > $endAt)
-        {
-            $nextChargeAt = null;
-        }
-
-        //
-        // Charge_At cannot simply be set to current_end, as
-        // current_end is not updated in case of failed charges.
-        //
-        $subscription->setChargeAt($nextChargeAt);
-    }
-
-    /**
      * In case of retries, we would explicitly change the task's next_run_at
      * to the next day instead of next month or so. If the retry is successful,
      * we would call this function and the next_run_at will get set to
@@ -508,8 +464,10 @@ class Charge extends Base\Core
      * @param Task\Entity $task
      * @param bool        $retry
      */
-    public function updateScheduleTask(Task\Entity $task, $retry = false)
+    public function updateScheduleTask(Entity $subscription, $retry = false)
     {
+        $task = $subscription->task;
+
         if ($retry === true)
         {
             $task->incrementNextRunByOneDayAndUpdateLastRun();
@@ -517,7 +475,27 @@ class Charge extends Base\Core
             return;
         }
 
-        $task->updateNextRunAndLastRun(false);
+        //
+        // Calling updateNextRunAndLastRun for task sets the next_run starting
+        // from current time. This works fine in most cases, since charge time
+        // is usually equal to current time. But in the merchant-initiated test
+        // charge flow, we allow merchants to simulate a future charge for a
+        // subscription. So in this case, using current time will give the wrong
+        // result. So we use charge_at instead, which is equal to current time
+        // in normal flow, and equal to simulated current time in test charge flow.
+        //
+        $referenceTime = $subscription->getChargeAt();
+
+        // However, if charge_at is currently null, that means this is the auth txn.
+        // In that case, we can use actual current time as the reference time.
+        if ($referenceTime === null)
+        {
+            $referenceTime = Carbon::now(Timezone::IST)->getTimestamp();
+        }
+
+        $referenceTime = Carbon::createFromTimestamp($referenceTime, Timezone::IST);
+
+        $task->updateNextRunAndLastRunFromGivenRefTime($referenceTime, false);
     }
 
     /**
@@ -558,6 +536,8 @@ class Charge extends Base\Core
             // would be 20th August to 20th October.
             //
             $subscription->setEndedAt($subscription->getCurrentStart());
+
+            $subscription->setChargeAt(null);
 
             $subscription->setStatus(Status::COMPLETED);
         }

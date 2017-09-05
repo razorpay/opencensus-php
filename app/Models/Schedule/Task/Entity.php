@@ -178,13 +178,18 @@ class Entity extends Base\PublicEntity
 
     // ------------------------- Helper methods --------------------------------
 
-    public function updateNextRunAndLastRun($considerHolidays = true)
+    public function updateNextRunAndLastRun(bool $considerHolidays = true)
+    {
+        $currentTime = Carbon::now(Timezone::IST);
+
+        $this->updateNextRunAndLastRunFromGivenRefTime($currentTime, $considerHolidays);
+    }
+
+    public function updateNextRunAndLastRunFromGivenRefTime($refTime, $considerHolidays = false)
     {
         $lastRun = Carbon::createFromTimestamp($this->getNextRunAt(), Timezone::IST);
 
-        $currentTime = Carbon::now(Timezone::IST);
-
-        $nextRun = Library::computeFutureRun($this->schedule, $currentTime, $lastRun->copy(), $considerHolidays);
+        $nextRun = Library::computeFutureRun($this->schedule, $refTime, $lastRun->copy(), $considerHolidays);
 
         $this->setNextRunAt($nextRun->getTimestamp());
 
