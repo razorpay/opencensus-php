@@ -17,12 +17,12 @@ class Federal extends Processor\Base
     use GenerateRefundFile;
     use FileHandler;
 
-    const FILE_NAME         = 'FBK_REFUND';
-    const EXTENSION         = FileStore\Format::TXT;
-    const FILE_TYPE         = FileStore\Type::FEDERAL_NETBANKING_REFUND;
-    const GATEWAY           = Payment\Gateway::NETBANKING_FEDERAL;
-    const GATEWAY_CODE      = IFSC::FDRL;
-    const PAYMENT_ATTRIBUTE = Payment\Entity::BANK;
+    const FILE_NAME              = 'FBK_REFUND';
+    const EXTENSION              = FileStore\Format::TXT;
+    const FILE_TYPE              = FileStore\Type::FEDERAL_NETBANKING_REFUND;
+    const GATEWAY                = Payment\Gateway::NETBANKING_FEDERAL;
+    const GATEWAY_CODE           = IFSC::FDRL;
+    const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
 
     protected function formatDataForFile()
     {

@@ -17,12 +17,12 @@ class Axis extends Processor\Base
     use GenerateRefundFile;
     use FileHandler;
 
-    const FILE_NAME         = 'IConnect_Refund_RAZORPAY';
-    const EXTENSION         = FileStore\Format::TXT;
-    const FILE_TYPE         = FileStore\Type::AXIS_NETBANKING_REFUND;
-    const GATEWAY           = Payment\Gateway::NETBANKING_AXIS;
-    const GATEWAY_CODE      = IFSC::UTIB;
-    const PAYMENT_ATTRIBUTE = Payment\Entity::BANK;
+    const FILE_NAME              = 'IConnect_Refund_RAZORPAY';
+    const EXTENSION              = FileStore\Format::TXT;
+    const FILE_TYPE              = FileStore\Type::AXIS_NETBANKING_REFUND;
+    const GATEWAY                = Payment\Gateway::NETBANKING_AXIS;
+    const GATEWAY_CODE           = IFSC::UTIB;
+    const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
 
     const HEADERS = [
         'Payee id', // pid

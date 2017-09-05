@@ -11,11 +11,6 @@ class Federal extends Processor\Base
 
     const GATEWAY = Payment\Gateway::NETBANKING_FEDERAL;
 
-    public function sendMail()
-    {
-        ;
-    }
-
     public function createFile()
     {
         ;

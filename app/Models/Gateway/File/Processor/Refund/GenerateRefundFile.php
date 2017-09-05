@@ -28,7 +28,7 @@ trait GenerateRefundFile
         if ($tpv === null)
         {
             $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
-                            static::PAYMENT_ATTRIBUTE,
+                            static::PAYMENT_TYPE_ATTRIBUTE,
                             static::GATEWAY_CODE,
                             $from,
                             $to,
@@ -38,7 +38,7 @@ trait GenerateRefundFile
         else
         {
             $refunds = $this->repo->refund->fetchRefundsForTpvBetweenTimestamps(
-                            static::PAYMENT_ATTRIBUTE,
+                            static::PAYMENT_TYPE_ATTRIBUTE,
                             static::GATEWAY_CODE,
                             $from,
                             $to,

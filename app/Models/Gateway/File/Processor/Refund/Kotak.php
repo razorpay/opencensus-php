@@ -15,13 +15,13 @@ class Kotak extends Processor\Base
     use GenerateRefundFile;
     use FileHandler;
 
-    const TPV_FILE_NAME     = 'Kotak_Netbanking_Refund_OTRAZORPAY';
-    const NON_TPV_FILE_NAME = 'Kotak_Netbanking_Refund_OSRAZORPAY';
-    const EXTENSION         = FileStore\Format::TXT;
-    const FILE_TYPE         = FileStore\Type::KOTAK_NETBANKING_REFUND;
-    const GATEWAY           = Payment\Gateway::NETBANKING_KOTAK;
-    const GATEWAY_CODE      = IFSC::KKBK;
-    const PAYMENT_ATTRIBUTE = Payment\Entity::BANK;
+    const TPV_FILE_NAME          = 'Kotak_Netbanking_Refund_OTRAZORPAY';
+    const NON_TPV_FILE_NAME      = 'Kotak_Netbanking_Refund_OSRAZORPAY';
+    const EXTENSION              = FileStore\Format::TXT;
+    const FILE_TYPE              = FileStore\Type::KOTAK_NETBANKING_REFUND;
+    const GATEWAY                = Payment\Gateway::NETBANKING_KOTAK;
+    const GATEWAY_CODE           = IFSC::KKBK;
+    const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
 
     protected $type = Payment\Entity::BANK;
 

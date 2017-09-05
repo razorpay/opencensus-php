@@ -16,12 +16,12 @@ class Rbl extends Processor\Base
 {
     use GenerateRefundFile;
 
-    const FILE_NAME         = 'Rbl_Netbanking_Refunds';
-    const EXTENSION         = FileStore\Format::XLSX;
-    const FILE_TYPE         = FileStore\Type::RBL_NETBANKING_REFUND;
-    const GATEWAY           = Payment\Gateway::NETBANKING_RBL;
-    const GATEWAY_CODE      = IFSC::RATN;
-    const PAYMENT_ATTRIBUTE = Payment\Entity::BANK;
+    const FILE_NAME              = 'Rbl_Netbanking_Refunds';
+    const EXTENSION              = FileStore\Format::XLSX;
+    const FILE_TYPE              = FileStore\Type::RBL_NETBANKING_REFUND;
+    const GATEWAY                = Payment\Gateway::NETBANKING_RBL;
+    const GATEWAY_CODE           = IFSC::RATN;
+    const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
 
     const HEADERS = [
         RefundFields::SERIAL_NO,

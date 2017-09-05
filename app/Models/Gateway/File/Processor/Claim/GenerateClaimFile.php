@@ -164,11 +164,6 @@ trait GenerateClaimFile
         }
     }
 
-    public function sendMail()
-    {
-        return ;
-    }
-
     protected function canRetry(): bool
     {
         if ($this->gatewayFile->isAcknowledged() === true)

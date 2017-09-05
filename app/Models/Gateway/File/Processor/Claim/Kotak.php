@@ -46,11 +46,6 @@ class Kotak extends Processor\Base
         return $formattedData;
     }
 
-    public function sendMail()
-    {
-        ;
-    }
-
     protected function getFileToWriteNameWithoutExt()
     {
         $time = Carbon::now(Timezone::IST)->format('d-m-Y');

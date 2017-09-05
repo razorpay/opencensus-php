@@ -11,11 +11,6 @@ class Indusind extends Processor\Base
 
     const GATEWAY = Payment\Gateway::NETBANKING_INDUSIND;
 
-    public function sendMail()
-    {
-        ;
-    }
-
     public function createFile()
     {
         ;

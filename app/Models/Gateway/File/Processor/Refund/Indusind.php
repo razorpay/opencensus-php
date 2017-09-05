@@ -16,12 +16,12 @@ class Indusind extends Processor\Base
     use GenerateRefundFile;
     use FileHandler;
 
-    const FILE_NAME         = 'PGReconRAZORPAY';
-    const EXTENSION         = FileStore\Format::TXT;
-    const FILE_TYPE         = FileStore\Type::INDUSIND_NETBANKING_REFUND;
-    const GATEWAY           = Payment\Gateway::NETBANKING_INDUSIND;
-    const GATEWAY_CODE      = IFSC::INDB;
-    const PAYMENT_ATTRIBUTE = Payment\Entity::BANK;
+    const FILE_NAME              = 'PGReconRAZORPAY';
+    const EXTENSION              = FileStore\Format::TXT;
+    const FILE_TYPE              = FileStore\Type::INDUSIND_NETBANKING_REFUND;
+    const GATEWAY                = Payment\Gateway::NETBANKING_INDUSIND;
+    const GATEWAY_CODE           = IFSC::INDB;
+    const PAYMENT_TYPE_ATTRIBUTE = Payment\Entity::BANK;
 
     protected $type = Payment\Entity::BANK;
 
