@@ -398,7 +398,7 @@ class Core extends Base\Core
 
         $merchant->getValidator()->validateAttachment($allFilesDetails);
 
-        $batchIds  = [];
+        $batchData  = [];
 
         foreach ($attachments as $attachment)
         {
@@ -409,12 +409,14 @@ class Core extends Base\Core
 
             $batch = $this->batchCore->create($batchInput);
 
-            $batchIds[] = $batch->getId();
+            $batchData[] = [
+                $type   => $batch->getId(),
+            ];
         }
 
-        $job = new MerchantBatchJob($this->mode, $batchIds);
+        $job = new IrctcBatchJob($this->mode, $batchData);
 
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::IRCTC_BATCH);
 
     }
 }
