@@ -23,7 +23,6 @@ class Entity extends Base\PublicEntity
     const GATEWAY_TOKEN             = 'gateway_token';
     const GATEWAY_TOKEN2            = 'gateway_token2';
     const RECURRING                 = 'recurring';
-    // TODO: Finalize the attribute names.
     const MAX_AMOUNT                = 'max_amount';
     const RECURRING_STATUS          = 'recurring_status';
     const RECURRING_FAILURE_REASON  = 'recurring_failure_reason';

@@ -57,7 +57,6 @@ class Customer extends Base
             'method'        => 'netbanking',
             'bank'          => 'HDFC',
             'wallet'        => null,
-            'recurring'     => true,
             'card_id'       => null,
             'used_at'       => 10
         ),

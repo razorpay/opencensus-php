@@ -119,6 +119,8 @@ trait Authorize
 
         $request = [];
 
+        $retry = false;
+
         //
         // We are attempting to rotate across multiple terminals to get a successful payment here.
         // For each of the terminals tried, we want to record the terminal metrics using recordTerminalAudit()
@@ -754,7 +756,12 @@ trait Authorize
 
         $this->verifyFeatureForRecurring($merchant, $payment);
 
-        $token = $this->assertTokenIsRecurringAndReturnToken($payment);
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        if ($token !== null)
+        {
+            $this->assertTokenIsRecurring($payment, $token);
+        }
 
         //
         // If payment type is card, validate that the card supports recurring
@@ -784,15 +791,8 @@ trait Authorize
         }
     }
 
-    protected function assertTokenIsRecurringAndReturnToken(Payment\Entity $payment)
+    protected function assertTokenIsRecurring(Payment\Entity $payment, Token\Entity $token)
     {
-        $token = $payment->getGlobalOrLocalTokenEntity();
-
-        if ($token === null)
-        {
-            return null;
-        }
-
         //
         // Second recurring payments have to be enabled for recurring
         //
@@ -807,8 +807,6 @@ trait Authorize
                     'token'   => $token->toArray()
                 ]);
         }
-
-        return $token;
     }
 
     protected function verifyFeatureForRecurring(Merchant\Entity $merchant, Payment\Entity $payment)
@@ -944,7 +942,10 @@ trait Authorize
         // For netbanking payments, we ensure that if it is a second recurring payment,
         // it must contain a recurring enabled token with an associated gateway token.
         //
-        $this->validateSecondRecurringNetbanking($token, $payment);
+        if ($payment->isSecondRecurring() === true)
+        {
+            $this->validateSecondRecurringNetbanking($token, $payment);
+        }
 
         $this->validateTokenMaxAmount($token, $payment);
     }
@@ -956,11 +957,6 @@ trait Authorize
      */
     protected function validateSecondRecurringNetbanking(Token\Entity $token, Payment\Entity $payment)
     {
-        if ($payment->isSecondRecurring() === false)
-        {
-            return;
-        }
-
         if (empty($token->getGatewayToken()) === true)
         {
             throw new Exception\BadRequestException(
