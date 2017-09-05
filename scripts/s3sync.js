@@ -5,7 +5,13 @@ var aws = require('aws-sdk');
 var glob = require('multi-glob').glob;
 var ENV = process.env;
 
-var s3sdk = new aws.S3({ signatureVersion: 'v2' });
+var s3sdk = new aws.S3({
+  signatureVersion: 'v2',
+  accessKeyId: ENV.AWS_KEY,
+  secretAccessKey: ENV.AWS_SECRET,
+  region: ENV.AWS_REGION,
+});
+
 var client = s3.createClient({
   s3Client: s3sdk,
   maxAsyncS3: 20, // this is the default
