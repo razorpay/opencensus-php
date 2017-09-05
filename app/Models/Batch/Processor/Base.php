@@ -106,7 +106,7 @@ class Base extends BaseModel\Core
 
         $this->downloadAndSetInputFile();
 
-        $fileExtension = explode('.', $this->inputFileLocalPath)[1];
+        $fileExtension = pathinfo($this->inputFileLocalPath)['extension'];
 
         $entries = $this->parseFile($this->inputFileLocalPath, $fileExtension);
 
