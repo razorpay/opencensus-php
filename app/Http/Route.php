@@ -472,7 +472,7 @@ final class Route
         // Workflows API
         'workflow_create'                         => ['post',     'workflows',                                      'WorkflowController@createWorkflow'                                 ],
         'workflow_get'                            => ['get',      'workflows/{id}',                                 'WorkflowController@getWorkflow'                                    ],
-        'workflow_get_multiple'                   => ['get',      'orgs/{orgId}/workflows',                         'WorkflowController@getWorkflowMultiple'                            ],
+        'workflow_get_multiple'                   => ['get',      'workflows',                                      'WorkflowController@getWorkflowMultiple'                            ],
         'workflow_update'                         => ['put',      'workflows/{id}',                                 'WorkflowController@updateWorkflow'                                 ],
         'workflow_delete'                         => ['delete',   'workflows/{id}',                                 'WorkflowController@deleteWorkflow'                                 ],
         'workflow_action_get_multiple'            => ['get',      'w-actions',                                      'WorkflowController@getActionMultiple'                              ],
