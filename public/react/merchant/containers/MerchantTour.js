@@ -21,7 +21,11 @@ export default class MerchantTour extends Component {
     // Identify user already using new ui
     if (
       this.props.user.tags.indexOf('Newui') === -1 &&
-      !JSON.parse(LocalStorageService.getItem('tour_shown'))
+      !JSON.parse(LocalStorageService.getItem('tour_shown')) &&
+      !(
+        JSON.parse(LocalStorageService.getItem('ngStorage-new_user_signup')) ||
+        JSON.parse(LocalStorageService.getItem('onboarding_first_step'))
+      )
     ) {
       this.display();
     }
