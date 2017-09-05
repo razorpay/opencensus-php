@@ -167,6 +167,7 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => self::RAZORPAY_ORG_ID,
+                    'invoice_code'  => '10NodalAount',
                     )
                 );
 
@@ -201,6 +202,7 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => self::RAZORPAY_ORG_ID,
+                    'invoice_code'  => '100AtomAount',
                 ));
 
             DB::table(Table::MERCHANT_DETAIL)->insert(
@@ -234,6 +236,7 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => self::RAZORPAY_ORG_ID,
+                    'invoice_code'  => '1ApiFeeAount',
                     )
                 );
 
@@ -270,6 +273,7 @@ class DatabaseSeeder extends Seeder
                     'fee_bearer'    => 0,
                     'billing_label' => 'Test Account',
                     'org_id'        => self::RAZORPAY_ORG_ID,
+                    'invoice_code'  => '100000000000',
                     )
                 );
 
@@ -346,6 +350,7 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => self::RAZORPAY_ORG_ID,
+                    'invoice_code'  => '100000Rarpay',
                     )
                 );
 
@@ -381,6 +386,7 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => self::RAZORPAY_ORG_ID,
+                    'invoice_code'  => '100DemoAount',
                     )
                 );
 
@@ -418,7 +424,8 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::METHODS)->insert(
                 array(
                     'merchant_id'   => Account::DEMO_ACCOUNT,
-                    'banks'         => json_encode(Netbanking::getAllBanks()),
+                    'banks'         => '[]',
+                    'disabled_banks'=> '[]',
                     'paytm'         => '1',
                     'olamoney'      => '1',
                     'freecharge'    => '1',
@@ -439,7 +446,8 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::METHODS)->insert(
                 array(
                     'merchant_id'   => Account::TEST_ACCOUNT,
-                    'banks'         => json_encode(Netbanking::getAllBanks()),
+                    'banks'         => '[]',
+                    'disabled_banks'=> '[]',
                     'paytm'         => '1',
                     'mobikwik'      => '1',
                     'olamoney'      => '1',

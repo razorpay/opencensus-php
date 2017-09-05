@@ -117,6 +117,8 @@ class CreateMerchants extends Migration
             $table->string(Merchant::CATEGORY2)
                   ->nullable();
 
+            $table->char(Merchant::INVOICE_CODE, 12);
+
             $table->integer(Merchant::CREATED_AT);
 
             $table->integer(Merchant::UPDATED_AT);

@@ -216,9 +216,9 @@ class DailyReport extends Base\Core
         // date format = 6th July 2015
         $this->date = $on->format('jS F Y');
 
-        $this->timeLowerLimit = $on->timestamp;
+        $this->timeLowerLimit = $on->getTimestamp();
 
-        $this->timeUpperLimit = $on->addDay()->timestamp;
+        $this->timeUpperLimit = $on->addDay()->getTimestamp();
     }
 
     protected function increaseAllowedSystemLimits()

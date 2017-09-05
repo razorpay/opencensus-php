@@ -527,7 +527,54 @@ class Gateway extends Base\Gateway
     public function verifyRefund(array $input)
     {
         $refundIds = [
-            '82NPrjC1TwVNb1'
+            "8GkizdwgzWCrzH",
+            "8Q4lHbGwkqyawW",
+            "8QzbBD25Fbd5wq",
+            "8RbjFD9tIXWq5S",
+            "8TflIJSmuMBILG",
+            "8UNyjtWLbwPqic",
+            "8UqfkCtQpD9t2Y",
+            "8UrA9ivPjvZLs3",
+            "8UrmANuUnosmcY",
+            "8Us66J2GotBEI3",
+            "8UtNl7p8jDzXsd",
+            "8UtVLIRVMcVBWO",
+            "8UtfTzTEDOqpnd",
+            "8V23DYPCK0CxkN",
+            "8VIIx4WdNaUoes",
+            "8VdfwqwOe2bWaT",
+            "8Vg6bkgU4GOppi",
+            "8Vg76B6c7Adpnp",
+            "8VhRbkfF9cQktU",
+            "8VkCCJqn8GPp7p",
+            "8Vl7wAzxMP3ZCx",
+            "8VnCGn3lPhByAn",
+            "8VnnZIBJPPBVf6",
+            "8VoBhxqaW98Xbv",
+            "8W0yfXKUFU87j6",
+            "8W3do7lhqndJiH",
+            "8W40jBll2t6IIB",
+            "8W5i0jipJRJ0in",
+            "8W7YgU9Hcc0fqt",
+            "8WAYI7xRx3QaWw",
+            "8WBhqxrYPro99R",
+            "8WUozW1vlHG2Kz",
+            "8WWI84sVlyWbNo",
+            "8WX2F6AieLULRP",
+            "8WXmISRPlyYC5C",
+            "8Wo2uvAfvFSX2v",
+            "8WrvkhEkAZHUJi",
+            "8WsYSg3iMuJVYb",
+            "8XLslVW1qKLlAW",
+            "8XMDdt5taw9Wx8",
+            "8XXxbJwI131tJ7",
+            "8XYzsrrF2lJi9O",
+            "8Xd1kofvhuqCs8",
+            "8Xg1D8qW6ZgHxd",
+            "8XgJDJh9fdm0RA",
+            "8Xi8GEL4F5QpgV",
+            "8XiTawSvs83nBx",
+            "8XmVhpo4G0aic8",
         ];
 
         if (in_array($input['refund']['id'], $refundIds, true) === true)
@@ -680,7 +727,6 @@ class Gateway extends Base\Gateway
             Fields::MERCHANT_TRAN_ID                => $this->getRefundId($refund),
             Fields::ORIGINAL_MERCHANT_TRAN_ID       => $payment['id'],
             Fields::REFUND_AMOUNT                   => $this->formatAmount($refund['amount']),
-            Fields::PAYEE_VA                        => strtolower($payment['vpa']),
             Fields::NOTE                            => 'Razorpay Refund ' . $refund['id'],
             Fields::ONLINE_REFUND                   => 'Y',
         ];
@@ -709,12 +755,7 @@ class Gateway extends Base\Gateway
      */
     protected function getRefundId(array $refund)
     {
-        if ($refund['attempts'] >= 1)
-        {
-            return $refund['id'] . '_' . $refund['attempts'];
-        }
-
-        return $refund['id'];
+        return $refund['id'] . ($refund['attempts'] ?: '');
     }
 
 

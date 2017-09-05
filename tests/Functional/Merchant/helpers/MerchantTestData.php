@@ -59,7 +59,7 @@ return [
                 'methods' => [
                     'merchant_id' => '1X4hRFHFx4UiXt',
                     'paytm' => false,
-                    'banks' => [],
+                    'disabled_banks' => [],
                 ]
             ],
         ],
@@ -863,7 +863,7 @@ return [
             'content' => [
                 'banks' => [
                     'HDFC',
-                    'ICIC',
+                    'ICIC'
                 ]
             ]
         ],
@@ -956,6 +956,28 @@ return [
     ],
 
     'testGetCheckoutPreferencesWithNetbankingDisabled' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesForMerchantDisabledBanks' => [
+        'request' => [
+            'url' => '/preferences',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testGetCheckoutPreferencesForTpvEnabledMerchant' => [
         'request' => [
             'url' => '/preferences',
             'method' => 'get',
@@ -1357,11 +1379,7 @@ return [
             'url' => '/merchants/10000000000000/methods',
             'method' => 'put',
             'content' => [
-                'paytm' => true,
-                'banks' => [
-                    'UTIB',
-                    'PUNB',
-                ],
+                'paytm' => true
             ],
             'server' => [
                 'HTTP_X-Dashboard'            => 'true',

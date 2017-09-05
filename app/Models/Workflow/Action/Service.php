@@ -39,15 +39,6 @@ class Service extends Base\Service
         return $action->toArrayPublic();
     }
 
-    public function get(string $id)
-    {
-        Entity::verifyIdAndStripSign($id);
-
-        $action = $this->core()->get($id);
-
-        return $action->toArrayPublic();
-    }
-
     public function fetchMultiple(array $input)
     {
         $orgId = $this->admin->getOrgId();
@@ -133,21 +124,6 @@ class Service extends Base\Service
         $action = $this->core()->edit($action, $input);
 
         return $action->toArrayPublic();
-    }
-
-    public function getStatesOfAction(string $actionId)
-    {
-        Entity::verifyIdAndStripSign($actionId);
-
-        $states = $this->repo
-                       ->action_state
-                       ->fetchStateTransitionsByActionId($actionId)
-                       ->map(function ($state) {
-                        return $state->toArrayPublic();
-                       })
-                       ->toArray();
-
-        return $states;
     }
 
     public function closeAction(string $id)

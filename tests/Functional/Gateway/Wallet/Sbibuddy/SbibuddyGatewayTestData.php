@@ -37,7 +37,7 @@ return [
     'testPaymentWalletEntity' => [
         'action'               => 'authorize',
         // They give the response in Rupees
-        'amount'               => 50000,
+        'amount'               => '50000',
         'wallet'               => 'sbibuddy',
         'received'             => true,
         'email'                => 'a@b.com',
@@ -50,7 +50,7 @@ return [
         'action'               => 'refund',
         'wallet'               => 'sbibuddy',
         'email'                => 'a@b.com',
-        'amount'               => 50000,
+        'amount'               => '50000',
         'contact'              => '9918899029',
         'gateway_merchant_id'  => 'random_id',
         'status_code'          => ResponseCodeMap::SUCCESS_CODE,
@@ -61,7 +61,7 @@ return [
         'action'               => 'refund',
         'wallet'               => 'sbibuddy',
         'email'                => 'a@b.com',
-        'amount'               => 25000,
+        'amount'               => '25000',
         'contact'              => '9918899029',
         'gateway_merchant_id'  => 'random_id',
         'gateway_payment_id'   => '987654321',
@@ -87,7 +87,7 @@ return [
 
     'testFailedPaymentWalletEntity' => [
         'action'               => 'authorize',
-        'amount'               => 50000,
+        'amount'               => '50000',
         'wallet'               => 'sbibuddy',
         'received'             => true,
         'email'                => 'a@b.com',
@@ -98,12 +98,28 @@ return [
         'entity'               => 'wallet'
     ],
 
+    'testInsufficientFundsPayment' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Payment failed due to insufficient balance in wallet',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE
+        ],
+    ],
+
 
     'testRefundFailedPaymentEntity' => [
         'action'               => 'refund',
         'wallet'               => 'sbibuddy',
         'email'                => 'a@b.com',
-        'amount'               => 50000,
+        'amount'               => '50000',
         'contact'              => '9918899029',
         'gateway_merchant_id'  => 'random_id',
         'status_code'          => ResponseCodeMap::GENERAL_ERROR,

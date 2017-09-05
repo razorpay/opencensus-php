@@ -69,6 +69,30 @@ class SbibuddyGatewayTest extends TestCase
         $this->assertTestResponse($wallet, 'testFailedPaymentWalletEntity');
     }
 
+    public function testInsufficientFundsPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('sbibuddy');
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            $content[ResponseFields::STATUS_CODE] = ResponseCodeMap::INSUFFICIENT_BALANCE;
+
+            $content[ResponseFields::ERROR_DESCRIPTION] = ResponseCodeMap::$codes[
+                ResponseCodeMap::INSUFFICIENT_BALANCE
+            ];
+
+            unset($content[ResponseFields::EXTERNAL_TRANSACTION_ID]);
+            unset($content[ResponseFields::PROCESSOR_ID]);
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testRefundPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('sbibuddy');
@@ -134,6 +158,27 @@ class SbibuddyGatewayTest extends TestCase
         $this->assertTestResponse($gatewayRefundEntity, 'testRefundFailedPaymentEntity');
 
         return $refund;
+    }
+
+    public function testVerifyRefund()
+    {
+        $refund = $this->testRefundFailedPayment();
+
+        // If refund failed and if on retry the response is duplicate transaction,
+        // it means the refund was initially successfull at gateway
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'refund')
+            {
+                $content[ResponseFields::STATUS_CODE] = ResponseCodeMap::DUPLICATE_TRANSACTION;
+
+                $content[ResponseFields::ERROR_DESCRIPTION] = 'Duplicate transaction';
+            }
+        });
+
+        $response = $this->retryFailedRefund($refund['id']);
+
+        $this->assertEquals(RefundStatus::PROCESSED, $response['status']);
     }
 
     public function testVerifyPayment()

@@ -151,6 +151,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MPESA_GATEWAY_PARAM_ARRAY                     = 'MPESA_GATEWAY_PARAM_ARRAY';
 
     const GATEWAY_MULTIPLE_BANK_PAYMENT_IDS             = 'GATEWAY_MULTIPLE_BANK_PAYMENT_IDS';
+    const MULTIPLE_TABLES_IN_VERIFY_RESPONSE            = 'MULTIPLE_TABLES_IN_VERIFY_RESPONSE';
 
     const ORDER_MULTIPLE_CAPTURED_PAYMENTS              = 'ORDER_MULTIPLE_CAPTURED_PAYMENTS';
     const GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT       = 'GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT';
@@ -344,6 +345,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     //Adjustments
     const ADJUSTMENT_CREATE_REQUEST                     = 'ADJUSTMENT_CREATE_REQUEST';
+    const FEE_ADJUSTMENT_CREATE_REQUEST                 = 'FEE_ADJUSTMENT_CREATE_REQUEST';
     const ADJUSTMENT_CREATE_SUCCESS                     = 'ADJUSTMENT_CREATE_SUCCESS';
 
     const VERIFY_LOCKED_PAYMENTS                        = 'VERIFY_LOCKED_PAYMENTS';
@@ -585,8 +587,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TOKENEX_RESPONSE                          = 'TOKENEX_RESPONSE';
     const TOKENEX_RETRY                             = 'TOKENEX_RETRY';
     const RAVEN_REQUEST                             = 'RAVEN_REQUEST';
-    const RAVEN_ASYNC_REQUEST_FAILED                = 'RAVEN_ASYNC_REQUEST_FAILED';
     const RAVEN_RESPONSE                            = 'RAVEN_RESPONSE';
+    const RAVEN_ASYNC_REQUEST_FAILED                = 'RAVEN_ASYNC_REQUEST_FAILED';
+    const LUMBERJACK_ASYNC_REQUEST_FAILED           = 'LUMBERJACK_ASYNC_REQUEST_FAILED';
 
     const EXCHANGE_REQUEST                          = 'EXCHANGE_REQUEST';
     const EXCHANGE_RESPONSE                         = 'EXCHANGE_RESPONSE';
@@ -716,6 +719,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TRANSFER_EDIT_SUCCESS                         = 'TRANSFER_EDIT_SUCCESS';
     const TRANSFER_REVERSAL_REQUEST                     = 'TRANSFER_REVERSAL_REQUEST';
     const TRANSFER_REVERSAL_SUCCESS                     = 'TRANSFER_REVERSAL_SUCCESS';
+    const TRANSFER_UPDATE_SETTLEMENT_ID_FAILED          = 'TRANSFER_UPDATE_SETTLEMENT_ID_FAILED';
 
 // Trace Code for Gateway Absence StatusCake
     const GATEWAY_DOWNTIME_STATUSCODE_MISSING_TOKEN     = 'GATEWAY_DOWNTIME_STATUSCODE_MISSING_TOKEN';
@@ -781,7 +785,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_RULE_CREATE_REQUEST                   = 'GATEWAY_RULE_CREATE_REQUEST';
     const GATEWAY_RULE_DELETE_REQUEST                   = 'GATEWAY_RULE_DELETE_REQUEST';
     const GATEWAY_RULE_UPDATE_REQUEST                   = 'GATEWAY_RULE_UPDATE_REQUEST';
-    const GATEWAY_RULES_POST_FILTER                     = 'GATEWAY_RULES_POST_FILTER';
+    const GATEWAY_SORTER_RULES                          = 'GATEWAY_SORTER_RULES';
     const GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS        = 'GATEWAY_LOAD_SORTING_BOOSTED_TERMINALS';
     const GATEWAY_LOAD_SORTING_FALLBACK                 = 'GATEWAY_LOAD_SORTING_FALLBACK';
     const GATEWAY_FILTER_RULES                          = 'GATEWAY_FILTER_RULES';
@@ -797,13 +801,18 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Trace codes for dispute entity
     const DISPUTE_CREATE_REQUEST                        = 'DISPUTE_CREATE_REQUEST';
     const DISPUTE_EDIT_REQUEST                          = 'DISPUTE_EDIT_REQUEST';
+    const DISPUTE_REVERSAL_REQUEST                      = 'DISPUTE_REVERSAL_REQUEST';
+    const DISPUTE_REVERSAL_SUCCESS                      = 'DISPUTE_REVERSAL_SUCCESS';
+    const DISPUTE_TRANSFER_SUCCESS                      = 'DISPUTE_TRANSFER_SUCCESS';
     const GRATIS_TO_POSTPAID_INPUT                      = 'GRATIS_TO_POSTPAID_INPUT';
     const GRATIS_TO_POSTPAID_FAILED                     = 'GRATIS_TO_POSTPAID_FAILED';
     const GRATIS_TO_POSTPAID_RESPONSE                   = 'GRATIS_TO_POSTPAID_RESPONSE';
 
     // Trace code for Merchant Invoices
     const MERCHANT_INVOICE_ENTITY_CREATION_FAILED       = 'MERCHANT_INVOICE_ENTITY_CREATION_FAILED';
+    const MERCHANT_INVOICE_BULK_CREATE                  = 'MERCHANT_INVOICE_BULK_CREATE';
     const MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED      = 'MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED';
+    const MERCHANT_INVOICE_REPORT_REQUEST               = 'MERCHANT_INVOICE_REPORT_REQUEST';
 
     const DUMMY_JOB = 'DUMMY_JOB';
 

@@ -108,15 +108,10 @@ class Filter extends Base\Core
 
         $featureSkippedFilters = $this->options->getFeatureSkippedFilters();
 
-        $globalSkippedFilters = $this->options->getGlobalSkippedFilters();
-
         $isFilterSkipped = in_array($property, $featureSkippedFilters, true);
 
         $featureEnabled = $merchant->isFeatureEnabled(Feature::RULE_FILTER);
 
-        $isFilterSkippedGlobally = in_array($property, $globalSkippedFilters, true);
-
-        return (($isFilterSkippedGlobally === true) or
-                (($isFilterSkipped === true) and ($featureEnabled === true)));
+        return (($isFilterSkipped === true) and ($featureEnabled === true));
     }
 }

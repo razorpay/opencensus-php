@@ -122,7 +122,7 @@ class Service extends Base\Service
             }
             catch (\Throwable $e)
             {
-                $result = ['message'=> $e->getMessage()];
+                $result = ['message' => $e->getMessage()];
             }
         }
 
@@ -639,14 +639,9 @@ class Service extends Base\Service
 
     public function getEnabledBanks()
     {
-        $methods = (new Methods\Core)->getMethods($this->merchant);
+        $methods = (new Methods\Core)->getEnabledAndDisabledBanks($this->merchant);
 
-        if ($methods === null)
-        {
-            return [];
-        }
-
-        return $methods->toArrayWithBankNames();
+        return $methods['enabled'];
     }
 
     public function setPaymentBanks($id, $input)
@@ -798,14 +793,14 @@ class Service extends Base\Service
         $from = Holidays::getPreviousWorkingDay($today);
 
         $newBeneficiaryCount = $this->repo->bank_account->getCountOfBankAccountsCreatedBetween(
-                                                        $from->timestamp,
-                                                        $today->timestamp);
+                                                        $from->getTimestamp(),
+                                                        $today->getTimestamp());
 
         if ($newBeneficiaryCount > 0)
         {
             (new BankAccount\BeneficiaryFile)->generateBetweenTimestamps(
-                                                        $from->timestamp,
-                                                        $today->timestamp);
+                                                        $from->getTimestamp(),
+                                                        $today->getTimestamp());
         }
 
         $message = "Merchant Beneficiary file generated. Beneficiary added since".
@@ -1234,6 +1229,59 @@ class Service extends Base\Service
             {
                 $this->repo->feature->delete($feature);
             }
+        }
+    }
+
+    public function getMerchantDetails()
+    {
+        $data = [];
+
+        /**
+         * Merchant needs to be set using X-Razorpay-account header.
+         * Setting Merchant in header validates admin access to
+         * that merchant in admin access middleware.
+         */
+        if (empty($this->merchant) === false)
+        {
+            $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
+                $this->merchant->getId(), ['methods', Entity::GROUPS, Entity::ADMINS]);
+
+            // Merchant to array public
+            $data = $merchant->toArrayPublic();
+
+            // Merchant confirmed details
+            $data['confirmed'] = $this->getMerchantConfirmed($merchant);
+
+            // Fetch formatted merchant details.
+            $data['merchant_details'] = (new Detail\Service)->getMerchantDetailsForAdmin();
+
+            $data['tags'] = $merchant->tagNames();
+        }
+
+        return $data;
+    }
+
+    /**
+     * Will provide if merchant is confirmed or not.
+     *
+     * @param $merchant
+     * @return bool
+     */
+    public function getMerchantConfirmed($merchant)
+    {
+        $parentId = $merchant->getParentId();
+
+        // Market place sub accounts are confirmed.
+        if (empty($parentId) === false)
+        {
+            return true;
+        }
+        else
+        {
+            $owner = $this->core()->getMerchantConfirmedOwner($merchant);
+
+            // True if an confirmed owner is present.
+            return !empty($owner);
         }
     }
 }
