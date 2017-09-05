@@ -192,6 +192,7 @@ export default class CreateVirtualAccount extends Component {
                     options={customers}
                     disabled={customersLoading}
                     class="virtual-account-powerselect"
+                    searchIndices={['id', 'name', 'email', 'contact']}
                     placeholder={`${customersLoading
                       ? 'Loading...'
                       : 'Select a customer'}`}
