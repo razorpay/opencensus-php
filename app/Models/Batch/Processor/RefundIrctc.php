@@ -3,6 +3,8 @@
 namespace RZP\Models\Batch\Processor;
 
 use RZP\Models\Batch;
+use RZP\Models\Payment;
+use RZP\Models\Payment\Refund;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class RefundIrctc extends Base
@@ -17,7 +19,7 @@ class RefundIrctc extends Base
 
         $processor = 'process' . studly_case($type) .'TypeRefunds';
 
-        $this->$processor($row, $payment);
+        $refund = $this->$processor($entry, $payment);
 
         $entry[Batch\Header::STATUS]       = Batch\Status::SUCCESS;
         $entry[Batch\Header::REFUND_ID]    = $refund->getPublicId();
@@ -25,43 +27,46 @@ class RefundIrctc extends Base
         $enrty[Batch\Header::PAYMENT_DATE] = $payment->getCreatedAt();
     }
 
-    protected function processRTypeRefunds(array $row, Payment\Entity $payment)
+    protected function processRTypeRefunds(array $entry, Payment\Entity $payment)
     {
         $paymentProcessor = (new PaymentProcessor($payment->merchant));
 
         $input = [
-            Entity::RECEIPT => $row[self::CANCELLATION_ID . '_' . self::MERCHANT_REFERENCE],
-            Entity::NOTES   => [
-                'reservation_id'  => $row[self::MERCHANT_REFERENCE],
-                'cancellation_id' => $row[self::CANCELLATION_ID],
-                'refund_type'     => $row[self::REFUND_TYPE],
+            Refund\Entity::RECEIPT => $entry[Batch\Header::CANCELLATION_ID . '_' . Batch\Header::MERCHANT_REFERENCE],
+            Refund\Entity::NOTES   => [
+                'reservation_id'  => $entry[Batch\Header::MERCHANT_REFERENCE],
+                'cancellation_id' => $entry[Batch\Header::CANCELLATION_ID],
+                'refund_type'     => $entry[Batch\Header::REFUND_TYPE],
             ],
         ];
 
-        $paymentProcessor->createRefundFromMerchantFile($payment, $input);
+        return $paymentProcessor->createRefundFromMerchantFile($payment, $input, $this->batch);
     }
 
-    protected function processCTypeRefunds(array $row, Payment\Entity $payment)
+    protected function processCTypeRefunds(array $entry, Payment\Entity $payment)
     {
         $paymentProcessor = (new PaymentProcessor($payment->merchant));
 
-        if ($payment->getStatus() !== Payment\Status::CAPTURED) {
-            throw new Exception\BadRequestException(
-                'Payment is not Captured for C type refund',
-                $row
-            );
+        // In case the payment is not captured, we need to capture the payment before initiating the refund
+        if ($payment->isCaptured() === false)
+        {
+            $params = [
+                Payment\Entity::AMOUNT => intval($entry[Batch\Header::PAYMENT_AMOUNT] * 100)
+            ];
+
+            $paymentProcessor->capture($payment, $params);
         }
 
         $input = [
-            Entity::AMOUNT  => intval($row[self::REFUND_AMOUNT] * 100),
-            Entity::RECEIPT => $row[self::CANCELLATION_ID . '_' . self::MERCHANT_REFERENCE],
-            Entity::NOTES   => [
-                'reservation_id'  => $row[self::MERCHANT_REFERENCE],
-                'cancellation_id' => $row[self::CANCELLATION_ID],
-                'refund_type'     => $row[self::REFUND_TYPE],
+            Refund\Entity::AMOUNT  => intval($entry[Batch\Header::REFUND_AMOUNT] * 100),
+            Refund\Entity::RECEIPT => $entry[Batch\Header::CANCELLATION_ID . '_' . Batch\Header::MERCHANT_REFERENCE],
+            Refund\Entity::NOTES   => [
+                'reservation_id'  => $entry[Batch\Header::MERCHANT_REFERENCE],
+                'cancellation_id' => $entry[Batch\Header::CANCELLATION_ID],
+                'refund_type'     => $entry[Batch\Header::REFUND_TYPE],
             ],
         ];
 
-        $paymentProcessor->createRefundFromMerchantFile($payment, $input);
+        return $paymentProcessor->createRefundFromMerchantFile($payment, $input, $this->batch);
     }
 }
