@@ -38,7 +38,7 @@ class Entity extends Base\PublicEntity
     const RECIPIENT_SETTLEMENT    = 'recipient_settlement';
 
     // Report fields
-    const SETTLEMENT_INITITATED_ON = 'settlement_inititated_on';
+    const SETTLEMENT_INITIATED_ON = 'SETTLEMENT_INITIATED_ON';
     const SETTLEMENT_UTR           = 'settlement_utr';
     const SETTLEMENT_STATUS        = 'settlement_status';
 
@@ -416,7 +416,7 @@ class Entity extends Base\PublicEntity
             $recipientSettlement   = $data[self::RECIPIENT_SETTLEMENT];
             $settlementId          = $recipientSettlement[Settlement\Entity::ID];
             $settlementCreatedAt   = $recipientSettlement[Settlement\Entity::CREATED_AT];
-            $settlementInitiatedOn = Carbon::createFromTimestamp($settlementCreatedAt, Timezone::IST)->format('d/m/Y');
+            $settlementInitiatedOn = Carbon::createFromTimestamp($settlementCreatedAt, Timezone::IST)->format('d/m/y');
             $utr                   = $recipientSettlement[Settlement\Entity::UTR];
             $settlementStatus      = $recipientSettlement[Settlement\Entity::STATUS];
             unset($data[self::RECIPIENT_SETTLEMENT]);
@@ -428,9 +428,9 @@ class Entity extends Base\PublicEntity
         unset($data[self::RECIPIENT_SETTLEMENT_ID]);
         unset($data[self::TAX]);
 
-        $data[self::ON_HOLD]                  = $this->getOnHold();
+        $data[self::ON_HOLD]                  = $this->getOnHold() ? "true" : "false";
         $data[self::RECIPIENT_SETTLEMENT_ID]  = $settlementId;
-        $data[self::SETTLEMENT_INITITATED_ON] = $settlementInitiatedOn;
+        $data[self::SETTLEMENT_INITIATED_ON] = $settlementInitiatedOn;
         $data[self::SETTLEMENT_UTR]           = $utr;
         $data[self::SETTLEMENT_STATUS]        = $settlementStatus;
         $data[self::TAX]                      = $tax;
