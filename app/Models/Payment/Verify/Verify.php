@@ -583,7 +583,7 @@ class Verify extends Base\Core
 
         foreach ($allBlockedGateways as $blockedGateway => $expiryTime)
         {
-            if ($expiryTime <= Carbon::now()->getTimestamp())
+            if ($expiryTime >= Carbon::now()->getTimestamp())
             {
                 $blockedGateways[] = $blockedGateway;
             }

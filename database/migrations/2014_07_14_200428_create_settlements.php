@@ -86,6 +86,8 @@ class CreateSettlements extends Migration
 
             $table->index(Settlement::CREATED_AT);
 
+            $table->index(Settlement::UPDATED_AT);
+
             $table->foreign(Settlement::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)

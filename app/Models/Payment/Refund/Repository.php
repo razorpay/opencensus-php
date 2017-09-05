@@ -421,7 +421,7 @@ class Repository extends Base\Repository
         $pId = $pRepo->dbColumn(Payment\Entity::ID);
         $pGateway = $pRepo->dbColumn(Payment\Entity::GATEWAY);
 
-        $timeLimit = Carbon::now(Timezone::IST)->subMinutes(30)->timestamp;
+        $timeLimit = Carbon::now(Timezone::IST)->subMinutes(30)->getTimestamp();
 
         // TODO: If the number of gateways exceeds by half of total,
         // inverse the `whereIn` condition.
@@ -440,6 +440,26 @@ class Repository extends Base\Repository
                     ->with(['payment','payment.terminal'])
                     ->limit(50)
                     ->inRandomOrder()
+                    ->get();
+    }
+
+    public function fetchRefundsForPnbClaims($from, $to, $gateway)
+    {
+        $pId = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $rPaymentId = $this->dbColumn(Entity::PAYMENT_ID);
+
+        $pGateway = $this->repo->payment->dbColumn(Payment\Entity::GATEWAY);
+
+        $pAuthorizedAt = $this->repo->payment->dbColumn(Payment\Entity::AUTHORIZED_AT);
+
+        return $this->newQuery()
+                    ->select($this->dbColumn('*'))
+                    ->join(Table::PAYMENT, $rPaymentId, '=', $pId)
+                    ->where($pAuthorizedAt, '<=', $from)
+                    ->where($pGateway, '=', $gateway)
+                    ->whereBetween($this->dbColumn(Entity::CREATED_AT), [$from, $to])
+                    ->with(['payment','payment.terminal'])
                     ->get();
     }
 }

@@ -2,18 +2,14 @@
 
 namespace RZP\Tests\Functional\Transfer;
 
-use Carbon\Carbon;
-
 use RZP\Constants\Entity;
-use RZP\Models\Reversal;
-use RZP\Models\Payment;
 use RZP\Models\Transfer;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class TransferTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use PaymentTrait;
 
     const STANDARD_PRICING_PLAN_ID  = '1A0Fkd38fGZPVC';
 
@@ -314,6 +310,27 @@ class TransferTest extends TestCase
         });
     }
 
+    public function testPaymentAfterTransferReversal()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['url'] = '/payments/' . $payment->getPublicId() . '/transfers';
+
+        $this->ba->privateAuth();
+
+        $transfers = $this->startTest();
+
+        $payment = $this->getEntityById('payment', $payment->getId(), true);
+        $this->assertEquals(1000, $payment['amount_transferred']);
+
+        $this->createReversal($transfers['items'][0]['id'], 200);
+
+        $payment = $this->getEntityById('payment', $payment['id'], true);
+        $this->assertEquals(800, $payment['amount_transferred']);
+    }
+
     public function testLiveTransferFundsOnHold()
     {
         $this->fixtures->merchant->holdFunds();
@@ -381,7 +398,6 @@ class TransferTest extends TestCase
         return $this->makeRequestAndGetContent($request);
     }
 
-    // @todo: Refactor for transfer pricing calc
     protected function checkReversals($amount = null)
     {
         $accOldBalance = $this->getBalance($this->linkedAccountId);

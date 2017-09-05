@@ -571,7 +571,7 @@ class FeeCalculator
 
     protected function validateAndGetOnePricingRule($pricing)
     {
-        if (count($pricing) > 1)
+        if (count($pricing) !== 1)
         {
             throw new Exception\LogicException(
                 'Only 1 pricing rule should have been present here. Found: ' . count($pricing));
@@ -735,7 +735,7 @@ class FeeCalculator
     public static function getTaxComponentsFromStateCode(string $merchantGstStateCode = null): array
     {
         // Intrastate gst
-        if ($merchantGstStateCode === self::RZP_GST_STATE_CODE)
+        if (($merchantGstStateCode === null) or ($merchantGstStateCode === self::RZP_GST_STATE_CODE))
         {
             return [
                 FeeBreakupName::CGST => self::CGST_PERCENTAGE,

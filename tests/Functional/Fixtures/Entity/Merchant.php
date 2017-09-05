@@ -165,11 +165,10 @@ class Merchant extends Base
 
     public function createAddPaymentBanks(array $attributes = array())
     {
-        $banks = \RZP\Models\Payment\Processor\Netbanking::getAllBanks();
-
         $defaultValues = array(
-            'merchant_id' => '10000000000000',
-            'banks' => $banks,
+            'merchant_id'    => '10000000000000',
+            'disabled_banks' => [],
+            'banks'          => '[]',
         );
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -369,7 +368,7 @@ class Merchant extends Base
         return $this->edit($id, ['category' => $category]);
     }
 
-    public function editCategory2($category, $id='10000000000000')
+    public function editCategory2($category, $id = '10000000000000')
     {
         return $this->edit($id, ['category2' => $category]);
     }

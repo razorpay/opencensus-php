@@ -181,7 +181,7 @@ class RuleFilter extends Terminal\Filter
         {
             $traceData = array_map(function (array $terminals)
             {
-                return array_pluck($terminals, 'id', 'gateway');
+                return array_pluck($terminals, 'gateway', 'id');
             }, $data);
 
             $traceData['group'] = $group;
@@ -204,10 +204,8 @@ class RuleFilter extends Terminal\Filter
             return true;
         }
 
-        $filterProperty = $this->options->getFilterPropertyForRuleGroup($group);
+        $globallyApplicableRuleGroups = $this->options->getGloballyApplicableRuleGroups();
 
-        $globalSkippedFilters = $this->options->getGlobalSkippedFilters();
-
-        return (in_array($filterProperty, $globalSkippedFilters, true) === true);
+        return (in_array($group, $globallyApplicableRuleGroups, true) === true);
     }
 }

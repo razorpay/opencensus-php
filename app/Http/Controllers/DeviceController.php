@@ -8,8 +8,6 @@ use Cache;
 use Trace;
 use Request;
 
-use RZP\Models\Device;
-
 class DeviceController extends Controller
 {
     protected $service;
@@ -18,14 +16,14 @@ class DeviceController extends Controller
     {
         $input = Request::all();
 
-        $device = $this->service('device')->create($input);
+        $device = $this->service()->create($input);
 
         return ApiResponse::json($device);
     }
 
     public function getDevice($deviceId)
     {
-        $invoice = $this->service('device')->fetch($deviceId);
+        $invoice = $this->service()->fetch($deviceId);
 
         return ApiResponse::json($invoice);
     }
@@ -34,7 +32,7 @@ class DeviceController extends Controller
     {
         $input = Request::all();
 
-        $this->service('device')->verify($input);
+        $this->service()->verify($input);
 
         return ApiResponse::json([], 200);
     }
@@ -43,7 +41,7 @@ class DeviceController extends Controller
     {
         $input = Request::all();
 
-        $this->service('device')->refreshToken($input);
+        $this->service()->refreshToken($input);
 
         return ApiResponse::json([], 204);
     }

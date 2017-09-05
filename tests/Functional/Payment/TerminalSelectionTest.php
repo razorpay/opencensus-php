@@ -247,6 +247,16 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->create('terminal:shared_hdfc_terminal');
         $this->fixtures->create('terminal:shared_axis_terminal');
 
+        $this->fixtures->create('gateway_rule', [
+            'method'        => 'card',
+            'merchant_id'   => '100000Razorpay',
+            'gateway'       => 'axis_migs',
+            'type'          => 'filter',
+            'filter_type'   => 'select',
+            'group'         => 'prepaid_iin_filter',
+            'iins'          => ['457392'],
+        ]);
+
         $this->mockTokenex();
 
         $payment = $this->getDefaultPaymentArray();
@@ -369,6 +379,18 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->create('terminal:shared_amex_terminal');
         $this->fixtures->create('terminal:shared_amex_category_terminals');
 
+        $this->fixtures->create('gateway_rule', [
+            'method'           => 'card',
+            'merchant_id'      => '100000Razorpay',
+            'category2'        => 'govt_education',
+            'gateway'          => 'amex',
+            'network'          => 'AMEX',
+            'network_category' => 'education',
+            'type'             => 'filter',
+            'filter_type'      => 'select',
+            'group'            => 'category_filter',
+        ]);
+
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '341111111111111';
         $payment['card']['cvv'] = '8888';
@@ -397,6 +419,27 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->create('terminal:shared_amex_terminal');
         $this->fixtures->create('terminal:shared_amex_category_terminals');
 
+        $this->fixtures->create('gateway_rule', [
+            'method'           => 'card',
+            'merchant_id'      => '100000Razorpay',
+            'gateway'          => 'amex',
+            'network'          => 'AMEX',
+            'network_category' => 'retail_services',
+            'type'             => 'filter',
+            'filter_type'      => 'select',
+            'group'            => 'category_filter',
+        ]);
+
+        $this->fixtures->create('gateway_rule', [
+            'method'           => 'card',
+            'merchant_id'      => '100000Razorpay',
+            'gateway'          => 'amex',
+            'network'          => 'AMEX',
+            'type'             => 'filter',
+            'filter_type'      => 'select',
+            'group'            => 'category_filter',
+        ]);
+
         $payment = $this->getDefaultPaymentArray();
         $payment['card']['number'] = '341111111111111';
         $payment['card']['cvv'] = '8888';
@@ -413,7 +456,6 @@ class TerminalSelectionTest extends TestCase
         $content = $this->doAuthAndCapturePayment($payment);
         $payment = $this->getLastEntity('payment', true);
 
-        // Payment should have been made through amex education services terminal
         $this->assertEquals('ShRetailSvcsTl', $payment['terminal_id']);
     }
 
@@ -695,6 +737,17 @@ class TerminalSelectionTest extends TestCase
                 'network_category' => 'securities'
             ]);
 
+        $this->fixtures->create('gateway_rule', [
+            'method'           => 'netbanking',
+            'merchant_id'      => '100000Razorpay',
+            'gateway'          => 'billdesk',
+            'type'             => 'filter',
+            'filter_type'      => 'select',
+            'category2'        => 'securities',
+            'network_category' => 'securities',
+            'group'            => 'tpv_filter',
+        ]);
+
         $payment = $this->getPaymentForTPV(['bank' => 'ICIC']);
 
         $this->doAuthAndCapturePayment($payment);
@@ -744,6 +797,18 @@ class TerminalSelectionTest extends TestCase
               'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
               'network_category' => 'securities']);
 
+        $this->fixtures->create('gateway_rule', [
+            'method'           => 'netbanking',
+            'merchant_id'      => '100000Razorpay',
+            'gateway'          => 'netbanking_kotak',
+            'issuer'           => 'KKBK',
+            'type'             => 'filter',
+            'filter_type'      => 'select',
+            'category2'        => 'securities',
+            'network_category' => 'securities',
+            'group'            => 'tpv_filter',
+        ]);
+
         $payment = $this->getPaymentForTPV(['bank' => 'KKBK']);
 
         $this->doAuthAndCapturePayment($payment);
@@ -771,6 +836,18 @@ class TerminalSelectionTest extends TestCase
              ['id' => 'SharNbBdkTmnl3',
               'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
               'network_category' => 'corporate']);
+
+        $this->fixtures->create('gateway_rule', [
+            'method'           => 'netbanking',
+            'merchant_id'      => '100000Razorpay',
+            'gateway'          => 'billdesk',
+            'issuer'           => 'ICIC',
+            'type'             => 'filter',
+            'filter_type'      => 'reject',
+            'network_category' => 'corporate',
+            'shared_terminal'  => 1,
+            'group'            => 'billdesk_category_filter',
+        ]);
 
         $payment = $this->getDefaultNetbankingPaymentArray();
 
@@ -860,6 +937,30 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
         $this->fixtures->create('terminal:shared_cybersource_axis_terminal');
 
+        $this->fixtures->create('gateway_rule', [
+            'method'           => 'card',
+            'merchant_id'      => '100000Razorpay',
+            'gateway'          => 'axis_migs',
+            'category2'        => 'pharma',
+            'type'             => 'filter',
+            'filter_type'      => 'reject',
+            'shared_terminal'  => 1,
+            'gateway_acquirer' => 'hdfc',
+            'group'            => 'pharma_filter',
+        ]);
+
+        $this->fixtures->create('gateway_rule', [
+            'method'           => 'card',
+            'merchant_id'      => '100000Razorpay',
+            'gateway'          => 'cybersource',
+            'category2'        => 'pharma',
+            'type'             => 'filter',
+            'filter_type'      => 'reject',
+            'shared_terminal'  => 1,
+            'gateway_acquirer' => 'hdfc',
+            'group'            => 'pharma_filter',
+        ]);
+
         $payment = $this->getDefaultPaymentArray();
         $this->doAuthAndCapturePayment($payment);
 
@@ -900,6 +1001,18 @@ class TerminalSelectionTest extends TestCase
 
         $this->fixtures->create('terminal:shared_netbanking_icici_terminal');
 
+        $this->fixtures->create('gateway_rule', [
+            'method'           => 'netbanking',
+            'merchant_id'      => '100000Razorpay',
+            'gateway'          => 'billdesk',
+            'category2'        => 'mutual_funds',
+            'issuer'           => 'ICIC',
+            'type'             => 'filter',
+            'filter_type'      => 'reject',
+            'shared_terminal'  => '0',
+            'group'            => 'billdesk_category_filter',
+        ]);
+
         $payment = $this->getDefaultNetbankingPaymentArray();
         $payment['bank'] = 'SBIN';
         $this->doAuthAndCapturePayment($payment);
@@ -933,6 +1046,17 @@ class TerminalSelectionTest extends TestCase
 
         $this->fixtures->create('terminal:shared_netbanking_icici_terminal');
 
+        $this->fixtures->create('gateway_rule', [
+            'method'           => 'netbanking',
+            'merchant_id'      => '100000Razorpay',
+            'gateway'          => 'billdesk',
+            'category2'        => 'housing',
+            'issuer'           => 'ICIC',
+            'type'             => 'filter',
+            'filter_type'      => 'reject',
+            'group'            => 'billdesk_category_filter',
+        ]);
+
         $payment = $this->getDefaultNetbankingPaymentArray();
         $payment['bank'] = 'ICIC';
         $this->doAuthAndCapturePayment($payment);
@@ -957,6 +1081,19 @@ class TerminalSelectionTest extends TestCase
              ['id' => 'ShrdNbBdkTmnl3',
               'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
               'network_category' => 'insurance']);
+
+        $this->fixtures->create('gateway_rule', [
+            'method'           => 'netbanking',
+            'merchant_id'      => '100000Razorpay',
+            'gateway'          => 'billdesk',
+            'category2'        => 'insurance',
+            'issuer'           => 'SBIN',
+            'type'             => 'filter',
+            'filter_type'      => 'reject',
+            'network_category' => 'insurance',
+            'shared_terminal'  => '1',
+            'group'            => 'billdesk_category_filter',
+        ]);
 
         $payment = $this->getDefaultNetbankingPaymentArray();
         $payment['bank'] = 'SBIN';
@@ -1030,22 +1167,5 @@ class TerminalSelectionTest extends TestCase
         $payment1 = $this->getLastEntity('payment', true);
 
         $this->assertEquals('ShrdNbBdkHouse', $payment1['terminal_id']);
-    }
-
-    public function testSharedTerminalFilter()
-    {
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-        $this->fixtures->create('terminal:shared_hdfc_terminal');
-
-        Merchant\Preferences::$merchantSharedTerminalsBlackList[] = '10000000000000';
-
-        $data = $this->testData[__FUNCTION__];
-
-        $this->runRequestResponseFlow($data, function()
-        {
-           $this->doAuthPayment();
-        });
-
-        array_pop(Merchant\Preferences::$merchantSharedTerminalsBlackList);
     }
 }

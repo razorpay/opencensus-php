@@ -28,4 +28,9 @@ class Gateway extends Icici\Gateway
     {
         return file_get_contents(__DIR__ . '/keys/mockclient.key');
     }
+
+    public function verifyRefund(array $input)
+    {
+        return false;
+    }
 }

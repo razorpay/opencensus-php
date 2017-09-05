@@ -87,47 +87,14 @@ class Entity extends Base\Entity
     /*
      * Getters
      */
-    public function getActionId() : string
-    {
-        return $this->getAttribute(self::ACTION_ID);
-    }
 
     public function getAdminId() : string
     {
         return $this->getAttribute(self::ADMIN_ID);
     }
 
-    public function getPublicActionId() : string
-    {
-        $actionId = $this->getAttribute(self::ACTION_ID);
-
-        return Action\Entity::getSignedId($actionId);
-    }
-
-    public function getStepId() : string
-    {
-        return $this->getAttribute(self::STEP_ID);
-    }
-
     public function isApproved() : bool
     {
         return $this->getAttribute(self::APPROVED);
-    }
-
-    public function getStatus()
-    {
-        if (empty($this->isApproved()) === true)
-        {
-            return;
-        }
-
-        if ($this->isApproved() === true)
-        {
-            return State\Entity::APPROVED;
-        }
-        else if ($this->isApproved() === false)
-        {
-            return State\Entity::REJECTED;
-        }
     }
 }

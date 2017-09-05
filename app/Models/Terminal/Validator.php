@@ -37,6 +37,7 @@ class Validator extends Base\Validator
         Entity::MODE                        => 'sometimes|in:1,2,3',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
         Entity::TPV                         => 'sometimes_if:netbanking,1|boolean',
+        Entity::CORPORATE                   => 'sometimes_if:netbanking,1|boolean',
         Entity::EMI_SUBVENTION              => 'sometimes|in:customer,merchant',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
@@ -242,6 +243,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TERMINAL_PASSWORD => 'required|string',
     ];
 
+    protected static $walletSbibuddyTerminalRules = [
+        Entity::GATEWAY                   => 'required|in:wallet_sbibuddy',
+        Entity::GATEWAY_MERCHANT_ID       => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET     => 'required|string',
+    ];
+
     protected static $walletMpesaTerminalRules = [
         Entity::GATEWAY                     => 'required|in:wallet_mpesa',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
@@ -300,12 +307,13 @@ class Validator extends Base\Validator
         }
 
         unset(
-            $input['card'],
-            $input['shared'],
-            $input['netbanking'],
-            $input['merchant_id'],
-            $input['category'],
-            $input['tpv'],
+            $input[Entity::TPV],
+            $input[Entity::CARD],
+            $input[Entity::SHARED],
+            $input[Entity::CATEGORY],
+            $input[Entity::CORPORATE],
+            $input[Entity::NETBANKING],
+            $input[Entity::MERCHANT_ID],
             $input[Entity::NETWORK_CATEGORY],
             $input[Entity::GATEWAY_ACQUIRER],
             $input[Entity::MODE],

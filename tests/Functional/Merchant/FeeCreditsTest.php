@@ -101,8 +101,8 @@ class FeeCreditsTest extends TestCase
 
     public function testNegativeFeeCredits()
     {
-        $this->fixtures->merchant->editFeeCredits('1000000', Account::TEST_ACCOUNT);
-        $this->fixtures->merchant->editCreditsforNodalAccount('1000000', 'fee');
+        $this->fixtures->merchant->editFeeCredits('30000000', Account::TEST_ACCOUNT);
+        $this->fixtures->merchant->editCreditsforNodalAccount('30000000', 'fee');
 
         $this->startTest();
 
@@ -110,11 +110,11 @@ class FeeCreditsTest extends TestCase
 
         $merchantCredits = $balance['fee_credits'];
 
-        $this->assertEquals($merchantCredits, 999850);
+        $this->assertEquals($merchantCredits, 27660840);
 
         $credits = $this->getLastEntity('credits', true);
 
-        $this->assertEquals($credits['value'], -150);
+        $this->assertEquals($credits['value'], -2339160);
     }
 
     public function testFeeCreditsGrantedInCampaign()

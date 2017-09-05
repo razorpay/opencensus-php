@@ -616,7 +616,7 @@ class Gateway extends Base\Gateway
         $errorMessage = SoapMethod::getErrorMessage($method);
 
         throw new Exception\GatewayErrorException(
-            ErrorCode::GATEWAY_ERROR_SOAP_ERROR, null, $errorMessage, $e);
+            ErrorCode::GATEWAY_ERROR_SOAP_ERROR, null, $errorMessage, [], $e);
     }
 
     protected function checkGatewayResponse(string $status)
@@ -751,5 +751,14 @@ class Gateway extends Base\Gateway
         }
 
         return $password;
+    }
+
+    /**
+     * We are picking up the live secret from the config variable
+     * @return mixed
+     */
+    protected function getLiveSecret()
+    {
+        return $this->config['live_hash_secret'];
     }
 }
