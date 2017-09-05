@@ -73,6 +73,9 @@ build:
       - script:
           name: copy artisan server logs
           code: cp /tmp/rzp-dbd* $WERCKER_REPORT_ARTIFACTS_DIR/
+      - script:
+          name: create commit.txt
+          code: git rev-parse HEAD > public/commit.txt
 deploy:
     steps:
       - script:
@@ -81,9 +84,6 @@ deploy:
       - script:
           name: check if dotfile rsyncignore exists
           code: if [ ! -f .rsyncignore ] ; then exit 1 ; fi;
-      - script:
-          name: create commit.txt
-          code: git rev-parse HEAD > public/commit.txt
       - script:
           name: S3 Sync
           code: node scripts/s3sync.js
