@@ -37,9 +37,9 @@ class Entity extends Base\PublicEntity
     const RECIPIENT_SETTLEMENT    = 'recipient_settlement';
 
     // Report fields
-    const SETTLEMENT_INITITATED_AT = 'settlement_inititated_at';
-    const SETTLEMENT_STATUS        = 'settlement_status';
+    const SETTLEMENT_INITITATED_ON = 'settlement_inititated_on';
     const SETTLEMENT_UTR           = 'settlement_utr';
+    const SETTLEMENT_STATUS        = 'settlement_status';
 
     // Public Attribute keys for SOURCE_ID and TO_ID
     const SOURCE    = 'source';
@@ -406,18 +406,18 @@ class Entity extends Base\PublicEntity
         $data = parent::toArrayReport();
 
         $settlementId          = null;
-        $settlementInitiatedAt = null;
-        $settlementStatus      = null;
+        $settlementInitiatedOn = null;
         $utr                   = null;
+        $settlementStatus      = null;
 
         if (isset($data[self::RECIPIENT_SETTLEMENT]))
         {
             $recipientSettlement   = $data[self::RECIPIENT_SETTLEMENT];
             $settlementId          = $recipientSettlement[Settlement\Entity::ID];
             $settlementCreatedAt   = $recipientSettlement[Settlement\Entity::CREATED_AT];
-            $settlementInitiatedAt = Carbon::createFromTimestamp($settlementCreatedAt, Timezone::IST)->format('m/d/Y');
-            $settlementStatus      = $recipientSettlement[Settlement\Entity::STATUS];
+            $settlementInitiatedOn = Carbon::createFromTimestamp($settlementCreatedAt, Timezone::IST)->format('d/m/Y');
             $utr                   = $recipientSettlement[Settlement\Entity::UTR];
+            $settlementStatus      = $recipientSettlement[Settlement\Entity::STATUS];
             unset($data[self::RECIPIENT_SETTLEMENT]);
         }
 
@@ -429,9 +429,9 @@ class Entity extends Base\PublicEntity
 
         $data[self::ON_HOLD]                  = $this->getOnHold();
         $data[self::RECIPIENT_SETTLEMENT_ID]  = $settlementId;
-        $data[self::SETTLEMENT_INITITATED_AT] = $settlementInitiatedAt;
-        $data[self::SETTLEMENT_STATUS]        = $settlementStatus;
+        $data[self::SETTLEMENT_INITITATED_ON] = $settlementInitiatedOn;
         $data[self::SETTLEMENT_UTR]           = $utr;
+        $data[self::SETTLEMENT_STATUS]        = $settlementStatus;
         $data[self::TAX]                      = $tax;
 
         return $data;
