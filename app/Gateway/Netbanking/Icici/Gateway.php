@@ -477,26 +477,31 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
+    /**
+     * For recurring payments, we use strtoupper(tokenId) for ITC, otherwise we use strtoupper(paymentId).
+     * For all payments, we use paymentId as the PRN parameter - as a unique identifier
+     *
+     * @param array $input
+     * @return array
+     */
     protected function getPaymentReferenceData(array $input)
     {
-        if (($this->isSecondRecurringPaymentRequest($input)) and
-            ($this->action === Action::AUTHORIZE))
+        if ($input['payment']['recurring'] === true)
         {
-            $prn = $this->app['repo']
-                        ->payment
-                        ->fetchIntitialNbSiPaymentByToken($input['token']['id'])
-                        ->getId();
+            $itc = strtoupper($input['token']->getId());
         }
         else
         {
-            $prn = $input['payment'][Payment\Entity::ID];
+            $itc = strtoupper($input['payment'][Payment\Entity::ID]);
         }
 
         $amount = $input['payment'][Payment\Entity::AMOUNT] / 100;
 
+        $prn = $input['payment'][Payment\Entity::ID];
+
         return [
             RequestFields::PAYMENT_ID    => $prn,
-            RequestFields::ITEM_CODE     => strtoupper($prn),
+            RequestFields::ITEM_CODE     => $itc,
             RequestFields::AMOUNT        => $amount,
             RequestFields::CURRENCY_CODE => Currency::INR,
         ];
