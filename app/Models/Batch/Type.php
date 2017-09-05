@@ -34,6 +34,8 @@ class Type
      */
     const QUEUE_GROUP = [
         self::PAYMENT_LINK,
+        self::REFUND_IRCTC,
+        self::SETTLEMENT_IRCTC
     ];
 
     public static function exists(string $type)
