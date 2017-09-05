@@ -1648,8 +1648,6 @@ trait Authorize
         }
         else if ($payment->isMethod(Payment\Method::NETBANKING))
         {
-            $payment->setBank($token->getBank());
-
             $payment->globalToken()->associate($token);
         }
     }
@@ -1789,7 +1787,7 @@ trait Authorize
         {
             $saveMethodInput[Token\Entity::BANK] = $payment->getBank();
             // TODO: We need to get this from user input - hard coding for now
-            $saveMethodInput[Token\Entity::MAX_AMOUNT] = Token\MaxAmount::ONE_LAC_RUPEES;
+            $saveMethodInput[Token\Entity::MAX_AMOUNT] = Token\Entity::MAX_AMOUNT_FOR_TOKEN;
         }
         else if ($payment->isMethod(Payment\Method::WALLET))
         {

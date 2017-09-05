@@ -33,6 +33,9 @@ class Entity extends Base\PublicEntity
     const UPDATED_AT                = 'updated_at';
     const DELETED_AT                = 'deleted_at';
 
+    // Default Max Amount
+    const MAX_AMOUNT_FOR_TOKEN      = 10000000;
+
     protected static $sign      = 'token';
 
     protected $entity           = 'token';
