@@ -416,10 +416,6 @@ class VerifyTest extends TestCase
     {
         $this->setupRedisMock();
 
-        $this->gateway = 'ebs';
-
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_ebs_terminal');
-
         $data = $this->testData['testTimeoutPaymentVerify'];
 
         $this->getErrorInCallback();
@@ -472,10 +468,6 @@ class VerifyTest extends TestCase
     public function testErrorPaymentVerify()
     {
         $this->setupRedisMock();
-
-        $this->gateway = 'ebs';
-
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_ebs_terminal');
 
         $data = $this->testData['testTimeoutPaymentVerify'];
 
@@ -547,10 +539,6 @@ class VerifyTest extends TestCase
     public function testTimeoutPaymentVerify()
     {
         $this->setupRedisMock();
-
-        $this->gateway = 'ebs';
-
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_ebs_terminal');
 
         $data = $this->testData['testTimeoutPaymentVerify'];
 
@@ -912,10 +900,6 @@ class VerifyTest extends TestCase
 
         $filter = 'payments_failed';
 
-        $this->gateway = 'ebs';
-
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_ebs_terminal');
-
         $data = $this->testData['testTimeoutPaymentVerify'];
 
         $this->getErrorInCallback();
@@ -978,10 +962,6 @@ class VerifyTest extends TestCase
         $this->setupRedisMock();
 
         $filter = 'payments_failed';
-
-        $this->gateway = 'ebs';
-
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_ebs_terminal');
 
         $data = $this->testData['testTimeoutPaymentVerify'];
 
@@ -1054,10 +1034,6 @@ class VerifyTest extends TestCase
         $this->setupRedisMockForBlockedPayments();
 
         $filter = 'payments_failed';
-
-        $this->gateway = 'ebs';
-
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_ebs_terminal');
 
         $data = $this->testData['testTimeoutPaymentVerify'];
 
