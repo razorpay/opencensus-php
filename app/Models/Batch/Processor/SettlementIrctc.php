@@ -26,6 +26,29 @@ class SettlementIrctc extends Base
             $paymentProcessor->capture($payment, $params);
         }
 
-        $entry[Batch\Header::STATUS]       = Batch\Status::SUCCESS;
+        $entry[Batch\Header::STATUS] = Batch\Status::SUCCESS;
+    }
+
+    /**
+     * Besides what parent's method does:
+     * - Sets aggregate processed amount of batch entity.
+     *
+     * @param $entries
+     */
+    protected function postProcessEntries(array & $entries)
+    {
+        parent::postProcessEntries($entries);
+
+        $processedAmount = 0;
+
+        foreach ($entries as $entry)
+        {
+            if ($entry[Batch\Header::STATUS] === Batch\Status::SUCCESS)
+            {
+                $processedAmount += $entry[Batch\Header::PAYMENT_AMOUNT];
+            }
+        }
+
+        $this->batch->setProcessedAmount($processedAmount);
     }
 }

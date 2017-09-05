@@ -2,12 +2,16 @@
 
 namespace RZP\Models\Batch\Processor;
 
+use Carbon\Carbon;
+
 use RZP\Models\Batch;
 use RZP\Models\Payment;
+use RZP\Constants\Timezone;
 use RZP\Models\Payment\Refund;
+use RZP\Models\Batch\Processor\Refund as RefundProcessor;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
-class RefundIrctc extends Base
+class RefundIrctc extends RefundProcessor
 {
     protected function processEntry(array & $entry)
     {
@@ -23,8 +27,7 @@ class RefundIrctc extends Base
 
         $entry[Batch\Header::STATUS]       = Batch\Status::SUCCESS;
         $entry[Batch\Header::REFUND_ID]    = $refund->getPublicId();
-        $entry[Batch\Header::REFUND_DATE]  = $refund->getCreatedAt();
-        $enrty[Batch\Header::PAYMENT_DATE] = $payment->getCreatedAt();
+        $entry[Batch\Header::REFUND_DATE]  = $this->getRefundDate($refund);
     }
 
     protected function processRTypeRefunds(array $entry, Payment\Entity $payment)
@@ -34,9 +37,10 @@ class RefundIrctc extends Base
         $input = [
             Refund\Entity::RECEIPT => $entry[Batch\Header::CANCELLATION_ID . '_' . Batch\Header::MERCHANT_REFERENCE],
             Refund\Entity::NOTES   => [
-                'reservation_id'  => $entry[Batch\Header::MERCHANT_REFERENCE],
-                'cancellation_id' => $entry[Batch\Header::CANCELLATION_ID],
-                'refund_type'     => $entry[Batch\Header::REFUND_TYPE],
+                'reservation_id'    => $entry[Batch\Header::MERCHANT_REFERENCE],
+                'cancellation_id'   => $entry[Batch\Header::CANCELLATION_ID],
+                'cancellation_date' => $entry[Batch\Header::CANCELLATION_DATE],
+                'refund_type'       => $entry[Batch\Header::REFUND_TYPE],
             ],
         ];
 
@@ -61,12 +65,25 @@ class RefundIrctc extends Base
             Refund\Entity::AMOUNT  => intval($entry[Batch\Header::REFUND_AMOUNT] * 100),
             Refund\Entity::RECEIPT => $entry[Batch\Header::CANCELLATION_ID . '_' . Batch\Header::MERCHANT_REFERENCE],
             Refund\Entity::NOTES   => [
-                'reservation_id'  => $entry[Batch\Header::MERCHANT_REFERENCE],
-                'cancellation_id' => $entry[Batch\Header::CANCELLATION_ID],
-                'refund_type'     => $entry[Batch\Header::REFUND_TYPE],
+                'reservation_id'    => $entry[Batch\Header::MERCHANT_REFERENCE],
+                'cancellation_id'   => $entry[Batch\Header::CANCELLATION_ID],
+                'cancellation_date' => $entry[Batch\Header::CANCELLATION_DATE],
+                'refund_type'       => $entry[Batch\Header::REFUND_TYPE],
             ],
         ];
 
         return $paymentProcessor->createRefundFromMerchantFile($payment, $input, $this->batch);
     }
+
+    protected function getRefundDate(Refund\Entity $refund)
+    {
+        $ts = $refund->getCreatedAt();
+
+        // Format dd/mm/yyyy hh:mm,
+        $refundDate = Carbon::createFromTimestamp($ts, Timezone::IST)
+                          ->format('Ymd');
+
+        return $refundDate;
+    }
+
 }
