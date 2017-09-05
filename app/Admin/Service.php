@@ -476,8 +476,6 @@ class Service extends Base\Service
             {
                 $currentTags = (new Merchant\Service)->getMerchantTags($id);
 
-                $this->addTagToMerchant($id, 'feebearer');
-
                 (new Merchant\Service)->addMerchantTagsOnAPI($id, array_merge($currentTags, ['feebearer']));
             }
         }
@@ -1024,26 +1022,22 @@ class Service extends Base\Service
                 $inputTags = $input['tags'];
             }
 
-            $merchant->retag($inputTags);
-
             (new Merchant\Service)->addMerchantTagsOnAPI($merchantId, $inputTags);
 
-            $merchant['tags'] = (new Merchant\Service)->getMerchantTags($merchantId);
+            $output = [];
+
+            $output['tags'] = (new Merchant\Service)->getMerchantTags($merchantId);
 
             $this->logActionToSlack($merchant, Actions::TAGGED, ['tags' => $input['tags']]);
 
-            return [null, $merchant->toArray()];
+            $output = array_merge($merchant->toArray(), $output);
+
+            return [null, $output];
         }
         else
         {
             return [$error, null];
         }
-    }
-
-    protected function addTagToMerchant($merchantId, $tag)
-    {
-        $merchant = Merchant\Entity::findOrFail($merchantId);
-        $merchant->tag($tag);
     }
 
     public function addEntityFeatures($entityType, $entityId, $input)
@@ -1084,15 +1078,6 @@ class Service extends Base\Service
         return array($error, null);
     }
 
-    private function removeMerchantTag($entityId, $featureName)
-    {
-        $merchant = Merchant\Entity::findOrFail($entityId);
-
-        $merchant->untag($featureName);
-
-        (new Merchant\Service)->deleteMerchantTagOnAPI($entityId, $featureName);
-    }
-
     private function retagMerchant($entityId, $features)
     {
         $merchant = Merchant\Entity::findOrFail($entityId);
@@ -1100,8 +1085,6 @@ class Service extends Base\Service
         $featureNames = $this->getFeatureNames($features['assigned_features']);
 
         $merchantTags = (new Merchant\Service)->getMerchantTags($merchant->id);
-
-        $merchant->retag(array_merge($featureNames, $merchantTags));
 
         (new Merchant\Service)->addMerchantTagsOnAPI($merchant->id, array_merge($featureNames, $merchantTags));
     }
