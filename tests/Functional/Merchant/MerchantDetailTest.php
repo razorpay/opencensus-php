@@ -49,6 +49,21 @@ class MerchantDetailTest extends TestCase
         $this->startTest();
     }
 
+    public function testSubmitAutoActivate()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace'], '10000000000000');
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $this->fixtures->edit('merchant', $merchantId, ['linked_account_kyc' => 0, 'parent_id' => '10000000000000']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
+
+        $this->startTest();
+    }
+
     public function testSubmitWithInvalidFields()
     {
         $merchantDetail = $this->fixtures->create('merchant_detail:invalid_fields');

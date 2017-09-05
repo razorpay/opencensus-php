@@ -12,7 +12,7 @@ class MerchantDetail extends Base
         $defaultValues =  [
                 'merchant_id'   => $merchant['id'],
                 'contact_email' => $merchant['email']
-            ];
+        ];
 
         $attributes = array_merge($defaultValues, $attributes);
 

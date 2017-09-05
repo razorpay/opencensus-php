@@ -62,6 +62,31 @@ return [
         ],
     ],
 
+    'testSubmitAutoActivate' => [
+        'request' => [
+            'content' => [
+                'bank_account_name' => 'Test',
+                'bank_account_number' => '111000',
+                'bank_branch_ifsc' => 'SBIN0007105',
+                'bank_account_type' => 'savings',
+                'business_name' => 'Test',
+                'business_type' => 1,
+                'submit' => true
+            ],
+            'url' => '/merchant/activation',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'submitted' => true,
+                'verification' => [
+                    'status' => 'pending'
+                ],
+                'can_submit' => true,
+            ],
+        ],
+    ],
+
     'testSubmitWithInvalidFields' => [
         'request' => [
             'content' => [
