@@ -87,9 +87,7 @@ class Service extends Base\Service
 
         $tokens = $this->repo->token->getByCustomer($customer);
 
-        $tokens = (new Customer\Service)->removeNetbankingRecurringTokens($tokens);
-
-        return $tokens;
+        return $tokens->toArrayPublic();
     }
 
     /**
