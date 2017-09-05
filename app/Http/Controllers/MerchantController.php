@@ -187,9 +187,7 @@ class MerchantController extends Controller
     {
         $this->checkMode($mode);
 
-        $input = Input::all();
-
-        list($error, $data) = (new Api\Service)->fetchCollection($input, $mode, 'invoice');
+        list($error, $data) = (new Merchant\Service)->fetchInvoices($mode);
 
         return AppResponse::jsonResponse($error, $data);
     }
