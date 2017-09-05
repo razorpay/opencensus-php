@@ -94,7 +94,7 @@ class Verify extends Base\Core
     /**
      * Time interval after which timeout count will be reset
      */
-    const GATEWAY_TIMEOUT_BUCKET_INTERVAL = 120; // 2 minutes
+    const GATEWAY_TIMEOUT_BUCKET_INTERVAL = 600; // 10 minutes
 
     /**
      * No of Timeout that should occur in GATEWAY_TIMEOUT_BUCKET_INTERVAL
