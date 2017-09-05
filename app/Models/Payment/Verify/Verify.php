@@ -91,7 +91,6 @@ class Verify extends Base\Core
      */
     const GATEWAY_BLOCK_TIME = 900; // 15 minutes
 
-
     /**
      * Time interval after which timeout count will be reset
      */
@@ -102,7 +101,6 @@ class Verify extends Base\Core
      * for gayeway to be blocked
      */
     const GATEWAY_TIMEOUT_THRESHOLD = 10;
-
 
     /**
      * Cache key prefix for storing gatway timeot values
@@ -254,12 +252,10 @@ class Verify extends Base\Core
 
         $maximumTime = self::MAXIMUM_TIME_MAP[$filter];
 
-        $timeBoundary = [
+        return [
             'min' => $minimumTime,
             'max' => $maximumTime
         ];
-
-        return $timeBoundary;
     }
 
     /**
@@ -270,7 +266,7 @@ class Verify extends Base\Core
      *
      * @return array boundary array for verify
      */
-    protected function getBoundaryForVerify(string $filter, array $bucketFilter = [], array $timeBoundary)
+    protected function getBoundaryForVerify(string $filter, array $bucketFilter = [], array $timeBoundary = [])
     {
         $boundary = [];
 
@@ -464,9 +460,7 @@ class Verify extends Base\Core
             'fetch_time'       => $times['fetch_time']
         ];
 
-        $processedResults = array_merge($processedResults, $result);
-
-        return $processedResults;
+        return array_merge($processedResults, $result);
     }
 
     /** Notify Processed Data in slack
@@ -512,7 +506,7 @@ class Verify extends Base\Core
         //
         try
         {
-            $response = $this->processor($merchant)->verify($payment);
+            $this->processor($merchant)->verify($payment);
 
             $this->updateVerifyBucket($payment, $filter, self::NEXT);
         }
@@ -868,8 +862,6 @@ class Verify extends Base\Core
 
     protected function processor($merchant = null)
     {
-        $processor = new Payment\Processor\Processor($merchant);
-
-        return $processor;
+        return new Payment\Processor\Processor($merchant);
     }
 }
