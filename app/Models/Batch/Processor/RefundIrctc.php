@@ -8,10 +8,9 @@ use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Constants\Timezone;
 use RZP\Models\Payment\Refund;
-use RZP\Models\Batch\Processor\Refund as RefundProcessor;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
-class RefundIrctc extends RefundProcessor
+class RefundIrctc extends Base
 {
     protected function processEntry(array & $entry)
     {
@@ -35,7 +34,7 @@ class RefundIrctc extends RefundProcessor
         $paymentProcessor = (new PaymentProcessor($payment->merchant));
 
         $input = [
-            Refund\Entity::RECEIPT => $entry[Batch\Header::CANCELLATION_ID . '_' . Batch\Header::MERCHANT_REFERENCE],
+            Refund\Entity::RECEIPT => $entry[Batch\Header::CANCELLATION_ID] . '_' . $entry[Batch\Header::MERCHANT_REFERENCE],
             Refund\Entity::NOTES   => [
                 'reservation_id'    => $entry[Batch\Header::MERCHANT_REFERENCE],
                 'cancellation_id'   => $entry[Batch\Header::CANCELLATION_ID],
@@ -55,7 +54,7 @@ class RefundIrctc extends RefundProcessor
         if ($payment->isCaptured() === false)
         {
             $params = [
-                Payment\Entity::AMOUNT => intval($entry[Batch\Header::PAYMENT_AMOUNT] * 100)
+                Payment\Entity::AMOUNT => intval($entry[Batch\Header::PAYMENT_AMOUNT] * 100),
             ];
 
             $paymentProcessor->capture($payment, $params);
@@ -63,7 +62,7 @@ class RefundIrctc extends RefundProcessor
 
         $input = [
             Refund\Entity::AMOUNT  => intval($entry[Batch\Header::REFUND_AMOUNT] * 100),
-            Refund\Entity::RECEIPT => $entry[Batch\Header::CANCELLATION_ID . '_' . Batch\Header::MERCHANT_REFERENCE],
+            Refund\Entity::RECEIPT => $entry[Batch\Header::CANCELLATION_ID] . '_' . $entry[Batch\Header::MERCHANT_REFERENCE],
             Refund\Entity::NOTES   => [
                 'reservation_id'    => $entry[Batch\Header::MERCHANT_REFERENCE],
                 'cancellation_id'   => $entry[Batch\Header::CANCELLATION_ID],
@@ -86,4 +85,26 @@ class RefundIrctc extends RefundProcessor
         return $refundDate;
     }
 
+    /**
+     * Besides what parent's method does:
+     * - Sets aggregate processed amount of batch entity.
+     *
+     * @param $entries
+     */
+    protected function postProcessEntries(array & $entries)
+    {
+        parent::postProcessEntries($entries);
+
+        $processedAmount = 0;
+
+        foreach ($entries as $entry)
+        {
+            if ($entry[Batch\Header::STATUS] === Batch\Status::SUCCESS)
+            {
+                $processedAmount += $entry[Batch\Header::REFUND_AMOUNT];
+            }
+        }
+
+        $this->batch->setProcessedAmount($processedAmount);
+    }
 }
