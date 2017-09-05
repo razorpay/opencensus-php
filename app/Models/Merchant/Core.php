@@ -424,9 +424,8 @@ class Core extends Base\Core
 
             $batch = (new Batch\Core)->create($params);
 
-            $batches[$type] = $batch->getId();
+            $batches[$type] = $batch->getPublicId();
         }
-
 
 //        $job = new IrctcBatch($this->mode, $batches);
 //

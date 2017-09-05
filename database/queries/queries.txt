@@ -2440,3 +2440,7 @@ ALTER TABLE transfers
     ADD COLUMN recipient_settlement_id CHAR(14) AFTER transaction_id,
     ADD CONSTRAINT transfers_recipient_settlement_id_foreign FOREIGN KEY(recipient_settlement_id)
     REFERENCES settlements(id) ON DELETE RESTRICT;
+
+ALTER TABLE batches
+    MODIFY COLUMN `type` CHAR(25);
+

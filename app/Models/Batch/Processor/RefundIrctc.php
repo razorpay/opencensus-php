@@ -5,7 +5,7 @@ namespace RZP\Models\Batch\Processor;
 use RZP\Models\Batch;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
-class IrctcRefund extends Base
+class RefundIrctc extends Base
 {
     protected function processEntry(array & $entry)
     {
