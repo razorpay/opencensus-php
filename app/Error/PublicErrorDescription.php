@@ -299,6 +299,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE                                = 'Invoice status cannot be retrieved now';
     const BAD_REQUEST_PAYMENT_NOT_AUTHORIZED                                    = 'Payment is not in authorized state';
+    const BAD_REQUEST_NOT_CARD_PAYMENT                                          = 'Payment was not done using card';
     const BAD_REQUEST_INVALID_MESSAGE_KEYWORD                                   = 'Invalid keyword sent in the request';
     const BAD_REQUEST_MISSING_FIELDS_MESSAGE                                    = 'Some fields are missing in the request';
     const BAD_REQUEST_CUSTOMER_ID_MISSING                                       = 'Sending customer ID is mandatory';
