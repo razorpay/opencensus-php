@@ -21,7 +21,11 @@ export default class MerchantTour extends Component {
     // Identify user already using new ui
     if (
       this.props.user.tags.indexOf('Newui') === -1 &&
-      !JSON.parse(LocalStorageService.getItem('tour_shown'))
+      !JSON.parse(LocalStorageService.getItem('tour_shown')) &&
+      !(
+        JSON.parse(LocalStorageService.getItem('ngStorage-new_user_signup')) ||
+        JSON.parse(LocalStorageService.getItem('onboarding_first_step'))
+      )
     ) {
       this.display();
     }
@@ -44,8 +48,8 @@ export default class MerchantTour extends Component {
             <NewUIOnboardingDialog
               onShowChanges={this.showTour}
               onCancelClick={() => {
-                this.closeTour();
-                LocalStorageService.setItem('tour_shown', false);
+                this.showTour();
+                this.setToLastInTour();
               }}
             />
           ),
@@ -71,13 +75,15 @@ export default class MerchantTour extends Component {
     this.setState({ isTourActive: false, activeTourStep: 0 });
   };
 
+  setToLastInTour = () => {
+    this.setState({ activeTourStep: 3 });
+  };
+
   gotoNextTourStep = () => {
     this.setState({ activeTourStep: this.state.activeTourStep + 1 });
   };
 
   render() {
-    let showOnboardingTour = this.state.showOnboardingTour;
-
     return (
       <div>
         <Tour
@@ -91,7 +97,7 @@ export default class MerchantTour extends Component {
               , <b>Refunds</b> and <b>Orders</b> have moved to Transactions.
             </p>
             <div class="btn-toolbar">
-              <button class="btn btn-link" onClick={this.closeTour}>
+              <button class="btn btn-link" onClick={this.setToLastInTour}>
                 Skip
               </button>
               <button
@@ -110,7 +116,7 @@ export default class MerchantTour extends Component {
               , <b>Credits</b> and <b>Add Funds</b> are now under My Account.
             </p>
             <div class="btn-toolbar">
-              <button class="btn btn-link" onClick={this.closeTour}>
+              <button class="btn btn-link" onClick={this.setToLastInTour}>
                 Skip
               </button>
               <button
@@ -129,7 +135,7 @@ export default class MerchantTour extends Component {
               , and <b>Webhooks</b> have moved to Settings.
             </p>
             <div class="btn-toolbar">
-              <button class="btn btn-link" onClick={this.closeTour}>
+              <button class="btn btn-link" onClick={this.setToLastInTour}>
                 Skip
               </button>
 
