@@ -192,8 +192,10 @@ class Core extends Base\Core
         Mail::queue($bankAccountChangeMail);
     }
 
-    public function buildBankAccountArrayFromMerchantDetails(array $details, bool $linkedAccount = false): array
+    public function buildBankAccountArrayFromMerchantDetail(DetailEntity $detail, bool $linkedAccount = false): array
     {
+        $details = $detail->toArray();
+
         $data = [
             Entity::IFSC_CODE             => $details[DetailEntity::BANK_BRANCH_IFSC],
             Entity::BENEFICIARY_NAME      => $details[DetailEntity::BANK_ACCOUNT_NAME],

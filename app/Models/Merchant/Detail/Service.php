@@ -70,7 +70,6 @@ class Service extends Base\Service
 
         return $this->repo->transaction(function() use ($input, $merchantDetails)
         {
-
             $this->repo->saveOrFail($merchantDetails);
 
             $response = $this->createResponse($merchantDetails);
@@ -444,7 +443,7 @@ class Service extends Base\Service
             $bankCore = (new BankAccount\Core);
 
             // Build the input array for the merchant's bank account creation
-            $bankData = $bankCore->buildBankAccountArrayFromMerchantDetails($merchantDetails->toArray(), true);
+            $bankData = $bankCore->buildBankAccountArrayFromMerchantDetail($merchantDetails, true);
 
             $bankCore->createOrChangeBankAccount($bankData, $this->merchant);
 
@@ -455,7 +454,6 @@ class Service extends Base\Service
 
         return false;
     }
-
 
     private function calculateFinishedSteps(array & $merchantDetails)
     {
