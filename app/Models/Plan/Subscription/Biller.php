@@ -118,6 +118,9 @@ class Biller extends Base\Core
                 // If not, the status would already be active or
                 // would be reset by some other flow (auth/capture).
                 //
+                // TODO: A halted subscription could reach here as well, with paid
+                // count = 0. In that case activating the subscription is wrong.
+                //
                 if ($subscription->getPaidCount() === 0)
                 {
                     $this->activateSubscription($subscription);

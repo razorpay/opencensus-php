@@ -2099,10 +2099,6 @@ trait Authorize
 
             $invoice = $payment->invoice;
 
-            // TODO: This should not be called for manual invoice charge, as all
-            // timefields for subscription have already been updated by the cron.
-            // The retry cron updates it when the subscription status is moved to halted.
-            //
             // Currently manual charge of pending invoices is not allowed, but it should be.
             // When we do allow that, handleCaptureSuccess will be used to set time fields.
             //

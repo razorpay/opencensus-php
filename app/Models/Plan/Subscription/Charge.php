@@ -186,24 +186,36 @@ class Charge extends Base\Core
         $this->resetErrorFields($subscription);
 
         //
-        // Even though we are updating it in the invoice now,
-        // we will be keeping the current billing cycle period
-        // in subscriptions also.
+        // If subscription status is halted, this is a manual charge of an old invoice.
+        // This should not update time fields, as the charge cron is already doing that.
         //
-        // Ensure that setting billing period functions are called
-        // before incrementing the paid count, since the logic
-        // is dependent on that.
-        //
+        if ($invoice->getSubscriptionStatus() !== Status::HALTED)
+        {
+            //
+            // Schedule task needs to be updated before setting time
+            // fields in subscription, as the next_run_at of
+            // schedule_task is used to set subscription charge_at
+            //
+            $this->updateScheduleTask($subscription);
 
-        // Schedule task needs to be updated before setting time
-        // fields in subscription, as the next_run_at of
-        // schedule_task is used to set subscription charge_at
-        $this->updateScheduleTask($subscription);
-
-        $this->updateSubscriptionTimeFields($subscription);
+            //
+            // Even though we are updating it in the invoice now,
+            // we will be keeping the current billing cycle period
+            // in subscriptions also.
+            //
+            $this->updateSubscriptionTimeFields($subscription);
+        }
 
         $this->incrementPaidCount($subscription);
 
+        //
+        // TODO: This needs to be called in charge fail flow as well.
+        // Billing period for failed invoives should be set.
+        //
+        // It needs needs to NOT be called in manual invoice charge flow,
+        // since that would override the existing billing period of the invoice
+        // with the current period of the subscription.
+        //
         $this->setInvoiceBillingPeriod($subscription, $invoice);
 
         if ($oldStatus === Status::AUTHENTICATED)

@@ -800,12 +800,12 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SHORT_URL, $shortUrl);
     }
 
-    public function setBillingStart(int $billingStart)
+    public function setBillingStart($billingStart)
     {
         $this->setAttribute(self::BILLING_START, $billingStart);
     }
 
-    public function setBillingEnd(int $billingEnd)
+    public function setBillingEnd($billingEnd)
     {
         $this->setAttribute(self::BILLING_END, $billingEnd);
     }
