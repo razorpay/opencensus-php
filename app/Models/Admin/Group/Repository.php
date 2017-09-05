@@ -70,7 +70,7 @@ class Repository extends Base\Repository
             $parentGroups = $this->findImmediateParentsOfGroups($parentGroups);
         }
 
-        return $finalResult;
+        return $finalResult->unique();
     }
 
     /**

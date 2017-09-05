@@ -44,7 +44,7 @@ class Repository extends Base\Repository
     protected $adminFetchParamRules = [
         EsRepository::SEARCH_HITS       => 'filled|boolean',
         EsRepository::QUERY             => 'filled|string|min:2|max:100',
-        Entity::ACCOUNT_STATUS          => 'filled|string|in:suspended,archived,activated,pending,dead',
+        Entity::ACCOUNT_STATUS          => 'filled|string|in:all,suspended,archived,activated,pending,dead',
         Entity::SUB_ACCOUNTS            => 'filled|custom',
         Entity::GROUPS                  => 'sometimes|array',
         Entity::ADMINS                  => 'required|array|min:1|max:1',
@@ -52,7 +52,7 @@ class Repository extends Base\Repository
 
     protected function validateSubAccounts($attribute, $value)
     {
-        ($value === self::SUB_ACCOUNTS_ONLY_VALUE) or $this->validatePublicId($attribute, $value);
+        ($value === self::SUB_ACCOUNTS_ONLY_VALUE) or Entity::verifyIdAndStripSign($value);
     }
 
     public function fetchActivatedMerchantsBeforeTimestamp(

@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Models\Admin;
 use RZP\Constants\Entity as E;
 
 class OrganizationController extends Controller

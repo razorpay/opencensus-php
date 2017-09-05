@@ -468,7 +468,7 @@ class Merchant extends Base
     {
         $groups = [];
 
-        foreach (range(11, 27) as $i)
+        foreach (range(11, 39) as $i)
         {
             $attributes = [
                 'id'     => "100000000000{$i}",
@@ -481,6 +481,9 @@ class Merchant extends Base
         //
         // Assigns parents to many of the groups to create hierarchy as depicted
         // in diagram link above.
+        //
+        // - Groups 11 - 27 are used in fetch tests.
+        // - Groups 28 - 39 are used in edit tests.
         //
 
         $groups[27]->parents()->sync(['10000000000026']);
@@ -497,6 +500,17 @@ class Merchant extends Base
         $groups[16]->parents()->sync(['10000000000011']);
         $groups[15]->parents()->sync(['10000000000011']);
         $groups[14]->parents()->sync(['10000000000011']);
+
+        $groups[39]->parents()->sync(['10000000000037']);
+        $groups[38]->parents()->sync(['10000000000034']);
+        $groups[37]->parents()->sync(['10000000000033']);
+        $groups[36]->parents()->sync(['10000000000033']);
+        $groups[35]->parents()->sync(['10000000000030', '10000000000031', '10000000000032']);
+        $groups[34]->parents()->sync(['10000000000030']);
+        $groups[33]->parents()->sync(['10000000000029']);
+        $groups[32]->parents()->sync(['10000000000028']);
+        $groups[31]->parents()->sync(['10000000000028']);
+        $groups[30]->parents()->sync(['10000000000028']);
 
         unset($groups);
     }
@@ -533,7 +547,8 @@ class Merchant extends Base
         // basically means he has access to all merchants under that group
         // hierarchy.
         //
-        // Admins from ids suffix 16 to 20 aren't assigned to any groups.
+        // Admins from ids suffix 16 to 20 aren't assigned to any groups and these
+        // will mostly be used in edit tests.
         //
 
         $admins[11]->groups()->sync(['10000000000011', '10000000000012', '10000000000013']);
@@ -553,23 +568,87 @@ class Merchant extends Base
         // - Also, assigns admins and groups to the created merchants.
         //
 
-        //
-        // TODOs:
-        // - Following is not final just yet. Will keep on adding new ones
-        //   as per tests.
-        // - At last drop the ascii diagram
-        //
+        // - Merchants 11 - 15 are used in fetch tests
+        // - Merchants 16 is used in edit tests
 
+        $now       = Carbon::now()->timestamp;
         $merchants = [];
 
-        $merchants[11] = $this->createMerchantWithDetails(self::RZP_ORG_ID, '10000000000011', ['name' => 'jitendra ojha']);
+        $merchants[11] = $this->createMerchantWithDetails(
+                                    self::RZP_ORG_ID,
+                                    '10000000000011',
+                                    [
+                                        'name'          => 'jitendra ojha',
+                                        'activated'     => 1,
+                                        'live'          => 1,
+                                        'activated_at'  => $now,
+                                        'email'         => 'email.ojha@test.com',
+                                        'website'       => 'www.ojha.test',
+                                        'billing_label' => 'Ojha Label',
+                                    ]);
 
         $merchants[11]->groups()->sync(['10000000000027']);
 
-        $merchants[12] = $this->createMerchantWithDetails(self::RZP_ORG_ID, '10000000000012', ['name' => 'jitendra selva']);
+        $merchants[12] = $this->createMerchantWithDetails(
+                                    self::RZP_ORG_ID,
+                                    '10000000000012',
+                                    [
+                                        'name'          => 'jitendra selva',
+                                        'activated'     => 1,
+                                        'live'          => 1,
+                                        'activated_at'  => $now,
+                                        'email'         => 'email.selva@test.com',
+                                        'website'       => 'www.selva.test',
+                                        'billing_label' => 'Selva Label',
+                                    ]);
 
         $merchants[12]->groups()->sync(['10000000000021']);
         $merchants[12]->admins()->sync(['10000000000012']);
+
+        $merchants[13] = $this->createMerchantWithDetails(
+                                    self::RZP_ORG_ID,
+                                    '10000000000013',
+                                    [
+                                        'name'        => 'jitendra amit',
+                                        'archived_at' => $now,
+                                    ]);
+
+        $merchants[13]->groups()->sync(['10000000000024']);
+
+        $merchants[14] = $this->createMerchantWithDetails(
+                                    self::RZP_ORG_ID,
+                                    '10000000000014',
+                                    [
+                                        'name'         => 'prashanth yv',
+                                        'parent_id'    => '10000000000012',
+                                        'activated'    => 1,
+                                        'live'         => 1,
+                                        'activated_at' => $now,
+                                    ]);
+
+        $merchants[14]->groups()->sync(['10000000000021']);
+
+        $merchants[15] = $this->createMerchantWithDetails(
+                                    self::RZP_ORG_ID,
+                                    '10000000000015',
+                                    [
+                                        'name'         => 'shashank kumar',
+                                        'parent_id'    => '10000000000013',
+                                        'activated'    => 1,
+                                        'live'         => 1,
+                                        'activated_at' => $now,
+                                    ]);
+
+        $merchants[15]->groups()->sync(['10000000000024']);
+
+        $merchants[16] = $this->createMerchantWithDetails(
+                                    self::RZP_ORG_ID,
+                                    '10000000000016',
+                                    [
+                                        'pricing_plan_id' => '1hDYlICobzOCYt',
+                                    ]);
+
+        $merchants[16]->retag(['First', 'Second']);
 
         // Create index by calling the artisan command
         Artisan::call('rzp:index_create', ['entity' => 'merchant', 'index' => 'testing_merchant_test', '--reindex' => true]);
