@@ -87,6 +87,9 @@ deploy:
       - script:
           name: S3 Sync
           code: node scripts/s3sync.js
+      - script:
+          name: remove folders
+          code: rm -rf {.git,node_modules}
       - nhuray/aws-code-deploy:
           key: $AWS_KEY
           secret: $AWS_SECRET
