@@ -164,7 +164,7 @@ trait Authorize
                     $request = $this->callGatewayAuthorize($terminalGatewayInput);
                 }
 
-                $retry = true;
+                $retry = false;
 
                 break;
             }
