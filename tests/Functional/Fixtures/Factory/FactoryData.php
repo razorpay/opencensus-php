@@ -443,7 +443,7 @@ final class FactoryData
 
         $factory(\RZP\Gateway\Wallet\Base\Entity::class, [
             'id'            => '12345',
-            'amount'        => 0,
+            'amount'        => '0',
             'contact'       => '9918899029',
             'email'         => 'a@b.com',
         ]);

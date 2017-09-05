@@ -10,6 +10,7 @@ class Role
     const SUPPORT    = 'support';
     const ADMIN      = 'admin';
     const SELLERAPP  = 'sellerapp';
+    const OWNER      = 'owner';
 
     public static function exists(string $action): bool
     {

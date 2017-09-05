@@ -152,6 +152,7 @@ final class Route
         'merchant_notify_holiday'                 => ['post',     'merchants/notify/holiday',                       'MerchantController@postMerchantsNotifyHoliday'                     ],
         'merchant_invoice_update_gstin'           => ['put',      'merchants/{id}/invoice/gstin',                   'MerchantInvoiceController@updateGstin'                             ],
         'merchant_create_invoice_entities'        => ['post',     'merchants/invoice/create',                       'MerchantInvoiceController@postCreateInvoiceEntities'               ],
+        'merchant_details_fetch'                  => ['get',      'merchants/details',                              'MerchantController@getMerchantDetails'                             ],
         'merchant_invoice_add_bulk'               => ['post',     'merchants/invoice/bulk',                         'MerchantInvoiceController@postMultipleEntities'                    ],
         'balance_fetch'                           => ['get',      'balance',                                        'MerchantController@getAccountBalance'                              ],
         'credits_create'                          => ['post',     'merchants/{id}/credits_log',                     'MerchantController@postCreateCreditsLog'                           ],
@@ -562,9 +563,9 @@ final class Route
         'promotion_create'                        => ['post',     'promotions',                                     'PromotionController@create'                                        ],
         'promotion_update'                        => ['patch',    'promotions/{id}',                                'PromotionController@update'                                        ],
         //coupon routes
-        'coupon_create'                           => ['post',     'coupons',                                         'CouponController@create'                                          ],
-        'coupon_apply'                            => ['post',     'coupons/apply',                                   'CouponController@apply'                                           ],
-        'coupon_delete'                           => ['delete',   'coupons/{id}',                                    'CouponController@delete'                                          ],
+        'coupon_create'                           => ['post',     'coupons',                                        'CouponController@create'                                           ],
+        'coupon_apply'                            => ['post',     'coupons/apply',                                  'CouponController@apply'                                            ],
+        'coupon_delete'                           => ['delete',   'coupons/{id}',                                   'CouponController@delete'                                           ],
         // Merchant invitation routes
         'invitation_create'                       => ['post',     'invitations',                                    'InvitationController@create'                                       ],
         'invitation_fetch_by_token'               => ['get',      'invitations/token/{token}',                      'InvitationController@fetchByToken'                                 ],
@@ -789,14 +790,12 @@ final class Route
         'merchant_fetch_keys',
         'merchant_replace_key',
         'merchant_assign_pricing',
-        'merchant_get_pricing',
         'merchant_add_bank_account',
         'merchant_fetch_bank_account',
         'merchant_generate_test_bank_acnt',
         'merchant_create_terminal',
         'merchant_daily_report',
         'merchant_delete_terminal',
-        'merchant_get_terminals',
         'merchant_copy_terminal',
         'merchant_activate',
         'merchant_send_activation_mail',
@@ -834,7 +833,6 @@ final class Route
         'pricing_delete_plan_rule_force',
         'setl_initiate',
         'payout_initiate',
-        'setl_retry',
         'setl_file_generate',
         'setl_reconcile',
         'setl_reconcile_h2h',
@@ -1121,8 +1119,12 @@ final class Route
         'payment_authorize_refund',
         'admin_change_password',
         'pricing_create_plan',
+        'merchant_get_pricing',
         'merchant_invoice_update_gstin',
+        'merchant_details_fetch',
+        'merchant_get_terminals',
         'merchant_invoice_add_bulk',
+        'setl_retry',
     ];
 
     public static $routePermission = [
@@ -1232,14 +1234,16 @@ final class Route
         'merchant_edit_config'             => Permission::ASSIGN_MERCHANT_HANDLE,
         'merchant_fetch'                   => '*',
         'merchant_get_terminals'           => '*',
-        'merchant_get_pricing'             => '*',
         'merchant_activation_details'      => '*',
         'merchant_fetch_users'             => '*',
         'admin_change_password'            => '*',
         'admin_get_file'                   => '*',
         'invitation_fetch'                 => '*',
         'pricing_create_plan'              => Permission::CREATE_PRICING_PLAN,
+        'merchant_get_pricing'             => Permission::VIEW_MERCHANT_PRICING,
         'merchant_invoice_update_gstin'    => '*',
+        'merchant_details_fetch'           => '*',
+        'setl_retry'                       => Permission::RETRY_SETTLEMENT,
         'merchant_invoice_add_bulk'        => '*',
     ];
 
@@ -1426,6 +1430,7 @@ final class Route
         'schedule_assign',
         'admin_dummy_account_test',
         'merchant_invoice_update_gstin',
+        'setl_retry',
         'merchant_invoice_add_bulk',
     ];
 

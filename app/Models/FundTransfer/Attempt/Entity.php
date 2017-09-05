@@ -207,16 +207,12 @@ class Entity extends Base\PublicEntity
 
     public function isPendingReconciliation()
     {
-        $status = $this->getStatus();
-
-        return in_array($status, [Status::PENDING_RECONCILIATION, Status::CREATED], true);
-
-        // return ($this->getStatus() === Status::PENDING_RECONCILIATION);
+        return ($this->getStatus() === Status::PENDING_RECONCILIATION);
     }
 
     public function isStatusFailed()
     {
-        return $this->getStatus() === Status::FAILED;
+        return ($this->getStatus() === Status::FAILED);
     }
 
     // ---------------------------- public setters -----------------------------
