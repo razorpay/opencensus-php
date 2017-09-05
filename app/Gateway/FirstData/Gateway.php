@@ -154,12 +154,14 @@ class Gateway extends Base\Gateway
         if (($verify->gatewaySuccess === false) and
             ($this->approval === true))
         {
+            $verifyStatus = $verify->payment->getStatus();
+
             // Callback verify is failing, but possibly only
             // because verify status has not been updated.
             //
             // This should still be considered a failure,
             // but not a case of data tampering.
-            if ($verify->payment->getStatus() === Status::WAITING)
+            if (in_array($verifyStatus, Status::WAITING_STATES, true) === true)
             {
                 throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
             }
