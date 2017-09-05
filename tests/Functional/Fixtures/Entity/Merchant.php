@@ -568,8 +568,10 @@ class Merchant extends Base
         // - Also, assigns admins and groups to the created merchants.
         //
 
+        //
         // - Merchants 11 - 15 are used in fetch tests
-        // - Merchants 16 is used in edit tests
+        // - Merchants 16 - 18 are used in edit tests
+        //
 
         $now       = Carbon::now()->timestamp;
         $merchants = [];
@@ -649,6 +651,18 @@ class Merchant extends Base
                                     ]);
 
         $merchants[16]->retag(['First', 'Second']);
+
+        $merchants[17] = $this->createMerchantWithDetails(self::RZP_ORG_ID, '10000000000017');
+
+        $merchants[17]->groups()->sync(['10000000000038']);
+
+        $merchants[18] = $this->createMerchantWithDetails(self::RZP_ORG_ID, '10000000000018');
+
+        $merchants[18]->groups()->sync(['10000000000035', '10000000000036']);
+
+        $merchants[19] = $this->createMerchantWithDetails(self::RZP_ORG_ID, '10000000000019');
+
+        $merchants[19]->groups()->sync(['10000000000032']);
 
         // Create index by calling the artisan command
         Artisan::call('rzp:index_create', ['entity' => 'merchant', 'index' => 'testing_merchant_test', '--reindex' => true]);

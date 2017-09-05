@@ -204,6 +204,11 @@ class EsClient
 
     public function get($params)
     {
+        if ($this->client === null)
+        {
+            $this->trace->traceException(new \Exception());
+        }
+
         return $this->client->get($params);
     }
 

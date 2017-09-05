@@ -9,8 +9,8 @@ namespace RZP\Tests\Functional;
 
 use Artisan;
 
+use RZP\Models\Base\EsDao;
 use RZP\Tests\TestCase as ParentTestCase;
-use RZP\Services\EsClient;
 
 class TestCase extends ParentTestCase
 {
@@ -24,7 +24,7 @@ class TestCase extends ParentTestCase
     protected $ba;
 
     /**
-     * @var EsClient
+     * @var \RZP\Services\EsClient
      */
     protected $es;
 
@@ -50,7 +50,7 @@ class TestCase extends ParentTestCase
         // Enable filters
         //$this->app['router']->enableFilters();
 
-        $this->es = $this->app['es'];
+        $this->es = (new EsDao)->getEsClient();
     }
 
     public function initialSetup()
