@@ -773,7 +773,6 @@ final class Route
         'transfer_fetch_reversals',
         'reversal_fetch',
         'reversal_fetch_multiple',
-        'merchant_batches'
     ];
 
     public static $internal = [
