@@ -6,11 +6,12 @@ use Config;
 use ApiResponse;
 
 use RZP\Models\Base;
+use RZP\Models\Batch;
 use RZP\Constants\Mode;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Models\Batch;
+use RZP\Jobs\IrctcBatch;
 use RZP\Models\Transaction;
 use RZP\Models\BankAccount;
 use RZP\Models\Admin\Action;
@@ -395,41 +396,42 @@ class Core extends Base\Core
                                  ->first();
     }
 
-    public function createBatches(Entity $merchant, array $input)
+    public function createBatches(Entity $merchant, array $input): array
     {
         $merchant->getValidator()->validateInput('create_batch', $input);
 
         $attachments = $input['attachment'];
 
-        foreach ($attachments as $key => $attachment)
-        {
-            $fileDetails = (new FileProcessor)->getFileDetails($attachment);
-
-            $allFilesDetails[] = $fileDetails;
-
-            $attachments[$key]['file_name'] = $fileDetails['file_name'];
-        }
-
-        $merchant->getValidator()->validateAttachment($allFilesDetails);
-
-        $batchData  = [];
+        $filenames = [];
 
         foreach ($attachments as $attachment)
         {
-            $batchInput = [
-                'file' => $attachment,
-                'type' => Batch\Type::getMerchantBatchType($merchant, $attachment['file_name'])
-            ];
-
-            $batch = $this->batchCore->create($batchInput);
-
-            $batchData[] = [
-                $type   => $batch->getId(),
-            ];
+            $filenames[] = $attachment->getClientOriginalName();
         }
 
-        $job = new IrctcBatchJob($this->mode, $batchData);
+        $merchant->getValidator()->validateAttachment($filenames);
 
-        (new DispatchRouter)->dispatchOn($job, DispatchRouter::IRCTC_BATCH);
+        $batches  = [];
+
+        foreach ($attachments as $attachment)
+        {
+            $type = Batch\Type::getMerchantBatchType($merchant->getName(), $attachment->getClientOriginalName());
+
+            $params = [
+                Batch\Entity::FILE => $attachment,
+                Batch\Entity::TYPE => $type
+            ];
+
+            $batch = (new Batch\Core)->create($params);
+
+            $batches[$type] = $batch->getId();
+        }
+
+
+//        $job = new IrctcBatch($this->mode, $batches);
+//
+//        (new DispatchRouter)->dispatchOn($job, DispatchRouter::IRCTC_BATCH);
+
+        return $batches;
     }
 }

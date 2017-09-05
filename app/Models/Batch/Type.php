@@ -7,19 +7,17 @@ class Type
     const REFUND           = 'refund';
     const PAYMENT_LINK     = 'payment_link';
 
-    const IRCTC            = 'Irctc';
+    const IRCTC            = 'irctc';
 
     // IRCTC Batch Types
-    const IRCTC_REFUND     = 'irctc_refund';
-    const IRCTC_SETTLEMENT = 'irctc_settlement';
+    const REFUND_IRCTC     = 'refund_irctc';
+    const SETTLEMENT_IRCTC = 'settlement_irctc';
 
-    const BATCH_MERCHANTS = [
-        self::IRCTC,
-    ];
-
-    const IRCTC_PROCESSORS_MAPPING = [
-        'refund_'     => self::IRCTC_REFUND,
-        'settlement_' => self::IRCTC_SETTLEMENT,
+    const MERCHANT_BATCH_TYPE = [
+        self::IRCTC => [
+            self::REFUND_IRCTC      => 'refund_',
+            self::SETTLEMENT_IRCTC  => 'settlement_'
+        ]
     ];
 
     /**
@@ -48,16 +46,23 @@ class Type
         return in_array($type, self::QUEUE_GROUP, true);
     }
 
-    public static function getMerchantBatchType(string $merchant, string $fileName)
+    public static function getMerchantBatchType(string $merchant, string $filename)
     {
-        $processorMapping = $merchant . '_PROCESSORS_MAPPING';
+        $type = null;
 
-        foreach (self::$processorMapping as $key => $value)
+        if (isset(self::MERCHANT_BATCH_TYPE[$merchant]) === true)
         {
-            if (strpos($fileName, $key) === 0)
-            {
-                return $value;
-            }
+            $type = key(array_filter(
+                self::MERCHANT_BATCH_TYPE[$merchant],
+
+                function($file) use ($filename)
+                {
+                    return (strpos($filename, $file) === 0);
+                },
+                ARRAY_FILTER_USE_BOTH
+            ));
         }
+
+        return $type;
     }
 }

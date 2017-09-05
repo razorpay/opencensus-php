@@ -7,7 +7,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 
 use RZP\Trace\TraceCode;
 use RZP\Models\Batch as BatchModel;
-use Razorpay\Trace\Logger as Trace;
 
 /**
  * Represents asynchronous Batch job.
@@ -65,7 +64,7 @@ class IrctcBatch extends Job implements ShouldQueue
                             ]);
             }
 
-             if (isset ($batchData['irctc_settlement']) === true)
+            if (isset ($batchData['irctc_settlement']) === true)
             {
                 $batch = $this->repoManager->batch->findOrFail($batchData['irctc_settlement']);
 

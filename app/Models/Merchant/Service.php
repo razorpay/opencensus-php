@@ -1138,7 +1138,7 @@ class Service extends Base\Service
         return $users;
     }
 
-    public function createBatches(string $merchantId, array $input)
+    public function createBatches(string $merchantId, array $input): array
     {
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 

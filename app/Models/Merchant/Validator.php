@@ -210,28 +210,26 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateAttachment(array $allFilesDetails)
+    public function validateAttachment(array $filenames)
     {
         $merchant = $this->entity->getName();
 
         $fileDetailsValidator = 'validate' . studly_case($merchant) . 'FileDetails';
 
-        $this->$fileDetailsValidator($allFilesDetails);
+        $this->$fileDetailsValidator($filenames);
     }
 
     /**
      * 1. Validate only 2 files are present
      * 2. Validate only `refund_` and `settlement_` files are present
      *
-     * @param array $fileDetails
+     * @param array $filenames
      * @throws Exception\BadRequestValidationFailureException
      */
-    protected function validateIrctcFileDetails(array $fileDetails)
+    protected function validateIrctcFileDetails(array $filenames)
     {
-        $fileNames = array_column($fileDetails, FileProcessor::FILE_NAME);
-
         $files = array_filter(
-            $fileNames,
+            $filenames,
             function($name)
             {
                 return ((strpos($name, 'refund_') === 0) or

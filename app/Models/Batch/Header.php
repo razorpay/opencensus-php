@@ -101,7 +101,7 @@ class Header
             ],
         ],
 
-        Type::IRCTC_REFUND => [
+        Type::REFUND_IRCTC => [
 
             self::INPUT => [
                 self::MERCHANT_REFERENCE,
@@ -128,7 +128,7 @@ class Header
             ],
         ],
 
-        Type::IRCTC_SETTLEMENT => [
+        Type::SETTLEMENT_IRCTC => [
 
             self::INPUT => [
                 self::PAYMENT_ID,
