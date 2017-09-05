@@ -2,17 +2,29 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+use Illuminate\Support\Facades\Artisan;
+
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Merchant\Repository;
+use RZP\Models\Merchant\EsRepository;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Methods\Entity as MerchantMethodEntity;
 
 class Merchant extends Base
 {
+    /**
+     * Razorpay organization's id. Used globally across tests.
+     */
+    const RZP_ORG_ID = '100000razorpay';
+
     public function setUp()
     {
         $this->fixtures->create('merchant:nodal_account');
         $this->fixtures->create('merchant:atom_account');
         $this->fixtures->create('merchant:api_fee_account');
+
+        $this->setUpHiemdallHierarcyForRazorpayOrg();
     }
 
     public function createDefaultTestMerchant()
@@ -143,6 +155,33 @@ class Merchant extends Base
         $merchantId = $merchant->getId();
 
         $balance = $this->fixtures->create('balance', ['id' => $merchantId]);
+
+        return $merchant;
+    }
+
+    /**
+     * Creates merchant and merchant details entity with given attributes.
+     *
+     * @param string $orgId
+     * @param string $id
+     * @param array  $attributes
+     * @param array  $detailsAttributes
+     *
+     * @return MerchantEntity
+     */
+    public function createMerchantWithDetails(
+        string $orgId,
+        string $id,
+        array $attributes = [],
+        array $detailsAttributes = []): MerchantEntity
+    {
+        $attributes = array_merge(['id' => $id, 'org_id' => $orgId], $attributes);
+
+        $detailsAttributes = array_merge(['merchant_id' => $id], $detailsAttributes);
+
+        $merchant = $this->fixtures->create('merchant', $attributes);
+
+        $this->fixtures->create('merchant_detail:sane', $detailsAttributes);
 
         return $merchant;
     }
@@ -408,5 +447,124 @@ class Merchant extends Base
     public function setHandle($handle, $id = '10000000000000')
     {
         return $this->edit($id, ['handle' => $handle]);
+    }
+
+    /**
+     * Setups up a hierarchy of groups, admins and merchants under the
+     * test razorpay's organization. This can be very useful in many tests.
+     *
+     * Refer to below diagram on how the default hierarchy looks like.
+     *
+     */
+    public function setUpHiemdallHierarcyForRazorpayOrg()
+    {
+        $this->createGroups();
+        $this->createAdmins();
+        $this->createMerchantsAndSyncToEs();
+    }
+
+    private function createGroups()
+    {
+        $groups = [];
+
+        foreach (range(11, 27) as $i)
+        {
+            $data = [
+                'id'     => "100000000000{$i}",
+                'org_id' => self::RZP_ORG_ID,
+            ];
+
+            $groups[$i] = $this->fixtures->create('group', $data);
+        }
+
+        //
+        // Assigns parents to many of the groups to create hierarchy as depicted
+        // in diagram link above.
+        //
+
+        $groups[27]->parents()->sync(['10000000000026']);
+        $groups[26]->parents()->sync(['10000000000020', '10000000000021']);
+        $groups[25]->parents()->sync(['10000000000020']);
+        $groups[24]->parents()->sync(['10000000000019']);
+        $groups[23]->parents()->sync(['10000000000018']);
+        $groups[22]->parents()->sync(['10000000000018']);
+        $groups[21]->parents()->sync(['10000000000015']);
+        $groups[20]->parents()->sync(['10000000000014', '10000000000015']);
+        $groups[19]->parents()->sync(['10000000000013']);
+        $groups[18]->parents()->sync(['10000000000012']);
+        $groups[17]->parents()->sync(['10000000000012']);
+        $groups[16]->parents()->sync(['10000000000011']);
+        $groups[15]->parents()->sync(['10000000000011']);
+        $groups[14]->parents()->sync(['10000000000011']);
+
+        unset($groups);
+    }
+
+    private function createAdmins()
+    {
+        $admins = [];
+
+        foreach (range(11, 20) as $i)
+        {
+            $data = [
+                'id'     => "100000000000{$i}",
+                'org_id' => self::RZP_ORG_ID,
+            ];
+
+            $admins[$i] = $this->fixtures->create('admin', $data);
+        }
+
+        //
+        // Assign groups to admins. And admins if has access to G1, G2 that
+        // basically means he has access to all merchants under that group
+        // hierarchy.
+        //
+        // Admins from ids suffix 16 to 20 aren't assigned to any groups.
+        //
+
+        $admins[11]->groups()->sync(['10000000000011', '10000000000012', '10000000000013']);
+        $admins[12]->groups()->sync(['10000000000018']);
+        $admins[13]->groups()->sync(['10000000000020', '10000000000024']);
+        $admins[14]->groups()->sync(['10000000000014', '10000000000015']);
+        $admins[15]->groups()->sync(['10000000000026']);
+
+        unset($admins);
+    }
+
+    private function createMerchantsAndSyncToEs()
+    {
+        //
+        // - Creates a total of 10 merchants with different set of attributes
+        //   so that it serves well for all the test cases.
+        // - Also, assigns admins and groups to the created merchants.
+        //
+
+        //
+        // TODOs:
+        // - Following is not final just yet. Will keep on adding new ones
+        //   as per tests.
+        // - At last drop the ascii diagram
+        //
+
+        $merchants = [];
+
+        $merchants[11] = $this->createMerchantWithDetails(self::RZP_ORG_ID, '10000000000011');
+
+        $merchants[11]->groups()->sync(['10000000000027', '10000000000024']);
+
+        $merchants[12] = $this->createMerchantWithDetails(self::RZP_ORG_ID, '10000000000012');
+
+        $merchants[12]->groups()->sync(['10000000000024']);
+        $merchants[12]->admins()->sync(['10000000000014']);
+
+        // Create index by calling the artisan command
+        Artisan::call('rzp:index_create', ['entity' => 'merchant', 'index' => 'tests_merchant_test', '--reindex' => true]);
+        Artisan::call('rzp:index_create', ['entity' => 'merchant', 'index' => 'tests_merchant_live', '--reindex' => true]);
+
+        // Sync these merchants created just now via fixtures to ES.
+        Artisan::call('rzp:index', ['--mode' => 'test', '--entity' => 'merchant', '--index' => 'tests_merchant_test']);
+        Artisan::call('rzp:index', ['--mode' => 'live', '--entity' => 'merchant', '--index' => 'tests_merchant_live']);
+
+        unset($merchants);
     }
 }

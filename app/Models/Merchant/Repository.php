@@ -548,12 +548,10 @@ class Repository extends Base\Repository
         //
 
         $serialized[Entity::TAGS]            = $entity->tagNames();
-        $serialized[Entity::MERCHANT_DETAIL] = $entity->merchantDetail->toArray();
+        $serialized[Entity::MERCHANT_DETAIL] = $entity->merchantDetail ? $entity->merchantDetail->toArray() : [];
         $serialized[Entity::ADMINS]          = $entity->admins->pluck(Common::ID)->all();
 
-        $groups = $this->repo
-                       ->group
-                       ->getParentsRecursively($entity->groups, true);
+        $groups = $this->repo->group->getParentsRecursively($entity->groups, true);
 
         $serialized[Entity::GROUPS]         = $groups->pluck(Common::ID)->all();
         $serialized[Entity::IS_MARKETPLACE] = $entity->isMarketplace();

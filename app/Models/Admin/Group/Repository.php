@@ -60,10 +60,12 @@ class Repository extends Base\Repository
 
         while ($parentGroups->count() > 0)
         {
-            $parentGroups->each(function ($group, $id) use ($finalResult)
-            {
-                $finalResult->push($group);
-            });
+            $parentGroups->unique()
+                         ->each(
+                            function ($group, $id) use ($finalResult)
+                            {
+                                $finalResult->push($group);
+                            });
 
             $parentGroups = $this->findImmediateParentsOfGroups($parentGroups);
         }

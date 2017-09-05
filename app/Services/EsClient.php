@@ -29,11 +29,22 @@ class EsClient
 
     protected $trace;
 
+    /**
+     * If running unit tests, after every ES write operation we
+     * manually do index refresh so it's available readily for tests.
+     * Otherwise delay for refresh is 1 sec.
+     *
+     * @var boolean
+     */
+    protected $runningUnitTests;
+
     public function __construct($app)
     {
         $this->config = $app['config'];
 
         $this->trace = $app['trace'];
+
+        $this->runningUnitTests = $app->runningUnitTests();
     }
 
     public function setEsClient($params)
@@ -97,7 +108,11 @@ class EsClient
             return null;
         }
 
-        return $this->client->update($params);
+        $response = $this->client->update($params);
+
+        $this->refreshIndicesIfApplicable();
+
+        return $response;
     }
 
     public function bulkUpdate($params)
@@ -109,7 +124,11 @@ class EsClient
             return ['errors' => false];
         }
 
-        return $this->client->bulk($params);
+        $response = $this->client->bulk($params);
+
+        $this->refreshIndicesIfApplicable();
+
+        return $response;
     }
 
     public function search(array $params)
@@ -200,7 +219,11 @@ class EsClient
             return null;
         }
 
-        return $this->client->delete($params);
+        $response = $this->client->delete($params);
+
+        $this->refreshIndicesIfApplicable();
+
+        return $response;
     }
 
     public function createIndex($params)
@@ -262,5 +285,16 @@ class EsClient
     public function indexHeimdall($params)
     {
         $this->heimdallClient->index($params);
+    }
+
+    /**
+     * Refreshes Es indexes if running unit tests.
+     */
+    protected function refreshIndicesIfApplicable()
+    {
+        if ($this->runningUnitTests === true)
+        {
+            $this->client->indices()->refresh();
+        }
     }
 }

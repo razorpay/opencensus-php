@@ -24,6 +24,11 @@ class TestCase extends ParentTestCase
     protected $ba;
 
     /**
+     * @var EsClient
+     */
+    protected $es;
+
+    /**
      * To denote whether to simulate unit tests with
      * environment being in cloud
      *
@@ -44,6 +49,8 @@ class TestCase extends ParentTestCase
 
         // Enable filters
         //$this->app['router']->enableFilters();
+
+        $this->es = $this->app['es'];
     }
 
     public function initialSetup()

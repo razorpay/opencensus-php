@@ -1054,7 +1054,7 @@ class Service extends Base\Service
 
         $merchant->retag($tags);
 
-        $this->repo->merchant->syncToEs($merchant, EsRepository::UPDATE);
+        $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
 
         return $merchant->tagNames();
     }
@@ -1070,7 +1070,7 @@ class Service extends Base\Service
 
         $merchant->untag($tagName);
 
-        $this->repo->merchant->syncToEs($merchant, EsRepository::UPDATE);
+        $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
 
         return $merchant->tagNames();
     }
