@@ -583,6 +583,7 @@ final class Route
         'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
         'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                          ],
         'merchant_payout'                         => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
+        'merchant_analytics'                      => ['post',     'merchant/{id}/analytics',                        'MerchantController@postAnalytics'                                  ],
     ];
 
     public static $public = [
@@ -1047,6 +1048,7 @@ final class Route
         'invitation_resend',
         'invitation_edit',
         'invitation_delete',
+        'merchant_analytics',
     ];
 
     // These will run on internal auth with the assurance

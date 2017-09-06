@@ -21,6 +21,7 @@ use RZP\Models\Admin\Permission;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Admin\AdminLead;
 use RZP\Models\Transaction;
+use Requests_Response as Response;
 
 class Core extends Base\Core
 {
@@ -380,5 +381,12 @@ class Core extends Base\Core
                 );
             }
         }
+    }
+
+    public function getAnalytics($id, $input): Response
+    {
+        (new Validator())->validateAnalyticsInput($id, $input);
+
+        return $this->app['eventManager']->query($input);
     }
 }

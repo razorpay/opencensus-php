@@ -761,4 +761,13 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function postAnalytics($id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->core()->getAnalytics($id, $input);
+
+        return ApiResponse::json($response);
+    }
 }
