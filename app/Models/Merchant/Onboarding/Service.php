@@ -31,7 +31,7 @@ class Service extends Base\Service
 
     public function createResponses($input)
     {
-        $service = Settings\Service::getNewInstance();
+        $settingsService = Settings\Service::getNewInstance();
 
         $entity = Constants::MERCHANT;
 
@@ -68,28 +68,48 @@ class Service extends Base\Service
                 // example settingKey = "onboarding.marketplace.use_case"
                 $settingKey   = implode(".", [Constants::ONBOARDING, $featureName, $userQuestion]);
 
+                // json_encode is being used as the response can also be an array. Don't want to join the array based on comma's.
                 $settingValue = json_encode($userResponse);
 
                 if ($questionsMap[$userQuestion]['response_type'] === 'file')
                 {
                     $file = $userResponse;
+
                     $extension = $file->extension();
+
                     $fileName = 'api/' . $merchant->getId() . '/' . $settingKey;
 
                     $file = $this->createFile($extension, $file, $fileName, $settingKey, $merchant);
-                    s($file);
-                    $settingValue = FileStore\Entity::verifyIdAndSilentlyStripSign($file['id']);
+
+                    $filePath = FileStore\Entity::verifyIdAndSilentlyStripSign($file['id']);
+
+                    $settingValue = json_encode($filePath);
                 }
 
                 $settingsMap[$settingKey] = $settingValue;
             }
         }
 
-        $service->upsert($entity, $entityId, $settingsMap);
+        $settingsService->upsert($entity, $entityId, $settingsMap);
 
-        $response = $service->getAll($entity, $entityId);
+        $response = $settingsService->getAll($entity, $entityId);
 
-        return $response;
+        $response = $response['settings'];
+
+        $returnResponse['onboarding'] = [];
+
+        foreach ($response['onboarding'] as $feature => $questionResponseMap)
+        {
+            $returnResponse['onboarding'][$feature] = [];
+
+            foreach ($questionResponseMap as $question => $userResponse)
+            {
+                // json_decode, because just json_encode does not help
+                $returnResponse['onboarding'][$feature][$question] = json_decode($userResponse);
+            }
+        }
+
+        return $returnResponse;
     }
 
     public function getResponses($feature = null)
