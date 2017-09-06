@@ -42,8 +42,6 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input)
     {
-        $orgId = $this->admin->getOrgId();
-
         // $duty can be maker/checker/admin_checked
         // actions will be fetched based on duty and type
         // type can be all/closed/open etc
@@ -56,7 +54,11 @@ class Service extends Base\Service
             // Function name which needs to be called to return actions based on duty and maker.
             $actionFunctionName = self::ACTION_FUNCTION_MAPPING[$duty][$type];
 
-            $actions = call_user_func_array([$this, $actionFunctionName], [$input]);
+            $count = $input['count'] ?? 10;
+
+            $skip = $input['skip'] ?? 0;
+
+            $actions = call_user_func_array([$this, $actionFunctionName], [$input, $skip, $count]);
         }
         else
         {
@@ -67,11 +69,18 @@ class Service extends Base\Service
         return $actions->toArrayPublic();
     }
 
-    public function getActionsCheckedByAdmin($input)
+    /**
+     * All the checked actions by the admin.
+     * @param $input
+     * @param int $skip
+     * @param int $count
+     * @return mixed
+     */
+    public function getActionsCheckedByAdmin($input, int $skip, int $count)
     {
         $actions = $this->repo->workflow_action
             ->getActionsCheckedByAdmin(
-                $this->admin->getId(), ['admin']);
+                $this->admin->getId(), ['admin'], $skip, $count);
 
         return $actions;
     }
@@ -171,15 +180,17 @@ class Service extends Base\Service
      * if the admin has the role, give the checker the action_id, step_id
      *
      * @param array $input input array
+     * @param int $skip
+     * @param int $count
      *
      * @return array
      */
-    public function getActionsForChecker(array $input)
+    public function getActionsForChecker(array $input, int $skip, int $count)
     {
         $adminRoleIds = $this->admin->roles()->allRelatedIds()->toArray();
 
         $actions = $this->repo->workflow_action->findActionsForChecker(
-            $adminRoleIds, ['admin']);
+            $adminRoleIds, ['admin'], $skip, $count);
 
         return $actions;
     }
@@ -211,21 +222,23 @@ class Service extends Base\Service
      *
      * @return mixed
      */
-    public function getClosedActionsByMaker(array $input)
+    public function getClosedActionsByMaker(array $input, int $skip, int $count)
     {
         $actions = $this->repo->workflow_action
             ->getClosedActionsByAdmin(
-                $this->admin->getId(), ['admin']);
+                $this->admin->getId(), ['admin'], $skip, $count);
 
         return $actions;
     }
 
     /**
      * @param array $input
+     * @param int $skip
+     * @param int $count
      *
      * @return mixed
      */
-    public function getActionsByMaker(array $input)
+    public function getActionsByMaker(array $input, int $skip, int $count)
     {
         $relations = ['workflow', 'admin'];
 
@@ -234,7 +247,7 @@ class Service extends Base\Service
                         ->findByAdminIdAndOrgIdWithRelations(
                             $this->admin->getId(),
                             $this->admin->getOrgId(),
-                            $relations);
+                            $relations, $skip, $count);
 
         return $actions;
     }

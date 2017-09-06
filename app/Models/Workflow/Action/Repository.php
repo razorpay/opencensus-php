@@ -57,21 +57,25 @@ class Repository extends Base\Repository
     public function findByAdminIdAndOrgIdWithRelations(
         string $adminId,
         string $orgId,
-        array $relations = [])
+        array $relations = [],
+        int $skip = 0,
+        int $count = 10)
     {
-        $permission = Table::PERMISSION;
-
         return $this->getNewQueryWithPermissions()
                     ->where(Entity::ADMIN_ID, '=', $adminId)
                     ->where(Entity::ORG_ID, '=', $orgId)
                     ->with($relations)
                     ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->skip($skip)
+                    ->take($count)
                     ->get();
     }
 
     public function findActionsForChecker(
         array $roleIds,
-        array $relations = [])
+        array $relations = [],
+        int $skip = 0,
+        int $count = 10)
     {
         /*
             SELECT wa.id, wa.title, wa.description
@@ -97,12 +101,16 @@ class Repository extends Base\Repository
                     ->whereIn('workflow_steps.role_id', $roleIds)
                     ->with($relations)
                     ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->skip($skip)
+                    ->take($count)
                     ->get();
     }
 
     public function getClosedActionsByAdmin(
         string $adminId,
-        array $relations = [])
+        array $relations = [],
+        int $skip = 0,
+        int $count = 10)
     {
         /*
          * SELECT `workflow_actions`.*
@@ -130,6 +138,8 @@ class Repository extends Base\Repository
                     ->where($acsAdminId, '=', $adminId)
                     ->with($relations)
                     ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->take($count)
+                    ->skip($skip)
                     ->get();
     }
 
@@ -145,7 +155,9 @@ class Repository extends Base\Repository
 
     public function getActionsCheckedByAdmin(
         string $adminId,
-        array $relations = [])
+        array $relations = [],
+        int $skip = 0,
+        int $count = 10)
     {
         $checkerRepo = $this->repo->action_checker;
 
@@ -163,6 +175,8 @@ class Repository extends Base\Repository
                     ->join($checkerTable, $aId, '=', $cActionId)
                     ->where($cAdminId, '=', $adminId)
                     ->with($relations)
+                    ->take($count)
+                    ->skip($skip)
                     ->get();
     }
 
