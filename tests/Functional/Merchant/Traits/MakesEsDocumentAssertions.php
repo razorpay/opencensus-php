@@ -4,8 +4,9 @@ namespace RZP\Tests\Functional\Merchant\Traits;
 
 /**
  * TODO:
- * - Move this to some other name space where it can be used
- *   by other tests as well.
+ * - When needed move this to some other name space where it
+ *   can be used by other tests as well. It's content are nothing
+ *   specific to this name space.
  */
 trait MakesEsDocumentAssertions
 {

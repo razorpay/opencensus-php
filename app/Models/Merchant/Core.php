@@ -397,6 +397,18 @@ class Core extends Base\Core
                                  ->first();
     }
 
+    /**
+     * Pushes MerchantSync job onto queue for given event with given payload.
+     *
+     * Events e.g. Group got edited/deleted and we need to handle the hierarchy
+     * updates in Es docs.
+     *
+     * This method is here at once place and will be called from few other places
+     * where merchant's es doc is getting affected
+     *
+     * @param string $event
+     * @param array  $payload
+     */
     public function syncEventToEs(string $event, array $payload)
     {
         $job = new MerchantSync($this->mode, $event, $payload);

@@ -545,11 +545,11 @@ class Repository extends \Razorpay\Spine\Repository
      * Syncs model changes to es.
      * Upserts in case of addition/updates and deletes es document otherwise.
      *
-     * - $dirty:      If dirty is not null then this will be used to check
-     *                if es sync is required.
+     * - $dirty: If dirty is not null then this will be used to check
+     *           if es sync is required.
      *
-     * - $mode:       If mode is passed then this will be used, else rzp.mode
-     *                will be used.
+     * - $mode:  If mode is passed then this will be used, else rzp.mode
+     *           will be used.
      *
      * @param Models\Base\PublicEntity $entity
      * @param string                   $action
@@ -569,11 +569,7 @@ class Repository extends \Razorpay\Spine\Repository
             return;
         }
 
-        //
-        // Model::getConnectionName returns the database connection for the
-        // model which equals one of the Mode values. But that will not be set
-        // for new entities, so use rzp.mode in those cases.
-        //
+        // If $mode is provided use that else default to set rzp.mode
         $mode = $mode ?: $this->app['rzp.mode'];
 
         $tracePayload = [
@@ -606,7 +602,10 @@ class Repository extends \Razorpay\Spine\Repository
         }
     }
 
-    public function syncToEsLiveAndTest(Models\Base\PublicEntity $entity, string $action, array $dirty = null)
+    public function syncToEsLiveAndTest(
+        Models\Base\PublicEntity $entity,
+        string $action,
+        array $dirty = null)
     {
         $this->syncToEs($entity, $action, $dirty, Mode::LIVE);
         $this->syncToEs($entity, $action, $dirty, Mode::TEST);

@@ -123,10 +123,8 @@ trait RepositoryFetch
 
         $expands = $this->getExpandsForQueryFromInput($params);
 
-        // Create a new query
         $query = $this->newQuery()->with($expands);
 
-        // Add merchantId filter if applicable
         $this->addCommonQueryParamMerchantId($query, $merchantId);
 
         // Splits the params into mysqlParams and esParams. Check methods doc on
@@ -171,7 +169,6 @@ trait RepositoryFetch
     {
         $this->setEsRepoIfExist();
 
-        // If no ES Repo set, just return with [$mysqlParams, []]
         if ($this->esRepo === null)
         {
             return [$params, []];
@@ -191,6 +188,7 @@ trait RepositoryFetch
                                 $esFetchKeys,
                                 $commonFetchKeys));
 
+        //
         // Get input params which are not a part of the:
         // - Default param rules (see $fetchParamRules definition above), plus
         // - Common keys defined in EsRepo.
@@ -198,6 +196,7 @@ trait RepositoryFetch
         // The remainder/filtered list has to be a subset of MySQL or ES keys
         // exclusively, otherwise an error will be raised. Hence both MySQL and
         // ES cannot be searched together in a single fetch operation.
+        //
 
         $filteredParamsKeys = array_values(array_diff(
                                     array_keys($params),
@@ -206,12 +205,12 @@ trait RepositoryFetch
 
         if (empty(array_diff($filteredParamsKeys, $mysqlFetchKeys)) === true)
         {
-            // MySQL params
+            // First value is MySQL params, so fetch will happen via MySQL
             return [$params, []];
         }
         else if (empty(array_diff($filteredParamsKeys, $esFetchKeys)) === true)
         {
-            // ES params
+            // Second value is Es params, so fetch will happen via Es
             return [[], $params];
         }
         else
@@ -248,9 +247,10 @@ trait RepositoryFetch
     {
         $response = $this->esRepo->buildQueryAndSearch($params, $merchantId);
 
+        //
         // Extract results from ES response: If hit has _source get that else
         // just the document id.
-
+        //
         $result = array_map(
                     function ($res)
                     {
@@ -263,8 +263,10 @@ trait RepositoryFetch
             return new PublicCollection;
         }
 
+        //
         // If callee expects only es data (no mysql queries) then hydrate
         // the es array result into model and return the collection.
+        //
         $esHitsOnly = boolval(($params[EsRepository::SEARCH_HITS]) ?? false);
 
         if ($esHitsOnly)
@@ -272,15 +274,17 @@ trait RepositoryFetch
             return $this->hydrate($result);
         }
 
+        //
         // Else extract the matched ids and return collection by making a mysql
         // query on found ids.
+        //
         $ids = array_column($result, 'id');
 
         $entities = $this->newQuery()
                          ->with($expands)
                          ->findMany($ids, ['*']);
 
-        // If the not all the ids from es are found in mysql, just raise an error.
+        // If the not all the ids from es are found in MySQL, just raise an error.
         if (count($ids) !== $entities->count())
         {
             $this->trace->critical(TraceCode::ES_MYSQL_RESULTS_MISMATCH, ['ids' => $ids]);

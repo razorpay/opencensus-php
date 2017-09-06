@@ -235,11 +235,13 @@ class Service extends Base\Service
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException($e);
-
-            $this->trace->info(
+            $this->trace->traceException(
+                $e,
+                null,
                 TraceCode::CREATE_MERCHANT_DETAIL_FAILED,
-                [ 'merchant_id'   => $merchant->getId()]);
+                [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                ]);
         }
 
         return $merchantDetail;

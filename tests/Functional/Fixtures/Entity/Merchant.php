@@ -14,11 +14,6 @@ use RZP\Models\Merchant\Methods\Entity as MerchantMethodEntity;
 
 class Merchant extends Base
 {
-    /**
-     * Razorpay organization's id. Used globally across tests.
-     */
-    const RZP_ORG_ID = '100000razorpay';
-
     public function setUp()
     {
         $this->fixtures->create('merchant:nodal_account');
@@ -454,7 +449,7 @@ class Merchant extends Base
      * Setups up a hierarchy of groups, admins and merchants under the
      * test razorpay's organization. This can be very useful in many tests.
      *
-     * Refer to below diagram on how the default hierarchy looks like.
+     * Ref: https://gist.github.com/jitendra-1217/0d8f74c1bf3683aad112fa7e97dc527c
      *
      */
     public function setUpHiemdallHierarcyForRazorpayOrg()
@@ -472,7 +467,7 @@ class Merchant extends Base
         {
             $attributes = [
                 'id'     => "100000000000{$i}",
-                'org_id' => self::RZP_ORG_ID,
+                'org_id' => Org::RZP_ORG,
             ];
 
             $groups[$i] = $this->fixtures->create('group', $attributes);
@@ -523,7 +518,7 @@ class Merchant extends Base
         {
             $attributes = [
                 'id'     => "100000000000{$i}",
-                'org_id' => self::RZP_ORG_ID,
+                'org_id' => Org::RZP_ORG,
             ];
 
             $admins[$i] = $this->fixtures->create('admin', $attributes);
@@ -577,7 +572,7 @@ class Merchant extends Base
         $merchants = [];
 
         $merchants[11] = $this->createMerchantWithDetails(
-                                    self::RZP_ORG_ID,
+                                    Org::RZP_ORG,
                                     '10000000000011',
                                     [
                                         'name'          => 'jitendra ojha',
@@ -592,7 +587,7 @@ class Merchant extends Base
         $merchants[11]->groups()->sync(['10000000000027']);
 
         $merchants[12] = $this->createMerchantWithDetails(
-                                    self::RZP_ORG_ID,
+                                    Org::RZP_ORG,
                                     '10000000000012',
                                     [
                                         'name'          => 'jitendra selva',
@@ -608,7 +603,7 @@ class Merchant extends Base
         $merchants[12]->admins()->sync(['10000000000012']);
 
         $merchants[13] = $this->createMerchantWithDetails(
-                                    self::RZP_ORG_ID,
+                                    Org::RZP_ORG,
                                     '10000000000013',
                                     [
                                         'name'        => 'jitendra amit',
@@ -618,7 +613,7 @@ class Merchant extends Base
         $merchants[13]->groups()->sync(['10000000000024']);
 
         $merchants[14] = $this->createMerchantWithDetails(
-                                    self::RZP_ORG_ID,
+                                    Org::RZP_ORG,
                                     '10000000000014',
                                     [
                                         'name'         => 'prashanth yv',
@@ -631,7 +626,7 @@ class Merchant extends Base
         $merchants[14]->groups()->sync(['10000000000021']);
 
         $merchants[15] = $this->createMerchantWithDetails(
-                                    self::RZP_ORG_ID,
+                                    Org::RZP_ORG,
                                     '10000000000015',
                                     [
                                         'name'         => 'shashank kumar',
@@ -644,7 +639,7 @@ class Merchant extends Base
         $merchants[15]->groups()->sync(['10000000000024']);
 
         $merchants[16] = $this->createMerchantWithDetails(
-                                    self::RZP_ORG_ID,
+                                    Org::RZP_ORG,
                                     '10000000000016',
                                     [
                                         'pricing_plan_id' => '1hDYlICobzOCYt',
@@ -652,23 +647,26 @@ class Merchant extends Base
 
         $merchants[16]->retag(['First', 'Second']);
 
-        $merchants[17] = $this->createMerchantWithDetails(self::RZP_ORG_ID, '10000000000017');
+        $merchants[17] = $this->createMerchantWithDetails(Org::RZP_ORG, '10000000000017');
 
         $merchants[17]->groups()->sync(['10000000000038']);
 
-        $merchants[18] = $this->createMerchantWithDetails(self::RZP_ORG_ID, '10000000000018');
+        $merchants[18] = $this->createMerchantWithDetails(Org::RZP_ORG, '10000000000018');
 
         $merchants[18]->groups()->sync(['10000000000035', '10000000000036']);
 
-        $merchants[19] = $this->createMerchantWithDetails(self::RZP_ORG_ID, '10000000000019');
+        $merchants[19] = $this->createMerchantWithDetails(Org::RZP_ORG, '10000000000019');
 
         $merchants[19]->groups()->sync(['10000000000032']);
 
-        // Create index by calling the artisan command
+        //
+        // - Create index by calling the artisan command
+        // - Sync these merchants created just now via fixtures to ES.
+        //
+
         Artisan::call('rzp:index_create', ['entity' => 'merchant', 'index' => 'testing_merchant_test', '--reindex' => true]);
         Artisan::call('rzp:index_create', ['entity' => 'merchant', 'index' => 'testing_merchant_live', '--reindex' => true]);
 
-        // Sync these merchants created just now via fixtures to ES.
         Artisan::call('rzp:index', ['--mode' => 'test', '--entity' => 'merchant', '--index' => 'testing_merchant_test']);
         Artisan::call('rzp:index', ['--mode' => 'live', '--entity' => 'merchant', '--index' => 'testing_merchant_live']);
 
