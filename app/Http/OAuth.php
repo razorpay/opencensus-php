@@ -43,7 +43,7 @@ class OAuth
 
         $this->router = $app['router'];
 
-        $this->server = new OAuthServer();
+        $this->server = new OAuthServer($app['env']);
 
         $this->request = $app['request'];
     }
