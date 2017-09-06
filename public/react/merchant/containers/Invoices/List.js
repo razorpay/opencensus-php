@@ -22,7 +22,7 @@ import { luminateRow } from 'merchant/modules/app';
 )
 export default class InvoicesListContainer extends ListContainer {
   fetchEntityList(params) {
-    if (this.props.user.isNewUIEnabled) {
+    if (!this.props.user.isOldUIEnabled) {
       params.type = 'invoice';
     }
 
@@ -53,7 +53,7 @@ export default class InvoicesListContainer extends ListContainer {
 
   render() {
     let { loading, invoices, user } = this.props;
-    let isNewUIEnabled = user.isNewUIEnabled;
+    let isOldUIEnabled = user.isOldUIEnabled;
     let status = this.state.status;
 
     return (
@@ -68,7 +68,7 @@ export default class InvoicesListContainer extends ListContainer {
                 </NavLink>
               </ShowWhen>
 
-              {!isNewUIEnabled
+              {isOldUIEnabled
                 ? <button
                     class="btn btn-primary"
                     onClick={() => this.showPaymentLinkModal()}
@@ -91,7 +91,7 @@ export default class InvoicesListContainer extends ListContainer {
 
         <InvoicesList
           invoices={invoices}
-          isNewUIEnabled={isNewUIEnabled}
+          isOldUIEnabled={isOldUIEnabled}
           isLoading={loading}
           onEdit={this.editInvoice}
         />

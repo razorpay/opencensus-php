@@ -58,11 +58,6 @@ class Service extends Base\Service
             // This is called for certain special email addresses
             $merchant->setCustomId();
 
-            if ($referer)
-            {
-                $merchant->tag('ref-'.$referer);
-            }
-
             $merchant->save();
         }
 
@@ -872,8 +867,6 @@ class Service extends Base\Service
             $newAllTags[] = 'newui';
         }
 
-        $currentMerchant->retag($newAllTags);
-
         $this->addMerchantTagsOnAPI($currentMerchant->id, $newAllTags);
 
         return [[], $currentMerchant->toArray()];
@@ -917,19 +910,5 @@ class Service extends Base\Service
         $genericService = new Generic\Service;
 
         list($error, $data) = $genericService->call('POST', $addTags);
-    }
-
-    public function deleteMerchantTagOnAPI($merchantId, $tagName) {
-        $deleteTag = [
-            'route_name' => 'merchant_tag_delete',
-            'url_params' => [
-                '{id}'      => $merchantId,
-                '{tagName}' => $tagName
-            ],
-        ];
-
-        $genericService = new Generic\Service;
-
-        list($error, $data) = $genericService->call('DELETE', $deleteTag);
     }
 }

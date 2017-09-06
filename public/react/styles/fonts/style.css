@@ -197,10 +197,14 @@
 	content: "\E02C";
 }
 
-.icon-undo:before {
+.icon-tour:before {
 	content: "\E02D";
 }
 
-.icon-wallet:before {
+.icon-undo:before {
 	content: "\E02E";
+}
+
+.icon-wallet:before {
+	content: "\E02F";
 }

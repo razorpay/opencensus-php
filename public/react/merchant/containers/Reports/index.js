@@ -98,18 +98,6 @@ export default class ReportsContainer extends Component {
     });
   }
 
-  componentWillReceiveProps(nextProps) {
-    // set the date to 1st of current month otherwise e.g, if 30 Aug changes to Feb then date becomes 30, making it select March!
-    if (this.props.type === 'daily' && nextProps.type === 'monthly') {
-      this.props.change('date', this.props.date.startOf('month'));
-    } else if (
-      this.props.entity !== 'invoice' &&
-      nextProps.entity === 'invoice'
-    ) {
-      this.props.change('invoiceDate', this.props.invoiceDate.startOf('month'));
-    }
-  }
-
   getEntityLabel(value) {
     let label = null;
     label = this.entityOptions.find(item => item.value === value).label;
