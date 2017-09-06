@@ -4,7 +4,8 @@ namespace RZP\Models\FileStore;
 
 use RZP\Constants;
 use RZP\Exception;
-use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
+use RZP\Models\Feature\Constants as FeaturesConstants;
+use RZP\Models\Merchant\Onboarding\Constants as OnboardingConstants;
 
 class Type
 {
@@ -69,7 +70,7 @@ class Type
     const ACTIVATION_BUCKET_CONFIG              = 'activation_bucket_config';
     const H2H_BUCKET_CONFIG                     = 'h2h_bucket_config';
 
-    const ONBOARDING_MARKETPLACE_AGREEMENT      = 'onboarding.marketplace.signed_agreement_with_third_party';
+    const ONBOARDING_MARKETPLACE_AGREEMENT      = OnboardingConstants::ONBOARDING . "." . FeaturesConstants::MARKETPLACE . "." . OnboardingConstants::VENDOR_AGREEMENT;
 
     /**
      * Map of types allowed for each entity.

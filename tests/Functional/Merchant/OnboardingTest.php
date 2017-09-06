@@ -6,6 +6,8 @@ use Illuminate\Http\UploadedFile;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Models\Merchant\Onboarding\Constants as OnboardingConstants;
+use RZP\Models\Feature\Constants as FeatureConstants;
 
 
 class OnboardingTest extends TestCase
@@ -32,7 +34,7 @@ class OnboardingTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $url = "storage/files/onboarding/signed_agreement_with_third_party.pdf";
+        $url = "storage/files/" . OnboardingConstants::ONBOARDING .  "/" . OnboardingConstants::VENDOR_AGREEMENT . ".pdf";
 
         $uploadedFile = $this->createUploadedFile($url);
 
@@ -40,7 +42,7 @@ class OnboardingTest extends TestCase
 
         $request = $testData['request'];
 
-        $request['content']['onboarding']['marketplace']['signed_agreement_with_third_party'] = $uploadedFile;
+        $request['content'][OnboardingConstants::ONBOARDING][FeatureConstants::MARKETPLACE][OnboardingConstants::VENDOR_AGREEMENT] = $uploadedFile;
 
         $expectedResponse = $testData['response']['content'];
 
@@ -48,7 +50,7 @@ class OnboardingTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedResponse, $actualResponse);
 
-        $this->assertArrayHasKey( 'signed_agreement_with_third_party', $actualResponse['onboarding']['marketplace']);
+        $this->assertArrayHasKey( OnboardingConstants::VENDOR_AGREEMENT, $actualResponse[OnboardingConstants::ONBOARDING][FeatureConstants::MARKETPLACE]);
     }
 
     protected function createUploadedFile(string $url): UploadedFile

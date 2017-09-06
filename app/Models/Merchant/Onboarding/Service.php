@@ -33,17 +33,15 @@ class Service extends Base\Service
     {
         $settingsService = Settings\Service::getNewInstance();
 
-        $entity = Constants::MERCHANT;
-
-        $entityId = $this->merchant->getId();
-
         $featureQuestionsMap = Constants::$featureQuestionsMap;
-
-        $userResponses = $input[Constants::ONBOARDING];
 
         $settingsMap = [];
 
         $merchant = $this->merchant;
+
+        $merchantId = $merchant->getId();
+
+        $userResponses = $input[Constants::ONBOARDING];
 
         foreach ($userResponses as $featureName => $userQuestionMaps)
         {
@@ -71,17 +69,17 @@ class Service extends Base\Service
                 // json_encode is being used as the response can also be an array. Don't want to join the array based on comma's.
                 $settingValue = json_encode($userResponse);
 
-                if ($questionsMap[$userQuestion]['response_type'] === 'file')
+                if ($questionsMap[$userQuestion][Constants::RESPONSE_TYPE] === 'file')
                 {
                     $file = $userResponse;
 
                     $extension = $file->extension();
 
-                    $fileName = 'api/' . $merchant->getId() . '/' . $settingKey;
+                    $fileName = 'api/' . $merchantId . '/' . $settingKey;
 
                     $file = $this->createFile($extension, $file, $fileName, $settingKey, $merchant);
 
-                    $filePath = FileStore\Entity::verifyIdAndSilentlyStripSign($file['id']);
+                    $filePath = $file['local_file_path'];
 
                     $settingValue = json_encode($filePath);
                 }
@@ -90,46 +88,30 @@ class Service extends Base\Service
             }
         }
 
+        $entity = Constants::MERCHANT;
+
+        $entityId = $this->merchant->getId();
+
         $settingsService->upsert($entity, $entityId, $settingsMap);
 
         $response = $settingsService->getAll($entity, $entityId);
 
         $response = $response['settings'];
 
-        $returnResponse['onboarding'] = [];
+        $returnResponse[Constants::ONBOARDING] = [];
 
-        foreach ($response['onboarding'] as $feature => $questionResponseMap)
+        foreach ($response[Constants::ONBOARDING] as $feature => $questionResponseMap)
         {
-            $returnResponse['onboarding'][$feature] = [];
+            $returnResponse[Constants::ONBOARDING][$feature] = [];
 
             foreach ($questionResponseMap as $question => $userResponse)
             {
                 // json_decode, because just json_encode does not help
-                $returnResponse['onboarding'][$feature][$question] = json_decode($userResponse);
+                $returnResponse[Constants::ONBOARDING][$feature][$question] = json_decode($userResponse);
             }
         }
 
         return $returnResponse;
-    }
-
-    public function getResponses($feature = null)
-    {
-        $service = Settings\Service::getNewInstance();
-
-        $entity = Constants::MERCHANT;
-
-        $entityId = $this->merchant->getId();
-
-        if ($feature === null)
-        {
-            $response = $service->getAll($entity, $entityId);
-        }
-        else
-        {
-            $response = $service->get($entity, $entityId, $feature);
-        }
-
-        return $response;
     }
 
     protected function createFile(string $extension,

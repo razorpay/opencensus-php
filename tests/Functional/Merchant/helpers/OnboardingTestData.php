@@ -1,13 +1,16 @@
 <?php
 
+use RZP\Models\Feature\Constants as FeaturesConstants;
+use RZP\Models\Merchant\Onboarding\Constants as OnboardingConstants;
+
 return [
     'testGetQuestions'           => [
         'request'  => [
             'content' => [
-                'features' => [
-                    'marketplace',
-                    'subscriptions',
-                    'virtual_accounts'
+                OnboardingConstants::FEATURES => [
+                    FeaturesConstants::MARKETPLACE,
+                    FeaturesConstants::SUBSCRIPTIONS,
+                    FeaturesConstants::VIRTUAL_ACCOUNTS
                 ]
             ],
             'url'     => '/merchant/onboarding',
@@ -19,51 +22,51 @@ return [
         ],
         'response' => [
             'content' => [
-                'onboarding' => [
-                    'marketplace'      => [
-                        'use_case'                          => [
-                            'id'            => 'use_case',
-                            'response_type' => 'textarea',
-                            'mandatory'     => true
+                OnboardingConstants::ONBOARDING => [
+                    FeaturesConstants::MARKETPLACE      => [
+                        OnboardingConstants::USE_CASE         => [
+                            OnboardingConstants::ID            => OnboardingConstants::USE_CASE,
+                            OnboardingConstants::RESPONSE_TYPE => 'textarea',
+                            OnboardingConstants::MANDATORY     => true
                         ],
-                        'settling_to'                       => [
-                            'id'            => 'settling_to',
-                            'response_type' => 'radio',
-                            'mandatory'     => true
+                        OnboardingConstants::SETTLING_TO      => [
+                            OnboardingConstants::ID            => OnboardingConstants::SETTLING_TO,
+                            OnboardingConstants::RESPONSE_TYPE => 'radio',
+                            OnboardingConstants::MANDATORY     => true
                         ],
-                        'signed_agreement_with_third_party' => [
-                            'id'            => 'signed_agreement_with_third_party',
-                            'response_type' => 'file',
-                            'mandatory'     => false
+                        OnboardingConstants::VENDOR_AGREEMENT => [
+                            OnboardingConstants::ID            => OnboardingConstants::VENDOR_AGREEMENT,
+                            OnboardingConstants::RESPONSE_TYPE => 'file',
+                            OnboardingConstants::MANDATORY     => false
                         ]
                     ],
-                    'subscriptions'    => [
-                        'business_model'  => [
-                            'id'            => 'business_model',
-                            'response_type' => 'textarea',
-                            'mandatory'     => true
+                    FeaturesConstants::SUBSCRIPTIONS    => [
+                        OnboardingConstants::BUSINESS_MODEL  => [
+                            OnboardingConstants::ID            => OnboardingConstants::BUSINESS_MODEL,
+                            OnboardingConstants::RESPONSE_TYPE => 'textarea',
+                            OnboardingConstants::MANDATORY     => true
                         ],
-                        'sample_plans'    => [
-                            'id'            => 'sample_plans',
-                            'response_type' => 'textarea',
-                            'mandatory'     => true
+                        OnboardingConstants::SAMPLE_PLANS    => [
+                            OnboardingConstants::ID            => OnboardingConstants::SAMPLE_PLANS,
+                            OnboardingConstants::RESPONSE_TYPE => 'textarea',
+                            OnboardingConstants::MANDATORY     => true
                         ],
-                        'website_details' => [
-                            'id'            => 'website_details',
-                            'response_type' => 'textarea',
-                            'mandatory'     => true
+                        OnboardingConstants::WEBSITE_DETAILS => [
+                            OnboardingConstants::ID            => OnboardingConstants::WEBSITE_DETAILS,
+                            OnboardingConstants::RESPONSE_TYPE => 'textarea',
+                            OnboardingConstants::MANDATORY     => true
                         ]
                     ],
-                    'virtual_accounts' => [
-                        'use_case'                 => [
-                            'id'            => 'use_case',
-                            'response_type' => 'textarea',
-                            'mandatory'     => true
+                    FeaturesConstants::VIRTUAL_ACCOUNTS => [
+                        OnboardingConstants::USE_CASE                 => [
+                            OnboardingConstants::ID            => OnboardingConstants::USE_CASE,
+                            OnboardingConstants::RESPONSE_TYPE => 'textarea',
+                            OnboardingConstants::MANDATORY     => true
                         ],
-                        'expected_monthly_revenue' => [
-                            'id'            => 'expected_monthly_revenue',
-                            'response_type' => 'number',
-                            'mandatory'     => true
+                        OnboardingConstants::EXPECTED_MONTHLY_REVENUE => [
+                            OnboardingConstants::ID            => OnboardingConstants::EXPECTED_MONTHLY_REVENUE,
+                            OnboardingConstants::RESPONSE_TYPE => 'number',
+                            OnboardingConstants::MANDATORY     => true
                         ]
                     ]
                 ]
@@ -74,10 +77,10 @@ return [
     'testpostResponsesWithFiles' => [
         'request'  => [
             'content' => [
-                'onboarding' => [
-                    'marketplace' => [
-                        'use_case'    => 'Some default use case',
-                        'settling_to' => 'Someone'
+                OnboardingConstants::ONBOARDING => [
+                    FeaturesConstants::MARKETPLACE => [
+                        OnboardingConstants::USE_CASE    => 'Some default use case',
+                        OnboardingConstants::SETTLING_TO => 'Someone'
                     ]
                 ],
             ],
@@ -90,10 +93,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'onboarding' => [
-                    'marketplace' => [
-                        'use_case'    => 'Some default use case',
-                        'settling_to' => 'Someone'
+                OnboardingConstants::ONBOARDING => [
+                    FeaturesConstants::MARKETPLACE => [
+                        OnboardingConstants::USE_CASE    => 'Some default use case',
+                        OnboardingConstants::SETTLING_TO => 'Someone'
                     ]
                 ]
             ]
