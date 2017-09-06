@@ -5,16 +5,19 @@ namespace RZP\Models\Batch\Processor;
 use Mail;
 use Carbon\Carbon;
 
-use RZP\Exception;
 use RZP\Models\Batch;
+use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\FileStore;
+use RZP\Exception\BaseException;
+use RZP\Exception\LogicException;
 use RZP\Models\Base as BaseModel;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Base extends BaseModel\Core
 {
@@ -116,9 +119,7 @@ class Base extends BaseModel\Core
 
                 $this->postProcessEntries($entries);
 
-                $this->createAndSetOutputFile($entries);
-
-                $this->saveOutputFile();
+                $this->createSetOutputFileAndSave($entries);
 
                 $this->repo->saveOrFail($this->batch);
             },
@@ -156,7 +157,7 @@ class Base extends BaseModel\Core
                 $entry[Batch\Header::ERROR_CODE]        = null;
                 $entry[Batch\Header::ERROR_DESCRIPTION] = null;
             }
-            catch (Exception\BaseException $e)
+            catch (BaseException $e)
             {
                 // All RZP Exceptions have public error code and public error
                 // description which can be exposed in the output file.
@@ -217,7 +218,7 @@ class Base extends BaseModel\Core
 
         foreach ($entries as $entry)
         {
-            if ($entry[Batch\Header::STATUS] === Batch\Status::SUCCESS)
+            if ($entry[Batch\Header::STATUS] !== Batch\Status::FAILURE)
             {
                 $successCount++;
             }
@@ -255,6 +256,24 @@ class Base extends BaseModel\Core
         $this->deleteFile($this->outputFileLocalPath);
 
         $this->deleteFile($this->inputFileLocalPath);
+    }
+
+    protected function createSetOutputFileAndSave(array & $entries)
+    {
+        try
+        {
+            $this->createAndSetOutputFile($entries);
+
+            $this->saveOutputFile();
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                            $e,
+                            null,
+                            TraceCode::BATCH_PROCESSING_ERROR,
+                            $this->batch->toArrayPublic());
+        }
     }
 
     /**
@@ -444,7 +463,7 @@ class Base extends BaseModel\Core
      *
      * @return FileStore\Creator
      *
-     * @throws Exception\LogicException
+     * @throws LogicException
      */
     protected function saveFile(string $filePath, string $type): FileStore\Creator
     {
@@ -505,5 +524,86 @@ class Base extends BaseModel\Core
     public function getHeadings()
     {
         return $this->batch->getHeaders();
+    }
+
+    /**
+     * Creates output file for already processed batch.
+     * NOT to be use in general.
+     *
+     * Ref: Batch/Core::retryBatchOutputFile
+     */
+    public function retryBatchOutputFile()
+    {
+        $this->trace->info(TraceCode::BATCH_RETRY_OUTPUT_FILE, $this->batch->toArrayPublic());
+
+        $this->validateRetryBatchOutputFileOperationAllowed();
+
+        $this->downloadAndSetInputFile();
+
+        $entries = $this->parseFile($this->inputFileLocalPath);
+
+        //
+        // Gets 'receipts' from the input entries. Fetch invoices by batch id
+        // and these receipts.
+        //
+        $receipts = array_pluck($entries, Batch\Header::INVOICE_NUMBER);
+
+        $invoices = $this->repo->invoice->findByBatchIdAndReceipts($this->batch->getId(), $receipts);
+
+        //
+        // Makes 'receipt' the key of collection for easy access and check later
+        //
+        $invoices = $invoices->keyBy(Invoice\Entity::RECEIPT);
+
+        //
+        // For each entry, if there is an invoice created with the input receipt
+        // have the success response appended otherwise failure response.
+        //
+        foreach ($entries as & $entry)
+        {
+            $receipt = $entry[Batch\Header::INVOICE_NUMBER];
+
+            $invoice = $invoices->get($receipt);
+
+            if (empty($invoice) === false)
+            {
+                $entry[Batch\Header::STATUS]            = $invoice->getStatus();
+                $entry[Batch\Header::PAYMENT_LINK_ID]   = $invoice->getPublicId();
+                $entry[Batch\Header::SHORT_URL]         = $invoice->getShortUrl();
+            }
+            else
+            {
+                $entry[Batch\Header::STATUS]            = Batch\Status::FAILURE;
+                $entry[Batch\Header::ERROR_CODE]        = ErrorCode::BAD_REQUEST_ERROR;
+                $entry[Batch\Header::ERROR_DESCRIPTION] = 'Something went wrong, Request you to please contact Razorpay for assistance.';
+            }
+        }
+
+        //
+        // Finally create and output file with the data and set the same
+        // against the batch entity.
+        //
+        $this->createSetOutputFileAndSave($entries);
+
+        $this->repo->saveOrFail($this->batch);
+    }
+
+    /**
+     * Above operation is only allowed for payment link type and for batches
+     * not already having output file created.
+     */
+    protected function validateRetryBatchOutputFileOperationAllowed()
+    {
+        if ($this->batch->isPaymentLinkType() === false)
+        {
+            throw new BadRequestValidationFailureException(
+                        'Operation not allowed: Batch is not of payment link type.');
+        }
+
+        if ($this->batch->outputFile() !== null)
+        {
+            throw new BadRequestValidationFailureException(
+                        'Operation not allowed: Batch already has output file created.');
+        }
     }
 }

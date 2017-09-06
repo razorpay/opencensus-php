@@ -75,6 +75,25 @@ class Core extends Base\Core
     }
 
     /**
+     * Internal Auth: There are some very rare cases (UFH issues) where output
+     * file doesn't get created but the batch is actually processed. This has
+     * happened specifically for payment_link type batch. We can't wrap the whole
+     * operation under transaction because of few other reasons.
+     *
+     * TODO: Drop in detail the use case and reasons here.
+     *
+     * @param Entity $batch
+     *
+     * @return Entity
+     */
+    public function retryBatchOutputFile(Entity $batch): Entity
+    {
+        Processor\Base::get($batch)->retryBatchOutputFile();
+
+        return $batch;
+    }
+
+    /**
      * Returns signed url of the batch file: output file if that exists else
      * the input file itself.
      *

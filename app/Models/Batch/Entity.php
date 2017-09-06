@@ -159,6 +159,11 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::PROCESSED);
     }
 
+    public function isPaymentLinkType()
+    {
+        return ($this->getType() === Type::PAYMENT_LINK);
+    }
+
     /**
      * Returns prefix for the file. Prefix are mostly used to get a folder like
      * structure on S3. We have different prefix for created and output batch

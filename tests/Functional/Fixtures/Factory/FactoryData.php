@@ -781,9 +781,9 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Workflow\Entity::class, [
-           'id'      => $faker->uniqueid,
-            'org_id' => '100000razorpay',
-            'name'   => $faker->name,
+            'id'        => $faker->uniqueid,
+            'org_id'    => '100000razorpay',
+            'name'      => $faker->name,
         ]);
 
         $factory(\RZP\Models\Workflow\Step\Entity::class,[
@@ -797,7 +797,7 @@ final class FactoryData
             'updated_at'       => $faker->timestamp,
         ]);
 
-        $factory(\RZP\Models\Workflow\Action\Entity::class,[
+        $factory(\RZP\Models\Workflow\Action\Entity::class, [
             'id'                => $faker->uniqueid,
             'entity_id'         => \RZP\Tests\Functional\Fixtures\Entity\Org::MAKER_ADMIN,
             'entity_name'       => 'admin',
@@ -810,12 +810,12 @@ final class FactoryData
             'permission_id'     => 'factory:RZP\Models\Admin\Permission\Entity',
         ]);
 
-        $factory(\RZP\Models\Workflow\Action\State\Entity::class,[
+        $factory(\RZP\Models\Workflow\Action\State\Entity::class, [
             'id'                => $faker->uniqueid,
             'name'              => \RZP\Models\Workflow\Action\State\Entity::OPEN,
         ]);
 
-        $factory(\RZP\Models\Workflow\Action\Checker\Entity::class,[
+        $factory(\RZP\Models\Workflow\Action\Checker\Entity::class, [
             'id'                => $faker->uniqueid,
             'name'              => \RZP\Models\Workflow\Action\State\Entity::OPEN,
         ]);
