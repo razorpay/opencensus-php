@@ -7,12 +7,12 @@ use Mail;
 use Config;
 use Carbon\Carbon;
 
-use RZP\Constants\Timezone;
 use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Token as OAuthToken;
 
 use RZP\Exception;
 use RZP\Models\Key;
+use RZP\Models\User;
 use RZP\Models\Base;
 use RZP\Models\Offer;
 use RZP\Models\Coupon;
