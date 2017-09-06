@@ -1,16 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
-echo "Current user - `whoami`"
-
 # Deployment Script
 echo "Setting BASEDIR"
 BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )
 API_INSTALL_DIR="/home/ubuntu/api"
 ALOHOMORA_BIN="$(which alohomora)"
-
-echo "permission dump"
-cd $BASEDIR && ls -al ./vendor/razorpay/oauth/keys
 
 # Install new version
 echo  "Install new version"
