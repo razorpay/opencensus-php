@@ -54,11 +54,7 @@ class Service extends Base\Service
             // Function name which needs to be called to return actions based on duty and maker.
             $actionFunctionName = self::ACTION_FUNCTION_MAPPING[$duty][$type];
 
-            $count = $input['count'] ?? 10;
-
-            $skip = $input['skip'] ?? 0;
-
-            $actions = call_user_func_array([$this, $actionFunctionName], [$input, $skip, $count]);
+            $actions = call_user_func_array([$this, $actionFunctionName], [$input]);
         }
         else
         {
@@ -180,17 +176,15 @@ class Service extends Base\Service
      * if the admin has the role, give the checker the action_id, step_id
      *
      * @param array $input input array
-     * @param int $skip
-     * @param int $count
      *
      * @return array
      */
-    public function getActionsForChecker(array $input, int $skip, int $count)
+    public function getActionsForChecker(array $input)
     {
         $adminRoleIds = $this->admin->roles()->allRelatedIds()->toArray();
 
         $actions = $this->repo->workflow_action->findActionsForChecker(
-            $adminRoleIds, ['admin'], $skip, $count);
+            $adminRoleIds, ['admin']);
 
         return $actions;
     }
@@ -207,12 +201,15 @@ class Service extends Base\Service
         // Only superadmin can access maker.all and maker.open
         $this->app['basicauth']->validateSuperAdminAccess();
 
-        $orgId = $this->admin->getOrgId();
+        $input['org_id'] = $this->admin->getOrgId();
 
-        $type = $input['type'] ?? 'all';
+        $input['expand'] = ['admin'];
 
-        $actions = $this->repo->workflow_action->findByOrgId(
-            $orgId, ['admin'], $type);
+        $input['permission'] = true;
+
+        unset($input['duty']);
+
+        $actions = $this->repo->workflow_action->fetch($input);
 
         return $actions;
     }
@@ -222,23 +219,27 @@ class Service extends Base\Service
      *
      * @return mixed
      */
-    public function getClosedActionsByMaker(array $input, int $skip, int $count)
+    public function getClosedActionsByMaker(array $input)
     {
-        $actions = $this->repo->workflow_action
-            ->getClosedActionsByAdmin(
-                $this->admin->getId(), ['admin'], $skip, $count);
+        unset($input['duty']);
+
+        $input['permission'] = true;
+
+        $input['expand'] = ['admin'];
+
+        $input['closed'] = true;
+
+        $actions = $this->repo->workflow_action->fetch($input);
 
         return $actions;
     }
 
     /**
      * @param array $input
-     * @param int $skip
-     * @param int $count
      *
      * @return mixed
      */
-    public function getActionsByMaker(array $input, int $skip, int $count)
+    public function getActionsByMaker(array $input)
     {
         $relations = ['workflow', 'admin'];
 

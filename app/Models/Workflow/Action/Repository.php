@@ -13,9 +13,13 @@ class Repository extends Base\Repository
     protected $entity = 'workflow_action';
 
     protected $adminFetchParamRules = [
-        Entity::ADMIN_ID    => 'sometimes|string|max:14',
-        Entity::WORKFLOW_ID => 'sometimes|string|max:14',
-        Entity::ORG_ID      => 'sometimes|string|max:14',
+        Entity::ADMIN_ID     => 'sometimes|string|max:14',
+        Entity::WORKFLOW_ID  => 'sometimes|string|max:14',
+        Entity::ORG_ID       => 'sometimes|string|max:14',
+        self::EXPAND . '.*'  => 'string|in:admin,',
+        Entity::TYPE         => 'sometimes|string|max:10',
+        Entity::PERMISSION   => 'sometimes|boolean|in:0,1',
+        State\Entity::CLOSED => 'sometimes|boolean|in:0,1',
     ];
 
     protected function getNewQueryWithPermissions()
@@ -32,26 +36,41 @@ class Repository extends Base\Repository
                     });
     }
 
-    public function findByOrgId(
-        string $orgId,
-        array $relations = [],
-        string $type = 'all')
+    public function addQueryParamPermission($query, $params)
     {
+        $permission = Table::PERMISSION;
+
+        $query->select(
+                    Table::WORKFLOW_ACTION . '.*',
+                    'permissions.name AS permission_name',
+                    'permissions.description AS permission_description')
+                ->join($permission, function ($join) {
+                    $join->on('permissions.id', '=', 'workflow_actions.permission_id');
+                });
+    }
+
+    public function addQueryParamOrgId($query, $params)
+    {
+        $orgId = $params['org_id'];
+
         Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
-        $openStates = State\Entity::OPEN_STATES;
+        $query->OrgId($orgId);
+    }
 
-        $query = $this->getNewQueryWithPermissions()
-                      ->orgId($orgId)
-                      ->with($relations)
-                      ->orderBy(Entity::CREATED_AT, 'desc');
-
-        if ($type == 'open')
+    public function addQueryParamType($query, $params)
+    {
+        if ($params['type'] === 'open')
         {
+            $openStates = State\Entity::OPEN_STATES;
+
             $query->whereIn(Entity::STATE, $openStates);
         }
+    }
 
-        return $query->get();
+    public function addQueryOrder($query)
+    {
+        $query->orderBy(Entity::CREATED_AT, 'desc');
     }
 
     public function findByAdminIdAndOrgIdWithRelations(
@@ -106,19 +125,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getClosedActionsByAdmin(
-        string $adminId,
-        array $relations = [],
-        int $skip = 0,
-        int $count = 10)
+    /**
+     * Function to add closed state param to the query.
+     * @param $query
+     * @param $params
+     */
+    public function addQueryParamClosed($query, $params)
     {
-        /*
-         * SELECT `workflow_actions`.*
-         * FROM `workflow_actions` wa
-         * JOIN `action_states` acs ON acs.action_id = wa.id
-         *      AND `actions_states`.name = 'closed';
-         *
-         */
+        $adminId = $this->auth->getAdmin()->getId();
 
         $acsDao = $this->repo->action_state;
 
@@ -132,15 +146,9 @@ class Repository extends Base\Repository
         // CLOSED is the absolute last state, We can expect unique entries.
         $acsAdminId = $acsDao->dbColumn(State\Entity::ADMIN_ID);
 
-        return $this->getNewQueryWithPermissions()
-                    ->join($acsTable, $aId, '=', $acsActionId)
-                    ->where($acsState, '=', State\Entity::CLOSED)
-                    ->where($acsAdminId, '=', $adminId)
-                    ->with($relations)
-                    ->orderBy(Entity::CREATED_AT, 'desc')
-                    ->take($count)
-                    ->skip($skip)
-                    ->get();
+        $query->join($acsTable, $aId, '=', $acsActionId)
+              ->where($acsState, '=', State\Entity::CLOSED)
+              ->where($acsAdminId, '=', $adminId);
     }
 
     public function fetchOpenActionsByWorkflowId(string $workflowId)

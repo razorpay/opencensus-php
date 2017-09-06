@@ -31,6 +31,9 @@ class Entity extends Base\Entity
     const PERMISSION_NAME           = 'permission_name';
     const PERMISSION_DESCRIPTION    = 'permission_description';
 
+    const DUTY          = 'duty';
+    const TYPE          = 'type';
+
     protected static $sign = 'w_action';
 
     protected $entity = 'workflow_action';
