@@ -122,9 +122,7 @@ class Base extends BaseModel\Core
 
                 $this->postProcessEntries($entries);
 
-                $this->createAndSetOutputFile($entries);
-
-                $this->saveOutputFile();
+                $this->createSetOutputFileAndSave($entries);
 
                 $this->repo->saveOrFail($this->batch);
             },
@@ -223,7 +221,7 @@ class Base extends BaseModel\Core
 
         foreach ($entries as $entry)
         {
-            if ($entry[Batch\Header::STATUS] === Batch\Status::SUCCESS)
+            if ($entry[Batch\Header::STATUS] !== Batch\Status::FAILURE)
             {
                 $successCount++;
             }
@@ -261,6 +259,24 @@ class Base extends BaseModel\Core
         $this->deleteFile($this->outputFileLocalPath);
 
         $this->deleteFile($this->inputFileLocalPath);
+    }
+
+    protected function createSetOutputFileAndSave(array & $entries)
+    {
+        try
+        {
+            $this->createAndSetOutputFile($entries);
+
+            $this->saveOutputFile();
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                            $e,
+                            null,
+                            TraceCode::BATCH_PROCESSING_ERROR,
+                            $this->batch->toArrayPublic());
+        }
     }
 
     /**
@@ -491,9 +507,7 @@ class Base extends BaseModel\Core
         // Finally create and output file with the data and set the same
         // against the batch entity.
         //
-        $this->createAndSetOutputFile($entries);
-
-        $this->saveOutputFile();
+        $this->createSetOutputFileAndSave($entries);
 
         $this->repo->saveOrFail($this->batch);
     }
