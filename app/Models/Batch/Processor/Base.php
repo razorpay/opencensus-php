@@ -317,7 +317,7 @@ class Base extends BaseModel\Core
 
                 $txt = $this->generateText($entries, '|');
 
-                $this->outputFileLocalPath = $this->createTxtFile($this->batch->getId() . '.' . $fileExtension, $txt);
+                $this->outputFileLocalPath = $this->createTxtFile($this->batch->getId() . '.' . $ext, $txt);
 
                 return;
 
@@ -330,7 +330,7 @@ class Base extends BaseModel\Core
                                     $this->batch->getType()
                                  )
                                  ->store(
-                                    FileStore\Format::XLSX,
+                                    $ext,
                                     $this->batch->getLocalSaveDir(),
                                     true
                                 );
@@ -341,7 +341,7 @@ class Base extends BaseModel\Core
 
             default:
 
-                throw new Exception\LogicException();
+                throw new Exception\LogicException("Extension not handled: {$ext}");
         }
     }
 
@@ -413,7 +413,7 @@ class Base extends BaseModel\Core
 
             default:
 
-                throw new Exception\LogicException();
+                throw new Exception\LogicException("Extension not handled: {$ext}");
         }
     }
 
