@@ -140,4 +140,13 @@ return array(
         ],
         'url' => env('NODAL_BASE_URL'),
     ],
+
+    'reporting' => [
+        'mock' => env('REPORTING_MOCK', false),
+        'auth' => [
+            'username' => env('REPORTING_USERNAME'),
+            'password' => env('REPORTING_PASSWORD'),
+        ],
+        'url' => env('REPORTING_BASE_URL'),
+    ],
 );

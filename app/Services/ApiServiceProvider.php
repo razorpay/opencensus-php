@@ -44,7 +44,7 @@ class ApiServiceProvider extends BaseServiceProvider
     public function register()
     {
         $this->registerTraceProcessors();
-        
+
         $this->app->singleton('mailgun', function($app)
         {
             $mailgunMock = $app['config']->get('applications.mailgun.mock');
@@ -119,6 +119,11 @@ class ApiServiceProvider extends BaseServiceProvider
             return new HarvesterClient($app);
         });
 
+        $this->app->bind('reporting', function($app)
+        {
+            return new Reporting($app);
+        });
+
         $this->registerApiMutex();
 
         $this->registerMaxMind();
@@ -170,6 +175,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'pigeon',
             'workflow',
             'sns',
+            'reporting',
         ];
     }
 

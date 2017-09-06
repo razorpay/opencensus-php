@@ -568,6 +568,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED    = 'DASHBOARD_MERCHANT_APP_AUTH_UNEXPECTED';
 
     const NODAL_INTEGRATION_ERROR                   = 'NODAL_INTEGRATION_ERROR';
+    const REPORTING_INTEGRATION_ERROR               = 'REPORTING_INTEGRATION_ERROR';
 
     const QUEUE_JOB_FAILURE                         = 'QUEUE_JOB_FAILURE';
     const QUEUE_INVALID_CONFIG                      = 'QUEUE_INVALID_CONFIG';
