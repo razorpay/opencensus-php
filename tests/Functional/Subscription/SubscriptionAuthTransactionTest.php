@@ -96,7 +96,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->assertEquals('paid', $invoice['status']);
         $this->assertEquals($subscription['id'], $invoice['subscription_id']);
         $this->assertEquals($order['id'], $invoice['order_id']);
-        $this->assertEquals($payment['created_at'], $invoice['billing_start']);
+        $this->assertEquals($subscription['current_start'], $invoice['billing_start']);
         $this->assertEquals($subscription['current_end'], $invoice['billing_end']);
 
         $this->assertEquals('paid', $order['status']);

@@ -48,6 +48,12 @@ class Core extends Base\Core
      */
     public function create(array $input, Plan\Entity $plan, Customer\Entity $customer = null): Entity
     {
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_CREATE_REQUEST,
+            [
+                'input'       => $input
+            ]);
+
         return (new Creator)->create($input, $plan, $customer);
     }
 

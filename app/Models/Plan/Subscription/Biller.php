@@ -89,7 +89,7 @@ class Biller extends Base\Core
      * @param  Invoice\Entity $invoice      Newly created invoice
      * @return null
      */
-    protected function updateSubscriptionInvoiceBillingPeriod(Entity $subscription, Invoice\Entity $invoice)
+    public function updateSubscriptionInvoiceBillingPeriod(Entity $subscription, Invoice\Entity $invoice)
     {
         $this->setCurrentPeriod($subscription);
 

@@ -3,44 +3,46 @@
 namespace RZP\Models\Payment\Processor;
 
 use App;
-use Carbon\Carbon;
-use Config;
-use Crypt;
-use Lib\PhoneBook;
 use Mail;
-use RZP\Constants\Mode;
-use RZP\Http\BasicAuth;
-use RZP\Listeners\ApiEventSubscriber;
-use RZP\Models\Plan\Subscription;
+use Crypt;
+use Config;
+use Carbon\Carbon;
+use Lib\PhoneBook;
+
 use RZP\Error;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Models\Admin;
-use RZP\Models\Card;
-use RZP\Models\Card\IIN;
-use RZP\Models\Customer;
-use RZP\Models\Customer\Token;
+use RZP\Models\Upi;
 use RZP\Models\Emi;
-use RZP\Models\Currency;
-use RZP\Models\Feature;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Methods;
+use RZP\Models\Risk;
+use RZP\Models\Card;
+use RZP\Models\Admin;
 use RZP\Models\Offer;
 use RZP\Models\Order;
-use RZP\Models\Payment;
-use RZP\Models\Payment\Action;
-use RZP\Models\Payment\Analytics;
-use RZP\Models\Payment\Method;
-use RZP\Models\Payment\TwoFactorAuth;
-use RZP\Models\Payment\TerminalAnalytics;
+use RZP\Http\BasicAuth;
 use RZP\Models\Pricing;
-use RZP\Models\Risk;
-use RZP\Models\Terminal;
-use RZP\Models\Transaction;
-use RZP\Models\Customer\GatewayToken;
-use RZP\Models\Upi;
+use RZP\Constants\Mode;
+use RZP\Models\Payment;
+use RZP\Models\Invoice;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Models\Terminal;
+use RZP\Models\Currency;
+use RZP\Models\Merchant;
+use RZP\Models\Customer;
+use RZP\Models\Card\IIN;
+use RZP\Models\Transaction;
+use RZP\Models\Payment\Action;
+use RZP\Models\Payment\Method;
+use RZP\Models\Customer\Token;
+use RZP\Models\Merchant\Methods;
+use RZP\Models\Plan\Subscription;
+use RZP\Models\Payment\Analytics;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Payment\TwoFactorAuth;
+use RZP\Listeners\ApiEventSubscriber;
+use RZP\Models\Customer\GatewayToken;
+use RZP\Models\Payment\TerminalAnalytics;
 
 trait Authorize
 {
@@ -2187,14 +2189,14 @@ trait Authorize
                     ]);
             }
 
+            $invoice = $payment->invoice;
+
             //
             // If this is auth txn charge, it means that start_at was null. This,
             // in turn, means that some fields were not filled when the subscription
             // was created. We fill those fields here.
             //
-            $this->updateSubscriptionDetails($subscription, $payment);
-
-            $invoice = $payment->invoice;
+            $this->updateSubscriptionDetails($subscription, $payment, $invoice);
 
             (new Subscription\Charge)->handleCaptureSuccess($subscription, $payment, $invoice);
         }
@@ -2202,7 +2204,10 @@ trait Authorize
         $this->autoRefundAuthTransactionIfApplicable($payment, $subscription);
     }
 
-    protected function updateSubscriptionDetails(Subscription\Entity $subscription, Payment\Entity $payment)
+    protected function updateSubscriptionDetails(
+        Subscription\Entity $subscription,
+        Payment\Entity $payment,
+        Invoice\Entity $invoice)
     {
         $plan = $subscription->plan;
 
@@ -2211,6 +2216,8 @@ trait Authorize
         $subscriptionCore = new Subscription\Core;
 
         $subscriptionCore->fillScheduleDetailsForNewSubscription($subscription);
+
+        (new Subscription\Biller)->updateSubscriptionInvoiceBillingPeriod($subscription, $invoice);
 
         (new Subscription\Creator)->fillEndAtAndTotalCount($subscription, $plan);
     }
