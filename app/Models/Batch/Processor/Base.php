@@ -308,21 +308,16 @@ class Base extends BaseModel\Core
         // Creation of file differs per extension, ext of output file has
         // to be same of input file.
         //
-
         $ext = pathinfo($this->inputFileLocalPath, PATHINFO_EXTENSION);
 
         switch ($ext)
         {
             case FileStore\Format::TXT:
-
                 $txt = $this->generateText($entries, '|');
-
                 $this->outputFileLocalPath = $this->createTxtFile($this->batch->getId() . '.' . $ext, $txt);
-
                 return;
 
             case FileStore\Format::XLSX:
-
                 $fileMeta = $this->createExcelObject(
                                     $entries,
                                     $this->batch->getId(),
@@ -334,13 +329,10 @@ class Base extends BaseModel\Core
                                     $this->batch->getLocalSaveDir(),
                                     true
                                 );
-
                 $this->outputFileLocalPath = $fileMeta['full'];
-
                 return;
 
             default:
-
                 throw new Exception\LogicException("Extension not handled: {$ext}");
         }
     }
@@ -389,7 +381,7 @@ class Base extends BaseModel\Core
     /**
      * Parses given file and returns the entries array
      *
-     * @param string $file
+     * @param string $filePath
      *
      * @return array
      */
@@ -400,11 +392,9 @@ class Base extends BaseModel\Core
         switch ($ext)
         {
             case FileStore\Format::XLSX:
-
                 return $this->parseExcelSheets($filePath);
 
             case FileStore\Format::TXT:
-
                 //
                 // We use standard separator | for txt, if needs this
                 // can be made configurable. But for now it's ok.
@@ -412,7 +402,6 @@ class Base extends BaseModel\Core
                 return $this->parseTextFile($filePath, '|');
 
             default:
-
                 throw new Exception\LogicException("Extension not handled: {$ext}");
         }
     }
@@ -488,7 +477,6 @@ class Base extends BaseModel\Core
         // will not have reference. So using the old way (else block) of forming
         // S3 object key and then fetches the same.
         //
-
         if ($inputFile !== null)
         {
             $filePath = (new FileStore\Accessor)

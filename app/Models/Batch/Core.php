@@ -29,7 +29,6 @@ class Core extends Base\Core
         // - Updates batch entity with aggregate details of file (if applicable)
         // - Saves batch entity
         //
-
         $this->repo->transaction(function () use ($batch, $input)
         {
             $processor = Processor\Base::get($batch);
