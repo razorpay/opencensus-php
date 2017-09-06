@@ -103,10 +103,7 @@ export const getFixedINRAmount = amount => (Number(amount) / 100).toFixed(2);
 
 // following regex formats in indian comma separated, i.e. 2,01,20,45,222.66
 export const getFormattedAmount = amount =>
-  (amount / 100)
-    .toFixed(2)
-    .replace(/(.{1,2})(?=.(..)+(\...)$)/g, '$1,')
-    .replace('.00', '');
+  (amount / 100).toFixed(2).replace(/(.{1,2})(?=.(..)+(\...)$)/g, '$1,');
 
 export const without = (source, keys) => {
   keys = makeArray(keys);

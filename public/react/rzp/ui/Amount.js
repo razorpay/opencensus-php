@@ -6,9 +6,11 @@ const currencies = {
 };
 
 export default ({ value, currency, className, ...attrs }) => {
+  const amount = getFormattedAmount(value);
   return (
     <span class={`amount ${className}`} {...attrs}>
-      {currencies[currency]} {getFormattedAmount(value)}
+      {currencies[currency]} {amount.split('.')[0]}
+      <span class="text-fade">.{amount.split('.')[1]}</span>
     </span>
   );
 };

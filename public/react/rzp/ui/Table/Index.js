@@ -8,7 +8,7 @@ export default ({
   showHeaders = true,
   limit,
   loading,
-  progressLoader,
+  progressLoader = false,
 }) => {
   let rowItems = [];
 
@@ -17,14 +17,14 @@ export default ({
     for (let cur = 0; cur < limit; cur++) {
       rowItems.push(
         <EntityItemRow key={cur}>
-          {columns.map((column, index) => (
+          {columns.map((column, index) =>
             <td
               class={column.columnClass ? column.columnClass : ''}
               key={index}
             >
               <PlaceholderLoader />
             </td>
-          ))}
+          )}
         </EntityItemRow>
       );
     }
@@ -38,14 +38,14 @@ export default ({
       }
       rowItems.push(
         <EntityItemRow key={item.id} id={item.id}>
-          {columns.map((column, index) => (
+          {columns.map((column, index) =>
             <td
               class={column.columnClass ? column.columnClass : ''}
               key={index}
             >
               {column.value(item)}
             </td>
-          ))}
+          )}
         </EntityItemRow>
       );
     });
@@ -57,9 +57,11 @@ export default ({
         {showHeaders
           ? <thead>
               <tr>
-                {columns.map((column, index) => (
-                  <th class={column.columnClass} key={index}>{column.title}</th>
-                ))}
+                {columns.map((column, index) =>
+                  <th class={column.columnClass} key={index}>
+                    {column.title}
+                  </th>
+                )}
               </tr>
             </thead>
           : null}

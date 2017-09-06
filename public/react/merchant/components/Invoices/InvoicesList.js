@@ -8,7 +8,7 @@ import EntityItemRow from 'merchant/containers/EntityItemRow';
 import { getCustomerDisplayName } from 'rzp/utils/rzp-utils';
 
 const InvoiceListItem = props => {
-  let { invoice, isNewUIEnabled, onEditClick } = props;
+  let { invoice, isOldUIEnabled, onEditClick } = props;
   let customer = invoice.customer_details;
 
   return (
@@ -17,18 +17,24 @@ const InvoiceListItem = props => {
         {
           do {
             if (['link', 'ecod'].indexOf(invoice.type) !== -1) {
-              if (isNewUIEnabled) {
-                <NavLink to={`/paymentlinks/${invoice.id}`}>
-                  <code>{invoice.id}</code>
+              if (isOldUIEnabled) {
+                <NavLink to={`/invoices/${invoice.id}/details`}>
+                  <code>
+                    {invoice.id}
+                  </code>
                 </NavLink>;
               } else {
-                <NavLink to={`/invoices/${invoice.id}/details`}>
-                  <code>{invoice.id}</code>
+                <NavLink to={`/paymentlinks/${invoice.id}`}>
+                  <code>
+                    {invoice.id}
+                  </code>
                 </NavLink>;
               }
             } else {
               <NavLink to={`/invoices/${invoice.id}`}>
-                <code>{invoice.id}</code>
+                <code>
+                  {invoice.id}
+                </code>
               </NavLink>;
             }
           }
@@ -40,7 +46,9 @@ const InvoiceListItem = props => {
       <td class="text-right">
         <Amount value={invoice.amount} />
       </td>
-      <td>{invoice.receipt}</td>
+      <td>
+        {invoice.receipt}
+      </td>
       <td>
         {getCustomerDisplayName({
           name: customer.customer_name,
@@ -48,8 +56,14 @@ const InvoiceListItem = props => {
           email: customer.customer_email,
         })}
       </td>
-      <td>{invoice.short_url && <CopyLink url={invoice.short_url} />}</td>
-      {!isNewUIEnabled ? <td>{invoice.type}</td> : ''}
+      <td>
+        {invoice.short_url && <CopyLink url={invoice.short_url} />}
+      </td>
+      {isOldUIEnabled
+        ? <td>
+            {invoice.type}
+          </td>
+        : ''}
       <td>
         <InvoiceStatusLabel status={invoice.status} />
       </td>
@@ -75,7 +89,7 @@ const InvoiceListItem = props => {
 };
 
 export default props => {
-  let { type, invoices, isNewUIEnabled, isLoading } = props;
+  let { type, invoices, isOldUIEnabled, isLoading } = props;
   let label = type === 'link' ? 'Payment Link' : 'Invoice';
 
   return (
@@ -83,13 +97,17 @@ export default props => {
       <table class="table table-hover">
         <thead>
           <tr>
-            <th>{label} Id</th>
-            <th>{label} Date</th>
+            <th>
+              {label} Id
+            </th>
+            <th>
+              {label} Date
+            </th>
             <th class="text-right">Amount</th>
             <th>Receipt No.</th>
             <th>Customer</th>
             <th>Payment Link</th>
-            {!isNewUIEnabled ? <th>Type</th> : ''}
+            {isOldUIEnabled ? <th>Type</th> : ''}
             <th>Status</th>
             <th>Actions</th>
           </tr>
@@ -100,15 +118,15 @@ export default props => {
           rows={invoices}
           emptyTableMsg="No data found!"
         >
-          {invoices.map(invoice => (
+          {invoices.map(invoice =>
             <InvoiceListItem
               key={invoice.id}
               invoice={invoice}
-              isNewUIEnabled={isNewUIEnabled}
+              isOldUIEnabled={isOldUIEnabled}
               onEditClick={() => props.onEdit(invoice)}
               onDeleteClick={() => props.onDelete(invoice)}
             />
-          ))}
+          )}
         </TableBody>
       </table>
     </div>

@@ -13,7 +13,7 @@ import { PowerSelect, TypeAhead } from 'react-power-select';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 function validYear(current) {
-  return current.year() >= 2015 && current.year() <= 2017;
+  return current._d.getTime() <= Date.now() && current.year() >= 2015;
 }
 
 const selector = formValueSelector('generateReports');
@@ -27,6 +27,7 @@ const selector = formValueSelector('generateReports');
       entity: selector(state, 'entity'),
       type: selector(state, 'type'),
       date: selector(state, 'date'),
+      invoiceDate: selector(state, 'invoiceDate'),
     };
   },
   { generateReport, fetchAccounts, ...NotificationsActions }
@@ -37,6 +38,7 @@ const selector = formValueSelector('generateReports');
     entity: 'payment',
     type: 'daily',
     date: moment(),
+    invoiceDate: moment().subtract(1, 'months').startOf('month'), // Merchant can not download invoice of current month
   },
 })
 export default class ReportsContainer extends Component {
@@ -80,6 +82,14 @@ export default class ReportsContainer extends Component {
         merchantAccounts: merchantAccounts,
         merchantSelected: merchantAccounts[0],
       });
+    }
+
+    if (user.isGSTDisabled) {
+      // If GST is disabled, Select June. Invoice date can not be july or after
+      this.props.change(
+        'invoiceDate',
+        moment().set('month', 5).startOf('month')
+      );
     }
 
     // Select default report type
@@ -180,7 +190,7 @@ export default class ReportsContainer extends Component {
   }
 
   prepareGenerateReport = values => {
-    let { entity, type, date } = values;
+    let { entity, type, date, invoiceDate } = values;
     const account_id =
       this.props.user.isMarketplaceEnabled &&
       this.linkedAccountOptions.indexOf(this.props.entity) !== -1
@@ -195,8 +205,8 @@ export default class ReportsContainer extends Component {
     if (entity === 'invoice') {
       return Promise.resolve(
         window.open(
-          `/${this.props
-            .mode}/reports/invoice?year=${data.year}&month=${data.month}`,
+          `/${this.props.mode}/reports/invoice?year=${invoiceDate.year()}` +
+            `&month=${invoiceDate.month() + 1}`,
           '_blank'
         )
       );
@@ -249,6 +259,20 @@ export default class ReportsContainer extends Component {
           message: 'No data found for given time range',
         });
       });
+  };
+
+  validateInvoiceMonthYear = current => {
+    const isGSTEnabled = !this.props.user.isGSTDisabled;
+
+    const currDate = new Date(),
+      tillPrevMonth =
+        currDate.getFullYear() === current.year()
+          ? isGSTEnabled
+            ? current.month() < currDate.getMonth()
+            : current.month() < 6 // 6 = July
+          : true;
+
+    return validYear(current) && tillPrevMonth;
   };
 
   render() {
@@ -441,11 +465,15 @@ export default class ReportsContainer extends Component {
                   <div class="col-sm-4 col-xs-12">
                     <div class="form-group">
                       <Field
-                        name="date"
+                        name={entity === 'invoice' ? 'invoiceDate' : 'date'}
                         component={ReduxDatetime}
                         dateFormat="MMM, YYYY"
                         closeOnSelect={true}
-                        isValidDate={validYear}
+                        isValidDate={
+                          entity === 'invoice'
+                            ? this.validateInvoiceMonthYear
+                            : validYear
+                        }
                         placeholder="Select Year-Month"
                         timeFormat={false}
                       />

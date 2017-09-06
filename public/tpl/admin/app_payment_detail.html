@@ -8,9 +8,10 @@
   <div ng-controller="PaymentDetailCtrl">
     <div class="panel panel-default col-sm-6 col-sm-offset-3" >
       <div class="panel-heading m-t m-b">
-        <div class="pull-right" ng-if="entity.merchant_id">
+        <div class="pull-right" ng-if="entity.merchant_id" tooltip="Merchant Id">
           <a ui-sref="app.merchants.detail({id: entity.merchant_id})">
-          <code>{{entity.merchant_id}}</code>
+            <i class="fa fa-user-circle-o"></i>
+            <code>{{entity.merchant_id}}</code>
           </a>
         </div>
         Payment Id: <strong>{{entity.id}}</strong>

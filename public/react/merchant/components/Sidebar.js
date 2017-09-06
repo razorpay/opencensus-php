@@ -35,10 +35,10 @@ export default class Sidebar extends Component {
   initializeRoutes(location) {
     let pathname = location.pathname;
     let routes = this.routes;
-    let isNewUIEnabled = this.props.user.isNewUIEnabled;
-    let invoicesRegex = isNewUIEnabled
-      ? INVOICES_ROUTES_REGEX
-      : INVOICES_ROUTES_OLD_REGEX;
+    let isOldUIEnabled = this.props.user.isOldUIEnabled;
+    let invoicesRegex = isOldUIEnabled
+      ? INVOICES_ROUTES_OLD_REGEX
+      : INVOICES_ROUTES_REGEX;
 
     if (TRANSACTIONS_ROUTES_REGEX.test(pathname)) {
       routes.transactions = pathname.match(TRANSACTIONS_ROUTES_REGEX)[0];
@@ -61,7 +61,7 @@ export default class Sidebar extends Component {
     let { user, logoURL } = this.props;
     let routes = this.routes;
     let isMerchant = !!user.current;
-    let isNewUIEnabled = user.isNewUIEnabled;
+    let isOldUIEnabled = user.isOldUIEnabled;
 
     return (
       <div class="sidebar">
@@ -76,106 +76,7 @@ export default class Sidebar extends Component {
             do {
               if (!isMerchant) {
                 null;
-              } else if (isNewUIEnabled) {
-                <div class="nav">
-                  <MainNavLink
-                    label="Home"
-                    icon="icon icon-chart text-info"
-                    to="/dashboard"
-                    exact
-                    notMyRole="sellerapp support"
-                  />
-                  <MainNavLink
-                    label="Transactions"
-                    id="transactions-nav"
-                    icon="icon icon-repeat text-primary"
-                    to={routes.transactions}
-                    notMyRole="sellerapp"
-                  />
-                  <MainNavLink
-                    label="Settlements"
-                    icon="icon icon-done-all text-success"
-                    to="/settlements"
-                    notMyRole="sellerapp support"
-                  />
-
-                  <div class="divider" />
-
-                  <MainNavLink
-                    label="Invoices"
-                    icon="icon icon-notes text-warning"
-                    to={routes.invoices}
-                    featureEnabled="Invoice"
-                    notMyRole="sellerapp"
-                    beta={true}
-                  />
-                  <MainNavLink
-                    label="Payment Links"
-                    icon="icon icon-link text-primary"
-                    to={routes.paymentlinks}
-                  />
-                  <MainNavLink
-                    label="Subscriptions"
-                    icon="icon icon-refresh text-info"
-                    notMyRole="sellerapp support"
-                    featureEnabled="subscriptions"
-                    to={routes.subscriptions}
-                    beta={true}
-                  />
-                  <MainNavLink
-                    label="Customers"
-                    icon="icon icon-people text-warning"
-                    to="/customers"
-                    featureEnabled="Invoice"
-                    notMyRole="sellerapp"
-                  />
-                  <MainNavLink
-                    label="Route"
-                    icon="icon icon-store text-success"
-                    to={routes.marketplace}
-                    notMyRole="sellerapp support"
-                    featureEnabled="Marketplace"
-                    beta={true}
-                  />
-                  <MainNavLink
-                    label="Virtual Accounts"
-                    icon="icon icon-account-balance text-primary"
-                    to="/virtualaccounts"
-                    notMyRole="sellerapp support"
-                    featureEnabled="Virtual_Accounts"
-                    beta={true}
-                  />
-
-                  <div class="divider" />
-
-                  <MainNavLink
-                    label="Reports"
-                    icon="icon icon-books text-danger"
-                    to="/reports"
-                    notMyRole="sellerapp support"
-                  />
-                  <MainNavLink
-                    label="Manage Team"
-                    icon="icon icon-city text-info"
-                    to="/team"
-                    myRole="owner"
-                    beta={true}
-                  />
-                  <MainNavLink
-                    label="My Account"
-                    id="myaccount-nav"
-                    icon="icon icon-account text-primary"
-                    to={routes.account}
-                  />
-                  <MainNavLink
-                    label="Settings"
-                    id="settings-nav"
-                    icon="icon icon-settings text-warning"
-                    to={routes.settings}
-                    myRole="owner manager admin"
-                  />
-                </div>;
-              } else {
+              } else if (isOldUIEnabled) {
                 <div class="nav">
                   <MainNavLink
                     label="Home"
@@ -317,6 +218,105 @@ export default class Sidebar extends Component {
                     label="Configuration"
                     icon="fa fa-cog text-warning"
                     to="/config"
+                    myRole="owner manager admin"
+                  />
+                </div>;
+              } else {
+                <div class="nav">
+                  <MainNavLink
+                    label="Home"
+                    icon="icon icon-chart text-info"
+                    to="/dashboard"
+                    exact
+                    notMyRole="sellerapp support"
+                  />
+                  <MainNavLink
+                    label="Transactions"
+                    id="transactions-nav"
+                    icon="icon icon-repeat text-primary"
+                    to={routes.transactions}
+                    notMyRole="sellerapp"
+                  />
+                  <MainNavLink
+                    label="Settlements"
+                    icon="icon icon-done-all text-success"
+                    to="/settlements"
+                    notMyRole="sellerapp support"
+                  />
+
+                  <div class="divider" />
+
+                  <MainNavLink
+                    label="Invoices"
+                    icon="icon icon-notes text-warning"
+                    to={routes.invoices}
+                    featureEnabled="Invoice"
+                    notMyRole="sellerapp"
+                    beta={true}
+                  />
+                  <MainNavLink
+                    label="Payment Links"
+                    icon="icon icon-link text-primary"
+                    to={routes.paymentlinks}
+                  />
+                  <MainNavLink
+                    label="Subscriptions"
+                    icon="icon icon-refresh text-info"
+                    notMyRole="sellerapp support"
+                    featureEnabled="subscriptions"
+                    to={routes.subscriptions}
+                    beta={true}
+                  />
+                  <MainNavLink
+                    label="Customers"
+                    icon="icon icon-people text-warning"
+                    to="/customers"
+                    featureEnabled="Invoice"
+                    notMyRole="sellerapp"
+                  />
+                  <MainNavLink
+                    label="Route"
+                    icon="icon icon-store text-success"
+                    to={routes.marketplace}
+                    notMyRole="sellerapp support"
+                    featureEnabled="Marketplace"
+                    beta={true}
+                  />
+                  <MainNavLink
+                    label="Virtual Accounts"
+                    icon="icon icon-account-balance text-primary"
+                    to="/virtualaccounts"
+                    notMyRole="sellerapp support"
+                    featureEnabled="Virtual_Accounts"
+                    beta={true}
+                  />
+
+                  <div class="divider" />
+
+                  <MainNavLink
+                    label="Reports"
+                    icon="icon icon-books text-danger"
+                    to="/reports"
+                    notMyRole="sellerapp support"
+                  />
+                  <MainNavLink
+                    label="Manage Team"
+                    icon="icon icon-city text-info"
+                    to="/team"
+                    myRole="owner"
+                    beta={true}
+                  />
+                  <MainNavLink
+                    label="My Account"
+                    id="myaccount-nav"
+                    icon="icon icon-account text-primary"
+                    to={routes.account}
+                  />
+                  <MainNavLink
+                    label="Settings"
+                    id="settings-nav"
+                    icon="icon icon-settings text-warning"
+                    to={routes.settings}
                     myRole="owner manager admin"
                   />
                 </div>;

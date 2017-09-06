@@ -1109,6 +1109,7 @@ angular
           wallet_payumoney: 'Payumoney',
           wallet_payzapp: 'Payzapp',
           wallet_mpesa: 'Mpesa',
+          wallet_sbibuddy: 'SbiBuddy',
           wallet_openwallet: 'Openwallet',
           sharp: 'Sharp',
         },

@@ -4,10 +4,10 @@
 
 @if ($isConfirmed and $isPreSignupComplete)
   <% for (var css in htmlWebpackPlugin.files.css) { %>
-    <link href="<%= htmlWebpackPlugin.files.css[css] %>" rel="stylesheet">
+    <link href="{{$cdnDashboardUrl}}<%= htmlWebpackPlugin.files.css[css] %>" rel="stylesheet">
   <% } %>
 @else
-  <link rel='stylesheet' href='css/generated{{asset('style.css')}}' type='text/css' />
+  <link rel='stylesheet' href="{{$cdnDashboardUrl}}/css/generated{{asset('style.css')}}" type='text/css' />
 @endif
 
 @include('partials/common')
@@ -18,13 +18,13 @@
     window.rzp_org = {!! $org !!};
   </script>
   <% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
-  <script src="<%= htmlWebpackPlugin.files.chunks[chunk].entry %>"></script>
+  <script src="{{$cdnDashboardUrl}}<%= htmlWebpackPlugin.files.chunks[chunk].entry %>"></script>
   <% } %>
 @else
   <!-- jQuery & angular -->
-  <script src='{{asset('js/generated/pre.js')}}'></script>
+  <script src='{{$cdnDashboardUrl}}{{asset('js/generated/pre.js')}}'></script>
   <!-- Merchant Js-->
-  <script src='{{asset('js/generated/merchant.js')}}'></script>
+  <script src='{{$cdnDashboardUrl}}{{asset('js/generated/merchant.js')}}'></script>
 @endif
 
 <!-- supportkiy code -->
@@ -33,3 +33,17 @@
 @endif
 
 @include('partials/footer')
+
+<!-- Hotjar Tracking Code for dashboard.razorpay.com -->
+<script>
+  if (location.hostname === 'dashboard.razorpay.com') {
+    (function(h,o,t,j,a,r){
+      h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+      h._hjSettings={hjid:575141,hjsv:5};
+      a=o.getElementsByTagName('head')[0];
+      r=o.createElement('script');r.async=1;
+      r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+      a.appendChild(r);
+    })(window,document,'//static.hotjar.com/c/hotjar-','.js?sv=');
+  }
+</script>

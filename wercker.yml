@@ -29,13 +29,19 @@ build:
           code: php artisan cache:clear; php artisan clear-compiled
 
       - script:
-          name: Install js dependencies
-          code: yarn install
+          name: node version
+          code: node -v
+
+      - npm-install
 
       - script:
           name: gulp
           code: gulp
           fail-on-warnings: true
+
+      - script:
+          name: Gzip
+          code: node scripts/gzip.js
 
       - script:
           name: Run artisan migrate
@@ -67,6 +73,9 @@ build:
       - script:
           name: copy artisan server logs
           code: cp /tmp/rzp-dbd* $WERCKER_REPORT_ARTIFACTS_DIR/
+      - script:
+          name: create commit.txt
+          code: git rev-parse HEAD > public/commit.txt
 deploy:
     steps:
       - script:
@@ -76,8 +85,11 @@ deploy:
           name: check if dotfile rsyncignore exists
           code: if [ ! -f .rsyncignore ] ; then exit 1 ; fi;
       - script:
-          name: create commit.txt
-          code: git rev-parse HEAD > public/commit.txt
+          name: S3 Sync
+          code: node scripts/s3sync.js
+      - script:
+          name: remove heavy directories
+          code: rm --recursive --force .git node_modules
       - nhuray/aws-code-deploy:
           key: $AWS_KEY
           secret: $AWS_SECRET
@@ -85,6 +97,7 @@ deploy:
           application-name: dashboard
           deployment-group-name: $WERCKER_DEPLOYTARGET_NAME
           s3-bucket: "rzp-code-deploy"
+
     after-steps:
       - slack-notifier:
           url: $SLACK_URL
