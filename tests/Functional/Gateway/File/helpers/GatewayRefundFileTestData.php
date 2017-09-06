@@ -9,25 +9,32 @@ return [
     'testProcessRefundFile' => [
         'request' => [
             'content' => [
-                'type'   => 'refund',
-                'source' => 'hdfc',
-                'from'   => Carbon::today(Timezone::IST)->timestamp,
-                'to'     => Carbon::tomorrow(Timezone::IST)->timestamp
+                'type'    => 'refund',
+                'targets' => ['hdfc'],
+                'begin'   => Carbon::today(Timezone::IST)->timestamp,
+                'end'     => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'status'              => 'mail_sent',
-                'scheduled'           => true,
-                'partially_processed' => false,
-                'attempts'            => 1,
-                'sender'              => 'refunds@razorpay.com',
-                'type'                => 'refund',
-                'source'              => 'hdfc',
-                'entity'              => 'gateway_file',
-                'admin'               => true
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'mail_sent',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'refunds@razorpay.com',
+                        'type'                => 'refund',
+                        'target'              => 'hdfc',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ]
+                ]
             ]
         ]
     ],
@@ -36,9 +43,9 @@ return [
         'request' => [
             'content' => [
                 'type'   => 'xyz',
-                'source' => 'hdfc',
-                'from'   => Carbon::today(Timezone::IST)->timestamp,
-                'to'     => Carbon::tomorrow(Timezone::IST)->timestamp
+                'targets' => ['hdfc'],
+                'begin'   => Carbon::today(Timezone::IST)->timestamp,
+                'end'     => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -62,9 +69,9 @@ return [
         'request' => [
             'content' => [
                 'type'    => 'refund',
-                'source'  => 'kotak',
-                'from'    => Carbon::today(Timezone::IST)->timestamp,
-                'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
+                'targets' => ['kotak'],
+                'begin'    => Carbon::today(Timezone::IST)->timestamp,
+                'end'      => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -73,7 +80,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'kotak is not a supported source for type refund',
+                    'description' => 'kotak is not a valid target for type refund',
                 ],
             ],
             'status_code' => 400,
@@ -88,9 +95,9 @@ return [
         'request' => [
             'content' => [
                 'type'       => 'refund',
-                'source'     => 'hdfc',
-                'from'       => Carbon::today(Timezone::IST)->timestamp,
-                'to'         => Carbon::tomorrow(Timezone::IST)->timestamp,
+                'targets'    => ['hdfc'],
+                'begin'      => Carbon::today(Timezone::IST)->timestamp,
+                'end'        => Carbon::tomorrow(Timezone::IST)->timestamp,
                 'recipients' => ['abc']
             ],
             'url' => '/gateway/files',
@@ -114,10 +121,10 @@ return [
     'testProcessGatewayFileStartingInFuture' => [
         'request' => [
             'content' => [
-                'type'       => 'refund',
-                'source'     => 'hdfc',
-                'from'       => Carbon::tomorrow(Timezone::IST)->timestamp,
-                'to'         => Carbon::tomorrow(Timezone::IST)->timestamp,
+                'type'    => 'refund',
+                'targets' => ['hdfc'],
+                'begin'   => Carbon::tomorrow(Timezone::IST)->timestamp,
+                'end'     => Carbon::tomorrow(Timezone::IST)->timestamp,
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -126,7 +133,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'from cannot be in the future',
+                    'description' => 'begin cannot be in the future',
                 ],
             ],
             'status_code' => 400,
@@ -140,10 +147,10 @@ return [
     'testProcessGatewayFileWithInvalidTimeRange' => [
         'request' => [
             'content' => [
-                'type'       => 'refund',
-                'source'     => 'hdfc',
-                'from'       => Carbon::today(Timezone::IST)->timestamp,
-                'to'         => Carbon::yesterday(Timezone::IST)->timestamp,
+                'type'    => 'refund',
+                'targets' => ['hdfc'],
+                'begin'   => Carbon::today(Timezone::IST)->timestamp,
+                'end'     => Carbon::yesterday(Timezone::IST)->timestamp,
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -152,7 +159,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'from cannot be after to',
+                    'description' => 'begin cannot be after end',
                 ],
             ],
             'status_code' => 400,
@@ -167,26 +174,32 @@ return [
         'request' => [
             'content' => [
                 'type'       => 'refund',
-                'source'     => 'hdfc',
+                'targets'    => ['hdfc'],
                 'recipients' => ['test@razorpay.com'],
-                'from'       => Carbon::today(Timezone::IST)->timestamp,
-                'to'         => Carbon::tomorrow(Timezone::IST)->timestamp
+                'begin'      => Carbon::today(Timezone::IST)->timestamp,
+                'end'        => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'status'              => 'mail_sent',
-                'scheduled'           => true,
-                'partially_processed' => false,
-                'attempts'            => 1,
-                'sender'              => 'refunds@razorpay.com',
-                'recipients'          => ['test@razorpay.com'],
-                'type'                => 'refund',
-                'source'              => 'hdfc',
-                'entity'              => 'gateway_file',
-                'admin'               => true
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'mail_sent',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'refunds@razorpay.com',
+                        'recipients'          => ['test@razorpay.com'],
+                        'type'                => 'refund',
+                        'target'              => 'hdfc',
+                        'entity'              => 'gateway_file',
+                    ]
+                ]
             ]
         ]
     ],
@@ -195,25 +208,31 @@ return [
         'request' => [
             'content' => [
                 'type'    => 'refund',
-                'source'  => 'hdfc',
-                'from'    => Carbon::today(Timezone::IST)->timestamp,
-                'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
+                'targets' => ['hdfc'],
+                'begin'   => Carbon::today(Timezone::IST)->timestamp,
+                'end'     => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'status'              => 'failed',
-                'failure_code'        => 'no_data_for_file_generation',
-                'scheduled'           => true,
-                'partially_processed' => false,
-                'attempts'            => 1,
-                'sender'              => 'refunds@razorpay.com',
-                'type'                => 'refund',
-                'source'              => 'hdfc',
-                'entity'              => 'gateway_file',
-                'admin'               => true
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'acknowledged',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'refunds@razorpay.com',
+                        'comments'            => 'Valid data not available for file processing',
+                        'type'                => 'refund',
+                        'target'              => 'hdfc',
+                        'entity'              => 'gateway_file',
+                    ]
+                ]
             ]
         ]
     ],
@@ -222,25 +241,31 @@ return [
         'request' => [
             'content' => [
                 'type'    => 'refund',
-                'source'  => 'hdfc',
-                'from'    => Carbon::today(Timezone::IST)->timestamp,
-                'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
+                'targets' => ['hdfc'],
+                'begin'   => Carbon::today(Timezone::IST)->timestamp,
+                'end'     => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'status'              => 'failed',
-                'failure_code'        => 'error_creating_file',
-                'scheduled'           => true,
-                'partially_processed' => false,
-                'attempts'            => 1,
-                'sender'              => 'refunds@razorpay.com',
-                'type'                => 'refund',
-                'source'              => 'hdfc',
-                'entity'              => 'gateway_file',
-                'admin'               => true
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'failed',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'refunds@razorpay.com',
+                        'type'                => 'refund',
+                        'target'              => 'hdfc',
+                        'error_code'          => 'error_generating_file',
+                        'entity'              => 'gateway_file',
+                    ]
+                ]
             ]
         ]
     ],
@@ -249,25 +274,31 @@ return [
         'request' => [
             'content' => [
                 'type'    => 'refund',
-                'source'  => 'hdfc',
-                'from'    => Carbon::today(Timezone::IST)->timestamp,
-                'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
+                'targets' => ['hdfc'],
+                'begin'   => Carbon::today(Timezone::IST)->timestamp,
+                'end'     => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'status'              => 'failed',
-                'failure_code'        => 'error_sending_mail',
-                'scheduled'           => true,
-                'partially_processed' => false,
-                'attempts'            => 1,
-                'sender'              => 'refunds@razorpay.com',
-                'type'                => 'refund',
-                'source'              => 'hdfc',
-                'entity'              => 'gateway_file',
-                'admin'               => true
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'failed',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'refunds@razorpay.com',
+                        'type'                => 'refund',
+                        'target'              => 'hdfc',
+                        'error_code'          => 'error_sending_mail',
+                        'entity'              => 'gateway_file',
+                    ]
+                ]
             ]
         ]
     ],
@@ -286,9 +317,8 @@ return [
                 'attempts'            => 2,
                 'sender'              => 'refunds@razorpay.com',
                 'type'                => 'refund',
-                'source'              => 'hdfc',
+                'target'              => 'hdfc',
                 'entity'              => 'gateway_file',
-                'admin'               => true
             ]
         ]
     ],
@@ -324,7 +354,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'This gateway file is not retriable',
+                    'description' => 'This gateway file generation attempt is not retriable',
                 ],
             ],
             'status_code' => 400,
@@ -345,7 +375,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'This gateway file is not retriable',
+                    'description' => 'This gateway file generation attempt is not retriable',
                 ],
             ],
             'status_code' => 400,
@@ -359,6 +389,7 @@ return [
     'testGatewayFileAcknowledge' => [
         'request' => [
             'content' => [
+                'comments' => 'test comments',
             ],
             'method' => 'POST',
         ],
@@ -367,10 +398,11 @@ return [
                 'status'              => 'acknowledged',
                 'scheduled'           => true,
                 'partially_processed' => false,
+                'comments'            => 'test comments',
                 'attempts'            => 1,
                 'sender'              => 'refunds@razorpay.com',
                 'type'                => 'refund',
-                'source'              => 'hdfc',
+                'target'              => 'hdfc',
                 'entity'              => 'gateway_file',
                 'admin'               => true
             ]
@@ -392,64 +424,28 @@ return [
                 'attempts'            => 1,
                 'sender'              => 'refunds@razorpay.com',
                 'type'                => 'refund',
-                'source'              => 'hdfc',
+                'target'              => 'hdfc',
                 'entity'              => 'gateway_file',
                 'admin'               => true
             ]
         ]
     ],
 
-    'testGenerateGatewayFilesBulk' => [
+    'testGenerateGatewayFilesBulkWithNoTargets' => [
         'request' => [
             'content' => [
-                'sources' => [
-                    'hdfc'
-                ],
-                'from' => Carbon::today(Timezone::IST)->timestamp,
-                'to'   => Carbon::tomorrow(Timezone::IST)->timestamp
+                'type'  => 'refund',
+                'begin' => Carbon::today(Timezone::IST)->timestamp,
+                'end'   => Carbon::tomorrow(Timezone::IST)->timestamp,
             ],
-            'url' => '/gateway/files/refund/generate',
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'collection',
-                'count' => 1,
-                'admin' => true,
-                'items' => [
-                    [
-                        'status'              => 'mail_sent',
-                        'scheduled'           => true,
-                        'partially_processed' => false,
-                        'attempts'            => 1,
-                        'sender'              => 'refunds@razorpay.com',
-                        'type'                => 'refund',
-                        'source'              => 'hdfc',
-                        'entity'              => 'gateway_file',
-                        'admin'               => true
-                    ]
-                ]
-            ]
-        ]
-    ],
-
-    'testGenerateGatewayFilesBulkWithInvalidType' => [
-        'request' => [
-            'content' => [
-                'sources' => [
-                    'hdfc'
-                ],
-                'from' => Carbon::today(Timezone::IST)->timestamp,
-                'to'   => Carbon::tomorrow(Timezone::IST)->timestamp,
-            ],
-            'url' => '/gateway/files/xyz/generate',
+            'url' => '/gateway/files/',
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'xyz is not a valid gateway file type',
+                    'description' => 'targets are required and should be sent',
                 ],
             ],
             'status_code' => 400,

@@ -41,6 +41,8 @@ class GatewayRefundFileTest extends TestCase
 
         $content = $this->startTest();
 
+        $content = $content['items'][0];
+
         $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
         $this->assertNotNull(File\Entity::SENT_AT);
         $this->assertNull($content[File\Entity::FAILED_AT]);
@@ -111,6 +113,8 @@ class GatewayRefundFileTest extends TestCase
 
         $content = $this->startTest();
 
+        $content = $content['items'][0];
+
         $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
         $this->assertNotNull($content[File\Entity::SENT_AT]);
         $this->assertNull($content[File\Entity::FAILED_AT]);
@@ -127,10 +131,12 @@ class GatewayRefundFileTest extends TestCase
 
         $content = $this->startTest();
 
+        $content = $content['items'][0];
+
         $this->assertNull($content[File\Entity::FILE_GENERATED_AT]);
         $this->assertNull($content[File\Entity::SENT_AT]);
-        $this->assertNotNull($content[File\Entity::FAILED_AT]);
-        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNotNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
         Mail::assertNotSent(RefundFileMail::class);
     }
@@ -152,6 +158,8 @@ class GatewayRefundFileTest extends TestCase
         $this->ba->appAuth();
 
         $content = $this->startTest();
+
+        $content = $content['items'][0];
 
         $this->assertNull($content[File\Entity::FILE_GENERATED_AT]);
         $this->assertNull($content[File\Entity::SENT_AT]);
@@ -181,6 +189,8 @@ class GatewayRefundFileTest extends TestCase
 
         $content = $this->startTest();
 
+        $content = $content['items'][0];
+
         $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
         $this->assertNull($content[File\Entity::SENT_AT]);
         $this->assertNotNull($content[File\Entity::FAILED_AT]);
@@ -205,15 +215,15 @@ class GatewayRefundFileTest extends TestCase
         Mail::fake();
 
         $gatewayFile = $this->fixtures->create('gateway_file', [
-            'source'       => 'hdfc',
-            'type'         => 'refund',
-            'sender'       => 'refunds@razorpay.com',
-            'status'       => 'failed',
-            'failure_code' => 'error_creating_file',
-            'failed_at'    => time(),
-            'attempts'     => 1,
-            'from'         => Carbon::today(Timezone::IST)->timestamp,
-            'to'           => Carbon::tomorrow(Timezone::IST)->timestamp,
+            'target'     => 'hdfc',
+            'type'       => 'refund',
+            'sender'     => 'refunds@razorpay.com',
+            'status'     => 'failed',
+            'error_code' => 'error_creating_file',
+            'failed_at'  => time(),
+            'attempts'   => 1,
+            'begin'      => Carbon::today(Timezone::IST)->timestamp,
+            'end'        => Carbon::tomorrow(Timezone::IST)->timestamp,
         ]);
 
         $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
@@ -339,25 +349,7 @@ class GatewayRefundFileTest extends TestCase
         $this->assertNotNull($content[File\Entity::ACKNOWLEDGED_AT]);
     }
 
-    public function testGenerateGatewayFilesBulk()
-    {
-        // @todo Use correct timestamps in this test
-        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
-
-        Mail::fake();
-
-        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
-
-        $payment = $this->doAuthAndCapturePayment($payment);
-
-        $refund = $this->refundPayment($payment['id']);
-
-        $this->ba->appAuth();
-
-        $content = $this->startTest();
-    }
-
-    public function testGenerateGatewayFilesBulkWithInvalidType()
+    public function testGenerateGatewayFilesBulkWithNoTargets()
     {
         $this->ba->appAuth();
 
