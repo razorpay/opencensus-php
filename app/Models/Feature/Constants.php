@@ -86,16 +86,29 @@ class Constants
     ];
 
     public static $visibleFeaturesMap = [
-        'noflashcheckout' => [
+        self::NOFLASHCHECKOUT  => [
             'feature'      => self::NOFLASHCHECKOUT,
             'display_name' => 'No Flash Checkout'
         ],
-        'marketplace'     => [
+        self::MARKETPLACE      => [
             'feature'      => self::MARKETPLACE,
             'display_name' => 'Marketplace'
-        ]
+        ],
+        self::SUBSCRIPTIONS    => [
+            'feature'      => self::SUBSCRIPTIONS,
+            'display_name' => 'Subscriptions'
+        ],
+        self::VIRTUAL_ACCOUNTS => [
+            'feature'      => self::VIRTUAL_ACCOUNTS,
+            'display_name' => 'Virtual accounts'
+        ],
+
     ];
 
+    /*
+     * Visible features that can be enabled / disabled on test mode by the merchant directly,
+     * but require admin approval for live mode, has to be added here
+     */
     public static $featuresUneditableOnLive = [
         self::MARKETPLACE,
         self::SUBSCRIPTIONS,

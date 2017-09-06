@@ -1366,6 +1366,7 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    // This function tests updating of a visible merchant feature: noflashcheckout
     public function testUpdateMerchantFeatures()
     {
         $this->ba->proxyAuth();
@@ -1373,9 +1374,26 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    // This function tests updating of a non visble merchant feature: dummy
     public function testUpdateMerchantUnEditableFeatures()
     {
         $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    // This function tests updating of a merchant feature that can be updated on test but not live mode: marketplace
+    public function testUpdateMerchantUnEditableFeaturesOnLive()
+    {
+        $this->ba->proxyAuthLive();
+
+        $this->startTest();
+    }
+
+    // This function tests updating of a merchant feature that can be updated on test but not live mode: marketplace
+    public function testUpdateMerchantEditableFeaturesOnTest()
+    {
+        $this->ba->proxyAuthTest();
 
         $this->startTest();
     }
