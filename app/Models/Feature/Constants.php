@@ -89,7 +89,17 @@ class Constants
         'noflashcheckout' => [
             'feature'      => self::NOFLASHCHECKOUT,
             'display_name' => 'No Flash Checkout'
+        ],
+        'marketplace'     => [
+            'feature'      => self::MARKETPLACE,
+            'display_name' => 'Marketplace'
         ]
+    ];
+
+    public static $featuresUneditableOnLive = [
+        self::MARKETPLACE,
+        self::SUBSCRIPTIONS,
+        self::VIRTUAL_ACCOUNTS
     ];
 
     public static function getFeatureValue($featureName)
