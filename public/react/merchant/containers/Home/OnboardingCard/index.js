@@ -11,10 +11,10 @@ export default class OnboardingCard extends Component {
   state = {};
 
   componentWillMount() {
-    if (LocalStorageService.getItem('ngStorage-new_user_signup')) {
+    if (JSON.parse(LocalStorageService.getItem('ngStorage-new_user_signup'))) {
       LocalStorageService.setItem('onboarding_first_step', true);
       LocalStorageService.setItem('show_onboarding_card', true);
-      LocalStorageService.removeItem('ngStorage-new_user_signup');
+      LocalStorageService.setItem('ngStorage-new_user_signup', false);
     }
 
     this.setState({
