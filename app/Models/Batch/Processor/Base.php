@@ -5,17 +5,19 @@ namespace RZP\Models\Batch\Processor;
 use Mail;
 use Carbon\Carbon;
 
-use RZP\Exception;
 use RZP\Models\Batch;
 use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\FileStore;
+use RZP\Exception\BaseException;
+use RZP\Exception\LogicException;
 use RZP\Models\Base as BaseModel;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Base extends BaseModel\Core
 {
@@ -160,7 +162,7 @@ class Base extends BaseModel\Core
                 $entry[Batch\Header::ERROR_CODE]        = null;
                 $entry[Batch\Header::ERROR_DESCRIPTION] = null;
             }
-            catch (Exception\BaseException $e)
+            catch (BaseException $e)
             {
                 // All RZP Exceptions have public error code and public error
                 // description which can be exposed in the output file.
@@ -391,7 +393,7 @@ class Base extends BaseModel\Core
      *
      * @return FileStore\Creator
      *
-     * @throws Exception\LogicException
+     * @throws LogicException
      */
     protected function saveFile(string $filePath, string $type): FileStore\Creator
     {
@@ -451,17 +453,10 @@ class Base extends BaseModel\Core
      */
     public function retryBatchOutputFile()
     {
-        //
-        // This operation only applies for type=payment_link.
-        //
-        if ($this->batch->isPaymentLinkType() === false)
-        {
-            throw new Exception\LogicException('Invalid type, Operation not allowed.');
-        }
+        $this->trace->info(TraceCode::BATCH_RETRY_OUTPUT_FILE, $this->batch->toArrayPublic());
 
-        //
-        // Download the input file, parse and get the row of entities.
-        //
+        $this->validateRetryBatchOutputFileOperationAllowed();
+
         $this->downloadAndSetInputFile();
 
         $entries = $this->parseExcelSheets($this->inputFileLocalPath);
@@ -510,5 +505,24 @@ class Base extends BaseModel\Core
         $this->createSetOutputFileAndSave($entries);
 
         $this->repo->saveOrFail($this->batch);
+    }
+
+    /**
+     * Above operation is only allowed for payment link type and for batches
+     * not already having output file created.
+     */
+    protected function validateRetryBatchOutputFileOperationAllowed()
+    {
+        if ($this->batch->isPaymentLinkType() === false)
+        {
+            throw new BadRequestValidationFailureException(
+                        'Operation not allowed: Batch is not of payment link type.');
+        }
+
+        if ($this->batch->outputFile() !== null)
+        {
+            throw new BadRequestValidationFailureException(
+                        'Operation not allowed: Batch already has output file created.');
+        }
     }
 }
