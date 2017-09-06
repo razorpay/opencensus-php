@@ -76,6 +76,7 @@ class Entity extends Base\PublicEntity
     const METHODS                   = 'methods';
     const ORIGINAL_SIZE             = 'original';
     const ACTION                    = 'action';
+    const MEDIUM_SIZE               = 'medium';
 
     const ROLE                      = 'role';
     const PIVOT                     = 'pivot';
@@ -1152,7 +1153,7 @@ class Entity extends Base\PublicEntity
             self::ACTIVATED    => $this->getAttribute(self::ACTIVATED),
             self::ARCHIVED_AT  => $this->getAttribute(self::ARCHIVED_AT),
             self::SUSPENDED_AT => $this->getAttribute(self::SUSPENDED_AT),
-            self::LOGO_URL     => $this->getAttribute(self::LOGO_URL),
+            self::LOGO_URL     => $this->getFullLogoUrlWithSize(self::MEDIUM_SIZE),
             self::CREATED_AT   => $this->getAttribute(self::CREATED_AT),
             self::UPDATED_AT   => $this->getAttribute(self::UPDATED_AT),
         ];
