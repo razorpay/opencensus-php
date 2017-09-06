@@ -243,24 +243,6 @@ class AdminController extends Controller
         return redirect('/');
     }
 
-    public function getMerchant($id)
-    {
-        ApiRequest::addHeader('X-Razorpay-Account', $id);
-
-        list($error, $data) = (new Admin\Service)->fetchFullMerchantDetails($id);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getMerchantTerminal($id)
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->postMerchantTerminal($id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function postMerchantTerminal($id)
     {
         $input = Input::all();
@@ -393,13 +375,6 @@ class AdminController extends Controller
         $input = Input::all();
 
         list($error, $response) = (new Admin\Service)->addEntityFeatures($entityType, $entityId, $input);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
-    public function deleteEntityFeature($entityId, $featureName)
-    {
-        list($error, $response) = (new Admin\Service)->deleteEntityFeature($entityId, $featureName);
 
         return AppResponse::jsonResponse($error, $response);
     }

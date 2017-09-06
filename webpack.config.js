@@ -78,14 +78,24 @@ module.exports = env => {
       ],
     },
     {
-      test: /\.(png|woff|woff2|eot|ttf|svg)$/,
+      test: /\.(woff|woff2|eot|ttf)$/,
+      use: [
+        {
+          loader: 'file-loader',
+          options: {
+            publicPath: process.env.WERCKER ? '/dashboard/dist/' : '/dist/',
+          },
+        },
+      ],
+    },
+    {
+      test: /\.(png|svg)$/,
       use: [
         {
           loader: 'file-loader',
         },
       ],
     },
-
     {
       test: /\.jst$/,
       use: [

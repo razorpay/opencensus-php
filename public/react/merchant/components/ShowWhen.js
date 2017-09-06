@@ -30,8 +30,15 @@ export default class ShowWhen extends Component {
       return null;
     }
 
-    if (featureEnabled && tags.indexOf(featureEnabled.toLowerCase()) === -1) {
-      return null;
+    if (featureEnabled) {
+      if (featureEnabled instanceof Array) {
+        // Array elements will be matched to tags as per `OR` and not `AND`
+        if (!featureEnabled.some(r => tags.includes(r.toLowerCase()))) {
+          return null;
+        }
+      } else if (tags.indexOf(featureEnabled.toLowerCase()) === -1) {
+        return null;
+      }
     }
 
     return children;

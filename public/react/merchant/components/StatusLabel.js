@@ -9,6 +9,7 @@ const StatusLabel = statusMap => ({ status }) => (
 export const invoiceStatusMap = {
   draft: 'label-muted',
   issued: 'label-info',
+  overdue: 'label-partially-paid',
   partially_paid: 'label-partially-paid',
   paid: 'label-success',
   cancelled: 'label-danger',

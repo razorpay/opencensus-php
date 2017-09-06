@@ -73,10 +73,6 @@ class MerchantTest extends TestCase
             self::$admin = $this->createEntity('admin');
         }
 
-        // Make sure that the merchant has webhook tagged
-        // So the webhook button is visible
-        self::$merchant->tag('webhooks', 'team', 'orders');
-
         self::$setUp = true;
     }
 

@@ -5,8 +5,22 @@ import Spinner from 'rzp/ui/Spinner';
 import Alert from 'rzp/ui/Forms/Alert';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
+import EntityDetailList from 'merchant/components/EntityDetailList/List';
 import { getFixedINRAmount, getIntervalCycle } from 'rzp/utils/rzp-utils';
 import { SubscriptionStatusLabel } from 'merchant/components/StatusLabel';
+
+const getDescription = (interval, period) => {
+  switch (period) {
+    case 'monthly':
+      return `Billed Every ${interval} month`;
+    case 'yearly':
+      return `Billed Every ${interval} year`;
+    case 'weekly':
+      return `Billed Every ${interval} week`;
+    default:
+      return period;
+  }
+};
 
 export default ({
   subscription,
@@ -14,6 +28,9 @@ export default ({
   customer,
   isLoading,
   statusMsg,
+  invoices,
+  goToLink,
+  activeSecEntityId,
   onCancelClick,
 }) => {
   return (
@@ -41,12 +58,18 @@ export default ({
                   value={() =>
                     <div>
                       <Link to={`/plans/${subscription.plan_id}`}>
-                        {plan.item.name}
+                        {subscription.plan_id}
                       </Link>
-                      <div class="text-muted">
-                        <small>
+                      <div>
+                        <div class="label--primary">
+                          {plan.item.name}
+                        </div>
+                        <div class="label--secondary">
                           {plan.item.description}
-                        </small>
+                        </div>
+                        <div class="label--secondary">
+                          {getDescription(plan.interval, plan.period)}
+                        </div>
                       </div>
                     </div>}
                 />
@@ -55,13 +78,13 @@ export default ({
                   label="Recurring Billing"
                   value={() =>
                     <div>
-                      <div>
+                      <div class="label--primary">
                         <Amount
                           currency={plan.item.currency}
                           value={subscription.quantity * plan.item.unit_amount}
                         />
                       </div>
-                      <small class="text-muted">
+                      <small class="label--secondary">
                         {subscription.quantity} x{' '}
                         <Amount
                           currency={plan.item.currency}
@@ -92,6 +115,20 @@ export default ({
                     />}
                 />
 
+                {false &&
+                  <EntityDetailList
+                    title="Invoices detail"
+                    goToLink={goToLink}
+                    subTitle={
+                      subscription.total_count &&
+                      `${subscription.paid_count} of ${subscription.total_count} invoices charged`
+                    }
+                    moreAfterlimit={2}
+                    error={invoices.error}
+                    items={invoices.items}
+                    activeSecEntityId={activeSecEntityId}
+                    loading={invoices.loading}
+                  />}
                 <NestedEntityDetailRow
                   label="Notes"
                   value={subscription.notes}

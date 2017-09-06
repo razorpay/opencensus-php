@@ -288,15 +288,6 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function postTagMerchant()
-    {
-        $input = Input::all();
-
-        list($error, $response) = (new Merchant\Service)->tagMerchant($input);
-
-        return AppResponse::jsonResponse($error, $response);
-    }
-
     public function sendFeedback()
     {
         $input = Input::all();

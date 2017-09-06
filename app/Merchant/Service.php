@@ -58,11 +58,6 @@ class Service extends Base\Service
             // This is called for certain special email addresses
             $merchant->setCustomId();
 
-            if ($referer)
-            {
-                $merchant->tag('ref-'.$referer);
-            }
-
             $merchant->save();
         }
 
@@ -458,12 +453,6 @@ class Service extends Base\Service
         return $merchantApiData;
     }
 
-    public function tagAdmin($merchantOnApi)
-    {
-        sd($merchantOnApi);
-        // $this->api->merchant->tagAdmin();
-    }
-
     public function resendConfirmation(array $input)
     {
         if (isset($input['email']) === false)
@@ -497,13 +486,7 @@ class Service extends Base\Service
     {
         list($error, $merchant) = $this->fetchMerchantFromApi($merchantId);
 
-        $tags = Merchant\Entity::select(['id'])
-                                ->with('tagged')
-                                ->where('id', $merchantId)
-                                ->get()
-                                ->toArray();
-
-        return array_merge($merchant, $tags[0]);
+        return $merchant;
     }
 
     public function fetchMerchantFromApi($merchantId)
@@ -578,30 +561,6 @@ class Service extends Base\Service
         }
 
         return [$errors, $data];
-    }
-
-    /**
-     * Get the merchant entity from the gibven merchant id
-     *
-     * @param  string $merchantId
-     * @return Array with merchant, merchant details
-     */
-    public function fetchCurrentMerchantForUser($user)
-    {
-        $merchantId = $user->getCurrentMerchantId();
-
-        $merchant = $this->fetch($merchantId);
-
-        if ($user->currentMerchant->primaryOwner()->id === $user->id)
-        {
-            $merchant['primaryOwner'] = true;
-        }
-        else
-        {
-            $merchant['primaryOwner'] = false;
-        }
-
-        return $merchant;
     }
 
     public function getInvoices($mode)
@@ -769,35 +728,6 @@ class Service extends Base\Service
         return [$error, null];
     }
 
-    /**
-     * Makes sure that the hex color is in proper
-     * format for the API. Just drops the first
-     * character if it is 7 characters in length
-     * also, uppercases
-     * @param  array $input Input Data
-     * @return array Input data
-     */
-    protected function fixHexColor(array $input)
-    {
-        if (isset($input['brand_color']))
-        {
-            $color = $input['brand_color'];
-
-            $len = strlen($color);
-
-            if ($len === 7)
-            {
-                $color = substr($color, 1);
-            }
-
-            $color = strtoupper($color);
-
-            $input['brand_color'] = $color;
-        }
-
-        return $input;
-    }
-
     public function savePreSignupDetails($merchantId, $input)
     {
         $error = (new MerchantDetails\Entity)->edit($input, 'preSignup');
@@ -820,10 +750,14 @@ class Service extends Base\Service
 
                 $user = $merchant->primaryOwner();
 
-                $userEditData = [
-                    'contact_mobile' => $input['contact_mobile'],
-                    'name'           => $input['contact_name']
-                ];
+                //
+                // We need to handle for non-existence of keys in $input as those
+                // are all optional for MerchantDetails edit.
+                //
+                $userEditData['contact_mobile'] = $input['contact_mobile'] ?? null;
+                $userEditData['name']           = $input['contact_name'] ?? null;
+
+                $userEditData = array_filter($userEditData);
 
                 $user->edit($userEditData, 'preSignup');
 
@@ -933,8 +867,6 @@ class Service extends Base\Service
             $newAllTags[] = 'newui';
         }
 
-        $currentMerchant->retag($newAllTags);
-
         $this->addMerchantTagsOnAPI($currentMerchant->id, $newAllTags);
 
         return [[], $currentMerchant->toArray()];
@@ -978,19 +910,5 @@ class Service extends Base\Service
         $genericService = new Generic\Service;
 
         list($error, $data) = $genericService->call('POST', $addTags);
-    }
-
-    public function deleteMerchantTagOnAPI($merchantId, $tagName) {
-        $deleteTag = [
-            'route_name' => 'merchant_tag_delete',
-            'url_params' => [
-                '{id}'      => $merchantId,
-                '{tagName}' => $tagName
-            ],
-        ];
-
-        $genericService = new Generic\Service;
-
-        list($error, $data) = $genericService->call('DELETE', $deleteTag);
     }
 }

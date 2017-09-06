@@ -4,16 +4,14 @@ import { Field, reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
-import LocalStorageService from 'rzp/utils/localStorage';
 import { required } from 'rzp/utils/validators';
 import { closeModal } from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
-import { enableOrDisableNewui, submitFeedback } from 'merchant/modules/session';
+import { submitFeedback } from 'merchant/modules/session';
 
 @connect(state => state.session, {
   closeModal,
   showNotification,
-  enableOrDisableNewui,
   submitFeedback,
 })
 @reduxForm({
@@ -44,37 +42,18 @@ export default class SubmitFeedback extends Component {
   submit = props => {
     return this._submit({
       ...props,
-      subject: this.props.user.isNewUIEnabled
-        ? 'New Dashboard Feedback'
-        : 'Old Dashboard Feedback',
+      subject: this.props.user.isOldUIEnabled
+        ? 'Old Dashboard Feedback'
+        : 'New Dashboard Feedback',
     }).then(() => {
       this.props.closeModal();
     });
   };
 
-  revert = () => {
-    return this.props.enableOrDisableNewui(false);
-  };
-
-  submitAndRevert = (props = {}) => {
-    return this._submit({
-      ...props,
-      subject: props.message
-        ? 'New Dashboard Revert Feedback'
-        : 'New Dashboard Revert Without Feedback',
-    }).then(() => {
-      return this.revert();
-    });
-  };
-
   render() {
-    const { handleSubmit, revertToOldDesign } = this.props;
+    const { handleSubmit } = this.props;
     let title = 'Feedback / Suggestion';
     let label = 'Your message';
-    if (revertToOldDesign) {
-      title = 'Before you revert...';
-      label = 'Why do you want to go back?';
-    }
 
     return (
       <div>
@@ -83,7 +62,7 @@ export default class SubmitFeedback extends Component {
         <div class="modal-body">
           <form onSubmit={handleSubmit(this.submit)}>
             <div class="form-group">
-              <label class={revertToOldDesign ? '' : 'label-required'}>
+              <label class="label-required">
                 {label}
               </label>
               <div>
@@ -94,11 +73,7 @@ export default class SubmitFeedback extends Component {
                   class="form-control"
                   autoFocus={true}
                   rows={10}
-                  placeholder={
-                    revertToOldDesign
-                      ? 'This will help us learn and fix issues'
-                      : 'We would love to know your thoughts'
-                  }
+                  placeholder="We would love to know your thoughts"
                   validate={required()}
                 />
               </div>
@@ -108,26 +83,9 @@ export default class SubmitFeedback extends Component {
               <AsyncButton
                 type="submit"
                 class="btn btn-primary btn-lg btn-block"
-                text={
-                  revertToOldDesign
-                    ? 'Submit and revert to old design'
-                    : 'Submit Feedback'
-                }
-                onClick={handleSubmit(
-                  revertToOldDesign ? this.submitAndRevert : this.submit
-                )}
+                text="Submit Feedback"
+                onClick={handleSubmit(this.submit)}
               />
-              {revertToOldDesign &&
-                <AsyncButton
-                  type="button"
-                  class="btn btn-default btn-block"
-                  text="Revert without giving feedback"
-                  pendingText="Reverting..."
-                  onClick={() => this.submitAndRevert()}
-                  style={{
-                    marginTop: '16px',
-                  }}
-                />}
             </div>
           </form>
         </div>
@@ -135,7 +93,3 @@ export default class SubmitFeedback extends Component {
     );
   }
 }
-
-SubmitFeedback.defaultProps = {
-  revertToOldDesign: false,
-};
