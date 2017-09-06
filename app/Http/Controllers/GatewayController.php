@@ -392,38 +392,4 @@ class GatewayController extends Controller
 
         return ApiResponse::json($data);
     }
-
-    public function createGatewayFile(File\Service $service)
-    {
-        $input = Request::all();
-
-        $data = $service->create($input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function acknowledgeGatewayFile(File\Service $service, string $id)
-    {
-        $input = Request::all();
-
-        $data = $service->acknowledge($id, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function retryGatewayFile(File\Service $service, string $id)
-    {
-        $data = $service->retry($id);
-
-        return ApiResponse::json($data);
-    }
-
-    public function generateGatewayFiles(File\Service $service, string $type)
-    {
-        $input = Request::all();
-
-        $data = $service->generateGatewayFiles($type, $input);
-
-        return ApiResponse::json($data);
-    }
 }

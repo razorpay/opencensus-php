@@ -20,8 +20,6 @@ class GatewayManager extends \Illuminate\Support\Manager
 
     protected $recons = [];
 
-    protected $fileProcessors = [];
-
     public function __construct($app)
     {
         parent::__construct($app);
@@ -162,31 +160,6 @@ class GatewayManager extends \Illuminate\Support\Manager
         $this->recons[$driver] = $recon;
 
         return $recon;
-    }
-
-    public function getFileProcessor(string $type, string $source)
-    {
-        $driver = $this->getFileProcessorDriver($type, $source);
-
-        if (isset($this->fileProcessors[$driver]) === true)
-        {
-            return $this->fileProcessors[$driver];
-        }
-
-        $processor = new $driver;
-
-        $this->fileProcessors[$driver] = $processor;
-
-        return $this->fileProcessors[$driver];
-    }
-
-    protected function getFileProcessorDriver(string $type, string $source): string
-    {
-        $baseNamespace = 'RZP\\Models\\Gateway\\File\\Processor\\';
-
-        $driverNameSpace = $baseNamespace . studly_case($type) . '\\' . studly_case($source);
-
-        return $driverNameSpace;
     }
 
     public function getServerClass($driver)

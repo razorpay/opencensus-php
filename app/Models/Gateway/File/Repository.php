@@ -9,8 +9,8 @@ class Repository extends Base\Repository
     protected $entity = 'gateway_file';
 
     protected $entityFetchParamRules = [
-        Entity::SOURCE => 'sometimes|string',
-        Entity::TYPE   => 'sometimes|string',
-        Entity::STATUS => 'sometimes|string',
+        Entity::TARGET => 'filled|string|max:50',
+        Entity::TYPE   => 'filled|string|max:20',
+        Entity::STATUS => 'filled|string|max:20',
     ];
 }

@@ -20,7 +20,7 @@ class Constants
      * of gateways supported for a particular type. Here the value ALL represents that
      * payments across all gateways need to be considered while generating the file
      */
-    const SUPPORTED_SOURCES = [
+    const SUPPORTED_TARGETS = [
         Type::REFUND => [
             self::HDFC,
             self::ICICI
@@ -47,5 +47,12 @@ class Constants
         Type::CLAIM    => MailConstants::MAIL_ADDRESSES[MailConstants::REFUNDS],
         Type::COMBINED => MailConstants::MAIL_ADDRESSES[MailConstants::REFUNDS],
         Type::EMI      => MailConstants::MAIL_ADDRESSES[MailConstants::EMI],
+    ];
+
+    const RECIPIENTS_MAP = [
+        Type::REFUND => [
+            self::HDFC  => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
+            self::ICICI => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
+        ]
     ];
 }

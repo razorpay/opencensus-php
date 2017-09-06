@@ -9,20 +9,15 @@ class Type
     const REFUND   = 'refund';
     const COMBINED = 'combined';
 
-    public static function getValidTypes(): array
-    {
-        return [
-            self::EMI,
-            self::CLAIM,
-            self::REFUND,
-            self::COMBINED
-        ];
-    }
+    const VALID_TYPES = [
+        self::EMI,
+        self::CLAIM,
+        self::REFUND,
+        self::COMBINED,
+    ];
 
     public static function isValidType(string $type)
     {
-        $validTypes = self::getValidTypes();
-
-        return (in_array($type, $validTypes, true) === true);
+        return (in_array($type, self::VALID_TYPES, true) === true);
     }
 }

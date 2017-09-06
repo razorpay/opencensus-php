@@ -9,9 +9,11 @@ class Service extends Base\Service
 {
     public function create(array $input)
     {
-        $gatewayFile = $this->core()->create($input);
+        $input = $this->formatInput($input);
 
-        return $gatewayFile->toArrayAdmin();
+        $gatewayFiles = $this->core()->create($input);
+
+        return $gatewayFiles->toArrayAdmin();
     }
 
     public function acknowledge(string $id, array $data)
@@ -37,16 +39,27 @@ class Service extends Base\Service
         return $gatewayFile->toArrayAdmin();
     }
 
-    public function generateGatewayFiles(string $type, array $input)
+    protected function formatInput(array $input): array
     {
-        $sources = $input['sources'];
+        if ((isset($input['targets']) === false) or
+            (is_sequential_array($input['targets']) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'targets are required and should be sent');
+        }
 
-        $from = $input[Entity::FROM];
+        $targets = $input['targets'];
+        unset($input['targets']);
 
-        $to = $input[Entity::TO];
+        $data = [];
 
-        $gatewayFiles = $this->core()->generateGatewayFiles($type, $sources, $from, $to);
+        foreach ($targets as $target)
+        {
+            $input[Entity::TARGET] = $target;
 
-        return $gatewayFiles->toArrayAdmin();
+            $data[] = $input;
+        }
+
+        return $data;
     }
 }

@@ -24,35 +24,38 @@ class CreateGatewayFiles extends Migration
             $table->string(GatewayFile::ID, GatewayFile::ID_LENGTH)
                   ->primary();
 
-            $table->string(GatewayFile::SOURCE, 50);
-
             $table->string(GatewayFile::TYPE, 20);
 
-            $table->string(GatewayFile::SENDER);
+            $table->string(GatewayFile::TARGET, 50);
+
+            $table->string(GatewayFile::SENDER, 100);
 
             $table->text(GatewayFile::RECIPIENTS)
                   ->nullable();
 
-            $table->integer(GatewayFile::FROM);
+            $table->integer(GatewayFile::BEGIN);
 
-            $table->integer(GatewayFile::TO);
+            $table->integer(GatewayFile::END);
 
             $table->string(GatewayFile::STATUS, 20)
                   ->default('created');
 
-            $table->string(GatewayFile::FAILURE_CODE, 50)
+            $table->tinyInteger(GatewayFile::PARTIALLY_PROCESSED)
+                  ->default(0);
+
+            $table->string(GatewayFile::COMMENTS)
                   ->nullable();
 
             $table->tinyInteger(GatewayFile::SCHEDULED)
                   ->default(1);
 
-            $table->tinyInteger(GatewayFile::PARTIALLY_PROCESSED)
-                  ->default(0);
-
             $table->integer(GatewayFile::ATTEMPTS)
                   ->default(1);
 
-            $table->integer(GatewayFile::FAILED_AT)
+            $table->string(GatewayFile::ERROR_CODE, 50)
+                  ->nullable();
+
+            $table->string(GatewayFile::ERROR_DESCRIPTION)
                   ->nullable();
 
             $table->integer(GatewayFile::FILE_GENERATED_AT)
@@ -64,11 +67,14 @@ class CreateGatewayFiles extends Migration
             $table->integer(GatewayFile::ACKNOWLEDGED_AT)
                   ->nullable();
 
+            $table->integer(GatewayFile::FAILED_AT)
+                  ->nullable();
+
             $table->integer(GatewayFile::CREATED_AT);
 
             $table->integer(GatewayFile::UPDATED_AT);
 
-            $table->index(GatewayFile::SOURCE);
+            $table->index(GatewayFile::TARGET);
             $table->index(GatewayFile::TYPE);
             $table->index(GatewayFile::STATUS);
         });

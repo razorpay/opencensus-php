@@ -5,6 +5,7 @@ namespace RZP\Models\Gateway\File;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\PublicCollection;
 
 class Core extends Base\Core
 {
@@ -17,20 +18,24 @@ class Core extends Base\Core
      * @param  array        $input input data
      * @param  bool|boolean $halt  flag to indicate if the entity created should be further processed or not
      */
-    public function create(array $input, bool $halt = false): Entity
+    public function create(array $input): PublicCollection
     {
         $this->trace->info(TraceCode::GATEWAY_FILE_CREATE_REQUEST, $input);
 
-        $gatewayFile = (new Entity)->build($input);
+        $gatewayFiles = new PublicCollection();
 
-        $this->repo->saveOrFail($gatewayFile);
-
-        if ($halt !== true)
+        foreach ($input as $params)
         {
+            $gatewayFile = (new Entity)->build($params);
+
+            $this->repo->saveOrFail($gatewayFile);
+
+            $gatewayFiles->push($gatewayFile);
+
             $this->process($gatewayFile);
         }
 
-        return $gatewayFile;
+        return $gatewayFiles;
     }
 
     /**
@@ -43,13 +48,13 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::GATEWAY_FILE_PROCESSING, [
             'id'     => $gatewayFile->getId(),
-            'source' => $gatewayFile->getSource(),
+            'target' => $gatewayFile->getTarget(),
         ]);
 
         $type = $gatewayFile->getType();
-        $source = $gatewayFile->getSource();
+        $target = $gatewayFile->getTarget();
 
-        $processor = $this->app['gateway']->getFileProcessor($type, $source);
+        $processor = $this->app['gateway_file']->getProcessor($type, $target);
 
         $processor->process($gatewayFile);
     }
@@ -65,6 +70,7 @@ class Core extends Base\Core
      */
     public function acknowledge(Entity $gatewayFile, array $data): Entity
     {
+
         // Only gateway_file entities for which we have sent a mail successfully
         // can be acknowledged
         if ($gatewayFile->isMailSent() === false)
@@ -73,63 +79,14 @@ class Core extends Base\Core
                 'Cannot acknoewledge given gateway_file entity');
         }
 
-        $gatewayFile->getValidator()->validateInput('acknowledge', $data);
+        $type = $gatewayFile->getType();
 
-        $gatewayFile->setStatus(Status::ACKNOWLEDGED);
+        $target = $gatewayFile->getTarget();
 
-        $gatewayFile->setAcknowledgedAt(time());
+        $processor = $this->app['gateway_file']->getProcessor($type, $target);
 
-        $gatewayFile->fill($data);
-
-        $this->repo->saveOrFail($gatewayFile);
+        $processor->acknowledge($gatewayFile, $data);
 
         return $gatewayFile;
-    }
-
-    /**
-     * Generates multiple gateway files for given type and <gateway> => <bank>
-     * combination. Here we create the base gateway_file entities in created state
-     * and then process the files. Currently processing is happening in sync. We
-     * can later change this to push to a queue and process asynchronously
-     *
-     * @param  string $type Type of the gateway_file entitiss to be processed
-     * @param  array  $data Array containing gateway => bank mapping for
-     * @return PublicCollection     Collection of gateway_file entities created
-     */
-    public function generateGatewayFiles(
-                        string $type,
-                        array $sources,
-                        int $from,
-                        int $to): Base\PublicCollection
-    {
-        if (Type::isValidType($type) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                "$type is not a supported type");
-        }
-
-        $gatewayFiles = new Base\PublicCollection;
-
-        foreach ($sources as $source)
-        {
-            $params = [
-                Entity::TYPE      => $type,
-                Entity::SOURCE    => $source,
-                Entity::FROM      => $from,
-                Entity::TO        => $to,
-                Entity::SCHEDULED => 1,
-            ];
-
-            // We just create the entity here and process it in a separate step.
-            // Hence the "halt" flag is passed as true
-            $gatewayFile = $this->create($params, true);
-
-            $gatewayFiles->push($gatewayFile);
-
-            // TODO Move this step to queue later
-            $this->process($gatewayFile);
-        }
-
-        return $gatewayFiles;
     }
 }

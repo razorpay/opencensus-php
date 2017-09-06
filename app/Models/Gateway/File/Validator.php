@@ -12,22 +12,23 @@ class Validator extends Base\Validator
     const TIME_RANGE = 'time_range';
 
     protected static $createRules = [
-        Entity::TYPE              => 'required|string|custom',
-        Entity::SOURCE            => 'required|string',
-        Entity::SENDER            => 'filled|email',
+        Entity::TYPE              => 'required|string|max:20|custom',
+        Entity::TARGET            => 'required|string|max:50',
+        Entity::SENDER            => 'filled|email|max:100',
         Entity::RECIPIENTS        => 'filled|array',
         Entity::RECIPIENTS . '.*' => 'email',
-        Entity::FROM              => 'required|epoch',
-        Entity::TO                => 'required|epoch',
+        Entity::BEGIN             => 'required|epoch',
+        Entity::END               => 'required|epoch',
         Entity::SCHEDULED         => 'filled|boolean',
     ];
 
     protected static $acknowledgeRules = [
         Entity::PARTIALLY_PROCESSED => 'filled|in:1',
+        Entity::COMMENTS            => 'filled|string|max:200',
     ];
 
     protected static $createValidators = [
-        Entity::SOURCE,
+        Entity::TARGET,
         self::TIME_RANGE,
     ];
 
@@ -40,38 +41,36 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateSource(array $input)
+    protected function validateTarget(array $input)
     {
         $type = $input[Entity::TYPE];
 
-        $source = $input[Entity::SOURCE];
+        $target = $input[Entity::TARGET];
 
-        $supportedSourceForType = Constants::SUPPORTED_SOURCES[$type];
-
-        if (in_array($source, $supportedSourceForType, true) === false)
+        if (in_array($target, Constants::SUPPORTED_TARGETS[$type], true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                "$source is not a supported source for type");
+                "$target is not a valid target for type $type");
         }
     }
 
     protected function validateTimeRange(array $input)
     {
-        $from = $input[Entity::FROM];
-        $to = $input[Entity::TO];
+        $from = $input[Entity::BEGIN];
+        $to = $input[Entity::END];
 
         $now = time();
 
         if ($from > $now)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'from cannot be in the future');
+                'begin cannot be in the future');
         }
 
         if ($from >= $to)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'from cannot be after to');
+                'begin cannot be after end');
 
         }
     }

@@ -15,27 +15,12 @@ use RZP\Error\ErrorCode;
  */
 class GatewayFileException extends RecoverableException
 {
-    protected $failureCode;
-
-    public function __construct(string $failureCode, \Exception $previous = null)
+    public function __construct(string $code, \Exception $previous = null)
     {
-        $this->failureCode = $failureCode;
+        $this->error = new Error($code);
 
-        $this->data = [
-            'failure_code' => $failureCode
-        ];
-
-        $code = ErrorCode::SERVER_ERROR_GATEWAY_FILE_GENERATION_ERROR;
-
-        $message = 'Error processing gateway file';
-
-        $this->error = new Error($code, $message);
+        $message = $this->error->getDescription();
 
         parent::__construct($message, $code, $previous);
-    }
-
-    public function getFailureCode(): string
-    {
-        return $this->failureCode;
     }
 }

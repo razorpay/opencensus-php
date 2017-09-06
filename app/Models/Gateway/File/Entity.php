@@ -2,27 +2,31 @@
 
 namespace RZP\Models\Gateway\File;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 
 class Entity extends Base\PublicEntity
 {
+    const ID                  = 'id';
     const TYPE                = 'type';
-    const SOURCE              = 'source';
-    const FILE_ID             = 'file_id';
+    const TARGET              = 'target';
     const SENDER              = 'sender';
     const RECIPIENTS          = 'recipients';
-    const FROM                = 'from';
-    const TO                  = 'to';
+    const BEGIN               = 'begin';
+    const END                 = 'end';
     const STATUS              = 'status';
-    const FAILURE_CODE        = 'failure_code';
-    const SCHEDULED           = 'scheduled';
     const PARTIALLY_PROCESSED = 'partially_processed';
+    const COMMENTS            = 'comments';
+    const SCHEDULED           = 'scheduled';
     const ATTEMPTS            = 'attempts';
-    const FAILED_AT           = 'failed_at';
+    const ERROR_CODE          = 'error_code';
+    const ERROR_DESCRIPTION   = 'error_description';
     const FILE_GENERATED_AT   = 'file_generated_at';
     const SENT_AT             = 'sent_at';
     const ACKNOWLEDGED_AT     = 'acknowledged_at';
+    const FAILED_AT           = 'failed_at';
 
     protected $entity = 'gateway_file';
 
@@ -30,32 +34,35 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::TYPE,
-        self::SOURCE,
+        self::TARGET,
         self::SENDER,
         self::RECIPIENTS,
-        self::FROM,
-        self::TO,
+        self::PARTIALLY_PROCESSED,
+        self::COMMENTS,
+        self::BEGIN,
+        self::END,
         self::SCHEDULED,
     ];
 
     protected $visible = [
         self::ID,
         self::TYPE,
-        self::SOURCE,
-        self::FILE_ID,
+        self::TARGET,
         self::SENDER,
         self::RECIPIENTS,
-        self::FROM,
-        self::TO,
+        self::BEGIN,
+        self::END,
         self::STATUS,
-        self::FAILURE_CODE,
-        self::SCHEDULED,
         self::PARTIALLY_PROCESSED,
+        self::COMMENTS,
+        self::SCHEDULED,
         self::ATTEMPTS,
-        self::FAILED_AT,
+        self::ERROR_CODE,
+        self::ERROR_DESCRIPTION,
         self::FILE_GENERATED_AT,
         self::SENT_AT,
         self::ACKNOWLEDGED_AT,
+        self::FAILED_AT,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -73,8 +80,16 @@ class Entity extends Base\PublicEntity
         self::ATTEMPTS            => 0,
     ];
 
+    // In case of cron, the beign and end timestamps won't be set
+    // in the request. In such cases we need to set the same for the entire day
+    protected static $modifiers = [
+        self::BEGIN,
+        self::END
+    ];
+
     protected static $generators = [
-        self::SENDER
+        self::SENDER,
+        self::RECIPIENTS,
     ];
 
     protected function generateSender(array $input)
@@ -84,6 +99,16 @@ class Entity extends Base\PublicEntity
             $sender = Constants::TYPE_SENDER_MAPPING[$input[self::TYPE]];
 
             $this->setAttribute(self::SENDER, $sender);
+        }
+    }
+
+    protected function generateRecipients(array $input)
+    {
+        if (empty($input[self::RECIPIENTS]) === true)
+        {
+            $recipients = Constants::RECIPIENTS_MAP[$input[Entity::TYPE]][$input[Entity::TARGET]];
+
+            $this->setAttribute(self::RECIPIENTS, $recipients);
         }
     }
 
@@ -97,9 +122,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
-    public function getSource()
+    public function getTarget()
     {
-        return $this->getAttribute(self::SOURCE);
+        return $this->getAttribute(self::TARGET);
     }
 
     public function getSender()
@@ -112,14 +137,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RECIPIENTS);
     }
 
-    public function getFrom()
+    public function getBegin()
     {
-        return $this->getAttribute(self::FROM);
+        return $this->getAttribute(self::BEGIN);
     }
 
-    public function getTo()
+    public function getEnd()
     {
-        return $this->getAttribute(self::TO);
+        return $this->getAttribute(self::END);
     }
 
     public function getStatus()
@@ -134,24 +159,27 @@ class Entity extends Base\PublicEntity
 
     public function isFileGenerated(): bool
     {
-        return (($this->isAttributeNotNull(self::FILE_GENERATED_AT) === true) and
-                ($this->files->isNotEmpty() === true));
+        return ($this->getStatus() === Status::FILE_GENERATED);
     }
 
     public function isMailSent(): bool
     {
-        return ($this->isAttributeNotNull(self::SENT_AT) === true);
+        return ($this->getStatus() === Status::MAIL_SENT);
     }
 
     public function isFailed(): bool
     {
-        return (($this->getStatus() === Status::FAILED) and
-                ($this->isAttributeNotNull(self::FAILED_AT)));
+        return ($this->getStatus() === Status::FAILED);
     }
 
-    public function getFailureCode()
+    public function getErrorCode()
     {
-        return $this->getAttribute(self::FAILURE_CODE);
+        return $this->getAttribute(self::ERROR_CODE);
+    }
+
+    public function getErrorDescription()
+    {
+        return $this->getAttribute(self::ERROR_DESCRIPTION);
     }
 
     public function setStatus(string $status)
@@ -162,6 +190,11 @@ class Entity extends Base\PublicEntity
     public function setAcknowledgedAt(int $acknowledgedAt)
     {
         $this->setAttribute(self::ACKNOWLEDGED_AT, $acknowledgedAt);
+    }
+
+    public function setComments(string $comments)
+    {
+        $this->setAttribute(self::COMMENTS, $comments);
     }
 
     public function setFailedAt(int $failedAt)
@@ -179,9 +212,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SENT_AT, $mailSentAt);
     }
 
-    public function setFailureCode(string $failureCode)
+    public function setErrorCode(string $errorCode)
     {
-        $this->setAttribute(self::FAILURE_CODE, $failureCode);
+        $this->setAttribute(self::ERROR_CODE, $errorCode);
+    }
+
+    public function setErrorDescription(string $errorDescription)
+    {
+        $this->setAttribute(self::ERROR_DESCRIPTION, $errorDescription);
     }
 
     public function incrementAttempts()
@@ -197,5 +235,21 @@ class Entity extends Base\PublicEntity
         }
 
         return json_decode($this->attributes[self::RECIPIENTS], true);
+    }
+
+    protected function modifyBegin(array & $array)
+    {
+        if (empty($input[self::BEGIN]) === true)
+        {
+            $input[self::BEGIN] = Carbon::yesterday(Timezone::IST)->timestamp;
+        }
+    }
+
+    protected function modifyEnd(array & $input)
+    {
+        if (empty($input[self::END]) === true)
+        {
+            $input[self::END] = (Carbon::today(Timezone::IST)->timestamp - 1);
+        }
     }
 }

@@ -53,6 +53,19 @@ abstract class Base extends Core
         }
     }
 
+    public function acknowledge(File\Entity $gatewayFile, $data)
+    {
+        $gatewayFile->getValidator()->validateInput('acknowledge', $data);
+
+        $gatewayFile->setStatus(Status::ACKNOWLEDGED);
+
+        $gatewayFile->setAcknowledgedAt(time());
+
+        $gatewayFile->fill($data);
+
+        $this->repo->saveOrFail($gatewayFile);
+    }
+
     /**
      * Handles any exception thrown during processing. Here we update the status as failed
      * with appropriate failure_code.
@@ -61,13 +74,22 @@ abstract class Base extends Core
      */
     protected function handleProcessingFailure(Exception\GatewayFileException $e)
     {
-        $failureCode = $e->getFailureCode();
-
         $this->trace->traceException($e);
+
+        if ($this->shouldNotReportFailure($e->getCode()) === true)
+        {
+            $this->acknowledge($this->gatewayFile, [
+                File\Entity::COMMENTS => 'Valid data not available for file processing'
+            ]);
+
+            return;
+        }
 
         $this->gatewayFile->setStatus(Status::FAILED);
 
-        $this->gatewayFile->setFailureCode($failureCode);
+        $this->gatewayFile->setErrorCode($e->getCode());
+
+        $this->gatewayFile->setErrorDescription($e->getMessage());
 
         $this->gatewayFile->setFailedAt(time());
     }
@@ -96,6 +118,14 @@ abstract class Base extends Core
     }
 
     abstract protected function canRetry(): bool;
+
+    /**
+     * If the processing fails due to some known reason like no data found for file
+     * generation. In such cases, we mark the gateway_file entity as acknowledged
+     * @param  string   Error code / reason for failure
+     * @return bool
+     */
+    abstract protected function shouldNotReportFailure(string $code): bool;
 
     abstract public function fetchEntities(): PublicCollection;
 

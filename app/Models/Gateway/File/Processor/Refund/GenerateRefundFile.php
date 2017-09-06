@@ -13,7 +13,6 @@ use RZP\Models\Gateway\File\Status;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
-use RZP\Models\Gateway\File\FailureCode;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Models\Gateway\File\Processor\Base as BaseProcessor;
 
@@ -21,14 +20,14 @@ trait GenerateRefundFile
 {
     public function fetchEntities(): PublicCollection
     {
-        $from = $this->gatewayFile->getFrom();
-        $to = $this->gatewayFile->getTo();
+        $begin = $this->gatewayFile->getbegin();
+        $end = $this->gatewayFile->getEnd();
 
         $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
                         static::PAYMENT_TYPE_ATTRIBUTE,
                         static::GATEWAY_CODE,
-                        $from,
-                        $to,
+                        $begin,
+                        $end,
                         static::GATEWAY
                     );
 
@@ -40,7 +39,7 @@ trait GenerateRefundFile
         if ($refunds->isEmpty() === true)
         {
             throw new GatewayFileException(
-                    FailureCode::NO_DATA_FOR_FILE_GENERATION);
+                    ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND);
         }
     }
 
@@ -131,7 +130,7 @@ trait GenerateRefundFile
                             ]);
 
             throw new GatewayFileException(
-                FailureCode::ERROR_CREATING_FILE);
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE);
         }
     }
 
@@ -162,8 +161,13 @@ trait GenerateRefundFile
                             ]);
 
             throw new GatewayFileException(
-                FailureCode::ERROR_SENDING_MAIL);
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_MAIL);
         }
+    }
+
+    protected function shouldNotReportFailure(string $code): bool
+    {
+        return ($code === ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND);
     }
 
     /**
@@ -184,9 +188,9 @@ trait GenerateRefundFile
 
         if ($this->gatewayFile->isFailed() === true)
         {
-            $failureCode = $this->gatewayFile->getFailureCode();
+            $errorCode = $this->gatewayFile->getErrorCode();
 
-            return ($failureCode !== FailureCode::NO_DATA_FOR_FILE_GENERATION);
+            return ($errorCode !== ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND);
         }
 
         return true;
