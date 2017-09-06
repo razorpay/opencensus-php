@@ -1,0 +1,53 @@
+<?php
+
+namespace RZP\Gateway\Netbanking\Bob;
+
+use RZP\Gateway\Base;
+
+class AESCrypto extends Base\AESCrypto
+{
+    const VALUE_SEPARATOR = "=";
+    const PAIR_SEPARATOR  = "|";
+
+    public function encryptData(array $data)
+    {
+        $formattedData = $this->encodeData($data);
+
+        return urlencode($this->encryptString($formattedData));
+    }
+
+    public function decryptData(string $input)
+    {
+        $input = urldecode($input);
+
+        return $this->decodeData($this->decryptString($input));
+    }
+
+    protected function encodeData(array $data)
+    {
+        $formattedArray = [];
+
+        foreach ($data as $key => $value)
+        {
+            $formattedArray[] = $key . self::VALUE_SEPARATOR . $value;
+        }
+
+        return implode(self::PAIR_SEPARATOR, $formattedArray);
+    }
+
+    protected function decodeData(string $input)
+    {
+        $exploded = explode(self::PAIR_SEPARATOR, $input);
+
+        $output = [];
+
+        foreach ($exploded as $value)
+        {
+            $pair = explode(self::VALUE_SEPARATOR, $value);
+
+            $output[$pair[0]] = $pair[1];
+        }
+
+        return $output;
+    }
+}

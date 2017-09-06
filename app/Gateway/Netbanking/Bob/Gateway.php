@@ -2,6 +2,8 @@
 
 namespace RZP\Gateway\Netbanking\Bob;
 
+use phpseclib\Crypt\AES;
+
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Action;
@@ -22,10 +24,7 @@ class Gateway extends Base\Gateway
     protected $map = [
         RequestFields::MERCHANT_ID => NetbankingEntity::MERCHANT_CODE,
         RequestFields::PAYMENT_ID  => NetbankingEntity::PAYMENT_ID,
-        RequestFields::AMOUNT      => NetbankingEntity::AMOUNT,
-        // NetbankingEntity::EMAIL         => NetbankingEntity::EMAIL,
-        // NetbankingEntity::CONTACT       => NetbankingEntity::CONTACT,
-        // NetbankingEntity::RECEIVED      => NetbankingEntity::RECEIVED
+        RequestFields::AMOUNT      => NetbankingEntity::AMOUNT
     ];
 
     public function authorize(array $input): array
@@ -56,7 +55,15 @@ class Gateway extends Base\Gateway
             RequestFields::PAYMENT_ID       => $payment[Payment::ID]
         ];
 
-        $request = $this->getStandardRequestArray($content);
+        $encryptedData = $this->getEncryptor()->encryptData($content);
+
+        $decrypted = $this->getEncryptor()->decryptData($encryptedData);
+
+        $requestData = [
+            RequestFields::ENCRYPTED_DATA => $encryptedData
+        ];
+
+        $request = $this->getStandardRequestArray($requestData);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
@@ -91,14 +98,14 @@ class Gateway extends Base\Gateway
         return $this->getLiveMerchantId();
     }
 
-    // public function getEncryptor(): AESCrypto
-    // {
-    //     $secret = $this->getSecret();
+    public function getEncryptor(): AESCrypto
+    {
+        $secret = $this->getSecret();
 
-    //     assert($secret !== null);
+        assert($secret !== null);
 
-    //     return (new AESCrypto(AES::MODE_CBC, $secret));
-    // }
+        return (new AESCrypto(AES::MODE_CBC, $secret));
+    }
 
     public function formatAmount(int $amount): string
     {
