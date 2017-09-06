@@ -101,9 +101,8 @@ class HarvesterClient extends AbstractEventClient
 
     public function query($data = ''): Response
     {
-        // TODO : Validate data
+        // TODO : Add any service level validation here
 
-        // Create request here
         return $this->sendRequest($this->queryPath, $data, true, 3);
 
     }
@@ -117,15 +116,13 @@ class HarvesterClient extends AbstractEventClient
                 'data'    => $data
             ]);
 
-        // Create request object
         $request= [
             'url'           => $this->queryBaseUrl . $urlPath,
             'method'        => 'POST',
-            'body'          => $data,
+            'content'          => $data,
             'content-type'  => 'application/json',
             ];
 
-        // Add configs and env variables to request here
         $headers = [
             'AuthKey'       => $this->accessToken,
             'Accept'        => 'application/json'
@@ -137,7 +134,6 @@ class HarvesterClient extends AbstractEventClient
 
         $request['options'] = $options;
 
-        // Add retry logic here
         $retryCount = 0;
         $maxRetryTimes += 1;
         $response = null;
@@ -161,13 +157,12 @@ class HarvesterClient extends AbstractEventClient
 
             $retryCount++;
 
-            if ($retry === false or $response->status_code === 200)
+            if (($retry === false) or ($response != null and $response->status_code === 200))
             {
                 break;
             }
         }
 
-        // Check for errors
         $this->checkErrors($response);
 
         return $response;
