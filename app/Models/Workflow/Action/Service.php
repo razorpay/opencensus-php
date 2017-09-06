@@ -241,14 +241,17 @@ class Service extends Base\Service
      */
     public function getActionsByMaker(array $input)
     {
-        $relations = ['workflow', 'admin'];
+        unset($input['duty']);
 
-        $actions = $this->repo
-                        ->workflow_action
-                        ->findByAdminIdAndOrgIdWithRelations(
-                            $this->admin->getId(),
-                            $this->admin->getOrgId(),
-                            $relations, $skip, $count);
+        $input['permission'] = true;
+
+        $input['expand'] = ['workflow', 'admin'];
+
+        $input['org_id'] = $this->admin->getOrgId();
+
+        $input['admin_id'] = $this->admin->getId();
+
+        $actions = $this->repo->workflow_action->fetch($input);
 
         return $actions;
     }

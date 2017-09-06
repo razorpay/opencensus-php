@@ -16,7 +16,7 @@ class Repository extends Base\Repository
         Entity::ADMIN_ID     => 'sometimes|string|max:14',
         Entity::WORKFLOW_ID  => 'sometimes|string|max:14',
         Entity::ORG_ID       => 'sometimes|string|max:14',
-        self::EXPAND . '.*'  => 'string|in:admin,',
+        self::EXPAND . '.*'  => 'string|in:admin,workflow,',
         Entity::TYPE         => 'sometimes|string|max:10',
         Entity::PERMISSION   => 'sometimes|boolean|in:0,1',
         State\Entity::CLOSED => 'sometimes|boolean|in:0,1',
@@ -73,23 +73,6 @@ class Repository extends Base\Repository
         $query->orderBy(Entity::CREATED_AT, 'desc');
     }
 
-    public function findByAdminIdAndOrgIdWithRelations(
-        string $adminId,
-        string $orgId,
-        array $relations = [],
-        int $skip = 0,
-        int $count = 10)
-    {
-        return $this->getNewQueryWithPermissions()
-                    ->where(Entity::ADMIN_ID, '=', $adminId)
-                    ->where(Entity::ORG_ID, '=', $orgId)
-                    ->with($relations)
-                    ->orderBy(Entity::CREATED_AT, 'desc')
-                    ->skip($skip)
-                    ->take($count)
-                    ->get();
-    }
-
     public function findActionsForChecker(
         array $roleIds,
         array $relations = [],
@@ -126,7 +109,7 @@ class Repository extends Base\Repository
     }
 
     /**
-     * Function to add closed state param to the query.
+     * Function to add closed state of the action to the query.
      * @param $query
      * @param $params
      */
