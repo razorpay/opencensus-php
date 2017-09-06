@@ -4,20 +4,19 @@ namespace RZP\Models\Plan\Subscription;
 
 use App;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
+
+use RZP\Models\Plan;
+use RZP\Models\Base;
+use RZP\Models\Payment;
+use RZP\Models\Invoice;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Exception\LogicException;
-use RZP\Exception\BadRequestException;
-use RZP\Models\Schedule\Library;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
-use RZP\Models\Payment;
-use RZP\Models\Plan;
-use RZP\Models\Invoice;
-use RZP\Models\Base;
-use RZP\Models\Schedule\Task;
+use RZP\Constants\Timezone;
+use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\BadRequestException;
 
 class Charge extends Base\Core
 {
@@ -208,16 +207,6 @@ class Charge extends Base\Core
 
         $this->incrementPaidCount($subscription);
 
-        //
-        // TODO: This needs to be called in charge fail flow as well.
-        // Billing period for failed invoives should be set.
-        //
-        // It needs needs to NOT be called in manual invoice charge flow,
-        // since that would override the existing billing period of the invoice
-        // with the current period of the subscription.
-        //
-        $this->setInvoiceBillingPeriod($subscription, $invoice);
-
         if ($oldStatus === Status::AUTHENTICATED)
         {
             $this->setActivatedAt($subscription, $capturedPayment);
@@ -261,10 +250,16 @@ class Charge extends Base\Core
         // $this->sendInvoiceEmail($invoice);
     }
 
+    /**
+     * Update charge_at and ended_at. Current period does not need to
+     * be updated as these were set before the charge was attempted.
+     * See updateSubscriptionInvoiceBillingPeriod.
+     *
+     * @param  Entity $subscription
+     * @return null
+     */
     public function updateSubscriptionTimeFields(Entity $subscription)
     {
-        $this->setCurrentPeriod($subscription);
-
         $subscription->setChargeAt($subscription->task->getNextRunAt());
 
         $this->setEndedAtIfApplicable($subscription);
@@ -295,8 +290,16 @@ class Charge extends Base\Core
 
         if ($authAttempts < self::MAX_AUTH_ATTEMPTS)
         {
+            // Charge has failed an acceptable number of times
             $subscription->setStatus(Status::PENDING);
+
+            // Update task by a day
             $this->updateScheduleTask($subscription, true);
+
+            // TODO: Replace below function with updateSubscriptionTimeFields?
+            // This will call setEndedAtIfApplicable, which could end up setting
+            // the wrong time as ended_at, if current_start is not equal to current
+            // time (happens in case of retries).
             $subscription->setChargeAt($subscription->task->getNextRunAt());
         }
         else if ($authAttempts === self::MAX_AUTH_ATTEMPTS)
@@ -305,7 +308,14 @@ class Charge extends Base\Core
             // go into halted or cancelled state.
             $subscription->setStatus(Status::HALTED);
             $invoice->setSubscriptionStatus(Invoice\Status::HALTED);
+
+            // Update task by a full plan period
             $this->updateScheduleTask($subscription);
+
+            // TODO: Replace below function with updateSubscriptionTimeFields?
+            // This will call setEndedAtIfApplicable, which could end up setting
+            // the wrong time as ended_at, if current_start is not equal to current
+            // time (happens in case of retries).
             $subscription->setChargeAt($subscription->task->getNextRunAt());
         }
         else
@@ -405,50 +415,6 @@ class Charge extends Base\Core
         $subscription->resetAuthAttempts();
     }
 
-    protected function setInvoiceBillingPeriod(Entity $subscription, Invoice\Entity $invoice)
-    {
-        $invoice->setBillingStart($subscription->getCurrentStart());
-        $invoice->setBillingEnd($subscription->getCurrentEnd());
-    }
-
-    protected function getBillingPeriod(Entity $subscription)
-    {
-        $planChargeInvoiceCount = $subscription->getPlanChargeInvoicesCount();
-
-        $schedule = $subscription->schedule;
-
-        $nextRun = $subscription->getStartAt();
-        $nextRun = Carbon::createFromTimestamp($nextRun, Timezone::IST);
-
-        $start = $nextRun->copy();
-
-        // If there's just one invoice, this is first charge period.
-        if ($planChargeInvoiceCount > 1)
-        {
-            //
-            // We are subtracting one because the
-            // invoice for the current charge has
-            // already been created and associated
-            //
-            foreach (range(1, $planChargeInvoiceCount - 1) as $i)
-            {
-                $nextRun = Library::computeFutureRun($schedule, $start, $start, false);
-
-                $start = $nextRun->copy();
-            }
-        }
-
-        // Cannot pass start here, as computeFutureRun will modify the value
-        $end = Library::computeFutureRun($schedule, $nextRun, $nextRun, false);
-
-        $billingPeriod = [
-            'start' => $start->timestamp,
-            'end'   => $end->timestamp,
-        ];
-
-        return $billingPeriod;
-     }
-
     /**
      * This just uses the captured_at.
      *
@@ -473,8 +439,8 @@ class Charge extends Base\Core
      * we would call this function and the next_run_at will get set to
      * whatever it's supposed to get set to initially without retry.
      *
-     * @param Task\Entity $task
-     * @param bool        $retry
+     * @param Entity $subscription
+     * @param bool   $retry
      */
     public function updateScheduleTask(Entity $subscription, $retry = false)
     {
@@ -508,22 +474,6 @@ class Charge extends Base\Core
         $referenceTime = Carbon::createFromTimestamp($referenceTime, Timezone::IST);
 
         $task->updateNextRunAndLastRunFromGivenRefTime($referenceTime, false);
-    }
-
-    /**
-     * If first subscription, set
-     * [currentStart, currentEnd] = [startAt, startAt + interval]
-     * If NOT first subscription, set
-     * [currentStart, currentEnd] = [currentStart+interval, currentStart + (2 * interval)]
-     *
-     * @param Entity $subscription
-     */
-    protected function setCurrentPeriod(Entity $subscription)
-    {
-        $billingPeriod = $this->getBillingPeriod($subscription);
-
-        $subscription->setCurrentStart($billingPeriod['start']);
-        $subscription->setCurrentEnd($billingPeriod['end']);
     }
 
     /**

@@ -593,24 +593,28 @@ class SubscriptionChargeTest extends TestCase
 
         $invoice = $this->getLastEntity('invoice', true);
         $this->assertEquals('paid', $invoice['status']);
+        $this->assertEquals($subscription['current_start'], $invoice['billing_start']);
+        $this->assertEquals($subscription['current_end'], $invoice['billing_end']);
 
         $this->assertInvoiceCount(1, $subscription['id']);
 
         $oldSubcription = $subscription;
 
         // Failed test charge marks the subscrition as pending
-        // Paid count remains the same, billing period remains the same
+        // Paid count remains the same, billing period is updated
         // Charge_at increments by only one day
         $subscription = $this->chargeSubscriptionManuallyTestMode($oldSubcription['id'], false);
         $this->assertEquals('pending', $subscription['status']);
         $this->assertEquals(1, $subscription['paid_count']);
         $this->assertEquals(1, $subscription['auth_attempts']);
-        $this->assertEquals($oldSubcription['current_start'], $subscription['current_start']);
+        $this->assertEquals($oldSubcription['current_end'], $subscription['current_start']);
         $this->assertEquals($oldSubcription['charge_at']+(24*60*60), $subscription['charge_at']);
 
         // An invoice is created, but remains in issued state
         $invoice = $this->getLastEntity('invoice', true);
         $this->assertEquals('issued', $invoice['status']);
+        $this->assertEquals($subscription['current_start'], $invoice['billing_start']);
+        $this->assertEquals($subscription['current_end'], $invoice['billing_end']);
         $firstUnpaidInvoice = $invoice;
 
         $this->assertInvoiceCount(2, $subscription['id']);

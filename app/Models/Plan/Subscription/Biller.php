@@ -2,11 +2,15 @@
 
 namespace RZP\Models\Plan\Subscription;
 
-use RZP\Exception\LogicException;
+use Carbon\Carbon;
+
 use RZP\Models\Base;
 use RZP\Models\Invoice;
 use RZP\Models\LineItem;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
+use RZP\Models\Schedule\Library;
+use RZP\Exception\LogicException;
 
 /**
  * Takes care of billing life-cycle of a subscription which can include
@@ -62,12 +66,102 @@ class Biller extends Base\Core
             // to be updated, so that the flow continues as it
             // is even if the subscription is in halted state.
             //
-            $this->handleHaltedSubscription($subscription);
+            $this->handleHaltedSubscription($subscription, $invoice);
 
             return;
         }
 
+        //
+        // Update current period and billing period before the charge itself. This
+        // saves us the hassle of having to update them separately in retry flows.
+        //
+        $this->updateSubscriptionInvoiceBillingPeriod($subscription, $invoice);
+
         (new Core)->charge($subscription, $invoice, $options);
+    }
+
+    /**
+     * Sets subscription current period, and then uses that to set invoice
+     * billing period. We can do this before the charge, as current period
+     * is set to be updated irrespective of the result of the charge attempt.
+     *
+     * @param  Entity         $subscription Subscription to be updated
+     * @param  Invoice\Entity $invoice      Newly created invoice
+     * @return null
+     */
+    protected function updateSubscriptionInvoiceBillingPeriod(Entity $subscription, Invoice\Entity $invoice)
+    {
+        $this->setCurrentPeriod($subscription);
+
+        $this->setInvoiceBillingPeriod($subscription, $invoice);
+
+        $this->repo->transaction(
+            function() use ($subscription, $invoice)
+            {
+                $this->repo->saveOrFail($subscription);
+
+                $this->repo->saveOrFail($invoice);
+            });
+    }
+
+    /**
+     * If first subscription, set
+     * [currentStart, currentEnd] = [startAt, startAt + interval]
+     * If NOT first subscription, set
+     * [currentStart, currentEnd] = [currentStart+interval, currentStart + (2 * interval)]
+     *
+     * @param Entity $subscription
+     */
+    protected function setCurrentPeriod(Entity $subscription)
+    {
+        $billingPeriod = $this->getBillingPeriod($subscription);
+
+        $subscription->setCurrentStart($billingPeriod['start']);
+        $subscription->setCurrentEnd($billingPeriod['end']);
+    }
+
+    protected function getBillingPeriod(Entity $subscription)
+    {
+        $planChargeInvoiceCount = $subscription->getPlanChargeInvoicesCount();
+
+        $schedule = $subscription->schedule;
+
+        $nextRun = $subscription->getStartAt();
+        $nextRun = Carbon::createFromTimestamp($nextRun, Timezone::IST);
+
+        $start = $nextRun->copy();
+
+        // If there's just one invoice, this is first charge period.
+        if ($planChargeInvoiceCount > 1)
+        {
+            //
+            // We are subtracting one because the
+            // invoice for the current charge has
+            // already been created and associated
+            //
+            foreach (range(1, $planChargeInvoiceCount - 1) as $i)
+            {
+                $nextRun = Library::computeFutureRun($schedule, $start, $start, false);
+
+                $start = $nextRun->copy();
+            }
+        }
+
+        // Cannot pass start here, as computeFutureRun will modify the value
+        $end = Library::computeFutureRun($schedule, $nextRun, $nextRun, false);
+
+        $billingPeriod = [
+            'start' => $start->timestamp,
+            'end'   => $end->timestamp,
+        ];
+
+        return $billingPeriod;
+    }
+
+    protected function setInvoiceBillingPeriod(Entity $subscription, Invoice\Entity $invoice)
+    {
+        $invoice->setBillingStart($subscription->getCurrentStart());
+        $invoice->setBillingEnd($subscription->getCurrentEnd());
     }
 
     public function createInvoiceForSubscription(
@@ -136,9 +230,13 @@ class Biller extends Base\Core
             });
     }
 
-    protected function handleHaltedSubscription(Entity $subscription)
+    protected function handleHaltedSubscription(Entity $subscription, Invoice\Entity $invoice)
     {
         $charge = (new Charge);
+
+        $this->setCurrentPeriod($subscription);
+
+        $this->setInvoiceBillingPeriod($subscription, $invoice);
 
         // Schedule task needs to be updated before setting time
         // fields in subscription, as the next_run_at of
@@ -148,11 +246,13 @@ class Biller extends Base\Core
         $charge->updateSubscriptionTimeFields($subscription);
 
         $this->repo->transaction(
-            function() use ($subscription)
+            function() use ($subscription, $invoice)
             {
                 $this->repo->saveOrFail($subscription);
 
                 $this->repo->saveOrFail($subscription->task);
+
+                $this->repo->saveOrFail($invoice);
             });
 
         if ($subscription->isCompleted() === true)
