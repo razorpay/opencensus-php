@@ -314,11 +314,8 @@ class Service extends Base\Service
             $adminId, $orgId, ['groups', 'roles', 'roles.permissions']);
 
         $roles = $admin->roles;
-
-        $permissions = new Base\PublicCollection();
-
+        $permissions = [];
         $roleNames = [];
-
         $groupRules = [];
 
         foreach ($admin->groups as $group)
@@ -329,11 +326,20 @@ class Service extends Base\Service
             ];
         }
 
+        $permissions = null;
+
         foreach ($roles as $role)
         {
             $roleNames[] = $role['name'];
 
-            $permissions->push($role->permissions->pluck('name'));
+            if ($permissions === null)
+            {
+                $permissions = $role->permissions->pluck('name');
+            }
+            else
+            {
+                $permissions = $permissions->merge($role->permissions->pluck('name'));
+            }
         }
 
         $admin = $admin->toArrayPublic();
@@ -518,7 +524,7 @@ class Service extends Base\Service
 
         $responseHash = [];
 
-        $merchants = $this->repo->merchant->findManyByIdsWithRelations($merchantIds);
+        $merchants = $this->repo->merchant->findManyWithRelations($merchantIds, ['admins']);
 
         foreach ($merchants as $merchant)
         {
