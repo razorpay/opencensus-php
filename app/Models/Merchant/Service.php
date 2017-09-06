@@ -6,37 +6,33 @@ use DB;
 use Mail;
 use Config;
 use Carbon\Carbon;
+
 use RZP\Constants\Timezone;
 use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Token as OAuthToken;
 
 use RZP\Exception;
-use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
-use RZP\Models\Base;
-use RZP\Models\Emi;
 use RZP\Models\Key;
-use RZP\Models\User;
+use RZP\Models\Base;
 use RZP\Models\Offer;
 use RZP\Models\Coupon;
-use RZP\Models\Payment;
-use RZP\Models\Pricing;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Schedule;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
+use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Group;
-use RZP\Constants\MailTags;
 use RZP\Models\BankAccount;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Merchant\SlackActions as SlackActions;
+use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 
 class Service extends Base\Service
 {
@@ -1153,9 +1149,11 @@ class Service extends Base\Service
      */
     public function getSubmerchants(): array
     {
-        $merchant = $this->merchant;
+        $merchantId = $this->merchant->getId();
 
-        return [ $merchant->getId() ];
+        $merchants = $this->fetchReferredMerchants();
+
+        return array_merge([$merchantId], $merchants->pluck('id')->toArray());
     }
 
     /**

@@ -333,17 +333,6 @@ class EventTrackerClient extends AbstractEventClient
     }
 
     /**
-     * Get HMAC message
-     *
-     * @param string $message
-     * @return string $key
-     */
-    protected function getHmacMessage(string $message)
-    {
-        return $this->config['key'];
-    }
-
-    /**
      * Track a payment through lumberjack
      *
      * @param Payment\Entity $payment

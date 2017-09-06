@@ -472,7 +472,7 @@ final class Route
         // Workflows API
         'workflow_create'                         => ['post',     'workflows',                                      'WorkflowController@createWorkflow'                                 ],
         'workflow_get'                            => ['get',      'workflows/{id}',                                 'WorkflowController@getWorkflow'                                    ],
-        'workflow_get_multiple'                   => ['get',      'orgs/{orgId}/workflows',                         'WorkflowController@getWorkflowMultiple'                            ],
+        'workflow_get_multiple'                   => ['get',      'workflows',                                      'WorkflowController@getWorkflowMultiple'                            ],
         'workflow_update'                         => ['put',      'workflows/{id}',                                 'WorkflowController@updateWorkflow'                                 ],
         'workflow_delete'                         => ['delete',   'workflows/{id}',                                 'WorkflowController@deleteWorkflow'                                 ],
         'workflow_action_get_multiple'            => ['get',      'w-actions',                                      'WorkflowController@getActionMultiple'                              ],
@@ -563,9 +563,9 @@ final class Route
         'promotion_create'                        => ['post',     'promotions',                                     'PromotionController@create'                                        ],
         'promotion_update'                        => ['patch',    'promotions/{id}',                                'PromotionController@update'                                        ],
         //coupon routes
-        'coupon_create'                           => ['post',     'coupons',                                         'CouponController@create'                                          ],
-        'coupon_apply'                            => ['post',     'coupons/apply',                                   'CouponController@apply'                                           ],
-        'coupon_delete'                           => ['delete',   'coupons/{id}',                                    'CouponController@delete'                                          ],
+        'coupon_create'                           => ['post',     'coupons',                                        'CouponController@create'                                           ],
+        'coupon_apply'                            => ['post',     'coupons/apply',                                  'CouponController@apply'                                            ],
+        'coupon_delete'                           => ['delete',   'coupons/{id}',                                   'CouponController@delete'                                           ],
         // Merchant invitation routes
         'invitation_create'                       => ['post',     'invitations',                                    'InvitationController@create'                                       ],
         'invitation_fetch_by_token'               => ['get',      'invitations/token/{token}',                      'InvitationController@fetchByToken'                                 ],

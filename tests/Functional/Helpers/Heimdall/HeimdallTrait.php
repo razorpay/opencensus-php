@@ -41,6 +41,9 @@ trait HeimdallTrait
         return $response;
     }
 
+    /**
+     * Edit an admin as superadmin
+     */
     protected function editAdmin($orgId, $adminId, $content = [])
     {
         $defaultContent = [
