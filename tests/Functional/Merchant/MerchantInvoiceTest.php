@@ -124,7 +124,7 @@ class MerchantInvoiceTest extends TestCase
 
         $entities = $this->getEntities('merchant_invoice', [], true);
 
-        $this->assertEquals(3, $entities['count']);
+        $this->assertEquals(15, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -178,7 +178,7 @@ class MerchantInvoiceTest extends TestCase
 
         $entities = $this->getEntities('merchant_invoice', [], true);
 
-        $this->assertEquals(3, $entities['count']);
+        $this->assertEquals(15, $entities['count']);
 
         $entities = $entities['items'];
 
