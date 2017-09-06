@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const execSync = require('child_process').execSync;
 const gulp = require('gulp');
+const gulpWatch = require('gulp-watch');
 const webpack = require('webpack');
 const through = require('through2').obj;
 const plumber = require('gulp-plumber');
@@ -221,21 +222,31 @@ gulp.task('dev:webpack', ['dev:setENV'], cb => {
 });
 
 const watch = () => {
-  gulp.watch('public/js/themes/*.jst', ['compileThemes', 'js']);
-  gulp.watch('public/css/*.styl', ['css']);
-  gulp.watch(
+  gulpWatch('public/js/themes/*.jst', () => {
+    run(['compileThemes', 'js']);
+  });
+
+  gulpWatch('public/css/*.styl', () => {
+    run('css');
+  });
+
+  gulpWatch(
     ['public/js/*.js', 'public/js/admin/**/*.js', 'public/js/merchant/**/*.js'],
-    ['js']
+    () => {
+      run('js');
+    }
   );
-  gulp.watch(
+
+  gulpWatch(
     [
       'public/react/merchant/**/*',
       'public/react/admin/**/*',
       'public/react/rzp/**/*',
       'public/react/styles/**/*.styl',
-      'public/react/styles/fonts/*.*',
     ],
-    ['dev:webpack']
+    () => {
+      run('dev:webpack');
+    }
   );
 };
 

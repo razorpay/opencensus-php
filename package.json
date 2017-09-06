@@ -27,6 +27,7 @@
     "gulp-rev": "^7.1.2",
     "gulp-stylus": "^2.6.0",
     "gulp-uglify": "^2.0.1",
+    "gulp-watch": "^4.3.11",
     "html-webpack-plugin": "^2.29.0",
     "husky": "^0.13.3",
     "lazypipe": "^1.0.1",
