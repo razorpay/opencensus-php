@@ -64,7 +64,7 @@
     </a>
   </li>
   <li dynamic-tooltip="view_workflow_requests" ng-if="admin.permissions && admin.permissions.indexOf('view_workflow_requests') !== -1">
-    <a id="workflowFeedNav" ui-sref="app.workflows.actions.list({ type: 'checker' })" >
+    <a id="workflowFeedNav" ui-sref="app.workflows.actions.list({ type: 'checker-requested' })" >
       <i class="fa fa-exchange icon text-warning-lter"></i>
       <span>Requests</span>
     </a>
