@@ -10,7 +10,7 @@ export default class LogoUploadButton extends Component {
 
   setFileName(value) {
     // this.textInput.value = value;
-    console.log(value)
+    console.log(value);
   }
 
   render() {

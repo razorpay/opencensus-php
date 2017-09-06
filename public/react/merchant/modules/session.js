@@ -7,6 +7,7 @@ const UPDATE_SESSION = 'UPDATE_SESSION';
 const USER_FETCH = 'USER_FETCH';
 const ORG_FETCH = 'ORG_FETCH';
 export const USER_LOGOUT = 'USER_LOGOUT';
+const SHOW_HIDE_TOUR = 'SHOW_HIDE_TOUR';
 
 export const updateSession = payload => {
   return {
@@ -53,21 +54,6 @@ export const logout = () => {
   };
 };
 
-export const enableOrDisableNewui = enableOrDisable => {
-  return () => {
-    return ajax({
-      url: `/tags`,
-      method: 'post',
-      appendModeInURL: false,
-      data: {
-        newui: enableOrDisable,
-      },
-    }).then(() => {
-      window.location.reload();
-    });
-  };
-};
-
 export const submitFeedback = data => {
   return () => {
     return ajax({
@@ -79,11 +65,19 @@ export const submitFeedback = data => {
   };
 };
 
+export const showOrHideTour = toShowTour => {
+  return {
+    type: SHOW_HIDE_TOUR,
+    toShowTour,
+  };
+};
+
 let initialState = {
   user: new User(),
   org: {},
   mode: 'test',
   modeFormatted: 'Test',
+  isTourVisible: false,
 };
 
 export default function(state = initialState, action) {
@@ -103,6 +97,9 @@ export default function(state = initialState, action) {
 
     case `${ORG_FETCH}::SUCCESS`:
       return set(state, 'org', action.payload.data);
+
+    case 'SHOW_HIDE_TOUR':
+      return set(state, 'isTourVisible', action.toShowTour);
 
     default:
       return state;

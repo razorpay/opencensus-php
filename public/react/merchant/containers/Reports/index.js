@@ -38,7 +38,7 @@ const selector = formValueSelector('generateReports');
     entity: 'payment',
     type: 'daily',
     date: moment(),
-    invoiceDate: moment().set('month', 5).startOf('month'), // Select June. Invoice date can not be july or after
+    invoiceDate: moment().subtract(1, 'months').startOf('month'), // Merchant can not download invoice of current month
   },
 })
 export default class ReportsContainer extends Component {
@@ -84,26 +84,18 @@ export default class ReportsContainer extends Component {
       });
     }
 
-    if (user.isGSTEnabled) {
-      this.props.change('invoiceDate', moment().subtract('months', 1));
+    if (user.isGSTDisabled) {
+      // If GST is disabled, Select June. Invoice date can not be july or after
+      this.props.change(
+        'invoiceDate',
+        moment().set('month', 5).startOf('month')
+      );
     }
 
     // Select default report type
     this.setState({
       entity: this.entityOptions[1],
     });
-  }
-
-  componentWillReceiveProps(nextProps) {
-    // set the date to 1st of current month otherwise e.g, if 30 Aug changes to Feb then date becomes 30, making it select March!
-    if (this.props.type === 'daily' && nextProps.type === 'monthly') {
-      this.props.change('date', this.props.date.startOf('month'));
-    } else if (
-      this.props.entity !== 'invoice' &&
-      nextProps.entity === 'invoice'
-    ) {
-      this.props.change('invoiceDate', this.props.invoiceDate.startOf('month'));
-    }
   }
 
   getEntityLabel(value) {
@@ -270,7 +262,7 @@ export default class ReportsContainer extends Component {
   };
 
   validateInvoiceMonthYear = current => {
-    const isGSTEnabled = this.props.user.isGSTEnabled;
+    const isGSTEnabled = !this.props.user.isGSTDisabled;
 
     const currDate = new Date(),
       tillPrevMonth =

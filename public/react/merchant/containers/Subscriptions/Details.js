@@ -1,32 +1,40 @@
 import React, { Component, PropTypes } from 'react';
+import { findDOMNode } from 'react-dom';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 import SubscriptionDetails from 'merchant/components/Subscriptions/Details';
 import InvoiceDetail from 'merchant/components/Subscriptions/InvoiceDetail';
-import PaymentDetail from 'merchant/components/Payments/PaymentDetails';
 import {
   fetchSubscription as fetchItem,
+  fetchInvoices,
   cancelSubscription,
 } from 'merchant/modules/subscriptions';
 import { fetchPlan } from 'merchant/modules/plans';
 import { fetchCustomer } from 'merchant/modules/customers';
 import { fetchInvoice } from 'merchant/modules/invoices/details';
-import { fetchItem as fetchPayment } from 'merchant/modules/payments/details';
 import { showNotification } from 'rzp/modules/notifications';
 import { expandSlider, compactSlider } from 'rzp/modules/slider';
 
 @withRouter
-@connect(state => state.subscription, {
-  expandSlider,
-  compactSlider,
-  fetchInvoice,
-  fetchPayment,
-  fetchItem,
-  fetchPlan,
-  fetchCustomer,
-  cancelSubscription,
-  showNotification,
-})
+@connect(
+  state => {
+    return {
+      ...state.subscription,
+      ...state.app,
+    };
+  },
+  {
+    expandSlider,
+    compactSlider,
+    fetchInvoice,
+    fetchItem,
+    fetchInvoices,
+    fetchPlan,
+    fetchCustomer,
+    cancelSubscription,
+    showNotification,
+  }
+)
 export default class SubscriptionDetailsContainer extends Component {
   static contextTypes = {
     confirm: PropTypes.func,
@@ -35,19 +43,41 @@ export default class SubscriptionDetailsContainer extends Component {
   state = {};
 
   componentWillMount() {
-    this.fetchAll(this.props);
+    this.props.id && this.fetchSubscriptionDetails(this.props.id);
+    this.props.invoice_id && this.fetchInvoice(this.props.invoice_id);
+    this.checkSecView();
   }
 
   componentWillReceiveProps(nextProps) {
-    this.fetchAll(nextProps);
+    if (this.props.id !== nextProps.id) {
+      this.fetchSubscriptionDetails(nextProps.id);
+    }
+
+    if (
+      nextProps.invoice_id &&
+      (!this.props.invoice_id || this.props.invoice_id !== nextProps.invoice_id)
+    ) {
+      this.fetchInvoice(nextProps.invoice_id);
+    }
+
+    this.checkSecView(nextProps.invoice_id);
   }
 
-  fetchAll(nextProps) {
-    let { id, invoice_id, payment_id } = nextProps;
+  checkSecView(invoiceId) {
+    if (!invoiceId) {
+      // this.setState({secView: false});
+      this.props.compactSlider();
 
-    id && this.fetchSubscriptionDetails(id);
-    invoice_id && this.fetchInvoice(invoice_id);
-    payment_id && this.fetchPayment(payment_id);
+      // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
+      if (this.invoiceView && findDOMNode(this.invoiceView)) {
+        findDOMNode(this.invoiceView).classList.toggle('toggle-slider');
+      }
+
+      this.setState({
+        invoice: {},
+        invoiceLoading: false,
+      });
+    }
   }
 
   fetchInvoice(id) {
@@ -57,40 +87,19 @@ export default class SubscriptionDetailsContainer extends Component {
       this.setState({
         secView: 'invoice',
         invoiceErrors: null,
+        invoiceLoading: true,
       });
       this.props
         .fetchInvoice(id)
         .then(invoice => {
           this.setState({
             invoice,
+            invoiceLoading: false,
           });
         })
         .catch(({ invoiceErrors }) => {
           this.setState({
             invoiceErrors,
-          });
-        });
-    }
-  }
-
-  fetchPayment(id) {
-    let { payment } = this.props;
-    if (!payment || payment.id !== id) {
-      this.props.expandSlider();
-      this.setState({
-        secView: 'payment',
-        paymentErrors: null,
-      });
-      this.props
-        .fetchPayment(id)
-        .then(payment => {
-          this.setState({
-            payment,
-          });
-        })
-        .catch(({ paymentErrors }) => {
-          this.setState({
-            paymentErrors,
           });
         });
     }
@@ -107,16 +116,38 @@ export default class SubscriptionDetailsContainer extends Component {
           return Promise.all([
             fetchPlan(subscription.plan_id),
             fetchCustomer(subscription.customer_id),
-          ]);
-        })
-        .then(() => {
-          this.setState({ isLoading: false });
+          ]).then(() => {
+            this.props.fetchInvoices(id).then(data => {
+              // Set curInvoiceIndex when /{subscription_id}/{invoice_id} is direct hit
+              if (data.data && !this.state.curInvoiceIndex) {
+                const invoicesItems = data.data.items;
+
+                invoicesItems.forEach((item, index) => {
+                  if (item.id === this.props.invoice_id) {
+                    this.setState({
+                      curInvoiceIndex: invoicesItems.length - index,
+                    });
+                  }
+                });
+              }
+            });
+            this.setState({ isLoading: false });
+          });
         })
         .catch(({ errors }) => {
           this.setState({ errors, isLoading: false });
         });
     }
   }
+
+  goToLink = (itemId, index) => {
+    this.setState({ curInvoiceIndex: index });
+    this.props.history.push(`/subscriptions/${this.props.entity.id}/${itemId}`);
+
+    if (this.invoiceView && findDOMNode(this.invoiceView)) {
+      findDOMNode(this.invoiceView).classList.toggle('toggle-slider');
+    }
+  };
 
   cancelSubscription = () => {
     this.context.confirm({
@@ -143,41 +174,47 @@ export default class SubscriptionDetailsContainer extends Component {
     });
   };
 
+  secClose = () => {
+    let { compactSlider, history, location } = this.props;
+    findDOMNode(this.invoiceView).classList.toggle('toggle-slider');
+
+    compactSlider();
+    history.push(location.pathname.replace(/\/[^\/]+\/?$/, ''));
+  };
+
   render() {
-    let { entity, plan, customer } = this.props;
+    let { entity, plan, customer, invoices, activeSecEntityId } = this.props;
     let {
       isLoading,
       invoice,
-      payment,
       secView,
       errors,
       invoiceErrors,
-      paymentErrors,
+      invoiceLoading,
     } = this.state;
 
     return (
-      <div class="multi-content">
+      <div>
         <SubscriptionDetails
           subscription={entity}
           plan={plan}
           customer={customer}
+          invoices={invoices}
           isLoading={isLoading}
           statusMsg={makeErrorStatus(errors)}
+          goToLink={this.goToLink}
+          activeSecEntityId={activeSecEntityId}
           onCancelClick={this.cancelSubscription}
         />
-        {secView === 'invoice' &&
+        {false &&
+          secView === 'invoice' &&
           <InvoiceDetail
+            curInvoiceIndex={this.state.curInvoiceIndex}
             invoice={invoice}
             onClose={this.secClose}
             statusMsg={makeErrorStatus(invoiceErrors)}
-            isLoading={secView && !invoice}
-          />}
-        {secView === 'payment' &&
-          <PaymentDetail
-            payment={payment}
-            onClose={this.secClose}
-            statusMsg={makeErrorStatus(paymentErrors)}
-            isLoading={secView && !payment}
+            isLoading={secView && invoiceLoading}
+            ref={comp => (this.invoiceView = comp)}
           />}
       </div>
     );
@@ -197,4 +234,15 @@ function makeErrorStatus(message) {
       message: invoiceErrors,
     }
   );
+}
+
+function makeErrorStatus(message) {
+  if (message) {
+    return {
+      type: 'error',
+      message: invoiceErrors,
+    };
+  } else {
+    return {};
+  }
 }

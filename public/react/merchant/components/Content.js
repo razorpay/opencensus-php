@@ -35,7 +35,11 @@ import Configuration from 'merchant/containers/Configuration';
 import ApiKeys from 'merchant/containers/Keys/List';
 import Webhooks from 'merchant/containers/Webhooks/List';
 
-import { setBaseLocation, setActiveEntity } from 'merchant/modules/app';
+import {
+  setBaseLocation,
+  setActiveEntity,
+  setSecActiveEntity,
+} from 'merchant/modules/app';
 import { openSlider } from 'rzp/modules/slider';
 
 // Can be removed with old navigation removal
@@ -88,20 +92,34 @@ const RefundsTabbedContainer = () => {
 };
 
 @withRouter
-@connect(null, { setBaseLocation, setActiveEntity, openSlider })
+@connect(null, {
+  setBaseLocation,
+  setActiveEntity,
+  setSecActiveEntity,
+  openSlider,
+})
 export default class Content extends Component {
   setBaseLocation = location => {
-    let { setBaseLocation, setActiveEntity } = this.props;
+    let { setBaseLocation, setActiveEntity, setSecActiveEntity } = this.props;
     var matchResult = matchDetail(location.pathname);
 
     if (matchResult) {
       this.detailView = matchResult.component;
-      this.detailProps = matchResult.match.params;
+
+      const params = matchResult.match.params;
+      setActiveEntity(params.id);
+
+      this.detailProps = params;
+
       setActiveEntity(matchResult.match.params.id);
+      if (Object.keys(params > 1)) {
+        setSecActiveEntity(params[Object.keys(params)[1]]);
+      }
     } else {
       this.detailView = null;
       this.detailProps = null;
       setActiveEntity(null);
+      setSecActiveEntity(null);
 
       this.baseLocation = location;
       setBaseLocation(location);
@@ -109,61 +127,13 @@ export default class Content extends Component {
   };
 
   getBaseView = () => {
-    let isNewUIEnabled = this.props.user.isNewUIEnabled;
+    let isOldUIEnabled = this.props.user.isOldUIEnabled;
 
     return (
       <div>
         {
           do {
-            if (isNewUIEnabled) {
-              <Switch location={this.baseLocation}>
-                <Route path="/dashboard" component={Home} />
-                <Redirect from="/" exact to="/dashboard" />
-
-                <Route path="/payments" component={Transactions} />
-                <Route path="/refunds" component={Transactions} />
-                <Route path="/orders" component={Transactions} />
-
-                <Route path="/settlements" component={Settlements} />
-
-                <Route path="/invoices" exact component={InvoicingContainer} />
-                <Route path="/invoices/:id(inv_.+)" component={InvoicesNew} />
-                <Route path="/invoices/new" component={InvoicesNew} />
-                <Route path="/items" component={InvoicingContainer} />
-                <Route path="/paymentlinks" component={PaymentLinks} />
-                <Route path="/subscriptions" component={Subscriptions} />
-                <Route path="/plans" component={Subscriptions} />
-                <Route
-                  path="/customers"
-                  render={() =>
-                    <TabbedContent
-                      headerId="invoicing-header"
-                      to="/customers"
-                      navLabel="Customers"
-                      component={Customers}
-                    />}
-                />
-
-                <Route path="/route" component={Marketplace} />
-                <Route path="/virtualaccounts" component={VirtualAccounts} />
-
-                <Route path="/reports" component={Reports} />
-                <Route path="/team" component={TeamManagement} />
-
-                <Route path="/profile" component={MyAccount} />
-                <Route path="/activation" component={MyAccount} />
-                <Route path="/addfunds" component={MyAccount} />
-                <Route path="/credits" component={MyAccount} />
-                <Route path="/referrals" component={MyAccount} />
-
-                <Route path="/config" component={Settings} />
-                <Route path="/keys" component={Settings} />
-                <Route path="/webhooks" component={Settings} />
-                <Route path="/applications" component={Settings} />
-
-                <Redirect to="/dashboard" />
-              </Switch>;
-            } else {
+            if (isOldUIEnabled) {
               <Switch location={this.baseLocation}>
                 <Route path="/dashboard" component={Home} />
                 <Redirect from="/" exact to="/dashboard" />
@@ -280,6 +250,54 @@ export default class Content extends Component {
                       component={Webhooks}
                     />}
                 />
+
+                <Redirect to="/dashboard" />
+              </Switch>;
+            } else {
+              <Switch location={this.baseLocation}>
+                <Route path="/dashboard" component={Home} />
+                <Redirect from="/" exact to="/dashboard" />
+
+                <Route path="/payments" component={Transactions} />
+                <Route path="/refunds" component={Transactions} />
+                <Route path="/orders" component={Transactions} />
+
+                <Route path="/settlements" component={Settlements} />
+
+                <Route path="/invoices" exact component={InvoicingContainer} />
+                <Route path="/invoices/:id(inv_.+)" component={InvoicesNew} />
+                <Route path="/invoices/new" component={InvoicesNew} />
+                <Route path="/items" component={InvoicingContainer} />
+                <Route path="/paymentlinks" component={PaymentLinks} />
+                <Route path="/subscriptions" component={Subscriptions} />
+                <Route path="/plans" component={Subscriptions} />
+                <Route
+                  path="/customers"
+                  render={() =>
+                    <TabbedContent
+                      headerId="invoicing-header"
+                      to="/customers"
+                      navLabel="Customers"
+                      component={Customers}
+                    />}
+                />
+
+                <Route path="/route" component={Marketplace} />
+                <Route path="/virtualaccounts" component={VirtualAccounts} />
+
+                <Route path="/reports" component={Reports} />
+                <Route path="/team" component={TeamManagement} />
+
+                <Route path="/profile" component={MyAccount} />
+                <Route path="/activation" component={MyAccount} />
+                <Route path="/addfunds" component={MyAccount} />
+                <Route path="/credits" component={MyAccount} />
+                <Route path="/referrals" component={MyAccount} />
+
+                <Route path="/config" component={Settings} />
+                <Route path="/keys" component={Settings} />
+                <Route path="/webhooks" component={Settings} />
+                <Route path="/applications" component={Settings} />
 
                 <Redirect to="/dashboard" />
               </Switch>;

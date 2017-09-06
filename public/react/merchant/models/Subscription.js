@@ -24,4 +24,16 @@ export default class Subscription extends GenericEntity {
       return new Subscription(response.data);
     });
   }
+
+  fetchInvoices(subs_id) {
+    return this.makeGenericAjaxCall({
+      method: 'get',
+      data: {
+        route_name: 'invoice_fetch_multiple',
+        query_params: JSON.stringify({
+          subscription_id: subs_id,
+        }),
+      },
+    });
+  }
 }

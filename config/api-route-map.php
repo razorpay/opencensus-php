@@ -70,7 +70,7 @@ return [
         'admin_get_file'                    => 'files/{fileId}/signed-url',
 
         // Workflows
-        'workflow_get_multiple'             => 'orgs/{orgId}/workflows',
+        'workflow_get_multiple'             => 'workflows',
         'workflow_create'                   => 'workflows',
         'workflow_get'                      => 'workflows/{id}',
         'workflow_update'                   => 'workflows/{id}',
@@ -101,6 +101,9 @@ return [
         // Refund Authorized Payment
         'payment_authorize_refund'          => 'payments/{id}/authorize_refund',
         'pricing_create_plan'               => 'pricing',
+        'merchant_get_pricing'              => 'merchants/{id}/pricing',
+        'merchant_get_terminals'            => 'merchants/{id}/terminals',
+        'merchant_details_fetch'            => 'merchants/details',
     ],
 
     // auth

@@ -11,9 +11,12 @@ import * as NotificationActions from 'rzp/modules/notifications';
 import * as ApplicationActions from 'merchant/modules/applications';
 
 const INFO = {
-  icon: 'Your uploaded app icon will be shown to your users on Razorpay Connect screens. The icon will also be displayed in the connected applications list',
-  dev: "End-point on your development server that we'll redirect your users back to after they connect with Razorpay. Can be localhost. If you provide a comma-separated list, we will allow redirects to any of them via the redirect_uri parameter and default to the first one.",
-  prod: "End-point on your production server that we'll redirect your users back to after they connect with Razorpay. Must be HTTPS. If you provide a comma-separated list, we will allow redirects to any of them via the redirect_uri parameter and default to the first one.",
+  icon:
+    'Your uploaded app icon will be shown to your users on Razorpay Connect screens. The icon will also be displayed in the connected applications list',
+  dev:
+    "End-point on your development server that we'll redirect your users back to after they connect with Razorpay. Can be localhost. If you provide a comma-separated list, we will allow redirects to any of them via the redirect_uri parameter and default to the first one.",
+  prod:
+    "End-point on your production server that we'll redirect your users back to after they connect with Razorpay. Must be HTTPS. If you provide a comma-separated list, we will allow redirects to any of them via the redirect_uri parameter and default to the first one.",
 };
 
 const selector = formValueSelector('newApplicationForm');
@@ -76,7 +79,9 @@ class NewApplicationForm extends Component {
 
   openPreviewPage = () => {
     // open in a popup
-    const popupUrl = `http://authorize.razorpay.dev:28095/authorize?response_type=code&client_id=${this.state.details.clients.prod.id}&redirect_uri=http://localhost&scope=read_only`;
+    const popupUrl = `http://authorize.razorpay.dev:28095/authorize?response_type=code&client_id=${this
+      .state.details.clients.prod
+      .id}&redirect_uri=http://localhost&scope=read_only`;
     window.open(popupUrl, 'PopupPreview');
   };
 
@@ -150,18 +155,17 @@ class NewApplicationForm extends Component {
             <i class="icon icon-arrow-back" />
             <span> Back</span>
           </Link>
-          <strong> / {this.state.edit ? 'Edit' : 'Create'} Application</strong>
+          <strong>
+            {' '}/ {this.state.edit ? 'Edit' : 'Create'} Application
+          </strong>
         </div>
         <form
           class="form-horizontal"
           onSubmit={handleSubmit(this.state.edit ? this.update : this.create)}
         >
           <Fieldset>
-
             <div class="form-group">
-              <label class="col-md-2 control-label label-required">
-                Name
-              </label>
+              <label class="col-md-2 control-label label-required">Name</label>
               <div class="col-md-10">
                 <Field
                   name="name"
@@ -222,9 +226,7 @@ class NewApplicationForm extends Component {
                 </div>
 
                 <div class="form-group">
-                  <label class="col-md-2 control-label">
-                    Client ID
-                  </label>
+                  <label class="col-md-2 control-label">Client ID</label>
                   <div class="col-md-4">
                     <Field
                       name="clients.dev.id"
@@ -234,9 +236,7 @@ class NewApplicationForm extends Component {
                       placeholder="Client ID"
                     />
                   </div>
-                  <label class="col-md-2 control-label">
-                    Client Secret
-                  </label>
+                  <label class="col-md-2 control-label">Client Secret</label>
                   <div class="col-md-4">
                     <Field
                       name="clients.dev.secret"
@@ -257,9 +257,7 @@ class NewApplicationForm extends Component {
                 </div>
 
                 <div class="form-group">
-                  <label class="col-md-2 control-label">
-                    Redirect URIs
-                  </label>
+                  <label class="col-md-2 control-label">Redirect URIs</label>
                   <div class="col-md-10">
                     <Field
                       name="clients.dev.redirect_url"
@@ -283,9 +281,7 @@ class NewApplicationForm extends Component {
                 </div>
 
                 <div class="form-group">
-                  <label class="col-md-2 control-label">
-                    Client ID
-                  </label>
+                  <label class="col-md-2 control-label">Client ID</label>
                   <div class="col-md-4">
                     <Field
                       name="clients.prod.id"
@@ -295,9 +291,7 @@ class NewApplicationForm extends Component {
                       placeholder="Client ID"
                     />
                   </div>
-                  <label class="col-md-2 control-label">
-                    Client Secret
-                  </label>
+                  <label class="col-md-2 control-label">Client Secret</label>
                   <div class="col-md-4">
                     <Field
                       name="clients.prod.secret"
@@ -318,9 +312,7 @@ class NewApplicationForm extends Component {
                 </div>
 
                 <div class="form-group">
-                  <label class="col-md-2 control-label">
-                    Redirect URIs
-                  </label>
+                  <label class="col-md-2 control-label">Redirect URIs</label>
                   <div class="col-md-10">
                     <Field
                       name="clients.prod.redirect_url"

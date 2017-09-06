@@ -248,30 +248,7 @@ class Service extends Base\Service
         {
             $merchants = $this->getMerchants($orgId, $adminId, $input)->toArray();
 
-            $merchantIds = array_column($merchants, 'id');
-
-            $data = Merchant\Entity::select(['merchants.id'])
-                                    ->with('tagged')
-                                    ->whereIn('merchants.id', $merchantIds);
-
-            if (isset($input['tags']))
-            {
-                $data = $data->withAllTags($input['tags']);
-            }
-
-            $data = $data->get()->toArray();
-
-            foreach ($merchants as $merchant)
-            {
-                $key = array_search($merchant['id'], array_column($data, 'id'));
-
-                if ($key !== false)
-                {
-                    unset($data[$key]['referrer']);
-
-                    $response[] = array_merge($merchant, $data[$key]);
-                }
-            }
+            $response = $merchants;
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
@@ -407,35 +384,6 @@ class Service extends Base\Service
         return [[], $data];
     }
 
-    public function fetchFullMerchantDetails($id)
-    {
-        $details = null;
-
-        $error = [];
-
-        $this->setAdminCredentials();
-
-        if ($id !== '10NodalAccount')
-        {
-            $details = $this->fetchMerchantDetails($id);
-        }
-
-        $terminal = $this->fetchMerchantTerminal($id);
-
-        $pricingPlan = $this->fetchMerchantPricing($id);
-
-        $scheduleTasks = $this->fetchMerchantSchedule($id);
-
-        $data = [
-                    'details'        => $details,
-                    'terminals'      => $terminal,
-                    'pricing_plan'   => $pricingPlan,
-                    'schedule_tasks' => $scheduleTasks
-                ];
-
-        return [$error, $data];
-    }
-
     public function fetchMerchantDetails($id)
     {
         $response = [];
@@ -465,12 +413,6 @@ class Service extends Base\Service
             $merchant['confirmed'] = (empty($confirmedPrimaryOwner) === false);
         }
 
-        $tags = Merchant\Entity::select(['merchants.id'])
-                                ->with('tagged')
-                                ->where('merchants.id', $id)
-                                ->get()
-                                ->toArray();
-
         $merchantDetail = (new MerchantDetails\Service)->fetchDetails($id);
 
         $merchant['merchant_details'] = $merchantDetail;
@@ -481,7 +423,6 @@ class Service extends Base\Service
             'steps_finished'      => $merchantDetail['steps_finished'],
             'locked'              => $merchantDetail['locked'],
             'submitted'           => $merchantDetail['submitted'],
-            'tags'                => $tags[0]['tags'] ?? [],
             'submitted_at'        => $merchantDetail['submitted_at'],
             'activated_dashboard' => $merchant['activated']
         ] + $merchant;
@@ -534,8 +475,6 @@ class Service extends Base\Service
             if ((isset($input['fee_bearer'])) and ($input['fee_bearer'] === 'customer'))
             {
                 $currentTags = (new Merchant\Service)->getMerchantTags($id);
-
-                $this->addTagToMerchant($id, 'feebearer');
 
                 (new Merchant\Service)->addMerchantTagsOnAPI($id, array_merge($currentTags, ['feebearer']));
             }
@@ -627,35 +566,6 @@ class Service extends Base\Service
         return $error;
     }
 
-    public function fetchMerchantTerminal($id)
-    {
-        $this->setApiCredentials();
-
-        $liveTerminals = $this->api->merchant->setId($id)->fetchTerminals()->toArray();
-
-        $this->setApiCredentials(null, 'test');
-
-        $testTerminals = $this->api->merchant->setId($id)->fetchTerminals()->toArray();
-
-        foreach ($testTerminals['items'] as &$item)
-        {
-            $item['mode'] = 'test';
-        }
-
-        foreach ($liveTerminals['items'] as &$item)
-        {
-            $item['mode'] = 'live';
-        }
-
-        $response = array(
-            'entity'    => 'collection',
-            'count'     => $liveTerminals['count'] + $testTerminals['count'],
-            'items'     => array_merge($liveTerminals['items'], $testTerminals['items'])
-        );
-
-        return $response;
-    }
-
     public function postMerchantTerminal($id, $input)
     {
         $error = (new Merchant\Validator)->validateInput('terminal', $input)->messages();
@@ -703,24 +613,6 @@ class Service extends Base\Service
         $gateway_client_certificate = file_get_contents($certificateFile->getPathname());
 
         return base64_encode($gateway_client_certificate);
-    }
-
-    public function fetchMerchantPricing($id)
-    {
-        $this->setApiCredentials();
-
-        $response = $this->api->merchant->fetch($id)->fetchPricing()->toArray();
-
-        return $response;
-    }
-
-    public function fetchMerchantSchedule($id)
-    {
-        $this->setApiCredentials(null, 'live');
-
-        $response = $this->api->admin->fetchMultipleEntities('schedule_task', ['merchant_id' => $id])->toArray();
-
-        return $response;
     }
 
     /**
@@ -914,26 +806,6 @@ class Service extends Base\Service
         $this->logActionToSlack($id, Actions::HDFC_EXCEL);
 
         return [[], $file];
-    }
-
-    public function fetchPricingPlan($id)
-    {
-        $errors = array();
-
-        $response = array();
-
-        $this->setApiCredentials();
-
-        try
-        {
-            $response = $this->api->pricing->fetch($id)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return array($errors, $response);
     }
 
     public function fetchMultipleEntities($mode, $entity, $input)
@@ -1150,26 +1022,22 @@ class Service extends Base\Service
                 $inputTags = $input['tags'];
             }
 
-            $merchant->retag($inputTags);
-
             (new Merchant\Service)->addMerchantTagsOnAPI($merchantId, $inputTags);
 
-            $merchant['tags'] = (new Merchant\Service)->getMerchantTags($merchantId);
+            $output = [];
+
+            $output['tags'] = (new Merchant\Service)->getMerchantTags($merchantId);
 
             $this->logActionToSlack($merchant, Actions::TAGGED, ['tags' => $input['tags']]);
 
-            return [null, $merchant->toArray()];
+            $output = array_merge($merchant->toArray(), $output);
+
+            return [null, $output];
         }
         else
         {
             return [$error, null];
         }
-    }
-
-    protected function addTagToMerchant($merchantId, $tag)
-    {
-        $merchant = Merchant\Entity::findOrFail($merchantId);
-        $merchant->tag($tag);
     }
 
     public function addEntityFeatures($entityType, $entityId, $input)
@@ -1210,15 +1078,6 @@ class Service extends Base\Service
         return array($error, null);
     }
 
-    private function removeMerchantTag($entityId, $featureName)
-    {
-        $merchant = Merchant\Entity::findOrFail($entityId);
-
-        $merchant->untag($featureName);
-
-        (new Merchant\Service)->deleteMerchantTagOnAPI($entityId, $featureName);
-    }
-
     private function retagMerchant($entityId, $features)
     {
         $merchant = Merchant\Entity::findOrFail($entityId);
@@ -1226,8 +1085,6 @@ class Service extends Base\Service
         $featureNames = $this->getFeatureNames($features['assigned_features']);
 
         $merchantTags = (new Merchant\Service)->getMerchantTags($merchant->id);
-
-        $merchant->retag(array_merge($featureNames, $merchantTags));
 
         (new Merchant\Service)->addMerchantTagsOnAPI($merchant->id, array_merge($featureNames, $merchantTags));
     }
