@@ -30,7 +30,7 @@ class OnboardingTest extends TestCase
         $this->startTest();
     }
 
-    public function testpostResponsesWithFiles()
+    public function testPostResponsesWithFiles()
     {
         $this->ba->proxyAuth();
 

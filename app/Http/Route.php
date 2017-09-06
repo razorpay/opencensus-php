@@ -587,8 +587,6 @@ final class Route
         // Onboarding routes
         'merchant_onboarding'                     => ['get',      'merchant/onboarding',                            'MerchantController@getQuestions',                                  ],
         'merchant_responses_create'               => ['post',     'merchant/onboarding',                            'MerchantController@createResponses',                               ],
-        'merchant_onboarding_responses'           => ['get',      'merchant/onboarding/responses/',                 'MerchantController@getResponses',                                  ],
-        'merchant_onboarding_feature_responses'   => ['get',      'merchant/onboarding/{feature}/responses/',       'MerchantController@getResponses',                                  ],
     ];
 
     public static $public = [
@@ -1045,9 +1043,7 @@ final class Route
         'invitation_edit',
         'invitation_delete',
         'merchant_onboarding',
-        'merchant_responses_create',
-        'merchant_onboarding_responses',
-        'merchant_onboarding_feature_responses'
+        'merchant_responses_create'
     ];
 
     // These will run on internal auth with the assurance

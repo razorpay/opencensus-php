@@ -74,7 +74,7 @@ return [
         ],
     ],
     // Files will be added and verified from the main test function
-    'testpostResponsesWithFiles' => [
+    'testPostResponsesWithFiles' => [
         'request'  => [
             'content' => [
                 OnboardingConstants::ONBOARDING => [

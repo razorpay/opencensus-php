@@ -750,11 +750,4 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
-
-    public function getResponses(OnboardingService $service, $feature = null)
-    {
-        $response = $service->getResponses($feature);
-
-        return ApiResponse::json($response);
-    }
 }
