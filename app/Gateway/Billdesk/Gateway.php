@@ -103,11 +103,15 @@ class Gateway extends Base\Gateway
 
         if ($content['AuthStatus'] !== AuthStatus::SUCCESS)
         {
+            $errorCode = Billdesk\ErrorCode::getMappedCode(
+                $content['ErrorStatus'],
+                $content['ErrorDescription']);
+
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                    $errorCode,
                     $content['AuthStatus'],
-                    '');
+                    $content['ErrorDescription']);
         }
 
         assertTrue($content['CustomerID'] === $input['payment']['id']);
@@ -826,32 +830,29 @@ class Gateway extends Base\Gateway
 
     protected function checkForErrors($input, $request)
     {
-        if ($input['callbackUrl'] === $request['url'])
+        $merchantId = $input['merchant']->getId();
+
+        // Callback check is only enabled for DEMO and TEST Account for now
+        $shouldCheck = (($merchantId === Merchant\Account::DEMO_PAGE_ACCOUNT) or
+                        ($merchantId === Merchant\Account::TEST_ACCOUNT));
+
+        if (($shouldCheck === true) and
+            ($input['callbackUrl'] === $request['url']))
         {
             $rawMsg = $request['content']['msg'];
 
-            $msg = $this->getContentAfterChecksumVerification($rawMsg, 'callback');
+            $content = $this->getContentAfterChecksumVerification($rawMsg, 'callback');
 
             if ($content['AuthStatus'] !== AuthStatus::SUCCESS)
             {
-                /*
-                 * As seen from splunk some of error_code comes as ErrorStatus and some as ErrorCode.
-                 * Like: ERR_REF010 comes as ErrorCode
-                 *
-                 * Similarly, error_message sometimes comes as ErrorReason and other time as ErrorDescription.
-                 * Like: For ERR_REF010 comes as ErrorReason
-                 *
-                 * TODO: Should be take care of this dicrepency here or is there another source for the request
-                 *
-                 */
-                $errorCode = ErrorCode::getMappedCode(
+                $errorCode = Billdesk\ErrorCode::getMappedCode(
                                     $content['ErrorStatus'],
                                     $content['ErrorDescription']);
 
                 throw new Exception\GatewayErrorException(
                         $errorCode,
                         $content['AuthStatus'],
-                        '');
+                        $content['ErrorDescription']);
             }
         }
     }
@@ -879,10 +880,7 @@ class Gateway extends Base\Gateway
 
     protected function getContentAfterChecksumVerification($responseBody, $action = null)
     {
-        if ($action === null)
-        {
-            $action = $this->action;
-        }
+        $action = $action ?: $this->action;
 
         $fields = $this->getFieldsForAction($action);
 

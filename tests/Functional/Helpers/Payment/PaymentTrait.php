@@ -1313,6 +1313,18 @@ trait PaymentTrait
         return $server;
     }
 
+    protected function mockServerRequestFunction($closure, $gateway = null)
+    {
+        $server = $this->mockServer($gateway)
+                       ->shouldReceive('request')
+                       ->andReturnUsing($closure)
+                       ->mock();
+
+        $this->setMockServer($server, $gateway);
+
+        return $server;
+    }
+
     protected function mockServer($gateway = null)
     {
         $gateway = $gateway ?: $this->gateway;

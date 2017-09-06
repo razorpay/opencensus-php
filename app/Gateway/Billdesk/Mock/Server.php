@@ -108,7 +108,7 @@ class Server extends Base\Mock\Server
 
         $content = ['msg' => $msg];
 
-        $this->content($content);
+        $this->content($content, 'bank');
 
         $request = array(
             'url' => $input['RU'],
