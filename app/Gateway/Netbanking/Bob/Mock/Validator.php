@@ -3,20 +3,16 @@
 namespace RZP\Gateway\Netbanking\Bob\Mock;
 
 use RZP\Base;
+use RZP\Gateway\Netbanking\Bob\RequestFields;
 
 class Validator extends Base\Validator
 {
-    // protected static $authRules = array(
-    //     'ClientCode'            => 'required|alpha_num',
-    //     'MerchantCode'          => 'required|alpha',
-    //     'TxnCurrency'           => 'required|in:INR',
-    //     'TxnAmount'             => 'required|numeric',
-    //     'TxnScAmount'           => 'required|in:0',
-    //     'MerchantRefNo'         => 'required|alpha_num|size:14',
-    //     'SuccessStaticFlag'     => 'required|in:N',
-    //     'FailureStaticFlag'     => 'required|in:N',
-    //     'Date'                  => 'required',
-    //     'DynamicUrl'            => 'required|url',
-    //     'CheckSum'              => 'required',
-    // );
+    protected static $authRules = array(
+        RequestFields::MERCHANT_ID      => 'required|alpha_num',
+        RequestFields::BANK_FIXED_VALUE => 'required|alpha_num',
+        RequestFields::BILLER_NAME      => 'required|alpha_num',
+        RequestFields::AMOUNT           => 'required|numeric',
+        RequestFields::CALLBACK_URL     => 'required|url',
+        RequestFields::PAYMENT_ID       => 'required|alpha_num',
+    );
 }
