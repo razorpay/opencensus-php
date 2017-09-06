@@ -32,16 +32,14 @@ class Core extends Base\Core
 
         $this->repo->transaction(function () use ($batch, $input)
         {
-            $file = $input[Entity::FILE];
-
-            $clientExtension = $file->getClientOriginalExtension();
-
             $processor = Processor\Base::get($batch);
 
-            $file = $processor->saveInputFile($file, $clientExtension);
+            $inputFile = $input[Entity::FILE];
 
-            $entries = $processor->validateAndGetEntries($input, $file, $clientExtension);
-            
+            $file = $processor->saveInputFile($inputFile);
+
+            $entries = $processor->parseInputFileAndValidate($file->getPathname(), $input);
+
             $this->fillBatchEntityWithInputFileDetails($batch, $entries);
 
             $this->repo->saveOrFail($batch);
@@ -88,7 +86,7 @@ class Core extends Base\Core
     public function downloadBatch(Entity $batch): string
     {
         $file = ($batch->getStatus() === Status::CREATED) ?
-            $batch->inputFile() : $batch->outputFile();
+                    $batch->inputFile() : $batch->outputFile();
 
         // Backward compatibility:
         // - If file relation exists use that else to handle BC
@@ -205,7 +203,7 @@ class Core extends Base\Core
         array $entries)
     {
         $totalAmount = array_sum(array_column($entries, Header::AMOUNT));
-        $totalCount = count($entries);
+        $totalCount  = count($entries);
 
         $batch->setAmount($totalAmount);
         $batch->setTotalCount($totalCount);
@@ -238,7 +236,7 @@ class Core extends Base\Core
      * others are processed via CRON.
      *
      * @param Entity $batch
-     * @param array $input
+     * @param array  $input
      */
     protected function dispatchOnQueueForProcessingIfApplicable(
         Entity $batch,

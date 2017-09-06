@@ -120,12 +120,12 @@ class Header
         }
     }
 
-    public static function getInputHeaders(string $type)
+    public static function getInputHeadersForType(string $type): array
     {
         return self::PER_TYPE[$type][self::INPUT];
     }
 
-    public static function getOutputHeaders(string $type)
+    public static function getOutputHeadersForType(string $type): array
     {
         return self::PER_TYPE[$type][self::OUTPUT];
     }

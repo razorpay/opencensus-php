@@ -106,21 +106,19 @@ class Base extends BaseModel\Core
 
         $this->downloadAndSetInputFile();
 
-        $fileExtension = pathinfo($this->inputFileLocalPath)['extension'];
-
-        $entries = $this->parseFile($this->inputFileLocalPath, $fileExtension);
+        $entries = $this->parseFile($this->inputFileLocalPath);
 
         $this->mutex->acquireAndRelease(
             $this->batch->getId(),
-            function () use ($entries, $fileExtension)
+            function () use ($entries)
             {
                 $this->processEntries($entries);
 
                 $this->postProcessEntries($entries);
 
-                $this->createAndSetOutputFile($entries, $fileExtension);
+                $this->createAndSetOutputFile($entries);
 
-                $this->saveOutputFile($fileExtension);
+                $this->saveOutputFile();
 
                 $this->repo->saveOrFail($this->batch);
             },
@@ -260,13 +258,12 @@ class Base extends BaseModel\Core
     }
 
     /**
-     * - Method to generate the output file (excel always) from the processed
+     * - Method to generate the output file (excel/text) from the processed
      *   entries.
      *
      * @param array $entries
-     * @param string $fileExtension
      */
-    protected function createAndSetOutputFile(array & $entries, string $fileExtension = FileStore\Format::XLSX)
+    protected function createAndSetOutputFile(array & $entries)
     {
         $type = $this->batch->getType();
 
@@ -275,11 +272,12 @@ class Base extends BaseModel\Core
         $fieldsCount = count($headers);
 
         //
-        // Constructs final excel input using updated $entries set. This things
-        // is used to create output excel file.
+        // Constructs final input using updated $entries set. This things
+        // is used to create output file. Below we fill in the empty headers
+        // with null so we don't get errors during creation of files.
         //
 
-        $excelInput = [];
+        $cleanedEntries = [];
 
         foreach ($entries as $entry)
         {
@@ -290,38 +288,60 @@ class Base extends BaseModel\Core
                 $dict[$key] = $value;
             }
 
-            $excelInput[] = $dict;
+            $cleanedEntries[] = $dict;
         }
 
-        $this->createOutputFile($excelInput, $fileExtension);
+        $this->createAndSetOutputFileByExt($cleanedEntries);
 
-        unset($entries);
+        unset($entries, $cleanedEntries);
     }
 
-    protected function createOutputFile(array $entries, string $fileExtension)
+    /**
+     * Actually creates the output file with proper extension by calling
+     * the relevant FileHandlerTrait's methods.
+     *
+     * @param array $entries
+     */
+    protected function createAndSetOutputFileByExt(array $entries)
     {
-        if ($fileExtension === 'txt')
-        {
-            $txt = $this->generateText($entries, '|');
+        //
+        // Creation of file differs per extension, ext of output file has
+        // to be same of input file.
+        //
 
-            $this->outputFileLocalPath = $this->createTxtFile($this->batch->getId() . '.' . $fileExtension, $txt);
-        }
+        $ext = pathinfo($this->inputFileLocalPath, PATHINFO_EXTENSION);
 
-        elseif ($fileExtension === 'xlsx')
+        switch ($ext)
         {
-            $fileMeta = $this->createExcelObject(
-                                $entries,
-                                $this->batch->getId(),
-                                [],
-                                $this->batch->getType()
-                             )
-                             ->store(
-                                FileStore\Format::XLSX,
-                                $this->batch->getLocalSaveDir(),
-                                true
-                            );
+            case FileStore\Format::TXT:
+
+                $txt = $this->generateText($entries, '|');
+
+                $this->outputFileLocalPath = $this->createTxtFile($this->batch->getId() . '.' . $fileExtension, $txt);
+
+                return;
+
+            case FileStore\Format::XLSX:
+
+                $fileMeta = $this->createExcelObject(
+                                    $entries,
+                                    $this->batch->getId(),
+                                    [],
+                                    $this->batch->getType()
+                                 )
+                                 ->store(
+                                    FileStore\Format::XLSX,
+                                    $this->batch->getLocalSaveDir(),
+                                    true
+                                );
 
                 $this->outputFileLocalPath = $fileMeta['full'];
+
+                return;
+
+            default:
+
+                throw new Exception\LogicException();
         }
     }
 
@@ -347,30 +367,57 @@ class Base extends BaseModel\Core
         }
     }
 
-    public function validateAndGetEntries(array $input, \SplFileInfo $file, string $clientExtension)
+    /**
+     * Parses input file and runs validation on the entries. Finally returns
+     * the validated entries.
+     *
+     * @param string $filePath
+     * @param array  $input
+     *
+     * @return array
+     */
+    public function parseInputFileAndValidate(string $filePath, array $input): array
     {
-        $entries = $this->parseFile($file, $clientExtension);
+        $entries = $this->parseFile($filePath);
 
-        $this->batch->getValidator()
-                    ->validateEntries($entries, $input, $this->merchant);
+        $this->batch->getValidator()->validateEntries($entries, $input, $this->merchant);
 
         return $entries;
     }
 
-    protected function parseFile($file, string $clientExtension = FileStore\Format::XLSX)
-    {
-        if ($clientExtension === 'txt')
-        {
-            return $this->parseTextFile($file, '|');
-        }
 
-        elseif ($clientExtension === 'xlsx')
+    /**
+     * Parses given file and returns the entries array
+     *
+     * @param string $file
+     *
+     * @return array
+     */
+    protected function parseFile(string $filePath): array
+    {
+        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+
+        switch ($ext)
         {
-            return $this->parseExcelSheets($file);
+            case FileStore\Format::XLSX:
+
+                return $this->parseExcelSheets($filePath);
+
+            case FileStore\Format::TXT:
+
+                //
+                // We use standard separator | for txt, if needs this
+                // can be made configurable. But for now it's ok.
+                //
+                return $this->parseTextFile($filePath, '|');
+
+            default:
+
+                throw new Exception\LogicException();
         }
     }
 
-    public function saveInputFile(UploadedFile $file, string $clientExtension): \SplFileInfo
+    public function saveInputFile(UploadedFile $file): \SplFileInfo
     {
         $this->trace->info(TraceCode::BATCH_UPLOADING_FILE, $this->batch->toArray());
 
@@ -380,11 +427,11 @@ class Base extends BaseModel\Core
         // from S3. This helps in smooth S3 mock working.
         //
 
-        $file = $file->move(
-                        $this->batch->getLocalSaveDir(),
-                        $this->batch->getFileKeyWithExt($clientExtension));
+        $ext = $file->getClientOriginalExtension();
 
-        $ufh = $this->saveFile($file->getPathname(), FileStore\Type::BATCH_INPUT, $clientExtension);
+        $file = $file->move($this->batch->getLocalSaveDir(), $this->batch->getFileKeyWithExt($ext));
+
+        $ufh = $this->saveFile($file->getPathname(), FileStore\Type::BATCH_INPUT);
 
         $this->batch->setUploadFileUrl($ufh->getUrl());
 
@@ -395,9 +442,9 @@ class Base extends BaseModel\Core
         return $file;
     }
 
-    protected function saveOutputFile(string $fileExtension)
+    protected function saveOutputFile()
     {
-        $ufh = $this->saveFile($this->outputFileLocalPath,FileStore\Type::BATCH_OUTPUT, $fileExtension);
+        $ufh = $this->saveFile($this->outputFileLocalPath, FileStore\Type::BATCH_OUTPUT);
 
         $this->batch->setDownloadFileUrl($ufh->getUrl());
     }
@@ -405,21 +452,22 @@ class Base extends BaseModel\Core
     /**
      * @param string $filePath
      * @param string $type
-     * @param string $clientExtension
      *
      * @return FileStore\Creator
      *
      * @throws Exception\LogicException
      */
-    protected function saveFile(string $filePath, string $type, string $clientExtension = FileStore\Format::XLSX): FileStore\Creator
+    protected function saveFile(string $filePath, string $type): FileStore\Creator
     {
         $name = $this->batch->getFilePrefix() . $this->batch->getFileKey();
 
+        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+
         return (new FileStore\Creator)
                     ->localFilePath($filePath)
-                    ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$clientExtension][0])
+                    ->mime(FileStore\Format::VALID_EXTENSION_MIME_MAP[$ext][0])
                     ->name($name)
-                    ->extension($clientExtension)
+                    ->extension($ext)
                     ->entity($this->batch)
                     ->merchant($this->merchant)
                     ->type($type)
@@ -461,6 +509,11 @@ class Base extends BaseModel\Core
         $this->inputFileLocalPath = $filePath;
     }
 
+    /**
+     * Required by FileHandlerTrait for parseTextFile() method.
+     *
+     * @return array
+     */
     public function getHeadings()
     {
         return $this->batch->getHeaders();
