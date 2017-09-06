@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 use RZP\Exception;
 use RZP\Models\Batch;
+use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
@@ -424,5 +425,76 @@ class Base extends BaseModel\Core
         }
 
         $this->inputFileLocalPath = $filePath;
+    }
+
+    /**
+     * Creates output file for already processed batch.
+     * NOT to be use in general.
+     *
+     * Ref: Batch/Core::retryBatchOutputFile
+     */
+    public function retryBatchOutputFile()
+    {
+        //
+        // This operation only applies for type=payment_link.
+        //
+        if ($this->batch->isPaymentLinkType() === false)
+        {
+            throw new Exception\LogicException('Invalid type, Operation not allowed.');
+        }
+
+        //
+        // Download the input file, parse and get the row of entities.
+        //
+        $this->downloadAndSetInputFile();
+
+        $entries = $this->parseExcelSheets($this->inputFileLocalPath);
+
+        //
+        // Gets 'receipts' from the input entries. Fetch invoices by batch id
+        // and these receipts.
+        //
+        $receipts = array_pluck($entries, Batch\Header::INVOICE_NUMBER);
+
+        $invoices = $this->repo->invoice->findByBatchIdAndReceipts($this->batch->getId(), $receipts);
+
+        //
+        // Makes 'receipt' the key of collection for easy access and check later
+        //
+        $invoices = $invoices->keyBy(Invoice\Entity::RECEIPT);
+
+        //
+        // For each entry, if there is an invoice created with the input receipt
+        // have the success response appended otherwise failure response.
+        //
+        foreach ($entries as & $entry)
+        {
+            $receipt = $entry[Batch\Header::INVOICE_NUMBER];
+
+            $invoice = $invoices->get($receipt);
+
+            if (empty($invoice) === false)
+            {
+                $entry[Batch\Header::STATUS]            = $invoice->getStatus();
+                $entry[Batch\Header::PAYMENT_LINK_ID]   = $invoice->getPublicId();
+                $entry[Batch\Header::SHORT_URL]         = $invoice->getShortUrl();
+            }
+            else
+            {
+                $entry[Batch\Header::STATUS]            = Batch\Status::FAILURE;
+                $entry[Batch\Header::ERROR_CODE]        = ErrorCode::BAD_REQUEST_ERROR;
+                $entry[Batch\Header::ERROR_DESCRIPTION] = 'Something went wrong, Request you to please contact Razorpay for assistance.';
+            }
+        }
+
+        //
+        // Finally create and output file with the data and set the same
+        // against the batch entity.
+        //
+        $this->createAndSetOutputFile($entries);
+
+        $this->saveOutputFile();
+
+        $this->repo->saveOrFail($this->batch);
     }
 }
