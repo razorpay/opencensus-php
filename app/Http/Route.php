@@ -380,7 +380,6 @@ final class Route
         'gateway_delete_rule'                     => ['delete',   'gateway/rules/{id}',                             'GatewayController@deleteGatewayRule'                               ],
         'gateway_file_create'                     => ['post',     'gateway/files',                                  'GatewayFileController@createGatewayFile'                           ],
         'gateway_file_retry'                      => ['post',     'gateway/files/{id}/retry',                       'GatewayFileController@retryGatewayFile'                            ],
-        'gateway_files_generate'                  => ['post',     'gateway/files/{type}/generate',                  'GatewayFileController@generateGatewayFiles'                        ],
         'gateway_file_acknowledge'                => ['post',     'gateway/files/{id}/acknowledge',                 'GatewayFileController@acknowledgeGatewayFile'                      ],
         'scorecard'                               => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
         'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
@@ -993,7 +992,6 @@ final class Route
         'merchant_payout',
         'gateway_file_create',
         'gateway_file_retry',
-        'gateway_files_generate',
         'gateway_file_acknowledge',
     ];
 

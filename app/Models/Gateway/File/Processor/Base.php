@@ -87,7 +87,7 @@ abstract class Base extends Core
 
         $this->gatewayFile->setStatus(Status::FAILED);
 
-        $this->gatewayFile->setErrorCode($e->getCode());
+        $this->gatewayFile->setErrorCode($e->getErrorCode());
 
         $this->gatewayFile->setErrorDescription($e->getMessage());
 

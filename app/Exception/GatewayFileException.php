@@ -15,6 +15,8 @@ use RZP\Error\ErrorCode;
  */
 class GatewayFileException extends RecoverableException
 {
+    const PREFIX = 'SERVER_ERROR_GATEWAY_FILE_';
+
     public function __construct(string $code, \Exception $previous = null)
     {
         $this->error = new Error($code);
@@ -22,5 +24,10 @@ class GatewayFileException extends RecoverableException
         $message = $this->error->getDescription();
 
         parent::__construct($message, $code, $previous);
+    }
+
+    public function getErrorCode()
+    {
+        return strtolower(substr($this->getCode(), strlen(self::PREFIX)));
     }
 }

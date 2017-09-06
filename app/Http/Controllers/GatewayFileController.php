@@ -17,7 +17,7 @@ class GatewayFileController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function acknowledgeGatewayFile(File\Service $service, string $id)
+    public function acknowledgeGatewayFile(string $id)
     {
         $input = Request::all();
 
@@ -26,7 +26,7 @@ class GatewayFileController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function retryGatewayFile(File\Service $service, string $id)
+    public function retryGatewayFile(string $id)
     {
         $data = $this->service(Entity::GATEWAY_FILE)->retry($id);
 

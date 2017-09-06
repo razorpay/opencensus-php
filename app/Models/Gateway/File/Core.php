@@ -33,6 +33,8 @@ class Core extends Base\Core
             $gatewayFiles->push($gatewayFile);
 
             $this->process($gatewayFile);
+
+            $gatewayFile->reload();
         }
 
         return $gatewayFiles;

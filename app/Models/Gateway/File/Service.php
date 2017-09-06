@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Gateway\File;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 
