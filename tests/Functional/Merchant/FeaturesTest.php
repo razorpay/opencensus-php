@@ -54,9 +54,7 @@ class FeaturesTest extends TestCase
 
         $resultData = [
             "id"            => (string) $features->first()->getId(),
-            "name"          => 'dummy',
-            "entity_id"     => '10000000000000',
-            "entity_type"   => 'merchant'
+            "deleted"       => true,
         ];
 
         $this->assertArraySelectiveEquals($resultData, $content);

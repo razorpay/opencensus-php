@@ -217,9 +217,6 @@ class Processor extends Base\Core
 
             $slackData = $returnData;
 
-            $slackData['settlement_text_file'] = $txtUrl;
-            $slackData['settlement_excel_file'] = $excelUrl;
-
             $this->successNotification($slackData, $settlements, TraceCode::SETTLEMENT_INITIATED);
         }
         else
@@ -314,7 +311,7 @@ class Processor extends Base\Core
     protected function isInvalidSettlementTime(): bool
     {
         // Cron runs at 5.01pm.
-        $fivePm = Carbon::today(Timezone::IST)->hour(17)->minute(10)->timestamp;
+        $fivePm = Carbon::today(Timezone::IST)->hour(17)->minute(10)->getTimestamp();
 
         // No settlements after five PM but allow settlements file upload anytime
         // before that, we want to do it before 8 am as well as that allows us

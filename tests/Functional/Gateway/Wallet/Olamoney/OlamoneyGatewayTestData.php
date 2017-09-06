@@ -83,7 +83,7 @@ return [
 
     'testTopUpEntity' => [
         'action'                => 'authorize',
-        'amount'                => 100000,
+        'amount'                => '100000',
         'wallet'                => 'olamoney',
         'received'              => true,
         'email'                 => 'a@b.com',
@@ -240,7 +240,7 @@ return [
 
     'testPaymentWalletEntity' => [
         'action'                => 'authorize',
-        'amount'                => 50000,
+        'amount'                => '50000',
         'wallet'                => 'olamoney',
         'received'              => true,
         'email'                 => 'a@b.com',
@@ -251,7 +251,7 @@ return [
     ],
 
     'testAuthPaymentRefund' => [
-        'amount'                => 50000,
+        'amount'                => '50000',
         'action'                => 'refund',
         'wallet'                => 'olamoney',
         'email'                 => 'a@b.com',
@@ -277,7 +277,7 @@ return [
     ],
 
     'testPaymentPartialRefund' => [
-        'amount'                => 16666,
+        'amount'                => '16666',
         'action'                => 'refund',
         'wallet'                => 'olamoney',
         'email'                 => 'a@b.com',

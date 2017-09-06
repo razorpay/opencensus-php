@@ -22,6 +22,8 @@ class Core extends Base\Core
 
         $invoiceEntity->build($input);
 
+        $invoiceEntity->generateInvoiceNumber($input['month'], $input['year']);
+
         $this->repo->saveOrFail($invoiceEntity);
 
         return $invoiceEntity;
@@ -98,17 +100,6 @@ class Core extends Base\Core
                 (new DispatchRouter)->dispatchOn($createJob, DispatchRouter::MERCHANT_INVOICE);
             }
         }
-    }
-
-    public function updateGstin(string $merchantId, array $input)
-    {
-        (new Validator)->validateInput('edit_gstin', $input);
-
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
-        $currentGstin = $merchant->getGstin();
-
-        $this->repo->merchant_invoice->updateGstin($merchantId, $input[Entity::INVOICE_NUMBER], $currentGstin);
     }
 
     public function createMulitpleInvoiceEntities(array $input)

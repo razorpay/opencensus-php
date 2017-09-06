@@ -4,7 +4,6 @@ namespace RZP\Http\Controllers;
 
 use Redirect;
 use ApiResponse;
-use RZP\Models\FileStore;
 
 class FileStoreController extends Controller
 {
@@ -16,7 +15,7 @@ class FileStoreController extends Controller
      */
     public function getFile(string $fileId)
     {
-        $signedUrl = (new FileStore\Service)->fetchFileSignedUrlById($fileId);
+        $signedUrl = $this->service()->fetchFileSignedUrlById($fileId);
 
         $data = ['url' => $signedUrl];
 
@@ -30,7 +29,7 @@ class FileStoreController extends Controller
      */
     public function getSignedUrlForEntity(string $entity, string $entityId)
     {
-        $signedUrl = (new FileStore\Service)->fetchSignedUrlForEntityFile($entity, $entityId);
+        $signedUrl = $this->service()->fetchSignedUrlForEntityFile($entity, $entityId);
 
         return Redirect::to($signedUrl);
     }
