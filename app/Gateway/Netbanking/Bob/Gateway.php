@@ -40,6 +40,11 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    public function callback(array $input)
+    {
+        sd($input);
+    }
+
     // -------------------- Auth helper methods-------------------------
 
     protected function getAuthorizeRequest($input)
