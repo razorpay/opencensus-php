@@ -787,6 +787,14 @@ trait Authorize
         }
     }
 
+    /**
+     * If the token is not recurring, but the payment is a second recurring payment,
+     * then the token cannot be used for the payment.
+     *
+     * @param Payment\Entity $payment
+     * @param Token\Entity $token
+     * @throws Exception\BadRequestException
+     */
     protected function assertTokenIsRecurring(Payment\Entity $payment, Token\Entity $token)
     {
         //
@@ -1526,9 +1534,6 @@ trait Authorize
         //
         if (empty($input[Payment\Entity::TOKEN]) === false)
         {
-            //
-            // TODO: Throw exception is token is set and method is netbanking?
-            //
             $this->preProcessPaymentFromSavedMethodLocal($customer, $payment, $input, $gatewayInput);
         }
         else
@@ -1746,10 +1751,9 @@ trait Authorize
             // save global saved card for global customer
             $token = $this->savePaymentMethod($customer, $payment, $savedGlobalCard->getId());
         }
-        else if (($payment->isNetbanking() === true) and
-                 (Payment\Gateway::isRecurringSupportedOnBank($payment->getBank()) === true))
+        else if ($payment->isNetbanking() === true)
         {
-            // save netbanking bank locally for local customer
+            // save netbanking bank token globally for global customer
             $token = $this->savePaymentMethod($customer, $payment);
         }
 
@@ -2174,6 +2178,8 @@ trait Authorize
         {
             //
             // Not all netbanking recurring have a gateway token.
+            // However, if a second recurring payment is attempted without a gateway token,
+            // we throw an exception to handle the case appropriately.
             //
             if (empty($gatewayData[Token\Entity::GATEWAY_TOKEN]) === false)
             {

@@ -21,6 +21,12 @@ class Core extends Base\Core
 
         $gatewayToken->setReference($reference);
 
+        //
+        // The gateway token is created only after the token entity
+        // is updated with recurring = true. Therefore, this parameter
+        // is set correctly.
+        //
+
         // TODO: Set recurring for the older ones by DB update!
         $gatewayToken->setRecurring($token->isRecurring());
 

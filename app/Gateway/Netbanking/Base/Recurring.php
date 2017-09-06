@@ -10,13 +10,4 @@ class Recurring
      * how long the merchant wants the subscription to go on
      */
     const MAX_END_YEARS = 10;
-
-    /**
-     * Maximum amount that we should set the e-mandate
-     * registration for. We cannot do recurring charge
-     * for more than this amount.
-     *
-     * Note: The amount is is paise.
-     */
-    const MAX_AMOUNT            = 10000000;
 }

@@ -63,14 +63,14 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($response);
     }
 
-    public function getBankingType($input)
-    {
-        return ($input['PID'] === 'random_pid_corp') ? 'corporate' : 'retail';
-    }
-
     protected function isSecondRecurring(array $content)
     {
         return ($content[RequestFields::MODE] === Mode::STANDING_INSTRUCTIONS);
+    }
+
+    public function getBankingType($input)
+    {
+        return ($input['PID'] === 'random_pid_corp') ? 'corporate' : 'retail';
     }
 
     public function verify($input)
@@ -81,6 +81,9 @@ class Server extends Base\Mock\Server
 
         $responseArray = $this->createResponseArray($input);
 
+        //
+        // Sending back the SI reference numbers in the response
+        //
         if (empty($input[RequestFields::SI_REFERENCE_NUMBER]) === false)
         {
             $responseArray[ResponseFields::SI_REFERENCE_ID] = $input[RequestFields::SI_REFERENCE_NUMBER];
@@ -111,12 +114,8 @@ class Server extends Base\Mock\Server
             ($input[RequestFields::SI] === Confirmation::YES))
         {
             $response[ResponseFields::SI_SCHEDULE_ID] = uniqid();
-            $response[ResponseFields::SI_STATUS]    = Confirmation::YES;
-            $response[ResponseFields::SI_MESSAGE]   = 'Success';
-        }
-        else if (isset($input[RequestFields::SI_REFERENCE_NUMBER]) === true)
-        {
-            $response[ResponseFields::SI_REFERENCE_ID] = $input[RequestFields::SI_REFERENCE_NUMBER];
+            $response[ResponseFields::SI_STATUS]      = Confirmation::YES;
+            $response[ResponseFields::SI_MESSAGE]     = 'SUC';
         }
 
         return $response;

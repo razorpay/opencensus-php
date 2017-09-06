@@ -7,8 +7,19 @@ use RZP\Exception\BadRequestException;
 
 class RecurringStatus
 {
+    /**
+     * This status indicates that we are waiting for the bank's response to update the status
+     */
     const INITIATED = 'initiated';
+
+    /**
+     * This status indicates that this token has been confirmed for future recurring payments
+     */
     const CONFIRMED = 'confirmed';
+
+    /**
+     * This status indicates that this token has been rejected for future recurring payments
+     */
     const REJECTED  = 'rejected';
 
     public static function isRecurringStatusValid($recurringStatus): bool

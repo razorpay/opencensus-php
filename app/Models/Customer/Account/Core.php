@@ -201,6 +201,11 @@ class Core extends Base\Core
 
         if (($tokens !== null) and ($tokens->count() > 0))
         {
+            //
+            // We do not allow the global customer to see his / her netbanking recurring tokens
+            //
+            $tokens = (new Customer\Service)->removeNetbankingRecurringTokens($tokens);
+
             $response['tokens'] = $tokens;
         }
 

@@ -32,7 +32,7 @@ class RequestFields
      * Payment date used to make the Standing Instructions debit request.
      * Can be future or current.
      */
-    const SI_DEBIT_PAYMENT_DATE       = 'PMT_DATE';
+    const SI_DEBIT_PAYMENT_DATE = 'PMT_DATE';
 
     /**
      * This will be either one-time or recurring

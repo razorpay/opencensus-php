@@ -308,6 +308,9 @@ class Service extends Base\Service
             // Fetch existing tokens if exists
             $tokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
 
+            //
+            // we remove all the netbanking recurring tokens for global customers
+            //
             if (($tokens !== null) and ($tokens->count() > 0))
             {
                 $tokens = $this->removeNetbankingRecurringTokens($tokens);
@@ -319,6 +322,13 @@ class Service extends Base\Service
         return $result;
     }
 
+    /**
+     * This method takes in the current tokens collection, removes the netbanking
+     * recurring tokens and returns the remaining tokens as an array
+     *
+     * @param $tokens
+     * @return mixed
+     */
     public function removeNetbankingRecurringTokens($tokens)
     {
         //
@@ -339,6 +349,10 @@ class Service extends Base\Service
             })
             ->toArrayPublic();
 
+        //
+        // This needs to be done because the method above converts the items
+        // sub-array into a key value pair of the form: 0 => item
+        //
         $tokens['items'] = array_values($tokens['items']);
 
         return $tokens;

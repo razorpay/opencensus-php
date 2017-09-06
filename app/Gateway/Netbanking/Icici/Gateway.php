@@ -76,10 +76,10 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->createGatewayPaymentEntity($entity);
 
         //
-        // Payment must be made with the same payment id as the one used for initiation
-        // Amount can be any value - so long as the PRN, ITC, RID are all the same as the SI initiation request
+        // We set the PRN value to be the unique payment ID. But we send the token number
+        // of the recurring registration payment for all SI execution payments
         //
-        $requestData = $this->getSecondRecurringRequestData($input, $gatewayPayment);
+        $requestData = $this->getSecondRecurringRequestData($input);
 
         $request = $this->getStandardRequestArray($requestData, 'post', $this->getUrlType());
 
@@ -87,7 +87,9 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_RECURRING_DEBIT_REQUEST,
             [
                 'payment_id' => $input['payment']['id'],
-                'request'    => $request
+                'token_id'   => $input['token']->getId(),
+                'request'    => $request,
+                'gateway'    => $this->gateway
             ]);
 
         $response = $this->sendGatewayRequest($request);
@@ -96,7 +98,9 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_RECURRING_DEBIT_RESPONSE,
             [
                 'payment_id' => $input['payment']['id'],
-                'response'   => $response->body
+                'token_id'   => $input['token']->getId(),
+                'response'   => $response->body,
+                'gateway'    => $this->gateway
             ]);
 
         try
@@ -109,7 +113,10 @@ class Gateway extends Base\Gateway
                 $e->getMessage(),
                 ErrorCode::SERVER_ERROR_INVALID_RESPONSE,
                 [
-                    'response' => $response->body
+                    'payment_id' => $input['payment']['id'],
+                    'token_id'   => $input['token']->getId(),
+                    'response'   => $response->body,
+                    'gateway'    => $this->gateway
                 ]);
         }
 
@@ -136,7 +143,7 @@ class Gateway extends Base\Gateway
         {
             $errorCode = SiStatusCode::getInternalErrorCode($response[ResponseFields::STATUS]);
 
-            $gatewayErrorCode = $response[ResponseFields::PAID];
+            $gatewayErrorCode = $response[ResponseFields::PAID] ?? Status::N;
 
             $gatewayErrorDesc = $response[ResponseFields::STATUS];
 
@@ -149,12 +156,15 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getSecondRecurringRequestData(array $input, $gatewayPayment)
+    protected function getSecondRecurringRequestData(array $input)
     {
+        //
+        // All second recurring payments need the gatewayToken to be set
+        //
         $gatewayToken = $input['token']->getGatewayToken();
 
         $baseRequestData = $this->getBaseRequestData(Mode::STANDING_INSTRUCTIONS);
-        $verifyRequestData = $this->getBaseVerifyRequestData($gatewayPayment, $input);
+        $referenceData = $this->getPaymentReferenceData($input);
 
         $paymentDate = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST)
                              ->format('Y-m-d');
@@ -164,7 +174,7 @@ class Gateway extends Base\Gateway
             RequestFields::SI_DEBIT_PAYMENT_DATE => $paymentDate,
         ];
 
-        return array_merge($baseRequestData, $verifyRequestData, $recurringRequestData);
+        return array_merge($baseRequestData, $referenceData, $recurringRequestData);
     }
 
     public function callback(array $input)
@@ -191,16 +201,14 @@ class Gateway extends Base\Gateway
 
         $acquirerData = $this->getAcquirerData($gatewayPayment);
 
-        $recurringData = [];
-
-        if ($this->isFirstRecurring($input))
+        if ($this->isFirstRecurring($input) === true)
         {
             $recurringData = $this->getRecurringData($gatewayPayment);
+
+            $acquirerData = array_merge($acquirerData, $recurringData);
         }
 
-        $callbackData = array_merge($acquirerData, $recurringData);
-
-        return $this->getCallbackResponseData($input, $callbackData);
+        return $this->getCallbackResponseData($input, $acquirerData);
     }
 
     public function verify(array $input)
@@ -344,7 +352,7 @@ class Gateway extends Base\Gateway
         $requestData = $this->getBaseAuthorizeRequestData($input);
 
         //
-        // For recurring payments, we use E-Mandate
+        // For recurring payments, we use E-Mandate Registration flow
         //
         if ($this->isFirstRecurring($input) === true)
         {
@@ -399,18 +407,15 @@ class Gateway extends Base\Gateway
 
         $data = $this->getPaymentReferenceData($input);
 
-        if ($this->action === Action::VERIFY)
-        {
-            $data[RequestFields::PAYMENT_DATE] = $paymentDate;
+        $data[RequestFields::PAYMENT_DATE] = $paymentDate;
 
-            //
-            // For payments that were done via the recurring flow, we
-            // send the SI request reference ID in the verify request
-            //
-            if ($gatewayPayment->getSIRefId() !== null)
-            {
-                $data[RequestFields::SI_REFERENCE_NUMBER] = $gatewayPayment->getSIRefId();
-            }
+        //
+        // For payments that were done via the recurring flow, we
+        // send the SI request reference ID in the verify request.
+        //
+        if ($gatewayPayment->getSIRefId() !== null)
+        {
+            $data[RequestFields::SI_REFERENCE_NUMBER] = $gatewayPayment->getSIRefId();
         }
 
         return $data;
@@ -476,7 +481,7 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * For recurring payments, we use strtoupper(tokenId) for ITC, otherwise we use strtoupper(paymentId).
+     * For recurring payments, we use tokenId for ITC, otherwise we use strtoupper(paymentId).
      * For all payments, we use paymentId as the PRN parameter - as a unique identifier
      *
      * @param array $input
@@ -486,7 +491,7 @@ class Gateway extends Base\Gateway
     {
         if ($input['payment']['recurring'] === true)
         {
-            $itc = strtoupper($input['token']->getId());
+            $itc = $input['token']->getId();
         }
         else
         {
@@ -554,7 +559,7 @@ class Gateway extends Base\Gateway
     protected function getCallbackAttributes(array $content)
     {
         //
-        // BID won't be sent across when the payment has not been scheduled
+        // BID won't be sent back when the payment has not been scheduled in SI flow
         //
         $data = [
             Base\Entity::RECEIVED        => true,
@@ -615,7 +620,7 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($gatewayPayment);
     }
 
-    protected function getVerifyAttributesFromPaymentAndContent($gatewayPayment, $content)
+    protected function getVerifyAttributesFromPaymentAndContent(Base\Entity $gatewayPayment = null, array $content)
     {
         $attributes = [];
 
@@ -652,7 +657,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getVerifyConfirmationFromContent($content, $status)
+    protected function getVerifyConfirmationFromContent(array $content, string $status)
     {
         $confirmation = Confirmation::NO;
 
@@ -777,7 +782,7 @@ class Gateway extends Base\Gateway
         return $this->getBankingType() . '_QUERY';
     }
 
-    protected function getRecurringData($gatewayPayment)
+    protected function getRecurringData(Base\Entity $gatewayPayment = null)
     {
         $siStatus = $gatewayPayment->getSIStatus();
 

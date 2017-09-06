@@ -7,7 +7,6 @@ use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Customer\Token\Entity as Token;
 use RZP\Gateway\Netbanking\Base\Entity as Netbanking;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
-use RZP\Models\Customer\Token\MaxAmount as TokenMaxAmount;
 use RZP\Models\Customer\GatewayToken\Entity as GatewayToken;
 
 class NetbankingIciciEMandateTest extends TestCase
@@ -19,6 +18,8 @@ class NetbankingIciciEMandateTest extends TestCase
     protected $fixtures;
 
     protected $payment;
+
+//    TODO: Test global customer / token flow
 
     public function setUp()
     {
@@ -440,7 +441,7 @@ class NetbankingIciciEMandateTest extends TestCase
     {
         // Create a payment with twice the maximum amount
         $payment = $this->payment;
-        $payment['amount'] = 2 * TokenMaxAmount::ONE_LAC_RUPEES;
+        $payment['amount'] = 2 * Token::MAX_AMOUNT_FOR_TOKEN;
 
         $data = $this->testData[__FUNCTION__];
 
@@ -452,7 +453,7 @@ class NetbankingIciciEMandateTest extends TestCase
             });
 
         $token = $this->getLastEntity('token', true);
-        $this->assertEquals(TokenMaxAmount::ONE_LAC_RUPEES, $token[Token::MAX_AMOUNT]);
+        $this->assertEquals(Token::MAX_AMOUNT_FOR_TOKEN, $token[Token::MAX_AMOUNT]);
         $this->assertGreaterThan($token[Token::MAX_AMOUNT], $payment['amount']);
     }
 
@@ -534,7 +535,7 @@ class NetbankingIciciEMandateTest extends TestCase
         {
             $this->assertEquals('9999999999', $netbanking[Netbanking::BANK_PAYMENT_ID]);
             $this->assertEquals('Y', $netbanking[Netbanking::SI_STATUS]);
-            $this->assertEquals('Success', $netbanking[Netbanking::SI_MSG]);
+            $this->assertEquals('SUC', $netbanking[Netbanking::SI_MSG]);
 
             $usedCount = 1;
         }
@@ -551,7 +552,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEquals($netbanking[Netbanking::SI_REF_ID], $token[Token::GATEWAY_TOKEN]);
         $this->assertEquals($payment[Payment::TOKEN_ID], $token[Token::ID]);
         $this->assertEquals(true, $token[Token::RECURRING]);
-        $this->assertEquals(TokenMaxAmount::ONE_LAC_RUPEES, $token[Token::MAX_AMOUNT]);
+        $this->assertEquals(Token::MAX_AMOUNT_FOR_TOKEN, $token[Token::MAX_AMOUNT]);
         $this->assertEquals('confirmed', $token[Token::RECURRING_STATUS]);
         $this->assertEquals(null, $token[Token::RECURRING_FAILURE_REASON]);
         $this->assertEquals($usedCount, $token[Token::USED_COUNT]);
@@ -593,7 +594,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEquals('Y', $netbanking[Netbanking::SI_STATUS]);
         $this->assertEquals('N', $netbanking[Netbanking::STATUS]);
         $this->assertEquals(true, $netbanking[Netbanking::RECEIVED]);
-        $this->assertEquals('Success', $netbanking[Netbanking::SI_MSG]);
+        $this->assertEquals('SUC', $netbanking[Netbanking::SI_MSG]);
         $this->assertEquals('9999999999', $netbanking[Netbanking::BANK_PAYMENT_ID]);
     }
 

@@ -6,15 +6,33 @@ use RZP\Models\Customer\Token;
 
 class Status
 {
+    /**
+     * This status appears in verify when the payment is successful on the bank's end
+     */
     const SUCCESS     = 'SUCCESS';
+
+    /**
+     * This status appears in verify when the payment is failed on the bank's end
+     */
     const FAILED      = 'FAILED';
-    // TODO: Get exact meanings and leave comments on
-    // how we get these statuses
+
+    /**
+     * This status appears in verify when the payment has been reversed by the bank
+     */
     const REVERSED    = 'Reversed';
+
+    /**
+     * This status appears in verify when the payment is still in process
+     */
     const IN_PROCESS  = 'IN PROCESS';
+
+    /**
+     * This status appears when there's an error in the payment, and is similar to a failure
+     */
     const ERROR       = 'Error';
 
     const Y           = 'Y';
+    const N           = 'N';
 
     const SI_SUCCESS            = 'Success';
     const SI_FAILED             = 'Failed';

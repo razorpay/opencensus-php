@@ -88,7 +88,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::REFERENCE, $reference);
     }
 
-    public function setRecurring($recurring)
+    public function setRecurring(bool $recurring)
     {
         $this->setAttribute(self::RECURRING, $recurring);
     }

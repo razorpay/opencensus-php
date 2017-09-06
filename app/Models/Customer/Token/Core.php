@@ -96,6 +96,12 @@ class Core extends Base\Core
         return $token;
     }
 
+    /**
+     * This method gives us all of the customer's saved tokens
+     *
+     * @param $customer
+     * @return mixed
+     */
     public function fetchTokensByCustomer($customer)
     {
         $tokens = $this->repo->token->getByCustomer($customer);

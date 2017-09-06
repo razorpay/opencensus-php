@@ -188,8 +188,14 @@ class Checkout
                 return null;
             }
 
+            //
+            // Here we fetch all the tokens by customer for the merchant
+            //
             $savedTokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
 
+            //
+            // For the preferences route, we remove all the recurring netbanking tokens
+            //
             $savedTokens = (new Customer\Service)->removeNetbankingRecurringTokens($savedTokens);
 
             $custData =  array(
