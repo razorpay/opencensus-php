@@ -104,6 +104,9 @@ return [
         'merchant_get_pricing'              => 'merchants/{id}/pricing',
         'merchant_get_terminals'            => 'merchants/{id}/terminals',
         'merchant_details_fetch'            => 'merchants/details',
+
+        // Retry Settlements
+        'setl_retry'                        => 'settlements/retry',
     ],
 
     // auth

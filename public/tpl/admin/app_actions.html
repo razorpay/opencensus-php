@@ -72,6 +72,11 @@
            dynamic-tooltip-pos="top" dynamic-tooltip="make_api_call">
           Make API Call
         </a>
+        <a href class="list-group-item" ng-click="openRertySettlements()"
+           ng-show="admin.permissions.indexOf('retry_settlement') !== -1"
+           dynamic-tooltip-pos="top" dynamic-tooltip="retry_settlement">
+          Retry Failed Settlements
+        </a>
       </div>
     </div>
   </div>
@@ -745,3 +750,23 @@
   </div>
 </script>
 
+<script type="text/ng-template" id="retrySettlementsModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Retry Failed Settlements</h3>
+  </div>
+  <div class="modal-body terminal-modal">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Settlement IDs</label>
+        <div class="col-lg-10">
+          <input type="text" class="form-control m-b" name="name" ng-model="settlementIds"
+                 placeholder="Please enter comma separated Settlement IDs" required>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+    <button class="btn btn-primary modal-ok" ng-click="ok(settlementIds)">OK</button>
+  </div>
+</script>
