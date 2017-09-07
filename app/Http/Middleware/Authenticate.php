@@ -6,6 +6,7 @@ use Closure;
 use ApiResponse;
 use Illuminate\Foundation\Application;
 
+use Illuminate\Support\Str;
 use RZP\Http\Route;
 use RZP\Http\OAuth;
 use RZP\Http\Scopes;
@@ -67,7 +68,20 @@ class Authenticate
 
         $this->ba->init($this->app);
 
-        $bearerToken = $request->bearerToken();
+        $authHeader = getallheaders()['Authorization'] ?? null;
+
+        $bearerToken = '';
+
+        if ($authHeader !== null)
+        {
+            if (Str::startsWith($authHeader, 'Bearer '))
+            {
+                $bearerToken = Str::substr($authHeader, 7);
+            }
+        }
+
+        // Does not work due to Apache's CGIAuthPass setting
+        // $bearerToken = $request->bearerToken();
 
         //
         // If the request was sent with Bearer auth (OAuth),
