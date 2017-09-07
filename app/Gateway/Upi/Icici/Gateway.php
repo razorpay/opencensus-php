@@ -589,13 +589,23 @@ class Gateway extends Base\Gateway
 
         $content = $this->sendRefundVerifyRequest($input);
 
-        if (($content['status'] === Status::SUCCESS) or
-            ($content['status'] === Status::PENDING))
+        if ($content['status'] === Status::SUCCESS)
         {
             return true;
         }
 
-        return false;
+        if ($content['status'] === Status::FAILURE)
+        {
+            return false;
+        }
+
+         throw new Exception\LogicException(
+                'Shouldn\'t reach here',
+                null,
+                [
+                    'gateway_status' => $content['status'],
+                    'refund_id'      => $input['refund']['id'],
+                ]);
     }
 
     /**
