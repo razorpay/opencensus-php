@@ -227,7 +227,7 @@ class Service extends Base\Service
      */
     public function getClosedActionsByMaker(array $input)
     {
-        $input['permission'] = true;
+        $input[Entity::PERMISSION] = true;
 
         $input['expand'] = ['admin'];
 
@@ -245,13 +245,13 @@ class Service extends Base\Service
      */
     public function getActionsByMaker(array $input)
     {
-        $input['permission'] = true;
+        $input[Entity::PERMISSION] = true;
 
         $input['expand'] = ['workflow', 'admin'];
 
-        $input['org_id'] = $this->admin->getOrgId();
+        $input[Entity::ORG_ID] = $this->admin->getOrgId();
 
-        $input['admin_id'] = $this->admin->getId();
+        $input[Entity::ADMIN_ID] = $this->admin->getId();
 
         $actions = $this->repo->workflow_action->fetch($input);
 
