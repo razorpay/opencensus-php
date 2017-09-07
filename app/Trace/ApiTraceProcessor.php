@@ -19,11 +19,43 @@ class ApiTraceProcessor
     {
         $this->addMode($record);
 
+        $this->updateClientIp($record);
+
+        $this->addMerchantId($record);
+
+        $this->addDashboardHeaders($record);
+
         return $record;
     }
 
     protected function addMode(&$record)
     {
         $record['mode'] = $this->app['basicauth']->getMode();
+    }
+
+    protected function updateClientIp(&$record)
+    {
+        $record['request']['client_ip'] = $this->app['request']->ip();
+    }
+
+    protected function addMerchantId(&$record)
+    {
+        $record['request']['merchant_id'] = null;
+
+        if ($this->app['basicauth']->getMerchant() !== null)
+        {
+            $record['request']['merchant_id'] = $this->app['basicauth']->getMerchantId();
+        }
+    }
+
+    protected function addDashboardHeaders(&$record)
+    {
+        if ($this->app['basicauth']->isDashboardApp() === true)
+        {
+            foreach ($this->app['basicauth']->getDashboardHeaders() as $key => $value)
+            {
+                $record['request'][$key] = $value;
+            }
+        }
     }
 }
