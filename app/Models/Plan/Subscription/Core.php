@@ -158,7 +158,7 @@ class Core extends Base\Core
 
         $subscription->getValidator()->validateInput('manual_test_charge', $input);
 
-        $input['queue'] = true;
+        $input['queue'] = false;
 
         $subscription->getValidator()->validateTestSubscriptionChargeable();
 
@@ -315,7 +315,6 @@ class Core extends Base\Core
         // {
         //     $eventPayload[ApiEventSubscriber::WITH] = [Constants\Entity::PAYMENT => $payment];
         // }
-
         $this->app['events']->fire('api.' . $event, $eventPayload);
     }
 
@@ -357,7 +356,7 @@ class Core extends Base\Core
     {
         $manual = boolval($options['manual'] ?? false);
 
-        $recurringPayload = $this->constructRecurringPayload($subscription, $invoice);
+        $recurringPayload = $this->constructRecurringPayload($subscription, $invoice, $options);
 
         $queuePayload = [
             'recurring_payload' => $recurringPayload,
@@ -369,7 +368,6 @@ class Core extends Base\Core
             // across rather than the mode.
             'key_id'            => $this->app['basicauth']->getPublicKey(),
             'manual'            => $manual,
-            'success'           => boolval($options['success'] ?? true),
         ];
 
         $this->trace->info(
@@ -560,7 +558,10 @@ class Core extends Base\Core
         return Entity::DEFAULT_AUTH_AMOUNT;
     }
 
-    protected function constructRecurringPayload(Entity $subscription, Invoice\Entity $invoice): array
+    protected function constructRecurringPayload(
+        Entity $subscription,
+        Invoice\Entity $invoice,
+        array $options): array
     {
         //
         // Ensure that invoice amount is taken always because
@@ -585,6 +586,14 @@ class Core extends Base\Core
             Payment\Entity::CONTACT         => $customer->getContact(),
             Payment\Entity::DESCRIPTION     => 'Recurring Payment via Subscription',
         ];
+
+        // This is here for the test charge route.
+        if (($this->mode === Constants\Mode::TEST) and
+            (isset($options['success']) === true))
+        {
+            $recurringPayload['test_success'] = boolval($options['success']);
+            $recurringPayload['description'] = 'Failed Recurring Payment via Subscription';
+        }
 
         return $recurringPayload;
     }

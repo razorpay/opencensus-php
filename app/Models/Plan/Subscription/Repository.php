@@ -52,22 +52,26 @@ class Repository extends Base\Repository
      */
     public function getSubscriptionsToCharge()
     {
-        $subscriptions = $this->getBaseSubscriptionsQuery()
-                              ->whereIn(Entity::STATUS, Status::$cronChargeableStatuses)
-                              ->whereNull(Entity::ENDED_AT)
-                              ->where(function($query)
-                              {
-                                  $query->where(Entity::AUTH_ATTEMPTS, '=', 0)
-                                      ->orWhere(function($query)
-                                      {
-                                          $query->where(Entity::AUTH_ATTEMPTS, '=', Charge::MAX_AUTH_ATTEMPTS)
-                                                ->where(Entity::STATUS, '=', Status::HALTED);
-                                      });
-                              })
-                              ->limit(100)
-                              ->get();
+        $currentTime = Carbon::now()->getTimestamp();
 
-        return $subscriptions;
+        $query = $this->getBaseSubscriptionsQuery()
+                      ->whereIn(Entity::STATUS, Status::$cronChargeableStatuses)
+                      ->whereNull(Entity::ENDED_AT)
+                      ->where(function($query) use ($currentTime)
+                      {
+                          $query->where(Entity::AUTH_ATTEMPTS, '=', 0)
+                                ->orWhere(function($query)
+                                {
+                                    $query->where(Entity::AUTH_ATTEMPTS, '=', Charge::MAX_AUTH_ATTEMPTS)
+                                          ->where(Entity::STATUS, '=', Status::HALTED);
+                                });
+
+                          $query->whereNull(Entity::CURRENT_END)
+                                ->orWhere(Entity::CURRENT_END, '<', $currentTime);
+                      })
+                      ->limit(100);
+
+        return $query->get();
     }
 
     public function getSubscriptionsToRetry()
@@ -107,11 +111,6 @@ class Repository extends Base\Repository
                     ->select($subscriptionAttrs)
                     ->join(Table::SCHEDULE_TASK, $subscriptionIdAttr, '=', $taskEntityIdAttr)
                     ->where($taskNextRunAttr, '<', $currentTime)
-                    ->where(function($query) use ($currentTime)
-                        {
-                            $query->whereNull(Entity::CURRENT_END)
-                                  ->orWhere(Entity::CURRENT_END, '<', $currentTime);
-                        })
                     ->with(['plan', 'merchant']);
     }
 

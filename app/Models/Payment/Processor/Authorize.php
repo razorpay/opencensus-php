@@ -1164,6 +1164,8 @@ trait Authorize
             $this->associateSubscriptionToPayment($payment, $input);
 
             $this->addCustomerIdToSubscriptionInput($payment->subscription, $input);
+
+            $this->addTestSuccessFlagToGatewayInput($input, $gatewayInput);
         }
 
         // First fetch the relevant customer (global or local)
@@ -1227,6 +1229,21 @@ trait Authorize
         }
 
         $payment->setInternational();
+    }
+
+    protected function addTestSuccessFlagToGatewayInput(array $input, array & $gatewayInput)
+    {
+        if (isset($input['test_success']) === false)
+        {
+            return;
+        }
+
+        if (($this->mode === MODE::TEST) and
+            ($this->ba->isProxyAuth() === true) and
+            (isset($input[Payment\Entity::TOKEN]) === true))
+        {
+            $gatewayInput['test_success'] = $input['test_success'];
+        }
     }
 
     protected function associateLocalCustomerToSubscription(

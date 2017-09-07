@@ -586,7 +586,7 @@ class SubscriptionChargeTest extends TestCase
 
         // First test charge marks the subscrition as active
         // Billing period has been updated, paid count increased
-        $subscription = $this->chargeSubscriptionManuallyTestMode($oldSubcription['id']);
+        $subscription = $this->chargeSubscriptionManuallyTestMode($oldSubcription['id'], true);
         $this->assertEquals('active', $subscription['status']);
         $this->assertEquals(1, $subscription['paid_count']);
         $this->assertEquals($oldSubcription['charge_at'], $subscription['current_start']);
@@ -668,14 +668,14 @@ class SubscriptionChargeTest extends TestCase
         $oldSubcription = $subscription;
 
         // Subsequent successful charges update billing period and paid count
-        $subscription = $this->chargeSubscriptionManuallyTestMode($oldSubcription['id']);
+        $subscription = $this->chargeSubscriptionManuallyTestMode($oldSubcription['id'], true);
         $this->assertEquals('active', $subscription['status']);
         $this->assertEquals(4, $subscription['paid_count']);
         $this->assertEquals($oldSubcription['charge_at'], $subscription['current_start']);
 
         while($subscription['paid_count'] < $subscription['total_count'])
         {
-            $subscription = $this->chargeSubscriptionManuallyTestMode($subscription['id']);
+            $subscription = $this->chargeSubscriptionManuallyTestMode($subscription['id'], true);
         }
 
         // Last charge marks the subscription completed
@@ -860,6 +860,7 @@ class SubscriptionChargeTest extends TestCase
         $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
         // Invoice got created
         $this->assertEquals(1, $result['invoices_created']);
+        $this->assertInvoiceCount(2, $subscription['id']);
 
         $this->failCharge();
 

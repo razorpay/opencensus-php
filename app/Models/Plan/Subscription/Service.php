@@ -225,7 +225,7 @@ class Service extends Base\Service
         $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
 
         $this->trace->info(
-            TraceCode::SUBSCRIPTION_INVOICE_MANUAL_CHARGE,
+            TraceCode::SUBSCRIPTION_TEST_MANUAL_CHARGE,
             [
                 'subscription_id'   => $subscription->getId(),
                 'subscription'      => $subscription->toArray(),

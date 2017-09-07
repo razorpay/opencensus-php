@@ -41,8 +41,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $manualTestChargeRules = [
-        'success' => 'sometimes|boolean',
-        'retry'   => 'sometimes|boolean',
+        // Enforcing this because it makes things easier in constructRecurringPayload
+        // of Subscription\Core. There, when deciding whether or not to send the
+        // test_success flag, we can just use the fact that test_success is set in
+        // the input. If we have a default value, it will need to be handled so as
+        // to NOT send that default value in the usual charge cron payloads.
+        'success' => 'required|boolean',
     ];
 
     public function validateEndAtAfterGenerating()

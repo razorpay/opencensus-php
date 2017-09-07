@@ -117,7 +117,7 @@ class Charge extends Base\Core
 
         try
         {
-            $payment = $this->authorizePayment($data);
+            $payment = $this->authorizePayment($data['recurring_payload']);
         }
         catch (\Exception $ex)
         {
@@ -385,27 +385,13 @@ class Charge extends Base\Core
         return $valid;
     }
 
-    protected function authorizePayment(array $data)
+    protected function authorizePayment(array $recurringPayload)
     {
-        $this->preProcessSubscriptionCharge($data);
-
-        $recurringPayment = $this->processor->process($data['recurring_payload']);
+        $recurringPayment = $this->processor->process($recurringPayload);
 
         $authorizedPayment = $this->repo->payment->findByPublicId($recurringPayment['razorpay_payment_id']);
 
         return $authorizedPayment;
-    }
-
-    protected function preProcessSubscriptionCharge(array $data)
-    {
-        if (($this->mode === Mode::TEST) and
-            ($data['success'] === false))
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_SUBSCRIPTION_SCHEDULED_FAILURE,
-                null,
-                $data);
-        }
     }
 
     protected function resetErrorFields(Entity $subscription)

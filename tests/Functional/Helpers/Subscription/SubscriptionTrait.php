@@ -321,13 +321,13 @@ trait SubscriptionTrait
         return $this->makeSubscriptionChargeCronRequest();
     }
 
-    protected function chargeSubscriptionManuallyTestMode($subscriptionId, $success = true)
+    protected function chargeSubscriptionManuallyTestMode($subscriptionId, $success)
     {
         $request = [
             'url'     => "/subscriptions/$subscriptionId/charge",
             'action'  => 'post',
             'content' => [
-                'success' => $success,
+                'success' => $success ? 1 : 0,
             ],
         ];
 
