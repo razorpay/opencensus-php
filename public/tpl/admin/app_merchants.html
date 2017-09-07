@@ -79,7 +79,7 @@
             <td data-value="{{row.created_at}}">{{row.created_at*1000 | date:'medium'}}</td>
             <td data-value="{{(row.submitted_at ? row.submitted_at : row.updated_at)}}">{{(row.submitted_at ? row.submitted_at : row.updated_at)*1000 | date:'medium'}}</td>
             <td data-value="{{row.archived_at}} " ng-show="merchant_type_request==archived" data-hide="phone,tablet" data-type="numeric">{{row.archived_at * 1000| date:'medium'}}</td>
-            <td>{{row.tags.join()}}</td>
+            <td>{{row.tag_list.join()}}</td>
           </tr>
           <tr ng-show="merchants.length == 0">
             <td colspan="7">No Merchants</td>
