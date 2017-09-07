@@ -144,7 +144,7 @@ trait GenerateRefundFile
 
             $refundFileMail = new RefundFileMail($mailData, static::GATEWAY, $recipients);
 
-            Mail::send($refundFileMail);
+            Mail::queue($refundFileMail);
 
             $this->gatewayFile->setMailSentAt(time());
 
