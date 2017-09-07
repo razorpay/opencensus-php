@@ -600,6 +600,10 @@ class Verify extends Base\Core
 
     protected function blockGatewayForVerify(string $gateway)
     {
+        $this->trace->info(
+            TraceCode::VERIFY_GATEWAY_BLOCK,
+            ['gateway' => $gateway]
+        );
         $this->redis->hSet(
             self::GATEWAY_BLOCK_CACHE_KEY,
             $gateway,
