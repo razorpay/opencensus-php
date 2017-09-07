@@ -2999,8 +2999,8 @@ return [
     // Expectations for ES
 
     'testGetInvoiceByReceiptExpectedSearchParams' => [
-        'index' => 'invoice_test',
-        'type'  => 'invoice_test',
+        'index' => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,
@@ -3055,8 +3055,8 @@ return [
     ],
 
     'testGetMultipleInvoicesOnlyEsFieldsExpectedSearchParams' => [
-        'index' => 'invoice_test',
-        'type'  => 'invoice_test',
+        'index' => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,
@@ -3123,8 +3123,8 @@ return [
     ],
 
     'testGetMultipleInvoicesByQExpectedSearchParams' => [
-        'index' => 'invoice_test',
-        'type'  => 'invoice_test',
+        'index' => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 10,
@@ -3187,8 +3187,8 @@ return [
     ],
 
     'testGetMultipleInvoicesSearchHitsOnlyExpectedSearchParams' => [
-        'index' => 'invoice_test',
-        'type'  => 'invoice_test',
+        'index' => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => true,
             'from'    => 0,
@@ -3250,8 +3250,8 @@ return [
     ],
 
     'testGetMultipleInvoicesByEsFeildAndFromExpectedSearchParams' => [
-        'index' => 'invoice_test',
-        'type'  => 'invoice_test',
+        'index' => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 20,
@@ -3309,8 +3309,8 @@ return [
     ],
 
     'testGetMultipleInvoicesByEsFeildFromAndToExpectedSearchParams' => [
-        'index' => 'invoice_test',
-        'type'  => 'invoice_test',
+        'index' => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 20,
@@ -3369,8 +3369,8 @@ return [
     ],
 
     'testGetMultipleInvoicesByCommonAndEsFieldsExpectedSearchParams' => [
-        'index' => 'invoice_test',
-        'type'  => 'invoice_test',
+        'index' => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,
@@ -3442,8 +3442,8 @@ return [
         'body' => [
             [
                 'index' => [
-                    '_index' => 'invoice_test',
-                    '_type'  => 'invoice_test',
+                    '_index' => 'testing_invoice_test',
+                    '_type'  => 'testing_invoice_test',
                     // '_id'    => '7KoRT3qkc1KGFb',
                 ],
             ],
