@@ -23,8 +23,14 @@ class MerchantSync extends Job implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    const GROUP_EDIT   = 'group_edit';
-    const GROUP_DELETE = 'group_delete';
+    const MAX_JOB_ATTEMPTS = 3;
+    const JOB_RELEASE_WAIT = 30;
+
+    //
+    // Handled events
+    //
+    const GROUP_EDIT       = 'group_edit';
+    const GROUP_DELETE     = 'group_delete';
 
     private $event;
     private $payload;
@@ -48,7 +54,9 @@ class MerchantSync extends Job implements ShouldQueue
 
         if (method_exists($this, $handler) === false)
         {
-            $this->trace->critical(TraceCode::SERVER_ERROR_MISSING_HANDLER, $this->getTraceData());
+            $this->trace->critical(
+                            TraceCode::SERVER_ERROR_MISSING_HANDLER,
+                            $this->getTraceData());
 
             $this->delete();
         }
@@ -60,12 +68,25 @@ class MerchantSync extends Job implements ShouldQueue
         try
         {
             $this->$handler();
+
+            $this->delete();
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException($e, null, null, $this->getTraceData());
+            $this->trace->traceException(
+                            $e,
+                            null,
+                            TraceCode::ES_SYNC_MERCHANT_FAILED,
+                            $this->getTraceData());
 
-            $this->release(EsRepository::JOB_RELEASE_WAIT);
+            if($this->attempts() >= self::MAX_JOB_ATTEMPTS)
+            {
+                $this->delete();
+            }
+            else
+            {
+                $this->release(self::JOB_RELEASE_WAIT);
+            }
         }
     }
 

@@ -115,6 +115,32 @@ class EsClient
         return $response;
     }
 
+    /**
+     * Makes a bulk request to ES.
+     *
+     * In our case using this same method to create/update even a single document.
+     *
+     * In ideal world, one would use index() for creating documents for first time,
+     * update() to update document for next times. But in async flows we would
+     * also want to handle failures and do upsetr instead. In async flows many a times
+     * before index() the document has reached ES by previous tries or some other flows.
+     *
+     * Bulk update method handles everything: create, update, partial update, upserts.
+     * We don't have to provide additional details (upsert params etc) as well. Also
+     * afaik internally bulk update is optimized for bulk insertions/updates but has
+     * makes no difference with single document.
+     *
+     * It first checks if doc exists already, if it is then the param body will
+     * be used as partial document and it patches the same. If the document doesn't
+     * exist then it'll create one with the same body.
+     *
+     * Refs:
+     * - https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
+     *
+     * @param array $params
+     *
+     * @return array
+     */
     public function bulkUpdate($params)
     {
         // If ES mock is set to true, return dummy response.

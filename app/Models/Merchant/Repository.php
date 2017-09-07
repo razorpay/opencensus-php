@@ -47,7 +47,7 @@ class Repository extends Base\Repository
         Entity::ACCOUNT_STATUS          => 'filled|string|in:all,suspended,archived,activated,pending,dead',
         Entity::SUB_ACCOUNTS            => 'filled|custom',
         Entity::GROUPS                  => 'sometimes|array',
-        Entity::ADMINS                  => 'required|array|min:1|max:1',
+        Entity::ADMINS                  => 'sometimes|array|min:1|max:1',
     ];
 
     protected function validateSubAccounts($attribute, $value)

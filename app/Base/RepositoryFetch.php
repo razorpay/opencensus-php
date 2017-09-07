@@ -193,7 +193,7 @@ trait RepositoryFetch
         // - Default param rules (see $fetchParamRules definition above), plus
         // - Common keys defined in EsRepo.
         //
-        // The remainder/filtered list has to be a subset of MySQL or ES keys
+        // The remainder/filtered list has to be a subset of either MySQL or ES keys
         // exclusively, otherwise an error will be raised. Hence both MySQL and
         // ES cannot be searched together in a single fetch operation.
         //

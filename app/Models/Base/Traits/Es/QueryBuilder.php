@@ -57,6 +57,15 @@ trait QueryBuilder
         $clause = [
             Es::MATCH => [
                 $field => [
+
+                    //
+                    // Some fields have 'standard' search analyzer but some fields
+                    // are 'keyword' type and there there is no search analysis.
+                    // 'strtolower' is done just to be on safe side. Eg. someone
+                    // sends 'status' as 'PENDING' instead of 'pending'.
+                    //
+                    //
+
                     Es::QUERY                => strtolower($value),
                     Es::BOOST                => 2,
                     Es::MINIMUM_SHOULD_MATCH => '75%',

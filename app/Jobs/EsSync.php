@@ -18,6 +18,9 @@ class EsSync extends Job implements ShouldQueue
 {
     use InteractsWithQueue;
 
+    const MAX_JOB_ATTEMPTS = 3;
+    const JOB_RELEASE_WAIT = 30;
+
     private $action;
     private $entity;
     private $id;
@@ -74,13 +77,13 @@ class EsSync extends Job implements ShouldQueue
             // just delete the job, else retry the job after a wait.
 
             if (($e instanceof LogicException) or
-                ($this->attempts() >= Base\EsRepository::MAX_JOB_ATTEMPTS))
+                ($this->attempts() >= self::MAX_JOB_ATTEMPTS))
             {
                 $this->delete();
             }
             else
             {
-                $this->release(Base\EsRepository::JOB_RELEASE_WAIT);
+                $this->release(self::JOB_RELEASE_WAIT);
             }
         }
     }

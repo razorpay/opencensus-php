@@ -658,8 +658,8 @@ class Repository extends \Razorpay\Spine\Repository
         }
 
         //
-        // Otherwise if it's insert action then need to check if those values
-        // are null-ables. (e.g. {} JSON or '' string or null values etc)
+        // Otherwise if it's insert action then need to check if there is at least
+        // one value in $dirty that IS set(not null values, e.g null, [], {} etc.).
         //
         $shouldSync = false;
 

@@ -14,16 +14,6 @@ class EsRepository extends \Razorpay\Spine\Repository
 {
     use Base\Traits\Es\QueryBuilder;
 
-    /**
-     * Maximum number of attempts for a given ES sync queue job.
-     */
-    const MAX_JOB_ATTEMPTS = 3;
-
-    /**
-     * Wait for 30 s before re-queuing the failed job.
-     */
-    const JOB_RELEASE_WAIT = 30;
-
     // Different actions on ES document
     const CREATE           = 'create';
     const UPDATE           = 'update';
