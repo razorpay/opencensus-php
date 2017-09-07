@@ -145,31 +145,9 @@
       line-height: 36px;
     }
 
-    .custom-icon {
-      position: absolute;
-      z-index: 1;
-      color: #e0e0e0;
-      pointer-events: none;
-    }
-    .custom-select .custom-icon {
-      top: 8px;
-      left: 8px;
-      font-size: 20px;
-    }
     .custom-date .custom-icon {
-      top: 10px;
+      top: 12px;
       right: 10px;
-    }
-
-    .typeAheadSkin {
-      position: absolute;
-      z-index: 2;
-      background-color: rgb(255, 255, 255);
-      top: 10px;
-      width: 87%;
-      margin-left: 30px;
-      pointer-events none;
-      font-size: 12px;
     }
 
     .PowerSelect__TriggerInput {
@@ -216,6 +194,31 @@
     }
   }
 }
+
+.custom-icon {
+  position: absolute;
+  z-index: 1;
+  color: #e0e0e0;
+  pointer-events: none;
+}
+
+.typeAheadSkin {
+  position: absolute;
+  z-index: 2;
+  background-color: rgb(255, 255, 255);
+  top: 10px;
+  width: 87%;
+  margin-left: 30px;
+  pointer-events none;
+  font-size: 12px;
+}
+
+.custom-select .custom-icon {
+  top: 11px;
+  left: 8px;
+  font-size: 20px;
+}
+
 
 // Onboarding Card
 
@@ -386,6 +389,25 @@
 .virtual-account-powerselect {
   border: 1px solid #cfdadd;
   border-radius: 2px;
+}
+
+.transfers-powerselect {
+  input {
+    padding: 0 12px;
+  }
+}
+.transfers-powerselect__Menu {
+  .PowerSelect__Option {
+    border-bottom: 1px solid #eaeff0;
+    padding: 8px 0;
+    border-bottom: 1px solid #eaeff0;
+    line-height: 28px;
+  }
+
+  .heading {
+    color: #8991ae;
+    padding: 12px 12px 8px;
+  }
 }
 
 .custom-powerselect {
