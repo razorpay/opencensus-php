@@ -74,6 +74,30 @@ export default class PaymentDetailsContainer extends Component {
         findDOMNode(this.transfersView).classList.remove('toggle-slider');
       }
     }
+
+    if (nextProps.entity_name != this.props.entity_name) {
+      this.checkSecView(nextProps.entity_name);
+    }
+  }
+
+  checkSecView(entityName) {
+    if (!entityName) {
+      this.props.compactSlider();
+
+      // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
+      if (this.transfersView && findDOMNode(this.transfersView)) {
+        findDOMNode(this.transfersView).classList.add('toggle-slider');
+      }
+    } else {
+      this.props.expandSlider();
+      this.setState({
+        secView: 'new_transfer',
+      });
+      // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
+      if (this.transfersView && findDOMNode(this.transfersView)) {
+        findDOMNode(this.transfersView).classList.remove('toggle-slider');
+      }
+    }
   }
 
   fetchCardDetails = payment => {
