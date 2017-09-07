@@ -113,6 +113,16 @@ export default class InvoicesNewContainer extends Component {
     };
   }
 
+  isPaymentLink(invoice) {
+    if (invoice.type !== 'link') {
+      return;
+    }
+
+    this.props.history.replace('/paymentlinks');
+    this.props.history.replace(`/paymentlinks/${invoice.id}`);
+    return true;
+  }
+
   componentWillMount() {
     this.getMerchantInfo();
     let promises = [];
@@ -122,8 +132,8 @@ export default class InvoicesNewContainer extends Component {
     if (invoiceId) {
       promises.push(
         this.props.fetchInvoice(invoiceId).then(invoice => {
-          if (invoice.type === 'link') {
-            return this.props.history.replace(`/paymentlinks`);
+          if (this.isPaymentLink(invoice)) {
+            return;
           }
 
           if (invoice.partial_payment) {
@@ -163,6 +173,16 @@ export default class InvoicesNewContainer extends Component {
       });
 
     this.handleWindowClose();
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.props.match.params.id !== nextProps.match.params.id) {
+      this.props.fetchInvoice(nextProps.match.params.id).then(invoice => {
+        if (this.isPaymentLink(invoice)) {
+          return;
+        }
+      });
+    }
   }
 
   getMerchantInfo() {
@@ -320,7 +340,7 @@ export default class InvoicesNewContainer extends Component {
     let invoice = this.props.invoice;
     this.context.confirm({
       header: 'Delete Invoice?',
-      message: () => (
+      message: () =>
         <div class="text-semi-muted">
           <p>
             The Invoice will be deleted. There is no coming back!. Are you sure?
@@ -329,8 +349,7 @@ export default class InvoicesNewContainer extends Component {
             If you have added any item or customer, you can still use them in
             other invoices.
           </div>
-        </div>
-      ),
+        </div>,
       affirmativeLabel: 'Yes, Delete',
       affirmativePendingLabel: 'Deleting...',
       abortLabel: "No, don't!",
@@ -360,14 +379,13 @@ export default class InvoicesNewContainer extends Component {
     let invoice = this.props.invoice;
     this.context.confirm({
       header: 'Cancel Invoice?',
-      message: () => (
+      message: () =>
         <div class="text-semi-muted">
           <p>
             The Invoice will be cancelled and the customer will not be able to
             pay for it.
           </p>
-        </div>
-      ),
+        </div>,
       affirmativeLabel: 'Yes, Cancel',
       affirmativePendingLabel: 'Cancelling...',
       abortLabel: "No, don't!",
@@ -461,316 +479,315 @@ export default class InvoicesNewContainer extends Component {
 
     return (
       <div class="react-root">
-        {this.state.isLoading ? (
-          <div class="page-spinner-container">
-            <Spinner />
-          </div>
-        ) : (
-          <div class="content-wrapper invoice-creation-container">
-            <form onSubmit={handleSubmit(this.save)}>
-              <div class="row">
-                <div class="col-md-8 col-sm-8">
-                  <div class="invoice-container pull-right">
-                    <InvoiceBreadcrumbNav
-                      invoice={invoice}
-                      onBackNavClick={this.handleBackNavClick}
-                    />
-
-                    <Alert
-                      type={this.state.status.type}
-                      message={this.state.status.message}
-                    />
-
-                    <div class="invoice">
-                      {isTestMode && (
-                        <div class="alert-sm alert-warning testmode-warning">
-                          Invoice is created in <b>Test Mode</b>
-                          . Only test payments can be made for this invoice
-                        </div>
-                      )}
-                      <InvoiceLogo
-                        logo={this.state.merchantLogoUrl}
-                        name={this.state.merchantName}
+        {this.state.isLoading
+          ? <div class="page-spinner-container">
+              <Spinner />
+            </div>
+          : <div class="content-wrapper invoice-creation-container">
+              <form onSubmit={handleSubmit(this.save)}>
+                <div class="row">
+                  <div class="col-md-8 col-sm-8">
+                    <div class="invoice-container pull-right">
+                      <InvoiceBreadcrumbNav
+                        invoice={invoice}
+                        onBackNavClick={this.handleBackNavClick}
                       />
 
-                      <div class="row">
-                        <div class="col-md-6">
-                          <div class="inv__titlesection">
-                            <h3>Invoice</h3>
-                            {locked && !invoice.receipt ? (
-                              <InlineField
-                                formName="newInvoice"
-                                name="id"
-                                component="input"
-                                class="form-control input-xs"
-                                disabled={true}
-                                size={30}
-                              />
-                            ) : (
-                              <InlineField
-                                formName="newInvoice"
-                                name="receipt"
-                                component="input"
-                                class="form-control input-xs"
-                                placeholder="Receipt number"
-                                disabled={locked}
-                              />
-                            )}
+                      <Alert
+                        type={this.state.status.type}
+                        message={this.state.status.message}
+                      />
+
+                      <div class="invoice">
+                        {isTestMode &&
+                          <div class="alert-sm alert-warning testmode-warning">
+                            Invoice is created in <b>Test Mode</b>
+                            . Only test payments can be made for this invoice
+                          </div>}
+                        <InvoiceLogo
+                          logo={this.state.merchantLogoUrl}
+                          name={this.state.merchantName}
+                        />
+
+                        <div class="row">
+                          <div class="col-md-6">
+                            <div class="inv__titlesection">
+                              <h3>Invoice</h3>
+                              {locked && !invoice.receipt
+                                ? <InlineField
+                                    formName="newInvoice"
+                                    name="id"
+                                    component="input"
+                                    class="form-control input-xs"
+                                    disabled={true}
+                                    size={30}
+                                  />
+                                : <InlineField
+                                    formName="newInvoice"
+                                    name="receipt"
+                                    component="input"
+                                    class="form-control input-xs"
+                                    placeholder="Receipt number"
+                                    disabled={locked}
+                                  />}
+                            </div>
+
+                            <InlineField
+                              formName="newInvoice"
+                              name="description"
+                              component={AutoResizeTextarea}
+                              class="form-control input-xs"
+                              placeholder="Summary or brief"
+                              rows="1"
+                              disabled={isIssued || locked}
+                            />
                           </div>
+                          <div class="col-md-6 text-right">
+                            <label>AMOUNT DUE</label>
+                            <h3 class="inv__amountdue">
+                              {invoice.amount_due
+                                ? <Amount
+                                    value={invoice.amount_due}
+                                    currency={invoice.currency}
+                                  />
+                                : <span>
+                                    ₹ {invoiceTotal}
+                                  </span>}
+                            </h3>
+                          </div>
+                        </div>
 
-                          <InlineField
-                            formName="newInvoice"
-                            name="description"
-                            component={AutoResizeTextarea}
-                            class="form-control input-xs"
-                            placeholder="Summary or brief"
-                            rows="1"
-                            disabled={isIssued || locked}
-                          />
-                        </div>
-                        <div class="col-md-6 text-right">
-                          <label>AMOUNT DUE</label>
-                          <h3 class="inv__amountdue">
-                            {invoice.amount_due ? (
-                              <Amount
-                                value={invoice.amount_due}
-                                currency={invoice.currency}
-                              />
-                            ) : (
-                              <span>₹ {invoiceTotal}</span>
-                            )}
-                          </h3>
-                        </div>
-                      </div>
+                        <div class="row">
+                          <div class="col-md-6">
+                            <label>BILLING TO</label>
+                            <InlineField
+                              formName="newInvoice"
+                              name="customer_id"
+                              component={TypeAhead}
+                              options={this.props.customers}
+                              selected={this.props.customer_id}
+                              optionLabelPath="displayName"
+                              selectedOptionLabelPath="selectedDisplayName"
+                              placeholder="Select a customer"
+                              onQuickAdd={this.quickCreateCustomer}
+                              disabled={isIssued || locked}
+                              onOptionChange={selectedCustomer => {
+                                this.props.change(
+                                  'customer_id',
+                                  selectedCustomer.id || ''
+                                );
+                              }}
+                              normalizeValue={value => {
+                                let selected = findBy(
+                                  this.props.customers || [],
+                                  'id',
+                                  value
+                                );
+                                if (selected) {
+                                  return selected.selectedDisplayName;
+                                }
+                                return value;
+                              }}
+                            />
 
-                      <div class="row">
-                        <div class="col-md-6">
-                          <label>BILLING TO</label>
-                          <InlineField
-                            formName="newInvoice"
-                            name="customer_id"
-                            component={TypeAhead}
-                            options={this.props.customers}
-                            selected={this.props.customer_id}
-                            optionLabelPath="displayName"
-                            selectedOptionLabelPath="selectedDisplayName"
-                            placeholder="Select a customer"
-                            onQuickAdd={this.quickCreateCustomer}
-                            disabled={isIssued || locked}
-                            onOptionChange={selectedCustomer => {
-                              this.props.change(
-                                'customer_id',
-                                selectedCustomer.id || ''
-                              );
-                            }}
-                            normalizeValue={value => {
-                              let selected = findBy(
-                                this.props.customers || [],
-                                'id',
-                                value
-                              );
-                              if (selected) {
-                                return selected.selectedDisplayName;
-                              }
-                              return value;
-                            }}
-                          />
+                            {customer &&
+                              <div class="inv__customerdetails">
+                                {customer.name &&
+                                  <div>
+                                    {customer.contact}
+                                  </div>}
+                                {customer.name || customer.contact
+                                  ? <div>
+                                      {customer.email}
+                                    </div>
+                                  : ''}
+                              </div>}
+                          </div>
+                          <div class="col-md-6 text-right">
+                            <label>INVOICE DATE</label>
+                            <InlineField
+                              formName="newInvoice"
+                              name="date"
+                              component={DatePickerField}
+                              class="form-control"
+                              rightAlign={true}
+                              isOutsideRange={day => {
+                                let diff = moment().diff(day, 'hours') / 24;
+                                return !(diff <= 60 && diff >= 0);
+                              }}
+                              normalizeValue={value => {
+                                if (value) {
+                                  return moment
+                                    .unix(value)
+                                    .format('DD MMM YYYY');
+                                }
+                                return value;
+                              }}
+                              disabled={isIssued || locked}
+                            />
+                          </div>
+                        </div>
+                        <div class="row">
+                          <div class="col-md-12">
+                            <FieldArray
+                              name="line_items"
+                              component={LineItemTable}
+                              items={this.props.items}
+                              disabled={isIssued || locked}
+                              invoice={invoice}
+                              invoiceTotal={invoiceTotal}
+                            />
+                          </div>
+                        </div>
 
-                          {customer && (
-                            <div class="inv__customerdetails">
-                              {customer.name && <div>{customer.contact}</div>}
-                              {customer.name || customer.contact ? (
-                                <div>{customer.email}</div>
-                              ) : (
-                                ''
-                              )}
-                            </div>
-                          )}
+                        <div class="row">
+                          <div class="col-md-12">
+                            <ShowWhen featureEnabled="Invoice_Partial_Payments">
+                              <div class="rzpCheckbox rzpCheckbox-sm">
+                                <Field
+                                  name="partial_payment"
+                                  id="partial_payment"
+                                  component="input"
+                                  type="checkbox"
+                                  disabled={locked}
+                                />
+                                <label for="partial_payment">
+                                  Enable Partial Payments
+                                </label>
+                              </div>
+                            </ShowWhen>
+                          </div>
                         </div>
-                        <div class="col-md-6 text-right">
-                          <label>INVOICE DATE</label>
-                          <InlineField
-                            formName="newInvoice"
-                            name="date"
-                            component={DatePickerField}
-                            class="form-control"
-                            rightAlign={true}
-                            isOutsideRange={day => {
-                              let diff = moment().diff(day, 'hours') / 24;
-                              return !(diff <= 60 && diff >= 0);
-                            }}
-                            normalizeValue={value => {
-                              if (value) {
-                                return moment.unix(value).format('DD MMM YYYY');
-                              }
-                              return value;
-                            }}
-                            disabled={isIssued || locked}
-                          />
-                        </div>
-                      </div>
-                      <div class="row">
-                        <div class="col-md-12">
-                          <FieldArray
-                            name="line_items"
-                            component={LineItemTable}
-                            items={this.props.items}
-                            disabled={isIssued || locked}
-                            invoice={invoice}
-                            invoiceTotal={invoiceTotal}
-                          />
-                        </div>
-                      </div>
 
-                      <div class="row">
-                        <div class="col-md-12">
-                          <ShowWhen featureEnabled="Invoice_Partial_Payments">
-                            <div class="rzpCheckbox rzpCheckbox-sm">
-                              <Field
-                                name="partial_payment"
-                                id="partial_payment"
-                                component="input"
-                                type="checkbox"
-                                disabled={locked}
-                              />
-                              <label for="partial_payment">
-                                Enable Partial Payments
-                              </label>
-                            </div>
-                          </ShowWhen>
+                        <div class="row">
+                          <div class="col-md-12">
+                            <InlineField
+                              formName="newInvoice"
+                              name="comment"
+                              component={AutoResizeTextarea}
+                              class="form-control input-xs"
+                              rows={2}
+                              placeholder="Customer Notes"
+                              disabled={locked}
+                            />
+                          </div>
                         </div>
-                      </div>
 
-                      <div class="row">
-                        <div class="col-md-12">
-                          <InlineField
-                            formName="newInvoice"
-                            name="comment"
-                            component={AutoResizeTextarea}
-                            class="form-control input-xs"
-                            rows={2}
-                            placeholder="Customer Notes"
-                            disabled={locked}
-                          />
+                        <div class="row">
+                          <div class="col-md-12">
+                            <InlineField
+                              formName="newInvoice"
+                              name="terms"
+                              component={AutoResizeTextarea}
+                              class="form-control input-xs"
+                              rows={3}
+                              placeholder="Terms and Conditions"
+                              disabled={locked}
+                            />
+                          </div>
                         </div>
-                      </div>
 
-                      <div class="row">
-                        <div class="col-md-12">
-                          <InlineField
-                            formName="newInvoice"
-                            name="terms"
-                            component={AutoResizeTextarea}
-                            class="form-control input-xs"
-                            rows={3}
-                            placeholder="Terms and Conditions"
-                            disabled={locked}
-                          />
-                        </div>
-                      </div>
-
-                      <div class="inv__Footer">
-                        <div class="inv__Footer__merchantName">
-                          {this.state.merchantName}
-                        </div>
-                        <div class="inv__Footer__merchantAddress">
-                          {this.props.session.user.business_registered_address}
+                        <div class="inv__Footer">
+                          <div class="inv__Footer__merchantName">
+                            {this.state.merchantName}
+                          </div>
+                          <div class="inv__Footer__merchantAddress">
+                            {
+                              this.props.session.user
+                                .business_registered_address
+                            }
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
+
+                  <ShowWhen notMyRole="support finance">
+                    <div
+                      class="col-md-4 col-sm-4"
+                      style={{ marginTop: '48px' }}
+                    >
+                      {!locked &&
+                        <div class="inv__cta">
+                          <div class="btn-group-vertical">
+                            {(isNew || isDraft) &&
+                              <AsyncButton
+                                type="button"
+                                class="btn btn-primary btn-block btn-lg"
+                                disabled={this.state.isSaving}
+                                onClick={handleSubmit(props => {
+                                  return this.saveAndIssue({
+                                    ...props,
+                                    ...{ draft: 0 },
+                                  });
+                                })}
+                              >
+                                <i class="icon icon-done" />
+                                <span>Finalize and Issue</span>
+                              </AsyncButton>}
+
+                            {isIssued &&
+                              <AsyncButton
+                                type="button"
+                                class="btn btn-primary btn-block btn-lg"
+                                disabled={this.state.isSaving}
+                                onClick={handleSubmit(this.resendInvoice)}
+                              >
+                                <i class="icon icon-send" />
+                                <span>Resend Invoice</span>
+                              </AsyncButton>}
+
+                            {!locked &&
+                              <AsyncButton
+                                type="button"
+                                class="btn btn-default btn-block btn-lg"
+                                text="Save Invoice"
+                                pendingText="Saving..."
+                                disabled={this.state.isSaving}
+                                onClick={handleSubmit(props => {
+                                  return this.save({
+                                    ...props,
+                                    ...{ draft: isIssued ? 0 : 1 },
+                                  });
+                                })}
+                              >
+                                <i class="icon icon-save" />
+                                <span>Save Invoice</span>
+                              </AsyncButton>}
+                            {(isNew || isDraft) &&
+                              <button
+                                type="button"
+                                class="btn btn-default btn-block btn-lg"
+                                onClick={this.deleteInvoice}
+                                disabled={this.state.isSaving}
+                              >
+                                <i class="icon icon-close" />
+                                <span>Delete Invoice</span>
+                              </button>}
+                            {isIssued &&
+                              <button
+                                type="button"
+                                class="btn btn-default btn-block btn-lg"
+                                onClick={this.cancelInvoice}
+                                disabled={this.state.isSaving}
+                              >
+                                <i class="icon icon-close" />
+                                <span>Cancel Invoice</span>
+                              </button>}
+                          </div>
+                        </div>}
+
+                      <InvoiceInfo invoice={invoice} />
+                      <InvoiceNotes
+                        invoice={invoice}
+                        isSaving={this.state.isSaving}
+                        onAddClick={this.addInternalNote}
+                      />
+                    </div>
+                  </ShowWhen>
                 </div>
-
-                <ShowWhen notMyRole="support finance">
-                  <div class="col-md-4 col-sm-4" style={{ marginTop: '48px' }}>
-                    {!locked && (
-                      <div class="inv__cta">
-                        <div class="btn-group-vertical">
-                          {(isNew || isDraft) && (
-                            <AsyncButton
-                              type="button"
-                              class="btn btn-primary btn-block btn-lg"
-                              disabled={this.state.isSaving}
-                              onClick={handleSubmit(props => {
-                                return this.saveAndIssue({
-                                  ...props,
-                                  ...{ draft: 0 },
-                                });
-                              })}
-                            >
-                              <i class="icon icon-done" />
-                              <span>Finalize and Issue</span>
-                            </AsyncButton>
-                          )}
-
-                          {isIssued && (
-                            <AsyncButton
-                              type="button"
-                              class="btn btn-primary btn-block btn-lg"
-                              disabled={this.state.isSaving}
-                              onClick={handleSubmit(this.resendInvoice)}
-                            >
-                              <i class="icon icon-send" />
-                              <span>Resend Invoice</span>
-                            </AsyncButton>
-                          )}
-
-                          {!locked && (
-                            <AsyncButton
-                              type="button"
-                              class="btn btn-default btn-block btn-lg"
-                              text="Save Invoice"
-                              pendingText="Saving..."
-                              disabled={this.state.isSaving}
-                              onClick={handleSubmit(props => {
-                                return this.save({
-                                  ...props,
-                                  ...{ draft: isIssued ? 0 : 1 },
-                                });
-                              })}
-                            >
-                              <i class="icon icon-save" />
-                              <span>Save Invoice</span>
-                            </AsyncButton>
-                          )}
-                          {(isNew || isDraft) && (
-                            <button
-                              type="button"
-                              class="btn btn-default btn-block btn-lg"
-                              onClick={this.deleteInvoice}
-                              disabled={this.state.isSaving}
-                            >
-                              <i class="icon icon-close" />
-                              <span>Delete Invoice</span>
-                            </button>
-                          )}
-                          {isIssued && (
-                            <button
-                              type="button"
-                              class="btn btn-default btn-block btn-lg"
-                              onClick={this.cancelInvoice}
-                              disabled={this.state.isSaving}
-                            >
-                              <i class="icon icon-close" />
-                              <span>Cancel Invoice</span>
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    <InvoiceInfo invoice={invoice} />
-                    <InvoiceNotes
-                      invoice={invoice}
-                      isSaving={this.state.isSaving}
-                      onAddClick={this.addInternalNote}
-                    />
-                  </div>
-                </ShowWhen>
-              </div>
-            </form>
-          </div>
-        )}
+              </form>
+            </div>}
       </div>
     );
   }
