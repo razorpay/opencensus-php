@@ -518,6 +518,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const VIRTUAL_ACCOUNT_EXCESS_REFUND             = 'VIRTUAL_ACCOUNT_EXCESS_REFUND';
 
     const BANK_TRANSFER_PROCESS_REQUEST             = 'BANK_TRANSFER_PROCESS_REQUEST';
+    const BANK_TRANSFER_PROCESSING                  = 'BANK_TRANSFER_PROCESSING';
     const BANK_TRANSFER_PROCESSING_SUCCESSFUL       = 'BANK_TRANSFER_PROCESSING_SUCCESSFUL';
     const BANK_TRANSFER_PROCESSING_FAILED           = 'BANK_TRANSFER_PROCESSING_FAILED';
     const BANK_TRANSFER_PROCESS_DUPLICATE_UTR       = 'BANK_TRANSFER_PROCESS_DUPLICATE_UTR';
@@ -644,6 +645,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_PROCESSING_ENTRY                        = 'BATCH_PROCESSING_ENTRY';
     const BATCH_PROCESSING_ERROR                        = 'BATCH_PROCESSING_ERROR';
     const BATCH_RETRY                                   = 'BATCH_RETRY';
+    const BATCH_RETRY_OUTPUT_FILE                       = 'BATCH_RETRY_OUTPUT_FILE';
     const BATCH_DOWNLOAD                                = 'BATCH_DOWNLOAD';
     const BATCH_LIST                                    = 'BATCH_LIST';
     const BATCH_GET                                     = 'BATCH_GET';
@@ -816,6 +818,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_INVOICE_BULK_CREATE                  = 'MERCHANT_INVOICE_BULK_CREATE';
     const MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED      = 'MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED';
     const MERCHANT_INVOICE_REPORT_REQUEST               = 'MERCHANT_INVOICE_REPORT_REQUEST';
+    const MERCHANT_INVOICE_ENTITY_CREATION_REQUEST      = 'MERCHANT_INVOICE_ENTITY_CREATION_REQUEST';
 
     const DUMMY_JOB = 'DUMMY_JOB';
 
