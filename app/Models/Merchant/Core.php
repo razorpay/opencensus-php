@@ -6,6 +6,7 @@ use Config;
 use ApiResponse;
 
 use RZP\Models\Base;
+use RZP\Models\User;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
 use RZP\Models\Pricing;
