@@ -63,11 +63,12 @@ app.controller('WorkflowRequestsCtrl', [
           if (data.success) {
             $scope.workflow_requests = data.data.items;
             $scope.stats.countStart = $scope.stats.skip + 1;
-            if (data.data.count === 0)
+            if (data.data.count === 0) {
               $scope.stats.countEnd = $scope.stats.countStart;
-            else
+            } else {
               $scope.stats.countEnd =
                 $scope.stats.countStart + $scope.stats.count - 1;
+            }
             $scope.allowPrev = $scope.stats.countStart != 1;
             $scope.allowNext = $scope.stats.count == data.data.count;
           }
