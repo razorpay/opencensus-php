@@ -1,25 +1,32 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import { Route, Switch, NavLink } from 'react-router-dom';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
+import * as ModalActions from 'rzp/modules/modals';
 
 import PaymentsList from 'merchant/containers/Marketplace/Payments/List';
 import TransfersList from 'merchant/containers/Marketplace/Transfers/List';
 import ReversalsList from 'merchant/containers/Marketplace/Reversals/List';
 import AccountsList from 'merchant/containers/Marketplace/Accounts/List';
 
-@connect(state => {
-  return {
-    user: state.session.user,
-  };
-})
+import FeatureOnboardingModal from 'merchant/containers/FeatureOnboardingModal';
+
+@connect(
+  state => {
+    return {
+      user: state.session.user,
+    };
+  },
+  { ...ModalActions }
+)
 export default class MarketplaceContainer extends Component {
   componentWillMount() {
-    this.props.fetchConfigAndFeatures(this.props.user.current).catch(err => {
-      this.props.showNotification({
-        type: 'error',
-        message: err.errors,
+    if (this.props.user.isMarketplaceEnabled === true) {
+      this.props.openModal({
+        size: 'small',
+        component: <FeatureOnboardingModal feature="marketplace" />,
       });
-    });
+    }
   }
 
   render() {

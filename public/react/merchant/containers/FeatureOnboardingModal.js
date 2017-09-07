@@ -7,6 +7,9 @@ import { Field, reduxForm, formValueSelector } from 'redux-form';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
+import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
+import InputField from 'rzp/ui/Forms/InputField';
+import { required } from 'rzp/utils/validators';
 
 const selector = formValueSelector('uploadBatch');
 @withRouter
@@ -17,6 +20,7 @@ const selector = formValueSelector('uploadBatch');
 export default class FeatureOnboardingModal extends Component {
   // Form submit handler
   onSubmitClick = props => {
+    console.log('asd');
     const prom = new Promise(() => {
       let additionalFormFields = {};
 
@@ -42,6 +46,80 @@ export default class FeatureOnboardingModal extends Component {
     return prom;
   };
 
+  getQuestionsElements() {
+    switch (this.props.feature) {
+      case 'marketplace':
+        return (
+          <div>
+            <div class="value">
+              <label for="use_case">Use Case</label>
+              <Field
+                name="use_case"
+                component={AutoResizeTextarea}
+                rows="2"
+                class="form-control"
+                placeholder="Your use case for the product and business model"
+              />
+            </div>
+
+            <div class="value">
+              <label for="email_notify">Transfer for</label>
+              <Field
+                name="bank_beneficiary_state"
+                component={InputField}
+                tagName="select"
+                class="form-control"
+                placeholder="Transferring Payments to?"
+                validate={[required()]}
+              >
+                <option value="Businesses" key="vendors">
+                  Third party businesses
+                </option>
+                <option value="Own Accounts" key="own_accounts">
+                  Own bank accounts
+                </option>
+                <option value="Individuals" key="individuals">
+                  Individuals
+                </option>
+              </Field>
+            </div>
+          </div>
+        );
+
+      case 'susbcriptions':
+        return 'asd';
+
+      case 'virtual_accounts':
+        return (
+          <div>
+            <div class="value">
+              <label for="use_case">Use Case</label>
+              <Field
+                name="use_case"
+                component={AutoResizeTextarea}
+                rows="2"
+                class="form-control"
+                placeholder="Your use case for the product and business model"
+              />
+            </div>
+
+            <div class="value">
+              <label for="use_case">Use Case</label>
+              <Field
+                name="use_case"
+                component={AutoResizeTextarea}
+                rows="2"
+                class="form-control"
+                placeholder="Your use case for the product and business model"
+              />
+            </div>
+          </div>
+        );
+    }
+
+    return 'asds';
+  }
+
   // View render
   render() {
     const { handleSubmit } = this.props;
@@ -49,33 +127,15 @@ export default class FeatureOnboardingModal extends Component {
     return (
       <div class="feature-onboarding-modal">
         <ModalHeader
-          title="Batch Upload"
+          title="Feature Request"
           onCloseClick={this.props.closeModal}
         />
         <form class="form-horizontal">
           <div class="modal-body">
             <div>
-              <p>Send link and payment instructions to...</p>
+              <p>Provide the following details for the request.</p>
 
-              <div class="rzpCheckbox">
-                <Field
-                  name="sms_notify"
-                  id="sms_notify"
-                  component="input"
-                  type="checkbox"
-                />
-                <label for="sms_notify">Sms Notify</label>
-              </div>
-
-              <div class="rzpCheckbox">
-                <Field
-                  name="email_notify"
-                  id="email_notify"
-                  component="input"
-                  type="checkbox"
-                />
-                <label for="email_notify">Email Notify</label>
-              </div>
+              {this.getQuestionsElements()}
             </div>
 
             <div>
