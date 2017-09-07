@@ -97,7 +97,7 @@ class Repository extends Base\Repository
     public function fetchRecentMerchants()
     {
         // 00:00 Today
-        $today = \Carbon\Carbon::today("Asia/Kolkata")->timestamp;
+        $today = \Carbon\Carbon::today("Asia/Kolkata")->getTimestamp();
 
         $start = \Carbon\Carbon::today("Asia/Kolkata")->subWeeks(3);
 
@@ -236,17 +236,6 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
                     ->whereIn(Entity::ID, $merchantIds)
-                    ->get();
-    }
-
-    /**
-     * Fetches the merchants with its relations (admin, groups)
-     */
-    public function findManyByIdsWithRelations(array $merchantIds)
-    {
-        return $this->newQuery()
-                    ->whereIn(Entity::ID, $merchantIds)
-                    ->with(['admins'])
                     ->get();
     }
 

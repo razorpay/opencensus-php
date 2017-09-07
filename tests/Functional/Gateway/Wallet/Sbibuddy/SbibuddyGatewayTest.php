@@ -160,6 +160,27 @@ class SbibuddyGatewayTest extends TestCase
         return $refund;
     }
 
+    public function testVerifyRefund()
+    {
+        $refund = $this->testRefundFailedPayment();
+
+        // If refund failed and if on retry the response is duplicate transaction,
+        // it means the refund was initially successfull at gateway
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'refund')
+            {
+                $content[ResponseFields::STATUS_CODE] = ResponseCodeMap::DUPLICATE_TRANSACTION;
+
+                $content[ResponseFields::ERROR_DESCRIPTION] = 'Duplicate transaction';
+            }
+        });
+
+        $response = $this->retryFailedRefund($refund['id']);
+
+        $this->assertEquals(RefundStatus::PROCESSED, $response['status']);
+    }
+
     public function testVerifyPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('sbibuddy');

@@ -11,11 +11,15 @@ class File extends Base
 {
     protected $fileData;
 
-    public function __construct(string $bankName, array $fileData, array $emails)
+    protected $data;
+
+    public function __construct(string $bankName, $fileData, array $emails, $data = null)
     {
         parent::__construct($bankName, $emails);
 
         $this->fileData = $fileData;
+
+        $this->data = $data;
     }
 
     protected function addSender()
@@ -31,9 +35,16 @@ class File extends Base
 
     protected function addMailData()
     {
-        $data = [
-            'body' => 'Please process the attached EMI file'
-        ];
+        if (empty($this->data) === false)
+        {
+            $data = $this->data;
+        }
+        else
+        {
+            $data = [
+                'body' => 'Please process the attached EMI file'
+            ];
+        }
 
         $this->with($data);
 
@@ -53,12 +64,15 @@ class File extends Base
 
     protected function addAttachments()
     {
-        $this->attach(
-            $this->fileData['signed_url'],
-            [
-                'as'   => $this->fileData['file_name'],
-                'mime' => 'application/zip'
-            ]);
+        if (empty($this->fileData) === false)
+        {
+            $this->attach(
+                $this->fileData['signed_url'],
+                [
+                    'as'   => $this->fileData['file_name'],
+                    'mime' => 'application/zip'
+                ]);
+        }
 
         return $this;
     }

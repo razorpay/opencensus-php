@@ -4,7 +4,6 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
-use RZP\Models\Order;
 
 class OrderController extends Controller
 {
@@ -12,7 +11,7 @@ class OrderController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('order')->create($input);
+        $data = $this->service()->create($input);
 
         return ApiResponse::json($data);
     }
@@ -21,21 +20,21 @@ class OrderController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('order')->fetchMultiple($input);
+        $data = $this->service()->fetchMultiple($input);
 
         return ApiResponse::json($data);
     }
 
     public function fetchOrderById($id)
     {
-        $data = $this->service('order')->fetch($id);
+        $data = $this->service()->fetch($id);
 
         return ApiResponse::json($data);
     }
 
     public function fetchPayments($id)
     {
-        $payments = $this->service('order')->fetchPaymentsFor($id);
+        $payments = $this->service()->fetchPaymentsFor($id);
 
         return ApiResponse::json($payments);
     }

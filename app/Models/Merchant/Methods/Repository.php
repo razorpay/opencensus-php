@@ -13,18 +13,18 @@ class Repository extends Base\Repository
     protected $entity = 'methods';
 
     protected $appFetchParamRules = array(
-        Entity::AMEX        => 'sometimes|in:0,1',
-        Entity::BANKS       => 'sometimes|in:0,1',
-        Entity::CARD        => 'sometimes|in:0,1',
-        Entity::EMI         => 'sometimes|in:0,1',
-        Entity::MERCHANT_ID => 'sometimes|alpha_num',
-        Entity::MOBIKWIK    => 'sometimes|in:0,1',
-        Entity::PAYTM       => 'sometimes|in:0,1',
-        Entity::PAYUMONEY   => 'sometimes|in:0,1',
-        Entity::PAYZAPP     => 'sometimes|in:0,1',
-        Entity::OLAMONEY    => 'sometimes|in:0,1',
-        Entity::AIRTELMONEY => 'sometimes|in:0,1',
-        Entity::FREECHARGE  => 'sometimes|in:0,1',
+        Entity::AMEX                => 'sometimes|in:0,1',
+        Entity::DISABLED_BANKS      => 'sometimes|in:0,1',
+        Entity::CARD                => 'sometimes|in:0,1',
+        Entity::EMI                 => 'sometimes|in:0,1',
+        Entity::MERCHANT_ID         => 'sometimes|alpha_num',
+        Entity::MOBIKWIK            => 'sometimes|in:0,1',
+        Entity::PAYTM               => 'sometimes|in:0,1',
+        Entity::PAYUMONEY           => 'sometimes|in:0,1',
+        Entity::PAYZAPP             => 'sometimes|in:0,1',
+        Entity::OLAMONEY            => 'sometimes|in:0,1',
+        Entity::AIRTELMONEY         => 'sometimes|in:0,1',
+        Entity::FREECHARGE          => 'sometimes|in:0,1',
     );
 
     public function getMethodsForMerchant(Merchant\Entity $merchant)

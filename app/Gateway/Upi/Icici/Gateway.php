@@ -748,16 +748,9 @@ class Gateway extends Base\Gateway
             Fields::MERCHANT_TRAN_ID                => $this->getRefundId($refund),
             Fields::ORIGINAL_MERCHANT_TRAN_ID       => $payment['id'],
             Fields::REFUND_AMOUNT                   => $this->formatAmount($refund['amount']),
-            Fields::PAYEE_VA                        => strtolower($payment['vpa']),
             Fields::NOTE                            => 'Razorpay Refund ' . $refund['id'],
             Fields::ONLINE_REFUND                   => 'Y',
         ];
-
-        // ICICI has confirmed that the vpa is not a mandatory field now.
-        if ($input['merchant']['id'] === Merchant\Account::DEMO_PAGE_ACCOUNT)
-        {
-            unset($data[Fields::PAYEE_VA]);
-        }
 
         $content = $this->transformRequestArrayToContent($data);
 
