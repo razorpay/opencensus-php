@@ -51,7 +51,7 @@ class Base extends BaseModel\Core
      *
      * @var array
      */
-    protected $params;
+    protected $params = [];
 
     /**
      * Holds local file path of input and output file respectively.
