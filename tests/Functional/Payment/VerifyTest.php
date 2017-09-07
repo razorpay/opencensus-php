@@ -1046,7 +1046,7 @@ class VerifyTest extends TestCase
 
         $time = Carbon::now('Asia/Kolkata');
 
-        $time->addMinutes(15);
+        $time->addMinutes(14);
 
         Carbon::setTestNow($time);
 

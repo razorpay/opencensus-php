@@ -256,6 +256,7 @@ return [
         'test_password'     => env('MPESA_WALLET_TEST_PASSWORD'),
         'live_user_id'      => env('MPESA_WALLET_LIVE_USER_ID'),
         'live_password'     => env('MPESA_WALLET_LIVE_PASSWORD'),
+        'live_hash_secret'  => env('MPESA_WALLET_LIVE_HASH_SECRET'),
     ],
 
     'netbanking_hdfc' => [

@@ -365,6 +365,11 @@ class Service extends Base\Service
     {
         $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
+        if ($payment->hasCard() === false)
+        {
+            throw new Exception\BadRequestException(Error\ErrorCode::BAD_REQUEST_NOT_CARD_PAYMENT);
+        }
+
         $card = $this->repo->card->fetchForPayment($payment);
 
         return $card->toArrayPublic();
