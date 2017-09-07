@@ -775,6 +775,10 @@ app
           return id && idList.push(id);
         });
 
+        if (idList.length === 0) {
+          return;
+        }
+
         $modalInstance.close(idList);
       };
 
