@@ -13,7 +13,8 @@ class Validator extends Base\Validator
         Entity::NAME     => 'sometimes|string|max:50',
         Entity::PERIOD   => 'required|string',
         Entity::INTERVAL => 'sometimes|nullable|integer|max:24',
-        Entity::ANCHOR   => 'sometimes|nullable|integer|min:-1|max:31',
+        // For yearly periods, anchor can be december 31st (1231).
+        Entity::ANCHOR   => 'sometimes|nullable|integer|min:-1|max:1231',
         Entity::HOUR     => 'sometimes|integer|min:0|max:23',
         Entity::DELAY    => 'sometimes|integer|min:0|max:30',
     );
@@ -21,7 +22,8 @@ class Validator extends Base\Validator
     protected static $editRules = array(
         Entity::NAME     => 'sometimes|string|max:50',
         Entity::INTERVAL => 'sometimes|integer|max:24',
-        Entity::ANCHOR   => 'sometimes|integer|min:-1|max:30',
+        // For yearly periods, anchor can be december 31st (1231).
+        Entity::ANCHOR   => 'sometimes|integer|min:-1|max:1231',
         Entity::HOUR     => 'sometimes|integer|min:0|max:23',
         Entity::DELAY    => 'sometimes|integer|min:0|max:30',
     );
@@ -43,15 +45,7 @@ class Validator extends Base\Validator
     {
         $period = $input[Entity::PERIOD];
 
-        if (Period::isPeriodValid($period) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SCHEDULE_INVALID_PERIOD,
-                'period',
-                [
-                    'period' => $period,
-                ]);
-        }
+        Period::validatePeriod($period);
     }
 
     protected function validateHour($input)
@@ -83,32 +77,20 @@ class Validator extends Base\Validator
 
     protected function validateAnchor($input)
     {
-        if (isset($input[Entity::PERIOD]) === true)
+        if (isset($input[Entity::PERIOD]) === false)
         {
-            if ($input[Entity::PERIOD] === Period::WEEKLY)
-            {
-                // $this->validateWeeklyAnchor($input);
-            }
-            else if (($input[Entity::PERIOD] === Period::DAILY) or
-                    ($input[Entity::PERIOD] === Period::HOURLY))
-            {
-                if (isset($input[Entity::ANCHOR]) === true)
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_SCHEDULE_HOURLY_DAILY_ANCHOR_NOT_PERMITTED);
-                }
-            }
+            return;
         }
-    }
 
-    protected function validateWeeklyAnchor($input)
-    {
-        if ((isset($input[Entity::ANCHOR]) === true) and
-            ((intval($input[Entity::ANCHOR]) < Carbon::MONDAY) or
-             (intval($input[Entity::ANCHOR]) > Carbon::FRIDAY)))
+        if (isset($input[Entity::ANCHOR]) === true)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SCHEDULE_WEEKEND_ANCHOR_NOT_PERMITTED);
+            if (Period::isPeriodUnAnchored($input[Entity::PERIOD]) === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_SCHEDULE_ANCHOR_NOT_PERMITTED,
+                    Entity::ANCHOR,
+                    $input);
+            }
         }
     }
 }

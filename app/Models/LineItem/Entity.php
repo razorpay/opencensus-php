@@ -52,6 +52,10 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
+    protected $embeddedRelations  = [
+        self::TAXES,
+    ];
+
     protected $defaults = [
         self::QUANTITY      => 1,
         self::DESCRIPTION   => null,

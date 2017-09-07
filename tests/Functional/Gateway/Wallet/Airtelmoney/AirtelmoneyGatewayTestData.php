@@ -51,7 +51,7 @@ return [
 
     'testPaymentWalletEntity' => [
         'action'                => 'authorize',
-        'amount'                => 50000,
+        'amount'                => '50000',
         'wallet'                => 'airtelmoney',
         'received'              => true,
         'email'                 => 'a@b.com',
@@ -64,7 +64,7 @@ return [
 
     'testFailedPaymentWalletEntity' => [
         'action'                => 'authorize',
-        'amount'                => 1999,
+        'amount'                => '1999',
         'wallet'                => 'airtelmoney',
         'received'              => false,
         'email'                 => 'a@b.com',
@@ -112,7 +112,7 @@ return [
         'action'                => 'refund',
         'wallet'                => 'airtelmoney',
         'email'                 => 'a@b.com',
-        'amount'                => 50000,
+        'amount'                => '50000',
         'contact'               => '9918899029',
         'gateway_merchant_id'   => 'random_id',
         'response_description'  => 'SUCCESS',
@@ -124,7 +124,7 @@ return [
         'action'                => 'refund',
         'wallet'                => 'airtelmoney',
         'email'                 => 'a@b.com',
-        'amount'                => 25000,
+        'amount'                => '25000',
         'contact'               => '9918899029',
         'gateway_merchant_id'   => 'random_id',
         'response_description'  => 'SUCCESS',
@@ -136,7 +136,7 @@ return [
         'action'                => 'refund',
         'wallet'                => 'airtelmoney',
         'email'                 => 'a@b.com',
-        'amount'                => 2999,
+        'amount'                => '2999',
         'contact'               => '9918899029',
         'gateway_merchant_id'   => 'random_id',
         'response_description'  => 'Reversal amount is greater than the amount that can be reversed',

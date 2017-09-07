@@ -5,10 +5,10 @@ namespace RZP\Jobs\Invoice;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
-use RZP\Trace\Trace;
 use RZP\Models\Batch;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\Job as BaseJob;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Invoice as InvoiceModel;
 
 /**

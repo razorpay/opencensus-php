@@ -6,9 +6,9 @@ use App;
 use Response;
 use Exception;
 use ApiResponse;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use Razorpay\Trace\Logger as Trace;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -331,7 +331,8 @@ class Handler extends ExceptionHandler
         {
             $data = $e->getData();
 
-            if (method_exists($data, 'toArray'))
+            if ((is_object($data) === true) and
+                (method_exists($data, 'toArray') === true))
             {
                 $data = $data->toArray();
             }

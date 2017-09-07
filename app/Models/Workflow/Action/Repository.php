@@ -32,16 +32,32 @@ class Repository extends Base\Repository
                     });
     }
 
-    public function findByOrgId(string $orgId, array $relations = [])
+    public function findByOrgId(
+        string $orgId,
+        array $relations = [],
+        string $type = 'all')
     {
-        return $this->getNewQueryWithPermissions()
-                    ->orgId($orgId)
-                    ->with($relations)
-                    ->orderBy(Entity::CREATED_AT, 'desc')
-                    ->get();
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        $openStates = State\Entity::OPEN_STATES;
+
+        $query = $this->getNewQueryWithPermissions()
+                      ->orgId($orgId)
+                      ->with($relations)
+                      ->orderBy(Entity::CREATED_AT, 'desc');
+
+        if ($type == 'open')
+        {
+            $query->whereIn(Entity::STATE, $openStates);
+        }
+
+        return $query->get();
     }
 
-    public function findByAdminIdAndOrgIdWithRelations($adminId, $orgId, $relations = [])
+    public function findByAdminIdAndOrgIdWithRelations(
+        string $adminId,
+        string $orgId,
+        array $relations = [])
     {
         $permission = Table::PERMISSION;
 
@@ -51,15 +67,6 @@ class Repository extends Base\Repository
                     ->with($relations)
                     ->orderBy(Entity::CREATED_AT, 'desc')
                     ->get();
-    }
-
-    public function findByAdminIdAndOrgId($adminId, $orgId, $relations = [])
-    {
-        return $this->newQuery()
-                    ->where(Entity::ADMIN_ID, '=', $adminId)
-                    ->where(Entity::ORG_ID, '=', $orgId)
-                    ->with($relations)
-                    ->firstOrFailPublic();
     }
 
     public function findActionsForChecker(
@@ -80,8 +87,6 @@ class Repository extends Base\Repository
         */
 
         $wStep = Table::WORKFLOW_STEP;
-
-        $permission = Table::PERMISSION;
 
         return $this->getNewQueryWithPermissions()
                     ->join($wStep, function ($join) {
@@ -119,27 +124,11 @@ class Repository extends Base\Repository
         // CLOSED is the absolute last state, We can expect unique entries.
         $acsAdminId = $acsDao->dbColumn(State\Entity::ADMIN_ID);
 
-
         return $this->getNewQueryWithPermissions()
                     ->join($acsTable, $aId, '=', $acsActionId)
                     ->where($acsState, '=', State\Entity::CLOSED)
                     ->where($acsAdminId, '=', $adminId)
                     ->with($relations)
-                    ->orderBy(Entity::CREATED_AT, 'desc')
-                    ->get();
-    }
-
-    public function findOpenActionsByOrgId(
-        string $orgId,
-        array $relations = [])
-    {
-        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
-
-        $openStates = State\Entity::OPEN_STATES;
-
-        return $this->getNewQueryWithPermissions()
-                    ->orgId($orgId)
-                    ->whereIn(Entity::STATE, $openStates)
                     ->orderBy(Entity::CREATED_AT, 'desc')
                     ->get();
     }
@@ -177,7 +166,10 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getOpenActionOnEntityOperation($entityId, $entityName, $permissionId)
+    public function getOpenActionOnEntityOperation(
+        string $entityId,
+        string $entityName,
+        string $permissionId)
     {
         return $this->newQuery()
                     ->where(Entity::ENTITY_ID, $entityId)

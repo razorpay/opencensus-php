@@ -23,6 +23,8 @@ class CreateDisputeReasons extends Migration
             $table->char(DisputeReason::ID, DisputeReason::ID_LENGTH)
                   ->primary();
 
+            $table->string(DisputeReason::NETWORK, 50);
+
             $table->string(DisputeReason::GATEWAY_CODE, 50);
 
             $table->string(DisputeReason::GATEWAY_DESCRIPTION, 255);

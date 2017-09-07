@@ -3,6 +3,7 @@
 namespace RZP\Mail\Batch;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
@@ -92,7 +93,7 @@ class Base extends Mailable
 
     protected function addSubject()
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $today = Carbon::now(Timezone::IST)->format('d-m-Y');
 
         $this->subject(sprintf(static::$subjectLine, $today));
 

@@ -108,6 +108,29 @@ class HdfcGatewayAuthTest extends TestCase
         }
     }
 
+    public function testRupayFailedPayment()
+    {
+        $this->mockServerContentFunction(function (& $content, $action)
+        {
+            if ($action === 'auth_response')
+            {
+                $content = [
+                    'Error'     => 'PY20007',
+                    'ErrorText' => 'PY20007-Invalid Order Status.',
+                    'paymentid' => $content['paymentid'],
+                    'trackid'   => $content['trackid'],
+                    'udf1'      => 'test',
+                    'udf2'      => 'a@b.com',
+                    'udf3'      => '9918899029',
+                    'udf4'      => 'test',
+                    'udf5'      => 'test',
+                ];
+            }
+        });
+
+        $this->startTest();
+    }
+
     public function testMaestroCard()
     {
         $payment = $this->getDefaultPaymentArray();

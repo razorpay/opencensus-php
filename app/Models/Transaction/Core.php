@@ -3,10 +3,11 @@
 namespace RZP\Models\Transaction;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
-use RZP\Models\Card;
+use RZP\Models\Dispute;
 use RZP\Models\Reversal;
 use RZP\Models\Currency;
 use RZP\Models\Merchant;
@@ -14,19 +15,18 @@ use RZP\Models\Payment;
 use RZP\Models\Payout;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Pricing;
-use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Schedule\Library as ScheduleLibrary;
 use RZP\Models\Schedule\Task as ScheduleTask;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Models\Customer;
 use RZP\Models\Transfer;
 use RZP\Models\Feature;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\FeeModel;
+use RZP\Constants\Entity as E;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Core extends Base\Core
@@ -615,7 +615,15 @@ class Core extends Base\Core
 
                 break;
             default:
-                throw new Exception\LogicException('Should not have reached here');
+                throw new Exception\LogicException(
+                    'Should not have reached here',
+                    null,
+                    [
+                        'refund_id'         => $refund->getId(),
+                        'payment_id'        => $payment->getId(),
+                        'status'            => $paymentStatus,
+                        'transaction_id'    => $txn->getId(),
+                    ]);
         }
 
         return $txn;
@@ -684,6 +692,25 @@ class Core extends Base\Core
 
         $settledAt = time();
 
+        //
+        // For transfers from a payment, if the source payment is not
+        // settled yet, delay the settled_at timestamp to avoid this txn
+        // from being picked up for settlement immediately.
+        //
+        // Without this, the transfer txn would get picked up for settlement
+        // before the payment txn, leading to a overall negative settlement
+        // that is then skipped.
+        //
+        if ($transfer->getSourceType() === E::PAYMENT)
+        {
+            $paymentTxn = $transfer->source->transaction;
+
+            if ($paymentTxn->isSettled() === false)
+            {
+                $settledAt = $paymentTxn->getSettledAt();
+            }
+        }
+
         $amountPlusFees = abs($amount + $fee);
 
         $values = [
@@ -722,8 +749,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Create transaction and update balances for a reverse transfer
-     * on a Marketplace payment refund
+     * Create transaction and update balances for a reversal
      *
      * @param  Reversal\Entity   $reversal
      * @return Entity
@@ -760,6 +786,38 @@ class Core extends Base\Core
         $txn->sourceAssociate($reversal);
 
         $this->updateBalances($txn, false);
+
+        return $txn;
+    }
+
+    public function createFromDispute(Dispute\Entity $dispute): Entity
+    {
+        $txn = new Entity;
+
+        $nowTimestamp = Carbon::now()->getTimestamp();
+
+        $data = [
+            Entity::DEBIT         => $dispute->getAmountDeducted(),
+            Entity::CREDIT        => 0,
+            Entity::CURRENCY      => $dispute->getCurrency(),
+            Entity::GATEWAY_FEE   => 0,
+            Entity::API_FEE       => 0,
+            Entity::SETTLED       => 0,
+            Entity::SETTLED_AT    => $nowTimestamp,
+            Entity::FEE           => 0,
+            Entity::SERVICE_TAX   => 0,
+            Entity::AMOUNT        => $dispute->getAmountDeducted(),
+            Entity::TYPE          => Type::DISPUTE,
+            Entity::CHANNEL       => Channel::KOTAK,
+        ];
+
+        $txn->fillAndGenerateId($data);
+
+        $txn->merchant()->associate($dispute->merchant);
+
+        $txn->sourceAssociate($dispute);
+
+        $this->updateBalances($txn);
 
         return $txn;
     }
@@ -927,7 +985,15 @@ class Core extends Base\Core
 
         if ($feeCredits < $fee)
         {
-            throw new Exception\LogicException("FeeCredits should be higher or equal to the fee");
+            throw new Exception\LogicException(
+                'FeeCredits should be higher or equal to the fee',
+                null,
+                [
+                    'transaction_id'    => $txn->getId(),
+                    'merchant_id'       => $merchantId,
+                    'fee_credits'       => $feeCredits,
+                    'fee'               => $fee,
+                ]);
         }
 
         // $nodalBalance = $this->getNodalBalanceLockForUpdate($txn->getChannel());
@@ -1002,11 +1068,11 @@ class Core extends Base\Core
 
     public function calculateSettledAtTimestamp($timestamp, $addDays, $ignoreBankHolidays = false)
     {
-        $capturedAt = Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata');
+        $capturedAt = Carbon::createFromTimestamp($timestamp, Timezone::IST);
 
         $returnDay = Holidays::getNthWorkingDayFrom($capturedAt, $addDays, $ignoreBankHolidays);
 
-        return $returnDay->timestamp;
+        return $returnDay->getTimestamp();
     }
 
     public function updateCredits(Transaction\Entity $txn, Payment\Entity $payment)

@@ -84,9 +84,16 @@ return array(
         'url'           => env('LUMBERJACK_URL'),
         'secret'        => env('LUMBERJACK_SECRET'),
         'key'           => env('LUMBERJACK_KEY'),
-        'is_mock'       => env('LUMBERJACK_MOCK', false),
+        'mock'          => env('LUMBERJACK_MOCK', false),
         'identifier'    => env('LUMBERJACK_API_IDENTIFIER')
     ),
+
+    'harvester' => [
+        'url'           => env('HARVESTER_URL'),
+        'secret'        => env('HARVESTER_SECRET'),
+        'mock'          => env('HARVESTER_MOCK', false),
+        'identifier'    => env('HARVESTER_API_IDENTIFIER')
+    ],
 
     'elfin' => [
         'mock'     => env('ELFIN_MOCK', true),

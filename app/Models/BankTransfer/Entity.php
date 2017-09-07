@@ -56,6 +56,7 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::PAYMENT_ID,
+        self::PAYER_NAME,
         self::PAYER_ACCOUNT,
         self::PAYER_IFSC,
         self::PAYEE_ACCOUNT,
@@ -83,6 +84,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::VIRTUAL_ACCOUNT_ID,
         self::AMOUNT,
+        self::PAYER_NAME,
         self::PAYER_ACCOUNT,
         self::PAYER_IFSC,
         self::PAYER_BANK_ACCOUNT_ID,
@@ -209,6 +211,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::UTR);
     }
 
+    public function getPayerName()
+    {
+        return $this->getAttribute(self::PAYER_NAME);
+    }
+
     public function getPayeeAccount()
     {
         return $this->getAttribute(self::PAYEE_ACCOUNT);
@@ -227,6 +234,16 @@ class Entity extends Base\PublicEntity
     public function getPayerIfsc()
     {
         return $this->getAttribute(self::PAYER_IFSC);
+    }
+
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
+    }
+
+    public function getPaymentId()
+    {
+        return $this->getAttribute(self::PAYMENT_ID);
     }
 
     public function isNotified()
@@ -254,5 +271,10 @@ class Entity extends Base\PublicEntity
     public function setNotified(bool $notified)
     {
         $this->setAttribute(self::NOTIFIED, $notified);
+    }
+
+    public function setCustomerName(string $name)
+    {
+        $this->setAttribute(self::PAYER_NAME, $name);
     }
 }

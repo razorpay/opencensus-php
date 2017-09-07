@@ -7,6 +7,7 @@ class DisputeReason extends Base
     public function create(array $attributes = [])
     {
         $defaultValues = [
+           'network'             => 'VISA',
            'gateway_code'        => '8fjf',
            'gateway_description' => 'Fraud on merchant side',
            'code'                => 'KFRER_R',

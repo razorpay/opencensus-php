@@ -40,28 +40,6 @@ return [
 
     ],
 
-   'testAddAdjustmentWithoutUpdatingEscrowBalance' => [
-        'request' => [
-            'content' => [
-                'merchant_id' => '10000000000000',
-                'amount'        => 100,
-                'description'   => 'random desc',
-                'currency'      => 'INR',
-                'update_escrow' => '0',
-            ],
-            'url'     => '/adjustments',
-            'method'  => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'amount'      => 100,
-                'description' => 'random desc',
-                'channel'     => 'kotak',
-                'currency'    => 'INR',
-            ],
-        ],
-    ],
-
     'txnDataAfterAddingAdjustment' => [
         'entity'          => 'transaction',
         'type'            => 'adjustment',
@@ -161,6 +139,42 @@ return [
         'api_fee'         => 0,
         'gratis'          => false,
         'balance'         => 999000,
+        'merchant_id'     => '10000000000000',
+        'pricing_rule_id' => null,
+        'channel'         => 'kotak',
+    ],
+
+    'txnDataAfterDisputingPayment' => [
+        'entity'          => 'transaction',
+        'type'            => 'dispute',
+        'amount'          => 1000000,
+        'currency'        => 'INR',
+        'debit'           => 1000000,
+        'credit'          => 0,
+        'fee'             => 0,
+        'service_tax'     => 0,
+        'gateway_fee'     => 0,
+        'api_fee'         => 0,
+        'gratis'          => false,
+        'balance'         => 976400,
+        'merchant_id'     => '10000000000000',
+        'pricing_rule_id' => null,
+        'channel'         => 'kotak',
+    ],
+
+    'txnDataAfterDisputingPaymentWithoutDeduct' => [
+        'entity'          => 'transaction',
+        'type'            => 'payment',
+        'amount'          => 1000000,
+        'currency'        => 'INR',
+        'debit'           => 0,
+        'credit'          => 976400,
+        'fee'             => 23600,
+        'service_tax'     => 3600,
+        'gateway_fee'     => 0,
+        'api_fee'         => 0,
+        'gratis'          => false,
+        'balance'         => 1976400,
         'merchant_id'     => '10000000000000',
         'pricing_rule_id' => null,
         'channel'         => 'kotak',

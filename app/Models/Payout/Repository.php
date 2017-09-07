@@ -48,8 +48,12 @@ class Repository extends Base\Repository
         if ($updatedCount !== $expectedCount)
         {
             throw new Exception\LogicException(
-                'Failed to update expected number of payout records. \n' .
-                'Expected: ' . $expectedCount . ' Updated: ' . $updatedCount);
+                'Failed to update expected number of payout records.',
+                null,
+                [
+                    'expected' => $expectedCount,
+                    'updated'  => $updatedCount,
+                ]);
         }
 
         return $updatedCount;

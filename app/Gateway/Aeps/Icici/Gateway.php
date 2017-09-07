@@ -4,6 +4,7 @@ namespace RZP\Gateway\Aeps\Icici;
 
 use Cache;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
@@ -274,7 +275,7 @@ class Gateway extends Base\Gateway
 
         $terminalId = $this->getTerminalId();
 
-        $date = Carbon::now('Asia/Kolkata')->format('Y-m-d\TH:i:s');
+        $date = Carbon::now(Timezone::IST)->format('Y-m-d\TH:i:s');
 
         $extraBlock = '001344' . $input['aadhaar']['session_key'] . '002008' . $input['aadhaar']['cert_expiry'] . '003064' . $input['aadhaar']['hmac'];
 
@@ -330,7 +331,7 @@ class Gateway extends Base\Gateway
 
     protected function getCounter()
     {
-        $cacheKey = 'AEPS_COUNTER_' . Carbon::now('Asia/Kolkata')->format('Ymd');
+        $cacheKey = 'AEPS_COUNTER_' . Carbon::now(Timezone::IST)->format('Ymd');
 
         $counter = $this->cache->increment($cacheKey);
 

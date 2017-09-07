@@ -138,7 +138,9 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'terminal';
 
-    protected static $generators = ['method'];
+    protected static $generators = [
+        'method',
+    ];
 
     protected static $modifiers = [
         'inputRemoveBlanks',

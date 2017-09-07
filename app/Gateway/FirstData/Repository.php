@@ -12,8 +12,16 @@ class Repository extends Base\Repository
     protected $entity = 'first_data';
 
     protected $appFetchParamRules = [
+        Entity::PAYMENT_ID             => 'sometimes|string|max:18',
+        Entity::REFUND_ID              => 'sometimes|string|max:19',
+        Entity::ACTION                 => 'sometimes|alpha|max:10',
         Entity::CAPS_PAYMENT_ID        => 'sometimes|alpha_num|size:14',
         Entity::GATEWAY_TRANSACTION_ID => 'sometimes|integer|max:20',
+    ];
+
+    protected $signedIds = [
+        Entity::PAYMENT_ID,
+        Entity::REFUND_ID,
     ];
 
     public function findCapturedPaymentByIdOrFail($paymentId)
@@ -66,11 +74,14 @@ class Repository extends Base\Repository
 
     public function findSuccessfulRefundByRefundId(string $refundId)
     {
-        $actions = [Base\Action::REFUND, Base\Action::REVERSE];
+        $refundActions = [Base\Action::REFUND, Base\Action::REVERSE];
+
+        $failStates = [Status::FAILED, Status::VOIDED];
 
         $refundEntities =  $this->newQuery()
                                 ->where(Entity::REFUND_ID, '=', $refundId)
-                                ->whereIn(Entity::ACTION, $actions)
+                                ->whereIn(Entity::ACTION, $refundActions)
+                                ->whereNotIn(Entity::STATUS, $failStates)
                                 ->get();
         //
         // There should never be more than one successful gateway refund entity
@@ -78,7 +89,6 @@ class Repository extends Base\Repository
         //
         if ($refundEntities->count() > 1)
         {
-
             throw new Exception\LogicException(
                 'Multiple refund entities found for a refund ID',
                 Error\ErrorCode::SERVER_ERROR_MULTIPLE_REFUNDS_FOUND,

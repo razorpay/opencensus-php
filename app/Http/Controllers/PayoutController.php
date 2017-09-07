@@ -5,13 +5,11 @@ namespace RZP\Http\Controllers;
 use ApiResponse;
 use Request;
 
-use RZP\Models\Payout;
-
 class PayoutController extends Controller
 {
     public function getPayout(string $id)
     {
-        $data = $this->service('payout')->fetch($id);
+        $data = $this->service()->fetch($id);
 
         return ApiResponse::json($data);
     }
@@ -20,7 +18,7 @@ class PayoutController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('payout')->fetchMultiple($input);
+        $data = $this->service()->fetchMultiple($input);
 
         return ApiResponse::json($data);
     }
@@ -29,7 +27,7 @@ class PayoutController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('payout')->create($input);
+        $data = $this->service()->create($input);
 
         return ApiResponse::json($data);
     }
@@ -38,7 +36,16 @@ class PayoutController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('payout')->initiatePayouts($input, $channel);
+        $data = $this->service()->initiatePayouts($input, $channel);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postMerchantPayout()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->merchantPayout($input);
 
         return ApiResponse::json($data);
     }

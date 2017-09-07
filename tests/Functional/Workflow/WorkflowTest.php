@@ -54,8 +54,6 @@ class WorkflowTest extends TestCase
 
     public function testCreateWorkflow()
     {
-        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
-
         $defaultAttributes = $this->getDefaultWorkflowArray();
 
         $attributes = array_merge($defaultAttributes, $this->input);
@@ -71,8 +69,6 @@ class WorkflowTest extends TestCase
 
     public function testDeleteWorkflow()
     {
-        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
-
         $workflow = $this->createWorkflow($this->input);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
@@ -100,8 +96,6 @@ class WorkflowTest extends TestCase
      */
     public function testCreateWorkflowWithPermissionWorkflow()
     {
-        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
-
         $this->createWorkflow($this->input);
 
         // To recreate the same workflow using request to test.
@@ -136,7 +130,7 @@ class WorkflowTest extends TestCase
      */
     public function testDeleteWorkflowProgress()
     {
-        $this->ba->adminAuth('test', null, ORG::RZP_ORG);
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -182,7 +176,7 @@ class WorkflowTest extends TestCase
      */
     public function testEditWorkflowInProgress()
     {
-        $this->ba->adminAuth('test', null, 'org_' . ORG::RZP_ORG);
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
 
         // Default workflow has edit admin permission and editing default org user.
         $this->editAdmin('org_' . Org::RZP_ORG, 'admin_' . Org::SUPER_ADMIN);
@@ -205,7 +199,7 @@ class WorkflowTest extends TestCase
     {
         $workflowId = 'workflow_' . Workflow::DEFAULT_WORKFLOW_ID;
 
-        $this->ba->adminAuth('test', null, 'org_' . ORG::RZP_ORG);
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -215,6 +209,13 @@ class WorkflowTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->testData[__FUNCTION__]['response']['content']['id'] = $workflowId;
+
+        $this->startTest();
+    }
+
+    public function testWorkflowGetMultiple()
+    {
+        $this->ba->adminAuth('test');
 
         $this->startTest();
     }

@@ -5,10 +5,10 @@ namespace RZP\Gateway\Hdfc\Payment;
 use RZP\Exception;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card;
 use RZP\Models\Currency\Currency;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Feature\Constants as Feature;
 
 trait Enroll
@@ -252,7 +252,7 @@ trait Enroll
             // Collect udf fields
             $data['udf1'] = $input['merchant']->getBillingLabel();
 
-            $data['udf4'] = $input['payment']['description'] ?: $data['udf4'];
+            $data['udf4'] = $input['payment']['description'] ?? $data['udf4'];
 
             $data['udf5'] = $this->request->ip();
         }
@@ -265,7 +265,12 @@ trait Enroll
         if ($trackid !== $this->id)
         {
             throw new Exception\LogicException(
-                'Gateway Exception: Track id do not match: ' . $trackid . ' ' . $this->id);
+                'Gateway Exception: Track id do not match',
+                null,
+                [
+                     'id'       => $this->id,
+                     'track_id' => $trackid,
+                ]);
         }
     }
 
@@ -354,7 +359,12 @@ trait Enroll
             if ($eci === '6')
                 return;
 
-            throw new Exception\LogicException('eci value should be 6. Eci: ' . $eci);
+            throw new Exception\LogicException(
+                'eci value should be 6',
+                null,
+                [
+                    'eci' => $eci,
+                ]);
         }
 
         $masterCardOrMaestro = (($network === Card\Network::MC) or
@@ -368,7 +378,13 @@ trait Enroll
             if ($eci === '1')
                 return;
 
-            throw new Exception\LogicException('eci value should be 1. Eci: ' . $eci);
+            throw new Exception\LogicException(
+                'eci value should be 1',
+                null,
+                [
+                    'payment_id' => $this->input['payment']['id'],
+                    'eci'        => $eci,
+                ]);
         }
     }
 

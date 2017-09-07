@@ -141,6 +141,12 @@ class CreateInvoices extends Migration
             $table->tinyInteger(Entity::GROUP_TAXES_DISCOUNTS)
                   ->default(0);
 
+            $table->text(Entity::CALLBACK_URL)
+                  ->nullable();
+
+            $table->string(Entity::CALLBACK_METHOD, 16)
+                  ->nullable();
+
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
             $table->integer(Entity::DELETED_AT)
@@ -156,6 +162,7 @@ class CreateInvoices extends Migration
             $table->index(Entity::SMS_STATUS);
             $table->index(Entity::USER_ID);
             $table->index(Entity::EXPIRE_BY);
+            $table->index(Entity::AMOUNT);
             $table->index(Entity::CUSTOMER_NAME);
             $table->index(Entity::CUSTOMER_CONTACT);
             $table->index(Entity::CUSTOMER_EMAIL);

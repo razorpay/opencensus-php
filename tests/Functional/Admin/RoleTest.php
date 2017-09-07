@@ -61,7 +61,6 @@ class RoleTest extends TestCase
         $perms = $this->fixtures->times(3)->create('permission');
 
         $permIds = array_map(create_function('$p', 'return $p->getId();'), $perms);
-        ;
 
         $role->permissions()->sync($permIds);
 

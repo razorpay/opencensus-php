@@ -4,9 +4,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Payment\Refund\Entity as Refund;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\Payment\Refund\Entity as Refund;
 use RZP\Models\Transaction\Entity as Transaction;
 
 class CreateRefunds extends Migration
@@ -45,6 +45,9 @@ class CreateRefunds extends Migration
 
             $table->text(Refund::NOTES);
 
+            $table->string(Refund::RECEIPT)
+                  ->nullable();
+
             $table->char(Refund::TRANSACTION_ID, Transaction::ID_LENGTH)
                   ->unique()
                   ->nullable();
@@ -67,12 +70,16 @@ class CreateRefunds extends Migration
             $table->integer(Refund::CREATED_AT);
             $table->integer(Refund::UPDATED_AT);
 
+            $table->index(Refund::AMOUNT);
             $table->index(Refund::STATUS);
             $table->index(Refund::GATEWAY_REFUNDED);
             $table->index(Refund::ATTEMPTS);
             $table->index(Refund::CREATED_AT);
             $table->index(Refund::LAST_ATTEMPTED_AT);
             $table->index(Refund::REFERENCE1);
+            $table->index(Refund::UPDATED_AT);
+
+            $table->unique([Refund::MERCHANT_ID, Refund::RECEIPT]);
 
             $table->foreign(Refund::MERCHANT_ID)
                   ->references(Merchant::ID)

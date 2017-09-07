@@ -12,7 +12,7 @@ return [
                 'transfers' => [
                     [
                         'account' => 'acc_10000000000000',
-                        'amount' => 100,
+                        'amount'  => 100,
                         'currency'=> 'INR',
                     ],
                 ]
@@ -38,7 +38,7 @@ return [
                 'transfers' => [
                     [
                         'account' => 'acc_10000000000001',
-                        'amount' => 100,
+                        'amount'  => 100,
                         'currency'=> 'INR',
                     ],
                 ]
@@ -60,7 +60,7 @@ return [
                 'transfers' => [
                     [
                         'account' => 'acc_10000000000001',
-                        'amount' => 100,
+                        'amount'  => 100,
                         'currency'=> 'INR',
                     ],
                 ]
@@ -68,16 +68,17 @@ return [
         ],
         'response'  => [
             'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_MULTIPLE_TRANSFERS_TO_SAME_ACCOUNT,
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity'    => 'transfer',
+                        'recipient' => 'acc_10000000000001',
+                        'amount'    => 100,
+                        'currency'  => 'INR',
+                    ],
                 ],
             ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_MULTIPLE_TRANSFERS_TO_SAME_ACCOUNT
+            'status_code' => 200,
         ],
     ],
     'testTransferPaymentAmountGreaterThanCaptured' => [

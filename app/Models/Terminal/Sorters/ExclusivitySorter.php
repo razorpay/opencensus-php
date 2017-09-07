@@ -18,26 +18,45 @@ class ExclusivitySorter extends Terminal\Sorter
      * @param array $input
      * @return array
      */
-    public function sharedSorter($terminals, array $input)
+    public function sharedSorter($terminals)
     {
-        $sharedTerminals = [];
-        $nonSharedTerminals = [];
+        $sharedTerminals1 = []; // List of shared terminals where we dont have direct terminals
+        $sharedTerminals2 = []; // List of shared terminals where we have direct terminals
 
-        // As the terminals are from the priority list
-        // append to the terminal
+        $nonSharedTerminals = [];
+        $nonSharedTerminalGateways = [];
+
+        // find all non shared terminals
+        foreach ($terminals as $terminal)
+        {
+            if ($terminal->isShared() === false)
+            {
+                $nonSharedTerminals[] = $terminal;
+
+                $nonSharedTerminalGateways[] = $terminal->getGateway();
+            }
+        }
+
+        // create 2 groups of shared terminals
+        // 1. Terminals with gateways where we don't have direct terminals
+        // 2. Terminals with gateways where we have direct terminals
         foreach ($terminals as $terminal)
         {
             if ($terminal->isShared() === true)
             {
-                $sharedTerminals[] = $terminal;
-            }
-            else
-            {
-                $nonSharedTerminals[] = $terminal;
+                if (in_array($terminal->getGateway(), $nonSharedTerminalGateways, true))
+                {
+                    $sharedTerminals2[] = $terminal;
+                }
+                else
+                {
+                    $sharedTerminals1[] = $terminal;
+                }
+
             }
         }
 
-        $sortedTerminals = array_merge($nonSharedTerminals, $sharedTerminals);
+        $sortedTerminals = array_merge($nonSharedTerminals, $sharedTerminals1, $sharedTerminals2);
 
         return $sortedTerminals;
     }

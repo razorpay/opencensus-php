@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use Config;
+use Conner\Tagging\Taggable;
 use RZP\Models\User;
 use RZP\Models\Base;
 use RZP\Models\Emi;
@@ -16,6 +17,8 @@ use RZP\Exception\LogicException;
 
 class Entity extends Base\PublicEntity
 {
+    use Taggable;
+
     const ID                        = 'id';
     const ORG_ID                    = 'org_id';
     const NAME                      = 'name';
@@ -34,12 +37,14 @@ class Entity extends Base\PublicEntity
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
     const CATEGORY2                 = 'category2';
+    const INVOICE_CODE              = 'invoice_code';
     const SCOPE                     = 'scope';
     const FEE_BEARER                = 'fee_bearer';
     const FEE_MODEL                 = 'fee_model';
     const BRAND_COLOR               = 'brand_color';
     const HANDLE                    = 'handle';
     const RISK_RATING               = 'risk_rating';
+    const RISK_THRESHOLD            = 'risk_threshold';
     const LOGO_URL                  = 'logo_url';
     const AWS_LOGO_URL              = 'aws_logo_url';
     const MAX_PAYMENT_AMOUNT        = 'max_payment_amount';
@@ -54,9 +59,16 @@ class Entity extends Base\PublicEntity
     // Coupon Related Data for display only
     const COUPON_CODE               = 'coupon_code';
 
-    // constants
+    //
+    // Configs
+    //
+
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
     const SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 3;
+    // 30 minutes in seconds
+    const MIN_AUTO_REFUND_DELAY = 1800;
+    // 10 days in seconds
+    const MAX_AUTO_REFUND_DELAY = 864000;
 
     /**
      * Refers to methods relation and not a property;
@@ -79,7 +91,13 @@ class Entity extends Base\PublicEntity
     protected $revisionCreationsEnabled = true;
 
     protected static $generators = [
-        self::TRANSACTION_REPORT_EMAIL
+        self::TRANSACTION_REPORT_EMAIL,
+        self::INVOICE_CODE,
+    ];
+
+    protected $embeddedRelations = [
+        self::GROUPS,
+        self::ADMINS,
     ];
 
     protected $fillable = [
@@ -96,6 +114,7 @@ class Entity extends Base\PublicEntity
         self::FEE_BEARER,
         self::HOLD_FUNDS,
         self::RISK_RATING,
+        self::RISK_THRESHOLD,
         self::BRAND_COLOR,
         self::HANDLE,
         self::INTERNATIONAL,
@@ -171,6 +190,7 @@ class Entity extends Base\PublicEntity
         self::BRAND_COLOR            => null,
         self::HANDLE                 => null,
         self::RISK_RATING            => 3,
+        self::RISK_THRESHOLD         => null,
         self::LOGO_URL               => null,
         self::MAX_PAYMENT_AMOUNT     => null,
         self::ORG_ID                 => null,
@@ -196,8 +216,18 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS                => 'bool',
         self::CATEGORY                  => 'int',
         self::SETTLEMENT_SCHEDULE       => 'int',
+        self::RISK_THRESHOLD            => 'int',
         self::CONVERT_CURRENCY          => 'bool',
         self::AUTO_CAPTURE_LATE_AUTH    => 'bool',
+    ];
+
+    protected $eventFields = [
+        self::ID,
+        self::NAME,
+        self::EMAIL,
+        self::WEBSITE,
+        self::CATEGORY,
+        self::CATEGORY2,
     ];
 
     protected $dates = [
@@ -207,12 +237,26 @@ class Entity extends Base\PublicEntity
     ];
 
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
+    const RISK_THRESHOLD_DEFAULT     = 5;
 
     protected function generateTransactionReportEmail($input)
     {
         $email = array($input[self::EMAIL]);
 
         $this->setAttribute(self::TRANSACTION_REPORT_EMAIL, $email);
+    }
+
+    protected function generateInvoiceCode($input)
+    {
+        $id = $this->getAttribute(self::ID);
+
+        $first8 = substr($id, 0, 8);
+
+        $last4 = substr($id, -4);
+
+        $invoiceCode = strtoupper($first8 . $last4);
+
+        $this->setAttribute(self::INVOICE_CODE, $invoiceCode);
     }
 
     public function isActivated()
@@ -640,6 +684,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ORG_ID);
     }
 
+    public function getInvoiceCode()
+    {
+        return $this->getAttribute(self::INVOICE_CODE);
+    }
+
     /**
      * check if api or gateway should do currency conversion for merchant
      *
@@ -886,6 +935,23 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RISK_RATING);
     }
 
+    public function getRiskThreshold()
+    {
+        return $this->getAttribute(self::RISK_THRESHOLD);
+    }
+
+    protected function getRiskThresholdAttribute()
+    {
+        $riskThreshold = $this->attributes[self::RISK_THRESHOLD];
+
+        if ($riskThreshold === null)
+        {
+            $riskThreshold = self::RISK_THRESHOLD_DEFAULT;
+        }
+
+        return (int) $riskThreshold;
+    }
+
     public function getSubventionType()
     {
         // Move to subvention type if ever.
@@ -923,6 +989,16 @@ class Entity extends Base\PublicEntity
         }
 
         return $businessStateCode;
+    }
+
+    public function getGstin()
+    {
+        if ($this->merchantDetail === null)
+        {
+            return null;
+        }
+
+        return $this->merchantDetail->getGstin() ?? $this->merchantDetail->getPGstin();
     }
 
     public function enableReceiptEmails()
@@ -996,7 +1072,7 @@ class Entity extends Base\PublicEntity
      *
      * @return array
      */
-    public function toArrayReport() : array
+    public function toArrayReport(): array
     {
         $data = parent::toArrayReport();
 
@@ -1083,5 +1159,27 @@ class Entity extends Base\PublicEntity
         $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;
 
         return $attributes;
+    }
+
+    public function toArrayEvent()
+    {
+        $merchantAttributes = [];
+
+        foreach ($this->eventFields as $eventField)
+        {
+            if ($this->hasAttribute($eventField))
+            {
+                $merchantAttributes[$eventField] = $this->getAttribute($eventField);
+            }
+        }
+
+        if ($this->merchantDetail !== null)
+        {
+            $merchantDetailAttributes = $this->merchantDetail->toArrayEvent();
+
+            $merchantAttributes = array_merge($merchantAttributes, $merchantDetailAttributes);
+        }
+
+        return $merchantAttributes;
     }
 }

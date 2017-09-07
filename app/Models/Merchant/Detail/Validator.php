@@ -169,13 +169,13 @@ class Validator extends Base\Validator
     {
         $error = false;
 
-        if (($this->entity->getGstin() !== null) and
+        if ((empty($this->entity->getGstin()) === false) and
             (isset($input[Entity::GSTIN]) === true))
         {
             $error = true;
         }
 
-        if (($this->entity->getPGstin() !== null) and
+        if ((empty($this->entity->getPGstin()) === false) and
             (isset($input[Entity::P_GSTIN]) === true))
         {
             $error = true;

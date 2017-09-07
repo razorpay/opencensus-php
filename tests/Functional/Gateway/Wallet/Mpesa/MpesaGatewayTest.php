@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Wallet\Mpesa;
 
+use SoapFault;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Wallet\Mpesa\Action;
 use RZP\Gateway\Wallet\Mpesa\SoapAction;
@@ -278,6 +279,58 @@ class MpesaGatewayTest extends TestCase
 
         $this->assertEquals(false, $refund['gateway_refunded']);
         $this->assertEquals('failed', $refund['status']);
+    }
+
+    public function testSoapTimeoutError()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->testAuthPayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->mockSoapFault(true);
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
+    }
+
+    public function testSoapError()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->testAuthPayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->mockSoapFault();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
+    }
+
+    protected function mockSoapFault($timeout = false)
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null) use ($timeout)
+        {
+            if (($timeout === true) and
+                ($action === SoapAction::QUERY_API))
+            {
+                throw new SoapFault('HTTP', 'Error Fetching http headers');
+            }
+            else if ($action === SoapAction::QUERY_API)
+            {
+                throw new SoapFault('HTTP', 'Random SoapFault Exception');
+            }
+        });
     }
 
     protected function refundsTest(int $amount, string $key)

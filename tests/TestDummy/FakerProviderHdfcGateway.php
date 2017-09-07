@@ -3,13 +3,14 @@
 namespace RZP\Tests\TestDummy;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Faker\Provider\Base;
 
 class FakerProviderHdfcGateway extends Base
 {
     public function hdfcPostDate()
     {
-        return (new Carbon('now', 'Asia/Kolkata'))->format('md');
+        return (new Carbon('now', Timezone::IST))->format('md');
     }
 
     public function hdfcRef()

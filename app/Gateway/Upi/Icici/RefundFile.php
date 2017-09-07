@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Upi\Icici;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mail;
 use RZP\Constants\MailTags;
 use RZP\Gateway\Base;
@@ -89,7 +90,7 @@ class RefundFile extends Base\RefundFile
             }
 
             $date = Carbon::createFromTimestamp(
-                $row['payment']['authorized_at'], 'Asia/Kolkata')->format('Y-m-d');
+                $row['payment']['authorized_at'], Timezone::IST)->format('Y-m-d');
 
             $data[] = [
                 self::BANKADJREF         => $row['refund']['id'],
