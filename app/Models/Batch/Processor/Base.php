@@ -352,7 +352,7 @@ class Base extends BaseModel\Core
                 return;
 
             default:
-                throw new Exception\LogicException("Extension not handled: {$ext}");
+                throw new LogicException("Extension not handled: {$ext}");
         }
     }
 
@@ -421,7 +421,7 @@ class Base extends BaseModel\Core
                 return $this->parseTextFile($filePath, '|');
 
             default:
-                throw new Exception\LogicException("Extension not handled: {$ext}");
+                throw new LogicException("Extension not handled: {$ext}");
         }
     }
 
