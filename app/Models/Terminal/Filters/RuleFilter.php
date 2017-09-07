@@ -27,8 +27,6 @@ class RuleFilter extends Terminal\Filter
             // Temporarily setting verbosity to true for this filter
             $verbose = true;
 
-            $merchant = $this->input['merchant'];
-
             if ($this->rules->isEmpty() === true)
             {
                 return $terminals;
@@ -83,7 +81,7 @@ class RuleFilter extends Terminal\Filter
         {
             foreach ($rules as $rule)
             {
-                $match = $rule->matches($terminal);
+                $match = $rule->matches($terminal, $this->input['merchant']);
 
                 if ($match === true)
                 {
