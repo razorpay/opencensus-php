@@ -16,10 +16,46 @@ return [
 
         'analysis' => [
             'analyzer' => [
+
+                //
+                // Refs:
+                // - https://www.elastic.co/guide/en/elasticsearch/reference/1.4/analysis-custom-analyzer.html
+                // - https://www.elastic.co/guide/en/elasticsearch/reference/1.4/analysis-edgengram-tokenizer.html
+                //
+                // For many of the text field we store their edge ngrams in index.
+                //
+
                 'edge_ngram_analyzer' => [
+                    'type'      => 'custom',
                     'tokenizer' => 'edge_ngram_tokenizer',
                     'filter'    => [
-                        'lowercase_filter',
+                        'lowercase',
+                    ],
+                ],
+
+                //
+                // Generally index analysis and search analysis should be same.
+                // But for better match against combination of query, we decided
+                // we will index using edge ngram but search using standard.
+                //
+                // Now edge ngram tokenized terms on any punctuation. But standard
+                // does not tokenized for a set of punctuation(set 1). So we use custom
+                // standard_analyzer where it's same as standard but also replaces
+                // those set 1 punctuation to '-' which will get used as word break
+                // char in normal standard anaylzer.
+                //
+                //  This way, both index and search time analysis is consistent.
+                //
+
+                'standard_custom' => [
+                    'type'        => 'custom',
+                    'char_filter' => [
+                        'punctuation_remap',
+                    ],
+                    'tokenizer'   => 'standard',
+                    'filter'      => [
+                        'standard',
+                        'lowercase',
                     ],
                 ],
             ],
@@ -35,8 +71,15 @@ return [
                 ],
             ],
             'filter' => [
-                'lowercase_filter' => [
-                    'type' => 'lowercase',
+            ],
+            'char_filter' => [
+                'punctuation_remap' => [
+                    'type'     => 'mapping',
+                    'mappings' => [
+                        '. => -',
+                        ': => -',
+                        '\' => -',
+                    ],
                 ],
             ],
         ]
@@ -85,7 +128,7 @@ return [
                     'mapping'    => [
                         'type'            => 'text',
                         'analyzer'        => 'edge_ngram_analyzer',
-                        'search_analyzer' => 'standard',
+                        'search_analyzer' => 'standard_custom',
                         'index_options'   => 'offsets',
                     ],
                 ],
@@ -108,37 +151,37 @@ return [
             'receipt' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
-                'search_analyzer' => 'standard',
+                'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
             ],
             'customer_name' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
-                'search_analyzer' => 'standard',
+                'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
             ],
             'customer_contact' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
-                'search_analyzer' => 'standard',
+                'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
             ],
             'customer_email' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
-                'search_analyzer' => 'standard',
+                'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
             ],
             'description' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
-                'search_analyzer' => 'standard',
+                'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
             ],
             'terms' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
-                'search_analyzer' => 'standard',
+                'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
             ],
         ],
