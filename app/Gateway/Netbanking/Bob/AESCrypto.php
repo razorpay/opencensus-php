@@ -45,6 +45,11 @@ class AESCrypto extends Base\AESCrypto
         {
             $pair = explode(self::VALUE_SEPARATOR, $value);
 
+            if (count($pair) !== 2)
+            {
+                continue;
+            }
+
             $output[$pair[0]] = $pair[1];
         }
 

@@ -22,9 +22,13 @@ class Gateway extends Base\Gateway
     protected $bank = 'bob';
 
     protected $map = [
-        RequestFields::MERCHANT_ID => NetbankingEntity::MERCHANT_CODE,
-        RequestFields::PAYMENT_ID  => NetbankingEntity::PAYMENT_ID,
-        RequestFields::AMOUNT      => NetbankingEntity::AMOUNT
+        RequestFields::MERCHANT_ID              => NetbankingEntity::MERCHANT_CODE,
+        RequestFields::PAYMENT_ID               => NetbankingEntity::PAYMENT_ID,
+        RequestFields::AMOUNT                   => NetbankingEntity::AMOUNT,
+        ResponseFields::STATUS                  => NetbankingEntity::STATUS,
+        ResponseFields::BANK_REF_NUMBER         => NetbankingEntity::BANK_PAYMENT_ID,
+        ResponseFields::CUSTOMER_ACCOUNT_NUMBER => NetbankingEntity::ACCOUNT_NUMBER,
+        NetbankingEntity::RECEIVED              => NetbankingEntity::RECEIVED,
     ];
 
     public function authorize(array $input): array
@@ -42,7 +46,25 @@ class Gateway extends Base\Gateway
 
     public function callback(array $input)
     {
-        sd($input);
+        parent::callback($input);
+
+        $content = $this->getCallbackContent($input);
+
+        $content = $content + [NetbankingEntity::RECEIVED => true];
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+            $input['payment']['id'],
+            Action::AUTHORIZE
+        );
+
+        // This asserts the payment id and amount from the response
+        $this->checkCallbackResponse($gatewayPayment, $content);
+
+        $this->updateGatewayPaymentEntity($gatewayPayment, $content);
+
+        $this->checkCallbackStatus($content);
+
+        return $this->getCallbackResponseData($input);
     }
 
     // -------------------- Auth helper methods-------------------------
@@ -93,6 +115,59 @@ class Gateway extends Base\Gateway
 
     // -------------------- Auth helper methods end----------------------
 
+    // -------------------- Callback helper methods----------------------
+
+    protected function getCallbackContent(array $input): array
+    {
+        $encryptedData = $input['gateway'][RequestFields::ENCRYPTED_DATA];
+
+        $content = $this->getEncryptor()->decryptData($encryptedData);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'payment_id'    => $input['payment']['id'],
+                'encryptedData' => $encryptedData,
+                'content'       => $content
+            ]
+        );
+
+        return $content;
+    }
+
+    protected function checkCallbackStatus(array $content)
+    {
+        if ($this->isGatewaySuccess($content) === false)
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_CALLBACK_FAILURE,
+                [
+                    'payment_id' => $content[ResponseFields::PAYMENT_ID],
+                    'content' => $content
+                ]
+            );
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+    }
+
+    protected function checkCallbackResponse($gatewayPayment, $content)
+    {
+        assert($content[ResponseFields::AMOUNT] === $gatewayPayment[NetbankingEntity::AMOUNT]);
+
+        assert($content[ResponseFields::PAYMENT_ID] === $gatewayPayment[NetbankingEntity::PAYMENT_ID]);
+    }
+
+    // -------------------- Callback helper methods end -----------------
+
+    // -------------------- General helper methods ----------------------
+
+    protected function isGatewaySuccess(array $content): bool
+    {
+        return ($content[ResponseFields::STATUS] === Constants::STATUS_SUCCESS);
+    }
+
     protected function getMerchantId()
     {
         if ($this->mode === Mode::TEST)
@@ -116,4 +191,5 @@ class Gateway extends Base\Gateway
     {
         return number_format($amount / 100, 2, '.', '');
     }
+
 }
