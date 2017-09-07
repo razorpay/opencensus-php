@@ -90,7 +90,7 @@
   padding-top: 8px;
   margin: 0px auto;
 
-  // This is only needed for desktop
+// This is only needed for desktop
   @media(min-width: 992px) {
     &:before {
       content: '';
@@ -165,7 +165,7 @@
     .form-element {
       margin-bottom 16px;
 
-      //<select> has default radius which can't be changed using CSS. So, set parent as .form-control and don't add .form-control to <select>
+    //<select> has default radius which can't be changed using CSS. So, set parent as .form-control and don't add .form-control to <select>
       .fix-select {
         background: transparent;
         border: none;
@@ -211,6 +211,11 @@
   margin-left: 30px;
   pointer-events none;
   font-size: 12px;
+}
+
+
+.transfers-powerselect + .typeAheadSkin {
+  margin-left: 10px;
 }
 
 .custom-select .custom-icon {
@@ -437,7 +442,7 @@
   padding: 8px;
   border-bottom: 1px solid #ebecee;
 
-  // To highlight selected row
+// To highlight selected row
   &.active {
     background-color: rgba(255,255,215,0.75);
   }
