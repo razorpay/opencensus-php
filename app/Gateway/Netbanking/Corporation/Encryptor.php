@@ -27,22 +27,15 @@ class Encryptor extends AESCrypto
 
     public function decryptData(string $encryptedString)
     {
-        $encoded = $this->aes->decrypt(base64_decode($encryptedString));
+        $decryptedString = $this->aes->decrypt(base64_decode($encryptedString));
 
-        $encoded = explode(self::PAIRS_SEPARATOR, $encoded);
+        $encoded = explode(self::PAIRS_SEPARATOR, $decryptedString);
 
         $data = [];
 
         foreach ($encoded as $value)
         {
             $pair = explode(self::KEY_VALUE_SEPARATOR, $value);
-
-            // Incase the value sent from the gateway does not
-            // follow it's own convention and does not add the separator
-            if(count($pair) !== 2)
-            {
-                continue;
-            }
 
             $data[$pair[0]] = $pair[1];
         }

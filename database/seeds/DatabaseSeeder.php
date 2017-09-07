@@ -1063,7 +1063,7 @@ class DatabaseSeeder extends Seeder
     protected function createNetbankingCorporationTerminals()
     {
         DB::table(Table::TERMINAL)->insert(
-            array(
+            [
                 'id'                        => '22nP3sEf2tQco1',
                 'merchant_id'               => Account::TEST_ACCOUNT,
                 'gateway'                   => Gateway::NETBANKING_CORPORATION,
@@ -1073,11 +1073,11 @@ class DatabaseSeeder extends Seeder
                 'gateway_secure_secret'     => Crypt::encrypt('test_account_netbanking_corp_secret'),
                 'created_at'                => time(),
                 'updated_at'                => time(),
-                )
-            );
+            ]
+        );
 
         DB::table(Table::TERMINAL)->insert(
-            array(
+            [
                 'id'                    => Terminal\Shared::NETBANKING_CORPORATION_TERMINAL,
                 'merchant_id'           => Account::DEMO_ACCOUNT,
                 'gateway'               => Gateway::NETBANKING_CORPORATION,
@@ -1087,8 +1087,8 @@ class DatabaseSeeder extends Seeder
                 'gateway_secure_secret' => Crypt::encrypt('test_account_netbanking_corp_secret'),
                 'created_at'            => time(),
                 'updated_at'            => time(),
-                )
-            );
+            ]
+        );
     }
 
     protected function createNetbankingHdfcTerminals()

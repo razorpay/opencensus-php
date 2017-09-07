@@ -69,7 +69,7 @@ class NetbankingCorporationGatewayTest extends TestCase
         // Assert that we don't save any information into the netbanking entity
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertTestResponse($gatewayPayment, 'testPaymentFailedNetbankingEntity');
+        $this->assertTestResponse($gatewayPayment, 'testTamperedPaymentNetbankingEntity');
     }
 
     public function testAuthorizeFailed()
@@ -180,7 +180,9 @@ class NetbankingCorporationGatewayTest extends TestCase
         {
             if ($action === 'verify')
             {
-                $content = [];
+                $content = [
+                    Corporation\ResponseFields::VERIFY_RESULT => Corporation\ResponseCodeMap::RESULT_REJECTED
+                ];
             }
         });
     }
@@ -192,6 +194,8 @@ class NetbankingCorporationGatewayTest extends TestCase
             if ($action === 'authorize')
             {
                 $content[Corporation\ResponseFields::STATUS] = Corporation\ResponseCodeMap::RESULT_REJECTED;
+
+                unset($content[Corporation\ResponseFields::BANK_REF_NUMBER]);
             }
         });
     }

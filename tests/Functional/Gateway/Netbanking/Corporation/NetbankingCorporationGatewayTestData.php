@@ -65,6 +65,13 @@ return [
 
     'testPaymentFailedNetbankingEntity' => [
         'bank_payment_id' => null,
+        'received'        => true,
+        'bank'            => 'CORP',
+        'status'          => 'REJECTED'
+    ],
+
+    'testTamperedPaymentNetbankingEntity' => [
+        'bank_payment_id' => null,
         'received'        => false,
         'bank'            => 'CORP',
         'status'          => null
@@ -104,7 +111,7 @@ return [
 
     'testAuthFailedVerifySuccessEntity' => [
         'bank_payment_id' => 'AB1234',
-        'received'        => false,
+        'received'        => true,
         'bank'            => 'CORP',
         'status'          => 'EXECUTED'
     ],

@@ -2,6 +2,8 @@
 
 namespace RZP\Gateway\Netbanking\Corporation;
 
+use phpseclib\Crypt\AES;
+
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Constants\Mode;
@@ -12,15 +14,12 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
-use phpseclib\Crypt\AES;
 
 class Gateway extends Base\Gateway
 {
     protected $gateway = 'netbanking_corporation';
 
     protected $bank = 'corporation';
-
-    protected $tpv;
 
     protected $map = [
         ResponseFields::CUSTOMER_ID      => NetbankingEntity::CUSTOMER_ID,
@@ -91,7 +90,7 @@ class Gateway extends Base\Gateway
 
     protected function getAuthRequestData($input)
     {
-        $data = array(
+        $data = [
             // Setting this as the merchant code shared with us
             RequestFields::CUSTOMER_ID          => $this->getMerchantId(),
             RequestFields::MERCHANT_CODE        => $this->getMerchantId(),
@@ -99,7 +98,7 @@ class Gateway extends Base\Gateway
             RequestFields::PAYMENT_ID           => $input['payment']['id'],
             RequestFields::MODE_OF_TRANSACTION  => Constants::MODE_OF_TRANSACTION_PAYMENT,
             RequestFields::FUND_TRANSFER        => Constants::FUND_TRANSFER,
-        );
+        ];
 
         if ($input['merchant']->isTPVRequired())
         {
@@ -267,26 +266,11 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequest(array $input)
     {
-        // We can call the verification from the callback, since it's not encrypted
-        // or from a separate verify request.
-        if($this->action === 'verify')
-        {
-            $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
-
-            $bankRefNumber = $gatewayPayment[Base\Entity::BANK_PAYMENT_ID];
-        }
-        else
-        {
-            $bankRefNumber = $input['gateway'][ResponseFields::BANK_REF_NUMBER];
-        }
-
         $data = [
             RequestFields::VERIFY_MERCHANT_CODE         => $this->getMerchantId(),
             RequestFields::VERIFY_PAYMENT_ID            => $input['payment']['id'],
             RequestFields::VERIFY_AMOUNT                => $input['payment']['amount'] / 100,
-            RequestFields::VERIFY_BANK_REF_NUMBER       => $bankRefNumber,
-            RequestFields::VERIFY_MODE_OF_TRANSACTION   => RequestFields::VERIFY_MODE_OF_TRANSACTION_VALUE,
-            RequestFields::VERIFY_ACCOUNT_NUMBER        => "",
+            RequestFields::VERIFY_MODE_OF_TRANSACTION   => RequestFields::VERIFY_MODE_OF_TRANSACTION_VALUE
         ];
 
         $encryptedString = $this->getEncryptor()->encryptData($data);
