@@ -3011,8 +3011,9 @@ return [
                         [
                             'match' => [
                                 'receipt' => [
-                                    'query' =>'00000000000002',
-                                    'boost' => 2,
+                                    'query'                =>'00000000000002',
+                                    'boost'                => 2,
+                                    'minimum_should_match' => '75%',
                                 ],
                             ],
                         ],
@@ -3066,17 +3067,19 @@ return [
                         [
                             'match' => [
                                 'customer_name' => [
-                                    'query' =>'tes',
-                                    'boost' => 2,
+                                    'query'                =>'tes',
+                                    'boost'                => 2,
+                                    'minimum_should_match' => '75%',
                                 ],
                             ],
                         ],
                         [
                             'multi_match' => [
-                                'query'  => 'info',
-                                'type'   => 'best_fields',
-                                'fields' => 'notes.*',
-                                'boost'  => 2,
+                                'query'                => 'info',
+                                'type'                 => 'best_fields',
+                                'fields'               => 'notes.*',
+                                'boost'                => 2,
+                                'minimum_should_match' => '75%',
                             ],
                         ]
                     ],
@@ -3142,7 +3145,8 @@ return [
                                     'terms',
                                     'notes.*',
                                 ],
-                                'boost'  => 1,
+                                'boost'                => 1,
+                                'minimum_should_match' => '75%',
                             ],
                         ]
                     ],
@@ -3195,8 +3199,9 @@ return [
                         [
                             'match' => [
                                 'customer_name' => [
-                                    'query' =>'tes',
-                                    'boost' => 2,
+                                    'query'                =>'tes',
+                                    'boost'                => 2,
+                                    'minimum_should_match' => '75%',
                                 ],
                             ],
                         ],
@@ -3257,8 +3262,9 @@ return [
                         [
                             'match' => [
                                 'receipt' => [
-                                    'query' =>'rec',
-                                    'boost' => 2,
+                                    'query'                =>'rec',
+                                    'boost'                => 2,
+                                    'minimum_should_match' => '75%',
                                 ],
                             ],
                         ],
@@ -3315,8 +3321,9 @@ return [
                         [
                             'match' => [
                                 'receipt' => [
-                                    'query' =>'rec',
-                                    'boost' => 2,
+                                    'query'                =>'rec',
+                                    'boost'                => 2,
+                                    'minimum_should_match' => '75%',
                                 ],
                             ],
                         ],
@@ -3401,8 +3408,9 @@ return [
                         [
                             'match' => [
                                 'receipt' => [
-                                    'query' =>'xyz',
-                                    'boost' => 2,
+                                    'query'                =>'xyz',
+                                    'boost'                => 2,
+                                    'minimum_should_match' => '75%',
                                 ],
                             ],
                         ],

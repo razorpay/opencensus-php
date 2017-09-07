@@ -43,11 +43,22 @@ trait QueryBuilder
         string $field,
         string $value)
     {
+        //
+        // In match query we want at least 75% of terms to match given doc's field.
+        // This ensures we avoid false results. The same is done in multi_match
+        // query as well.
+        //
+        // Refs:
+        // - https://www.elastic.co/guide/en/elasticsearch/reference/5.5/query-dsl-match-query.html
+        // - https://www.elastic.co/guide/en/elasticsearch/reference/5.5/query-dsl-minimum-should-match.html
+        //
+
         $clause = [
             'match' => [
                 $field => [
-                    'query' => strtolower($value),
-                    'boost' => 2,
+                    'query'                => strtolower($value),
+                    'boost'                => 2,
+                    'minimum_should_match' => '75%',
                 ],
             ],
         ];
@@ -63,19 +74,22 @@ trait QueryBuilder
      */
     public function buildQueryForQ(array & $query, string $value)
     {
+        //
         // - Boost given for 'q' is 1 to lower it's contribution when there are more
         //   matches by exact fields(eg. receipt, description etc) when used in
         //   combination with other
         // - It's a multi match query as given query is run against a set of fields
         //   (defined in $queryFields). Also we use type 'best_fields' (default).
         //   Ref: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-multi-match-query.html
+        //
 
         $clause = [
             'multi_match' => [
-                'query'  => $value,
-                'type'   => 'best_fields',
-                'fields' => $this->queryFields,
-                'boost'  => 1,
+                'query'                => $value,
+                'type'                 => 'best_fields',
+                'fields'               => $this->queryFields,
+                'boost'                => 1,
+                'minimum_should_match' => '75%',
             ],
         ];
 
@@ -84,17 +98,20 @@ trait QueryBuilder
 
     public function  buildQueryForNotes(array & $query, string $value)
     {
+        //
         // - Notes search is again on an specific object (unlike 'q') and so
         //   we give boost of 2.
         // - The query construct is same as above (for 'q') but the fields here
         //   are all keys of notes object (denoted as notes.*).
+        //
 
         $clause = [
             'multi_match' => [
-                'query'  => $value,
-                'type'   => 'best_fields',
-                'fields' => 'notes.*',
-                'boost'  => 2,
+                'query'                => $value,
+                'type'                 => 'best_fields',
+                'fields'               => 'notes.*',
+                'boost'                => 2,
+                'minimum_should_match' => '75%',
             ],
         ];
 
