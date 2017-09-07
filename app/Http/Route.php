@@ -54,6 +54,7 @@ final class Route
         'batch_process_file'                      => ['post',     'batches/process',                                'BatchController@processBatches'                                    ],
         'batch_process_by_id'                     => ['post',     'batches/{id}/process',                           'BatchController@processBatch'                                      ],
         'batch_retry'                             => ['post',     'batches/{id}/retry',                             'BatchController@retryBatch'                                        ],
+        'batch_retry_output_file'                 => ['post',     'batches/{id}/retry_output_file',                 'BatchController@retryBatchOutputFile'                              ],
         'batch_download_file'                     => ['get',      'batches/{id}/download',                          'BatchController@downloadBatch'                                     ],
         'payment_capture'                         => ['post',     'payments/{id}/capture',                          'PaymentController@postCapture'                                     ],
         'payment_bulk_capture'                    => ['post',     'payments/capture/bulk',                          'PaymentController@postBulkCapture'                                 ],
@@ -472,7 +473,7 @@ final class Route
         // Workflows API
         'workflow_create'                         => ['post',     'workflows',                                      'WorkflowController@createWorkflow'                                 ],
         'workflow_get'                            => ['get',      'workflows/{id}',                                 'WorkflowController@getWorkflow'                                    ],
-        'workflow_get_multiple'                   => ['get',      'orgs/{orgId}/workflows',                         'WorkflowController@getWorkflowMultiple'                            ],
+        'workflow_get_multiple'                   => ['get',      'workflows',                                      'WorkflowController@getWorkflowMultiple'                            ],
         'workflow_update'                         => ['put',      'workflows/{id}',                                 'WorkflowController@updateWorkflow'                                 ],
         'workflow_delete'                         => ['delete',   'workflows/{id}',                                 'WorkflowController@deleteWorkflow'                                 ],
         'workflow_action_get_multiple'            => ['get',      'w-actions',                                      'WorkflowController@getActionMultiple'                              ],
@@ -563,9 +564,9 @@ final class Route
         'promotion_create'                        => ['post',     'promotions',                                     'PromotionController@create'                                        ],
         'promotion_update'                        => ['patch',    'promotions/{id}',                                'PromotionController@update'                                        ],
         //coupon routes
-        'coupon_create'                           => ['post',     'coupons',                                         'CouponController@create'                                          ],
-        'coupon_apply'                            => ['post',     'coupons/apply',                                   'CouponController@apply'                                           ],
-        'coupon_delete'                           => ['delete',   'coupons/{id}',                                    'CouponController@delete'                                          ],
+        'coupon_create'                           => ['post',     'coupons',                                        'CouponController@create'                                           ],
+        'coupon_apply'                            => ['post',     'coupons/apply',                                  'CouponController@apply'                                            ],
+        'coupon_delete'                           => ['delete',   'coupons/{id}',                                   'CouponController@delete'                                           ],
         // Merchant invitation routes
         'invitation_create'                       => ['post',     'invitations',                                    'InvitationController@create'                                       ],
         'invitation_fetch_by_token'               => ['get',      'invitations/token/{token}',                      'InvitationController@fetchByToken'                                 ],
@@ -892,6 +893,7 @@ final class Route
         'invoice_expire_bulk',
         'batch_process_file',
         'batch_process_by_id',
+        'batch_retry_output_file',
         'gateway_add_priorities',
         'gateway_fetch_priorities',
         'gateway_update_priorities',

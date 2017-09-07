@@ -38,7 +38,7 @@ class Core extends Base\Core
     public function process(array $input)
     {
         $this->trace->info(
-            TraceCode::BANK_TRANSFER_PROCESS_REQUEST,
+            TraceCode::BANK_TRANSFER_PROCESSING,
             $input
         );
 

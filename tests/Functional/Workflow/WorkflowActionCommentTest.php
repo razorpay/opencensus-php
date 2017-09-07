@@ -19,7 +19,7 @@ class WorkflowActionCommentTest extends TestCase
 
         $this->fixtures->workflow_action->setUp();
 
-        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
     }
 
     /**

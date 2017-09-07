@@ -159,6 +159,11 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::PROCESSED);
     }
 
+    public function isPaymentLinkType()
+    {
+        return ($this->getType() === Type::PAYMENT_LINK);
+    }
+
     /**
      * Returns prefix for the file. Prefix are mostly used to get a folder like
      * structure on S3. We have different prefix for created and output batch
@@ -183,6 +188,24 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * Returns headers based on status of batch.
+     *
+     * @return array
+     */
+    public function getHeaders(): array
+    {
+        $type = $this->getType();
+
+        if ($this->getStatus() === Status::CREATED)
+        {
+            return Header::getInputHeadersForType($type);
+        }
+        else
+        {
+            return Header::getOutputHeadersForType($type);
+        }
+    }
+    /**
      * Returns key for file. Id is being used for key.
      *
      * @return string
@@ -192,9 +215,9 @@ class Entity extends Base\PublicEntity
         return $this->getId();
     }
 
-    public function getFileKeyWithExt(): string
+    public function getFileKeyWithExt(string $ext = FileStore\Format::XLSX): string
     {
-        return $this->getFileKey() . '.' . FileStore\Format::XLSX;
+        return $this->getFileKey() . '.' . $ext;
     }
 
     /**

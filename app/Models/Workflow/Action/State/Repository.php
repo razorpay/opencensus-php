@@ -12,12 +12,4 @@ class Repository extends Base\Repository
         Entity::ADMIN_ID  => 'sometimes|string|max:14',
         Entity::ACTION_ID => 'sometimes|string|max:14',
     ];
-
-    public function getLatestState(string $actionId)
-    {
-        return $this->newQuery()
-                    ->where(Entity::ACTION_ID, '=', $actionId)
-                    ->orderBy(Entity::CREATED_AT, 'desc')
-                    ->firstOrFail();
-    }
 }
