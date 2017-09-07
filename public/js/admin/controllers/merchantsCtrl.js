@@ -1,4 +1,4 @@
-//Merchant List controller
+// Merchant List controller
 app.controller('MerchantsCtrl', [
   '$scope',
   '$http',
@@ -17,7 +17,7 @@ app.controller('MerchantsCtrl', [
         all: false,
         id: '',
       };
-      $scope.tags = '';
+      $scope.search_query = '';
       $scope.filter();
     };
 
@@ -25,27 +25,23 @@ app.controller('MerchantsCtrl', [
       var query = {};
       switch ($scope.merchant_type_request) {
         case 'activated':
-          query.activated = 1;
-          break;
-
-        case 'notactivated':
-          query.activated = 0;
+          query.account_status = 'activated';
           break;
 
         case 'pending':
-          query.pending = 1;
+          query.account_status = 'pending';
           break;
 
         case 'dead':
-          query.dead = 1;
+          query.account_status = 'dead';
           break;
 
         case 'archived':
-          query.archived = 1;
+          query.account_status = 'archived';
           break;
 
         case 'suspended':
-          query.suspended = 1;
+          query.account_status = 'suspended';
           break;
       }
 
@@ -61,11 +57,6 @@ app.controller('MerchantsCtrl', [
         query.sub_accounts = $scope.sub_accounts.id;
       }
 
-      // If we have tags in the list, send them as well
-      if ($scope.tags !== '') {
-        query.tags = $scope.tags;
-      }
-
       generate(query);
     };
 
@@ -76,23 +67,30 @@ app.controller('MerchantsCtrl', [
     };
 
     function generate(query) {
-      var url = '/admin/merchant/list';
-
       // Pending is a different view, and we only filter on that
       if ($scope.pending) {
         query = {
-          pending: 1,
+          account_status: 'pending',
           sub_accounts: query.sub_accounts,
         };
       }
 
-      var request = $http.get(url, {
-        params: query,
+      if ($scope.search_query !== '') {
+        query.q = $scope.search_query;
+      }
+
+      var data = {
+        route_name: 'admin_fetch_merchants_new',
+        query_params: query,
+      };
+
+      var request = $http.get('/admin/generic', {
+        params: data,
       });
 
       request.success(function(data) {
         if (data.success) {
-          $scope.merchants = data.data.data;
+          $scope.merchants = data.data.items;
           $scope.count = data.data.count;
         }
       });
