@@ -550,6 +550,9 @@ class Service extends Base\Service
 
         // Appends more payload in $input for ES search:
 
+        // Always add this ORG_ID filter.
+        $input[Merchant\Entity::ORG_ID] = $this->auth->getAdminOrgId();
+
         // If admin not allowed to see all merchants, get all group
         // ids he belongs to and pass in $input. This gets used to
         // filter results.

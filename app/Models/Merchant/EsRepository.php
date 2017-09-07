@@ -50,16 +50,19 @@ class EsRepository extends Base\EsRepository
     ];
 
     protected $queryFields = [
+        Entity::ID,
         Entity::NAME,
         Entity::EMAIL,
         Entity::BILLING_LABEL,
         Entity::WEBSITE,
         Entity::TAG_LIST,
+        Entity::REFERRER,
     ];
 
     protected $esFetchParams = [
         self::QUERY,
         self::SEARCH_HITS,
+        Entity::ORG_ID,
         Entity::GROUPS,
         Entity::ADMINS,
         Entity::ACCOUNT_STATUS,
@@ -92,6 +95,13 @@ class EsRepository extends Base\EsRepository
     // Following methods with empty block are here so the default impl of query
     // builder doesn't get called for these fields in input.
     //
+
+    public function buildQueryForOrgId(array & $query, string $value)
+    {
+        $filter = [Es::TERM => [Entity::ORG_ID => [Es::VALUE => $value]]];
+
+        $this->addFilter($query, $filter);
+    }
 
     public function buildQueryForAdmins(array & $query, array $value)
     {

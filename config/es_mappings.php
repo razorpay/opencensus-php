@@ -209,7 +209,6 @@ return [
             ],
             'org_id' => [
                 'type'  => 'keyword',
-                'index' => false,
             ],
             'name' => [
                 'type'            => 'text',
@@ -298,8 +297,9 @@ return [
                 'index' => false,
             ],
             'referrer' => [
-                'type'  => 'keyword',
-                'index' => false,
+                'type'            => 'text',
+                'analyzer'        => 'standard',
+                'search_analyzer' => 'standard',
             ],
         ],
     ],

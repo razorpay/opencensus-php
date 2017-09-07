@@ -44,6 +44,7 @@ class Repository extends Base\Repository
     protected $adminFetchParamRules = [
         EsRepository::SEARCH_HITS       => 'filled|boolean',
         EsRepository::QUERY             => 'filled|string|min:2|max:100',
+        Entity::ORG_ID                  => 'required|string|size:14',
         Entity::ACCOUNT_STATUS          => 'filled|string|in:all,suspended,archived,activated,pending,dead',
         Entity::SUB_ACCOUNTS            => 'filled|custom',
         Entity::GROUPS                  => 'sometimes|array',
