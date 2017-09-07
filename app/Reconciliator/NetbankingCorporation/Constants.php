@@ -12,6 +12,7 @@ class Constants
     const BANK_REF_ID      = 'bank_ref_id';
     const STATUS           = 'status';
     const DATE             = 'date';
+    const EMPTY_FIELD      = 'empty_field';
     const REMARKS          = 'remarks';
     const BRANCH_CODE      = 'branch_code';
     const ACCOUNT_TYPE     = 'account_type';
@@ -27,6 +28,7 @@ class Constants
         self::BANK_REF_ID,
         self::STATUS,
         self::DATE,
+        self::EMPTY_FIELD,
         self::REMARKS,
         self::BRANCH_CODE,
         self::ACCOUNT_TYPE,
