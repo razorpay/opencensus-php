@@ -109,6 +109,19 @@ export default props => {
 
                   <EntityDetailRow label="Captured" value={payment.captured} />
 
+                  <ShowWhen featureEnabled="Marketplace">
+                    <EntityDetailRow
+                      label="Transfer"
+                      value={() =>
+                        <button
+                          class="btn btn-default"
+                          onClick={props.goToLink}
+                        >
+                          Create Transfer
+                        </button>}
+                    />
+                  </ShowWhen>
+
                   <EntityDetailRow
                     label="Method"
                     value={titleCase(payment.method)}
