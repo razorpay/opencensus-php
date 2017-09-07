@@ -7,7 +7,21 @@ import TransfersList from 'merchant/containers/Marketplace/Transfers/List';
 import ReversalsList from 'merchant/containers/Marketplace/Reversals/List';
 import AccountsList from 'merchant/containers/Marketplace/Accounts/List';
 
+@connect(state => {
+  return {
+    user: state.session.user,
+  };
+})
 export default class MarketplaceContainer extends Component {
+  componentWillMount() {
+    this.props.fetchConfigAndFeatures(this.props.user.current).catch(err => {
+      this.props.showNotification({
+        type: 'error',
+        message: err.errors,
+      });
+    });
+  }
+
   render() {
     return (
       <tabbed-container>

@@ -10,13 +10,7 @@ import { showNotification } from 'rzp/modules/notifications';
 
 const selector = formValueSelector('uploadBatch');
 @withRouter
-@connect(
-  state => ({
-    sms_notify: selector(state, 'sms_notify'),
-    email_notify: selector(state, 'email_notify'),
-  }),
-  { ...ModalActions, showNotification }
-)
+@connect(state => ({}), { ...ModalActions, showNotification })
 @reduxForm({
   form: 'featureOnboardingModal',
 })
@@ -53,7 +47,7 @@ export default class FeatureOnboardingModal extends Component {
     const { handleSubmit } = this.props;
 
     return (
-      <div class="proceed-upload-modal">
+      <div class="feature-onboarding-modal">
         <ModalHeader
           title="Batch Upload"
           onCloseClick={this.props.closeModal}
