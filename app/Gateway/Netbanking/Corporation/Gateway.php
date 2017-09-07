@@ -66,8 +66,7 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::PAYMENT_ID]
         );
 
-        // If callback status was a success, we verify the payment immediately
-        $this->verifyCallback($input);
+        $this->verifyCallback($input, $content);
 
         // Saving callback response only if the verification passes
         $gatewayPayment = $this->saveCallbackResponse($content);
@@ -235,7 +234,7 @@ class Gateway extends Base\Gateway
      * Verifying the payment after callback response is saved to
      * prevent user tampering with the data while making a payment.
      */
-    protected function verifyCallback(array $input)
+    protected function verifyCallback(array $input, array $callbackContent)
     {
         $verify = new Verify($this->gateway, $input);
 
@@ -243,11 +242,11 @@ class Gateway extends Base\Gateway
 
         $this->checkGatewaySuccess($verify);
 
-        //
-        // If verify returns false, we throw an error as
-        // authorize request / response has been tampered with
-        //
-        if ($verify->gatewaySuccess === false)
+        // We set apiSuccess based on the response from the callback,
+        // since we can't check the same from the payment status.
+        $apiSuccess = ($callbackContent[ResponseFields::STATUS] === ResponseCodeMap::SUCCESS_CODE);
+
+        if ($verify->gatewaySuccess !== $apiSuccess)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);

@@ -69,7 +69,7 @@ class NetbankingCorporationGatewayTest extends TestCase
         // Assert that we don't save any information into the netbanking entity
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertTestResponse($gatewayPayment, 'testTamperedPaymentNetbankingEntity');
+        $this->assertTestResponse($gatewayPayment, 'testPaymentFailedNetbankingEntity');
     }
 
     public function testAuthorizeFailed()

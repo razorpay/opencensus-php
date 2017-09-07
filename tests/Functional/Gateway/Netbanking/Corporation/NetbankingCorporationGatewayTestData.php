@@ -65,13 +65,6 @@ return [
 
     'testPaymentFailedNetbankingEntity' => [
         'bank_payment_id' => null,
-        'received'        => true,
-        'bank'            => 'CORP',
-        'status'          => 'REJECTED'
-    ],
-
-    'testTamperedPaymentNetbankingEntity' => [
-        'bank_payment_id' => null,
         'received'        => false,
         'bank'            => 'CORP',
         'status'          => null
@@ -81,15 +74,15 @@ return [
         'response' => [
             'content'     => [
                 'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
                 ],
             ],
-            'status_code' => 400,
+            'status_code' => 502,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
         ],
     ],
 
@@ -111,7 +104,7 @@ return [
 
     'testAuthFailedVerifySuccessEntity' => [
         'bank_payment_id' => 'AB1234',
-        'received'        => true,
+        'received'        => false,
         'bank'            => 'CORP',
         'status'          => 'EXECUTED'
     ],
