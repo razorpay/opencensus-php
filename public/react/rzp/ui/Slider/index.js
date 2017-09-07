@@ -14,6 +14,14 @@ export default class ModalSlider extends Component {
   //  2. When clicking on the document except on the Slider view & on any links
   handleDocumentClick = event => {
     let target = event.target;
+
+    // Fix for power-select dropdown in slider component
+    if (
+      document.querySelector('body > .tether-element') &&
+      document.querySelector('body > .tether-element').contains(target)
+    ) {
+      return;
+    }
     if (!(target.closest('a[href]') || target.closest('.ReactModalPortal'))) {
       this.close();
     }
