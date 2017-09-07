@@ -641,6 +641,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BATCH_PROCESSING_ENTRY                        = 'BATCH_PROCESSING_ENTRY';
     const BATCH_PROCESSING_ERROR                        = 'BATCH_PROCESSING_ERROR';
     const BATCH_RETRY                                   = 'BATCH_RETRY';
+    const BATCH_RETRY_OUTPUT_FILE                       = 'BATCH_RETRY_OUTPUT_FILE';
     const BATCH_DOWNLOAD                                = 'BATCH_DOWNLOAD';
     const BATCH_LIST                                    = 'BATCH_LIST';
     const BATCH_GET                                     = 'BATCH_GET';

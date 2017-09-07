@@ -67,7 +67,7 @@ trait FraudDetector
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException($e, Trace::WARNING, TraceCode::RECOVERABLE_EXCEPTION);
+            $this->trace->traceException($e);
         }
 
         return $response;
