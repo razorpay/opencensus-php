@@ -16,7 +16,7 @@ class Validator extends Base\Validator
     const AMOUNTS = 'amounts';
 
     protected static $createRules = [
-        Entity::GATEWAY          => 'required|string|max:50|custom',
+        Entity::GATEWAY          => 'required_if:type,sorter|string|max:50|custom',
         Entity::MERCHANT_ID      => 'required|alpha_num|size:14',
         Entity::TYPE             => 'required|in:sorter,filter',
         Entity::GROUP            => 'sometimes|filled|string|max:50',
@@ -75,11 +75,11 @@ class Validator extends Base\Validator
 
     protected function validateGatewayAcquirer(array $input)
     {
-        $gateway = $input[Entity::GATEWAY];
+        $gateway = $input[Entity::GATEWAY] ?? null;
 
         $gatewayAcquirer = $input[Entity::GATEWAY_ACQUIRER] ?? null;
 
-        if (empty($gatewayAcquirer) === true)
+        if ((empty($gateway) === true) or (empty($gatewayAcquirer) === true))
         {
             return;
         }
@@ -100,13 +100,18 @@ class Validator extends Base\Validator
     {
         $method = $input[Entity::METHOD];
 
-        $gateway = $input[Entity::GATEWAY];
-
         if (Method::isValid($method) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                         $method . ' is not a valid payment method');
         }
+
+        if (empty($input[Entity::GATEWAY]) === true)
+        {
+            return;
+        }
+
+        $gateway = $input[Entity::GATEWAY];
 
         // If it is a reject filter type  don't check if gateway supports method
         if (self::isRejectFilter($input) === true)
@@ -147,13 +152,13 @@ class Validator extends Base\Validator
     {
         $method = $input[Entity::METHOD];
 
-        $gateway = $input[Entity::GATEWAY];
+        $gateway = $input[Entity::GATEWAY] ?? null;
 
         //
         // skip issuer validation if gateway is sharp,
         // as sharp is test gateway and works for everything
         //
-        if ($gateway === Gateway::SHARP)
+        if ((empty($gateway) === true) or ($gateway === Gateway::SHARP))
         {
             return;
         }
@@ -282,12 +287,14 @@ class Validator extends Base\Validator
 
         $method = $input[Entity::METHOD];
 
-        $gateway = $input[Entity::GATEWAY];
+        $gateway = $input[Entity::GATEWAY] ?? null;
 
         // Don't validate if method is not card/emi or if network is null or gateway is
-        // sharp
+        // sharp or null
         if ((in_array($method, [Method::CARD, Method::EMI], true) === false) or
-            ($network === null) or ($gateway === Gateway::SHARP))
+            ($network === null) or
+            ($gateway === Gateway::SHARP) or
+            (empty($gateway) === true))
         {
             return;
         }
@@ -372,7 +379,8 @@ class Validator extends Base\Validator
 
     protected function validateNetworkCategory(array $input)
     {
-        if (empty($input[Entity::NETWORK_CATEGORY]) === true)
+        if ((empty($input[Entity::NETWORK_CATEGORY]) === true) or
+            (empty($input[Entity::GATEWAY]) === true))
         {
             return;
         }

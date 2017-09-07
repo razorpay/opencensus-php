@@ -78,6 +78,7 @@ class Entity extends Base\PublicEntity
     const NULLABLE_ATTRIBUTES = [
         self::GROUP,
         self::FILTER_TYPE,
+        self::GATEWAY,
         self::METHOD_TYPE,
         self::NETWORK,
         self::ISSUER,
