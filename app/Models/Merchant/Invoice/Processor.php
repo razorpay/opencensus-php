@@ -135,6 +135,11 @@ class Processor extends Base\Core
                             $this->endTimestamp,
                             $type);
 
+        if (empty($txns) === true)
+        {
+            return;
+        }
+
         $txnData = $txns->getAttributes();
 
         $fees = $txnData['fee'];
