@@ -216,6 +216,9 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $this->buildQueryAdditional($query, $params);
 
+        // If $query is [], this is considered as match all query.
+        $query = $query ?: ['match_all' => new \stdClass];
+
         $sort = $this->getSortParameter();
 
         return [
