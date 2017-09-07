@@ -2,8 +2,11 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Illuminate\Http\UploadedFile;
+
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Models\Feature\Constants;
 
 class FeaturesTest extends TestCase
 {
@@ -109,5 +112,48 @@ class FeaturesTest extends TestCase
         $this->ba->privateAuth();
 
         $this->startTest();
+    }
+
+    public function testGetQuestions()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testPostResponsesWithFiles()
+    {
+        $this->ba->proxyAuth();
+
+        $url = "storage/files/" . Constants::ONBOARDING .  "/" . Constants::VENDOR_AGREEMENT . ".pdf";
+
+        $uploadedFile = $this->createUploadedFile($url);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $request = $testData['request'];
+
+        $request['content'][Constants::MARKETPLACE][Constants::VENDOR_AGREEMENT] = $uploadedFile;
+
+        $expectedResponse = $testData['response']['content'];
+
+        $actualResponse = $this->makeRequestAndGetContent($request);
+
+        $this->assertArraySelectiveEquals($expectedResponse, $actualResponse);
+
+        $this->assertArrayHasKey(Constants::VENDOR_AGREEMENT, $actualResponse[Constants::MARKETPLACE]);
+    }
+
+    protected function createUploadedFile(string $url): UploadedFile
+    {
+        $mime = 'application/pdf';
+
+        return new UploadedFile(
+            $url,
+            'file',
+            $mime,
+            filesize($url),
+            null,
+            true);
     }
 }

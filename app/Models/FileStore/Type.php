@@ -4,8 +4,8 @@ namespace RZP\Models\FileStore;
 
 use RZP\Constants;
 use RZP\Exception;
-use RZP\Models\Feature\Constants as FeaturesConstants;
-use RZP\Models\Feature\Onboarding\Constants as OnboardingConstants;
+use RZP\Models\Feature\Constants as FeatureConstants;
+use RZP\Models\Pricing\Feature;
 
 class Type
 {
@@ -76,7 +76,8 @@ class Type
     const H2H_BUCKET_CONFIG                     = 'h2h_bucket_config';
 
     // File contants required for merchant feature onboarding
-    const MARKETPLACE_VENDOR_AGREEMENT      = FeaturesConstants::MARKETPLACE . "." . OnboardingConstants::VENDOR_AGREEMENT;
+    const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
+    const MARKETPLACE_VENDOR_AGREEMENT      = FeatureConstants::MARKETPLACE . "." . FeatureConstants::VENDOR_AGREEMENT;
 
     /**
      * Map of types allowed for each entity.
@@ -135,7 +136,7 @@ class Type
             self::FUND_TRANSFER_H2H,
         ],
 
-        Constants\Entity::MERCHANT_ONBOARDING => [
+        Constants\Entity::FEATURES => [
             self::MARKETPLACE_VENDOR_AGREEMENT
         ],
     ];

@@ -593,8 +593,8 @@ final class Route
         'settings_delete'                         => ['delete',   'settings/{entity}/{id}/{key}',                   'SettingsController@delete'                                         ],
 
         // Onboarding routes
-        'feature_onboarding'                      => ['get',      'feature/onboarding',                            'FeatureController@getQuestions',                                  ],
-        'feature_onboarding_create'               => ['post',     'feature/onboarding',                            'FeatureController@createResponses',                               ],
+        'feature_onboarding_fetch_default'        => ['get',      'feature/onboarding',                            'FeatureController@getOnboardingQuestions',                          ],
+        'feature_onboarding_create'               => ['post',     'feature/onboarding',                            'FeatureController@createOnboardingResponses',                       ],
     ];
 
     public static $public = [
@@ -1061,7 +1061,7 @@ final class Route
         'invitation_resend',
         'invitation_edit',
         'invitation_delete',
-        'feature_onboarding',
+        'feature_onboarding_fetch_default',
         'feature_onboarding_create'
     ];
 
