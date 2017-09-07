@@ -232,7 +232,9 @@ return [
                 'search_analyzer' => 'standard',
             ],
             'tag_list' => [
-                'type' => 'keyword',
+                'type'            => 'text',
+                'analyzer'        => 'standard',
+                'search_analyzer' => 'standard',
             ],
             'parent_id' => [
                 'type' => 'keyword',
