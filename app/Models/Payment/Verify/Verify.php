@@ -582,7 +582,7 @@ class Verify extends Base\Core
     {
         $currentTimestamp = Carbon::now()->getTimestamp();
 
-        $currentTimestampBucket = $currentTimestamp / self::GATEWAY_TIMEOUT_BUCKET_INTERVAL;
+        $currentTimestampBucket = (int)($currentTimestamp / self::GATEWAY_TIMEOUT_BUCKET_INTERVAL);
 
         $gateway = $payment->getGateway();
 
