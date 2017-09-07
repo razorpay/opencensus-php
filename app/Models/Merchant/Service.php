@@ -32,6 +32,7 @@ use RZP\Constants\MailTags;
 use RZP\Models\BankAccount;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Webhook;
+use Requests_Response as Response;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Merchant\SlackActions as SlackActions;
@@ -1239,5 +1240,10 @@ class Service extends Base\Service
                 $this->repo->feature->delete($feature);
             }
         }
+    }
+
+    public function getAnalytics($input): Response
+    {
+        return $this->app['eventManager']->query($input);
     }
 }
