@@ -75,11 +75,13 @@ class Service extends Base\Service
      * @param int $count
      * @return mixed
      */
-    public function getActionsCheckedByAdmin($input, int $skip, int $count)
+    public function getActionsCheckedByAdmin($input)
     {
-        $actions = $this->repo->workflow_action
-            ->getActionsCheckedByAdmin(
-                $this->admin->getId(), ['admin'], $skip, $count);
+        $input['expand'] = ['admin'];
+
+        $input[Constants::ACTIONS_CHECKED] = true;
+
+        $actions = $this->repo->workflow_action->fetch($input);
 
         return $actions;
     }

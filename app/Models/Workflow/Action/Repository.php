@@ -22,6 +22,7 @@ class Repository extends Base\Repository
         Entity::PERMISSION          => 'sometimes|boolean|in:0,1',
         Constants::CLOSED_ACTIONS   => 'sometimes|boolean|in:0,1',
         Constants::CHECKER_ACTIONS  => 'sometimes|boolean|in:0,1',
+        Constants::ACTIONS_CHECKED  => 'sometimes|boolean|in:0,1',
     ];
 
     protected function getNewQueryWithPermissions()
@@ -75,41 +76,6 @@ class Repository extends Base\Repository
         $query->orderBy(Entity::CREATED_AT, 'desc');
     }
 
-    public function findActionsForChecker(
-        array $roleIds,
-        array $relations = [],
-        int $skip = 0,
-        int $count = 10)
-    {
-        /*
-            SELECT wa.id, wa.title, wa.description
-            FROM workflow_actions wa
-            JOIN
-                workflow_steps ws ON wa.workflow_id = ws.workflow_id
-                AND wa.current_level = ws.level
-            JOIN
-                permissions p ON p.id = wa.permission_id
-            WHERE
-                wa.state = 'open'
-                AND ws.role_id IN ($adminIds);
-        */
-
-        $wStep = Table::WORKFLOW_STEP;
-
-        return $this->getNewQueryWithPermissions()
-                    ->join($wStep, function ($join) {
-                        $join->on('workflow_actions.workflow_id', '=', 'workflow_steps.workflow_id')
-                             ->on('workflow_actions.current_level', '=', 'workflow_steps.level');
-                    })
-                    ->where('workflow_actions.state', '=', State\Entity::OPEN)
-                    ->whereIn('workflow_steps.role_id', $roleIds)
-                    ->with($relations)
-                    ->orderBy(Entity::CREATED_AT, 'desc')
-                    ->skip($skip)
-                    ->take($count)
-                    ->get();
-    }
-
     /**
      * Function to add closed state of the action to the query.
      * @param $query
@@ -146,33 +112,6 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getActionsCheckedByAdmin(
-        string $adminId,
-        array $relations = [],
-        int $skip = 0,
-        int $count = 10)
-    {
-        $checkerRepo = $this->repo->action_checker;
-
-        $attributes = $this->dbColumn('*');
-        $aId = $this->repo->workflow_action->dbColumn(Entity::ID);
-
-        $cActionId = $checkerRepo->dbColumn(Checker\Entity::ACTION_ID);
-
-        $cAdminId = $checkerRepo->dbColumn(Checker\Entity::ADMIN_ID);
-
-        $checkerTable = Table::ACTION_CHECKER;
-
-        return $this->newQuery()
-                    ->select($attributes)
-                    ->join($checkerTable, $aId, '=', $cActionId)
-                    ->where($cAdminId, '=', $adminId)
-                    ->with($relations)
-                    ->take($count)
-                    ->skip($skip)
-                    ->get();
-    }
-
     public function getOpenActionOnEntityOperation(
         string $entityId,
         string $entityName,
@@ -186,6 +125,12 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    /**
+     * Will filter our checker actions which needs to be checked.
+     * This will provide awaiting for your approval actions.
+     * @param $query
+     * @param $params
+     */
     public function addQueryParamCheckerActions($query, $params)
     {
         $wStep = Table::WORKFLOW_STEP;
@@ -198,6 +143,26 @@ class Repository extends Base\Repository
                 })
               ->where('workflow_actions.state', '=', State\Entity::OPEN)
               ->whereIn('workflow_steps.role_id', $adminRoleIds);
+    }
+
+    public function addQueryParamActionsChecked($query, $params)
+    {
+        $adminId = $this->auth->getAdmin()->getId();
+
+        $checkerRepo = $this->repo->action_checker;
+
+        $attributes = $this->dbColumn('*');
+        $aId = $this->repo->workflow_action->dbColumn(Entity::ID);
+
+        $cActionId = $checkerRepo->dbColumn(Checker\Entity::ACTION_ID);
+
+        $cAdminId = $checkerRepo->dbColumn(Checker\Entity::ADMIN_ID);
+
+        $checkerTable = Table::ACTION_CHECKER;
+
+        $query->select($attributes)
+              ->join($checkerTable, $aId, '=', $cActionId)
+              ->where($cAdminId, '=', $adminId);
     }
 
 }
