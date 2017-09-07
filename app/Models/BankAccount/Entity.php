@@ -194,7 +194,7 @@ class Entity extends Base\PublicEntity
             return 'Razorpay';
         }
 
-        return IFSC::getBankName($this->getAttribute(self::IFSC_CODE));
+        return IFSC::getBankName($ifsc);
     }
 
     protected function getMpinAttribute()

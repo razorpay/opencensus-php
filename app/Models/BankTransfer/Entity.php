@@ -27,6 +27,7 @@ class Entity extends Base\PublicEntity
     const PAYER_IFSC            = 'payer_ifsc';
     const PAYER_BANK_ACCOUNT    = 'payer_bank_account';
     const PAYER_BANK_ACCOUNT_ID = 'payer_bank_account_id';
+    const PAYER_BANK_NAME       = 'payer_bank_name';
 
     // Details of the receiver bank account
     const PAYEE_ACCOUNT      = 'payee_account';
@@ -79,9 +80,14 @@ class Entity extends Base\PublicEntity
         self::VIRTUAL_ACCOUNT_ID,
         self::AMOUNT,
         self::PAYER_BANK_ACCOUNT,
+        self::PAYER_BANK_NAME,
         // This can be added later, upon request
         // self::MODE,
         // self::UTR,
+    ];
+
+    protected $appends = [
+        self::PAYER_BANK_NAME,
     ];
 
     protected $visible = [
@@ -96,6 +102,7 @@ class Entity extends Base\PublicEntity
         self::PAYER_BANK_ACCOUNT_ID,
         self::PAYEE_ACCOUNT,
         self::PAYEE_IFSC,
+        self::PAYER_BANK_NAME,
         self::DESCRIPTION,
         self::MODE,
         self::UTR,
@@ -225,6 +232,18 @@ class Entity extends Base\PublicEntity
     public function getPayerName()
     {
         return $this->getAttribute(self::PAYER_NAME);
+    }
+
+    public function getBankNameAttribute()
+    {
+        $ifsc = $this->getAttribute(self::IFSC_CODE);
+
+        if ($ifsc === self::SPECIAL_IFSC_CODE)
+        {
+            return 'Razorpay';
+        }
+
+        return IFSC::getBankName($ifsc);
     }
 
     public function getPayeeAccount()
