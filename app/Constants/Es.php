@@ -13,6 +13,8 @@ final class Es
     const GT                   = 'gt';
     const LTE                  = 'lte';
     const GTE                  = 'gte';
+    const _ID                  = '_id';
+    const HITS                 = 'hits';
     const DESC                 = 'desc';
     const MUST                 = 'must';
     const TERM                 = 'term';
