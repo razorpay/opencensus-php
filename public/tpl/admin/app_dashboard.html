@@ -13,7 +13,7 @@
     </div>
     <div class="panel-body b-b b-light">
       <div class="col-md-4 m-b-xs">
-        Search: <input id="filter" type="text" class="form-control input-sm w-sm inline m-r"/>
+        Search: <input id="filter" type="text" ng-model="search_query" class="form-control input-sm w-sm inline m-r" ng-enter="filter()" />
       </div>
       <div class="col-md-4 m-b-xs">
         <span tooltip="Only show Marketpace sub-accounts">
@@ -23,7 +23,7 @@
       </div>
     </div>
     <div class="table-responsive">
-      <table ui-jq="footable" data-filter="#filter" data-page="false" class="table table-responsive table-striped b-t b-light">
+      <table ui-jq="footable" data-page="false" class="table table-responsive table-striped b-t b-light">
         <thead>
           <tr>
             <th>Merchant Id</th>
