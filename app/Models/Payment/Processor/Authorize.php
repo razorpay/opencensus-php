@@ -800,7 +800,7 @@ trait Authorize
         //
         // Second recurring payments have to be enabled for recurring
         //
-        if (($payment->isSecondRecurring()) and
+        if (($payment->isSecondRecurring() === true) and
             ($token->isRecurring() === false))
         {
             throw new Exception\BadRequestException(
@@ -926,12 +926,11 @@ trait Authorize
         }
 
         //
-        // At this point, the token has been used, and if the payment is a
-        // first recurring payment, we throw an exception here, as it should
-        // not be sent in the first recurring request
+        // This is broken still. We should not be accepting any token
+        // in private auth also for first recurring. But, in private auth,
+        // it could be second recurring also, where we accept a token.
         //
-        if (($token->getUsedAt() !== null) and
-            ($payment->isSecondRecurring() === false))
+        if ($this->ba->isPublicAuth() === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_NB_TOKEN_PASSED_IN_FIRST_RECURRING,
@@ -947,7 +946,8 @@ trait Authorize
 
     protected function validateTokenMaxAmount(Token\Entity $token, Payment\Entity $payment)
     {
-        if ($token->getMaxAmount() < $payment->getAmount())
+        if (($token->getMaxAmount() !== null) and
+            ($payment->getAmount() > $token->getMaxAmount()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_AMOUNT_GREATER_THAN_TOKEN_MAX_AMOUNT,
@@ -1504,13 +1504,13 @@ trait Authorize
         // if token is set, payment is either from a saved card or is second recurring
         // else, the card needs to be saved or need to mark the payment as recurring (first recurring)
         //
-        if (empty($input[Payment\Entity::TOKEN]) === false)
+        if (empty($input[Payment\Entity::TOKEN]) === true)
         {
-            $this->preProcessPaymentFromSavedMethodLocal($customer, $payment, $input, $gatewayInput);
+            $this->preProcessPaymentFromUserDataLocal($customer, $payment, $input, $gatewayInput);
         }
         else
         {
-            $this->preProcessPaymentFromUserDataLocal($customer, $payment, $input, $gatewayInput);
+            $this->preProcessPaymentFromSavedMethodLocal($customer, $payment, $input, $gatewayInput);
         }
     }
 
@@ -1553,14 +1553,14 @@ trait Authorize
         }
 
         // If token is set, then pay using global saved card
-        if (empty($input[Payment\Entity::TOKEN]) === false)
-        {
-            $this->preProcessPaymentFromSavedMethodGlobal($customer, $payment, $input, $gatewayInput);
-        }
-        else
+        if (empty($input[Payment\Entity::TOKEN]) === true)
         {
             // Does processing like creating card entity, saving card if passed in the input, etc..
             $this->preProcessPaymentFromUserDataGlobal($customer, $payment, $input, $gatewayInput);
+        }
+        else
+        {
+            $this->preProcessPaymentFromSavedMethodGlobal($customer, $payment, $input, $gatewayInput);
         }
     }
 
@@ -1587,6 +1587,9 @@ trait Authorize
         }
         else if ($payment->isNetbanking())
         {
+            // TODO: Check if this is really required here.
+            $payment->setBank($token->getBank());
+
             $payment->localToken()->associate($token);
         }
 
@@ -1625,6 +1628,12 @@ trait Authorize
         }
         else if ($payment->isMethod(Payment\Method::NETBANKING))
         {
+            //
+            // This should be here since, if a token is passed,
+            // the bank would not be passed in the payment input.
+            //
+            $payment->setBank($token->getBank());
+
             $payment->globalToken()->associate($token);
         }
     }
@@ -1763,7 +1772,7 @@ trait Authorize
         {
             $saveMethodInput[Token\Entity::BANK] = $payment->getBank();
             // TODO: We need to get this from user input - hard coding for now
-            $saveMethodInput[Token\Entity::MAX_AMOUNT] = Token\Entity::MAX_AMOUNT_FOR_TOKEN;
+            $saveMethodInput[Token\Entity::MAX_AMOUNT] = Token\Entity::DEFAULT_MAX_AMOUNT;
         }
         else if ($payment->isMethod(Payment\Method::WALLET))
         {
@@ -2007,15 +2016,29 @@ trait Authorize
 
         $token->incrementUsedCount();
 
-        //
-        // For netbanking payments, we create a new token for every single new first recurring payment.
-        // For second recurring payments, we do not update the old token entity.
-        //
-        if (($payment->isRecurring() === true) and
-            (($payment->isCard()) or
-            (($payment->isNetbanking()) and
-             ($payment->isSecondRecurring() === false))))
+        if ($payment->isRecurring() === true)
         {
+            //
+            // This is just in case. Payment recurring is anyway only
+            // allowed on cards and netbanking.
+            //
+            if (($payment->isCard() === false) and
+                ($payment->isNetbanking() === false))
+            {
+                return;
+            }
+
+            //
+            // For netbanking payments, we create a new token for every
+            // single new first recurring payment.
+            // For existing recurring nb tokens, we do not update it.
+            //
+            if (($payment->isNetbanking() === true) and
+                ($token->isRecurring() === true))
+            {
+                return;
+            }
+
             if ($this->shouldSetTokenRecurring($payment, $data) === true)
             {
                 $token->setRecurring(true);
@@ -2091,60 +2114,21 @@ trait Authorize
         // for same token only.
         //
 
-        //
-        // This should throw an exception because the method above is called
-        // only when the payment is a first recurring payment. If the recurring status
-        // is not null, there was something wrong with the way the token was created.
-        //
-        if ($token->getRecurringStatus() !== null)
+        $this->updateRecurringStatus($token, $gatewayData);
+
+        if ($token->getRecurringStatus() === null)
         {
-            throw new Exception\LogicException(
-                'Recurring status cannot be set during first recurring payment',
-                null,
-                [
-                    'token'        => $token->toArray(),
-                    'gateway_data' => $gatewayData
-                ]);
+            return;
         }
 
-        $recurringStatus = $gatewayData[Token\Entity::RECURRING_STATUS];
+        $this->updateRecurringFailureReason($token, $gatewayData);
 
-        if (empty($recurringStatus) === true)
-        {
-            // This is to ensure that if the recurring status is not already set, we set it now
-            throw new Exception\LogicException(
-                'The recurring status should always be set for token update',
-                null,
-                [
-                    'token'          => $token->toArray(),
-                    'gateway_data'   => $gatewayData
-                ]);
-        }
+        $this->updateGatewayTokenForRecurring($token, $gatewayData);
+    }
 
-        $token->setRecurringStatus($recurringStatus);
-
-        //
-        // We update the recurring failure reason of the token
-        // only if the gateway returned a rejected response
-        //
-        if ($recurringStatus === Token\RecurringStatus::REJECTED)
-        {
-            if (empty($gatewayData[Token\Entity::RECURRING_FAILURE_REASON]) === true)
-            {
-                // If it's rejected, there must always be a reason.
-                throw new Exception\LogicException(
-                    'The SI request must be rejected with a reason',
-                    null,
-                    [
-                        'token'        => $token->toArray(),
-                        'gateway_data' => $gatewayData,
-                    ]);
-            }
-
-            $recurringFailureReason = $gatewayData[Token\Entity::RECURRING_FAILURE_REASON];
-
-            $token->setRecurringFailureReason($recurringFailureReason);
-        }
+    protected function updateGatewayTokenForRecurring(Token\Entity $token, array $gatewayData)
+    {
+        $recurringStatus = $token->getRecurringStatus();
 
         if ($recurringStatus === Token\RecurringStatus::CONFIRMED)
         {
@@ -2160,6 +2144,82 @@ trait Authorize
                 $token->setGatewayToken($gatewayToken);
             }
         }
+    }
+
+    protected function updateRecurringFailureReason(Token\Entity $token, array $gatewayData)
+    {
+        $recurringStatus = $token->getRecurringStatus();
+
+        //
+        // We update the recurring failure reason of the token
+        // only if the gateway returned a rejected response
+        //
+        if ($recurringStatus === Token\RecurringStatus::REJECTED)
+        {
+            if (empty($gatewayData[Token\Entity::RECURRING_FAILURE_REASON]) === true)
+            {
+                //
+                // If it's rejected, there must always be a reason.
+                //
+
+                $this->trace->critical(
+                    TraceCode::GATEWAY_RECURRING_REJECTED_WITHOUT_REASON,
+                    [
+                        'token'        => $token->toArray(),
+                        'gateway_data' => $gatewayData
+                    ]);
+
+                return;
+            }
+
+            $recurringFailureReason = $gatewayData[Token\Entity::RECURRING_FAILURE_REASON];
+
+            $token->setRecurringFailureReason($recurringFailureReason);
+        }
+    }
+
+    protected function updateRecurringStatus(Token\Entity $token, array $gatewayData)
+    {
+        //
+        // This should trace a critical error because this method is called
+        // only when the payment is a first recurring payment. If the recurring status
+        // is not null, there was something wrong with the way the token was created.
+        //
+        if ($token->getRecurringStatus() !== null)
+        {
+            //
+            // We don't throw an exception here because this flow
+            // is called while marking the payment as authorized.
+            // We don't want to mess with payment being authorized!
+            //
+            $this->trace->critical(
+                TraceCode::TOKEN_RECURRING_STATUS_ALREADY_SET,
+                [
+                    'token'        => $token->toArray(),
+                    'gateway_data' => $gatewayData
+                ]);
+
+            return;
+        }
+
+        $recurringStatus = $gatewayData[Token\Entity::RECURRING_STATUS];
+
+        if (empty($recurringStatus) === true)
+        {
+            //
+            // The recurring status should always be set for token update.
+            //
+            $this->trace->critical(
+                TraceCode::GATEWAY_RECURRING_STATUS_ALREADY_SET,
+                [
+                    'token'        => $token->toArray(),
+                    'gateway_data' => $gatewayData
+                ]);
+
+            return;
+        }
+
+        $token->setRecurringStatus($recurringStatus);
     }
 
     protected function createAndSetTerminalInGatewayToken(Payment\Entity $payment, Token\Entity $token)
@@ -2181,8 +2241,11 @@ trait Authorize
         {
             if ($payment->isNetbanking() === true)
             {
-                // we do not reuse the tokens. Every new
-                // registration requires a new token to be created.
+                //
+                // We do not reuse the tokens in case of NB.
+                // Every new registration requires a new
+                // token to be created.
+                //
                 throw new Exception\LogicException(
                     'Tokens cannot be reused in netbanking payments',
                     null,

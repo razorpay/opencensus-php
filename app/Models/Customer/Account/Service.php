@@ -308,13 +308,8 @@ class Service extends Base\Service
             // Fetch existing tokens if exists
             $tokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
 
-            //
-            // we remove all the netbanking recurring tokens for global customers
-            //
             if (($tokens !== null) and ($tokens->count() > 0))
             {
-                $tokens = (new Customer\Core)->removeNetbankingRecurringTokens($tokens);
-
                 $result['tokens'] = $tokens->toArrayPublic();
             }
         }

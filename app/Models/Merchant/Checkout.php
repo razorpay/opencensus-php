@@ -188,21 +188,22 @@ class Checkout
                 return null;
             }
 
-            //
-            // Here we fetch all the tokens by customer for the merchant
-            //
-            $savedTokens = (new Customer\Token\Core)->fetchTokensByCustomer($customer);
+            $tokenCore = (new Customer\Token\Core);
+
+            $savedTokens = $tokenCore->fetchTokensByCustomer($customer);
 
             //
-            // For the preferences route, we remove all the recurring netbanking tokens
+            // Currently, we do not expose any recurring NB tokens to the customer.
+            // We do not handle the flow where a customer can use an existing token
+            // to subscribe to another product.
             //
-            $savedTokens = (new Customer\Core)->removeNetbankingRecurringTokens($savedTokens);
+            $savedTokens = $tokenCore->removeNetbankingRecurringTokens($savedTokens);
 
-            $custData =  array(
+            $custData =  [
                 'email'     => $customer->getEmail(),
                 'contact'   => $customer->getContact(),
                 'tokens'    => $savedTokens->toArrayPublic(),
-            );
+            ];
 
             //
             // This case comes when customer_id is sent in the input (always local customer).
@@ -323,7 +324,11 @@ class Checkout
 
                     if (isset($response['tokens']))
                     {
-                        $data['customer']['tokens'] = $response['tokens'];
+                        $tokens = $response['tokens'];
+
+                        $tokensWithoutNB = (new Customer\Token\Core)->removeNetbankingRecurringTokens($tokens);
+
+                        $data['customer']['tokens'] = $tokensWithoutNB;
                     }
                 }
             }

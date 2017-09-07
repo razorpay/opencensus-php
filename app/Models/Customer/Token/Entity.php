@@ -34,7 +34,7 @@ class Entity extends Base\PublicEntity
     const DELETED_AT                = 'deleted_at';
 
     // Default Max Amount
-    const MAX_AMOUNT_FOR_TOKEN      = 10000000;
+    const DEFAULT_MAX_AMOUNT    = 10000000;
 
     protected static $sign      = 'token';
 
@@ -213,7 +213,7 @@ class Entity extends Base\PublicEntity
 
     public function getMaxAmount()
     {
-        return $this->getAttribute(self::MAX_AMOUNT);   
+        return $this->getAttribute(self::MAX_AMOUNT);
     }
 
     public function getCardId()
@@ -229,6 +229,11 @@ class Entity extends Base\PublicEntity
     public function getRecurringStatus()
     {
         return $this->getAttribute(self::RECURRING_STATUS);
+    }
+
+    public function getRecurringFailureReason()
+    {
+        return $this->getAttribute(self::RECURRING_FAILURE_REASON);
     }
 
     public function isLocal()

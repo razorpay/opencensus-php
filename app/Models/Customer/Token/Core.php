@@ -109,6 +109,51 @@ class Core extends Base\Core
         return $tokens;
     }
 
+    /**
+     * This method takes in the current tokens collection, removes the netbanking
+     * recurring tokens and returns the remaining tokens as an array
+     *
+     * @param $tokens
+     * @return mixed
+     */
+    public function removeNetbankingRecurringTokens($tokens)
+    {
+        //
+        // We are creating an array of all the items that do not pass the truth test
+        // that the token is recurring and netbanking - as we do not want to show
+        // recurring = netbanking tokens to the merchant via preferences
+        //
+
+        if ($tokens->isPublicCollection() === true)
+        {
+            $tokens = $tokens->reject(
+                function($token)
+                {
+                    if (($token->getMethod() === 'netbanking') and
+                        ($token->isRecurring() === true))
+                    {
+                        return true;
+                    }
+
+                    return false;
+                })->values();
+        }
+        else
+        {
+            $tokenItems = & $tokens['items'];
+
+            $tokenItems = array_filter($tokenItems, function ($item)
+                        {
+                            $netbankingRecurring = (($item['method'] === 'netbanking') and
+                                                    ($item['recurring']));
+
+                            return ($netbankingRecurring === false);
+                        });
+        }
+
+        return $tokens;
+    }
+
     protected function validateExistingToken($token)
     {
         $existingTokens = $this->repo->token->getByMethodAndCustomerId(

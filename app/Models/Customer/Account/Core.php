@@ -199,46 +199,19 @@ class Core extends Base\Core
             $response['device_token'] = $appToken->getDeviceToken();
         }
 
-        if (($tokens !== null) and ($tokens->count() > 0))
+        if ((empty($tokens) === false) and ($tokens->count() > 0))
         {
             //
-            // We do not allow the global customer to see his / her netbanking recurring tokens
+            // Currently, we do not expose netbanking recurring tokens to the
+            // customer. We don't have a way to handle first recurring
+            // with an existing recurring token.
             //
-            $tokens = $this->removeNetbankingRecurringTokens($tokens);
+            $tokens = (new Token\Core)->removeNetbankingRecurringTokens($tokens);
 
             $response['tokens'] = $tokens->toArrayPublic();
         }
 
         return $response;
-    }
-
-    /**
-     * This method takes in the current tokens collection, removes the netbanking
-     * recurring tokens and returns the remaining tokens as an array
-     *
-     * @param $tokens
-     * @return mixed
-     */
-    public function removeNetbankingRecurringTokens($tokens)
-    {
-        //
-        // We are creating an array of all the items that do not pass the truth test
-        // that the token is recurring and netbanking - as we do not want to show
-        // recurring = netbanking tokens to the merchant via preferences
-        //
-        $tokens = $tokens->reject(
-            function($token)
-            {
-                if (($token->getMethod() === 'netbanking') and
-                    ($token->isRecurring() === true))
-                {
-                    return true;
-                }
-
-                return false;
-            });
-
-        return $tokens;
     }
 
     /**

@@ -120,9 +120,10 @@ class Gateway extends Base\Gateway
         }
         catch (\Exception $e)
         {
-            throw new Exception\LogicException(
-                $e->getMessage(),
-                ErrorCode::SERVER_ERROR_INVALID_RESPONSE,
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                null,
+                null,
                 [
                     'payment_id' => $input['payment']['id'],
                     'token_id'   => $input['token']->getId(),
@@ -194,25 +195,25 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
 
-        $content = $this->getDataFromResponse($input['gateway']);
+        $callbackData = $this->getDataFromResponse($input['gateway']);
 
         $this->assertPaymentId($input['payment']['id'],
-                               $content[RequestFields::PAYMENT_ID]);
+                               $callbackData[RequestFields::PAYMENT_ID]);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
 
-        $attrs = $this->getCallbackAttributes($content);
+        $attrs = $this->getCallbackAttributes($callbackData);
 
         $gatewayPayment->fill($attrs);
 
         $this->repo->saveOrFail($gatewayPayment);
 
-        $this->checkCallbackStatus($attrs, $content);
+        $this->checkCallbackStatus($attrs, $callbackData);
 
         $acquirerData = $this->getAcquirerData($gatewayPayment);
 
-        if ($this->isRegistrationStep($input) === true)
+        if ($this->hasRecurringData($callbackData) === true)
         {
             $recurringData = $this->getRecurringData($gatewayPayment);
 
@@ -365,7 +366,7 @@ class Gateway extends Base\Gateway
         //
         // For recurring payments, we use E-Mandate Registration flow
         //
-        if ($this->isRegistrationStep($input) === true)
+        if ($this->isEMandateRegistrationRequired($input) === true)
         {
             $eMandateData = $this->getEMandateRequestData($input);
 
@@ -482,7 +483,7 @@ class Gateway extends Base\Gateway
      * @param array $input
      * @return bool
      */
-    protected function isRegistrationStep(array $input)
+    protected function isEMandateRegistrationRequired(array $input)
     {
         $paymentRecurring = $input['payment']['recurring'];
         $terminalRecurring = $input['terminal']->is3DSRecurring();
@@ -499,7 +500,9 @@ class Gateway extends Base\Gateway
         //
         // Payment has to be a recurring payment, terminal has to be enabled for recurring
         // and token's recurring field has to be set to false, because it gets updated to true
-        // after the initial recurring payment is successful
+        // after the initial recurring payment is successful.
+        //
+        // In case the token is already recurring, we don't have to do any registration.
         //
         return (($paymentRecurring === true) and
                 ($terminalRecurring === true) and
@@ -540,21 +543,17 @@ class Gateway extends Base\Gateway
     {
         $paymentId = $input['payment'][Payment\Entity::ID];
 
+        $itc = strtoupper($paymentId);
+
         if ($input['payment']['recurring'] === true)
         {
             $itc = $input['token']->getId();
         }
-        else
-        {
-            $itc = strtoupper($paymentId);
-        }
 
         $amount = $input['payment'][Payment\Entity::AMOUNT] / 100;
 
-        $prn = $paymentId;
-
         return [
-            RequestFields::PAYMENT_ID    => $prn,
+            RequestFields::PAYMENT_ID    => $paymentId,
             RequestFields::ITEM_CODE     => $itc,
             RequestFields::AMOUNT        => $amount,
             RequestFields::CURRENCY_CODE => Currency::INR,
@@ -831,6 +830,12 @@ class Gateway extends Base\Gateway
     protected function getUrlType()
     {
         return $this->getBankingType() . '_QUERY';
+    }
+
+    protected function hasRecurringData($gatewayPayment)
+    {
+        return (($gatewayPayment->getSIStatus() !== null) and
+                ($gatewayPayment->getSIRefId() !== null));
     }
 
     protected function getRecurringData(Base\Entity $gatewayPayment = null)

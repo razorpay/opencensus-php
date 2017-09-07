@@ -9,7 +9,7 @@ class PublicErrorDescription
     // Serialization is a problem when using these characters where signing is involved.
     // Because the other side may read the backslashes as escape characters and ignore
     // them while generating the signature.
-    // As per JSON spec these need escpaing -
+    // As per JSON spec these need escaping -
     //        %x22 /          ; "    quotation mark  U+0022
     //        %x5C /          ; \    reverse solidus U+005C
     //        %x2F /          ; /    solidus         U+002F
