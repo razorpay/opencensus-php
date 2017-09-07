@@ -19,20 +19,27 @@ class Accessor extends Base\Core
      */
     protected $id;
 
-    public function __construct(Base\PublicEntity $entity)
+    /**
+     * @var string
+     */
+    protected $module;
+
+    public function __construct(Base\PublicEntity $entity, $module)
     {
         parent::__construct();
 
         $this->entity = $entity->getEntity();
 
         $this->id = $entity->getId();
+
+        $this->module = $module;
     }
 
-    public static function for(Base\PublicEntity $entity): self
+    public static function for(Base\PublicEntity $entity, $module): self
     {
         // TODO: Validate for allowed entities?
 
-        return new static($entity);
+        return new static($entity, $module);
     }
 
     public function create($key, string $value = null)
@@ -90,6 +97,7 @@ class Accessor extends Base\Core
         $filterColumns = [
             'entity_type' => $this->entity,
             'entity_id'   => $this->id,
+            'module'      => $this->module
         ];
 
         Setting::setExtraColumns($filterColumns);
