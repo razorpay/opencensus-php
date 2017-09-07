@@ -11,10 +11,10 @@ return [
 	'table' => 'settings',
 
 	// For database store, which connection to use.
-    // Set to null because set custom connections for test and live
+	// Set to null because set custom connections for test and live
 	'connection' => null,
 
 	// Custom column names for the database table
-    'keyColumn'   => 'key',
-    'valueColumn' => 'value'
+	'keyColumn'   => 'key',
+	'valueColumn' => 'value'
 ];

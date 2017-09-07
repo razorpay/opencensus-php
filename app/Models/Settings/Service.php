@@ -40,7 +40,7 @@ class Service extends Base\Service
         Accessor::for($entity, $module)->create($input)->save();
     }
 
-    public function delete(string $entity, string $module, string $id, string $key)
+    public function delete(string $entity, string $id, string $module, string $key)
     {
         $entity = $this->fetchEntity($entity, $id);
 

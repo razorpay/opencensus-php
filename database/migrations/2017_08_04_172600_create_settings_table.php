@@ -45,7 +45,7 @@ class CreateSettingsTable extends Migration
 
 			$table->char('entity_id', PublicEntity::ID_LENGTH);
 
-            $table->string('module', 100);
+			$table->string('module', 100);
 
 			$table->string($this->keyColumn)
                   ->index();

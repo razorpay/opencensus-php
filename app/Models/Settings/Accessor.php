@@ -24,18 +24,18 @@ class Accessor extends Base\Core
      */
     protected $module;
 
-    public function __construct(Base\PublicEntity $entity, $module)
+    public function __construct(Base\PublicEntity $entity, string $module)
     {
         parent::__construct();
 
-        $this->entity = $entity->getEntity();
+        $this->entity   = $entity->getEntity();
 
-        $this->id = $entity->getId();
+        $this->id       = $entity->getId();
 
-        $this->module = $module;
+        $this->module   = $module;
     }
 
-    public static function for(Base\PublicEntity $entity, $module): self
+    public static function for(Base\PublicEntity $entity, string $module): self
     {
         // TODO: Validate for allowed entities?
 

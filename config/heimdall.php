@@ -462,7 +462,7 @@ return [
                 'description' => 'Edit Wallet Config',
                 'assignable'  => true
             ],
-            Permission::VIEW_WALLET_CONFIG => [
+            Permission::VIEW_WALLET_CONFIG   => [
                 'description' => 'Delete Wallet Config',
                 'assignable'  => true
             ],
