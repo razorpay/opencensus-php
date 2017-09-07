@@ -78,6 +78,7 @@ app.controller('MerchantsCtrl', [
       if ($scope.search_query !== '') {
         query.q = $scope.search_query;
       }
+      query.count = 100;
 
       var data = {
         route_name: 'admin_fetch_merchants_new',
