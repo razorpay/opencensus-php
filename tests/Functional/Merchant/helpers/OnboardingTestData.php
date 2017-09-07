@@ -1,7 +1,7 @@
 <?php
 
 use RZP\Models\Feature\Constants as FeaturesConstants;
-use RZP\Models\Merchant\Onboarding\Constants as OnboardingConstants;
+use RZP\Models\Feature\Onboarding\Constants as OnboardingConstants;
 
 return [
     'testGetQuestions'           => [

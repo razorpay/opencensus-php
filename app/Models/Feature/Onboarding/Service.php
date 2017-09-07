@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Merchant\Onboarding;
+namespace RZP\Models\Feature\Onboarding;
 
 use RZP\Models\Base;
 use RZP\Models\Settings;

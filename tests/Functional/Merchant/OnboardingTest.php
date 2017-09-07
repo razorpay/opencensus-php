@@ -1,12 +1,12 @@
 <?php
 
-namespace RZP\Tests\Functional\Merchant;
+namespace RZP\Tests\Functional\Feature;
 
 use Illuminate\Http\UploadedFile;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Models\Merchant\Onboarding\Constants as OnboardingConstants;
+use RZP\Models\Feature\Onboarding\Constants as OnboardingConstants;
 use RZP\Models\Feature\Constants as FeatureConstants;
 
 

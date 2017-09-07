@@ -5,7 +5,7 @@ namespace RZP\Models\FileStore;
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Feature\Constants as FeaturesConstants;
-use RZP\Models\Merchant\Onboarding\Constants as OnboardingConstants;
+use RZP\Models\Feature\Onboarding\Constants as OnboardingConstants;
 
 class Type
 {

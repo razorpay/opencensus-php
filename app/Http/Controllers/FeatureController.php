@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
+use RZP\Models\Feature\Onboarding\Service as OnboardingService;
 
 class FeatureController extends Controller
 {
@@ -46,6 +47,24 @@ class FeatureController extends Controller
         $data = $this->service()->getFeatures($entityId);
 
         return ApiResponse::json($data);
+    }
+
+    public function getQuestions(OnboardingService $service)
+    {
+        $input = Request::all();
+
+        $response = $service->getQuestions($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function createResponses(OnboardingService $service)
+    {
+        $input = Request::all();
+
+        $response = $service->createResponses($input);
+
+        return ApiResponse::json($response);
     }
 
 }
