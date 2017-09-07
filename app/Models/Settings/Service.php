@@ -6,11 +6,11 @@ use RZP\Models\Base;
 
 class Service extends Base\Service
 {
-    public function get(string $entity, string $id, string $key): array
+    public function get(string $entity, string $id, string $module, string $key): array
     {
         $entity = $this->fetchEntity($entity, $id);
 
-        $settings = Accessor::for($entity)->get($key);
+        $settings = Accessor::for($entity, $module)->get($key);
 
         return ['settings' => $settings];
     }
@@ -22,29 +22,29 @@ class Service extends Base\Service
         return ['settings' => $settings];
     }
 
-    public function getAll(string $entity, string $id): array
+    public function getAll(string $entity, string $id, string $module): array
     {
         $entity = $this->fetchEntity($entity, $id);
 
-        $settings = Accessor::for($entity)->all();
+        $settings = Accessor::for($entity, $module)->all();
 
         return ['settings' => $settings];
     }
 
-    public function upsert(string $entity, string $id, array $input)
+    public function upsert(string $entity, string $id, $module, array $input)
     {
         // Validate input?
 
         $entity = $this->fetchEntity($entity, $id);
 
-        Accessor::for($entity)->create($input)->save();
+        Accessor::for($entity, $module)->create($input)->save();
     }
 
-    public function delete(string $entity, string $id, string $key)
+    public function delete(string $entity, string $module, string $id, string $key)
     {
         $entity = $this->fetchEntity($entity, $id);
 
-        Accessor::for($entity)->delete($key)->save();
+        Accessor::for($entity, $module)->delete($key)->save();
     }
 
     protected function fetchEntity(string $entity, string $id): Base\PublicEntity
