@@ -213,22 +213,26 @@ return [
             'name' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
-                'search_analyzer' => 'standard',
+                'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
             ],
             'email' => [
-                'type' => 'text',
+                'type'            => 'text',
+                'analyzer'        => 'edge_ngram_analyzer',
+                'search_analyzer' => 'standard_custom',
+                'index_options'   => 'offsets',
             ],
             'billing_label' => [
                 'type'            => 'text',
                 'analyzer'        => 'edge_ngram_analyzer',
-                'search_analyzer' => 'standard',
+                'search_analyzer' => 'standard_custom',
                 'index_options'   => 'offsets',
             ],
             'website' => [
                 'type'            => 'text',
-                'analyzer'        => 'standard',
-                'search_analyzer' => 'standard',
+                'analyzer'        => 'edge_ngram_analyzer',
+                'search_analyzer' => 'standard_custom',
+                'index_options'   => 'offsets',
             ],
             'tag_list' => [
                 'type'            => 'text',
