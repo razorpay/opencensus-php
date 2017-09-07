@@ -42,7 +42,7 @@ class OnboardingTest extends TestCase
 
         $request = $testData['request'];
 
-        $request['content'][OnboardingConstants::ONBOARDING][FeatureConstants::MARKETPLACE][OnboardingConstants::VENDOR_AGREEMENT] = $uploadedFile;
+        $request['content'][FeatureConstants::MARKETPLACE][OnboardingConstants::VENDOR_AGREEMENT] = $uploadedFile;
 
         $expectedResponse = $testData['response']['content'];
 
@@ -50,7 +50,7 @@ class OnboardingTest extends TestCase
 
         $this->assertArraySelectiveEquals($expectedResponse, $actualResponse);
 
-        $this->assertArrayHasKey( OnboardingConstants::VENDOR_AGREEMENT, $actualResponse[OnboardingConstants::ONBOARDING][FeatureConstants::MARKETPLACE]);
+        $this->assertArrayHasKey(OnboardingConstants::VENDOR_AGREEMENT, $actualResponse[FeatureConstants::MARKETPLACE]);
     }
 
     protected function createUploadedFile(string $url): UploadedFile

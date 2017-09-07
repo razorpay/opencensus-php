@@ -13,7 +13,7 @@ return [
                     FeaturesConstants::VIRTUAL_ACCOUNTS
                 ]
             ],
-            'url'     => '/merchant/onboarding',
+            'url'     => '/feature/onboarding',
             'method'  => 'GET',
             'server'  => [
                 'HTTP_X-Dashboard'            => 'true',
@@ -22,52 +22,50 @@ return [
         ],
         'response' => [
             'content' => [
-                OnboardingConstants::ONBOARDING => [
-                    FeaturesConstants::MARKETPLACE      => [
-                        OnboardingConstants::USE_CASE         => [
-                            OnboardingConstants::ID            => OnboardingConstants::USE_CASE,
-                            OnboardingConstants::RESPONSE_TYPE => 'textarea',
-                            OnboardingConstants::MANDATORY     => true
-                        ],
-                        OnboardingConstants::SETTLING_TO      => [
-                            OnboardingConstants::ID            => OnboardingConstants::SETTLING_TO,
-                            OnboardingConstants::RESPONSE_TYPE => 'radio',
-                            OnboardingConstants::MANDATORY     => true
-                        ],
-                        OnboardingConstants::VENDOR_AGREEMENT => [
-                            OnboardingConstants::ID            => OnboardingConstants::VENDOR_AGREEMENT,
-                            OnboardingConstants::RESPONSE_TYPE => 'file',
-                            OnboardingConstants::MANDATORY     => false
-                        ]
+                FeaturesConstants::MARKETPLACE      => [
+                    OnboardingConstants::USE_CASE         => [
+                        OnboardingConstants::ID            => OnboardingConstants::USE_CASE,
+                        OnboardingConstants::RESPONSE_TYPE => 'textarea',
+                        OnboardingConstants::MANDATORY     => true
                     ],
-                    FeaturesConstants::SUBSCRIPTIONS    => [
-                        OnboardingConstants::BUSINESS_MODEL  => [
-                            OnboardingConstants::ID            => OnboardingConstants::BUSINESS_MODEL,
-                            OnboardingConstants::RESPONSE_TYPE => 'textarea',
-                            OnboardingConstants::MANDATORY     => true
-                        ],
-                        OnboardingConstants::SAMPLE_PLANS    => [
-                            OnboardingConstants::ID            => OnboardingConstants::SAMPLE_PLANS,
-                            OnboardingConstants::RESPONSE_TYPE => 'textarea',
-                            OnboardingConstants::MANDATORY     => true
-                        ],
-                        OnboardingConstants::WEBSITE_DETAILS => [
-                            OnboardingConstants::ID            => OnboardingConstants::WEBSITE_DETAILS,
-                            OnboardingConstants::RESPONSE_TYPE => 'textarea',
-                            OnboardingConstants::MANDATORY     => true
-                        ]
+                    OnboardingConstants::SETTLING_TO      => [
+                        OnboardingConstants::ID            => OnboardingConstants::SETTLING_TO,
+                        OnboardingConstants::RESPONSE_TYPE => 'radio',
+                        OnboardingConstants::MANDATORY     => true
                     ],
-                    FeaturesConstants::VIRTUAL_ACCOUNTS => [
-                        OnboardingConstants::USE_CASE                 => [
-                            OnboardingConstants::ID            => OnboardingConstants::USE_CASE,
-                            OnboardingConstants::RESPONSE_TYPE => 'textarea',
-                            OnboardingConstants::MANDATORY     => true
-                        ],
-                        OnboardingConstants::EXPECTED_MONTHLY_REVENUE => [
-                            OnboardingConstants::ID            => OnboardingConstants::EXPECTED_MONTHLY_REVENUE,
-                            OnboardingConstants::RESPONSE_TYPE => 'number',
-                            OnboardingConstants::MANDATORY     => true
-                        ]
+                    OnboardingConstants::VENDOR_AGREEMENT => [
+                        OnboardingConstants::ID            => OnboardingConstants::VENDOR_AGREEMENT,
+                        OnboardingConstants::RESPONSE_TYPE => 'file',
+                        OnboardingConstants::MANDATORY     => false
+                    ]
+                ],
+                FeaturesConstants::SUBSCRIPTIONS    => [
+                    OnboardingConstants::BUSINESS_MODEL  => [
+                        OnboardingConstants::ID            => OnboardingConstants::BUSINESS_MODEL,
+                        OnboardingConstants::RESPONSE_TYPE => 'textarea',
+                        OnboardingConstants::MANDATORY     => true
+                    ],
+                    OnboardingConstants::SAMPLE_PLANS    => [
+                        OnboardingConstants::ID            => OnboardingConstants::SAMPLE_PLANS,
+                        OnboardingConstants::RESPONSE_TYPE => 'textarea',
+                        OnboardingConstants::MANDATORY     => true
+                    ],
+                    OnboardingConstants::WEBSITE_DETAILS => [
+                        OnboardingConstants::ID            => OnboardingConstants::WEBSITE_DETAILS,
+                        OnboardingConstants::RESPONSE_TYPE => 'textarea',
+                        OnboardingConstants::MANDATORY     => true
+                    ]
+                ],
+                FeaturesConstants::VIRTUAL_ACCOUNTS => [
+                    OnboardingConstants::USE_CASE                 => [
+                        OnboardingConstants::ID            => OnboardingConstants::USE_CASE,
+                        OnboardingConstants::RESPONSE_TYPE => 'textarea',
+                        OnboardingConstants::MANDATORY     => true
+                    ],
+                    OnboardingConstants::EXPECTED_MONTHLY_REVENUE => [
+                        OnboardingConstants::ID            => OnboardingConstants::EXPECTED_MONTHLY_REVENUE,
+                        OnboardingConstants::RESPONSE_TYPE => 'number',
+                        OnboardingConstants::MANDATORY     => true
                     ]
                 ]
             ],
@@ -77,14 +75,12 @@ return [
     'testPostResponsesWithFiles' => [
         'request'  => [
             'content' => [
-                OnboardingConstants::ONBOARDING => [
-                    FeaturesConstants::MARKETPLACE => [
-                        OnboardingConstants::USE_CASE    => 'Some default use case',
-                        OnboardingConstants::SETTLING_TO => 'Someone'
-                    ]
-                ],
+                FeaturesConstants::MARKETPLACE => [
+                    OnboardingConstants::USE_CASE    => 'Some default use case',
+                    OnboardingConstants::SETTLING_TO => 'Someone'
+                ]
             ],
-            'url'     => '/merchant/onboarding',
+            'url'     => '/feature/onboarding',
             'method'  => 'POST',
             'server'  => [
                 'HTTP_X-Dashboard'            => 'true',
@@ -93,11 +89,9 @@ return [
         ],
         'response' => [
             'content' => [
-                OnboardingConstants::ONBOARDING => [
-                    FeaturesConstants::MARKETPLACE => [
-                        OnboardingConstants::USE_CASE    => 'Some default use case',
-                        OnboardingConstants::SETTLING_TO => 'Someone'
-                    ]
+                FeaturesConstants::MARKETPLACE => [
+                    OnboardingConstants::USE_CASE    => 'Some default use case',
+                    OnboardingConstants::SETTLING_TO => 'Someone'
                 ]
             ]
         ]

@@ -22,7 +22,7 @@ class Service extends Base\Service
 
             if (count($questionMap) > 0)
             {
-                $response[Constants::ONBOARDING][$feature] = $questionMap;
+                $response[$feature] = $questionMap;
             }
         }
 
@@ -41,9 +41,7 @@ class Service extends Base\Service
 
         $merchantId = $merchant->getId();
 
-        $userResponses = $input[Constants::ONBOARDING];
-
-        foreach ($userResponses as $featureName => $userQuestionMaps)
+        foreach ($input as $featureName => $userQuestionMaps)
         {
             // Ignore, if the feature sent is not found in the Constants defined
             if (array_key_exists($featureName, $featureQuestionsMap) === false)
@@ -64,7 +62,7 @@ class Service extends Base\Service
                 }
 
                 // example settingKey = "onboarding.marketplace.use_case"
-                $settingKey   = implode(".", [Constants::ONBOARDING, $featureName, $userQuestion]);
+                $settingKey   = implode(".", [$featureName, $userQuestion]);
 
                 // json_encode is being used as the response can also be an array. Don't want to join the array based on comma's.
                 $settingValue = json_encode($userResponse);
@@ -92,22 +90,22 @@ class Service extends Base\Service
 
         $entityId = $this->merchant->getId();
 
-        $settingsService->upsert($entity, $entityId, $settingsMap);
+        $settingsService->upsert($entity, $entityId, Constants::ONBOARDING, $settingsMap);
 
-        $response = $settingsService->getAll($entity, $entityId);
+        $response = $settingsService->getAll($entity, $entityId, Constants::ONBOARDING, $settingsMap);
 
         $response = $response['settings'];
 
-        $returnResponse[Constants::ONBOARDING] = [];
+        $returnResponse = [];
 
-        foreach ($response[Constants::ONBOARDING] as $feature => $questionResponseMap)
+        foreach ($response as $feature => $questionResponseMap)
         {
-            $returnResponse[Constants::ONBOARDING][$feature] = [];
+            $returnResponse[$feature] = [];
 
             foreach ($questionResponseMap as $question => $userResponse)
             {
                 // json_decode, because just json_encode does not help
-                $returnResponse[Constants::ONBOARDING][$feature][$question] = json_decode($userResponse);
+                $returnResponse[$feature][$question] = json_decode($userResponse);
             }
         }
 

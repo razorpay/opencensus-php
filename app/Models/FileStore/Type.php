@@ -75,7 +75,8 @@ class Type
     const ACTIVATION_BUCKET_CONFIG              = 'activation_bucket_config';
     const H2H_BUCKET_CONFIG                     = 'h2h_bucket_config';
 
-    const ONBOARDING_MARKETPLACE_AGREEMENT      = OnboardingConstants::ONBOARDING . "." . FeaturesConstants::MARKETPLACE . "." . OnboardingConstants::VENDOR_AGREEMENT;
+    // File contants required for merchant feature onboarding
+    const MARKETPLACE_VENDOR_AGREEMENT      = FeaturesConstants::MARKETPLACE . "." . OnboardingConstants::VENDOR_AGREEMENT;
 
     /**
      * Map of types allowed for each entity.
@@ -135,7 +136,7 @@ class Type
         ],
 
         Constants\Entity::MERCHANT_ONBOARDING => [
-            self::ONBOARDING_MARKETPLACE_AGREEMENT
+            self::MARKETPLACE_VENDOR_AGREEMENT
         ],
     ];
 
