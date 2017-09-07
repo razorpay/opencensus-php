@@ -217,6 +217,14 @@ class Reconciliate
         return $reconciliationType;
     }
 
+    // This can be overriden from the child class
+    // If not overriden, it fetches the mapping from FileProcessor::FILE_TYPES_MAPPINGS
+    public function getFileType(string $mimeType)
+    {
+        return Orchestrator::getKeyFromSubArrayMatch(
+            $mimeType, FileProcessor::FILE_TYPES_MAPPINGS);
+    }
+
     public function getReconciliationTypeFromFileName($fileName)
     {
         $fileName = strtolower($fileName);

@@ -805,8 +805,7 @@ class Orchestrator extends Base\Core
      */
     protected function getFileContentInArrayAndSet($fileDetails)
     {
-        $fileType = self::getKeyFromSubArrayMatch(
-            $fileDetails[FileProcessor::MIME_TYPE], FileProcessor::FILE_TYPES_MAPPINGS);
+        $fileType = $this->gatewayReconciliator->getFileType($fileDetails[FileProcessor::MIME_TYPE]);
 
         $fileDetails[FileProcessor::FILE_TYPE] = $fileType;
 
