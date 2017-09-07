@@ -77,7 +77,8 @@ class Dashboard
                 $options
             );
 
-            $body = $response->body;
+            $statusCode = $response->status_code ;
+            $body       = $response->body;
 
             // The response can be in jsonp or json.
             // Remove jsonp related callback if so.
@@ -99,39 +100,30 @@ class Dashboard
 
             $content = json_decode($body, true);
 
+            $traceData = [
+                'status_code' => $statusCode,
+                'body'        => $body,
+                'transaction' => $data['message'],
+                'mode'        => $data['mode'],
+            ];
+
             if ($content === null)
             {
-                $array = array(
-                    'body'          => $body,
-                    'transaction'   => $data['message'],
-                    'mode'          => $data['mode']);
+                $this->trace->error(TraceCode::DASHBOARD_INTEGRATION_ERROR, $traceData);
 
-                $this->trace->error(TraceCode::DASHBOARD_INTEGRATION_ERROR, $array);
-
-                throw new Exception\IntegrationException(
-                    'Dashboard returned a non-json response',
-                    $array);
+                throw new Exception\IntegrationException('Dashboard returned a non-json response', $traceData);
             }
 
             if ((isset($content['success']) === false) or
                 ($content['success'] === false))
             {
-                $errors = [];
+                $errors = $content['errors'] ?? [];
 
-                if (isset($content['errors']))
-                    $errors = $content['errors'];
+                $traceData['errors'] = $errors;
 
-                $array = array(
-                    'body'          => $content,
-                    'transaction'   => $data['message'],
-                    'mode'          => $data['mode'],
-                    'errors'        => $errors);
+                $this->trace->error(TraceCode::DASHBOARD_INTEGRATION_ERROR, $traceData);
 
-                $this->trace->error(TraceCode::DASHBOARD_INTEGRATION_ERROR, $array);
-
-                throw new Exception\IntegrationException(
-                    'Dashboard returned false status in response',
-                    $array);
+                throw new Exception\IntegrationException('Dashboard returned false status in response', $traceData);
             }
         }
 

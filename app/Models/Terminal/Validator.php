@@ -32,7 +32,6 @@ class Validator extends Base\Validator
         Entity::UPI                         => 'sometimes|boolean',
         Entity::AEPS                        => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12,18,24',
-        Entity::SHARED                      => 'sometimes|boolean',
         Entity::TYPE                        => 'sometimes|integer|max:7',
         Entity::MODE                        => 'sometimes|in:1,2,3',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
@@ -416,8 +415,8 @@ class Validator extends Base\Validator
                 ]);
         }
 
-        if ((isset($input[Entity::SHARED]) === false) or
-            ($input[Entity::SHARED] !== '1'))
+        if ((isset($input[Entity::MERCHANT_ID]) === false) or
+            ($input[Entity::MERCHANT_ID] !== Merchant\Account::SHARED_ACCOUNT))
         {
             throw new Exception\LogicException(
                 'EMI Terminals must be shared terminals',
