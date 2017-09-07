@@ -59,9 +59,9 @@ class Reconciliator extends Base\RefundFile
 
             $data[] = [
                 'bank_reference' => $row['gateway']['bank_payment_id'],
-                'amount'         => $this->getFormattedAmount($row['payment']['amount']),
+                'amount'         => str_pad($this->getFormattedAmount($row['payment']['amount']), 6, ' ', STR_PAD_LEFT),
                 'date'           => $date,
-                'payment_id'     => $row['payment']['id'],
+                'payment_id'     => str_pad($row['payment']['id'], 8, ' ', STR_PAD_RIGHT),
                 'account_number' => $date,
             ];
 

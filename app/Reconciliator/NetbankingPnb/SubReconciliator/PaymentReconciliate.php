@@ -14,14 +14,14 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_PAYMENT_ID          = 'payment_id';
     const COLUMN_GATEWAY_PAYMENT_ID  = 'bank_reference';
     const COLUMN_BANK_ACCOUNT_NUMBER = 'account_number';
-    const COLUMN_AMOUNT              = 'amount';
+    const COLUMN_PAYMENT_AMOUNT      = 'amount';
     const COLUMN_DATE                = 'date';
 
     protected function getPaymentId($row)
     {
         if (empty($row[self::COLUMN_PAYMENT_ID]) === false)
         {
-            return ltrim($row[self::COLUMN_PAYMENT_ID]);
+            return trim($row[self::COLUMN_PAYMENT_ID]);
         }
 
         return null;
@@ -37,6 +37,18 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                                                            $status);
     }
 
+    protected function getGatewayPaymentAmount($row)
+    {
+        $paymentAmount = floatval(trim($row[self::COLUMN_PAYMENT_AMOUNT])) * 100;
+
+        // We are converting to int after casting to string as PHP randomly
+        // returns wrong int values due to differing floating point precisions
+        // So something like intval(31946.0) may give 31945 or 31946.
+        // Convering to string using number_format and then converting
+        // is a hack to avoid this issue
+        return intval(number_format($paymentAmount, 2, '.', ''));
+    }
+
     protected function getNbAccountDetails($row)
     {
         return [
@@ -48,7 +60,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         if (empty($row[self::COLUMN_BANK_ACCOUNT_NUMBER]) === false)
         {
-            return ltrim($row[self::COLUMN_BANK_ACCOUNT_NUMBER]);
+            return trim($row[self::COLUMN_BANK_ACCOUNT_NUMBER]);
         }
 
         return null;
