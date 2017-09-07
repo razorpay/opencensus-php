@@ -1003,8 +1003,6 @@ class Service extends Base\Service
 
         $merchant->validateInput('feature', $input);
 
-        $this->modeBasedFeatureValidation($input['features']);
-
         $featuresToAdd = $this->getFeatureNamesToAdd($input['features']);
 
         $featuresToRemove = $this->getFeatureNamesToRemove($input['features']);
@@ -1151,29 +1149,6 @@ class Service extends Base\Service
         $merchants = $this->fetchReferredMerchants();
 
         return array_merge([$merchantId], $merchants->pluck('id')->toArray());
-    }
-
-    /**
-     * If any of the features that can be enabled or disabled only by an admin in the LIVE mode,
-     * is being edited by the merchant, an error is thrown.
-     *
-     * @param $features
-     *
-     * @throws Exception\BadRequestException
-     */
-    private function modeBasedFeatureValidation($features)
-    {
-        if ($this->mode === Mode::LIVE)
-        {
-            foreach ($features as $name => $value)
-            {
-                if (in_array($name, Feature\Constants::$featuresUneditableOnLive, true) === true)
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE_ON_LIVE);
-                }
-            }
-        }
     }
 
     /**

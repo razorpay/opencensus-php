@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Merchant;
 
+use App;
 use RZP\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
@@ -113,7 +114,31 @@ class Validator extends Base\Validator
 
     protected static $featureValidators = [
         'visible_features',
+        'mode_based_feature_access'
     ];
+
+    /**
+     * If any of the features that can be enabled or disabled only by an admin in the LIVE mode,
+     * is being edited by the merchant, an error is thrown.
+     *
+     * @param $features
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function validateModeBasedFeatureAccess($features)
+    {
+        if (App::getFacadeRoot()['rzp.mode'] === Mode::LIVE)
+        {
+            foreach ($features as $name => $value)
+            {
+                if (in_array($name, Feature\Constants::$featuresUneditableOnLive, true) === true)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE_ON_LIVE);
+                }
+            }
+        }
+    }
 
     protected function validateHandle($attribute, $handle)
     {
