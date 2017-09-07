@@ -196,12 +196,12 @@ class Checkout
             //
             // For the preferences route, we remove all the recurring netbanking tokens
             //
-            $savedTokens = (new Customer\Service)->removeNetbankingRecurringTokens($savedTokens);
+            $savedTokens = (new Customer\Core)->removeNetbankingRecurringTokens($savedTokens);
 
             $custData =  array(
                 'email'     => $customer->getEmail(),
                 'contact'   => $customer->getContact(),
-                'tokens'    => $savedTokens
+                'tokens'    => $savedTokens->toArrayPublic(),
             );
 
             //

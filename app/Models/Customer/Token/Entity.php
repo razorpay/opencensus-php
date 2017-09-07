@@ -92,7 +92,6 @@ class Entity extends Base\PublicEntity
         self::RECURRING_FAILURE_REASON,
         self::USED_AT,
         self::CREATED_AT,
-        self::MAX_AMOUNT,
     ];
 
     protected $defaults = [
@@ -106,7 +105,7 @@ class Entity extends Base\PublicEntity
         self::EXPIRED_AT                => null,
         self::RECURRING_STATUS          => null,
         self::RECURRING_FAILURE_REASON  => null,
-        self::MAX_AMOUNT                => 0,
+        self::MAX_AMOUNT                => null,
     ];
 
     protected $publicSetters = [

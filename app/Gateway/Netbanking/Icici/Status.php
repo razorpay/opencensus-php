@@ -41,8 +41,8 @@ class Status
     const SI_FAILED_STATUSES    = [self::SI_FAILED, self::PAYMENT_NOT_SCHEDULED];
 
     const SI_STATUS_TO_RECURRING_STATUS_MAP = [
-        'Y' => Token\RecurringStatus::CONFIRMED,
-        'N' => Token\RecurringStatus::REJECTED
+        self::Y => Token\RecurringStatus::CONFIRMED,
+        self::N => Token\RecurringStatus::REJECTED
     ];
 
     public static function isSiStatusFailure(string $status)

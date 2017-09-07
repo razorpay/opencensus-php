@@ -2445,3 +2445,8 @@ ALTER TABLE transfers
     ADD COLUMN recipient_settlement_id CHAR(14) AFTER transaction_id,
     ADD CONSTRAINT transfers_recipient_settlement_id_foreign FOREIGN KEY(recipient_settlement_id)
     REFERENCES settlements(id) ON DELETE RESTRICT;
+
+ALTER TABLE netbanking
+    ADD COLUMN si_ref_id VARCHAR(255) DEFAULT NULL AFTER caps_payment_id
+    ADD COLUMN si_status VARCHAR(255) DEFAULT NULL AFTER si_ref_id
+    ADD COLUMN si_message VARCHAR(255) DEFAULT NULL AFTER si_status

@@ -934,7 +934,7 @@ trait Authorize
             ($payment->isSecondRecurring() === false))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_TOKEN_PASSED_IN_FIRST_RECURRING,
+                ErrorCode::BAD_REQUEST_NB_TOKEN_PASSED_IN_FIRST_RECURRING,
                 Payment\Entity::BANK,
                 [
                     'payment' => $payment->toArray(),
@@ -942,35 +942,7 @@ trait Authorize
                 ]);
         }
 
-        //
-        // For netbanking payments, we ensure that if it is a second recurring payment,
-        // it must contain a recurring enabled token with an associated gateway token.
-        //
-        if ($payment->isSecondRecurring() === true)
-        {
-            $this->validateSecondRecurringNetbanking($token, $payment);
-        }
-
         $this->validateTokenMaxAmount($token, $payment);
-    }
-
-    /**
-     * @param $token
-     * @param $payment
-     * @throws Exception\BadRequestException
-     */
-    protected function validateSecondRecurringNetbanking(Token\Entity $token, Payment\Entity $payment)
-    {
-        if (empty($token->getGatewayToken()) === true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_GATEWAY_TOKEN_EMPTY,
-                Token\Entity::GATEWAY_TOKEN,
-                [
-                    'payment' => $payment->toArray(),
-                    'token'   => $token->toArray(),
-                ]);
-        }
     }
 
     protected function validateTokenMaxAmount(Token\Entity $token, Payment\Entity $payment)

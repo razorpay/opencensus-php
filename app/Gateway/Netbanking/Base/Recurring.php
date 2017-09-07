@@ -9,5 +9,5 @@ class Recurring
      * For charge at will payments, we don't off hand
      * how long the merchant wants the subscription to go on
      */
-    const MAX_END_YEARS = 10;
+    const MAX_END_YEARS = 30;
 }

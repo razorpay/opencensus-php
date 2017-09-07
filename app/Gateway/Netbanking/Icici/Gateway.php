@@ -48,7 +48,7 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        if ($this->isSecondRecurringPaymentRequest($input) === true)
+        if ($this->isDebitStep($input) === true)
         {
             //
             // We return nothing here, to avoid 2 step flow
@@ -71,6 +71,17 @@ class Gateway extends Base\Gateway
 
     protected function authorizeSecondRecurring(array $input)
     {
+        if (empty($input['token']->getGatewayToken()) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_GATEWAY_TOKEN_EMPTY,
+                Token\Entity::GATEWAY_TOKEN,
+                [
+                    'payment' => $input['payment'],
+                    'token'   => $input['token']->toArray(),
+                ]);
+        }
+
         $entity = [RequestFields::AMOUNT => $input['payment'][Payment\Entity::AMOUNT] / 100];
 
         $gatewayPayment = $this->createGatewayPaymentEntity($entity);
@@ -201,7 +212,7 @@ class Gateway extends Base\Gateway
 
         $acquirerData = $this->getAcquirerData($gatewayPayment);
 
-        if ($this->isFirstRecurring($input) === true)
+        if ($this->isRegistrationStep($input) === true)
         {
             $recurringData = $this->getRecurringData($gatewayPayment);
 
@@ -354,7 +365,7 @@ class Gateway extends Base\Gateway
         //
         // For recurring payments, we use E-Mandate Registration flow
         //
-        if ($this->isFirstRecurring($input) === true)
+        if ($this->isRegistrationStep($input) === true)
         {
             $eMandateData = $this->getEMandateRequestData($input);
 
@@ -394,7 +405,7 @@ class Gateway extends Base\Gateway
         if (empty($verify->payment->getSIRefId()) === false)
         {
             $requestData[RequestFields::SI] = Status::Y;
-            $requestData[RequestFields::SI_AUTO_PAY_AMOUNT] = (int) $verify->input['token']->getMaxAmount() / 100;
+            $requestData[RequestFields::SI_AUTO_PAY_AMOUNT] = $verify->input['token']->getMaxAmount() / 100;
         }
 
         return array_merge($baseRequestData, $requestData);
@@ -462,6 +473,44 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
+    /**
+     * Registration step is marked by
+     * 1. payment being recurring,
+     * 2. terminal being 3DS recurring and
+     * 3. token's recurring parameter being false
+     *
+     * @param array $input
+     * @return bool
+     */
+    protected function isRegistrationStep(array $input)
+    {
+        $paymentRecurring = $input['payment']['recurring'];
+        $terminalRecurring = $input['terminal']->is3DSRecurring();
+        $tokenRecurring = (isset($input['token']) === true) ? $input['token']->isRecurring() : null;
+
+        $this->trace->info(
+            TraceCode::GATEWAY_FIRST_RECURRING,
+            [
+                'payment_recurring'     => $paymentRecurring,
+                'terminal_recurring'    => $terminalRecurring,
+                'token_recurring'       => $tokenRecurring,
+            ]);
+
+        //
+        // Payment has to be a recurring payment, terminal has to be enabled for recurring
+        // and token's recurring field has to be set to false, because it gets updated to true
+        // after the initial recurring payment is successful
+        //
+        return (($paymentRecurring === true) and
+                ($terminalRecurring === true) and
+                ($tokenRecurring === false));
+    }
+
+    protected function isDebitStep(array $input)
+    {
+        return parent::isSecondRecurringPaymentRequest($input);
+    }
+
     protected function getBaseAuthorizeRequestData(array $input)
     {
         $callbackUrl = '%22' . $input['callbackUrl'] . '%22';
@@ -489,18 +538,20 @@ class Gateway extends Base\Gateway
      */
     protected function getPaymentReferenceData(array $input)
     {
+        $paymentId = $input['payment'][Payment\Entity::ID];
+
         if ($input['payment']['recurring'] === true)
         {
             $itc = $input['token']->getId();
         }
         else
         {
-            $itc = strtoupper($input['payment'][Payment\Entity::ID]);
+            $itc = strtoupper($paymentId);
         }
 
         $amount = $input['payment'][Payment\Entity::AMOUNT] / 100;
 
-        $prn = $input['payment'][Payment\Entity::ID];
+        $prn = $paymentId;
 
         return [
             RequestFields::PAYMENT_ID    => $prn,
@@ -512,12 +563,12 @@ class Gateway extends Base\Gateway
 
     protected function getBaseRequestData(string $mode)
     {
-        $defaultData = [
+        $requestData = [
             RequestFields::MODE     => $mode,
             RequestFields::PAYEE_ID => $this->getPid(),
         ];
 
-        return $defaultData;
+        return $requestData;
     }
 
     protected function setTpvFieldIfNeeded(array & $additionalData, array $input)
@@ -787,7 +838,7 @@ class Gateway extends Base\Gateway
         $siStatus = $gatewayPayment->getSIStatus();
 
         // This null check is used in the test cases
-        $recurringStatus = Status::SI_STATUS_TO_RECURRING_STATUS_MAP[$siStatus] ?? null;
+        $recurringStatus = Status::SI_STATUS_TO_RECURRING_STATUS_MAP[$siStatus] ?? Token\RecurringStatus::REJECTED;
 
         // TODO: We should have a mapping here with our internal error codes.
         // We cannot show the message as it is.
@@ -796,7 +847,7 @@ class Gateway extends Base\Gateway
         $recurringData = [
             Token\Entity::RECURRING_STATUS         => $recurringStatus,
             Token\Entity::GATEWAY_TOKEN            => $gatewayPayment->getSIRefId(),
-            Token\Entity::RECURRING_FAILURE_REASON => $recurringFailureReason ?? null,
+            Token\Entity::RECURRING_FAILURE_REASON => $recurringFailureReason,
         ];
 
         return $recurringData;

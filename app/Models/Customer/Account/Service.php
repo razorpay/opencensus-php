@@ -313,49 +313,13 @@ class Service extends Base\Service
             //
             if (($tokens !== null) and ($tokens->count() > 0))
             {
-                $tokens = $this->removeNetbankingRecurringTokens($tokens);
+                $tokens = (new Customer\Core)->removeNetbankingRecurringTokens($tokens);
 
-                $result['tokens'] = $tokens;
+                $result['tokens'] = $tokens->toArrayPublic();
             }
         }
 
         return $result;
-    }
-
-    /**
-     * This method takes in the current tokens collection, removes the netbanking
-     * recurring tokens and returns the remaining tokens as an array
-     *
-     * @param $tokens
-     * @return mixed
-     */
-    public function removeNetbankingRecurringTokens($tokens)
-    {
-        //
-        // We are creating an array of all the items that do not pass the truth test
-        // that the token is recurring and netbanking - as we do not want to show
-        // recurring = netbanking tokens to the merchant via preferences
-        //
-        $tokens = $tokens->reject(
-            function($token)
-            {
-                if (($token->getMethod() === 'netbanking') and
-                    ($token->isRecurring() === true))
-                {
-                    return true;
-                }
-
-                return false;
-            })
-            ->toArrayPublic();
-
-        //
-        // This needs to be done because the method above converts the items
-        // sub-array into a key value pair of the form: 0 => item
-        //
-        $tokens['items'] = array_values($tokens['items']);
-
-        return $tokens;
     }
 
     public function updateSmsStatus($id, $input)

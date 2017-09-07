@@ -32,7 +32,7 @@ class RecurringStatus
         if (self::isRecurringStatusValid($recurringStatus) === false)
         {
             throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_TOKEN_INVALID_RECURRING_STATUS,
+                ErrorCode::SERVER_ERROR_TOKEN_INVALID_RECURRING_STATUS,
                 Entity::RECURRING_STATUS,
                 [
                     'recurring_status' => $recurringStatus

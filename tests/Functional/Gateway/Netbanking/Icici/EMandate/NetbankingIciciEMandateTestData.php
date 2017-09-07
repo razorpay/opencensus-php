@@ -66,22 +66,6 @@ return [
         ],
     ],
 
-    'testSiRecurringStatusNotSet' => [
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'          => PublicErrorCode::SERVER_ERROR,
-                    'description'   => PublicErrorDescription::SERVER_ERROR,
-                ],
-            ],
-            'status_code' => 500,
-        ],
-        'exception' => [
-            'class'                 => RZP\Exception\LogicException::class,
-            'internal_error_code'   => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
-        ],
-    ],
-
     'testSiRecurringMessageNotSet' => [
         'response'  => [
             'content'     => [
@@ -201,14 +185,14 @@ return [
             'content'     => [
                 'error' => [
                     'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_TOKEN_PASSED_IN_FIRST_RECURRING,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_NB_TOKEN_PASSED_IN_FIRST_RECURRING,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'                 => RZP\Exception\BadRequestException::class,
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_TOKEN_PASSED_IN_FIRST_RECURRING,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_NB_TOKEN_PASSED_IN_FIRST_RECURRING,
         ],
     ],
 ];

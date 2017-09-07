@@ -128,7 +128,6 @@ class ErrorCode
     const BAD_REQUEST_UNMAPPED_VPA                                                  = 'BAD_REQUEST_UNMAPPED_VPA';
     const BAD_REQUEST_INVALID_P2P                                                   = 'BAD_REQUEST_INVALID_P2P';
     const BAD_REQUEST_VPA_DOESNT_EXIST                                              = 'BAD_REQUEST_VPA_DOESNT_EXIST';
-    const BAD_REQUEST_TOKEN_INVALID_RECURRING_STATUS                                = 'BAD_REQUEST_TOKEN_INVALID_RECURRING_STATUS';
 
 // Unauthorized bad requests
     const BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED                               = 'BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED';
@@ -489,6 +488,7 @@ class ErrorCode
     const SERVER_ERROR_PERIOD_NOT_ANCHORED                                          = 'SERVER_ERROR_PERIOD_NOT_ANCHORED';
     const SERVER_ERROR_LOG_RISK                                                     = 'SERVER_ERROR_LOG_RISK';
     const SERVER_ERROR_INVALID_RESPONSE                                             = 'SERVER_ERROR_INVALID_RESPONSE';
+    const SERVER_ERROR_TOKEN_INVALID_RECURRING_STATUS                               = 'SERVER_ERROR_TOKEN_INVALID_RECURRING_STATUS';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED                                     = 'BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED';
@@ -499,7 +499,7 @@ class ErrorCode
     const BAD_REQUEST_GLOBAL_CUSTOMER_MISMATCH                                      = 'BAD_REQUEST_GLOBAL_CUSTOMER_MISMATCH';
     const BAD_REQUEST_GATEWAY_TOKEN_EMPTY                                           = 'BAD_REQUEST_GATEWAY_TOKEN_EMPTY';
     const BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING                               = 'BAD_REQUEST_TOKEN_NOT_ENABLED_FOR_RECURRING';
-    const BAD_REQUEST_TOKEN_PASSED_IN_FIRST_RECURRING                               = 'BAD_REQUEST_TOKEN_PASSED_IN_FIRST_RECURRING';
+    const BAD_REQUEST_NB_TOKEN_PASSED_IN_FIRST_RECURRING                            = 'BAD_REQUEST_NB_TOKEN_PASSED_IN_FIRST_RECURRING';
 
     const BAD_REQUEST_RECONCILIATION                                                = 'BAD_REQUEST_RECONCILIATION';
     const BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE                          = 'BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE';
