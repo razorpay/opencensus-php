@@ -31,10 +31,10 @@ class MerchantAnalyticsTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/merchant/' . $this->ba->getKey() . '/analytics';
+        $testData['request']['url'] = '/merchant/10000000000000/analytics';
 
         // For validations
-        $testData['request']['content']['query']['filter']['terms'][0]['merchant_id'] = $this->ba->getKey();
+        $testData['request']['content']['query']['filter']['terms'][0]['merchant_id'] = '10000000000000';
 
         return $testData;
     }

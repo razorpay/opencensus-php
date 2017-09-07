@@ -205,10 +205,6 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateAnalyticsInput($id, $input)
-    {
-    }
-
     protected function validateCsvEmail($input)
     {
         if (empty($input[Entity::TRANSACTION_REPORT_EMAIL]) === true)

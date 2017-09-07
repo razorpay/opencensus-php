@@ -383,10 +383,8 @@ class Core extends Base\Core
         }
     }
 
-    public function getAnalytics($id, $input): Response
+    public function getAnalytics($input): Response
     {
-        (new Validator())->validateAnalyticsInput($id, $input);
-
         return $this->app['eventManager']->query($input);
     }
 }

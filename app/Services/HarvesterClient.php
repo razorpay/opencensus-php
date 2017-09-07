@@ -101,10 +101,7 @@ class HarvesterClient extends AbstractEventClient
 
     public function query($data = ''): Response
     {
-        // TODO : Add any service level validation here
-
         return $this->sendRequest($this->queryPath, $data, true, 3);
-
     }
 
     protected function sendRequest(string $urlPath, $data, bool $retry = false, int $maxRetryTimes = 0): Response
