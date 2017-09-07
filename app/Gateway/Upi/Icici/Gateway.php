@@ -533,7 +533,6 @@ class Gateway extends Base\Gateway
         ];
 
         return $request;
-
     }
 
     protected function verifyPayment(Verify $verify): string
