@@ -198,4 +198,109 @@ return [
     'transfer_mapping'        => [],
 
     'virtual_account_mapping' => [],
+
+    'merchant_mapping'        => [
+        '_all' => [
+            'enabled' => false
+        ],
+        'properties' => [
+            'id' => [
+                'type' => 'keyword',
+            ],
+            'org_id' => [
+                'type'  => 'keyword',
+                'index' => false,
+            ],
+            'name' => [
+                'type'            => 'text',
+                'analyzer'        => 'edge_ngram_analyzer',
+                'search_analyzer' => 'standard',
+                'index_options'   => 'offsets',
+            ],
+            'email' => [
+                'type' => 'text',
+            ],
+            'billing_label' => [
+                'type'            => 'text',
+                'analyzer'        => 'edge_ngram_analyzer',
+                'search_analyzer' => 'standard',
+                'index_options'   => 'offsets',
+            ],
+            'website' => [
+                'type'            => 'text',
+                'analyzer'        => 'standard',
+                'search_analyzer' => 'standard',
+            ],
+            'tag_list' => [
+                'type'            => 'text',
+                'analyzer'        => 'standard',
+                'search_analyzer' => 'standard',
+            ],
+            'parent_id' => [
+                'type' => 'keyword',
+            ],
+            'activated' => [
+                'type' => 'boolean',
+            ],
+            'activated_at' => [
+                'type'   => 'date',
+                'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
+            'archived_at' => [
+                'type'   => 'date',
+                'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
+            'suspended_at' => [
+                'type'   => 'date',
+                'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
+            'created_at' => [
+                'type'   => 'date',
+                'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
+            'updated_at' => [
+                'type'   => 'date',
+                'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+            ],
+            'merchant_details' => [
+                'properties' => [
+                    'merchant_id' => [
+                        'type'  => 'keyword',
+                        'index' => false,
+                    ],
+                    'steps_finished' => [
+                        'type'  => 'keyword',
+                        'index' => false,
+                    ],
+                    'activation_progress' => [
+                        'type' => 'byte',
+                    ],
+                    'submitted_at' => [
+                        'type'   => 'date',
+                        'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+                        'index'  => false,
+                    ],
+                    'updated_at' => [
+                        'type'   => 'date',
+                        'format' => 'yyyy-MM-dd HH:mm:ss||epoch_millis',
+                        'index'  => false,
+                    ],
+                ],
+            ],
+            'admins' => [
+                'type' => 'keyword',
+            ],
+            'groups' => [
+                'type' => 'keyword',
+            ],
+            'is_marketplace' => [
+                'type'  => 'boolean',
+                'index' => false,
+            ],
+            'referrer' => [
+                'type'  => 'keyword',
+                'index' => false,
+            ],
+        ],
+    ],
 ];
