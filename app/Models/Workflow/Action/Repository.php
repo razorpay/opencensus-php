@@ -32,16 +32,19 @@ class Repository extends Base\Repository
                     });
     }
 
-    public function findByOrgId(string $orgId, array $relations = [], string $type = 'all')
+    public function findByOrgId(
+        string $orgId,
+        array $relations = [],
+        string $type = 'all')
     {
         Org\Entity::verifyIdAndSilentlyStripSign($orgId);
 
         $openStates = State\Entity::OPEN_STATES;
 
         $query = $this->getNewQueryWithPermissions()
-                    ->orgId($orgId)
-                    ->with($relations)
-                    ->orderBy(Entity::CREATED_AT, 'desc');
+                      ->orgId($orgId)
+                      ->with($relations)
+                      ->orderBy(Entity::CREATED_AT, 'desc');
 
         if ($type == 'open')
         {
@@ -51,7 +54,10 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function findByAdminIdAndOrgIdWithRelations($adminId, $orgId, $relations = [])
+    public function findByAdminIdAndOrgIdWithRelations(
+        string $adminId,
+        string $orgId,
+        array $relations = [])
     {
         $permission = Table::PERMISSION;
 
@@ -160,7 +166,10 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getOpenActionOnEntityOperation($entityId, $entityName, $permissionId)
+    public function getOpenActionOnEntityOperation(
+        string $entityId,
+        string $entityName,
+        string $permissionId)
     {
         return $this->newQuery()
                     ->where(Entity::ENTITY_ID, $entityId)

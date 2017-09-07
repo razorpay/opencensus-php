@@ -26,7 +26,7 @@ class Authorization
     protected $defaultDeviceToken = 'authentication_token';
 
     protected $defaultToken = 'SecretTokenForRazorpayAdminAuthentication';
-    protected $defaultOrgId = 'org_100000Razorpay';
+    protected $defaultOrgId = 'org_100000razorpay';
     protected $defaultDashboardHostname = 'dashboard.razorpay.dev';
 
     protected $defaultAccountId = 'acc_10000000000001';

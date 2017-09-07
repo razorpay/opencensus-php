@@ -249,7 +249,7 @@ return [
 
     'testPaymentWalletEntity' => [
         'action'                => 'authorize',
-        'amount'                => 50000,
+        'amount'                => '50000',
         'wallet'                => 'payumoney',
         'received'              => true,
         'email'                 => 'a@b.com',
@@ -262,7 +262,7 @@ return [
 
     'testTopupPayment'               => [
         'action'                => 'authorize',
-        'amount'                => 100000,
+        'amount'                => '100000',
         'wallet'                => 'payumoney',
         'received'              => true,
         'email'                 => 'a@b.com',
@@ -309,7 +309,7 @@ return [
         'action'                => 'refund',
         'wallet'                => 'payumoney',
         'email'                 => 'a@b.com',
-        'amount'                => 50000,
+        'amount'                => '50000',
         'contact'               => '9918899029',
         'gateway_merchant_id'   => 'random_id',
         'response_code'         => '',
@@ -322,7 +322,7 @@ return [
         'action'                => 'refund',
         'wallet'                => 'payumoney',
         'email'                 => 'a@b.com',
-        'amount'                => 10000,
+        'amount'                => '10000',
         'contact'               => '9918899029',
         'gateway_merchant_id'   => 'random_id',
         'gateway_refund_id'     => '123456',
