@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Exception\InvalidArgumentException;
+use RZP\Models\Workflow\Constants;
 
 class Service extends Base\Service
 {
@@ -53,6 +54,8 @@ class Service extends Base\Service
         {
             // Function name which needs to be called to return actions based on duty and maker.
             $actionFunctionName = self::ACTION_FUNCTION_MAPPING[$duty][$type];
+
+            unset($input['duty']);
 
             $actions = call_user_func_array([$this, $actionFunctionName], [$input]);
         }
@@ -181,10 +184,13 @@ class Service extends Base\Service
      */
     public function getActionsForChecker(array $input)
     {
-        $adminRoleIds = $this->admin->roles()->allRelatedIds()->toArray();
+        $input['expand'] = ['admin'];
 
-        $actions = $this->repo->workflow_action->findActionsForChecker(
-            $adminRoleIds, ['admin']);
+        $input[Constants::CHECKER_ACTIONS] = true;
+
+        $input[Entity::PERMISSION] = true;
+
+        $actions = $this->repo->workflow_action->fetch($input);
 
         return $actions;
     }
@@ -201,13 +207,11 @@ class Service extends Base\Service
         // Only superadmin can access maker.all and maker.open
         $this->app['basicauth']->validateSuperAdminAccess();
 
-        $input['org_id'] = $this->admin->getOrgId();
+        $input[Entity::ORG_ID] = $this->admin->getOrgId();
 
         $input['expand'] = ['admin'];
 
-        $input['permission'] = true;
-
-        unset($input['duty']);
+        $input[Entity::PERMISSION] = true;
 
         $actions = $this->repo->workflow_action->fetch($input);
 
@@ -221,13 +225,11 @@ class Service extends Base\Service
      */
     public function getClosedActionsByMaker(array $input)
     {
-        unset($input['duty']);
-
         $input['permission'] = true;
 
         $input['expand'] = ['admin'];
 
-        $input['closed'] = true;
+        $input[Constants::CLOSED_ACTIONS] = true;
 
         $actions = $this->repo->workflow_action->fetch($input);
 
@@ -241,8 +243,6 @@ class Service extends Base\Service
      */
     public function getActionsByMaker(array $input)
     {
-        unset($input['duty']);
-
         $input['permission'] = true;
 
         $input['expand'] = ['workflow', 'admin'];

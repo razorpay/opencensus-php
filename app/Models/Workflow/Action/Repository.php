@@ -7,19 +7,21 @@ use RZP\Models\Admin\Org;
 use RZP\Models\Workflow\Action\State;
 use RZP\Models\Workflow\Action\Checker;
 use RZP\Constants\Table;
+use RZP\Models\Workflow\Constants;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'workflow_action';
 
     protected $adminFetchParamRules = [
-        Entity::ADMIN_ID     => 'sometimes|string|max:14',
-        Entity::WORKFLOW_ID  => 'sometimes|string|max:14',
-        Entity::ORG_ID       => 'sometimes|string|max:14',
-        self::EXPAND . '.*'  => 'string|in:admin,workflow,',
-        Entity::TYPE         => 'sometimes|string|max:10',
-        Entity::PERMISSION   => 'sometimes|boolean|in:0,1',
-        State\Entity::CLOSED => 'sometimes|boolean|in:0,1',
+        Entity::ADMIN_ID            => 'sometimes|string|max:14',
+        Entity::WORKFLOW_ID         => 'sometimes|string|max:14',
+        Entity::ORG_ID              => 'sometimes|string|max:14',
+        self::EXPAND . '.*'         => 'string|in:admin,workflow,',
+        Entity::TYPE                => 'sometimes|string|max:10',
+        Entity::PERMISSION          => 'sometimes|boolean|in:0,1',
+        Constants::CLOSED_ACTIONS   => 'sometimes|boolean|in:0,1',
+        Constants::CHECKER_ACTIONS  => 'sometimes|boolean|in:0,1',
     ];
 
     protected function getNewQueryWithPermissions()
@@ -113,7 +115,7 @@ class Repository extends Base\Repository
      * @param $query
      * @param $params
      */
-    public function addQueryParamClosed($query, $params)
+    public function addQueryParamClosedActions($query, $params)
     {
         $adminId = $this->auth->getAdmin()->getId();
 
@@ -183,4 +185,19 @@ class Repository extends Base\Repository
                     ->whereIn(Entity::STATE, State\Entity::OPEN_STATES)
                     ->get();
     }
+
+    public function addQueryParamCheckerActions($query, $params)
+    {
+        $wStep = Table::WORKFLOW_STEP;
+
+        $adminRoleIds = $this->auth->getAdmin()->roles()->allRelatedIds()->toArray();
+
+        $query->join($wStep, function ($join) {
+                    $join->on('workflow_actions.workflow_id', '=', 'workflow_steps.workflow_id')
+                         ->on('workflow_actions.current_level', '=', 'workflow_steps.level');
+                })
+              ->where('workflow_actions.state', '=', State\Entity::OPEN)
+              ->whereIn('workflow_steps.role_id', $adminRoleIds);
+    }
+
 }
