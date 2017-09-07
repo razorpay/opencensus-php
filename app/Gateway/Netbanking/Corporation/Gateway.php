@@ -38,7 +38,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getAuthRequestData($input);
 
-        $gatewayPayment = $this->createGatewayPaymentEntity($content);
+        $this->createGatewayPaymentEntity($content);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -67,13 +67,13 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::PAYMENT_ID]
         );
 
-        $this->checkCallbackStatus($content);
-
         // If callback status was a success, we verify the payment immediately
         $this->verifyCallback($input);
 
-        // Saving callback response only if the above checks pass
+        // Saving callback response only if the verification passes
         $gatewayPayment = $this->saveCallbackResponse($content);
+
+        $this->checkCallbackStatus($content);
 
         return $this->getCallbackResponseData($input);
     }
@@ -267,11 +267,8 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequest(array $input)
     {
-        // If we're calling the double verification request from callback,
-        // we'll have the 'gateway' attribute filled, because we already got
-        // the response from the gateway in the callback request.
-        // But, if we're calling this method from the verify request,
-        // we'll have to fetch the bank ref number from the netbanking repo.
+        // We can call the verification from the callback, since it's not encrypted
+        // or from a separate verify request.
         if($this->action === 'verify')
         {
             $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
@@ -299,6 +296,9 @@ class Gateway extends Base\Gateway
             RequestFields::VERIFY_DATA          => $encryptedString
         ];
 
+        // If this is getting called from the callback request,
+        // for fetching the verify URL correctly, we need to set the
+        // current action as verify.
         parent::verify($this->input);
 
         $request = $this->getStandardRequestArray($content);
