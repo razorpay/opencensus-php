@@ -2439,7 +2439,7 @@ ALTER TABLE refunds
 
 ALTER TABLE transactions
     ADD INDEX transactions_updated_at_index (updated_at);
-    
+
 # Adding recipient_settlement_id in transfers table
 ALTER TABLE transfers
     ADD COLUMN recipient_settlement_id CHAR(14) AFTER transaction_id,
@@ -2450,3 +2450,6 @@ ALTER TABLE netbanking
     ADD COLUMN si_ref_id VARCHAR(255) DEFAULT NULL AFTER caps_payment_id
     ADD COLUMN si_status VARCHAR(255) DEFAULT NULL AFTER si_ref_id
     ADD COLUMN si_message VARCHAR(255) DEFAULT NULL AFTER si_status
+
+ALTER TABLE gateway_rules
+    MODIFY COLUMN gateway VARCHAR(50) DEFAULT NULL;

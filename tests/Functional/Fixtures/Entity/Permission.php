@@ -26,12 +26,15 @@ class Permission extends Base
             {
                 $desc = isset($permissionValue['description']) ? $permissionValue['description'] : '';
 
+                $assignable = $permissionValue['assignable'] ?? false;
+
                 $row = [
                     PermissionEntity::NAME        => $permission,
                     PermissionEntity::CATEGORY    => $permissionCategory,
                     PermissionEntity::DESCRIPTION => $desc,
                     PermissionEntity::CREATED_AT  => time(),
-                    PermissionEntity::UPDATED_AT  => time()
+                    PermissionEntity::UPDATED_AT  => time(),
+                    PermissionEntity::ASSIGNABLE  => $assignable,
                 ];
 
                 $records[] = $this->fixtures->create('permission', $row);

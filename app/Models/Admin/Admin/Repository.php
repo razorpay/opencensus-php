@@ -40,19 +40,6 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function findByOrgIdAndEmailOrFail($orgId, $email, $relations=[])
-    {
-        $email = strtolower($email);
-
-        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
-
-        return $this->newQuery()
-                    ->orgId($orgId)
-                    ->where(Entity::EMAIL, '=', $email)
-                    ->with($relations)
-                    ->firstOrFailPublic();
-    }
-
     public function lockUnactivatedAccounts($timestamp)
     {
         return $this->newQuery()
