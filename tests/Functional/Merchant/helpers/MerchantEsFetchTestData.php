@@ -138,7 +138,7 @@ return [
                         'billing_label'  => 'Selva Label',
                         // 'created_at'     => 1504638504,
                         // 'updated_at'     => 1504638504,
-                        'tags'           => [],
+                        'tag_list'       => [],
                         'is_marketplace' => false,
                         'referrer'       => 'test admin',
                         'merchant_detail' => [
@@ -165,7 +165,7 @@ return [
                         'billing_label'   => 'Ojha Label',
                         // 'created_at'      => 1504638504,
                         // 'updated_at'      => 1504638504,
-                        'tags'            => [],
+                        'tag_list'        => [],
                         'is_marketplace'  => false,
                         'referrer'        => null,
                         'merchant_detail' => [

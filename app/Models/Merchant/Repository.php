@@ -534,7 +534,7 @@ class Repository extends Base\Repository
         // - Few additional attributes consumed by clients.
         //
 
-        $serialized[Entity::TAGS]            = $entity->tagNames();
+        $serialized[Entity::TAG_LIST]        = $entity->tagNames();
         $serialized[Entity::MERCHANT_DETAIL] = $entity->merchantDetail ? $entity->merchantDetail->toArray() : [];
         $serialized[Entity::ADMINS]          = $entity->admins->pluck(Common::ID)->all();
 

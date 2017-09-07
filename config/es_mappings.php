@@ -231,7 +231,7 @@ return [
                 'analyzer'        => 'standard',
                 'search_analyzer' => 'standard',
             ],
-            'tags' => [
+            'tag_list' => [
                 'type' => 'keyword',
             ],
             'parent_id' => [

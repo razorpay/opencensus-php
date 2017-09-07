@@ -145,7 +145,7 @@ return [
         'billing_label'   => 'Test',
         // 'created_at'      => 1504620540,
         // 'updated_at'      => 1504620540,
-        'tags'            => [],
+        'tag_list'        => [],
         'merchant_detail' => [
             'merchant_id'         => '1X4hRFHFx4UiXt',
             'steps_finished'      => '[]',
@@ -185,7 +185,7 @@ return [
         'billing_label'   => 'Test',
         // 'created_at'      => 1504620540,
         // 'updated_at'      => 1504620540,
-        'tags'            => [],
+        'tag_list'        => [],
         'merchant_detail' => [
             'merchant_id'         => '1X4hRFHFx4UiXt',
             'steps_finished'      => '[]',
@@ -204,20 +204,20 @@ return [
     //
 
     'testUpdateMerchantWithBasicDatapointsExpectedEsTestDoc' => [
-        'id'     => '10000000000016',
-        'org_id' => '100000razorpay',
-        'name'   => 'Updated New Name',
-        'tags'   => [
+        'id'       => '10000000000016',
+        'org_id'   => '100000razorpay',
+        'name'     => 'Updated New Name',
+        'tag_list' => [
             'First',
             'Second',
         ],
     ],
 
     'testUpdateMerchantWithBasicDatapointsExpectedEsLiveDoc' => [
-        'id'     => '10000000000016',
-        'org_id' => '100000razorpay',
-        'name'   => 'Updated New Name',
-        'tags'   => [],
+        'id'       => '10000000000016',
+        'org_id'   => '100000razorpay',
+        'name'     => 'Updated New Name',
+        'tag_list' => [],
     ],
 
     'testUpdateMerchantWithGroupsExpectedEsTestDoc' => [
@@ -273,9 +273,9 @@ return [
     ],
 
     'testAddMerchantTagsExpectedEsTestDoc' => [
-        'id'     => '10000000000016',
-        'org_id' => '100000razorpay',
-        'tags'   => [
+        'id'       => '10000000000016',
+        'org_id'   => '100000razorpay',
+        'tag_list' => [
             'First',
             'Second',
             'Third',
@@ -284,22 +284,22 @@ return [
     ],
 
     'testAddMerchantTagsExpectedEsLiveDoc' => [
-        'id'     => '10000000000016',
-        'org_id' => '100000razorpay',
-        'tags'   => [],
+        'id'       => '10000000000016',
+        'org_id'   => '100000razorpay',
+        'tag_list' => [],
     ],
 
     'testRemoveMerchantTagExpectedEsTestDoc' => [
-        'id'     => '10000000000016',
-        'org_id' => '100000razorpay',
-        'tags'   => [
+        'id'       => '10000000000016',
+        'org_id'   => '100000razorpay',
+        'tag_list' => [
             'Second',
         ],
     ],
 
     'testRemoveMerchantTagExpectedEsLiveDoc' => [
-        'id'     => '10000000000016',
-        'org_id' => '100000razorpay',
-        'tags'   => [],
+        'id'       => '10000000000016',
+        'org_id'   => '100000razorpay',
+        'tag_list' => [],
     ],
 ];

@@ -57,8 +57,17 @@ class Entity extends Base\PublicEntity
     // Coupon Related Data for display only
     const COUPON_CODE               = 'coupon_code';
 
+    //
+    // Followings are derived data indexed in ES and goes to
+    // admin dashboard as it is.
+    //
+
+    // Whether the entity is marketplace entity or not
     const IS_MARKETPLACE            = 'is_marketplace';
+    // Referrer for the entity is name of first admin.
     const REFERRER                  = 'referrer';
+    // List of tags this entity is tagged as.
+    const TAG_LIST                  = 'tag_list';
 
     //
     // Configs
@@ -98,7 +107,6 @@ class Entity extends Base\PublicEntity
 
     const ROLE                      = 'role';
     const PIVOT                     = 'pivot';
-    const TAGS                      = 'tags';
 
     protected $entity = 'merchant';
 
