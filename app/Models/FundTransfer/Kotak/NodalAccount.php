@@ -3,6 +3,7 @@
 namespace RZP\Models\FundTransfer\Kotak;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Excel;
 use Mail;
 
@@ -41,9 +42,9 @@ class NodalAccount
     public function __construct()
     {
         // Date format is DD/MM/YYYY in human representation
-        $this->date = Carbon::today('Asia/Kolkata')->format('d/m/Y');
+        $this->date = Carbon::today(Timezone::IST)->format('d/m/Y');
 
-        $this->hour = Carbon::now('Asia/Kolkata')->hour;
+        $this->hour = Carbon::now(Timezone::IST)->hour;
 
         $this->queue = \Queue::getFacadeRoot();
 
@@ -169,7 +170,7 @@ class NodalAccount
                 Headings::BENEFICIARY_NAME        => $ba->getBeneficiaryName(),
                 Headings::IFSC_CODE               => $ba->getIfscCode(),
                 Headings::BENEFICIARY_ACC_NO      => $ba->getAccountNumber(),
-                Headings::CREDIT_NARRATION        => 'RAZORPAY SETTLEMENT',
+                Headings::CREDIT_NARRATION        => $attempt->getNarration() ?? 'RAZORPAY SETTLEMENT',
                 Headings::PAYMENT_DETAILS_1       => $source->getPublicId(),
                 Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
                 Headings::PAYMENT_DETAILS_3       => $version,
@@ -306,7 +307,7 @@ class NodalAccount
             $metadata = [
                 'gid'   => '10000',
                 'uid'   => '10001',
-                'mtime' => Carbon::now()->timestamp,
+                'mtime' => Carbon::now()->getTimestamp(),
                 'mode'  => '33188',
             ];
 
@@ -340,7 +341,7 @@ class NodalAccount
 
         $summary = $this->summary;
 
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $today = Carbon::now(Timezone::IST)->format('d-m-Y');
         $subject = "Kotak Settlement files for $today";
 
         $data = compact('summary', 'subject');
@@ -371,7 +372,7 @@ class NodalAccount
 
     protected function getFileToWriteNameWithoutExt()
     {
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y-H-i-s');
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y-H-i-s');
 
         $mode = $this->getMode();
 
@@ -388,7 +389,7 @@ class NodalAccount
 
     protected function getH2HFileNameWithoutExt()
     {
-        $name = 'RAZORNODAL_'. Carbon::now('Asia/Kolkata')->format('dmYHis');
+        $name = 'RAZORNODAL_'. Carbon::now(Timezone::IST)->format('dmYHis');
 
         return $name;
     }

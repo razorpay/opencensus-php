@@ -8,30 +8,35 @@ class DisputeReasonSeeder extends Seeder
 {
     protected static $reasons = [
         [
+            'JCB',
             'UA05',
             'Fraud-Chip Counterfeit Transaction',
             'COUNTERFEIT_TRANSACTION',
             'The cardholder did not participate in the transaction, a fraudster made counterfeit copy of the card.'
         ],
         [
+            'AMEX',
             'M01',
             'Chargeback Authorization',
             'chargeback_authorization',
             'American Express received merchant authorization to process a chargeback for the charge.'
         ],
         [
+            'JCB',
             'C02',
             'Credit Not Processed',
             'credit_not_processed',
             'The cardholder claims he is due a credit from an establishment that has not been processed.'
         ],
         [
+            'VISA',
             '85',
             'Credit Not Processed',
             'credit_not_processed',
             'The cardholder claims he is due a credit from an establishment that has not been processed.'
         ],
         [
+            'AMEX',
             'CD',
             'Credit or Debit Posted Incorrectly',
             'credit_or_debit_posted_incorrectly',
@@ -40,6 +45,7 @@ class DisputeReasonSeeder extends Seeder
                 in a card sale rather than a credit.'
         ],
         [
+            'JCB',
             'AA',
             'Does Not Recognize',
             'card_holder_not_recognised',
@@ -74,10 +80,11 @@ class DisputeReasonSeeder extends Seeder
 
                 DB::table(Table::DISPUTE_REASON)->insert([
                     'id'                  => str_random(14),
-                    'gateway_code'        => $reason[0],
-                    'gateway_description' => $reason[1],
-                    'code'                => $reason[2],
-                    'description'         => $reason[3],
+                    'network'             => $reason[0],
+                    'gateway_code'        => $reason[1],
+                    'gateway_description' => $reason[2],
+                    'code'                => $reason[3],
+                    'description'         => $reason[4],
                     'created_at'          => time(),
                     'updated_at'          => time(),
                 ]);

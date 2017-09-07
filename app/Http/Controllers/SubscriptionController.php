@@ -3,8 +3,8 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
-use RZP\Models\Plan;
 use Request;
+use RZP\Constants\Entity as E;
 
 class SubscriptionController extends Controller
 {
@@ -14,14 +14,14 @@ class SubscriptionController extends Controller
     {
         $input = Request::all();
 
-        $plan = $this->service('plan')->create($input);
+        $plan = $this->service(E::PLAN)->create($input);
 
         return ApiResponse::json($plan);
     }
 
     public function getPlan(string $id)
     {
-        $plan = $this->service('plan')->fetch($id);
+        $plan = $this->service(E::PLAN)->fetch($id);
 
         return ApiResponse::json($plan);
     }
@@ -30,7 +30,7 @@ class SubscriptionController extends Controller
     {
         $input = Request::all();
 
-        $plans = $this->service('plan')->fetchMultiple($input);
+        $plans = $this->service(E::PLAN)->fetchMultiple($input);
 
         return ApiResponse::json($plans);
     }

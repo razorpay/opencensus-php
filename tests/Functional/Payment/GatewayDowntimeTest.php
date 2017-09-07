@@ -464,7 +464,7 @@ class GatewayDowntimeTest extends TestCase
 
         $url = '/gateway/downtimes/'. $content['id'];
 
-        $now = Carbon::now()->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         $to = Carbon::now()->addMinutes(100)->timestamp;
 
@@ -587,7 +587,7 @@ class GatewayDowntimeTest extends TestCase
         $content2 = $this->createGatewayDowntimeWithEmptyTo('netbanking_kotak',
             Carbon::now()->addMinutes(60)->timestamp);
 
-        $from = Carbon::now()->timestamp;
+        $from = Carbon::now()->getTimestamp();
 
         $request = [
             'content' => ['begin' => $from],

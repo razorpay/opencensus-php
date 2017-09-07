@@ -54,13 +54,8 @@ t.className = 'show ' + (s ? 's' : 'f');
 g('icon').innerHTML = s ? '&#10004' : '!';
 
 if (!window.CheckoutBridge) {
-  if (window.opener) {
-    try {
-      opener.onComplete(data);
-      close();
-    } catch (e) {}
-    opener.postMessage(data, '*');
-  }
+  try { window.opener.onComplete(data) } catch(e){}
+  try { (window.opener || window.parent).postMessage(data, '*') } catch(e){}
   setTimeout(close, 999);
 }
 

@@ -169,6 +169,7 @@ return array(
         Http\Httplug\HttplugServiceProvider::class,
         Schuppo\PasswordStrength\PasswordStrengthServiceProvider::class,
         GrahamCampbell\Throttle\ThrottleServiceProvider::class,
+        Razorpay\Trace\ServiceProvider::class,
         anlutro\LaravelSettings\ServiceProvider::class,
 
         /**
@@ -176,14 +177,16 @@ return array(
          */
         // RZP\Providers\AppServiceProvider::class,
         // RZP\Providers\AuthServiceProvider::class,
+        RZP\Providers\FirstServiceProvider::class,
         RZP\Services\ApiServiceProvider::class,
         RZP\Providers\EventServiceProvider::class,
         RZP\Providers\RouteServiceProvider::class,
         RZP\Http\BasicAuth\ServiceProvider::class,
-        RZP\Trace\TraceServiceProvider::class,
+        // RZP\Trace\TraceServiceProvider::class,
         RZP\Services\DashboardServiceProvider::class,
         // Makes blade sharper
         RZP\Providers\KnifeServiceProvider::class,
+        \Conner\Tagging\Providers\TaggingServiceProvider::class,
     ],
 
     /*
@@ -245,7 +248,7 @@ return array(
 
         // Application Facades
         'ApiResponse'   => RZP\Http\Response\Facade::class,
-        'Trace'         => RZP\Trace\Facade::class,
+        'Trace'         => Razorpay\Trace\Facades\Trace::class,
 
         // Custom Facades
         'Excel'         => Maatwebsite\Excel\Facades\Excel::class,

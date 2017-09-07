@@ -5,6 +5,8 @@ namespace RZP\Reconciliator;
 use App;
 use Requests;
 use SplFileInfo;
+use Symfony\Component\HttpFoundation\File\MimeType\FileBinaryMimeTypeGuesser;
+use Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use ZipArchive;
 use Storage;
@@ -87,6 +89,30 @@ class FileProcessor
         $this->messenger = new Messenger();
 
         $this->trace =$app['trace'];
+
+        $this->registerMimeTypeGuesser();
+    }
+
+    /**
+     * We do this because two guessers are registered by default:
+     *   - FileBinaryMimeTypeGuesser
+     *   - FileinfoMimeTypeGuesser
+     * FileinfoMimeTypeGuesser is given the higher preference.
+     * To give FileBinaryMimeTypeGuesser the higher preference,
+     * we have to re-register it like a custom guesser.
+     * Check Symfony\Component\HttpFoundation\File\MimeType\MimeTypeGuesser class
+     * for more information around this.
+     *
+     * FileBinaryMimeTypeGuesser seems to be better guesser of the two.
+     * It runs the command `file -b --mime %s` to get the mime type.
+     * For some text files, `FileinfoMimeTypeGuesser` gives application/zlib and
+     * `FileBinaryMimeTypeGuesser` gives text/plain (correct!)
+     */
+    protected function registerMimeTypeGuesser()
+    {
+        $guesser = MimeTypeGuesser::getInstance();
+
+        $guesser->register(new FileBinaryMimeTypeGuesser());
     }
 
     public function getFileDetails($file, $type = self::UPLOADED)
@@ -285,6 +311,7 @@ class FileProcessor
         if ($fileLocationType === self::UPLOADED)
         {
             $mimeType = $file->getMimeType();
+
             $extension = $file->getClientOriginalExtension();
         }
         else

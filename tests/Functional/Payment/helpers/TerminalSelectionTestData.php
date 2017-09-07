@@ -20,19 +20,4 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_SUB_MERCHANT_ALREADY_ASSIGNED_TO_TERMINAL,
         ],
     ],
-
-    'testSharedTerminalFilter' => [
-        'response'  => [
-                'content'     => [
-                    'error' => [
-                        'code'          => PublicErrorCode::SERVER_ERROR,
-                    ],
-                ],
-                'status_code' => 500,
-            ],
-            'exception' => [
-                'class'                 => \RZP\Exception\RuntimeException::class,
-                'internal_error_code'   => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
-            ]
-    ]
 ];

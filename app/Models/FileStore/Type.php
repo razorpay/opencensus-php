@@ -34,6 +34,10 @@ class Type
 
     const ICICI_UPI_REFUND                  = 'icici_upi_refund';
 
+    const PNB_NETBANKING_REFUND             = 'pnb_netbanking_refund';
+
+    const PNB_NETBANKING_CLAIMS             = 'pnb_netbanking_claims';
+
     const BATCH_INPUT                       = 'batch_input';
     const BATCH_OUTPUT                      = 'batch_output';
 
@@ -53,7 +57,8 @@ class Type
     const KOTAK_EMI_FILE                    = 'kotak_emi_file';
     const RBL_EMI_FILE                      = 'rbl_emi_file';
     const SCBL_EMI_FILE                     = 'scbl_emi_file';
-    const ICICI_EMI_FILE                    = 'icici_emi_file';
+    const ICICI_EMI_FILE_SFTP               = 'icici_emi_file_sftp';
+    const ICICI_EMI_FILE_MAIL               = 'icici_emi_file_mail';
 
     const MERCHANT_BUSINESS_PROOF_URL           = 'business_proof_url';
     const MERCHANT_BUSINESS_OPERATION_PROOF_URL = 'business_operation_proof_url';
@@ -96,7 +101,10 @@ class Type
             self::KOTAK_EMI_FILE,
             self::RBL_EMI_FILE,
             self::SCBL_EMI_FILE,
-            self::ICICI_EMI_FILE,
+            self::ICICI_EMI_FILE_MAIL,
+            self::ICICI_EMI_FILE_SFTP,
+            self::PNB_NETBANKING_REFUND,
+            self::PNB_NETBANKING_CLAIMS,
         ],
 
         Constants\Entity::BATCH => [
@@ -135,7 +143,8 @@ class Type
         self::KOTAK_EMI_FILE,
         self::RBL_EMI_FILE,
         self::SCBL_EMI_FILE,
-        self::ICICI_EMI_FILE,
+        self::ICICI_EMI_FILE_MAIL,
+        self::ICICI_EMI_FILE_SFTP,
         self::KOTAK_NETBANKING_CLAIM,
         self::KOTAK_NETBANKING_REFUND,
         self::HDFC_NETBANKING_REFUND,
@@ -151,6 +160,8 @@ class Type
         self::ICICI_UPI_REFUND,
         self::FUND_TRANSFER_DEFAULT,
         self::FUND_TRANSFER_H2H,
+        self::PNB_NETBANKING_REFUND,
+        self::PNB_NETBANKING_CLAIMS,
     ];
 
     /**
@@ -174,8 +185,11 @@ class Type
             self::KOTAK_EMI_FILE,
             self::RBL_EMI_FILE,
             self::SCBL_EMI_FILE,
+            self::ICICI_EMI_FILE_MAIL,
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
+            self::PNB_NETBANKING_REFUND,
+            self::PNB_NETBANKING_CLAIMS,
         ],
 
         self::INVOICE_BUCKET_CONFIG => [
@@ -194,7 +208,7 @@ class Type
 
         self::H2H_BUCKET_CONFIG => [
             self::FUND_TRANSFER_H2H,
-            self::ICICI_EMI_FILE,
+            self::ICICI_EMI_FILE_SFTP,
         ],
     ];
 

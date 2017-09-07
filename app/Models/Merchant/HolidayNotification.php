@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use Config;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
 use RZP\Models\Admin\Newsletter;
 use RZP\Models\Settlement\Holidays;
@@ -125,7 +126,7 @@ class HolidayNotification
      */
     protected function isMailToBeSent()
     {
-        $today = Carbon::today('Asia/Kolkata');
+        $today = Carbon::today(Timezone::IST);
 
         if ($this->mode === Mode::TEST)
         {
@@ -166,7 +167,7 @@ class HolidayNotification
 
     protected function getHolidayNotificationMsg($input)
     {
-        $today = Carbon::today('Asia/Kolkata');
+        $today = Carbon::today(Timezone::IST);
 
         $nextWorkingDay = Holidays::getNextWorkingDay($today);
 
@@ -190,7 +191,7 @@ class HolidayNotification
     protected function getTestHolidayMessage()
     {
         $testHoliday = [
-            'date'   => Carbon::tomorrow('Asia/Kolkata'),
+            'date'   => Carbon::tomorrow(Timezone::IST),
             'reason' => 'Testing reason for holiday notification.',
         ];
 

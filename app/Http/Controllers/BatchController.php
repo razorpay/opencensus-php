@@ -3,7 +3,6 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
-use RZP\Models\Batch;
 use Request;
 use View;
 
@@ -13,7 +12,7 @@ class BatchController extends Controller
     {
         $input = Request::all();
 
-        $result = $this->service('batch')->createBatch($input);
+        $result = $this->service()->createBatch($input);
 
         return ApiResponse::json($result);
     }
@@ -22,42 +21,56 @@ class BatchController extends Controller
     {
         $input = Request::all();
 
-        $result = $this->service('batch')->fetchMultiple($input);
+        $result = $this->service()->fetchMultiple($input);
 
         return ApiResponse::json($result);
     }
 
     public function getBatchById($id)
     {
-        $result = $this->service('batch')->getBatchById($id);
+        $result = $this->service()->getBatchById($id);
 
         return ApiResponse::json($result);
     }
 
     public function processBatches()
     {
-        $result = $this->service('batch')->processBatches();
+        $result = $this->service()->processBatches();
 
         return ApiResponse::json($result);
     }
 
     public function processBatch(string $id)
     {
-        $result = $this->service('batch')->processBatch($id);
+        $result = $this->service()->processBatch($id);
 
         return ApiResponse::json($result);
     }
 
     public function retryBatch($id)
     {
-        $result = $this->service('batch')->retryBatch($id);
+        $result = $this->service()->retryBatch($id);
+
+        return ApiResponse::json($result);
+    }
+
+    /**
+     * Ref: Batch/Core::retryBatchOutputFile
+     *
+     * @param string $id
+     *
+     * @return ApiResponse
+     */
+    public function retryBatchOutputFile(string $id)
+    {
+        $result = $this->service()->retryBatchOutputFile($id);
 
         return ApiResponse::json($result);
     }
 
     public function downloadBatch($id)
     {
-        $result = $this->service('batch')->downloadBatch($id);
+        $result = $this->service()->downloadBatch($id);
 
         return ApiResponse::json($result);
     }

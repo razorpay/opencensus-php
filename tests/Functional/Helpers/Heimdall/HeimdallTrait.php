@@ -41,14 +41,21 @@ trait HeimdallTrait
         return $response;
     }
 
-    protected function editAdmin($orgId, $adminId)
+    /**
+     * Edit an admin as superadmin
+     */
+    protected function editAdmin($orgId, $adminId, $content = [])
     {
+        $defaultContent = [
+            'name' => 'Test Name',
+        ];
+
+        $content = array_merge($defaultContent, $content);
+
         $request = [
             'url'     => '/orgs/' . $orgId . '/admins/' . $adminId,
             'method'  => 'PUT',
-            'content' => [
-                'name' => "Test Name",
-            ],
+            'content' => $content,
         ];
 
         $this->ba->adminAuth('test', null, $orgId);

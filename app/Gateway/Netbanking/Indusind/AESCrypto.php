@@ -3,7 +3,7 @@
 namespace RZP\Gateway\Netbanking\Indusind;
 
 use phpseclib\Crypt\AES;
-use RZP\Gateway\Netbanking\Base;
+use RZP\Gateway\Base;
 
 class AESCrypto extends Base\AESCrypto
 {

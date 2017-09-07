@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\Axis;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Exception\ReconciliationException;
 use RZP\Models\Bank\IFSC;
@@ -364,8 +365,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         {
             try
             {
-                $gatewaySettledAt = Carbon::createFromFormat($possibleDateFormat, $columnSettledAt, 'Asia/Kolkata');
-                $gatewaySettledAt = $gatewaySettledAt->timestamp;
+                $gatewaySettledAt = Carbon::createFromFormat($possibleDateFormat, $columnSettledAt, Timezone::IST);
+                $gatewaySettledAt = $gatewaySettledAt->getTimestamp();
             }
             catch (\Exception $ex)
             {

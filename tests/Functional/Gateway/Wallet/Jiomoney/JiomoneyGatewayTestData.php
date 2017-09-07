@@ -67,7 +67,7 @@ return [
         'action'               => 'refund',
         'wallet'               => 'jiomoney',
         'email'                => 'a@b.com',
-        'amount'               => 50000,
+        'amount'               => '50000',
         'contact'              => '9918899029',
         'gateway_merchant_id'  => 'random_id',
         'status_code'          => '000',
@@ -128,7 +128,7 @@ return [
         'action'               => 'refund',
         'wallet'               => 'jiomoney',
         'email'                => 'a@b.com',
-        'amount'               => 50000,
+        'amount'               => '50000',
         'contact'              => '9918899029',
         'gateway_merchant_id'  => 'random_id',
         'status_code'          => '500',
@@ -141,7 +141,7 @@ return [
         'action'               => 'refund',
         'wallet'               => 'jiomoney',
         'email'                => 'a@b.com',
-        'amount'               => 25000,
+        'amount'               => '25000',
         'contact'              => '9918899029',
         'gateway_merchant_id'  => 'random_id',
         'status_code'          => '000',
@@ -152,7 +152,7 @@ return [
 
     'testPaymentWalletEntity' => [
         'action'               => 'authorize',
-        'amount'               => 50000,
+        'amount'               => '50000',
         'wallet'               => 'jiomoney',
         'received'             => true,
         'email'                => 'a@b.com',
@@ -166,7 +166,7 @@ return [
 
     'testFailedPaymentWalletEntity' => [
         'action'               => 'authorize',
-        'amount'               => 50000,
+        'amount'               => '50000',
         'wallet'               => 'jiomoney',
         'received'             => false,
         'email'                => 'a@b.com',

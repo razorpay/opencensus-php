@@ -211,7 +211,7 @@ class Newsletter
         $this->app['trace']->info(
             TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
             [
-                'pre_upsert_timestamp' => Carbon::now('Asia/Kolkata')->timestamp,
+                'pre_upsert_timestamp' => Carbon::now()->getTimestamp(),
                 'merchant_count'       => $this->count,
             ]);
 
@@ -229,7 +229,7 @@ class Newsletter
 
         $this->app['trace']->info(
             TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
-            ['post_upsert_timestamp' => Carbon::now('Asia/Kolkata')->timestamp]);
+            ['post_upsert_timestamp' => Carbon::now()->getTimestamp()]);
     }
 
     public function setTestEmail($email)

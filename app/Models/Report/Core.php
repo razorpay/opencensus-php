@@ -3,11 +3,11 @@
 namespace RZP\Models\Report;
 
 use RZP\Models\Base;
-use RZP\Trace\Trace;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\ReportsJob;
 use RZP\Jobs\DispatchRouter;
+use Razorpay\Trace\Logger as Trace;
 
 class Core extends Base\Core
 {

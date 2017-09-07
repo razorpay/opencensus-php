@@ -11,6 +11,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 use RZP\Models\Settlement;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Transaction;
@@ -86,6 +87,68 @@ class Core extends Base\Core
             ErrorCode::BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
+    /**
+     * Called for cron or API to
+     * create a payout for a merchant
+     *
+     * @param  array           $input
+     * @return array
+     */
+    public function merchantPayout(array $input, Merchant\Entity $merchant): array
+    {
+        $merchantId = $merchant->getId();
+
+        $bankAccountId = $input[Entity::DESTINATION_ID];
+
+        $customerId = $input[Entity::CUSTOMER_ID];
+
+        if (isset($input[Entity::AMOUNT]) === true)
+        {
+            $amount = $input[Entity::AMOUNT];
+        }
+        else
+        {
+            $amount = $merchant->balance->getBalance();
+        }
+
+        if ((isset($input[Entity::MIN_AMOUNT]) === true) and
+            ($amount < $input[Entity::MIN_AMOUNT]))
+        {
+            $this->trace->info(
+                TraceCode::MERCHANT_PAYOUT_FAILURE,
+                [
+                    'message'     => 'amount is less than min amount',
+                    'merchant_id' => $merchantId,
+                    'input'       => $input,
+                ]);
+
+            return ['message' =>
+                'amount to be transferred is less than ' . $input[Entity::MIN_AMOUNT]];
+
+        }
+
+        // Modulo will convert the amount into multiples
+        // of modulo value
+        if (isset($input[Entity::MODULO]) === true)
+        {
+            $moduloAmount = $amount % $input[Entity::MODULO];
+
+            $amount = $amount - $moduloAmount;
+        }
+
+        $payoutInput = [
+            Entity::CUSTOMER_ID    => $customerId,
+            Entity::AMOUNT         => $amount,
+            Entity::CURRENCY       => 'INR',
+            Entity::METHOD         => Method::FUND_TRANSFER,
+            Entity::DESTINATION    => $bankAccountId,
+        ];
+
+        $payout = $this->directPayout($payoutInput, $merchant);
+
+        return $payout->toArrayPublic();
+    }
+
     protected function createPayout(array $input, Merchant\Entity $merchant): Entity
     {
         $this->validateMerchantStatus($merchant);
@@ -106,7 +169,7 @@ class Core extends Base\Core
     {
         return $this->repo->transaction(function() use ($input, $channel)
         {
-            $timestamp = Carbon::now('Asia/Kolkata')->timestamp;
+            $timestamp = Carbon::now()->getTimestamp();
 
             $attempts = $this->repo
                              ->fund_transfer_attempt
@@ -200,9 +263,10 @@ class Core extends Base\Core
         $fundTransferAttempt = new FundTransferAttempt\Entity;
 
         $values = [
-            FundTransferAttempt\Entity::CHANNEL => $payout->getChannel(),
-            FundTransferAttempt\Entity::VERSION => FundTransferAttempt\Version::V3,
-            FundTransferAttempt\Entity::STATUS  => FundTransferAttempt\Status::CREATED,
+            FundTransferAttempt\Entity::CHANNEL   => $payout->getChannel(),
+            FundTransferAttempt\Entity::VERSION   => FundTransferAttempt\Version::V3,
+            FundTransferAttempt\Entity::STATUS    => FundTransferAttempt\Status::CREATED,
+            FundTransferAttempt\Entity::NARRATION => 'RAZORPAY SETTLEMENT',
         ];
 
         $fundTransferAttempt->fillAndGenerateId($values);

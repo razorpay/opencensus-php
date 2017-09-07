@@ -117,7 +117,7 @@ class BilldeskGatewayTest extends TestCase
         $this->assertEquals($billdesk['BankID'], 'ICO');
         $this->assertEquals($payment['status'], 'failed');
 
-        $time = Carbon::now('Asia/Kolkata')->timestamp;
+        $time = Carbon::now()->getTimestamp();
 
         // Change created_at to allow payments to be picked up,
         // Allow verify to pick up payment
@@ -162,7 +162,7 @@ class BilldeskGatewayTest extends TestCase
         $this->assertEquals($billdesk['BankID'], 'ICO');
         $this->assertEquals($payment['status'], 'created');
 
-        $time = Carbon::now('Asia/Kolkata')->timestamp;
+        $time = Carbon::now()->getTimestamp();
 
         // Change created_at to allow payments to be picked up,
         // Allow verify to pick up payment
@@ -228,7 +228,7 @@ class BilldeskGatewayTest extends TestCase
         $this->assertEquals($billdesk['BankID'], 'ICO');
         $this->assertEquals($payment['status'], 'created');
 
-        $time = Carbon::now('Asia/Kolkata')->timestamp;
+        $time = Carbon::now()->getTimestamp();
 
         // Change created_at to allow payments to be picked up,
         // Allow verify to pick up payment

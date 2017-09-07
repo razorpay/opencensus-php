@@ -47,6 +47,9 @@ class CreateFundTransferAttemptsTable extends Migration
                   ->nullable()
                   ->unique();
 
+            $table->string(FundTransferAttempt::NARRATION)
+                  ->nullable();
+
             $table->string(FundTransferAttempt::REMARKS)
                   ->nullable();
 

@@ -256,7 +256,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'email' => 'sreeram12@gmail.com'
+                'email'                => 'sreeram12@gmail.com',
+                'permissions'          => [],
+                'workflow_permissions' => [],
             ],
             'status_code' => 200,
         ],

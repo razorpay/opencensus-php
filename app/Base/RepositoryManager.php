@@ -6,6 +6,7 @@ use Closure;
 use RZP\Constants\Entity;
 use RZP\Constants\Mode;
 use RZP\Exception;
+use RZP\Models\Base\PublicEntity;
 
 class RepositoryManager extends \Illuminate\Support\Manager
 {
@@ -101,13 +102,14 @@ class RepositoryManager extends \Illuminate\Support\Manager
     {
         $repo = $this->getRepositoryClassFromObject($entity);
 
-        $reloadedEntity = $repo->findOrFail($entity->getKey());
+        return $repo->reload($entity);
+    }
 
-        $attributes = $reloadedEntity->getAttributes();
+    public function loadRelations(PublicEntity $entity): PublicEntity
+    {
+        $repo = $this->getRepositoryClassFromObject($entity);
 
-        $entity->setRawAttributes($attributes, true);
-
-        return $entity;
+        return $repo->loadRelations($entity);
     }
 
     public function determineLiveOrTestModeForEntity($id, $entity)

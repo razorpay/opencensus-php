@@ -184,6 +184,12 @@ class Gateway
      */
     public function callback(array $input)
     {
+        if (empty($input['gateway']) === true)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_CALLBACK_EMPTY_INPUT);
+        }
+
         $this->input = $input;
         $this->action = Action::CALLBACK;
     }
@@ -281,6 +287,29 @@ class Gateway
         $this->mock = $mock;
     }
 
+    protected function checkApiSuccess(Verify $verify)
+    {
+        $verify->apiSuccess = true;
+
+        $input = $verify->input;
+
+        if (($input['payment'][Payment\Entity::STATUS] === Payment\Status::FAILED) or
+            ($input['payment'][Payment\Entity::STATUS] === Payment\Status::CREATED))
+        {
+            $verify->apiSuccess = false;
+        }
+    }
+
+    public function getAction()
+    {
+        return $this->action;
+    }
+
+    public function getMode()
+    {
+        return $this->mode;
+    }
+
     protected function assertPaymentId($expectedPaymentId, $actualPaymentId)
     {
         if ($actualPaymentId !== $expectedPaymentId)
@@ -346,6 +375,12 @@ class Gateway
 
     protected function isSecondRecurringPaymentRequest($input)
     {
+        if (($this->app['basicauth']->isPrivateAuth() === false) and
+            ($this->app['basicauth']->isPrivilegeAuth() === false))
+        {
+            return false;
+        }
+
         if (($input['payment']['recurring'] === true) and
             (isset($input['token']) === true) and
             ($input['token']->isRecurring() === true) and
@@ -452,9 +487,9 @@ class Gateway
 
     protected function validateResponse($response)
     {
-        if ($response->status_code === 504)
+        if (in_array($response->status_code, [503, 504], true) === true)
         {
-            throw new Exception\GatewayTimeoutException('Response status: 504');
+            throw new Exception\GatewayTimeoutException('Response status: '. $response->status_code);
         }
         else if ($response->status_code >= 500)
         {
@@ -535,7 +570,7 @@ class Gateway
     }
 
     protected function traceGatewayPaymentRequest(
-        $request,
+        array $request,
         $input,
         $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
     {
@@ -658,14 +693,9 @@ class Gateway
     {
         $urlClass = $this->getGatewayNamespace() . '\Url';
 
-        $domainConstantName = strtoupper($this->mode).'_DOMAIN';
+        $domainType = $this->domainType ?? $this->mode;
 
-        if ($this->domainType !== null)
-        {
-            $domainType = strtoupper($this->domainType);
-
-            $domainConstantName = $domainType.'_DOMAIN';
-        }
+        $domainConstantName = strtoupper($domainType).'_DOMAIN';
 
         return constant($urlClass . '::' .$domainConstantName);
     }
@@ -679,18 +709,13 @@ class Gateway
 
     protected function getUrl($type = null)
     {
-        $url = $this->getUrlDomain();
+        $urlDomain = $this->getUrlDomain();
 
-        if ($type === null)
-        {
-            $type = $this->action;
-        }
+        $type = $type ?? $this->action;
 
         $type = strtoupper($type);
 
-        $url .= $this->getRelativeUrl($type);
-
-        return $url;
+        return $urlDomain . $this->getRelativeUrl($type);
     }
 
     protected function loadGatewayConfig()
@@ -779,10 +804,10 @@ class Gateway
         return $orderedData;
     }
 
-    protected function getStandardRequestArray($content = [], $method = 'post')
+    protected function getStandardRequestArray($content = [], $method = 'post', $type = null)
     {
         $request = array(
-            'url'       => $this->getUrl(),
+            'url'       => $this->getUrl($type),
             'method'    => $method,
             'content'   => $content,
         );

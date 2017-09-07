@@ -4,7 +4,6 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
-use RZP\Models\Transaction;
 
 class TransactionController extends Controller
 {
@@ -12,14 +11,14 @@ class TransactionController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Transaction\Service)->getTransactionRecords($input);
+        $data = $this->service()->getTransactionRecords($input);
 
         return ApiResponse::json($data);
     }
 
     public function getTransaction($id)
     {
-        $data = (new Transaction\Service)->getTransactionRecordById($id);
+        $data = $this->service()->getTransactionRecordById($id);
 
         return ApiResponse::json($data);
     }
@@ -28,7 +27,7 @@ class TransactionController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Transaction\Service)->getReport($input);
+        $data = $this->service()->getReport($input);
 
         return ApiResponse::json($data);
     }
@@ -37,14 +36,14 @@ class TransactionController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Transaction\Service)->createFeeBreakupForTransaction($input);
+        $data = $this->service()->createFeeBreakupForTransaction($input);
 
         return ApiResponse::json($data);
     }
 
     public function getEntityTransaction($entity, $id)
     {
-        $data = (new Transaction\Service)->getEntityTransaction($entity, $id);
+        $data = $this->service()->getEntityTransaction($entity, $id);
 
         return ApiResponse::json($data);
     }

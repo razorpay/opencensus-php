@@ -23,6 +23,8 @@ class Entity
     const PLAN                  = 'plan';
     const ITEM                  = 'item';
     const USER                  = 'user';
+    const RISK                  = 'risk';
+    const ADDON                 = 'addon';
     const BATCH                 = 'batch';
     const OFFER                 = 'offer';
     const ORDER                 = 'order';
@@ -31,7 +33,6 @@ class Entity
     const DEVICE                = 'device';
     const PAYOUT                = 'payout';
     const REFUND                = 'refund';
-    const ADDON                 = 'addon';
     const REPORT                = 'report';
     const DISPUTE               = 'dispute';
     const ADDRESS               = 'address';
@@ -70,13 +71,14 @@ class Entity
     const DISPUTE_REASON        = 'dispute_reason';
     const VIRTUAL_ACCOUNT       = 'virtual_account';
     const MERCHANT_DETAIL       = 'merchant_detail';
-    const CREDIT_TRANSACTION    = 'credit_transaction';
     const TERMINAL_ACTION       = 'terminal_action';
     const CUSTOMER_BALANCE      = 'customer_balance';
     const GATEWAY_DOWNTIME      = 'gateway_downtime';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const MERCHANT_PROMOTION    = 'merchant_promotion';
+    const CREDIT_TRANSACTION    = 'credit_transaction';
+    const MERCHANT_INVOICE      = 'merchant_invoice';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
     const BATCH_FUND_TRANSFER   = 'batch_fund_transfer';
     const CUSTOMER_TRANSACTION  = 'customer_transaction';
@@ -134,8 +136,10 @@ class Entity
     const NETBANKING_FEDERAL    = 'netbanking_federal';
     const NETBANKING_RBL        = 'netbanking_rbl';
     const NETBANKING_INDUSIND   = 'netbanking_indusind';
+    const NETBANKING_PNB        = 'netbanking_pnb';
     const WALLET_PAYZAPP        = 'wallet_payzapp';
     const WALLET_JIOMONEY       = 'wallet_jiomoney';
+    const WALLET_SBIBUDDY       = 'wallet_sbibuddy';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
     const WALLET_PAYUMONEY      = 'wallet_payumoney';
     const WALLET_FREECHARGE     = 'wallet_freecharge';
@@ -147,7 +151,6 @@ class Entity
 
     const TAX                   = 'tax';
     const TAX_GROUP             = 'tax_group';
-
 
     public static $namespace = [
         self::IIN                   => \RZP\Models\Card\IIN::class,
@@ -194,6 +197,7 @@ class Entity
         self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
         self::CREDIT_TRANSACTION    => \RZP\Models\Merchant\Credits\Transaction::class,
         self::MERCHANT_PROMOTION    => \RZP\Models\Merchant\Promotion::class,
+        self::MERCHANT_INVOICE      => \RZP\Models\Merchant\Invoice::class,
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::BATCH_FUND_TRANSFER   => \RZP\Models\FundTransfer\Batch::class,
@@ -224,6 +228,7 @@ class Entity
         self::WALLET_PAYZAPP        => \RZP\Gateway\Wallet\Payzapp::class,
         self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Olamoney::class,
         self::WALLET_JIOMONEY       => \RZP\Gateway\Wallet\Jiomoney::class,
+        self::WALLET_SBIBUDDY       => \RZP\Gateway\Wallet\Sbibuddy::class,
         self::NETBANKING_AXIS       => \RZP\Gateway\Netbanking\Axis::class,
         self::NETBANKING_HDFC       => \RZP\Gateway\Netbanking\Hdfc::class,
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Kotak::class,
@@ -232,6 +237,7 @@ class Entity
         self::NETBANKING_FEDERAL    => \RZP\Gateway\Netbanking\Federal::class,
         self::NETBANKING_RBL        => \RZP\Gateway\Netbanking\Rbl::class,
         self::NETBANKING_INDUSIND   => \RZP\Gateway\Netbanking\Indusind::class,
+        self::NETBANKING_PNB        => \RZP\Gateway\Netbanking\Pnb::class,
         self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Payumoney::class,
         self::WALLET_OPENWALLET     => \RZP\Gateway\Wallet\Openwallet::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
@@ -268,6 +274,7 @@ class Entity
         self::NETBANKING_INDUSIND   => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_RBL        => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_PNB        => \RZP\Gateway\Netbanking\Base::class,
 
         self::UPI_MINDGATE          => \RZP\Gateway\Upi\Base::class,
         self::UPI_ICICI             => \RZP\Gateway\Upi\Base::class,
@@ -279,6 +286,7 @@ class Entity
         self::WALLET_AIRTELMONEY    => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_JIOMONEY       => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_SBIBUDDY       => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_MPESA          => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Base::class,

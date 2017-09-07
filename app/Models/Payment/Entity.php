@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Lib\PhoneBook;
 
 use RZP\Exception;
@@ -239,6 +240,7 @@ class Entity extends Base\PublicEntity
         self::CAPTURED,
         self::DESCRIPTION,
         self::CARD_ID,
+        self::CARD,
         self::BANK,
         self::WALLET,
         self::VPA,
@@ -750,6 +752,11 @@ class Entity extends Base\PublicEntity
     public function setDisputed($disputed)
     {
         $this->setAttribute(self::DISPUTED, $disputed);
+    }
+
+    public function decrementAmountTransferred(int $amount)
+    {
+        $this->decrement(self::AMOUNT_TRANSFERRED, $amount);
     }
 
 // ----------------------- Setters Ends-----------------------------------------
@@ -1402,7 +1409,7 @@ class Entity extends Base\PublicEntity
 
     public function getDaysSinceAuthorized()
     {
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         $at = $this->getAuthorizeTimestamp();
         $diff = $now - $at;
@@ -1770,7 +1777,11 @@ class Entity extends Base\PublicEntity
         if ($card === null)
         {
             throw new Exception\LogicException(
-                'Associated card not found for the current payment entity');
+                'Associated card not found for the current payment entity',
+                null,
+                [
+                    'payment_id'    => $this->getId(),
+                ]);
         }
 
         $cardData = $card->getAttributes();
@@ -1853,7 +1864,7 @@ class Entity extends Base\PublicEntity
 
         $data[self::FORMATTED_AMOUNT] = $this->getFormattedAmount();
 
-        $createdAt = Carbon::createFromTimestamp($this->getCreatedAt(), 'Asia/Kolkata');
+        $createdAt = Carbon::createFromTimestamp($this->getCreatedAt(), Timezone::IST);
 
         $data[self::FORMATTED_CREATED_AT] = $createdAt->format(self::HOSTED_TIME_FORMAT);
 
@@ -1968,6 +1979,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Transfer\Entity', self::TRANSFER_ID);
     }
 
+    public function disputes()
+    {
+        return $this->hasMany(\RZP\Models\Dispute\Entity::class);
+    }
+
 // --------------- Relation to other entity section ends -----------------------
 
     public function refundAmount($amount, $baseAmount)
@@ -1998,7 +2014,13 @@ class Entity extends Base\PublicEntity
         else
         {
             throw new Exception\LogicException(
-                'Refund amount should be less than or equal to amount not refunded yet');
+                'Refund amount should be less than or equal to amount not refunded yet',
+                null,
+                [
+                    'amount'            => $amount,
+                    'amount_unrefunded' => $amountUnrefunded,
+                    'payment_id'        => $this->getId(),
+                ]);
         }
 
         $amountRefunded = $this->getAmountRefunded() + $amount;
@@ -2017,7 +2039,13 @@ class Entity extends Base\PublicEntity
         if ($amount > $amountUntransferred)
         {
             throw new Exception\LogicException(
-                'Transfer amount should be less than or equal to amount not transferred yet');
+                'Transfer amount should be less than or equal to amount not transferred yet',
+                null,
+                [
+                    'amount'                => $amount,
+                    'amount_untransferred'  => $amountUntransferred,
+                    'payment_id'            => $this->getId(),
+                ]);
         }
 
         $amountTransferred = $this->getAmountTransferred() + $amount;
@@ -2044,8 +2072,9 @@ class Entity extends Base\PublicEntity
                 'Payment payout: Payout total greater than payment amount',
                 null,
                 [
-                    'payout' => $amount,
-                    'payment_amount'  => $paymentAmount,
+                    'payout'            => $amount,
+                    'payment_amount'    => $paymentAmount,
+                    'payment_id'        => $this->getId(),
                 ]
             );
         }
@@ -2153,20 +2182,6 @@ class Entity extends Base\PublicEntity
     }
 
     public function shouldRunFraudChecks()
-    {
-        if ($this->isCard() === true)
-        {
-            if (($this->card->isInternational() === true) or
-                ($this->card->isAmex() === true))
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    public function shouldFailOnRiskFailure()
     {
         if ($this->isCard() === true)
         {

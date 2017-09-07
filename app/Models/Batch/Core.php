@@ -3,7 +3,6 @@
 namespace RZP\Models\Batch;
 
 use RZP\Models\Base;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Jobs\DispatchRouter;
@@ -30,15 +29,15 @@ class Core extends Base\Core
         // - Updates batch entity with aggregate details of file (if applicable)
         // - Saves batch entity
         //
-
         $this->repo->transaction(function () use ($batch, $input)
         {
-            $file = Processor\Base::get($batch)->saveInputFile($input[Entity::FILE]);
+            $processor = Processor\Base::get($batch);
 
-            $entries = $this->parseExcelSheets($file);
+            $inputFile = $input[Entity::FILE];
 
-            $batch->getValidator()
-                  ->validateEntries($entries, $input, $this->merchant);
+            $file = $processor->saveInputFile($inputFile);
+
+            $entries = $processor->parseInputFileAndValidate($file->getPathname(), $input);
 
             $this->fillBatchEntityWithInputFileDetails($batch, $entries);
 
@@ -71,6 +70,25 @@ class Core extends Base\Core
         $this->repo->saveOrFail($batch);
 
         $this->trace->info(TraceCode::BATCH_RETRY, $batch->toArrayPublic());
+
+        return $batch;
+    }
+
+    /**
+     * Internal Auth: There are some very rare cases (UFH issues) where output
+     * file doesn't get created but the batch is actually processed. This has
+     * happened specifically for payment_link type batch. We can't wrap the whole
+     * operation under transaction because of few other reasons.
+     *
+     * TODO: Drop in detail the use case and reasons here.
+     *
+     * @param Entity $batch
+     *
+     * @return Entity
+     */
+    public function retryBatchOutputFile(Entity $batch): Entity
+    {
+        Processor\Base::get($batch)->retryBatchOutputFile();
 
         return $batch;
     }
@@ -147,7 +165,7 @@ class Core extends Base\Core
     /**
      * Process a particular batch entity.
      *
-     * @param Entity  $batch
+     * @param Entity $batch
      * @param boolean $bubbleEx - When called iteratively over batch collection
      *                            we don't break execution. But when called via
      *                            API for individual batch we bubble exception
@@ -196,7 +214,7 @@ class Core extends Base\Core
      * - Aggregate sum of amount field
      *
      * @param Entity $batch
-     * @param array  $entries
+     * @param array $entries
      */
     protected function fillBatchEntityWithInputFileDetails(
         Entity $batch,
@@ -242,7 +260,7 @@ class Core extends Base\Core
         Entity $batch,
         array $input)
     {
-        if (Type::isQueueGroup($batch->getType()) == false)
+        if (Type::isQueueGroup($batch->getType()) === false)
         {
             return;
         }

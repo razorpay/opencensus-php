@@ -8,32 +8,27 @@ use Config;
 use Carbon\Carbon;
 
 use RZP\Exception;
-use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
-use RZP\Models\Base;
-use RZP\Models\Emi;
 use RZP\Models\Key;
-use RZP\Models\User;
+use RZP\Models\Base;
 use RZP\Models\Offer;
 use RZP\Models\Coupon;
-use RZP\Models\Payment;
-use RZP\Models\Pricing;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Schedule;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
+use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Group;
-use RZP\Constants\MailTags;
 use RZP\Models\BankAccount;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Merchant\SlackActions as SlackActions;
+use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 
 class Service extends Base\Service
 {
@@ -127,7 +122,7 @@ class Service extends Base\Service
             }
             catch (\Throwable $e)
             {
-                $result = ['message'=> $e->getMessage()];
+                $result = ['message' => $e->getMessage()];
             }
         }
 
@@ -287,6 +282,20 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
         $keyData = (new Key\Core)->createFirstKey($merchant, $this->mode);
+
+        if ($this->mode === MODE::LIVE)
+        {
+            $action = Merchant\Action::LIVE_KEYS_CREATED;
+        }
+        elseif ($this->mode === MODE::TEST)
+        {
+            $action = Merchant\Action::TEST_KEYS_CREATED;
+        }
+
+        if ($action !== null)
+        {
+            $this->app['eventManager']->trackEvents($merchant, $action, $merchant->toArrayEvent());
+        }
 
         return $keyData;
     }
@@ -630,14 +639,9 @@ class Service extends Base\Service
 
     public function getEnabledBanks()
     {
-        $methods = (new Methods\Core)->getMethods($this->merchant);
+        $methods = (new Methods\Core)->getEnabledAndDisabledBanks($this->merchant);
 
-        if ($methods === null)
-        {
-            return [];
-        }
-
-        return $methods->toArrayWithBankNames();
+        return $methods['enabled'];
     }
 
     public function setPaymentBanks($id, $input)
@@ -774,11 +778,11 @@ class Service extends Base\Service
     {
         if (isset($input['on']))
         {
-            $today = Carbon::createFromTimestamp($input['on'], 'Asia/Kolkata');
+            $today = Carbon::createFromTimestamp($input['on'], Timezone::IST);
         }
         else
         {
-            $today = Carbon::today('Asia/Kolkata');
+            $today = Carbon::today(Timezone::IST);
         }
 
         if (Holidays::isWorkingDay($today) === false)
@@ -789,14 +793,14 @@ class Service extends Base\Service
         $from = Holidays::getPreviousWorkingDay($today);
 
         $newBeneficiaryCount = $this->repo->bank_account->getCountOfBankAccountsCreatedBetween(
-                                                        $from->timestamp,
-                                                        $today->timestamp);
+                                                        $from->getTimestamp(),
+                                                        $today->getTimestamp());
 
         if ($newBeneficiaryCount > 0)
         {
             (new BankAccount\BeneficiaryFile)->generateBetweenTimestamps(
-                                                        $from->timestamp,
-                                                        $today->timestamp);
+                                                        $from->getTimestamp(),
+                                                        $today->getTimestamp());
         }
 
         $message = "Merchant Beneficiary file generated. Beneficiary added since".
@@ -1012,6 +1016,61 @@ class Service extends Base\Service
         return $data;
     }
 
+    /**
+     * used for fetching referred merchants of a particular merchant
+     */
+    public function fetchReferredMerchants()
+    {
+        $merchantId = $this->merchant->getId();
+
+        return $this->repo->merchant->fetchReferredMerchants($merchantId);
+    }
+
+    /**
+     * used for getting tags of the merchant
+     * @param string $id
+     */
+    public function getTags($id)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        return $merchant->tagNames();
+    }
+
+    /**
+     * used for adding tags to merchant
+     * @param string $id
+     * @param array $input which contains the tags of the merchant
+     */
+    public function addTags($id, $input)
+    {
+        (new Validator)->validateInput('addTags', $input);
+
+        $this->trace->info(TraceCode::MERCHANT_TAGS_ADD, $input);
+
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $tags = $input['tags'];
+
+        $merchant->retag($tags);
+
+        return $merchant->tagNames();
+    }
+
+    /**
+     * used for deleting a single tag of a merchant
+     * @param string $id
+     * @param string $tagName tag which has to be deleted
+     */
+    public function deleteTag($id, $tagName)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $merchant->untag($tagName);
+
+        return $merchant->tagNames();
+    }
+
     public function markGratisTransactionPostpaid($input)
     {
         $this->trace->info(
@@ -1085,9 +1144,11 @@ class Service extends Base\Service
      */
     public function getSubmerchants(): array
     {
-        $merchant = $this->merchant;
+        $merchantId = $this->merchant->getId();
 
-        return [ $merchant->getId() ];
+        $merchants = $this->fetchReferredMerchants();
+
+        return array_merge([$merchantId], $merchants->pluck('id')->toArray());
     }
 
     /**
@@ -1168,6 +1229,59 @@ class Service extends Base\Service
             {
                 $this->repo->feature->delete($feature);
             }
+        }
+    }
+
+    public function getMerchantDetails()
+    {
+        $data = [];
+
+        /**
+         * Merchant needs to be set using X-Razorpay-account header.
+         * Setting Merchant in header validates admin access to
+         * that merchant in admin access middleware.
+         */
+        if (empty($this->merchant) === false)
+        {
+            $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
+                $this->merchant->getId(), ['methods', Entity::GROUPS, Entity::ADMINS]);
+
+            // Merchant to array public
+            $data = $merchant->toArrayPublic();
+
+            // Merchant confirmed details
+            $data['confirmed'] = $this->getMerchantConfirmed($merchant);
+
+            // Fetch formatted merchant details.
+            $data['merchant_details'] = (new Detail\Service)->getMerchantDetailsForAdmin();
+
+            $data['tags'] = $merchant->tagNames();
+        }
+
+        return $data;
+    }
+
+    /**
+     * Will provide if merchant is confirmed or not.
+     *
+     * @param $merchant
+     * @return bool
+     */
+    public function getMerchantConfirmed($merchant)
+    {
+        $parentId = $merchant->getParentId();
+
+        // Market place sub accounts are confirmed.
+        if (empty($parentId) === false)
+        {
+            return true;
+        }
+        else
+        {
+            $owner = $this->core()->getMerchantConfirmedOwner($merchant);
+
+            // True if an confirmed owner is present.
+            return !empty($owner);
         }
     }
 }

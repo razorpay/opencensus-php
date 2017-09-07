@@ -3,6 +3,7 @@
 namespace RZP\Models\FundTransfer\Kotak;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use Excel;
 use RZP\Trace;
@@ -75,7 +76,7 @@ class ReconciliationGenerator2
             $setl = $row['Payment_Ref_No.'];
             $setl = str_replace('_', ' ', $setl);
 
-            $date = Carbon::createFromFormat('d/m/Y', $row['Payment_Date'], 'Asia/Kolkata');
+            $date = Carbon::createFromFormat('d/m/Y', $row['Payment_Date'], Timezone::IST);
             $date = $date->format('d M Y');
 
             $recon[] = array(

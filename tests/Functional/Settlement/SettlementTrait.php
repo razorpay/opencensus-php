@@ -9,6 +9,7 @@ use RZP\Models\Settlement\Holidays;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use AWS;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 trait SettlementTrait
 {
@@ -17,7 +18,7 @@ trait SettlementTrait
      **/
     protected function getDaysForSettlementHolidayTests()
     {
-        $date = Carbon::today('Asia/Kolkata')->subDays(30);
+        $date = Carbon::today(Timezone::IST)->subDays(30);
 
         $holidayDate = Holidays::getNextSettlementHoliday($date)->addHours(7);
 
@@ -35,7 +36,7 @@ trait SettlementTrait
      **/
     protected function getDaysForSettlementNonHolidayTests()
     {
-        $prevWorkingDay = Holidays::getPreviousWorkingDay((Carbon::today('Asia/Kolkata'))->subDays(25));
+        $prevWorkingDay = Holidays::getPreviousWorkingDay((Carbon::today(Timezone::IST))->subDays(25));
 
         $paymentCreatedOn = $prevWorkingDay->copy();
 
@@ -112,7 +113,7 @@ trait SettlementTrait
             ]
         ];
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 

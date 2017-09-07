@@ -15,24 +15,59 @@ class Entity extends Base\PublicEntity
 
     const MERCHANT_ID      = 'merchant_id';
     const GATEWAY          = 'gateway';
+    const TYPE             = 'type';
+    const GROUP            = 'group';
+    const FILTER_TYPE      = 'filter_type';
     const LOAD             = 'load';
+
+    // Terminal properties
     const GATEWAY_ACQUIRER = 'gateway_acquirer';
-    const INTERNATIONAL    = 'international';
+    const NETWORK_CATEGORY = 'network_category';
+    const SHARED_TERMINAL  = 'shared_terminal';
+
+    // Payment properties
     const METHOD           = 'method';
     const METHOD_TYPE      = 'method_type';
     const NETWORK          = 'network';
     const ISSUER           = 'issuer';
+    const MIN_AMOUNT       = 'min_amount';
+    const MAX_AMOUNT       = 'max_amount';
+    const IINS             = 'iins';
+
+    // Terminal and payment properties both
+    const EMI_DURATION     = 'emi_duration';
+    const EMI_SUBVENTION   = 'emi_subvention';
+    const INTERNATIONAL    = 'international';
+    const CURRENCY         = 'currency';
+
+    // Merchant properties
+    const CATEGORY2        = 'category2';
+
     const DELETED_AT       = 'deleted_at';
 
     const MAX_LOAD = 10000;
+
+    // Rule types
+    const SORTER = 'sorter';
+    const FILTER = 'filter';
+
+    // Filter types
+    const SELECT = 'select';
+    const REJECT = 'reject';
 
     /**
      * Attributes used for comparing terminal to rule
      */
     const COMPARISON_ATTRIBUTES = [
+        self::METHOD,
         self::GATEWAY,
         self::GATEWAY_ACQUIRER,
         self::INTERNATIONAL,
+        self::NETWORK_CATEGORY,
+        self::SHARED_TERMINAL,
+        self::EMI_DURATION,
+        self::EMI_SUBVENTION,
+        self::CURRENCY,
     ];
 
     /**
@@ -40,11 +75,20 @@ class Entity extends Base\PublicEntity
      * are acceptable for comparison
      */
     const NULLABLE_ATTRIBUTES = [
+        self::GROUP,
+        self::FILTER_TYPE,
         self::METHOD_TYPE,
         self::NETWORK,
         self::ISSUER,
+        self::MAX_AMOUNT,
         self::GATEWAY_ACQUIRER,
+        self::NETWORK_CATEGORY,
+        self::CATEGORY2,
+        self::SHARED_TERMINAL,
         self::INTERNATIONAL,
+        self::EMI_DURATION,
+        self::IINS,
+        self::CURRENCY,
     ];
 
     protected $entity = 'gateway_rule';
@@ -52,33 +96,62 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $casts = [
-        self::INTERNATIONAL => 'boolean',
-        self::LOAD          => 'int',
+        self::INTERNATIONAL   => 'boolean',
+        self::SHARED_TERMINAL => 'boolean',
+        self::LOAD            => 'int',
+        self::MIN_AMOUNT      => 'int',
+        self::MAX_AMOUNT      => 'int',
+        self::EMI_DURATION    => 'int',
+        self::IINS            => 'array',
     ];
 
     protected $fillable = [
         self::MERCHANT_ID,
         self::GATEWAY,
+        self::TYPE,
+        self::GROUP,
+        self::FILTER_TYPE,
         self::LOAD,
+        self::GATEWAY_ACQUIRER,
+        self::INTERNATIONAL,
+        self::NETWORK_CATEGORY,
+        self::SHARED_TERMINAL,
+        self::CATEGORY2,
         self::METHOD,
         self::METHOD_TYPE,
         self::NETWORK,
-        self::GATEWAY_ACQUIRER,
-        self::INTERNATIONAL,
         self::ISSUER,
+        self::MIN_AMOUNT,
+        self::MAX_AMOUNT,
+        self::IINS,
+        self::EMI_DURATION,
+        self::EMI_SUBVENTION,
+        self::CURRENCY,
     ];
 
     protected $visible = [
         self::ID,
         self::MERCHANT_ID,
         self::GATEWAY,
+        self::TYPE,
+        self::GROUP,
+        self::FILTER_TYPE,
         self::LOAD,
+        self::GATEWAY_ACQUIRER,
+        self::INTERNATIONAL,
+        self::NETWORK_CATEGORY,
+        self::SHARED_TERMINAL,
+        self::CATEGORY2,
         self::METHOD,
         self::METHOD_TYPE,
         self::NETWORK,
         self::ISSUER,
-        self::GATEWAY_ACQUIRER,
-        self::INTERNATIONAL,
+        self::MIN_AMOUNT,
+        self::MAX_AMOUNT,
+        self::IINS,
+        self::EMI_DURATION,
+        self::EMI_SUBVENTION,
+        self::CURRENCY,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT
@@ -86,24 +159,20 @@ class Entity extends Base\PublicEntity
 
     protected static $modifiers = [
         self::NETWORK,
-        self::ISSUER
+        self::ISSUER,
     ];
 
     protected $publicSetters = [
         self::ID,
         self::ENTITY,
-        self::LOAD
+        self::LOAD,
+        self::MIN_AMOUNT,
+        self::MAX_AMOUNT,
     ];
 
-    protected function modifyLoad(& $input)
-    {
-        $load = $input[self::LOAD];
-
-        if (empty($load) === false)
-        {
-            $input[self::LOAD] = intval(round($load * 100));
-        }
-    }
+    protected $defaults = [
+        self::MIN_AMOUNT => 0,
+    ];
 
     public function getLoad()
     {
@@ -113,6 +182,26 @@ class Entity extends Base\PublicEntity
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);
+    }
+
+    public function getGroup()
+    {
+        return $this->getAttribute(self::GROUP);
+    }
+
+    public function getType()
+    {
+        return $this->getAttribute(self::TYPE);
+    }
+
+    public function getFilterType()
+    {
+        return $this->getAttribute(self::FILTER_TYPE);
+    }
+
+    public function getMethod()
+    {
+        return $this->getAttribute(self::METHOD);
     }
 
     public function getMethodType()
@@ -145,13 +234,80 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INTERNATIONAL);
     }
 
+    public function isFilter(): bool
+    {
+        return ($this->getAttribute(self::TYPE) === self::FILTER);
+    }
+
+    public function isSorter(): bool
+    {
+        return ($this->getAttribute(self::TYPE) === self::SORTER);
+    }
+
+    public function shouldSelectTerminal(): bool
+    {
+        return ($this->getAttribute(self::FILTER_TYPE) === self::SELECT);
+    }
+
+    public function shouldRejectTerminal(): bool
+    {
+        return ($this->getAttribute(self::FILTER_TYPE) === self::REJECT);
+    }
+
+    public function isMethodCardOrEmi(): bool
+    {
+        return (in_array($this->getMethod(), [Method::CARD, Method::EMI], true) === true);
+    }
+
+    public function getIins()
+    {
+        return $this->getAttribute(self::IINS);
+    }
+
+    public function getEmiDuration()
+    {
+        return $this->getAttribute(self::EMI_DURATION);
+    }
+
+    public function getEmiSubvention()
+    {
+        return $this->getAttribute(self::EMI_SUBVENTION);
+    }
+
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
+    }
     //----------------- Public Setters------------------------------------------
 
     public function setPublicLoadAttribute(array & $array)
     {
-        $load = round(($this->getAttribute(self::LOAD) / 100), 2);
+        if ($this->getAttribute(self::LOAD) !== null)
+        {
+            $load = round(($this->getAttribute(self::LOAD) / 100), 2);
 
-        $array[self::LOAD] = $load;
+            $array[self::LOAD] = $load;
+        }
+    }
+
+    public function setPublicMinAmountAttribute(array & $array)
+    {
+        if ($this->getAttribute(self::MIN_AMOUNT) !== null)
+        {
+            $minAmount = round(($this->getAttribute(self::MIN_AMOUNT) / 100), 2);
+
+            $array[self::MIN_AMOUNT] = $minAmount;
+        }
+    }
+
+    public function setPublicMaxAmountAttribute(array & $array)
+    {
+        if ($this->getAttribute(self::MAX_AMOUNT) !== null)
+        {
+            $maxAmount = round(($this->getAttribute(self::MAX_AMOUNT) / 100), 2);
+
+            $array[self::MAX_AMOUNT] = $maxAmount;
+        }
     }
 
     //---------------- Public Setters End---------------------------------------
@@ -168,7 +324,8 @@ class Entity extends Base\PublicEntity
 
     protected function modifyIssuer(array & $input)
     {
-        if (empty($input[self::ISSUER]) === false)
+        if ((empty($input[self::ISSUER]) === false) and
+            ($input[self::METHOD] !== Method::WALLET))
         {
             $input[self::ISSUER] = strtoupper($input[self::ISSUER]);
         }
@@ -180,10 +337,24 @@ class Entity extends Base\PublicEntity
 
     public function setLoadAttribute($load)
     {
-        $this->attributes[self::LOAD] = intval(round($load * 100));
+        if ($load !== null)
+        {
+            $this->attributes[self::LOAD] = intval(round($load * 100));
+        }
     }
 
     //----------------- Mutators End--------------------------------------------
+
+
+    public function getIinsAttribute($value)
+    {
+        if (empty($value) === true)
+        {
+            return [];
+        }
+
+        return json_decode($value, true);
+    }
 
     /**
      * Evaluates if a rule's terminal related attributes match those of
@@ -204,7 +375,7 @@ class Entity extends Base\PublicEntity
                 continue;
             }
 
-            if ($this->match($key, $terminal) === false)
+            if ($this->compare($key, $terminal) === false)
             {
                 return false;
             }
@@ -213,8 +384,48 @@ class Entity extends Base\PublicEntity
         return true;
     }
 
-    protected function match(string $key, Terminal\Entity $terminal): bool
+    protected function compare(string $key, Terminal\Entity $terminal): bool
     {
+        $compareFunc = 'compare' . studly_case($key);
+
+        if (method_exists($this, $compareFunc) === true)
+        {
+            return $this->$compareFunc($terminal);
+        }
+
         return ($this->getAttribute($key) === $terminal->getAttribute($key));
+    }
+
+    protected function compareMethod(Terminal\Entity $terminal): bool
+    {
+        $method = $this->getMethod();
+
+        switch ($method)
+        {
+            case Method::CARD:
+                return (($terminal->isCardEnabled() === true) and ($terminal->isEmiEnabled() === false));
+
+            case Method::NETBANKING:
+                return ($terminal->isNetbankingEnabled() === true);
+
+            case Method::EMI:
+                return ($terminal->isEmiEnabled() === true);
+
+            case Method::WALLET:
+                return ($this->getGateway() === $terminal->getGateway());
+
+            case Method::UPI:
+                return ($terminal->isUpiEnabled() === true);
+
+            case Method::AEPS:
+                return ($terminal->isAepsEnabled() === true);
+        }
+    }
+
+    protected function compareSharedTerminal(Terminal\Entity $terminal): bool
+    {
+        $isApplicableForSharedTerminal = $this->getAttribute(self::SHARED_TERMINAL);
+
+        return ($isApplicableForSharedTerminal === $terminal->isShared()) ? true : false;
     }
 }

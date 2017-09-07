@@ -60,13 +60,6 @@ class PaymentMarketplaceRefundTest extends TestCase
         });
     }
 
-
-
-    public function testRefundAmountGreaterThanTransferred()
-    {
-        ; // ?
-    }
-
     public function testFullRefund()
     {
         $transfers[0] = [
@@ -320,7 +313,10 @@ class PaymentMarketplaceRefundTest extends TestCase
 
             Transfer\Entity::verifyIdAndSilentlyStripSign($id);
 
-            $content = $this->getEntities('reversal', ['transfer_id' => $id], true)['items'][0];
+            $entities = $this->getEntities('reversal',
+                                          ['entity_type' => 'transfer', 'entity_id' => $id],
+                                            true);
+            $content = $entities['items'][0];
 
             $expected = [
                 'transfer_id'   => $transfer['id'],

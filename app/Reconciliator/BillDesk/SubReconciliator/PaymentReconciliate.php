@@ -4,6 +4,7 @@ namespace RZP\Reconciliator\BillDesk;
 
 use RZP\Reconciliator\Base;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Trace\TraceCode;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
@@ -90,9 +91,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             $gatewaySettledAt = Carbon::createFromFormat(
                                         self::SETTLEMENT_DATE_FORMAT,
                                         $row[self::COLUMN_SETTLED_AT],
-                                        'Asia/Kolkata');
+                                        Timezone::IST);
 
-            $gatewaySettledAt = $gatewaySettledAt->timestamp;
+            $gatewaySettledAt = $gatewaySettledAt->getTimestamp();
         }
         catch (\Exception $ex)
         {
