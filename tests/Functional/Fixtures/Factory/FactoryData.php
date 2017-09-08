@@ -404,10 +404,10 @@ final class FactoryData
             'method'      => 'netbanking',
             'bank'        => 'ICIC',
             'card_id'     => null,
-            'recurring'   => true,
+            'recurring'   => false,
             'used_count'  => 0,
             'token'       => $faker->uniqueid,
-            'used_at'     => $faker->timestamp,
+            'used_at'     => null,
         ]);
 
         $factory(\RZP\Models\Customer\AppToken\Entity::class, [

@@ -45,6 +45,22 @@ class Status
         self::N => Token\RecurringStatus::REJECTED
     ];
 
+    /**
+     * Sets the SI Message
+     *
+     * @param string $status
+     * @return string
+     */
+    public static function getSiMessage(string $status)
+    {
+        if ($status === self::Y)
+        {
+            return 'Success';
+        }
+
+        return 'Failure';
+    }
+
     public static function isSiStatusFailure(string $status)
     {
         if (in_array($status, self::SI_FAILED_STATUSES, true) === true)

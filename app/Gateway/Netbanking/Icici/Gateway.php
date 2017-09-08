@@ -847,7 +847,7 @@ class Gateway extends Base\Gateway
 
         // TODO: We should have a mapping here with our internal error codes.
         // We cannot show the message as it is.
-        $recurringFailureReason = $gatewayPayment->getSIMessage();
+        $recurringFailureReason = Status::getSiMessage($siStatus);
 
         $recurringData = [
             Token\Entity::RECURRING_STATUS         => $recurringStatus,

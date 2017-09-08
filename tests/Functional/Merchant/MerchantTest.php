@@ -2,7 +2,6 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
-use App;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use DB;
@@ -18,10 +17,8 @@ use RZP\Models\Transaction;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
-use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 
 class MerchantTest extends TestCase
@@ -37,14 +34,6 @@ class MerchantTest extends TestCase
         $this->testDataFilePath = __DIR__.'/helpers/MerchantTestData.php';
 
         parent::setUp();
-
-        $this->fixtures->create('terminal:shared_netbanking_icici_recurring_terminal');
-
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-
-        $this->fixtures->create('customer');
-
-        $this->fixtures->merchant->addFeatures(['charge_at_will']);
 
         $this->ba->appAuth();
     }
@@ -1439,6 +1428,14 @@ class MerchantTest extends TestCase
 
     public function testCreateNbRecurringTokenPreferencesRoute()
     {
+        $this->fixtures->create('terminal:shared_netbanking_icici_recurring_terminal');
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->create('customer');
+
+        $this->fixtures->merchant->addFeatures(['charge_at_will']);
+
         $response = $this->makePreferencesRouteRequest();
 
         $expectedTokenCount = $response['customer']['tokens']['count'];
