@@ -12,7 +12,7 @@ app.controller('WorkflowRequestsCtrl', [
     $scope.workflow_request_type = $stateParams.type;
 
     $scope.stats = {
-      count: 10,
+      count: 50,
       countStart: 0,
       countEnd: 0,
       skip: 0,
@@ -67,7 +67,7 @@ app.controller('WorkflowRequestsCtrl', [
               $scope.stats.countEnd = $scope.stats.countStart;
             } else {
               $scope.stats.countEnd =
-                $scope.stats.countStart + $scope.stats.count - 1;
+                $scope.stats.countStart + data.data.count - 1;
             }
             $scope.allowPrev = $scope.stats.countStart != 1;
             $scope.allowNext = $scope.stats.count == data.data.count;
