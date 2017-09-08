@@ -11,8 +11,11 @@ class ExclusivitySorter extends Terminal\Sorter
     ];
 
     /**
-     * Direct terminals should be placed above the shared terminals.
-     * Place the direct terminals above shared terminals.
+     * Sorts terminals so that direct terminals get preference over shared terminals
+     * The sorted terminals have the following order
+     * 1. Direct terminals
+     * 2. Shared terminals whose gateways are not in the list of direct terminals
+     * 3. Other gateway shared terminals
      *
      * @param $terminals
      * @param array $input
@@ -20,20 +23,22 @@ class ExclusivitySorter extends Terminal\Sorter
      */
     public function sharedSorter($terminals)
     {
-        $sharedTerminals1 = []; // List of shared terminals where we dont have direct terminals
-        $sharedTerminals2 = []; // List of shared terminals where we have direct terminals
+        // Shared terminals whose gateways don't have any direct terminals in the list of terminals
+        $exclusiveSharedTerminals = [];
 
-        $nonSharedTerminals = [];
-        $nonSharedTerminalGateways = [];
+        // Shared terminals whose gateways also have a direct terminal in the list of terminals
+        $nonExclusiveSharedTerminals = [];
 
-        // find all non shared terminals
+        $directTerminals = [];
+        $directTerminalGateways = [];
+
         foreach ($terminals as $terminal)
         {
-            if ($terminal->isShared() === false)
+            if ($terminal->isDirectForMerchant($this->input['merchant']) === true)
             {
-                $nonSharedTerminals[] = $terminal;
+                $directTerminals[] = $terminal;
 
-                $nonSharedTerminalGateways[] = $terminal->getGateway();
+                $directTerminalGateways[] = $terminal->getGateway();
             }
         }
 
@@ -42,21 +47,22 @@ class ExclusivitySorter extends Terminal\Sorter
         // 2. Terminals with gateways where we have direct terminals
         foreach ($terminals as $terminal)
         {
-            if ($terminal->isShared() === true)
+            if ($terminal->isDirectForMerchant($this->input['merchant']) === false)
             {
-                if (in_array($terminal->getGateway(), $nonSharedTerminalGateways, true))
+                if (in_array($terminal->getGateway(), $directTerminalGateways, true) === true)
                 {
-                    $sharedTerminals2[] = $terminal;
+                    $nonExclusiveSharedTerminals[] = $terminal;
                 }
                 else
                 {
-                    $sharedTerminals1[] = $terminal;
+                    $exclusiveSharedTerminals[] = $terminal;
                 }
-
             }
         }
 
-        $sortedTerminals = array_merge($nonSharedTerminals, $sharedTerminals1, $sharedTerminals2);
+        $sortedTerminals = array_merge($directTerminals,
+                                      $exclusiveSharedTerminals,
+                                      $nonExclusiveSharedTerminals);
 
         return $sortedTerminals;
     }

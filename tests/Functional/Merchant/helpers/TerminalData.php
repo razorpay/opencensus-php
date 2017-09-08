@@ -68,7 +68,6 @@ return [
                 'gateway_terminal_password' => '12345678',
                 'category'                  => '4567',
                 'emi'                       => '1',
-                'shared'                    => '1',
             ],
             'method' => 'POST'
         ],
@@ -169,7 +168,6 @@ return [
                 'gateway_terminal_password' => '12345678',
                 'category'  => '4567',
                 'netbanking'   => '1',
-                'shared'    => '1',
                 'network_category' => 'govt_education',
             ],
             'method' => 'POST'
@@ -193,7 +191,6 @@ return [
                 'gateway_terminal_password' => '12345678',
                 'category'  => '4567',
                 'card'   => '1',
-                'shared'    => '1',
                 'network_category' => 'education',
                 'gateway_acquirer' => 'hdfc',
             ],
