@@ -248,7 +248,7 @@ class Gateway extends Base\Gateway
 
         if ($verify->gatewaySuccess !== $apiSuccess)
         {
-            throw new Exception\GatewayErrorException(
+            throw new Exception\BadRequestException(
                 ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
         }
 

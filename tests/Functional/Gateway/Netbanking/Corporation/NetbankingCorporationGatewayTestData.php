@@ -58,7 +58,7 @@ return [
             'status_code' => 502,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\GatewayErrorException',
+            'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
         ],
     ],
@@ -81,7 +81,7 @@ return [
             'status_code' => 502,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\GatewayErrorException',
+            'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
         ],
     ],
