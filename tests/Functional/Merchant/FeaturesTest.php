@@ -114,7 +114,7 @@ class FeaturesTest extends TestCase
         $this->startTest();
     }
 
-    public function testGetQuestions()
+    public function testGetOnboardingQuestions()
     {
         $this->ba->proxyAuth();
 
@@ -135,13 +135,9 @@ class FeaturesTest extends TestCase
 
         $request['content'][Constants::MARKETPLACE][Constants::VENDOR_AGREEMENT] = $uploadedFile;
 
-        $expectedResponse = $testData['response']['content'];
+        $response = $this->makeRequestAndGetContent($request);
 
-        $actualResponse = $this->makeRequestAndGetContent($request);
-
-        $this->assertArraySelectiveEquals($expectedResponse, $actualResponse);
-
-        $this->assertArrayHasKey(Constants::VENDOR_AGREEMENT, $actualResponse[Constants::MARKETPLACE]);
+        $this->assertTrue($response);
     }
 
     protected function createUploadedFile(string $url): UploadedFile

@@ -287,7 +287,7 @@ return [
     ],
 
 
-    'testGetQuestions'           => [
+    'testGetOnboardingQuestions' => [
         'request'  => [
             'content' => [
                 Constants::FEATURES => [
@@ -307,46 +307,38 @@ return [
             'content' => [
                 Constants::MARKETPLACE      => [
                     Constants::USE_CASE         => [
-                        Constants::ID            => Constants::USE_CASE,
                         Constants::RESPONSE_TYPE => 'textarea',
                         Constants::MANDATORY     => true
                     ],
                     Constants::SETTLING_TO      => [
-                        Constants::ID            => Constants::SETTLING_TO,
                         Constants::RESPONSE_TYPE => 'radio',
                         Constants::MANDATORY     => true
                     ],
                     Constants::VENDOR_AGREEMENT => [
-                        Constants::ID            => Constants::VENDOR_AGREEMENT,
                         Constants::RESPONSE_TYPE => 'file',
                         Constants::MANDATORY     => false
                     ]
                 ],
                 Constants::SUBSCRIPTIONS    => [
                     Constants::BUSINESS_MODEL  => [
-                        Constants::ID            => Constants::BUSINESS_MODEL,
                         Constants::RESPONSE_TYPE => 'textarea',
                         Constants::MANDATORY     => true
                     ],
                     Constants::SAMPLE_PLANS    => [
-                        Constants::ID            => Constants::SAMPLE_PLANS,
                         Constants::RESPONSE_TYPE => 'textarea',
                         Constants::MANDATORY     => true
                     ],
                     Constants::WEBSITE_DETAILS => [
-                        Constants::ID            => Constants::WEBSITE_DETAILS,
-                        Constants::RESPONSE_TYPE => 'textarea',
+                        Constants::RESPONSE_TYPE => 'text',
                         Constants::MANDATORY     => true
                     ]
                 ],
                 Constants::VIRTUAL_ACCOUNTS => [
                     Constants::USE_CASE                 => [
-                        Constants::ID            => Constants::USE_CASE,
                         Constants::RESPONSE_TYPE => 'textarea',
                         Constants::MANDATORY     => true
                     ],
                     Constants::EXPECTED_MONTHLY_REVENUE => [
-                        Constants::ID            => Constants::EXPECTED_MONTHLY_REVENUE,
                         Constants::RESPONSE_TYPE => 'number',
                         Constants::MANDATORY     => true
                     ]
@@ -369,14 +361,6 @@ return [
                 'HTTP_X-Dashboard'            => 'true',
                 'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
             ],
-        ],
-        'response' => [
-            'content' => [
-                Constants::MARKETPLACE => [
-                    Constants::USE_CASE    => 'Some default use case',
-                    Constants::SETTLING_TO => 'Someone'
-                ]
-            ]
         ]
     ]
 ];

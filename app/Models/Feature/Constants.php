@@ -115,7 +115,6 @@ class Constants
     // Stores the details for each question irrespective of the feature that it belongs to
     public static $questionMap = [
         self::USE_CASE => [
-            self::ID                  => self::USE_CASE,
             self::QUESTION            => 'What is your use case?',
             self::DESCRIPTION         => '',
             self::RESPONSE_TYPE       => 'textarea',
@@ -124,7 +123,6 @@ class Constants
         ],
 
         self::SETTLING_TO => [
-            self::ID                  => self::SETTLING_TO,
             self::QUESTION            => 'Who are you settling to?',
             self::DESCRIPTION         => '',
             self::RESPONSE_TYPE       => 'radio',
@@ -137,7 +135,6 @@ class Constants
         ],
 
         self::VENDOR_AGREEMENT => [
-            self::ID                  => self::VENDOR_AGREEMENT,
             self::QUESTION            => 'Please upload a copy of a signed agreement with the third party',
             self::DESCRIPTION         => '',
             self::RESPONSE_TYPE       => 'file',
@@ -146,7 +143,6 @@ class Constants
         ],
 
         self::BUSINESS_MODEL => [
-            self::ID                  => self::BUSINESS_MODEL,
             self::QUESTION            => 'What is your business model and requirement?',
             self::DESCRIPTION         => '',
             self::RESPONSE_TYPE       => 'textarea',
@@ -155,7 +151,6 @@ class Constants
         ],
 
         self::SAMPLE_PLANS => [
-            self::ID                  => self::SAMPLE_PLANS,
             self::QUESTION            => 'Sample plans',
             self::DESCRIPTION         => '',
             self::RESPONSE_TYPE       => 'textarea',
@@ -164,16 +159,14 @@ class Constants
         ],
 
         self::WEBSITE_DETAILS => [
-            self::ID                  => self::WEBSITE_DETAILS,
             self::QUESTION            => 'Is website live? If yes, link to the page with more details',
             self::DESCRIPTION         => '',
-            self::RESPONSE_TYPE       => 'textarea',
+            self::RESPONSE_TYPE       => 'text',
             self::AVAILABLE_RESPONSES => [],
             self::MANDATORY           => true
         ],
 
         self::EXPECTED_MONTHLY_REVENUE => [
-            self::ID                  => self::EXPECTED_MONTHLY_REVENUE,
             self::QUESTION            => 'Expected monthly revenue using this feature?',
             self::DESCRIPTION         => '',
             self::RESPONSE_TYPE       => 'number',

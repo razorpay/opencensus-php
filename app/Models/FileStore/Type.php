@@ -136,7 +136,7 @@ class Type
             self::FUND_TRANSFER_H2H,
         ],
 
-        Constants\Entity::FEATURES => [
+        Constants\Entity::FEATURE => [
             self::MARKETPLACE_VENDOR_AGREEMENT
         ],
     ];

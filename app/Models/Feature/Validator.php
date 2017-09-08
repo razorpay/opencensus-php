@@ -16,6 +16,22 @@ class Validator extends Base\Validator
         Entity::NAME        => 'required|string|max:25|custom'
     );
 
+    protected static $onboardingRules = array(
+        Constants::MARKETPLACE                                     => 'sometimes|array|max:3',
+        Constants::MARKETPLACE . "." . Constants::USE_CASE         => 'sometimes|string',
+        Constants::MARKETPLACE . "." . Constants::SETTLING_TO      => 'sometimes|string',
+        Constants::MARKETPLACE . "." . Constants::VENDOR_AGREEMENT => 'sometimes|file',
+
+        Constants::SUBSCRIPTIONS                                    => 'sometimes|array|max:3',
+        Constants::SUBSCRIPTIONS . "." . Constants::BUSINESS_MODEL  => 'sometimes|string',
+        Constants::SUBSCRIPTIONS . "." . Constants::SAMPLE_PLANS    => 'sometimes|string',
+        Constants::SUBSCRIPTIONS . "." . Constants::WEBSITE_DETAILS => 'sometimes|string|max:50',
+
+        Constants::VIRTUAL_ACCOUNTS                                             => 'sometimes|array|max:2',
+        Constants::VIRTUAL_ACCOUNTS . "." . Constants::USE_CASE                 => 'sometimes|string',
+        Constants::VIRTUAL_ACCOUNTS . "." . Constants::EXPECTED_MONTHLY_REVENUE => 'sometimes|array',
+    );
+
     protected function validateName($attribute, $value)
     {
         $allFeatures = array_keys(Constants::$featureValueMap);

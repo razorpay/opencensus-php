@@ -3,6 +3,7 @@
 namespace RZP\Models\Feature;
 
 use RZP\Models\Base;
+use RZP\Models\Pricing\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settings;
 use RZP\Models\Merchant;
@@ -154,83 +155,56 @@ class Service extends Base\Service
     {
         $settingsService = Settings\Service::getNewInstance();
 
-        $featureQuestionsMap = Constants::$featureQuestionsMap;
+        $merchantId = $this->merchant->getId();
 
-        $settingsMap = [];
+        (new Validator())->validateInput('onboarding', $input);
 
+        $saved = false;
+
+        try
+        {
+            $this->processFiles($input);
+
+            $settingsService->upsert(Constants::MERCHANT, $merchantId, Constants::ONBOARDING, $input);
+
+            $saved = true;
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception, Trace::CRITICAL, TraceCode::FEATURE_ONBOARDING_RESPONSE_CREATION_FAILED);
+        }
+
+        return $saved;
+    }
+
+    protected function processFiles(& $input)
+    {
         $merchant = $this->merchant;
 
         $merchantId = $merchant->getId();
 
-        foreach ($input as $featureName => $userQuestionMaps)
+        $featureName = Constants::MARKETPLACE;
+
+        $question = Constants::VENDOR_AGREEMENT;
+
+        if ((isset($input[$featureName]))
+            and (isset($input[$featureName][$question])))
         {
-            // Ignore, if the feature sent is not found in the Constants defined
-            if (array_key_exists($featureName, $featureQuestionsMap) === false)
-            {
-                $this->trace->info(TraceCode::ONBOARDING_FEATURE_DOES_NOT_EXIST, [$featureName]);
-                continue;
-            }
+            $file = $input[$featureName][$question];
 
-            $questionsMap = Constants::getFeatureQuestions($featureName);
+            $settingKey =  $featureName . "." . $question;
 
-            foreach ($userQuestionMaps as $userQuestion => $userResponse)
-            {
-                // Ignore, if the question key sent is not found in the Constants defined
-                if (array_key_exists($userQuestion, $questionsMap) === false)
-                {
-                    $this->trace->info(TraceCode::ONBOARDING_FEATURE_QUESTION_DOES_NOT_EXIST, [$featureName, $userQuestion]);
-                    continue;
-                }
+            $extension = $file->extension();
 
-                // example settingKey = "onboarding.marketplace.use_case"
-                $settingKey   = implode(".", [$featureName, $userQuestion]);
+            $fileName = 'api/' . $merchantId . '/' . $settingKey;
 
-                // json_encode is being used as the response can also be an array. Don't want to join the array based on comma's.
-                $settingValue = json_encode($userResponse);
+            $file = $this->createFile($extension, $file, $fileName, $settingKey, $merchant);
 
-                if ($questionsMap[$userQuestion][Constants::RESPONSE_TYPE] === 'file')
-                {
-                    $file = $userResponse;
+            $filePath = $file['local_file_path'];
 
-                    $extension = $file->extension();
-
-                    $fileName = 'api/' . $merchantId . '/' . $settingKey;
-
-                    $file = $this->createFile($extension, $file, $fileName, $settingKey, $merchant);
-
-                    $filePath = $file['local_file_path'];
-
-                    $settingValue = json_encode($filePath);
-                }
-
-                $settingsMap[$settingKey] = $settingValue;
-            }
+            $input[$featureName][$question] = $filePath;
         }
-
-        $entity = Constants::MERCHANT;
-
-        $entityId = $merchantId;
-
-        $settingsService->upsert($entity, $entityId, Constants::ONBOARDING, $settingsMap);
-
-        $response = $settingsService->getAll($entity, $entityId, Constants::ONBOARDING, $settingsMap);
-
-        $response = $response['settings'];
-
-        $returnResponse = [];
-
-        foreach ($response as $feature => $questionResponseMap)
-        {
-            $returnResponse[$feature] = [];
-
-            foreach ($questionResponseMap as $question => $userResponse)
-            {
-                // json_decode, because just json_encode does not help
-                $returnResponse[$feature][$question] = json_decode($userResponse);
-            }
-        }
-
-        return $returnResponse;
     }
 
     protected function createFile(string $extension,

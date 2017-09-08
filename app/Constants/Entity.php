@@ -83,7 +83,6 @@ class Entity
     const BATCH_FUND_TRANSFER   = 'batch_fund_transfer';
     const CUSTOMER_TRANSACTION  = 'customer_transaction';
     const FUND_TRANSFER_ATTEMPT = 'fund_transfer_attempt';
-    const FEATURES              = 'features';
 
     // heimdall
     const ORG                   = 'org';
@@ -204,7 +203,6 @@ class Entity
         self::BATCH_FUND_TRANSFER   => \RZP\Models\FundTransfer\Batch::class,
         self::CUSTOMER_TRANSACTION  => \RZP\Models\Customer\Transaction::class,
         self::FUND_TRANSFER_ATTEMPT => \RZP\Models\FundTransfer\Attempt::class,
-        self::FEATURES              => \RZP\Models\Feature::class,
 
         // gateways
         self::EBS                   => \RZP\Gateway\Ebs::class,
