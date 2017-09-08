@@ -7,6 +7,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
+import { Link } from 'react-router-dom';
 
 const notificationClassMap = {
   sent: 'text-success',
@@ -114,11 +115,11 @@ export default props => {
                         return '--';
                       }
                       return (
-                        <NavLink to={`/payments/${invoice.payment_id}`}>
+                        <Link to={`/payments/${invoice.payment_id}`}>
                           <code>
                             {invoice.payment_id}
                           </code>
-                        </NavLink>
+                        </Link>
                       );
                     }}
                   />
