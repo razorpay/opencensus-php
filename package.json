@@ -71,7 +71,7 @@
     "react-tether": "^0.5.5",
     "react-time": "^4.2.0",
     "redux": "^3.6.0",
-    "redux-form": "^7.0.3"
+    "redux-form": "^6.5.0"
   },
   "scripts": {
     "precommit": "lint-staged",
