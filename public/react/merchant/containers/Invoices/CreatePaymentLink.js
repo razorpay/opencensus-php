@@ -303,7 +303,9 @@ export default class CreatePaymentLink extends Component {
                 <FieldArray
                   name="notes"
                   component={NotesFieldArray}
-                  nonEditableUptilIndex={invoice.notes.length - 1}
+                  nonEditableUptilIndex={
+                    invoice ? invoice.notes.length - 1 : -1
+                  }
                   required
                 />
               </div>

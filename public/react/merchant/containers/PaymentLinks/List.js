@@ -42,8 +42,11 @@ export default class PaymentLinksContainer extends ListContainer {
   }
 
   showPaymentLinkModal = (invoice = null) => {
-    const item = { ...invoice };
-    item.notes = this.deserializeNotes(item.notes);
+    let item = null;
+    if (invoice) {
+      item = { ...invoice };
+      item.notes = this.deserializeNotes(item.notes);
+    }
 
     this.props.openModal({
       component: (
