@@ -402,8 +402,8 @@ class Terminal extends Base
             'netbanking'                => 0,
             'shared'                    => 1,
             'type'                      => [
-                Type::NON_RECURRING => 1,
-                Type::RECURRING_3DS => 1
+                Type::NON_RECURRING => '1',
+                Type::RECURRING_3DS => '1'
             ],
             'gateway_acquirer'          => 'hdfc',
             'gateway_merchant_id'       => 'merchant_id',
@@ -457,8 +457,8 @@ class Terminal extends Base
         $attributes['id'] = 'FssRecurringTl';
 
         $attributes['type'] = [
-            Type::RECURRING_3DS => 1,
-            Type::RECURRING_NON_3DS => 1,
+            Type::RECURRING_3DS => '1',
+            Type::RECURRING_NON_3DS => '1',
         ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
@@ -483,16 +483,16 @@ class Terminal extends Base
         // Add recurring 3ds terminal;
         $attributes['id'] = '1RecurringTerm';
         $attributes['type'] = [
-            Type::NON_RECURRING => 1,
-            Type::RECURRING_3DS => 1
+            Type::NON_RECURRING => '1',
+            Type::RECURRING_3DS => '1'
         ];
 
         $this->createEntityInTestAndLive('terminal', $attributes);
 
         $attributes['id'] = '3RecurringTerm';
         $attributes['type'] = [
-            Type::NON_RECURRING => 1,
-            Type::RECURRING_3DS => 1
+            Type::NON_RECURRING => '1',
+            Type::RECURRING_3DS => '1'
         ];
 
         $this->createEntityInTestAndLive('terminal', $attributes);
@@ -500,7 +500,7 @@ class Terminal extends Base
         // Add recurring 3ds
         $attributes['id'] = '2RecurringTerm';
         $attributes['type'] = [
-            Type::RECURRING_NON_3DS => 1,
+            Type::RECURRING_NON_3DS => '1',
         ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
@@ -516,8 +516,8 @@ class Terminal extends Base
             'card'                      => 1,
             'shared'                    => 1,
             'type'                      => [
-                Type::NON_RECURRING => 1,
-                Type::RECURRING_3DS => 1
+                Type::NON_RECURRING => '1',
+                Type::RECURRING_3DS => '1'
             ],
             'gateway_merchant_id'       => 'random',
         ];
@@ -532,7 +532,7 @@ class Terminal extends Base
             'card'                      => 1,
             'shared'                    => 1,
             'type'                      => [
-                Type::RECURRING_NON_3DS => 1
+                Type::RECURRING_NON_3DS => '1'
             ],
             'mode'                      => Mode::PURCHASE,
             'gateway_merchant_id'       => 'random',
@@ -551,8 +551,8 @@ class Terminal extends Base
             'card'                      => 1,
             'shared'                    => 1,
             'type'                      => [
-                Type::NON_RECURRING => 1,
-                Type::RECURRING_3DS => 1
+                Type::NON_RECURRING => '1',
+                Type::RECURRING_3DS => '1'
             ],
             'gateway_merchant_id'       => 'random',
             'gateway_terminal_id'       => 'recurring_random',
@@ -563,7 +563,7 @@ class Terminal extends Base
 
         $attributes['id']   = 'MiGSRcgTmlN3DS';
         $attributes['type'] = [
-            Type::RECURRING_NON_3DS => 1
+            Type::RECURRING_NON_3DS => '1'
         ];
 
         $this->createEntityInTestAndLive('terminal', $attributes);
