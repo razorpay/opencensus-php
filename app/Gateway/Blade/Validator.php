@@ -102,4 +102,113 @@ class Validator extends JitValidator
             ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
             $messages);
     }
+
+    public static function validateResponse($response, $input)
+    {
+        self::validatePurchaseDate($response, $input);
+        self::validateCurrency($response, $input);
+        self::validateAmount($response, $input);
+        self::validateCurrencyExponent($response, $input);
+        self::validatePaymentId($response, $input);
+    }
+
+    public static function validateXid($response, $expectedXid)
+    {
+        if ($pARes['Purchase']['xid'] !== $expectedXid)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                '',
+                'Value mismatch for xid',
+                [
+                    'expected' => $expectedXid,
+                    'actual'   => $response['Purchase']['xid']
+                ]
+            );
+        }
+    }
+
+    public static function validatePurchaseDate($response, $input)
+    {
+        $purchaseDate = Carbon::createFromTimestamp($input['payment']['created_at'], 'Asia/Kolkata')
+            ->format('Ymd H:m:s');
+
+        if ($response['Purchase']['date'] !== $purchaseDate)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                '',
+                'Value mismatch',
+                [
+                    'expected' => $purchaseDate,
+                    'actual'   => $response['Purchase']['date']
+                ]);
+        }
+    }
+
+    public static function validateCurrency($response, $input)
+    {
+        $currency = $response['Purchase']['currency'];
+
+        if ($currency !== Currency::getIsoCode($input['payment']['currency']))
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                '',
+                'Invalid currency code',
+                [
+                    'expected' => $input['payment']['currency'],
+                    'actual'   => $currency
+                ]);
+        }
+    }
+
+    public static function validateAmount($response, $input)
+    {
+        $amount = (int) $response['Purchase']['purchAmount'];
+
+        if ($amount !== $input['payment']['amount'])
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                '',
+                'Amount mismatch',
+                [
+                    'expected' => $input['payment']['amount'],
+                    'actual'   => $amount
+                ]);
+        }
+    }
+
+    public static function validateCurrencyExponent($response, $input)
+    {
+        $exponent = (int) $response['Purchase']['exponent'];
+
+        if ($exponent !== Currency::getExponent($input['payment']['currency']))
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                '',
+                'Exponent mismatch',
+                [
+                    'expected' => Currency::getExponent($input['payment']['currency']),
+                    'actual'   => $exponent
+                ]);
+        }
+    }
+
+    public static function validatePaymentId($response, $input)
+    {
+        if ($response['Message']['@attributes']['id'] !== $input['payment']['public_id'])
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+                '',
+                'Payment ID mismatch',
+                [
+                    'actual'   => $input['payment']['public_id'],
+                    'expected' => $response['@attributes']['id']
+                ]);
+        }
+    }
 }

@@ -23,28 +23,21 @@ class Gateway extends Base\Gateway
     protected $gateway = 'blade';
 
     /**
-     * Authorize the payment
+     * Authenticate the payment
      *
      * @param array $input Input
      *
      * @return void
      */
-    public function authorize(array $input)
-    {
-        parent::authorize($input);
-
-        return $this->authenticate($input);
-    }
-
-    protected function authenticate(array $input)
+    public function authenticate(array $input)
     {
         // TODO: Add card range cache
 
         // Send card enrollment verification request
-        $response = $this->sendVerifyEnrollmentRequest($input);
+        $response = $this->sendEnrollmentRequest($input);
 
         // Process verification response
-        $enrolled = $this->processVerifyEnrollmentResponse($input, $response);
+        $enrolled = $this->processEnrollmentResponse($input, $response);
 
         $attributes = $this->getVeresAttributesToSave($response);
 
@@ -100,13 +93,13 @@ class Gateway extends Base\Gateway
     {
         $attributes = [];
 
-        $ch = $response['Message']['VERes']['CH'];
+        $ch = $response[VereqResponse::MESSAGE][VereqResponse::VERES][VereqResponse::CH];
 
-        $attributes[Entity::ENROLLED] = $ch['enrolled'];
+        $attributes[Entity::ENROLLED] = $ch[VereqResponse::ENROLLED];
 
-        if (empty($ch['acctID']) === false)
+        if (empty($ch[VereqResponse::ACCID]) === false)
         {
-            $attributes[Entity::ACC_ID] = $ch['acctID'];
+            $attributes[Entity::ACC_ID] = $ch[VereqResponse::ACCID];
         }
 
         return $attributes;
@@ -116,15 +109,15 @@ class Gateway extends Base\Gateway
         Entity $gatewayPayment,
         array $resp)
     {
-        $gatewayPayment->setXid($resp['Purchase']['xid']);
+        $gatewayPayment->setXid($resp[ParesResponse::PURCHASE][ParesResponse::XID]);
 
-        $gatewayPayment->setCavv($resp['TX']['cavv']);
+        $gatewayPayment->setCavv($resp[ParesResponse::TX][ParesResponse::CAVV]);
 
-        $gatewayPayment->setCavvAlgorithm($resp['TX']['cavvAlgorithm']);
+        $gatewayPayment->setCavvAlgorithm($resp[ParesResponse::TX][ParesResponse::CAVVALGORITHM]);
 
-        $gatewayPayment->setStatus($resp['TX']['status']);
+        $gatewayPayment->setStatus($resp[ParesResponse::TX][ParesResponse::STATUS]);
 
-        $gatewayPayment->setEci($resp['TX']['eci']);
+        $gatewayPayment->setEci($resp[ParesResponse::TX][ParesResponse::ECI]);
 
         $this->repo->saveOrFail($gatewayPayment);
     }
@@ -232,7 +225,7 @@ class Gateway extends Base\Gateway
 
                     break;
                 case ParesResponse::MSG_INVALID_PROPERTY:
-                    $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_INVALID_RESPONSE;
+                    $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_INVALID;
 
                     break;
             }
@@ -251,25 +244,25 @@ class Gateway extends Base\Gateway
 
     protected function validateAndGetPayerAuthenticationResponse(array $input)
     {
-        $pares = $input['gateway']['PaRes'];
+        $pares = $input['gateway'][ParesResponse::GATEWAY_PARES];
+
         $pares = base64_decode($pares);
 
         $paresXml = $this->validateSignatureAndInflatePares($pares);
 
-        // Convert to an object
-        $PaRes = $this->xmlToArray($paresXml);
+        $paresArray = $this->xmlToArray($paresXml);
 
         // Validate Payer Authentication Response
-        $this->validatePayerAuthenticationResponse($input, $PaRes);
+        $this->validatePayerAuthenticationResponse($input, $paresArray);
 
-        $PARes = $PaRes['Message']['PARes'];
+        $paresMessage = $paresArray[ParesResponse::MESSAGE][ParesResponse::PARES];
 
-        return $PARes;
+        return $paresMessage;
     }
 
-    protected function validatePayerAuthenticationResponse($input, $paRes)
+    protected function validatePayerAuthenticationResponse(array $input, $paresArray)
     {
-        if (empty($paRes['Message']) === true)
+        if (empty($paresArray[ParesResponse::MESSAGE]) === true)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
@@ -277,109 +270,30 @@ class Gateway extends Base\Gateway
         }
 
         (new Validator)->rules(Validator::$paresRules)
-                       ->input($paRes)
+                       ->input($paresArray)
                        ->strict(false)
                        ->validate();
 
-        $pARes = $paRes['Message']['PARes'];
+        $paresMessage = $paresArray[ParesResponse::MESSAGE][ParesResponse::PARES];
 
-        if (in_array($pARes['TX']['status'], [ParesStatus::Y, ParesStatus::A], true))
+        if (in_array($paresMessage[ParesResponse::TX][ParesResponse::STATUS], [ParesStatus::Y, ParesStatus::A], true))
         {
-            Validator::validateLastFour($input['card']['last4'], $pARes['pan']);
+            Validator::validateLastFour($input['card']['last4'], $paresMessage[ParesResponse::PAN]);
         }
 
         $expectedXid = $this->generateXid($input);
 
-        if ($pARes['Purchase']['xid'] !== $expectedXid)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                '',
-                'Value mismatch for xid',
-                [
-                    'expected' => $expectedXid,
-                    'actual'   => $pARes['Purchase']['xid']
-                ]
-            );
-        }
+        Validator::validateResponse($paresMessage, $input);
 
-        $purchaseDate = Carbon::createFromTimestamp($input['payment']['created_at'], 'Asia/Kolkata')
-            ->format('Ymd H:m:s');
+        Validator::validateXid($paresMessage, $expectedXid);
 
-        if ($pARes['Purchase']['date'] !== $purchaseDate)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                '',
-                'Value mismatch',
-                [
-                    'expected' => $purchaseDate,
-                    'actual'   => $pARes['Purchase']['date']
-                ]);
-        }
-
-        $currency = $pARes['Purchase']['currency'];
-
-        // TODO: Use payment currency to validate this
-        if ($currency !== Currency::getIsoCode($input['payment']['currency']))
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                '',
-                'Invalid currency code',
-                [
-                    'expected' => $input['payment']['currency'],
-                    'actual'   => $currency
-                ]);
-        }
-
-        $amount = (int) $pARes['Purchase']['purchAmount'];
-
-        if ($amount !== $input['payment']['amount'])
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                '',
-                'Amount mismatch',
-                [
-                    'expected' => $input['payment']['amount'],
-                    'actual'   => $amount
-                ]);
-        }
-
-        $exponent = (int) $pARes['Purchase']['exponent'];
-
-        // Move it to currency and then validate
-        if ($exponent !== Currency::getExponent($input['payment']['currency']))
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                '',
-                'Exponent mismatch',
-                [
-                    'expected' => Currency::getExponent($input['payment']['currency']),
-                    'actual'   => $exponent
-                ]);
-        }
-        if ($paRes['Message']['@attributes']['id'] !== $input['payment']['public_id'])
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-                '',
-                'Payment ID mismatch',
-                [
-                    'actual'   => $input['payment']['public_id'],
-                    'expected' => $pARes['@attributes']['id']
-                ]);
-        }
-
-        $this->validateCredentials($input, $pARes);
+        $this->validateCredentials($input, $paresMessage);
     }
 
-    protected function validateCredentials($input, $PARes)
+    protected function validateCredentials($input, $paresMessage)
     {
-        if (($PARes['Merchant']['acqBIN'] !== $this->getAcquirerBin($input)) or
-            ($PARes['Merchant']['merID'] !== $this->getMerchantId($input)))
+        if (($paresMessage[ParesResponse::MERCHANT][ParesResponse::ACQBIN] !== $this->getAcquirerBin($input)) or
+            ($paresMessage[ParesResponse::MERCHANT][ParesResponse::MERID] !== $this->getMerchantId($input)))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
@@ -392,13 +306,11 @@ class Gateway extends Base\Gateway
     {
         $this->trace->info(TraceCode::VERIFY_ENROLLMENT_RESPONSE, $response);
 
-        //TODO : check if iReqDetail validation needs to be done
-        //Test case 42e-11-VERes
         (new Validator)->rules(Validator::$veresRules)
                        ->input($response)
                        ->validate();
 
-        if ($response['Message']['@attributes']['id'] !== $input['payment']['public_id'])
+        if ($response[VereqResponse::MESSAGE][VereqResponse::ATTRIBUTES][VereqResponse::ID] !== $input['payment']['public_id'])
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
@@ -406,42 +318,37 @@ class Gateway extends Base\Gateway
                 'Invalid payment id received',
                 [
                     'expected' => $input['payment']['public_id'],
-                    'actual'   => $response['Message']['@attributes']['id'],
+                    'actual'   => $response[VereqResponse::MESSAGE][VereqResponse::ATTRIBUTES][VereqResponse::ID],
                 ]);
         }
     }
 
-    protected function isSequentialArray(array $array)
-    {
-        return array_keys($array) === range(0, count($array) - 1);
-    }
-
-    protected function processVerifyEnrollmentResponse($input, $response)
+    protected function processEnrollmentResponse($input, $response)
     {
         $this->validateVERes($input, $response);
 
-        $VERes = $response['Message']['VERes'];
+        $VERes = $response[VereqResponse::MESSAGE][VereqResponse::VERES];
 
-        if ((isset($VERes['Error']) === true) and
-            (count($VERes['Error']) !== 0))
+        if ((isset($VERes[VereqResponse::ERROR]) === true) and
+            (count($VERes[VereqResponse::ERROR]) !== 0))
         {
-            $msg = 'Error message: ' . $error['errorMessage'] . ' ' .
-                   'Error detail: ' . $error['errorDetail'];
+            $msg = 'Error message: ' . $error[VereqResponse::ERROR_MSG] . ' ' .
+                   'Error detail: ' . $error[VereqResponse::ERROR_DETAILS];
 
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
-                $error['errorCode'],
+                '',
                 $msg);
         }
 
-        $ch = $VERes['CH'];
+        $ch = $VERes[VereqResponse::CH];
 
-        return $ch['enrolled'];
+        return $ch[VereqResponse::ENROLLED];
     }
 
     protected function getPayerAuthenticationRequest($input, $response)
     {
-        $url = $response['Message']['VERes']['url'];
+        $url = $response[VereqResponse::MESSAGE][VereqResponse::VERES][VereqResponse::URL];
 
         $pareq = $this->getPayerAuthenticationContent($input, $response);
 
@@ -449,18 +356,18 @@ class Gateway extends Base\Gateway
             'url'       => $url,
             'method'    => 'post',
             'content'   => [
-                'PaReq'     => $pareq,
-                'TermUrl'   => $input['callbackUrl'],
-                'MD'        => $input['payment']['id']
+                PareqRequest::PAREQ     => $pareq,
+                PareqRequest::TERMURL   => $input['callbackUrl'],
+                PareqRequest::MD        => $input['payment']['id']
             ]
         ];
 
         return $request;
     }
 
-    protected function sendVerifyEnrollmentRequest($input)
+    protected function sendEnrollmentRequest($input)
     {
-        $request = $this->getVerifyEnrollmentRequestArray($input);
+        $request = $this->getEnrollmentRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -487,7 +394,7 @@ class Gateway extends Base\Gateway
         return $this->xmlToArray($body);
     }
 
-    protected function getVerifyEnrollmentRequestArray($input)
+    protected function getEnrollmentRequestArray($input)
     {
         $content = $this->getVEReqContent($input);
 
@@ -582,32 +489,31 @@ class Gateway extends Base\Gateway
         $mid = $input['payment']['public_id'];
 
         $content = [
-            'Message' => [
-                '@attributes' => [
-                    'id' => $mid,
+            PareqRequest::MESSAGE => [
+                PareqRequest::ATTRIBUTES => [
+                    PareqRequest::ID     => $mid,
                 ],
-                'PAReq' => [
-                    'version' => self::VERSION,
-                    'Merchant' => [
-                        'acqBIN'      => $this->getAcquirerBin($input),
-                        'merID'       => $this->getMerchantId($input),
-                        // TODO: Make it dynamic
-                        'name'        => $input['merchant']->getBillingLabel(),
+                PareqRequest::MSG_PAREQ => [
+                    PareqRequest::VERSION => self::VERSION,
+                    PareqRequest::MERCHANT => [
+                        PareqRequest::ACQBIN      => $this->getAcquirerBin($input),
+                        PareqRequest::MERID       => $this->getMerchantId($input),
+                        PareqRequest::NAME        => $input['merchant']->getBillingLabel(),
                         // TODO: Use country class
-                        'country'     => '356',
-                        'url'         => 'https://razorpay.com',
+                        PareqRequest::COUNTRY     => '356',
+                        PareqRequest::URL         => 'https://razorpay.com',
                     ],
-                    'Purchase' => [
-                        'xid'         => $this->generateXid($input),
-                        'date'        => $date,
-                        'amount'      => $this->getFormattedAmount($input['payment']),
-                        'purchAmount' => $input['payment']['amount'],
-                        'currency'    => Currency::getIsoCode($input['payment']['currency']),
-                        'exponent'    => '2',
+                    PareqRequest::PURCHASE => [
+                        PareqRequest::XID         => $this->generateXid($input),
+                        PareqRequest::DATE        => $date,
+                        PareqRequest::AMOUNT      => $this->getFormattedAmount($input['payment']),
+                        PareqRequest::PURCHAMOUNT => $input['payment']['amount'],
+                        PareqRequest::CURRENCY    => Currency::getIsoCode($input['payment']['currency']),
+                        PareqRequest::EXPONENT    => '2',
                     ],
-                    'CH' => [
-                        'acctID'      => $response['Message']['VERes']['CH']['acctID'],
-                        'expiry'      => $this->getFormattedCardExpiry($input['card']),
+                    PareqRequest::CH => [
+                        PareqRequest::ACCID      => $response['Message']['VERes']['CH']['acctID'],
+                        PareqRequest::EXPIRY      => $this->getFormattedCardExpiry($input['card']),
                     ]
                 ]
             ]
@@ -653,22 +559,22 @@ class Gateway extends Base\Gateway
         $userAgent = substr($this->app['request']->header('User-Agent'), 0, 256);
 
         $content = [
-            'Message' => [
-                '@attributes' => [
+            VereqRequest::MESSAGE => [
+                VereqRequest::ATTRIBUTES => [
                     'id' => $input['payment']['public_id']
                 ],
-                'VEReq' => [
-                    'version' => self::VERSION,
-                    'pan'     => $input['card']['number'],
-                    'Merchant' => [
-                        'acqBIN' => $this->getAcquirerBin($input),
-                        'merID'  => $this->getMerchantId($input),
+                VereqRequest::VEREQ => [
+                    VereqRequest::VERSION    => self::VERSION,
+                    VereqRequest::PAN        => $input['card']['number'],
+                    VereqRequest::MERCHANT   => [
+                        VereqRequest::ACQBIN       => $this->getAcquirerBin($input),
+                        VereqRequest::MERCHANT_ID  => $this->getMerchantId($input),
                         // 'password' => $creds['password'],
                     ],
-                    'Browser' => [
-                        'deviceCategory' => DeviceCategory::DESKTOP,
-                        'accept'         => $accept,
-                        'userAgent'      => $userAgent,
+                    VereqRequest::BROWSER    => [
+                        VereqRequest::DEVICE_CATEGORY => DeviceCategory::DESKTOP,
+                        VereqRequest::DEVICE_ACCEPT   => $accept,
+                        VereqRequest::DEVICE_UA       => $userAgent,
                     ]
                 ]
             ]
