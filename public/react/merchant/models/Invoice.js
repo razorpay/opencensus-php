@@ -182,21 +182,6 @@ export default class Invoice extends GenericEntity {
       case 'email_status':
         this.email_notify = !isBlank(value);
         break;
-      case 'notes':
-        //TODO: Logic works and this.notes get set properly. Strangely, it's not reflecting in UI
-        let notes = [],
-          index = 0;
-
-        for (var key in value) {
-          if (value.hasOwnProperty(key)) {
-            notes[index] = { key: key, value: value[key] };
-
-            index++;
-          }
-        }
-
-        this.notes = notes;
-        break;
     }
 
     return super.deserializeProperty(prop, value);

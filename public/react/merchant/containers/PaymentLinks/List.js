@@ -42,12 +42,13 @@ export default class PaymentLinksContainer extends ListContainer {
   }
 
   showPaymentLinkModal = (invoice = null) => {
-    invoice.notes = this.deserializeNotes(invoice.notes);
+    const item = { ...invoice };
+    item.notes = this.deserializeNotes(item.notes);
 
     this.props.openModal({
       component: (
         <CreatePaymentLink
-          invoice={invoice}
+          invoice={item}
           onSave={invoice => {
             this.props.luminateRow(invoice.id);
           }}
