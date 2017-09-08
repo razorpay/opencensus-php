@@ -347,7 +347,7 @@ return [
         ],
     ],
     // Files will be added and verified from the main test function
-    'testPostResponsesWithFiles' => [
+    'testCreateOnboardingResponses' => [
         'request'  => [
             'content' => [
                 Constants::MARKETPLACE => [
