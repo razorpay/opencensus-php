@@ -40,13 +40,16 @@ class Gateway extends Base\Gateway
         // Send card enrollment verification request
         $response = $this->sendEnrollmentRequest($input);
 
-        // Process verification response
-        $enrolled = $this->processEnrollmentResponse($input, $response);
-
         $attributes = $this->getVeresAttributesToSave($response);
 
         $this->createGatewayPaymentEntity($attributes, $input);
 
+        $this->decideAuthStepAfterEnroll($input, $response);
+    }
+
+    protected function decideAuthStepAfterEnroll(array $input, array $response)
+    {
+        $enrolled = $this->processEnrollmentResponse($input, $response);
         //
         // Determine card enrollment status and take next action
         //
@@ -99,7 +102,12 @@ class Gateway extends Base\Gateway
 
         $ch = $response[VereqResponse::MESSAGE][VereqResponse::VERES][VereqResponse::CH];
 
-        $attributes[Entity::ENROLLED] = $ch[VereqResponse::ENROLLED];
+        $attributes = [
+            Entity::ENROLLED   => $ch[VereqResponse::ENROLLED],
+            Entity::PAYMENT_ID => $input['payment']['id'],
+            Entity::AMOUNT     => $input['payment']['amount'],
+            Entity::CURRENCY   => $input['payment']['currency'],
+        ];
 
         if (empty($ch[VereqResponse::ACCID]) === false)
         {
@@ -129,16 +137,6 @@ class Gateway extends Base\Gateway
     protected function createGatewayPaymentEntity(array $attributes, array $input)
     {
         $gatewayPayment = $this->getNewGatewayPaymentEntity();
-
-        $paymentId = $input['payment']['id'];
-        $amount    = $input['payment']['amount'];
-        $currency  = $input['payment']['currency'];
-
-        $gatewayPayment->setPaymentId($paymentId);
-
-        $gatewayPayment->setAmount($amount);
-
-        $gatewayPayment->setCurrency($currency);
 
         $gatewayPayment->setAction($this->action);
 
@@ -343,6 +341,8 @@ class Gateway extends Base\Gateway
                 ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
                 '',
                 $msg);
+
+            //TODO check if we need to trace response
         }
 
         $ch = $VERes[VereqResponse::CH];
@@ -749,11 +749,13 @@ class Gateway extends Base\Gateway
 
     protected function getUrl($type = null)
     {
+        $domain = $type;
+
         $urlClass = $this->getGatewayNamespace() . '\Url';
 
         $domainMode = $this->mode;
 
-        $domainConstantName = strtoupper($domainMode) . '_' . strtoupper($type) . '_DS';
+        $domainConstantName = strtoupper($domainMode) . '_' . strtoupper($domain) . '_DS';
 
         if (defined($urlClass . '::' . $domainConstantName))
         {
