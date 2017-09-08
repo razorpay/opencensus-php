@@ -9,7 +9,7 @@ use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Base\Repository as BaseRepository;
 
-class Repository extends Base\Repository
+class Repository extends BaseRepository
 {
     use Base\RepositoryUpdateTestAndLive;
 

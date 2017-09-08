@@ -294,7 +294,7 @@ trait RepositoryUpdateTestAndLive
     * - For cases where we want to sync based on conditions: define
     *   function `shouldSync` in the entity's repository class, returning
     *   `boolean`
-    *   Example: `Schedule\Repository::shouldSync($entity)`
+    *   Example: `Feature\Repository::shouldSync($entity, 'save')`
     * - $action param can be used to achieve different syncing behavior for
     *   different actions. Example values - 'save', 'delete', etc
     *
@@ -303,7 +303,7 @@ trait RepositoryUpdateTestAndLive
     *
     * @return bool
     */
-    protected function entityShouldSync($entity, $action = null) : bool
+    protected function entityShouldSync($entity, string $action = null) : bool
     {
         $shouldSync = ((method_exists($this, 'shouldSync') === false) or
                        ($this->shouldSync($entity, $action) === true));
