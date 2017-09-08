@@ -55,9 +55,9 @@ trait Refund
         $this->createRefundOnApiSeparately($payment, $refundId, $refundAmount);
     }
 
-    public function createRefundFromMerchantFile(Payment\Entity $payment, array $input)
+    public function createRefundFromMerchantFile(Payment\Entity $payment, array $input, Batch\Entity $batch = null)
     {
-        $this->refund($payment, $input);
+        return $this->refund($payment, $input, $batch);
     }
 
     public function createRefundOnApiForCancelledBilldeskRefund(

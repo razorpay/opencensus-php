@@ -19,24 +19,17 @@ class IrctcBatch extends Job implements ShouldQueue
     use InteractsWithQueue;
 
     /**
-     * Batch entity id array.
+     * Batches array.
      *
      * @var array
      */
-    protected $batchData;
+    protected $batches;
 
-    /**
-     * Additional parameters from request or query.
-     *
-     * @var array
-     */
-    protected $params;
-
-    public function __construct(string $mode, array $batchData, array $params = [])
+    public function __construct(string $mode, array $batches)
     {
         parent::__construct($mode);
 
-        $this->batchData = $batchData;
+        $this->batches = $batches;
     }
 
     public function handle()
@@ -45,11 +38,19 @@ class IrctcBatch extends Job implements ShouldQueue
 
         try
         {
-            if (isset ($batchData['irctc_refund']) === true)
+            $this->trace->debug(
+                        TraceCode::BATCH_JOB_RECEIVED,
+                        $this->batches);
+
+            if (isset($this->batches[BatchModel\Type::REFUND_IRCTC]) === true)
             {
-                $batch = $this->repoManager->batch->findOrFail($batchData['irctc_refund']);
+                $batchId = $this->batches[BatchModel\Type::REFUND_IRCTC];
+
+                $batch = $this->repoManager->batch->findOrFail($batchId);
 
                 $batch->getValidator()->validateNotProcessedAlready();
+
+                $timeStarted = microtime(true);
 
                 BatchModel\Processor\Base::get($batch)
                                          ->process();
@@ -59,16 +60,21 @@ class IrctcBatch extends Job implements ShouldQueue
                 $this->trace->debug(
                             TraceCode::BATCH_JOB_HANDLED,
                             [
-                                BatchModel\Entity::ID => $batchData['irctc_refund'],
-                                'time_taken'          => $timeTaken,
+                                'type'       => BatchModel\Type::REFUND_IRCTC,
+                                'batch_id'   => $batchId,
+                                'time_taken' => $timeTaken,
                             ]);
             }
 
-            if (isset ($batchData['irctc_settlement']) === true)
+            if (isset ($this->batches[BatchModel\Type::SETTLEMENT_IRCTC]) === true)
             {
-                $batch = $this->repoManager->batch->findOrFail($batchData['irctc_settlement']);
+                $batchId = $this->batches[BatchModel\Type::SETTLEMENT_IRCTC];
+
+                $batch = $this->repoManager->batch->findOrFail($batchId);
 
                 $batch->getValidator()->validateNotProcessedAlready();
+
+                $timeStarted = microtime(true);
 
                 BatchModel\Processor\Base::get($batch)
                                          ->process();
@@ -78,12 +84,11 @@ class IrctcBatch extends Job implements ShouldQueue
                 $this->trace->debug(
                             TraceCode::BATCH_JOB_HANDLED,
                             [
-                                BatchModel\Entity::ID => $batchData['irctc_settlement'],
-                                'time_taken'          => $timeTaken,
+                                'type'       => BatchModel\Type::SETTLEMENT_IRCTC,
+                                'batch_id'   => $batchId,
+                                'time_taken' => $timeTaken,
                             ]);
             }
-
-
         }
         catch (\Throwable $e)
         {
@@ -92,7 +97,7 @@ class IrctcBatch extends Job implements ShouldQueue
                             null,
                             TraceCode::BATCH_JOB_ERROR,
                             [
-                                'data' => $this->batchData,
+                                'data' => $this->batches,
                             ]);
         }
         finally

@@ -648,7 +648,7 @@ WHERE merchant_invoice.gstin IS NULL
 
 ########
 
-# Adding the settlement id in the transfers table>>>
+# Adding the settlement id in the transfers table
 UPDATE transfers as tr
     JOIN payments as p
         ON p.transfer_id = tr.id

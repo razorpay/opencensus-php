@@ -121,7 +121,7 @@ class Header
                 self::STATUS,
                 self::REFUND_DATE,
                 self::REFUND_ID,
-                self::PAYMENT_DATE,
+                self::CANCELLATION_DATE,
                 self::PAYMENT_AMOUNT,
                 self::CANCELLATION_ID,
                 self::ERROR_DESCRIPTION,
@@ -142,6 +142,7 @@ class Header
                 self::PAYMENT_AMOUNT,
                 self::PAYMENT_DATE,
                 self::MERCHANT_REFERENCE,
+                self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ],
@@ -178,12 +179,12 @@ class Header
         }
     }
 
-    public static function getInputHeaders(string $type)
+    public static function getInputHeadersForType(string $type): array
     {
         return self::PER_TYPE[$type][self::INPUT];
     }
 
-    public static function getOutputHeaders(string $type)
+    public static function getOutputHeadersForType(string $type): array
     {
         return self::PER_TYPE[$type][self::OUTPUT];
     }

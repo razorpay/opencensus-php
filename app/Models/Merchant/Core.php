@@ -6,6 +6,7 @@ use Config;
 use ApiResponse;
 
 use RZP\Models\Base;
+use RZP\Models\User;
 use RZP\Models\Batch;
 use RZP\Constants\Mode;
 use RZP\Models\Pricing;
@@ -15,10 +16,10 @@ use RZP\Jobs\IrctcBatch;
 use RZP\Models\Transaction;
 use RZP\Models\BankAccount;
 use RZP\Models\Admin\Action;
+use RZP\Jobs\DispatchRouter;
 use RZP\Models\Admin\AdminLead;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
-use RZP\Reconciliator\FileProcessor;
 use RZP\Models\Schedule\Task as ScheduleTask;
 
 
@@ -404,6 +405,12 @@ class Core extends Base\Core
 
         $filenames = [];
 
+        // Sort based upon the filename
+        // Refund file should be processed before settlement in case of irctc merchant
+        usort($attachments, function($attachment1, $attachment2) {
+            return strcmp($attachment1->getClientOriginalName(), $attachment2->getClientOriginalName());
+        });
+
         foreach ($attachments as $attachment)
         {
             $filenames[] = $attachment->getClientOriginalName();
@@ -424,12 +431,12 @@ class Core extends Base\Core
 
             $batch = (new Batch\Core)->create($params);
 
-            $batches[$type] = $batch->getPublicId();
+            $batches[$type] = $batch->getId();
         }
 
-//        $job = new IrctcBatch($this->mode, $batches);
-//
-//        (new DispatchRouter)->dispatchOn($job, DispatchRouter::IRCTC_BATCH);
+        $job = new IrctcBatch($this->mode, $batches);
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
 
         return $batches;
     }

@@ -169,7 +169,7 @@ class Gateway extends Base\Gateway
     {
         // Hardcoding these refunds for processing
         $unprocessedRefunds = [
-            '8Ne2s6gFOEDdhZ'
+            '8S8BMDSRhKCVaZ'
         ];
 
         $processedRefund = [];

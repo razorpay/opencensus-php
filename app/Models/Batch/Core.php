@@ -29,19 +29,16 @@ class Core extends Base\Core
         // - Updates batch entity with aggregate details of file (if applicable)
         // - Saves batch entity
         //
-
         $this->repo->transaction(function () use ($batch, $input)
         {
-            $file = $input[Entity::FILE];
-
-            $clientExtension = $file->getClientOriginalExtension();
-
             $processor = Processor\Base::get($batch);
 
-            $file = $processor->saveInputFile($file, $clientExtension);
+            $inputFile = $input[Entity::FILE];
 
-            $entries = $processor->validateAndGetEntries($input, $file, $clientExtension);
-            
+            $file = $processor->saveInputFile($inputFile);
+
+            $entries = $processor->parseInputFileAndValidate($file->getPathname(), $input);
+
             $this->fillBatchEntityWithInputFileDetails($batch, $entries);
 
             $this->repo->saveOrFail($batch);
@@ -78,6 +75,25 @@ class Core extends Base\Core
     }
 
     /**
+     * Internal Auth: There are some very rare cases (UFH issues) where output
+     * file doesn't get created but the batch is actually processed. This has
+     * happened specifically for payment_link type batch. We can't wrap the whole
+     * operation under transaction because of few other reasons.
+     *
+     * TODO: Drop in detail the use case and reasons here.
+     *
+     * @param Entity $batch
+     *
+     * @return Entity
+     */
+    public function retryBatchOutputFile(Entity $batch): Entity
+    {
+        Processor\Base::get($batch)->retryBatchOutputFile();
+
+        return $batch;
+    }
+
+    /**
      * Returns signed url of the batch file: output file if that exists else
      * the input file itself.
      *
@@ -88,7 +104,7 @@ class Core extends Base\Core
     public function downloadBatch(Entity $batch): string
     {
         $file = ($batch->getStatus() === Status::CREATED) ?
-            $batch->inputFile() : $batch->outputFile();
+                    $batch->inputFile() : $batch->outputFile();
 
         // Backward compatibility:
         // - If file relation exists use that else to handle BC
@@ -205,7 +221,7 @@ class Core extends Base\Core
         array $entries)
     {
         $totalAmount = array_sum(array_column($entries, Header::AMOUNT));
-        $totalCount = count($entries);
+        $totalCount  = count($entries);
 
         $batch->setAmount($totalAmount);
         $batch->setTotalCount($totalCount);
@@ -238,7 +254,7 @@ class Core extends Base\Core
      * others are processed via CRON.
      *
      * @param Entity $batch
-     * @param array $input
+     * @param array  $input
      */
     protected function dispatchOnQueueForProcessingIfApplicable(
         Entity $batch,

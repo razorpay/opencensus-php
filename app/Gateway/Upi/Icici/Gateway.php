@@ -436,9 +436,9 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY,
             [
                 'raw_content' => $response->body,
-                'content' => $content,
-                'gateway' => 'upi_icici',
-                'payment_id' => $input['payment']['id'],
+                'content'     => $content,
+                'gateway'     => 'upi_icici',
+                'payment_id'  => $input['payment']['id'],
             ]);
 
         $verify->verifyResponse = $this->response;
@@ -450,7 +450,30 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getPaymentVerifyRequestArray(array $input): array
+    protected function sendRefundVerifyRequest(array $input)
+    {
+        $request = $this->getRefundVerifyRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->response = $response;
+
+        $content = $this->parseGatewayResponse($response->body);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
+            [
+                'raw_content' => $response->body,
+                'content'     => $content,
+                'gateway'     => 'upi_icici',
+                'refund_id'   => $input['refund']['id'],
+            ]);
+
+        return $content;
+    }
+
+
+    protected function getPaymentVerifyRequestArray(array $input)
     {
         $data = [
             'merchantId'        => $this->getMerchantId(),
@@ -459,13 +482,7 @@ class Gateway extends Base\Gateway
             'terminalId'        => '1234',
         ];
 
-        $content = $this->transformRequestArrayToContent($data);
-
-        $request = $this->getStandardRequestArray($content);
-
-        $request['headers'] = [
-            'Content-Type' => 'text/plain'
-        ];
+        $request = $this->getRequest($data);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
@@ -473,6 +490,47 @@ class Gateway extends Base\Gateway
                 'request' => $request,
                 'decrypted_content' => $data
             ]);
+
+        return $request;
+    }
+
+    protected function getRefundVerifyRequestArray(array $input)
+    {
+        $attempts = '';
+
+        if ($input['refund']['attempts'] !== 2)
+        {
+            $attempts = $input['refund']['attempts'] - 1;
+        }
+
+        $data = [
+            'merchantId'        => $this->getMerchantId(),
+            'merchantTranId'    => $input['refund']['id'] . $attempts,
+            'subMerchantId'     => $this->getSubMerchantId($input),
+            'terminalId'        => '1234',
+        ];
+
+        $request = $this->getRequest($data);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
+            [
+                'request' => $request,
+                'decrypted_content' => $data
+            ]);
+
+        return $request;
+    }
+
+    protected function getRequest(array $data): array
+    {
+        $content = $this->transformRequestArrayToContent($data);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $request['headers'] = [
+            'Content-Type' => 'text/plain'
+        ];
 
         return $request;
     }
@@ -526,64 +584,27 @@ class Gateway extends Base\Gateway
 
     public function verifyRefund(array $input)
     {
-        $refundIds = [
-            "8GkizdwgzWCrzH",
-            "8Q4lHbGwkqyawW",
-            "8QzbBD25Fbd5wq",
-            "8RbjFD9tIXWq5S",
-            "8TflIJSmuMBILG",
-            "8UNyjtWLbwPqic",
-            "8UqfkCtQpD9t2Y",
-            "8UrA9ivPjvZLs3",
-            "8UrmANuUnosmcY",
-            "8Us66J2GotBEI3",
-            "8UtNl7p8jDzXsd",
-            "8UtVLIRVMcVBWO",
-            "8UtfTzTEDOqpnd",
-            "8V23DYPCK0CxkN",
-            "8VIIx4WdNaUoes",
-            "8VdfwqwOe2bWaT",
-            "8Vg6bkgU4GOppi",
-            "8Vg76B6c7Adpnp",
-            "8VhRbkfF9cQktU",
-            "8VkCCJqn8GPp7p",
-            "8Vl7wAzxMP3ZCx",
-            "8VnCGn3lPhByAn",
-            "8VnnZIBJPPBVf6",
-            "8VoBhxqaW98Xbv",
-            "8W0yfXKUFU87j6",
-            "8W3do7lhqndJiH",
-            "8W40jBll2t6IIB",
-            "8W5i0jipJRJ0in",
-            "8W7YgU9Hcc0fqt",
-            "8WAYI7xRx3QaWw",
-            "8WBhqxrYPro99R",
-            "8WUozW1vlHG2Kz",
-            "8WWI84sVlyWbNo",
-            "8WX2F6AieLULRP",
-            "8WXmISRPlyYC5C",
-            "8Wo2uvAfvFSX2v",
-            "8WrvkhEkAZHUJi",
-            "8WsYSg3iMuJVYb",
-            "8XLslVW1qKLlAW",
-            "8XMDdt5taw9Wx8",
-            "8XXxbJwI131tJ7",
-            "8XYzsrrF2lJi9O",
-            "8Xd1kofvhuqCs8",
-            "8Xg1D8qW6ZgHxd",
-            "8XgJDJh9fdm0RA",
-            "8Xi8GEL4F5QpgV",
-            "8XiTawSvs83nBx",
-            "8XmVhpo4G0aic8",
-        ];
+        parent::verify($input);
 
-        if (in_array($input['refund']['id'], $refundIds, true) === true)
+        $content = $this->sendRefundVerifyRequest($input);
+
+        if ($content['status'] === Status::SUCCESS)
+        {
+            return true;
+        }
+
+        if ($content['status'] === Status::FAILURE)
         {
             return false;
         }
 
-        throw new Exception\LogicException(
-            'UPI ICICI verify refund is not implemented');
+         throw new Exception\LogicException(
+                'Shouldn\'t reach here',
+                null,
+                [
+                    'gateway_status' => $content['status'],
+                    'refund_id'      => $input['refund']['id'],
+                ]);
     }
 
     /**
