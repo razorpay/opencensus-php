@@ -231,6 +231,8 @@ class Authenticate
 
     /**
      * This is our global rate throttling mechanism
+     *
+     * @param string $auth
      */
     private function throttleRequests(string $auth)
     {

@@ -12,7 +12,6 @@ use RZP\Trace\TraceCode;
 use RZP\Http\Route;
 use RZP\Models\Key;
 use RZP\Models\Merchant;
-use RZP\Models\Base\PublicEntity;
 
 class BasicAuth
 {
@@ -177,14 +176,14 @@ class BasicAuth
 
     /**
      * Trace instance used for tracing
-     * @var Trace\Trace
+     * @var \Razorpay\Trace\Logger
      */
     protected $trace;
 
     /**
      * Api Route instance
      *
-     * @var RZP\Http\Route
+     * @var \RZP\Http\Route
      */
     protected $route;
 

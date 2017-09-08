@@ -20,7 +20,6 @@ class AuthService
     // API talks to Authentication Service's APIs using HTTP Basic authentication.
     // Following are those user name and pass.
     //
-
     protected $key;
 
     protected $secret;

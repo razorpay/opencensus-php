@@ -7,7 +7,6 @@ use Razorpay\OAuth\OAuthServer;
 use Razorpay\OAuth\Token\Entity as OAuthToken;
 
 use RZP\Error\ErrorCode;
-use Illuminate\Http\Request;
 use RZP\Exception\LogicException;
 use RZP\Http\BasicAuth\BasicAuth;
 use Illuminate\Support\Facades\App;
@@ -55,11 +54,9 @@ class OAuth
      * in authenticate step) and unset key query parameter from request if
      * exists and return true.
      *
-     * TODO: Refactor common functions into a generic Auth class
-     *
      * @return bool
      */
-    public function hasOAuthPublicToken()
+    public function hasOAuthPublicToken(): bool
     {
         $keyParam = $this->request->input('key_id');
 

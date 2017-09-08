@@ -12,7 +12,7 @@ class OAuthScopes
     const READ_WRITE = 'read_write';
 
     /**
-     * Map of additional scopes per route.
+     * Map of additional scopes for a route (identified by the route name alias)
      *
      * @var array
      */
@@ -44,26 +44,14 @@ class OAuthScopes
      *
      * @param array  $scopes
      * @param string $route
-     *
-     * @return array
      */
-    protected static function addDefaultScopesForRoute(array & $scopes, string $route) : array
+    protected static function addDefaultScopesForRoute(array & $scopes, string $route)
     {
         $routeParams = Route::getApiRoute($route);
 
         //
-        // Adds the default scopes to existing $scopes
+        // Adds the default scopes for the current route to existing $scopes
         //
-
-        if ($routeParams[0] === 'get')
-        {
-            $scopes[] = self::READ_ONLY;
-        }
-        else
-        {
-            $scopes[] = self::READ_WRITE;
-        }
-
-        return $scopes;
+        $scopes[] = ($routeParams[0] === 'get') ? self::READ_ONLY : self::READ_WRITE;
     }
 }
