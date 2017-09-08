@@ -13,6 +13,9 @@ use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\IrctcBatch;
+use RZP\Models\Terminal;
+use RZP\Error\ErrorCode;
+use RZP\Jobs\MerchantSync;
 use RZP\Models\Transaction;
 use RZP\Models\BankAccount;
 use RZP\Models\Admin\Action;
@@ -356,7 +359,6 @@ class Core extends Base\Core
         return $merchant;
     }
 
-
     public function markGratisTransactionPostpaid(string $merchantId, int $from)
     {
         $merchant =  $this->repo->merchant->findOrFail($merchantId);
@@ -395,6 +397,27 @@ class Core extends Base\Core
         return $merchant->users()->where(Merchant\Detail\Entity::ROLE, '=', User\Role::OWNER)
                                  ->whereNull(User\Entity::CONFIRM_TOKEN)
                                  ->first();
+    }
+
+    /**
+     * Pushes MerchantSync job onto queue for given event with given payload.
+     *
+     * Events e.g. Group got edited/deleted and we need to handle the hierarchy
+     * updates in Es docs.
+     *
+     * This method is here at once place and will be called from few other places
+     * where merchant's es doc is getting affected
+     *
+     * @param string $event
+     * @param array  $payload
+     */
+    public function syncEventToEs(string $event, array $payload)
+    {
+        $job = new MerchantSync($this->mode, $event, $payload);
+
+        $job->delay(Repository::ES_JOB_DELAY);
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::ES_V2);
     }
 
     public function createBatches(Entity $merchant, array $input): array

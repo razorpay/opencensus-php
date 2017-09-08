@@ -206,6 +206,7 @@ class EntityReportTest extends TestCase
 
         $this->assertNotEmpty($invoiceEntries['invoice_number']);
         $this->assertNotEmpty($invoiceEntries['invoice_date']);
+        $this->assertArrayHasKey('gstin', $invoiceEntries);
 
         $data = $this->testData[__FUNCTION__];
 
