@@ -15,4 +15,6 @@ class Constants
     const CLOSED_ACTIONS    = 'closed_actions';
     const ACTIONS_CHECKED   = 'actions_checked';
     const TYPE              = 'type';
+    const EXPAND            = 'expand';
+    const DUTY              = 'duty';
 }

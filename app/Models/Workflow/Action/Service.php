@@ -47,15 +47,15 @@ class Service extends Base\Service
         // actions will be fetched based on duty and type
         // type can be all/closed/open etc
 
-        $duty = $input['duty'] ?? 'default';
-        $type = $input['type'] ?? 'all';
+        $duty = $input[Constants::DUTY] ?? 'default';
+        $type = $input[Constants::TYPE] ?? 'all';
 
         if (isset(self::ACTION_FUNCTION_MAPPING[$duty][$type]))
         {
             // Function name which needs to be called to return actions based on duty and maker.
             $actionFunctionName = self::ACTION_FUNCTION_MAPPING[$duty][$type];
 
-            unset($input['duty']);
+            unset($input[Constants::DUTY]);
 
             $actions = call_user_func_array([$this, $actionFunctionName], [$input]);
         }
@@ -77,7 +77,7 @@ class Service extends Base\Service
      */
     public function getActionsCheckedByAdmin($input)
     {
-        $input['expand'] = ['admin'];
+        $input[Constants::EXPAND] = ['admin'];
 
         $input[Constants::ACTIONS_CHECKED] = true;
 
@@ -186,7 +186,7 @@ class Service extends Base\Service
      */
     public function getActionsForChecker(array $input)
     {
-        $input['expand'] = ['admin'];
+        $input[Constants::EXPAND] = ['admin'];
 
         $input[Constants::CHECKER_ACTIONS] = true;
 
@@ -211,7 +211,7 @@ class Service extends Base\Service
 
         $input[Entity::ORG_ID] = $this->admin->getOrgId();
 
-        $input['expand'] = ['admin'];
+        $input[Constants::EXPAND] = ['admin'];
 
         $input[Entity::PERMISSION] = true;
 
@@ -229,7 +229,7 @@ class Service extends Base\Service
     {
         $input[Entity::PERMISSION] = true;
 
-        $input['expand'] = ['admin'];
+        $input[Constants::EXPAND] = ['admin'];
 
         $input[Constants::CLOSED_ACTIONS] = true;
 
@@ -247,7 +247,7 @@ class Service extends Base\Service
     {
         $input[Entity::PERMISSION] = true;
 
-        $input['expand'] = ['workflow', 'admin'];
+        $input[Constants::EXPAND] = ['workflow', 'admin'];
 
         $input[Entity::ORG_ID] = $this->admin->getOrgId();
 
