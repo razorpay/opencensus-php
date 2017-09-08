@@ -116,6 +116,7 @@ class Gateway
         self::WALLET_JIOMONEY,
         self::NETBANKING_RBL,
         self::NETBANKING_INDUSIND,
+        self::NETBANKING_PNB,
     ];
 
     /**

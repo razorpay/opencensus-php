@@ -10,6 +10,8 @@ use RZP\Exception;
 use RZP\Gateway\Billdesk;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Merchant\Invoice\Type as InvoiceType;
+use RZP\Models\Pricing\FeeCalculator;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Models\Schedule;
@@ -521,24 +523,55 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchCapturedTransactionsBetweenTimestamp(string $merchantId, int $start, int $end)
+    public function fetchFeesAndTaxForTransactionsByType(
+        string $merchantId, int $start, int $end, string $filterType)
     {
         $createdAtCol = $this->dbColumn(Entity::CREATED_AT);
 
         $merchantIdCol = $this->dbColumn(Entity::MERCHANT_ID);
 
+        $amountCol = $this->dbColumn(Entity::AMOUNT);
+
+        $feeCol = $this->dbColumn(Entity::FEE);
+
+        $taxCol = $this->dbColumn(Entity::TAX);
+
         $paymentIdCol = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $paymentCardIdCol = $this->repo->payment->dbColumn(Payment\Entity::CARD_ID);
 
         $transactionData = $this->dbColumn('*');
 
-        return $this->newQuery()
-                    ->select($transactionData)
-                    ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentIdCol)
-                    ->whereBetween($createdAtCol, [$start, $end])
-                    ->merchantId($merchantId)
-                    ->whereNotNull(Payment\Entity::CAPTURED_AT)
-                    ->where(Entity::TYPE, Type::PAYMENT)
-                    ->with('source')
-                    ->get();
+        $query = $this->newQuery()
+                      ->selectRaw(
+                            'SUM(' . $taxCol .') AS tax, SUM(' . $feeCol . ') AS fee')
+                      ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentIdCol)
+                      ->whereBetween($createdAtCol, [$start, $end])
+                      ->merchantId($merchantId)
+                      ->whereNotNull(Payment\Entity::CAPTURED_AT)
+                      ->where(Entity::TYPE, Type::PAYMENT)
+                      ->groupBy($merchantIdCol);
+
+        switch ($filterType)
+        {
+            case InvoiceType::NON_CARD:
+                $query = $query->whereNull($paymentCardIdCol);
+                break;
+
+            case InvoiceType::CARD_LTE_2K:
+                $query = $query->whereNotNull($paymentCardIdCol)
+                               ->where($amountCol, '<=', FeeCalculator::CARD_TAX_CUT_OFF);
+                break;
+
+            case InvoiceType::CARD_GT_2K:
+                $query = $query->whereNotNull($paymentCardIdCol)
+                               ->where($amountCol, '>', FeeCalculator::CARD_TAX_CUT_OFF);
+                break;
+
+            default:
+                throw new Exception\LogicException('Invalid merchant invoice type: ', $filterType);
+        }
+
+        return $query->first();
     }
 }
