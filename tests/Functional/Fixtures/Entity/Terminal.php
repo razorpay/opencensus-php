@@ -893,7 +893,10 @@ class Terminal extends Base
         // Recurring supports both 3ds and non3ds terminal;
         $attributes['id'] = 'NIcRecurringTl';
 
-        $attributes['type'] = 6;
+        $attributes['type'] = [
+            Type::RECURRING_NON_3DS => '1',
+            Type::RECURRING_3DS     => '1'
+        ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }

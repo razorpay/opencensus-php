@@ -685,7 +685,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $token = $this->getLastEntity(Entity::TOKEN, true);
         $payment = $this->getLastEntity(Entity::PAYMENT, true);
         $gatewayToken = $this->getLastEntity(Entity::GATEWAY_TOKEN, true);
-        
+
         // Gateway token is not set here
         $this->assertEquals($payment[Payment::TOKEN_ID], $token[Token::ID]);
         $this->assertEquals(null, $token[Token::GATEWAY_TOKEN]);

@@ -89,9 +89,9 @@ class Type
      * Takes the hex value and merges it
      * with the hex value of the events passed.
      *
-     * @param  array    $events
-     * @param  integer  $hex
-     * @return integer
+     * @param $types
+     * @param  integer $hex
+     * @return int
      */
     public static function getHexValue($types, $hex)
     {

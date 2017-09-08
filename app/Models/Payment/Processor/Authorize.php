@@ -907,7 +907,7 @@ trait Authorize
         }
     }
 
-    protected function validateRecurringNetbanking(Payment\Entity $payment, Token\Entity $token, array $input)
+    protected function validateRecurringNetbanking(Payment\Entity $payment, Token\Entity $token = null, array $input)
     {
         $bank = $payment->getBank();
 
@@ -932,7 +932,7 @@ trait Authorize
         // it could be second recurring also, where we accept a token.
         //
         if (($this->ba->isPublicAuth() === true) and
-            (isset($input[Payment\Entity::TOKEN]) === true))
+            (empty($input[Payment\Entity::TOKEN]) === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_NB_TOKEN_PASSED_IN_FIRST_RECURRING,
