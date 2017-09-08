@@ -52,6 +52,8 @@ class Type
         {
             return true;
         }
+
+        return false;
     }
 
     public static function getValidTypes()
