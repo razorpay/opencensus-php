@@ -26,4 +26,6 @@ class PareqRequest
     const CURRENCY      = 'currency';
     const EXPONENT      = 'exponent';
     const EXPIRY        = 'expiry';
+    const CH            = 'CH';
+    const ACCID         = 'acctID';
 }

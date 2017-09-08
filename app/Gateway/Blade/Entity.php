@@ -41,7 +41,11 @@ class Entity extends Base\Entity
         self::CAVV,
         self::XID,
         self::STATUS,
-        self::RECEIVED
+        self::RECEIVED,
+        self::AMOUNT,
+        self::PAYMENT_ID,
+        self::CURRENCY,
+        self::ACC_ID
     ];
 
     protected $casts = [

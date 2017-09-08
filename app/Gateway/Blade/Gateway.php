@@ -21,10 +21,12 @@ class Gateway extends Base\Gateway
     const VERSION = '1.0.2';
 
     const GATEWAY_ACCESS_CODE        = 'gateway_access_code';
-    const GATEWAY_MERCHANT_ID2       = 'GATEWAY_MERCHANT_ID2';
-    const GATEWAY_TERMINAL_PASSWORD  = 'GATEWAY_TERMINAL_PASSWORD';
+    const GATEWAY_MERCHANT_ID2       = 'gateway_merchant_id2';
+    const GATEWAY_TERMINAL_PASSWORD  = 'gateway_terminal_password';
 
     const CERTIFICATE_DIRECTORY_NAME = 'cert_dir_name';
+
+    protected $gateway = 'blade';
 
     /**
      * Authenticate the payment
@@ -33,6 +35,14 @@ class Gateway extends Base\Gateway
      *
      * @return void
      */
+
+    public function authorize(array $input)
+    {
+        parent::authorize($input);
+
+        $this->authenticate($input);
+    }
+
     public function authenticate(array $input)
     {
         // TODO: Add card range cache
@@ -40,7 +50,7 @@ class Gateway extends Base\Gateway
         // Send card enrollment verification request
         $response = $this->sendEnrollmentRequest($input);
 
-        $attributes = $this->getVeresAttributesToSave($response);
+        $attributes = $this->getVeresAttributesToSave($response, $input);
 
         $this->createGatewayPaymentEntity($attributes, $input);
 
@@ -96,7 +106,7 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input);
     }
 
-    protected function getVeresAttributesToSave(array $response)
+    protected function getVeresAttributesToSave(array $response, array $input)
     {
         $attributes = [];
 
