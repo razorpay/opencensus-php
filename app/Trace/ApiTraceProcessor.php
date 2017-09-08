@@ -52,10 +52,7 @@ class ApiTraceProcessor
     {
         if ($this->app['basicauth']->isDashboardApp() === true)
         {
-            foreach ($this->app['basicauth']->getDashboardHeaders() as $key => $value)
-            {
-                $record['request'][$key] = $value;
-            }
+            $record['request'] += $this->app['basicauth']->getDashboardHeaders();
         }
     }
 }
