@@ -2,9 +2,11 @@
 
 namespace RZP\Gateway\Blade;
 
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Base\JitValidator;
+use RZP\Models\Currency\Currency;
 
 class Validator extends JitValidator
 {
@@ -97,12 +99,11 @@ class Validator extends JitValidator
         self::validateCurrency($response, $input);
         self::validateAmount($response, $input);
         self::validateCurrencyExponent($response, $input);
-        self::validatePaymentId($response, $input);
     }
 
     public static function validateXid($response, $expectedXid)
     {
-        if ($pARes['Purchase']['xid'] !== $expectedXid)
+        if ($response['Purchase']['xid'] !== $expectedXid)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,

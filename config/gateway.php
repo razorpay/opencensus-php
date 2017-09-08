@@ -163,7 +163,7 @@ return [
         'live_mastercard_pem'            => env('BLADE_LIVE_MASTERCARD_PEM'),
         'gateway_access_code'            => env('BLADE_TEST_ACCESS_CODE'),
         'gateway_merchant_id2'           => env('BLADE_TEST_MERCHANT_ID2'),
-        'gateway_terminal_password'      => env('BLADE_TEST_TERMINAL_APSSWORD'),
+        'gateway_terminal_password'      => env('BLADE_TEST_TERMINAL_PASSWORD'),
         'live_mastercard_acq_bin'        => env('BLADE_LIVE_MASTERCARD_ACQ_BIN'),
         'live_visa_acq_bin'              => env('BLADE_LIVE_VISA_ACQ_BIN'),
         'test_acq_bin'                   => env('BLADE_TEST_ACQ_BIN'),

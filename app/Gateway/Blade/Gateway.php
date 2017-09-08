@@ -9,6 +9,7 @@ use DOMDocument;
 
 use RZP\Exception;
 use Requests_Hooks;
+use RZP\Models\Card;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -40,7 +41,7 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        $this->authenticate($input);
+        return $this->authenticate($input);
     }
 
     public function authenticate(array $input)
@@ -54,7 +55,7 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity($attributes, $input);
 
-        $this->decideAuthStepAfterEnroll($input, $response);
+        return $this->decideAuthStepAfterEnroll($input, $response);
     }
 
     protected function decideAuthStepAfterEnroll(array $input, array $response)
@@ -89,6 +90,12 @@ class Gateway extends Base\Gateway
         $PARes = $this->validateAndGetPayerAuthenticationResponse($input);
 
         $this->updateGatewayPaymentFromCallbackResponse($gatewayPayment, $PARes);
+
+        $eci = $gatewayPayment->getEci();
+
+        $network = $this->input['card']['network'];
+
+        $this->validateEci($eci, $network);
 
         $txnStatus = $PARes['TX']['status'];
 
@@ -296,6 +303,8 @@ class Gateway extends Base\Gateway
         $expectedXid = $this->generateXid($input);
 
         Validator::validateResponse($paresMessage, $input);
+
+        Validator::validatePaymentId($paresArray, $input);
 
         Validator::validateXid($paresMessage, $expectedXid);
 

@@ -21,4 +21,5 @@ class ParesResponse
     const MESSAGE           = 'Message';
     const PARES             = 'PARes';
     const GATEWAY_PARES     = 'PaRes';
+    const PAN               = 'pan';
 }
