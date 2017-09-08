@@ -40,12 +40,7 @@ class ApiTraceProcessor
 
     protected function addMerchantId(&$record)
     {
-        $record['request']['merchant_id'] = null;
-
-        if ($this->app['basicauth']->getMerchant() !== null)
-        {
-            $record['request']['merchant_id'] = $this->app['basicauth']->getMerchantId();
-        }
+        $record['request']['merchant_id'] = $this->app['basicauth']->getMerchantId();
     }
 
     protected function addDashboardHeaders(&$record)
