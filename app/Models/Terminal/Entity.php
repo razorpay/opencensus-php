@@ -159,7 +159,7 @@ class Entity extends Base\PublicEntity
         self::EMI                       => false,
         self::TPV                       => false,
         self::TYPE                      => [
-            Type::NON_RECURRING => 1
+            Type::NON_RECURRING => '1'
         ],
         self::MODE                      => Mode::DUAL,
         self::CORPORATE                 => 0,
