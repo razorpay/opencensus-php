@@ -1179,13 +1179,27 @@
         </div>
       </div>
       <div class="form-group" >
-        <label for="type" class="col-lg-3 control-label">Type</label>
+        <label for="non_recurring" class="col-lg-3 control-label">Non recurring</label>
         <div class="col-lg-9" >
-          <select class="form-control m-b" ng-model="terminal.type">
-            <option value="1">Non-recurring</option>
-            <option value="3">Recurring 3DS</option>
-            <option value="4">Recurring Non-3DS</option>
-          </select>
+          <input type="checkbox" ng-true-value="1" ng-false-value="0" ng-model="terminal['type[non_recurring]']">
+        </div>
+      </div>
+      <div class="form-group" >
+        <label for="recurring_3ds" class="col-lg-3 control-label">Recurring 3DS</label>
+        <div class="col-lg-9" >
+          <input type="checkbox" ng-true-value="1" ng-false-value="0" ng-model="terminal['type[recurring_3ds]']">
+        </div>
+      </div>
+      <div class="form-group" >
+        <label for="recurring_non_3ds" class="col-lg-3 control-label">Recurring Non 3DS</label>
+        <div class="col-lg-9" >
+          <input type="checkbox" ng-true-value="1" ng-false-value="0" ng-model="terminal['type[recurring_non_3ds]']">
+        </div>
+      </div>
+      <div class="form-group" >
+      <label for="ivr" class="col-lg-3 control-label">IVR</label>
+        <div class="col-lg-9" >
+          <input type="checkbox" ng-true-value="1" ng-false-value="0" ng-model="terminal['type[ivr]']">
         </div>
       </div>
     </form>

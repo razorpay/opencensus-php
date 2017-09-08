@@ -26,6 +26,7 @@ services:
      REDIS_HOST: dashboard_cache
      BASE_URL: http://dashboard.razorpay.dev:38080
      API_URL: "http://razorpay-api/v1/"
+     APP_CONTEXT: dev
   dashboard_db:
     image: mysql:5.6
     ports:

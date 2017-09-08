@@ -58,7 +58,6 @@ export default class SubscriptionDetailsContainer extends Component {
       (!this.props.invoice_id || this.props.invoice_id !== nextProps.invoice_id)
     ) {
       this.fetchInvoice(nextProps.invoice_id);
-
     }
 
     this.checkSecView(nextProps.invoice_id);
