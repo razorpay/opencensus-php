@@ -59,7 +59,6 @@ export default class PaymentLinksContainer extends ListContainer {
 
   render() {
     let { loading, invoices, user } = this.props;
-    console.log('LIST INVOICE...', invoices);
     let isOldUIEnabled = user.isOldUIEnabled;
     let status = this.state.status;
 

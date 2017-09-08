@@ -300,7 +300,12 @@ export default class CreatePaymentLink extends Component {
             <div class="form-group">
               <label class="col-md-3 control-label">Add Internal Notes</label>
               <div class="col-md-8">
-                <FieldArray name="notes" component={NotesFieldArray} required />
+                <FieldArray
+                  name="notes"
+                  component={NotesFieldArray}
+                  nonEditableUptilIndex={invoice.notes.length - 1}
+                  required
+                />
               </div>
             </div>
 
