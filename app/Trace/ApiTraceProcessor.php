@@ -24,12 +24,12 @@ class ApiTraceProcessor
         return $record;
     }
 
-    protected function addMode(&$record)
+    protected function addMode(& $record)
     {
         $record['mode'] = $this->app['basicauth']->getMode();
     }
 
-    protected function addOAuthAttributes(&$record)
+    protected function addOAuthAttributes(& $record)
     {
         $record['access_token_id'] = $this->app['basicauth']->getAccessTokenId();
 

@@ -7,8 +7,8 @@ use Mail;
 use Config;
 use Carbon\Carbon;
 
-use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Token as OAuthToken;
+use Razorpay\OAuth\Client as OAuthClient;
 
 use RZP\Exception;
 use RZP\Models\Key;

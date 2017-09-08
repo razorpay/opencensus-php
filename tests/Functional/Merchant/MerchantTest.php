@@ -7,7 +7,6 @@ use RZP\Constants\Timezone;
 use DB;
 use Mail;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Database\Eloquent\Factory;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
 use RZP\Mail\Merchant\Activation as ActivationMail;

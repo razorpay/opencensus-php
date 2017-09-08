@@ -1383,7 +1383,7 @@ final class Route
             'setl_reconcile_h2h',
         ],
 
-        'oauth' => [
+        'auth_service' => [
             'oauth_merchant_notify',
         ],
     ];

@@ -132,8 +132,12 @@ return array(
         ]
     ],
 
-    'oauth' => [
-        'secret'    => env('APP_OAUTH_SECRET'),
+    //
+    // Configuration for one of the internal applications allowed
+    // access to select routes of APIs.
+    //
+    'auth_service' => [
+        'secret' => env('APP_OAUTH_SECRET'),
     ],
 
     'nodal' => [
@@ -145,7 +149,11 @@ return array(
         'url' => env('NODAL_BASE_URL'),
     ],
 
-    'auth_service' => array(
+    //
+    // Configuration(URL and basic authentication details) for api to make
+    // service calls to authentication service.
+    //
+    'api_auth_service' => array(
         'url'       => env('AUTH_SERVICE_URL'),
         'secret'    => env('AUTH_SERVICE_SECRET'),
     ),

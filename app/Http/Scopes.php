@@ -4,51 +4,65 @@ namespace RZP\Http;
 
 class Scopes
 {
+    //
+    // Following default scope gets assigned to any of the routes
+    // based on HTTP method they are allowed
+    //
+    const DEFAULT_READ_ONLY_SCOPE  = 'read_only';
+    const DEFAULT_READ_WRITE_SCOPE = 'read_write';
+
+    /**
+     * Map of additional scopes per route.
+     *
+     * @var array
+     */
     protected static $scopes = [
-        'transfer_create'           => ['transfer.write']
+        'transfer_create' => ['transfer.write']
     ];
 
     /**
-     * Get an array of scopes that the a route
-     * is mapped to
+     * Gets array of scopes that a route is mapped to. Tokens will be given
+     * access if they have at least one of the route scopes allowed during token
+     * creation.
      *
      * @param string $route
+     *
      * @return array|mixed
      */
     public static function getScopesForRoute(string $route)
     {
         $scopes = self::$scopes[$route] ?? [];
 
-        self::addDefaultScopes($scopes, $route);
+        self::addDefaultScopesForRoute($scopes, $route);
 
         return $scopes;
     }
 
     /**
-     * If no scope is defined, we assign a default set
-     * of scopes to a route
+     * If no scope is defined for a route, we assign a default set of scopes
+     * to the route
      *
      * @param array  $scopes
      * @param string $route
      *
      * @return array
      */
-    protected static function addDefaultScopes(array & $scopes, string $route) : array
+    protected static function addDefaultScopesForRoute(array & $scopes, string $route) : array
     {
         $routeParams = Route::getApiRoute($route);
 
-        $defaultScopes = [];
+        //
+        // Adds the default scopes to existing $scopes
+        //
 
         if ($routeParams[0] === 'get')
         {
-            $defaultScopes[] = 'read_only';
+            $scopes[] = 'read_only';
         }
         else
         {
-            $defaultScopes[] = 'read_write';
+            $scopes[] = 'read_write';
         }
-
-        $scopes = array_merge($scopes, $defaultScopes);
 
         return $scopes;
     }
