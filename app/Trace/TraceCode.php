@@ -815,7 +815,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED      = 'MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED';
     const MERCHANT_INVOICE_REPORT_REQUEST               = 'MERCHANT_INVOICE_REPORT_REQUEST';
 
+    // Trace code for OAuth and Authentication service
     const AUTH_SERVICE_REQUEST                          = 'AUTH_SERVICE_REQUEST';
+    const SEND_OAUTH_MAIL_REQUEST                       = 'SEND_OAUTH_MAIL_REQUEST';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
