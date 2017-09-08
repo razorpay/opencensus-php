@@ -15,16 +15,18 @@ import FeatureOnboardingModal from 'merchant/containers/FeatureOnboardingModal';
   state => {
     return {
       user: state.session.user,
+      mode: state.session.mode,
     };
   },
   { ...ModalActions }
 )
 export default class MarketplaceContainer extends Component {
   componentWillMount() {
+    //    if (this.props.mode === 'live' && marketplace = false)
     if (this.props.user.isMarketplaceEnabled === true) {
       this.props.openModal({
-        size: 'small',
-        component: <FeatureOnboardingModal feature="marketplace" />,
+        size: 'large',
+        component: <FeatureOnboardingModal feature="virtual_accounts" />,
       });
     }
   }

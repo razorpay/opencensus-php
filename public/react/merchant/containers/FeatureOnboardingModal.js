@@ -10,22 +10,24 @@ import { showNotification } from 'rzp/modules/notifications';
 import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
 import InputField from 'rzp/ui/Forms/InputField';
 import { required } from 'rzp/utils/validators';
+import { saveOnboarding } from 'merchant/modules/onboarding';
 
 const selector = formValueSelector('uploadBatch');
 @withRouter
-@connect(state => ({}), { ...ModalActions, showNotification })
+@connect(state => ({}), { saveOnboarding, ...ModalActions, showNotification })
 @reduxForm({
   form: 'featureOnboardingModal',
 })
 export default class FeatureOnboardingModal extends Component {
   // Form submit handler
   onSubmitClick = props => {
-    console.log('asd');
     const prom = new Promise(() => {
-      let additionalFormFields = {};
+      let data = {};
+
+      data[this.props.feature] = props;
 
       this.props
-        // do something
+        .saveOnboarding(data)
         .then(() => {
           this.props.closeModal();
 
@@ -51,21 +53,21 @@ export default class FeatureOnboardingModal extends Component {
       case 'marketplace':
         return (
           <div>
-            <div class="value">
+            <div class="form-group">
               <label for="use_case">Use Case</label>
               <Field
                 name="use_case"
                 component={AutoResizeTextarea}
-                rows="2"
+                rows="3"
                 class="form-control"
                 placeholder="Your use case for the product and business model"
               />
             </div>
 
-            <div class="value">
+            <div class="form-group">
               <label for="email_notify">Transfer for</label>
               <Field
-                name="bank_beneficiary_state"
+                name="settling_to"
                 component={InputField}
                 tagName="select"
                 class="form-control"
@@ -92,32 +94,33 @@ export default class FeatureOnboardingModal extends Component {
       case 'virtual_accounts':
         return (
           <div>
-            <div class="value">
+            <div>
               <label for="use_case">Use Case</label>
               <Field
                 name="use_case"
                 component={AutoResizeTextarea}
-                rows="2"
+                rows="3"
                 class="form-control"
-                placeholder="Your use case for the product and business model"
+                placeholder="Your use case for virtual accounts"
               />
             </div>
 
-            <div class="value">
-              <label for="use_case">Use Case</label>
+            <div>
+              <label for="expected_monthly_revenue">
+                Expected Monthly Revenue
+              </label>
               <Field
-                name="use_case"
-                component={AutoResizeTextarea}
+                name="expected_monthly_revenue"
+                component={InputField}
                 rows="2"
                 class="form-control"
-                placeholder="Your use case for the product and business model"
+                placeholder="Expected monthly revenue through virtual accounts"
+                validate={[required()]}
               />
             </div>
           </div>
         );
     }
-
-    return 'asds';
   }
 
   // View render
@@ -133,14 +136,12 @@ export default class FeatureOnboardingModal extends Component {
         <form class="form-horizontal">
           <div class="modal-body">
             <div>
-              <p>Provide the following details for the request.</p>
-
-              {this.getQuestionsElements()}
+              <p>
+                We require a few details to enable this feature on your account.
+              </p>
             </div>
 
-            <div>
-              A <b>payment link</b> will also be created.
-            </div>
+            {this.getQuestionsElements()}
 
             <div class="Modal__actions">
               <AsyncButton

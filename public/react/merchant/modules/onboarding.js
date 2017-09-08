@@ -7,6 +7,7 @@ const FEATURE_ONBOARDING_SAVE = 'FEATURE_ONBOARDING_SAVE';
 export const saveOnboarding = data => {
   let body = {
     route_name: 'feature_onboarding_create',
+    mode: 'live',
     body: data,
   };
 
