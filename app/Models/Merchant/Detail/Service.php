@@ -3,12 +3,12 @@
 namespace RZP\Models\Merchant\Detail;
 
 use Carbon\Carbon;
+
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
-use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
-use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
@@ -93,7 +93,7 @@ class Service extends Base\Service
 
             if ($this->canSubmit($input, $response) === true)
             {
-                (new Detail\Core)->fireActivationTrigger($merchantDetails);
+                (new Core)->fireActivationTrigger($merchantDetails);
             }
 
             $response['auto_activated'] = $autoActivated;
@@ -229,7 +229,7 @@ class Service extends Base\Service
 
     public function createMerchantDetails(Merchant\Entity $merchant, array $input = [])
     {
-        $merchantDetail = (new Detail\Entity)->build($input);
+        $merchantDetail = (new Entity)->build($input);
 
         $merchantDetail->setContactEmail($merchant->getEmail());
 
@@ -256,8 +256,8 @@ class Service extends Base\Service
     protected function canSubmit($input, $response)
     {
         return (($response['can_submit'] === true) and
-                (isset($input[Detail\Entity::SUBMIT]) === true) and
-                ($input[Detail\Entity::SUBMIT] === '1'));
+                (isset($input[Entity::SUBMIT]) === true) and
+                ($input[Entity::SUBMIT] === '1'));
     }
 
     protected function markSubmitted($merchantDetails)
@@ -274,7 +274,7 @@ class Service extends Base\Service
         $this->repo->saveOrFail($merchantDetails);
     }
 
-    protected function createFile(Detail\Entity $merchantDetail,
+    protected function createFile(Entity $merchantDetail,
                                     string $extension,
                                     $file,
                                     string $fileName,
@@ -297,7 +297,7 @@ class Service extends Base\Service
         return $file;
     }
 
-    protected function createResponse(Detail\Entity $merchantDetails)
+    protected function createResponse(Entity $merchantDetails)
     {
         $merchantDetailsArr = $merchantDetails->toArray();
 

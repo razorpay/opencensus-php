@@ -2,20 +2,18 @@
 
 namespace RZP\Models\Merchant\Methods;
 
-use RZP\Error\ErrorCode;
-use RZP\Exception;
-use RZP\Models\Base;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Methods;
-use RZP\Models\Payment;
-use RZP\Models\Payment\Processor\Netbanking;
-use RZP\Models\Pricing;
-use RZP\Models\Terminal;
-use RZP\Trace\TraceCode;
-use RZP\Models\Bank;
-use RZP\Models\Emi;
-
 use Config;
+
+use RZP\Exception;
+use RZP\Models\Emi;
+use RZP\Models\Base;
+use RZP\Models\Payment;
+use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Models\Merchant\Methods;
+use RZP\Models\Payment\Processor\Netbanking;
+
 
 class Core extends Base\Core
 {

@@ -2,15 +2,16 @@
 
 namespace RZP\Models\BankAccount;
 
-use RZP\Constants\Mode;
-use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
-use RZP\Models\Merchant\Detail\Entity as DetailEntity;
-use RZP\Models\Base;
-use RZP\Models\BankAccount;
-use RZP\Constants\MailTags;
 use Mail;
+
+use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Detail\Entity as DetailEntity;
+use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
+
 
 class Core extends Base\Core
 {

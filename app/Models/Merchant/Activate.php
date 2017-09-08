@@ -4,28 +4,24 @@ namespace RZP\Models\Merchant;
 
 use Mail;
 
-use RZP\Constants\MailTags;
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Mail\Merchant\Activation as ActivationMail;
-use RZP\Models\Admin\Org;
 use RZP\Models\Base;
 use RZP\Models\Card;
-use RZP\Models\Key;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Webhook;
+use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
-use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Mail\Merchant\Activation as ActivationMail;
+
 
 class Activate extends Base\Core
 {
-    public function activate($merchant)
+    public function activate(Entity $merchant)
     {
-        (new Merchant\Validator)->validateBeforeActivate($merchant);
+        $merchant->getValidator()->validateBeforeActivate();
 
         if ($merchant->isArchived() === true)
         {
@@ -125,7 +121,7 @@ class Activate extends Base\Core
      */
     public function autoActivate(Entity $merchant)
     {
-        (new Merchant\Validator)->validateBeforeActivate($merchant);
+        $merchant->getValidator()->validateBeforeActivate($merchant);
 
         $merchant->activate();
 

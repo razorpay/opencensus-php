@@ -3,12 +3,11 @@
 namespace RZP\Models\Merchant;
 
 use RZP\Base;
-use RZP\Constants\Mode;
-use RZP\Models\Merchant;
-use RZP\Models\Terminal;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Models\Feature;
+use RZP\Constants\Mode;
+use RZP\Models\Terminal;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 
 class Validator extends Base\Validator
@@ -227,8 +226,10 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateBeforeActivate(Merchant\Entity $merchant)
+    public function validateBeforeActivate()
     {
+        $merchant = $this->entity;
+
         if ($merchant->isActivated() === true)
         {
             throw new Exception\BadRequestException(

@@ -3,7 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use Config;
-use Conner\Tagging\Taggable;
+
 use RZP\Models\User;
 use RZP\Models\Base;
 use RZP\Models\Emi;
@@ -13,7 +13,9 @@ use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Invitation;
+use Conner\Tagging\Taggable;
 use RZP\Exception\LogicException;
+
 
 class Entity extends Base\PublicEntity
 {

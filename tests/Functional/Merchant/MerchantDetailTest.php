@@ -3,12 +3,12 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use DB;
-use Mockery;
-use Carbon\Carbon;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
+
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+
 
 class MerchantDetailTest extends TestCase
 {

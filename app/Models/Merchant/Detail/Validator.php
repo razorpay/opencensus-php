@@ -6,7 +6,6 @@ use RZP\Base;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC;
 use RZP\Error\ErrorCode;
-use RZP\Models\Merchant\Detail\FileType;
 
 class Validator extends Base\Validator
 {
