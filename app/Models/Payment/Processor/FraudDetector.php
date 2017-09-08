@@ -65,7 +65,7 @@ trait FraudDetector
         {
             $response = $this->app['maxmind']->query($payment);
         }
-        catch (\Throwable $e)
+        catch (\MaxMind\Exception\IpAddressNotFoundException $e)
         {
             $this->trace->traceException($e);
         }
