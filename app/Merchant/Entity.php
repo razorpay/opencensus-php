@@ -10,8 +10,6 @@ use App\Invitation;
 
 class Entity extends Base\Entity
 {
-    use \Conner\Tagging\Taggable;
-
     public $incrementing = false;
 
     protected $table = 'merchants';

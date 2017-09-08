@@ -7,7 +7,11 @@ echo "$date Configuring App"
 
 # Install dependencies
 yarn install
-gulp
+if [[ "${APP_CONTEXT}" == "dev" ]]; then
+	gulp dev:webpack
+else
+	gulp
+fi
 
 # Copy config
 cp dockerconf/dashboard.conf /etc/nginx/conf.d/dashboard.conf && \

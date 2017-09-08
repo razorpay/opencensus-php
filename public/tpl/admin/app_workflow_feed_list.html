@@ -23,12 +23,12 @@
         <div class="col-md-4">
           <div class="input-group">
             <select class="input-sm form-control merchant_type" name="workflow_request_type" ng-model="workflow_request_type">
-              <option value="maker">Made by You</option>
-              <option value="checker">Awaiting your Approval</option>
-              <option value="closed">Closed by You</option>
-              <option value="admin_checked">Checked by You</option>
-              <option value="open" ng-if="isSuperAdmin">View all Open Actions</option>
-              <option value="all" ng-if="isSuperAdmin">View all Actions</option>
+              <option value="maker-created">Made by You</option>
+              <option value="checker-requested">Awaiting your Approval</option>
+              <option value="maker-closed">Closed by You</option>
+              <option value="checker-created">Checked by You</option>
+              <option value="super-open" ng-if="isSuperAdmin">View all Open Actions</option>
+              <option value="super-all" ng-if="isSuperAdmin">View all Actions</option>
             </select>
             <span class="input-group-btn">
               <button class="btn btn-sm btn-default merchant_go" type="button" ng-click="changeWorkflowRequestUrlType()" busy="...">Go!</button>

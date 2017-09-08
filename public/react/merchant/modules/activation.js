@@ -69,7 +69,12 @@ export const submitForm = ({ step, data, accountId = '' }) => {
   });
   return {
     type: ACTIVATION_FORM_SUBMIT,
-    payload: activation.submit(),
+    payload: activation.submit().then(response => {
+      if (!response.data.can_submit) {
+        throw { errors: ['Some mandatory fields are required'] };
+      }
+      return response;
+    }),
     step,
     data,
   };

@@ -1179,13 +1179,27 @@
         </div>
       </div>
       <div class="form-group" >
-        <label for="type" class="col-lg-3 control-label">Type</label>
+        <label for="non_recurring" class="col-lg-3 control-label">Non recurring</label>
         <div class="col-lg-9" >
-          <select class="form-control m-b" ng-model="terminal.type">
-            <option value="1">Non-recurring</option>
-            <option value="3">Recurring 3DS</option>
-            <option value="4">Recurring Non-3DS</option>
-          </select>
+          <input type="checkbox" ng-true-value="1" ng-false-value="0" ng-model="terminal['type[non_recurring]']">
+        </div>
+      </div>
+      <div class="form-group" >
+        <label for="recurring_3ds" class="col-lg-3 control-label">Recurring 3DS</label>
+        <div class="col-lg-9" >
+          <input type="checkbox" ng-true-value="1" ng-false-value="0" ng-model="terminal['type[recurring_3ds]']">
+        </div>
+      </div>
+      <div class="form-group" >
+        <label for="recurring_non_3ds" class="col-lg-3 control-label">Recurring Non 3DS</label>
+        <div class="col-lg-9" >
+          <input type="checkbox" ng-true-value="1" ng-false-value="0" ng-model="terminal['type[recurring_non_3ds]']">
+        </div>
+      </div>
+      <div class="form-group" >
+      <label for="ivr" class="col-lg-3 control-label">IVR</label>
+        <div class="col-lg-9" >
+          <input type="checkbox" ng-true-value="1" ng-false-value="0" ng-model="terminal['type[ivr]']">
         </div>
       </div>
     </form>
@@ -2055,14 +2069,19 @@
       </div>
 
       <div class="form-group">
-        <label for="value" class="col-lg-3 control-label">Amount (INR)</label>
-        <div class="col-lg-9" >
+        <label for="value" class="col-lg-3 control-label">Amount (Paise)</label>
+        <div class="col-lg-9">
           <input type="number" class="form-control m-b" name="value" ng-model="credits.value" />
-          This will add a (positive) credit of (INR {{credits.value|rupee}}) to the merchant account.<br>
-          This will be counted against their
-            <span ng-show="credits.type==='amount'">total payment volume</span>
-            <span ng-show="credits.type==='fee'">fees only</span>
-          .
+          <div>
+            This will {{credits.value < 0 ? "subtract" : "add"}}
+            a {{ credits.type }} credits of ({{ credits.value < 0 ? -credits.value : credits.value }} Paise)
+            to the merchant {{ credits.type }} credits balance.
+          </div>
+          <div class="text-danger" ng-if="credits.value < 0">
+            <b>Note<b>: Please make sure that the existing {{ credits.type }}
+            credits balance of the merchant is greater than
+            <b>{{ credits.value < 0 ? -credits.value : credits.value }} Paise</b>
+          </div>
         </div>
       </div>
     </form>

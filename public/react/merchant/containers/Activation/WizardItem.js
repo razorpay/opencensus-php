@@ -103,7 +103,6 @@ export default class WizardItem extends Component {
         this.setState({
           errors: err.errors,
         });
-        throw err;
       });
   };
 

@@ -113,6 +113,14 @@ export default class Invoice extends GenericEntity {
       return undefined;
     }
 
+    if (prop === 'notes') {
+      let notes = this.notes || [];
+      return notes.reduce((prev, curr) => {
+        prev[curr.key] = curr.value;
+        return prev;
+      }, {});
+    }
+
     if (prop === 'line_items' && !isBlank(this.line_items)) {
       if (this.type === 'link') {
         return this.line_items.map(item => {
