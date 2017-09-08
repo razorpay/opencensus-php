@@ -769,7 +769,7 @@ trait Authorize
         }
         else if ($payment->isNetbanking() === true)
         {
-            $this->validateRecurringNetbanking($payment, $token);
+            $this->validateRecurringNetbanking($payment, $token, $input);
         }
 
         //
@@ -906,7 +906,7 @@ trait Authorize
         }
     }
 
-    protected function validateRecurringNetbanking(Payment\Entity $payment, Token\Entity $token)
+    protected function validateRecurringNetbanking(Payment\Entity $payment, Token\Entity $token, array $input)
     {
         $bank = $payment->getBank();
 
@@ -930,7 +930,8 @@ trait Authorize
         // in private auth also for first recurring. But, in private auth,
         // it could be second recurring also, where we accept a token.
         //
-        if ($this->ba->isPublicAuth() === true)
+        if (($this->ba->isPublicAuth() === true) and
+            (isset($input[Payment\Entity::TOKEN]) === true))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_NB_TOKEN_PASSED_IN_FIRST_RECURRING,

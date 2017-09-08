@@ -124,7 +124,7 @@ class Core extends Base\Core
         // recurring = netbanking tokens to the merchant via preferences
         //
 
-        if ($tokens->isPublicCollection() === true)
+        if (Base\PublicCollection::isPublicCollection($tokens) === true)
         {
             $tokens = $tokens->reject(
                 function($token)

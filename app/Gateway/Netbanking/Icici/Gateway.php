@@ -213,7 +213,7 @@ class Gateway extends Base\Gateway
 
         $acquirerData = $this->getAcquirerData($gatewayPayment);
 
-        if ($this->hasRecurringData($callbackData) === true)
+        if ($this->hasRecurringData($gatewayPayment) === true)
         {
             $recurringData = $this->getRecurringData($gatewayPayment);
 
