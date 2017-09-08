@@ -17,20 +17,26 @@ const required = index => {
   };
 };
 
-export default ({ fields, onAdd }) => {
+export default ({ fields, onAdd, nonEditableUptilIndex }) => {
   return (
     <ul class="list-unstyled notes">
       {fields.map((note, index) => {
         return (
           <li class="note" key={index}>
             <div class="key">
-              <i class="icon icon-close" onClick={() => fields.remove(index)} />
+              {index > nonEditableUptilIndex &&
+                <i
+                  class="icon icon-close"
+                  onClick={() => fields.remove(index)}
+                />}
+
               <Field
                 name={`notes[${index}][key]`}
                 component={InputField}
                 class="form-control"
                 placeholder="Title (key)"
                 validate={required(index)}
+                disabled={index <= nonEditableUptilIndex}
               />
             </div>
 
@@ -41,6 +47,7 @@ export default ({ fields, onAdd }) => {
                 rows="2"
                 class="form-control"
                 placeholder="Description (value)"
+                disabled={index <= nonEditableUptilIndex}
               />
             </div>
           </li>
