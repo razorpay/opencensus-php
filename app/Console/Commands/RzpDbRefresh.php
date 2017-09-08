@@ -48,19 +48,21 @@ class RzpDbRefresh extends RefreshCommand
         {
             $this->info('<info>Refreshing test database.</info>');
 
-            $this->call('migrate:refresh',
-                        [
-                            '--database' => 'test',
-                            '--force' => $force
-                        ]);
+            $this->call(
+                'migrate:refresh',
+                [
+                    '--database' => 'test',
+                    '--force' => $force
+                ]);
 
             $this->info('<info>Refreshing live database.</info>');
 
-            $this->call('migrate:refresh',
-                        [
-                            '--database' => 'live',
-                            '--force' => $force
-                        ]);
+            $this->call(
+                'migrate:refresh',
+                [
+                    '--database' => 'live',
+                    '--force' => $force
+                ]);
         }
 
         if ($this->needsSeeding())

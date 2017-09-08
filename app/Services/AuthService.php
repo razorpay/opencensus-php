@@ -7,12 +7,19 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
+use Razorpay\OAuth\Token;
+use Razorpay\OAuth\Application;
+
 class AuthService
 {
     const REQUEST_TIMEOUT = 30; // In seconds
 
     protected $baseUrl;
 
+    //
+    // API talks to Authentication Service's APIs using HTTP Basic authentication.
+    // Following are those user name and pass.
+    //
     protected $key;
 
     protected $secret;
@@ -25,52 +32,64 @@ class AuthService
     {
         $this->key     = 'rzp';
         $this->trace   = $app['trace'];
-        $this->config  = $app['config']->get('applications.auth_service');
+        $this->config  = $app['config']->get('applications.api_auth_service');
         $this->baseUrl = $this->config['url'];
         $this->secret  = $this->config['secret'];
     }
 
-    public function createApplication(array $input): array
+    public function createApplication(array $input, string $merchantId): array
     {
+        $input[Application\Entity::MERCHANT_ID] = $merchantId;
+
         return $this->sendRequest('applications', Requests::POST, $input);
     }
 
     public function getApplication(string $id, string $merchantId): array
     {
-        $input = ['merchant_id' => $merchantId];
+        $input = [Application\Entity::MERCHANT_ID => $merchantId];
 
         return $this->sendRequest('applications/' . $id, Requests::GET, $input);
     }
 
-    public function getMultipleApplications(array $input): array
+    public function getMultipleApplications(array $input, string $merchantId): array
     {
+        $input[Application\Entity::MERCHANT_ID] = $merchantId;
+
         return $this->sendRequest('applications', Requests::GET, $input);
     }
 
     public function deleteApplication(string $id, string $merchantId): array
     {
-        $input = ['merchant_id' => $merchantId];
+        $input = [Application\Entity::MERCHANT_ID => $merchantId];
 
         return $this->sendRequest('applications/' . $id, Requests::DELETE, $input);
     }
 
-    public function updateApplication(string $id, array $input): array
+    public function updateApplication(string $id, array $input, string $merchantId): array
     {
+        $input[Application\Entity::MERCHANT_ID] = $merchantId;
+
         return $this->sendRequest('applications/' . $id, Requests::PATCH, $input);
     }
 
-    public function getTokens(array $input): array
+    public function getTokens(array $input, string $merchantId): array
     {
+        $input[Token\Entity::MERCHANT_ID] = $merchantId;
+
         return $this->sendRequest('tokens', Requests::GET, $input);
     }
 
-    public function getToken(string $id, array $input): array
+    public function getToken(string $id, array $input, string $merchantId): array
     {
+        $input[Token\Entity::MERCHANT_ID] = $merchantId;
+
         return $this->sendRequest('tokens/' . $id, Requests::GET, $input);
     }
 
-    public function revokeToken(string $id, array $input): array
+    public function revokeToken(string $id, array $input, string $merchantId): array
     {
+        $input[Token\Entity::MERCHANT_ID] = $merchantId;
+
         return $this->sendRequest('tokens/' . $id, Requests::DELETE, $input);
     }
 
@@ -109,11 +128,19 @@ class AuthService
     {
         $code = $res->status_code;
 
+        //
+        // If returned status code is 2XX, everything is fine
+        // and just return the decoded JSON body.
+        //
         if (in_array($code, [200, 201], true))
         {
             return json_decode($res->body, true);
         }
 
+        //
+        // If returned status code is 400 we parse the JSON body and
+        // raise validation exception in API format.
+        //
         elseif ($code === 400)
         {
             $error = json_decode($res->body, true)['error']['description'];
@@ -121,6 +148,10 @@ class AuthService
             throw new Exception\BadRequestValidationFailureException($error);
         }
 
+        //
+        // Else we return a generic API's bad request error with a message
+        // and log response body in trace.
+        //
         else
         {
             throw new Exception\BadRequestException(

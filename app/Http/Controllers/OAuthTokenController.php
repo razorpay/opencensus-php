@@ -3,14 +3,19 @@
 namespace RZP\Http\Controllers;
 
 use Request;
-use ApiResponse;
 
-use Razorpay\OAuth\Token;
+use ApiResponse;
 
 class OAuthTokenController extends Controller
 {
+    /**
+     * @var \RZP\Http\BasicAuth\BasicAuth
+     */
     protected $auth;
 
+    /**
+     * @var \RZP\Services\AuthService
+     */
     protected $authservice;
 
     public function __construct()
@@ -26,11 +31,9 @@ class OAuthTokenController extends Controller
     {
         $input = Request::all();
 
-        $merchant = $this->auth->getMerchant();
+        $merchantId = $this->auth->getMerchantId();
 
-        $input[Token\Entity::MERCHANT_ID] = $merchant->getId();
-
-        $data = $this->authservice->getTokens($input);
+        $data = $this->authservice->getTokens($input, $merchantId);
 
         return ApiResponse::json($data);
     }
@@ -39,11 +42,9 @@ class OAuthTokenController extends Controller
     {
         $input = Request::all();
 
-        $merchant = $this->auth->getMerchant();
+        $merchantId = $this->auth->getMerchantId();
 
-        $input[Token\Entity::MERCHANT_ID] = $merchant->getId();
-
-        $data = $this->authservice->getToken($id, $input);
+        $data = $this->authservice->getToken($id, $input, $merchantId);
 
         return ApiResponse::json($data);
     }
@@ -52,11 +53,9 @@ class OAuthTokenController extends Controller
     {
         $input = Request::all();
 
-        $merchant = $this->auth->getMerchant();
+        $merchantId = $this->auth->getMerchantId();
 
-        $input[Token\Entity::MERCHANT_ID] = $merchant->getId();
-
-        $data = $this->authservice->revokeToken($id, $input);
+        $data = $this->authservice->revokeToken($id, $input, $merchantId);
 
         return ApiResponse::json($data);
     }

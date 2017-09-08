@@ -7,8 +7,8 @@ use Mail;
 use Config;
 use Carbon\Carbon;
 
-use Razorpay\OAuth\Client as OAuthClient;
 use Razorpay\OAuth\Token as OAuthToken;
+use Razorpay\OAuth\Client as OAuthClient;
 
 use RZP\Exception;
 use RZP\Models\Key;
@@ -1301,22 +1301,39 @@ class Service extends Base\Service
      */
     public function sendOAuthMail(array $input, string $type): array
     {
-        $merchant = $this->repo->merchant->findOrFail($input[Entity::MERCHANT_ID]);
+        $this->trace->info(TraceCode::SEND_OAUTH_MAIL_REQUEST, ['type' => $type, 'input' => $input]);
 
         (new Merchant\Validator)->validateInput(self::OAUTH_MAIL, $input);
 
-        $user = $this->repo->user->findOrFail($input[User\Entity::USER_ID])->toArrayPublic();
+        $merchant = $this->repo->merchant->findOrFail($input[Entity::MERCHANT_ID]);
+        $user     = $this->repo->user->findOrFail($input[User\Entity::USER_ID]);
+        $client   = (new OAuthClient\Repository)->findOrFail($input[OAuthToken\Entity::CLIENT_ID]);
 
-        $client = (new OAuthClient\Repository)->findOrFail($input[OAuthToken\Entity::CLIENT_ID]);
-
-        $application = $client->application->toArrayPublic();
+        $mailer = $this->getOAuthMailerClassByType($type);
 
         $data = [
             'merchant'    => $merchant->toArrayPublic(),
-            'user'        => $user,
-            'application' => $application
+            'user'        => $user->toArrayPublic(),
+            'application' => $client->application->toArrayPublic(),
         ];
 
+        Mail::queue((new $mailer($data)));
+
+        return ['success' => true];
+    }
+
+    /**
+     * Returns OAuth mailer class name by event type. Also validates that
+     * the same exists. If not throws a bad request exception.
+     *
+     * @param string $type
+     *
+     * @return string
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function getOAuthMailerClassByType(string $type): string
+    {
         $mailer = 'RZP\\Mail\\OAuth\\' . studly_case($type);
 
         if (class_exists($mailer) === false)
@@ -1324,13 +1341,11 @@ class Service extends Base\Service
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_OAUTH_MAIL_TYPE,
                 null,
-                ['type' => $type]);
+                [
+                    'type' => $type,
+                ]);
         }
 
-        $oauthMail = (new $mailer($data));
-
-        Mail::queue($oauthMail);
-
-        return ['success' => true];
+        return $mailer;
     }
 }

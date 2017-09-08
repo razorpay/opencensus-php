@@ -3,6 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use Request;
+
 use ApiResponse;
 use RZP\Models\Merchant;
 use RZP\Base\JitValidator;
@@ -16,6 +17,9 @@ class OAuthApplicationController extends Controller
      */
     protected $auth;
 
+    /**
+     * @var \RZP\Services\AuthService
+     */
     protected $authservice;
 
     public function __construct()
@@ -35,9 +39,7 @@ class OAuthApplicationController extends Controller
 
         $merchantId = $this->auth->getMerchantId();
 
-        $input[Application\Entity::MERCHANT_ID] = $merchantId;
-
-        $data = $this->authservice->createApplication($input);
+        $data = $this->authservice->createApplication($input, $merchantId);
 
         return ApiResponse::json($data);
     }
@@ -57,9 +59,7 @@ class OAuthApplicationController extends Controller
 
         $merchantId = $this->auth->getMerchantId();
 
-        $input[Application\Entity::MERCHANT_ID] = $merchantId;
-
-        $data = $this->authservice->getMultipleApplications($input);
+        $data = $this->authservice->getMultipleApplications($input, $merchantId);
 
         return ApiResponse::json($data);
     }
@@ -81,9 +81,7 @@ class OAuthApplicationController extends Controller
 
         $merchantId = $this->auth->getMerchantId();
 
-        $input[Application\Entity::MERCHANT_ID] = $merchantId;
-
-        $data = $this->authservice->updateApplication($id, $input);
+        $data = $this->authservice->updateApplication($id, $input, $merchantId);
 
         return ApiResponse::json($data);
     }
@@ -107,7 +105,6 @@ class OAuthApplicationController extends Controller
                               ->input($logoInput)
                               ->validate();
 
-            // TODO: Move this out of Merchant namespace, and make generic
             $logoUrl = (new Merchant\Logo)->setUpMerchantLogo($logoInput);
 
             $input[Application\Entity::LOGO_URL] = $logoUrl;

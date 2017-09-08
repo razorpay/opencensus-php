@@ -32,7 +32,7 @@ class AppAuthorized extends Mailable
 
     protected function addSubject()
     {
-        $this->subject('Access grant notification');
+        $this->subject('Razorpay | Application access grant notification');
 
         return $this;
     }
