@@ -97,6 +97,9 @@ return [
         // Feature Delete
         'feature_delete'                    => 'features/{entityId}/{featureName}',
 
+        // Fetch Merchants from ES
+        'admin_fetch_merchants_new'         => 'admins/merchants',
+
         // Admin Payment Actions
         // Refund Authorized Payment
         'payment_authorize_refund'          => 'payments/{id}/authorize_refund',
@@ -104,6 +107,9 @@ return [
         'merchant_get_pricing'              => 'merchants/{id}/pricing',
         'merchant_get_terminals'            => 'merchants/{id}/terminals',
         'merchant_details_fetch'            => 'merchants/details',
+
+        // Retry Settlements
+        'setl_retry'                        => 'settlements/retry',
     ],
 
     // auth

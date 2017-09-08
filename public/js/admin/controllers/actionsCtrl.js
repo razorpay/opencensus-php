@@ -400,6 +400,32 @@ app
               $scope.alerts.addAlert('danger', null, true);
             });
         };
+
+        $scope.retrySettlements = function retrySettlements(idList) {
+          var request = $http
+            .post('/admin/generic', {
+              route_name: 'setl_retry',
+              body: { settlement_ids: idList },
+            })
+            .success(function onRetrySettlementsSuccess(data) {
+              if (data.success) {
+                $scope.alerts.addAlert(
+                  'success',
+                  'Settlements Retry Successfull',
+                  'true'
+                );
+              } else {
+                $scope.alerts.addAlert(
+                  'danger',
+                  'Settlements Retry Failed',
+                  true
+                );
+              }
+            })
+            .error(function onRetrySettlementsFail() {
+              $scope.alerts.addAlert('danger', null, true);
+            });
+        };
       });
       $scope.openConfirmUser = function() {
         var modalInstance = $modal.open({
@@ -452,6 +478,13 @@ app
           .error(function() {
             $scope.alerts.addAlert('danger', null, true);
           });
+      };
+      $scope.openRertySettlements = function openRertySettlements() {
+        var modalInstance = $modal.open({
+          templateUrl: 'retrySettlementsModalContent.html',
+          controller: 'retrySettlementsController',
+        });
+        modalInstance.result.then($scope.retrySettlements, $.noop);
       };
     },
   ])
@@ -718,6 +751,37 @@ app
       $scope.ok = function(schedule) {
         $modalInstance.close(schedule);
       };
+      $scope.cancel = function() {
+        $modalInstance.dismiss('cancel');
+      };
+    },
+  ])
+  .controller('retrySettlementsController', [
+    '$scope',
+    '$modalInstance',
+    function($scope, $modalInstance) {
+      $scope.settlementIds = '';
+
+      $scope.ok = function(ids) {
+        var ids = ids && ids.trim(),
+          idList = [];
+
+        if (!ids) {
+          return;
+        }
+
+        angular.forEach(ids.split(','), function(id) {
+          id = id.trim();
+          return id && idList.push(id);
+        });
+
+        if (idList.length === 0) {
+          return;
+        }
+
+        $modalInstance.close(idList);
+      };
+
       $scope.cancel = function() {
         $modalInstance.dismiss('cancel');
       };

@@ -36,13 +36,6 @@ class Admin extends Entity
         return $this->request('GET', $relativeUrl);
     }
 
-    public function fetchMerchants($orgId, $adminId, array $input)
-    {
-        $relativeUrl = "orgs/$orgId/admins/$adminId/merchants";
-
-        return $this->request('GET', $relativeUrl, $input);
-    }
-
     public function logout($orgId)
     {
         $relativeUrl = "orgs/$orgId/admin/logout";

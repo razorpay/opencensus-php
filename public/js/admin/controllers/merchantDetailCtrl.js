@@ -1618,7 +1618,6 @@ app
         modalInstance.result.then(function(creditsData) {
           // Transform money from paise to rupee
           var creditsDataCloned = JSON.parse(JSON.stringify(creditsData));
-          creditsDataCloned.value = creditsDataCloned.value * 100;
           var mode = creditsDataCloned.mode;
           delete creditsDataCloned.mode;
 
