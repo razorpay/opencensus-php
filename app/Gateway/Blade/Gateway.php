@@ -20,9 +20,11 @@ class Gateway extends Base\Gateway
 {
     const VERSION = '1.0.2';
 
-    const GATEWAY_ACCESS_CODE       = 'gateway_access_code';
-    const GATEWAY_MERCHANT_ID2      = 'GATEWAY_MERCHANT_ID2';
-    const GATEWAY_TERMINAL_PASSWORD = 'GATEWAY_TERMINAL_PASSWORD';
+    const GATEWAY_ACCESS_CODE        = 'gateway_access_code';
+    const GATEWAY_MERCHANT_ID2       = 'GATEWAY_MERCHANT_ID2';
+    const GATEWAY_TERMINAL_PASSWORD  = 'GATEWAY_TERMINAL_PASSWORD';
+
+    const CERTIFICATE_DIRECTORY_NAME = 'cert_dir_name';
 
     /**
      * Authenticate the payment
@@ -390,7 +392,14 @@ class Gateway extends Base\Gateway
                 TraceCode::BLADE_VERES_PARSE_FAILURE,
                 ['message' => 'Malformed xml: ' . $body]);
 
-            return Enrolled::U;
+            throw new Exception\LogicException(
+                'Unexpected response',
+                null,
+                [
+                    'payment_id'  => $input['payment']['id'],
+                    'body'        => $body
+                ]
+            );
         }
 
         return $this->xmlToArray($body);
@@ -590,9 +599,9 @@ class Gateway extends Base\Gateway
         if ($this->mode === Mode::TEST)
         {
             $creds = [
-                VereqRequest::ACQ_BIN     => $this->config[self::GATEWAY_ACCESS_CODE],
-                VereqRequest::MERCHANT_ID => $this->config[self::GATEWAY_MERCHANT_ID2],
-                VereqRequest::PASSWORD    => $this->config[self::GATEWAY_TERMINAL_PASSWORD],
+                VereqRequest::ACQ_BIN          => $this->config[self::GATEWAY_ACCESS_CODE],
+                VereqRequest::CRED_MERCHANT_ID => $this->config[self::GATEWAY_MERCHANT_ID2],
+                VereqRequest::PASSWORD         => $this->config[self::GATEWAY_TERMINAL_PASSWORD],
             ];
         }
         else
@@ -600,9 +609,9 @@ class Gateway extends Base\Gateway
             $terminal = $this->terminal;
 
             $creds = [
-                VereqRequest::ACQ_BIN     => $terminal[self::GATEWAY_ACCESS_CODE],
-                VereqRequest::MERCHANT_ID => $terminal[self::GATEWAY_MERCHANT_ID2],
-                VereqRequest::PASSWORD    => $terminal[self::GATEWAY_TERMINAL_PASSWORD],
+                VereqRequest::ACQ_BIN          => $terminal[self::GATEWAY_ACCESS_CODE],
+                VereqRequest::CRED_MERCHANT_ID => $terminal[self::GATEWAY_MERCHANT_ID2],
+                VereqRequest::PASSWORD         => $terminal[self::GATEWAY_TERMINAL_PASSWORD],
             ];
         }
 
@@ -740,20 +749,16 @@ class Gateway extends Base\Gateway
 
     protected function getUrl($type = null)
     {
-        $urlDomain = $this->getUrlDomain($type);
-
-        return $urlDomain;
-    }
-
-    protected function getUrlDomain($type = null)
-    {
         $urlClass = $this->getGatewayNamespace() . '\Url';
 
-        $domainType = $this->mode;
+        $domainMode = $this->mode;
 
-        $domainConstantName = strtoupper($domainType).'_'.strtoupper($type).'_DS';
+        $domainConstantName = strtoupper($domainMode) . '_' . strtoupper($type) . '_DS';
 
-        return constant($urlClass . '::' .$domainConstantName);
+        if (defined($urlClass . '::' . $domainConstantName))
+        {
+            return constant($urlClass . '::' . $domainConstantName);
+        }
     }
 
     protected function getRequestOptions()
@@ -778,5 +783,9 @@ class Gateway extends Base\Gateway
         curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
 
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, true);
+    }
+    protected function getGatewayCertDirName()
+    {
+        return $this->config[self::CERTIFICATE_DIRECTORY_NAME];
     }
 }

@@ -24,18 +24,6 @@ class Validator extends JitValidator
         'Message.VERes.Extension.@attributes.critical'  => 'sometimes|critical'
     ];
 
-    public static $CRresRules = [
-        'Message'                                       => 'required|array',
-        'Message.@attributes.id'                        => 'required|max:128',
-        'Message.CRRes.version'                         => ['required','min:3','regex:"(1.0.[2-9])|(1.[1-9].[0-9])"'],
-        'Message.CRRes.CR'                              => 'sometimes|array',
-        'Message.CRRes.serialNumber'                    => 'sometimes|digits_between:1,20',
-        'Message.CRRes.IReq'                            => 'sometimes|array',
-        'Message.CRRes.IReq.iReqCode'                   => 'required_with:Message.CRRes.IReq|min:1|max:3',
-        'Message.CRRes.IReq.iReqDetail'                 => 'sometimes|max:2048',
-        'Message.CRRes.IReq.vendorCode'                 => 'sometimes|max:256',
-    ];
-
     public static $paresRules = [
         'Message'                                                                       => 'required|array',
         'Message.@attributes.id'                                                        => 'required|max:128',

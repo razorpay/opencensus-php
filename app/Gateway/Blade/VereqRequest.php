@@ -16,4 +16,8 @@ class VereqRequest
     const DEVICE_CATEGORY   = 'deviceCategory';
     const DEVICE_ACCEPT     = 'accept';
     const DEVICE_UA         = 'userAgent';
+
+    const ACQ_BIN           = 'acq_bin';
+    const CRED_MERCHANT_ID  = 'merchant_id';
+    const PASSWORD          = 'password';
 }
