@@ -18,27 +18,27 @@ const getCustomerDetail = invoice => ({
   Email: (
     <span>
       {invoice.customer_details.customer_email || '--'}
-      {invoice.email_status ? (
-        <span
-          style={{ marginLeft: '10px' }}
-          class={`${notificationClassMap[invoice.email_status]}`}
-        >
-          ({invoice.email_status} mail)
-        </span>
-      ) : null}
+      {invoice.email_status
+        ? <span
+            style={{ marginLeft: '10px' }}
+            class={`${notificationClassMap[invoice.email_status]}`}
+          >
+            ({invoice.email_status} mail)
+          </span>
+        : null}
     </span>
   ),
   Phone: (
     <span>
       {invoice.customer_details.customer_contact || '--'}
-      {invoice.sms_status ? (
-        <span
-          style={{ marginLeft: '10px' }}
-          class={`${notificationClassMap[invoice.sms_status]}`}
-        >
-          ({invoice.sms_status} sms)
-        </span>
-      ) : null}
+      {invoice.sms_status
+        ? <span
+            style={{ marginLeft: '10px' }}
+            class={`${notificationClassMap[invoice.sms_status]}`}
+          >
+            ({invoice.sms_status} sms)
+          </span>
+        : null}
     </span>
   ),
 });
@@ -55,103 +55,113 @@ export default props => {
 
   return (
     <div class="content-wrapper content-sm txn-details">
-      {isLoading ? (
-        <div class="page-spinner-container">
-          <Spinner />
-        </div>
-      ) : (
-        <div class="panel panel-default SliderPanel">
-          <div class="panel-heading">
-            <i class="icon icon-link text-primary icon--formal" />{' '}
-            <strong>{invoice.id}</strong>
-            <ShowWhen notMyRole="support finance">
-              <div class="btn-toolbar pull-right">
-                {(isDraft || isIssued) && (
-                  <button
-                    class="btn btn-primary btn-sm"
-                    onClick={props.onIssue}
-                  >
-                    Send Link
-                  </button>
-                )}
-
-                {isIssued && (
-                  <button
-                    class="btn btn-default btn-sm"
-                    onClick={props.onCancel}
-                  >
-                    Cancel Link
-                  </button>
-                )}
-              </div>
-            </ShowWhen>
+      {isLoading
+        ? <div class="page-spinner-container">
+            <Spinner />
           </div>
+        : <div class="panel panel-default SliderPanel">
+            <div class="panel-heading">
+              <i class="icon icon-link text-primary icon--formal" />{' '}
+              <strong>{invoice.id}</strong>
+              <ShowWhen notMyRole="support finance">
+                <div class="btn-toolbar pull-right">
+                  {(isDraft || isIssued) &&
+                    <button
+                      class="btn btn-primary btn-sm"
+                      onClick={props.onIssue}
+                    >
+                      Send Link
+                    </button>}
 
-          <div class="SliderPanel__Body">
-            {invoice.type === 'invoice' && (
-              <Banner cta="View Invoice" ctaUrl={'/invoices/' + invoice.id}>
-                <span>
-                  Following is the summary of the invoice. See invoice to view
-                  all details.
-                </span>
-              </Banner>
-            )}
-            <div class="panel-body">
-              <div class="list-group details-row-container">
-                <EntityDetailRow
-                  label="Amount"
-                  value={() => <Amount value={invoice.amount} />}
-                />
-                <EntityDetailRow
-                  label="Status"
-                  value={() => <InvoiceStatusLabel status={invoice.status} />}
-                />
-                <EntityDetailRow
-                  label="Amount Paid"
-                  value={() => <Amount value={invoice.amount_paid} />}
-                />
-                <EntityDetailRow
-                  label="Payment Link"
-                  value={() => <CopyLink url={invoice.short_url} />}
-                />
-                <EntityDetailRow
-                  label="Summary"
-                  value={invoice.description || '--'}
-                />
-                <EntityDetailRow label="Receipt" value={invoice.receipt} />
-                <NestedEntityDetailRow
-                  label="Customer Details"
-                  value={getCustomerDetail(invoice)}
-                />
-                <EntityDetailRow
-                  label="Created at"
-                  value={() => <Time value={invoice.date} />}
-                />
-                <EntityDetailRow
-                  label="Paid At"
-                  value={() => (
-                    <Time
-                      value={invoice.paid_at}
-                      format="DD MMM YYYY, hh:mm:ss a"
-                    />
-                  )}
-                />
-                <EntityDetailRow
-                  label={isExpired ? 'Expired on' : 'Expires on'}
-                  value={() => (
-                    <Time
-                      value={invoice.expire_by}
-                      format="DD MMM YYYY, hh:mm:ss a"
-                    />
-                  )}
-                />
+                  {isIssued &&
+                    <button
+                      class="btn btn-default btn-sm"
+                      onClick={props.onCancel}
+                    >
+                      Cancel Link
+                    </button>}
+                </div>
+              </ShowWhen>
+            </div>
 
-                <NestedEntityDetailRow label="Notes" value={invoice.notes} />
+            <div class="SliderPanel__Body">
+              {invoice.type === 'invoice' &&
+                <Banner cta="View Invoice" ctaUrl={'/invoices/' + invoice.id}>
+                  <span>
+                    Following is the summary of the invoice. See invoice to view
+                    all details.
+                  </span>
+                </Banner>}
+              <div class="panel-body">
+                <div class="list-group details-row-container">
+                  <EntityDetailRow
+                    label="Amount"
+                    value={() => <Amount value={invoice.amount} />}
+                  />
+                  <EntityDetailRow
+                    label="Status"
+                    value={() => <InvoiceStatusLabel status={invoice.status} />}
+                  />
+                  <EntityDetailRow
+                    label="Amount Paid"
+                    value={() => <Amount value={invoice.amount_paid} />}
+                  />
+
+                  <EntityDetailRow
+                    label="Payment Id"
+                    value={() => {
+                      if (!invoice.payment_id) {
+                        return '--';
+                      }
+                      return (
+                        <NavLink to={`/payments/${invoice.payment_id}`}>
+                          <code>
+                            {invoice.payment_id}
+                          </code>
+                        </NavLink>
+                      );
+                    }}
+                  />
+
+                  <EntityDetailRow
+                    label="Payment Link"
+                    value={() => <CopyLink url={invoice.short_url} />}
+                  />
+                  <EntityDetailRow
+                    label="Summary"
+                    value={invoice.description || '--'}
+                  />
+                  <EntityDetailRow label="Receipt" value={invoice.receipt} />
+                  <NestedEntityDetailRow
+                    label="Customer Details"
+                    value={getCustomerDetail(invoice)}
+                  />
+                  <EntityDetailRow
+                    label="Created at"
+                    value={() => <Time value={invoice.date} />}
+                  />
+                  <EntityDetailRow
+                    label="Paid At"
+                    value={() =>
+                      <Time
+                        value={invoice.paid_at}
+                        format="DD MMM YYYY, hh:mm:ss a"
+                      />}
+                  />
+                  <EntityDetailRow
+                    label={isExpired ? 'Expired on' : 'Expires on'}
+                    value={() =>
+                      <Time
+                        value={invoice.expire_by}
+                        format="DD MMM YYYY, hh:mm:ss a"
+                      />}
+                  />
+
+                  <NestedEntityDetailRow label="Notes" value={invoice.notes} />
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>}
     </div>
   );
 };
