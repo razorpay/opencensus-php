@@ -138,6 +138,18 @@ class FeaturesTest extends TestCase
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertTrue($response);
+
+        // Test getOnboardingResponses function
+
+        $testData = $this->testData['getOnboardingResponses'];
+
+        $request = $testData['request'];
+
+        $expectedResponse = $testData['response']['content'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
     }
 
     protected function createUploadedFile(string $url): UploadedFile

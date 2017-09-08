@@ -595,6 +595,7 @@ final class Route
         // Onboarding routes
         'feature_onboarding_fetch_default'        => ['get',      'feature/onboarding',                            'FeatureController@getOnboardingQuestions',                          ],
         'feature_onboarding_create'               => ['post',     'feature/onboarding',                            'FeatureController@createOnboardingResponses',                       ],
+        'feature_onboarding_fetch_responses'      => ['get',      'feature/onboarding/{feature}/responses',        'FeatureController@getOnboardingResponses',                          ],
     ];
 
     public static $public = [
@@ -1062,7 +1063,8 @@ final class Route
         'invitation_edit',
         'invitation_delete',
         'feature_onboarding_fetch_default',
-        'feature_onboarding_create'
+        'feature_onboarding_create',
+        'feature_onboarding_fetch_responses'
     ];
 
     // These will run on internal auth with the assurance

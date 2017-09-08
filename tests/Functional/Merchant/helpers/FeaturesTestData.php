@@ -346,6 +346,7 @@ return [
             ],
         ],
     ],
+
     // Files will be added and verified from the main test function
     'testCreateOnboardingResponses' => [
         'request'  => [
@@ -361,6 +362,24 @@ return [
                 'HTTP_X-Dashboard'            => 'true',
                 'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
             ],
+        ]
+    ],
+
+    'getOnboardingResponses' => [
+        'request'  => [
+            'content' => [],
+            'url'     => '/feature/onboarding/' . Constants::MARKETPLACE . '/responses',
+            'method'  => 'GET',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                Constants::USE_CASE    => 'Some default use case',
+                Constants::SETTLING_TO => 'Someone'
+            ]
         ]
     ]
 ];

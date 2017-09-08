@@ -178,6 +178,26 @@ class Service extends Base\Service
         return $saved;
     }
 
+    public function getOnboardingResponses($feature = null)
+    {
+        $settingsService = Settings\Service::getNewInstance();
+
+        $entity = Constants::MERCHANT;
+
+        $entityId = $this->merchant->getId();
+
+        if ($feature === null)
+        {
+            $response = $settingsService->getAll($entity, $entityId, Constants::ONBOARDING);
+        }
+        else
+        {
+            $response = $settingsService->get($entity, $entityId, Constants::ONBOARDING, $feature);
+        }
+
+        return $response['settings'];
+    }
+
     protected function processFiles(& $input)
     {
         $merchant = $this->merchant;
