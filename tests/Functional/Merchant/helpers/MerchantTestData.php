@@ -1139,18 +1139,163 @@ return [
         ],
     ],
 
-    'testGetDowntimeInfoOverPublicRoute' => [
+    'testGetNetbankingDowntimeInfoForDirectNetbankingGateway' => [
         'request' => [
-            'url' => '/gateway/downtimes',
+            'url' => '/methods/downtime',
             'method' => 'get',
         ],
         'response' => [
             'content' => [
-                'netbanking' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
                     [
-                        'issuer'    => ['HDFC'],
-                        'scheduled' => true,
-                        'severity'  => 'low',
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer'    => ['HDFC']
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetNetbankingDowntimeInfoWithSharedNetbankingGateway' => [
+        'request' => [
+            'url' => '/methods/downtime',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer'    => [
+                                'ALLA',
+                                'BBKM',
+                                'BKDN',
+                                'COSB',
+                                'DCBL',
+                                'DCBL',
+                                'DEUT',
+                                'DBSS',
+                                'IDFB',
+                                'IBKL',
+                                'JSBP',
+                                'KVBL',
+                                'NKGS',
+                                'PMCB',
+                                'SBBJ',
+                                'SBHY',
+                                'SBIN',
+                                'SBMY',
+                                'STBP',
+                                'SBTR',
+                                'SCBL',
+                                'SIBL',
+                                'SVCB',
+                                'SYNB',
+                                'TMBL',
+                                'TNSC',
+                                'BARB_C',
+                                'BARB_R',
+                                'PUNB_C',
+                                'LAVB_C'
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetNetbankingDowntimeInfoWithIssuerExclusiveToGateway' => [
+        'request' => [
+            'url' => '/methods/downtime',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer'    => ['ALLA']
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetNetbankingDowntimeInfoWithIssuerNA' => [
+        'request' => [
+            'url' => '/methods/downtime',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 0,
+                'items' => [
+                ],
+            ],
+        ],
+    ],
+
+    'testGetNetbankingDowntimeInfoWithGatewayAll' => [
+        'request' => [
+            'url' => '/methods/downtime',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer'    => ['HDFC']
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetNetbankingDowntimeInfoWithMultipleDowntimes' => [
+        'request' => [
+            'url' => '/methods/downtime',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 2,
+                'items' => [
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'medium',
+                        'instrument' => [
+                            'issuer' => ['ALLA']
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'high',
+                        'instrument' => [
+                            'issuer' => ['HDFC']
+                        ],
                     ],
                 ],
             ],

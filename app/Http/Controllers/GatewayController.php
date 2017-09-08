@@ -242,19 +242,6 @@ class GatewayController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getPublicGatewayDowntimeData(Downtime\Service $service)
-    {
-        $data = $service->getPublicGatewayDowntimeData();
-
-        // For this route we are currently sending only netbanking
-        // downtimes in the response, so removing other routes
-        unset($data[Method::CARD]);
-        unset($data[Method::UPI]);
-        unset($data[Method::WALLET]);
-
-        return ApiResponse::json($data);
-    }
-
     /**
      * Single use function - Fills provider field in the UPI table with bank code
      *

@@ -15,7 +15,7 @@ class Collection extends Base\PublicCollection
      *
      * @return array Formatted data
      */
-    public function toArrayExternal()
+    public function toArrayCheckout()
     {
         $formattedData = [];
 
@@ -42,7 +42,7 @@ class Collection extends Base\PublicCollection
                 case Method::WALLET:
                 case Method::UPI:
 
-                    $downtimeData = $downtime->toArrayExternal();
+                    $downtimeData = $downtime->toArrayCheckout();
 
                     break;
 
@@ -59,9 +59,24 @@ class Collection extends Base\PublicCollection
         return $formattedData;
     }
 
+    public function toArrayExternal()
+    {
+        $formattedData = [];
+
+        $items = $this->itemsToArrayExternal();
+
+        $formattedData[static::ENTITY] = $this->entity;
+
+        $formattedData[static::COUNT] = count($items);
+
+        $formattedData[static::ITEMS] = $items;
+
+        return $formattedData;
+    }
+
     protected function getFormattedDowntimeDataForCard(Entity $downtime)
     {
-        $data = $downtime->toArrayExternal();
+        $data = $downtime->toArrayCheckout();
 
         $gateway = $downtime->getGateway();
 
@@ -120,7 +135,7 @@ class Collection extends Base\PublicCollection
 
     protected function getFormattedDowntimeDataForNetbanking(Entity $downtime)
     {
-        $data = $downtime->toArrayExternal();
+        $data = $downtime->toArrayCheckout();
 
         $gateway = $downtime->getGateway();
 
@@ -171,6 +186,15 @@ class Collection extends Base\PublicCollection
 
             return $data;
         }
+    }
+
+    protected function itemsToArrayExternal(): array
+    {
+        return array_values(array_filter(array_map(function ($item)
+        {
+            return $item->toArrayExternal();
+
+        }, $this->items)));
     }
 
     protected function isUnknownOrNA(string $value)
