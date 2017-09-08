@@ -158,7 +158,9 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_RECON_PASSWORD    => null,
         self::EMI                       => false,
         self::TPV                       => false,
-        self::TYPE                      => 1,
+        self::TYPE                      => [
+            Type::NON_RECURRING => 1
+        ],
         self::MODE                      => Mode::DUAL,
         self::CORPORATE                 => 0,
         self::CURRENCY                  => self::DEFAULT_CURRENCY,
@@ -503,6 +505,25 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::ENABLED] = $status;
     }
 
+    protected function setTypeAttribute($type)
+    {
+        $hex = 0;
+
+        if (isset($this->attributes[self::TYPE]) === true)
+        {
+            $hex = $this->attributes[self::TYPE];
+        }
+
+        $this->attributes[self::TYPE] = Type::getHexValue($type, $hex);
+    }
+
+    protected function getTypeAttribute()
+    {
+        $type = $this->attributes[self::TYPE];
+
+        return Type::getEnabledType($type);
+    }
+
     protected function modifyInternational(& $input)
     {
         if (empty($input[self::INTERNATIONAL]) === true)
@@ -666,9 +687,9 @@ class Entity extends Base\PublicEntity
 
     protected function isTypeApplicable($type)
     {
-        $hex = $this->getType();
+        $enabledTypes = $this->getType();
 
-        return Type::isApplicable($hex, $type);
+        return in_array($type, $enabledTypes, true);
     }
 
     public function isNonRecurring()
