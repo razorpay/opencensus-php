@@ -155,11 +155,21 @@ return [
     ],
 
     'blade' => [
-        'cert_dir_name'               => env('BLADE_CERT_DIR_NAME'),
-        'live_visa_certificate'       => env('BLADE_LIVE_VISA_CERTIFICATE'),
-        'live_visa_pem'               => env('BLADE_LIVE_VISA_PEM'),
-        'live_mastercard_certificate' => env('BLADE_LIVE_MASTERCARD_CERTIFICATE'),
-        'live_mastercard_pem'         => env('BLADE_LIVE_MASTERCARD_PEM'),
+        //TODO add all env variables
+        'cert_dir_name'                  => env('BLADE_CERT_DIR_NAME'),
+        'live_visa_certificate'          => env('BLADE_LIVE_VISA_CERTIFICATE'),
+        'live_visa_pem'                  => env('BLADE_LIVE_VISA_PEM'),
+        'live_mastercard_certificate'    => env('BLADE_LIVE_MASTERCARD_CERTIFICATE'),
+        'live_mastercard_pem'            => env('BLADE_LIVE_MASTERCARD_PEM'),
+        'test_gateway_access_code'       => env('BLADE_TEST_ACCESS_CODE'),
+        'test_gateway_merchant_id2'      => env('BLADE_TEST_MERCHANT_ID2'),
+        'test_gateway_terminal_password' => env('BLADE_TEST_TERMINAL_APSSWORD'),
+        'live_mastercard_acq_bin'        => env('BLADE_LIVE_MASTERCARD_ACQ_BIN'),
+        'live_visa_acq_bin'              => env('BLADE_LIVE_VISA_ACQ_BIN'),
+        'test_acq_bin'                   => env('BLADE_TEST_ACQ_BIN'),
+        'live_mastercard_merchant_id'    => env('BLADE_LIVE_MASTERCARD_MERCHANT_ID2'),
+        'live_visa_merchant_id'          => env('BLADE_LIVE_VISA_MERCHANT_ID'),
+        'test_merchant_id'               => env('BLADE_TEST_MERCHANT_ID'),
     ],
 
     'ebs' => [

@@ -20,7 +20,9 @@ class Gateway extends Base\Gateway
 {
     const VERSION = '1.0.2';
 
-    protected $gateway = 'blade';
+    const GATEWAY_ACCESS_CODE       = 'gateway_access_code';
+    const GATEWAY_MERCHANT_ID2      = 'GATEWAY_MERCHANT_ID2';
+    const GATEWAY_TERMINAL_PASSWORD = 'GATEWAY_TERMINAL_PASSWORD';
 
     /**
      * Authenticate the payment
@@ -588,9 +590,9 @@ class Gateway extends Base\Gateway
         if ($this->mode === Mode::TEST)
         {
             $creds = [
-                'acq_bin'       => '11111111111',
-                'merchant_id'   => '12AB,cd/34-EF  -g,5/H-67',
-                'password'      => '12345678',
+                VereqRequest::ACQ_BIN     => $this->config[self::GATEWAY_ACCESS_CODE],
+                VereqRequest::MERCHANT_ID => $this->config[self::GATEWAY_MERCHANT_ID2],
+                VereqRequest::PASSWORD    => $this->config[self::GATEWAY_TERMINAL_PASSWORD],
             ];
         }
         else
@@ -598,9 +600,9 @@ class Gateway extends Base\Gateway
             $terminal = $this->terminal;
 
             $creds = [
-                'acq_bin'       => $terminal['gateway_access_code'],
-                'merchant_id'   => $terminal['gateway_merchant_id2'],
-                'password'      => $terminal['gateway_terminal_password'],
+                VereqRequest::ACQ_BIN     => $terminal[self::GATEWAY_ACCESS_CODE],
+                VereqRequest::MERCHANT_ID => $terminal[self::GATEWAY_MERCHANT_ID2],
+                VereqRequest::PASSWORD    => $terminal[self::GATEWAY_TERMINAL_PASSWORD],
             ];
         }
 
@@ -611,7 +613,7 @@ class Gateway extends Base\Gateway
     {
         if ($this->mode === Mode::TEST)
         {
-            return '11111111111';
+            return $this->config['test_acq_bin'];
         }
 
         switch ($input['card']['network'])
@@ -630,18 +632,16 @@ class Gateway extends Base\Gateway
     {
         if ($this->mode === Mode::TEST)
         {
-            return '12AB,cd/34-EF  -g,5/H-67';
+            return $this->config['test_merchant_id'];;
         }
 
         switch ($input['card']['network'])
         {
             case Card\Network::MC:
-                $certName = $this->config['live_mastercard_merchant_id'];
-                break;
+                return $this->config['live_mastercard_merchant_id'];
 
             case Card\Network::VISA:
-                $certName = $this->config['live_visa_merchant_id'];
-                break;
+                return $this->config['live_visa_merchant_id'];
         }
     }
 
