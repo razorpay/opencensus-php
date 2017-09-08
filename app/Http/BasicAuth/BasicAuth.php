@@ -8,7 +8,6 @@ use Crypt;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Http\Scopes;
 use RZP\Trace\TraceCode;
 use RZP\Http\Route;
 use RZP\Models\Key;
@@ -66,8 +65,18 @@ class BasicAuth
      */
     protected $app;
 
+    /**
+     * OAuth's registered client id.
+     *
+     * @var string
+     */
     protected $oauthClientId;
 
+    /**
+     * OAuth's access token (public) id.
+     *
+     * @var string
+     */
     protected $accessTokenId;
 
     /**
@@ -185,8 +194,6 @@ class BasicAuth
      */
     protected $dashboardHeaders = array();
 
-    protected $scopes = [];
-
     /**
      * Contains valid lengths of key.
      * rzp_mode            = 3 + 1 + 4
@@ -212,18 +219,18 @@ class BasicAuth
     {
         $app = $this->app;
 
-        $this->request = $app['request'];
+        $this->request            = $app['request'];
         $this->internalAppConfigs = $app['config']->get('applications');
-        $this->cloud = $app['config']->get('app.cloud');
-        $this->router = $app['router'];
-        $this->trace = $this->app['trace'];
-        $this->repo = $this->app['repo'];
-        $this->route = $this->app['api.route'];
-        $this->merchant = null;
-        $this->device = null;
-        $this->isAdmin = false;
-        $this->appAuth = false;
-        $this->proxy = false;
+        $this->cloud              = $app['config']->get('app.cloud');
+        $this->router             = $app['router'];
+        $this->trace              = $this->app['trace'];
+        $this->repo               = $this->app['repo'];
+        $this->route              = $this->app['api.route'];
+        $this->merchant           = null;
+        $this->device             = null;
+        $this->isAdmin            = false;
+        $this->appAuth            = false;
+        $this->proxy              = false;
     }
 
     public function setCredentials()
@@ -1083,6 +1090,12 @@ class BasicAuth
         $this->app['rzp.mode'] = $mode;
     }
 
+    /**
+     * Sets $merchant instance var value by given $merchantId.
+     * Called by OAuth flow. OAuth server response contains the same($merchantId).
+     *
+     * @param string $merchantId
+     */
     public function setMerchantById(string $merchantId)
     {
         $merchant = $this->repo->merchant->findOrFail($merchantId);
@@ -1172,35 +1185,6 @@ class BasicAuth
     public function isProxyOrPrivilegeAuth()
     {
         return (($this->isProxyAuth()) or ($this->isPrivilegeAuth()));
-    }
-
-    /**
-     * Set the scopes available on the current authenticated
-     * request
-     *
-     * @param array $scopes
-     *
-     * @return BasicAuth
-     */
-    public function withScopes(array $scopes) : BasicAuth
-    {
-        $this->scopes = $scopes;
-
-        return $this;
-    }
-
-    /**
-     * Check if the request has a particular
-     * scope defined
-     *
-     * @param string $scope
-     * @return bool
-     */
-    public function hasScope(string $scope) : bool
-    {
-        $allScopes = $this->scopes ?? [];
-
-        return (in_array($scope, $allScopes, true) === true);
     }
 
     protected function setKeyFromQueryParams()

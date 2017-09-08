@@ -49,7 +49,12 @@ class OAuth
     }
 
     /**
-     * Check if the request have an OAuth public token
+     * Checks if the request have an OAuth public token.
+     * If request is not found to be having oauth public token, just return false.
+     * Otherwise set the $publicToken attribute of this instance(to be used later
+     * in authenticate step) and unset key query parameter from request if
+     * exists and return true.
+     *
      * TODO: Refactor common functions into a generic Auth class
      *
      * @return bool
@@ -79,7 +84,12 @@ class OAuth
             $this->publicToken = $key;
         }
 
+        //
         // Set the public_key on BasicAuth
+        // We need to do this as public_key gets used to create callback URL
+        // which gets sent as query parameter to some of the external calls to
+        // bank/gateways.
+        //
         $this->ba->setPublicKey($key);
 
         //
@@ -158,9 +168,6 @@ class OAuth
     {
         $tokenScopes = $response[OAuthToken::SCOPES];
 
-        // Store the scopes defined on the token
-        $this->ba->withScopes($tokenScopes);
-
         if ($this->areScopesAllowed($tokenScopes) === false)
         {
             return ApiResponse::oauthInvalidScope();
@@ -198,7 +205,7 @@ class OAuth
         // Fetch the scopes defined for the current route, including defaults
         // like 'read_only' and 'read_write'
         //
-        $routeScopes = Scopes::getScopesForRoute($route);
+        $routeScopes = OAuthScopes::getScopesForRoute($route);
 
         //
         // Atleast one of the scopes defined for the route should have been
@@ -216,19 +223,5 @@ class OAuth
     protected function parseOAuthException()
     {
         // TODO: Add an API <> OAuth Exception map
-    }
-
-    /**
-     * Process token scopes on API before usage
-     *
-     * @param array $tokenScopes
-     */
-    protected function resolveTokenScopes(array $tokenScopes)
-    {
-        //
-        // Save scopes on BasicAuth so endpoints can check
-        // against it, if needed
-        //
-        $this->ba->withScopes($tokenScopes);
     }
 }

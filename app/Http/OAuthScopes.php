@@ -2,14 +2,14 @@
 
 namespace RZP\Http;
 
-class Scopes
+class OAuthScopes
 {
     //
     // Following default scope gets assigned to any of the routes
     // based on HTTP method they are allowed
     //
-    const DEFAULT_READ_ONLY_SCOPE  = 'read_only';
-    const DEFAULT_READ_WRITE_SCOPE = 'read_write';
+    const READ_ONLY  = 'read_only';
+    const READ_WRITE = 'read_write';
 
     /**
      * Map of additional scopes per route.
@@ -57,11 +57,11 @@ class Scopes
 
         if ($routeParams[0] === 'get')
         {
-            $scopes[] = 'read_only';
+            $scopes[] = self::READ_ONLY;
         }
         else
         {
-            $scopes[] = 'read_write';
+            $scopes[] = self::READ_WRITE;
         }
 
         return $scopes;

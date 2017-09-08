@@ -3,15 +3,13 @@
 namespace RZP\Http\Middleware;
 
 use Closure;
-use ApiResponse;
 use Illuminate\Foundation\Application;
-
 use Illuminate\Support\Str;
+
+use ApiResponse;
 use RZP\Http\Route;
 use RZP\Http\OAuth;
-use RZP\Http\Scopes;
 use RZP\Http\Throttle;
-use RZP\Error\ErrorCode;
 use RZP\Http\BasicAuth\BasicAuth;
 
 class Authenticate
@@ -50,8 +48,9 @@ class Authenticate
     /**
      * Handle an incoming request
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
+     * @param \Illuminate\Http\Request  $request
+     * @param Closure  $next
+     *
      * @return mixed
      */
     public function handle($request, Closure $next)
@@ -86,7 +85,7 @@ class Authenticate
         //
         // If the request was sent with Bearer auth (OAuth),
         // authenticate with the access token, else go for the
-        // old key-secret flow
+        // otherwise existing key-secret flow
         //
         if (empty($bearerToken) === false)
         {
@@ -112,22 +111,21 @@ class Authenticate
      * Authenticate the request with Basic auth
      *
      * @param string $route
+     *
      * @return mixed
      */
     protected function authenticateBasicAuth(string $route)
     {
-        $ba = $this->ba;
-
         $ret = null;
 
         if ((in_array($route, Route::$internal, true) === true) or
             (in_array($route, Route::$admin, true) === true))
         {
-            $ret = $ba->appAuth();
+            $ret = $this->ba->appAuth();
         }
         else if (in_array($route, Route::$private, true) === true)
         {
-            $ret = $ba->privateAuth();
+            $ret = $this->ba->privateAuth();
         }
         else if (in_array($route, Route::$public, true) === true)
         {
@@ -143,24 +141,24 @@ class Authenticate
             else
             {
                 // Process via BasicAuth
-                $ret = $ba->publicAuth();
+                $ret = $this->ba->publicAuth();
             }
         }
         else if (in_array($route, Route::$publicCallback, true) === true)
         {
-            $ret = $ba->publicCallbackAuth();
+            $ret = $this->ba->publicCallbackAuth();
         }
         else if (in_array($route, Route::$proxy, true) === true)
         {
-            $ret = $ba->proxyAuth();
+            $ret = $this->ba->proxyAuth();
         }
         else if (in_array($route, Route::$device, true) === true)
         {
-            $ret = $ba->deviceAuth();
+            $ret = $this->ba->deviceAuth();
         }
         else if (in_array($route, Route::$direct, true) === true)
         {
-            ; // $ret = $ba->proxyAuth();
+            ; // $ret = $this->ba->proxyAuth();
         }
         else
         {

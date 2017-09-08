@@ -1303,7 +1303,7 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFail($input[Entity::MERCHANT_ID]);
 
-        (new Merchant\Validator)->validateInput(self::OAUTH_MAIL, $input);
+        $merchant->getValidator()->validateInput(self::OAUTH_MAIL, $input);
 
         $user = $this->repo->user->findOrFail($input[User\Entity::USER_ID])->toArrayPublic();
 
