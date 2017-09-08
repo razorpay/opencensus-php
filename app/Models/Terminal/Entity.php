@@ -658,9 +658,9 @@ class Entity extends Base\PublicEntity
 
     protected function isTypeApplicable($type)
     {
-        $hex = $this->getType();
+        $enabledTypes = $this->getType();
 
-        return Type::isApplicable($hex, $type);
+        return in_array($type, $enabledTypes, true);
     }
 
     public function isNonRecurring()
