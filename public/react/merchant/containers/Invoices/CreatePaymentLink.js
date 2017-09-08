@@ -1,6 +1,6 @@
 import { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-import { Field, reduxForm } from 'redux-form';
+import { Field, reduxForm, FieldArray } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import moment from 'moment';
 import DatePickerField from 'rzp/ui/Forms/DatePickerField';
@@ -12,6 +12,7 @@ import { saveInvoice } from 'merchant/modules/invoices/list';
 import { required, phone, email } from 'rzp/utils/validators';
 import { showNotification } from 'rzp/modules/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
+import NotesFieldArray from 'merchant/components/NotesFieldArray';
 
 function validate(values) {
   let errors = {};
@@ -295,13 +296,19 @@ export default class CreatePaymentLink extends Component {
                 </label>
               </div>
             </div>
+
+            <div class="form-group">
+              <label class="col-md-3 control-label">Add Internal Notes</label>
+              <div class="col-md-8">
+                <FieldArray name="notes" component={NotesFieldArray} required />
+              </div>
+            </div>
+
             {isTestMode &&
               <div class="row">
                 <div class="col-md-8 col-md-offset-3">
                   <div class="alert alert-sm alert-warning">
-                    You are creating the link in
-                    {' '}
-                    <b>Test Mode</b>
+                    You are creating the link in <b>Test Mode</b>
                     . So, only test payments can be made for this link.
                     {/* Also, SMS will not be sent in test mode */}
                   </div>
