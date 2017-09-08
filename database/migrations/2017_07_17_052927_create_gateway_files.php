@@ -77,6 +77,8 @@ class CreateGatewayFiles extends Migration
             $table->index(GatewayFile::TARGET);
             $table->index(GatewayFile::TYPE);
             $table->index(GatewayFile::STATUS);
+            $table->index(GatewayFile::CREATED_AT);
+            $table->index(GatewayFile::UPDATED_AT);
         });
     }
 

@@ -19,7 +19,7 @@ class Service extends Base\Service
 
     public function acknowledge(string $id, array $data)
     {
-        $this->trace->info(TraceCode::GATEWAY_ACKNOWLEDGE_REQUEST, [
+        $this->trace->info(TraceCode::GATEWAY_FILE_ACKNOWLEDGE_REQUEST, [
             'id'   => $id,
             'data' => $data,
         ]);

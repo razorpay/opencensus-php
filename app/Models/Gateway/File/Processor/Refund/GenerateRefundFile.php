@@ -202,7 +202,7 @@ trait GenerateRefundFile
         {
             $refundFile = $this->gatewayFile
                                ->files()
-                               ->where(FileStore\Type, static::FILE_TYPE)
+                               ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
                                ->first();
 
             return $refundFile !== null;
