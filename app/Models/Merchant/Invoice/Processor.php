@@ -7,7 +7,6 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Models\Pricing\FeeCalculator;
 use RZP\Trace\TraceCode;
 use Razorpay\Trace\Logger as Trace;
 
@@ -20,8 +19,6 @@ class Processor extends Base\Core
     protected $beginTimestamp = 0;
 
     protected $endTimestamp = 0;
-
-    protected $txns = null;
 
     protected $gstin = null;
 
@@ -46,17 +43,23 @@ class Processor extends Base\Core
 
     public function createInvoiceEntities()
     {
+        $this->trace->info(
+            TraceCode::MERCHANT_INVOICE_ENTITY_CREATION_REQUEST,
+            [
+                'merchant_id'   => $this->merchantId,
+                'month'         => $this->month,
+                'year'          => $this->year,
+            ]);
+
         try
         {
-            $merchantId = $this->merchant->getId();
-
-            $invoiceExists = $this->checkInvoiceExists($merchantId);
+            $invoiceExists = $this->checkInvoiceExists($this->merchantId);
 
             if ($invoiceExists === true)
             {
                 $this->trace->info(TraceCode::MERCHANT_INVOICE_ENTITY_CREATION_SKIPPED,
                     [
-                        'merchant'  => $merchantId,
+                        'merchant'  => $this->merchantId,
                         'month'     => $this->month,
                         'year'      => $this->year,
                     ]);
@@ -64,14 +67,11 @@ class Processor extends Base\Core
                 return;
             }
 
-            // get transactions
-            $this->txns = $this->repo
-                         ->transaction
-                         ->fetchCapturedTransactionsBetweenTimestamp(
-                                $merchantId, $this->beginTimestamp, $this->endTimestamp);
-
             // sum over fees & tax for different commission types
-            $this->calculateFeesForInvoice();
+            foreach ($this->invoiceBreakup as $type => $values)
+            {
+                $this->calculateFeesForInvoiceByType($type);
+            }
 
             // create entities
             $this->createInvoiceBreakup();
@@ -92,7 +92,7 @@ class Processor extends Base\Core
 
     protected function checkInvoiceExists(string $merchantId): bool
     {
-        $entities = $this->repo->merchant_invoice->fetchInvoiceReportData($merchantId, $this->month, $this->year);
+        $entities = $this->repo->merchant_invoice->fetchFeesDataForInvoice($merchantId, $this->month, $this->year);
 
         if ($entities->count() > 0)
         {
@@ -108,11 +108,6 @@ class Processor extends Base\Core
         {
             foreach ($this->invoiceBreakup as $type => $values)
             {
-                if ($this->shouldCreateEntity($type, $values[Entity::AMOUNT], $values[Entity::TAX]) === false)
-                {
-                    continue;
-                }
-
                 $params = [
                     Entity::MONTH   => $this->month,
                     Entity::YEAR    => $this->year,
@@ -130,50 +125,29 @@ class Processor extends Base\Core
     /**
      * Populate the map of Type of Commission with its Amount and Tax values
      */
-    protected function calculateFeesForInvoice()
+    protected function calculateFeesForInvoiceByType(string $type)
     {
-        foreach ($this->txns as $txn)
+        $txns = $this->repo
+                     ->transaction
+                     ->fetchFeesAndTaxForTransactionsByType(
+                            $this->merchantId,
+                            $this->beginTimestamp,
+                            $this->endTimestamp,
+                            $type);
+
+        if (empty($txns) === true)
         {
-            $tax = $txn->getTax();
-
-            $fee = $txn->getFee() - $tax;
-
-            $payment = $txn->source;
-
-            if ($payment->isCard() === true)
-            {
-                if ($txn->getAmount() <= FeeCalculator::CARD_TAX_CUT_OFF)
-                {
-                    $type = Type::CARD_LTE_2K;
-
-                    // For the following month, we had levied GST on some CARD_LTE_2K/
-                    // This was later reverted to the merchant through Adjustment.
-                    // As right now we aren't showing adjustments in invoices,
-                    // we want to force-set this to 0 to avoid confusion for merchants
-                    if (($this->month === 7) and ($this->year === 2017))
-                    {
-                        $tax = 0;
-                    }
-                }
-                else
-                {
-                    $type = Type::CARD_GT_2K;
-                }
-            }
-            else
-            {
-                $type = Type::NON_CARD;
-            }
-
-            $this->invoiceBreakup[$type][Entity::AMOUNT] += $fee;
-
-            $this->invoiceBreakup[$type][Entity::TAX] += $tax;
-
-            if ($txn->isPostpaid() === true)
-            {
-                $this->invoiceBreakup[$type][Entity::AMOUNT_DUE] += ($fee + $tax);
-            }
+            return;
         }
+
+        $txnData = $txns->getAttributes();
+
+        $fees = $txnData['fee'];
+
+        $tax = $txnData['tax'];
+
+        $this->invoiceBreakup[$type][Entity::AMOUNT] = $fees - $tax;
+        $this->invoiceBreakup[$type][Entity::TAX] = $tax;
     }
 
     protected function initiliazeVars()
@@ -198,7 +172,6 @@ class Processor extends Base\Core
         //    'card_lte_2k'   => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
         //    'card_gt_2k'    => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
         //    'non_card'      => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
-        //    'adjustment'    => ['amount' => 0, 'tax' => 0, 'amount_due' => 0],
         // ]
         foreach ($commissionTypes as $key)
         {
@@ -208,17 +181,5 @@ class Processor extends Base\Core
                 Entity::AMOUNT_DUE => 0
             ];
         }
-    }
-
-    protected function shouldCreateEntity(string $type, int $amount, int $tax): bool
-    {
-        if (($type === Type::ADJUSTMENT) and
-            ($amount === 0) and
-            ($tax === 0))
-        {
-            return false;
-        }
-
-        return true;
     }
 }

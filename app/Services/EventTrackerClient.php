@@ -237,7 +237,7 @@ class EventTrackerClient extends AbstractEventClient
                 'gateway'   => $terminal->getGateway(),
                 'acquirer'  => $terminal->getGatewayAcquirer(),
                 'category'  => $terminal->getCategory(),
-                'shared'    => $terminal->getShared(),
+                'shared'    => $terminal->isShared(),
                 'type'      => $terminal->getType(),
                 'mode'      => $terminal->getMode(),
             ];
