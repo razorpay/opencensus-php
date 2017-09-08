@@ -244,8 +244,8 @@ return [
     ],
 
     'testSearchEsForNotesOnAdminAuthExpectedSearchParams' => [
-        'index' => 'payment_test',
-        'type'  => 'payment_test',
+        'index' => 'testing_payment_test',
+        'type'  => 'testing_payment_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,
@@ -255,10 +255,11 @@ return [
                     'must' => [
                         [
                             'multi_match' => [
-                                'query'  => 'es',
-                                'type'   => 'best_fields',
-                                'fields' => 'notes.*',
-                                'boost'  => 2,
+                                'query'                => 'es',
+                                'type'                 => 'best_fields',
+                                'fields'               => 'notes.*',
+                                'boost'                => 2,
+                                'minimum_should_match' => '75%',
                             ],
                         ],
                     ],
@@ -307,8 +308,8 @@ return [
     ],
 
     'testSearchEsForNotesExpectedSearchParams' => [
-        'index' => 'payment_test',
-        'type'  => 'payment_test',
+        'index' => 'testing_payment_test',
+        'type'  => 'testing_payment_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,
@@ -318,10 +319,11 @@ return [
                     'must' => [
                         [
                             'multi_match' => [
-                                'query'  => 'es_random_1',
-                                'type'   => 'best_fields',
-                                'fields' => 'notes.*',
-                                'boost'  => 2,
+                                'query'                => 'es_random_1',
+                                'type'                 => 'best_fields',
+                                'fields'               => 'notes.*',
+                                'boost'                => 2,
+                                'minimum_should_match' => '75%',
                             ],
                         ],
                     ],

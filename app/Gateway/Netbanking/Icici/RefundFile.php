@@ -66,6 +66,8 @@ class RefundFile extends Base\RefundFile
     {
         $totalAmount = 0;
 
+        $data = [];
+
         foreach ($input['data'] as $index => $row)
         {
             $date = Carbon::createFromTimestamp(

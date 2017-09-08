@@ -1072,7 +1072,7 @@ class Core extends Base\Core
 
         $returnDay = Holidays::getNthWorkingDayFrom($capturedAt, $addDays, $ignoreBankHolidays);
 
-        return $returnDay->timestamp;
+        return $returnDay->getTimestamp();
     }
 
     public function updateCredits(Transaction\Entity $txn, Payment\Entity $payment)

@@ -427,7 +427,7 @@ class Gateway extends Base\Gateway
         //    retried
         if ($content['vpc_DRExists'] === 'N')
         {
-            if ($input['refund']['created_at'] > Carbon::now(Timezone::IST)->subDays(5)->timestamp)
+            if ($input['refund']['created_at'] > Carbon::now(Timezone::IST)->subDays(5)->getTimestamp())
             {
                 return false;
             }

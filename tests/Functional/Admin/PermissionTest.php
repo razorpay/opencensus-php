@@ -60,11 +60,17 @@ class PermissionTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['orgs'] = $orgs;
 
+        $this->testData[__FUNCTION__]['request']['content']['workflow_orgs'] = $orgs;
+
         $result = $this->startTest();
 
         $permId = Permission\Entity::verifyIdAndStripSign($result['id']);
 
         $permIds = $this->org->permissions()->allRelatedIds()->toArray();
+
+        $workflowPermIds = $this->org->workflow_permissions()->allRelatedIds()->toArray();
+
+        $this->assertContains($permId, $workflowPermIds);
 
         $this->assertContains($permId, $permIds);
     }
@@ -139,12 +145,16 @@ class PermissionTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * Testing editing org permission with workflow Org and Org.
+     * Here default org is also added as workflow org in request.
+     */
     public function testEditPermissionWithOrg()
     {
-        $perm = $this->fixtures->create(
-            'permission');
+        // Create a permission.
+        $perm = $this->fixtures->create('permission');
 
-        (new Permission\Repository)->attach($perm, 'orgs', [$this->org->getId()]);
+        $perm->orgs()->attach($this->org->getId());
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -162,11 +172,14 @@ class PermissionTest extends TestCase
 
         $rzpPerms = $rzpOrg->permissions()->allRelatedIds()->toArray();
 
+        $rzpWorkflowPerms = $rzpOrg->workflow_permissions()->allRelatedIds()->toArray();
+
         $this->assertNotContains($permId, $permIds);
 
-        $this->assertContains($permId, $rzpPerms);
+        // asserting removal of workflow permission.
+        $this->assertContains($permId, $rzpWorkflowPerms);
 
-        $this->startTest();
+        $this->assertContains($permId, $rzpPerms);
     }
 
     public function testGetRolesForPermission()
@@ -190,5 +203,59 @@ class PermissionTest extends TestCase
         $result = $this->startTest();
 
         $this->assertCount(2, $result['items']);
+    }
+
+    public function testGetMultipleWorkflowPermForRazorpayOrg()
+    {
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, Org::RZP_ORG_SIGNED);
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $rzpOrg = (new OrgRepo)->findOrFailPublic(Org::RZP_ORG);
+
+        $workflowPermissionCount = $rzpOrg->workflow_permissions()->count();
+
+        $this->testData[__FUNCTION__]['response']['content']['count'] = $workflowPermissionCount;
+
+        $this->startTest();
+    }
+
+    public function testGetPermissionsByType()
+    {
+        $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
+
+        $this->setPermissionType('assignable');
+
+        $this->startTest();
+
+        $this->setPermissionType('all');
+
+        $this->startTest();
+    }
+
+    public function setPermissionType($type)
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+
+        $function = $trace[1]['function'];
+
+        $url = '/permissions/get/' . $type;
+
+        $this->testData[$function]['request']['url'] = $url;
+
+        if ($type === 'assignable')
+        {
+            $permissionCount = count($this->getPermissions($type));
+        }
+        else
+        {
+            $permissionCount = $this->getTotalPermissionCount();
+        }
+
+        $this->testData[$function]['response']['content']['count'] = $permissionCount;
     }
 }

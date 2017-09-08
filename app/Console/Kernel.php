@@ -22,6 +22,7 @@ class Kernel extends ConsoleKernel
         Commands\Index::class,
         Commands\IndexCreate::class,
         Commands\VerifyUpiProviders::class,
+        Commands\VerifyTopLevelDomain::class,
         \Laravel\Tinker\Console\TinkerCommand::class,
     ];
 

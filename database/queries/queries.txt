@@ -2423,3 +2423,23 @@ ALTER TABLE merchant_invoice
 
 ALTER TABLE merchants
     ADD COLUMN invoice_code CHAR(12) DEFAULT NULL AFTER category2;
+
+# Adding index on settlements.updated_at, refunds.updated_at, transactions.updated_at
+# Useful for Merchant analytics queries
+ALTER TABLE settlements
+    ADD INDEX settlements_updated_at_index (updated_at);
+
+ALTER TABLE refunds
+    ADD INDEX refunds_updated_at_index (updated_at);
+
+ALTER TABLE transactions
+    ADD INDEX transactions_updated_at_index (updated_at);
+
+# Adding recipient_settlement_id in transfers table
+ALTER TABLE transfers
+    ADD COLUMN recipient_settlement_id CHAR(14) AFTER transaction_id,
+    ADD CONSTRAINT transfers_recipient_settlement_id_foreign FOREIGN KEY(recipient_settlement_id)
+    REFERENCES settlements(id) ON DELETE RESTRICT;
+
+ALTER TABLE gateway_rules
+    MODIFY COLUMN gateway VARCHAR(50) DEFAULT NULL;

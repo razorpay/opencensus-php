@@ -16,11 +16,4 @@ class Repository extends Base\Repository
                     ->where(Entity::TOKEN, '=', $token)
                     ->firstOrFailPublic();
     }
-
-    public function fetchByAdminIdOrFail(string $adminId)
-    {
-        return $this->newQuery()
-                    ->where(Entity::ADMIN_ID, '=', $adminId)
-                    ->get();
-    }
 }
