@@ -8,6 +8,7 @@ use Config;
 use Crypt;
 use Lib\PhoneBook;
 use Mail;
+use RZP\Constants\TLD;
 use RZP\Constants\Mode;
 use RZP\Http\BasicAuth;
 use RZP\Listeners\ApiEventSubscriber;
@@ -1072,9 +1073,24 @@ trait Authorize
     {
         if ($payment->shouldRunFraudChecks() === true)
         {
+            $this->validateEmailTld($payment);
+
             $this->validateFraudDetection($payment, $this->merchant);
 
             $this->validateBlockedCard($payment);
+        }
+    }
+
+    protected function validateEmailTld(Payment\Entity $payment)
+    {
+        $email = $payment->getEmail();
+
+        $tld = last(explode('.', $email));
+
+        if (TLD::isValid($tld) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The email must be a valid email address.', 'email');
         }
     }
 

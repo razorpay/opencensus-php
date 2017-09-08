@@ -614,6 +614,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ES_SYNC_REQUEST                           = 'ES_SYNC_REQUEST';
     const ES_BULK_UPDATE_FAILED                     = 'ES_BULK_UPDATE_FAILED';
     const ES_MYSQL_RESULTS_MISMATCH                 = 'ES_MYSQL_RESULTS_MISMATCH';
+    const ES_REQUEST_PARAMS                         = 'ES_REQUEST_PARAMS';
+    const ES_SYNC_MERCHANT_REQUEST                  = 'ES_SYNC_MERCHANT_REQUEST';
+    const ES_SYNC_MERCHANT_FAILED                   = 'ES_SYNC_MERCHANT_FAILED';
 
     const RECON_ALERT                               = 'RECON_ALERT';
     const RECON_FILE_SKIP                           = 'RECON_FILE_SKIP';
@@ -823,7 +826,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_INVOICE_REPORT_REQUEST               = 'MERCHANT_INVOICE_REPORT_REQUEST';
     const MERCHANT_INVOICE_ENTITY_CREATION_REQUEST      = 'MERCHANT_INVOICE_ENTITY_CREATION_REQUEST';
 
-    const DUMMY_JOB = 'DUMMY_JOB';
+    const SERVER_ERROR_MISSING_HANDLER                  = 'SERVER_ERROR_MISSING_HANDLER';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

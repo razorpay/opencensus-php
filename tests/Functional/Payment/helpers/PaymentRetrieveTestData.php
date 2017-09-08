@@ -244,8 +244,8 @@ return [
     ],
 
     'testSearchEsForNotesOnAdminAuthExpectedSearchParams' => [
-        'index' => 'payment_test',
-        'type'  => 'payment_test',
+        'index' => 'testing_payment_test',
+        'type'  => 'testing_payment_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,
@@ -308,8 +308,8 @@ return [
     ],
 
     'testSearchEsForNotesExpectedSearchParams' => [
-        'index' => 'payment_test',
-        'type'  => 'payment_test',
+        'index' => 'testing_payment_test',
+        'type'  => 'testing_payment_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,

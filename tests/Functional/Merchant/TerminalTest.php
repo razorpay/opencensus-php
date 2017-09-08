@@ -156,7 +156,7 @@ class TerminalTest extends TestCase
 
         $tid = $terminal['id'];
 
-        $data = array('gateway_terminal_id' => 'random', 'gateway_terminal_password' => 'random');
+        $data = ['gateway_terminal_id' => 'random', 'gateway_terminal_password' => 'random'];
 
         $content = $this->editTerminal($tid, $data);
 
@@ -170,7 +170,7 @@ class TerminalTest extends TestCase
 
         $tid = $terminal['id'];
 
-        $data = array('gateway_recon_password' => 'random');
+        $data = ['gateway_recon_password' => 'random'];
 
         $content = $this->editTerminal($tid, $data);
 
@@ -254,6 +254,51 @@ class TerminalTest extends TestCase
     public function testTerminalModeAuthCaptureFailure()
     {
         $this->startTest();
+    }
+
+    public function testTerminalTypeRecurringNon3DS()
+    {
+        $this->startTest();
+    }
+
+    public function testTerminalTypeRecurring3DS()
+    {
+        $this->startTest();
+    }
+
+    public function testTerminalTypeRecurringBoth()
+    {
+        $this->startTest();
+    }
+
+    public function testTerminalTypeIvr()
+    {
+        $this->startTest();
+    }
+
+    public function testEditTerminalTypeRecurringBoth()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:shared_hdfc_terminal', ['used' => 1]);
+
+        $tid = $terminal['id'];
+
+        $data = [
+            'type' => [
+                'non_recurring'     => '0',
+                'recurring_3ds'     => '1',
+                'recurring_non_3ds' => '1',
+            ]
+        ];
+
+        $content = $this->editTerminal($tid, $data);
+
+        $types = [
+            'recurring_3ds',
+            'recurring_non_3ds'
+        ];
+
+        $this->assertEquals($types, $content['type']);
     }
 
     public function startTest($testDataToReplace = [])

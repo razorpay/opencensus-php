@@ -489,6 +489,7 @@ class ErrorCode
     const SERVER_ERROR_LOG_RISK                                                     = 'SERVER_ERROR_LOG_RISK';
     const SERVER_ERROR_INVALID_RESPONSE                                             = 'SERVER_ERROR_INVALID_RESPONSE';
     const SERVER_ERROR_TOKEN_INVALID_RECURRING_STATUS                               = 'SERVER_ERROR_TOKEN_INVALID_RECURRING_STATUS';
+    const SERVER_ERROR_ES_OPERATION_ERRORED                                         = 'SERVER_ERROR_ES_OPERATION_ERRORED';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED                                     = 'BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED';
