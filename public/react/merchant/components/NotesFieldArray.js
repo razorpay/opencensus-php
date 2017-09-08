@@ -17,7 +17,7 @@ const required = index => {
   };
 };
 
-export default ({ fields, onAdd, nonEditableUptilIndex }) => {
+export default ({ fields, onAdd, nonEditableUptilIndex = -1 }) => {
   return (
     <ul class="list-unstyled notes">
       {fields.map((note, index) => {
