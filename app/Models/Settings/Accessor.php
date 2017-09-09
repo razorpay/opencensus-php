@@ -35,29 +35,17 @@ class Accessor extends Base\Core
         $this->module   = $module;
     }
 
-    public static function for(Base\PublicEntity $entity, string $module): self
+    /**
+     * @param Base\PublicEntity $entity
+     * @param string            $module
+     *
+     * @return Accessor
+     */
+    public static function for(Base\PublicEntity $entity, string $module): Accessor
     {
-        // TODO: Validate for allowed entities?
+        // TODO: Validate for allowed entities.
 
         return new static($entity, $module);
-    }
-
-    public function create($key, string $value = null)
-    {
-        $this->setColumns();
-
-        Setting::set($key, $value);
-
-        return $this;
-    }
-
-    public function get(string $key)
-    {
-        $this->setColumns();
-
-        $settings = Setting::get($key);
-
-        return $this->serializeSettings($settings);
     }
 
     public function all()
@@ -69,12 +57,25 @@ class Accessor extends Base\Core
         return $this->serializeSettings($settings);
     }
 
-    public function update($key, string $value = null)
+    public function get(string $key)
     {
-        return $this->create($key, $value);
+        $this->setColumns();
+
+        $settings = Setting::get($key);
+
+        return $this->serializeSettings($settings);
     }
 
-    public function delete(string $key)
+    public function upsert($key, string $value = null): Accessor
+    {
+        $this->setColumns();
+
+        Setting::set($key, $value);
+
+        return $this;
+    }
+
+    public function delete(string $key): Accessor
     {
         $this->setColumns();
 
