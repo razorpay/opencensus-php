@@ -36,6 +36,21 @@ class Repository extends BaseRepository
                     ->firstOrFailPublic();
     }
 
+    public function findByEntityIdAndName(string $entityId, string $featureName, string $mode = null)
+    {
+        if ($mode !== null)
+        {
+            $queryInstance = $this->newQueryWithConnection($mode);
+        }
+        else
+        {
+            $queryInstance = $this->newQuery();
+        }
+        return $queryInstance->where(Entity::ENTITY_ID, '=', $entityId)
+                             ->where(Entity::NAME, '=', $featureName)
+                             ->get();
+    }
+
     /**
      * Features added to live should sync and be added to test.
      * Features when removed from live should not be removed from test.
@@ -46,6 +61,9 @@ class Repository extends BaseRepository
      * api_test.features table.
      * Deleting a feature from live mode will only delete the feature from the
      * api_live.features table.
+     *
+     * When a feature is enabled on test and request is received to enable it on live,
+     * shouldSync() returns false, to avoid the duplicate entry constraint error.
      *
      * The AUTH used will determine the mode selected
      *
@@ -58,7 +76,9 @@ class Repository extends BaseRepository
     {
         if (($this->app['rzp.mode'] === Mode::LIVE) and ($action !== BaseRepository::DELETE))
         {
-            return true;
+            // Sync if the feature is not already enabled on test
+            $features = $this->findByEntityIdAndName($entity->getEntityId(), $entity->getName(), Mode::TEST);
+            return ($features->count() === 0);
         }
         return false;
     }
