@@ -247,7 +247,7 @@ app
         $scope.tagMerchant(tags);
       };
 
-      $scope.featureMerchant = function(features) {
+      $scope.featureMerchant = function(features, mode) {
         // Tags will be a csv field
         var request = $http({
           url: '/admin/features/merchant/' + $scope.merchant.id,
@@ -255,6 +255,7 @@ app
           transformRequest: transformRequestAsFormPost,
           data: {
             features: features,
+            mode: mode
           },
         });
 
@@ -263,13 +264,18 @@ app
             if (data.success) {
               $scope.alerts.addAlert(
                 'success',
-                'Features has been added successfully.',
+                'Features have been added successfully.',
                 true
               );
-              $scope.merchant.details.allowedFeatures = data.data.all_features;
-              $scope.merchant.details.features = getFeatureNames(
+              $scope.merchant.details.allowedFeatures[mode] = data.data.all_features;
+              $scope.merchant.details.features[mode] = getFeatureNames(
                 data.data.assigned_features
               );
+              // If features were added to live, they will be added to test as well.
+              // So fetch all test features again.
+              if (mode === 'live') {
+                  $scope.getModeBasedFeatures('test');
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
@@ -1383,15 +1389,26 @@ app
       };
 
       $scope.openFeatureMerchant = function() {
-        var features = $scope.merchant.details.features || [];
-        features = features.map(function(f) {
+        var features = {}
+        features.test = $scope.merchant.details.features.test || [];
+        features.test = features.test.map(function(f) {
           return f.name;
         });
-        var allowedFeatures = $scope.merchant.details.allowedFeatures;
+        features.live = $scope.merchant.details.features.live || [];
+        features.live = features.live.map(function(f) {
+            return f.name;
+        });
+        var allowedFeatures = {};
+        allowedFeatures.test = $scope.merchant.details.allowedFeatures.test || [];
+        allowedFeatures.live = $scope.merchant.details.allowedFeatures.live || [];
         // availableFeatures is a list of features which are not yet assigned to
         // the merchant. Used to populate the features dropdown
-        var availableFeatures = allowedFeatures.filter(function(f) {
-          return features.indexOf(f) === -1;
+        var availableFeatures = {}
+        availableFeatures.test = allowedFeatures.test.filter(function(f) {
+          return features.test.indexOf(f) === -1;
+        });
+        availableFeatures.live = allowedFeatures.live.filter(function(f) {
+            return features.live.indexOf(f) === -1;
         });
         var modalInstance = $modal.open({
           templateUrl: 'featureModalContent.html',
@@ -1402,8 +1419,8 @@ app
             },
           },
         });
-        modalInstance.result.then(function(features) {
-          $scope.featureMerchant(features);
+        modalInstance.result.then(function(data) {
+          $scope.featureMerchant(data.features, data.mode);
         }, $.noop);
       };
       $scope.openAssignTerminal = function() {
@@ -2094,38 +2111,48 @@ app
           });
       }
 
-      function getMerchantFeatures() {
-        var data = {
-          route_name: 'feature_get_multiple',
-          url_params: {
-            '{entityId}': $scope.merchant.id,
-          },
-        };
-        admin.identity().then(function(adminData) {
-          if (adminData.permissions.indexOf('view_merchant_features') !== -1) {
-            var request = $http.get('/admin/generic', {
+      $scope.getModeBasedFeatures = function(mode) {
+          var data = {
+              route_name: 'feature_get_multiple',
+              url_params: {
+                  '{entityId}': $scope.merchant.id,
+              },
+              mode: mode
+          };
+          var request = $http.get('/admin/generic', {
               params: data,
-            });
-            request
+          });
+          request
               .success(function(data) {
-                if (data.success) {
-                  // Full list of features which can be assigned to merchant
-                  $scope.merchant.details.allowedFeatures =
-                    data.data.all_features;
-                  // List of features currently assigned to merchant
-                  $scope.merchant.details.features = getFeatureNames(
-                    data.data.assigned_features
-                  );
-                } else {
-                  $scope.alerts.resetAlerts(true);
-                  angular.forEach(data.errors, function(value) {
-                    $scope.alerts.addAlert('danger', value);
-                  });
-                }
+                  if (data.success) {
+                      // Full list of features which can be assigned to merchant
+                      $scope.merchant.details.allowedFeatures =
+                          $scope.merchant.details.allowedFeatures || {};
+                      $scope.merchant.details.allowedFeatures[mode] =
+                          data.data.all_features;
+                      // List of features currently assigned to merchant
+                      $scope.merchant.details.features =
+                          $scope.merchant.details.features || {};
+                      $scope.merchant.details.features[mode] = getFeatureNames(
+                          data.data.assigned_features
+                      );
+                  } else {
+                      $scope.alerts.resetAlerts(true);
+                      angular.forEach(data.errors, function(value) {
+                          $scope.alerts.addAlert('danger', value);
+                      });
+                  }
               })
               .error(function() {
-                $scope.alerts.addAlert('danger', null);
+                  $scope.alerts.addAlert('danger', null);
               });
+      };
+
+      function getMerchantFeatures() {
+        admin.identity().then(function(adminData) {
+          if (adminData.permissions.indexOf('view_merchant_features') !== -1) {
+              $scope.getModeBasedFeatures('test');
+              $scope.getModeBasedFeatures('live');
           }
         });
       }
@@ -2145,7 +2172,7 @@ app
         return featureNames;
       }
 
-      $scope.deleteFeature = function(featureName) {
+      $scope.deleteFeature = function(featureName, featureMode) {
         var request = $http.delete('/admin/generic', {
           params: {
             route_name: 'feature_delete',
@@ -2153,6 +2180,7 @@ app
               '{entityId}': $scope.merchant.id,
               '{featureName}': featureName,
             },
+            mode: featureMode
           },
         });
         request.success(function(data) {
@@ -2162,8 +2190,8 @@ app
                 action_id: data.data.id,
               });
             }
-            var features = $scope.merchant.details.features;
-            $scope.merchant.details.features = features.filter(function(item) {
+            var features = $scope.merchant.details.features[featureMode];
+            $scope.merchant.details.features[featureMode] = features.filter(function(item) {
               return item.id !== data.data.id;
             });
           } else {
@@ -2729,10 +2757,14 @@ app
     'current',
     function($scope, $modalInstance, current) {
       $scope.features = current.shift();
-      $scope.assigned_features = current.shift().join(',');
+      $scope.assigned_features = {}
+      var assignedFeatures = current.shift()
+      $scope.assigned_features.test = assignedFeatures.test.join(',');
+      $scope.assigned_features.live = assignedFeatures.live.join(',');
       $scope.selectedFeatures = [];
-      $scope.ok = function(features) {
-        $modalInstance.close(features);
+      $scope.featuremode = "test";
+      $scope.ok = function(features, mode) {
+        $modalInstance.close({ features: features, mode: mode});
       };
       $scope.cancel = function() {
         $modalInstance.dismiss('cancel');

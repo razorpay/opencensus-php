@@ -1015,7 +1015,7 @@ class Service extends Base\Service
             return array($error, null);
         }
 
-        $this->setApiCredentials();
+        $this->setApiCredentials(null, $input['mode']);
 
         try
         {
