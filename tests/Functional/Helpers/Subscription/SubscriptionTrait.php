@@ -321,6 +321,20 @@ trait SubscriptionTrait
         return $this->makeSubscriptionChargeCronRequest();
     }
 
+    protected function retrySubscriptionsViaCron($timestamp = null)
+    {
+        if ($timestamp !== null)
+        {
+            $chargeAt = Carbon::createFromTimestamp($timestamp, Timezone::IST)
+                                ->addDay(1)
+                                ->addMinute(1);
+
+            Carbon::setTestNow($chargeAt);
+        }
+
+        return $this->makeSubscriptionRetryCronRequest();
+    }
+
     protected function chargeSubscriptionManuallyTestMode($subscriptionId, $success)
     {
         $request = [
