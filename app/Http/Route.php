@@ -587,10 +587,10 @@ final class Route
         'merchant_payout'                         => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
 
         // Settings routes
-        'settings_fetch_defined'                  => ['get',      'settings/{key}',                                 'SettingsController@getDefined'                                     ],
-        'settings_fetch'                          => ['get',      'settings/{entity}/{id}/{key?}',                  'SettingsController@get'                                            ],
-        'settings_upsert'                         => ['post',     'settings/{entity}/{id}',                         'SettingsController@upsert'                                         ],
-        'settings_delete'                         => ['delete',   'settings/{entity}/{id}/{key}',                   'SettingsController@delete'                                         ],
+        'settings_fetch_defined'                  => ['get',      'settings/defined/{module}',                      'SettingsController@getDefined'                                     ],
+        'settings_fetch'                          => ['get',      'settings/{module}/{key?}',                       'SettingsController@get'                                            ],
+        'settings_upsert'                         => ['post',     'settings/{module}',                              'SettingsController@upsert'                                         ],
+        'settings_delete'                         => ['delete',   'settings/{module}/{key}',                        'SettingsController@delete'                                         ],
     ];
 
     public static $public = [
