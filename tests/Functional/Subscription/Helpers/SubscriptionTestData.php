@@ -1283,5 +1283,21 @@ return [
                 ]
             ]
         ]
-    ]
+    ],
+
+    'testSubscriptionChangeCardOnAuthenticated' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Cannot change card for the subscription at this state',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SUBSCRIPTION_CHANGE_CARD_NOT_ALLOWED,
+        ],
+    ],
 ];
