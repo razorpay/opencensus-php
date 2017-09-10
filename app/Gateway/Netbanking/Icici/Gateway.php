@@ -403,7 +403,7 @@ class Gateway extends Base\Gateway
         }
 
         // If the SI reference ID is not empty, we know that this is a recurring payment
-        if (empty($verify->payment->getSIRefId()) === false)
+        if (empty($verify->payment->getSIToken()) === false)
         {
             $requestData[RequestFields::SI] = Status::Y;
             $requestData[RequestFields::SI_AUTO_PAY_AMOUNT] = $verify->input['token']->getMaxAmount() / 100;
@@ -425,9 +425,9 @@ class Gateway extends Base\Gateway
         // For payments that were done via the recurring flow, we
         // send the SI request reference ID in the verify request.
         //
-        if ($gatewayPayment->getSIRefId() !== null)
+        if ($gatewayPayment->getSIToken() !== null)
         {
-            $data[RequestFields::SI_REFERENCE_NUMBER] = $gatewayPayment->getSIRefId();
+            $data[RequestFields::SI_REFERENCE_NUMBER] = $gatewayPayment->getSIToken();
         }
 
         return $data;
@@ -626,7 +626,7 @@ class Gateway extends Base\Gateway
         // but for second recurring payments, we get RID in the callback response
         //
         $recurringData = [
-            Base\Entity::SI_REF_ID => $content[ResponseFields::SI_REFERENCE_ID] ??
+            Base\Entity::SI_TOKEN  => $content[ResponseFields::SI_REFERENCE_ID] ??
                                       $content[ResponseFields::SI_SCHEDULE_ID] ??
                                       null,
             Base\Entity::SI_STATUS => $content[ResponseFields::SI_STATUS] ?? null,
@@ -835,7 +835,7 @@ class Gateway extends Base\Gateway
     protected function hasRecurringData($gatewayPayment)
     {
         return (($gatewayPayment->getSIStatus() !== null) and
-                ($gatewayPayment->getSIRefId() !== null));
+                ($gatewayPayment->getSIToken() !== null));
     }
 
     protected function getRecurringData(Base\Entity $gatewayPayment = null)
@@ -851,7 +851,7 @@ class Gateway extends Base\Gateway
 
         $recurringData = [
             Token\Entity::RECURRING_STATUS         => $recurringStatus,
-            Token\Entity::GATEWAY_TOKEN            => $gatewayPayment->getSIRefId(),
+            Token\Entity::GATEWAY_TOKEN            => $gatewayPayment->getSIToken(),
             Token\Entity::RECURRING_FAILURE_REASON => $recurringFailureReason,
         ];
 

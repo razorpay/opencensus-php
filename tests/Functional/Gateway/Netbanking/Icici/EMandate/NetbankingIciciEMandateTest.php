@@ -332,7 +332,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertNotNull($verify['gateway']['verifyResponseContent']['RID']);
 
         // We assert that the RID used for verification is the same as SI Ref ID saved during initial payment
-        $this->assertEquals($verify['gateway']['verifyResponseContent']['RID'], $netbanking[Netbanking::SI_REF_ID]);
+        $this->assertEquals($verify['gateway']['verifyResponseContent']['RID'], $netbanking[Netbanking::SI_TOKEN]);
     }
 
     public function testPaymentVerifyFailed()
@@ -482,7 +482,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEquals(null, $token[Token::RECURRING_FAILURE_REASON]);
 
         // Registration succeeded
-        $this->assertNotNull($netbanking[Netbanking::SI_REF_ID]);
+        $this->assertNotNull($netbanking[Netbanking::SI_TOKEN]);
         $this->assertEquals('Y', $netbanking[Netbanking::SI_STATUS]);
         $this->assertEquals('9999999999', $netbanking[Netbanking::BANK_PAYMENT_ID]);
     }
@@ -509,7 +509,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $gatewayToken = $this->getLastEntity(Entity::GATEWAY_TOKEN, true);
 
         // Assert Netbanking Entity
-        $this->assertNotNull($netbanking[Netbanking::SI_REF_ID]);
+        $this->assertNotNull($netbanking[Netbanking::SI_TOKEN]);
         $this->assertEquals('authorize', $netbanking[Netbanking::ACTION]);
         // For successful payments, si requests and debit requests, the status is a Y
         $this->assertEquals('Y', $netbanking[Netbanking::STATUS]);
@@ -533,7 +533,7 @@ class NetbankingIciciEMandateTest extends TestCase
         }
 
         // Assert Token Entity
-        $this->assertEquals($netbanking[Netbanking::SI_REF_ID], $token[Token::GATEWAY_TOKEN]);
+        $this->assertEquals($netbanking[Netbanking::SI_TOKEN], $token[Token::GATEWAY_TOKEN]);
         $this->assertEquals($payment[Payment::TOKEN_ID], $token[Token::ID]);
         $this->assertEquals(true, $token[Token::RECURRING]);
         $this->assertEquals(Token::DEFAULT_MAX_AMOUNT, $token[Token::MAX_AMOUNT]);
@@ -640,7 +640,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertArrayNotHasKey(Token::RECURRING_STATUS, $token);
         $this->assertArrayNotHasKey(Token::RECURRING_FAILURE_REASON, $token);
 
-        $this->assertNotNull($netbanking[Netbanking::SI_REF_ID]);
+        $this->assertNotNull($netbanking[Netbanking::SI_TOKEN]);
         $this->assertEquals($expectedSiStatus, $netbanking[Netbanking::SI_STATUS]);
         $this->assertEquals('9999999999', $netbanking[Netbanking::BANK_PAYMENT_ID]);
 
@@ -669,7 +669,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEquals(null, $token2[Token::RECURRING_FAILURE_REASON]);
 
         // Reference ID sent across will sent be back
-        $this->assertNotNull($netbanking[Netbanking::SI_REF_ID]);
+        $this->assertNotNull($netbanking[Netbanking::SI_TOKEN]);
         // SI status not saved in second recurring payment flow and neither is SI message
         $this->assertEquals(null, $netbanking[Netbanking::SI_STATUS]);
         $this->assertEquals(null, $netbanking[Netbanking::SI_MSG]);
@@ -695,7 +695,7 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEquals(RecurringStatus::REJECTED, $token[Token::RECURRING_STATUS]);
         $this->assertEquals('Failure', $token[Token::RECURRING_FAILURE_REASON]);
 
-        $this->assertNotNull($netbanking[Netbanking::SI_REF_ID]);
+        $this->assertNotNull($netbanking[Netbanking::SI_TOKEN]);
         $this->assertEquals('C', $netbanking[Netbanking::SI_STATUS]);
         $this->assertEquals('9999999999', $netbanking[Netbanking::BANK_PAYMENT_ID]);
 

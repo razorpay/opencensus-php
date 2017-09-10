@@ -1455,7 +1455,7 @@ class MerchantTest extends TestCase
         $netbanking = $this->getLastEntity('netbanking', true);
         $this->assertEquals('ICIC', $netbanking['bank']);
         $token = $this->getLastEntity('token', true);
-        $this->assertEquals($netbanking['si_ref_id'], $token['gateway_token']);
+        $this->assertEquals($netbanking['si_token'], $token['gateway_token']);
 
         $response = $this->makePreferencesRouteRequest();
 

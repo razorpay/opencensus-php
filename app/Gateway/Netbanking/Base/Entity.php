@@ -31,7 +31,7 @@ class Entity extends Base\Entity
     // Recurring specific fields
     //
 
-    const SI_REF_ID             = 'si_ref_id';
+    const SI_TOKEN              = 'si_token';
     const SI_STATUS             = 'si_status';
     const SI_MSG                = 'si_message';
 
@@ -74,7 +74,7 @@ class Entity extends Base\Entity
         self::REFERENCE1,
         self::ACCOUNT_NUMBER,
         self::INT_PAYMENT_ID,
-        self::SI_REF_ID,
+        self::SI_TOKEN,
         self::SI_STATUS,
         self::SI_MSG,
     );
@@ -168,9 +168,9 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::STATUS);
     }
 
-    public function getSIRefId()
+    public function getSIToken()
     {
-        return $this->getAttribute(self::SI_REF_ID);
+        return $this->getAttribute(self::SI_TOKEN);
     }
 
     public function getSIStatus()
