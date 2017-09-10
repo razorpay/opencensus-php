@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Settings;
 
+use RZP\Exception\BadRequestValidationFailureException;
+
 class Types
 {
     const OPENWALLET                     = 'openwallet';
@@ -52,10 +54,21 @@ class Types
      * @param string|null $key
      *
      * @return array
+     * @throws BadRequestValidationFailureException
      */
     public static function getWithDescriptions(string $module, string $key = null): array
     {
-        $data = static::$defined[$module];
+        $definedSettings = static::$defined;
+
+        if (isset($definedSettings[$module]) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'No settings are defined for the module',
+                null,
+                ['module' => $module]);
+        }
+
+        $data = $definedSettings[$module];
 
         if ($key !== null)
         {

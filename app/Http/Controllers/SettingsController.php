@@ -5,9 +5,12 @@ namespace RZP\Http\Controllers;
 use Request;
 
 use ApiResponse;
+use RZP\Models\Settings;
 
 class SettingsController extends Controller
 {
+    protected $service = Settings\Service::class;
+
     public function get(string $module, string $key = null)
     {
         if ($key === null)

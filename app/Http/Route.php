@@ -587,7 +587,7 @@ final class Route
         'merchant_payout'                         => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
 
         // Settings routes
-        'settings_fetch_defined'                  => ['get',      'settings/defined/{module}',                      'SettingsController@getDefined'                                     ],
+        'settings_fetch_defined'                  => ['get',      'settings/{module}/defined',                      'SettingsController@getDefined'                                     ],
         'settings_fetch'                          => ['get',      'settings/{module}/{key?}',                       'SettingsController@get'                                            ],
         'settings_upsert'                         => ['post',     'settings/{module}',                              'SettingsController@upsert'                                         ],
         'settings_delete'                         => ['delete',   'settings/{module}/{key}',                        'SettingsController@delete'                                         ],
@@ -991,8 +991,8 @@ final class Route
         'risk_get',
         'merchant_create_invoice_entities',
         'merchant_payout',
-        'settings_fetch',
         'settings_fetch_defined',
+        'settings_fetch',
         'settings_upsert',
         'settings_delete',
     ];

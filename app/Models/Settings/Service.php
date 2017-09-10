@@ -13,6 +13,14 @@ class Service extends Base\Service
         return ['settings' => $settings];
     }
 
+    /**
+     * Return pre-defined settings for a module
+     * To be used for clients for a settings CRUD UI
+     *
+     * @param string $module
+     *
+     * @return array
+     */
     public function getDefined(string $module): array
     {
         $settings = Types::getWithDescriptions($module);
