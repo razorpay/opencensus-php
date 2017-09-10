@@ -133,6 +133,7 @@ class InvoiceReport extends BaseReport
             self::SUMMARY       => [self::SUMMARY_TITLE => [self::ROWS => []]],
             'invoice_number'    => $this->invoiceNo,
             'invoice_date'      => $this->invoiceDate,
+            'gstin'             => $this->gstin,
             self::PAGES         => [
                 self::TAX_INVOICE       => [],
                 self::TAX_CREDIT_NOTE   => [],
