@@ -463,7 +463,7 @@ return [
                 'assignable'  => true
             ],
             Permission::VIEW_WALLET_CONFIG   => [
-                'description' => 'Delete Wallet Config',
+                'description' => 'View Wallet Config',
                 'assignable'  => true
             ],
         ],
