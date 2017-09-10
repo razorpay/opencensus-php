@@ -31,7 +31,7 @@ class SettingTest extends TestCase
         $this->startTest();
     }
 
-    public function testSaveOpenwalletSettings()
+    public function testSaveAndRetrieveOpenwalletSettings()
     {
         $this->startTest();
 
@@ -44,6 +44,45 @@ class SettingTest extends TestCase
             'nested_key.key2' => 'value2'
         ];
 
+        $this->assertCount(2, $settings->toArray());
         $this->assertArraySelectiveEquals($expected, $settings->toArray());
+
+        $this->checkGetAllSettings();
+
+        $this->checkGetSingleSetting();
+    }
+
+    public function testDeleteSettingKey()
+    {
+        $createSettingsData = $this->testData['testSaveAndRetrieveOpenwalletSettings'];
+
+        $this->runRequestResponseFlow($createSettingsData);
+
+        $this->startTest();
+
+        $settings = \DB::connection('test')
+                       ->table(Table::SETTING)
+                       ->pluck('value', 'key');
+
+        $expected = [
+            'key1'            => 'value1'
+        ];
+
+        $this->assertCount(1, $settings->toArray());
+        $this->assertArraySelectiveEquals($expected, $settings->toArray());
+    }
+
+    protected function checkGetAllSettings()
+    {
+        $getSettingsData = $this->testData['testGetAllOpenwalletSettings'];
+
+        $this->runRequestResponseFlow($getSettingsData);
+    }
+
+    protected function checkGetSingleSetting()
+    {
+        $getSettingsData = $this->testData['testGetSingleOpenwalletSetting'];
+
+        $this->runRequestResponseFlow($getSettingsData);
     }
 }

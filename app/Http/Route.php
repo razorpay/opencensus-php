@@ -1260,6 +1260,7 @@ final class Route
         'settings_fetch'                   => Permission::VIEW_WALLET_CONFIG,
         'settings_fetch_defined'           => Permission::VIEW_WALLET_CONFIG,
         'settings_upsert'                  => Permission::EDIT_WALLET_CONFIG,
+        'settings_delete'                  => Permission::EDIT_WALLET_CONFIG,
     ];
 
     public static $direct = [

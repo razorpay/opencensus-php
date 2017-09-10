@@ -45,7 +45,7 @@ return [
         ],
     ],
 
-    'testSaveOpenwalletSettings' => [
+    'testSaveAndRetrieveOpenwalletSettings' => [
         'request'  => [
             'url'     => '/settings/openwallet',
             'method'  => 'post',
@@ -55,6 +55,49 @@ return [
                     'key2' => 'value2'
                 ]
             ]
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ],
+        ],
+    ],
+
+    'testGetAllOpenwalletSettings' => [
+        'request'  => [
+            'url'    => '/settings/openwallet',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'settings' => [
+                    'key1'       => 'value1',
+                    'nested_key' => [
+                        'key2' => 'value2'
+                    ]
+                ]
+            ],
+        ],
+    ],
+
+    'testGetSingleOpenwalletSetting' => [
+        'request'  => [
+            'url'    => '/settings/openwallet/nested_key',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'settings' => [
+                    'key2' => 'value2'
+                ]
+            ],
+        ],
+    ],
+
+    'testDeleteSettingKey' => [
+        'request'  => [
+            'url'     => '/settings/openwallet/nested_key',
+            'method'  => 'delete',
         ],
         'response' => [
             'content' => [
