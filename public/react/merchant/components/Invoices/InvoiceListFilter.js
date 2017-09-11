@@ -1,5 +1,6 @@
 import ListFilter from '../ListFilter';
 import { Field } from 'redux-form';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 export default ({ type, ...otherProps }) => {
   let label = type === 'link' ? 'Payment Link' : 'Invoice';
@@ -14,6 +15,9 @@ export default ({ type, ...otherProps }) => {
           <option value="">All</option>
           <option value="draft">Draft</option>
           <option value="issued">Issued</option>
+          <ShowWhen featureEnabled="Invoice_Partial_Payments">
+            <option value="partially_paid">Partially Paid</option>
+          </ShowWhen>
           <option value="paid">Paid</option>
           <option value="cancelled">Cancelled</option>
           <option value="expired">Expired</option>
