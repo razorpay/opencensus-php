@@ -4,10 +4,10 @@ namespace RZP\Models\Feature;
 
 use DB;
 
-use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Base\Repository as BaseRepository;
+use RZP\Trace\TraceCode;
 
 class Repository extends BaseRepository
 {
@@ -67,7 +67,15 @@ class Repository extends BaseRepository
                             ->where(Entity::NAME, '=', $entity->getName())
                             ->first();
 
-            return ($feature === null);
+            if ($feature === null)
+            {
+                $this->trace->info(TraceCode::FEATURE_SYNCED, $entity->getName());
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         return false;
