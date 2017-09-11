@@ -5,6 +5,7 @@ namespace RZP\Models\Workflow\Action;
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Exception\InvalidArgumentException;
 
 class Service extends Base\Service
 {
@@ -12,16 +13,16 @@ class Service extends Base\Service
 
     const ACTION_FUNCTION_MAPPING = [
         "maker" => [
-            "all"     => "getActionsByOrg",
-            "closed"  => "getClosedActionsByMaker",
-            "open"    => "getActionsByOrg",
-            "maker"   => "getActionsByMaker",
+            "closed"    => "getClosedActionsByMaker",
+            "created"   => "getActionsByMaker",
         ],
         "checker" => [
-            "all"     => "getActionsForChecker",
+            "requested"     => "getActionsForChecker",
+            "created"       => "getActionsCheckedByAdmin",
         ],
-        "admin_checked" => [
-            "all"     => "getActionsCheckedByAdmin",
+        "super" => [
+            "all"     => "getActionsByOrg",
+            "open"    => "getActionsByOrg",
         ],
     ];
 
@@ -59,7 +60,8 @@ class Service extends Base\Service
         }
         else
         {
-            $actions = $this->repo->workflow_action->findByOrgId($orgId);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_WORKFLOW_DUTY_TYPE_INVALID);
         }
 
         return $actions->toArrayPublic();
@@ -183,17 +185,20 @@ class Service extends Base\Service
     }
 
     /**
+     * Get actions by Org for SuperAdmin.
+     *
      * @param array $input
      *
      * @return array
      */
     public function getActionsByOrg(array $input)
     {
+        // Only superadmin can access maker.all and maker.open
+        $this->app['basicauth']->validateSuperAdminAccess();
+
         $orgId = $this->admin->getOrgId();
 
         $type = $input['type'] ?? 'all';
-
-        $this->app['basicauth']->validateSuperAdminAccess();
 
         $actions = $this->repo->workflow_action->findByOrgId(
             $orgId, ['admin'], $type);
@@ -224,8 +229,12 @@ class Service extends Base\Service
     {
         $relations = ['workflow', 'admin'];
 
-        $actions = $this->repo->workflow_action->findByAdminIdAndOrgIdWithRelations(
-            $this->admin->getId(), $this->admin->getOrgId(), $relations);
+        $actions = $this->repo
+                        ->workflow_action
+                        ->findByAdminIdAndOrgIdWithRelations(
+                            $this->admin->getId(),
+                            $this->admin->getOrgId(),
+                            $relations);
 
         return $actions;
     }

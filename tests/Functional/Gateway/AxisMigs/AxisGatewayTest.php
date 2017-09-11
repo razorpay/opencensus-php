@@ -211,6 +211,35 @@ class AxisGatewayTest extends TestCase
         });
     }
 
+    public function testCaptureError()
+    {
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'capture')
+            {
+                unset($content['vpc_AcqResponseCode'], $content['vpc_AuthorisedAmount'],
+                      $content['vpc_CapturedAmount'], $content['vpc_Card'],
+                      $content['vpc_ReceiptNo'], $content['vpc_ShopTransactionNo']);
+
+                $content['vpc_Amount']          = '0';
+                $content['vpc_BatchNo']         = '0';
+                $content['vpc_Currency']        = 'INR';
+                $content['vpc_Message']         = 'E5414-08311437: Capture Error : Field in error: \'transaction.amount\', value \'INR 500.00\' - reason: Requested capture amount exceeds outstanding authorized amount';
+                $content['vpc_TransactionNo']   = '0';
+                $content['vpc_TxnResponseCode'] = '7';
+            }
+        });
+
+        $testData = $this->testData['testCaptureError'];
+
+        $this->replaceDefaultValues($testData['request']['content']);
+
+        $this->runRequestResponseFlow($testData, function () use ($testData)
+        {
+            $this->doAuthAndCapturePayment($testData['request']['content']);
+        });
+    }
+
     public function testFailedPaymentWithProperError()
     {
         $this->mockServerContentFunction(function (& $content, $action = null)

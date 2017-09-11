@@ -2443,3 +2443,12 @@ ALTER TABLE transfers
 
 ALTER TABLE subscriptions
     ADD COLUMN type TINYINT(1) UNSIGNED DEFAULT 0 AFTER customer_notify;
+
+ALTER TABLE gateway_rules
+    MODIFY COLUMN gateway VARCHAR(50) DEFAULT NULL;
+
+ALTER TABLE offers
+    MODIFY COLUMN issuer VARCHAR(20);
+
+ALTER TABLE offers
+    MODIFY COLUMN payment_method VARCHAR(10) NULL;

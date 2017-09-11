@@ -22,6 +22,7 @@ final class Route
         'checkout_onyx'                           => ['post',     'checkout/onyx',                                  'PublicController@postCallbackUrlWithParams'                        ],
         'checkout_hosted'                         => ['post',     'checkout/hosted',                                'PublicController@postCheckoutHosted'                               ],
         'merchant_methods'                        => ['get',      'methods',                                        'MerchantController@getPaymentMethods'                              ],
+        'merchant_methods_downtime'               => ['get',      'methods/downtime',                               'MerchantController@getPublicGatewayDowntimeData'                   ],
         'merchant_checkout_preferences'           => ['get',      'preferences',                                    'MerchantController@getCheckoutPreferences'                         ],
         'payment_create'                          => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'                         ],
         'payment_create_private'                  => ['post',     'payments/create',                                'PaymentCreateController@postCreateS2SPayment'                      ],
@@ -54,6 +55,7 @@ final class Route
         'batch_process_file'                      => ['post',     'batches/process',                                'BatchController@processBatches'                                    ],
         'batch_process_by_id'                     => ['post',     'batches/{id}/process',                           'BatchController@processBatch'                                      ],
         'batch_retry'                             => ['post',     'batches/{id}/retry',                             'BatchController@retryBatch'                                        ],
+        'batch_retry_output_file'                 => ['post',     'batches/{id}/retry_output_file',                 'BatchController@retryBatchOutputFile'                              ],
         'batch_download_file'                     => ['get',      'batches/{id}/download',                          'BatchController@downloadBatch'                                     ],
         'payment_capture'                         => ['post',     'payments/{id}/capture',                          'PaymentController@postCapture'                                     ],
         'payment_bulk_capture'                    => ['post',     'payments/capture/bulk',                          'PaymentController@postBulkCapture'                                 ],
@@ -372,11 +374,13 @@ final class Route
         'gateway_remove_priorities'               => ['patch',    'gateway/priorities/{method}/remove',             'GatewayController@removeGatewayPriority'                           ],
         'gateway_create_downtime'                 => ['post',     'gateway/downtimes',                              'GatewayController@postGatewayDowntime'                             ],
         'gateway_update_downtime'                 => ['put',      'gateway/downtimes/{id}',                         'GatewayController@putGatewayDowntime'                              ],
-        'gateway_fetch_downtime'                  => ['get',      'gateway/downtimes',                              'GatewayController@getAbsentGateways'                               ],
         'gateway_downtime_source_webhook'         => ['post',     'gateway/downtimes/{source}/webhook',             'GatewayController@postGatewayDowntimeWebhook'                      ],
         'gateway_create_rule'                     => ['post',     'gateway/rules',                                  'GatewayController@createGatewayRule'                               ],
         'gateway_update_rule'                     => ['patch',    'gateway/rules/{id}',                             'GatewayController@updateGatewayRule'                               ],
         'gateway_delete_rule'                     => ['delete',   'gateway/rules/{id}',                             'GatewayController@deleteGatewayRule'                               ],
+        'gateway_file_create'                     => ['post',     'gateway/files',                                  'GatewayFileController@createGatewayFile'                           ],
+        'gateway_file_retry'                      => ['post',     'gateway/files/{id}/retry',                       'GatewayFileController@retryGatewayFile'                            ],
+        'gateway_file_acknowledge'                => ['post',     'gateway/files/{id}/acknowledge',                 'GatewayFileController@acknowledgeGatewayFile'                      ],
         'scorecard'                               => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
         'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
         'plan_create'                             => ['post',     'plans',                                          'SubscriptionController@postCreatePlan'                             ],
@@ -440,6 +444,8 @@ final class Route
         'admin_edit_app_auth'                     => ['put',      'orgs/{orgId}/admin-app-auth/{id}',               'OrganizationController@editAdmin'                                  ],
         'admin_fetch_merchant_ids'                => ['get',      'orgs/{orgId}/admins/{id}/merchant_ids',          'OrganizationController@getMerchantIds'                             ],
         'admin_fetch_merchants'                   => ['get',      'orgs/{orgId}/admins/{id}/merchants',             'OrganizationController@getMerchants'                               ],
+        'admin_fetch_merchant_ids_new'            => ['get',      'admins/merchant_ids',                            'OrganizationController@getMerchantIdsFromEs'                       ],
+        'admin_fetch_merchants_new'               => ['get',      'admins/merchants',                               'OrganizationController@getMerchantsFromEs'                         ],
         'admin_delete'                            => ['delete',   'orgs/{orgId}/admins/{id}',                       'OrganizationController@deleteAdmin'                                ],
         'admin_lead_create'                       => ['post',     'orgs/{orgId}/admin-lead',                        'OrganizationController@postAdminLead'                              ],
         'admin_lead_get_multiple'                 => ['get',      'orgs/{orgId}/admin-lead',                        'OrganizationController@getAdminLeadMultiple'                       ],
@@ -473,7 +479,7 @@ final class Route
         // Workflows API
         'workflow_create'                         => ['post',     'workflows',                                      'WorkflowController@createWorkflow'                                 ],
         'workflow_get'                            => ['get',      'workflows/{id}',                                 'WorkflowController@getWorkflow'                                    ],
-        'workflow_get_multiple'                   => ['get',      'orgs/{orgId}/workflows',                         'WorkflowController@getWorkflowMultiple'                            ],
+        'workflow_get_multiple'                   => ['get',      'workflows',                                      'WorkflowController@getWorkflowMultiple'                            ],
         'workflow_update'                         => ['put',      'workflows/{id}',                                 'WorkflowController@updateWorkflow'                                 ],
         'workflow_delete'                         => ['delete',   'workflows/{id}',                                 'WorkflowController@deleteWorkflow'                                 ],
         'workflow_action_get_multiple'            => ['get',      'w-actions',                                      'WorkflowController@getActionMultiple'                              ],
@@ -564,9 +570,9 @@ final class Route
         'promotion_create'                        => ['post',     'promotions',                                     'PromotionController@create'                                        ],
         'promotion_update'                        => ['patch',    'promotions/{id}',                                'PromotionController@update'                                        ],
         //coupon routes
-        'coupon_create'                           => ['post',     'coupons',                                         'CouponController@create'                                          ],
-        'coupon_apply'                            => ['post',     'coupons/apply',                                   'CouponController@apply'                                           ],
-        'coupon_delete'                           => ['delete',   'coupons/{id}',                                    'CouponController@delete'                                          ],
+        'coupon_create'                           => ['post',     'coupons',                                        'CouponController@create'                                           ],
+        'coupon_apply'                            => ['post',     'coupons/apply',                                  'CouponController@apply'                                            ],
+        'coupon_delete'                           => ['delete',   'coupons/{id}',                                   'CouponController@delete'                                           ],
         // Merchant invitation routes
         'invitation_create'                       => ['post',     'invitations',                                    'InvitationController@create'                                       ],
         'invitation_fetch_by_token'               => ['get',      'invitations/token/{token}',                      'InvitationController@fetchByToken'                                 ],
@@ -640,6 +646,7 @@ final class Route
         'otp_verify',
         'otp_verify_app',
         'device_create',
+        'merchant_methods_downtime'
     ];
 
     public static $device = [
@@ -893,13 +900,13 @@ final class Route
         'invoice_expire_bulk',
         'batch_process_file',
         'batch_process_by_id',
+        'batch_retry_output_file',
         'gateway_add_priorities',
         'gateway_fetch_priorities',
         'gateway_update_priorities',
         'gateway_remove_priorities',
         'gateway_create_downtime',
         'gateway_update_downtime',
-        'gateway_fetch_downtime',
         'order_refund_multiple_authorized',
         'refund_create_gateway_record',
         'gateway_validate_unknown_refund',
@@ -984,6 +991,9 @@ final class Route
         'risk_get',
         'merchant_create_invoice_entities',
         'merchant_payout',
+        'gateway_file_create',
+        'gateway_file_retry',
+        'gateway_file_acknowledge',
     ];
 
     public static $proxy = [
@@ -1056,6 +1066,8 @@ final class Route
         'org_get_multiple',
         'admin_fetch_merchant_ids',
         'admin_fetch_merchants',
+        'admin_fetch_merchant_ids_new',
+        'admin_fetch_merchants_new',
         'admin_create',
         'group_get',
         'group_get_multiple',
@@ -1157,6 +1169,8 @@ final class Route
         'schedule_assign'                  => Permission::SCHEDULE_ASSIGN,
         'admin_fetch_merchant_ids'         => Permission::VIEW_ALL_MERCHANTS,
         'admin_fetch_merchants'            => Permission::VIEW_ALL_MERCHANTS,
+        'admin_fetch_merchant_ids_new'     => '*',
+        'admin_fetch_merchants_new'        => '*',
         'permission_create'                => Permission::CREATE_PERMISSION,
         'permission_edit'                  => Permission::EDIT_PERMISSION,
         'permission_get'                   => Permission::GET_PERMISSION,
@@ -1243,7 +1257,7 @@ final class Route
         'invitation_fetch'                 => '*',
         'pricing_create_plan'              => Permission::CREATE_PRICING_PLAN,
         'merchant_get_pricing'             => Permission::VIEW_MERCHANT_PRICING,
-        'merchant_invoice_update_gstin'    => '*',
+        'merchant_invoice_update_gstin'    => Permission::EDIT_MERCHANT_INVOICE_GSTIN,
         'merchant_details_fetch'           => '*',
         'setl_retry'                       => Permission::RETRY_SETTLEMENT,
         'merchant_invoice_add_bulk'        => '*',
@@ -1333,6 +1347,7 @@ final class Route
             'virtual_account_refund_excess',
             'merchant_create_invoice_entities',
             'merchant_payout',
+            'gateway_file_create',
         ],
 
         'kotak' => [
@@ -1372,6 +1387,7 @@ final class Route
         'payment_get_status',
         'merchant_public_get_banks',
         'merchant_methods',
+        'merchant_methods_downtime',
     ];
 
     /**

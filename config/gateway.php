@@ -15,6 +15,7 @@ return [
         'axis_genius',
         'axis_migs',
         'billdesk',
+        'blade',
         'cybersource',
         'first_data',
         'ebs',
@@ -68,6 +69,8 @@ return [
     'mock_netbanking_indusind' => env('NETBANKING_INDUSIND_MOCK'),
     'mock_netbanking_pnb'      => env('NETBANKING_PNB_MOCK'),
     'mock_billdesk'            => env('BILLDESK_MOCK'),
+    //TODO add this env
+    'mock_blade'               => env('BLADE_MOCK'),
     'mock_ebs'                 => env('EBS_MOCK'),
     'mock_wallet_olamoney'     => env('OLAMONEY_MOCK'),
     'mock_wallet_payzapp'      => env('PAYZAPP_MOCK'),
@@ -149,6 +152,24 @@ return [
         //SECRET FOR SECURITIES MERCHANTS
         'live_hash_secret_sec'  => env('BILLDESK_GATEWAY_SECURITIES_LIVE_HASH_SECRET'),
         'live_access_code_sec'  => env('BILLDESK_GATEWAY_SECURITIES_LIVE_ACCESS_CODE'),
+    ],
+
+    'blade' => [
+        //TODO add all env variables
+        'cert_dir_name'                  => env('BLADE_CERT_DIR_NAME'),
+        'live_visa_certificate'          => env('BLADE_LIVE_VISA_CERTIFICATE'),
+        'live_visa_pem'                  => env('BLADE_LIVE_VISA_PEM'),
+        'live_mastercard_certificate'    => env('BLADE_LIVE_MASTERCARD_CERTIFICATE'),
+        'live_mastercard_pem'            => env('BLADE_LIVE_MASTERCARD_PEM'),
+        'gateway_access_code'            => env('BLADE_TEST_ACCESS_CODE'),
+        'gateway_merchant_id2'           => env('BLADE_TEST_MERCHANT_ID2'),
+        'gateway_terminal_password'      => env('BLADE_TEST_TERMINAL_PASSWORD'),
+        'live_mastercard_acq_bin'        => env('BLADE_LIVE_MASTERCARD_ACQ_BIN'),
+        'live_visa_acq_bin'              => env('BLADE_LIVE_VISA_ACQ_BIN'),
+        'test_acq_bin'                   => env('BLADE_TEST_ACQ_BIN'),
+        'live_mastercard_merchant_id'    => env('BLADE_LIVE_MASTERCARD_MERCHANT_ID2'),
+        'live_visa_merchant_id'          => env('BLADE_LIVE_VISA_MERCHANT_ID'),
+        'test_merchant_id'               => env('BLADE_TEST_MERCHANT_ID'),
     ],
 
     'ebs' => [
@@ -256,6 +277,7 @@ return [
         'test_password'     => env('MPESA_WALLET_TEST_PASSWORD'),
         'live_user_id'      => env('MPESA_WALLET_LIVE_USER_ID'),
         'live_password'     => env('MPESA_WALLET_LIVE_PASSWORD'),
+        'live_hash_secret'  => env('MPESA_WALLET_LIVE_HASH_SECRET'),
     ],
 
     'netbanking_hdfc' => [

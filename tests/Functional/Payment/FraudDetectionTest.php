@@ -104,4 +104,19 @@ class FraudDetectionTest extends TestCase
         $this->assertArrayHasKey('razorpay_payment_id', $response);
     }
 
+    public function testFraudDetectedWithInvalidEmailTld()
+    {
+        $this->fixtures->merchant->enableInternational();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['email'] = 'test@razorpay.xtm';
+        $payment['card']['number'] = '4012010000000007';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
 }

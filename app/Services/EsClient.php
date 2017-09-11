@@ -4,11 +4,19 @@ namespace RZP\Services;
 
 use Elasticsearch\ClientBuilder;
 
-use RZP\Exception\InvalidArgumentException;
+use RZP\Constants\Es;
 use RZP\Trace\TraceCode;
+use RZP\Exception\InvalidArgumentException;
 
 class EsClient
 {
+    /**
+     * Value gets used during scroll queries to ES.
+     * It tells ES to keep scroll search context to be open
+     * for another x seconds. Post that it'll return empty results.
+     */
+    const DEFAULT_SCROLL_SECS = '30s';
+
     protected $client;
 
     protected $esMock;
@@ -21,11 +29,22 @@ class EsClient
 
     protected $trace;
 
+    /**
+     * If running unit tests, after every ES write operation we
+     * manually do index refresh so it's available readily for tests.
+     * Otherwise delay for refresh is 1 sec.
+     *
+     * @var boolean
+     */
+    protected $runningUnitTests;
+
     public function __construct($app)
     {
         $this->config = $app['config'];
 
         $this->trace = $app['trace'];
+
+        $this->runningUnitTests = $app->runningUnitTests();
     }
 
     public function setEsClient($params)
@@ -89,9 +108,39 @@ class EsClient
             return null;
         }
 
-        return $this->client->update($params);
+        $response = $this->client->update($params);
+
+        $this->refreshIndicesIfApplicable();
+
+        return $response;
     }
 
+    /**
+     * Makes a bulk request to ES.
+     *
+     * In our case using this same method to create/update even a single document.
+     *
+     * In ideal world, one would use index() for creating documents for first time,
+     * update() to update document for next times. But in async flows we would
+     * also want to handle failures and do upsetr instead. In async flows many a times
+     * before index() the document has reached ES by previous tries or some other flows.
+     *
+     * Bulk update method handles everything: create, update, partial update, upserts.
+     * We don't have to provide additional details (upsert params etc) as well. Also
+     * afaik internally bulk update is optimized for bulk insertions/updates but has
+     * makes no difference with single document.
+     *
+     * It first checks if doc exists already, if it is then the param body will
+     * be used as partial document and it patches the same. If the document doesn't
+     * exist then it'll create one with the same body.
+     *
+     * Refs:
+     * - https://www.elastic.co/guide/en/elasticsearch/reference/current/docs-bulk.html
+     *
+     * @param array $params
+     *
+     * @return array
+     */
     public function bulkUpdate($params)
     {
         // If ES mock is set to true, return dummy response.
@@ -101,17 +150,72 @@ class EsClient
             return ['errors' => false];
         }
 
-        return $this->client->bulk($params);
+        $response = $this->client->bulk($params);
+
+        $this->refreshIndicesIfApplicable();
+
+        return $response;
     }
 
     public function search(array $params)
     {
         if ($this->esMock === true)
         {
-            return ['hits' => ['hits' => []]];
+            return [Es::HITS => [Es::HITS => []]];
         }
 
         return $this->client->search($params);
+    }
+
+    /**
+     * Search and scroll: Given the es request parameters, makes
+     * scroll calls to ES and keeps returning the results using Generator.
+     *
+     * Note: The callee shouldn't take more than DEFAULT_SCROLL_SECS s to
+     * process the yield results or else the scroll context in ES dies
+     * and will not return further results.
+     *
+     * @param array $params
+     *
+     * @return \Generator
+     */
+    public function searchAndScroll(array $params): \Generator
+    {
+        $params[Es::SCROLL] = self::DEFAULT_SCROLL_SECS;
+
+        $response = $this->search($params);
+
+        while ((isset($response[Es::HITS][Es::HITS]) === true) and
+            (count($response[Es::HITS][Es::HITS]) > 0))
+        {
+            yield $response;
+
+            $scrollId = $response[Es::_SCROLL_ID];
+
+            $response = $this->scroll($scrollId);
+        }
+    }
+
+    /**
+     * Makes a scroll search call to ES with given scroll id.
+     *
+     * @param string $scrollId
+     *
+     * @return array
+     */
+    public function scroll(string $scrollId): array
+    {
+        if ($this->esMock === true)
+        {
+            return [Es::HITS => [Es::HITS => []]];
+        }
+
+        $params = [
+            Es::SCROLL_ID => $scrollId,
+            Es::SCROLL    => self::DEFAULT_SCROLL_SECS,
+        ];
+
+        return $this->client->scroll($params);
     }
 
     public function indexExists(array $params)
@@ -126,6 +230,11 @@ class EsClient
 
     public function get($params)
     {
+        if ($this->client === null)
+        {
+            $this->trace->traceException(new \Exception());
+        }
+
         return $this->client->get($params);
     }
 
@@ -141,7 +250,11 @@ class EsClient
             return null;
         }
 
-        return $this->client->delete($params);
+        $response = $this->client->delete($params);
+
+        $this->refreshIndicesIfApplicable();
+
+        return $response;
     }
 
     public function createIndex($params)
@@ -173,12 +286,12 @@ class EsClient
 
         $searchResponse = $this->heimdallClient->search($params);
 
-        if ($searchResponse['hits']['total'] === 0)
+        if ($searchResponse[Es::HITS]['total'] === 0)
         {
             return null;
         }
 
-        $entityResults = $searchResponse['hits']['hits'];
+        $entityResults = $searchResponse[Es::HITS][Es::HITS];
 
         return $entityResults;
     }
@@ -203,5 +316,16 @@ class EsClient
     public function indexHeimdall($params)
     {
         $this->heimdallClient->index($params);
+    }
+
+    /**
+     * Refreshes Es indexes if running unit tests.
+     */
+    protected function refreshIndicesIfApplicable()
+    {
+        if ($this->runningUnitTests === true)
+        {
+            $this->client->indices()->refresh();
+        }
     }
 }

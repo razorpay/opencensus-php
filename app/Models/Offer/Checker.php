@@ -22,6 +22,20 @@ class Checker extends Base\Core
     // Flag to toggle verbose logging, Initialised to false by default.
     protected $verbose;
 
+    const CARD_USAGE = 'card_usage';
+
+    /**
+     * Properties used to check if offer is applicable on payment
+     */
+    const PROPERTIES_TO_CHECK = [
+        Entity::PAYMENT_METHOD,
+        Entity::PAYMENT_METHOD_TYPE,
+        Entity::PAYMENT_NETWORK,
+        Entity::ISSUER,
+        Entity::IINS,
+        self::CARD_USAGE,
+    ];
+
     public function __construct(Entity $offer, bool $verbose = false)
     {
         parent::__construct();
@@ -31,7 +45,7 @@ class Checker extends Base\Core
         $this->verbose = $verbose;
     }
 
-    public function checkOfferApplicableOnOrder(Order\Entity $order)
+    public function checkOfferApplicableOnOrder(Order\Entity $order): bool
     {
         $this->order = $order;
 
@@ -43,36 +57,160 @@ class Checker extends Base\Core
                 ($validOfferPeriod === true));
     }
 
-    public function checkOfferApplicableOnPayment(Payment\Entity $payment)
+    public function checkOfferApplicableOnPayment(Payment\Entity $payment): bool
     {
         $this->payment = $payment;
-
-        $validPaymentMethod = $this->checkPaymentMethod();
 
         $offerActive = $this->offer->isActive();
 
         $validOfferPeriod = $this->checkOfferPeriod();
 
-        $validCardUsage = $this->checkCardUsage();
+        $checkResult = false;
 
-        return (($validPaymentMethod === true) and
-                ($offerActive === true) and
+        foreach (self::PROPERTIES_TO_CHECK as $property)
+        {
+            $checkMethod = 'check' . studly_case($property);
+
+            $checkResult = $this->$checkMethod();
+
+            if ($checkResult === false)
+            {
+                break;
+            }
+        }
+
+        return (($offerActive === true) and
                 ($validOfferPeriod === true) and
-                ($validCardUsage === true));
+                ($checkResult === true));
     }
 
-    protected function checkPaymentMethod()
+    protected function checkPaymentMethod(): bool
     {
         $paymentMethod = $this->payment->getMethod();
 
-        if ($paymentMethod === $this->offer->getPaymentMethod())
-        {
-            $checkerFunction = 'check' . studly_case($paymentMethod);
+        $offerPaymentMethod = $this->offer->getPaymentMethod();
 
-            return $this->$checkerFunction();
+        if ($offerPaymentMethod !== null)
+        {
+            return ($offerPaymentMethod === $paymentMethod);
         }
 
-        return false;
+        return true;
+    }
+
+    protected function checkPaymentMethodType(): bool
+    {
+        $offerPaymentMethodType = $this->offer->getPaymentMethodType();
+
+        // Return true if no payment method type specified on offer
+        // Means offer is valid on both credit/debit cards
+        if (($offerPaymentMethodType === null) or
+            ($this->payment->isMethodCardOrEmi() === false))
+        {
+            return true;
+        }
+
+        $card = $this->payment->card;
+
+        $result = ($offerPaymentMethodType === $card->getType());
+
+        $this->traceCheckResult(TraceCode::OFFER_CARD_TYPE_CHECK, [
+            'result'            => $result,
+            'offer_card_type'   => $offerPaymentMethodType,
+            'payment_card_type' => $card->getType()
+        ]);
+
+        return $result;
+    }
+
+    protected function checkPaymentNetwork(): bool
+    {
+        $offerPaymentNetwork = $this->offer->getPaymentNetwork();
+
+        // Return true if payment network is null for offer
+        // Offer is valid across all card networks
+        if (($offerPaymentNetwork === null) or ($this->payment->isMethodCardOrEmi() === false))
+        {
+            return true;
+        }
+
+        $card = $this->payment->card;
+
+        $result = ($offerPaymentNetwork === $card->getNetworkCode());
+
+        $this->traceCheckResult(TraceCode::OFFER_CARD_NETWORK_CHECK, [
+            'result'               => $result,
+            'offer_card_network'   => $offerPaymentNetwork,
+            'payment_card_network' => $card->getNetworkCode()
+        ]);
+
+        return $result;
+    }
+
+    protected function checkIssuer(): bool
+    {
+        $offerIssuer = $this->offer->getIssuer();
+
+        if ($offerIssuer === null)
+        {
+            return true;
+        }
+
+        $paymentMethod = $this->payment->getMethod();
+
+        switch ($paymentMethod)
+        {
+            case Payment\Method::CARD:
+            case Payment\Method::EMI:
+                $card = $this->payment->card;
+
+                return ($offerIssuer === $card->getIssuer());
+
+            case Payment\Method::NETBANKING:
+                $bank = $this->payment->getBank();
+
+                return ($offerIssuer === $bank);
+
+            case Payment\Method::WALLET:
+                $wallet = $this->payment->getWallet();
+
+                return ($offerIssuer === $wallet);
+
+            default:
+                return false;
+        }
+    }
+
+    protected function checkIins(): bool
+    {
+        $offerIins = $this->offer->getIins();
+
+        if ((empty($offerIins) === true) or ($this->payment->isMethodCardOrEmi() === false))
+        {
+            return true;
+        }
+
+        $card = $this->payment->card;
+
+        $result = false;
+
+        foreach ($offerIins as $iin)
+        {
+            if (starts_with($card->getIin(), $iin) === true)
+            {
+                $result = true;
+
+                break;
+            }
+        }
+
+        $this->traceCheckResult(TraceCode::OFFER_CARD_IIN_CHECK, [
+            'result'     => $result,
+            'offer_iins' => $offerIins,
+            'card_iin'   => $card->getIin()
+        ]);
+
+        return $result;
     }
 
     protected function checkWallet()
@@ -97,156 +235,6 @@ class Checker extends Base\Core
         return $result;
     }
 
-    protected function checkNetbanking()
-    {
-        $offerPaymentNetwork = $this->offer->getPaymentNetwork();
-
-        // Return true if payment network is null for offer
-        // Offer is valid across all banks
-        if ($offerPaymentNetwork === null)
-        {
-            return true;
-        }
-
-        $result = ($offerPaymentNetwork === $this->payment->getBank());
-
-        $this->traceCheckResult(TraceCode::OFFER_NETBANKING_CHECK, [
-            'result'         => $result,
-            'offer_bank'     => $offerPaymentNetwork,
-            'payment_bank'   => $this->payment->getBank()
-        ]);
-
-        return $result;
-    }
-
-    /**
-     * For emi we are currently just validating against the card
-     * TBD if any other validations are required
-     */
-    protected function checkEmi()
-    {
-        return $this->checkCard();
-    }
-
-    protected function checkCard()
-    {
-        $this->card = $this->payment->card;
-
-        $iins = $this->offer->getIins();
-
-        if (empty($iins) === false)
-        {
-            $result = (in_array($this->card->getIin(), $iins, true) === true);
-
-            $this->traceCheckResult(TraceCode::OFFER_CARD_IIN_CHECK, [
-                'iin'        => $this->card->getIin(),
-                'result'     => $result,
-            ]);
-
-            return $result;
-        }
-
-        $validCardType = $this->checkCardType();
-
-        $validCardNetwork = $this->checkCardNetwork();
-
-        $validCardIssuer = $this->checkCardIssuer();
-
-        return (($validCardType === true) and
-                ($validCardNetwork === true) and
-                ($validCardIssuer === true));
-    }
-
-    protected function checkCardType()
-    {
-        $offerPaymentMethodType = $this->offer->getPaymentMethodType();
-
-        // Return true if no payment method type specified on offer
-        // Means offer is valid on both credit/debit cards
-        if ($offerPaymentMethodType === null)
-        {
-            return true;
-        }
-
-        $result = ($offerPaymentMethodType === $this->card->getType());
-
-        $this->traceCheckResult(TraceCode::OFFER_CARD_TYPE_CHECK, [
-            'result'            => $result,
-            'offer_card_type'   => $offerPaymentMethodType,
-            'payment_card_type' => $this->card->getType()
-        ]);
-
-        return $result;
-    }
-
-    protected function checkCardNetwork()
-    {
-        $offerPaymentNetwork = $this->offer->getPaymentNetwork();
-
-        // Return true if payment network is null for offer
-        // Offer is valid across all card networks
-        if ($offerPaymentNetwork === null)
-        {
-            return true;
-        }
-
-        $result = ($offerPaymentNetwork === $this->card->getNetworkCode());
-
-        $this->traceCheckResult(TraceCode::OFFER_CARD_NETWORK_CHECK, [
-            'result'               => $result,
-            'offer_card_network'   => $offerPaymentNetwork,
-            'payment_card_network' => $this->card->getNetworkCode()
-        ]);
-
-        return $result;
-    }
-
-    protected function checkCardIssuer()
-    {
-        $offerCardIssuer = $this->offer->getIssuer();
-
-        if ($offerCardIssuer === null)
-        {
-            return true;
-        }
-
-        $result = ($offerCardIssuer === $this->card->getIssuer());
-
-        $this->traceCheckResult(TraceCode::OFFER_CARD_ISSUER_CHECK, [
-            'result'              => $result,
-            'offer_card_issuer'   => $offerCardIssuer,
-            'payment_card_issuer' => $this->card->getIssuer()
-        ]);
-
-        return $result;
-    }
-
-    protected function checkPaymentAmount()
-    {
-        $result = ($this->payment->getAmount() >= $this->offer->getMinAmount());
-
-        $this->traceCheckResult(TraceCode::OFFER_PAYMENT_AMOUNT_CHECK, [
-                'result'           => $result,
-                'offer_min_amount' => $this->offer->getMinAmount(),
-                'payment_amount'   => $this->payment->getAmount()
-        ]);
-
-        return $result;
-    }
-
-    protected function checkOrderAmount()
-    {
-        $result = ($this->order->getAmount() >= $this->offer->getMinAmount());
-
-        $this->traceCheckResult(TraceCode::OFFER_ORDER_AMOUNT_CHECK, [
-                'result'           => $result,
-                'offer_min_amount' => $this->offer->getMinAmount(),
-                'order_amount'     => $this->order->getAmount()
-        ]);
-
-        return $result;
-    }
-
     protected function checkOfferPeriod()
     {
         $now = Carbon::now()->getTimestamp();
@@ -263,7 +251,7 @@ class Checker extends Base\Core
         return $result;
     }
 
-    protected function checkCardUsage()
+    protected function checkCardUsage(): bool
     {
         // Skip card usage check if payment method is not card or emi
         // or if the max payment count is not present

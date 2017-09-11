@@ -913,7 +913,7 @@ class Gateway
         {
             $res = simplexml_load_string($xml);
 
-            return (array) $res;
+            return json_decode(json_encode($res), true);
         }
         catch (\Exception $e)
         {

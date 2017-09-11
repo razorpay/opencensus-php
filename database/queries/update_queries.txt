@@ -633,22 +633,9 @@ UPDATE merchant_invoice
 SET invoice_number = upper(concat(substr(`merchant_id`,1, 8), substr(`merchant_id`, -4), '0817'))
 WHERE MONTH=8;
 
-UPDATE merchant_invoice
-JOIN merchant_details ON merchant_details.merchant_id = merchant_invoice.merchant_id
-SET merchant_invoice.gstin = merchant_details.gstin
-WHERE merchant_invoice.gstin IS NULL
-  AND merchant_details.gstin IS NOT NULL;
-
-
-UPDATE merchant_invoice
-JOIN merchant_details ON merchant_details.merchant_id = merchant_invoice.merchant_id
-SET merchant_invoice.gstin = merchant_details.gstin
-WHERE merchant_invoice.gstin IS NULL
-  AND merchant_details.p_gstin IS NOT NULL;
-
 ########
 
-# Adding the settlement id in the transfers table>>>
+# Adding the settlement id in the transfers table
 UPDATE transfers as tr
     JOIN payments as p
         ON p.transfer_id = tr.id
@@ -657,3 +644,27 @@ UPDATE transfers as tr
     SET recipient_settlement_id = txn.settlement_id
     WHERE txn.type = 'payment'
     AND p.transfer_id IS NOT NULL
+
+UPDATE merchant_invoice
+JOIN merchant_details ON merchant_details.merchant_id = merchant_invoice.merchant_id
+SET merchant_invoice.gstin = merchant_details.gstin
+WHERE (merchant_invoice.gstin IS NULL or merchant_invoice.gstin = '')
+    AND merchant_details.gstin IS NOT NULL
+    AND merchant_details.gstin != '';
+
+UPDATE merchant_invoice
+JOIN merchant_details ON merchant_details.merchant_id = merchant_invoice.merchant_id
+SET merchant_invoice.gstin = merchant_details.p_gstin
+WHERE (merchant_invoice.gstin IS NULL OR merchant_invoice.gstin = '')
+    AND merchant_details.p_gstin IS NOT NULL
+    AND merchant_details.p_gstin != '';
+
+# Data correction for FirstData terminal tokens
+UPDATE tokens SET terminal_id = '7Y30j1EY3JG8ob'
+    WHERE terminal_id = '7bOl7tgaZ5kWvf'
+
+UPDATE gateway_tokens SET terminal_id = '7Y30j1EY3JG8ob'
+    WHERE terminal_id = '7bOl7tgaZ5kWvf'
+
+UPDATE offers SET issuer = payment_network WHERE payment_method != 'card';
+UPDATE offers SET payment_network = NULL WHERE payment_method != 'card';
