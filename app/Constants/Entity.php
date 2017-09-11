@@ -4,6 +4,7 @@ namespace RZP\Constants;
 
 use App;
 
+use RZP\Base\Fetch;
 use RZP\Exception;
 use RZP\Gateway;
 use RZP\Trace\TraceCode;
@@ -381,6 +382,20 @@ class Entity
     public static function getEntityEsRepository(string $entity)
     {
         return self::getEntityRepository($entity, 'EsRepository');
+    }
+
+    /**
+     * @param string $entity
+     * @return null|Fetch
+     */
+    public static function getEntityFetch(string $entity)
+    {
+        $class = self::getEntityNamespace($entity) . '\\' . 'Fetch';
+
+        if (class_exists($class))
+        {
+            return new $class;
+        }
     }
 
     public static function getTableNameForEntity(string $entity)

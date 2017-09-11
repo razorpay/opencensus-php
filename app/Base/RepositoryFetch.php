@@ -15,6 +15,11 @@ use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Base\Traits\Es\Hydrator as EsHydrator;
 use RZP\Exception\BadRequestValidationFailureException;
 
+/**
+ * Trait RepositoryFetch
+ * @package RZP\Base
+ * @property Fetch $entityFetch
+ */
 trait RepositoryFetch
 {
     use EsHydrator;
@@ -118,8 +123,14 @@ trait RepositoryFetch
      */
     public function fetch(array $params, string $merchantId = null): PublicCollection
     {
-        // Process params (sanitization, validation, modification, etc.)
-        $this->processFetchParams($params);
+        if ($this->hasEntityFetch())
+        {
+            $this->entityFetch->processFetchParams($params);
+        }
+        else
+        {
+            $this->processFetchParams($params);
+        }
 
         $expands = $this->getExpandsForQueryFromInput($params);
 
@@ -129,7 +140,16 @@ trait RepositoryFetch
 
         // Splits the params into mysqlParams and esParams. Check methods doc on
         // how that happens.
-        list($mysqlParams, $esParams) = $this->getMysqlAndEsParams($params);
+        $this->setEsRepoIfExist();
+
+        if ($this->hasEntityFetch())
+        {
+            list($mysqlParams, $esParams) = $this->entityFetch->groupMysqlAndEsParams($params);
+        }
+        else
+        {
+            list($mysqlParams, $esParams) = $this->getMysqlAndEsParams($params);
+        }
 
         // If we find that there are es params then we do es search.
         // Currently (as commented in getMysqlAndEsParams method) we raise bad
@@ -167,8 +187,6 @@ trait RepositoryFetch
      */
     protected function getMysqlAndEsParams(array $params): array
     {
-        $this->setEsRepoIfExist();
-
         if ($this->esRepo === null)
         {
             return [$params, []];
@@ -492,7 +510,6 @@ trait RepositoryFetch
      */
     protected function getFetchParamRulesForCurrentAuth(): array
     {
-        // Assign the default rules
         $rules = $this->fetchParamRules;
 
         // TODO: Check for uniqueness. Privileged auth should override proxy auth and so on.
@@ -551,7 +568,7 @@ trait RepositoryFetch
 
     protected function validateAdditional(array $params)
     {
-        ;
+        //
     }
 
     public function setMerchantIdRequiredForMultipleFetch($required)
@@ -604,9 +621,16 @@ trait RepositoryFetch
         Merchant\Entity $merchant,
         array $params = []): PublicEntity
     {
-        $params = $this->modifyFindParams($params);
+        if ($this->hasEntityFetch())
+        {
+            $this->entityFetch->processFindParams($params);
+        }
+        else
+        {
+            $params = $this->modifyFindParams($params);
 
-        $this->validateFindParams($params);
+            $this->validateFindParams($params);
+        }
 
         $expands = $this->getExpandsForQueryFromInput($params);
 
