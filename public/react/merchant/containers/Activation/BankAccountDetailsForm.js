@@ -12,6 +12,12 @@ function verifyAccountNumber(value, allValues, props) {
     : undefined;
 }
 
+function validationAddressLength(value) {
+  return value && value.length > 30
+    ? 'Address must be 30 characters or less'
+    : undefined;
+}
+
 export default class BankDetailsForm extends Component {
   componentWillMount() {
     // Check if webkit browsers
@@ -132,7 +138,7 @@ export default class BankDetailsForm extends Component {
                       tagName="textarea"
                       class="form-control"
                       placeholder="Beneficiary Address Line 1"
-                      validate={[required()]}
+                      validate={[required(), validationAddressLength]}
                     />
                   </div>
                 </div>
