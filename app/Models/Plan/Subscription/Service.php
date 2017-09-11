@@ -211,17 +211,6 @@ class Service extends Base\Service
 
     public function chargeTestSubscription(string $subscriptionId, array $input)
     {
-        if ($this->mode !== Mode::TEST)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_SUBSCRIPTION_NOT_CHARGEABLE_IN_LIVE_MODE,
-                null,
-                [
-                    'subscription_id' => $subscriptionId,
-                    'input'           => $input,
-                ]);
-        }
-
         $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
 
         $this->trace->info(

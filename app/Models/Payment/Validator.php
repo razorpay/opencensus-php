@@ -146,7 +146,7 @@ class Validator extends Base\Validator
             return;
         }
 
-        if (($app['rzp.mode'] !== MODE::TEST) or
+        if (($app['rzp.mode'] !== Mode::TEST) or
             ($app['basicauth']->isProxyAuth() === false) or
             (isset($input[Entity::SUBSCRIPTION_ID]) === false) or
             (isset($input[Entity::TOKEN]) === false))

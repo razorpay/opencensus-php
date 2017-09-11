@@ -394,7 +394,7 @@ class Charge extends Base\Core
         return $authorizedPayment;
     }
 
-    protected function resetErrorFields(Entity $subscription)
+    public function resetErrorFields(Entity $subscription)
     {
         $subscription->setFailedAt(null);
         $subscription->setErrorStatus(null);

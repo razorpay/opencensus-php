@@ -5,9 +5,10 @@ namespace RZP\Models\Plan\Subscription;
 use Carbon\Carbon;
 
 use RZP\Base;
-use RZP\Models\Invoice;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Models\Invoice;
+use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Plan\Cycle;
 
@@ -177,6 +178,19 @@ class Validator extends Base\Validator
     public function validateTestSubscriptionChargeable()
     {
         $subscription = $this->entity;
+
+        $app = App::getFacadeRoot();
+
+        if ($app['rzp.mode'] !== Mode::TEST)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_NOT_CHARGEABLE_IN_LIVE_MODE,
+                null,
+                [
+                    'subscription_id' => $subscriptionId,
+                    'input'           => $input,
+                ]);
+        }
 
         if (($subscription->hasEnded() === true) or
             (in_array($subscription->getStatus(), Status::$manualTestChargeableStatuses, true) === false))

@@ -2144,6 +2144,8 @@ trait Authorize
         {
             $subscription->setStatus(Subscription\Status::ACTIVE);
 
+            (new Subscription\Charge)->resetErrorFields($subscription);
+
             $activated = true;
         }
 

@@ -1300,4 +1300,20 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_SUBSCRIPTION_CHANGE_CARD_NOT_ALLOWED,
         ],
     ],
+
+    'testSubscriptionHaltedCardChangeFail' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'The server encountered an error. The incident has been reported to admins.',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\RuntimeException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
+        ],
+    ],
 ];

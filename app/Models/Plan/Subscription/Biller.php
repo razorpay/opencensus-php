@@ -207,24 +207,31 @@ class Biller extends Base\Core
             {
                 $activated = false;
 
+                $addons = $this->repo->addon->getUnusedAddonsForSubscription($subscription);
+
+                $invoice = $this->createInvoiceForSubscription($subscription, $addons);
+
                 //
                 // If first charge, we set the status to active.
                 // If not, the status would already be active or
                 // would be reset by some other flow (auth/capture).
                 //
-                // TODO: A halted subscription could reach here as well, with paid
-                // count = 0. In that case activating the subscription is wrong.
+                // If subscription is halted, we need to create an invoice
+                // anyway, but not mark it as activated while doing so.
                 //
-                if ($subscription->getPaidCount() === 0)
+                // Eg. Subscription is in authenticated state, first charge
+                // fails, so does second and third. Subscription moves to
+                // halted. One month later, the halted subscription is to
+                // be picked up by the charge cron to create an invoice. But
+                // we don't want to activate it, even though paid_count is 0.
+                //
+                if (($subscription->getPaidCount() === 0) and
+                    ($subscription->isHalted() === false))
                 {
                     $this->activateSubscription($subscription);
 
                     $activated = true;
                 }
-
-                $addons = $this->repo->addon->getUnusedAddonsForSubscription($subscription);
-
-                $invoice = $this->createInvoiceForSubscription($subscription, $addons);
 
                 return ['invoice' => $invoice, 'activated' => $activated];
             });
