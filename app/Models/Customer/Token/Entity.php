@@ -26,6 +26,7 @@ class Entity extends Base\PublicEntity
     const MAX_AMOUNT                = 'max_amount';
     const RECURRING_STATUS          = 'recurring_status';
     const RECURRING_FAILURE_REASON  = 'recurring_failure_reason';
+    const RECURRING_DETAILS         = 'recurring_details';
     const USED_COUNT                = 'used_count';
     const USED_AT                   = 'used_at';
     const EXPIRED_AT                = 'expired_at';
@@ -69,8 +70,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TOKEN,
         self::GATEWAY_TOKEN2,
         self::RECURRING,
-        self::RECURRING_STATUS,
-        self::RECURRING_FAILURE_REASON,
+        self::RECURRING_DETAILS,
         self::USED_COUNT,
         self::USED_AT,
         self::EXPIRED_AT,
@@ -88,8 +88,7 @@ class Entity extends Base\PublicEntity
         self::METHOD,
         self::CARD,
         self::RECURRING,
-        self::RECURRING_STATUS,
-        self::RECURRING_FAILURE_REASON,
+        self::RECURRING_DETAILS,
         self::USED_AT,
         self::CREATED_AT,
     ];
@@ -113,8 +112,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::CARD,
         self::RECURRING,
-        self::RECURRING_STATUS,
-        self::RECURRING_FAILURE_REASON,
+        self::RECURRING_DETAILS,
     ];
 
     protected $casts = [
@@ -236,6 +234,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RECURRING_FAILURE_REASON);
     }
 
+    public function getRecurringDetails()
+    {
+        return $this->getAttribute(self::RECURRING_DETAILS);
+    }
+
     public function isLocal()
     {
         return ($this->getMerchantId() !== Account::SHARED_ACCOUNT);
@@ -326,21 +329,26 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    protected function setPublicRecurringStatusAttribute(array & $array)
+    /**
+     * If the token is not recurring and recurring status is not set, then
+     * we do not return recurring details. Else, we return recurring status
+     * and recurring failure reason as a key-value pair in recurring details
+     *
+     * @param array $array
+     */
+    public function setPublicRecurringDetailsAttribute(array & $array)
     {
         if (($this->isRecurring() === false) and
             (empty($this->getRecurringStatus()) === true))
         {
-            unset($array[self::RECURRING_STATUS]);
+            unset($array[self::RECURRING_DETAILS]);
         }
-    }
-
-    protected function setPublicRecurringFailureReasonAttribute(array & $array)
-    {
-        if (($this->isRecurring() === false) and
-            (empty($this->getRecurringStatus()) === true))
+        else
         {
-            unset($array[self::RECURRING_FAILURE_REASON]);
+            $array[self::RECURRING_DETAILS] = [
+                self::RECURRING_STATUS         => $this->getRecurringStatus(),
+                self::RECURRING_FAILURE_REASON => $this->getRecurringFailureReason(),
+            ];
         }
     }
 
