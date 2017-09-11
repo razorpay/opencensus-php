@@ -110,6 +110,9 @@ return [
 
         // Retry Settlements
         'setl_retry'                        => 'settlements/retry',
+        // Payment Dispute
+        'payment_disputes'                  => 'payments/{id}/disputes',
+        'dispute_edit'                      => 'disputes/{id}',
     ],
 
     // auth
@@ -584,10 +587,6 @@ return [
 
         // Make test payment for Virtual Account
         'bank_transfer_process'             => 'ecollect/validate',
-
-        // Payment Dispute
-        'payment_disputes'                  => 'payments/{id}/disputes',
-        'dispute_edit'                      => 'disputes/{id}',
     ],
 
     // auth
