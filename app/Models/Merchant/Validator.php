@@ -125,17 +125,27 @@ class Validator extends Base\Validator
      *
      * @throws Exception\BadRequestException
      */
-    protected function validateModeBasedFeatureAccess($features)
+    protected function validateModeBasedFeatureAccess(array $input)
     {
-        if (App::getFacadeRoot()['rzp.mode'] === Mode::LIVE)
+        if (App::getFacadeRoot()['rzp.mode'] === Mode::TEST)
         {
-            foreach ($features as $name => $value)
+            return;
+        }
+        else
+        {
+            $requestedFeatures = array_keys($input['features']);
+
+            $uneditableFeatures = Feature\Constants::$featuresUneditableOnLive;
+
+            // array_values is required as array_intersect returns an associative array with keys
+            // as the indexes if the element at index 0 in the first argument array is not present
+            // in the 2nd argument array.
+            $featuresNotAllowed = array_values(array_intersect($requestedFeatures, $uneditableFeatures));
+
+            if (empty($featuresNotAllowed) === false)
             {
-                if (in_array($name, Feature\Constants::$featuresUneditableOnLive, true) === true)
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE_ON_LIVE);
-                }
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE_ON_LIVE, $featuresNotAllowed);
             }
         }
     }

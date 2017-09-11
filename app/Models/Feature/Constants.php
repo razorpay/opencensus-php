@@ -102,7 +102,6 @@ class Constants
             'feature'      => self::VIRTUAL_ACCOUNTS,
             'display_name' => 'Virtual accounts'
         ],
-
     ];
 
     /*
