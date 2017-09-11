@@ -37,6 +37,21 @@ class WebhookTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateWebhookWithInternalIp()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateWebhookWithReservedIp()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateWebhookWithoutHost()
+    {
+        $this->startTest();
+    }
+
     public function testCreateWebhookWithLargerSecret()
     {
         $this->startTest();

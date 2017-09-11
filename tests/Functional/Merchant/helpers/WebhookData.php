@@ -54,6 +54,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
     'testCreateWebhookWithDisallowedPort' => [
         'request' => [
             'url' => '/webhooks',
@@ -78,6 +79,81 @@ return [
             'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
+    ],
+
+    'testCreateWebhookWithInternalIp' => [
+        'request' => [
+            'url' => '/webhooks',
+            'content' => [
+                'url' => 'http://10.0.0.1.xip.io',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'URL must point to a public IP address'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateWebhookWithReservedIp' => [
+        'request' => [
+            'url' => '/webhooks',
+            'content' => [
+                'url' => 'http://169.254.169.254.xip.io',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'URL must point to a public IP address'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateWebhookWithoutHost' => [
+        'request' => [
+            'url' => '/webhooks',
+            'content' => [
+                // Valid public IP address
+                'url' => 'http://1.2.3.4/hello',
+                'events' => [
+                    'payment.authorized' => '1',
+                ],
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'url' => 'http://1.2.3.4/hello',
+                'events' => [
+                    'payment.authorized' => true,
+                ],
+                'active' => true,
+            ]
+        ]
     ],
 
     'testGetWebhooks' => [
