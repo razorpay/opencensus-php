@@ -69,7 +69,10 @@ class Repository extends BaseRepository
 
             if ($feature === null)
             {
-                $this->trace->info(TraceCode::FEATURE_SYNCED, $entity->getName());
+                $this->trace->info(TraceCode::FEATURE_SYNCED, [
+                    $entity->getId(),
+                    $entity->getName()
+                ]);
                 return true;
             }
             else
