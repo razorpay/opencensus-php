@@ -32,6 +32,7 @@ class Terminal extends Base
         $this->createSharedCybersourceAxisTerminal();
         $this->createSharedFirstDataTerminal();
         $this->createSharedEbsTerminal();
+        $this->createSharedBladeTerminal();
     }
 
     public function createMultipleNetbankingTerminals()
@@ -212,6 +213,24 @@ class Terminal extends Base
             'gateway'                   => 'first_data',
             'gateway_acquirer'          => 'icic',
             'card'                      => 1,
+            'gateway_merchant_id'       => 'random',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedBladeTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::BLADE_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'blade',
+            'card'                      => 1,
+            'shared'                    => 1,
             'gateway_merchant_id'       => 'random',
         ];
 
