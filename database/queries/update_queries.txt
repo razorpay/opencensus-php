@@ -645,8 +645,6 @@ UPDATE transfers as tr
     WHERE txn.type = 'payment'
     AND p.transfer_id IS NOT NULL
 
-########
-
 UPDATE merchant_invoice
 JOIN merchant_details ON merchant_details.merchant_id = merchant_invoice.merchant_id
 SET merchant_invoice.gstin = merchant_details.gstin
@@ -667,3 +665,6 @@ UPDATE tokens SET terminal_id = '7Y30j1EY3JG8ob'
 
 UPDATE gateway_tokens SET terminal_id = '7Y30j1EY3JG8ob'
     WHERE terminal_id = '7bOl7tgaZ5kWvf'
+
+UPDATE offers SET issuer = payment_network WHERE payment_method != 'card';
+UPDATE offers SET payment_network = NULL WHERE payment_method != 'card';
