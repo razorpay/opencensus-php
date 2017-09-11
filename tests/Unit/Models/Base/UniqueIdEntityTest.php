@@ -9,7 +9,7 @@ class UniqueIdEntityTest extends TestCase
 {
     public function testVerifyUniqueIdWithInvalidId()
     {
-        $this->setExpectedException('RZP\Exception\BadRequestValidationFailureException');
+        $this->expectException('RZP\Exception\BadRequestValidationFailureException');
 
         $id = 'random';
 

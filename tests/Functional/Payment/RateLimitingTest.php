@@ -11,75 +11,77 @@ class RateLimitingTest extends TestCase
 {
     use PaymentTrait;
 
-    // public function setUp()
-    // {
-    //     parent::setUp();
+     public function setUp()
+     {
+         $this->markTestSkipped();
 
-    //     $this->ba->publicAuth();
+         parent::setUp();
 
-    //     $this->app['config']->set('throttle.skip', false);
-    // }
+         $this->ba->publicAuth();
 
-    // public function tearDown()
-    // {
-    //     $this->app['config']->set('throttle.skip', true);
+         $this->app['config']->set('throttle.skip', false);
+     }
 
-    //     parent::tearDown();
-    // }
+     public function tearDown()
+     {
+         $this->app['config']->set('throttle.skip', true);
 
-    // public function testThrottle()
-    // {
-    //     $this->skipTest();
-    //     $payment = $this->getDefaultPaymentArray();
-    //     $payment['card']['number'] = '5217294025032720';
+         parent::tearDown();
+     }
 
-    //     $this->app['config']->set('throttle.limits.test.public', 0);
+     public function testThrottle()
+     {
+         $this->skipTest();
+         $payment = $this->getDefaultPaymentArray();
+         $payment['card']['number'] = '5217294025032720';
 
-    //     $response = $this->doAuthPayment($payment);
+         $this->app['config']->set('throttle.limits.test.public', 0);
 
-    //     $this->assertArrayHasKey('error', $response);
-    //     $this->assertArrayNotHasKey('razorpay_payment_id', $response);
+         $response = $this->doAuthPayment($payment);
 
-    //     $this->assertEquals('Request failed. Please try after sometime.', $response['error']['description']);
-    // }
+         $this->assertArrayHasKey('error', $response);
+         $this->assertArrayNotHasKey('razorpay_payment_id', $response);
 
-    // public function testThrottleWithCallback()
-    // {
-    //     $this->skipTest();
-    //     $payment = $this->getDefaultPaymentArray();
-    //     $payment['card']['number'] = '4111111111111111';
+         $this->assertEquals('Request failed. Please try after sometime.', $response['error']['description']);
+     }
 
-    //     // For enrolled cards we need the limit to be more than double
-    //     // of actual values needed for public auth
-    //     $this->app['config']->set('throttle.limits.test.public', 1);
+     public function testThrottleWithCallback()
+     {
+         $this->skipTest();
+         $payment = $this->getDefaultPaymentArray();
+         $payment['card']['number'] = '4111111111111111';
 
-    //     $response = $this->doAuthPayment($payment);
+         // For enrolled cards we need the limit to be more than double
+         // of actual values needed for public auth
+         $this->app['config']->set('throttle.limits.test.public', 1);
 
-    //     $this->assertArrayHasKey('error', $response);
-    //     $this->assertArrayNotHasKey('razorpay_payment_id', $response);
+         $response = $this->doAuthPayment($payment);
 
-    //     $this->assertEquals('Request failed. Please try after sometime.', $response['error']['description']);
-    // }
+         $this->assertArrayHasKey('error', $response);
+         $this->assertArrayNotHasKey('razorpay_payment_id', $response);
 
-    // public function testThrottleWithMultipleLimits()
-    // {
-    //     $this->skipTest();
-    //     $payment = $this->getDefaultPaymentArray();
-    //     $payment['card']['number'] = '5217294025032720';
+         $this->assertEquals('Request failed. Please try after sometime.', $response['error']['description']);
+     }
 
-    //     $this->app['config']->set('throttle.limits.test.public', 10);
+     public function testThrottleWithMultipleLimits()
+     {
+         $this->skipTest();
+         $payment = $this->getDefaultPaymentArray();
+         $payment['card']['number'] = '5217294025032720';
 
-    //     $response = $this->doAuthPayment($payment);
+         $this->app['config']->set('throttle.limits.test.public', 10);
 
-    //     $this->assertArrayHasKey('razorpay_payment_id', $response);
+         $response = $this->doAuthPayment($payment);
 
-    //     $paymentId = $response['razorpay_payment_id'];
+         $this->assertArrayHasKey('razorpay_payment_id', $response);
 
-    //     $this->app['config']->set('throttle.limits.test.private', 0);
+         $paymentId = $response['razorpay_payment_id'];
 
-    //     $response = $this->getEntityById('payment', $paymentId);
+         $this->app['config']->set('throttle.limits.test.private', 0);
 
-    //     $this->assertArrayHasKey('error', $response);
-    //     $this->assertEquals('Request failed. Please try after sometime.', $response['error']['description']);
-    // }
+         $response = $this->getEntityById('payment', $paymentId);
+
+         $this->assertArrayHasKey('error', $response);
+         $this->assertEquals('Request failed. Please try after sometime.', $response['error']['description']);
+     }
 }
