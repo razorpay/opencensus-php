@@ -517,7 +517,8 @@ class Service extends Base\Service
         return [$error, $response];
     }
 
-    public function fetchKeysFromApi($merchantId, $mode) {
+    public function fetchKeysFromApi($merchantId, $mode)
+    {
         $getData = [
             'route_name' => 'merchant_fetch_keys',
             'url_params' => [
@@ -542,7 +543,8 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
-    public function fetchInvoices($mode) {
+    public function fetchInvoices($mode)
+    {
         $getData = [
             'route_name' => 'invoice_fetch_multiple',
             'mode' => $mode,
@@ -566,25 +568,28 @@ class Service extends Base\Service
 
     public function createKey($merchantId, $mode)
     {
-        $errors = $data = [];
+        $createKey = [
+            'route_name' => 'merchant_create_key',
+            'url_params' => [
+                '{id}' => $merchantId,
+            ],
+            'mode' => $mode
+        ];
 
-        $this->setApiCredentials(null, $mode);
+        $genericService = new Generic\Service;
 
-        try
+        list($error, $data) = $genericService->call('POST', $createKey);
+
+        if (empty($error) === false)
         {
-            $data = $this->api
-                         ->merchant
-                         ->setId($merchantId)
-                         ->keys()
-                         ->create()
-                         ->toArray();
-        }
-        catch(BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
+            throw new \Razorpay\Api\Errors\BadRequestError(
+                $error[0],
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
         }
 
-        return [$errors, $data];
+        return [$error, $data];
     }
 
     public function getInvoices($mode)

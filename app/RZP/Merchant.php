@@ -39,15 +39,6 @@ class Merchant extends Entity
         return parent::all($options);
     }
 
-    public function keys()
-    {
-        $entity = new Key;
-
-        $entity->merchant_id = $this->id;
-
-        return $entity;
-    }
-
     public function activate()
     {
         $relativeUrl = $this->getEntityUrl().$this->id.'/activate';
