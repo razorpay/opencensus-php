@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Blade;
 
-class PareqRequest
+class PAReq
 {
     const PAREQ         = 'PaReq';
     const TERMURL       = 'TermUrl';

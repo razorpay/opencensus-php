@@ -35,14 +35,14 @@ class ParesStatus
     const U = 'U';
     const A = 'A';
 
-    protected static $authenticateStatusMap = array(
+    protected static $authenticateStatusMap = [
         self::Y => AuthenticationStatus::Y,
         self::N => AuthenticationStatus::F,
         self::U => AuthenticationStatus::U,
         self::A => AuthenticationStatus::U,
-    );
+    ];
 
-    public static function getAuthenticationStatus($paresStatus)
+    public static function getAuthenticationStatus(string $paresStatus)
     {
         return self::$authenticateStatusMap[$paresStatus];
     }

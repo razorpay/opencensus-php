@@ -105,12 +105,12 @@ class Server extends Base\Mock\Server
                 $content['Message']['VERes'] =  $responseClass->notEnrolledValidResponse($paymentId, $cardNo);
 
                 break;
-            case CardNumber::INVALID_MEESGAE:
+            case CardNumber::INVALID_MEESAGE:
                 $content['Message']['@attributes']['id'] = 'RANDOM';
                 $content['Message']['VERes'] = $responseClass->differentMessageResponse($paymentId, $cardNo);
 
                 break;
-            case CardNumber::BLANK_MEESGAE:
+            case CardNumber::BLANK_MEESAGE:
                 $content['Message']['VERes'] = $responseClass->blankMessageResponse($paymentId, $cardNo);
 
                 break;

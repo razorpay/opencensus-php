@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Blade;
 
-class VereqRequest
+class VEReq
 {
     const MESSAGE           = 'Message';
     const ATTRIBUTES        = '@attributes';

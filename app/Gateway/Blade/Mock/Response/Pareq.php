@@ -33,7 +33,7 @@ class Pareq
                 'time'          => Carbon::createFromTimestamp(time(), 'Asia/Kolkata')->format('Ymd H:m:s'),
                 'status'        => 'Y',
                 'cavv'          => 'AAABBJg0VhI0VniQEjRWAAAAAAA=',
-                'eci'           => '03',
+                'eci'           => '05',
                 'cavvAlgorithm' => '2',
             ]
         ];

@@ -12,7 +12,7 @@ class Entity extends Base\Entity
     const AMOUNT                 = 'amount';
     const STATUS                 = 'status';
     const CAVV                   = 'cavv';
-    const CAVV_ALGORITHM         = 'cavv_algorithm';
+    const CAVV_ALGORITHM         = 'cavvAlgorithm';
     const ECI                    = 'eci';
     const XID                    = 'xid';
     const ENROLLED               = 'enrolled';
@@ -66,11 +66,6 @@ class Entity extends Base\Entity
         return $this->belongsTo('RZP\Models\Refund\Entity', self::REFUND_ID, self::ID);
     }
 
-    public function getId()
-    {
-        return $this->getAttribute(self::ID);
-    }
-
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
@@ -121,7 +116,7 @@ class Entity extends Base\Entity
         $this->setAttribute(self::CURRENCY, $currency);
     }
 
-    public function setAcquirer($acquirer)
+    public function setAcquirer(sting $acquirer)
     {
         $this->setAttribute(self::ACQUIRER, $acquirer);
     }

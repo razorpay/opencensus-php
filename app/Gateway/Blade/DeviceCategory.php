@@ -4,20 +4,34 @@ namespace RZP\Gateway\Blade;
 
 class DeviceCategory
 {
-    const DESKTOP   = 0;
-    const MOBILE    = 1;
-    const SMS       = 2;
-    const VOICE     = 3;
+    const DESKTOP   = 'desktop';
+    const MOBILE    = 'mobile';
+    const SMS       = 'sms';
+    const VOICE     = 'voice';
 
-    public static function getDeviceCategory($platform)
+    const DEVICE_CATEGORY = [
+        self::DESKTOP => 0,
+        self::MOBILE  => 1,
+        self::SMS     => 2,
+        self::VOICE   => 3,
+    ];
+
+    const AVAILABLE_DEVICE = [
+        self::DESKTOP,
+        self::MOBILE,
+        self::SMS,
+        self::VOICE
+    ];
+
+    public static function getDeviceCategory(string $platform = null)
     {
-        $platform = strtoupper($platform);
+        $platform = strtolower($platform);
 
-        if (defined(DeviceCategory::class . '::' . $platform))
+        if (in_array($platform, self::AVAILABLE_DEVICE, true) === true)
         {
-            return constant(DeviceCategory::class . '::' . $platform);
+            return self::DEVICE_CATEGORY[$platform];
         }
 
-        return self::DESKTOP;
+        return self::DEVICE_CATEGORY[self::DESKTOP];
     }
 }

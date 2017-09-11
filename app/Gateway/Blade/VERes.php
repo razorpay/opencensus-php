@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Blade;
 
-class VereqResponse
+class VERes
 {
     const MESSAGE           = 'Message';
     const VERES             = 'VERes';

@@ -6,7 +6,6 @@ use DOMDocument;
 use DOMNode;
 use DomElement;
 use DomXPath;
-use RZP\Exception\XMLSignatureValidationException;
 use RobRichards\XMLSecLibs\XMLSecEnc;
 use RuntimeException;
 use RobRichards\XMLSecLibs\XMLSecurityKey;
@@ -184,18 +183,6 @@ class XmlseclibsAdapter
         if ($this->getPublicKey())
         {
             $objXMLSecDSig->add509Cert($this->getPublicKey());
-        }
-    }
-
-    /**
-     * Raises an XMLSignatureValidationException
-     * if the assertion fails
-     */
-    protected function assert($assertion, $message = XMLSignatureValidationException::INVALID_XML_SIGNATURE)
-    {
-        if ($assertion !== true)
-        {
-            throw new XMLSignatureValidationException($message);
         }
     }
 

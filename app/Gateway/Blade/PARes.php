@@ -2,14 +2,12 @@
 
 namespace RZP\Gateway\Blade;
 
-class ParesResponse
+class PARes
 {
-    //TODO fix the response code
-    const MSG_REF_VALIDATION_FAILED = '';
-    const MSG_INVALID_PROPERTY = '';
-
     const PURCHASE          = 'Purchase';
     const XID               = 'xid';
+    const ID                = 'id';
+    const ATTRIBUTES        = '@attributes';
     const TX                = 'TX';
     const CAVV              = 'cavv';
     const CAVVALGORITHM     = 'cavvAlgorithm';
@@ -22,4 +20,9 @@ class ParesResponse
     const PARES             = 'PARes';
     const GATEWAY_PARES     = 'PaRes';
     const PAN               = 'pan';
+    const DATE              = 'date';
+    const CURRENCY          = 'currency';
+    const PURCHASE_AMOUNT   = 'purchAmount';
+    const EXPONENT          = 'exponent';
+
 }

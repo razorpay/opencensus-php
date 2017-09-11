@@ -101,7 +101,7 @@ class BladeGatewayTest extends TestCase
             {
                 $payment = $this->defaultAuthPayment([
                     'card' => [
-                        'number'       => CardNumber::INVALID_MEESGAE,
+                        'number'       => CardNumber::INVALID_MEESAGE,
                         'expiry_month' => '02',
                         'expiry_year'  => '21',
                         'cvv'          => 123,
@@ -119,7 +119,7 @@ class BladeGatewayTest extends TestCase
             {
                 $payment = $this->defaultAuthPayment([
                     'card' => [
-                        'number'       => CardNumber::BLANK_MEESGAE,
+                        'number'       => CardNumber::BLANK_MEESAGE,
                         'expiry_month' => '02',
                         'expiry_year'  => '21',
                         'cvv'          => 123,

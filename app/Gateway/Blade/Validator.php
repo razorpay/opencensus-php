@@ -72,12 +72,11 @@ class Validator extends JitValidator
         'Message.Signature.KeyInfo.X509Data.X509Certificate'                            => 'sometimes|array',
     ];
 
-    public static function validateLastFour($expected, $actual)
+    public static function validateLastFour(string $expected, string $actual)
     {
-        $expectedLastFour = substr($expected, -4);
         $actualLastFour = substr($actual, -4);
 
-        if ($expectedLastFour !== $actualLastFour)
+        if ($expected !== $actualLastFour)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_CARD_INVALID_NUMBER,
@@ -86,14 +85,7 @@ class Validator extends JitValidator
         }
     }
 
-    protected function processValidationFailure($messages, $operation, $input)
-    {
-        throw new Exception\GatewayErrorException(
-            ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
-            $messages);
-    }
-
-    public static function validateResponse($response, $input)
+    public static function validateResponse(array $response, array $input)
     {
         self::validatePurchaseDate($response, $input);
         self::validateCurrency($response, $input);
@@ -101,9 +93,9 @@ class Validator extends JitValidator
         self::validateCurrencyExponent($response, $input);
     }
 
-    public static function validateXid($response, $expectedXid)
+    public static function validateXid(array $response, string $expectedXid)
     {
-        if ($response['Purchase']['xid'] !== $expectedXid)
+        if ($response[PARes::PURCHASE][PARes::XID] !== $expectedXid)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
@@ -111,18 +103,18 @@ class Validator extends JitValidator
                 'Value mismatch for xid',
                 [
                     'expected' => $expectedXid,
-                    'actual'   => $response['Purchase']['xid']
+                    'actual'   => $response[PARes::PURCHASE][PARes::XID]
                 ]
             );
         }
     }
 
-    public static function validatePurchaseDate($response, $input)
+    public static function validatePurchaseDate(array $response, array $input)
     {
         $purchaseDate = Carbon::createFromTimestamp($input['payment']['created_at'], 'Asia/Kolkata')
             ->format('Ymd H:m:s');
 
-        if ($response['Purchase']['date'] !== $purchaseDate)
+        if ($response[PARes::PURCHASE][PARes::DATE] !== $purchaseDate)
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
@@ -130,14 +122,14 @@ class Validator extends JitValidator
                 'Value mismatch',
                 [
                     'expected' => $purchaseDate,
-                    'actual'   => $response['Purchase']['date']
+                    'actual'   => $response[PARes::PURCHASE][PARes::DATE]
                 ]);
         }
     }
 
-    public static function validateCurrency($response, $input)
+    public static function validateCurrency(array $response, array $input)
     {
-        $currency = $response['Purchase']['currency'];
+        $currency = $response[PARes::PURCHASE][PARes::CURRENCY];
 
         if ($currency !== Currency::getIsoCode($input['payment']['currency']))
         {
@@ -152,9 +144,9 @@ class Validator extends JitValidator
         }
     }
 
-    public static function validateAmount($response, $input)
+    public static function validateAmount(array $response, array $input)
     {
-        $amount = (int) $response['Purchase']['purchAmount'];
+        $amount = (int) $response[PARes::PURCHASE][PARes::PURCHASE_AMOUNT];
 
         if ($amount !== $input['payment']['amount'])
         {
@@ -169,9 +161,9 @@ class Validator extends JitValidator
         }
     }
 
-    public static function validateCurrencyExponent($response, $input)
+    public static function validateCurrencyExponent(array $response, array $input)
     {
-        $exponent = (int) $response['Purchase']['exponent'];
+        $exponent = (int) $response[PARes::PURCHASE][PARes::EXPONENT];
 
         if ($exponent !== Currency::getExponent($input['payment']['currency']))
         {
@@ -186,9 +178,9 @@ class Validator extends JitValidator
         }
     }
 
-    public static function validatePaymentId($response, $input)
+    public static function validatePaymentId(array $response, array $input)
     {
-        if ($response['Message']['@attributes']['id'] !== $input['payment']['public_id'])
+        if ($response[PARes::MESSAGE][PARes::ATTRIBUTES][PARes::ID] !== $input['payment']['public_id'])
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
@@ -196,8 +188,14 @@ class Validator extends JitValidator
                 'Payment ID mismatch',
                 [
                     'actual'   => $input['payment']['public_id'],
-                    'expected' => $response['@attributes']['id']
+                    'expected' => $response[PARes::MESSAGE][PARes::ATTRIBUTES][PARes::ID]
                 ]);
         }
+    }
+    protected function processValidationFailure($messages, $operation, $input)
+    {
+        throw new Exception\GatewayErrorException(
+            ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE,
+            $messages);
     }
 }
