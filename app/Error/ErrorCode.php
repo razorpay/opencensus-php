@@ -484,6 +484,11 @@ class ErrorCode
     const SERVER_ERROR_PERIOD_NOT_ANCHORED                                          = 'SERVER_ERROR_PERIOD_NOT_ANCHORED';
     const SERVER_ERROR_LOG_RISK                                                     = 'SERVER_ERROR_LOG_RISK';
     const SERVER_ERROR_ES_OPERATION_ERRORED                                         = 'SERVER_ERROR_ES_OPERATION_ERRORED';
+    const SERVER_ERROR_GATEWAY_FILE_GENERATION_ERROR                                = 'SERVER_ERROR_GATEWAY_FILE_GENERATION_ERROR';
+
+    const SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND                                   = 'SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND';
+    const SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE                           = 'SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE';
+    const SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_MAIL                              = 'SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_MAIL';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED                                     = 'BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED';
@@ -577,7 +582,6 @@ class ErrorCode
     const BAD_REQUEST_OFFER_ALREADY_EXISTS                                          = 'BAD_REQUEST_OFFER_ALREADY_EXISTS';
     const BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK               = 'BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK';
     const BAD_REQUEST_IINS_EDITABLE_FOR_CARD_OFFER                                  = 'BAD_REQUEST_IINS_EDITABLE_FOR_CARD_OFFER';
-    const BAD_REQUEST_INVALID_FORMAT_FOR_IINS                                       = 'BAD_REQUEST_INVALID_FORMAT_FOR_IINS';
     const BAD_REQUEST_OFFER_ALREADY_DEACTIVATED                                     = 'BAD_REQUEST_OFFER_ALREADY_DEACTIVATED';
 
     const BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED                                   = 'BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED';
@@ -630,4 +634,6 @@ class ErrorCode
     const BAD_REQUEST_INVALID_COUPON_CODE                                           = 'BAD_REQUEST_INVALID_COUPON_CODE';
 
     const BAD_REQUEST_SNS_PUBLISH_FAILED                                            = 'BAD_REQUEST_SNS_PUBLISH_FAILED';
+
+    const BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE                                    = 'BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE';
 }

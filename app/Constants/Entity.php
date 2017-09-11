@@ -61,6 +61,7 @@ class Entity
     const TRANSACTION           = 'transaction';
     const FEE_BREAKUP           = 'fee_breakup';
     const GATEWAY_RULE          = 'gateway_rule';
+    const GATEWAY_FILE          = 'gateway_file';
     const BANK_ACCOUNT          = 'bank_account';
     const FILE_HANDLER          = 'file_handler';
     const SUBSCRIPTION          = 'subscription';
@@ -196,6 +197,7 @@ class Entity
         self::CUSTOMER_BALANCE      => \RZP\Models\Customer\Balance::class,
         self::GATEWAY_DOWNTIME      => \RZP\Models\Gateway\Downtime::class,
         self::GATEWAY_RULE          => \RZP\Models\Gateway\Rule::class,
+        self::GATEWAY_FILE          => \RZP\Models\Gateway\File::class,
         self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
         self::CREDIT_TRANSACTION    => \RZP\Models\Merchant\Credits\Transaction::class,
         self::MERCHANT_PROMOTION    => \RZP\Models\Merchant\Promotion::class,

@@ -449,7 +449,6 @@ class PublicErrorDescription
     const BAD_REQUEST_OFFER_ALREADY_EXISTS                                      = 'Offer already exists. Please check the values and try again';
     const BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK           = 'Flat cashback cannot be combined wih percent rate or max cashback in an offer';
     const BAD_REQUEST_IINS_EDITABLE_FOR_CARD_OFFER                              = 'Iins can only be editable for card offer';
-    const BAD_REQUEST_INVALID_FORMAT_FOR_IINS                                   = 'Iins should be a valid array';
     const BAD_REQUEST_OFFER_ALREADY_DEACTIVATED                                 = 'Offer has already been deactivated';
     const BAD_REQUEST_ORG_ID_REQUIRED                                           = 'Authentication Failed';
     const BAD_REQUEST_INVALID_PERMISSIONS_USAGE                                 = 'Combination of permissions used or assigned are invalid. Contact Razorpay Support';
@@ -508,4 +507,10 @@ class PublicErrorDescription
     const BAD_REQUEST_COUPON_EXPIRED                                            = 'Coupon code is expired';
 
     const BAD_REQUEST_SNS_PUBLISH_FAILED                                        = 'Sns Publish failed';
+
+    const BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE                                = 'This gateway file generation attempt is not retriable';
+
+    const SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND                               = 'No data present for gateway file processing in the given time period';
+    const SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE                       = 'Error occurred trying to create file';
+    const SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_MAIL                          = 'Error occurred while sending mail';
 }

@@ -378,6 +378,9 @@ final class Route
         'gateway_create_rule'                     => ['post',     'gateway/rules',                                  'GatewayController@createGatewayRule'                               ],
         'gateway_update_rule'                     => ['patch',    'gateway/rules/{id}',                             'GatewayController@updateGatewayRule'                               ],
         'gateway_delete_rule'                     => ['delete',   'gateway/rules/{id}',                             'GatewayController@deleteGatewayRule'                               ],
+        'gateway_file_create'                     => ['post',     'gateway/files',                                  'GatewayFileController@createGatewayFile'                           ],
+        'gateway_file_retry'                      => ['post',     'gateway/files/{id}/retry',                       'GatewayFileController@retryGatewayFile'                            ],
+        'gateway_file_acknowledge'                => ['post',     'gateway/files/{id}/acknowledge',                 'GatewayFileController@acknowledgeGatewayFile'                      ],
         'scorecard'                               => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
         'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
         'plan_create'                             => ['post',     'plans',                                          'SubscriptionController@postCreatePlan'                             ],
@@ -987,6 +990,9 @@ final class Route
         'risk_get',
         'merchant_create_invoice_entities',
         'merchant_payout',
+        'gateway_file_create',
+        'gateway_file_retry',
+        'gateway_file_acknowledge',
     ];
 
     public static $proxy = [
@@ -1249,7 +1255,7 @@ final class Route
         'invitation_fetch'                 => '*',
         'pricing_create_plan'              => Permission::CREATE_PRICING_PLAN,
         'merchant_get_pricing'             => Permission::VIEW_MERCHANT_PRICING,
-        'merchant_invoice_update_gstin'    => '*',
+        'merchant_invoice_update_gstin'    => Permission::EDIT_MERCHANT_INVOICE_GSTIN,
         'merchant_details_fetch'           => '*',
         'setl_retry'                       => Permission::RETRY_SETTLEMENT,
         'merchant_invoice_add_bulk'        => '*',
@@ -1339,6 +1345,7 @@ final class Route
             'virtual_account_refund_excess',
             'merchant_create_invoice_entities',
             'merchant_payout',
+            'gateway_file_create',
         ],
 
         'kotak' => [
