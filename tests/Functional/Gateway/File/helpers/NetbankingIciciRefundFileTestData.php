@@ -8,24 +8,31 @@ return [
         'request' => [
             'content' => [
                 'type'    => 'refund',
-                'source'  => 'icici',
-                'from'    => Carbon::today(Timezone::IST)->timestamp,
-                'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
+                'targets' => ['icici'],
+                'begin'   => Carbon::today(Timezone::IST)->timestamp,
+                'end'     => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'status'              => 'mail_sent',
-                'scheduled'           => true,
-                'partially_processed' => false,
-                'attempts'            => 1,
-                'sender'              => 'refunds@razorpay.com',
-                'type'                => 'refund',
-                'source'              => 'icici',
-                'entity'              => 'gateway_file',
-                'admin'               => true
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'mail_sent',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'refunds@razorpay.com',
+                        'type'                => 'refund',
+                        'target'              => 'icici',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ],
+                ],
             ],
         ],
     ],

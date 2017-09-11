@@ -337,7 +337,7 @@ return [
                 'attempts'            => 2,
                 'sender'              => 'refunds@razorpay.com',
                 'type'                => 'refund',
-                'source'              => 'hdfc',
+                'target'              => 'hdfc',
                 'entity'              => 'gateway_file',
                 'admin'               => true
             ]
