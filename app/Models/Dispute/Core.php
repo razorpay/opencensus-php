@@ -36,15 +36,19 @@ class Core extends Base\Core
 
         $this->setRelationsAndDerivedAttributes($dispute, $payment, $reason);
 
+        // entity id is required to create associated transaction
+        $dispute->generateId();
+
+        $this->app['workflow']
+            ->setEntityAndId($dispute->getEntity(), $dispute->getId())
+            ->handle((new \stdClass), $dispute);
+
         $payment->setDisputed(true);
 
         $dispute = $this->repo->transaction(function() use ($dispute)
         {
             if ($dispute->getDeductAtOnset() === true)
             {
-                // entity id is required to create associated transaction
-                $dispute->generateId();
-
                 $this->deductDisputedAmount($dispute);
             }
 
