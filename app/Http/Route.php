@@ -977,6 +977,8 @@ final class Route
         'invitation_action',
         'migrate_tokens_to_gateway_tokens',
         'mock_generate_reconciliation',
+        'payment_dispute_create',
+        'dispute_edit',
         'gratis_postpaid_transactions',
         'virtual_account_refund_excess',
         'risk_create',
@@ -1129,8 +1131,6 @@ final class Route
         'merchant_get_terminals',
         'merchant_invoice_add_bulk',
         'setl_retry',
-        'payment_dispute_create',
-        'dispute_edit',
     ];
 
     public static $routePermission = [
