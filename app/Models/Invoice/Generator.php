@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Order;
 use RZP\Constants\Mode;
+use RZP\Models\Address;
 use RZP\Error\ErrorCode;
 use RZP\Models\Customer;
 use RZP\Models\LineItem;
@@ -377,55 +378,94 @@ class Generator extends Base\Core
     }
 
     /**
-     * Invoice can be created via passing customer_id which already exists
-     * or providing customer details in 'customer' array in input POST details.
-     *
-     * This function creates customer if it doesn't exist.
-     * It associates customer with invoice.
+     * Consumes customer related attributes of $input. Gets called in both create/
+     * update flow. Works as follows:
+     * - If customer_id is passed, use that and update invoice's copy of attributes
+     * - If customer is passed, override invoice copy of attributes with those details
      *
      * @param array $input
-     *
-     * @return null|Customer\Entity
-     * @throws BadRequestValidationFailureException
      */
     protected function associateCustomerWithInvoice(array $input)
     {
-        $customerDetails = ($input[Entity::CUSTOMER]) ?? [];
-
-        $customerId = ($input[Entity::CUSTOMER_ID]) ?? null;
-
-        if ($customerId and $customerDetails)
+        if (array_key_exists(Entity::CUSTOMER_ID, $input) === true)
         {
-            throw new BadRequestValidationFailureException(
-                'Expecting either customer_id or customer details'
-            );
+            $this->associateCustomerWithInvoiceById($input[Entity::CUSTOMER_ID]);
         }
 
-        $customer = null;
-
-        if ($customerId)
+        if (array_key_exists(Entity::CUSTOMER, $input) === true)
         {
-            $customer = $this->repo->customer->findByPublicIdAndMerchant(
-                                                $customerId, $this->merchant);
-
-            $this->trace->info(
-                TraceCode::INVOICE_EXISTING_CUSTOMER,
-                [
-                    'invoice_id' => $this->invoice->getId(),
-                    'customer_id' => $customer->getId(),
-                ]);
+            $this->associateCustomerWithInvoiceByDetails($input[Entity::CUSTOMER]);
         }
-        else if ($customerDetails)
+    }
+
+    protected function associateCustomerWithInvoiceById(string $id = null)
+    {
+        // If customer_id = null, remove customer and unset invoice's copy of attributes
+        if (empty($id) === true)
         {
-            $core = new Customer\Core;
-            $customer = $core->createLocalCustomer(
-                            $customerDetails, $this->merchant, false);
+            $this->invoice->unsetCustomerDetails();
+
+            return;
         }
 
-        if ($customer)
+        // Else, find customer with given id, associate and set invoice's copy of attributes
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $this->invoice->associateAndSetCustomerDetails($customer);
+    }
+
+    protected function associateCustomerWithInvoiceByDetails(array $details)
+    {
+        // If invoice has customer associated already just override the invoice's copy of attributes
+        if ($this->invoice->hasCustomer() === true)
         {
-            $this->invoice->customer()->associate($customer);
-            $this->invoice->setCustomerDetails($customer);
+            $this->overrideCustomerOfInvoiceWithDetails($details);
+        }
+        // Else, create customer with the given input details, associate and set invoice's copy
+        else
+        {
+            //
+            // TODO:
+            // - In case customer exists with given contact & email
+            //   (the unique check), we don't create anything here and probably
+            //   miss out name, billing_address and other attributes. They will
+            //   have to basically send those with another update request. :(
+            //
+            $customer = (new Customer\Core)->createLocalCustomer($details, $this->merchant, false);
+
+            $this->invoice->associateAndSetCustomerDetails($customer);
+        }
+    }
+
+    /**
+     * Overrides invoice's copy of customer attributes with one provided in
+     * input as $details.
+     *
+     * @param array $details
+     */
+    protected function overrideCustomerOfInvoiceWithDetails(array $details)
+    {
+        $this->invoice->getValidator()->validateInput('editCustomerDetails', $details);
+
+        // Verifies billing_address_id sign and strips the same.
+        if (isset($details[Customer\Entity::BILLING_ADDRESS_ID]))
+        {
+            Address\Entity::verifyIdAndStripSign($details[Customer\Entity::BILLING_ADDRESS_ID]);
+        }
+
+        //
+        // Gets list of editable customer detail attributes, FOREACHS over them
+        // and calls invoice's setter to update it's copy.
+        //
+        $attributes = Validator::getEditCustomerDetailsKeys();
+
+        foreach ($attributes as $key)
+        {
+            if (array_key_exists($key, $details) === false) { continue; }
+
+            $setter = 'setCustomer' . studly_case($key);
+
+            $this->invoice->$setter($details[$key]);
         }
     }
 }

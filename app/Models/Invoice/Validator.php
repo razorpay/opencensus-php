@@ -7,6 +7,7 @@ use RZP\Constants\Timezone;
 
 use RZP\Base;
 use RZP\Models\Feature;
+use RZP\Models\Customer;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Exception\LogicException;
@@ -111,7 +112,7 @@ class Validator extends Base\Validator
         Entity::SOURCE              => 'filled|string|max:32|custom',
         Entity::TYPE                => 'filled|string|max:16|custom',
         Entity::CUSTOMER            => 'sometimes|array',
-        Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
+        Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19|nullable',
         Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
         Entity::PARTIAL_PAYMENT     => 'filled|boolean|custom',
         Entity::AMOUNT              => 'filled|integer|min:100',
@@ -159,6 +160,13 @@ class Validator extends Base\Validator
         Entity::CALLBACK_METHOD     => 'required_with:callback_url|sometimes|string|in:get|nullable',
     ];
 
+    protected static $editCustomerDetailsRules = [
+        Customer\Entity::NAME               => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:50|nullable',
+        Customer\Entity::EMAIL              => 'sometimes|email',
+        Customer\Entity::CONTACT            => 'sometimes|contact_syntax',
+        Customer\Entity::BILLING_ADDRESS_ID => 'sometimes|public_id|size:19|nullable',
+    ];
+
     protected static $issueBatchRules = [
         Entity::IDS                 => 'sometimes|array|min:1|max:100',
         Entity::IDS . '.*'          => 'required|public_id|size:18',
@@ -182,6 +190,11 @@ class Validator extends Base\Validator
     protected static $editDraftValidators = [
         Entity::AMOUNT,
     ];
+
+    public static function getEditCustomerDetailsKeys(): array
+    {
+        return array_keys(self::$editCustomerDetailsRules);
+    }
 
     public function validateAmount(array $input)
     {
@@ -626,8 +639,7 @@ class Validator extends Base\Validator
 
         if ($lineItemsCount === 0)
         {
-            throw new BadRequestValidationFailureException(
-                'line_items is required.');
+            throw new BadRequestValidationFailureException('line_items is required.');
         }
 
         $customer = $invoice->customer;
@@ -635,8 +647,7 @@ class Validator extends Base\Validator
         if ((empty($customer) === true) and
             ($invoice->isOfSubscription() === false))
         {
-            throw new BadRequestValidationFailureException(
-                'customer is required.');
+            throw new BadRequestValidationFailureException('customer is required.');
         }
     }
 
@@ -646,8 +657,7 @@ class Validator extends Base\Validator
 
         if ($invoiceAmount === null)
         {
-            throw new BadRequestValidationFailureException(
-                'amount cannot be empty.');
+            throw new BadRequestValidationFailureException('amount cannot be empty.');
         }
 
         $lineItemsCount = $invoice->lineItems()->count();
@@ -655,8 +665,7 @@ class Validator extends Base\Validator
 
         if (($lineItemsCount === 0) and ($description === null))
         {
-            throw new BadRequestValidationFailureException(
-                'description is required.');
+            throw new BadRequestValidationFailureException('description is required.');
         }
     }
 }

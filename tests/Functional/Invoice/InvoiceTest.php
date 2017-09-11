@@ -69,6 +69,13 @@ class InvoiceTest extends TestCase
         $this->assertEquals('cust_100000customer', $response['customer_id']);
     }
 
+    public function testCreateInvoiceWithExistingCustomerAndNewDetails()
+    {
+        $this->startTest();
+
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
+    }
+
     public function testCreateInvoiceAndPay()
     {
         Mail::fake();
@@ -244,6 +251,24 @@ class InvoiceTest extends TestCase
         $this->assertEquals('1', $address['primary']);
         $this->assertEquals($response['customer_id'], $address['entity_id']);
         $this->assertEquals('customer', $address['entity_type']);
+    }
+
+    public function testCreateInvoiceWithExistingCustomerAndNewAddress()
+    {
+        // Have one new customer address created which we will use in test data
+        $input = [
+            'id'      => '10000000000002',
+            'line1'   => 'Line 1',
+            'line2'   => 'Line 2',
+            'zipcode' => '560076',
+            'type'    => 'billing_address',
+        ];
+
+        $this->fixtures->create('address', $input);
+
+        $this->startTest();
+
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testCreateInvoiceWithSmsNotifyFalseAndEmailNotifyTrue()
@@ -541,19 +566,42 @@ class InvoiceTest extends TestCase
     {
         $this->createDraftInvoice();
 
-        $response = $this->startTest();
-
-        $customer = $this->getLastEntity('customer', true);
-        $this->assertEquals($customer['id'], $response['customer_id']);
+        $this->startTest();
 
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
-    public function testUpdateDraftInvoiceWithCustomerIdAndDetails()
+    public function testUpdateDraftInvoiceWithCustomerIdAndNewDetails()
+    {
+        $this->createDraftInvoice();
+
+        $this->fixtures->create('customer', ['id' => '100002customer']);
+
+        $this->startTest();
+
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
+    }
+
+    public function testUpdateDraftInvoiceUnsetCustomer()
     {
         $this->createDraftInvoice();
 
         $this->startTest();
+
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
+    }
+
+    public function testUpdateDraftInvoiceUnsetCustomerAndNewDetails()
+    {
+        $this->createDraftInvoice();
+
+        $response = $this->startTest();
+
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
+
+        $customer = $this->getLastEntity('customer', true);
+
+        $this->assertEquals($customer['id'], $response['customer_id']);
     }
 
     public function testUpdateIssuedInvoice()
