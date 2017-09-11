@@ -1385,6 +1385,7 @@ final class Route
         'payment_get_status',
         'merchant_public_get_banks',
         'merchant_methods',
+        'merchant_methods_downtime',
     ];
 
     /**
