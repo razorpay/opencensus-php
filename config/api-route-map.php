@@ -110,9 +110,6 @@ return [
 
         // Retry Settlements
         'setl_retry'                        => 'settlements/retry',
-        // Payment Dispute
-        'payment_disputes'                  => 'payments/{id}/disputes',
-        'dispute_edit'                      => 'disputes/{id}',
     ],
 
     // auth
@@ -644,5 +641,8 @@ return [
         'gateway_create_rule'               => 'gateway/rules',
         'gateway_update_rule'               => 'gateway/rules/{id}',
         'gateway_delete_rule'               => 'gateway/rules/{id}',
+        // Payment Dispute
+        'payment_disputes'                  => 'payments/{id}/disputes',
+        'dispute_edit'                      => 'disputes/{id}',
     ],
 ];
