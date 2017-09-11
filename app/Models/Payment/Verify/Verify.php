@@ -103,7 +103,7 @@ class Verify extends Base\Core
     const GATEWAY_TIMEOUT_THRESHOLD = 10;
 
     /**
-     * Cache key prefix for storing gatway timeot values
+     * Cache key prefix for storing gateway timeout values
      */
     const GATEWAY_TIMEOUT_CACHE_KEY_PREFIX = 'verify_timeout_block';
 
@@ -588,7 +588,7 @@ class Verify extends Base\Core
 
         $key = self::GATEWAY_TIMEOUT_CACHE_KEY_PREFIX;
 
-        $key .= $gateway . '_' . $currentTimestampBucket;
+        $key .= '_' . $gateway . '_' . $currentTimestampBucket;
 
         $timedOutPaymentsCount = (int) $this->redis->incr($key);
 
