@@ -406,7 +406,7 @@ class Entity extends Base\PublicEntity
      * Currently this method deals with only netbanking downtimes, as we are only
      * exposing these types of downtimes over public route to merchant
      */
-    public function toArrayExternal()
+    public function toArrayPublic()
     {
         $reasonCode = $this->getReasonCode();
 

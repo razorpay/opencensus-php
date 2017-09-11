@@ -17,7 +17,7 @@ class Collection extends Base\PublicCollection
      */
     public function toArrayCheckout()
     {
-        $formattedData = [];
+        $array = [];
 
         foreach ($this->items as $downtime)
         {
@@ -52,26 +52,26 @@ class Collection extends Base\PublicCollection
 
             if ($downtimeData !== null)
             {
-                $formattedData[$method][] = $downtimeData;
+                $array[$method][] = $downtimeData;
             }
         }
 
-        return $formattedData;
+        return $array;
     }
 
-    public function toArrayExternal()
+    public function toArrayPublic()
     {
-        $formattedData = [];
+        $array = [];
 
-        $items = $this->itemsToArrayExternal();
+        $items = $this->itemsToArrayPublic();
 
-        $formattedData[static::ENTITY] = $this->entity;
+        $array[static::ENTITY] = $this->entity;
 
-        $formattedData[static::COUNT] = count($items);
+        $array[static::COUNT] = count($items);
 
-        $formattedData[static::ITEMS] = $items;
+        $array[static::ITEMS] = $items;
 
-        return $formattedData;
+        return $array;
     }
 
     protected function getFormattedDowntimeDataForCard(Entity $downtime)
@@ -188,11 +188,11 @@ class Collection extends Base\PublicCollection
         }
     }
 
-    protected function itemsToArrayExternal(): array
+    protected function itemsToArrayPublic(): array
     {
         return array_values(array_filter(array_map(function ($item)
         {
-            return $item->toArrayExternal();
+            return $item->toArrayPublic();
 
         }, $this->items)));
     }

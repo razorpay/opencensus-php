@@ -34,11 +34,14 @@ class Service extends Base\Service
 
     public function getDowntimeDataForMerchant(): array
     {
+        // Currently we are only exposing netbanking downtimes over the public
+        // downtime fetch route. For other methods, support will be added after
+        // the relevant downtimes are being utilised on Razorpay checkout.
         $downtimes = $this->core()->getPublicGatewayDowntimeData([
             Method::NETBANKING,
         ]);
 
-        return $downtimes->toArrayExternal();
+        return $downtimes->toArrayPublic();
     }
 
     public function processGatewayDowntimeWebhook(string $source, array $input)
