@@ -6,35 +6,29 @@ use DB;
 use Mail;
 use Config;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 
 use RZP\Exception;
-use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
-use RZP\Models\Base;
-use RZP\Models\Emi;
 use RZP\Models\Key;
-use RZP\Models\User;
+use RZP\Models\Base;
 use RZP\Models\Offer;
 use RZP\Models\Coupon;
-use RZP\Models\Payment;
-use RZP\Models\Pricing;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Schedule;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
+use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Group;
-use RZP\Constants\MailTags;
 use RZP\Models\BankAccount;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Merchant\SlackActions as SlackActions;
+use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 
 class Service extends Base\Service
 {
@@ -799,14 +793,14 @@ class Service extends Base\Service
         $from = Holidays::getPreviousWorkingDay($today);
 
         $newBeneficiaryCount = $this->repo->bank_account->getCountOfBankAccountsCreatedBetween(
-                                                        $from->timestamp,
-                                                        $today->timestamp);
+                                                        $from->getTimestamp(),
+                                                        $today->getTimestamp());
 
         if ($newBeneficiaryCount > 0)
         {
             (new BankAccount\BeneficiaryFile)->generateBetweenTimestamps(
-                                                        $from->timestamp,
-                                                        $today->timestamp);
+                                                        $from->getTimestamp(),
+                                                        $today->getTimestamp());
         }
 
         $message = "Merchant Beneficiary file generated. Beneficiary added since".
@@ -1060,6 +1054,8 @@ class Service extends Base\Service
 
         $merchant->retag($tags);
 
+        $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
+
         return $merchant->tagNames();
     }
 
@@ -1073,6 +1069,8 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $merchant->untag($tagName);
+
+        $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
 
         return $merchant->tagNames();
     }
@@ -1150,9 +1148,11 @@ class Service extends Base\Service
      */
     public function getSubmerchants(): array
     {
-        $merchant = $this->merchant;
+        $merchantId = $this->merchant->getId();
 
-        return [ $merchant->getId() ];
+        $merchants = $this->fetchReferredMerchants();
+
+        return array_merge([$merchantId], $merchants->pluck('id')->toArray());
     }
 
     /**
@@ -1233,6 +1233,59 @@ class Service extends Base\Service
             {
                 $this->repo->feature->delete($feature);
             }
+        }
+    }
+
+    public function getMerchantDetails()
+    {
+        $data = [];
+
+        /**
+         * Merchant needs to be set using X-Razorpay-account header.
+         * Setting Merchant in header validates admin access to
+         * that merchant in admin access middleware.
+         */
+        if (empty($this->merchant) === false)
+        {
+            $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
+                $this->merchant->getId(), ['methods', Entity::GROUPS, Entity::ADMINS]);
+
+            // Merchant to array public
+            $data = $merchant->toArrayPublic();
+
+            // Merchant confirmed details
+            $data['confirmed'] = $this->getMerchantConfirmed($merchant);
+
+            // Fetch formatted merchant details.
+            $data['merchant_details'] = (new Detail\Service)->getMerchantDetailsForAdmin();
+
+            $data['tags'] = $merchant->tagNames();
+        }
+
+        return $data;
+    }
+
+    /**
+     * Will provide if merchant is confirmed or not.
+     *
+     * @param $merchant
+     * @return bool
+     */
+    public function getMerchantConfirmed($merchant)
+    {
+        $parentId = $merchant->getParentId();
+
+        // Market place sub accounts are confirmed.
+        if (empty($parentId) === false)
+        {
+            return true;
+        }
+        else
+        {
+            $owner = $this->core()->getMerchantConfirmedOwner($merchant);
+
+            // True if an confirmed owner is present.
+            return !empty($owner);
         }
     }
 }

@@ -2,10 +2,9 @@
 
 namespace RZP\Console\Commands;
 
-use Illuminate\Console\Command;
 use App;
+use Illuminate\Console\Command;
 
-use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\EsRepository;
 use Razorpay\Trace\Logger as Trace;
@@ -92,9 +91,7 @@ class Index extends Command
 
         $this->repo = $repoManager->{$this->entity};
 
-        $this->repo->setEsRepoIfExist();
-
-        $this->esRepo = $this->repo->getEsRepo();
+        $this->esRepo = $this->repo->setAndGetEsRepoIfExist();
 
         if ($this->esRepo === null)
         {
@@ -160,56 +157,14 @@ class Index extends Command
             {
                 $response = $this->esRepo->bulkUpdate($documents);
 
-                $this->processEsResponse($response);
+                $this->info('Took: ' . $response['took'] . 'ms');
             }
-            catch(\Exception $e)
+            catch(\Throwable $e)
             {
                 $this->error($e);
 
-                $this->trace->traceException(
-                    $e,
-                    Trace::ERROR,
-                    TraceCode::ES_BULK_UPDATE_FAILED,
-                    [
-                        'source'  => __CLASS__,
-                        'options' => $this->option(),
-                    ]);
+                $this->trace->traceException($e);
             }
-        }
-    }
-
-    /**
-     * Checks ES response for errors and logs error if any.
-     *
-     * @param array $response
-     *
-     */
-    protected function processEsResponse(array & $response)
-    {
-        // By default just log time taken in writing the docs to ES
-        $this->info('Took: ' . $response['took'] . 'ms');
-
-        $errors = $response['errors'];
-
-        // In case of errors just logging the items with error(status not in 200,201)
-        if ($errors === true)
-        {
-
-            $errorItems = array_filter(
-                            $response['items'],
-                            function ($v)
-                            {
-                                return (in_array($v['index']['status'], [200, 201], true) === false);
-                            });
-
-            $this->error('Error count: ' . count($errorItems));
-
-            $this->trace->error(
-                TraceCode::ES_BULK_UPDATE_FAILED,
-                [
-                    'source' => __CLASS__,
-                    'errors' => $errorItems,
-                ]);
         }
     }
 }

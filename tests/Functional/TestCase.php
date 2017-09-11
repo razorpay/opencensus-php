@@ -9,8 +9,8 @@ namespace RZP\Tests\Functional;
 
 use Artisan;
 
-use RZP\Tests\TestCase as ParentTestCase;
 use RZP\Services\EsClient;
+use RZP\Tests\TestCase as ParentTestCase;
 
 class TestCase extends ParentTestCase
 {
@@ -29,6 +29,11 @@ class TestCase extends ParentTestCase
     protected $db;
 
     /**
+     * @var EsClient
+     */
+    protected $es;
+
+    /**
      * To denote whether to simulate unit tests with
      * environment being in cloud
      *
@@ -44,6 +49,17 @@ class TestCase extends ParentTestCase
 
         // Instantiate auth class
         $this->ba = new Authorization($this);
+
+        //
+        // Creates and configures EsClient instance.
+        // We don't get the same from service provider as it might
+        // cause some issues.
+        //
+        $this->es = new EsClient($this->app);
+
+        $host = $this->config->get('database.es_host');
+
+        $this->es->setEsClient(['hosts' => [$host]]);
     }
 
     public function initialSetup()

@@ -167,6 +167,7 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => self::RAZORPAY_ORG_ID,
+                    'invoice_code'  => '10NodalAount',
                     )
                 );
 
@@ -201,6 +202,7 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => self::RAZORPAY_ORG_ID,
+                    'invoice_code'  => '100AtomAount',
                 ));
 
             DB::table(Table::MERCHANT_DETAIL)->insert(
@@ -234,6 +236,7 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => self::RAZORPAY_ORG_ID,
+                    'invoice_code'  => '1ApiFeeAount',
                     )
                 );
 
@@ -270,6 +273,7 @@ class DatabaseSeeder extends Seeder
                     'fee_bearer'    => 0,
                     'billing_label' => 'Test Account',
                     'org_id'        => self::RAZORPAY_ORG_ID,
+                    'invoice_code'  => '100000000000',
                     )
                 );
 
@@ -346,6 +350,7 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => self::RAZORPAY_ORG_ID,
+                    'invoice_code'  => '100000Rarpay',
                     )
                 );
 
@@ -381,6 +386,7 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => self::RAZORPAY_ORG_ID,
+                    'invoice_code'  => '100DemoAount',
                     )
                 );
 
@@ -814,6 +820,7 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
+                'type'                  => 1,
                 )
             );
 
@@ -829,6 +836,7 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
+                'type'                  => 1,
                 )
             );
 
@@ -875,6 +883,7 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
+                'type'                  => 1,
                 )
             );
 
@@ -921,6 +930,7 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
+                'type'                  => 1,
                 )
             );
 
@@ -980,6 +990,7 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
+                'type'                  => 1,
                 )
             );
 

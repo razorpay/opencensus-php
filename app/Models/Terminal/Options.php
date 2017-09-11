@@ -22,29 +22,20 @@ class Options
         'method',
         'network',
         'bank',
-        'category',
     ];
 
-    // Filters to be skipped for any merchant
-    protected $globalSkippedFilters = [
-        'amount',
-        'iin',
-        'billdesk_category',
-        'billdesk_merchant',
-        'incompatible',
-        'pharma',
-    ];
-
-    // Maps the rule group name to the corresponding filter property.
-    // This is temporary and will be used only in the migration phase
-    // until all merchants are using rule filters
-    protected $ruleGroupToFilterPropertyMap = [
-        'min_amount_filter'        => 'amount',
-        'prepaid_iin_filter'       => 'iin',
-        'billdesk_category_filter' => 'billdesk_category',
-        'billdesk_merchant_filter' => 'billdesk_merchant',
-        'pharma_filter'            => 'pharma',
-        'tpv_filter'               => 'incompatible',
+    // Rule group names  to be used for terminal filtering for all merchants
+    protected $globallyApplicableRuleGroups = [
+        'min_amount_filter',
+        'prepaid_iin_filter',
+        'billdesk_category_filter',
+        'billdesk_merchant_filter',
+        'pharma_filter',
+        'tpv_filter',
+        'category_filter',
+        'gateway_exclusion_filter',
+        'billdesk_education_filter',
+        'maestro_filter',
     ];
 
     public function __construct()
@@ -92,19 +83,9 @@ class Options
         $this->featureSkippedFilters = $filters;
     }
 
-    public function getGlobalSkippedFilters()
+    public function getGloballyApplicableRuleGroups()
     {
-        return $this->globalSkippedFilters;
-    }
-
-    public function setGlobalSkippedFilters(array $filters)
-    {
-        $this->globalSkippedFilters = $filters;
-    }
-
-    public function getFilterPropertyForRuleGroup(string $group)
-    {
-        return $this->ruleGroupToFilterPropertyMap[$group] ?? null;
+        return $this->globallyApplicableRuleGroups;
     }
 
     public function setFailedTerminals(array $exclude)

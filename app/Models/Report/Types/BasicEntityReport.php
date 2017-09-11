@@ -48,7 +48,9 @@ class BasicEntityReport extends BaseReport
         E::REFUND       => [E::PAYMENT],
         E::ORDER        => [],
         E::SETTLEMENT   => [],
-        E::TRANSFER     => [],
+        E::TRANSFER     => [
+            'recipientSettlement'
+        ],
         E::REVERSAL     => [],
         E::INVOICE      => [E::ORDER],
     ];

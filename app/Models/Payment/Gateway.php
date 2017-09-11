@@ -115,6 +115,7 @@ class Gateway
         self::WALLET_JIOMONEY,
         self::NETBANKING_RBL,
         self::NETBANKING_INDUSIND,
+        self::NETBANKING_PNB,
     ];
 
     /**
@@ -134,6 +135,7 @@ class Gateway
         Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::AMEX,
         Payment\Gateway::WALLET_JIOMONEY,
+        Payment\Gateway::WALLET_SBIBUDDY,
         Payment\Gateway::WALLET_AIRTELMONEY,
         Payment\Gateway::FIRST_DATA,
         Payment\Gateway::UPI_ICICI,

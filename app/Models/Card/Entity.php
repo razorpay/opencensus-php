@@ -321,7 +321,7 @@ class Entity extends Base\PublicEntity
 
         return Carbon::createFromDate($year, $month, 1, Timezone::IST)
                         ->endOfMonth()
-                        ->timestamp;
+                        ->getTimestamp();
     }
 
     public function getTypeElseDefault()
