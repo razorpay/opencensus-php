@@ -30,7 +30,7 @@ class Hdfc extends Processor\Base
         foreach ($this->data as $index => $row)
         {
             $date = Carbon::createFromTimestamp(
-                $row['payment']['authorized_at'], 'Asia/Kolkata')->format('d/m/Y');
+                $row['payment']['authorized_at'], Timezone::IST)->format('d/m/Y');
 
             $formattedData[] = [
                 'Sr No'            => $index + 1,

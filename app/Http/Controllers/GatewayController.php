@@ -10,7 +10,6 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Gateway\Downtime;
-use RZP\Models\Gateway\File;
 use RZP\Models\Gateway\Rule;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Gateway\Priority as GatewayPriority;

@@ -16,9 +16,7 @@ class Constants
     const RBL      = 'rbl';
 
     /**
-     * Stores a mapping of valid bank corresponding to each gateway, and also the list
-     * of gateways supported for a particular type. Here the value ALL represents that
-     * payments across all gateways need to be considered while generating the file
+     * Stores a mapping of valid banks for each file type
      */
     const SUPPORTED_TARGETS = [
         Type::REFUND => [

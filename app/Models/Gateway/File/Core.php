@@ -11,12 +11,8 @@ class Core extends Base\Core
 {
     /**
      * Creates a gateway file entity with input provided and processes it.
-     * Here the halt flag represents if we should continue with processing the entity
-     * in sync or just create and return the entity to be processed later. This is
-     * used when we want to asynchronously process the entity via queue.
      *
      * @param  array        $input input data
-     * @param  bool|boolean $halt  flag to indicate if the entity created should be further processed or not
      */
     public function create(array $input): PublicCollection
     {
@@ -78,7 +74,7 @@ class Core extends Base\Core
         if ($gatewayFile->isMailSent() === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Cannot acknoewledge given gateway_file entity');
+                'Cannot acknoewledge given gateway_file entity before mail is sent.');
         }
 
         $type = $gatewayFile->getType();

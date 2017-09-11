@@ -92,6 +92,7 @@ class Entity extends Base\PublicEntity
         self::RECIPIENTS,
     ];
 
+    // --------------------------GENERATORS-------------------------------------
     protected function generateSender(array $input)
     {
         if (empty($input[self::SENDER]) === true)
@@ -112,6 +113,9 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    // -------------------------GENERATORS END----------------------------------
+
+    // -----------------------------GETTERS-------------------------------------
     public function files()
     {
         return $this->morphMany(FileStore\Entity::class, 'entity');
@@ -182,6 +186,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ERROR_DESCRIPTION);
     }
 
+    // -----------------------------GETTERS END---------------------------------
+
+    // -----------------------------SETTERS-------------------------------------
+
     public function setStatus(string $status)
     {
         $this->setAttribute(self::STATUS, $status);
@@ -226,6 +234,8 @@ class Entity extends Base\PublicEntity
     {
         $this->increment(self::ATTEMPTS);
     }
+
+    //-----------------------------SETTERS END----------------------------------
 
     public function getRecipientsAttribute()
     {

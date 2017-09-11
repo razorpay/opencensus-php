@@ -8,7 +8,6 @@ use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Constants\Entity;
 use RZP\Gateway\Base\Mock;
-use RZP\Models\Gateway\File\Type;
 
 class GatewayManager extends \Illuminate\Support\Manager
 {

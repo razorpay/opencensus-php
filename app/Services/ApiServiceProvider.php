@@ -4,6 +4,9 @@ namespace RZP\Services;
 
 use RZP;
 use Swift_Mailer;
+use Http\Mock\Client as MockHttplug;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 use RZP\Models\Batch;
 use RZP\Models\Payout;
 use RZP\Models\Dispute;
@@ -22,11 +25,8 @@ use RZP\Models\Admin as Admin;
 use RZP\Models\Payment\Refund;
 use RZP\Gateway\GatewayManager;
 use RZP\Models\Plan\Subscription;
-use Http\Mock\Client as MockHttplug;
 use RZP\Services\GatewayFileManager;
 use RZP\Models\Plan\Subscription\Addon;
-use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Support\ServiceProvider as BaseServiceProvider;
 
 
 class ApiServiceProvider extends BaseServiceProvider
