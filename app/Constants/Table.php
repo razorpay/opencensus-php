@@ -17,6 +17,7 @@ class Table
     const OFFER                 = 'offers';
     const ORDER                 = 'orders';
     const TOKEN                 = 'tokens';
+    const BLADE                 = 'blade';
     const ADDON                 = 'addons';
     const COUPON                = 'coupons';
     const BATCH                 = 'batches';

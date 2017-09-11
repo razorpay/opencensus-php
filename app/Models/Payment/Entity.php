@@ -312,6 +312,7 @@ class Entity extends Base\PublicEntity
         self::STATUS               => Status::CREATED,
         self::REFUND_STATUS        => RefundStatus::NULL,
         self::NOTES                => [],
+        self::DESCRIPTION          => null,
         self::AMOUNT_REFUNDED      => 0,
         self::BASE_AMOUNT_REFUNDED => 0,
         self::AMOUNT_TRANSFERRED   => 0,
