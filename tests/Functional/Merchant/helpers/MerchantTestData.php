@@ -1794,8 +1794,7 @@ return [
             'content' => [
                 "features" => [
                     "marketplace" => "1",
-                ],
-                "optout_reason" => "some reason"
+                ]
             ],
             'url' => '/merchants/10000000000000/features',
             'method' => 'post',
@@ -1808,23 +1807,23 @@ return [
             'content' => [
                 'features' => [
                     [
-                        'feature' => "noflashcheckout",
-                        'value' => false,
+                        'feature'      => "noflashcheckout",
+                        'value'        => false,
                         'display_name' => "No Flash Checkout"
                     ],
                     [
-                        'feature' => "marketplace",
-                        'value' => true,
+                        'feature'      => "marketplace",
+                        'value'        => true,
                         'display_name' => "Marketplace"
                     ],
                     [
-                        'feature' => "subscriptions",
-                        'value' => false,
+                        'feature'      => "subscriptions",
+                        'value'        => false,
                         'display_name' => "Subscriptions"
                     ],
                     [
-                        'feature' => "virtual_accounts",
-                        'value' => false,
+                        'feature'      => "virtual_accounts",
+                        'value'        => false,
                         'display_name' => "Virtual accounts"
                     ],
                 ]
