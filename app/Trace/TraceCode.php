@@ -349,6 +349,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const ADJUSTMENT_CREATE_SUCCESS                     = 'ADJUSTMENT_CREATE_SUCCESS';
 
     const VERIFY_LOCKED_PAYMENTS                        = 'VERIFY_LOCKED_PAYMENTS';
+    const VERIFY_GATEWAY_BLOCK                          = 'VERIFY_GATEWAY_BLOCK';
     const VERIFY_PROCESSED_SUMMARY                      = 'VERIFY_PROCESSED_SUMMARY';
     const PAYMENT_VERIFY_RESULT                         = 'PAYMENT_VERIFY_RESULT';
     const PAYMENT_VERIFY_ALREADY_AUTHORIZED             = 'PAYMENT_VERIFY_ALREADY_AUTHORIZED';

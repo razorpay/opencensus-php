@@ -111,6 +111,14 @@ class Creator extends Base\Core
      */
     protected $compressionCommand = null;
 
+
+    /**
+     * Flag to signify if local file needs to be deleted
+     *
+     * @var bool Flag
+     */
+    protected $shouldDeleteLocalFile = false;
+
     const DEFAULT_STORE    = 's3';
 
     const COMMAND_FOR_ZIPPING = 'zip --junk-paths --move';
@@ -376,6 +384,18 @@ class Creator extends Base\Core
     }
 
     /**
+     * Local file will be deleted after upload
+     *
+     * @return Creator
+     */
+    public function deleteLocalFile()
+    {
+        $this->shouldDeleteLocalFile = true;
+
+        return $this;
+    }
+
+    /**
      * Creates a local file instance,
      * upload it to service specified and creates file store entity
      *
@@ -418,7 +438,21 @@ class Creator extends Base\Core
 
         $this->repo->saveOrFail($this->file);
 
+        $this->deleteLocalFileIfRequired();
+
         return $this;
+    }
+
+
+    protected function deleteLocalFileIfRequired()
+    {
+        $filePath = $this->getFullFilePath();
+
+        if (($this->shouldDeleteLocalFile === true) and
+            (file_exists($filePath) === false))
+        {
+            unlink($filePath);
+        }
     }
 
     /**

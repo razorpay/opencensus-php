@@ -1255,7 +1255,7 @@ final class Route
         'invitation_fetch'                 => '*',
         'pricing_create_plan'              => Permission::CREATE_PRICING_PLAN,
         'merchant_get_pricing'             => Permission::VIEW_MERCHANT_PRICING,
-        'merchant_invoice_update_gstin'    => '*',
+        'merchant_invoice_update_gstin'    => Permission::EDIT_MERCHANT_INVOICE_GSTIN,
         'merchant_details_fetch'           => '*',
         'setl_retry'                       => Permission::RETRY_SETTLEMENT,
         'merchant_invoice_add_bulk'        => '*',

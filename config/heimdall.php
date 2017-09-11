@@ -191,6 +191,7 @@ return [
             Permission::ADD_RECONCILIATION_FILE => '',
             Permission::ADD_SETTLEMENT_RECONCILIATION => '',
             Permission::RETRY_SETTLEMENT => '',
+            Permission::EDIT_MERCHANT_INVOICE_GSTIN => '',
             Permission::SEND_NEWSLETTER => '',
             Permission::TRIGGER_DUMMY_ERROR => '',
             Permission::MAKE_API_CALL => '',
