@@ -140,6 +140,17 @@ class FeaturesTest extends TestCase
     }
 
     /**
+     * Add a feature to test and then to live. Adding a feature to live should not sync if
+     * it is already present in test.
+     */
+    public function testAddFeatureToTestAndLive()
+    {
+        $this->addFeatureToMode('test');
+
+        $this->addFeatureToMode('live');
+    }
+
+    /**
      * Add a feature to the database which is linked to the mode passed as parameter
      * Get the features from the second database
      * Verify -

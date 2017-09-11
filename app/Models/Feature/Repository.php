@@ -36,21 +36,6 @@ class Repository extends BaseRepository
                     ->firstOrFailPublic();
     }
 
-    public function findByEntityIdAndName(string $entityId, string $featureName, string $mode = null)
-    {
-        if ($mode !== null)
-        {
-            $queryInstance = $this->newQueryWithConnection($mode);
-        }
-        else
-        {
-            $queryInstance = $this->newQuery();
-        }
-        return $queryInstance->where(Entity::ENTITY_ID, '=', $entityId)
-                             ->where(Entity::NAME, '=', $featureName)
-                             ->get();
-    }
-
     /**
      * Features added to live should sync and be added to test.
      * Features when removed from live should not be removed from test.
@@ -77,9 +62,14 @@ class Repository extends BaseRepository
         if (($this->app['rzp.mode'] === Mode::LIVE) and ($action !== BaseRepository::DELETE))
         {
             // Sync if the feature is not already enabled on test
-            $features = $this->findByEntityIdAndName($entity->getEntityId(), $entity->getName(), Mode::TEST);
-            return ($features->count() === 0);
+            $feature = $this->newQueryWithConnection(Mode::TEST)
+                            ->where(Entity::ENTITY_ID, '=', $entity->getEntityId())
+                            ->where(Entity::NAME, '=', $entity->getName())
+                            ->first();
+
+            return ($feature === null);
         }
+
         return false;
     }
 }
