@@ -7,7 +7,9 @@ export default ({ type, ...otherProps }) => {
   return (
     <ListFilter {...otherProps}>
       <div class="form-group list-filter-item">
-        <label>{label} Status</label>
+        <label>
+          {label} Status
+        </label>
         <Field name="status" component="select" class="form-control input-sm">
           <option value="">All</option>
           <option value="draft">Draft</option>
@@ -19,7 +21,9 @@ export default ({ type, ...otherProps }) => {
       </div>
 
       <div class="form-group list-filter-item">
-        <label>{label} Id</label>
+        <label>
+          {label} Id
+        </label>
         <Field name="id" component="input" class="form-control input-sm" />
       </div>
 
@@ -44,6 +48,11 @@ export default ({ type, ...otherProps }) => {
           component="input"
           class="form-control input-sm"
         />
+      </div>
+
+      <div class="form-group list-filter-item">
+        <label>Notes</label>
+        <Field name="notes" component="input" class="form-control input-sm" />
       </div>
 
       <div class="form-group list-filter-item count">
