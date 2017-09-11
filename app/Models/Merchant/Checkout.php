@@ -556,7 +556,7 @@ class Checkout
         {
             if ($merchant->isFeatureEnabled(Feature\Constants::HIDE_DOWNTIMES) === false)
             {
-                $downtimeData = (new Downtime\Core)->getFormattedGatewayDowntimeCheckoutData($merchant);
+                $downtimeData = (new Downtime\Service)->getPublicGatewayDowntimeData();
 
                 if (empty($downtimeData) === false)
                 {
