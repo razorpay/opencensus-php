@@ -660,3 +660,10 @@ SET merchant_invoice.gstin = merchant_details.p_gstin
 WHERE (merchant_invoice.gstin IS NULL OR merchant_invoice.gstin = '')
     AND merchant_details.p_gstin IS NOT NULL
     AND merchant_details.p_gstin != '';
+
+# Data correction for FirstData terminal tokens
+UPDATE tokens SET terminal_id = '7Y30j1EY3JG8ob'
+    WHERE terminal_id = '7bOl7tgaZ5kWvf'
+
+UPDATE gateway_tokens SET terminal_id = '7Y30j1EY3JG8ob'
+    WHERE terminal_id = '7bOl7tgaZ5kWvf'
