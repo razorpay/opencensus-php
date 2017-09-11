@@ -190,11 +190,24 @@ class Collection extends Base\PublicCollection
 
     protected function itemsToArrayPublic(): array
     {
-        return array_values(array_filter(array_map(function ($item)
-        {
-            return $item->toArrayPublic();
+        $array = [];
 
-        }, $this->items)));
+        foreach ($this->items as $item)
+        {
+            $item = $item->toArrayPublic();
+
+            if ($item !== null)
+            {
+                if (is_associative_array($item) === true)
+                {
+                    $item = [$item];
+                }
+
+                $array = array_merge($array, $item);
+            }
+        }
+
+        return $array;
     }
 
     protected function isUnknownOrNA(string $value)

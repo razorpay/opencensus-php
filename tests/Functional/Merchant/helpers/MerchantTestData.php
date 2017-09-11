@@ -1153,7 +1153,7 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer'    => ['HDFC']
+                            'issuer'    => 'HDFC'
                         ],
                     ],
                 ],
@@ -1169,47 +1169,465 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 1,
+                'count' => 30,
                 'items' => [
                     [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer'    => [
-                                'ALLA',
-                                'BBKM',
-                                'BKDN',
-                                'COSB',
-                                'DCBL',
-                                'DCBL',
-                                'DEUT',
-                                'DBSS',
-                                'IDFB',
-                                'IBKL',
-                                'JSBP',
-                                'KVBL',
-                                'NKGS',
-                                'PMCB',
-                                'SBBJ',
-                                'SBHY',
-                                'SBIN',
-                                'SBMY',
-                                'STBP',
-                                'SBTR',
-                                'SCBL',
-                                'SIBL',
-                                'SVCB',
-                                'SYNB',
-                                'TMBL',
-                                'TNSC',
-                                'BARB_C',
-                                'BARB_R',
-                                'PUNB_C',
-                                'LAVB_C'
-                            ],
+                            'issuer' => 'ALLA',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'BBKM',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'BKDN',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'COSB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'DCBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'DCBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'DEUT',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'DBSS',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'IDFB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'IBKL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'JSBP',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'KVBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'NKGS',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'PMCB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SBBJ',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SBHY',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SBIN',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SBMY',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'STBP',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SBTR',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SCBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SIBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SVCB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SYNB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'TMBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'TNSC',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'BARB_C',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'BARB_R',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'PUNB_C',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'LAVB_C',
                         ],
                     ],
                 ],
+            ],
+        ],
+    ],
+
+    'testGetNetbankingDowntimeInfoWithBothSharedAndDirectGateway' => [
+        'request' => [
+            'url' => '/methods/downtime',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 31,
+                'items' => [
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer'    => 'HDFC'
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'ALLA',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'BBKM',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'BKDN',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'COSB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'DCBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'DCBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'DEUT',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'DBSS',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'IDFB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'IBKL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'JSBP',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'KVBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'NKGS',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'PMCB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SBBJ',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SBHY',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SBIN',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SBMY',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'STBP',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SBTR',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SCBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SIBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SVCB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SYNB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'TMBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'TNSC',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'BARB_C',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'BARB_R',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'PUNB_C',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'LAVB_C',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetNetbankingDowntimeWithNoBanksExclusiveToGateway' => [
+        'request' => [
+            'url' => '/methods/downtime',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 0,
+                'items' => [],
             ],
         ],
     ],
@@ -1228,7 +1646,7 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer'    => ['ALLA']
+                            'issuer'    => 'ALLA'
                         ],
                     ],
                 ],
@@ -1265,7 +1683,7 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'low',
                         'instrument' => [
-                            'issuer'    => ['HDFC']
+                            'issuer'    => 'HDFC'
                         ],
                     ],
                 ],
@@ -1287,14 +1705,14 @@ return [
                         'method' => 'netbanking',
                         'severity' => 'medium',
                         'instrument' => [
-                            'issuer' => ['ALLA']
+                            'issuer' => 'ALLA'
                         ],
                     ],
                     [
                         'method' => 'netbanking',
                         'severity' => 'high',
                         'instrument' => [
-                            'issuer' => ['HDFC']
+                            'issuer' => 'HDFC'
                         ],
                     ],
                 ],

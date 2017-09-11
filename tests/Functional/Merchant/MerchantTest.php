@@ -888,6 +888,32 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetNetbankingDowntimeInfoWithBothSharedAndDirectGateway()
+    {
+        $this->ba->publicAuth();
+
+        $this->fixtures->create('gateway_downtime:netbanking', [
+            'gateway' => 'billdesk',
+            'issuer'  => 'ALL']);
+
+        $this->fixtures->create('gateway_downtime:netbanking', [
+            'gateway' => 'netbanking_hdfc',
+            'issuer'  => 'ALL']);
+
+        $this->startTest();
+    }
+
+    public function testGetNetbankingDowntimeWithNoBanksExclusiveToGateway()
+    {
+         $this->ba->publicAuth();
+
+         $this->fixtures->create('gateway_downtime:netbanking', [
+            'gateway' => 'ebs',
+            'issuer'  => 'ALL']);
+
+         $this->startTest();
+    }
+
     public function testGetNetbankingDowntimeInfoWithIssuerExclusiveToGateway()
     {
         $this->ba->publicAuth();

@@ -410,7 +410,7 @@ class Entity extends Base\PublicEntity
     {
         $reasonCode = $this->getReasonCode();
 
-        $data = [
+        $downtimeMetaData = [
             self::METHOD   => $this->getMethod(),
             self::SEVERITY => ReasonCode::SEVERITY_MAP[$reasonCode],
             self::BEGIN    => $this->getBegin(),
@@ -426,20 +426,16 @@ class Entity extends Base\PublicEntity
             return null;
         }
 
-        $data[self::INSTRUMENT] = $this->getDetailsForNetbankingDowntime($gateway, $issuer);
-
-        return array_filter($data);
+        return $this->getDetailsForNetbankingDowntime($gateway,
+                                                      $issuer,
+                                                      $downtimeMetaData);
     }
 
-    protected function getDetailsForNetbankingDowntime(string $gateway, string $issuer): array
+    protected function getDetailsForNetbankingDowntime(string $gateway, string $issuer, array $downtimeMetaData)
     {
-        $instrumentDetails = [];
+        $data = [];
 
-        if ($gateway === Entity::ALL)
-        {
-            $issuer = (array) $issuer;
-        }
-        else if (in_array($gateway, Payment\Gateway::SHARED_NETBANKING_GATEWAYS_LIVE, true) === true)
+        if (in_array($gateway, Payment\Gateway::SHARED_NETBANKING_GATEWAYS_LIVE, true) === true)
         {
             // If issuer is set as ALL, return all issuers exclusive to gateway
             // E.g for billdesk return all banks exclusive to billdesk
@@ -456,19 +452,43 @@ class Entity extends Base\PublicEntity
             }
             // If particular issuer is present and it is exclusive to the gateway then
             // display the data
-            else if (Netbanking::isIssuerExclusiveToGateway($issuer, $gateway) === true)
+            else if (Netbanking::isIssuerExclusiveToGateway($issuer, $gateway) === false)
             {
-                $issuer = (array) $issuer;
+                return null;
             }
         }
         // For directly supporteed gateways we always dsiplay the data
         else if (Payment\Gateway::isDirectNetbankingGateway($gateway) === true)
         {
-            $issuer = (array) Payment\Gateway::getBankForDirectNetbankingGateway($gateway);
+            $issuer = Payment\Gateway::getBankForDirectNetbankingGateway($gateway);
         }
 
-        $instrumentDetails[self::ISSUER] = $issuer;
+        if (is_array($issuer) === true)
+        {
+            foreach ($issuer as $i)
+            {
+                $instrumentDetails = $this->getInstrumentDetails($i);
 
-        return $instrumentDetails;
+                $data[] = array_merge($downtimeMetaData, $instrumentDetails);
+            }
+
+        }
+        else
+        {
+            $instrumentDetails = $this->getInstrumentDetails($issuer);
+
+            $data = array_merge($downtimeMetaData, $instrumentDetails);
+        }
+
+        return $data;
+    }
+
+    protected function getInstrumentDetails(string $issuer): array
+    {
+        return [
+            self::INSTRUMENT => [
+                self::ISSUER => $issuer,
+            ],
+        ];
     }
 }
