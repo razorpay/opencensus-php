@@ -943,7 +943,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Currency must not be empty.',
+                    'description' => 'The currency field is required.',
                 ],
             ],
             'status_code' => 400,
@@ -974,7 +974,7 @@ return [
                     ]
                 ],
                 'amount'        => 1000,
-                'currency'      => null,
+                'currency'      => 'INR',
             ],
         ],
         'response' => [

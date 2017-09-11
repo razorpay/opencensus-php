@@ -40,30 +40,30 @@ class Validator extends Base\Validator
     const MIN_EXPIRY_SECS = 900;
 
     protected static $createRules = [
-        Entity::SMS_NOTIFY          => 'sometimes|boolean',
-        Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
-        Entity::DATE                => 'sometimes|epoch',
+        Entity::SMS_NOTIFY          => 'filled|boolean',
+        Entity::EMAIL_NOTIFY        => 'filled|boolean',
+        Entity::DATE                => 'sometimes|epoch|nullable',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable',
-        Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40',
-        Entity::VIEW_LESS           => 'sometimes|in:1',
-        Entity::SOURCE              => 'sometimes|string|max:32|custom',
-        Entity::TYPE                => 'sometimes|string|max:16|custom',
+        Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40|nullable',
+        Entity::VIEW_LESS           => 'filled|in:1',
+        Entity::SOURCE              => 'filled|string|max:32|custom',
+        Entity::TYPE                => 'filled|string|max:16|custom',
         Entity::CUSTOMER            => 'sometimes|array',
-        Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
+        Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19|nullable',
         Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
-        Entity::PARTIAL_PAYMENT     => 'sometimes|boolean|custom',
-        Entity::AMOUNT              => 'sometimes|integer|min:100',
+        Entity::PARTIAL_PAYMENT     => 'filled|boolean|custom',
+        Entity::AMOUNT              => 'filled|integer|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
-        Entity::CURRENCY            => 'sometimes|in:INR',
-        Entity::BILLING_START       => 'sometimes|epoch',
-        Entity::BILLING_END         => 'sometimes|epoch',
-        Entity::DRAFT               => 'sometimes|boolean',
+        Entity::CURRENCY            => 'filled|in:INR',
+        Entity::BILLING_START       => 'filled|epoch',
+        Entity::BILLING_END         => 'filled|epoch',
+        Entity::DRAFT               => 'filled|boolean',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
-        Entity::CALLBACK_URL        => 'sometimes|url',
-        Entity::CALLBACK_METHOD     => 'required_with:callback_url|string|in:get',
+        Entity::CALLBACK_URL        => 'filled|url',
+        Entity::CALLBACK_METHOD     => 'required_with:callback_url|filled|string|in:get',
     ];
 
     //
@@ -72,80 +72,80 @@ class Validator extends Base\Validator
     //
 
     protected static $createDraftRules = [
-        Entity::SMS_NOTIFY          => 'sometimes|boolean',
-        Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
-        Entity::DATE                => 'sometimes|epoch',
+        Entity::SMS_NOTIFY          => 'filled|boolean',
+        Entity::EMAIL_NOTIFY        => 'filled|boolean',
+        Entity::DATE                => 'sometimes|epoch|nullable',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable',
-        Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40',
-        Entity::VIEW_LESS           => 'sometimes|in:1',
-        Entity::SOURCE              => 'sometimes|string|max:32|custom',
-        Entity::TYPE                => 'sometimes|string|max:16|custom',
+        Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40|nullable',
+        Entity::VIEW_LESS           => 'filled|in:1',
+        Entity::SOURCE              => 'filled|string|max:32|custom',
+        Entity::TYPE                => 'filled|string|max:16|custom',
         Entity::CUSTOMER            => 'sometimes|array',
-        Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
+        Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19|nullable',
         Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
-        Entity::PARTIAL_PAYMENT     => 'sometimes|boolean|custom',
-        Entity::AMOUNT              => 'sometimes|integer|min:100',
+        Entity::PARTIAL_PAYMENT     => 'filled|boolean|custom',
+        Entity::AMOUNT              => 'filled|integer|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
-        Entity::CURRENCY            => 'sometimes|in:INR',
-        Entity::BILLING_START       => 'sometimes|epoch',
-        Entity::BILLING_END         => 'sometimes|epoch',
-        Entity::DRAFT               => 'sometimes|boolean',
+        Entity::CURRENCY            => 'filled|in:INR',
+        Entity::BILLING_START       => 'filled|epoch',
+        Entity::BILLING_END         => 'filled|epoch',
+        Entity::DRAFT               => 'filled|boolean',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
-        Entity::CALLBACK_URL        => 'sometimes|url',
-        Entity::CALLBACK_METHOD     => 'required_with:callback_url|string|in:get',
+        Entity::CALLBACK_URL        => 'filled|url',
+        Entity::CALLBACK_METHOD     => 'required_with:callback_url|filled|string|in:get',
     ];
 
     protected static $createIssuedRules = [
-        Entity::SMS_NOTIFY          => 'sometimes|boolean',
-        Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
-        Entity::DATE                => 'sometimes|epoch',
+        Entity::SMS_NOTIFY          => 'filled|boolean',
+        Entity::EMAIL_NOTIFY        => 'filled|boolean',
+        Entity::DATE                => 'sometimes|epoch|nullable',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable',
-        Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40',
-        Entity::VIEW_LESS           => 'sometimes|in:1',
-        Entity::SOURCE              => 'sometimes|string|max:32|custom',
-        Entity::TYPE                => 'sometimes|string|max:16|custom',
+        Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40|nullable',
+        Entity::VIEW_LESS           => 'filled|in:1',
+        Entity::SOURCE              => 'filled|string|max:32|custom',
+        Entity::TYPE                => 'filled|string|max:16|custom',
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
         Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
-        Entity::PARTIAL_PAYMENT     => 'sometimes|boolean|custom',
-        Entity::AMOUNT              => 'sometimes|integer|min:100',
+        Entity::PARTIAL_PAYMENT     => 'filled|boolean|custom',
+        Entity::AMOUNT              => 'filled|integer|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
-        Entity::CURRENCY            => 'sometimes|in:INR',
-        Entity::BILLING_START       => 'sometimes|epoch',
-        Entity::BILLING_END         => 'sometimes|epoch',
-        Entity::DRAFT               => 'sometimes|in:0',
+        Entity::CURRENCY            => 'filled|in:INR',
+        Entity::BILLING_START       => 'filled|epoch',
+        Entity::BILLING_END         => 'filled|epoch',
+        Entity::DRAFT               => 'filled|in:0',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
-        Entity::CALLBACK_URL        => 'sometimes|url',
-        Entity::CALLBACK_METHOD     => 'required_with:callback_url|string|in:get',
+        Entity::CALLBACK_URL        => 'filled|url',
+        Entity::CALLBACK_METHOD     => 'required_with:callback_url|filled|string|in:get',
     ];
 
     protected static $editDraftRules  = [
-        Entity::SMS_NOTIFY          => 'sometimes|boolean',
-        Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
-        Entity::DATE                => 'sometimes|epoch',
+        Entity::SMS_NOTIFY          => 'filled|boolean',
+        Entity::EMAIL_NOTIFY        => 'filled|boolean',
+        Entity::DATE                => 'sometimes|epoch|nullable',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable',
-        Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40',
-        Entity::CUSTOMER            => 'sometimes',
-        Entity::CUSTOMER_ID         => 'sometimes|string|size:19',
+        Entity::INVOICE_NUMBER      => 'sometimes|string|min:1|max:40|nullable',
+        Entity::CUSTOMER            => 'sometimes|array',
+        Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19|nullable',
         Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
-        Entity::PARTIAL_PAYMENT     => 'sometimes|boolean|custom',
-        Entity::AMOUNT              => 'sometimes|integer|min:100',
+        Entity::PARTIAL_PAYMENT     => 'filled|boolean|custom',
+        Entity::AMOUNT              => 'filled|integer|min:100',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
-        Entity::BILLING_START       => 'sometimes|epoch',
-        Entity::BILLING_END         => 'sometimes|epoch',
+        Entity::BILLING_START       => 'filled|epoch',
+        Entity::BILLING_END         => 'filled|epoch',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
-        Entity::DRAFT               => 'sometimes|boolean',
-        Entity::CALLBACK_URL        => 'sometimes|url',
-        Entity::CALLBACK_METHOD     => 'required_with:callback_url|string|in:get',
+        Entity::DRAFT               => 'filled|boolean',
+        Entity::CALLBACK_URL        => 'sometimes|url|nullable',
+        Entity::CALLBACK_METHOD     => 'required_with:callback_url|sometimes|string|in:get|nullable',
     ];
 
     protected static $editIssuedRules  = [
@@ -154,9 +154,9 @@ class Validator extends Base\Validator
         Entity::COMMENT             => 'sometimes|string|max:2048',
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
-        Entity::PARTIAL_PAYMENT     => 'sometimes|boolean|custom',
-        Entity::CALLBACK_URL        => 'sometimes|url',
-        Entity::CALLBACK_METHOD     => 'required_with:callback_url|string|in:get',
+        Entity::PARTIAL_PAYMENT     => 'filled|boolean|custom',
+        Entity::CALLBACK_URL        => 'sometimes|url|nullable',
+        Entity::CALLBACK_METHOD     => 'required_with:callback_url|sometimes|string|in:get|nullable',
     ];
 
     protected static $issueBatchRules = [
@@ -177,16 +177,10 @@ class Validator extends Base\Validator
 
     protected static $createValidators =[
         Entity::AMOUNT,
-        Entity::CURRENCY,
-    ];
-
-    protected static $createIssuedValidators = [
-        Entity::CURRENCY,
     ];
 
     protected static $editDraftValidators = [
         Entity::AMOUNT,
-        self::EDIT_DRAFT . Entity::AMOUNT,
     ];
 
     public function validateAmount(array $input)
@@ -213,25 +207,35 @@ class Validator extends Base\Validator
      */
     private function checkIfAmountIsExpectedInInput(array $input)
     {
+        $entity = $this->entity;
+
         $type = $input[Entity::TYPE] ?? $this->entity->getType();
 
-        if ($type === null)
-        {
-            $type = Type::INVOICE;
-        }
+        // In case entity's type is not set, default to be assumed is 'invoice'
+        $type = $type ?: Type::INVOICE;
 
         if ($type === Type::INVOICE)
         {
             throw new BadRequestValidationFailureException(
-                'amount can be only sent for ecod or link types.'
-            );
+                'amount can be only sent for ecod or link types.');
         }
 
+        //
+        // For non-invoice type, line items can be sent but need to ensure
+        // only one is being used, either amount or line_items.
+        //
         if (isset($input[Entity::LINE_ITEMS]) === true)
         {
             throw new BadRequestValidationFailureException(
-                'amount should not be sent if line_items are being sent in the input.'
-            );
+                'amount should not be sent if line_items are being sent in the input.');
+        }
+
+        if ($entity->lineItems()->count() > 0)
+        {
+            $label = $entity->getTypeLabel();
+
+            throw new BadRequestValidationFailureException(
+                "amount cannot be updated if $label has line_items");
         }
     }
 
@@ -263,33 +267,6 @@ class Validator extends Base\Validator
         }
     }
 
-    /**
-     * Currency is optional (defaults to INR) but in laravel 5.2, if sent null
-     * no other validations would happen and will attempt to flush null in db.
-     * Ref: https://laravel.com/docs/5.2/validation#rule-string
-     * To avoid that, adding validator to be run by spine here.
-     *
-     * @param array $input
-     *
-     * @throws BadRequestValidationFailureException
-     */
-    public function validateCurrency(array $input)
-    {
-        if (array_key_exists(Entity::CURRENCY, $input) === false)
-        {
-            return;
-        }
-
-        if (empty($input[Entity::CURRENCY]))
-        {
-            throw new BadRequestValidationFailureException(
-                'Currency must not be empty.',
-                Entity::CURRENCY,
-                $input
-            );
-        }
-    }
-
     public function validateSource($attribute, $value)
     {
         Source::checkSource($value);
@@ -316,32 +293,6 @@ class Validator extends Base\Validator
             throw new BadRequestValidationFailureException(
                 'Partial payment feature is not enabled',
                 Entity::PARTIAL_PAYMENT);
-        }
-    }
-
-    /**
-     * Amount should not be updated by via input if line items already exists
-     * for the invoice.
-     *
-     * @param array $input
-     *
-     * @throws BadRequestValidationFailureException
-     */
-    public function validateEditDraftAmount(array $input)
-    {
-        if (isset($input[Entity::AMOUNT]) === false)
-        {
-            return;
-        }
-
-        $invoice = $this->entity;
-
-        if ($invoice->lineItems()->count() > 0)
-        {
-            $message = 'amount cannot be updated if ' .
-                       $invoice->getTypeLabel() .  ' has line_items';
-
-            throw new BadRequestValidationFailureException($message);
         }
     }
 
