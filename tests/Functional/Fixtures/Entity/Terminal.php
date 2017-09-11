@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use RZP\Models\Terminal\Shared;
 use RZP\Models\Terminal\Mode;
+use RZP\Models\Terminal\Type;
 use RZP\Models\Base\UniqueIdEntity;
 
 class Terminal extends Base
@@ -403,7 +404,10 @@ class Terminal extends Base
             'gateway'                   => 'cybersource',
             'card'                      => 1,
             'netbanking'                => 0,
-            'type'                      => 3,
+            'type'                      => [
+                Type::NON_RECURRING => '1',
+                Type::RECURRING_3DS => '1'
+            ],
             'gateway_acquirer'          => 'hdfc',
             'gateway_merchant_id'       => 'merchant_id',
             'gateway_terminal_id'       => 'cybersource',
@@ -453,7 +457,10 @@ class Terminal extends Base
         // Add fss recurring supports both 3ds and non3ds terminal;
         $attributes['id'] = 'FssRecurringTl';
 
-        $attributes['type'] = 6;
+        $attributes['type'] = [
+            Type::RECURRING_3DS => '1',
+            Type::RECURRING_NON_3DS => '1',
+        ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
@@ -475,18 +482,26 @@ class Terminal extends Base
 
         // Add recurring 3ds terminal;
         $attributes['id'] = '1RecurringTerm';
-        $attributes['type'] = 3;
+        $attributes['type'] = [
+            Type::NON_RECURRING => '1',
+            Type::RECURRING_3DS => '1'
+        ];
 
         $this->createEntityInTestAndLive('terminal', $attributes);
 
         $attributes['id'] = '3RecurringTerm';
-        $attributes['type'] = 3;
+        $attributes['type'] = [
+            Type::NON_RECURRING => '1',
+            Type::RECURRING_3DS => '1'
+        ];
 
         $this->createEntityInTestAndLive('terminal', $attributes);
 
         // Add recurring 3ds
         $attributes['id'] = '2RecurringTerm';
-        $attributes['type'] = 4;
+        $attributes['type'] = [
+            Type::RECURRING_NON_3DS => '1',
+        ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
@@ -499,7 +514,10 @@ class Terminal extends Base
             'gateway'                   => 'first_data',
             'gateway_acquirer'          => 'icic',
             'card'                      => 1,
-            'type'                      => 3,
+            'type'                      => [
+                Type::NON_RECURRING => '1',
+                Type::RECURRING_3DS => '1'
+            ],
             'gateway_merchant_id'       => 'random',
         ];
 
@@ -511,7 +529,9 @@ class Terminal extends Base
             'gateway'                   => 'first_data',
             'gateway_acquirer'          => 'icic',
             'card'                      => 1,
-            'type'                      => 4,
+            'type'                      => [
+                Type::RECURRING_NON_3DS => '1'
+            ],
             'mode'                      => Mode::PURCHASE,
             'gateway_merchant_id'       => 'random',
         ];
@@ -527,7 +547,10 @@ class Terminal extends Base
             'gateway'                   => 'axis_migs',
             'gateway_acquirer'          => 'axis',
             'card'                      => 1,
-            'type'                      => 3,
+            'type'                      => [
+                Type::NON_RECURRING => '1',
+                Type::RECURRING_3DS => '1'
+            ],
             'gateway_merchant_id'       => 'random',
             'gateway_terminal_id'       => 'recurring_random',
             'gateway_terminal_password' => 'razorpay_password',
@@ -536,7 +559,9 @@ class Terminal extends Base
         $this->createEntityInTestAndLive('terminal', $attributes);
 
         $attributes['id']   = 'MiGSRcgTmlN3DS';
-        $attributes['type'] = 4;
+        $attributes['type'] = [
+            Type::RECURRING_NON_3DS => '1'
+        ];
 
         $this->createEntityInTestAndLive('terminal', $attributes);
     }
