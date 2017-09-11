@@ -614,24 +614,26 @@ class Service extends Base\Service
 
     public function createInvoice($mode, $input)
     {
-        $merchantId = $this->currentUser->currentMerchant()->id;
+        $createInvoice = [
+            'route_name' => 'invoice_create',
+            'mode' => $mode,
+            'body' => $input
+        ];
 
-        $this->setApiCredentials($merchantId, $mode);
+        $genericService = new Generic\Service;
 
-        $errors = [];
+        list($error, $data) = $genericService->call('POST', $createInvoice);
 
-        $data = null;
-
-        try
+        if (empty($error) === false)
         {
-            $data = $this->api->invoice->create($input)->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
+            throw new \Razorpay\Api\Errors\BadRequestError(
+                $error[0],
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
         }
 
-        return [$errors, $data];
+        return [$error, $data];
     }
 
     public function sendInvoiceNotification($mode, $invoiceId, $medium)
