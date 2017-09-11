@@ -185,10 +185,23 @@ class Charge extends Base\Core
         $this->resetErrorFields($subscription);
 
         //
-        // If subscription status is halted, this is a manual charge of an old invoice.
-        // This should not update time fields, as the charge cron is already doing that.
+        // Charge_At is to be updated only after charge of current invoices, and not after
+        // manual charge of an older invoice. Also, for halted subscriptions, reaching here
+        // means an older invoice is being manually charged. There again, no need to update
+        // charge_at, as the regular charge cron has already updated it.
         //
-        if ($invoice->getSubscriptionStatus() !== Status::HALTED)
+        // Inv Subscription Status | Which invoice | Should Charge_at be updated?
+        // ----------------------------------------------------------------------
+        //        Active           |   Latest      |         Yes
+        //        Active           |   Older       |         No
+        //        Pending          |   Latest      |         Yes
+        //        Pending          |   Older       |         No
+        //        Halted           |   Older       |         No
+        //
+        //
+        if (($this->isLatestInvoiceForSubscription($subscription, $invoice) === true) and
+            (($invoice->getSubscriptionStatus() === Status::ACTIVE) or
+             ($invoice->getSubscriptionStatus() === Status::PENDING)))
         {
             //
             // Schedule task needs to be updated before setting time
@@ -263,6 +276,28 @@ class Charge extends Base\Core
         $subscription->setChargeAt($subscription->task->getNextRunAt());
 
         $this->setEndedAtIfApplicable($subscription);
+    }
+
+    /**
+     * Checks if invoice is the latest one generated for the subscription.
+     * This would be the case if the invoice billing period matches that
+     * of the subscription, which is always current.
+     *
+     * @param  Entity         $subscription
+     * @param  Invoice\Entity $invoice
+     * @return boolean
+     */
+    protected function isLatestInvoiceForSubscription(Entity $subscription, Invoice\Entity $invoice)
+    {
+        $isLatest = false;
+
+        if (($subscription->getCurrentStart() === $invoice->getBillingStart()) and
+            ($subscription->getCurrentEnd() === $invoice->getBillingEnd()))
+        {
+            $isLatest = true;
+        }
+
+        return $isLatest;
     }
 
     public function handleAuthorizationOrCaptureFailure(

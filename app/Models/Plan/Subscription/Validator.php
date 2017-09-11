@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Plan\Subscription;
 
+use App;
 use Carbon\Carbon;
 
 use RZP\Base;

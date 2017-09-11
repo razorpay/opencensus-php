@@ -2,20 +2,20 @@
 
 namespace RZP\Models\Plan\Subscription;
 
+use RZP\Constants;
+use RZP\Models\Base;
+use RZP\Models\Plan;
+use RZP\Models\Invoice;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
+use RZP\Trace\TraceCode;
+use RZP\Models\Customer;
+use RZP\Models\Merchant;
 use RZP\Exception\LogicException;
 use RZP\Listeners\ApiEventSubscriber;
-use RZP\Models\Base;
-use RZP\Models\Invoice;
-use RZP\Models\Merchant;
-use RZP\Models\Plan;
-use RZP\Models\Customer;
-use RZP\Models\Payment;
-use RZP\Constants;
-use RZP\Trace\TraceCode;
-use Illuminate\Foundation\Bus\DispatchesJobs;
 use RZP\Jobs\Plan\ChargeSubscription;
+use RZP\Exception\BadRequestException;
+use Illuminate\Foundation\Bus\DispatchesJobs;
 
 class Core extends Base\Core
 {
@@ -177,6 +177,10 @@ class Core extends Base\Core
             (new Biller)->createInvoiceAndCharge($subscription, $input);
         }
 
+        // Subscription is charged by passing a payload of reference ids
+        // to a helper class (Charge). We use a payload, because for cron
+        // charges, we queue the job. We don't for manual though, so
+        // reloading at this stage ensures that updated values are returned.
         $this->repo->reload($subscription);
 
         return $subscription;

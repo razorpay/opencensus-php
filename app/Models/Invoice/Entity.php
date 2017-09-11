@@ -467,6 +467,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STATUS);
     }
 
+    public function getBillingStart()
+    {
+        return $this->getAttribute(self::BILLING_START);
+    }
+
+    public function getBillingEnd()
+    {
+        return $this->getAttribute(self::BILLING_END);
+    }
+
     public function getShortUrl()
     {
         return $this->getAttribute(self::SHORT_URL);
@@ -800,12 +810,12 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SHORT_URL, $shortUrl);
     }
 
-    public function setBillingStart($billingStart)
+    public function setBillingStart(int $billingStart)
     {
         $this->setAttribute(self::BILLING_START, $billingStart);
     }
 
-    public function setBillingEnd($billingEnd)
+    public function setBillingEnd(int $billingEnd)
     {
         $this->setAttribute(self::BILLING_END, $billingEnd);
     }
