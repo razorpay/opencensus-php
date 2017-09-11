@@ -14,7 +14,6 @@ class Server extends Base\Mock\Server
         $this->validateAuthenticateInput($input);
 
         // TODO: vaidate PaReq
-
         $paResContent = $this->getPaResContent($input);
 
         $this->content($paResContent, 'pares');
@@ -37,21 +36,21 @@ class Server extends Base\Mock\Server
 
     private function getPaResXml($content, $input)
     {
+        $encodedRes = base64_decode($input['PaReq']);
+
+        $pares = zlib_decode($encodedRes);
+
+        $paresArray = $this->xmlToArray($pares);
+
         $id = $input['MD'];
+
         $xid = base64_encode(str_pad($id, 20, '0', STR_PAD_LEFT));
 
-        $this->repo = new Payment\Repository;
+        $paRes = $this->getPaRes($paresArray);
 
-        $payment = $this->repo->findByPublicId('pay_' . $id);
+        $paResXml = Xml::create('ThreeDSecure', $paRes);
 
-        $created = $payment->getCreatedAt();
-
-        $created = Carbon::createFromTimestamp($created, 'Asia/Kolkata')->format('Ymd H:m:s');
-
-        // TODO make it dynamic and from array
-        // TODO: Sign XML here
-
-        return '<ThreeDSecure><Message id="pay_'.$id.'"><PARes id="a630671711"><version>1.0.2</version><Merchant><acqBIN>11111111111</acqBIN><merID>12AB,cd/34-EF  -g,5/H-67</merID></Merchant><Purchase><xid>'. $xid.'</xid><date>' . $created . '</date><purchAmount>50000</purchAmount><currency>356</currency><exponent>2</exponent></Purchase><pan>4532249047240</pan><TX><time>20160814 06:52:22</time><status>Y</status><cavv>AAABBJg0VhI0VniQEjRWAAAAAAA=</cavv><eci>03</eci><cavvAlgorithm>2</cavvAlgorithm></TX></PARes><Signature xmlns="http://www.w3.org/2000/09/xmldsig#"><SignedInfo xmlns="http://www.w3.org/2000/09/xmldsig#"><CanonicalizationMethod Algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315"></CanonicalizationMethod><SignatureMethod Algorithm="http://www.w3.org/2000/09/xmldsig#rsa-sha1"></SignatureMethod><Reference URI="#a630671711"><DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1"></DigestMethod><DigestValue>iRI4FJUn4qkZIP+x66PKO7DQQ7o=</DigestValue></Reference></SignedInfo><KeyInfo><X509Data></X509Data></KeyInfo></Signature></Message></ThreeDSecure>';
+        return $paResXml;
     }
 
     public function authorize($input)
@@ -61,9 +60,27 @@ class Server extends Base\Mock\Server
         // $this->validateAuthInput($input);
         $VERes = $this->getVERes($input);
 
-        $this->switchAuthorizeCases($input, $VERes);
-
         return $this->makeXmlResponse($VERes);
+    }
+
+    protected function getPaRes(array $content)
+    {
+        $responseClass = new Response\Pareq($this->route);
+
+        $acctId = $content['Message']['PAReq']['CH']['acctID'];
+
+        $cardNo = CardNumber::getCardNumberFromAccId($acctId);
+
+        switch($cardNo)
+        {
+            case CardNumber::VALID_ENROLL_NUMBER:
+                $content['Message']['PARes'] = $responseClass->enrolledValidResponse($content);
+                break;
+        }
+
+        unset($content['Message']['PAReq']);
+
+        return $content;
     }
 
     protected function getVERes(array $input)
@@ -104,11 +121,6 @@ class Server extends Base\Mock\Server
         }
 
         return $content;
-    }
-
-    protected function switchAuthorizeCases($input, &$response)
-    {
-
     }
 
     protected function makeXmlResponse($content)
