@@ -320,13 +320,13 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) === Status::COMPLETED);
     }
 
-    public function markType(string $type, bool $value)
+    public function setType(string $type, bool $value)
     {
         $currentHex = $this->getType();
 
         $newHex = Type::getHexWithTypeMarked($currentHex, $type, $value);
 
-        $this->setType($newHex);
+        $this->setTypeHex($newHex);
     }
 
     public function getType()
@@ -434,11 +434,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ENDED_AT, $endAt);
     }
 
-    public function setType($type)
-    {
-        $this->setAttribute(self::TYPE, $type);
-    }
-
     public function setStatus($status)
     {
         Status::validateStatus($status);
@@ -498,6 +493,11 @@ class Entity extends Base\PublicEntity
     public function resetAuthAttempts()
     {
         $this->setAttribute(self::AUTH_ATTEMPTS, 0);
+    }
+
+    public function setTypeHex(string $hex)
+    {
+        $this->setAttribute(self::TYPE, $hex);
     }
 
     /**
@@ -607,12 +607,12 @@ class Entity extends Base\PublicEntity
     {
         if (empty($input[Entity::START_AT]) === true)
         {
-            $this->markType(Type::IMMEDIATE, true);
+            $this->setType(Type::IMMEDIATE, true);
         }
 
         if (empty($input[Entity::ADDONS]) === false)
         {
-            $this->markType(Type::UPFRONT, true);
+            $this->setType(Type::UPFRONT, true);
         }
     }
 

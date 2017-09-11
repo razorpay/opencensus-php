@@ -2174,6 +2174,10 @@ trait Authorize
         {
             $subscription->setStatus(Subscription\Status::ACTIVE);
 
+            // If old status is anything but active, that means card is being changed
+            // on a failing subscription. Since payment has succeeded, the error fields
+            // can now be reset. These fields would have been reset in another flow
+            // if the charge had succeeded without card change anyway.
             (new Subscription\Charge)->resetErrorFields($subscription);
 
             $activated = true;
@@ -2427,6 +2431,9 @@ trait Authorize
         // The cron key is set in scope.
         // A hacky way to do this would be to override the cron auth
         // with merchant auth. This might cause other issues though.
+        // Proxy auth means the payment is being made from dashboard,
+        // typically for a test charge. In this case as well, we cannot
+        // and should not add the signature to the response.
         //
         if ($this->app['basicauth']->isProxyOrPrivilegeAuth() === false)
         {

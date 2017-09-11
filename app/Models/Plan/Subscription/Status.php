@@ -106,14 +106,14 @@ class Status
     ];
 
     public static $cronChargeableStatuses = [
-        self::ACTIVE,
         self::AUTHENTICATED,
+        self::ACTIVE,
         self::HALTED,
     ];
 
     public static $manualTestChargeableStatuses = [
-        self::ACTIVE,
         self::AUTHENTICATED,
+        self::ACTIVE,
         self::HALTED,
         self::PENDING,
     ];
