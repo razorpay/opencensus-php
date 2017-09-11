@@ -69,6 +69,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
+        self::ATTEMPTS            => 'int',
         self::RECIPIENTS          => 'array',
         self::SCHEDULED           => 'boolean',
         self::PARTIALLY_PROCESSED => 'boolean'
