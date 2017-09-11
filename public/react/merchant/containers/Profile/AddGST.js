@@ -85,7 +85,7 @@ export default class AddGST extends Component {
         } else {
           this.props.showNotification({
             type: 'success',
-            message: `Your GST details have been updated, Note: ${this
+            message: `Your GST details have been updated. Note: ${this
               .gst_success_msg}`,
           });
           this.props.closeModal();
@@ -225,6 +225,11 @@ export default class AddGST extends Component {
                           placeholder="19AAAAAA1234YYY"
                         />
                       </div>
+                      <div className="gst-update-note">
+                        <Banner>
+                          <b>Note:</b> {this.gst_success_msg}.
+                        </Banner>
+                      </div>
                     </div>
                   : <div class="form-group">
                       <label class="label-required">GSTIN</label>
@@ -236,6 +241,11 @@ export default class AddGST extends Component {
                           autoFocus={true}
                           placeholder="19AAAAAA1234YYY"
                         />
+                      </div>
+                      <div className="gst-update-note">
+                        <Banner>
+                          <b>Note:</b> {this.gst_success_msg}.
+                        </Banner>
                       </div>
                     </div>}
 
