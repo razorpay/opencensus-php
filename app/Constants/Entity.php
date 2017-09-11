@@ -309,6 +309,11 @@ class Entity
         self::SCHEDULE,
     ];
 
+    public static function getAllEntities()
+    {
+        return array_keys(self::$namespace);
+    }
+
     public static function getEntityNamespace(string $entity)
     {
         self::validateIsEntity($entity);
