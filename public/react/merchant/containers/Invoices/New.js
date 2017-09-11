@@ -177,11 +177,27 @@ export default class InvoicesNewContainer extends Component {
 
   componentWillReceiveProps(nextProps) {
     if (this.props.match.params.id !== nextProps.match.params.id) {
-      this.props.fetchInvoice(nextProps.match.params.id).then(invoice => {
-        if (this.isPaymentLink(invoice)) {
-          return;
-        }
+      this.setState({
+        isLoading: true,
       });
+
+      this.props
+        .fetchInvoice(nextProps.match.params.id)
+        .then(invoice => {
+          this.setState({
+            isLoading: false,
+          });
+
+          if (this.isPaymentLink(invoice)) {
+            return;
+          }
+        })
+        .catch(({ errors }) => {
+          this.props.showNotification({
+            type: 'error',
+            message: errors,
+          });
+        });
     }
   }
 
