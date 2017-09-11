@@ -13,6 +13,15 @@ function verifyAccountNumber(value, allValues, props) {
 }
 
 export default class BankDetailsForm extends Component {
+  componentWillMount() {
+    // Check if webkit browsers
+    this.isWebkit =
+      typeof window.getComputedStyle(document.documentElement)[
+        '-webkit-text-security'
+      ] === 'string'
+        ? true
+        : false;
+  }
   render() {
     let {
       handleSubmit,
@@ -51,9 +60,9 @@ export default class BankDetailsForm extends Component {
               <Field
                 name="bank_account_number"
                 component={InputField}
-                class="form-control"
+                class={`form-control ${this.isWebkit ? 'webkit-sec' : ''}`}
                 placeholder="Bank Account Number"
-                type="password"
+                type={this.isWebkit ? 'text' : 'password'}
                 autoComplete="off"
                 validate={[required()]}
               />
@@ -188,11 +197,11 @@ export default class BankDetailsForm extends Component {
                       validate={[required()]}
                     >
                       <option />
-                      {Object.keys(states).map(stateCode => (
+                      {Object.keys(states).map(stateCode =>
                         <option value={stateCode} key={stateCode}>
                           {states[stateCode]}
                         </option>
-                      ))}
+                      )}
                     </Field>
                   </div>
                 </div>
