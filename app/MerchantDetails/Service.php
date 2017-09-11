@@ -99,18 +99,6 @@ class Service extends Base\Service
         'promoter_pan_url'     => 'promoter_pan_proof',
     ];
 
-    const UPLOAD_DOCUMENT_ERRORS = [
-        'business_proof'         => "Please upload business proof",
-        'business_pan_proof'     => "Please upload business pan card scan.",
-        'address_proof'          => "Please upload address proof.",
-        'promoter_address_proof' => "Please upload authorised signatory address proof."
-    ];
-
-    const UPLOAD_DOCUMENT_ERRORS_ACCOUNT = [
-        'address_proof'          => "Please upload bank account proof, as specified.",
-        'promoter_pan_proof'     => "Please upload PAN card scan",
-    ];
-
     const PRE_SIGNUP_FIELDS = [
         'business_type',
         'transaction_volume',
@@ -130,9 +118,6 @@ class Service extends Base\Service
         'website_refund',
         'website_pricing'
     ];
-
-    const BANK_STEP           = 4;
-    const BANK_STEP_ACCOUNT   = 2;
 
     public function __construct()
     {
@@ -184,57 +169,6 @@ class Service extends Base\Service
         $merchantDetails['files'] = $this->getFileDetails($merchantDetails);
 
         return $merchantDetails;
-    }
-
-    public function submitDetails()
-    {
-        $input = ['submit' => true];
-
-        list($error, $merchantDetails) = $this->saveDetailsOnAPI($input);
-
-        if (empty($error) === true)
-        {
-            if ($merchantDetails['can_submit'] === false)
-            {
-                $error = [ "Some mandatory fields are required" ];
-            }
-        }
-
-        return $error;
-    }
-
-    public function saveDetails(int $step, array $input)
-    {
-        $bankStep = $this->getBankStep();
-
-        //
-        // 4 is the Bank Account Details step (2 for marketplace accounts)
-        // We disable this because this doesn't edit the Bank Account
-        // on the API side, causing confusion. We have a separate
-        // method in merchant details to accomplish the same
-        //
-
-        if (($this->merchant->activated === true) and ($step === $bankStep))
-        {
-            return ["Bank account updation not allowed after account is updated"];
-        }
-
-        $operation = 'step' . $step;
-
-        if ($this->isLinkedAccount() === true)
-        {
-            $operation .= '_account';
-        }
-
-        $error = (new Entity)->edit($input, $operation);
-
-        // Save the finished steps if there are no errors
-        if (empty($error) === true)
-        {
-            list($error, $merchantDetails) = $this->saveDetailsOnAPI($input);
-        }
-
-        return $error;
     }
 
     public function getPresignupDetails($merchantId, $merchantDetails = null)
@@ -292,45 +226,6 @@ class Service extends Base\Service
         }
 
         return ['files' => $fileUrls];
-    }
-
-    public function checkUploads()
-    {
-        $error = [];
-
-        $merchantDetails = $this->fetchDetails();
-
-        $files = $merchantDetails['files'];
-
-        $uploadDocumentErrors = $this->getUploadDocumentErrors();
-
-        foreach ($uploadDocumentErrors as $key => $value)
-        {
-            if (in_array($key, $files, true) === false)
-            {
-                $error[] = $value;
-            }
-        }
-
-        return $error;
-    }
-
-    public function saveUploadedFile($input)
-    {
-        $error = Validator::checkFileUpload($input);
-
-        if (empty($error) === true)
-        {
-            $data = Entity::getFileUploadData($input);
-
-            $params = [
-                $data['field'] => $data['file']
-            ];
-
-            $this->uploadFileToAPI($params);
-        }
-
-        return $error;
     }
 
     public function getDetailsFromAPI($merchantId = null)
@@ -416,15 +311,6 @@ class Service extends Base\Service
         ));
     }
 
-    protected function uploadFileToAPI(array $input)
-    {
-        $this->setApiCredentials($this->merchant->id);
-
-        $response = $this->api
-                         ->merchantDetail
-                         ->uploadActivationFile($this->merchant->id, $input);
-    }
-
     protected function calculateSteps(array $response = null) : array
     {
         $stepFinished = [];
@@ -470,28 +356,7 @@ class Service extends Base\Service
     {
         $stepsList = array_values($this->getFieldsToStepMap());
 
-
         return array_values(array_unique($stepsList));
-    }
-
-    /**
-     * Returns the step number for the bank details part of the activation form
-     *
-     * @return int
-     */
-    protected function getBankStep() : int
-    {
-        return ($this->isLinkedAccount() === true) ? self::BANK_STEP_ACCOUNT : self::BANK_STEP;
-    }
-
-    /**
-     * Returns an array that maps upload document key types to error messages
-     *
-     * @return array
-     */
-    protected function getUploadDocumentErrors() : array
-    {
-        return ($this->isLinkedAccount() === true) ? self::UPLOAD_DOCUMENT_ERRORS_ACCOUNT : self::UPLOAD_DOCUMENT_ERRORS;
     }
 
     /**
@@ -520,43 +385,6 @@ class Service extends Base\Service
         }
 
         return $fileResponse;
-    }
-
-    /**
-     * Fetches a marketplace linked account by its ID
-     * Sets the $this->merchant property to the fetched entity
-     *
-     * @param  string $accountId
-     * @return self
-     */
-    public function forAccount(string $accountId)
-    {
-        $this->checkAndSetAccountMerchant($accountId);
-
-        return $this;
-    }
-
-    protected function checkAndSetAccountMerchant(string $accountId)
-    {
-        $this->setApiCredentials();
-
-        $account = $this->api->merchant->fetch($accountId);
-
-        if ($account->parent_id !== $this->merchant->id)
-        {
-            Trace::debug(
-                'MISC_TRACE_CODE',
-                [
-                    'error'     => "Accessing details of unlinked account"
-                ]);
-
-            return null;
-        }
-
-        // Switch $this->merchant to the linked-account entity
-        $this->merchant = Merchant\Entity::findOrFail($account->id);
-
-        $this->linked_account = true;
     }
 
     protected function isLinkedAccount() : bool

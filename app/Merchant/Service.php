@@ -636,6 +636,52 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
+    public function saveActivationData($input)
+    {
+        $saveActivationData = [
+            'route_name' => 'merchant_activation_save',
+            'body' => $input
+        ];
+
+        $genericService = new Generic\Service;
+
+        list($error, $data) = $genericService->call('POST', $saveActivationData);
+
+        if (empty($error) === false)
+        {
+            throw new \Razorpay\Api\Errors\BadRequestError(
+                $error[0],
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
+        return [$error, $data];
+    }
+
+    public function saveActivationFilesData($input)
+    {
+        $saveActivationFilesData = [
+            'route_name' => 'merchant_activation_upload_file',
+            'body' => $input
+        ];
+
+        $genericService = new Generic\Service;
+
+        list($error, $data) = $genericService->call('POST', $saveActivationFilesData);
+
+        if (empty($error) === false)
+        {
+            throw new \Razorpay\Api\Errors\BadRequestError(
+                $error[0],
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
+        return [$error, $data];
+    }
+
     public function sendInvoiceNotification($mode, $invoiceId, $medium)
     {
         $errors = $data = [];
