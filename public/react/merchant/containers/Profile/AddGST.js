@@ -164,7 +164,7 @@ export default class AddGST extends Component {
 
                 <div className="gst-update-note">
                   <Banner>
-                    <b>Note:</b> {this.gst_success_msg}.
+                    <b>Note:</b> {this.gst_success_msg}
                   </Banner>
                 </div>
 
@@ -227,7 +227,7 @@ export default class AddGST extends Component {
                       </div>
                       <div className="gst-update-note">
                         <Banner>
-                          <b>Note:</b> {this.gst_success_msg}.
+                          <b>Note:</b> {this.gst_success_msg}
                         </Banner>
                       </div>
                     </div>
