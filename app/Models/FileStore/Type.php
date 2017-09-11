@@ -57,6 +57,7 @@ class Type
     const KOTAK_EMI_FILE                    = 'kotak_emi_file';
     const RBL_EMI_FILE                      = 'rbl_emi_file';
     const SCBL_EMI_FILE                     = 'scbl_emi_file';
+    const YES_EMI_FILE                      = 'yes_emi_file';
     const ICICI_EMI_FILE_SFTP               = 'icici_emi_file_sftp';
     const ICICI_EMI_FILE_MAIL               = 'icici_emi_file_mail';
 
@@ -143,6 +144,7 @@ class Type
         self::KOTAK_EMI_FILE,
         self::RBL_EMI_FILE,
         self::SCBL_EMI_FILE,
+        self::YES_EMI_FILE,
         self::ICICI_EMI_FILE_MAIL,
         self::ICICI_EMI_FILE_SFTP,
         self::KOTAK_NETBANKING_CLAIM,
@@ -185,6 +187,7 @@ class Type
             self::KOTAK_EMI_FILE,
             self::RBL_EMI_FILE,
             self::SCBL_EMI_FILE,
+            self::YES_EMI_FILE,
             self::ICICI_EMI_FILE_MAIL,
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
