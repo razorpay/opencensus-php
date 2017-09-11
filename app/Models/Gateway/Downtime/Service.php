@@ -15,14 +15,14 @@ class Service extends Base\Service
     {
         $downtime = $this->core()->create($input);
 
-        return $downtime->toArrayPublic();
+        return $downtime->toArrayAdmin();
     }
 
     public function edit($id, array $input)
     {
         $downtime = $this->core()->edit($id, $input);
 
-        return $downtime->toArrayPublic();
+        return $downtime->toArrayAdmin();
     }
 
     public function getPublicGatewayDowntimeData(): array

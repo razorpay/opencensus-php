@@ -465,25 +465,25 @@ class Entity extends Base\PublicEntity
 
         if (is_array($issuer) === true)
         {
-            foreach ($issuer as $i)
+            foreach ($issuer as $bank)
             {
-                $instrumentDetails = $this->getInstrumentDetails($i);
+                $instrumentDetails = $this->getNetbankingInstrumentDetails($bank);
 
-                $data[] = array_merge($downtimeMetaData, $instrumentDetails);
+                $data[] = array_filter(array_merge($downtimeMetaData, $instrumentDetails));
             }
 
         }
         else
         {
-            $instrumentDetails = $this->getInstrumentDetails($issuer);
+            $instrumentDetails = $this->getNetbankingInstrumentDetails($issuer);
 
-            $data = array_merge($downtimeMetaData, $instrumentDetails);
+            $data = array_filter(array_merge($downtimeMetaData, $instrumentDetails));
         }
 
         return $data;
     }
 
-    protected function getInstrumentDetails(string $issuer): array
+    protected function getNetbankingInstrumentDetails(string $issuer): array
     {
         return [
             self::INSTRUMENT => [
