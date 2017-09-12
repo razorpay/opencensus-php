@@ -22,6 +22,7 @@ final class Route
         'checkout_onyx'                           => ['post',     'checkout/onyx',                                  'PublicController@postCallbackUrlWithParams'                        ],
         'checkout_hosted'                         => ['post',     'checkout/hosted',                                'PublicController@postCheckoutHosted'                               ],
         'merchant_methods'                        => ['get',      'methods',                                        'MerchantController@getPaymentMethods'                              ],
+        'merchant_methods_downtime'               => ['get',      'methods/downtime',                               'MerchantController@getPublicGatewayDowntimeData'                   ],
         'merchant_checkout_preferences'           => ['get',      'preferences',                                    'MerchantController@getCheckoutPreferences'                         ],
         'payment_create'                          => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'                         ],
         'payment_create_private'                  => ['post',     'payments/create',                                'PaymentCreateController@postCreateS2SPayment'                      ],
@@ -373,11 +374,13 @@ final class Route
         'gateway_remove_priorities'               => ['patch',    'gateway/priorities/{method}/remove',             'GatewayController@removeGatewayPriority'                           ],
         'gateway_create_downtime'                 => ['post',     'gateway/downtimes',                              'GatewayController@postGatewayDowntime'                             ],
         'gateway_update_downtime'                 => ['put',      'gateway/downtimes/{id}',                         'GatewayController@putGatewayDowntime'                              ],
-        'gateway_fetch_downtime'                  => ['get',      'gateway/downtimes',                              'GatewayController@getAbsentGateways'                               ],
         'gateway_downtime_source_webhook'         => ['post',     'gateway/downtimes/{source}/webhook',             'GatewayController@postGatewayDowntimeWebhook'                      ],
         'gateway_create_rule'                     => ['post',     'gateway/rules',                                  'GatewayController@createGatewayRule'                               ],
         'gateway_update_rule'                     => ['patch',    'gateway/rules/{id}',                             'GatewayController@updateGatewayRule'                               ],
         'gateway_delete_rule'                     => ['delete',   'gateway/rules/{id}',                             'GatewayController@deleteGatewayRule'                               ],
+        'gateway_file_create'                     => ['post',     'gateway/files',                                  'GatewayFileController@createGatewayFile'                           ],
+        'gateway_file_retry'                      => ['post',     'gateway/files/{id}/retry',                       'GatewayFileController@retryGatewayFile'                            ],
+        'gateway_file_acknowledge'                => ['post',     'gateway/files/{id}/acknowledge',                 'GatewayFileController@acknowledgeGatewayFile'                      ],
         'scorecard'                               => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
         'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
         'plan_create'                             => ['post',     'plans',                                          'SubscriptionController@postCreatePlan'                             ],
@@ -623,7 +626,6 @@ final class Route
         'mock_paytm_payment',
         'mock_mobikwik_payment',
         'mock_netbanking_payment',
-        'mock_billdesk_payment',
         'mock_ebs_payment',
         'mock_sharp_payment_post',
         'mock_sharp_payment_get',
@@ -642,6 +644,7 @@ final class Route
         'otp_verify',
         'otp_verify_app',
         'device_create',
+        'merchant_methods_downtime'
     ];
 
     public static $device = [
@@ -902,7 +905,6 @@ final class Route
         'gateway_remove_priorities',
         'gateway_create_downtime',
         'gateway_update_downtime',
-        'gateway_fetch_downtime',
         'order_refund_multiple_authorized',
         'refund_create_gateway_record',
         'gateway_validate_unknown_refund',
@@ -987,6 +989,9 @@ final class Route
         'risk_get',
         'merchant_create_invoice_entities',
         'merchant_payout',
+        'gateway_file_create',
+        'gateway_file_retry',
+        'gateway_file_acknowledge',
     ];
 
     public static $proxy = [
@@ -1249,7 +1254,7 @@ final class Route
         'invitation_fetch'                 => '*',
         'pricing_create_plan'              => Permission::CREATE_PRICING_PLAN,
         'merchant_get_pricing'             => Permission::VIEW_MERCHANT_PRICING,
-        'merchant_invoice_update_gstin'    => '*',
+        'merchant_invoice_update_gstin'    => Permission::EDIT_MERCHANT_INVOICE_GSTIN,
         'merchant_details_fetch'           => '*',
         'setl_retry'                       => Permission::RETRY_SETTLEMENT,
         'merchant_invoice_add_bulk'        => '*',
@@ -1284,6 +1289,7 @@ final class Route
         'mock_event_tracker',
         'upi_npci_request',
         'upi_zero_call',
+        'mock_billdesk_payment',
     ];
 
     public static $internalApps = [
@@ -1341,6 +1347,7 @@ final class Route
             'virtual_account_refund_excess',
             'merchant_create_invoice_entities',
             'merchant_payout',
+            'gateway_file_create',
         ],
 
         'kotak' => [
@@ -1380,6 +1387,7 @@ final class Route
         'payment_get_status',
         'merchant_public_get_banks',
         'merchant_methods',
+        'merchant_methods_downtime',
     ];
 
     /**

@@ -16,8 +16,22 @@ class Server extends Base\Mock\Server
 {
     public function authorize($input)
     {
+        $request = array(
+            'url' => $this->route->getUrl('mock_billdesk_payment'),
+            'content' => $input,
+            'method' => 'post',
+        );
+
+        $this->request($request);
+
+        return $this->makePostResponse($request);
+    }
+
+    public function bank(array $input)
+    {
         parent::authorize($input);
 
+        // Create request array here
         $input = $this->getContentFromInput($input);
 
         $gatewayPayment = $this->getRepo()->findByPaymentIdAndAction(
@@ -94,7 +108,7 @@ class Server extends Base\Mock\Server
 
         $content = ['msg' => $msg];
 
-        $this->content($content);
+        $this->content($content, 'bank');
 
         $request = array(
             'url' => $input['RU'],
@@ -102,7 +116,7 @@ class Server extends Base\Mock\Server
             'method' => 'post',
         );
 
-        return $this->makePostResponse($request);
+        return $request;
     }
 
     public function verify($input)

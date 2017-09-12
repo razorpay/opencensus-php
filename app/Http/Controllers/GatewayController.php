@@ -9,8 +9,9 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
-use RZP\Models\Gateway\Downtime;
 use RZP\Models\Gateway\Rule;
+use RZP\Models\Payment\Method;
+use RZP\Models\Gateway\Downtime;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Models\Gateway\Priority as GatewayPriority;
 
@@ -223,19 +224,6 @@ class GatewayController extends Controller
         $input = Request::all();
 
         $data = $service->edit($id, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    /**
-     * Method to get absent gateways across multiple search params
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function getAbsentGateways(Downtime\Service $service)
-    {
-        $input = Request::all();
-
-        $data = $service->fetchMultiple($input);
 
         return ApiResponse::json($data);
     }
