@@ -138,10 +138,7 @@ class InvoiceTest extends TestCase
 
     public function testCreateLinkWithInvalidSource()
     {
-        //
-        // TODO: (Low priority)
-        // - Fix Source::checkType and Type::validateType methods.
-        //
+        $this->startTest();
     }
 
     public function testCreateLinkWithTooLargeAmount()
