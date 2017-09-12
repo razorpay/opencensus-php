@@ -27,4 +27,14 @@ class Repository extends BaseRepository
 
         $query = $query->where($attribute, '=', $email);
     }
+
+    protected function isTestMode(): bool
+    {
+        return ($this->app['rzp.mode'] === Mode::TEST);
+    }
+
+    protected function isLiveMode(): bool
+    {
+        return ($this->app['rzp.mode'] === Mode::LIVE);
+    }
 }

@@ -163,9 +163,9 @@ class FeaturesTest extends TestCase
     {
         $featureName = "dummy";
 
-        $method = 'appAuth' . studly_case($addToMode);
+        $authMethod = 'appAuth' . studly_case($addToMode);
 
-        $this->ba->$method();
+        $this->ba->$authMethod();
 
         $request = [
             'url'     => '/features',

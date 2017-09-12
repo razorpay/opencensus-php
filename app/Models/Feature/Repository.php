@@ -59,7 +59,7 @@ class Repository extends BaseRepository
      */
     public function shouldSync($entity, $action = null): bool
     {
-        if (($this->app['rzp.mode'] === Mode::LIVE) and ($action !== BaseRepository::DELETE))
+        if (($this->isLiveMode()) and ($action !== BaseRepository::DELETE))
         {
             // Sync if the feature is not already enabled on test
             $feature = $this->newQueryWithConnection(Mode::TEST)
