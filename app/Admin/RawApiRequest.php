@@ -255,7 +255,7 @@ class RawApiRequest
         // If we need to add the file to the body
         if ($this->input['file'] instanceof \SplFileInfo)
         {
-            $file = Input::file('file');
+            $file = $this->input['file'];
 
             $this->params['body'] = $this->parseBody();
 

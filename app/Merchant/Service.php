@@ -638,6 +638,11 @@ class Service extends Base\Service
 
     public function saveActivationData($input)
     {
+        if (isset($input['bank_account_number_confirmation']) === true)
+        {
+            unset($input['bank_account_number_confirmation']);
+        }
+
         $saveActivationData = [
             'route_name' => 'merchant_activation_save',
             'body' => $input
@@ -673,13 +678,10 @@ class Service extends Base\Service
 
         $field = MerchantDetails\Entity::UPLOAD_KEYS[key($input)];
 
-        $fileData = [
-            $field => current($input)
-        ];
-
         $saveActivationFilesData = [
             'route_name' => 'merchant_activation_upload_file',
-            'body' => $fileData
+            'file_name' => $field,
+            'file' => current($input)
         ];
 
         $genericService = new Generic\Service;
