@@ -31,6 +31,7 @@ class Validator extends Base\Validator
     protected static $editValidators = [
         'events',
         'url',
+        'public_ip'
     ];
 
     // Refer: http://www-archive.mozilla.org/projects/netlib/PortBanning.html#portlist
@@ -41,6 +42,22 @@ class Validator extends Base\Validator
         514, 515, 526, 530, 531, 532, 540, 556, 563, 587, 601, 636,
         993, 995, 2049, 4045, 6000
     ];
+
+    protected function validatePublicIp($input)
+    {
+        if (isset($input[Entity::URL]) === false)
+        {
+            return;
+        }
+
+        $url = $input[Entity::URL];
+
+        if ($this->validatePublicIpAddress($url) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'URL must point to a public IP address');
+        }
+    }
 
     /**
      * Do not allow internal or reserved IP addresses
@@ -62,14 +79,9 @@ class Validator extends Base\Validator
      *     ::ffff:0:0/96
      *     fe80::/10.
      */
-    protected function validatePublicIp($input)
+    public function validatePublicIpAddress(string $url)
     {
-        if (isset($input[Entity::URL]) === false)
-        {
-            return;
-        }
-
-        $components = parse_url($input[Entity::URL]);
+        $components = parse_url($url);
 
         $host = $components['host'];
 
@@ -77,12 +89,9 @@ class Validator extends Base\Validator
         // this will return the hostname as the IP, and work as expected
         $ip = gethostbyname($host);
 
-        if (v::ip(FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)
-            ->validate($ip) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'URL must point to a public IP address');
-        }
+        $flags = FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE;
+
+        return v::ip($flags)->validate($ip);
     }
 
     protected function validateUrl($input)

@@ -167,7 +167,7 @@ return [
                     'count' => 1,
                     'items' => [
                         [
-                            'url' => 'http://localhost/v1/dummy/route',
+                            'url' => 'http://razorpay.com/v1/dummy/route',
                             'events' => [
                                 'payment.authorized' => true
                             ],
@@ -479,7 +479,7 @@ return [
     ],
 
     'testWebhookEventDataJustBeforeFiring' => [
-        'url' => 'http://localhost/v1/dummy/route',
+        'url' => 'http://razorpay.com/v1/dummy/route',
         'method' => 'post',
         'content' => [
             'entity' => 'event',
@@ -513,7 +513,7 @@ return [
     ],
 
     'testExceptionOnWebhookFire' => [
-        'url' => 'http://localhost/v1/dummy/route',
+        'url' => 'http://razorpay.com/v1/dummy/route',
         'method' => 'post',
         'content' => [
             'entity' => 'event',
@@ -543,7 +543,7 @@ return [
     ],
 
     'testSecretValueInWebhookEventDataJustBeforeFiring' => [
-        'url' => 'http://localhost/v1/dummy/route',
+        'url' => 'http://razorpay.com/v1/dummy/route',
         'method' => 'post',
         'content' => [
             'entity' => 'event',
