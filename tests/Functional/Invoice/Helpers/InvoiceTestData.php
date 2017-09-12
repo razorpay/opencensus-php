@@ -2995,6 +2995,80 @@ return [
         ],
     ],
 
+    'testInvoiceExpiredWebhook' => [
+        'request' => [
+            'url'     => '/invoices/expire',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'total_invoices_count' => 1,
+                'failed_invoice_ids'   => [],
+                // 'time_taken'          : '1 secs'
+            ],
+        ],
+    ],
+
+    'testInvoiceExpiredWebhookEventData' => [
+        'entity'   => 'event',
+        'event'    => 'invoice.expired',
+        'contains' => [
+            'invoice',
+        ],
+        'payload'  => [
+            'invoice' => [
+                'entity' => [
+                    'id'               => 'inv_1000000invoice',
+                    'entity'           => 'invoice',
+                    'receipt'          => null,
+                    'invoice_number'   => null,
+                    'customer_id'      => 'cust_100000customer',
+                    'customer_details' => [
+                        'name'             => 'test',
+                        'email'            => 'test@razorpay.com',
+                        'contact'          => '1234567890',
+                        'billing_address'  => null,
+                        'customer_name'    => 'test',
+                        'customer_email'   => 'test@razorpay.com',
+                        'customer_contact' => '1234567890',
+                    ],
+                    'order_id'              => 'order_100000000order',
+                    'payment_id'            => null,
+                    'status'                => 'expired',
+                    // 'expire_by'             => 1505201091,
+                    // 'issued_at'             => 1505088000,
+                    'paid_at'               => null,
+                    'cancelled_at'          => null,
+                    // 'expired_at'            => 1505201092,
+                    'sms_status'            => 'sent',
+                    'email_status'          => 'sent',
+                    'date'                  => null,
+                    'terms'                 => null,
+                    'partial_payment'       => false,
+                    'gross_amount'          => null,
+                    'tax_amount'            => null,
+                    'amount'                => 100000,
+                    'amount_paid'           => 0,
+                    'amount_due'            => 100000,
+                    'currency'              => 'INR',
+                    'description'           => null,
+                    'notes'                 => [],
+                    'comment'               => null,
+                    'short_url'             => 'http://bitly.dev/2eZ11Vn',
+                    'view_less'             => true,
+                    'billing_start'         => null,
+                    'billing_end'           => null,
+                    'type'                  => 'invoice',
+                    'group_taxes_discounts' => false,
+                    'user_id'               => null,
+                    // 'created_at'            => 1505201092,
+                ],
+            ],
+        ],
+        // 'created_at' => 1505201092,
+    ],
+
     // ----------------------------------------------------------------------
     // Expectations for ES
 

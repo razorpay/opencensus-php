@@ -178,6 +178,10 @@ class ApiEventSubscriber extends Base\Core
 
     protected function onInvoicePaid($payment)
     {
+        //
+        // Other than firing web hook in this case, we also update invoice's copy
+        // of customer details if that is empty with payment's attributes.
+        //
         (new Invoice\Core)->setCustomerDetailsFromPaymentIfAbsent($payment);
 
         if ($this->webhookEnabledForEvent === false)
@@ -185,8 +189,14 @@ class ApiEventSubscriber extends Base\Core
             return;
         }
 
-        // WebHook specific statements
-        $payload = $this->getInvoicePayload($payment);
+        $payload = $this->getInvoicePayloadWithPayment($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onInvoiceExpired($invoice)
+    {
+        $payload = $this->getInvoicePayload($invoice);
 
         $this->prepareAndDispatchWebhook($payload);
     }
@@ -336,7 +346,12 @@ class ApiEventSubscriber extends Base\Core
         return $partialPayload;
     }
 
-    protected function getInvoicePayload($payment)
+    protected function getInvoicePayload(Invoice\Entity $invoice)
+    {
+        return [Constants\Entity::INVOICE => ['entity' => $invoice->toArrayPublic()]];
+    }
+
+    protected function getInvoicePayloadWithPayment($payment)
     {
         $order = $payment->order;
         $invoice = $order->invoice;
