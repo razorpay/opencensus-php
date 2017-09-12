@@ -18,7 +18,7 @@ return array(
 
     'driver' => 'custom_redis',
 
-    'encrypt' => false,
+    'encrypt' => env('SESSION_ENCRYPT', true),
 
     /*
     |--------------------------------------------------------------------------
