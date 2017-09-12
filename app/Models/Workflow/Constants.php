@@ -1,13 +1,6 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: patlola
- * Date: 07/09/17
- * Time: 4:26 PM
- */
 
 namespace RZP\Models\Workflow;
-
 
 class Constants
 {
