@@ -20,6 +20,7 @@ class Gateway
     const AXIS_GENIUS        = 'axis_genius';
     const AXIS_MIGS          = 'axis_migs';
     const BILLDESK           = 'billdesk';
+    const BLADE              = 'blade';
     const CYBERSOURCE        = 'cybersource';
     const EBS                = 'ebs';
     const FIRST_DATA         = 'first_data';
@@ -147,6 +148,7 @@ class Gateway
         self::ATOM                => Settlement\Channel::ATOM,
         self::AXIS_GENIUS         => Settlement\Channel::KOTAK,
         self::AXIS_MIGS           => Settlement\Channel::KOTAK,
+        self::BLADE               => Settlement\Channel::KOTAK,
         self::BILLDESK            => Settlement\Channel::KOTAK,
         self::EBS                 => Settlement\Channel::KOTAK,
         self::HDFC                => Settlement\Channel::KOTAK,
@@ -193,6 +195,7 @@ class Gateway
             self::AMEX,
             self::CYBERSOURCE,
             self::FIRST_DATA,
+            self::BLADE,
         ],
 
         Method::NETBANKING => [
@@ -315,21 +318,31 @@ class Gateway
             Network::MAES,
             Network::DICL,
             Network::RUPAY,
-            Network::UNKNOWN],
+            Network::UNKNOWN
+        ],
         self::AXIS_MIGS => [
             Network::MC,
-            Network::VISA],
+            Network::VISA
+        ],
         self::AXIS_GENIUS => [
             Network::MC,
-            Network::VISA],
+            Network::VISA
+        ],
         self::ATOM => [
             Network::MC,
-            Network::VISA],
+            Network::VISA
+        ],
         self::AMEX => [
-            Network::AMEX],
+            Network::AMEX
+        ],
+        self::BLADE => [
+            Network::MC,
+            Network::VISA
+        ],
         self::PAYTM => [
             Network::MC,
-            Network::VISA],
+            Network::VISA
+        ],
         self::SHARP => [
             Network::MC,
             Network::VISA,
@@ -337,10 +350,12 @@ class Gateway
             Network::AMEX,
             Network::DICL,
             Network::RUPAY,
-            Network::UNKNOWN],
+            Network::UNKNOWN
+        ],
         self::CYBERSOURCE => [
             Network::MC,
-            Network::VISA],
+            Network::VISA
+        ],
         self::FIRST_DATA => [
             Network::MC,
             Network::VISA,
@@ -450,6 +465,7 @@ class Gateway
      * @var array
      */
     public static $internationalCardGateways = [
+        Gateway::BLADE,
         Gateway::HDFC,
         Gateway::AXIS_MIGS,
         Gateway::AMEX,

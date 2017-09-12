@@ -200,6 +200,14 @@ class Validator extends Base\Validator
     {
         $extension = strtolower($file->getClientOriginalExtension());
 
+        /**
+         * Guess extension from mime type if getClientOriginalExtension does not exist
+         */
+        if (empty($extension) === true)
+        {
+            $extension = strtolower($file->guessExtension());
+        }
+
         $mime = $file->getMimeType();
 
         if ((in_array($extension, FileType::ALLOWED_EXTENSIONS) === false) or

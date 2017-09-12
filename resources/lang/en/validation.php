@@ -98,14 +98,17 @@ return array(
     |
     */
 
-    'custom' => array(
-        'contact' => array(
+    'custom' => [
+        'iReq' => [
+            'if_present_then' => 'Transaction status must be N or U when iReq is present.'
+        ],
+        'contact' => [
             'phone' => 'The :attribute field is invalid.'
-        ),
-        'amount' => array(
+        ],
+        'amount' => [
             'min' => 'Minimum transaction amount allowed is Re. 1'
-        )
-    ),
+        ]
+    ],
     /*
     |--------------------------------------------------------------------------
     | Custom Validation Attributes
