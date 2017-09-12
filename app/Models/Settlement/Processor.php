@@ -217,9 +217,6 @@ class Processor extends Base\Core
 
             $slackData = $returnData;
 
-            $slackData['settlement_text_file'] = $txtUrl;
-            $slackData['settlement_excel_file'] = $excelUrl;
-
             $this->successNotification($slackData, $settlements, TraceCode::SETTLEMENT_INITIATED);
         }
         else

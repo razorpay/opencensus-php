@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\Collection;
+use RZP\Models\FileStore\Store;
 use RZP\Models\Merchant\Account;
 
 class Accessor extends Base\Core
@@ -176,6 +177,11 @@ class Accessor extends Base\Core
     {
         $signedUrl = $this->getUrl($file);
 
+        if ($this->app->environment('dev', 'testing') === true)
+        {
+            $signedUrl = $this->getFullFilePath($file);
+        }
+
         return $signedUrl;
     }
 
@@ -251,5 +257,10 @@ class Accessor extends Base\Core
         {
             $this->merchantId(Account::SHARED_ACCOUNT);
         }
+    }
+
+    protected function getFullFilePath($file)
+    {
+        return $this->getStorageDir() . $file->getName() . '.' . $file->getExtension();
     }
 }

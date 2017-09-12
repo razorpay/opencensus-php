@@ -43,7 +43,7 @@ class TerminalLoadSorter extends Terminal\Sorter
             if ($verbose === true)
             {
                 $this->trace->info(
-                    TraceCode::GATEWAY_RULES_POST_FILTER,
+                    TraceCode::GATEWAY_SORTER_RULES,
                     [
                         'rules'          => $this->rules->pluck(Rule\Entity::ID)->toArray(),
                         'chance_percent' => $this->options->getChance(),
@@ -104,7 +104,7 @@ class TerminalLoadSorter extends Terminal\Sorter
 
             foreach ($terminals as $terminal)
             {
-                if ($rule->matches($terminal) === true)
+                if ($rule->matches($terminal, $this->input['merchant']) === true)
                 {
                     $boostedTerminals[] = $terminal;
                 }

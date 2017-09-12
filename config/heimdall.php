@@ -36,7 +36,7 @@ return [
             Permission::VIEW_MERCHANT         => [
                 'description' => 'View a particular merchant details',
                 'assignable'  => true,
-            ]
+            ],
         ],
 
         PermissionCategory::MERCHANT_DETAIL => [
@@ -52,7 +52,6 @@ return [
             ],
             Permission::VIEW_MERCHANT_LOGIN => '',
             Permission::VIEW_ACTIVITY => '',
-            Permission::VIEW_MERCHANT_PRICING_RULES => '',
             Permission::VIEW_MERCHANT_HDFC_EXCEL => '',
             Permission::VIEW_BENEFICIARY_FILE => '',
             Permission::VIEW_MERCHANT_SCREENSHOT => [
@@ -192,6 +191,7 @@ return [
             Permission::ADD_RECONCILIATION_FILE => '',
             Permission::ADD_SETTLEMENT_RECONCILIATION => '',
             Permission::RETRY_SETTLEMENT => '',
+            Permission::EDIT_MERCHANT_INVOICE_GSTIN => '',
             Permission::SEND_NEWSLETTER => '',
             Permission::TRIGGER_DUMMY_ERROR => '',
             Permission::MAKE_API_CALL => '',
@@ -219,6 +219,7 @@ return [
                 'description' => 'Edit offer for a merchant',
             ],
             Permission::ASSIGN_MERCHANT_HANDLE => 'Assign merchant handle',
+            Permission::VIEW_MERCHANT_PRICING  => 'View Mercant Pricing Plan',
         ],
 
         PermissionCategory::PRICING => [
@@ -369,12 +370,12 @@ return [
                 'workflow'    => true
             ],
             Permission::EDIT_ADMIN        => [
-                'description' => 'create workflow',
+                'description' => 'edit admin',
                 'assignable'  => true,
                 'workflow'    => true
             ],
             Permission::DELETE_ADMIN      => [
-                'description' => 'create workflow',
+                'description' => 'delete admin',
                 'assignable'  => true,
                 'workflow'    => true
             ],
