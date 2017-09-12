@@ -292,7 +292,7 @@ app.controller('EntitiesCtrl', [
         source_type: ['all', 'settlement', 'payout'],
         source_id: ['Source Id'],
         merchant_id: ['Merchant Id'],
-        status: ['all', 'created', 'failed', 'processed'],
+        status: ['all', 'created', 'initiated', 'failed', 'processed'],
         utr: ['UTR'],
       },
       gateway_downtime: {
