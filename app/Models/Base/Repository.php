@@ -3,6 +3,7 @@
 namespace RZP\Models\Base;
 
 use RZP\Base\Repository as BaseRepository;
+use RZP\Constants\Mode;
 
 class Repository extends BaseRepository
 {
