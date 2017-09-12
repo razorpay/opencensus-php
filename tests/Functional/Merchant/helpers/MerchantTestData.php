@@ -1685,24 +1685,24 @@ return [
             'content' => [
                 'features' => [
                     [
-                        'feature' => "noflashcheckout",
+                        'feature' => 'noflashcheckout',
                         'value' => false,
-                        'display_name' => "No Flash Checkout"
+                        'display_name' => 'No Flash Checkout'
                     ],
                     [
-                        'feature' => "marketplace",
+                        'feature' => 'marketplace',
                         'value' => false,
-                        'display_name' => "Marketplace"
+                        'display_name' => 'Marketplace'
                     ],
                     [
-                        'feature' => "subscriptions",
+                        'feature' => 'subscriptions',
                         'value' => false,
-                        'display_name' => "Subscriptions"
+                        'display_name' => 'Subscriptions'
                     ],
                     [
-                        'feature' => "virtual_accounts",
+                        'feature' => 'virtual_accounts',
                         'value' => false,
-                        'display_name' => "Virtual accounts"
+                        'display_name' => 'Virtual accounts'
                     ],
                 ]
             ],
@@ -1713,10 +1713,10 @@ return [
     'testUpdateMerchantFeatures' => [
         'request' => [
             'content' => [
-                "features" => [
-                    "noflashcheckout" => "1",
+                'features' => [
+                    'noflashcheckout' => '1',
                 ],
-                "optout_reason" => "some reason"
+                'optout_reason' => 'some reason'
             ],
             'url' => '/merchants/10000000000000/features',
             'method' => 'post',
@@ -1729,9 +1729,9 @@ return [
             'content' => [
                 'features' => [
                     [
-                        'feature' => "noflashcheckout",
+                        'feature' => 'noflashcheckout',
                         'value' => true,
-                        'display_name' => "No Flash Checkout"
+                        'display_name' => 'No Flash Checkout'
                     ]
                 ]
             ],
@@ -1742,8 +1742,8 @@ return [
     'testUpdateMerchantUnEditableFeatures' => [
         'request' => [
             'content' => [
-                "features" => [
-                    "dummy" => "1"
+                'features' => [
+                    'dummy' => '1'
                 ]
             ],
             'url' => '/merchants/10000000000000/features',
@@ -1767,8 +1767,8 @@ return [
     'testUpdateMerchantUnEditableFeaturesOnLive' => [
         'request' => [
             'content' => [
-                "features" => [
-                    "marketplace" => "1"
+                'features' => [
+                    'marketplace' => '1'
                 ]
             ],
             'url' => '/merchants/10000000000000/features',
@@ -1778,22 +1778,22 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE_ON_LIVE
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE_ON_LIVE,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
         ],
     ],
 
     'testUpdateMerchantEditableFeaturesOnTest' => [
         'request' => [
             'content' => [
-                "features" => [
-                    "marketplace" => "1",
+                'features' => [
+                    'marketplace' => '1',
                 ]
             ],
             'url' => '/merchants/10000000000000/features',
@@ -1807,24 +1807,24 @@ return [
             'content' => [
                 'features' => [
                     [
-                        'feature'      => "noflashcheckout",
+                        'feature'      => 'noflashcheckout',
                         'value'        => false,
-                        'display_name' => "No Flash Checkout"
+                        'display_name' => 'No Flash Checkout'
                     ],
                     [
-                        'feature'      => "marketplace",
+                        'feature'      => 'marketplace',
                         'value'        => true,
-                        'display_name' => "Marketplace"
+                        'display_name' => 'Marketplace'
                     ],
                     [
-                        'feature'      => "subscriptions",
+                        'feature'      => 'subscriptions',
                         'value'        => false,
-                        'display_name' => "Subscriptions"
+                        'display_name' => 'Subscriptions'
                     ],
                     [
-                        'feature'      => "virtual_accounts",
+                        'feature'      => 'virtual_accounts',
                         'value'        => false,
-                        'display_name' => "Virtual accounts"
+                        'display_name' => 'Virtual accounts'
                     ],
                 ]
             ],

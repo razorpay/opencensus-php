@@ -1238,7 +1238,7 @@ class MerchantTest extends TestCase
     {
         $this->assertFileExists($file);
 
-        $mimeType = "image/png";
+        $mimeType = 'image/png';
         $uploadedFile = new UploadedFile(
                                             $file,
                                             $file,

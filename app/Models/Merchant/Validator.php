@@ -114,7 +114,7 @@ class Validator extends Base\Validator
 
     protected static $featureValidators = [
         'visible_features',
-        'mode_based_feature_access'
+        'feature_update_for_mode'
     ];
 
     /**
@@ -125,9 +125,10 @@ class Validator extends Base\Validator
      *
      * @throws Exception\BadRequestException
      */
-    protected function validateModeBasedFeatureAccess(array $input)
+    protected function validateFeatureUpdateForMode(array $input)
     {
-        if (App::getFacadeRoot()['rzp.mode'] === Mode::TEST)
+        $app = App::getFacadeRoot();
+        if ($app['rzp.mode'] === Mode::TEST)
         {
             return;
         }
@@ -145,7 +146,7 @@ class Validator extends Base\Validator
             if (empty($featuresNotAllowed) === false)
             {
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE_ON_LIVE, $featuresNotAllowed);
+                    ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE, $featuresNotAllowed);
             }
         }
     }
@@ -165,8 +166,8 @@ class Validator extends Base\Validator
     public function validateLogo($imageDetails)
     {
         $fileSize = $imageDetails['size'];
-        $width = $imageDetails['width'];
-        $height = $imageDetails['height'];
+        $width    = $imageDetails['width'];
+        $height   = $imageDetails['height'];
 
         // File size should not be more than 1M.
         if ($fileSize > self::MAXIMAGESIZE)
