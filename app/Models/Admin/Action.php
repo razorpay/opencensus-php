@@ -94,6 +94,18 @@ class Action
         'action' => AC::ACTION_DELETE
     ];
 
+    const CREATE_DISPUTE = [
+        'category'  => AC::CATEGORY_DISPUTE,
+        'label'     => AC::LABEL_DISPUTE,
+        'action'    => AC::ACTION_CREATE,
+    ];
+
+    const EDIT_DISPUTE  = [
+        'category'  => AC::CATEGORY_DISPUTE,
+        'label'     => AC::LABEL_DISPUTE,
+        'action'    => AC::ACTION_EDIT,
+    ];
+
     const CREATE_AUTH_POLICY = [
         'category' => AC::CATEGORY_AUTH,
         'label' => AC::CATEGORY_AUTH_POLICY,

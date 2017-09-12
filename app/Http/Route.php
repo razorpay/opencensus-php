@@ -1258,6 +1258,8 @@ final class Route
         'merchant_details_fetch'           => '*',
         'setl_retry'                       => Permission::RETRY_SETTLEMENT,
         'merchant_invoice_add_bulk'        => '*',
+        'payment_dispute_create'           => Permission::CREATE_DISPUTE,
+        'dispute_edit'                     => Permission::EDIT_DISPUTE,
     ];
 
     public static $direct = [

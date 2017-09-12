@@ -268,7 +268,7 @@ trait RequestResponseFlowTrait
             $request['raw']);
 
         $this->response = $response;
-// sd($response->getContent());
+
         $this->app['request']->generateId();
 
         return $response;
