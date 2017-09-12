@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { Field, reduxForm } from 'redux-form';
+import { reduxForm } from 'redux-form';
 import Alert from 'rzp/ui/Forms/Alert';
 import { without } from 'rzp/utils/rzp-utils';
 import { showNotification } from 'rzp/modules/notifications';
@@ -48,9 +48,10 @@ const FORM_COMPONENTS = {
   { ...ActivationActions, showNotification, fetchUser }
 )
 @reduxForm({
+  form: 'activationForm',
   destroyOnUnmount: false,
   enableReinitialize: true,
-  keepDirtyOnReinitialize: true,
+  // keepDirtyOnReinitialize: true,
 })
 export default class WizardItem extends Component {
   finalStep = 6;
@@ -85,13 +86,16 @@ export default class WizardItem extends Component {
     return this._save(props)
       .then(response => {
         let step = this.props.step;
-        let message = step === this.finalStep
-          ? 'Form submitted Successfully!'
-          : 'Step saved successfully';
+        let message =
+          step === this.finalStep
+            ? 'Form submitted Successfully!'
+            : 'Step saved successfully';
 
         this.setState({
           errors: null,
         });
+
+        this.props.initialize(props);
 
         this.props.showNotification({
           type: 'success',
@@ -103,6 +107,8 @@ export default class WizardItem extends Component {
         this.setState({
           errors: err.errors,
         });
+
+        throw { errors: err.errors };
       });
   };
 
@@ -160,11 +166,15 @@ export default class WizardItem extends Component {
         <div class="panel-body">
           <div class="row">
             <div
-              class={`${this.props.accountId ? '' : 'col-lg-10'} col-md-12 col-sm-12`}
+              class={`${this.props.accountId
+                ? ''
+                : 'col-lg-10'} col-md-12 col-sm-12`}
             >
               <div class="row">
                 <div class="col-md-offset-3 col-md-9">
-                  <h4 class="wizard-header">{this.props.pageTitle}</h4>
+                  <h4 class="wizard-header">
+                    {this.props.pageTitle}
+                  </h4>
                   <Alert type="error" message={this.state.errors} />
                 </div>
               </div>

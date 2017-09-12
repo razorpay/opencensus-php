@@ -113,17 +113,29 @@ export default class InvoicesNewContainer extends Component {
     };
   }
 
+  isPaymentLink(invoice) {
+    if (invoice.type !== 'link') {
+      return;
+    }
+
+    this.props.history.replace('/paymentlinks');
+    this.props.history.replace(`/paymentlinks/${invoice.id}`);
+    return true;
+  }
+
   componentWillMount() {
     this.getMerchantInfo();
-    let promises = [
-      this.props.fetchCustomersForAutocomplete(),
-      this.props.fetchItemsForAutocomplete(),
-    ];
+    let promises = [];
+
     let invoiceId = this.props.match.params.id;
 
     if (invoiceId) {
       promises.push(
         this.props.fetchInvoice(invoiceId).then(invoice => {
+          if (this.isPaymentLink(invoice)) {
+            return;
+          }
+
           if (invoice.partial_payment) {
             this.props.fetchInvoicePayments(invoiceId);
           }
@@ -133,6 +145,12 @@ export default class InvoicesNewContainer extends Component {
     } else {
       this.props.initializeInvoice();
     }
+
+    promises = [
+      this.props.fetchCustomersForAutocomplete(),
+      this.props.fetchItemsForAutocomplete(),
+      ...promises,
+    ];
 
     this.setState({
       isLoading: true,
@@ -155,6 +173,32 @@ export default class InvoicesNewContainer extends Component {
       });
 
     this.handleWindowClose();
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.props.match.params.id !== nextProps.match.params.id) {
+      this.setState({
+        isLoading: true,
+      });
+
+      this.props
+        .fetchInvoice(nextProps.match.params.id)
+        .then(invoice => {
+          this.setState({
+            isLoading: false,
+          });
+
+          if (this.isPaymentLink(invoice)) {
+            return;
+          }
+        })
+        .catch(({ errors }) => {
+          this.props.showNotification({
+            type: 'error',
+            message: errors,
+          });
+        });
+    }
   }
 
   getMerchantInfo() {
