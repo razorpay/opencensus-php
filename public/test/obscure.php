@@ -71,7 +71,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <td>
             <select name="method">
                 <option value="netbanking">Net Banking</option>
-                <option value="card" selected>Card</option>
+                <option value="card">Card</option>
                 <option value="wallet">Wallet</option>
                 <option value="emi">Emi</option>
                 <option value="upi">UPI</option>
@@ -83,7 +83,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <td>
             <select name="bank">
                 <option value="HDFC">HDFC Bank</option>
-                <option value="CORP">Corporation Bank</option>
+                <option value="CORP" selected>Corporation Bank</option>
                 <option value="SBIN">SBI Bank</option>
                 <option value="ICIC">ICICI Bank</option>
                 <option value="AIRP">Airtel Payments Bank</option>

@@ -93,7 +93,7 @@ class Gateway extends Base\Gateway
             // Setting this as the merchant code shared with us
             RequestFields::CUSTOMER_ID          => $this->getMerchantId(),
             RequestFields::MERCHANT_CODE        => $this->getMerchantId(),
-            RequestFields::AMOUNT               => $input['payment']['amount'] / 100,
+            RequestFields::AMOUNT               => $this->formatAmount($input['payment']['amount']),
             RequestFields::PAYMENT_ID           => $input['payment']['id'],
             RequestFields::MODE_OF_TRANSACTION  => Constants::MODE_OF_TRANSACTION_PAYMENT,
             RequestFields::FUND_TRANSFER        => Constants::FUND_TRANSFER,
@@ -277,7 +277,7 @@ class Gateway extends Base\Gateway
         $data = [
             RequestFields::VERIFY_MERCHANT_CODE         => $this->getMerchantId(),
             RequestFields::VERIFY_PAYMENT_ID            => $input['payment']['id'],
-            RequestFields::VERIFY_AMOUNT                => $input['payment']['amount'] / 100,
+            RequestFields::VERIFY_AMOUNT                => $this->formatAmount($input['payment']['amount']),
             RequestFields::VERIFY_MODE_OF_TRANSACTION   => RequestFields::VERIFY_MODE_OF_TRANSACTION_VALUE
         ];
 
