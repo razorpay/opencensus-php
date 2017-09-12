@@ -12,7 +12,22 @@ function verifyAccountNumber(value, allValues, props) {
     : undefined;
 }
 
+function validationAddressLength(value) {
+  return value && value.length > 30
+    ? 'Address must be 30 characters or less'
+    : undefined;
+}
+
 export default class BankDetailsForm extends Component {
+  componentWillMount() {
+    // Check if webkit browsers
+    this.isWebkit =
+      typeof window.getComputedStyle(document.documentElement)[
+        '-webkit-text-security'
+      ] === 'string'
+        ? true
+        : false;
+  }
   render() {
     let {
       handleSubmit,
@@ -51,9 +66,9 @@ export default class BankDetailsForm extends Component {
               <Field
                 name="bank_account_number"
                 component={InputField}
-                class="form-control"
+                class={`form-control ${this.isWebkit ? 'webkit-sec' : ''}`}
                 placeholder="Bank Account Number"
-                type="password"
+                type={this.isWebkit ? 'text' : 'password'}
                 autoComplete="off"
                 validate={[required()]}
               />
@@ -123,7 +138,7 @@ export default class BankDetailsForm extends Component {
                       tagName="textarea"
                       class="form-control"
                       placeholder="Beneficiary Address Line 1"
-                      validate={[required()]}
+                      validate={[required(), validationAddressLength]}
                     />
                   </div>
                 </div>
@@ -188,11 +203,11 @@ export default class BankDetailsForm extends Component {
                       validate={[required()]}
                     >
                       <option />
-                      {Object.keys(states).map(stateCode => (
+                      {Object.keys(states).map(stateCode =>
                         <option value={stateCode} key={stateCode}>
                           {states[stateCode]}
                         </option>
-                      ))}
+                      )}
                     </Field>
                   </div>
                 </div>

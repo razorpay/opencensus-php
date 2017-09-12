@@ -292,7 +292,7 @@ app.controller('EntitiesCtrl', [
         source_type: ['all', 'settlement', 'payout'],
         source_id: ['Source Id'],
         merchant_id: ['Merchant Id'],
-        status: ['all', 'created', 'failed', 'processed'],
+        status: ['all', 'created', 'initiated', 'failed', 'processed'],
         utr: ['UTR'],
       },
       gateway_downtime: {
@@ -325,6 +325,7 @@ app.controller('EntitiesCtrl', [
         type: ['all', 'ecod', 'link', 'invoice'],
         merchant_id: ['Merchant Id'],
         order_id: ['Order Id'],
+        notes: ['Notes'],
         customer_name: ['Customer Name'],
         customer_email: ['Customer Email'],
         customer_contact: ['Customer Contact'],
@@ -403,6 +404,7 @@ app.controller('EntitiesCtrl', [
         account_number: ['Account Number'],
         authorized: booleanList,
         merchant_id: ['Merchant Id'],
+        notes: ['Notes'],
         receipt: ['Receipt'],
         status: ['all', 'created', 'attempted', 'paid'],
       },
@@ -459,6 +461,7 @@ app.controller('EntitiesCtrl', [
         payment_id: ['Payment Id'],
         status: ['all', 'created', 'failed', 'processed'],
         transaction_id: ['Transaction Id'],
+        notes: ['Notes'],
       },
       reversal: {
         merchant_id: ['Merchant Id'],
