@@ -3,6 +3,7 @@
 namespace RZP\Models\Base;
 
 use RZP\Base\Repository as BaseRepository;
+use RZP\Constants\Mode;
 
 class Repository extends BaseRepository
 {
@@ -26,5 +27,15 @@ class Repository extends BaseRepository
         $email = mb_strtolower($params['email']);
 
         $query = $query->where($attribute, '=', $email);
+    }
+
+    protected function isTestMode(): bool
+    {
+        return ($this->app['rzp.mode'] === Mode::TEST);
+    }
+
+    protected function isLiveMode(): bool
+    {
+        return ($this->app['rzp.mode'] === Mode::LIVE);
     }
 }

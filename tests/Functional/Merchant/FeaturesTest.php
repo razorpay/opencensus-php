@@ -118,8 +118,13 @@ class FeaturesTest extends TestCase
      */
     public function testAddFeatureToTestAndVerifyLive()
     {
-        $this->addFeatureToMode1AndVerifyMode2('test');
+        $this->addFeatureToMode('test');
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
     }
+
     /**
      * Add a feature to the live database
      * Get the features from the test database
@@ -127,8 +132,24 @@ class FeaturesTest extends TestCase
      */
     public function testAddFeatureToLiveAndVerifyTest()
     {
-        $this->addFeatureToMode1AndVerifyMode2('live');
+        $this->addFeatureToMode('live');
+
+        $this->ba->appAuthTest();
+
+        $this->startTest();
     }
+
+    /**
+     * Add a feature to test and then to live. Adding a feature to live should not sync if
+     * it is already present in test.
+     */
+    public function testAddFeatureToTestAndLive()
+    {
+        $this->addFeatureToMode('test');
+
+        $this->addFeatureToMode('live');
+    }
+
     /**
      * Add a feature to the database which is linked to the mode passed as parameter
      * Get the features from the second database
@@ -138,13 +159,13 @@ class FeaturesTest extends TestCase
      *
      * @param $addToMode
      */
-    private function addFeatureToMode1AndVerifyMode2($addToMode)
+    private function addFeatureToMode(string $addToMode)
     {
         $featureName = "dummy";
 
-        $method = 'appAuth' . studly_case($addToMode);
+        $authMethod = 'appAuth' . studly_case($addToMode);
 
-        $this->ba->$method();
+        $this->ba->$authMethod();
 
         $request = [
             'url'     => '/features',
@@ -160,48 +181,9 @@ class FeaturesTest extends TestCase
             ]
         ];
 
-        $content = $this->makeRequestAndGetContent($request);
-
-        if ($addToMode === 'test')
-        {
-            $this->ba->appAuthLive();
-        }
-        else
-        {
-            $this->ba->appAuthTest();
-        }
-
-        $request          = [
-            'url'    => '/features/10000000000000',
-            'method' => 'get',
-            'server' => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-        ];
-
-        $content          = $this->makeRequestAndGetContent($request);
-
-        $assignedFeatures = array_map(
-            function ($feature)
-            {
-                return $feature["name"];
-            },
-            $content["assigned_features"]
-        );
-
-        if ($addToMode === 'test')
-        {
-            // Check if not in array
-            $this->assertFalse(in_array($featureName, $assignedFeatures));
-        }
-        else
-        {
-            // Check if in array
-            $this->assertTrue(in_array($featureName, $assignedFeatures));
-        }
-        $this->ba->appAuth();
+        $this->makeRequestAndGetContent($request);
     }
+
     /**
      * Add a feature to live [adds to both, test and live]
      * Delete a feature from the test database
@@ -210,8 +192,13 @@ class FeaturesTest extends TestCase
      */
     public function testDeleteFeatureFromTestAndVerifyLive()
     {
-        $this->deleteFeatureFromMode1AndVerifyMode2('test');
+        $this->deleteFeatureFromMode('test');
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
     }
+
     /**
      * Add a feature to live [adds to both, test and live]
      * Delete a feature from the live database
@@ -220,20 +207,26 @@ class FeaturesTest extends TestCase
      */
     public function testDeleteFeatureFromLiveAndVerifyTest()
     {
-        $this->deleteFeatureFromMode1AndVerifyMode2('live');
+        $this->deleteFeatureFromMode('live');
+
+        $this->ba->appAuthTest();
+
+        $this->startTest();
     }
+
     /**
      * Add a feature to live [adds to both, test and live]
-     * Delete a feature from the database linked to mode1
-     * Get the features from the database linked to mode2
+     * Delete a feature from the database linked to mode received
      * Verify - The feature deleted from database1 should not be deleted from database2
      *
      * @param string $deleteFromMode
      */
-    private function deleteFeatureFromMode1AndVerifyMode2($deleteFromMode)
+    private function deleteFeatureFromMode(string $deleteFromMode)
     {
         $featureName = "dummy";
+
         $this->ba->appAuthLive();
+
         $request = [
             'url'       => '/features',
             'method'    => 'post',
@@ -247,8 +240,11 @@ class FeaturesTest extends TestCase
                 'entity_id'         => '10000000000000'
             ]
         ];
-        $content = $this->makeRequestAndGetContent($request);
+
+        $this->makeRequestAndGetContent($request);
+
         $this->ba->adminAuth($deleteFromMode, null, 'org_100000razorpay');
+
         $request = [
             'url'       => "/features/10000000000000/$featureName",
             'method'    => 'delete',
@@ -262,33 +258,7 @@ class FeaturesTest extends TestCase
                 'entity_id'         => '10000000000000'
             ]
         ];
-        $content = $this->makeRequestAndGetContent($request);
-        if ($deleteFromMode === 'test')
-        {
-            $this->ba->appAuthLive();
-        }
-        else
-        {
-            $this->ba->appAuthTest();
-        }
-        $request = [
-            'url'       => '/features/10000000000000',
-            'method'    => 'get',
-            'server' => [
-                'HTTP_X-Dashboard'                => 'true',
-                'HTTP_X-Dashboard-User-Email'     => 'user@rzp.dev',
-            ],
-        ];
-        $content = $this->makeRequestAndGetContent($request);
-        $assignedFeatures = array_map (
-            function($feature)
-            {
-                return $feature["name"];
-            },
-            $content["assigned_features"]
-        );
-        // Check if in array
-        $this->assertTrue(in_array($featureName, $assignedFeatures));
-        $this->ba->appAuth();
+
+        $this->makeRequestAndGetContent($request);
     }
 }

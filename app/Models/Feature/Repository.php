@@ -4,12 +4,12 @@ namespace RZP\Models\Feature;
 
 use DB;
 
-use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Base\Repository as BaseRepository;
+use RZP\Trace\TraceCode;
 
-class Repository extends Base\Repository
+class Repository extends BaseRepository
 {
     use Base\RepositoryUpdateTestAndLive;
 
@@ -47,6 +47,9 @@ class Repository extends Base\Repository
      * Deleting a feature from live mode will only delete the feature from the
      * api_live.features table.
      *
+     * When a feature is enabled on test and request is received to enable it on live,
+     * shouldSync() returns false, to avoid the duplicate entry constraint error.
+     *
      * The AUTH used will determine the mode selected
      *
      * @param      $entity
@@ -56,10 +59,28 @@ class Repository extends Base\Repository
      */
     public function shouldSync($entity, $action = null): bool
     {
-        if (($this->app['rzp.mode'] === Mode::LIVE) and ($action !== BaseRepository::DELETE))
+        if (($this->isLiveMode() === true) and ($action !== BaseRepository::DELETE))
         {
-            return true;
+            $entityId = $entity->getId();
+
+            $entityName = $entity->getName();
+
+            // Sync if the feature is not already enabled on test
+            $feature = $this->newQueryWithConnection(Mode::TEST)
+                            ->where(Entity::ENTITY_ID,  '=', $entityId)
+                            ->where(Entity::NAME,       '=', $entityName)
+                            ->first();
+
+            if ($feature === null)
+            {
+                $this->trace->info(TraceCode::FEATURE_SYNCED, [
+                    $entityId,
+                    $entityName
+                ]);
+                return true;
+            }
         }
+
         return false;
     }
 }

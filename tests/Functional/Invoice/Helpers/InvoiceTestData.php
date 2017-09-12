@@ -2999,8 +2999,8 @@ return [
     // Expectations for ES
 
     'testGetInvoiceByReceiptExpectedSearchParams' => [
-        'index' => 'invoice_test',
-        'type'  => 'invoice_test',
+        'index' => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,
@@ -3011,8 +3011,9 @@ return [
                         [
                             'match' => [
                                 'receipt' => [
-                                    'query' =>'00000000000002',
-                                    'boost' => 2,
+                                    'query'                =>'00000000000002',
+                                    'boost'                => 2,
+                                    'minimum_should_match' => '75%',
                                 ],
                             ],
                         ],
@@ -3054,8 +3055,8 @@ return [
     ],
 
     'testGetMultipleInvoicesOnlyEsFieldsExpectedSearchParams' => [
-        'index' => 'invoice_test',
-        'type'  => 'invoice_test',
+        'index' => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,
@@ -3066,17 +3067,19 @@ return [
                         [
                             'match' => [
                                 'customer_name' => [
-                                    'query' =>'tes',
-                                    'boost' => 2,
+                                    'query'                =>'tes',
+                                    'boost'                => 2,
+                                    'minimum_should_match' => '75%',
                                 ],
                             ],
                         ],
                         [
                             'multi_match' => [
-                                'query'  => 'info',
-                                'type'   => 'best_fields',
-                                'fields' => 'notes.*',
-                                'boost'  => 2,
+                                'query'                => 'info',
+                                'type'                 => 'best_fields',
+                                'fields'               => 'notes.*',
+                                'boost'                => 2,
+                                'minimum_should_match' => '75%',
                             ],
                         ]
                     ],
@@ -3120,8 +3123,8 @@ return [
     ],
 
     'testGetMultipleInvoicesByQExpectedSearchParams' => [
-        'index' => 'invoice_test',
-        'type'  => 'invoice_test',
+        'index' => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 10,
@@ -3142,7 +3145,8 @@ return [
                                     'terms',
                                     'notes.*',
                                 ],
-                                'boost'  => 1,
+                                'boost'                => 1,
+                                'minimum_should_match' => '75%',
                             ],
                         ]
                     ],
@@ -3183,8 +3187,8 @@ return [
     ],
 
     'testGetMultipleInvoicesSearchHitsOnlyExpectedSearchParams' => [
-        'index' => 'invoice_test',
-        'type'  => 'invoice_test',
+        'index' => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => true,
             'from'    => 0,
@@ -3195,8 +3199,9 @@ return [
                         [
                             'match' => [
                                 'customer_name' => [
-                                    'query' =>'tes',
-                                    'boost' => 2,
+                                    'query'                =>'tes',
+                                    'boost'                => 2,
+                                    'minimum_should_match' => '75%',
                                 ],
                             ],
                         ],
@@ -3245,8 +3250,8 @@ return [
     ],
 
     'testGetMultipleInvoicesByEsFeildAndFromExpectedSearchParams' => [
-        'index' => 'invoice_test',
-        'type'  => 'invoice_test',
+        'index' => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 20,
@@ -3257,8 +3262,9 @@ return [
                         [
                             'match' => [
                                 'receipt' => [
-                                    'query' =>'rec',
-                                    'boost' => 2,
+                                    'query'                =>'rec',
+                                    'boost'                => 2,
+                                    'minimum_should_match' => '75%',
                                 ],
                             ],
                         ],
@@ -3303,8 +3309,8 @@ return [
     ],
 
     'testGetMultipleInvoicesByEsFeildFromAndToExpectedSearchParams' => [
-        'index' => 'invoice_test',
-        'type'  => 'invoice_test',
+        'index' => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 20,
@@ -3315,8 +3321,9 @@ return [
                         [
                             'match' => [
                                 'receipt' => [
-                                    'query' =>'rec',
-                                    'boost' => 2,
+                                    'query'                =>'rec',
+                                    'boost'                => 2,
+                                    'minimum_should_match' => '75%',
                                 ],
                             ],
                         ],
@@ -3362,8 +3369,8 @@ return [
     ],
 
     'testGetMultipleInvoicesByCommonAndEsFieldsExpectedSearchParams' => [
-        'index' => 'invoice_test',
-        'type'  => 'invoice_test',
+        'index' => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,
@@ -3401,8 +3408,9 @@ return [
                         [
                             'match' => [
                                 'receipt' => [
-                                    'query' =>'xyz',
-                                    'boost' => 2,
+                                    'query'                =>'xyz',
+                                    'boost'                => 2,
+                                    'minimum_should_match' => '75%',
                                 ],
                             ],
                         ],
@@ -3434,8 +3442,8 @@ return [
         'body' => [
             [
                 'index' => [
-                    '_index' => 'invoice_test',
-                    '_type'  => 'invoice_test',
+                    '_index' => 'testing_invoice_test',
+                    '_type'  => 'testing_invoice_test',
                     // '_id'    => '7KoRT3qkc1KGFb',
                 ],
             ],

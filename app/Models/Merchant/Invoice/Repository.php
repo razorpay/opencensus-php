@@ -14,12 +14,24 @@ class Repository extends Base\Repository
         Entity::GSTIN           => 'sometimes|string|size:15',
     ];
 
+    // Gets all invoice entities for a merchant for given month and year
     public function fetchInvoiceReportData(string $merchantId, int $month, int $year)
     {
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchantId)
                     ->where(Entity::YEAR, '=', $year)
                     ->where(Entity::MONTH, '=', $month)
+                    ->get();
+    }
+
+    // Gets entities to be displayed on Tax Invoice page
+    public function fetchFeesDataForInvoice(string $merchantId, int $month, int $year)
+    {
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', $merchantId)
+                    ->where(Entity::YEAR, '=', $year)
+                    ->where(Entity::MONTH, '=', $month)
+                    ->where(Entity::TYPE, '!=', Type::ADJUSTMENT)
                     ->get();
     }
 

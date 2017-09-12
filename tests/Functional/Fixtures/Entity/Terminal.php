@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use RZP\Models\Terminal\Shared;
 use RZP\Models\Terminal\Mode;
+use RZP\Models\Terminal\Type;
 use RZP\Models\Base\UniqueIdEntity;
 
 class Terminal extends Base
@@ -31,6 +32,7 @@ class Terminal extends Base
         $this->createSharedCybersourceAxisTerminal();
         $this->createSharedFirstDataTerminal();
         $this->createSharedEbsTerminal();
+        $this->createSharedBladeTerminal();
     }
 
     public function createMultipleNetbankingTerminals()
@@ -49,21 +51,18 @@ class Terminal extends Base
             'id' => 'SharedTrmnl123',
             'merchant_id' => $sharedMerchantAccount,
             'category' => 123,
-            'shared' => 1
         ]);
 
         $this->createSharedHdfcTerminal([
             'id' => 'SharedTrmnl124',
             'merchant_id' => $sharedMerchantAccount,
             'category' => 124,
-            'shared' => 1
         ]);
 
         $this->createSharedHdfcTerminal([
             'id' => 'SharedTrmnl125',
             'merchant_id' => $sharedMerchantAccount,
             'category' => 125,
-            'shared' => 1
         ]);
     }
 
@@ -109,7 +108,6 @@ class Terminal extends Base
             'gateway_secure_secret' => 'secret',
             'card'                  => 0,
             'netbanking'            => 1,
-            'shared'                => 0
         ];
 
         return parent::create($attributes);
@@ -123,7 +121,6 @@ class Terminal extends Base
             'gateway_merchant_id'   => 'abcd',
             'card'                  => 0,
             'netbanking'            => 1,
-            'shared'                => 0
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -178,7 +175,6 @@ class Terminal extends Base
             'gateway'               => 'atom',
             // 'card'                  => 1,
             'netbanking'            => 1,
-            'shared'                => 1,
             'gateway_merchant_id'   => 'razorpay',
             'gateway_terminal_id'   => 'nodal account',
             'gateway_terminal_password' => 'razorpay_password',
@@ -217,6 +213,23 @@ class Terminal extends Base
             'gateway'                   => 'first_data',
             'gateway_acquirer'          => 'icic',
             'card'                      => 1,
+            'gateway_merchant_id'       => 'random',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedBladeTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::BLADE_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'blade',
+            'card'                      => 1,
             'shared'                    => 1,
             'gateway_merchant_id'       => 'random',
         ];
@@ -236,7 +249,6 @@ class Terminal extends Base
             'gateway'                   => 'wallet_payzapp',
             'card'                      => 0,
             'netbanking'                => 0,
-            'shared'                    => 1,
             'gateway_merchant_id'       => '298374982374928374928',
             'gateway_merchant_id2'      => '3456',
             'gateway_terminal_id'       => '293847923847293874983',
@@ -258,7 +270,6 @@ class Terminal extends Base
             'gateway'                   => 'wallet_payumoney',
             'card'                      => 0,
             'netbanking'                => 0,
-            'shared'                    => 1,
             'gateway_merchant_id'       => 'payumoney_merchant',
             'gateway_merchant_id2'      => 'payumoney_auth_code',
             'gateway_terminal_id'       => 'payumoney_terminal',
@@ -280,7 +291,6 @@ class Terminal extends Base
             'gateway'                   => 'wallet_olamoney',
             'card'                      => 0,
             'netbanking'                => 0,
-            'shared'                    => 1,
             'gateway_merchant_id'       => 'olamoney_merchant',
             'gateway_merchant_id2'      => 'olamoney_auth_code',
             'gateway_terminal_id'       => 'olamoney_terminal',
@@ -302,7 +312,6 @@ class Terminal extends Base
             'gateway'                   => 'wallet_mpesa',
             'card'                      => 0,
             'netbanking'                => 0,
-            'shared'                    => 1,
             'gateway_merchant_id'       => 'mpesa_merchant',
             'gateway_merchant_id2'      => 'mpesa_merchant_2',
             'gateway_secure_secret'     => 'secret',
@@ -321,7 +330,6 @@ class Terminal extends Base
             'gateway'                   => 'wallet_freecharge',
             'card'                      => 0,
             'netbanking'                => 0,
-            'shared'                    => 1,
             'gateway_merchant_id'       => 'random_id',
             'gateway_terminal_id'       => 'freecharge_terminal',
             'gateway_terminal_password' => 'razorpay_password',
@@ -341,7 +349,6 @@ class Terminal extends Base
             'gateway'                   => 'wallet_airtelmoney',
             'card'                      => 0,
             'netbanking'                => 0,
-            'shared'                    => 1,
             'gateway_merchant_id'       => 'airtelmoney_merchant',
             'gateway_merchant_id2'      => 'airtelmoney_auth_code',
             'gateway_terminal_id'       => 'airtelmoney_terminal',
@@ -363,7 +370,6 @@ class Terminal extends Base
             'gateway'                   => 'wallet_jiomoney',
             'card'                      => 0,
             'netbanking'                => 0,
-            'shared'                    => 1,
             'gateway_merchant_id'       => 'jiomoney_merchant',
             'gateway_access_code'       => 'random_access_code',
             'gateway_secure_secret'     => 'secret',
@@ -382,7 +388,6 @@ class Terminal extends Base
             'gateway'                   => 'wallet_sbibuddy',
             'card'                      => 0,
             'netbanking'                => 0,
-            'shared'                    => 1,
             'gateway_merchant_id'       => 'sbibuddy_merchant',
             'gateway_secure_secret'     => 'secret',
         ];
@@ -399,8 +404,10 @@ class Terminal extends Base
             'gateway'                   => 'cybersource',
             'card'                      => 1,
             'netbanking'                => 0,
-            'shared'                    => 1,
-            'type'                      => 3,
+            'type'                      => [
+                Type::NON_RECURRING => '1',
+                Type::RECURRING_3DS => '1'
+            ],
             'gateway_acquirer'          => 'hdfc',
             'gateway_merchant_id'       => 'merchant_id',
             'gateway_terminal_id'       => 'cybersource',
@@ -421,7 +428,6 @@ class Terminal extends Base
             'gateway'                   => 'cybersource',
             'card'                      => 1,
             'netbanking'                => 0,
-            'shared'                    => 1,
             'gateway_acquirer'          => 'hdfc',
             'gateway_merchant_id'       => 'merchant_id',
             'gateway_terminal_id'       => 'cybersource',
@@ -442,7 +448,6 @@ class Terminal extends Base
             'gateway'                   => 'hdfc',
             'card'                      => 1,
             'netbanking'                => 0,
-            'shared'                    => 1,
             'gateway_acquirer'          => 'hdfc',
             'gateway_merchant_id'       => 'shared_merchant_hdfc',
             'gateway_terminal_id'       => 'shared_terminal_hdfc',
@@ -452,7 +457,10 @@ class Terminal extends Base
         // Add fss recurring supports both 3ds and non3ds terminal;
         $attributes['id'] = 'FssRecurringTl';
 
-        $attributes['type'] = 6;
+        $attributes['type'] = [
+            Type::RECURRING_3DS => '1',
+            Type::RECURRING_NON_3DS => '1',
+        ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
@@ -464,7 +472,6 @@ class Terminal extends Base
             'gateway'                   => 'cybersource',
             'card'                      => 1,
             'netbanking'                => 0,
-            'shared'                    => 1,
             'gateway_acquirer'          => 'hdfc',
             'gateway_merchant_id'       => 'merchant_id',
             'gateway_terminal_id'       => 'cybersource',
@@ -475,18 +482,26 @@ class Terminal extends Base
 
         // Add recurring 3ds terminal;
         $attributes['id'] = '1RecurringTerm';
-        $attributes['type'] = 3;
+        $attributes['type'] = [
+            Type::NON_RECURRING => '1',
+            Type::RECURRING_3DS => '1'
+        ];
 
         $this->createEntityInTestAndLive('terminal', $attributes);
 
         $attributes['id'] = '3RecurringTerm';
-        $attributes['type'] = 3;
+        $attributes['type'] = [
+            Type::NON_RECURRING => '1',
+            Type::RECURRING_3DS => '1'
+        ];
 
         $this->createEntityInTestAndLive('terminal', $attributes);
 
         // Add recurring 3ds
         $attributes['id'] = '2RecurringTerm';
-        $attributes['type'] = 4;
+        $attributes['type'] = [
+            Type::RECURRING_NON_3DS => '1',
+        ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
@@ -499,8 +514,10 @@ class Terminal extends Base
             'gateway'                   => 'first_data',
             'gateway_acquirer'          => 'icic',
             'card'                      => 1,
-            'shared'                    => 1,
-            'type'                      => 3,
+            'type'                      => [
+                Type::NON_RECURRING => '1',
+                Type::RECURRING_3DS => '1'
+            ],
             'gateway_merchant_id'       => 'random',
         ];
 
@@ -512,8 +529,9 @@ class Terminal extends Base
             'gateway'                   => 'first_data',
             'gateway_acquirer'          => 'icic',
             'card'                      => 1,
-            'shared'                    => 1,
-            'type'                      => 4,
+            'type'                      => [
+                Type::RECURRING_NON_3DS => '1'
+            ],
             'mode'                      => Mode::PURCHASE,
             'gateway_merchant_id'       => 'random',
         ];
@@ -529,8 +547,10 @@ class Terminal extends Base
             'gateway'                   => 'axis_migs',
             'gateway_acquirer'          => 'axis',
             'card'                      => 1,
-            'shared'                    => 1,
-            'type'                      => 3,
+            'type'                      => [
+                Type::NON_RECURRING => '1',
+                Type::RECURRING_3DS => '1'
+            ],
             'gateway_merchant_id'       => 'random',
             'gateway_terminal_id'       => 'recurring_random',
             'gateway_terminal_password' => 'razorpay_password',
@@ -539,7 +559,9 @@ class Terminal extends Base
         $this->createEntityInTestAndLive('terminal', $attributes);
 
         $attributes['id']   = 'MiGSRcgTmlN3DS';
-        $attributes['type'] = 4;
+        $attributes['type'] = [
+            Type::RECURRING_NON_3DS => '1'
+        ];
 
         $this->createEntityInTestAndLive('terminal', $attributes);
     }
@@ -553,7 +575,6 @@ class Terminal extends Base
             'gateway'                   => 'cybersource',
             'card'                      => 1,
             'netbanking'                => 0,
-            'shared'                    => 1,
             'gateway_acquirer'          => 'axis',
             'gateway_merchant_id'       => 'cybersource',
             'gateway_terminal_id'       => 'cybersource',
@@ -577,7 +598,6 @@ class Terminal extends Base
             'gateway_secure_secret' => 'secret',
             'card'                  => 0,
             'netbanking'            => 1,
-            'shared'                => 1,
         ];
 
         return parent::create($attributes);
@@ -592,7 +612,6 @@ class Terminal extends Base
             'gateway_merchant_id'   => 'abcd',
             'card'                  => 0,
             'netbanking'            => 1,
-            'shared'                => 0,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -613,7 +632,6 @@ class Terminal extends Base
             'gateway_merchant_id'   => 'abcd',
             'card'                  => 0,
             'netbanking'            => 1,
-            'shared'                => 1,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -632,7 +650,6 @@ class Terminal extends Base
             'gateway_merchant_id'   => 'abcd',
             'card'                  => 0,
             'netbanking'            => 1,
-            'shared'                => 1,
             'category'              => 0,
             'tpv'                   => 1,
             'network_category'      => 'securities',
@@ -653,7 +670,6 @@ class Terminal extends Base
             'gateway'                   => 'axis_genius',
             'card'                      => 1,
             'netbanking'                => 0,
-            'shared'                    => 1,
             'gateway_merchant_id'       => 'razorpay axis_genius',
             'gateway_terminal_id'       => 'nodal account axis_genius',
             'gateway_terminal_password' => 'razorpay_password',
@@ -745,7 +761,6 @@ class Terminal extends Base
             'card'                      => 1,
             'emi'                       => 1,
             'emi_duration'              => 9,
-            'shared'                    => 1,
             'emi_subvention'            => 'customer',
         ];
 
@@ -768,7 +783,6 @@ class Terminal extends Base
             'emi'                       => 1,
             'emi_duration'              => 9,
             'emi_subvention'            => 'merchant',
-            'shared'                    => 1,
         ];
 
         return parent::create($attributes);
@@ -856,7 +870,6 @@ class Terminal extends Base
             'gateway_merchant_id'       => 'abcd',
             'gateway_terminal_id'       => 'abcde',
             'netbanking'                => 1,
-            'shared'                    => 1
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -876,7 +889,6 @@ class Terminal extends Base
             'gateway_merchant_id2'      => 'razorpay_icici',
             'gateway_secure_secret'     => 'razorpay_password',
             'netbanking'                => 1,
-            'shared'                    => 1
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -904,7 +916,6 @@ class Terminal extends Base
             'gateway'                   => 'netbanking_airtel',
             'gateway_merchant_id'       => 'test_merchant_id',
             'netbanking'                => 1,
-            'shared'                    => 1
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -923,7 +934,6 @@ class Terminal extends Base
             'gateway_merchant_id'       => 'test_pid',
             'gateway_secure_secret'     => 'test_masterkey',
             'netbanking'                => 1,
-            'shared'                    => 1
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -953,7 +963,6 @@ class Terminal extends Base
             'gateway_merchant_id'       => 'test_pid',
             'gateway_secure_secret'     => 'test_masterkey',
             'netbanking'                => 1,
-            'shared'                    => 1
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -980,7 +989,6 @@ class Terminal extends Base
             'merchant_id' => $merchantId,
             'gateway'     => 'netbanking_pnb',
             'netbanking'  => 1,
-            'shared'      => 1
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -998,7 +1006,6 @@ class Terminal extends Base
             'gateway'                   => 'netbanking_federal',
             'gateway_merchant_id'       => 'netbanking_federal_merchant_id',
             'netbanking'                => 1,
-            'shared'                    => 1
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -1028,7 +1035,6 @@ class Terminal extends Base
             'gateway_merchant_id2'      => 'netbanking_rbl_merchant_id2',
             'gateway_access_code'       => 'random_rbl_code',
             'netbanking'                => 1,
-            'shared'                    => 1
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -1060,7 +1066,6 @@ class Terminal extends Base
             'gateway_merchant_id'       => 'razorpay amex',
             'gateway_terminal_id'       => 'nodal account amex',
             'gateway_terminal_password' => 'razorpay_password',
-            'shared'                    => 1,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -1114,7 +1119,6 @@ class Terminal extends Base
             'id'                        => $terminalId,
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'wallet_openwallet',
-            'shared'                    => 1,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -1152,7 +1156,6 @@ class Terminal extends Base
             'gateway_merchant_id'   => 'abcd',
             'card'                  => 0,
             'netbanking'            => 1,
-            'shared'                => 0,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -1172,7 +1175,6 @@ class Terminal extends Base
             'gateway'                   => 'wallet_freecharge',
             'card'                      => 0,
             'netbanking'                => 0,
-            'shared'                    => 0,
             'gateway_merchant_id'       => 'random_id',
             'gateway_merchant_id2'      => 'freecharge_dealer',
             'gateway_terminal_id'       => 'freecharge_terminal',

@@ -2434,9 +2434,18 @@ ALTER TABLE refunds
 
 ALTER TABLE transactions
     ADD INDEX transactions_updated_at_index (updated_at);
-    
+
 # Adding recipient_settlement_id in transfers table
 ALTER TABLE transfers
     ADD COLUMN recipient_settlement_id CHAR(14) AFTER transaction_id,
     ADD CONSTRAINT transfers_recipient_settlement_id_foreign FOREIGN KEY(recipient_settlement_id)
     REFERENCES settlements(id) ON DELETE RESTRICT;
+
+ALTER TABLE gateway_rules
+    MODIFY COLUMN gateway VARCHAR(50) DEFAULT NULL;
+
+ALTER TABLE offers
+    MODIFY COLUMN issuer VARCHAR(20);
+
+ALTER TABLE offers
+    MODIFY COLUMN payment_method VARCHAR(10) NULL;
