@@ -494,6 +494,13 @@ return [
             'url'       => 'plans/{id}',
             'routeName' => 'subscriptions_write'
         ],
+
+        // Addons
+        'subscription_create_addon'      => 'subscriptions/{subscription_id}/addon',
+        'addon_fetch'                    => 'addons/{addon_id}',
+        'addon_fetch_multiple'           => 'addons',
+        'addons_fetch_due'               => 'subscriptions/{subscription_id}/addons/due',
+        'addon_delete'                   => 'addons/{addon_id}'
     ],
 
     // auth
