@@ -506,5 +506,5 @@ class PublicErrorDescription
 
     const BAD_REQUEST_SNS_PUBLISH_FAILED                                        = 'Sns Publish failed';
 
-    const BAD_REQUEST_ADMIN_TOKEN_MISMATCH                                            = 'Admin Token Mismatch';
+    const BAD_REQUEST_ADMIN_TOKEN_MISMATCH                                      = 'Admin Token Mismatch';
 }
