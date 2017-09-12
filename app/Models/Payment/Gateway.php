@@ -205,6 +205,7 @@ class Gateway
             self::EBS,
             self::NETBANKING_ICICI,
             self::NETBANKING_HDFC,
+            self::NETBANKING_CORPORATION,
             self::NETBANKING_KOTAK,
             self::NETBANKING_AIRTEL,
             self::NETBANKING_AXIS,
