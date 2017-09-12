@@ -51,15 +51,15 @@ return [
         'response' => [
             'content'     => [
                 'error' => [
-                    'code'          => PublicErrorCode::GATEWAY_ERROR,
-                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
                 ],
             ],
-            'status_code' => 502,
+            'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         ],
     ],
 
@@ -74,15 +74,15 @@ return [
         'response' => [
             'content'     => [
                 'error' => [
-                    'code'          => PublicErrorCode::GATEWAY_ERROR,
-                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
                 ],
             ],
-            'status_code' => 502,
+            'status_code' => 400,
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         ],
     ],
 

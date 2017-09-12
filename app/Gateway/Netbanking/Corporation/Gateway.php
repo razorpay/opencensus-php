@@ -258,7 +258,7 @@ class Gateway extends Base\Gateway
         if ($verify->gatewaySuccess !== $apiSuccess)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
+                ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED);
         }
 
         // Setting this back to a callback request once the verification in callback is done
