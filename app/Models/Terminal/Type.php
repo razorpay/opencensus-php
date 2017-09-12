@@ -44,5 +44,67 @@ class Type
 
         return ((($hexType >> ($pos - 1)) & 1) === 1);
     }
+
+    public static function isApplicableType($types, $type)
+    {
+        if ((isset($types[$type]) === true) and
+            ($types[$type] === '1'))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static function getValidTypes()
+    {
+        return self::$types;
+    }
+
+    public static function getBitPosition($type)
+    {
+        return self::$bitPosition[$type];
+    }
+
+    public static function getEnabledType($hex)
+    {
+        $types = [];
+
+        foreach (self::$types as $type)
+        {
+            $pos = self::$bitPosition[$type];
+            $value = ($hex >> ($pos - 1)) & 1;
+
+            if ($value)
+            {
+                array_push($types, $type);
+            }
+        }
+
+        return $types;
+    }
+
+    /**
+     * Takes the hex value and merges it
+     * with the hex value of the events passed.
+     *
+     * @param  array    $events
+     * @param  integer  $hex
+     * @return integer
+     */
+    public static function getHexValue($types, $hex)
+    {
+        foreach ($types as $type => $value)
+        {
+            $pos = Type::getBitPosition($type);
+
+            $value = ($value === '1') ? 1 : 0;
+
+            // Sets the bit value for the current type.
+            $hex ^= ((-1 * $value) ^ $hex) & (1 << ($pos - 1));
+        }
+
+        return $hex;
+    }
 }
 
