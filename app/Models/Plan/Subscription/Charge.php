@@ -195,18 +195,18 @@ class Charge extends Base\Core
         // means an older invoice is being manually charged. There again, no need to update
         // charge_at, as the regular charge cron has already updated it.
         //
-        // Inv Subscription Status | Which invoice | Should Charge_at be updated?
+        // Subscription Status | Which invoice | Should Charge_at be updated?
         // ----------------------------------------------------------------------
-        //        Active           |   Latest      |         Yes
-        //        Active           |   Older       |         No
-        //        Pending          |   Latest      |         Yes
-        //        Pending          |   Older       |         No
-        //        Halted           |   Older       |         No
+        //        Active       |   Latest      |         Yes
+        //        Active       |   Older       |         No
+        //        Pending      |   Latest      |         Yes
+        //        Pending      |   Older       |         No
+        //        Halted       |   Older       |         No
         //
         //
         if (($this->isLatestInvoiceForSubscription($subscription, $invoice) === true) and
-            (($invoice->getSubscriptionStatus() === Status::ACTIVE) or
-             ($invoice->getSubscriptionStatus() === Status::PENDING)))
+            (($subscription->getStatus() === Status::ACTIVE) or
+             ($subscription->getStatus() === Status::PENDING)))
         {
             //
             // Schedule task needs to be updated before setting time
@@ -502,8 +502,10 @@ class Charge extends Base\Core
     }
 
     /**
-     * If the chargeAt is null, it means that the subscription has ended.
-     * We set the end_at to the current period's end_at in this case.
+     * Count the number of invoices generated for the subscription that were part of
+     * the plan (so exclude upfront amounts with future start_at). When this count
+     * is equal to the total count for the subscription, it is complete.
+     * We also mark charge_at to null at this stage.
      *
      * @param Entity $subscription
      */

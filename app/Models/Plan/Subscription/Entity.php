@@ -326,7 +326,7 @@ class Entity extends Base\PublicEntity
 
         $newHex = Type::getHexWithTypeMarked($currentHex, $type, $value);
 
-        $this->setType($newHex);
+        $this->setTypeHex($newHex);
     }
 
     public function getType()
@@ -493,6 +493,11 @@ class Entity extends Base\PublicEntity
     public function resetAuthAttempts()
     {
         $this->setAttribute(self::AUTH_ATTEMPTS, 0);
+    }
+
+    public function setTypeHex(string $hex)
+    {
+        $this->setAttribute(self::TYPE, $hex);
     }
 
     /**

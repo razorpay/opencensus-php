@@ -1114,8 +1114,7 @@ class SubscriptionChargeTest extends TestCase
         $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('active', $subscription['status']);
         $this->assertEquals(1, $subscription['paid_count']);
-        // TODO Should this is reset as well?
-        $this->assertEquals('auth_failure', $subscription['error_status']);
+        $this->assertNull($subscription['error_status']);
         $this->assertEquals($oldSubcription['current_start'], $subscription['current_start']);
         $this->assertEquals($oldSubcription['current_end'], $subscription['current_end']);
 
