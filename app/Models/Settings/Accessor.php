@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Settings;
 
-use Setting;
+use LaravelSettings;
 use Razorpay\Spine\DataTypes\Dictionary;
 
 use RZP\Models\Base;
@@ -80,7 +80,7 @@ class Accessor extends Base\Core
     {
         $this->setColumns();
 
-        $settings = Setting::all();
+        $settings = LaravelSettings::all();
 
         return $this->serializeSettings($settings);
     }
@@ -113,7 +113,7 @@ class Accessor extends Base\Core
     {
         $this->setColumns();
 
-        $settings = Setting::get($key);
+        $settings = LaravelSettings::get($key);
 
         return $this->serializeSettings($settings);
     }
@@ -137,7 +137,7 @@ class Accessor extends Base\Core
     {
         $this->setColumns();
 
-        Setting::set($key, $value);
+        LaravelSettings::set($key, $value);
 
         return $this;
     }
@@ -158,7 +158,7 @@ class Accessor extends Base\Core
     {
         $this->setColumns();
 
-        Setting::forget($key);
+        LaravelSettings::forget($key);
 
         return $this;
     }
@@ -171,7 +171,7 @@ class Accessor extends Base\Core
      */
     public function save()
     {
-        Setting::save();
+        LaravelSettings::save();
     }
 
     /**
@@ -186,7 +186,7 @@ class Accessor extends Base\Core
             'module'      => $this->module
         ];
 
-        Setting::setExtraColumns($filterColumns);
+        LaravelSettings::setExtraColumns($filterColumns);
     }
 
     /**
