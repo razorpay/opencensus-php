@@ -12,6 +12,7 @@ import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter';
 import * as InvoiceActions from 'merchant/modules/invoices/list';
 import * as ModalActions from 'rzp/modules/modals';
 import { luminateRow } from 'merchant/modules/app';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 @connect(state => ({ ...state.invoices, ...state.session }), {
   ...InvoiceActions,
@@ -24,11 +25,33 @@ export default class PaymentLinksContainer extends ListContainer {
     return this.props.fetchInvoices(params);
   }
 
+  // Temporary fn. for handling code of merchant/models/Invoice.js for handling notes in deserialize fn.
+  deserializeNotes(value) {
+    let notes = [],
+      index = 0;
+
+    for (var key in value) {
+      if (value.hasOwnProperty(key)) {
+        notes[index] = { key: key, value: value[key] };
+
+        index++;
+      }
+    }
+
+    return notes;
+  }
+
   showPaymentLinkModal = (invoice = null) => {
+    let item = null;
+    if (invoice) {
+      item = { ...invoice };
+      item.notes = this.deserializeNotes(item.notes);
+    }
+
     this.props.openModal({
       component: (
         <CreatePaymentLink
-          invoice={invoice}
+          invoice={item}
           onSave={invoice => {
             this.props.luminateRow(invoice.id);
           }}
@@ -40,11 +63,13 @@ export default class PaymentLinksContainer extends ListContainer {
 
   render() {
     let { loading, invoices, user } = this.props;
-    let isNewUIEnabled = user.isNewUIEnabled;
+    let isOldUIEnabled = user.isOldUIEnabled;
     let status = this.state.status;
 
     return (
       <div class="content-wrapper">
+        <TestModeBanner />
+
         <HeaderAction>
           <ShowWhen notMyRole="support">
             <div class="btn-toolbar pull-right">
@@ -72,7 +97,7 @@ export default class PaymentLinksContainer extends ListContainer {
           invoices={invoices}
           isLoading={loading}
           type="link"
-          isNewUIEnabled={isNewUIEnabled}
+          isOldUIEnabled={isOldUIEnabled}
           onEdit={this.showPaymentLinkModal}
         />
 

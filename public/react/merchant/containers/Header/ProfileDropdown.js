@@ -1,10 +1,10 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
-import ShowWhen from 'merchant/components/ShowWhen';
+import NewUIOnboardingDialog from 'merchant/components/NewUIOnboardingDialog';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
-import { openModal } from 'rzp/modules/modals';
-import { logout } from 'merchant/modules/session';
+import { openModal, closeModal } from 'rzp/modules/modals';
+import { logout, showOrHideTour } from 'merchant/modules/session';
 import { fetchConfig } from 'merchant/modules/config';
 import SubmitFeedback from 'merchant/containers/Header/SubmitFeedback';
 
@@ -15,7 +15,7 @@ import SubmitFeedback from 'merchant/containers/Header/SubmitFeedback';
       ...state.config.config,
     };
   },
-  { logout, fetchConfig, openModal }
+  { logout, fetchConfig, closeModal, openModal, showOrHideTour }
 )
 export default class ProfileDropdown extends Component {
   componentWillMount() {
@@ -28,10 +28,10 @@ export default class ProfileDropdown extends Component {
     });
   };
 
-  submitFeedback = ({ revert = false }) => {
+  submitFeedback = () => {
     this.props.openModal({
       size: 'small',
-      component: <SubmitFeedback revertToOldDesign={revert} />,
+      component: <SubmitFeedback />,
     });
   };
 
@@ -55,9 +55,13 @@ export default class ProfileDropdown extends Component {
                   </div>
                 </div>
                 <div class="media-body">
-                  <div class="merchantname">{merchant.name}</div>
+                  <div class="merchantname">
+                    {merchant.name}
+                  </div>
                   <div>
-                    <small>{merchant.id}</small>
+                    <small>
+                      {merchant.id}
+                    </small>
                     <CustomClipboard value={merchant.id}>
                       <button
                         class="btn btn-default btn-xs"
@@ -78,40 +82,38 @@ export default class ProfileDropdown extends Component {
               </div>
               <div class="media-body">
                 <div>Logged in as</div>
-                <p><b>{user.user.email}</b></p>
+                <p>
+                  <b>
+                    {user.user.email}
+                  </b>
+                </p>
                 <button class="btn btn-primary btn-sm" onClick={this.logout}>
                   Log out
                 </button>
               </div>
             </div>
 
+            {!user.isOldUIEnabled
+              ? <div
+                  class="media media-action"
+                  onClick={() => this.props.showOrHideTour(true)}
+                >
+                  <div class="media-left">
+                    <div class="media-object">
+                      <i class="icon icon-tour" />
+                    </div>
+                  </div>
+                  <div class="media-body">Show Recent UI Changes</div>
+                </div>
+              : null}
             <div class="media media-action" onClick={this.submitFeedback}>
               <div class="media-left">
                 <div class="media-object">
                   <i class="icon icon-help" />
                 </div>
               </div>
-              <div class="media-body">
-                Give feedback or suggestions
-              </div>
+              <div class="media-body">Give feedback or suggestions</div>
             </div>
-
-            {/* Don't show for new signups after this timestamp July 13, 5:00pm */}
-            {user.isNewUIEnabled && user.created_at < 1499965200
-              ? <div
-                  class="media media-action"
-                  onClick={() => this.submitFeedback({ revert: true })}
-                >
-                  <div class="media-left">
-                    <div class="media-object">
-                      <i class="icon icon-undo" />
-                    </div>
-                  </div>
-                  <div class="media-body">
-                    Revert to old design
-                  </div>
-                </div>
-              : null}
           </div>
         </DropdownContent>
       </Dropdown>

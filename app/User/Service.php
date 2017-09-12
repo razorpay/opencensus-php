@@ -24,21 +24,38 @@ use App\Providers\GenericUser;
 use DrewM\MailChimp\MailChimp;
 use App\Session as SessionTable;
 use Illuminate\Hashing\BcryptHasher;
+use Illuminate\Contracts\Cache\Store;
+use Illuminate\Foundation\Application;
+
 
 class Service extends Base\Service
 {
     const INVALID_CONFIRMATION_TOKEN = 'Invalid confirmation token or the merchant is already confirmed.';
     const ACCOUNT_ALREADY_EXISTS     = 'You already have an account. Log in and accept the invite in you account settings page.';
+    const OAUTH_SESSION_TOKEN         = 'oauth_session_token';
+
     // Users who signed up before this date
     // are not exposed to the pre signup flow
 
     const PRE_SIGNUP_TIMESTAMP = 1488306600;
+
+    /**
+     * @var Application
+     */
+    protected $app;
+
+    /**
+     * @var Store
+     */
+    protected $cache;
 
     public function __construct()
     {
         $app = \App::getFacadeRoot();
 
         $this->app = $app;
+
+        $this->cache = $app['cache'];
     }
 
     protected function getRef(array &$input)
@@ -185,6 +202,11 @@ class Service extends Base\Service
             list($error, $data) = $this->createMerchantFromUser($user, $data, $referer);
 
             (new Merchant\Service)->createMerchantOnApi($data['id'], $adminId);
+
+            if ($referer)
+            {
+                (new Merchant\Service)->addMerchantTagsOnAPI($data['id'], ['ref-'.$referer]);
+            }
 
             $this->attachMerchantUserOnApi($user->id, $data['id'], 'owner');
         }
@@ -366,6 +388,11 @@ class Service extends Base\Service
         }
 
         $user = User\Entity::getUserForConfirmation($token);
+
+        if (empty($user) === true)
+        {
+            return [[static::INVALID_CONFIRMATION_TOKEN], []];
+        }
 
         $user->confirm();
 
@@ -847,6 +874,98 @@ class Service extends Base\Service
         return $response;
     }
 
+    /**
+     * Get data from the current user session
+     *
+     * @param array $queryParams
+     *
+     * @return array
+     */
+    public function getSessionData(array $queryParams): array
+    {
+        $user = Auth::user();
+
+        $data = $error = null;
+
+        if ($user === null)
+        {
+            //
+            // If user is null, no active session exists
+            // We simply return null, and allow the Authenticate middleware
+            // to send a 401 response.
+            //
+            return [$error, $data];
+        }
+
+        $currentMerchant = $user->currentMerchant();
+
+        // Create and cache a random token tying the user to the request
+        $token = str_random(30);
+
+        $data = [
+            'user_id'       => $user->id,
+            'user_email'    => $user->email,
+            'merchant_id'   => $currentMerchant->id,
+            'role'          => $currentMerchant->role,
+            'query_params'  => $queryParams['query'] ?? []
+        ];
+
+        $cacheKey = $this->getOAuthSessionTokenCacheKey($token);
+
+        $this->cache->put($cacheKey, $data, 10);
+
+        $response = [
+            'token' => $token,
+            'email' => $user->email,
+            'name'  => $user->name,
+            'role'  => $currentMerchant->role
+        ];
+
+        return [$error, $response];
+    }
+
+    /**
+     * Fetch cached data for a session token
+     * Used in auth-service for verifying user creds, S2S
+     *
+     * @param string $token
+     *
+     * @return array
+     */
+    public function getDetailsFromSessionToken(string $token): array
+    {
+        $error = $data = null;
+        $cacheKey = $this->getOAuthSessionTokenCacheKey($token);
+
+        $data = $this->cache->get($cacheKey);
+
+        if ($data !== null)
+        {
+            $user = (new Entity)->findOrFail($data['user_id']);
+
+            $data['user'] = $user;
+            $data['user']['merchant_id'] = $data['merchant_id'];
+        }
+        else
+        {
+            $error[] = 'User data not found';
+        }
+
+        return [$error, $data];
+    }
+
+    /**
+     * Defines the cache key for OAuth session tokens
+     *
+     * @param string $token
+     *
+     * @return string
+     */
+    private function getOAuthSessionTokenCacheKey(string $token): string
+    {
+        return self::OAUTH_SESSION_TOKEN . '.' . $token;
+    }
+
     public function getUserDetails()
     {
         $data = [
@@ -868,8 +987,6 @@ class Service extends Base\Service
         }
 
         $userDetails = $genericUser->toArray();
-
-        $this->getTags($userDetails);
 
         $merchants = $userDetails['merchants'];
 
@@ -916,7 +1033,7 @@ class Service extends Base\Service
                 {
                     $data['current'] = $currentMerchantId;
 
-                    $data['tags'] = $merchant['tags'];
+                    $data['tags'] = (new Merchant\Service)->getMerchantTags($currentMerchantId);
                 }
             }
 
@@ -952,36 +1069,6 @@ class Service extends Base\Service
         }
 
         return [[], $data];
-    }
-
-    protected function getTags(array & $userDetails)
-    {
-        if (empty($userDetails) === true)
-        {
-            return;
-        }
-
-        $merchants = $userDetails['merchants'];
-
-        $merchantIds = array_column($merchants, 'id');
-
-        $data = Merchant\Entity::select(['merchants.id'])
-                                ->with('tagged')
-                                ->whereIn('merchants.id', $merchantIds)
-                                ->get()
-                                ->toArray();
-
-        foreach ($merchants as & $merchant)
-        {
-            $key = array_search($merchant['id'], array_column($data, 'id'));
-
-            if ($key !== false)
-            {
-                $merchant = array_merge($merchant, $data[$key]);
-            }
-        }
-
-        $userDetails['merchants'] = $merchants;
     }
 
     public function loginOnApi(array $input)

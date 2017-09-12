@@ -10,8 +10,6 @@ use App\Invitation;
 
 class Entity extends Base\Entity
 {
-    use \Conner\Tagging\Taggable;
-
     public $incrementing = false;
 
     protected $table = 'merchants';
@@ -26,8 +24,6 @@ class Entity extends Base\Entity
         'archived_at',
         'suspended_at'
     );
-
-    protected $appends = ['referrer', 'tags'];
 
     const ID_LENGTH = 14;
     const EMAIL     = 'email';
@@ -108,30 +104,7 @@ class Entity extends Base\Entity
         $merchant->name     = $businessName;
         $merchant->email    = $email;
 
-        if ($isLinkedAccount === false)
-        {
-            // We tag the merchant as referred from the original merchant as well
-            $merchant->tag("ref-{$aggregator->id}");
-        }
-
         return $merchant;
-    }
-
-    /**
-     * An aggregator is defined as a merchant
-     * Which can create other merchants without sending
-     * them confirmation emails. All these merchants are also
-     * created with the same email address
-     * return boolean
-     */
-    public function isAggregator()
-    {
-        return in_array(self::AGGREGATOR, $this->tagNames());
-    }
-
-    public function isMarketplace()
-    {
-        return in_array(self::MARKETPLACE, $this->tagNames());
     }
 
     /**
@@ -519,27 +492,6 @@ class Entity extends Base\Entity
     public function isActive()
     {
         return ((int)$this->activated === 1);
-    }
-
-    protected function getTagsAttribute()
-    {
-        return $this->tagNames();
-    }
-
-    public function getReferrerAttribute()
-    {
-        $tags = $this->getTagsAttribute();
-
-        foreach ($tags as $tag)
-        {
-            $tag = strtolower($tag);
-            if (substr($tag, 0,4) === 'ref-')
-            {
-                return substr($tag, 4);
-            }
-        }
-
-        return null;
     }
 
     public function setCustomId()

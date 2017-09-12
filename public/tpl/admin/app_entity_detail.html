@@ -2,11 +2,18 @@
   <h1 class="m-n font-thin h3">
     {{entity.type | titlecase}} Entity Detail ({{mode + " Mode"| titlecase }})
     <spinner class="inline"></spinner>
+
   </h1>
 </div>
 <div class="wrapper-md entity-wrapper" ng-controller="EntityDetailCtrl" ng-init="generate(loadType)">
   <div class="panel panel-default col-sm-8 col-sm-offset-2" >
     <div class="panel-heading m-t m-b">
+      <div class="pull-right" ng-if="entity.merchant_id" tooltip="Merchant Id">
+        <a ui-sref="app.merchants.detail({id: entity.merchant_id})">
+          <i class="fa fa-user-circle-o"></i>
+          <code>{{entity.merchant_id}}</code>
+        </a>
+      </div>
       Entity Id: <strong>{{entity.id}}</strong><br>
     </div>
   <div class="text-center m-t">

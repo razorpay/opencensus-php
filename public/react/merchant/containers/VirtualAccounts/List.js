@@ -4,14 +4,11 @@ import { NavLink } from 'react-router-dom';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import DataTable from 'rzp/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
-import VirtualAccountsListFilter
-  from 'merchant/components/VirtualAccounts/ListFilter';
+import VirtualAccountsListFilter from 'merchant/components/VirtualAccounts/ListFilter';
 import CreateVirtualAccount from './CreateVirtualAccount';
 import { fetchConfig } from 'merchant/modules/config';
 import { openModal } from 'rzp/modules/modals';
-import {
-  fetchVirtualAccounts as fetchAll,
-} from 'merchant/modules/virtualaccounts';
+import { fetchVirtualAccounts as fetchAll } from 'merchant/modules/virtualaccounts';
 import {
   virtualAccountId,
   accountDescription,
@@ -19,6 +16,7 @@ import {
   status,
   createdAt,
 } from 'rzp/ui/item/pair';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 @connect(state => state.virtualaccounts, { fetchAll, fetchConfig, openModal })
 export default class VirtualAccountsListContainer extends ListContainer {
@@ -30,7 +28,9 @@ export default class VirtualAccountsListContainer extends ListContainer {
   showCreateVAModal = () => {
     this.props.openModal({
       size: 'small',
-      component: <CreateVirtualAccount />,
+      component: (
+        <CreateVirtualAccount showCreateVAModal={this.showCreateVAModal} />
+      ),
     });
   };
 
@@ -49,6 +49,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
             </div>
           </HeaderAction>
         </header>
+        <TestModeBanner />
 
         <content>
           <div class="content-wrapper">

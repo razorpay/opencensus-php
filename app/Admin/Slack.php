@@ -281,11 +281,6 @@ class Slack
         return $this->getFormattedLinkForSlack($entity, $value);
     }
 
-    protected function fetchPricing($id)
-    {
-        return (new Service)->fetchPricingPlan($id);
-    }
-
     public static function getFormattedLinkForSlack($entity, $id, $label = null)
     {
         $label = $label ? $label : $id;

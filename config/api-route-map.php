@@ -70,7 +70,7 @@ return [
         'admin_get_file'                    => 'files/{fileId}/signed-url',
 
         // Workflows
-        'workflow_get_multiple'             => 'orgs/{orgId}/workflows',
+        'workflow_get_multiple'             => 'workflows',
         'workflow_create'                   => 'workflows',
         'workflow_get'                      => 'workflows/{id}',
         'workflow_update'                   => 'workflows/{id}',
@@ -97,10 +97,19 @@ return [
         // Feature Delete
         'feature_delete'                    => 'features/{entityId}/{featureName}',
 
+        // Fetch Merchants from ES
+        'admin_fetch_merchants_new'         => 'admins/merchants',
+
         // Admin Payment Actions
         // Refund Authorized Payment
         'payment_authorize_refund'          => 'payments/{id}/authorize_refund',
         'pricing_create_plan'               => 'pricing',
+        'merchant_get_pricing'              => 'merchants/{id}/pricing',
+        'merchant_get_terminals'            => 'merchants/{id}/terminals',
+        'merchant_details_fetch'            => 'merchants/details',
+
+        // Retry Settlements
+        'setl_retry'                        => 'settlements/retry',
     ],
 
     // auth
@@ -212,6 +221,12 @@ return [
         // Features
         'merchant_get_features'             => 'merchants/{id}/features',
         'merchant_update_features'          => 'merchants/{id}/features',
+
+        // Referrals
+        'merchant_fetch_referrals'          => [
+            'url'       => 'referrals',
+            'routeName' => 'referred_merchants_list'
+        ],
 
         // Activation
         'merchant_activation_save'          => [
@@ -346,6 +361,36 @@ return [
         'reversal_fetch'           => [
             'url'       => 'reversals/{id}',
             'routeName' => 'marketplace_read'
+        ],
+
+        // OAuth routes
+        'oauth_application_create'   => [
+            'url'       => 'oauth/applications',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_application_fetch_multiple'   => [
+            'url'       => 'oauth/applications',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_application_fetch'   => [
+            'url'       => 'oauth/applications/{id}',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_application_delete'  => [
+            'url'       => 'oauth/applications/{id}',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_application_update'  => [
+            'url'       => 'oauth/applications/{id}',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_token_fetch_multiple'  => [
+            'url'       => 'oauth/tokens/',
+            'routeName' => 'oauth_read'
+        ],
+        'oauth_token_revoke'  => [
+            'url'       => 'oauth/tokens/{id}/revoke',
+            'routeName' => 'oauth_read'
         ],
 
         // GST
@@ -521,6 +566,7 @@ return [
         'refund_verify_failed'              => 'refunds/{id}/retry',
 
         // Tags
+        'merchant_get_tags'                 => 'merchants/{id}/tags',
         'merchant_tag_add'                  => 'merchants/{id}/tags',
         'merchant_tag_delete'               => 'merchants/{id}/tags/{tagName}',
 

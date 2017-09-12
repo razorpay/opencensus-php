@@ -286,7 +286,7 @@ app
           url_params: {
             '{id}': $scope.entity.id,
           },
-          mode: 'test',
+          mode: $scope.mode,
           body: data,
         };
 
@@ -365,6 +365,9 @@ app
           resolve: {
             current: function() {
               return $scope.entity;
+            },
+            mode: function() {
+              return $scope.mode;
             },
           },
         });

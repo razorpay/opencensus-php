@@ -71,7 +71,10 @@ class RawApiRequest
         {
             $queryParams = json_decode(Request::query('query_params'), true);
 
-            $this->path .= '?' . http_build_query($queryParams);
+            if (is_array($queryParams))
+            {
+                $this->path .= '?' . http_build_query($queryParams);
+            }
         }
         // This block is supposed to handle internal generic calls
         // not the ones coming from frontend/xhr.
@@ -79,7 +82,10 @@ class RawApiRequest
         {
             $queryParams = $input['query_params'];
 
-            $this->path .= '?' . http_build_query($queryParams);
+            if (is_array($queryParams))
+            {
+                $this->path .= '?' . http_build_query($queryParams);
+            }
         }
     }
 
@@ -94,24 +100,24 @@ class RawApiRequest
             $adminToken = $adminUser->token;
         }
 
+        $merchantId = $this->resolveMerchantId($input, $adminToken);
+
+        if (isset($merchantId)) {
+            /**
+             * Setting X-Razorpay-Account header in case of market place routes.
+             * The handling of this header is already taken care in api
+             */
+            $accountId = $input['account_id'] ?? null;
+
+            if (empty($accountId) === false) {
+                $this->params['headers'][self::RAZORPAY_ACCOUNT_HEADER] = $accountId;
+            }
+        }
+
         // Setup credentials based on auth
         switch ($input['auth'])
         {
             case 'proxy':
-                $merchantId = $this->resolveMerchantId($input, $adminToken);
-
-                if (isset($merchantId)) {
-                    /**
-                     * Setting X-Razorpay-Account header in case of market place routes.
-                     * The handling of this header is already taken care in api
-                     */
-                    $accountId = $input['account_id'] ?? null;
-
-                    if (empty($accountId) === false) {
-                        $this->params['headers'][self::RAZORPAY_ACCOUNT_HEADER] = $accountId;
-                    }
-                }
-
                 $this->setApiCredentials($input['mode'], $merchantId);
                 break;
 
@@ -121,14 +127,10 @@ class RawApiRequest
                     $this->params['headers']['X-Admin-Token'] = $adminToken;
                 }
 
-                $merchantId = $this->resolveMerchantId($input, $adminToken);
-
                 $this->setApiCredentials($input['mode'], $merchantId);
                 break;
 
             case 'admin':
-                $merchantId = $this->resolveMerchantId($input, $adminToken);
-
                 $this->setAdminCredentials($adminToken, $input['mode'], $merchantId);
                 break;
 
@@ -262,6 +264,15 @@ class RawApiRequest
             $fileFieldName = $this->input['file_name'];
             // This contains the original file name with extension
             $fileName = $file->getClientOriginalName();
+
+            if (empty($file->getFileName()) === true)
+            {
+                throw new \Razorpay\Api\Errors\BadRequestError(
+                    'Filename cannot be empty',
+                    \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                    400
+                );
+            }
 
             // This is as per guzzle 5, will need to get changed for 6
             $postFile = new PostFile($fileFieldName, fopen($file, 'r'), $fileName);

@@ -211,18 +211,6 @@ class MerchantController extends Controller
     }
 
     /**
-     * Completely dashboard side function
-     */
-    public function getReferredMerchants()
-    {
-        $id = Auth::user()->currentMerchant()->id;
-
-        $data = (new Merchant\Service)->fetchReferredMerchants($id);
-
-        return AppResponse::jsonResponse([], $data);
-    }
-
-    /**
      * Registers a new sub-merchant account
      * This will automatically have the correct
      * referral field and dashboard users added.
@@ -298,15 +286,6 @@ class MerchantController extends Controller
         list($error, $data) = (new Api\Service)->fetchCollectionForMarketplaceAccounts($input);
 
         return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function postTagMerchant()
-    {
-        $input = Input::all();
-
-        list($error, $response) = (new Merchant\Service)->tagMerchant($input);
-
-        return AppResponse::jsonResponse($error, $response);
     }
 
     public function sendFeedback()

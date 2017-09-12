@@ -58,13 +58,6 @@ class Service extends Base\Service
             // This is called for certain special email addresses
             $merchant->setCustomId();
 
-            if ($referer)
-            {
-                $merchant->tag('ref-'.$referer);
-
-                (new Merchant\Service)->addMerchantTagsOnAPI($merchant->id, ['ref-'.$referer]);
-            }
-
             $merchant->save();
         }
 
@@ -90,16 +83,25 @@ class Service extends Base\Service
 
         $currentMerchant = Merchant\Entity::find($currentMerchant->id);
 
+        $currentMerchantTags = $this->getMerchantTags($currentMerchant->id);
+
         if ($isLinkedAccount === true)
         {
-            if ($currentMerchant->isMarketplace() === false)
+            if (in_array(Entity::MARKETPLACE, $currentMerchantTags) === false)
             {
                 return [[self::ACCOUNT_CREATION_NOT_ALLOWED], null];
             }
         }
         else
         {
-            if ($currentMerchant->isAggregator() === false)
+            /**
+             * Checking if the current merchant is an aggregator
+             * An aggregator is defined as a merchant
+             * which can create other merchants without sending
+             * them confirmation emails. All these merchants are also
+             * created with the same email address
+             */
+            if (in_array(Entity::AGGREGATOR, $currentMerchantTags) === false)
             {
                 return [[self::SUBMERCHANT_NOT_ALLOWED], null];
             }
@@ -451,12 +453,6 @@ class Service extends Base\Service
         return $merchantApiData;
     }
 
-    public function tagAdmin($merchantOnApi)
-    {
-        sd($merchantOnApi);
-        // $this->api->merchant->tagAdmin();
-    }
-
     public function resendConfirmation(array $input)
     {
         if (isset($input['email']) === false)
@@ -490,13 +486,7 @@ class Service extends Base\Service
     {
         list($error, $merchant) = $this->fetchMerchantFromApi($merchantId);
 
-        $tags = Merchant\Entity::select(['id'])
-                                ->with('tagged')
-                                ->where('id', $merchantId)
-                                ->get()
-                                ->toArray();
-
-        return array_merge($merchant, $tags[0]);
+        return $merchant;
     }
 
     public function fetchMerchantFromApi($merchantId)
@@ -571,30 +561,6 @@ class Service extends Base\Service
         }
 
         return [$errors, $data];
-    }
-
-    /**
-     * Get the merchant entity from the gibven merchant id
-     *
-     * @param  string $merchantId
-     * @return Array with merchant, merchant details
-     */
-    public function fetchCurrentMerchantForUser($user)
-    {
-        $merchantId = $user->getCurrentMerchantId();
-
-        $merchant = $this->fetch($merchantId);
-
-        if ($user->currentMerchant->primaryOwner()->id === $user->id)
-        {
-            $merchant['primaryOwner'] = true;
-        }
-        else
-        {
-            $merchant['primaryOwner'] = false;
-        }
-
-        return $merchant;
     }
 
     public function getInvoices($mode)
@@ -762,45 +728,6 @@ class Service extends Base\Service
         return [$error, null];
     }
 
-    public function fetchReferredMerchants($merchantId)
-    {
-        $tag = "ref-$merchantId";
-
-        return Merchant\Entity::select(['id', 'name', 'activated', 'created_at', 'email'])
-                              ->withAnyTag($tag)
-                              ->whereNull('suspended_at')
-                              ->get();
-    }
-
-    /**
-     * Makes sure that the hex color is in proper
-     * format for the API. Just drops the first
-     * character if it is 7 characters in length
-     * also, uppercases
-     * @param  array $input Input Data
-     * @return array Input data
-     */
-    protected function fixHexColor(array $input)
-    {
-        if (isset($input['brand_color']))
-        {
-            $color = $input['brand_color'];
-
-            $len = strlen($color);
-
-            if ($len === 7)
-            {
-                $color = substr($color, 1);
-            }
-
-            $color = strtoupper($color);
-
-            $input['brand_color'] = $color;
-        }
-
-        return $input;
-    }
-
     public function savePreSignupDetails($merchantId, $input)
     {
         $error = (new MerchantDetails\Entity)->edit($input, 'preSignup');
@@ -823,10 +750,14 @@ class Service extends Base\Service
 
                 $user = $merchant->primaryOwner();
 
-                $userEditData = [
-                    'contact_mobile' => $input['contact_mobile'],
-                    'name'           => $input['contact_name']
-                ];
+                //
+                // We need to handle for non-existence of keys in $input as those
+                // are all optional for MerchantDetails edit.
+                //
+                $userEditData['contact_mobile'] = $input['contact_mobile'] ?? null;
+                $userEditData['name']           = $input['contact_name'] ?? null;
+
+                $userEditData = array_filter($userEditData);
 
                 $user->edit($userEditData, 'preSignup');
 
@@ -848,6 +779,23 @@ class Service extends Base\Service
         return [ $error, $presignupDetails];
     }
 
+    public function getReferrerAttribute($merchantId)
+    {
+        $tags = $this->getMerchantTags($merchantId);
+
+        foreach ($tags as $tag)
+        {
+            $tag = strtolower($tag);
+
+            if (substr($tag, 0, 4) === 'ref-')
+            {
+                return substr($tag, 4);
+            }
+        }
+
+        return null;
+    }
+
     /**
      * returns the presignup data for a merchant
      * if the merchant is referred (submerchant)
@@ -859,7 +807,7 @@ class Service extends Base\Service
 
         $merchant = Merchant\Entity::findorfail($merchantId);
 
-        $referrer = $merchant->getReferrerAttribute();
+        $referrer = $this->getReferrerAttribute($merchantId);
 
         if (($referrer === null) or
             (Merchant\Entity::verifyUniqueId($referrer) === 0))
@@ -903,13 +851,13 @@ class Service extends Base\Service
 
         $currentMerchant = Merchant\Entity::find($currentMerchant->id);
 
-        $merchantTags = $currentMerchant->tagNames;
+        $merchantTags = $this->getMerchantTags($currentMerchant->id);
 
         $allTags = [];
 
         if (empty($merchantTags) === false)
         {
-            $allTags = explode(', ', strtolower($merchantTags));
+            $allTags = array_map('strtolower', $merchantTags);
         }
 
         $newAllTags = array_diff($allTags, ['newui']);
@@ -919,11 +867,33 @@ class Service extends Base\Service
             $newAllTags[] = 'newui';
         }
 
-        $currentMerchant->retag($newAllTags);
-
         $this->addMerchantTagsOnAPI($currentMerchant->id, $newAllTags);
 
         return [[], $currentMerchant->toArray()];
+    }
+
+    public function getMerchantTags($merchantId) {
+        $getTags = [
+            'route_name' => 'merchant_get_tags',
+            'url_params' => [
+                '{id}' => $merchantId,
+            ]
+        ];
+
+        $genericService = new Generic\Service;
+
+        list($error, $data) = $genericService->call('GET', $getTags);
+
+        if (empty($error) === false)
+        {
+            throw new \Razorpay\Api\Errors\BadRequestError(
+                $error[0],
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
+        return $data;
     }
 
     public function addMerchantTagsOnAPI($merchantId, $tags) {
@@ -940,19 +910,5 @@ class Service extends Base\Service
         $genericService = new Generic\Service;
 
         list($error, $data) = $genericService->call('POST', $addTags);
-    }
-
-    public function deleteMerchantTagOnAPI($merchantId, $tagName) {
-        $deleteTag = [
-            'route_name' => 'merchant_tag_delete',
-            'url_params' => [
-                '{id}'      => $merchantId,
-                '{tagName}' => $tagName
-            ],
-        ];
-
-        $genericService = new Generic\Service;
-
-        list($error, $data) = $genericService->call('DELETE', $deleteTag);
     }
 }

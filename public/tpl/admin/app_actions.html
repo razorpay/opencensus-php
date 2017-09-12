@@ -48,8 +48,8 @@
           Generate Refunds Excel (Netbanking)
         </a>
         <a href class="list-group-item" ng-click="openGenerateEmiFiles()"
-           ng-show="admin.permissions.indexOf('generate_emi_files') !== -1"
-           dynamic-tooltip-pos="top" dynamic-tooltip="generate_emi_files">
+           ng-show="admin.permissions.indexOf('create_emi_files') !== -1"
+           dynamic-tooltip-pos="top" dynamic-tooltip="create_emi_files">
           Generate Emi Excel
         </a>
         <a href class="list-group-item" ng-click="openAuthorizeFailedPayment()"
@@ -71,6 +71,11 @@
            ng-show="admin.permissions.indexOf('make_api_call') !== -1"
            dynamic-tooltip-pos="top" dynamic-tooltip="make_api_call">
           Make API Call
+        </a>
+        <a href class="list-group-item" ng-click="openRertySettlements()"
+           ng-show="admin.permissions.indexOf('retry_settlement') !== -1"
+           dynamic-tooltip-pos="top" dynamic-tooltip="retry_settlement">
+          Retry Failed Settlements
         </a>
       </div>
     </div>
@@ -202,13 +207,14 @@
         <label for="bank" class="col-lg-2 control-label">Bank</label>
         <div class="col-lg-10" >
           <select class="form-control m-b" name="bank" ng-model="emi.bank">
+            <option value="RATN">RBL</option>
             <option value="HDFC">HDFC</option>
-            <option value="KKBK">Kotak</option>
             <option value="UTIB">Axis</option>
+            <option value="KKBK">Kotak</option>
             <option value="ICIC">ICICI</option>
             <option value="FDRL">Federal</option>
             <option value="INDB">Indusind</option>
-            <option value="RATN">RBL</option>
+            <option value="SCBL">Standard Chartered</option>
           </select>
         </div>
       </div>
@@ -529,12 +535,15 @@
             <option value="Paytm">Paytm</option>
             <option value="Freecharge">Freecharge</option>
             <option value="Jiomoney">Jiomoney</option>
+            <option value="Sbibuddy">SBI Buddy</option>
             <option value="NetbankingAxis">Netbanking AXIS</option>
             <option value="NetbankingIcici">Netbanking ICICI</option>
             <option value="NetbankingFederal">Netbanking Federal</option>
             <option value="NetbankingRbl">Netbanking Rbl</option>
             <option value="NetbankingIndusind">Netbanking Indusind</option>
+            <option value="NetbankingPnb">Netbanking Pnb</option>
             <option value="FirstData">First Data</option>
+            <option value="VirtualAccKotak">Virtual Accounts Kotak</option>
           </select>
         </div>
       </div>
@@ -659,12 +668,12 @@
         <div class="col-lg-10" >
           <select class="form-control m-b" name="bank" ng-model="bank">
             <!-- Take care to keep these capitalized -->
-            <option value="KKBK">KOTAK</option>
-            <option value="UTIB">AXIS</option>
-            <option value="INDB">INDUS_IND</option>
-            <option value="RATN">RBL</option>
-            <option value="SCBL">SCBL</option>
-            <option value="ICIC">ICICI</option>
+            <option value="KKBK">Kotak</option>
+            <option value="UTIB">Axis</option>
+            <option value="INDB">IndusInd</option>
+            <option value="RATN">Rbl</option>
+            <option value="SCBL">Scbl</option>
+            <option value="ICIC">Icici</option>
           </select>
         </div>
       </div>
@@ -741,3 +750,24 @@
   </div>
 </script>
 
+<script type="text/ng-template" id="retrySettlementsModalContent.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Retry Failed Settlements</h3>
+  </div>
+  <div class="modal-body terminal-modal">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label class="col-lg-2 control-label">Settlement IDs</label>
+        <div class="col-lg-10">
+          <textarea type="text" class="form-control m-b" name="name" ng-model="settlementIds"
+                    placeholder="Please enter comma separated Settlement IDs" rows="5"
+                    required></textarea>
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+    <button class="btn btn-primary modal-ok" ng-click="ok(settlementIds)">OK</button>
+  </div>
+</script>

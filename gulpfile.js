@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const execSync = require('child_process').execSync;
 const gulp = require('gulp');
+const gulpWatch = require('gulp-watch');
 const webpack = require('webpack');
 const through = require('through2').obj;
 const plumber = require('gulp-plumber');
@@ -20,24 +21,24 @@ const uglify = require('gulp-uglify');
 const rev = require('gulp-rev');
 const webpackConfig = require('./webpack.config.js');
 
+const iconfont = require('gulp-iconfont');
+const iconfontCss = require('gulp-iconfont-css');
+
 const revMap = {};
 let isDevelopment = false;
 
-// functions and variables to be passed to blade.php.tmpl file
-const tmplData = {
-  asset: function(path) {
-    if (path in revMap) {
-      path = revMap[path];
-    }
-    return `/${path}`;
-  },
-};
+function revIt(path) {
+  if (path in revMap) {
+    path = revMap[path];
+  }
+  return `/${path}`;
+}
 
 // minimal string interpolation for processing tmpl
 function interpolate(template, pattern) {
-  pattern = pattern || /\{\{([^\}]+)\}\}/g;
+  pattern = pattern || /\{\{asset\(['|"]([^\}]+)['|"]\)\}\}/g;
   return template.replace(pattern, (match, keypath) => {
-    return new Function('_', 'return _.' + keypath.trim())(tmplData);
+    return revIt(keypath);
   });
 }
 
@@ -218,22 +219,58 @@ gulp.task('dev:webpack', ['dev:setENV'], cb => {
 });
 
 const watch = () => {
-  gulp.watch('public/js/themes/*.jst', ['compileThemes', 'js']);
-  gulp.watch('public/css/*.styl', ['css']);
-  gulp.watch(
+  gulpWatch('public/js/themes/*.jst', () => {
+    run(['compileThemes', 'js']);
+  });
+
+  gulpWatch('public/css/*.styl', () => {
+    run('css');
+  });
+
+  gulpWatch(
     ['public/js/*.js', 'public/js/admin/**/*.js', 'public/js/merchant/**/*.js'],
-    ['js']
+    () => {
+      run('js');
+    }
   );
-  gulp.watch(
+
+  gulpWatch(
     [
       'public/react/merchant/**/*',
       'public/react/admin/**/*',
       'public/react/rzp/**/*',
       'public/react/styles/**/*.styl',
     ],
-    ['dev:webpack']
+    () => {
+      run('dev:webpack');
+    }
   );
 };
 
 gulp.task('watch:full', ['clean', 'dev:webpack'], watch);
 gulp.task('watch', ['clean', 'dev:webpack'], watch);
+
+// Gulp task to generate font icons from svg (run: gulp iconfont)
+const fontName = 'icons';
+gulp.task('iconfont', function() {
+  gulp
+    .src(['public/react/styles/merchant/svgs/*.svg'])
+    .pipe(
+      iconfontCss({
+        fontName: fontName,
+        targetPath: 'style.css',
+        fontPath: './',
+        cssClass: 'icon',
+      })
+    )
+    .pipe(
+      iconfont({
+        fontName: fontName,
+        formats: ['svg', 'ttf', 'eot', 'woff', 'woff2'], // default, 'woff2' and 'svg' are available
+        normalize: true,
+        prependUnicode: true, // recommended option
+        fontHeight: 1001,
+      })
+    )
+    .pipe(gulp.dest('public/react/styles/fonts/'));
+});

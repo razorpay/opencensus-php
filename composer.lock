@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "b3a533694aa49905ef1c07461724ad30",
+    "content-hash": "24500f8cffef828964edebaf9f3ea0bc",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -3335,16 +3335,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "1.0.4",
+            "version": "1.0.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "ba2fd039f4255a1f0023ecf794a34eb28137b22e"
+                "reference": "68e2b1beebbac88c2b67e1344c03f555e6209168"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/ba2fd039f4255a1f0023ecf794a34eb28137b22e",
-                "reference": "ba2fd039f4255a1f0023ecf794a34eb28137b22e",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/68e2b1beebbac88c2b67e1344c03f555e6209168",
+                "reference": "68e2b1beebbac88c2b67e1344c03f555e6209168",
                 "shasum": ""
             },
             "require": {
@@ -3378,7 +3378,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2017-07-10T06:52:15+00:00"
+            "time": "2017-09-01T14:33:53+00:00"
         },
         {
             "name": "razorpay/razorpay",
@@ -3400,7 +3400,6 @@
                 "rmccue/requests": "v1.6.1"
             },
             "require-dev": {
-                "phpunit/phpunit": "^4.8.0",
                 "raveren/kint": "1.*"
             },
             "type": "library",
@@ -3435,7 +3434,7 @@
                 "php",
                 "razorpay"
             ],
-            "time": "2017-03-14T11:51:36+00:00"
+            "time": "2016-10-12T12:15:02+00:00"
         },
         {
             "name": "razorpay/spine",
@@ -3578,61 +3577,6 @@
                 "sockets"
             ],
             "time": "2014-05-18T04:59:02+00:00"
-        },
-        {
-            "name": "rtconner/laravel-tagging",
-            "version": "2.2.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/rtconner/laravel-tagging.git",
-                "reference": "ce928fbd43ed011847e0c245033b7447f54bf0c6"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/rtconner/laravel-tagging/zipball/ce928fbd43ed011847e0c245033b7447f54bf0c6",
-                "reference": "ce928fbd43ed011847e0c245033b7447f54bf0c6",
-                "shasum": ""
-            },
-            "require": {
-                "illuminate/database": ">= 5.0",
-                "illuminate/support": ">= 5.0",
-                "php": ">=5.5.0"
-            },
-            "require-dev": {
-                "mockery/mockery": "~0.9",
-                "orchestra/testbench": "~3.0",
-                "phpunit/phpunit": "~4.0",
-                "vlucas/phpdotenv": "~2.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Conner\\Tagging\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Robert Conner",
-                    "email": "rtconner@smarter.bz"
-                }
-            ],
-            "description": "Use PHP traits to extend Laravel Eloquent Models to allow Tags. Models can be marked as Taggable.",
-            "homepage": "https://smartersoftware.net/packages/laravel-tagging-taggable",
-            "keywords": [
-                "Taggable",
-                "eloquent",
-                "laravel",
-                "laravel5",
-                "tag",
-                "tagged",
-                "tagging",
-                "tags"
-            ],
-            "time": "2016-09-12T21:50:32+00:00"
         },
         {
             "name": "schuppo/password-strength",

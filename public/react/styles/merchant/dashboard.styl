@@ -9,6 +9,10 @@
   }
 }
 
+.webkit-sec {
+  -webkit-text-security: disc;
+}
+
 .InfoCard {
   padding-top: 15px;
   padding-bottom: 15px;
@@ -378,6 +382,12 @@
   }
 }
 
+// To be checked and later generalized. Currently, styles are inconsisent
+.virtual-account-powerselect {
+  border: 1px solid #cfdadd;
+  border-radius: 2px;
+}
+
 .custom-powerselect {
   border: 1px solid #cfdadd;
   border-radius: 3px;
@@ -398,4 +408,83 @@
   line-height: 24px !important;
   padding: 2px 12px !important;
   min-height: 28px;
+}
+
+// Entity Detail Row
+.entity-detail-row {
+  padding: 8px;
+  border-bottom: 1px solid #ebecee;
+
+  // To highlight selected row
+  &.active {
+    background-color: rgba(255,255,215,0.75);
+  }
+
+  .row-item {
+    display: inline-block;
+    vertical-align: middle;
+
+    &.content {
+      width: 93%;
+    }
+
+    &.icon {
+      width: 7%;
+      text-align: center;
+      font-size: 22px;
+      padding: 10px;
+      cursor: pointer;
+
+      &:hover {
+        color: #9bb2bf;
+      }
+    }
+  }
+
+  .detail-row {
+    display: table;
+    width: 100%;
+    margin-bottom: 4px;
+  }
+
+  .row-element {
+    display: table-cell;
+  }
+
+  .left {
+    width: 60%;
+  }
+  .right {
+    width: 40%;
+    text-align: right;
+  }
+}
+
+// Entity Detail List
+.entity-detail-list {
+  margin: 16px 0;
+  border-bottom: 1px solid #C6CFD9;
+
+  .panel-heading {
+    background-color: #F7F8FA;
+    border-top: 1px solid #dfe0e2;
+    border-bottom: 1px solid #e2e3e5;
+    padding: 12px;
+
+    .label--secondary {
+      line-height: 21px;
+    }
+  }
+
+  button {
+    padding: 12px;
+    cursor: pointer;
+
+    .icon {
+      vertical-align: middle;
+    }
+  }
+
+  .panel-content {
+  }
 }

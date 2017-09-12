@@ -9,7 +9,6 @@ import {
   fetchRefunds,
   fetchSettlements,
 } from 'rzp/modules/collection';
-import { enableOrDisableNewui } from 'merchant/modules/session';
 import DateRangePickerField from 'rzp/ui/Forms/DateRangePickerField';
 import InfoCardList from 'merchant/components/Home/InfoCardList';
 import RecentEntityTable from 'merchant/components/Home/EntityTable';
@@ -55,7 +54,6 @@ defaults.global.layout = {
     fetchPayments,
     fetchRefunds,
     fetchSettlements,
-    enableOrDisableNewui,
   }
 )
 export default class HomeContainer extends Component {
@@ -67,12 +65,6 @@ export default class HomeContainer extends Component {
     this.props.fetchRefunds({ count: 5 });
     this.props.fetchSettlements({ count: 5 });
   }
-
-  switchToNewUI = () => {
-    return this.props.enableOrDisableNewui(true).then(() => {
-      LocalStorageService.setItem('show_newui_tour', true);
-    });
-  };
 
   render() {
     let {
@@ -100,6 +92,7 @@ export default class HomeContainer extends Component {
             />
           </div>
         </Header>
+
         <div
           class="Dashboard"
           style={{
@@ -107,43 +100,6 @@ export default class HomeContainer extends Component {
           }}
         >
           <div class="row">
-            <ShowWhen myRole="owner manager admin">
-              {!this.props.user.isNewUIEnabled
-                ? <div class="col-md-12">
-                    <div class="panel new-nav-banner">
-                      <div class="panel-body">
-                        <div class="media">
-                          <div
-                            class="media-left"
-                            style={{ paddingRight: '16px' }}
-                          >
-                            <img
-                              style={{ width: '40px' }}
-                              class="media-object"
-                              src={TadaPNG}
-                            />
-                          </div>
-                          <div class="media-body">
-                            <AsyncButton
-                              class="btn btn-large btn-default pull-right"
-                              text="Switch to new Navigation"
-                              pendingText="Switching..."
-                              onClick={this.switchToNewUI}
-                            />
-                            <div>
-                              <b>Try out the new dashboard navigation!</b>
-                              <div>
-                                We are simplifying your dashboard experience. If you switch, you can come back anytime!
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                : null}
-            </ShowWhen>
-
             <div class="col-md-12">
               <NewUserOnboardingCard payments={payments.items} />
             </div>

@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Route, NavLink, withRouter } from 'react-router-dom';
 import ShowWhen from 'merchant/components/ShowWhen';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 
 import Invoices from 'merchant/containers/Invoices/List';
 import Customers from 'merchant/containers/Customers/List';
@@ -11,21 +12,21 @@ import Items from 'merchant/containers/Items/List';
 @connect(state => state.session)
 export default class InvoicingContainer extends Component {
   render() {
-    let isNewUIEnabled = this.props.user.isNewUIEnabled;
+    let isOldUIEnabled = this.props.user.isOldUIEnabled;
     return (
       <tabbed-container>
         <header id="invoicing-header">
           <NavLink to="/invoices">Invoices</NavLink>
           <ShowWhen notMyRole="sellerapp" featureEnabled="Invoice">
             <span>
-              {!isNewUIEnabled
+              {isOldUIEnabled
                 ? <NavLink to="/customers">Customers</NavLink>
                 : null}
               <NavLink to="/items">Items</NavLink>
             </span>
           </ShowWhen>
         </header>
-
+        <TestModeBanner />
         <content>
           <Route path="/invoices" component={Invoices} />
           <Route path="/items" component={Items} />

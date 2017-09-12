@@ -11,7 +11,7 @@
     </div>
     <div class="row wrapper actions-wrapper">
       <div class="list-group">
-        <a href="{{'/admin/merchant/' + merchant.details.id + '/login'}}" dynamic-tooltip="view_merchant_login" ng-show="admin.permissions.indexOf('view_merchant_login') !== -1" target="_blank" class="list-group-item" dynamic-tooltip="view_merchant_login">
+        <a href="{{'/admin/merchant/' + merchant.id + '/login'}}" dynamic-tooltip="view_merchant_login" ng-show="admin.permissions.indexOf('view_merchant_login') !== -1" target="_blank" class="list-group-item" dynamic-tooltip="view_merchant_login">
           Login as Merchant
         </a>
         <a ui-sref="app.merchants.activation({id: merchant.details.id})" dynamic-tooltip="view_activation_form" ng-show="admin.permissions.indexOf('view_activation_form') !== -1" class="list-group-item see-activation-form">
@@ -529,6 +529,10 @@
             Jiomoney
           </div>
           <div class="list-group-item">
+            <span class="pull-right" tooltip="{{merchant.details.methods.sbibuddy == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.sbibuddy == true, 'fa-times text-danger':merchant.details.methods.sbibuddy == false}"></i></span>
+            SBI Buddy
+          </div>
+          <div class="list-group-item">
             <span class="pull-right" tooltip="{{merchant.details.methods.upi == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.upi == true, 'fa-times text-danger':merchant.details.methods.upi == false}"></i></span>
             UPI
           </div>
@@ -974,6 +978,7 @@
              <option value="wallet_airtelmoney">Airtelmoney</option>
              <option value="wallet_freecharge">Freecharge</option>
              <option value="wallet_jiomoney">Jiomoney</option>
+             <option value="wallet_sbibuddy">SBI Buddy</option>
              <option value="mobikwik">Mobikwik</option><
              <option value="billdesk">Billdesk</option>
              <option value="ebs">EBS</option>
@@ -1001,7 +1006,6 @@
              <option value="hdfc" selected>HDFC</option>
              <option value="axis">Axis</option>
              <option value="icic">ICICI</option>
-             <option value="hdfc">HDFC</option>
           </select>
         </div>
       </div>
@@ -1109,6 +1113,15 @@
         </div>
       </div>
       <div class="form-group" >
+        <label for="corporate" class="col-lg-3 control-label">Corporate</label>
+        <div class="col-lg-9" >
+          <select class="form-control m-b" name="corporate" ng-model="terminal.corporate">
+             <option value="1">Yes</option>
+             <option value="0" selected>No</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group" >
         <label for="currency" class="col-lg-3 control-label">Currency</label>
         <div class="col-lg-9" >
           <select class="form-control m-b" name="currency" ng-model="terminal.currency">
@@ -1166,13 +1179,27 @@
         </div>
       </div>
       <div class="form-group" >
-        <label for="type" class="col-lg-3 control-label">Type</label>
+        <label for="non_recurring" class="col-lg-3 control-label">Non recurring</label>
         <div class="col-lg-9" >
-          <select class="form-control m-b" ng-model="terminal.type">
-            <option value="1">Non-recurring</option>
-            <option value="3">Recurring 3DS</option>
-            <option value="4">Recurring Non-3DS</option>
-          </select>
+          <input type="checkbox" ng-true-value="1" ng-false-value="0" ng-model="terminal['type[non_recurring]']">
+        </div>
+      </div>
+      <div class="form-group" >
+        <label for="recurring_3ds" class="col-lg-3 control-label">Recurring 3DS</label>
+        <div class="col-lg-9" >
+          <input type="checkbox" ng-true-value="1" ng-false-value="0" ng-model="terminal['type[recurring_3ds]']">
+        </div>
+      </div>
+      <div class="form-group" >
+        <label for="recurring_non_3ds" class="col-lg-3 control-label">Recurring Non 3DS</label>
+        <div class="col-lg-9" >
+          <input type="checkbox" ng-true-value="1" ng-false-value="0" ng-model="terminal['type[recurring_non_3ds]']">
+        </div>
+      </div>
+      <div class="form-group" >
+      <label for="ivr" class="col-lg-3 control-label">IVR</label>
+        <div class="col-lg-9" >
+          <input type="checkbox" ng-true-value="1" ng-false-value="0" ng-model="terminal['type[ivr]']">
         </div>
       </div>
     </form>
@@ -1460,12 +1487,12 @@
 
       <div class="row">
         <div class="form-group col-lg-6">
-          <label for="payment_method" class="col-lg-6 control-label">Payment Method<span style="color:red">*</span>:</label>
+          <label for="payment_method" class="col-lg-6 control-label">Payment Method:</label>
           <div class="col-lg-6" >
             <select class="form-control m-b"
                     name="payment_method"
-                    ng-change="updatePaymentNetworkMap()"
-                    ng-model="offer.payment_method" required>
+                    ng-model="offer.payment_method">
+              <option value="">All</option>
               <option value="card">Card</option>
               <option value="netbanking">Netbanking</option>
               <option value="emi">EMI</option>
@@ -1475,7 +1502,7 @@
           </div>
         </div>
 
-        <div class="form-group col-lg-6" ng-if="['card', 'emi'].indexOf(offer.payment_method) !== -1">
+        <div class="form-group col-lg-6" ng-if="['netbanking', 'wallet', 'upi'].indexOf(offer.payment_method) === -1">
           <label for="payment_method_type" class="col-lg-5 control-label">Payment Method Type:</label>
           <div class="col-lg-7">
             <select class="form-control m-b"
@@ -1488,33 +1515,33 @@
           </div>
         </div>
       </div>
-      <div class="form-group" ng-if="offer.payment_method && offer.payment_method !== 'upi'">
+      <div class="form-group" ng-if="['netbanking', 'wallet', 'upi'].indexOf(offer.payment_method) === -1">
         <label for="payment_network" class="col-lg-3 control-label">Payment Network:</label>
         <div class="col-lg-9" >
           <select name="payment_network" class="form-control m-b" ng-model="offer.payment_network"
-                  ng-if="['card', 'emi', 'wallet'].indexOf(offer.payment_method) !== -1">
-            {{paymentNetworkMap}}
-            <option ng-repeat="(value, network) in paymentNetworkMap" ng-value="value">{{network}}</option>
+                  ng-if="['netbanking', 'wallet', 'upi'].indexOf(offer.payment_method) === -1">
+            {{cardNetworkMap}}
+            <option ng-repeat="(value, network) in cardNetworkMap" ng-value="value">{{network}}</option>
           </select>
-
-          <input type="text" class="form-control m-b"
-                 name="payment_network"
-                 ng-if="offer.payment_method === 'netbanking'"
-                 placeholder="Enter bank code for netbanking"
-                 ng-model="offer.payment_network" />
         </div>
       </div>
 
       <!--Issuer-->
-      <div class="form-group" ng-if="offer.payment_method === 'card'">
+      <div class="form-group" ng-if="['upi'].indexOf(offer.payment_method) === -1">
         <label for="issuer" class="col-lg-3 control-label">Issuer:</label>
         <div class="col-lg-9" >
-          <input type="text" class="form-control m-b" name="issuer" ng-model="offer.issuer" />
+          <input type="text" class="form-control m-b" name="issuer" ng-model="offer.issuer"
+            ng-if="['upi', 'wallet'].indexOf(offer.payment_method) === -1" />
+          <select name="issuer" class="form-control m-b" ng-model="offer.issuer"
+                  ng-if="offer.payment_method === 'wallet'">
+            {{walletMap}}
+            <option ng-repeat="(value, wallet) in walletMap" ng-value="value">{{wallet}}</option>
+          </select>
         </div>
       </div>
 
       <!--IINS-->
-      <div class="form-group" ng-if="['card', 'emi'].indexOf(offer.payment_method) !== -1">
+      <div class="form-group" ng-if="['netbanking', 'wallet', 'upi'].indexOf(offer.payment_method) === -1">
         <label for="iins" class="col-lg-3 control-label">iins:</label>
         <div class="col-lg-9" >
           <input type="text" class="form-control m-b" name="iins" ng-model="offer.iins" placeholder="Enter comma(,) separated values" required/>
@@ -2042,14 +2069,19 @@
       </div>
 
       <div class="form-group">
-        <label for="value" class="col-lg-3 control-label">Amount (INR)</label>
-        <div class="col-lg-9" >
+        <label for="value" class="col-lg-3 control-label">Amount (Paise)</label>
+        <div class="col-lg-9">
           <input type="number" class="form-control m-b" name="value" ng-model="credits.value" />
-          This will add a (positive) credit of (INR {{credits.value|rupee}}) to the merchant account.<br>
-          This will be counted against their
-            <span ng-show="credits.type==='amount'">total payment volume</span>
-            <span ng-show="credits.type==='fee'">fees only</span>
-          .
+          <div>
+            This will {{credits.value < 0 ? "subtract" : "add"}}
+            a {{ credits.type }} credits of ({{ credits.value < 0 ? -credits.value : credits.value }} Paise)
+            to the merchant {{ credits.type }} credits balance.
+          </div>
+          <div class="text-danger" ng-if="credits.value < 0">
+            <b>Note<b>: Please make sure that the existing {{ credits.type }}
+            credits balance of the merchant is greater than
+            <b>{{ credits.value < 0 ? -credits.value : credits.value }} Paise</b>
+          </div>
         </div>
       </div>
     </form>

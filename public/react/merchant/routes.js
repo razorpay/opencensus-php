@@ -10,6 +10,8 @@ import PlanDetails from 'merchant/containers/Plans/Details';
 import SubscriptionDetails from 'merchant/containers/Subscriptions/Details';
 import TransferDetails from 'merchant/containers/Marketplace/Transfers/Details';
 
+import PlanNew from 'merchant/containers/Plans/New';
+
 const entityMap = {
   '/payments/:id': PaymentsDetails,
   '/refunds/:id(rfnd_.+)': RefundDetails,
@@ -20,7 +22,10 @@ const entityMap = {
 
   '/route/payments/:id': PaymentsDetails,
   '/virtualaccounts/:id': VirtualAccountDetails,
+  '/plans/new': PlanNew,
   '/plans/:id': PlanDetails,
+  '/subscriptions/:id(sub_.+)/:invoice_id(inv_.+)': SubscriptionDetails,
+  '/subscriptions/:id(sub_.+)': SubscriptionDetails,
   '/subscriptions/:id': SubscriptionDetails,
   '/route/transfers/:id': TransferDetails,
 };
@@ -33,12 +38,9 @@ function matcher(routeMap, pathname) {
   for (let route in routeMap) {
     var match = matchPath(pathname, route);
     if (match) {
-      var MatchedComponent = routeMap[route];
       return {
         match,
-        component: props => (
-          <MatchedComponent id={match.params.id} {...props} />
-        ),
+        component: routeMap[route],
       };
     }
   }

@@ -142,7 +142,7 @@ app
             url_params: {
               '{id}': $scope.entity.id,
             },
-            mode: 'test',
+            mode: $scope.mode,
             body: data,
           };
 
@@ -530,6 +530,9 @@ app
               current: function() {
                 return Object.assign({}, dispute);
               },
+              mode: function() {
+                return $scope.mode;
+              },
             },
           });
           modalInstance.result.then(function(dispute) {
@@ -625,7 +628,8 @@ app
       $scope.onRetryRefund = function onRetryRefund(e) {
         e.preventDefault();
 
-        var entityType = $scope.loadType, entityId = $scope.entity.id;
+        var entityType = $scope.loadType,
+          entityId = $scope.entity.id;
 
         if (entityType !== 'refund' || $scope.isRetryRefundProcessing) {
           return;

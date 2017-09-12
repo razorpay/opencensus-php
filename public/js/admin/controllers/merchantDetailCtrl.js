@@ -519,9 +519,10 @@ app
           postMethods[i] = methods[i] ? 1 : 0;
         }
 
-        msg = typeof msg !== 'undefined'
-          ? msg
-          : 'Methods edited successfully: ' + JSON.stringify(methods);
+        msg =
+          typeof msg !== 'undefined'
+            ? msg
+            : 'Methods edited successfully: ' + JSON.stringify(methods);
 
         var data = {
           route_name: 'merchant_put_payment_methods',
@@ -683,7 +684,8 @@ app
 
         if (entity === 'broking') {
           ajaxParams.headers = {
-            Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            Accept:
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           };
         }
 
@@ -705,7 +707,8 @@ app
 
             if (entity === 'broking') {
               var blob = new Blob([data], {
-                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                type:
+                  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
               });
               return saveAs(blob, 'broking_report.xlsx');
             }
@@ -1615,7 +1618,6 @@ app
         modalInstance.result.then(function(creditsData) {
           // Transform money from paise to rupee
           var creditsDataCloned = JSON.parse(JSON.stringify(creditsData));
-          creditsDataCloned.value = creditsDataCloned.value * 100;
           var mode = creditsDataCloned.mode;
           delete creditsDataCloned.mode;
 
@@ -1759,7 +1761,10 @@ app
           var adminObj = {
             id: admin.id,
             name: admin.name,
-            role: admin.roles[0].name,
+            role:
+              admin.roles.length && admin.roles[0].name
+                ? admin.roles[0].name
+                : '--',
           };
 
           $scope.adminMap[admin.id] = adminObj; // create mapping id - name
@@ -1875,41 +1880,110 @@ app
             $scope.alerts.addAlert('danger', null);
           });
       }
+      function fetchTerminalRequest(request_mode) {
+        var request = $http.get('/admin/generic', {
+          params: {
+            route_name: 'merchant_get_terminals',
+            url_params: {
+              '{id}': $scope.merchant.id,
+            },
+            mode: request_mode,
+          },
+        });
 
-      function generateMerchant() {
-        var request = $http.get('/admin/merchant/' + $scope.merchant.id);
+        return request;
+      }
+      function fetchTerminals() {
+        var items = [];
+        var count = 0;
+        // test mode
+        var liveTerminalRequest = fetchTerminalRequest('live');
+        liveTerminalRequest
+          .success(function(data) {
+            if (data.success) {
+              $scope.merchant.terminals.items = $scope.merchant.terminals.items.concat(
+                data.data.items
+              );
+              sortTerminals();
+            } else {
+              $scope.alerts.resetAlerts(true);
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
+          })
+          .error(function() {
+            $scope.alerts.resetAlerts(true);
+            $scope.alerts.addAlert('danger', null);
+          });
+
+        var testTerminalRequest = fetchTerminalRequest('test');
+        testTerminalRequest
+          .success(function(data) {
+            if (data.success) {
+              $scope.merchant.terminals.items = $scope.merchant.terminals.items.concat(
+                data.data.items
+              );
+              sortTerminals();
+            } else {
+              $scope.alerts.resetAlerts(true);
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
+          })
+          .error(function() {
+            $scope.alerts.resetAlerts(true);
+            $scope.alerts.addAlert('danger', null);
+          });
+      }
+
+      function fetchPricingPlans() {
+        var data = {
+          route_name: 'merchant_get_pricing',
+          url_params: {
+            '{id}': $scope.merchant.id,
+          },
+        };
+        var request = $http.get('/admin/generic', {
+          params: data,
+        });
+
         request
           .success(function(data) {
-            $scope.alerts.resetAlerts(true);
-
             if (data.success) {
-              $scope.merchant = data.data;
-              sortTerminals();
-              $scope.scheduleKeys = [
-                'schedule_name',
-                'type',
-                'method',
-                'schedule_id',
-                'next_run_at',
-              ];
-              $scope.merchant.id = data.data.details.id;
-              $scope.merchant.details.activation_progress =
-                data.data.details.merchant_details.activation_progress;
-              $scope.referer = getReferer($scope.merchant.details.tags);
-              $scope.marketplace = data.data.details.parent_id;
-              $scope.merchant.details.international =
-                data.data.details.international;
-
-              var merchantAdmins = data.data.details.admins || [];
-              $scope.selected_admins = [];
-
-              // Re-populated array with selected admin ids
-              merchantAdmins.map(function(admin) {
-                $scope.selected_admins.push(admin.id);
+              $scope.merchant.pricing_plan = data.data;
+            } else {
+              $scope.alerts.resetAlerts(true);
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
               });
+            }
+          })
+          .error(function() {
+            $scope.alerts.resetAlerts(true);
+            $scope.alerts.addAlert('danger', null);
+          });
+      }
 
-              fetchBalance();
-              getMerchantFeatures();
+      function fetchScheduleTasks() {
+        var data = {
+          route_name: 'admin_fetch_entity_multiple',
+          url_params: {
+            '{type}': 'schedule_task',
+          },
+          query_params: {
+            merchant_id: $scope.merchant.id,
+          },
+        };
+        var request = $http.get('/admin/generic', {
+          params: data,
+        });
+
+        request
+          .success(function(data) {
+            if (data.success) {
+              $scope.merchant.schedule_tasks = data.data;
 
               $scope.hasSettlementSchedule = false;
               if ($scope.merchant.schedule_tasks) {
@@ -1923,11 +1997,84 @@ app
                   }
                 }
               }
+            } else {
+              $scope.alerts.resetAlerts(true);
+              angular.forEach(data.errors, function(value) {
+                $scope.alerts.addAlert('danger', value);
+              });
+            }
+          })
+          .error(function() {
+            $scope.alerts.resetAlerts(true);
+            $scope.alerts.addAlert('danger', null);
+          });
+      }
+
+      function generateMerchant() {
+        var data = {
+          route_name: 'merchant_details_fetch',
+          account_id: $scope.merchant.id,
+          merchant_id: $scope.merchant.id,
+        };
+        var request = $http.get('/admin/generic', {
+          params: data,
+        });
+        request
+          .success(function(data) {
+            $scope.alerts.resetAlerts(true);
+
+            if (data.success) {
+              $scope.merchant.details = data.data;
+              $scope.merchant.terminals = {
+                items: [],
+                count: 0,
+              };
+              fetchTerminals();
+              admin.identity().then(function(adminData) {
+                if (
+                  adminData.permissions.indexOf('view_merchant_pricing') !== -1
+                ) {
+                  fetchPricingPlans();
+                }
+              });
+              fetchScheduleTasks();
+
+              $scope.scheduleKeys = [
+                'schedule_name',
+                'type',
+                'method',
+                'schedule_id',
+                'next_run_at',
+              ];
+              $scope.merchant.id = $scope.merchant.details.id;
+              $scope.merchant.details.activation_progress =
+                $scope.merchant.details.merchant_details.activation_progress;
+              $scope.merchant.details.activated_dashboard =
+                $scope.merchant.details.merchant_details.activated;
+              $scope.merchant.details.locked =
+                $scope.merchant.details.merchant_details.locked;
+              $scope.merchant.details.submitted =
+                $scope.merchant.details.merchant_details.submitted;
+              $scope.merchant.details.submitted_at =
+                $scope.merchant.details.merchant_details.submitted_at;
+              $scope.referer = getReferer($scope.merchant.details.tags);
+              $scope.marketplace = $scope.merchant.details.parent_id;
+
+              var merchantAdmins = $scope.merchant.details.admins || [];
+              $scope.selected_admins = [];
+
+              // Re-populated array with selected admin ids
+              merchantAdmins.map(function(admin) {
+                $scope.selected_admins.push(admin.id);
+              });
+
+              fetchBalance();
+              getMerchantFeatures();
 
               $scope.merchant.creditsLogMode = 'live';
               getCreditsLog($scope.merchant.creditsLogMode);
 
-              if (data.data.details.confirmed === false) {
+              if ($scope.merchant.details.confirmed === false) {
                 $scope.unconfirmed = true;
                 $scope.alerts.addAlert('danger', 'Merchant not confirmed');
               }
@@ -1999,15 +2146,26 @@ app
       }
 
       $scope.deleteFeature = function(featureName) {
-        var request = $http.delete(
-          '/admin/features/' + $scope.merchant.id + '/' + featureName
-        );
+        var request = $http.delete('/admin/generic', {
+          params: {
+            route_name: 'feature_delete',
+            url_params: {
+              '{entityId}': $scope.merchant.id,
+              '{featureName}': featureName,
+            },
+          },
+        });
         request.success(function(data) {
           if (data.success) {
-            $scope.merchant.details.allowedFeatures = data.data.all_features;
-            $scope.merchant.details.features = getFeatureNames(
-              data.data.assigned_features
-            );
+            if (utils.isWorkflow(data.data)) {
+              $state.go('app.workflows.actions.detail', {
+                action_id: data.data.id,
+              });
+            }
+            var features = $scope.merchant.details.features;
+            $scope.merchant.details.features = features.filter(function(item) {
+              return item.id !== data.data.id;
+            });
           } else {
             $scope.alerts.resetAlerts(true);
             angular.forEach(data.errors, function(value) {
@@ -2133,6 +2291,7 @@ app
         'credit_card',
         'jiomoney',
         'openwallet',
+        'sbibuddy',
       ];
       $scope.methods = {};
 
@@ -2383,18 +2542,14 @@ app
 
       // Payment network map to have different dropdown values depending upon payment method
       $scope.updatePaymentNetworkMap = function() {
-        switch ($scope.offer.payment_method) {
-          case 'card':
-          case 'emi':
-            $scope.paymentNetworkMap = utilMapping.getMap('networkMap');
-            break;
-          case 'wallet':
-            $scope.paymentNetworkMap = utilMapping.getMap('walletMap');
-            break;
-          default:
-            $scope.paymentNetworkMap = {};
+        $scope.paymentNetworkMap = {};
+        if ($scope.offer.payment_method === 'wallet') {
+          $scope.paymentNetworkMap = utilMapping.getMap('walletMap');
         }
       };
+
+      $scope.walletMap = utilMapping.getMap('walletMap');
+      $scope.cardNetworkMap = utilMapping.getMap('networkMap');
 
       $scope.date = dateFactory.getHandler($scope);
       $scope.date.dateOptions['showWeeks'] = false;
@@ -2740,7 +2895,8 @@ app
               merctech_tel_after: '+91-8003393912',
               merctech_fax: '',
               merctech_email: 'harshil@razorpay.com',
-              merctech_addr: '35, Vishnupuri, Opp. Malviya Nagar P.O., Jagatpura Road, Jaipur - 302017, Rajasthan',
+              merctech_addr:
+                '35, Vishnupuri, Opp. Malviya Nagar P.O., Jagatpura Road, Jaipur - 302017, Rajasthan',
               merctech_web_addr: current.website || '',
               merctech_return_url: 'https://api.razorpay.com',
               mercsetup_auth: 'Y',
