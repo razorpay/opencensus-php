@@ -431,6 +431,7 @@ app
           $http
             .put('/admin/generic', {
               route_name: 'merchant_invoice_update_gstin',
+              mode: data.mode,
               url_params: {
                 '{id}': data.merchantId,
               },
@@ -826,8 +827,9 @@ app
     function($scope, $modalInstance) {
       $scope.merchantId = '';
       $scope.invoiceNumber = '';
+      $scope.mode = 'live';
 
-      $scope.ok = function(merchantId, invoiceNumber) {
+      $scope.ok = function(merchantId, invoiceNumber, mode) {
         merchantId = merchantId.trim();
         invoiceNumber = invoiceNumber.trim();
 
@@ -838,6 +840,7 @@ app
         $modalInstance.close({
           merchantId: merchantId,
           invoiceNumber: invoiceNumber,
+          mode: mode,
         });
       };
 
