@@ -1,30 +1,55 @@
+import ajax from 'merchant/utils/ajax';
 import AddOns from 'merchant/models/AddOns';
 import { makeActionCollectionReducer, fetchAll } from 'rzp/modules/collection';
 import { makeEntityReducer, updateEntity } from 'rzp/modules/entity';
 import { set } from 'rzp/utils/immutable';
+import { formatFields } from 'merchant/resources/addons';
 
-export const PLANS_FETCH = 'ADDONS_FETCH';
-export const PLAN_CREATE = 'ADDONS_CREATE';
-export const PLAN_EDIT = 'ADDONS_EDIT';
-export const PLAN_DELETE = 'ADDONS_DELETE';
+export const ADDONS_FETCH = 'ADDONS_FETCH';
+export const ADDONS_CREATE = 'ADDONS_CREATE';
+export const ADDONS_EDIT = 'ADDONS_EDIT';
+export const ADDONS_DELETE = 'ADDONS_DELETE';
 
 export const fetchAddOns = params => fetchAll(params, AddOns, 'ADDONS');
 
-export const saveAddOn = params => {
-  const plan = new Plan(params);
+// Fn. to create / edit add ons
+export const saveAddOn = (params, isNew = true) => {
+  const item = formatFields(['name', 'description', 'amount'], params.item);
+  const quantity = formatFields('quantity', params.quantity);
+
+  // Prepare exact payload here
+  const data = {
+    item,
+    quantity,
+  };
+
   return {
-    type: plan.isNew ? PLAN_CREATE : PLAN_EDIT,
-    payload: plan.save(),
+    type: isNew ? ADDONS_CREATE : ADDONS_EDIT,
+    payload: ajax({
+      url: '/user/generic',
+      method: 'post',
+      appendModeInURL: false,
+      appendModeInQueryParam: true,
+      data: {
+        route_name: 'subscription_create_addon',
+        url_params: JSON.stringify({
+          '{subscription_id}': params.subscription_id,
+        }),
+        body: {
+          ...data,
+        },
+      },
+    }),
   };
 };
 
 export const deleteAddOn = params => {
-  const plan = new Plan(params);
-
   return {
-    type: PLAN_DELETE,
-    payload: plan.delete(),
-    id: plan.id,
+    type: ADDONS_DELETE,
+    payload: ajax({
+      url: '/addon_delete',
+      data: params,
+    }),
   };
 };
 

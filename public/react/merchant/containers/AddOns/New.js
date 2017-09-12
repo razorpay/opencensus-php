@@ -36,6 +36,7 @@ export default class CreateAddOn extends Component {
     return this.props
       .saveAddOn(props)
       .then(addon => {
+        this.props.closeModal();
         this.props.showNotification({
           type: 'success',
           message: 'Add-on details successfully created',
@@ -63,12 +64,25 @@ export default class CreateAddOn extends Component {
 
           <form onSubmit={handleSubmit(this.save)}>
             <div class="form-group">
+              <label class="colcontrol-label label-required">
+                Subscription Id
+              </label>
+              <Field
+                name="subscription_id"
+                placeholder="sub_8cR2a11NVALA1s"
+                component={InputField}
+                class="form-control"
+                autoFocus={true}
+                validate={required()}
+              />
+            </div>
+
+            <div class="form-group">
               <label class="colcontrol-label label-required">Name</label>
               <Field
                 name="item[name]"
                 component={InputField}
                 class="form-control"
-                autoFocus={true}
                 validate={required()}
               />
             </div>
