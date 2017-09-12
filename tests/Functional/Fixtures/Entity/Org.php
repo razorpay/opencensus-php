@@ -30,12 +30,15 @@ class Org extends Base
 
     const DEFAULT_TOKEN             = 'SuperSecretTokenForRazorpay';
     const DEFAULT_TOKEN_PRINCIPAL   = 'SuprAdminToken';
+    const DEFAULT_ADMIN_TOKEN       = self::DEFAULT_TOKEN . self::DEFAULT_TOKEN_PRINCIPAL;
 
     //Workflow related role tokens
     const MAKER_TOKEN               = 'MakerSecretTokenForRazorpay';
     const MAKER_TOKEN_PRINCIPAL     = 'MakrAdminToken';
+    const MAKER_ADMIN_TOKEN         = self::MAKER_TOKEN . self::MAKER_TOKEN_PRINCIPAL;
     const CHECKER_TOKEN             = 'CheckerSecretTokenForRazorpay';
     const CHECKER_TOKEN_PRINCIPAL   = 'ChkrAdminToken';
+    const CHECKER_ADMIN_TOKEN       = self::CHECKER_TOKEN . self::CHECKER_TOKEN_PRINCIPAL;
 
     public function setUp()
     {
