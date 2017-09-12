@@ -147,6 +147,11 @@ class Charge extends Base\Core
         return true;
     }
 
+    /**
+     * @param Entity         $subscription
+     * @param Payment\Entity $capturedPayment
+     * @param Invoice\Entity $invoice
+     */
     public function handleCaptureSuccess(
         Entity $subscription,
         Payment\Entity $capturedPayment,
@@ -215,7 +220,7 @@ class Charge extends Base\Core
             // we will be keeping the current billing cycle period
             // in subscriptions also.
             //
-            $this->updateSubscriptionTimeFields($subscription);
+            $this->updateChargeAtAndEndedAt($subscription);
         }
 
         $this->incrementPaidCount($subscription);
@@ -269,9 +274,8 @@ class Charge extends Base\Core
      * See updateSubscriptionInvoiceBillingPeriod.
      *
      * @param  Entity $subscription
-     * @return null
      */
-    public function updateSubscriptionTimeFields(Entity $subscription)
+    public function updateChargeAtAndEndedAt(Entity $subscription)
     {
         $subscription->setChargeAt($subscription->task->getNextRunAt());
 

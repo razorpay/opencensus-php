@@ -48,6 +48,12 @@ class Biller extends Base\Core
         $invoice = $data['invoice'];
 
         //
+        // Update current period and billing period before the charge itself. This
+        // saves us the hassle of having to update them separately in retry flows.
+        //
+        $this->updateSubscriptionInvoiceBillingPeriod($subscription, $invoice);
+
+        //
         // We should not charge any invoice which is in halted status,
         // since, the subscription would also be in halted status here.
         // We do not charge halted subscriptions, we only create an invoice.
@@ -66,16 +72,10 @@ class Biller extends Base\Core
             // to be updated, so that the flow continues as it
             // is even if the subscription is in halted state.
             //
-            $this->handleHaltedSubscription($subscription, $invoice);
+            $this->handleHaltedSubscriptionAtInvoiceCreation($subscription, $invoice);
 
             return;
         }
-
-        //
-        // Update current period and billing period before the charge itself. This
-        // saves us the hassle of having to update them separately in retry flows.
-        //
-        $this->updateSubscriptionInvoiceBillingPeriod($subscription, $invoice);
 
         (new Core)->charge($subscription, $invoice, $options);
     }
@@ -87,7 +87,6 @@ class Biller extends Base\Core
      *
      * @param  Entity         $subscription Subscription to be updated
      * @param  Invoice\Entity $invoice      Newly created invoice
-     * @return null
      */
     public function updateSubscriptionInvoiceBillingPeriod(Entity $subscription, Invoice\Entity $invoice)
     {
@@ -237,20 +236,22 @@ class Biller extends Base\Core
             });
     }
 
-    protected function handleHaltedSubscription(Entity $subscription, Invoice\Entity $invoice)
+    /**
+     * @param Entity         $subscription
+     * @param Invoice\Entity $invoice
+     */
+    protected function handleHaltedSubscriptionAtInvoiceCreation(Entity $subscription, Invoice\Entity $invoice)
     {
         $charge = (new Charge);
 
-        $this->setCurrentPeriod($subscription);
-
-        $this->setInvoiceBillingPeriod($subscription, $invoice);
-
+        //
         // Schedule task needs to be updated before setting time
         // fields in subscription, as the next_run_at of
         // schedule_task is used to set subscription charge_at
+        //
         $charge->updateScheduleTask($subscription);
 
-        $charge->updateSubscriptionTimeFields($subscription);
+        $charge->updateChargeAtAndEndedAt($subscription);
 
         $this->repo->transaction(
             function() use ($subscription, $invoice)

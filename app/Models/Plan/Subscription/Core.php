@@ -348,7 +348,7 @@ class Core extends Base\Core
      *
      * @param Entity         $subscription
      * @param Invoice\Entity $invoice
-     * @param bool           $options   List of options for use by merchant, that alter the flow of charge.
+     * @param array          $options   List of options for use by merchant, that alter the flow of charge.
      *                                  - manual: Leaves auth_attempts, pending status unchanged
      *                                  - queue: Charges in queue, rather than in sync
      *                                  - success: For test charge, allows testing failures
@@ -397,7 +397,7 @@ class Core extends Base\Core
 
         $queue  = boolval($options['queue'] ?? true);
 
-        if ($queue === false)
+        if ($queue === true)
         {
             return (new Charge)->fireCharge($queuePayload);
 
