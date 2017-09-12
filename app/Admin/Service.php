@@ -234,45 +234,11 @@ class Service extends Base\Service
         return $error;
     }
 
-    public function listMerchants($input)
-    {
-        $user = Auth::guard('api')->user();
-
-        $adminId = $user->id;
-
-        $orgId = $user->org_id;
-
-        $response = [];
-
-        try
-        {
-            $merchants = $this->getMerchants($orgId, $adminId, $input)->toArray();
-
-            $response = $merchants;
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            // something went wrong
-        }
-
-        return [
-            'count' => count($response),
-            'data'  => $response
-        ];
-    }
-
     public function getMerchantIdsToList(string $orgId, string $adminId)
     {
         $this->setAdminCredentials();
 
         return $this->api->admin->fetchMerchantIds($orgId, $adminId);
-    }
-
-    public function getMerchants(string $orgId, string $adminId, array $input)
-    {
-        $this->setAdminCredentials();
-
-        return $this->api->admin->fetchMerchants($orgId, $adminId, $input);
     }
 
     public function getAdminActivity($id)

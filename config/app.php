@@ -174,7 +174,6 @@ return array(
         Bogardo\Mailgun\MailgunServiceProvider::class,
         'Maatwebsite\Excel\ExcelServiceProvider',
         'Maknz\Slack\SlackServiceProvider',
-        \Conner\Tagging\Providers\TaggingServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
     ],
 

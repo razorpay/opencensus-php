@@ -1,10 +1,9 @@
 import { titleCase } from 'rzp/utils/rzp-utils';
 
-const StatusLabel = statusMap => ({ status }) => (
+const StatusLabel = statusMap => ({ status }) =>
   <span class={`status-label label ${statusMap[status]}`}>
     {titleCase(status)}
-  </span>
-);
+  </span>;
 
 export const invoiceStatusMap = {
   draft: 'label-muted',

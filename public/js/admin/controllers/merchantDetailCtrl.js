@@ -1618,7 +1618,6 @@ app
         modalInstance.result.then(function(creditsData) {
           // Transform money from paise to rupee
           var creditsDataCloned = JSON.parse(JSON.stringify(creditsData));
-          creditsDataCloned.value = creditsDataCloned.value * 100;
           var mode = creditsDataCloned.mode;
           delete creditsDataCloned.mode;
 
@@ -2543,18 +2542,14 @@ app
 
       // Payment network map to have different dropdown values depending upon payment method
       $scope.updatePaymentNetworkMap = function() {
-        switch ($scope.offer.payment_method) {
-          case 'card':
-          case 'emi':
-            $scope.paymentNetworkMap = utilMapping.getMap('networkMap');
-            break;
-          case 'wallet':
-            $scope.paymentNetworkMap = utilMapping.getMap('walletMap');
-            break;
-          default:
-            $scope.paymentNetworkMap = {};
+        $scope.paymentNetworkMap = {};
+        if ($scope.offer.payment_method === 'wallet') {
+          $scope.paymentNetworkMap = utilMapping.getMap('walletMap');
         }
       };
+
+      $scope.walletMap = utilMapping.getMap('walletMap');
+      $scope.cardNetworkMap = utilMapping.getMap('networkMap');
 
       $scope.date = dateFactory.getHandler($scope);
       $scope.date.dateOptions['showWeeks'] = false;

@@ -222,15 +222,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
-    public function getMerchantList()
-    {
-        $input = Input::all();
-
-        $merchants = (new Admin\Service)->listMerchants($input);
-
-        return AppResponse::jsonResponse([], $merchants);
-    }
-
     public function getMerchantLogin($id)
     {
         $error = (new Admin\Service)->loginUsingPrimaryOwner($id);

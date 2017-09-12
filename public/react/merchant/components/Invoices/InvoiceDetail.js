@@ -7,6 +7,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
+import { Link } from 'react-router-dom';
 
 const notificationClassMap = {
   sent: 'text-success',
@@ -85,12 +86,13 @@ export default props => {
             </div>
 
             <div class="SliderPanel__Body">
-              <Banner cta="View Invoice" ctaUrl={'/invoices/' + invoice.id}>
-                <span>
-                  Following is the summary of the invoice. See invoice to view
-                  all details.
-                </span>
-              </Banner>
+              {invoice.type === 'invoice' &&
+                <Banner cta="View Invoice" ctaUrl={'/invoices/' + invoice.id}>
+                  <span>
+                    Following is the summary of the invoice. See invoice to view
+                    all details.
+                  </span>
+                </Banner>}
               <div class="panel-body">
                 <div class="list-group details-row-container">
                   <EntityDetailRow
@@ -105,6 +107,23 @@ export default props => {
                     label="Amount Paid"
                     value={() => <Amount value={invoice.amount_paid} />}
                   />
+
+                  <EntityDetailRow
+                    label="Payment Id"
+                    value={() => {
+                      if (!invoice.payment_id) {
+                        return '--';
+                      }
+                      return (
+                        <Link to={`/payments/${invoice.payment_id}`}>
+                          <code>
+                            {invoice.payment_id}
+                          </code>
+                        </Link>
+                      );
+                    }}
+                  />
+
                   <EntityDetailRow
                     label="Payment Link"
                     value={() => <CopyLink url={invoice.short_url} />}

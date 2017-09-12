@@ -51,14 +51,10 @@ app.controller('WorkflowRequestsCtrl', [
     $scope.regenerateList = function() {
       var type = $scope.workflow_request_type;
 
-      var duty = 'maker'; // Considering default duty as Maker since most requests are for maker.
+      type = type.split('-');
 
-      if (type === 'checker' || type === 'admin_checked') {
-        duty = type;
-        type = 'all'; // since currently checker and admin_checked don't have types.
-      }
-
-      $scope.getActionsByDutyAndType(duty, type);
+      // duty, type
+      $scope.getActionsByDutyAndType(type[0], type[1]);
     };
 
     $scope.regenerateList();
@@ -68,6 +64,7 @@ app.controller('WorkflowRequestsCtrl', [
         type: $scope.workflow_request_type,
       });
     };
+
     $scope.isSuperAdmin = admin.isSuperAdmin();
   },
 ]);
