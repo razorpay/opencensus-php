@@ -105,7 +105,7 @@ export default class CreateAddOn extends Component {
               >
                 <label class="control-label label-required">No. of Units</label>
                 <Field
-                  name="item[units]"
+                  name="quantity"
                   component={InputField}
                   class="form-control"
                   validate={required()}
