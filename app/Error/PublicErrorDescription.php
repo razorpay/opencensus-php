@@ -505,4 +505,6 @@ class PublicErrorDescription
     const BAD_REQUEST_COUPON_EXPIRED                                            = 'Coupon code is expired';
 
     const BAD_REQUEST_SNS_PUBLISH_FAILED                                        = 'Sns Publish failed';
+
+    const BAD_REQUEST_ADMIN_TOKEN_MISMATCH                                            = 'Admin Token Mismatch';
 }

@@ -7,6 +7,7 @@ use RZP\Models\Admin\Base;
 use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Error\ErrorCode;
 
 class Repository extends Base\Repository
 {
@@ -43,7 +44,7 @@ class Repository extends Base\Repository
         else
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND, null, $data);
+                ErrorCode::BAD_REQUEST_ADMIN_TOKEN_MISMATCH, null, []);
         }
     }
 }
