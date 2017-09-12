@@ -154,7 +154,13 @@ app
           request
             .success(function(data) {
               if (data.success) {
-                window.location.reload();
+                if (data.data.workflow_id) {
+                  $state.go('app.workflows.actions.detail', {
+                    action_id: data.data.id,
+                  });
+                } else {
+                  window.location.reload();
+                }
               } else {
                 angular.forEach(data.errors, function(value) {
                   $scope.alerts.addAlert('danger', value);
