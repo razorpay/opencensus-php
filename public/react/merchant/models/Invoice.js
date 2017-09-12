@@ -114,7 +114,15 @@ export default class Invoice extends GenericEntity {
     }
 
     if (prop === 'notes') {
+      // Invoice type 'invoice' will have this.notes in object form
+      if (this.notes && !(this.notes instanceof Array)) {
+        return this.notes;
+      }
+
+      // Invoice type 'link' will have this.notes in object form
       let notes = this.notes || [];
+
+      // Convert [{key: key1, value: value1}, {key: key2, value: value2}] into single Object like {key1: value}
       return notes.reduce((prev, curr) => {
         prev[curr.key] = curr.value;
         return prev;
