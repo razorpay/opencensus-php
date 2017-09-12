@@ -31,6 +31,11 @@ class SettingTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetForInvalidModule()
+    {
+        $this->startTest();
+    }
+
     public function testSaveAndRetrieveOpenwalletSettings()
     {
         $this->startTest();

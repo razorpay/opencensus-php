@@ -9,7 +9,7 @@ return [
 
     'testGetOpenwalletDefinedSettings' => [
         'request'  => [
-            'url'    => '/settings/openwallet/defined',
+            'url'    => '/settings/openwallet/defined_keys',
             'method' => 'get',
         ],
         'response' => [
@@ -27,7 +27,7 @@ return [
 
     'testGetDefinedSettingsInvalidModule' => [
         'request'   => [
-            'url'    => '/settings/invalid/defined',
+            'url'    => '/settings/invalid/defined_keys',
             'method' => 'get',
         ],
         'response'  => [
@@ -35,6 +35,26 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'No settings are defined for the module',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testGetForInvalidModule' => [
+        'request'   => [
+            'url'    => '/settings/invalid',
+            'method' => 'get',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The module specified is invalid',
                 ],
             ],
             'status_code' => 400,

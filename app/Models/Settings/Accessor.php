@@ -58,9 +58,11 @@ class Accessor extends Base\Core
      *
      * @return Accessor
      */
-    public static function for (Base\PublicEntity $entity, string $module): Accessor
+    public static function for(Base\PublicEntity $entity, string $module): Accessor
     {
         // TODO: Validate for allowed entities.
+
+        Module::validate($module);
 
         return new static($entity, $module);
     }
@@ -194,7 +196,7 @@ class Accessor extends Base\Core
      *
      * @param array|string|null $settings
      *
-     * @return Dictionary
+     * @return Dictionary|string
      */
     protected function serializeSettings($settings)
     {

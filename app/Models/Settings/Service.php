@@ -23,7 +23,7 @@ class Service extends Base\Service
      */
     public function getDefined(string $module): array
     {
-        $settings = Types::getWithDescriptions($module);
+        $settings = Keys::getWithDescriptions($module);
 
         return ['settings' => $settings];
     }
