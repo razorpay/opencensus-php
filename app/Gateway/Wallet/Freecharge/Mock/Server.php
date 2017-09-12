@@ -18,6 +18,8 @@ class Server extends Base\Mock\Server
     const REFRESH_TOKEN         = '8c31d80b-83ed-4f52-8377-71301790ccaa';
     const REFRESH_TOKEN_EXPIRY  = '2025-09-21T14:18:06';
 
+    const E018_NUMBER           = '9999123456';
+
     public function authorize($input)
     {
         parent::authorize($input);
@@ -142,6 +144,11 @@ class Server extends Base\Mock\Server
     public function otpGenerate($input)
     {
         $input = json_decode($input, true);
+
+        if ($input[RequestFields::MOBILE_NUMBER] === self::E018_NUMBER)
+        {
+            return $this->getErrorResponse('E018');
+        }
 
         $this->validateActionInput($input, 'otpGenerate');
 

@@ -562,6 +562,20 @@ class FreechargeGatewayTest extends TestCase
         $this->assertEquals(1, $result['total_success_refunds']);
     }
 
+    public function testApplicationErrorOccurred()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $payment['contact'] = '9999123456';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $data = $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            return $this->doAuthPayment($payment);
+        });
+    }
+
     public function deleteGatewayRefundEntity($id)
     {
         $id = Refund\Entity::verifyIdAndStripSign($id);

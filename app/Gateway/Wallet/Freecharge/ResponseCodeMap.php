@@ -17,7 +17,8 @@ class ResponseCodeMap extends Base\ResponseCodeMap
         'E006'  => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS,
         'E007'  => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS,
         'E008'  => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
-        'E018'  => ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR,
+        # changing to bad request error to mute error emails
+        'E018'  => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         'E023'  => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS,
         'E024'  => ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT,
         'E026'  => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS,
