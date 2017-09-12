@@ -545,9 +545,12 @@ class Gateway extends Base\Gateway
 
         $itc = strtoupper($paymentId);
 
+        //
+        // ITC is always in upper case
+        //
         if ($input['payment']['recurring'] === true)
         {
-            $itc = $input['token']->getId();
+            $itc = strtoupper($input['token']->getId());
         }
 
         $amount = $input['payment'][Payment\Entity::AMOUNT] / 100;
