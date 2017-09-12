@@ -61,7 +61,7 @@ class Repository extends BaseRepository
     {
         if (($this->isLiveMode() === true) and ($action !== BaseRepository::DELETE))
         {
-            $entityId = $entity->getId();
+            $entityId = $entity->getEntityId();
 
             $entityName = $entity->getName();
 
