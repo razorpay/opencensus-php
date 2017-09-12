@@ -285,8 +285,9 @@ class AdminTest extends TestCase
         $admin->roles()->sync([Org::ADMIN_ROLE]);
 
         $adminToken = $this->fixtures->create('admin_token', [
-            'token' => 'secondToken',
-            'admin_id' => $admin->getId(),
+            'id'        => 'AdminToken1234',
+            'token'     => Hash::make('secondToken'),
+            'admin_id'  => $admin->getId(),
         ]);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
