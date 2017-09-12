@@ -25,11 +25,33 @@ export default class PaymentLinksContainer extends ListContainer {
     return this.props.fetchInvoices(params);
   }
 
+  // Temporary fn. for handling code of merchant/models/Invoice.js for handling notes in deserialize fn.
+  deserializeNotes(value) {
+    let notes = [],
+      index = 0;
+
+    for (var key in value) {
+      if (value.hasOwnProperty(key)) {
+        notes[index] = { key: key, value: value[key] };
+
+        index++;
+      }
+    }
+
+    return notes;
+  }
+
   showPaymentLinkModal = (invoice = null) => {
+    let item = null;
+    if (invoice) {
+      item = { ...invoice };
+      item.notes = this.deserializeNotes(item.notes);
+    }
+
     this.props.openModal({
       component: (
         <CreatePaymentLink
-          invoice={invoice}
+          invoice={item}
           onSave={invoice => {
             this.props.luminateRow(invoice.id);
           }}

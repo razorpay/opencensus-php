@@ -3,14 +3,16 @@
 namespace App\Http\Middleware;
 
 use Closure;
+use Response;
 
 class OAuth
 {
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
+     * @param  \Illuminate\Http\Request $request
+     * @param  \Closure                 $next
+     *
      * @return mixed
      */
     public function handle($request, Closure $next)
@@ -20,8 +22,9 @@ class OAuth
         {
             $response = [
                 'success' => false,
-                'errors' => ['Unauthorised']
+                'errors'  => ['Unauthorised']
             ];
+
             return Response::json($response);
         }
 

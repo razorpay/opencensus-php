@@ -7,12 +7,16 @@ export default ({ label, value, ...otherProps }) => {
     <div class="pair-group-item" {...otherProps}>
       {typeof label === 'function'
         ? label()
-        : <div class="pair-label">{label}</div>}
+        : <div class="pair-label">
+            {label}
+          </div>}
       {/*<span class="pair-separator">:</span>*/}
       <div class="pair-value">
         {typeof value === 'function'
           ? value()
-          : <span class="label--primary">{value + ''}</span>}
+          : <span class="label--primary">
+              {value + ''}
+            </span>}
       </div>
     </div>
   );

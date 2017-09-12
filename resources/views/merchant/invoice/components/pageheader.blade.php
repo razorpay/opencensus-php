@@ -39,8 +39,8 @@
                 @if ($merchant_details['business_registered_state'])
                 {{{$merchant_details['business_registered_state']}}}<br/>
                 @endif
-                @if (!empty($gst))
-                <span class="code">GSTIN - {{{$gst}}}</span>
+                @if (!empty($gstin))
+                <span class="code">GSTIN - {{{$gstin}}}</span>
                 @endif
               </td>
               <td class="text-right">

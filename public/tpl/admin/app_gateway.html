@@ -136,7 +136,7 @@
               </span>
             </td>
             <td>{{row.group}}</td>
-            <td>{{getGatewayLabel(row.method, row.gateway)}}</td>
+            <td>{{row.gateway ? getGatewayLabel(row.method, row.gateway) : 'ALL'}}</td>
             <td>{{methodMap[row.method]}}</td>
             <td>{{row.type === 'sorter' ? row.load : 'NA'}}</td>
             <td>
@@ -302,14 +302,13 @@
       <!-- Gateway -->
       <div class="form-group" ng-if="current.method">
         <label class="col-lg-2 control-label">
-          <span style="color: red" ng-if="!editMode">*</span>
           Gateway:
         </label>
 
         <div class="col-lg-10" >
           <select name="gateway" ng-model="current.gateway" class="form-control"
-                  ng-readonly="editMode"
-                  ng-required="!editMode">
+                  ng-readonly="editMode">
+            <option value="">ALL</option>
             <option
               ng-repeat="(key, option) in gatewayListMap"
               ng-selected="{{key == current.gateway}}"
@@ -391,7 +390,7 @@
                   class="form-control"
                   ng-disabled="editMode">
             <option value="">ALL</option>
-            <option ng-repeat="(key, option) in gatewayAcquirerMap" value={{key}}>{{option}}</option>
+            <option ng-repeat="(key, option) in gatewayAcquirerMap" value={{key}} ng-selected="{{key === current.gateway_acquirer}}">{{option}}</option>
           </select>
 
         </div>
@@ -493,7 +492,7 @@
         </div>
       </div>
 
-      <!-- Netowork Category .-->
+      <!-- Network Category .-->
       <div class="form-group" ng-if="current.type === 'filter'">
         <label class="col-lg-2 control-label">Network Category:</label>
         <div class="col-lg-10" >
