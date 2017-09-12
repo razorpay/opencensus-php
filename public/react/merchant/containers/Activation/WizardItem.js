@@ -1,6 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
-import { Field, reduxForm } from 'redux-form';
+import { reduxForm } from 'redux-form';
 import Alert from 'rzp/ui/Forms/Alert';
 import { without } from 'rzp/utils/rzp-utils';
 import { showNotification } from 'rzp/modules/notifications';
@@ -48,9 +48,10 @@ const FORM_COMPONENTS = {
   { ...ActivationActions, showNotification, fetchUser }
 )
 @reduxForm({
+  form: 'activationForm',
   destroyOnUnmount: false,
   enableReinitialize: true,
-  keepDirtyOnReinitialize: true,
+  // keepDirtyOnReinitialize: true,
 })
 export default class WizardItem extends Component {
   finalStep = 6;
@@ -93,6 +94,8 @@ export default class WizardItem extends Component {
         this.setState({
           errors: null,
         });
+
+        this.props.initialize(props);
 
         this.props.showNotification({
           type: 'success',
