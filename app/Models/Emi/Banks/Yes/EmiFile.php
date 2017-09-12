@@ -17,7 +17,16 @@ class EmiFile extends Base\EmiFile
 
     protected $bankName  = 'Yes';
 
-    protected $type = FileStore\Type::INDUSIND_EMI_FILE;
+    protected $type = FileStore\Type::YES_EMI_FILE_SFTP;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->shouldCompress = false;
+
+        $this->transferMode = Base\EmiMode::SFTP;
+    }
 
     protected function getEmiData($input)
     {
@@ -81,6 +90,37 @@ class EmiFile extends Base\EmiFile
         }
 
         return $data;
+    }
+
+    protected function generateEmiFile(array $emiData, array $metadata = [])
+    {
+        $fileData = null;
+
+        if ($this->transferMode === Base\EmiMode::MAIL)
+        {
+            $this->type = FileStore\Type::YES_EMI_FILE_MAIL;
+        }
+
+        $fileData = parent::generateEmiFile($emiData);
+
+        return $fileData;
+    }
+
+    protected function getFileToWriteName(array $data)
+    {
+        $date = Carbon::now(Timezone::IST)->format('dmY');
+
+        static::$fileToWriteName = 'Razorpay_YESEMI_' . $date;
+
+        $filePath = '';
+
+        // for sftp we put the file in a H2H path
+        if ($this->transferMode === Base\EmiMode::SFTP)
+        {
+           $filePath = 'yes/outgoing/';
+        }
+
+        return $filePath . static::$fileToWriteName;
     }
 
     private function formattedDateFromTimestamp($timestamp)

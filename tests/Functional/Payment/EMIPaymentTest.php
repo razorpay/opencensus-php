@@ -120,14 +120,13 @@ class EmiPaymentTest extends TestCase
         $this->assertEquals(true, File::exists($this->zipFileName($content['RATN'])));
         $this->assertEquals(true, File::exists($this->zipFileName($content['SCBL'])));
         $this->assertEquals(true, File::exists($content['ICIC']));
-        $this->assertEquals(true, File::exists($this->zipFileName($content['YESB'])));
+        $this->assertEquals(true, File::exists($content['YESB']));
 
         $this->checkPasswordProtectedZip($this->zipFileName($content['KKBK']));
         $this->checkPasswordProtectedZip($this->zipFileName($content['UTIB']));
         $this->checkPasswordProtectedZip($this->zipFileName($content['INDB']));
         $this->checkPasswordProtectedZip($this->zipFileName($content['RATN']));
         $this->checkPasswordProtectedZip($this->zipFileName($content['SCBL']));
-        $this->checkPasswordProtectedZip($this->zipFileName($content['YESB']));
 
         Mail::assertSent(EmiMail\File::class);
 
