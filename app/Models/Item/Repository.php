@@ -15,9 +15,18 @@ class Repository extends Base\Repository
         Entity::ACTIVE      => 'sometimes|boolean',
     ];
 
+    protected $proxyFetchParamRules = [
+        Entity::TYPE        => 'filled|custom'
+    ];
+
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID => 'sometimes|alpha_num'
     ];
+
+    public function validateType($attribute, $value)
+    {
+        Type::checkType($value);
+    }
 
     /**
      * Finds item with given public id and where status is ACTIVE.
