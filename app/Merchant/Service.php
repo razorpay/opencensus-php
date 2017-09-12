@@ -661,9 +661,25 @@ class Service extends Base\Service
 
     public function saveActivationFilesData($input)
     {
+        if ((count($input) !== 1) or
+            (in_array(key($input), array_keys(MerchantDetails\Entity::UPLOAD_KEYS)) == false))
+        {
+            throw new \Razorpay\Api\Errors\BadRequestError(
+                'Invalid parameters.',
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
+        }
+
+        $field = MerchantDetails\Entity::UPLOAD_KEYS[key($input)];
+
+        $fileData = [
+            $field => current($input)
+        ];
+
         $saveActivationFilesData = [
             'route_name' => 'merchant_activation_upload_file',
-            'body' => $input
+            'body' => $fileData
         ];
 
         $genericService = new Generic\Service;
