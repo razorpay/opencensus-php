@@ -59,25 +59,25 @@ class Repository extends BaseRepository
      */
     public function shouldSync($entity, $action = null): bool
     {
-        if (($this->isLiveMode()) and ($action !== BaseRepository::DELETE))
+        if (($this->isLiveMode() === true) and ($action !== BaseRepository::DELETE))
         {
+            $entityId = $entity->getId();
+
+            $entityName = $entity->getName();
+
             // Sync if the feature is not already enabled on test
             $feature = $this->newQueryWithConnection(Mode::TEST)
-                            ->where(Entity::ENTITY_ID, '=', $entity->getEntityId())
-                            ->where(Entity::NAME, '=', $entity->getName())
+                            ->where(Entity::ENTITY_ID,  '=', $entityId)
+                            ->where(Entity::NAME,       '=', $entityName)
                             ->first();
 
             if ($feature === null)
             {
                 $this->trace->info(TraceCode::FEATURE_SYNCED, [
-                    $entity->getId(),
-                    $entity->getName()
+                    $entityId,
+                    $entityName
                 ]);
                 return true;
-            }
-            else
-            {
-                return false;
             }
         }
 
