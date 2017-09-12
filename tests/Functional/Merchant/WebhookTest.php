@@ -111,7 +111,7 @@ class WebhookTest extends TestCase
 
         $this->assertEquals(['Razorpay-Webhook/v1'], $request->getHeader('User-Agent'));
         $this->assertEquals(['application/json'], $request->getHeader('Content-Type'));
-        $this->assertEquals('http://razorpay.com/v1/dummy/route', (string) $request->getUri());
+        $this->assertEquals('http://example.com/v1/dummy/route', (string) $request->getUri());
 
         $body = (string) $request->getBody();
         $decodedBody = json_decode($body, true);
