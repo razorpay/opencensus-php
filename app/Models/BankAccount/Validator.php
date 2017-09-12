@@ -30,7 +30,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $addVirtualBankAccountRules = [
-        Entity::IFSC_CODE             => 'required|alpha_num|size:11',
+        Entity::IFSC_CODE             => 'sometimes|alpha_num|nullable',
         Entity::ACCOUNT_NUMBER        => 'required|alpha_num|between:5,20',
         Entity::BENEFICIARY_NAME      => 'required|max:40|alpha_space_num',
     ];
