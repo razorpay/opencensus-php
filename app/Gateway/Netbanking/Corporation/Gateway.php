@@ -305,7 +305,7 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        if (isset($content[ResponseFields::VERIFY_RESULT]) and
+        if ((isset($content[ResponseFields::VERIFY_RESULT]) === true) and
             $content[ResponseFields::VERIFY_RESULT] === ResponseCodeMap::RESULT_SUCCESS
         )
         {
