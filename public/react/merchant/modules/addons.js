@@ -10,8 +10,6 @@ export const ADDONS_CREATE = 'ADDONS_CREATE';
 export const ADDONS_EDIT = 'ADDONS_EDIT';
 export const ADDONS_DELETE = 'ADDONS_DELETE';
 
-export const fetchAddOns = params => fetchAll(params, AddOns, 'ADDONS');
-
 // Fn. to create / edit add ons
 export const saveAddOn = (params, isNew = true) => {
   const item = formatFields(['name', 'description', 'amount'], params.item);
@@ -43,14 +41,30 @@ export const saveAddOn = (params, isNew = true) => {
   };
 };
 
-export const deleteAddOn = params => {
-  return {
-    type: ADDONS_DELETE,
-    payload: ajax({
-      url: '/addon_delete',
-      data: params,
-    }),
-  };
+export const fetchAddOns = () => {
+  return ajax({
+    url: 'user/generic',
+    appendModeInURL: false,
+    appendModeInQueryParam: true,
+    data: {
+      route_name: 'addon_fetch_multiple',
+    },
+  });
+};
+
+export const deleteAddOn = addon_id => {
+  return ajax({
+    method: 'delete',
+    url: 'user/generic',
+    appendModeInURL: false,
+    appendModeInQueryParam: true,
+    data: {
+      route_name: 'addon_delete',
+      url_params: JSON.stringify({
+        '{addon_id}': addon_id,
+      }),
+    },
+  });
 };
 
 // List Reducer
