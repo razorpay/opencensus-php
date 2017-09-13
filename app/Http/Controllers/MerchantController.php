@@ -251,11 +251,13 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getItemsForAutocomplete($mode)
+    public function getItemsForAutocomplete(Request $request, string $mode)
     {
         $this->checkMode($mode);
 
-        list($error, $data) = (new Api\Service)->fetchCollectionForAutocomplete($mode, 'item');
+        $input = $request->all();
+
+        list($error, $data) = (new Api\Service)->fetchCollectionForAutocomplete($mode, 'item', $input);
 
         return AppResponse::jsonResponse($error, $data);
     }
