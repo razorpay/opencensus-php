@@ -36,9 +36,9 @@ class Reporting
             throw new Exception\LogicException('Reporting Config not defined');
         }
 
-        $this->mode = $app['rzp.mode'];
-
         $this->trace = $app['trace'];
+
+        $this->auth = $app['basicauth'];
     }
 
     private function getAuthHeaders() : array
@@ -53,47 +53,57 @@ class Reporting
     {
         $url = self::REPORT_CONFIG;
 
-        return $this->makeRequestAndSend($input, $url);
+        $headers = ['X-Merchant-Id' => $this->auth->getMerchantId()];
+
+        return $this->makeRequestAndSend($input, $url, 'post', $headers);
     }
 
-    public function fetchConfigMutliple($input) : array
+    public function fetchConfigMultiple($input) : array
     {
         $url = self::REPORT_CONFIG;
 
-        return $this->makeRequestAndSend($input, $url, 'get');
+        $headers = ['X-Merchant-Id' => $this->auth->getMerchantId()];
+
+        return $this->makeRequestAndSend($input, $url, 'get', $headers);
     }
 
     public function fetchConfigById($id, $input) : array
     {
         $url = self::REPORT_CONFIG . '/' . $id;
 
-        return $this->makeRequestAndSend($input, $url, 'get');
+        $headers = ['X-Merchant-Id' => $this->auth->getMerchantId()];
+
+        return $this->makeRequestAndSend($input, $url, 'get', $headers);
     }
 
     public function editConfig($id, $input) : array
     {
         $url = self::REPORT_CONFIG . '/' . $id;
 
-        return $this->makeRequestAndSend($input, $url, 'patch');
+        $headers = ['X-Merchant-Id' => $this->auth->getMerchantId()];
+
+        return $this->makeRequestAndSend($input, $url, 'patch', $headers);
     }
 
     public function deleteConfig($id) : array
     {
         $url = self::REPORT_CONFIG . '/' . $id;
 
-        return $this->makeRequestAndSend($input, $url, 'delete');
+        $headers = ['X-Merchant-Id' => $this->auth->getMerchantId()];
+
+        return $this->makeRequestAndSend(null, $url, 'delete', $headers);
     }
 
     public function generateReport($input) : array
     {
         $url = self::REPORT_GENERATE;
 
-        $input['mode'] = $this->mode;
+        $input['mode'] = $app['rzp.mode'];;
 
         return $this->makeRequestAndSend($input, $url);
     }
 
-    protected function makeRequestAndSend($input = null, $url, $method = 'post')
+    protected function makeRequestAndSend($input = null, $url, $method = 'post', $headers = [])
     {
         $request = [];
         $response = null;
@@ -110,6 +120,8 @@ class Reporting
         $request['content'] = $input;
 
         $request['options'] = $options;
+
+        $request['headers'] = $headers;
 
         if ($this->mode === Mode::TEST)
         {

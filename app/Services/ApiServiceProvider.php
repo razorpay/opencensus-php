@@ -119,7 +119,7 @@ class ApiServiceProvider extends BaseServiceProvider
             return new HarvesterClient($app);
         });
 
-        $this->app->bind('reporting', function($app)
+        $this->app->singleton('reporting', function($app)
         {
             return new Reporting($app);
         });

@@ -11,8 +11,6 @@ class ReportingServiceTest extends TestCase
      */
     public function testReportingAuthHeaders()
     {
-        $this->app['rzp.mode'] = 'test';
-
         $reporting = new \RZP\Services\Reporting($this->app);
 
         $auth = $this->getMethod('getAuthHeaders');
@@ -20,7 +18,7 @@ class ReportingServiceTest extends TestCase
         $authHeaders = $auth->invokeArgs($reporting, []);
 
         assert(count($authHeaders) === 2);
-        $this->assertEquals($authHeaders[0], 'rzp_live');
+        $this->assertEquals($authHeaders[0], 'rzp');
     }
 
     protected function getMethod($name)
