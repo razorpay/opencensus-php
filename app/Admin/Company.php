@@ -119,6 +119,8 @@ class Company
             'companyID'     =>  $this->cin
         ];
 
+        $response = null;
+
         try
         {
             $response = $this->session->post(
@@ -151,13 +153,27 @@ class Company
             }
         }
 
+        if (empty($response) === true)
+        {
+            return $response;
+        }
+
         return $response->body;
     }
 
     public function fetch()
     {
         $newCin = $this->retry();
+
         $res = $this->fetchData();
+
+        if (empty($res) === true)
+        {
+            return [
+                'company'     => [],
+                'signatories' => []
+            ];
+        }
 
         if (strpos($res, self::NOT_FOUND_ERROR) !== false)
         {
