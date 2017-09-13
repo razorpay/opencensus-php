@@ -70,7 +70,7 @@ class Service extends Base\Service
             $requestParams = [
                 'route_name'   => $routeName,
                 'mode'         => $mode,
-                'query_params' => $params + $offsets,
+                'query_params' => array_merge($params, $offsets),
             ];
 
             list($error, $list) = $genericService->call('GET', $requestParams);
