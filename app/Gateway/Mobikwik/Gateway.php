@@ -222,6 +222,8 @@ class Gateway extends Base\Gateway
 
         if ($input['refund']['amount'] === $input['payment']['amount'])
         {
+            parent::verify($input);
+
             $content = $this->sendRefundVerifyRequest($input);
 
             if (($content['statuscode'] === Status::SUCCESS) and
