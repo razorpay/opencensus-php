@@ -88,45 +88,42 @@ class PublicController extends Controller
         return View::make('public.callback_params', $data);
     }
 
-    public function postCheckoutHosted()
+    public function renderCheckoutHosted()
     {
-        $postParams = Request::instance()->request->all();
+        $params = Request::all();
 
-        $checkout = $this->getCheckoutCommon();
+        $this->validateHostedPostParams($params);
 
-        $this->validateHostedPostParams($postParams);
+        $options     = json_encode($params['checkout'], JSON_FORCE_OBJECT);
+        $checkout    = $this->getCheckoutCommon();
+        $checkoutUrl = $checkout['checkout'] . '/v1/checkout.js';
+        $urls        = json_encode($params['url'], JSON_FORCE_OBJECT);
 
         $data = [
-            'options'       => json_encode($postParams['checkout'], JSON_FORCE_OBJECT),
-            'checkout'      => $checkout['checkout'] . '/v1/checkout.js',
-            // This is used directly in JS side
-            'urls'          => json_encode([
-                'callback'  => $postParams['url']['callback'],
-                'cancel'    => $postParams['url']['cancel'] ?? null,
-            ], JSON_FORCE_OBJECT),
-            // This is used in PHP
-            'url_callback'  => $postParams['url']['callback'],
-            'retry'         => true //(bool) Request::get('retry', false) ,
+            'options'      => $options,
+            'checkout'     => $checkoutUrl,
+            'urls'         => $urls,                      // used directly in JS side
+            'url_callback' => $params['url']['callback'], // Used in PHP
+            'retry'        => true,
         ];
 
         return View::make('public.hosted', $data);
     }
 
-    protected function validateHostedPostParams($postParams)
+    protected function validateHostedPostParams($params)
     {
-        $postParamRules = [
+        $rules = [
             'url'                   => 'required|array',
             'checkout'              => 'required|array',
             'url.cancel'            => 'sometimes|url',
             'url.callback'          => 'required|url',
-            'checkout.key'          => 'required',
-            'checkout.amount'       => 'required|integer',
+            'checkout.key'          => 'required|string|size:23',
+            'checkout.order_id'     => 'sometimes|string|size:20',
+            'checkout.amount'       => 'required_without:checkout.order_id|integer',
             'checkout.image'        => 'sometimes|url',
-            'retry'                 => 'sometimes'
+            'retry'                 => 'sometimes',
         ];
 
-        (new JitValidator)->rules($postParamRules)
-                          ->input($postParams)
-                          ->validate();
+        (new JitValidator)->rules($rules)->input($params)->validate();
     }
 }
