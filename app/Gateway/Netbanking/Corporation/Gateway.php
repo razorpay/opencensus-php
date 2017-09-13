@@ -345,5 +345,10 @@ class Gateway extends Base\Gateway
         return $mid;
     }
 
+    public function formatAmount(int $amount): string
+    {
+        return number_format($amount / 100, 2, '.', '');
+    }
+
     // -------------------------- General helper methods end ----------------------
 }
