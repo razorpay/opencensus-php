@@ -216,6 +216,8 @@ class Authorization
 
     /**
      * Adds account auth to a request
+     *
+     * @param string|null $accountId
      */
     public function addAccountAuth($accountId = null)
     {
