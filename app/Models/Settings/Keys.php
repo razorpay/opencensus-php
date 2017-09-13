@@ -50,17 +50,15 @@ class Keys
      * Return a list of pre-defined setting types
      * (and their descriptions)
      *
-     * @param string      $module
-     * @param string|null $key
+     * @param string $module
      *
      * @return array
+     *
      * @throws BadRequestValidationFailureException
      */
-    public static function getWithDescriptions(string $module, string $key = null): array
+    public static function getWithDescriptions(string $module): array
     {
-        $definedSettings = static::$defined;
-
-        if (isset($definedSettings[$module]) === false)
+        if (isset(static::$defined[$module]) === false)
         {
             throw new BadRequestValidationFailureException(
                 'No settings are defined for the module',
@@ -68,12 +66,7 @@ class Keys
                 ['module' => $module]);
         }
 
-        $data = $definedSettings[$module];
-
-        if ($key !== null)
-        {
-            $data = $data[$key] ?? $data;
-        }
+        $data = static::$defined[$module];
 
         return array_dot($data);
     }
