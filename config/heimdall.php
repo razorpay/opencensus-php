@@ -222,6 +222,19 @@ return [
             Permission::VIEW_MERCHANT_PRICING  => 'View Mercant Pricing Plan',
         ],
 
+        PermissionCategory::DISPUTE => [
+            Permission::CREATE_DISPUTE => [
+                'description'   => 'Create Dispute Permission',
+                'assignable'    => true,
+                'workflow'      => true,
+            ],
+            Permission::EDIT_DISPUTE    => [
+                'description'   => 'Edit Dispute Permission',
+                'assignable'    => true,
+                'workflow'      => true,
+            ],
+        ],
+
         PermissionCategory::PRICING => [
             Permission::VIEW_PRICING_LIST => [
                 'description' => 'view pricinglist',
@@ -452,7 +465,24 @@ return [
                 'workflow'    => true
             ],
         ],
+
+        // RZP White label wallet config
+        PermissionCategory::WALLET_CONFIG => [
+            Permission::CREATE_WALLET_CONFIG => [
+                'description' => 'Create Wallet Config',
+                'assignable'  => true
+            ],
+            Permission::EDIT_WALLET_CONFIG   => [
+                'description' => 'Edit Wallet Config',
+                'assignable'  => true
+            ],
+            Permission::VIEW_WALLET_CONFIG   => [
+                'description' => 'View Wallet Config',
+                'assignable'  => true
+            ],
+        ],
     ],
+
     'workflows' => [
         'mock'  => env('HEIMDALL_WORKFLOWS_MOCK', false),
     ],

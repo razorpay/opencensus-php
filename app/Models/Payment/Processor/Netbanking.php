@@ -35,6 +35,7 @@ class Netbanking
     protected static $self = [
         IFSC::ICIC,
         IFSC::HDFC,
+        IFSC::CORP,
         IFSC::UTIB,
         IFSC::KKBK,
         IFSC::AIRP,

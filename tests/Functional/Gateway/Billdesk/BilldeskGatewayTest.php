@@ -6,6 +6,7 @@ use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Billdesk\Gateway;
 
 class BilldeskGatewayTest extends TestCase
 {
@@ -454,5 +455,87 @@ class BilldeskGatewayTest extends TestCase
         $this->assertNotNull($paymentTransaction['reconciled_at']);
         $this->assertEquals(0, $paymentTransaction['gateway_service_tax']);
         $this->assertEquals(0, $paymentTransaction['gateway_fee']);
+    }
+
+    public function testPaymentFailureBeforeRedirection()
+    {
+        $this->mockServerRequestFunction(function(& $request)
+        {
+            $messages = explode('|', $request['content']['msg']);
+            $callbackUrl = $messages[21];
+            $request['url'] = $callbackUrl;
+
+            $override = [
+                'AuthStatus'        => '0399',
+                'ErrorStatus'       => 'NA',
+                'ErrorDescription'  => 'TRANSACTION TERMINATED BY USER'
+            ];
+            $msg = $this->getCallbackErrorMsg($override);
+
+            $request['content']['msg'] = $msg;
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $payment = $this->getDefaultNetbankingPaymentArray();
+            $payment = $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testServerToServerFailureCallback()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $override = [
+                'AuthStatus'        => '0399',
+                'ErrorStatus'       => 'NA',
+                'ErrorDescription'  => 'Insufficient-funds'
+            ];
+            $msg = $this->getCallbackErrorMsg($override, $content['msg']);
+
+            $content['msg'] = $msg;
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $payment = $this->getDefaultNetbankingPaymentArray();
+            $payment = $this->doAuthPayment($payment);
+        });
+    }
+
+    /**
+     *
+     * @param array $override
+     * @param null $msg With explode msg and override it
+     * @return string Updated Msg
+     */
+    private function getCallbackErrorMsg(array $override, $msg = null)
+    {
+        $gateway = new Gateway();
+
+        $keys = $gateway->getFieldsForAction('callback');
+
+        if ($msg)
+        {
+            $values = explode('|', $msg);
+        }
+        else
+        {
+            $values = array_flip($keys);
+        }
+
+        $content = array_combine($keys, $values);
+
+        $overridden = array_merge($content, $override);
+
+        unset($overridden['Checksum']);
+
+        $msg = $gateway->getMessageStringWithHash($overridden);
+
+        return $msg;
     }
 }

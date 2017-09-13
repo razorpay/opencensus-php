@@ -15,32 +15,33 @@ use Razorpay\IFSC\IFSC as BaseIFSC;
 
 class Gateway
 {
-    const AMEX               = 'amex';
-    const ATOM               = 'atom';
-    const AXIS_GENIUS        = 'axis_genius';
-    const AXIS_MIGS          = 'axis_migs';
-    const BILLDESK           = 'billdesk';
-    const BLADE              = 'blade';
-    const CYBERSOURCE        = 'cybersource';
-    const EBS                = 'ebs';
-    const FIRST_DATA         = 'first_data';
-    const HDFC               = 'hdfc';
-    const MOBIKWIK           = 'mobikwik';
-    const NETBANKING_AIRTEL  = 'netbanking_airtel';
-    const NETBANKING_AXIS    = 'netbanking_axis';
-    const NETBANKING_FEDERAL = 'netbanking_federal';
-    const NETBANKING_HDFC    = 'netbanking_hdfc';
-    const NETBANKING_ICICI   = 'netbanking_icici';
-    const NETBANKING_INDUSIND= 'netbanking_indusind';
-    const NETBANKING_KOTAK   = 'netbanking_kotak';
-    const NETBANKING_RBL     = 'netbanking_rbl';
-    const NETBANKING_PNB     = 'netbanking_pnb';
-    const PAYTM              = 'paytm';
-    const SHARP              = 'sharp';
-    const UPI_MINDGATE       = 'upi_mindgate';
-    const UPI_ICICI          = 'upi_icici';
-    const UPI_IDFC           = 'upi_idfc';
-    const AEPS_ICICI         = 'aeps_icici';
+    const AMEX                   = 'amex';
+    const ATOM                   = 'atom';
+    const AXIS_GENIUS            = 'axis_genius';
+    const AXIS_MIGS              = 'axis_migs';
+    const BILLDESK               = 'billdesk';
+    const BLADE                  = 'blade';
+    const CYBERSOURCE            = 'cybersource';
+    const EBS                    = 'ebs';
+    const FIRST_DATA             = 'first_data';
+    const HDFC                   = 'hdfc';
+    const MOBIKWIK               = 'mobikwik';
+    const NETBANKING_AIRTEL      = 'netbanking_airtel';
+    const NETBANKING_AXIS        = 'netbanking_axis';
+    const NETBANKING_FEDERAL     = 'netbanking_federal';
+    const NETBANKING_HDFC        = 'netbanking_hdfc';
+    const NETBANKING_CORPORATION = 'netbanking_corporation';
+    const NETBANKING_ICICI       = 'netbanking_icici';
+    const NETBANKING_INDUSIND    = 'netbanking_indusind';
+    const NETBANKING_KOTAK       = 'netbanking_kotak';
+    const NETBANKING_RBL         = 'netbanking_rbl';
+    const NETBANKING_PNB         = 'netbanking_pnb';
+    const PAYTM                  = 'paytm';
+    const SHARP                  = 'sharp';
+    const UPI_MINDGATE           = 'upi_mindgate';
+    const UPI_ICICI              = 'upi_icici';
+    const UPI_IDFC               = 'upi_idfc';
+    const AEPS_ICICI             = 'aeps_icici';
 
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
     const WALLET_FREECHARGE  = 'wallet_freecharge';
@@ -204,6 +205,7 @@ class Gateway
             self::EBS,
             self::NETBANKING_ICICI,
             self::NETBANKING_HDFC,
+            self::NETBANKING_CORPORATION,
             self::NETBANKING_KOTAK,
             self::NETBANKING_AIRTEL,
             self::NETBANKING_AXIS,
@@ -456,6 +458,7 @@ class Gateway
         Gateway::UPI_MINDGATE,
         Gateway::UPI_ICICI,
         Gateway::WALLET_OLAMONEY,
+        Gateway::NETBANKING_CORPORATION,
         Gateway::SHARP
     ];
 
@@ -508,6 +511,7 @@ class Gateway
     public static $netbankingToGatewayMap = [
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
+        IFSC::CORP => Gateway::NETBANKING_CORPORATION,
         IFSC::AIRP => Gateway::NETBANKING_AIRTEL,
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,

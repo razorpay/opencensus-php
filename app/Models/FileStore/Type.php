@@ -14,6 +14,8 @@ class Type
 
     const HDFC_NETBANKING_REFUND            = 'hdfc_netbanking_refund';
 
+    const CORPORATION_NETBANKING_REFUND     = 'corporation_netbanking_refund';
+
     const ICICI_NETBANKING_REFUND           = 'icici_netbanking_refund';
 
     const AXIS_NETBANKING_REFUND            = 'axis_netbanking_refund';
@@ -86,6 +88,7 @@ class Type
             self::ICICI_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
             self::FEDERAL_NETBANKING_REFUND,
+            self::CORPORATION_NETBANKING_REFUND,
             self::RBL_NETBANKING_REFUND,
             self::INDUSIND_NETBANKING_REFUND,
             self::AXIS_NETBANKING_CLAIMS,
@@ -148,6 +151,7 @@ class Type
         self::KOTAK_NETBANKING_CLAIM,
         self::KOTAK_NETBANKING_REFUND,
         self::HDFC_NETBANKING_REFUND,
+        self::CORPORATION_NETBANKING_REFUND,
         self::ICICI_NETBANKING_REFUND,
         self::AXIS_NETBANKING_REFUND,
         self::FEDERAL_NETBANKING_REFUND,
