@@ -1024,6 +1024,11 @@ class BasicAuth
 
     public function getMerchantId()
     {
+        if ($this->getMerchant() === null)
+        {
+            return null;
+        }
+
         return $this->merchant->getKey();
     }
 

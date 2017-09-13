@@ -7,9 +7,10 @@ use ApiResponse;
 use RZP\Exception;
 use RZP\Models\Key;
 use RZP\Models\Report;
-use RZP\Models\Terminal;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
+use RZP\Models\Terminal;
+use RZP\Constants\Entity;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Credits;
@@ -784,5 +785,12 @@ class MerchantController extends Controller
         $response = (new Merchant\Service)->sendOAuthMail($input, $type);
 
         return ApiResponse::json($response);
+    }
+
+    public function getPublicGatewayDowntimeData()
+    {
+        $data = $this->service(Entity::GATEWAY_DOWNTIME)->getDowntimeDataForMerchant();
+
+        return ApiResponse::json($data);
     }
 }

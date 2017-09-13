@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\Downtime;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class Entity extends Base\PublicEntity
 {
@@ -31,6 +32,8 @@ class Entity extends Base\PublicEntity
     const UNKNOWN       = 'UNKNOWN';
     const ALL           = 'ALL';
 
+    const SEVERITY      = 'severity';
+    const INSTRUMENT    = 'instrument';
 
     protected $fillable = [
         self::GATEWAY,
@@ -295,6 +298,11 @@ class Entity extends Base\PublicEntity
         return in_array($value, [Entity::UNKNOWN, Entity::ALL, null], true);
     }
 
+    protected function isUnknownOrNA(string $value)
+    {
+        return in_array($value, [Entity::UNKNOWN, Entity::NA], true);
+    }
+
     public function hasTerminal()
     {
         return $this->isAttributeNotNull(self::TERMINAL_ID);
@@ -371,11 +379,13 @@ class Entity extends Base\PublicEntity
      *
      * @return array Formatted downtime data
      */
-    public function toArrayExternal()
+    public function toArrayCheckout()
     {
+        $reasonCode = $this->getReasonCode();
+
         $data = [
             Entity::ISSUER      => (array) $this->getIssuer(),
-            Entity::REASON_CODE => $this->getReasonCode(),
+            Entity::SEVERITY    => ReasonCode::SEVERITY_MAP[$reasonCode],
             Entity::PARTIAL     => $this->isPartial(),
             Entity::SCHEDULED   => $this->isScheduled(),
             Entity::BEGIN       => $this->getBegin(),
@@ -390,5 +400,95 @@ class Entity extends Base\PublicEntity
         }
 
         return array_filter($data);
+    }
+
+    /**
+     * Currently this method deals with only netbanking downtimes, as we are only
+     * exposing these types of downtimes over public route to merchant
+     */
+    public function toArrayPublic()
+    {
+        $reasonCode = $this->getReasonCode();
+
+        $downtimeMetaData = [
+            self::METHOD   => $this->getMethod(),
+            self::SEVERITY => ReasonCode::SEVERITY_MAP[$reasonCode],
+            self::BEGIN    => $this->getBegin(),
+            self::END      => $this->getEnd(),
+        ];
+
+        $issuer = $this->getIssuer();
+
+        $gateway = $this->getGateway();
+
+        if ($this->isUnknownOrNA($issuer) === true)
+        {
+            return null;
+        }
+
+        return $this->getDetailsForNetbankingDowntime($gateway,
+                                                      $issuer,
+                                                      $downtimeMetaData);
+    }
+
+    protected function getDetailsForNetbankingDowntime(string $gateway, string $issuer, array $downtimeMetaData)
+    {
+        $data = [];
+
+        if (in_array($gateway, Payment\Gateway::SHARED_NETBANKING_GATEWAYS_LIVE, true) === true)
+        {
+            // If issuer is set as ALL, return all issuers exclusive to gateway
+            // E.g for billdesk return all banks exclusive to billdesk
+            if ($issuer === Entity::ALL)
+            {
+                $exclusiveIssuers = Netbanking::getExclusiveIssuersForGateway($gateway);
+
+                if (empty($exclusiveIssuers) === true)
+                {
+                    return null;
+                }
+
+                $issuer = $exclusiveIssuers;
+            }
+            // If particular issuer is present and it is exclusive to the gateway then
+            // display the data
+            else if (Netbanking::isIssuerExclusiveToGateway($issuer, $gateway) === false)
+            {
+                return null;
+            }
+        }
+        // For directly supporteed gateways we always dsiplay the data
+        else if (Payment\Gateway::isDirectNetbankingGateway($gateway) === true)
+        {
+            $issuer = Payment\Gateway::getBankForDirectNetbankingGateway($gateway);
+        }
+
+        if (is_array($issuer) === true)
+        {
+            foreach ($issuer as $bank)
+            {
+                $instrumentDetails = $this->getNetbankingInstrumentDetails($bank);
+
+                $data[] = array_filter(array_merge($downtimeMetaData, $instrumentDetails));
+            }
+
+        }
+        else
+        {
+            $instrumentDetails = $this->getNetbankingInstrumentDetails($issuer);
+
+            $data = array_filter(array_merge($downtimeMetaData, $instrumentDetails));
+        }
+
+        return $data;
+    }
+
+    protected function getNetbankingInstrumentDetails(string $issuer): array
+    {
+        return [
+            self::INSTRUMENT => [
+                self::ISSUER => $issuer,
+            ],
+        ];
     }
 }

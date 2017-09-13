@@ -191,6 +191,7 @@ return [
             Permission::ADD_RECONCILIATION_FILE => '',
             Permission::ADD_SETTLEMENT_RECONCILIATION => '',
             Permission::RETRY_SETTLEMENT => '',
+            Permission::EDIT_MERCHANT_INVOICE_GSTIN => '',
             Permission::SEND_NEWSLETTER => '',
             Permission::TRIGGER_DUMMY_ERROR => '',
             Permission::MAKE_API_CALL => '',
@@ -219,6 +220,19 @@ return [
             ],
             Permission::ASSIGN_MERCHANT_HANDLE => 'Assign merchant handle',
             Permission::VIEW_MERCHANT_PRICING  => 'View Mercant Pricing Plan',
+        ],
+
+        PermissionCategory::DISPUTE => [
+            Permission::CREATE_DISPUTE => [
+                'description'   => 'Create Dispute Permission',
+                'assignable'    => true,
+                'workflow'      => true,
+            ],
+            Permission::EDIT_DISPUTE    => [
+                'description'   => 'Edit Dispute Permission',
+                'assignable'    => true,
+                'workflow'      => true,
+            ],
         ],
 
         PermissionCategory::PRICING => [

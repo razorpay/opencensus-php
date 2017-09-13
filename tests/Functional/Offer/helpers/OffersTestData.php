@@ -42,6 +42,68 @@ return [
         ]
     ],
 
+    'testCreateOfferWithNullMethod' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer',
+                'payment_network'     => 'VISA',
+                'issuer'              => 'HDFC',
+                'percent_rate'        => 1000,
+                'processing_time'     => 86400,
+                'starts_at'           => 1519457070,
+                'ends_at'             => 1550993070,
+                'display_text'        => 'Some more details',
+                'terms'               => 'Some more details'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'active'              => true,
+                'name'                => 'Test Offer',
+                'payment_network'     => 'VISA',
+                'issuer'              => 'HDFC',
+                'percent_rate'        => 1000,
+                'processing_time'     => 86400,
+                'starts_at'           => 1519457070,
+                'ends_at'             => 1550993070,
+                'display_text'        => 'Some more details',
+                'terms'               => 'Some more details'
+            ]
+        ]
+    ],
+
+    'testCreateOfferWithNullMethodAndInvalidIssuer' => [
+        'request' => [
+            'content' => [
+                'name'                => 'Test Offer',
+                'issuer'              => 'XXXX',
+                'percent_rate'        => 1000,
+                'processing_time'     => 86400,
+                'starts_at'           => 1519457070,
+                'ends_at'             => 1550993070,
+                'display_text'        => 'Some more details',
+                'terms'               => 'Some more details'
+            ],
+            'url'    => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid issuer name : XXXX',
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ]
+    ],
+
     'testCreateCardOfferWithMaxPaymentCount' => [
         'request' => [
             'content' => [
@@ -181,7 +243,7 @@ return [
             'content' => [
                 'name'            => 'Test Offer',
                 'payment_method'  => 'wallet',
-                'payment_network' => 'airtelmoney',
+                'issuer'          => 'airtelmoney',
                 'percent_rate'    => 1000,
                 'max_cashback'    => 200,
                 'min_amount'      => 500,
@@ -201,7 +263,7 @@ return [
                 'active'          => true,
                 'name'            => 'Test Offer',
                 'payment_method'  => 'wallet',
-                'payment_network' => 'airtelmoney',
+                'issuer'          => 'airtelmoney',
                 'percent_rate'    => 1000,
                 'processing_time' => 172800,
                 'starts_at'       => 1519457070,
@@ -217,7 +279,7 @@ return [
             'content' => [
                 'name'            => 'Test Offer',
                 'payment_method'  => 'netbanking',
-                'payment_network' => 'UTBI',
+                'issuer'          => 'UTIB',
                 'percent_rate'    => 1000,
                 'max_cashback'    => 200,
                 'min_amount'      => 500,
@@ -237,7 +299,7 @@ return [
                 'active'          => true,
                 'name'            => 'Test Offer',
                 'payment_method'  => 'netbanking',
-                'payment_network' => 'UTBI',
+                'issuer'          => 'UTIB',
                 'percent_rate'    => 1000,
                 'processing_time' => 172800,
                 'starts_at'       => 1519457070,
@@ -253,7 +315,7 @@ return [
             'content' => [
                 'name'            => 'Test Offer',
                 'payment_method'  => 'wallet',
-                'payment_network' => 'airtelmoney',
+                'issuer'          => 'airtelmoney',
                 'flat_cashback'   => 300,
                 'min_amount'      => 500,
                 'processing_time' => 172800,
@@ -272,7 +334,7 @@ return [
                 'active'          => true,
                 'name'            => 'Test Offer',
                 'payment_method'  => 'wallet',
-                'payment_network' => 'airtelmoney',
+                'issuer'          => 'airtelmoney',
                 'processing_time' => 172800,
                 'starts_at'       => 1519457070,
                 'ends_at'         => 1550993070,
@@ -420,7 +482,7 @@ return [
             'content' => [
                 'name'               => 'Test Offer',
                 'payment_method'     => 'wallet',
-                'payment_network'    => 'airtelhoney',
+                'issuer'             => 'airtelhoney',
                 'percent_rate'       => 1000,
                 'max_cashback'       => 200,
                 'processing_time'    => '2',
@@ -436,14 +498,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED,
+                    'description' => 'Invalid issuer name : airtelhoney',
                 ]
             ],
             'status_code' => 400
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ]
     ],
 
@@ -452,7 +514,7 @@ return [
             'content' => [
                 'name'               => 'Test Offer',
                 'payment_method'     => 'netbanking',
-                'payment_network'    => 'XXXX',
+                'issuer'             => 'XXXX',
                 'percent_rate'       => 1000,
                 'max_cashback'       => 200,
                 'min_amount'         => 500,
@@ -469,7 +531,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Payment network for bank should be a valid bank name'
+                    'description' => 'Invalid issuer name : XXXX'
                 ]
             ],
             'status_code' => 400,
@@ -521,7 +583,7 @@ return [
                 'payment_method'      => 'card',
                 'payment_method_type' => 'credit',
                 'payment_network'     => 'VISA',
-                'issuer'              => 'HDF1',
+                'issuer'              => 'HDFD',
                 'percent_rate'        => 1000,
                 'max_payment_count'   => 2,
                 'processing_time'     => '1',
@@ -537,7 +599,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invalid Issuer name : HDF1'
+                    'description' => 'Invalid issuer name : HDFD'
                 ]
             ],
             'status_code' => 400,
@@ -656,14 +718,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_FORMAT_FOR_IINS
+                    'description' => 'Iins should be a valid array',
                 ]
             ],
             'status_code' => 400
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_FORMAT_FOR_IINS
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ]
     ],
 
@@ -679,14 +741,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_IINS_EDITABLE_FOR_CARD_OFFER
+                    'description' => 'Iins can be only edited for card / emi offer'
                 ]
             ],
             'status_code' => 400
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_IINS_EDITABLE_FOR_CARD_OFFER
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ]
     ],
 

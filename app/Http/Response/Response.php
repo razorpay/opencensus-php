@@ -328,14 +328,16 @@ class Response
 
     protected function setAccessControlAllowOriginStarOnSpecificRoutes($route, $response)
     {
-        $routes = array(
+        $routes = [
             'payment_cancel',
             'payment_create_ajax',
             'payment_otp_submit',
             'payment_otp_resend',
-            'payment_topup_ajax');
+            'payment_topup_ajax',
+            'merchant_methods_downtime',
+        ];
 
-        if (in_array($route, $routes))
+        if (in_array($route, $routes, true) === true)
         {
             //
             // These routes are being hit from razorpay.js which is being called

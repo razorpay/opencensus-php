@@ -782,9 +782,6 @@ trait Refund
             return Payment\Refund\Status::PROCESSED;
         }
 
-        $this->refund->incrementAttempts();
-        $this->repo->saveOrFail($this->refund);
-
         // true  if refunded
         // false if not refunded
         $refundedOnGateway = $this->verifyRefund($refund);
@@ -804,6 +801,8 @@ trait Refund
         }
 
         $this->refund->setGatewayRefunded($refundedOnGateway);
+
+        $this->refund->incrementAttempts();
 
         $this->repo->saveOrFail($this->refund);
 

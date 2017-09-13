@@ -169,12 +169,13 @@ class Database
 
         $driver = $config['driver'];
 
-        $tables = $this->getTables($driver, $database);
-
         if ($driver === 'mysql')
         {
             $this->db->statement('SET FOREIGN_KEY_CHECKS=0');
+            $this->db->statement('SET GROUP_CONCAT_MAX_LEN=10000');
         }
+
+        $tables = $this->getTables($driver, $database);
 
         foreach ($tables as $table)
         {
@@ -191,6 +192,7 @@ class Database
         if ($driver === 'mysql')
         {
             $this->db->statement('SET FOREIGN_KEY_CHECKS=1');
+            $this->db->statement('SET GROUP_CONCAT_MAX_LEN=1024');
         }
     }
 
@@ -211,8 +213,6 @@ class Database
         $query = $results[0]->query;
 
         $tables = explode(';', $query);
-
-        array_pop($tables);
 
         return $tables;
     }
