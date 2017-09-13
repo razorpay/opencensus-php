@@ -17,6 +17,7 @@ class Table
     const OFFER                 = 'offers';
     const ORDER                 = 'orders';
     const TOKEN                 = 'tokens';
+    const BLADE                 = 'blade';
     const ADDON                 = 'addons';
     const COUPON                = 'coupons';
     const BATCH                 = 'batches';
@@ -124,10 +125,11 @@ class Table
     const CREDITS               = 'credits';
 
     // Terminal Performance
-
     const TERMINAL_ACTION       = 'terminal_action_logs';
     const GATEWAY_DOWNTIME      = 'gateway_downtimes';
+
     const GATEWAY_RULE          = 'gateway_rules';
+    const GATEWAY_FILE          = 'gateway_files';
 
     // Payment Analytics
     const PAYMENT_ANALYTICS     = 'payment_analytics';
@@ -138,6 +140,8 @@ class Table
     const TAX                   = 'taxes';
     const TAX_GROUP             = 'tax_groups';
     const TAX_GROUP_TAX_MAP     = 'tax_group_tax_map';
+
+    const SETTING               = 'settings';
 
     protected static $entityToTableMap = array(
         Entity::AXIS_MIGS           => self::MIGS,

@@ -24,6 +24,11 @@ class TestCase extends ParentTestCase
     protected $ba;
 
     /**
+     * @var Database
+     */
+    protected $db;
+
+    /**
      * @var EsClient
      */
     protected $es;
@@ -40,15 +45,10 @@ class TestCase extends ParentTestCase
     {
         parent::setUp();
 
-//      $this->markTestSkipped();
-
         $this->initialSetup();
 
         // Instantiate auth class
         $this->ba = new Authorization($this);
-
-        // Enable filters
-        //$this->app['router']->enableFilters();
 
         //
         // Creates and configures EsClient instance.
@@ -77,7 +77,9 @@ class TestCase extends ParentTestCase
     public function tearDown()
     {
         if ($this->db !== null)
+        {
             $this->db->tearDown();
+        }
 
         parent::tearDown();
     }

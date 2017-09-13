@@ -495,6 +495,12 @@ class Checkout
     {
         $method = $offer->getPaymentMethod();
 
+        // If offer method is empty we do not update methods in response
+        if (empty($method) === true)
+        {
+            return ;
+        }
+
         $enabledBanks = $data['methods']['netbanking'];
 
         $enabledWallets = $data['methods']['wallet'];
@@ -519,9 +525,9 @@ class Checkout
                 $data['methods']['netbanking'] = $enabledBanks;
 
                 // Only allow payment through specific bank if network is specified
-                if ($offer->getPaymentNetwork() !== null)
+                if ($offer->getIssuer() !== null)
                 {
-                    $bankCode = $offer->getPaymentNetwork();
+                    $bankCode = $offer->getIssuer();
 
                     $bankName = Netbanking::getName($bankCode);
 
@@ -538,9 +544,9 @@ class Checkout
                 $data['methods']['wallet'] = $enabledWallets;
 
                 // For wallet offers if network is specified, lock method to only that wallet
-                if ($offer->getPaymentNetwork() !== null)
+                if ($offer->getIssuer() !== null)
                 {
-                    $wallet = $offer->getPaymentNetwork();
+                    $wallet = $offer->getIssuer();
 
                     $data['methods']['wallet'] = [
                         $wallet
@@ -564,7 +570,7 @@ class Checkout
         {
             if ($merchant->isFeatureEnabled(Feature\Constants::HIDE_DOWNTIMES) === false)
             {
-                $downtimeData = (new Downtime\Core)->getFormattedGatewayDowntimeCheckoutData($merchant);
+                $downtimeData = (new Downtime\Service)->getPublicGatewayDowntimeData();
 
                 if (empty($downtimeData) === false)
                 {

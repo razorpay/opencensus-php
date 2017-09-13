@@ -2,10 +2,13 @@
 
 namespace RZP\Tests\Functional\Order;
 
-use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Constants\Timezone;
+use RZP\Models\Merchant\Account;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class OrderTest extends TestCase
 {
@@ -127,11 +130,11 @@ class OrderTest extends TestCase
         // If a payment is requested for an already authorised order
         // That will fail with a BadRequestValidationFailureException
         $testData = $this->testData[__FUNCTION__];
-        $payment1 = $this->getDefaultPaymentArray();
-        $payment1['order_id'] = $order['id'];
-        $this->runRequestResponseFlow($testData, function() use ($payment1)
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $this->runRequestResponseFlow($testData, function() use ($payment)
         {
-            $this->doAuthPayment($payment1);
+            $this->doAuthPayment($payment);
         });
 
         $this->capturePayment($rzpPayment['razorpay_payment_id'], $payment['amount']);
@@ -142,9 +145,9 @@ class OrderTest extends TestCase
         // If a payment is requested for an already paid order
         // That will fail with a BadRequestValidationFailureException
         $testData = $this->testData[__FUNCTION__];
-        $this->runRequestResponseFlow($testData, function() use ($payment1)
+        $this->runRequestResponseFlow($testData, function() use ($payment)
         {
-            $this->doAuthPayment($payment1);
+            $this->doAuthPayment($payment);
         });
     }
 
@@ -380,6 +383,89 @@ class OrderTest extends TestCase
         $payment = $this->getDefaultWalletPaymentArray();
         $payment['order_id'] = $order['id'];
         $payment['amount'] = $order['amount'];
+
+        $testData = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($testData, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $this->fixtures->merchant->disableMobikwik();
+    }
+
+    public function testPaymentOnOfferWithNullMethod()
+    {
+        $this->mockTokenex();
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $offer = $this->fixtures->create('offer', [
+            'starts_at' => Carbon::now(Timezone::IST)->subMonth()->timestamp,
+            'issuer' => 'HDFC',
+        ]);
+
+        $order = $this->fixtures->create('order', [
+            'merchant_id' => Account::TEST_ACCOUNT,
+            'offer_id' => $offer->getId(),
+            'amount' => 1000,
+        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = $order->getAmount();
+
+        $res = $this->doAuthPayment($payment);
+        $this->assertArrayHasKey('razorpay_order_id', $res);
+        $this->assertArrayHasKey('razorpay_signature', $res);
+        $this->assertEquals($order->getPublicId(), $res['razorpay_order_id']);
+
+        $payment = $this->getLastEntity('payment');
+        $this->capturePayment($res['razorpay_payment_id'], $payment['amount']);
+
+        $order = $this->getLastEntity('order');
+        $this->assertEquals($order['status'], 'paid');
+
+        $order = $this->fixtures->create('order', [
+            'merchant_id' => Account::TEST_ACCOUNT,
+            'offer_id'    => $offer->getId(),
+            'amount'      => 1000,
+        ]);
+
+        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = $order->getAmount();
+
+        $res = $this->doAuthPayment($payment);
+        $this->assertArrayHasKey('razorpay_order_id', $res);
+        $this->assertArrayHasKey('razorpay_signature', $res);
+        $this->assertEquals($order->getPublicId(), $res['razorpay_order_id']);
+
+        $payment = $this->getLastEntity('payment');
+        $this->capturePayment($res['razorpay_payment_id'], $payment['amount']);
+
+        $order = $this->getLastEntity('order');
+        $this->assertEquals($order['status'], 'paid');
+    }
+
+    public function testPaymentWithFailedOfferCheckOnNullMethodOffer()
+    {
+        $offer = $this->fixtures->create('offer', [
+            'starts_at' => Carbon::now(Timezone::IST)->subMonth()->timestamp,
+            'issuer' => 'HDFC',
+            'error_message' => 'Custom error message'
+        ]);
+
+        $this->fixtures->merchant->enableMobikwik();
+
+        $order = $this->fixtures->create('order', [
+            'merchant_id' => '10000000000000',
+            'offer_id' => $offer->getId(),
+            'amount' => 1000,
+        ]);
+
+        $payment = $this->getDefaultWalletPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = $order->getAmount();
 
         $testData = $this->testData[__FUNCTION__];
         $this->runRequestResponseFlow($testData, function () use ($payment)

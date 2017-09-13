@@ -32,6 +32,7 @@ class Terminal extends Base
         $this->createSharedCybersourceAxisTerminal();
         $this->createSharedFirstDataTerminal();
         $this->createSharedEbsTerminal();
+        $this->createSharedBladeTerminal();
     }
 
     public function createMultipleNetbankingTerminals()
@@ -212,6 +213,24 @@ class Terminal extends Base
             'gateway'                   => 'first_data',
             'gateway_acquirer'          => 'icic',
             'card'                      => 1,
+            'gateway_merchant_id'       => 'random',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedBladeTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::BLADE_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'blade',
+            'card'                      => 1,
+            'shared'                    => 1,
             'gateway_merchant_id'       => 'random',
         ];
 
@@ -704,6 +723,35 @@ class Terminal extends Base
             'gateway_merchant_id'       => 'abcd',
             'gateway_terminal_id'       => 'abcde',
             'gateway_terminal_password' => 'abcdef'
+        ];
+
+        return parent::create($attributes);
+    }
+
+    public function createNetbankingCorporationTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'merchant_id'               => '10000000000000',
+            'card'                      => 0,
+            'netbanking'                => 1,
+            'gateway'                   => 'netbanking_corporation',
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_secure_secret'     => 'secure_secret'
+        ];
+
+        return parent::create($attributes);
+    }
+
+    public function createSharedNetbankingCorporationTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'                        => Shared::NETBANKING_CORPORATION_TERMINAL,
+            'card'                      => 0,
+            'netbanking'                => 1,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'netbanking_corporation',
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_secure_secret'     => 'secure_secret'
         ];
 
         return parent::create($attributes);
