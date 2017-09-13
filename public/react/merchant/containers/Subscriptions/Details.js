@@ -178,7 +178,7 @@ export default class SubscriptionDetailsContainer extends Component {
     } = this.state;
 
     return (
-      <div>
+      <div class="multi-content">
         <SubscriptionDetails
           subscription={entity}
           plan={plan}
@@ -190,8 +190,7 @@ export default class SubscriptionDetailsContainer extends Component {
           activeSecEntityId={activeSecEntityId}
           onCancelClick={this.cancelSubscription}
         />
-        {false &&
-          secView === 'invoice' &&
+        {secView === 'invoice' &&
           <InvoiceDetail
             curInvoiceIndex={this.state.curInvoiceIndex}
             invoice={invoice}

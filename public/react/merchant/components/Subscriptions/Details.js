@@ -115,20 +115,20 @@ export default ({
                     />}
                 />
 
-                {false &&
-                  <EntityDetailList
-                    title="Invoices detail"
-                    goToLink={goToLink}
-                    subTitle={
-                      subscription.total_count &&
-                      `${subscription.paid_count} of ${subscription.total_count} invoices charged`
-                    }
-                    moreAfterlimit={2}
-                    error={invoices.error}
-                    items={invoices.items}
-                    activeSecEntityId={activeSecEntityId}
-                    loading={invoices.loading}
-                  />}
+                <EntityDetailList
+                  title="Invoices detail"
+                  goToLink={goToLink}
+                  subTitle={
+                    subscription.total_count &&
+                    `${subscription.paid_count} of ${subscription.total_count} invoices charged`
+                  }
+                  moreAfterlimit={2}
+                  error={invoices.error}
+                  items={invoices.items}
+                  activeSecEntityId={activeSecEntityId}
+                  loading={invoices.loading}
+                />
+
                 <NestedEntityDetailRow
                   label="Notes"
                   value={subscription.notes}
