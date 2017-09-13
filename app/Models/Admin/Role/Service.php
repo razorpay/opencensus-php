@@ -9,9 +9,9 @@ use RZP\Models\Admin\Permission;
 
 class Service extends Base\Service
 {
-    public function create($orgId, $input)
+    public function create($input)
     {
-        $org = $this->repo->org->findByPublicId($orgId);
+        $org = $this->app['basicauth']->getAdmin()->getOrg();
 
         if (empty($input[Entity::PERMISSIONS]) === false)
         {

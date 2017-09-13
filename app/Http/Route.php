@@ -430,7 +430,7 @@ final class Route
         'org_fieldmap_get_by_entity'              => ['get',      'orgs/{orgId}/field-map/entity/{entity}',         'OrganizationController@getOrgFieldMapByEntity'                     ],
         'org_fieldmap_edit'                       => ['put',      'orgs/{orgId}/field-map/{id}',                    'OrganizationController@putOrgFieldMap'                             ],
         'org_fieldmap_delete'                     => ['delete',   'orgs/{orgId}/field-map/{id}',                    'OrganizationController@deleteOrgFieldMap'                          ],
-        'role_create'                             => ['post',     'orgs/{orgId}/roles',                             'OrganizationController@createRole'                                 ],
+        'role_create'                             => ['post',     'orgs/roles',                                     'OrganizationController@createRole'                                 ],
         'role_get_multiple'                       => ['get',      'orgs/{orgId}/roles',                             'OrganizationController@getMultipleRoles'                           ],
         'role_get'                                => ['get',      'orgs/{orgId}/roles/{id}',                        'OrganizationController@getRole'                                    ],
         'role_edit'                               => ['put',      'orgs/{orgId}/roles/{id}',                        'OrganizationController@putRole'                                    ],

@@ -161,11 +161,11 @@ class OrganizationController extends Controller
 // --------------------- END CRUD for Admins   ---------------------------------------
 
 // --------------------- CRUD for roles  -----------------------------------------
-    public function createRole(string $id)
+    public function createRole()
     {
         $input = Request::all();
 
-        $data = $this->service(E::ROLE)->create($id, $input);
+        $data = $this->service(E::ROLE)->create($input);
 
         return ApiResponse::json($data);
     }
