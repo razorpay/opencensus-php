@@ -36,12 +36,24 @@ export default class PaymentDetailsContainer extends Component {
     confirm: PropTypes.func,
   };
 
-  componentWillMount() {
-    this.props.fetchItem(this.props.id).then(() => {
-      this.props.fetchRefunds(this.props.payment);
+  fetchData = id => {
+    this.props.fetchItem(id).then(() => {
+      const additionReqs = [this.props.fetchRefunds(this.props.payment)];
+
+      if (this.props.payment.method === 'card') {
+        additionReqs.push(this.props.fetchCardDetails(this.props.payment));
+      }
+
+      return Promise.all(additionReqs).then(function() {
+        console.log(arguments);
+      });
     });
 
     this.checkSecView(this.props.entity_name);
+  };
+
+  componentWillMount() {
+    this.fetchData(this.props.id);
   }
 
   componentWillReceiveProps(nextProps) {
