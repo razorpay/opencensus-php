@@ -226,6 +226,10 @@ class CreatePayments extends Migration
             $table->tinyInteger(Payment::DISPUTED)
                   ->default(0);
 
+            $table->string(Payment::RECURRING_TYPE)
+                  ->nullable()
+                  ->default(null);
+
             // Adds created_at and updated_at columns to the table
             $table->integer(Payment::CREATED_AT);
             $table->integer(Payment::UPDATED_AT);

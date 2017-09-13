@@ -402,8 +402,8 @@ class Gateway extends Base\Gateway
             $requestData = array_merge($requestData, $corporateData);
         }
 
-        // If the SI reference ID is not empty, we know that this is a recurring payment
-        if (empty($verify->payment->getSIToken()) === false)
+        // We check that the recurring type of the payment is registration and not debit
+        if ($verify->input['payment']['recurring_type'] === Payment\Type::REGISTRATION)
         {
             $requestData[RequestFields::SI] = Status::Y;
             $requestData[RequestFields::SI_AUTO_PAY_AMOUNT] = $verify->input['token']->getMaxAmount() / 100;

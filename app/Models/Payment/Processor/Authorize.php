@@ -1345,6 +1345,28 @@ trait Authorize
         }
 
         $payment->setInternational();
+
+        $this->handleEMandatePayments($payment);
+    }
+
+    protected function handleEMandatePayments(Payment\Entity $payment)
+    {
+        $token = $payment->getGlobalOrLocalTokenEntity();
+
+        // If token is not set at this point, the payment is surely not an e mandate payment
+        // If the payment is not netbanking, we know that it is surely not an e mandate payment
+        // If the payment is not recurring then we know that it is surely not an e mandate payment
+        if (($token === null) or
+            ($payment->isNetbanking() === false) or
+            ($payment->isRecurring() === false))
+        {
+            return;
+        }
+
+        // True => debit, False => registration
+        $isDebit = ($token->isRecurring() === true);
+
+        $payment->setRecurringType($isDebit);
     }
 
     protected function associateLocalCustomerToSubscription(

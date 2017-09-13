@@ -87,6 +87,9 @@ class Server extends Base\Mock\Server
         if (empty($input[RequestFields::SI_REFERENCE_NUMBER]) === false)
         {
             $responseArray[ResponseFields::SI_REFERENCE_ID] = $input[RequestFields::SI_REFERENCE_NUMBER];
+        }
+        if (empty($input[RequestFields::SI_AUTO_PAY_AMOUNT]) === false)
+        {
             $responseArray[ResponseFields::SI_AUTO_PAY_AMOUNT] = $input[RequestFields::SI_AUTO_PAY_AMOUNT];
         }
 

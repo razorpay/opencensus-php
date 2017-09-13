@@ -31,6 +31,11 @@ class Verify
 
     public $throwExceptionOnMismatch = true;
 
+    /**
+     * @var Used to set the status match property of $verify
+     */
+    public $match;
+
     public function __construct($gateway, array $input)
     {
         $this->input = $input;

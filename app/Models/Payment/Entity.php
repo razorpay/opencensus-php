@@ -105,6 +105,9 @@ class Entity extends Base\PublicEntity
     // Query params
     const TRANSFERRED           = 'transferred';
 
+    // Tells us whether this payment is a registration or debit e mandate payment
+    const RECURRING_TYPE        = 'recurring_type';
+
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
     const MIN_PAYMENT_AMOUNT                = 100;
@@ -152,6 +155,7 @@ class Entity extends Base\PublicEntity
         self::REFERENCE1,
         self::REFERENCE2,
         self::DISPUTED,
+        self::RECURRING_TYPE,
     ];
 
     protected $visible = [
@@ -223,6 +227,7 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DISPUTED,
+        self::RECURRING_TYPE,
     ];
 
     protected $public = [
@@ -257,6 +262,7 @@ class Entity extends Base\PublicEntity
         // self::SUBSCRIPTION_ID,
         self::CREATED_AT,
         self::TAX,
+        self::RECURRING_TYPE,
     ];
 
     /**
@@ -283,6 +289,7 @@ class Entity extends Base\PublicEntity
         self::TOKEN_ID,
         self::SUBSCRIPTION_ID,
         self::ACQUIRER_DATA,
+        self::RECURRING_TYPE,
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA];
@@ -337,6 +344,7 @@ class Entity extends Base\PublicEntity
         self::TERMINAL_ID          => null,
         self::TRANSFER_ID          => null,
         self::DISPUTED             => false,
+        self::RECURRING_TYPE       => null,
     ];
 
     protected $amounts = [
@@ -621,6 +629,35 @@ class Entity extends Base\PublicEntity
     public function setBank($bank)
     {
         $this->setAttribute(self::BANK, $bank);
+    }
+
+    /**
+     * E Mandate Type is null by default, and will be set to debit or registration based on use case
+     *
+     * @param $isDebit
+     */
+    public function setRecurringType($isDebit)
+    {
+        if ($isDebit === true)
+        {
+            $type = Type::DEBIT;
+        }
+        else
+        {
+            $type = Type::REGISTRATION;
+        }
+
+        $this->setAttribute(self::RECURRING_TYPE, $type);
+    }
+
+    public function isDebitRecurringType()
+    {
+        return ($this->getAttribute(self::RECURRING_TYPE) === Type::DEBIT);
+    }
+
+    public function isRegistrationRecurringType()
+    {
+        return ($this->getAttribute(self::RECURRING_TYPE) === Type::REGISTRATION);
     }
 
     public function setSigned($signed = true)
@@ -1747,6 +1784,14 @@ class Entity extends Base\PublicEntity
         if (in_array($currentMerchantId, $merchantIds, true) === false)
         {
             unset($array[self::ACQUIRER_DATA]);
+        }
+    }
+
+    public function setPublicRecurringTypeAttribute(array & $array)
+    {
+        if (empty($array[self::RECURRING_TYPE]) === true)
+        {
+            unset($array[self::RECURRING_TYPE]);
         }
     }
 
