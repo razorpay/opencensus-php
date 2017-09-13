@@ -68,6 +68,9 @@ class Entity extends Base\Entity
         self::REFUND_ID,
         self::REFERENCE1,
         self::ACCOUNT_NUMBER,
+        self::ACCOUNT_TYPE,
+        self::ACCOUNT_SUBTYPE,
+        self::ACCOUNT_BRANCHCODE,
         self::INT_PAYMENT_ID,
     );
 
