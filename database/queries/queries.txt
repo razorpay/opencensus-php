@@ -2451,7 +2451,7 @@ ALTER TABLE offers
     MODIFY COLUMN payment_method VARCHAR(10) NULL;
 
 ALTER TABLE bank_transfers
-    MODIFY COLUMN payer_ifsc varchar(13);
+    MODIFY COLUMN payer_ifsc varchar(13) NOT NULL;
 
 ALTER TABLE bank_accounts
-    MODIFY COLUMN ifsc_code varchar(11) NULLABLE;
+    MODIFY COLUMN ifsc_code varchar(11) NULL;
