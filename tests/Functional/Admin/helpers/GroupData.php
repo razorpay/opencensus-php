@@ -8,7 +8,7 @@ return [
 
     'testCreateGroup' => [
         'request' => [
-            'url' => '/org/groups',
+            'url' => '/groups',
             'method' => 'post',
             'content' => [
                 'name' => 'Group1',
@@ -26,7 +26,7 @@ return [
 
     'testDeleteGroup' => [
         'request' => [
-            'url' => '/org/groups/%s',
+            'url' => '/groups/%s',
             'method' => 'delete',
             'content' => [
             ],
@@ -41,7 +41,7 @@ return [
 
     'testEditGroup' => [
         'request' => [
-            'url' => '/org/groups/%s',
+            'url' => '/groups/%s',
             'method' => 'put',
             'content' => [
                 'name' => 'new name',
@@ -59,7 +59,7 @@ return [
 
     'testGetMultipleGroups' => [
         'request' => [
-            'url' => '/org/groups',
+            'url' => '/groups',
             'method' => 'get',
         ],
         'response' => [
@@ -73,7 +73,7 @@ return [
 
     'testDuplicateGroup' => [
         'request' => [
-            'url' => '/org/groups',
+            'url' => '/groups',
             'method' => 'post',
             'content' => [
                 'description' => 'Some description',
@@ -95,7 +95,7 @@ return [
 
     'testParentGroupAssignment' => [
         'request' => [
-            'url' => '/org/groups/%s',
+            'url' => '/groups/%s',
             'method' => 'put',
             'content' => [],
         ],
@@ -107,7 +107,7 @@ return [
 
     'testParentGroupDelete' => [
         'request' => [
-            'url' => '/org/groups/%s',
+            'url' => '/groups/%s',
             'method' => 'put',
             'content' => [],
         ],
@@ -119,7 +119,7 @@ return [
 
     'testAncestorsNotAllowedAsParents' => [
         'request' => [
-            'url' => '/org/groups/%s/allowed_groups',
+            'url' => '/groups/%s/allowed_groups',
             'method' => 'get',
         ],
         'response' => [
@@ -130,7 +130,7 @@ return [
 
     'testDescendantsNotAllowedAsParents' => [
         'request' => [
-            'url' => '/org/groups/%s/allowed_groups',
+            'url' => '/groups/%s/allowed_groups',
             'method' => 'get',
         ],
         'response' => [
@@ -141,7 +141,7 @@ return [
 
     'testSiblingsNotAllowedAsParents' => [
         'request' => [
-            'url' => '/org/groups/%s/allowed_groups',
+            'url' => '/groups/%s/allowed_groups',
             'method' => 'get',
         ],
         'response' => [
@@ -152,7 +152,7 @@ return [
 
     'testUnconnectedGroupsAsEligibleParentsForEachOther' => [
         'request' => [
-            'url' => '/org/groups/%s/allowed_groups',
+            'url' => '/groups/%s/allowed_groups',
             'method' => 'get',
         ],
         'response' => [
@@ -162,7 +162,7 @@ return [
     ],
     'testGetGroup' => [
         'request' => [
-            'url' => '/org/groups/%s',
+            'url' => '/groups/%s',
             'method' => 'get',
         ],
         'response' => [

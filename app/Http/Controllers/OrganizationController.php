@@ -59,61 +59,52 @@ class OrganizationController extends Controller
 
 // --------------------- CRUD for Admins   ---------------------------------------
 
-    public function getAdmin($id, $adminId)
+    public function getAdmin($adminId)
     {
-        $data = $this->service(E::ADMIN)->getAdmin($id, $adminId);
+        $data = $this->service(E::ADMIN)->getAdmin($adminId);
 
         return ApiResponse::json($data);
     }
 
-    public function getAdminByAppAuth(string $id)
+    public function getAdminByAppAuth()
     {
         $input = Request::all();
 
-        $data = $this->service(E::ADMIN)->getAdminByAppAuth($id, $input);
+        $data = $this->service(E::ADMIN)->getAdminByAppAuth($input);
 
         return ApiResponse::json($data);
     }
 
-    public function createAdmin($id)
+    public function createAdmin()
     {
         $input = Request::all();
 
-        $data = $this->service(E::ADMIN)->createAdmin($id, $input);
+        $data = $this->service(E::ADMIN)->createAdmin($input);
 
         return ApiResponse::json($data);
     }
 
-    public function deleteAdmin($id, $adminId)
+    public function deleteAdmin($adminId)
     {
-        $data = $this->service(E::ADMIN)->deleteAdmin($id, $adminId);
+        $data = $this->service(E::ADMIN)->deleteAdmin($adminId);
 
         return ApiResponse::json($data);
     }
 
-    public function fetchAdminMultiple(string $id)
-    {
-        $input = Request::all();
-
-        $data = $this->service(E::ADMIN)->fetchMultiple($id, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function getAdminMultipleOnAppAuth()
+    public function fetchAdminMultiple()
     {
         $input = Request::all();
 
-        $data = $this->service(E::ADMIN)->fetchMultipleOnAppAuth($input);
+        $data = $this->service(E::ADMIN)->fetchMultiple();
 
         return ApiResponse::json($data);
     }
 
-    public function editAdmin(string $id, string $adminId)
+    public function editAdmin(string $adminId)
     {
         $input = Request::all();
 
-        $data = $this->service(E::ADMIN)->editAdmin($id, $adminId, $input);
+        $data = $this->service(E::ADMIN)->editAdmin($adminId, $input);
 
         return ApiResponse::json($data);
     }

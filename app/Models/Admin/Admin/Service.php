@@ -33,6 +33,13 @@ class Service extends Base\Service
 
     const TOKEN = 'token';
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->adminOrgId = $this->app['basicauth']->getAdminOrgId();
+    }
+
     public function authenticate(string $orgId, array $input)
     {
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
@@ -260,9 +267,9 @@ class Service extends Base\Service
         return $admin;
     }
 
-    public function createAdmin(string $orgId, array $input)
+    public function createAdmin(array $input)
     {
-        $org = $this->repo->org->findByPublicId($orgId);
+        $org = $this->repo->org->findByPublicId($this->adminOrgId);
 
         if (empty($input[Entity::ROLES]) === false)
         {
@@ -293,16 +300,16 @@ class Service extends Base\Service
         Mail::queue($createAdminMail);
     }
 
-    public function getAdmin(string $orgId, string $adminId)
+    public function getAdmin(string $adminId)
     {
         // Fetch admin with relations
         $admin = $this->repo->admin->findByPublicIdAndOrgIdWithRelations(
-            $adminId, $orgId, [Entity::GROUPS, Entity::ROLES]);
+            $adminId, $this->adminOrgId, [Entity::GROUPS, Entity::ROLES]);
 
         return $admin->toArrayPublic();
     }
 
-    public function getAdminByAppAuth(string $orgId, array $input)
+    public function getAdminByAppAuth(array $input)
     {
         $token = $input['token'];
 
@@ -311,10 +318,9 @@ class Service extends Base\Service
         $adminId = $adminToken->getAdminId();
 
         $admin = $this->repo->admin->findByIdAndOrgIdWithRelations(
-            $adminId, $orgId, ['groups', 'roles', 'roles.permissions']);
+            $adminId, $this->adminOrgId, ['groups', 'roles', 'roles.permissions']);
 
         $roles = $admin->roles;
-        $permissions = [];
         $roleNames = [];
         $groupRules = [];
 
@@ -356,11 +362,11 @@ class Service extends Base\Service
         return $admin;
     }
 
-    public function deleteAdmin(string $orgId, string $adminId)
+    public function deleteAdmin(string $adminId)
     {
         $authAdmin = $this->app['basicauth']->getAdmin();
 
-        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
+        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $this->adminOrgId);
 
         $admin->getValidator()->validateSelfEditForbidden($authAdmin, $admin);
 
@@ -369,36 +375,16 @@ class Service extends Base\Service
         return $this->core()->delete($admin);
     }
 
-    public function fetchMultiple(string $orgId, array $input)
+    public function fetchMultiple()
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-
-        $admins = $this->repo->admin->fetchByOrgId($orgId, [Entity::GROUPS, Entity::ROLES]);
+        $admins = $this->repo->admin->fetchByOrgId($this->adminOrgId, [Entity::GROUPS, Entity::ROLES]);
 
         return $admins->toArrayPublic();
     }
 
-    public function fetchMultipleOnAppAuth(array $input)
+    public function editAdmin(string $adminId, array $input)
     {
-        $admins = $this->repo->admin->fetch($input);
-
-        $admins = $admins->toArrayPublic();
-
-        // heimdall dashboard has a custom parser which is not compatible with
-        // collections. If dashboard needs a single entity and passes a unique
-        // key return the only collection
-        // todo: Use toArrayPublicEmbedded
-        if ($admins['count'] === 1)
-        {
-            return $admins['items'][0];
-        }
-
-        return [];
-    }
-
-    public function editAdmin(string $orgId, string $adminId, array $input)
-    {
-        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
+        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $this->adminOrgId);
 
         if (empty($input[Entity::ROLES]) === false)
         {
