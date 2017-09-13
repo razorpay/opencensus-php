@@ -53,7 +53,7 @@ trait HeimdallTrait
         $content = array_merge($defaultContent, $content);
 
         $request = [
-            'url'     => '/orgs/' . $orgId . '/admins/' . $adminId,
+            'url'     => '/admins/' . $adminId,
             'method'  => 'PUT',
             'content' => $content,
         ];
