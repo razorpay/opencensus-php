@@ -911,6 +911,8 @@ trait Authorize
     {
         $bank = $payment->getBank();
 
+        // TODO: Handle first recurring / second recurring based on token and route
+
         if (Payment\Gateway::isRecurringSupportedOnBank($bank) === false)
         {
             throw new Exception\BadRequestException(
@@ -920,6 +922,9 @@ trait Authorize
                     'payment' => $payment->toArray(),
                 ]);
         }
+
+        // We ensure that the e_mandate feature has been enabled for the merchant
+        $this->verifyFeatureForMerchant($payment->merchant, Feature\Constants::E_MANDATE);
 
         if ($token === null)
         {
@@ -1353,9 +1358,12 @@ trait Authorize
     {
         $token = $payment->getGlobalOrLocalTokenEntity();
 
-        // If token is not set at this point, the payment is surely not an e mandate payment
-        // If the payment is not netbanking, we know that it is surely not an e mandate payment
-        // If the payment is not recurring then we know that it is surely not an e mandate payment
+        //
+        // It's not an e-mandate payment if
+        // - Token not set
+        // - Payment not netbanking
+        // - Payment not recurring
+        //
         if (($token === null) or
             ($payment->isNetbanking() === false) or
             ($payment->isRecurring() === false))
@@ -1364,6 +1372,7 @@ trait Authorize
         }
 
         // True => debit, False => registration
+        // TODO: Add support for when we allow recurring tokens for first payments
         $isDebit = ($token->isRecurring() === true);
 
         $payment->setRecurringType($isDebit);

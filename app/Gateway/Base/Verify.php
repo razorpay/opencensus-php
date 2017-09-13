@@ -32,7 +32,9 @@ class Verify
     public $throwExceptionOnMismatch = true;
 
     /**
-     * @var Used to set the status match property of $verify
+     * Used to set the status match property of $verify
+     *
+     * @var bool
      */
     public $match;
 

@@ -641,11 +641,11 @@ class Entity extends Base\PublicEntity
     {
         if ($isDebit === true)
         {
-            $type = Type::DEBIT;
+            $type = RecurringType::DEBIT;
         }
         else
         {
-            $type = Type::REGISTRATION;
+            $type = RecurringType::REGISTRATION;
         }
 
         $this->setAttribute(self::RECURRING_TYPE, $type);
@@ -653,12 +653,12 @@ class Entity extends Base\PublicEntity
 
     public function isDebitRecurringType()
     {
-        return ($this->getAttribute(self::RECURRING_TYPE) === Type::DEBIT);
+        return ($this->getAttribute(self::RECURRING_TYPE) === RecurringType::DEBIT);
     }
 
     public function isRegistrationRecurringType()
     {
-        return ($this->getAttribute(self::RECURRING_TYPE) === Type::REGISTRATION);
+        return ($this->getAttribute(self::RECURRING_TYPE) === RecurringType::REGISTRATION);
     }
 
     public function setSigned($signed = true)

@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Payment;
 
-class Type
+class RecurringType
 {
     const REGISTRATION      = 'registration';
     const DEBIT             = 'debit';

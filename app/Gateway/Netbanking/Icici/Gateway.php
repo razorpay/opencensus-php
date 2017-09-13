@@ -403,7 +403,7 @@ class Gateway extends Base\Gateway
         }
 
         // We check that the recurring type of the payment is registration and not debit
-        if ($verify->input['payment']['recurring_type'] === Payment\Type::REGISTRATION)
+        if ($verify->input['payment']['recurring_type'] === Payment\RecurringType::REGISTRATION)
         {
             $requestData[RequestFields::SI] = Status::Y;
             $requestData[RequestFields::SI_AUTO_PAY_AMOUNT] = $verify->input['token']->getMaxAmount() / 100;

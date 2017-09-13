@@ -38,7 +38,7 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $this->fixtures->create(Entity::CUSTOMER);
 
-        $this->fixtures->merchant->addFeatures(['charge_at_will']);
+        $this->fixtures->merchant->addFeatures(['charge_at_will', 'e_mandate']);
 
         $this->payment = $this->getNetbankingRecurringPaymentArray(IFSC::ICIC);
         unset($this->payment[Entity::CARD]);
