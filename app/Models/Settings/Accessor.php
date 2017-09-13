@@ -6,6 +6,7 @@ use LaravelSettings;
 use Razorpay\Spine\DataTypes\Dictionary;
 
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
 
 /**
  * Class Accessor
@@ -44,10 +45,12 @@ class Accessor extends Base\Core
         parent::__construct();
 
         $this->entity = $entity->getEntity();
-
-        $this->id = $entity->getId();
-
+        $this->id     = $entity->getId();
         $this->module = $module;
+
+        $this->validateEntityAndModule();
+
+        $this->setExtraColumns();
     }
 
     /**
@@ -60,10 +63,6 @@ class Accessor extends Base\Core
      */
     public static function for(Base\PublicEntity $entity, string $module): Accessor
     {
-        // TODO: Validate for allowed entities.
-
-        Module::validate($module);
-
         return new static($entity, $module);
     }
 
@@ -76,12 +75,10 @@ class Accessor extends Base\Core
      *      "max_load_value" => "500000"
      * ]
      *
-     * @return Dictionary
+     * @return Dictionary|string
      */
     public function all()
     {
-        $this->setColumns();
-
         $settings = LaravelSettings::all();
 
         return $this->serializeSettings($settings);
@@ -92,6 +89,7 @@ class Accessor extends Base\Core
      * denoted by dot notated keys.
      *
      * Example:
+     *
      * For the following saved settings -
      * "closed" => [
      *     "max_limit"      => "2000000",
@@ -109,12 +107,10 @@ class Accessor extends Base\Core
      *
      * @param string $key
      *
-     * @return Dictionary
+     * @return Dictionary|string
      */
     public function get(string $key)
     {
-        $this->setColumns();
-
         $settings = LaravelSettings::get($key);
 
         return $this->serializeSettings($settings);
@@ -137,7 +133,7 @@ class Accessor extends Base\Core
      */
     public function upsert($key, string $value = null): Accessor
     {
-        $this->setColumns();
+        $this->trace->info(TraceCode::SETTINGS_UPSERT_REQUEST, [$key, $value]);
 
         LaravelSettings::set($key, $value);
 
@@ -158,7 +154,7 @@ class Accessor extends Base\Core
      */
     public function delete(string $key): Accessor
     {
-        $this->setColumns();
+        $this->trace->info(TraceCode::SETTINGS_DELETE_REQUEST, [$key]);
 
         LaravelSettings::forget($key);
 
@@ -176,11 +172,19 @@ class Accessor extends Base\Core
         LaravelSettings::save();
     }
 
+    protected function validateEntityAndModule()
+    {
+        // TODO: Validate entity
+
+        Module::validate($this->module);
+    }
+
     /**
-     * Set the extra columns that we filter on
-     * https://github.com/anlutro/laravel-settings#example
+     * Set the extra columns that we filter on.
+     *
+     * Ref: https://github.com/anlutro/laravel-settings#example
      */
-    protected function setColumns()
+    protected function setExtraColumns()
     {
         $filterColumns = [
             'entity_type' => $this->entity,

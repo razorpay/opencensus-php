@@ -27,8 +27,7 @@ class Module
     {
         $const = __CLASS__ . '::' . strtoupper($module);
 
-        return ((defined($const) === true) and
-                (constant($const) === $module));
+        return ((defined($const) === true) and (constant($const) === $module));
     }
 
     /**

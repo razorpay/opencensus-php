@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "87e69eeb36763ca55b8afe7449c3cf77",
+    "content-hash": "068daf81cb3adfa49b650613d32be39e",
     "packages": [
         {
             "name": "anlutro/l4-settings",
@@ -394,7 +394,7 @@
             ],
             "authors": [
                 {
-                    "name": "Christian L??ck",
+                    "name": "Christian Lück",
                     "email": "christian@lueck.tv"
                 }
             ],
@@ -917,7 +917,7 @@
                 "singularize",
                 "string"
             ],
-            "time": "2017-07-22T12:18:28+00:00"
+            "time": "2015-11-06T14:35:42+00:00"
         },
         {
             "name": "doctrine/instantiator",
@@ -2734,7 +2734,7 @@
             ],
             "authors": [
                 {
-                    "name": "Michael H??rtl",
+                    "name": "Michael Härtl",
                     "email": "haertl.mike@gmail.com"
                 }
             ],
@@ -2770,7 +2770,7 @@
             ],
             "authors": [
                 {
-                    "name": "Michael H??rtl",
+                    "name": "Michael Härtl",
                     "email": "haertl.mike@gmail.com"
                 }
             ],
@@ -3376,7 +3376,7 @@
             ],
             "authors": [
                 {
-                    "name": "M??rk S??gi-Kaz??r",
+                    "name": "Márk Sági-Kazár",
                     "email": "mark.sagikazar@gmail.com"
                 }
             ],
@@ -3437,7 +3437,7 @@
             ],
             "authors": [
                 {
-                    "name": "M??rk S??gi-Kaz??r",
+                    "name": "Márk Sági-Kazár",
                     "email": "mark.sagikazar@gmail.com"
                 }
             ],
@@ -3496,7 +3496,7 @@
             ],
             "authors": [
                 {
-                    "name": "M??rk S??gi-Kaz??r",
+                    "name": "Márk Sági-Kazár",
                     "email": "mark.sagikazar@gmail.com"
                 }
             ],
@@ -3557,7 +3557,7 @@
             ],
             "authors": [
                 {
-                    "name": "M??rk S??gi-Kaz??r",
+                    "name": "Márk Sági-Kazár",
                     "email": "mark.sagikazar@gmail.com"
                 },
                 {
@@ -3617,7 +3617,7 @@
                     "email": "geloen.eric@gmail.com"
                 },
                 {
-                    "name": "M??rk S??gi-Kaz??r",
+                    "name": "Márk Sági-Kazár",
                     "email": "mark.sagikazar@gmail.com"
                 }
             ],
@@ -3674,7 +3674,7 @@
             ],
             "authors": [
                 {
-                    "name": "Mathieu Santo Stefano--F??ron",
+                    "name": "Mathieu Santo Stefano--Féron",
                     "email": "mathieu.santostefano@gmail.com"
                 }
             ],
@@ -3734,7 +3734,7 @@
             ],
             "authors": [
                 {
-                    "name": "M??rk S??gi-Kaz??r",
+                    "name": "Márk Sági-Kazár",
                     "email": "mark.sagikazar@gmail.com"
                 }
             ],
@@ -3807,7 +3807,7 @@
             ],
             "authors": [
                 {
-                    "name": "M??rk S??gi-Kaz??r",
+                    "name": "Márk Sági-Kazár",
                     "email": "mark.sagikazar@gmail.com"
                 }
             ],
@@ -3855,7 +3855,7 @@
             ],
             "authors": [
                 {
-                    "name": "M??rk S??gi-Kaz??r",
+                    "name": "Márk Sági-Kazár",
                     "email": "mark.sagikazar@gmail.com"
                 }
             ],
@@ -3962,7 +3962,7 @@
             ],
             "authors": [
                 {
-                    "name": "M??rk S??gi-Kaz??r",
+                    "name": "Márk Sági-Kazár",
                     "email": "mark.sagikazar@gmail.com"
                 },
                 {
@@ -4191,7 +4191,7 @@
                     "role": "Developer"
                 },
                 {
-                    "name": "Hans-J??rgen Petrich",
+                    "name": "Hans-Jürgen Petrich",
                     "email": "petrich@tronic-media.com",
                     "role": "Developer"
                 },
@@ -4924,7 +4924,7 @@
                 "source": "https://github.com/razorpay/spine/tree/laravel5.4",
                 "issues": "https://github.com/razorpay/spine/issues"
             },
-            "time": "2017-07-03 03:54:18"
+            "time": "2017-07-03T03:54:18+00:00"
         },
         {
             "name": "razorpay/trace",
@@ -5034,7 +5034,7 @@
                 "source": "https://github.com/razorpay/upi-clients/tree/master",
                 "issues": "https://github.com/razorpay/upi-clients/issues"
             },
-            "time": "2017-06-09T09:05:10+00:00"
+            "time": "2017-08-10T18:30:30+00:00"
         },
         {
             "name": "react/promise",
@@ -5502,7 +5502,7 @@
             ],
             "authors": [
                 {
-                    "name": "Jean-Fran??ois Simon",
+                    "name": "Jean-François Simon",
                     "email": "jeanfrancois.simon@sensiolabs.com"
                 },
                 {
@@ -6640,7 +6640,7 @@
             ],
             "authors": [
                 {
-                    "name": "Fran??ois Zaninotto"
+                    "name": "François Zaninotto"
                 }
             ],
             "description": "Faker is a PHP library that generates fake data for you.",
@@ -6691,7 +6691,7 @@
             ],
             "authors": [
                 {
-                    "name": "Alexandre Salom??",
+                    "name": "Alexandre Salomé",
                     "email": "alexandre.salome@gmail.com",
                     "homepage": "http://alexandre-salome.fr"
                 },
@@ -6784,7 +6784,7 @@
             ],
             "authors": [
                 {
-                    "name": "Rokas ??leinius",
+                    "name": "Rokas Šleinius",
                     "homepage": "https://github.com/kint-php"
                 },
                 {
@@ -6892,7 +6892,7 @@
             ],
             "authors": [
                 {
-                    "name": "P??draic Brady",
+                    "name": "Pádraic Brady",
                     "email": "padraic.brady@gmail.com",
                     "homepage": "http://blog.astrumfutura.com"
                 },
