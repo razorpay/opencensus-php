@@ -6,7 +6,7 @@ import Pager from 'rzp/ui/Pager';
 import AddOnsListFilter from 'merchant/components/AddOns/ListFilter';
 import AddOnsList from 'merchant/components/AddOns/List';
 import ListContainer from 'merchant/containers/ListContainer';
-import { fetchPlans as fetchAll } from 'merchant/modules/plans';
+import { fetchAddOns, deleteAddOn } from 'merchant/modules/addons';
 import * as ModalActions from 'rzp/modules/modals';
 import { luminateRow } from 'merchant/modules/app';
 import AddOnCreation from 'merchant/containers/AddOns/New';
@@ -19,8 +19,67 @@ import {
   createdAt,
 } from 'rzp/ui/item/pair';
 
-@connect(state => state.plans, { fetchAll, luminateRow, ...ModalActions })
+@connect(
+  state => {
+    return {
+      ...state.plans,
+      ...state.app,
+    };
+  },
+  {
+    luminateRow,
+    ...ModalActions,
+  }
+)
 export default class AddOnsListContainer extends ListContainer {
+  state = {
+    items: [],
+  };
+
+  componentWillMount() {
+    this.fetchAddOns();
+  }
+
+  fetchAddOns() {
+    this.setState({
+      loading: true,
+      errors: null,
+    });
+
+    fetchAddOns()
+      .then(response => {
+        this.setState({
+          loading: false,
+          items: response.data.items,
+          errors: null,
+        });
+      })
+      .catch(err => {
+        this.setState({
+          errors: err.errors,
+          loading: false,
+        });
+      });
+  }
+
+  deleteAddOn = id => {
+    deleteAddOn(id)
+      .then(response => {
+        this.fetchAddOns();
+      })
+      .catch(err => {
+        this.setState({
+          errors: err.errors,
+        });
+      });
+  };
+
+  highlightRowAndClose = id => {
+    this.props.closeModal();
+    this.fetchAddOns(); // Fetching list t
+    this.props.luminateRow(id);
+  };
+
   showAddOnModal = (addon = null) => {
     this.props.openModal({
       size: 'small',
@@ -34,48 +93,14 @@ export default class AddOnsListContainer extends ListContainer {
     });
   };
 
-  highlightRowAndClose = addon => {
-    this.props.luminateRow(addon.id);
-    this.props.closeModal();
-  };
-
-  actionOnAddOns = (type, id) => {
-    switch (type) {
-      case 'delete':
-        break; // dispatcher call
-      case 'edit':
-        break; // open edit modal
-    }
-  };
-
   render() {
-    let { loading, items, error } = this.props;
-    items = [
-      {
-        id: 'add_12323asdad1ad',
-        date: 1523232123,
-        amount: 123232,
-        name: 'flash',
-        status: 'success',
-        short_url: '/addon/12323',
-        isEditable: true,
-      },
-      {
-        id: 'add_12323asbblod1d',
-        date: 1523232123,
-        amount: 219232,
-        name: 'batman',
-        status: 'success',
-        short_url: '/addon/12223',
-        isEditable: false,
-      },
-    ];
+    let { loading, items, errors, luminateRowId } = this.state;
     let statusMsg = {};
 
-    if (error) {
+    if (errors) {
       statusMsg = {
         type: 'error',
-        message: error,
+        message: errors,
       };
     }
 
@@ -107,13 +132,14 @@ export default class AddOnsListContainer extends ListContainer {
         <AddOnsList
           addons={items}
           isLoading={loading}
-          onAction={this.actionOnAddOns}
+          luminateRowId={luminateRowId}
+          onDelete={this.deleteAddOn}
         />
 
         <Pager
           count={this.state.count}
           skip={this.state.skip}
-          length={items.length}
+          length={items ? items.length : 0}
           onClick={this.paginate}
         />
       </div>

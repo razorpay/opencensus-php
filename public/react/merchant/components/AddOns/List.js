@@ -7,10 +7,10 @@ import EntityItemRow from 'merchant/containers/EntityItemRow';
 import { getCustomerDisplayName } from 'rzp/utils/rzp-utils';
 
 const AddOnsListItem = props => {
-  let { addon, onAction } = props;
+  let { addon, onAction, luminateRowId } = props;
 
   return (
-    <EntityItemRow id={addon.id}>
+    <EntityItemRow id={addon.id} luminateRowId={luminateRowId}>
       <td>
         <NavLink to={`/addons/${addon.id}`}>
           {addon.id}
@@ -28,16 +28,7 @@ const AddOnsListItem = props => {
       <td class="text-center">
         <button
           class="btn btn-xs btn-transparent"
-          disabled={!addon.isEditable}
-          onClick={() => props.onAction('edit', addon.id)}
-        >
-          <i class="icon icon-edit" />
-        </button>
-      </td>
-      <td class="text-center">
-        <button
-          class="btn btn-xs btn-transparent"
-          onClick={() => props.onAction('delete', addon.id)}
+          onClick={() => props.onDelete()}
         >
           <i class="icon icon-close text-danger" />
         </button>
@@ -47,7 +38,7 @@ const AddOnsListItem = props => {
 };
 
 export default props => {
-  let { type, addons, isLoading } = props;
+  let { addons, isLoading, luminateRowId } = props;
   return (
     <div class="table-responsive">
       <table class="table table-hover">
@@ -57,13 +48,12 @@ export default props => {
             <th>Name</th>
             <th class="text-right">Amount/Unit (INR)</th>
             <th>Created on</th>
-            <th class="text-center">Edit Details</th>
             <th class="text-center">Remove</th>
           </tr>
         </thead>
         <TableBody
           isLoading={isLoading}
-          colSpan={8}
+          colSpan={5}
           rows={addons}
           emptyTableMsg="No data found!"
         >
@@ -71,8 +61,8 @@ export default props => {
             <AddOnsListItem
               key={addon.id}
               addon={addon}
-              onEditClick={() => props.onEdit(addon)}
-              onDeleteClick={() => props.onDelete(addon)}
+              luminateRowId={luminateRowId}
+              onDelete={() => props.onDelete(addon.id)}
             />
           )}
         </TableBody>

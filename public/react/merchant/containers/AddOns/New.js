@@ -32,15 +32,15 @@ export default class CreateAddOn extends Component {
     }
   }
 
-  save = props => {
+  handleSubmit = props => {
     return this.props
       .saveAddOn(props)
-      .then(addon => {
-        this.props.closeModal();
+      .then(response => {
         this.props.showNotification({
           type: 'success',
           message: 'Add-on details successfully created',
         });
+        this.props.onSave(response.data.id); // For highlighting the row
       })
       .catch(err => {
         this.setState({
@@ -62,7 +62,7 @@ export default class CreateAddOn extends Component {
         <div class="modal-body">
           <Alert type="error" message={this.state.errors} />
 
-          <form onSubmit={handleSubmit(this.save)}>
+          <form onSubmit={handleSubmit(this.handleSubmit)}>
             <div class="form-group">
               <label class="colcontrol-label label-required">
                 Subscription Id
@@ -134,7 +134,7 @@ export default class CreateAddOn extends Component {
                 text="Create and Include"
                 disabled={invalid}
                 pendingText="Creating..."
-                onClick={handleSubmit(this.save)}
+                onClick={handleSubmit(this.handleSubmit)}
               />
             </div>
           </form>
@@ -143,7 +143,3 @@ export default class CreateAddOn extends Component {
     );
   }
 }
-
-CreateAddOn.defaultProps = {
-  onSave: () => {},
-};
