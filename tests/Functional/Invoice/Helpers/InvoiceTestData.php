@@ -413,6 +413,41 @@ return [
         ],
     ],
 
+    'testCreateInvoiceWithItemOfTypeNonInvoice' => [
+        'request' => [
+            'url'     => '/invoices',
+            'method'  => 'post',
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'line_items'  => [
+                    [
+                        'item_id'       => 'item_1000000000item',
+                        'quantity'      => 5,
+                    ],
+                    [
+                        'name'          => 'Some item name',
+                        'description'   => 'Some item description',
+                        'amount'        => 100000,
+                    ],
+                ],
+                'currency' => 'INR',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Can only reuse an item of the same item type',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE,
+        ],
+    ],
+
     'testCreateInvoiceWithSmsNotifyFalseAndEmailNotifyTrue' => [
         'request' => [
             'url' => '/invoices',

@@ -43,6 +43,8 @@ class Core extends Base\Core
                 'input'   => $input,
             ]);
 
+        $item->getValidator()->validateUpdateOperation($item);
+
         $this->modifyInputToHandleRenamedAttributes($input);
 
         $item->edit($input);
@@ -56,13 +58,13 @@ class Core extends Base\Core
 
     public function delete(Entity $item)
     {
-        $item->getValidator()->validateDeleteOperation($item);
-
         $this->trace->info(
             TraceCode::ITEM_DELETE_REQUEST,
             [
                 'item_id' => $item->getId(),
             ]);
+
+        $item->getValidator()->validateDeleteOperation($item);
 
         return $this->repo->item->deleteOrFail($item);
     }

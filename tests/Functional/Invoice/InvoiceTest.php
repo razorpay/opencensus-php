@@ -220,7 +220,14 @@ class InvoiceTest extends TestCase
     {
         $this->fixtures->create('item', ['active' => 0]);
 
-        $response = $this->startTest();
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithItemOfTypeNonInvoice()
+    {
+        $this->fixtures->create('item', ['type' => 'plan']);
+
+        $this->startTest();
     }
 
     public function testCreateInvoiceWithNewCustomerAndAddress()

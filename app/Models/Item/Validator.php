@@ -3,8 +3,9 @@
 namespace RZP\Models\Item;
 
 use RZP\Base;
-use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
@@ -56,7 +57,7 @@ class Validator extends Base\Validator
      *
      * @param array $input
      *
-     * @throws Exception\BadRequestValidationFailureException
+     * @throws BadRequestValidationFailureException
      */
     public function validateTaxInputs(array $input)
     {
@@ -68,16 +69,35 @@ class Validator extends Base\Validator
 
         if ((empty($taxId) === false) and (empty($taxGroupId) === false))
         {
-            throw new Exception\BadRequestValidationFailureException(
+            throw new BadRequestValidationFailureException(
                 'Both tax_id and tax_group_id cannot be present');
+        }
+    }
+
+    public function validateUpdateOperation(Entity $item)
+    {
+        if ($item->isNotOfType(Type::INVOICE))
+        {
+            $type = $item->getType();
+
+            throw new BadRequestValidationFailureException(
+                "Update operation not allowed for item of type: $type");
         }
     }
 
     public function validateDeleteOperation(Entity $item)
     {
+        if ($item->isNotOfType(Type::INVOICE))
+        {
+            $type = $item->getType();
+
+            throw new BadRequestValidationFailureException(
+                "Delete operation not allowed for item of type: $type");
+        }
+
         if ($item->lineItems()->count() > 0)
         {
-            throw new Exception\BadRequestException(
+            throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED,
                 null,
                 [

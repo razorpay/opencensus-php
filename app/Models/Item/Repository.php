@@ -3,65 +3,63 @@
 namespace RZP\Models\Item;
 
 use RZP\Models\Base;
-use RZP\Models\Merchant;
-use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
+use RZP\Exception\BadRequestException;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'item';
 
     protected $entityFetchParamRules = [
-        Entity::ACTIVE      => 'sometimes|boolean',
+        Entity::ACTIVE      => 'filled|boolean',
+        Entity::TYPE        => 'filled|string|custom',
     ];
 
     protected $appFetchParamRules = [
-        Entity::MERCHANT_ID => 'sometimes|alpha_num'
+        Entity::MERCHANT_ID => 'filled|alpha_num|size:14'
     ];
 
-    /**
-     * Finds item with given public id and where status is ACTIVE.
-     * If not found, throws exception.
-     *
-     * @param string          $id
-     * @param Merchant\Entity $merchant
-     *
-     * @return Entity
-     * @throws Exception\BadRequestException
-     */
-    public function findActiveByPublicIdAndMerchantOrFail(
-        string $id,
-        Merchant\Entity $merchant)
+    protected function validateType($attribute, $value)
     {
-        $item = $this->findByPublicIdAndMerchant($id, $merchant);
+        Type::checkType($value);
+    }
+
+    public function findActiveByPublicIdAndMerchantForType(
+        string $id,
+        Merchant\Entity $merchant,
+        string $type)
+    {
+        $item = $this->findByPublicIdAndMerchantForType($id, $merchant, $type);
 
         if ($item->isNotActive())
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ITEM_INACTIVE,
-                null,
-                [
-                    'item_id' => $item->getId(),
-                ]);
+            $payload = [
+                Entity::ID     => $item->getId(),
+                Entity::ACTIVE => $item->isActive(),
+            ];
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ITEM_INACTIVE, null, $payload);
         }
 
         return $item;
     }
 
-    public function findByPublicIdAndMerchantForType(string $id, Merchant\Entity $merchant, string $type)
+    public function findByPublicIdAndMerchantForType(
+        string $id,
+        Merchant\Entity $merchant,
+        string $type)
     {
         $item = $this->findByPublicIdAndMerchant($id, $merchant);
 
-        if ($item->getType() !== $type)
+        if ($item->isNotOfType($type))
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE,
-                null,
-                [
-                    'item_id'       => $id,
-                    'merchant_id'   => $merchant->getId(),
-                    'item_type'     => $item->getType(),
-                ]);
+            $payload = [
+                Entity::ID   => $item->getId(),
+                Entity::TYPE => $item->getType(),
+            ];
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE, null, $payload);
         }
 
         return $item;

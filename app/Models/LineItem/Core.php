@@ -2,10 +2,10 @@
 
 namespace RZP\Models\LineItem;
 
-use RZP\Models\Base;
-use RZP\Models\Merchant;
-use RZP\Models\Item;
 use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Models\Item;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
@@ -301,11 +301,12 @@ class Core extends Base\Core
             return;
         }
 
-        $item = $this->repo->item
-                           ->findActiveByPublicIdAndMerchantOrFail(
-                                $input[Entity::ITEM_ID],
-                                $merchant
-                            );
+        $item = $this->repo
+                     ->item
+                     ->findActiveByPublicIdAndMerchantForType(
+                            $input[Entity::ITEM_ID],
+                            $merchant,
+                            Item\Type::INVOICE);
 
         $lineItem->item()->associate($item);
 

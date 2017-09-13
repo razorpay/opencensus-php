@@ -332,6 +332,29 @@ return [
         ],
     ],
 
+    'testUpdateItemOfTypeNonInvoice' => [
+        'request' => [
+            'url'     => '/items/item_1000000000item',
+            'method'  => 'patch',
+            'content' => [
+                'name' => 'Updated name',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Update operation not allowed for item of type: plan',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testDeleteItem' => [
         'request' => [
             'url'     => '/items/item_1000000000item',
@@ -359,6 +382,26 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED,
+        ],
+    ],
+
+    'testDeleteItemOfTypeNonInvoice' => [
+        'request' => [
+            'url'    => '/items/item_1000000000item',
+            'method' => 'delete',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Delete operation not allowed for item of type: plan',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 ];
