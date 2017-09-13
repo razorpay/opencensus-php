@@ -1373,9 +1373,9 @@ trait Authorize
 
         // True => debit, False => registration
         // TODO: Add support for when we allow recurring tokens for first payments
-        $isDebit = ($token->isRecurring() === true);
+        $type = ($token->isRecurring() === true) ? Payment\RecurringType::DEBIT : Payment\RecurringType::REGISTRATION;
 
-        $payment->setRecurringType($isDebit);
+        $payment->setRecurringType($type);
     }
 
     protected function associateLocalCustomerToSubscription(

@@ -635,19 +635,10 @@ class Entity extends Base\PublicEntity
     /**
      * E Mandate Type is null by default, and will be set to debit or registration based on use case
      *
-     * @param $isDebit
+     * @param $type
      */
-    public function setRecurringType($isDebit)
+    public function setRecurringType($type)
     {
-        if ($isDebit === true)
-        {
-            $type = RecurringType::DEBIT;
-        }
-        else
-        {
-            $type = RecurringType::REGISTRATION;
-        }
-
         $this->setAttribute(self::RECURRING_TYPE, $type);
     }
 
