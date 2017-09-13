@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { PropTypes } from 'react';
 import { connect } from 'react-redux';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import Alert from 'rzp/ui/Forms/Alert';
@@ -11,6 +11,8 @@ import * as ModalActions from 'rzp/modules/modals';
 import { luminateRow } from 'merchant/modules/app';
 import AddOnCreation from 'merchant/containers/AddOns/New';
 import ShowWhen from 'merchant/components/ShowWhen';
+import { showNotification } from 'rzp/modules/notifications';
+
 import {
   planId,
   planName,
@@ -28,12 +30,17 @@ import {
   },
   {
     luminateRow,
+    showNotification,
     ...ModalActions,
   }
 )
 export default class AddOnsListContainer extends ListContainer {
   state = {
     items: [],
+  };
+
+  static contextTypes = {
+    confirm: PropTypes.func,
   };
 
   componentWillMount() {
@@ -62,16 +69,28 @@ export default class AddOnsListContainer extends ListContainer {
       });
   }
 
+  // Delete addon. Show confirmation box.
   deleteAddOn = id => {
-    deleteAddOn(id)
-      .then(response => {
-        this.fetchAddOns();
-      })
-      .catch(err => {
-        this.setState({
-          errors: err.errors,
-        });
-      });
+    this.context.confirm({
+      message: 'Are you sure to delete this addon?', // TODO: Show name and id of Addon to be deleted
+      affirmativeLabel: 'Delete',
+      affirmativePendingLabel: 'Deleting...',
+      action: () =>
+        deleteAddOn(id)
+          .then(response => {
+            this.fetchAddOns();
+
+            this.props.showNotification({
+              type: 'success',
+              message: 'Add-on details successfully deleted',
+            });
+          })
+          .catch(err => {
+            this.setState({
+              errors: err.errors,
+            });
+          }),
+    });
   };
 
   highlightRowAndClose = id => {
