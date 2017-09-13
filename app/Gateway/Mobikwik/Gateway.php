@@ -215,8 +215,8 @@ class Gateway extends Base\Gateway
         {
             $content = $this->sendRefundVerifyRequest($input);
 
-            //need to confirm the status
-            if ($content['statuscode'] === 'refund')
+            if (($content['statuscode'] === Status::SUCCESS) and
+                ($content['statusmessage'] === 'Refund'))
             {
                 return true;
             }
