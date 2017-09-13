@@ -91,6 +91,14 @@ class Gateway extends Base\Gateway
 
         $this->verifySecureHashForQueryRequest($content);
 
+        unset($content['checksum']);
+
+        $verify->verifyResponse = $this->response;
+
+        $verify->verifyResponseBody = $this->response->body;
+
+        $verify->verifyResponseContent = $content;
+
         return $content;
     }
 
@@ -574,7 +582,7 @@ class Gateway extends Base\Gateway
     {
         $content['mid'] = $this->getMobikwikMerchantId($input['terminal']);
 
-        $content['orderid'] = $input[$entity]['id'];
+        $content['orderid'] = $input['payment']['id'];
 
         $contentToTrace = http_build_query($content);
 
