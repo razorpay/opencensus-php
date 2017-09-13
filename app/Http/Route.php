@@ -594,6 +594,12 @@ final class Route
         'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                          ],
         'merchant_payout'                         => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
 
+        // Settings routes
+        'settings_delete'                         => ['delete',   'settings/{module}/{key}',                        'SettingsController@delete'                                         ],
+        'settings_fetch_defined'                  => ['get',      'settings/{module}/defined_keys',                 'SettingsController@getDefined'                                     ],
+        'settings_fetch'                          => ['get',      'settings/{module}/{key?}',                       'SettingsController@get'                                            ],
+        'settings_upsert'                         => ['post',     'settings/{module}',                              'SettingsController@upsert'                                         ],
+
         // OAuth routes
         'oauth_token_fetch_multiple'              => ['get',      'oauth/tokens',                                   'OAuthTokenController@getAll'                                       ],
         'oauth_token_fetch'                       => ['get',      'oauth/tokens/{id}',                              'OAuthTokenController@get'                                          ],
@@ -1007,6 +1013,10 @@ final class Route
         'gateway_file_create',
         'gateway_file_retry',
         'gateway_file_acknowledge',
+        'settings_fetch_defined',
+        'settings_fetch',
+        'settings_upsert',
+        'settings_delete',
     ];
 
     public static $proxy = [
@@ -1283,6 +1293,10 @@ final class Route
         'merchant_invoice_add_bulk'        => '*',
         'payment_dispute_create'           => Permission::CREATE_DISPUTE,
         'dispute_edit'                     => Permission::EDIT_DISPUTE,
+        'settings_fetch'                   => Permission::VIEW_WALLET_CONFIG,
+        'settings_fetch_defined'           => Permission::VIEW_WALLET_CONFIG,
+        'settings_upsert'                  => Permission::EDIT_WALLET_CONFIG,
+        'settings_delete'                  => Permission::EDIT_WALLET_CONFIG,
     ];
 
     public static $direct = [

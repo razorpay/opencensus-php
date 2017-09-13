@@ -192,6 +192,8 @@ class Gateway extends Base\Gateway
 
     public function verifyRefund(array $input)
     {
+        parent::verify($input);
+
         // Hardcoding these refunds for processing
         $unprocessedRefunds = [
             '8S8BMDSRhKCVaZ'
