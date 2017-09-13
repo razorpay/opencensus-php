@@ -74,7 +74,7 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
-        $request = $this->getVerifyRequestArray($input);
+        $request = $this->getVerifyRequestArray($input, 'payment');
 
         $response = $this->sendGatewayRequest($request);
         $this->response = $response;
@@ -91,13 +91,29 @@ class Gateway extends Base\Gateway
 
         $this->verifySecureHashForQueryRequest($content);
 
+        return $content;
+    }
+
+    public function sendRefundVerifyRequest($input)
+    {
+        $request = $this->getVerifyRequestArray($input, 'refund');
+
+        $response = $this->sendGatewayRequest($request);
+        $this->response = $response;
+
+        $content = $this->xmlToArray($response->body);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
+            [
+                'content' => $content,
+                'gateway' => 'mobikwik',
+                'payment_id' => $input['refund']['id'],
+            ]);
+
+        $this->verifySecureHashForQueryRequest($content);
+
         unset($content['checksum']);
-
-        $verify->verifyResponse = $this->response;
-
-        $verify->verifyResponseBody = $this->response->body;
-
-        $verify->verifyResponseContent = $content;
 
         return $content;
     }
@@ -193,6 +209,17 @@ class Gateway extends Base\Gateway
         {
             throw new Exception\LogicException(
                 'Verify refund is only supported for full refunds and specific partial refunds');
+        }
+
+        if ($input['refund']['amount'] === $input['payment']['amount'])
+        {
+            $content = $this->sendRefundVerifyRequest($input);
+
+            //need to confirm the status
+            if ($content['statuscode'] === 'refund')
+            {
+                return true;
+            }
         }
 
         return false;
@@ -543,11 +570,11 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getVerifyRequestArray($input)
+    protected function getVerifyRequestArray($input, $entity)
     {
         $content['mid'] = $this->getMobikwikMerchantId($input['terminal']);
 
-        $content['orderid'] = $input['payment']['id'];
+        $content['orderid'] = $input[$entity]['id'];
 
         $contentToTrace = http_build_query($content);
 
