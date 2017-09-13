@@ -23,6 +23,7 @@ if (!function_exists('getallheaders'))
                 $headers[$headerKey] = $value;
             }
         }
+
         return $headers;
     }
 }

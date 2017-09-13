@@ -15,10 +15,7 @@ class OAuth
 {
     const PUBLIC_TOKEN_LENGTH = 29;
 
-    /**
-     * @var OAuthServer
-     */
-    protected $server;
+    protected $app;
 
     /**
      * @var BasicAuth
@@ -38,11 +35,11 @@ class OAuth
     {
         $app = App::getFacadeRoot();
 
+        $this->app = $app;
+
         $this->ba = $app['basicauth'];
 
         $this->router = $app['router'];
-
-        $this->server = new OAuthServer($app['env']);
 
         $this->request = $app['request'];
     }
@@ -76,10 +73,12 @@ class OAuth
         $isPublicToken = ((strlen($key) === self::PUBLIC_TOKEN_LENGTH) and
                           (substr($key, 8, 7) === '_oauth_'));
 
-        if ($isPublicToken === true)
+        if ($isPublicToken === false)
         {
-            $this->publicToken = $key;
+            return false;
         }
+
+        $this->publicToken = $key;
 
         //
         // Set the public_key on BasicAuth
@@ -94,7 +93,7 @@ class OAuth
         // key_id sent in the request params and not via Basic Auth header.
         // In this case, we remove the key_id attribute before proceeding
         //
-        if (($isPublicToken === true) and ($keyParam !== null))
+        if ($keyParam !== null)
         {
             // Remove 'key_id' from query params
             $this->request->query->remove('key_id');
@@ -117,7 +116,9 @@ class OAuth
     {
         try
         {
-            $response = $this->server->authenticateWithBearerToken($token);
+            $oauthServer = new OAuthServer($this->app['env']);
+
+            $response = $oauthServer->authenticateWithBearerToken($token);
         }
         catch (\Exception $exception)
         {
@@ -149,7 +150,9 @@ class OAuth
 
         try
         {
-            $response = $this->server->authenticateWithPublicToken($this->publicToken);
+            $oauthServer = new OAuthServer($this->app['env']);
+
+            $response = $oauthServer->authenticateWithPublicToken($this->publicToken);
         }
         catch (\Exception $exception)
         {
