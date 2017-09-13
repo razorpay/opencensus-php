@@ -203,18 +203,18 @@ class OrganizationController extends Controller
 // --------------------- END CRUD for roles  --------------------------------------
 
 // --------------------- CRUD for Groups  -----------------------------------------
-    public function createGroup(string $id)
+    public function createGroup()
     {
         $input = Request::all();
 
-        $data = $this->service(E::GROUP)->createGroup($id, $input);
+        $data = $this->service(E::GROUP)->createGroup($input);
 
         return ApiResponse::json($data);
     }
 
-    public function getGroup(string $id, string $groupId)
+    public function getGroup(string $groupId)
     {
-        $data = $this->service(E::GROUP)->getGroup($id, $groupId);
+        $data = $this->service(E::GROUP)->getGroup($groupId);
 
         return ApiResponse::json($data);
     }
@@ -230,27 +230,27 @@ class OrganizationController extends Controller
         We'll fetch all the groups eligible to be the "parent"
         of the incoming groupID
     */
-    public function getAllowedGroups(string $id, string $groupId)
+    public function getAllowedGroups(string $groupId)
     {
         $input = Request::all();
 
-        $data = $this->service(E::GROUP)->fetchEligibleParents($id, $groupId, $input);
+        $data = $this->service(E::GROUP)->fetchEligibleParents($groupId, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function putGroup(string $id, string $groupId)
+    public function putGroup(string $groupId)
     {
         $input = Request::all();
 
-        $data = $this->service(E::GROUP)->editGroup($id, $groupId, $input);
+        $data = $this->service(E::GROUP)->editGroup($groupId, $input);
 
         return ApiResponse::json($data);
     }
 
-    public function deleteGroup(string $id, string $groupId)
+    public function deleteGroup(string $groupId)
     {
-        $data = $this->service(E::GROUP)->deleteGroup($id, $groupId);
+        $data = $this->service(E::GROUP)->deleteGroup($groupId);
 
         return ApiResponse::json($data);
     }

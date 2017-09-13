@@ -31,12 +31,6 @@ class GroupTest extends TestCase
 
     public function testCreateGroup()
     {
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         return $this->startTest();
     }
 
@@ -46,7 +40,7 @@ class GroupTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $group->getPublicId());
+        $url = sprintf($url, $group->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -59,7 +53,7 @@ class GroupTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $group->getPublicId());
+        $url = sprintf($url, $group->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -73,6 +67,22 @@ class GroupTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetGroup()
+    {
+        $group = $this->fixtures->create('group',
+            ['org_id' => $this->org->getId(), 'name' => 'Testing wala group']);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $group->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['response']['content']['id'] = $group->getPublicId();
+
+        $this->startTest();
+    }
+
     public function testDuplicateGroup()
     {
         $name = 'hello';
@@ -80,29 +90,7 @@ class GroupTest extends TestCase
         $group = $this->fixtures->create('group',
             ['org_id' => $this->org->getId(), 'name' => $name]);
 
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         $this->testData[__FUNCTION__]['request']['content']['name'] = $name;
-
-        $this->startTest();
-    }
-
-    public function testGroupOrgMismatchOnGet()
-    {
-        $group = $this->fixtures->create('group', ['org_id' => $this->org->getId()]);
-
-        $org2 = $this->fixtures->create('org');
-
-        // modify request
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $org2->getPublicId(), $group->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
     }
@@ -120,7 +108,7 @@ class GroupTest extends TestCase
         // modify request
         $request = $this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = sprintf($request['url'], $this->org->getPublicId(), $l0Group->getPublicId());
+        $request['url'] = sprintf($request['url'], $l0Group->getPublicId());
 
         $this->testData[__FUNCTION__]['request'] = $request;
 
@@ -140,7 +128,7 @@ class GroupTest extends TestCase
         // modify request
         $request = $this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = sprintf($request['url'], $this->org->getPublicId(), $l0Group->getPublicId());
+        $request['url'] = sprintf($request['url'], $l0Group->getPublicId());
 
         $request['content']['parents'] = $l1GroupIds;
 
@@ -180,7 +168,7 @@ class GroupTest extends TestCase
         // modify request
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $groupWithoutChild->getPublicId());
+        $url = sprintf($url, $groupWithoutChild->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -217,7 +205,7 @@ class GroupTest extends TestCase
         // modify request
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $selectedGroup->getPublicId());
+        $url = sprintf($url, $selectedGroup->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -256,7 +244,7 @@ class GroupTest extends TestCase
         // modify request
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $selectedGroup->getPublicId());
+        $url = sprintf($url, $selectedGroup->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -287,7 +275,7 @@ class GroupTest extends TestCase
         // modify request
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $selectedGroup->getPublicId());
+        $url = sprintf($url, $selectedGroup->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 

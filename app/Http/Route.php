@@ -456,12 +456,12 @@ final class Route
         'admin_forgot_password'                   => ['post',     'orgs/{orgId}/admin/forgot_password',             'OrganizationController@postForgotPassword'                         ],
         'admin_reset_password'                    => ['post',     'orgs/{orgId}/admin/reset_password',              'OrganizationController@postResetPassword'                          ],
         'admin_change_password'                   => ['post',     'orgs/admin/change_password',                     'OrganizationController@postChangePassword'                         ],
-        'group_create'                            => ['post',     'orgs/{orgId}/groups',                            'OrganizationController@createGroup'                                ],
+        'group_create'                            => ['post',     'org/groups',                                     'OrganizationController@createGroup'                                ],
         'group_get_multiple'                      => ['get',      'org/groups',                                     'OrganizationController@getGroupsMultiple'                          ],
         'group_get_allowed_groups'                => ['get',      'org/groups/{id}/allowed_groups',                 'OrganizationController@getAllowedGroups'                           ],
-        'group_get'                               => ['get',      'org/{orgId}/groups/{id}',                        'OrganizationController@getGroup'                                   ],
-        'group_edit'                              => ['put',      'org/{orgId}/groups/{id}',                        'OrganizationController@putGroup'                                   ],
-        'group_delete'                            => ['delete',   'org/{orgId}/groups/{id}',                        'OrganizationController@deleteGroup'                                ],
+        'group_get'                               => ['get',      'org/groups/{id}',                                'OrganizationController@getGroup'                                   ],
+        'group_edit'                              => ['put',      'org/groups/{id}',                                'OrganizationController@putGroup'                                   ],
+        'group_delete'                            => ['delete',   'org/groups/{id}',                                'OrganizationController@deleteGroup'                                ],
         'admin_lock_old_accounts'                 => ['post',     'admins/lock_accounts',                           'OrganizationController@postLockBulkAccounts'                       ],
 
         // Permission can only be created by certain organizations.
