@@ -7,7 +7,7 @@ use RZP\Error\PublicErrorDescription;
 return [
     'testCreateRole' => [
         'request' => [
-            'url' => '/orgs/%s/roles',
+            'url' => '/orgs/roles',
             'method' => 'post',
             'content' => [
                 'name' => 'manager',
@@ -38,7 +38,7 @@ return [
 
     'testCreateRoleWithPermissions' => [
         'request' => [
-            'url' => '/orgs/%s/roles',
+            'url' => '/orgs/roles',
             'method' => 'post',
             'content' => [
                 'name' => 'manager',
@@ -125,7 +125,7 @@ return [
 
     'testDuplicateRole' => [
         'request' => [
-            'url' => '/orgs/%s/roles',
+            'url' => '/orgs/roles',
             'method' => 'post',
             'content' => [
                 'description' => 'Manager of roles',

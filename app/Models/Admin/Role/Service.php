@@ -11,7 +11,9 @@ class Service extends Base\Service
 {
     public function create($input)
     {
-        $org = $this->app['basicauth']->getAdmin()->getOrg();
+        $orgId = $this->app['basicauth']->getAdmin()->getPublicOrgId();
+
+        $org = $this->repo->org->findbyPublicId($orgId);
 
         if (empty($input[Entity::PERMISSIONS]) === false)
         {

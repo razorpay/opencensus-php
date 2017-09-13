@@ -25,17 +25,11 @@ class RoleTest extends TestCase
 
         $this->authToken = $this->getAuthTokenForOrg($this->org);
 
-        $this->ba->adminAuth('test', $this->authToken);
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
     }
 
     public function testCreateRole()
     {
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         return $this->startTest();
     }
 
@@ -44,12 +38,6 @@ class RoleTest extends TestCase
         $permIds = $this->getPermissionsByIds('assignable');
 
         $this->testData[__FUNCTION__]['request']['content']['permissions'] = $permIds;
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $result = $this->startTest();
     }
@@ -212,12 +200,6 @@ class RoleTest extends TestCase
         $role = $this->fixtures->create(
             'role',
             ['org_id' => $this->org->getId(), 'name' => $name]);
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->testData[__FUNCTION__]['request']['content']['name'] = $name;
 
