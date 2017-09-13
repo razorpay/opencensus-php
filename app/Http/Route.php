@@ -627,7 +627,6 @@ final class Route
         'mock_paytm_payment',
         'mock_mobikwik_payment',
         'mock_netbanking_payment',
-        'mock_billdesk_payment',
         'mock_ebs_payment',
         'mock_sharp_payment_post',
         'mock_sharp_payment_get',
@@ -1260,6 +1259,8 @@ final class Route
         'merchant_details_fetch'           => '*',
         'setl_retry'                       => Permission::RETRY_SETTLEMENT,
         'merchant_invoice_add_bulk'        => '*',
+        'payment_dispute_create'           => Permission::CREATE_DISPUTE,
+        'dispute_edit'                     => Permission::EDIT_DISPUTE,
     ];
 
     public static $direct = [
@@ -1290,6 +1291,7 @@ final class Route
         'mock_event_tracker',
         'upi_npci_request',
         'upi_zero_call',
+        'mock_billdesk_payment',
     ];
 
     public static $internalApps = [

@@ -222,6 +222,19 @@ return [
             Permission::VIEW_MERCHANT_PRICING  => 'View Mercant Pricing Plan',
         ],
 
+        PermissionCategory::DISPUTE => [
+            Permission::CREATE_DISPUTE => [
+                'description'   => 'Create Dispute Permission',
+                'assignable'    => true,
+                'workflow'      => true,
+            ],
+            Permission::EDIT_DISPUTE    => [
+                'description'   => 'Edit Dispute Permission',
+                'assignable'    => true,
+                'workflow'      => true,
+            ],
+        ],
+
         PermissionCategory::PRICING => [
             Permission::VIEW_PRICING_LIST => [
                 'description' => 'view pricinglist',
