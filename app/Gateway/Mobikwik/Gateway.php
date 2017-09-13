@@ -114,9 +114,10 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
             [
-                'content' => $content,
-                'gateway' => 'mobikwik',
-                'payment_id' => $input['refund']['id'],
+                'content'    => $content,
+                'gateway'    => 'mobikwik',
+                'payment_id' => $input['payment']['id'],
+                'refund_id'  => $input['refund']['id'],
             ]);
 
         $this->verifySecureHashForQueryRequest($content);
