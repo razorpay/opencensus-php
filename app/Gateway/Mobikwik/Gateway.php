@@ -192,6 +192,8 @@ class Gateway extends Base\Gateway
 
     public function verifyRefund(array $input)
     {
+        parent::verify($input);
+
         // Hardcoding these refunds for processing
         $unprocessedRefunds = [
             '8S8BMDSRhKCVaZ'
@@ -222,8 +224,6 @@ class Gateway extends Base\Gateway
 
         if ($input['refund']['amount'] === $input['payment']['amount'])
         {
-            parent::verify($input);
-
             $content = $this->sendRefundVerifyRequest($input);
 
             if (($content['statuscode'] === Status::SUCCESS) and
