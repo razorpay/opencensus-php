@@ -13,6 +13,7 @@ class AuditActionCode
     const CATEGORY_HOSTNAME             = 'Hostname';
     const CATEGORY_MERCHANT             = 'Merchant';
     const CATEGORY_USER                 = 'User';
+    const CATEGORY_DISPUTE              = 'Dispute';
 
     // actions
     const ACTION_CREATE                 = 'Create';
@@ -43,4 +44,5 @@ class AuditActionCode
     const LABEL_MERCHANT_PRICING_PLAN   = 'Merchant Pricing Plan';
     const LABEL_PRICING_PLAN_RULE       = 'Pricing Plan Rule';
     const LABEL_USER                    = 'User';
+    const LABEL_DISPUTE                 = 'Dispute';
 }

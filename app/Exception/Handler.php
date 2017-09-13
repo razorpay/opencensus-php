@@ -77,6 +77,9 @@ class Handler extends ExceptionHandler
                 $response = $this->gatewayExceptionHandler($e);
                 break;
 
+            case $e instanceof GatewayFileException:
+                $response = $this->gatewayFileExceptionHandler($e);
+
             case $e instanceof BaseException:
             case $e instanceof RecoverableException:
                 $response = $this->baseExceptionHandler($e);
@@ -185,6 +188,16 @@ class Handler extends ExceptionHandler
             $level = Trace::CRITICAL;
             $code = TraceCode::ERROR_EXCEPTION;
         }
+
+        $this->traceException($exception, $level, $code);
+
+        return $this->recoverableErrorResponse($this->isDebug(), $exception);
+    }
+
+    protected function gatewayFileExceptionHandler(GatewayFileException $exception)
+    {
+        $level = Trace::INFO;
+        $code = TraceCode::RECOVERABLE_EXCEPTION;
 
         $this->traceException($exception, $level, $code);
 
