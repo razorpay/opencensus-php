@@ -236,6 +236,16 @@ class Service extends Base\Service
         $this->handleAuthFailure($admin, Action::LOGIN_FAIL_OAUTH);
     }
 
+    /**
+     * Here we are generating a bearer token
+     * and savnig bcrypted token and considering token Id as principal.
+     * Ref https://security.stackexchange.com/a/94792
+     * concat bearer token and principal and sending to client as admin token.
+     * last 14 characters of the token will be extracted and will be matched bycrypting the token.
+     *
+     * @param $admin
+     * @return mixed
+     */
     private function generateLoginToken($admin)
     {
         $this->fireAdminAction($admin, Action::GENERATE_LOGIN_TOKEN);
@@ -246,8 +256,10 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($admin);
 
+        $bearerToken = str_random(20);
+
         $tokenAttributes = [
-            'token'      => str_random(40),
+            'token'      => Hash::make($bearerToken),
             'expires_at' => Carbon::now()->addDays(30)->getTimestamp()
         ];
 
@@ -255,7 +267,7 @@ class Service extends Base\Service
 
         $admin = $admin->toArrayPublic();
 
-        $admin['token'] = $token->getToken();
+        $admin['token'] = $bearerToken . $token->getId();
 
         return $admin;
     }

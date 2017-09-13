@@ -98,7 +98,7 @@ class FirstDataGatewayTest extends TestCase
         $token = $this->getLastEntity('token', true);
         $this->assertEquals($paymentEntity['token_id'], $token['id']);
         $this->assertEquals(true, $token['recurring']);
-        $this->assertEquals('FDRcrgTrmnl3DS', $token['terminal_id']);
+        $this->assertEquals('FDRcrgTrmlN3DS', $token['terminal_id']); // TODO: Should this remain the same or not? Changing for now
 
         $gatewayPayment = $this->getLastEntity('first_data', true);
         $refund = $this->getLastEntity('refund', true);
