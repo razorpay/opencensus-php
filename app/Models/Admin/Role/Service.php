@@ -26,25 +26,29 @@ class Service extends Base\Service
         return $role->toArrayPublic();
     }
 
-    public function getRole($orgId, $roleId)
+    public function getRole($roleId)
     {
+        $orgId = $this->app['basicauth']->getAdmin()->getPublicOrgId();
+
         $role = $this->repo->role->findByPublicIdAndOrgIdWithRelations(
             $roleId, $orgId, ['permissions']);
 
         return $role->toArrayPublic();
     }
 
-    public function getMultipleRoles($orgId)
+    public function getMultipleRoles()
     {
-        Org\Entity::verifyIdAndStripSign($orgId);
+        $orgId = $this->app['basicauth']->getAdminOrgId();
 
         $role = $this->repo->role->fetchRolesForOrg($orgId);
 
         return $role->toArrayPublic();
     }
 
-    public function deleteRole($orgId, $roleId)
+    public function deleteRole($roleId)
     {
+        $orgId = $this->app['basicauth']->getAdmin()->getPublicOrgId();
+
         $role = $this->repo->role->findByPublicIdAndOrgId($roleId, $orgId);
 
         $role->getValidator()->validateRoleIsNotSuperAdmin();
@@ -56,13 +60,15 @@ class Service extends Base\Service
         return $role->toArrayDeleted();
     }
 
-    public function putRole(string $orgId, string $roleId, array $input)
+    public function putRole(string $roleId, array $input)
     {
         if (empty($input[Entity::PERMISSIONS]) === false)
         {
             Permission\Entity::verifyIdAndStripSignMultiple(
                 $input[Entity::PERMISSIONS]);
         }
+
+        $orgId = $this->app['basicauth']->getAdmin()->getPublicOrgId();
 
         $role = $this->repo->role->findByPublicIdAndOrgId($roleId, $orgId);
 

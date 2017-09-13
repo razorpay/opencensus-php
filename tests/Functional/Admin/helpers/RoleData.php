@@ -25,7 +25,7 @@ return [
     ],
     'testGetRole' => [
         'request' => [
-            'url' => '/orgs/%s/roles/%s',
+            'url' => '/orgs/roles/%s',
             'method' => 'get',
         ],
         'response' => [
@@ -56,7 +56,7 @@ return [
 
     'testEditRoleDeleteAllPermissions' => [
         'request' => [
-            'url' => '/orgs/%s/roles/%s',
+            'url' => '/orgs/roles/%s',
             'method' => 'put',
             'content' => [
                 'permissions' => [],
@@ -70,7 +70,7 @@ return [
 
     'testEditRoleEditPermissions' => [
         'request' => [
-            'url' => '/orgs/%s/roles/%s',
+            'url' => '/orgs/roles/%s',
             'method' => 'put',
             'content' => [],
         ],
@@ -82,7 +82,7 @@ return [
 
     'testDeleteRole' => [
         'request' => [
-            'url' => '/orgs/%s/roles/%s',
+            'url' => '/orgs/roles/%s',
             'method' => 'delete',
             'content' => [
             ],
@@ -97,7 +97,7 @@ return [
 
     'testEditRole' => [
         'request' => [
-            'url' => '/orgs/%s/roles/%s',
+            'url' => '/orgs/roles/%s',
             'method' => 'put',
             'content' => [
                 'name' => 'test Admin LOL',
@@ -113,7 +113,7 @@ return [
 
     'testGetMultipleRoles' => [
         'request' => [
-            'url' => '/orgs/%s/roles',
+            'url' => '/orgs/roles',
             'method' => 'get',
         ],
         'response' => [

@@ -170,32 +170,32 @@ class OrganizationController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getRole(string $id, string $roleId)
+    public function getRole(string $roleId)
     {
-        $data = $this->service(E::ROLE)->getRole($id, $roleId);
+        $data = $this->service(E::ROLE)->getRole($roleId);
 
         return ApiResponse::json($data);
     }
 
-    public function getMultipleRoles(string $id)
+    public function getMultipleRoles()
     {
-        $data = $this->service(E::ROLE)->getMultipleRoles($id);
+        $data = $this->service(E::ROLE)->getMultipleRoles();
 
         return ApiResponse::json($data);
     }
 
-    public function deleteRole(string $id, string $roleId)
+    public function deleteRole(string $roleId)
     {
-        $data = $this->service(E::ROLE)->deleteRole($id, $roleId);
+        $data = $this->service(E::ROLE)->deleteRole($roleId);
 
         return ApiResponse::json($data);
     }
 
-    public function putRole(string $id, string $roleId)
+    public function putRole(string $roleId)
     {
         $input = Request::all();
 
-        $data = $this->service(E::ROLE)->putRole($id, $roleId, $input);
+        $data = $this->service(E::ROLE)->putRole($roleId, $input);
 
         return ApiResponse::json($data);
     }
