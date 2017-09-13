@@ -64,10 +64,11 @@ class Constants extends Base\Constants
     ];
 
     const MAIL_TEMPLATE_MAP = [
-        Gateway::NETBANKING_HDFC     => 'emails.message',
-        Gateway::NETBANKING_ICICI    => 'emails.admin.icici_refunds',
-        Gateway::UPI_ICICI           => 'emails.message',
-        Gateway::WALLET_AIRTELMONEY  => 'emails.message',
-        Gateway::WALLET_PAYUMONEY    => 'emails.message',
+        Gateway::NETBANKING_HDFC        => 'emails.message',
+        Gateway::NETBANKING_CORPORATION => 'emails.message',
+        Gateway::NETBANKING_ICICI       => 'emails.admin.icici_refunds',
+        Gateway::UPI_ICICI              => 'emails.message',
+        Gateway::WALLET_AIRTELMONEY     => 'emails.message',
+        Gateway::WALLET_PAYUMONEY       => 'emails.message',
     ];
 }

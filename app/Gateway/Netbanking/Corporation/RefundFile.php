@@ -3,11 +3,15 @@
 namespace RZP\Gateway\Netbanking\Corporation;
 
 use Carbon\Carbon;
+use Mail;
+
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base;
-use RZP\Constants\Mode;
-use RZP\Models\FileStore;
+use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
+use RZP\Models\FileStore;
+use RZP\Models\Payment\Gateway;
 
 class RefundFile extends Base\RefundFile
 {
@@ -49,15 +53,14 @@ class RefundFile extends Base\RefundFile
             'signed_url' => $signedFileUrl,
         ];
 
-        sd($input['email']);
+        $this->sendRefundEmail($fileData, (array) $input['email']);
 
-        $this->sendRefundEmail($fileData, $input['email']);
-        // TODO: Create the text file
+        return $file['local_file_path'];
     }
 
-    protected function sendRefundEmail($fileData = [], $email = null)
+    protected function sendRefundEmail($fileData = [], array $email = [])
     {
-        $refundFileMail = new RefundFileMail($fileData, Gateway::NETBANKING_HDFC, $email);
+        $refundFileMail = new RefundFileMail($fileData, Gateway::NETBANKING_CORPORATION, $email);
 
         Mail::queue($refundFileMail);
     }
@@ -85,18 +88,20 @@ class RefundFile extends Base\RefundFile
 
         foreach ($input['data'] as $row)
         {
-            array_push($data, $this->getDataForRow(
-                    self::CUSTOMER_ACCOUNT_BR_CODE,
+            array_push(
+                $data,
+                $this->getDataForRow(
+                    $row['gateway'][NetbankingEntity::ACCOUNT_BRANCHCODE],
                     $row['payment']['created_at'],
                     Constants::REFUND_FILE_CREDIT,
                     '00000000040000',
-                    Constants::REFUND_FILE_ACCOUNT_TYPE_2,
-                    Constants::REFUND_FILE_ACCOUNT_SUB_TYPE,
-                    self::OTHERS_ACCOUNT_NUMBER
+                    str_pad($row['gateway'][NetbankingEntity::ACCOUNT_TYPE], 5, ' ', STR_PAD_RIGHT),
+                    $row['gateway'][NetbankingEntity::ACCOUNT_SUBTYPE],
+                    $row['gateway'][NetbankingEntity::ACCOUNT_NUMBER]
                 )
             );
 
-            $totalAmount += $row['refund']['amount'] / 100;
+            $totalAmount += $row['refund']['amount'];
 
             $count++;
         }
