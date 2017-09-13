@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Fixtures\Entity;
 use Carbon\Carbon;
 use Config;
 use DB;
+use Hash;
 
 class Org extends Base
 {
@@ -27,11 +28,17 @@ class Org extends Base
     const CHECKER_ADMIN             = 'RzpChekrAdmnId';
     const CHECKER_ADMIN_SIGNED      = 'admin_RzpChekrAdmnId';
 
-    const DEFAULT_TOKEN  = 'SecretTokenForRazorpayAdminAuthentication';
+    const DEFAULT_TOKEN             = 'SuperSecretTokenForRazorpay';
+    const DEFAULT_TOKEN_PRINCIPAL   = 'SuprAdminToken';
+    const DEFAULT_ADMIN_TOKEN       = self::DEFAULT_TOKEN . self::DEFAULT_TOKEN_PRINCIPAL;
 
     //Workflow related role tokens
-    const MAKER_TOKEN    = 'SecretTokenForRazorpayMAKERAdminAuthentic';
-    const CHECKER_TOKEN  = 'SecretTokenForRazorpayCHECKERAdminAuthent';
+    const MAKER_TOKEN               = 'MakerSecretTokenForRazorpay';
+    const MAKER_TOKEN_PRINCIPAL     = 'MakrAdminToken';
+    const MAKER_ADMIN_TOKEN         = self::MAKER_TOKEN . self::MAKER_TOKEN_PRINCIPAL;
+    const CHECKER_TOKEN             = 'CheckerSecretTokenForRazorpay';
+    const CHECKER_TOKEN_PRINCIPAL   = 'ChkrAdminToken';
+    const CHECKER_ADMIN_TOKEN       = self::CHECKER_TOKEN . self::CHECKER_TOKEN_PRINCIPAL;
 
     public function setUp()
     {
@@ -110,8 +117,9 @@ class Org extends Base
         $admin->roles()->attach($adminRole);
 
         $this->fixtures->create('admin_token', [
+            'id'         => self::DEFAULT_TOKEN_PRINCIPAL,
             'admin_id'   => self::SUPER_ADMIN,
-            'token'      => self::DEFAULT_TOKEN,
+            'token'      => Hash::make(self::DEFAULT_TOKEN),
             'created_at' => $now,
             'expires_at' => Carbon::now()->addYear()->timestamp,
         ]);
@@ -154,15 +162,17 @@ class Org extends Base
         $adminChecker->roles()->attach($checkerRole);
 
         $this->fixtures->create('admin_token', [
+            'id'         => self::MAKER_TOKEN_PRINCIPAL,
             'admin_id'   => self::MAKER_ADMIN,
-            'token'      => self::MAKER_TOKEN,
+            'token'      => Hash::make(self::MAKER_TOKEN),
             'created_at' => $now,
             'expires_at' => Carbon::now()->addYear()->timestamp,
         ]);
 
         $this->fixtures->create('admin_token', [
+            'id'         => self::CHECKER_TOKEN_PRINCIPAL,
             'admin_id'   => self::CHECKER_ADMIN,
-            'token'      => self::CHECKER_TOKEN,
+            'token'      => Hash::make(self::CHECKER_TOKEN),
             'created_at' => $now,
             'expires_at' => Carbon::now()->addYear()->timestamp,
         ]);

@@ -636,5 +636,6 @@ class ErrorCode
 
     const BAD_REQUEST_SNS_PUBLISH_FAILED                                            = 'BAD_REQUEST_SNS_PUBLISH_FAILED';
 
+    const BAD_REQUEST_ADMIN_TOKEN_MISMATCH                                          = 'BAD_REQUEST_ADMIN_TOKEN_MISMATCH';
     const BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE                                    = 'BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE';
 }
