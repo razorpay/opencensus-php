@@ -269,7 +269,7 @@ class Service extends Base\Service
 
     public function createAdmin(array $input)
     {
-        $org = $this->repo->org->findByPublicId($this->adminOrgId);
+        $org = $this->repo->org->find($this->adminOrgId);
 
         if (empty($input[Entity::ROLES]) === false)
         {
@@ -317,8 +317,10 @@ class Service extends Base\Service
 
         $adminId = $adminToken->getAdminId();
 
+        $orgId = $adminToken->admin->getOrgId();
+
         $admin = $this->repo->admin->findByIdAndOrgIdWithRelations(
-            $adminId, $this->adminOrgId, ['groups', 'roles', 'roles.permissions']);
+            $adminId, $orgId, ['groups', 'roles', 'roles.permissions']);
 
         $roles = $admin->roles;
         $roleNames = [];

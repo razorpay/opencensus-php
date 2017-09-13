@@ -47,12 +47,6 @@ class AdminTest extends TestCase
     {
         Mail::fake();
 
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         $superAdminRole = Role\Entity::getSignedId(Org::ADMIN_ROLE);
 
         $this->testData[__FUNCTION__]['request']['content']['roles'] = (array) $superAdminRole;
@@ -84,27 +78,15 @@ class AdminTest extends TestCase
 
     public function testCreateAdminWithWrongEmailDomain()
     {
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         $this->startTest();
     }
 
     public function testCreateAdminWithExistingEmail()
     {
-        $admin = $this->fixtures->create('admin', [
+        $this->fixtures->create('admin', [
             Admin\Entity::ORG_ID  => $this->orgId,
             Admin\Entity::EMAIL   => 'xyz@rzp.com',
         ]);
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
     }
@@ -112,12 +94,6 @@ class AdminTest extends TestCase
     public function testCreateAdminWithExistingEmailOfDeletedAdmin()
     {
         $admin = $this->testDeleteAdmin();
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->testData[__FUNCTION__]['request']['content']['email'] = $admin->getEmail();
 
@@ -133,7 +109,7 @@ class AdminTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $admin->getPublicId());
+        $url = sprintf($url, $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -158,7 +134,7 @@ class AdminTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $admin->getPublicId());
+        $url = sprintf($url, $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -192,7 +168,7 @@ class AdminTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $admin->getPublicId());
+        $url = sprintf($url, $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -216,7 +192,7 @@ class AdminTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $admin->getPublicId());
+        $url = sprintf($url, $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -239,7 +215,7 @@ class AdminTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $admin->getPublicOrgId(), $admin->getPublicId());
+        $url = sprintf($url, $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -254,7 +230,7 @@ class AdminTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $admin->getPublicOrgId(), $admin->getPublicId());
+        $url = sprintf($url, $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -265,12 +241,6 @@ class AdminTest extends TestCase
     {
         $admin = $this->fixtures->times(3)->create(
             'admin', ['org_id' => $this->orgId]);
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $result = $this->startTest();
     }
@@ -288,12 +258,6 @@ class AdminTest extends TestCase
             'token' => 'secondToken',
             'admin_id' => $admin->getId(),
         ]);
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->ba->appAuth();
 
@@ -348,11 +312,7 @@ class AdminTest extends TestCase
         // Replace auth with this route
         $this->ba->adminAuth('test', $token);
 
-        $this->testData[__FUNCTION__]['request']['url'] =
-            '/orgs/' .
-            $this->org->getPublicId() .
-            '/admins/' .
-            $admin->getPublicId();
+        $this->testData[__FUNCTION__]['request']['url'] = '/admins/' . $admin->getPublicId();
 
         $this->startTest();
     }
@@ -379,7 +339,7 @@ class AdminTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->orgId, $admin->getPublicId());
+        $url = sprintf($url, $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -498,7 +458,7 @@ class AdminTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $org->getPublicId(), $admin->getPublicId());
+        $url = sprintf($url, $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -900,19 +860,6 @@ class AdminTest extends TestCase
         $this->assertArrayNotHasKey($token, $remainingTokens);
     }
 
-    public function testGetAdminByEmailOnAppAuth()
-    {
-        $admin = $this->fixtures->create('admin', [
-            Admin\Entity::ORG_ID  => $this->orgId,
-            Admin\Entity::EMAIL   => 'testadmin@rzp.com',
-            Admin\Entity::NAME    => 'test admin app auth',
-        ]);
-
-        $this->ba->appAuth();
-
-        $result = $this->startTest();
-    }
-
     public function testEditAdminOnAppAuth()
     {
         $this->ba->appAuth();
@@ -930,7 +877,7 @@ class AdminTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $admin->getPublicId());
+        $url = sprintf($url, $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -974,13 +921,7 @@ class AdminTest extends TestCase
 
         $authToken = $this->getAuthTokenForOrg($org);
 
-        $this->ba->adminAuth('test', $authToken);
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
+        $this->ba->adminAuth('test', $authToken, $org->getPublicId());
 
         $this->startTest();
     }

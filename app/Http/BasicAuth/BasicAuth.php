@@ -192,6 +192,8 @@ class BasicAuth
         8, 14, 23, 33
     ];
 
+    protected $adminOrgId = null;
+
     public function __construct($app)
     {
         $this->app = $app;

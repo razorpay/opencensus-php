@@ -16,11 +16,11 @@ trait HeimdallTrait
     protected function deleteAdmin($orgId, $adminId, $token = null)
     {
         $request = [
-            'url'    => '/orgs/' . $orgId . '/admins/' . $adminId,
+            'url'    => '/admins/' . $adminId,
             'method' => 'DELETE'
         ];
 
-        $this->ba->adminAuth('test', $token);
+        $this->ba->adminAuth('test', $token, $orgId);
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -30,11 +30,11 @@ trait HeimdallTrait
     protected function getAdmin($orgId, $adminId, $token = null)
     {
         $request = [
-            'url'    => '/orgs/' . $orgId . '/admins/' . $adminId,
+            'url'    => '/admins/' . $adminId,
             'method' => 'GET'
         ];
 
-        $this->ba->adminAuth('test', $token);
+        $this->ba->adminAuth('test', $token, $orgId);
 
         $response = $this->makeRequestAndGetContent($request);
 

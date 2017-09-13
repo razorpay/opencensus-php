@@ -8,7 +8,7 @@ return [
 
     'testCreateAdmin' => [
         'request' => [
-            'url' => '/orgs/%s/admins',
+            'url' => '/admins',
             'method' => 'post',
             'content' => [
                 'name'                  => 'test admin',
@@ -42,7 +42,7 @@ return [
 
     'testCreateAdminWithWrongEmailDomain' => [
         'request' => [
-            'url' => '/orgs/%s/admins',
+            'url' => '/admins',
             'method' => 'post',
             'content' => [
                 'name'               => 'test admin',
@@ -77,7 +77,7 @@ return [
 
     'testCreateAdminWithExistingEmail' => [
         'request' => [
-            'url' => '/orgs/%s/admins',
+            'url' => '/admins',
             'method' => 'post',
             'content' => [
                 'name'               => 'test admin',
@@ -111,7 +111,7 @@ return [
 
     'testCreateAdminWithExistingEmailOfDeletedAdmin' => [
         'request' => [
-            'url' => '/orgs/%s/admins',
+            'url' => '/admins',
             'method' => 'post',
             'content' => [
                 'name'                  => 'test admin',
@@ -144,7 +144,7 @@ return [
 
     'testGetAdmin' => [
         'request' => [
-            'url' => '/orgs/%s/admins/%s',
+            'url' => '/admins/%s',
             'method' => 'get',
         ],
         'response' => [
@@ -159,7 +159,7 @@ return [
 
     'testEditAdmin' => [
         'request' => [
-            'url' => '/orgs/%s/admins/%s',
+            'url' => '/admins/%s',
             'method' => 'put',
             'content' => [
                 'name' => 'test',
@@ -177,7 +177,7 @@ return [
 
     'testEditAdminOnAppAuth' => [
         'request' => [
-            'url' => '/orgs/%s/admin-app-auth/%s',
+            'url' => '/admin-app-auth/%s',
             'method' => 'put',
             'content' => [
                 'name' => 'test',
@@ -210,7 +210,7 @@ return [
 
     'testDeleteAllGroupsAdmin' => [
         'request' => [
-            'url' => '/orgs/%s/admins/%s',
+            'url' => '/admins/%s',
             'method' => 'put',
             'content' => [
                 'name' => 'test',
@@ -225,7 +225,7 @@ return [
 
     'testDeleteAdmin' => [
         'request' => [
-            'url' => '/orgs/%s/admins/%s',
+            'url' => '/admins/%s',
             'method' => 'delete',
         ],
         'response' => [
@@ -238,7 +238,7 @@ return [
 
     'testDeleteAdminFailed' => [
         'request' => [
-            'url' => '/orgs/%s/admins/%s',
+            'url' => '/admins/%s',
             'method' => 'delete',
         ],
         'response' => [
@@ -251,7 +251,7 @@ return [
 
     'testGetMultipleAdmin' => [
         'request' => [
-            'url' => '/orgs/%s/admins',
+            'url' => '/admins',
             'method' => 'get',
         ],
         'response' => [
@@ -264,7 +264,7 @@ return [
 
     'testGetCurrentAdmin' => [
         'request' => [
-            'url' => '/orgs/%s/current_admin',
+            'url' => '/current_admin',
             'method' => 'post',
             'content' => [
                 'token' => 'secondToken',
@@ -292,7 +292,7 @@ return [
 
     'testLockedAdminAccess' => [
         'request' => [
-            'url' => '/orgs/%s/admins/%s',
+            'url' => '/admins/%s',
             'method' => 'GET',
             'content' => []
         ],
@@ -408,23 +408,9 @@ return [
         ],
     ],
 
-    'testGetAdminByEmailOnAppAuth' => [
-        'request' => [
-            'url'     => '/admins/get-multiple-app-auth?email=testadmin@rzp.com',
-            'method'  => 'get',
-            'content' => [],
-        ],
-        'response' => [
-            'content'     => [
-                'name' => 'test admin app auth'
-            ],
-            'status_code' => 200,
-        ],
-    ],
-
     'testSelfEditAdminFailed' => [
         'request' => [
-            'url' => '/orgs/%s/admins/%s',
+            'url' => '/admins/%s',
             'method' => 'put',
             'content' => [
                 'name' => 'test asd',
@@ -737,7 +723,7 @@ return [
 
     'testCreateAdminWithOAuth' => [
         'request' => [
-            'url' => '/orgs/%s/admins',
+            'url' => '/admins',
             'method' => 'post',
             'content' => [
                 'name'                  => 'test admin',

@@ -923,7 +923,6 @@ final class Route
         'admin_get_app_auth',
         'admin_authentication',
         'admin_oauth_authenticate',
-        'admin_get_by_attr',
         'org_get_self',
         'org_get_by_hostname',
         'admin_lead_verify',
