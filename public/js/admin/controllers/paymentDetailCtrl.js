@@ -14,6 +14,7 @@ app
     'statusClass',
     'displayClass',
     'displayValue',
+    '$state',
     function(
       $scope,
       $http,
@@ -23,7 +24,8 @@ app
       transformRequestAsFormPost,
       getStatusClass,
       displayClass,
-      displayValue
+      displayValue,
+      $state
     ) {
       $scope.displayClass = displayClass;
       $scope.getStatusClass = getStatusClass;
@@ -298,7 +300,13 @@ app
         request
           .success(function(data) {
             if (data.success) {
-              window.location.reload();
+              if (data.data.workflow_id) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              } else {
+                window.location.reload();
+              }
             } else {
               angular.forEach(data.errors, function(value) {
                 $scope.alerts.addAlert('danger', value);

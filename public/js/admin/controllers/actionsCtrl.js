@@ -412,7 +412,7 @@ app
                 $scope.alerts.addAlert(
                   'success',
                   'Settlements Retry Successfull',
-                  'true'
+                  true
                 );
               } else {
                 $scope.alerts.addAlert(
@@ -423,6 +423,32 @@ app
               }
             })
             .error(function onRetrySettlementsFail() {
+              $scope.alerts.addAlert('danger', null, true);
+            });
+        };
+
+        $scope.updateGSTIN = function updateGSTIN(data) {
+          $http
+            .put('/admin/generic', {
+              route_name: 'merchant_invoice_update_gstin',
+              mode: data.mode,
+              url_params: {
+                '{id}': data.merchantId,
+              },
+              body: { invoice_number: data.invoiceNumber },
+            })
+            .success(function onUpdateGSTINSuccess(data) {
+              if (data.success) {
+                $scope.alerts.addAlert(
+                  'success',
+                  'Update GSTIN Successfull',
+                  true
+                );
+              } else {
+                $scope.alerts.addAlert('danger', 'Update GSTIN Failed', true);
+              }
+            })
+            .error(function onUpdateGSTINFail() {
               $scope.alerts.addAlert('danger', null, true);
             });
         };
@@ -485,6 +511,14 @@ app
           controller: 'retrySettlementsController',
         });
         modalInstance.result.then($scope.retrySettlements, $.noop);
+      };
+      $scope.openGSTINUpdate = function openGSTINUpdate() {
+        $modal
+          .open({
+            templateUrl: 'updateGSTINModalContent.html',
+            controller: 'updateGSTINController',
+          })
+          .result.then($scope.updateGSTIN, $.noop);
       };
     },
   ])
@@ -780,6 +814,34 @@ app
         }
 
         $modalInstance.close(idList);
+      };
+
+      $scope.cancel = function() {
+        $modalInstance.dismiss('cancel');
+      };
+    },
+  ])
+  .controller('updateGSTINController', [
+    '$scope',
+    '$modalInstance',
+    function($scope, $modalInstance) {
+      $scope.merchantId = '';
+      $scope.invoiceNumber = '';
+      $scope.mode = 'live';
+
+      $scope.ok = function(merchantId, invoiceNumber, mode) {
+        merchantId = merchantId.trim();
+        invoiceNumber = invoiceNumber.trim();
+
+        if (!merchantId || !invoiceNumber) {
+          return;
+        }
+
+        $modalInstance.close({
+          merchantId: merchantId,
+          invoiceNumber: invoiceNumber,
+          mode: mode,
+        });
       };
 
       $scope.cancel = function() {

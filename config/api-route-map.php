@@ -110,6 +110,9 @@ return [
 
         // Retry Settlements
         'setl_retry'                        => 'settlements/retry',
+
+        // Update GSTIN for given invoice
+        'merchant_invoice_update_gstin'     => 'merchants/{id}/invoice/gstin',
     ],
 
     // auth
@@ -584,10 +587,6 @@ return [
 
         // Make test payment for Virtual Account
         'bank_transfer_process'             => 'ecollect/validate',
-
-        // Payment Dispute
-        'payment_disputes'                  => 'payments/{id}/disputes',
-        'dispute_edit'                      => 'disputes/{id}',
     ],
 
     // auth
@@ -645,5 +644,8 @@ return [
         'gateway_create_rule'               => 'gateway/rules',
         'gateway_update_rule'               => 'gateway/rules/{id}',
         'gateway_delete_rule'               => 'gateway/rules/{id}',
+        // Payment Dispute
+        'payment_disputes'                  => 'payments/{id}/disputes',
+        'dispute_edit'                      => 'disputes/{id}',
     ],
 ];
