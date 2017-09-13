@@ -60,7 +60,7 @@ export default ({
                       <Link to={`/plans/${subscription.plan_id}`}>
                         {subscription.plan_id}
                       </Link>
-                      <div>
+                      <div style={{ marginTop: '4px' }}>
                         <div class="label--primary">
                           {plan.item.name}
                         </div>
