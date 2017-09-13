@@ -120,16 +120,6 @@ class Validator extends Base\Validator
         'contact_mobile'                => 'sometimes|numeric|digits_between:8,11',
     ];
 
-    const UPLOAD_KEYS = array(
-        'business_proof',
-        'business_operation_proof',
-        'business_pan_proof',
-        'address_proof',
-        'promoter_proof',
-        'promoter_pan_proof',
-        'promoter_address_proof',
-    );
-
     protected $customAttributes = array(
         'contact_name'                  => 'Contact Name',
         'contact_email'                 => 'Email',
@@ -188,62 +178,6 @@ class Validator extends Base\Validator
         'promoter_pan_proof'            => 'Authorised Signatory PAN Proof',
         'promoter_address_proof'        => 'Authorised Signatory Address Proof'
     );
-    const ALLOWED_EXTENSIONS = array(
-        'pdf', 'png', 'jpg', 'jpeg', 'zip'
-    );
-
-    const ALLOWED_MIMES = array(
-       'image/jpeg',
-       'image/png',
-       'application/pdf',
-       'application/x-pdf',
-       'application/zip'
-    );
-
-    public static function checkFileUpload($input)
-    {
-        $error = array();
-
-        if ((count($input) !== 1) or
-            (in_array(key($input), self::UPLOAD_KEYS) == false))
-        {
-            throw new \InvalidArgumentException('Invalid parameters.');
-        }
-
-        // reset() rewinds array's internal pointer to the first element
-        // and returns the value of the first array element.
-        // Returns false otherwise
-
-        $file = reset($input);
-
-        if ($file === false)
-        {
-            $error[] = 'No files uploaded';
-        }
-
-        else
-        {
-            $extension = strtolower($file->getClientOriginalExtension());
-
-            try
-            {
-                $mime = $file->getMimeType();
-
-                if ((in_array($extension, self::ALLOWED_EXTENSIONS) === false) or
-                    (in_array($mime, self::ALLOWED_MIMES) === false))
-                {
-                    $error[] = 'Invalid File format. Only pdf, png and jpg is allowed.';
-                }
-            }
-            catch(FileNotFoundException $e)
-            {
-                $error[] = 'File not uploaded properly. Please try again';
-            }
-        }
-
-
-        return $error;
-    }
 
     /**
      * Adds each key to an array of step digits

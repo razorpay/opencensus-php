@@ -4,13 +4,6 @@ namespace App\RZP;
 
 class Key extends Entity
 {
-    public function create($params = null)
-    {
-        $relativeUrl = 'merchants/'.$this->merchant_id.'/'.$this->getEntityUrl();
-
-        return $this->request('POST', $relativeUrl, $params);
-    }
-
     public function fetch($id)
     {
         $this->id = $id;
