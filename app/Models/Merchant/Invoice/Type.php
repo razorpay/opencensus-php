@@ -43,7 +43,6 @@ class Type
             self::CARD_LTE_2K,
             self::CARD_GT_2K,
             self::NON_CARD,
-            self::ADJUSTMENT,
         ];
     }
 

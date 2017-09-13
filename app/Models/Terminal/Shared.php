@@ -12,10 +12,12 @@ class Shared
     const AXIS_GENIUS_RAZORPAY_TERMINAL     = '1000AxisGenius';
     const AXIS_MIGS_RAZORPAY_TERMINAL       = '1000AxisMigsTl';
     const BILLDESK_RAZORPAY_TERMINAL        = '1000BdeskTrmnl';
+    const BLADE_RAZORPAY_TERMINAL           = '1000BladeTrmnl';
     const EBS_RAZORPAY_TERMINAL             = '100000EbsTrmnl';
     const HDFC_RAZORPAY_TERMINAL            = '1000HdfcShared';
     const MOBIKWIK_RAZORPAY_TERMINAL        = '1000MobiKwikTl';
     const NETBANKING_HDFC_TERMINAL          = '100NbHdfcTrmnl';
+    const NETBANKING_CORPORATION_TERMINAL   = '100NbCorpTrmnl';
     const NETBANKING_KOTAK_TERMINAL         = '100NbKotakTmnl';
     const NETBANKING_ICICI_TERMINAL         = '100NbIciciTmnl';
     const NETBANKING_ICICI_TPV_TERMINAL     = '100NbIcicTpvTl';
@@ -52,6 +54,7 @@ class Shared
         self::AXIS_MIGS_RAZORPAY_TERMINAL,
         self::AXIS_GENIUS_RAZORPAY_TERMINAL,
         self::BILLDESK_RAZORPAY_TERMINAL,
+        self::BLADE_RAZORPAY_TERMINAL,
         self::EBS_RAZORPAY_TERMINAL,
         self::HDFC_RAZORPAY_TERMINAL,
         self::MOBIKWIK_RAZORPAY_TERMINAL,
@@ -85,8 +88,9 @@ class Shared
 
     // NOTE: No two shared terminal should be present for same gateway
     // See getSharedTerminalForGateway() for the reason
-    protected static $map = array(
+    protected static $map = [
         self::AMEX_RAZORPAY_TERMINAL            => Gateway::AMEX,
+        self::BLADE_RAZORPAY_TERMINAL           => Gateway::BLADE,
         self::ATOM_RAZORPAY_TERMINAL            => Gateway::ATOM,
         self::AXIS_GENIUS_RAZORPAY_TERMINAL     => Gateway::AXIS_GENIUS,
         self::AXIS_MIGS_RAZORPAY_TERMINAL       => Gateway::AXIS_MIGS,
@@ -96,6 +100,7 @@ class Shared
         self::HDFC_RAZORPAY_TERMINAL            => Gateway::HDFC,
         self::MOBIKWIK_RAZORPAY_TERMINAL        => Gateway::MOBIKWIK,
         self::NETBANKING_HDFC_TERMINAL          => Gateway::NETBANKING_HDFC,
+        self::NETBANKING_CORPORATION_TERMINAL   => Gateway::NETBANKING_CORPORATION,
         self::NETBANKING_KOTAK_TERMINAL         => Gateway::NETBANKING_KOTAK,
         self::NETBANKING_ICICI_TERMINAL         => Gateway::NETBANKING_ICICI,
         self::NETBANKING_AIRTEL_TERMINAL        => Gateway::NETBANKING_AIRTEL,
@@ -119,7 +124,7 @@ class Shared
         self::UPI_ICICI_RAZORPAY_TERMINAL       => Gateway::UPI_ICICI,
         self::OPENWALLET_RAZORPAY_TERMINAL      => Gateway::WALLET_OPENWALLET,
         self::MPESA_RAZORPAY_TERMINAL           => Gateway::WALLET_MPESA,
-    );
+    ];
 
     public static function getSharedTerminalMapping()
     {

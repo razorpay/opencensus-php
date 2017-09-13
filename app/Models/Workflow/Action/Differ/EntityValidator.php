@@ -30,6 +30,10 @@ class EntityValidator
             self::ENTITY_NAME_KEY   => Entity::ROLE,
             self::VALIDATOR_KEY     => 'edit'
         ],
+        'dispute_edit'          => [
+            self::ENTITY_NAME_KEY   => Entity::DISPUTE,
+            self::VALIDATOR_KEY     => 'edit',
+        ]
     ];
 
     const RELATIONS_WHITELIST = [

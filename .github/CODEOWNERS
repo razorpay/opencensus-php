@@ -100,6 +100,7 @@ app/Models/LineItem/*                                   jitendra.ojha@razorpay.c
 app/Models/Merchant/*                                   prashanth.yv@razorpay.com                               vivek.kumar@razorpay.com
 app/Models/Merchant/Promotion/*                         ria.garg@razorpay.com                                   gaurav.d@razorpay.com
 app/Models/Merchant/Credits/*                           ria.garg@razorpay.com                                   gaurav.d@razorpay.com
+app/Models/Merchant/Invoice/*                           priyanshu.chhazed@razorpay.com                          sunny.aggrawal@razorpay.com
 app/Models/Offer/*                                      giri@razorpay.com                                       saurav.chowdhury@razorpay.com
 app/Models/Order/*                                      giri@razorpay.com                                       saurav.chowdhury@razorpay.com
 app/Models/P2p/*                                        nemo@razorpay.com

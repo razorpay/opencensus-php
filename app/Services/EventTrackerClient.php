@@ -237,7 +237,7 @@ class EventTrackerClient extends AbstractEventClient
                 'gateway'   => $terminal->getGateway(),
                 'acquirer'  => $terminal->getGatewayAcquirer(),
                 'category'  => $terminal->getCategory(),
-                'shared'    => $terminal->getShared(),
+                'shared'    => $terminal->isShared(),
                 'type'      => $terminal->getType(),
                 'mode'      => $terminal->getMode(),
             ];
@@ -330,17 +330,6 @@ class EventTrackerClient extends AbstractEventClient
         }
 
         return $analytics;
-    }
-
-    /**
-     * Get HMAC message
-     *
-     * @param string $message
-     * @return string $key
-     */
-    protected function getHmacMessage(string $message)
-    {
-        return $this->config['key'];
     }
 
     /**

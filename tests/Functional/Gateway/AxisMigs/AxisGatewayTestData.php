@@ -299,6 +299,30 @@ return [
         ],
     ],
 
+    'testCaptureError' => [
+        'request' => [
+            'content' => [
+                'card' => [
+                    'number' => '5200000000000064',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH,
+            'gateway_error_code'  => '7',
+        ],
+    ],
+
     'testFailedPaymentWithProperError' => [
         'request' => [
             'content' => [
