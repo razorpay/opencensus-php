@@ -219,11 +219,9 @@ class OrganizationController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getGroupsMultiple(string $id)
+    public function getGroupsMultiple()
     {
-        $input = Request::all();
-
-        $data = $this->service(E::GROUP)->fetchMultiple($id, $input);
+        $data = $this->service(E::GROUP)->fetchMultiple();
 
         return ApiResponse::json($data);
     }

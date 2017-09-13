@@ -157,7 +157,7 @@ class RoleTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $role->getPublicId());
+        $url = sprintf($url, $role->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -168,11 +168,9 @@ class RoleTest extends TestCase
     {
         $role = $this->getEntityById('role', Org::ADMIN_ROLE, true);
 
-        $orgId = 'org_' . Org::RZP_ORG;
-
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $orgId, $role['id']);
+        $url = sprintf($url, $role['id']);
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 

@@ -26,7 +26,7 @@ class GroupTest extends TestCase
 
         $this->authToken = $this->getAuthTokenForOrg($this->org);
 
-        $this->ba->adminAuth('test', $this->authToken);
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
     }
 
     public function testCreateGroup()
@@ -68,13 +68,7 @@ class GroupTest extends TestCase
 
     public function testGetMultipleGroups()
     {
-        $groups = $this->fixtures->times(2)->create('group', ['org_id' => $this->org->getId()]);
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
+        $this->fixtures->times(2)->create('group', ['org_id' => $this->org->getId()]);
 
         $this->startTest();
     }
@@ -241,7 +235,6 @@ class GroupTest extends TestCase
                                             $l0Group->getPublicId()
                                         ];
 
-
         $allGroupIds = array_map(create_function('$g', 'return $g->getPublicId();'), $allGroups);
 
         // get allowed parent-groups' ids
@@ -330,7 +323,7 @@ class GroupTest extends TestCase
         $childGroups = $allGroups = [$l0Group];
 
         // create parent groups
-        for ($i=0; $i<$level; $i++)
+        for ($i=0; $i < $level; $i++)
         {
             $newChildGroups = [];
 

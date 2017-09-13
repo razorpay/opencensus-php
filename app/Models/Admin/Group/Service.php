@@ -64,8 +64,10 @@ class Service extends Base\Service
         return $group->toArrayDeleted();
     }
 
-    public function fetchMultiple(string $orgId, array $input = [])
+    public function fetchMultiple()
     {
+        $orgId = $this->app['basicauth']->getAdminOrgId();
+
         $groups = $this->repo->group->fetchByOrgId($orgId);
 
         return $groups->toArrayPublic();

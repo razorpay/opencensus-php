@@ -59,7 +59,7 @@ return [
 
     'testGetMultipleGroups' => [
         'request' => [
-            'url' => '/orgs/%s/groups',
+            'url' => '/org/groups',
             'method' => 'get',
         ],
         'response' => [
