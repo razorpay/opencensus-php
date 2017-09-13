@@ -598,6 +598,7 @@ final class Route
         'reporting_config_create'                 => ['post',     'reporting/config',                               'ReportingController@create'                                        ],
         'reporting_config_edit'                   => ['put',      'reporting/config/{id}',                          'ReportingController@update'                                        ],
         'reporting_config_delete'                 => ['delete',   'reporting/config/{id}',                          'ReportingController@delete'                                        ],
+        'reporting_generate'                      => ['post',     'reporting/generate/{configId}',                  'ReportingController@generateReport'                                ],
     ];
 
     public static $public = [
@@ -1067,6 +1068,7 @@ final class Route
         'reporting_config_create',
         'reporting_config_edit',
         'reporting_config_delete',
+        'reporting_generate',
     ];
 
     // These will run on internal auth with the assurance

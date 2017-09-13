@@ -10,6 +10,8 @@ use RZP\Constants\Mode;
 use RZP\Gateway\Utility;
 use RZP\Trace\TraceCode;
 
+use Carbon\Carbon;
+
 class Reporting
 {
     const REQUEST_TIMEOUT = 20;
@@ -35,6 +37,8 @@ class Reporting
         {
             throw new Exception\LogicException('Reporting Config not defined');
         }
+
+        $this->app = $app;
 
         $this->trace = $app['trace'];
 
@@ -94,13 +98,22 @@ class Reporting
         return $this->makeRequestAndSend(null, $url, 'delete', $headers);
     }
 
-    public function generateReport($input) : array
+    public function generateReport(string $configId)
     {
         $url = self::REPORT_GENERATE;
 
-        $input['mode'] = $app['rzp.mode'];;
+        $headers = ['X-Merchant-Id' => $this->auth->getMerchantId()];
 
-        return $this->makeRequestAndSend($input, $url);
+        // Prepare input
+        $input = [
+            'config_id'    => $configId,
+            'generated_by' => '20000000000000',
+            'start_time'   => Carbon::now()->subDays(30)->timestamp,
+            'end_time'     => Carbon::now()->timestamp,
+            'mode'         => $this->app['rzp.mode'],
+        ];
+
+        return $this->makeRequestAndSend($input, $url, 'post', $headers);
     }
 
     protected function makeRequestAndSend($input = null, $url, $method = 'post', $headers = [])
