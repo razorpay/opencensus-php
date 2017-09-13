@@ -74,7 +74,7 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
-        $request = $this->getVerifyRequestArray($input, 'payment');
+        $request = $this->getVerifyRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
         $this->response = $response;
@@ -96,7 +96,7 @@ class Gateway extends Base\Gateway
 
     public function sendRefundVerifyRequest($input)
     {
-        $request = $this->getVerifyRequestArray($input, 'refund');
+        $request = $this->getVerifyRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
         $this->response = $response;
@@ -570,7 +570,7 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getVerifyRequestArray($input, $entity)
+    protected function getVerifyRequestArray($input)
     {
         $content['mid'] = $this->getMobikwikMerchantId($input['terminal']);
 
