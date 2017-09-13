@@ -841,12 +841,26 @@ class Processor
             //
             $addons = $this->repo->addon->fetch($fetchInput, $this->merchant->getId());
 
+            //
+            // If no subscription invoices are present and addons are there, it's wrong.
+            // Because if addons are there, it means it's an upfront amount. If there's an
+            // upfront amount, there should be an invoice created!
+            // But, this case is actually okay when start_at is in future.
+            // If the addon was created AFTER subscription creation (with future start_at),
+            // the subscription invoice count would be 0 and there won't be any invoices created.
+            // The addon will be used in the next invoice (when the first charge will be made).
+            //
             if ($addons->count() === 0)
             {
                 return;
             }
             else
             {
+                if ($subscription->getStartAt() !== null)
+                {
+                    return;
+                }
+
                 throw new Exception\LogicException(
                     'There should have been one invoice created for a newly created subscription',
                     ErrorCode::SERVER_ERROR_INCORRECT_NUMBER_OF_INVOICES_FOUND,
@@ -854,7 +868,7 @@ class Processor
                         'invoices_count'    => $subscriptionInvoices->count(),
                         'subscription_id'   => $subscriptionId,
                         'payment_id'        => $payment->getId(),
-                        'addons_count'      => $addons->count(),
+                        'addons'            => $addons->toArrayPublic(),
                     ]);
             }
         }
