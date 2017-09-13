@@ -14,11 +14,11 @@ return [
         'org_delete'                        => 'orgs/{id}',
 
         // Roles
-        'role_get_multiple'                 => 'orgs/{orgId}/roles',
-        'role_get'                          => 'orgs/{orgId}/roles/{roleId}',
-        'role_create'                       => 'orgs/{orgId}/roles',
-        'role_delete'                       => 'orgs/{orgId}/roles/{roleId}',
-        'role_edit'                         => 'orgs/{orgId}/roles/{roleId}',
+        'role_get_multiple'                 => 'orgs/roles',
+        'role_get'                          => 'orgs/roles/{roleId}',
+        'role_create'                       => 'orgs/roles',
+        'role_delete'                       => 'orgs/roles/{roleId}',
+        'role_edit'                         => 'orgs/roles/{roleId}',
 
         // Groups
         'group_get_multiple'                => 'orgs/{orgId}/groups',
