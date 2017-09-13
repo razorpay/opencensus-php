@@ -9,6 +9,8 @@ use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\LineItem;
+use RZP\Models\Merchant;
+use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant\Checkout;
 
 /**
@@ -46,7 +48,13 @@ class ViewDataSerializer extends Base\Core
         Entity::AMOUNT_PAID
     ];
 
+    /**
+     * @var Entity
+     */
     protected $invoice;
+    /**
+     * @var Merchant\Entity
+     */
     protected $merchant;
 
     public function __construct(Entity $invoice)
@@ -76,6 +84,11 @@ class ViewDataSerializer extends Base\Core
 
         $invoiceJsUrl = Config::get('app.cdn_v1_url') . '/invoice.js';
 
+        if ($this->invoice->isOfSubscription() === true)
+        {
+            $subscriptionData = $this->getFormattedSubscriptionDataForView();
+        }
+
         return [
             'environment'   => $this->app->environment(),
 
@@ -86,7 +99,15 @@ class ViewDataSerializer extends Base\Core
             'key_id'        => $keyId,
             'merchant'      => $merchantData,
             'invoice'       => $invoiceData,
+            'subscription'  => $subscriptionData ?? [],
         ];
+    }
+
+    protected function getFormattedSubscriptionDataForView(): array
+    {
+        $subscription = $this->invoice->subscription;
+
+        return [];
     }
 
     protected function getFormattedInvoiceDataForView(): array
