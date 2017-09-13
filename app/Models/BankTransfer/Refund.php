@@ -2,11 +2,8 @@
 
 namespace RZP\Models\BankTransfer;
 
-use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payout;
-use RZP\Models\Payment;
-use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction\Channel;
 use RZP\Models\Currency\Currency;
@@ -76,18 +73,5 @@ class Refund extends Base\Core
         }
 
         return $label . '-' . $utr;
-    }
-
-    public function validateRefundIsAllowed(Payment\Entity $payment)
-    {
-        $bankTransfer = $this->getBankTransfer($payment->toArray());
-
-        // Refunds currently not permitted for IMPS payments
-        if ($bankTransfer->getMode() === Mode::IMPS)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
-                $bankTransfer);
-        }
     }
 }

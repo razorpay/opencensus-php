@@ -1006,7 +1006,7 @@ trait Refund
         // Certain kinds of bank_transfers cannot be refunded
         if ($payment->isBankTransfer() === true)
         {
-            (new BankTransfer\Refund)->validateRefundIsAllowed($payment);
+            (new BankTransfer\Validator)->validateRefundIsAllowed($payment);
         }
     }
 

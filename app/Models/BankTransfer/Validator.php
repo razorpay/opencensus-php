@@ -4,6 +4,8 @@ namespace RZP\Models\BankTransfer;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Models\Payment;
 
 class Validator extends Base\Validator
 {
@@ -39,12 +41,6 @@ class Validator extends Base\Validator
 
     protected function validatePayerIfsc($input)
     {
-        if (Mode::isValid($input[Entity::MODE]) === false)
-        {
-            return;
-        }
-
-
         // We currently aren't getting the actual payer_ifsc for IMPS payments.
         if ((strlen($input[Entity::PAYER_IFSC]) !== self::IFSC_LENGTH) and
             ($input[Entity::MODE] !== Mode::IMPS))
@@ -53,6 +49,19 @@ class Validator extends Base\Validator
                 'IFSC is of invalid length',
                 $attribute,
                 $payerIfsc);
+        }
+    }
+
+    public function validateRefundIsAllowed(Payment\Entity $payment)
+    {
+        $bankTransfer = (new Repository)->findByPaymentId($payment->getId());
+
+        // Refunds currently not permitted for IMPS payments
+        if ($bankTransfer->getMode() === Mode::IMPS)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
+                $bankTransfer);
         }
     }
 }

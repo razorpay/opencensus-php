@@ -280,7 +280,7 @@ class Entity extends Base\PublicEntity
             $code = strtoupper($code);
         }
 
-        return strtoupper($code);
+        return $code;
     }
 
     protected function getIfscAttribute()
