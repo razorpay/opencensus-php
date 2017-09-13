@@ -125,11 +125,11 @@ class Database
         //
         // Creating the auth database here, mainly for wercker.
         // There isn't a straightforward way of creating multiple
-        // database on the werker MySQL service
+        // database on the wercker MySQL service
         //
         $authDb = env('DB_AUTH_DATABASE', 'auth_test');
 
-        $this->db->connection('auth')->statement('CREATE DATABASE IF NOT EXISTS ' . $authDb);
+        $this->db->statement('CREATE DATABASE IF NOT EXISTS ' . $authDb);
 
         \Artisan::call('migrate', ['--database' => 'auth', '--path' => '/vendor/razorpay/oauth/database/migrations']);
     }
