@@ -18,4 +18,5 @@ class Category
     const PRICING         = 'pricing';
     const GATEWAY_RULE    = 'gateway_rule';
     const GENERAL         = 'general';
+    const DISPUTE         = 'dispute';
 }
