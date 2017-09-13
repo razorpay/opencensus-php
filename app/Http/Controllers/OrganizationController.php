@@ -100,6 +100,14 @@ class OrganizationController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getAdminMultipleOnAppAuth()
+    {
+        $input = Request::all();
+
+        $data = $this->service(E::ADMIN)->fetchMultipleOnAppAuth($input);
+
+        return ApiResponse::json($data);
+    }
     public function editAdmin(string $adminId)
     {
         $input = Request::all();

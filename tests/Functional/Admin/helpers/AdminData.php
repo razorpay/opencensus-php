@@ -407,7 +407,19 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED,
         ],
     ],
-
+    'testGetAdminByEmailOnAppAuth' => [
+        'request' => [
+            'url'     => '/admins/get-multiple-app-auth?email=testadmin@rzp.com',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content'   => [
+                'name'  => 'test admin app auth'
+            ],
+            'status_code' => 200,
+        ],
+    ],
     'testSelfEditAdminFailed' => [
         'request' => [
             'url' => '/admins/%s',

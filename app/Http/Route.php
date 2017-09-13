@@ -417,6 +417,7 @@ final class Route
 
         // Routes for the admin roles project
         'org_create'                              => ['post',     'orgs',                                           'OrganizationController@postOrganization'                           ],
+        'admin_get_by_attr'                       => ['get',      'admins/get-multiple-app-auth',                   'OrganizationController@getAdminMultipleOnAppAuth'                  ],
         'org_get'                                 => ['get',      'orgs/{orgId}',                                   'OrganizationController@getOrganization'                            ],
         'org_get_self'                            => ['get',      'orgs/{id}/self',                                 'OrganizationController@getOrganization'                            ],
         'org_get_by_hostname'                     => ['get',      'orgs/hostname/{hostname}',                       'OrganizationController@getOrganizationByHostname'                  ],
@@ -439,6 +440,7 @@ final class Route
         'admin_get_app_auth'                      => ['post',     'current_admin',                                  'OrganizationController@getAdminByAppAuth'                          ],
         'admin_get'                               => ['get',      'admins/{id}',                                    'OrganizationController@getAdmin'                                   ],
         'admin_edit'                              => ['put',      'admins/{id}',                                    'OrganizationController@editAdmin'                                  ],
+        'admin_edit_app_auth'                     => ['put',      'orgs/{orgId}/admin-app-auth/{id}',               'OrganizationController@editAdmin'                                  ],
         'admin_fetch_merchant_ids'                => ['get',      'orgs/{orgId}/admins/{id}/merchant_ids',          'OrganizationController@getMerchantIds'                             ],
         'admin_fetch_merchants'                   => ['get',      'orgs/{orgId}/admins/{id}/merchants',             'OrganizationController@getMerchants'                               ],
         'admin_fetch_merchant_ids_new'            => ['get',      'admins/merchant_ids',                            'OrganizationController@getMerchantIdsFromEs'                       ],
@@ -923,6 +925,7 @@ final class Route
         'admin_get_app_auth',
         'admin_authentication',
         'admin_oauth_authenticate',
+        'admin_get_by_attr',
         'org_get_self',
         'org_get_by_hostname',
         'admin_lead_verify',
@@ -931,6 +934,7 @@ final class Route
         'admin_reset_password',
         'merchant_activation_update',
         'merchant_activation_files',
+        'admin_edit_app_auth',
         'currency_update_rates',
         'currency_fetch_rates',
         'upi_psp_disallow',
