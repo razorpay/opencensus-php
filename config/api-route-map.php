@@ -14,20 +14,19 @@ return [
         'org_delete'                        => 'orgs/{id}',
 
         // Roles
-        'role_get_multiple'                 => 'orgs/roles',
-        'role_get'                          => 'orgs/roles/{roleId}',
-        'role_create'                       => 'orgs/roles',
-        'role_delete'                       => 'orgs/roles/{roleId}',
-        'role_edit'                         => 'orgs/roles/{roleId}',
+        'role_get_multiple'                 => 'org/roles',
+        'role_get'                          => 'org/roles/{roleId}',
+        'role_create'                       => 'org/roles',
+        'role_delete'                       => 'org/roles/{roleId}',
+        'role_edit'                         => 'org/roles/{roleId}',
 
         // Groups
-        'group_get_multiple'                => 'orgs/{orgId}/groups',
-        'group_create'                      => 'orgs/{orgId}/groups',
-        'group_get'                         => 'orgs/{orgId}/groups/{groupId}',
-        'group_admins_create'               => 'orgs/{orgId}/groups/{groupId}/admins',
-        'group_delete'                      => 'orgs/{orgId}/groups/{groupId}',
-        'edit_group'                        => 'orgs/{orgId}/groups/{groupId}',
-        'group_get_allowed_groups'          => 'orgs/{orgId}/groups/{groupId}/allowed_groups',
+        'group_get_multiple'                => 'org/groups',
+        'group_create'                      => 'org/groups',
+        'group_get'                         => 'org/groups/{groupId}',
+        'group_delete'                      => 'org/groups/{groupId}',
+        'edit_group'                        => 'org/groups/{groupId}',
+        'group_get_allowed_groups'          => 'org/groups/{groupId}/allowed_groups',
 
         // Admins
         'admin_get'                         => 'orgs/{orgId}/admins/{adminId}',
