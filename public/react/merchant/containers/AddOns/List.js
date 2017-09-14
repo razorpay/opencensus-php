@@ -44,16 +44,16 @@ export default class AddOnsListContainer extends ListContainer {
   };
 
   componentWillMount() {
-    this.fetchAddOns();
+    this.fetchAll(); // super class method
   }
 
-  fetchAddOns() {
+  fetchList(params) {
     this.setState({
       loading: true,
       errors: null,
     });
 
-    fetchAddOns()
+    fetchAddOns(params)
       .then(response => {
         this.setState({
           loading: false,
@@ -78,7 +78,7 @@ export default class AddOnsListContainer extends ListContainer {
       action: () =>
         deleteAddOn(id)
           .then(response => {
-            this.fetchAddOns();
+            this.fetchAll();
 
             this.props.showNotification({
               type: 'success',
@@ -95,7 +95,7 @@ export default class AddOnsListContainer extends ListContainer {
 
   highlightRowAndClose = id => {
     this.props.closeModal();
-    this.fetchAddOns(); // Fetching list t
+    this.fetchAll(); // Fetching list t
     this.props.luminateRow(id);
   };
 
