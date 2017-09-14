@@ -14,30 +14,30 @@ return [
         'org_delete'                        => 'orgs/{id}',
 
         // Roles
-        'role_get_multiple'                 => 'org/roles',
-        'role_get'                          => 'org/roles/{roleId}',
-        'role_create'                       => 'org/roles',
-        'role_delete'                       => 'org/roles/{roleId}',
-        'role_edit'                         => 'org/roles/{roleId}',
+        'role_get_multiple'                 => 'roles',
+        'role_get'                          => 'roles/{roleId}',
+        'role_create'                       => 'roles',
+        'role_delete'                       => 'roles/{roleId}',
+        'role_edit'                         => 'roles/{roleId}',
 
         // Groups
-        'group_get_multiple'                => 'org/groups',
-        'group_create'                      => 'org/groups',
-        'group_get'                         => 'org/groups/{groupId}',
-        'group_delete'                      => 'org/groups/{groupId}',
-        'edit_group'                        => 'org/groups/{groupId}',
-        'group_get_allowed_groups'          => 'org/groups/{groupId}/allowed_groups',
+        'group_get_multiple'                => 'groups',
+        'group_create'                      => 'groups',
+        'group_get'                         => 'groups/{groupId}',
+        'group_delete'                      => 'groups/{groupId}',
+        'edit_group'                        => 'groups/{groupId}',
+        'group_get_allowed_groups'          => 'groups/{groupId}/allowed_groups',
 
         // Admins
-        'admin_get'                         => 'orgs/{orgId}/admins/{adminId}',
-        'admin_get_multiple'                => 'orgs/{orgId}/admins',
-        'admin_edit'                        => 'orgs/{orgId}/admins/{adminId}',
-        'admin_delete'                      => 'orgs/{orgId}/admins/{adminId}',
-        'admin_create'                      => 'orgs/{orgId}/admins',
-        'admin_get_app_auth'                => 'orgs/{orgId}/current_admin',
+        'admin_get'                         => 'admin/{adminId}/fetch',
+        'admin_get_multiple'                => 'admins',
+        'admin_edit'                        => 'admin/{adminId}',
+        'admin_delete'                      => 'admin/{adminId}',
+        'admin_create'                      => 'admins',
+        'admin_get_app_auth'                => 'current_admin',
 
         // AuditLog
-        'auditlog_search'                    => 'orgs/{orgId}/auditlog/search',
+        'auditlog_search'                   => 'orgs/{orgId}/auditlog/search',
 
         // Permissions
         'permission_get_by_type'            => 'permissions/get/{type}',

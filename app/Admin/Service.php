@@ -131,7 +131,7 @@ class Service extends Base\Service
 
             // 1. Save the data (oauth token and provider) to API
 
-            $updatedAdmin = $this->api->admin->updateAdmin($orgId, $admin['id'], $updateData);
+            $updatedAdmin = $this->api->admin->updateAdmin($admin['id'], $updateData);
 
             // 2. Login the user to dashboard. Have to make an API call
             // to login the user and get an admin_token
@@ -1319,13 +1319,11 @@ class Service extends Base\Service
 
         try
         {
-            $orgId = $admin->org_id;
-
             $params = [
                 'token' => $admin->token
             ];
 
-            $data = $this->api->admin->getAdminData($orgId, $params)->toArray();
+            $data = $this->api->admin->getAdminData($params)->toArray();
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {

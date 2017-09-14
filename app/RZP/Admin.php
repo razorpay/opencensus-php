@@ -208,17 +208,16 @@ class Admin extends Entity
         return $this->request('GET', $relativeUrl, $options);
     }
 
-    public function updateAdmin($orgId, $adminId, $params)
+    public function updateAdmin($adminId, $params)
     {
-        // $relativeUrl = "orgs/$orgId/admins/$adminId";
-        $relativeUrl = "orgs/$orgId/admin-app-auth/$adminId";
+        $relativeUrl = "admin-app-auth/$adminId";
 
         return $this->request('PUT', $relativeUrl, $params);
     }
 
-    public function getAdminData($orgId, $body)
+    public function getAdminData($body)
     {
-        $relativeUrl = "orgs/$orgId/current_admin";
+        $relativeUrl = "current_admin";
 
         return $this->request('POST', $relativeUrl, $body);
     }
