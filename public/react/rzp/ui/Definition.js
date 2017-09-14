@@ -19,20 +19,17 @@ import React, { Component } from 'react';
  */
 export default class Definition extends Component {
   render() {
-    let children = Array.isArray(this.props.children)
-      ? [...this.props.children]
-      : [this.props.children];
+    const { allowEmptyTitle, children, placeholder } = this.props;
 
-    const allowEmptyTitle = this.props.allowEmptyTitle,
-      placeholder = this.props.placeholder;
+    let definition = Array.isArray(children) ? [...children] : [children];
 
     if (!allowEmptyTitle) {
-      while (children.length > 0 && !children[0]) {
-        children.shift();
+      while (definition.length > 0 && !definition[0]) {
+        definition.shift();
       }
     }
 
-    if (children.length === 0) {
+    if (definition.length === 0) {
       return typeof placeholder !== 'undefined'
         ? <span>
             {placeholder}
@@ -40,8 +37,8 @@ export default class Definition extends Component {
         : null;
     }
 
-    const heading = children[0],
-      body = children.slice(1);
+    const heading = definition[0],
+      body = definition.slice(1);
 
     return (
       <dl class="rzp-definition">
