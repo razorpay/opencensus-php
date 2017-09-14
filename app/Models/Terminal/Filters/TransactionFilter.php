@@ -301,7 +301,7 @@ class TransactionFilter extends Terminal\Filter
         return $terminal->isValidEmiTerminal($gateway, $emiDuration, $subvention);
     }
 
-    protected function tpvFilter($terminal)
+    public function tpvFilter($terminal)
     {
         if ($this->input['merchant']->isFeatureEnabled(Feature\Constants::TPV))
         {

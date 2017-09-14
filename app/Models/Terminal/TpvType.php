@@ -9,9 +9,9 @@ class TpvType
     // we don't want to add to the terminal type right
     // now.
     // We can move across to other if required.
-    const NON_TPV_ONLY     = '0';
-    const TPV_ONLY         = '1';
-    const BOTH_TPV_NON_TPV = '2';
+    const NON_TPV_ONLY     = 0;
+    const TPV_ONLY         = 1;
+    const BOTH_TPV_NON_TPV = 2;
 
     public static function isTpvAllowed($tpv) : bool
     {
