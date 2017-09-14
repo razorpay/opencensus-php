@@ -17,13 +17,13 @@ const AddOnsListItem = props => {
         </NavLink>
       </td>
       <td>
-        {addon.name}
+        {addon.item.name}
       </td>
       <td class="text-right">
-        <Amount value={addon.amount} />
+        <Amount value={addon.item.amount} />
       </td>
       <td>
-        <Time value={addon.date} format="MMM DD  YYYY, hh:mm a" />
+        <Time value={addon.item.created_at} format="MMM DD  YYYY, hh:mm a" />
       </td>
       <td class="text-center">
         <button
