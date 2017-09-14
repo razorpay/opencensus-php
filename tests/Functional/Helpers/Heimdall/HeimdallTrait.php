@@ -16,7 +16,7 @@ trait HeimdallTrait
     protected function deleteAdmin($orgId, $adminId, $token = null)
     {
         $request = [
-            'url'    => '/admins/' . $adminId,
+            'url'    => '/admin/' . $adminId,
             'method' => 'DELETE'
         ];
 
@@ -30,7 +30,7 @@ trait HeimdallTrait
     protected function getAdmin($orgId, $adminId, $token = null)
     {
         $request = [
-            'url'    => '/admins/' . $adminId,
+            'url'    => '/admin/' . $adminId . '/fetch',
             'method' => 'GET'
         ];
 
@@ -53,7 +53,7 @@ trait HeimdallTrait
         $content = array_merge($defaultContent, $content);
 
         $request = [
-            'url'     => '/admins/' . $adminId,
+            'url'     => '/admin/' . $adminId,
             'method'  => 'PUT',
             'content' => $content,
         ];

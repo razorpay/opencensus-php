@@ -36,6 +36,13 @@ class AdminTest extends TestCase
 
         $this->orgId = $this->org->getId();
 
+        $this->hostName = 'testing.testing.com';
+
+        $this->orgHostName = $this->fixtures->create('org_hostname', [
+            'org_id'        => $this->orgId,
+            'hostname'      => $this->hostName,
+        ]);
+
         $this->authToken = $this->getAuthTokenForOrg($this->org);
 
         $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
@@ -312,7 +319,7 @@ class AdminTest extends TestCase
         // Replace auth with this route
         $this->ba->adminAuth('test', $token);
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/admins/' . $admin->getPublicId();
+        $this->testData[__FUNCTION__]['request']['url'] = '/admin/' . $admin->getPublicId();
 
         $this->startTest();
     }
@@ -875,7 +882,7 @@ class AdminTest extends TestCase
 
     public function testEditAdminOnAppAuth()
     {
-        $this->ba->appAuth();
+        $this->ba->appAuth('rzp_test', '', $this->hostName);
 
         $admin = $this->fixtures->create('admin', [
             Admin\Entity::ORG_ID => $this->orgId,
@@ -901,8 +908,6 @@ class AdminTest extends TestCase
         $group = Group\Entity::getSignedId(Org::DEFAULT_GRP);
 
         $this->testData[__FUNCTION__]['request']['content']['groups'] = (array) $group;
-
-        $this->ba->appAuth();
 
         $result = $this->startTest();
 

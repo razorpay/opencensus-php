@@ -144,7 +144,7 @@ return [
 
     'testGetAdmin' => [
         'request' => [
-            'url' => '/admins/%s',
+            'url' => '/admin/%s/fetch',
             'method' => 'get',
         ],
         'response' => [
@@ -159,7 +159,7 @@ return [
 
     'testEditAdmin' => [
         'request' => [
-            'url' => '/admins/%s',
+            'url' => '/admin/%s',
             'method' => 'put',
             'content' => [
                 'name' => 'test',
@@ -210,7 +210,7 @@ return [
 
     'testDeleteAllGroupsAdmin' => [
         'request' => [
-            'url' => '/admins/%s',
+            'url' => '/admin/%s',
             'method' => 'put',
             'content' => [
                 'name' => 'test',
@@ -225,7 +225,7 @@ return [
 
     'testDeleteAdmin' => [
         'request' => [
-            'url' => '/admins/%s',
+            'url' => '/admin/%s',
             'method' => 'delete',
         ],
         'response' => [
@@ -238,7 +238,7 @@ return [
 
     'testDeleteAdminFailed' => [
         'request' => [
-            'url' => '/admins/%s',
+            'url' => '/admin/%s',
             'method' => 'delete',
         ],
         'response' => [
@@ -292,7 +292,7 @@ return [
 
     'testLockedAdminAccess' => [
         'request' => [
-            'url' => '/admins/%s',
+            'url' => '/admin/%s/fetch',
             'method' => 'GET',
             'content' => []
         ],
@@ -422,7 +422,7 @@ return [
     ],
     'testSelfEditAdminFailed' => [
         'request' => [
-            'url' => '/admins/%s',
+            'url' => '/admin/%s',
             'method' => 'put',
             'content' => [
                 'name' => 'test asd',

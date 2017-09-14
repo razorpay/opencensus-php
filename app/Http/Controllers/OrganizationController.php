@@ -108,6 +108,7 @@ class OrganizationController extends Controller
 
         return ApiResponse::json($data);
     }
+
     public function editAdmin(string $adminId)
     {
         $input = Request::all();

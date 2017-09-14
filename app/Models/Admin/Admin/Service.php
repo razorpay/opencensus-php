@@ -9,6 +9,7 @@ use Hash;
 use Mail;
 use Event;
 use Str;
+use Request;
 
 use RZP\Constants\HashAlgo;
 use RZP\Error;
@@ -404,6 +405,20 @@ class Service extends Base\Service
 
     public function editAdmin(string $adminId, array $input)
     {
+        if (empty($this->adminOrgId))
+        {
+            // In App auth AdminOrg will not be set so fetching org from header sent by client.
+            $orgHeader = Request::header('X-Org-Hostname');
+
+            // This will never be empty.
+            if (empty($orgHeader) === false)
+            {
+                $org = $this->repo->org->findOrFailByHostname($orgHeader);
+
+                $this->adminOrgId = $org->getId();
+            }
+        }
+
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $this->adminOrgId);
 
         if (empty($input[Entity::ROLES]) === false)
