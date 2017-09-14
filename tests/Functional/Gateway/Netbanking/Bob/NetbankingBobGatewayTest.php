@@ -25,4 +25,17 @@ class NetbankingBobGatewayTest extends TestCase
 
         $this->fixtures->create('terminal:shared_netbanking_bob_terminal');
     }
+
+    public function testPayment()
+    {
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment);
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertTestResponse($gatewayPayment, 'testPaymentNetbankingEntity');
+    }
 }
