@@ -159,7 +159,10 @@ class Core extends Base\Core
                     $data['upi'] = false;
                 }
 
-                if ($merchant->isFeatureEnabled(Constants::E_MANDATE) === true)
+                // If both recurring and e mandate are enabled,
+                // we send the e mandate netbanking banks for recurring payments
+                if (($merchant->isFeatureEnabled(Constants::RECURRING) === true) and
+                    ($merchant->isFeatureEnabled(Constants::E_MANDATE) === true))
                 {
                     $banks = Payment\Gateway::$eMandateBanks;
                     $data['netbanking'] = $this->getBankNames($banks);

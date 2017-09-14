@@ -639,6 +639,8 @@ class Entity extends Base\PublicEntity
      */
     public function setRecurringType($type)
     {
+        RecurringType::validateRecurringType($type);
+
         $this->setAttribute(self::RECURRING_TYPE, $type);
     }
 
