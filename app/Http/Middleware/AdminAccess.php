@@ -104,6 +104,7 @@ class AdminAccess
         // Fetch public org Id from uri
         $orgId = $this->getOrgIdForRoute($request);
 
+        // $admin->getPublicOrgId cannot be null here because admin has to be associated with org.
         if ($orgId !== $admin->getPublicOrgId())
         {
             throw new Exception\BadRequestException(
@@ -147,12 +148,6 @@ class AdminAccess
 
                 $orgId = $org->getPublicId();
             }
-        }
-
-        if ($orgId === null)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ORG_ID_REQUIRED);
         }
 
         return $orgId;
