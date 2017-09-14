@@ -1371,7 +1371,7 @@ class BasicAuth
         }
     }
 
-    public function setOrgId(string $orgId)
+    public function setOrgId($orgId)
     {
         $this->orgId = $orgId;
     }
