@@ -63,8 +63,13 @@ class NetbankingKotakGatewayTest extends TestCase
         $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
     }
 
-    public function testTpvPayment()
+    public function testTpvPayment($tpvFeatureEnabled = false)
     {
+        if ($tpvFeatureEnabled === false)
+        {
+            $this->fixtures->merchant->enableTPV();
+        }
+
         $this->fixtures->create('gateway_rule', [
             'method'           => 'netbanking',
             'merchant_id'      => '100000Razorpay',
@@ -138,12 +143,12 @@ class NetbankingKotakGatewayTest extends TestCase
             $this->testPayment();
         }
 
-        $this->fixtures->merchant->enableTPV();
+        $tpvEnabled = $this->fixtures->merchant->enableTPV();
 
         foreach (range(0,2) as $value)
         {
             // 3 tpv payment
-            $this->testTpvPayment();
+            $this->testTpvPayment($tpvEnabled);
         }
 
         $payments = $this->getEntities('payment', [], true);

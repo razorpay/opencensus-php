@@ -416,7 +416,9 @@ class Merchant extends Base
 
     public function enableTPV($id = '10000000000000')
     {
-        return $this->addFeatures(['tpv'], $id);
+        $this->addFeatures(['tpv'], $id);
+
+        return true;
     }
 
     public function disableTPV($id = '10000000000000')
