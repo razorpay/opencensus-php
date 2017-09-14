@@ -381,4 +381,20 @@ class Core extends Base\Core
             }
         }
     }
+
+    public function extractFilterAttributesAndValidate($input)
+    {
+        $filters = $input['query']['filters'];
+
+        $validator = new AnalyticsValidator();
+
+        foreach ($filters as $filter)
+        {
+            foreach ($filter as $attributes)
+            {
+                $validator->validateAnalyticsInputFilter($attributes);
+            }
+        }
+    }
+
 }

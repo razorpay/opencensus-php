@@ -1244,6 +1244,9 @@ class Service extends Base\Service
 
     public function getAnalytics($input): Response
     {
+        (new Core())->extractFilterAttributesAndValidate($input);
+
         return $this->app['eventManager']->query($input);
     }
+
 }
