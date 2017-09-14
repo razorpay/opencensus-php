@@ -42,6 +42,7 @@ const getCustomerDetail = invoice =>
             </span>
           : null}
       </span>}
+    {invoice.customer_id}
   </Definition>;
 
 export default props => {
