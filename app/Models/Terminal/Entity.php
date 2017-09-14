@@ -77,7 +77,6 @@ class Entity extends Base\PublicEntity
         self::EMI,
         self::EMI_DURATION,
         self::EMI_SUBVENTION,
-        self::SHARED,
         self::INTERNATIONAL,
         self::TPV,
         self::TYPE,
@@ -157,10 +156,11 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_ACCESS_CODE       => null,
         self::GATEWAY_SECURE_SECRET     => null,
         self::GATEWAY_RECON_PASSWORD    => null,
-        self::SHARED                    => false,
         self::EMI                       => false,
         self::TPV                       => false,
-        self::TYPE                      => 1,
+        self::TYPE                      => [
+            Type::NON_RECURRING => '1'
+        ],
         self::MODE                      => Mode::DUAL,
         self::CORPORATE                 => 0,
         self::CURRENCY                  => self::DEFAULT_CURRENCY,
@@ -177,7 +177,6 @@ class Entity extends Base\PublicEntity
         self::EMI                       => 'boolean',
         self::NETBANKING                => 'boolean',
         self::INTERNATIONAL             => 'boolean',
-        self::SHARED                    => 'boolean',
         self::UPI                       => 'boolean',
         self::AEPS                      => 'boolean',
         self::ENABLED                   => 'boolean',
@@ -186,6 +185,15 @@ class Entity extends Base\PublicEntity
         self::MODE                      => 'int',
         self::CORPORATE                 => 'boolean',
         self::USED                      => 'boolean',
+    ];
+
+    protected $appends = [
+        self::SHARED,
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
     ];
 
     // ---------------------- GETTERS ----------------------
@@ -242,11 +250,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CATEGORY);
     }
 
-    public function getShared()
-    {
-        return $this->getAttribute(self::SHARED);
-    }
-
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
@@ -260,24 +263,6 @@ class Entity extends Base\PublicEntity
     public function getEmiSubvention()
     {
         return $this->getAttribute(self::EMI_SUBVENTION);
-    }
-
-    protected function getSubMerchants()
-    {
-        $subMerchants = $this->merchants()->get();
-
-        $subMerchants->transform(
-            function ($item, $key)
-            {
-                return [
-                    Merchant\Entity::ID            => $item[Merchant\Entity::ID],
-                    Merchant\Entity::NAME          => $item[Merchant\Entity::NAME],
-                    Merchant\Entity::WEBSITE       => $item[Merchant\Entity::WEBSITE],
-                    Merchant\Entity::BILLING_LABEL => $item[Merchant\Entity::BILLING_LABEL]
-                ];
-            });
-
-        return $subMerchants->all();
     }
 
     /**
@@ -342,11 +327,35 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AEPS);
     }
 
-    public function isShared()
+    public function isShared(): bool
     {
         $merchantId = $this->getAttribute(self::MERCHANT_ID);
 
         return ($merchantId === Merchant\Account::SHARED_ACCOUNT);
+    }
+
+    /**
+     * For a given merchant, checks if the terminal can be considered direct
+     * for the merchant based on the below two cases
+     * - terminal's primary merchant is given merchant
+     * - any of the sub-merchants of the terminal has this merchant
+     *
+     * @param  Merchant\Entity $merchant    Merchant entity for which we wantto check
+     * @return boolean
+     */
+    public function isDirectForMerchant(Merchant\Entity $merchant): bool
+    {
+        $result = ($merchant->getId() === $this->getAttribute(self::MERCHANT_ID));
+
+        if ($result === false)
+        {
+            $result = $this->merchants->contains(function ($subMerchant) use ($merchant)
+            {
+                return ($merchant->getId() === $subMerchant[Merchant\Entity::ID]);
+            });
+        }
+
+        return $result;
     }
 
     public function isCorporate()
@@ -377,6 +386,28 @@ class Entity extends Base\PublicEntity
     }
 
     // ---------------------- END SETTERS ----------------------
+
+    // -----------------------PUBLIC SETTERS -------------------
+
+    protected function setPublicSubMerchantsAttribute(array & $array)
+    {
+        $subMerchants = $this->merchants()->get();
+
+        $subMerchants->transform(
+            function ($item, $key)
+            {
+                return [
+                    Merchant\Entity::ID            => $item[Merchant\Entity::ID],
+                    Merchant\Entity::NAME          => $item[Merchant\Entity::NAME],
+                    Merchant\Entity::WEBSITE       => $item[Merchant\Entity::WEBSITE],
+                    Merchant\Entity::BILLING_LABEL => $item[Merchant\Entity::BILLING_LABEL]
+                ];
+            });
+
+        $array[self::SUB_MERCHANTS] = $subMerchants;
+    }
+
+    //----------------------END PUBLIC SETTERS----------------
 
     // ---------------------- ACCESSORS ----------------------
 
@@ -431,6 +462,11 @@ class Entity extends Base\PublicEntity
         return $emiDuration;
     }
 
+    protected function getSharedAttribute()
+    {
+        return $this->isShared();
+    }
+
     // ---------------------- END ACCESSORS ----------------------
 
     // ---------------------- MODIFIERS ----------------------
@@ -469,6 +505,25 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::ENABLED] = $status;
     }
 
+    protected function setTypeAttribute($type)
+    {
+        $hex = 0;
+
+        if (isset($this->attributes[self::TYPE]) === true)
+        {
+            $hex = $this->attributes[self::TYPE];
+        }
+
+        $this->attributes[self::TYPE] = Type::getHexValue($type, $hex);
+    }
+
+    protected function getTypeAttribute()
+    {
+        $type = $this->attributes[self::TYPE];
+
+        return Type::getEnabledType($type);
+    }
+
     protected function modifyInternational(& $input)
     {
         if (empty($input[self::INTERNATIONAL]) === true)
@@ -499,11 +554,6 @@ class Entity extends Base\PublicEntity
     public function scopeEnabled($query)
     {
         return $query->where(Entity::ENABLED, '=', '1');
-    }
-
-    public function scopeShared($query)
-    {
-        return $query->where(Entity::SHARED, '=', '1');
     }
 
     // ---------------------- END SCOPES ----------------------
@@ -637,9 +687,9 @@ class Entity extends Base\PublicEntity
 
     protected function isTypeApplicable($type)
     {
-        $hex = $this->getType();
+        $enabledTypes = $this->getType();
 
-        return Type::isApplicable($hex, $type);
+        return in_array($type, $enabledTypes, true);
     }
 
     public function isNonRecurring()
@@ -682,27 +732,30 @@ class Entity extends Base\PublicEntity
         return ($this->isCardEnabled() === true);
     }
 
+    /**
+     * This is being overridden because, we don't always want to add sub merchants
+     * to the serialized data as it involves a db call. Only when serializing
+     * an individual terminal entity, we want to do it
+     *
+     * @param  boolean $subMerchantFlag Flag ti indicate if sub_merchants should be included
+     */
     public function toArrayPublic($subMerchantFlag = false)
     {
-        $terminalData = parent::toArrayPublic();
-
         if ($subMerchantFlag === true)
         {
-            $terminalData['sub_merchants'] = $this->getSubMerchants();
+            $this->publicSetters[] = Entity::SUB_MERCHANTS;
         }
 
-        return $terminalData;
+        return parent::toArrayPublic();
     }
 
     public function toArrayAdmin($subMerchantFlag = false)
     {
-        $terminalData = parent::toArrayAdmin();
-
         if ($subMerchantFlag === true)
         {
-            $terminalData['sub_merchants'] = $this->getSubMerchants();
+            $this->publicSetters[] = Entity::SUB_MERCHANTS;
         }
 
-        return $terminalData;
+        return parent::toArrayAdmin();
     }
 }

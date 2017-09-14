@@ -49,11 +49,11 @@ class NetbankingReconcilationTest extends TestCase
 
         $this->reconcile('NetbankingRbl', $uploadedFile);
 
-        $gatewayEnttiy = $this->getLastEntity('netbanking', true);
+        $gatewayEntity = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals(self::ACCOUNT_NUMBER, $gatewayEnttiy['account_number']);
+        $this->assertEquals(self::ACCOUNT_NUMBER, $gatewayEntity['account_number']);
 
-        $this->assertEquals('309001141935', $gatewayEnttiy['credit_account_number']);
+        $this->assertEquals('309001141935', $gatewayEntity['credit_account_number']);
     }
 
     public function testRblWrongFormatReconciliation()
@@ -102,9 +102,9 @@ class NetbankingReconcilationTest extends TestCase
 
         $this->reconcile('NetbankingRbl', $uploadedFile);
 
-        $paymentEnttiy = $this->getLastEntity('payment', true);
+        $paymentEntity = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($paymentEnttiy['status'], 'authorized');
+        $this->assertEquals($paymentEntity['status'], 'authorized');
     }
 
     public function testIndusindManualReconciliation()
@@ -129,9 +129,57 @@ class NetbankingReconcilationTest extends TestCase
 
         $this->reconcile('NetbankingIndusind', $uploadedFile);
 
-        $gatewayEnttiy = $this->getLastEntity('netbanking', true);
+        $gatewayEntity = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals(self::ACCOUNT_NUMBER, $gatewayEnttiy['account_number']);
+        $this->assertEquals(self::ACCOUNT_NUMBER, $gatewayEntity['account_number']);
+    }
+
+    public function testPnbManualReconciliation()
+    {
+        $this->gateway = 'netbanking_pnb';
+
+        $payment = $this->createPayment('netbanking_pnb');
+
+        $netbanking = $this->createNetbanking($payment['id'], 'PUNB', 'S');
+
+        $this->mockReconContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'claims_data')
+            {
+                $content['0']['account_number'] = self::ACCOUNT_NUMBER;
+            }
+        });
+
+        $fileContents = $this->generateFile('pnb', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingPnb', $uploadedFile);
+
+        $gatewayEntity = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals(self::ACCOUNT_NUMBER, $gatewayEntity['account_number']);
+    }
+
+    public function testPnbFailedPaymentReconciliation()
+    {
+        $this->gateway = 'netbanking_pnb';
+
+        $this->setMockGatewayTrue();
+
+        $payment = $this->createFailedPayment($this->gateway);
+
+        $netbanking = $this->createNetbanking($payment['id'], 'PUNB', 'F');
+
+        $fileContents = $this->generateFile('pnb', []);
+
+        $uploadedFile = $this->createUploadedFile($fileContents['local_file_path']);
+
+        $this->reconcile('NetbankingPnb', $uploadedFile);
+
+        $paymentEntity = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($paymentEntity['status'], 'authorized');
     }
 
     protected function reconcile($gateway, $uploadedFile)
@@ -208,6 +256,8 @@ class NetbankingReconcilationTest extends TestCase
         ];
 
         $netbanking = $this->fixtures->create('netbanking', $netbankingAttributes);
+
+        return $netbanking;
     }
 
     protected function generateFile($bank, $input)

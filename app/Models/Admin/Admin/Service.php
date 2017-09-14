@@ -236,6 +236,16 @@ class Service extends Base\Service
         $this->handleAuthFailure($admin, Action::LOGIN_FAIL_OAUTH);
     }
 
+    /**
+     * Here we are generating a bearer token
+     * and savnig bcrypted token and considering token Id as principal.
+     * Ref https://security.stackexchange.com/a/94792
+     * concat bearer token and principal and sending to client as admin token.
+     * last 14 characters of the token will be extracted and will be matched bycrypting the token.
+     *
+     * @param $admin
+     * @return mixed
+     */
     private function generateLoginToken($admin)
     {
         $this->fireAdminAction($admin, Action::GENERATE_LOGIN_TOKEN);
@@ -246,8 +256,10 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($admin);
 
+        $bearerToken = str_random(20);
+
         $tokenAttributes = [
-            'token'      => str_random(40),
+            'token'      => Hash::make($bearerToken),
             'expires_at' => Carbon::now()->addDays(30)->getTimestamp()
         ];
 
@@ -255,7 +267,7 @@ class Service extends Base\Service
 
         $admin = $admin->toArrayPublic();
 
-        $admin['token'] = $token->getToken();
+        $admin['token'] = $bearerToken . $token->getId();
 
         return $admin;
     }
@@ -424,6 +436,9 @@ class Service extends Base\Service
         return $admin->toArrayPublic();
     }
 
+    /**
+     * @deprecated Ref: #4216
+     */
     public function getMerchantIds($orgId, $adminId)
     {
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
@@ -541,6 +556,60 @@ class Service extends Base\Service
         return $responseHash;
     }
 
+    public function getMerchantsFromEs(array $input): array
+    {
+        $admin = $this->auth->getAdmin();
+
+        // Appends more payload in $input for ES search:
+
+        // Always add this ORG_ID filter.
+        $input[Merchant\Entity::ORG_ID] = $this->auth->getAdminOrgId();
+
+        // If admin not allowed to see all merchants, get all group
+        // ids he belongs to and pass in $input. This gets used to
+        // filter results.
+
+        if ($admin->canSeeAllMerchants() === false)
+        {
+            $groupIds = $admin->groups()->get()->getIds();
+
+            $input[Merchant\Entity::GROUPS] = $groupIds;
+
+            // Adds following to $input so all merchant to which this admin
+            // has direct access to can be filtered.
+
+            $input[Merchant\Entity::ADMINS] = [$admin->getId()];
+        }
+
+        // We would want to receive the ES payload
+
+        $input[Base\EsRepository::SEARCH_HITS] = 1;
+
+        $merchants = $this->repo->merchant->fetch($input);
+
+        return $merchants->toArrayAdmin();
+    }
+
+    public function getMerchantIdsFromEs(): array
+    {
+        $result = $this->getMerchantsFromEs([]);
+
+        //
+        // Existing consumer(dashboard) expect the result as following:
+        // [
+        //   "id" => "referrer",
+        //   ...
+        // ]
+        //
+
+        $items = $result['items'];
+
+        return array_pluck($items, Merchant\Entity::REFERRER, Merchant\Entity::ID);
+    }
+
+    /**
+     * @deprecated Ref: #4216
+     */
     public function getMerchants($orgId, $adminId, $input)
     {
         $responseHash = $this->getMerchantIds($orgId, $adminId);

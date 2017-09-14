@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional;
 
+use RZP\Tests\Functional\Fixtures\Entity\Org;
+
 class Authorization
 {
     protected $test;
@@ -25,8 +27,8 @@ class Authorization
     protected $defaultSecret = 'TheKeySecretForTests';
     protected $defaultDeviceToken = 'authentication_token';
 
-    protected $defaultToken = 'SecretTokenForRazorpayAdminAuthentication';
-    protected $defaultOrgId = 'org_100000razorpay';
+    protected $defaultToken = Org::DEFAULT_TOKEN . Org::DEFAULT_TOKEN_PRINCIPAL;
+    protected $defaultOrgId = Org::RZP_ORG_SIGNED;
     protected $defaultDashboardHostname = 'dashboard.razorpay.dev';
 
     protected $defaultAccountId = 'acc_10000000000001';
@@ -216,6 +218,8 @@ class Authorization
 
     /**
      * Adds account auth to a request
+     *
+     * @param string|null $accountId
      */
     public function addAccountAuth($accountId = null)
     {

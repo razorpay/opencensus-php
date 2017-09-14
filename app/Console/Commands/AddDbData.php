@@ -46,6 +46,7 @@ class AddDbData extends Command
                     'recurring'             => 1,
                     'created_at'            =>  time(),
                     'updated_at'            =>  time(),
+                    'type'                  => 1,
                     )
                 );
 
@@ -75,6 +76,7 @@ class AddDbData extends Command
                     'recurring'             => 1,
                     'created_at'            =>  time(),
                     'updated_at'            =>  time(),
+                    'type'                  => 1,
                     )
                 );
 

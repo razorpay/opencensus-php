@@ -19,4 +19,5 @@ class Category
     const GATEWAY_RULE    = 'gateway_rule';
     const WALLET_CONFIG   = 'wallet_config';
     const GENERAL         = 'general';
+    const DISPUTE         = 'dispute';
 }

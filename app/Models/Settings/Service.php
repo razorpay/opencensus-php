@@ -6,55 +6,48 @@ use RZP\Models\Base;
 
 class Service extends Base\Service
 {
-    public function get(string $entity, string $id, string $module, string $key): array
+    public function get(string $module, string $key): array
     {
-        $entity = $this->fetchEntity($entity, $id);
-
-        $settings = Accessor::for($entity, $module)->get($key);
+        $settings = Accessor::for($this->merchant, $module)
+                            ->get($key);
 
         return ['settings' => $settings];
     }
 
-    public function getDefined(string $key): array
+    public function getAll(string $module): array
     {
-        $settings = Types::getWithDescriptions($key);
+        $settings = Accessor::for($this->merchant, $module)
+                            ->all();
 
         return ['settings' => $settings];
     }
 
-    public function getAll(string $entity, string $id, string $module): array
+    public function upsert(string $module, array $input)
     {
-        $entity = $this->fetchEntity($entity, $id);
+        Accessor::for($this->merchant, $module)
+                ->upsert($input)
+                ->save();
+    }
 
-        $settings = Accessor::for($entity, $module)->all();
+    public function delete(string $module, string $key)
+    {
+        Accessor::for($this->merchant, $module)
+                ->delete($key)
+                ->save();
+    }
+
+    /**
+     * Return pre-defined settings for a module
+     * To be used for clients for a settings CRUD UI
+     *
+     * @param string $module
+     *
+     * @return array
+     */
+    public function getDefined(string $module): array
+    {
+        $settings = Keys::getWithDescriptions($module);
 
         return ['settings' => $settings];
-    }
-
-    public function upsert(string $entity, string $id, $module, array $input)
-    {
-        // Validate input?
-
-        $entity = $this->fetchEntity($entity, $id);
-
-        Accessor::for($entity, $module)->create($input)->save();
-    }
-
-    public function delete(string $entity, string $module, string $id, string $key)
-    {
-        $entity = $this->fetchEntity($entity, $id);
-
-        Accessor::for($entity, $module)->delete($key)->save();
-    }
-
-    protected function fetchEntity(string $entity, string $id): Base\PublicEntity
-    {
-        // TODO: Validate Entity whitelisted
-
-        $entity = $this->repo
-                       ->$entity
-                       ->findOrFailPublic($id);
-
-        return $entity;
     }
 }

@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\Downtime;
 
 use RZP\Models\Base;
+use RZP\Models\Base\PublicCollection;
 
 class Repository extends Base\Repository
 {
@@ -92,11 +93,16 @@ class Repository extends Base\Repository
                      ->first();
     }
 
-    public function fetchDowntimesWithoutTerminal(array $input)
+    public function fetchDowntimesWithoutTerminal(array $input, array $methods): PublicCollection
     {
         $query = $this->newQuery();
 
         $this->buildFetchQuery($query, $input);
+
+        if (empty($methods) === false)
+        {
+            $query->whereIn(Entity::METHOD, $methods);
+        }
 
         return $query->whereNull(Entity::TERMINAL_ID)
                      ->get();
