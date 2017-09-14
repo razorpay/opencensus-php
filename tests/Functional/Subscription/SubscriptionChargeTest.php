@@ -478,6 +478,8 @@ class SubscriptionChargeTest extends TestCase
         $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
         $this->assertEquals(1, $result['invoices_created']);
 
+        $subscription = $this->getLastEntity('subscription', true);
+
         foreach (range(1,3) as $i)
         {
             $this->failCharge();
@@ -503,6 +505,7 @@ class SubscriptionChargeTest extends TestCase
         $result = $this->chargeSubscriptionInvoiceManually($invoice);
 
         $subscription = $this->getLastEntity('subscription', true);
+
         $invoice = $this->getLastEntity('invoice', true);
         $payments = $this->getEntities('payment', [], true);
 
@@ -515,6 +518,7 @@ class SubscriptionChargeTest extends TestCase
                                   ->addMonthsNoOverflow(2)
                                   ->startOfDay()
                                   ->timestamp;
+
         $this->assertEquals($expectedChargeAt, $subscription['charge_at']);
 
         $task = $this->getLastEntity('schedule_task', true);

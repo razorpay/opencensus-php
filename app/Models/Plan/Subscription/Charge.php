@@ -182,14 +182,6 @@ class Charge extends Base\Core
         $oldStatus = $subscription->getStatus();
 
         //
-        // Not sending webhook here because the transaction might fail later
-        // in the flow. Will be sending it after the transaction is committed.
-        //
-        $subscription->setStatus(Status::ACTIVE);
-
-        $this->resetErrorFields($subscription);
-
-        //
         // Charge_At is to be updated only after charge of current invoices, and not after
         // manual charge of an older invoice. Also, for halted subscriptions, reaching here
         // means an older invoice is being manually charged. There again, no need to update
@@ -222,6 +214,14 @@ class Charge extends Base\Core
             //
             $this->updateChargeAtAndEndedAt($subscription);
         }
+
+        //
+        // Not sending webhook here because the transaction might fail later
+        // in the flow. Will be sending it after the transaction is committed.
+        //
+        $subscription->setStatus(Status::ACTIVE);
+
+        $this->resetErrorFields($subscription);
 
         $this->incrementPaidCount($subscription);
 
