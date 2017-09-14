@@ -3,11 +3,11 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class MerchantAnalyticsTest extends TestCase
 {
-    use PaymentTrait;
+    use RequestResponseFlowTrait;
 
     protected $testDataFilePath;
 
@@ -25,16 +25,34 @@ class MerchantAnalyticsTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testRouteAnalyticsDeviceValidation()
+    {
+        $testData = $this->initializeRouteAnalyticsRequest();
+
+        $this->startTest($testData);
+    }
+
+    public function testRouteAnalyticsMethodValidation()
+    {
+        $testData = $this->initializeRouteAnalyticsRequest();
+
+        $this->startTest($testData);
+    }
+
     protected function initializeRouteAnalyticsRequest()
     {
         $this->ba->proxyAuth();
+
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+
+        $name = $trace[1]['function'];
 
         $testData = & $this->testData[__FUNCTION__];
 
         $testData['request']['url'] = '/merchant/10000000000000/analytics';
 
         // For validations
-        $testData['request']['content']['query']['filter']['terms'][0]['merchant_id'] = '10000000000000';
+        $testData['request']['content']['query']['filters']['default'][0]['merchant_id'] = '10000000000000';
 
         return $testData;
     }
