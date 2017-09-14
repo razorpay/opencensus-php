@@ -1,5 +1,6 @@
 import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
+import Definition from 'rzp/ui/Definition';
 import Spinner from 'rzp/ui/Spinner';
 import Banner from 'rzp/ui/Banner';
 import CopyLink from 'merchant/components/Invoices/CopyLink';
@@ -14,35 +15,38 @@ const notificationClassMap = {
   pending: 'text-warning',
 };
 
-const getCustomerDetail = invoice => ({
-  Name: invoice.customer_details.customer_name,
-  Email: (
-    <span>
-      {invoice.customer_details.customer_email || '--'}
-      {invoice.email_status
-        ? <span
-            style={{ marginLeft: '10px' }}
-            class={`${notificationClassMap[invoice.email_status]}`}
-          >
-            ({invoice.email_status} mail)
-          </span>
-        : null}
-    </span>
-  ),
-  Phone: (
-    <span>
-      {invoice.customer_details.customer_contact || '--'}
-      {invoice.sms_status
-        ? <span
-            style={{ marginLeft: '10px' }}
-            class={`${notificationClassMap[invoice.sms_status]}`}
-          >
-            ({invoice.sms_status} sms)
-          </span>
-        : null}
-    </span>
-  ),
-});
+const getCustomerDetail = invoice =>
+  <Definition placeholder="--">
+    {invoice.customer_details.customer_name}
+    {invoice.customer_details.customer_email &&
+      <span>
+        {invoice.customer_details.customer_email}
+        {invoice.email_status
+          ? <span
+              style={{ marginLeft: '10px' }}
+              class={`${notificationClassMap[invoice.email_status]}`}
+            >
+              ({invoice.email_status} mail)
+            </span>
+          : null}
+      </span>}
+    {invoice.customer_details.customer_contact &&
+      <span>
+        {invoice.customer_details.customer_contact}
+        {invoice.sms_status
+          ? <span
+              style={{ marginLeft: '10px' }}
+              class={`${notificationClassMap[invoice.sms_status]}`}
+            >
+              ({invoice.sms_status} sms)
+            </span>
+          : null}
+      </span>}
+    {invoice.customer_id &&
+      <code>
+        {invoice.customer_id}
+      </code>}
+  </Definition>;
 
 export default props => {
   let { invoice, isLoading, statusMsg } = props;
@@ -133,10 +137,9 @@ export default props => {
                     value={invoice.description || '--'}
                   />
                   <EntityDetailRow label="Receipt" value={invoice.receipt} />
-                  <NestedEntityDetailRow
-                    label="Customer Details"
-                    value={getCustomerDetail(invoice)}
-                  />
+                  <EntityDetailRow label="Customer Details">
+                    {getCustomerDetail(invoice)}
+                  </EntityDetailRow>
                   <EntityDetailRow
                     label="Created at"
                     value={() => <Time value={invoice.date} />}
