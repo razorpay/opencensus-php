@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant\Methods;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Feature\Constants;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Payment;
@@ -99,7 +100,7 @@ class Core extends Base\Core
         return $methods;
     }
 
-    public function getFormattedMethods(Merchant\Entity $merchant)
+    public function getFormattedMethods(Merchant\Entity $merchant, array $input = [])
     {
         $data = array(
             'entity'        => 'methods',
@@ -137,6 +138,32 @@ class Core extends Base\Core
                 $data['emi_subvention'] = $merchant->getEmiSubvention();
 
                 $data['emi_plans'] = (new Emi\Service)->all();
+            }
+
+            //
+            // If the payment is a recurring payment, we have to ensure that the recurring feature
+            // is enabled for the merchant, and only allow netbanking recurring methods if e mandate is
+            // enabled for the merchant. Also, we must send upi and card = false if recurring is not enabled
+            //
+            if ((empty($input['recurring']) === false) and
+                ((bool) $input['recurring'] === true))
+            {
+                // By default we set netbanking banks to an empty array, we also set wallet to empty array
+                $data['netbanking'] = [];
+                $data['wallet'] = [];
+
+                // We set card to false if recurring is not enabled
+                if ($merchant->isFeatureEnabled(Constants::RECURRING) === false)
+                {
+                    $data['card'] = false;
+                    $data['upi'] = false;
+                }
+
+                if ($merchant->isFeatureEnabled(Constants::E_MANDATE) === true)
+                {
+                    $banks = Payment\Gateway::$eMandateBanks;
+                    $data['netbanking'] = $this->getBankNames($banks);
+                }
             }
         }
 

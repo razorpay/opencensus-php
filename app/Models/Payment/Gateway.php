@@ -448,6 +448,10 @@ class Gateway
         Gateway::NETBANKING_ICICI
     ];
 
+    public static $eMandateBanks = [
+        IFSC::ICIC
+    ];
+
     /**
      * List of gateways which give s2s callback where we do not validate
      * payment callback hash

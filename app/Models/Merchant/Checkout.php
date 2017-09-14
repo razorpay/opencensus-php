@@ -49,13 +49,14 @@ class Checkout
 
     public function getPreferences(Entity $merchant, $mode, array $input)
     {
+        // TODO: Recurring is set here. Use it wisely!
         $this->tracePreferencesRequest($merchant, $mode, $input);
 
         $this->checkAndFillAppTokenInputFromSession($merchant, $mode, $input);
 
         $data = $this->getMerchantPreferencesData($merchant, $mode);
 
-        $data['methods'] = (new Methods\Core)->getFormattedMethods($merchant);
+        $data['methods'] = (new Methods\Core)->getFormattedMethods($merchant, $input);
 
         $this->checkAndFillSavedTokens($input, $merchant, $data);
 
