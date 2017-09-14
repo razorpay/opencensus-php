@@ -1038,6 +1038,7 @@ class Terminal extends Base
             'gateway'                   => 'netbanking_federal',
             'gateway_merchant_id'       => 'netbanking_federal_merchant_id',
             'netbanking'                => 1,
+            'tpv'                       => 2,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
