@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Bob\Mock;
 
 use RZP\Gateway\Base;
+use RZP\Gateway\Netbanking;
 use RZP\Gateway\Netbanking\Bob\RequestFields;
 use RZP\Gateway\Netbanking\Bob\ResponseFields;
 use RZP\Gateway\Netbanking\Bob\Constants;
@@ -33,6 +34,23 @@ class Server extends Base\Mock\Server
         return \Redirect::to($redirectUrl . '?' . $params);
     }
 
+    public function verify($input)
+    {
+        $id = $input[RequestFields::PAYMENT_ID];
+
+        $content = [
+            ResponseFields::BANK_REF_NUMBER => '434323',
+            ResponseFields::PAYMENT_ID => $id,
+            ResponseFields::STATUS => Constants::STATUS_SUCCESS,
+        ];
+
+        $this->content($content, 'verify');
+
+        $content = $this->prepareVerifyResponse($content);
+
+        return $this->makeResponse($content);
+    }
+
     protected function getAuthResponseContent($content)
     {
         $data = [
@@ -51,5 +69,17 @@ class Server extends Base\Mock\Server
         return [
             ResponseFields::ENCRYPTED_DATA => $encryptor->encryptData($data)
         ];
+    }
+
+    protected function prepareVerifyResponse($content)
+    {
+        $array = [];
+
+        foreach ($content as $key => $value)
+        {
+            $array[] = implode(Constants::VERIFY_KEY_VALUE_SEPARATOR, [$key, $value]);
+        }
+
+        return implode(Constants::VERIFY_PAIR_SEPARATOR, $array);
     }
 }

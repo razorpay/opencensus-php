@@ -5,13 +5,15 @@ namespace RZP\Gateway\Netbanking\Bob;
 use phpseclib\Crypt\AES;
 
 use RZP\Constants\Mode;
-use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
-use RZP\Gateway\Base\AuthorizeFailed;
-use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\Payment\Entity as Payment;
+use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
@@ -65,6 +67,15 @@ class Gateway extends Base\Gateway
         $this->checkCallbackStatus($content);
 
         return $this->getCallbackResponseData($input);
+    }
+
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
     }
 
     // -------------------- Auth helper methods-------------------------
@@ -161,6 +172,112 @@ class Gateway extends Base\Gateway
 
     // -------------------- Callback helper methods end -----------------
 
+    // -------------------- Verify helper methods -----------------------
+
+    protected function sendPaymentVerifyRequest($verify)
+    {
+        $content = $this->getVerifyRequestData($verify);
+
+        $request = $this->getStandardRequestArray($content, 'get');
+
+        $query = http_build_query($content);
+
+        $request['url'] = $request['url'] . '?' . $query;
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST, $request);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'response' => $response->body
+            ]);
+
+        $content = $this->parseVerifyResponse($response->body);
+
+        $verify->verifyResponseContent = $content;
+    }
+
+    protected function verifyPayment($verify)
+    {
+        $gatewayPayment = $verify->payment;
+
+        $verify->status = VerifyResult::STATUS_MATCH;
+
+        $this->checkApiSuccess($verify);
+
+        $this->checkVerifyGatewaySuccess($verify);
+
+        if ($verify->apiSuccess !== $verify->gatewaySuccess)
+        {
+            $verify->status = VerifyResult::STATUS_MISMATCH;
+        }
+
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
+
+        $this->saveVerifyContentIfNeeded($gatewayPayment, $verify->input['payment']);
+    }
+
+    protected function getVerifyRequestData($verify)
+    {
+        $content = [
+            RequestFields::PAYMENT_ID => $verify->input['payment']['id']
+        ];
+
+        return $content;
+    }
+
+    protected function parseVerifyResponse($body)
+    {
+        $pairs = explode(Constants::VERIFY_PAIR_SEPARATOR, $body);
+
+        $content = [];
+
+        foreach ($pairs as $value)
+        {
+            $pair = explode(Constants::VERIFY_KEY_VALUE_SEPARATOR, $value);
+
+            $content[$pair[0]] = $pair[1];
+        }
+
+        return $content;
+    }
+
+    protected function checkVerifyGatewaySuccess($verify)
+    {
+        // Initially assume gatewaySuccess is false
+        $verify->gatewaySuccess = false;
+
+        if ($this->isStatusCodeSuccess($verify->verifyResponseContent) === true)
+        {
+            $verify->gatewaySuccess = true;
+        }
+    }
+
+    protected function saveVerifyContentIfNeeded($gatewayPayment, $payment)
+    {
+        $this->action = Action::AUTHORIZE;
+
+        $gatewayAttributes = $this->getAuthorizeNetbankingContentToSave($payment);
+
+        if ($gatewayPayment === null)
+        {
+            $gatewayPayment = $this->createGatewayPaymentEntity($gatewayAttributes, Action::AUTHORIZE);
+        }
+        else if ($gatewayPayment[NetbankingEntity::RECEIVED] === false)
+        {
+            $gatewayPayment->fill($gatewayAttributes);
+            $gatewayPayment->saveOrFail();
+        }
+
+        $this->action = Action::VERIFY;
+
+        return $gatewayPayment;
+    }
+
+    // -------------------- Verify helper methods end -------------------
+
     // -------------------- General helper methods ----------------------
 
     protected function isGatewaySuccess(array $content): bool
@@ -176,6 +293,11 @@ class Gateway extends Base\Gateway
         }
 
         return $this->getLiveMerchantId();
+    }
+
+    protected function isStatusCodeSuccess($content)
+    {
+        return ($content[ResponseFields::STATUS] === Constants::STATUS_SUCCESS);
     }
 
     public function getEncryptor(): AESCrypto
