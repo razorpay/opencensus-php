@@ -550,6 +550,17 @@ class Gateway
                 $verify);
         }
 
+        if ($verify->amountMismatch === true)
+        {
+            throw new Exception\RuntimeException(
+                'Payment amount verification failed.',
+                [
+                    'payment' => $this->input['payment'],
+                    'gateway' => $this->gateway
+                ]
+            );
+        }
+
         return $verify->getDataToTrace();
     }
 
