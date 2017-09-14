@@ -29,7 +29,7 @@ class Validator extends Base\Validator
 
         Constants::VIRTUAL_ACCOUNTS                                             => 'sometimes|array|max:2',
         Constants::VIRTUAL_ACCOUNTS . "." . Constants::USE_CASE                 => 'sometimes|string',
-        Constants::VIRTUAL_ACCOUNTS . "." . Constants::EXPECTED_MONTHLY_REVENUE => 'sometimes|array',
+        Constants::VIRTUAL_ACCOUNTS . "." . Constants::EXPECTED_MONTHLY_REVENUE => 'sometimes|string',
     );
 
     protected function validateName($attribute, $value)

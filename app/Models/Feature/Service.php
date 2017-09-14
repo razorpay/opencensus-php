@@ -3,9 +3,9 @@
 namespace RZP\Models\Feature;
 
 use RZP\Models\Base;
-use RZP\Models\Pricing\Feature;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
-use RZP\Models\Settings;
+use RZP\Models\Settings\Accessor;
 use RZP\Models\Merchant;
 use RZP\Models\FileStore;
 
@@ -153,11 +153,9 @@ class Service extends Base\Service
 
     public function createOnboardingResponses($input)
     {
-        $settingsService = Settings\Service::getNewInstance();
-
         $merchantId = $this->merchant->getId();
 
-        (new Validator())->validateInput('onboarding', $input);
+        (new Validator())->validateInput(Constants::ONBOARDING, $input);
 
         $saved = false;
 
@@ -165,7 +163,9 @@ class Service extends Base\Service
         {
             $this->processFiles($input);
 
-            $settingsService->upsert(Constants::MERCHANT, $merchantId, Constants::ONBOARDING, $input);
+            Accessor::for($this->merchant, Constants::ONBOARDING)
+                ->upsert($input)
+                ->save();
 
             $saved = true;
         }
@@ -180,22 +180,16 @@ class Service extends Base\Service
 
     public function getOnboardingResponses($feature = null)
     {
-        $settingsService = Settings\Service::getNewInstance();
-
-        $entity = Constants::MERCHANT;
-
-        $entityId = $this->merchant->getId();
-
         if ($feature === null)
         {
-            $response = $settingsService->getAll($entity, $entityId, Constants::ONBOARDING);
+              $settings = Accessor::for($this->merchant, Constants::ONBOARDING)->all();
         }
         else
         {
-            $response = $settingsService->get($entity, $entityId, Constants::ONBOARDING, $feature);
+            $settings = Accessor::for($this->merchant, Constants::ONBOARDING)->get($feature);
         }
 
-        return $response['settings'];
+        return $settings;
     }
 
     protected function processFiles(& $input)
