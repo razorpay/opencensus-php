@@ -149,4 +149,9 @@ return array(
         ],
         'url' => env('REPORTING_BASE_URL'),
     ],
+
+    'ufh' => [
+        'mock'  => env('UFH_MOCK', false),
+        'url'   => env('UFH_BASE_URL'),
+    ],
 );

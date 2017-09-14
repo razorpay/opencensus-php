@@ -125,7 +125,7 @@ class ApiServiceProvider extends BaseServiceProvider
         {
             return new Reporting($app);
         });
-        
+
         $this->app->singleton('gateway_file', function($app)
         {
             return new GatewayFileManager($app);

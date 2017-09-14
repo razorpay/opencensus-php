@@ -599,6 +599,9 @@ final class Route
         'reporting_config_edit'                   => ['put',      'reporting/config/{id}',                          'ReportingController@update'                                        ],
         'reporting_config_delete'                 => ['delete',   'reporting/config/{id}',                          'ReportingController@delete'                                        ],
         'reporting_generate'                      => ['post',     'reporting/generate/{configId}',                  'ReportingController@generateReport'                                ],
+
+        // UFH Service
+        'ufh_get_file_signed_url'                 => ['get',      'ufh/file/{fileId}/get-signed-url',               'UfhController@getSignedUrl'                                        ],
     ];
 
     public static $public = [
@@ -1069,6 +1072,7 @@ final class Route
         'reporting_config_edit',
         'reporting_config_delete',
         'reporting_generate',
+        'ufh_get_file_signed_url'
     ];
 
     // These will run on internal auth with the assurance
