@@ -177,13 +177,31 @@ export default class SubscriptionDetailsContainer extends Component {
       invoiceLoading,
     } = this.state;
 
+    let invoicesList = invoices;
+    console.log('INVOICES....', invoices);
+
+    if (!invoices.loading && invoices.items && invoices.items.length) {
+      if (['authenticated', 'active', 'halted'].indexOf(entity.status) !== 1) {
+        invoicesList = { ...invoices };
+
+        let nextDueInvoice = {
+          id: 'inv_upcoming',
+          status: 'next_due',
+          issued_at: entity.charge_at,
+          amount: plan.item.amount,
+        };
+
+        invoicesList.items.unshift(nextDueInvoice);
+      }
+    }
+
     return (
       <div class="multi-content">
         <SubscriptionDetails
           subscription={entity}
           plan={plan}
           customer={customer}
-          invoices={invoices}
+          invoices={invoicesList}
           isLoading={isLoading}
           statusMsg={makeErrorStatus(errors)}
           goToLink={this.goToLink}
