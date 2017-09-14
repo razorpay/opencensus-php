@@ -132,11 +132,25 @@ return [
                 [
                     'plan_name'      => 'TestUploadPlan2',
                     'payment_method' => 'netbanking',
-                    'percent_rate'   => 1000,
+                    'percent_rate' => 1000,
+                    'payment_network' => 'SIBL',
                 ],
                 [
                     'payment_method' => 'card',
-                    'percent_rate'   => 1000,
+                    'payment_method_type'  => 'credit',
+                    'payment_network' => 'DICL',
+                    'payment_issuer' => 'HDFC',
+                    'percent_rate' => 1000,
+                    'amount_range_active' => false,
+                    'amount_range_min' => null,
+                    'amount_range_max' => null,
+                    'min_fee'   => 10,
+                    'max_fee'   => 10000,
+                ],
+                [
+                    'payment_method' => 'wallet',
+                    'payment_network' => 'paytm',
+                    'percent_rate' => 1000
                 ]
             ],
             'url' => '/pricing',
@@ -146,31 +160,39 @@ return [
             'content' => [
                 'name' => 'TestUploadPlan2',
                 'entity' => 'pricing',
-                'count' => 2,
+                'count' => 3,
                 'rules' => array(
+                    array(
+                        'plan_name' => 'TestUploadPlan2',
+                        'payment_method' => 'wallet',
+                        'payment_method_type' => null,
+                        'payment_network' => 'paytm',
+                        'payment_issuer' => null,
+                        'percent_rate' => 1000
+                    ),
                     array(
                         'plan_name' => 'TestUploadPlan2',
                         'payment_method' => 'netbanking',
                         'percent_rate' => 1000,
-                        'international' => false,
-                        'amount_range_active' => false,
-                        'amount_range_min' => null,
-                        'amount_range_max' => null,
+                        'payment_network' => 'SIBL',
                     ),
                     array(
                         'plan_name' => 'TestUploadPlan2',
                         'payment_method' => 'card',
+                        'payment_method_type'  => 'credit',
+                        'payment_network' => 'DICL',
+                        'payment_issuer' => 'HDFC',
                         'percent_rate' => 1000,
-                        'international' => false,
                         'amount_range_active' => false,
                         'amount_range_min' => null,
                         'amount_range_max' => null,
+                        'min_fee'   => 10,
+                        'max_fee'   => 10000,
                     ),
                 ),
             ],
         ],
     ],
-
     'testAddPricingPlanRule' => [
         'request' => [
             'content' => [

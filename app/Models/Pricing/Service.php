@@ -25,17 +25,7 @@ class Service extends Base\Service
 
     public function uploadPricingPlan($input)
     {
-        $this->repo->transactionOnLiveAndTest(function() use ($input){
-
-            $plan = (new Pricing\Core)->createPricingPlan($input[0]);
-
-            array_shift($input);
-
-            foreach ($input as $value)
-            {
-                $rule = (new Pricing\Core)->addPlanRule($value, $plan);
-            }
-        });
+        (new Pricing\Core())->createMultiplePricing($input);
 
         $plan = $this->repo->pricing->getPricingPlanByName($input[0][Entity::PLAN_NAME]);
 
