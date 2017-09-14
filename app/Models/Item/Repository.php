@@ -25,6 +25,15 @@ class Repository extends Base\Repository
         Type::checkType($value);
     }
 
+    public function findActiveByPublicIdAndMerchant(string $id, Merchant\Entity $merchant)
+    {
+        $item = $this->findByPublicIdAndMerchant($id, $merchant);
+
+        $item->getValidator()->validateItemIsActive();
+
+        return $item;
+    }
+
     public function findActiveByPublicIdAndMerchantForType(
         string $id,
         Merchant\Entity $merchant,
@@ -32,15 +41,7 @@ class Repository extends Base\Repository
     {
         $item = $this->findByPublicIdAndMerchantForType($id, $merchant, $type);
 
-        if ($item->isNotActive())
-        {
-            $payload = [
-                Entity::ID     => $item->getId(),
-                Entity::ACTIVE => $item->isActive(),
-            ];
-
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_ITEM_INACTIVE, null, $payload);
-        }
+        $item->getValidator()->validateItemIsActive();
 
         return $item;
     }
@@ -52,15 +53,7 @@ class Repository extends Base\Repository
     {
         $item = $this->findByPublicIdAndMerchant($id, $merchant);
 
-        if ($item->isNotOfType($type))
-        {
-            $payload = [
-                Entity::ID   => $item->getId(),
-                Entity::TYPE => $item->getType(),
-            ];
-
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE, null, $payload);
-        }
+        $item->getValidator()->validateItemTypeIsInAllowedList([$type]);
 
         return $item;
     }

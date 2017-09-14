@@ -654,6 +654,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAmount() === $this->getAmountPaid());
     }
 
+    public function hasSubscription()
+    {
+        return ($this->getAttribute(self::SUBSCRIPTION_ID) !== null);
+    }
+
     /**
      * Returns the path component of Dashboard view url.
      *

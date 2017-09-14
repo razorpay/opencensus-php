@@ -5,6 +5,7 @@ namespace RZP\Models\LineItem;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Item;
+use RZP\Models\Invoice;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -28,7 +29,7 @@ class Core extends Base\Core
 
         $lineItem = (new Entity)->generateId();
 
-        $this->setItemAssociationAndModifyInput($lineItem, $input, $merchant);
+        $this->setItemAssociationAndModifyInput($lineItem, $input, $merchant, $morphEntity);
 
         // For Backward compatibility: If without ITEM_ID (template),
         // no CURRENCY is sent, we use invoice's currency.
@@ -103,7 +104,7 @@ class Core extends Base\Core
 
         $this->modifyInputToHandleRenamedAttributes($input);
 
-        $this->setItemAssociationAndModifyInput($lineItem, $input, $merchant);
+        $this->setItemAssociationAndModifyInput($lineItem, $input, $merchant, $morphEntity);
 
         $lineItem->edit($input);
 
@@ -288,25 +289,24 @@ class Core extends Base\Core
      * @param Entity            $lineItem
      * @param array             $input
      * @param Merchant\Entity   $merchant
+     * @param Base\PublicEntity $morphEntity
      *
      * @return null
      */
     protected function setItemAssociationAndModifyInput(
         Entity $lineItem,
         array & $input,
-        Merchant\Entity $merchant)
+        Merchant\Entity $merchant,
+        Base\PublicEntity $morphEntity)
     {
         if (isset($input[Entity::ITEM_ID]) === false)
         {
             return;
         }
 
-        $item = $this->repo
-                     ->item
-                     ->findActiveByPublicIdAndMerchantForType(
-                            $input[Entity::ITEM_ID],
-                            $merchant,
-                            Item\Type::INVOICE);
+        $item = $this->repo->item->findActiveByPublicIdAndMerchant($input[Entity::ITEM_ID], $merchant);
+
+        $item->getValidator()->validateItemTypeIsAllowedForEntity($item, $morphEntity);
 
         $lineItem->item()->associate($item);
 

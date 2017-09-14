@@ -3,7 +3,9 @@
 namespace RZP\Models\Item;
 
 use RZP\Base;
+use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
+use RZP\Models\Base as BaseModel;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -104,5 +106,56 @@ class Validator extends Base\Validator
                     'item_id' => $item->getId(),
                 ]);
         }
+    }
+
+    public function validateItemIsActive()
+    {
+        $item = $this->entity;
+
+        if ($item->isNotActive())
+        {
+            $payload = [
+                Entity::ID     => $item->getId(),
+                Entity::ACTIVE => $item->isActive(),
+            ];
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ITEM_INACTIVE, null, $payload);
+        }
+    }
+
+    public function validateItemTypeIsInAllowedList(array $allowedTypes)
+    {
+        $item = $this->entity;
+
+        $isItemTypeInAllowed = in_array($item->getType(), $allowedTypes, true);
+
+        if ($isItemTypeInAllowed === false)
+        {
+            $payload = [
+                Entity::ID   => $item->getId(),
+                Entity::TYPE => $item->getType(),
+            ];
+
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE, null, $payload);
+        }
+    }
+
+
+    public function validateItemTypeIsAllowedForEntity(Entity $item, BaseModel\PublicEntity $morphEntity)
+    {
+        if ($morphEntity instanceof Invoice\Entity === false)
+        {
+            $allowedTypes = [];
+        }
+        else if ($morphEntity->hasSubscription() === true)
+        {
+            $allowedTypes = [Type::PLAN, Type::ADDON];
+        }
+        else
+        {
+            $allowedTypes = [Type::INVOICE];
+        }
+
+        $this->validateItemTypeIsInAllowedList($allowedTypes);
     }
 }
