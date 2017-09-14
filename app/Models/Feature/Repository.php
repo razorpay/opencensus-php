@@ -36,6 +36,14 @@ class Repository extends BaseRepository
                     ->firstOrFailPublic();
     }
 
+    public function findByEntityIdAndName(string $entityId, string $entityName, $mode = Mode::TEST)
+    {
+        return $this->newQueryWithConnection($mode)
+                    ->where(Entity::ENTITY_ID,  '=', $entityId)
+                    ->where(Entity::NAME,       '=', $entityName)
+                    ->first();
+    }
+
     /**
      * Features added to live should sync and be added to test.
      * Features when removed from live should not be removed from test.
@@ -59,28 +67,92 @@ class Repository extends BaseRepository
      */
     public function shouldSync($entity, $action = null): bool
     {
-        if (($this->isLiveMode() === true) and ($action !== BaseRepository::DELETE))
+        $entityId = $entity->getEntityId();
+
+        $entityName = $entity->getName();
+
+        if ($this->isLiveMode() === true)
         {
-            $entityId = $entity->getEntityId();
-
-            $entityName = $entity->getName();
-
-            // Sync if the feature is not already enabled on test
-            $feature = $this->newQueryWithConnection(Mode::TEST)
-                            ->where(Entity::ENTITY_ID,  '=', $entityId)
-                            ->where(Entity::NAME,       '=', $entityName)
-                            ->first();
-
-            if ($feature === null)
+            if (($this->isOptOutFeature($entityName) === true)
+                and ($action === BaseRepository::DELETE))
             {
-                $this->trace->info(TraceCode::FEATURE_SYNCED, [
-                    $entityId,
-                    $entityName
-                ]);
                 return true;
+            }
+            else if (($this->isOptOutFeature($entityName) === false)
+                and ($action === BaseRepository::SAVE))
+            {
+                // Sync if the feature is not already enabled on test
+                $feature = $this->findByEntityIdAndName($entityId, $entityName, Mode::TEST);
+
+                if ($feature === null)
+                {
+                    $this->trace->info(TraceCode::FEATURE_SYNCED, [
+                        $entityId,
+                        $entityName,
+                        $action
+                    ]);
+
+                    return true;
+                }
             }
         }
 
+        $this->trace->info(TraceCode::FEATURE_NOT_SYNCED, [
+            $entityId,
+            $entityName,
+            $action
+        ]);
+
         return false;
+    }
+
+    public function isOptOutFeature($featureName)
+    {
+        return in_array($featureName, Constants::$optOutFeatures);
+    }
+
+    public function delete($entity)
+    {
+        if ($this->entityShouldSync($entity, Repository::DELETE) === false)
+        {
+            return parent::delete($entity);
+        }
+
+        $liveEntity     = $entity;
+
+        $liveEntityId   = $entity->getEntityId();
+
+        $liveEntityName = $entity->getName();
+
+        // Sync if the feature is not already enabled on test
+        $testEntity = $this->findByEntityIdAndName($liveEntityId, $liveEntityName, Mode::TEST);
+
+        if ($testEntity === null)
+        {
+            $this->trace->info(TraceCode::FEATURE_NOT_SYNCED, [
+                $liveEntityId,
+                $liveEntityName,
+                Repository::DELETE
+            ]);
+
+            $liveEntity->delete();
+
+            return;
+        }
+
+        $res = $this->repo->transactionOnLiveAndTest(function () use ($liveEntity, $testEntity)
+        {
+            $res1 = $liveEntity->delete();
+
+            $res2 = $testEntity->delete();
+
+            return $res1;
+        });
+
+        $this->syncToEs($testEntity, Base\EsRepository::DELETE, null, Mode::TEST);
+
+        $this->syncToEs($liveEntity, Base\EsRepository::DELETE, null, Mode::LIVE);
+
+        return $res;
     }
 }

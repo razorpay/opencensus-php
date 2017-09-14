@@ -285,7 +285,18 @@ return [
         ]
     ],
 
-    'testAddFeatureToTestAndVerifyLive' => [
+    'testAddFeatureToTestVerifyAbsenceInLive' => [
+        'request'  => [
+            'url'    => '/features/10000000000000',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ]
+    ],
+
+    'testDeleteFeatureFromTestAndVerifyPresenceInLive' => [
         'request'  => [
             'url'    => '/features/10000000000000',
             'method' => 'get',
@@ -296,7 +307,18 @@ return [
         ],
         'response' => [
             'content' => [
-                'assigned_features' => [],
+                'assigned_features' => [
+                    [
+                        'name'        => 'dummy',
+                        'entity_id'   => '10000000000000',
+                        'entity_type' => 'merchant'
+                    ],
+                    [
+                        'name'        => 'noflashcheckout',
+                        'entity_id'   => '10000000000000',
+                        'entity_type' => 'merchant'
+                    ]
+                ],
                 'all_features'      => [
                     'dummy',
                     'webhooks',
@@ -317,7 +339,18 @@ return [
         ]
     ],
 
-    'testAddFeatureToLiveAndVerifyTest' => [
+    'testAddOptOutFeatureToLiveVerifyAbsenceInTest' => [
+        'request'  => [
+            'url'    => '/features/10000000000000',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ]
+    ],
+
+    'testDeleteOptInFeatureFromLiveVerifyPresenceInTest' => [
         'request'  => [
             'url'    => '/features/10000000000000',
             'method' => 'get',
@@ -355,7 +388,7 @@ return [
         ]
     ],
 
-    'testDeleteFeatureFromTestAndVerifyLive' => [
+    'testDeleteOptOutFeatureFromLiveVerifyAbsenceInTest' => [
         'request'  => [
             'url'    => '/features/10000000000000',
             'method' => 'get',
@@ -363,71 +396,7 @@ return [
                 'HTTP_X-Dashboard'            => 'true',
                 'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
             ],
-        ],
-        'response' => [
-            'content' => [
-                'assigned_features' => [
-                    [
-                        'name'        => 'dummy',
-                        'entity_id'   => '10000000000000',
-                        'entity_type' => 'merchant'
-                    ]
-                ],
-                'all_features'      => [
-                    'dummy',
-                    'webhooks',
-                    'aggregator',
-                    'tokens',
-                    's2swallet',
-                    's2supi',
-                    's2saeps',
-                    'setl_report',
-                    'noflashcheckout',
-                    'recurring',
-                    's2s',
-                    'invoice',
-                    'nozeropricing',
-                    'reverse',
-                ]
-            ]
         ]
     ],
 
-    'testDeleteFeatureFromLiveAndVerifyTest' => [
-        'request'  => [
-            'url'    => '/features/10000000000000',
-            'method' => 'get',
-            'server' => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'assigned_features' => [
-                    [
-                        'name'        => 'dummy',
-                        'entity_id'   => '10000000000000',
-                        'entity_type' => 'merchant'
-                    ]
-                ],
-                'all_features'      => [
-                    'dummy',
-                    'webhooks',
-                    'aggregator',
-                    'tokens',
-                    's2swallet',
-                    's2supi',
-                    's2saeps',
-                    'setl_report',
-                    'noflashcheckout',
-                    'recurring',
-                    's2s',
-                    'invoice',
-                    'nozeropricing',
-                    'reverse',
-                ]
-            ]
-        ]
-    ]
 ];

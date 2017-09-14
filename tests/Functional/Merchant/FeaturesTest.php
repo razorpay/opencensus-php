@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use RZP\Constants\Mode;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -112,13 +114,54 @@ class FeaturesTest extends TestCase
     }
 
     /**
-     * Add a feature to the test database
+     * Add an opt-in feature and an opt-out feature to the test database
      * Get the features from the live database
-     * Verify - The feature added to test should not be added to live
+     * Verify - Any feature added to test, should not be synced to live
      */
-    public function testAddFeatureToTestAndVerifyLive()
+    public function testAddFeatureToTestVerifyAbsenceInLive()
     {
-        $this->addFeatureToMode('test');
+        $optInFeature  = FeatureConstants::DUMMY;
+
+        $optOutFeature = FeatureConstants::NOFLASHCHECKOUT;
+
+        $this->addFeatureToMode($optInFeature, Mode::TEST);
+
+        $this->addFeatureToMode($optOutFeature, Mode::TEST);
+
+        $this->ba->appAuthLive();
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $assignedFeatures = $response['assigned_features'];
+
+        $this->assertEquals(count($assignedFeatures), 0);
+    }
+
+    /**
+     * Add an opt-in feature to live [syncs to test]
+     * Add an opt-in feature to live [does not sync to test] and then to test
+     * Delete the opt-in feature from the test database
+     * Delete the opt-out feature from the test database
+     * Get the features from the live database
+     * Verify - Any feature deleted from test should not be deleted from live
+     */
+    public function testDeleteFeatureFromTestAndVerifyPresenceInLive()
+    {
+        $optInFeature  = FeatureConstants::DUMMY;
+
+        $optOutFeature = FeatureConstants::NOFLASHCHECKOUT;
+
+        $this->addFeatureToMode($optInFeature, Mode::LIVE);
+
+        $this->addFeatureToMode($optOutFeature, Mode::LIVE);
+
+        $this->addFeatureToMode($optOutFeature, Mode::TEST);
+
+        $this->deleteFeatureFromMode($optInFeature, Mode::TEST);
+
+        $this->deleteFeatureFromMode($optOutFeature, Mode::TEST);
 
         $this->ba->appAuthLive();
 
@@ -130,9 +173,36 @@ class FeaturesTest extends TestCase
      * Get the features from the test database
      * Verify - The feature added to live should be added to test as well
      */
-    public function testAddFeatureToLiveAndVerifyTest()
+    public function testAddOptOutFeatureToLiveVerifyAbsenceInTest()
     {
-        $this->addFeatureToMode('live');
+        $optInFeature = FeatureConstants::NOFLASHCHECKOUT;
+
+        $this->addFeatureToMode($optInFeature, 'live');
+
+        $this->ba->appAuthTest();
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $assignedFeatures = $response['assigned_features'];
+
+        $this->assertEquals(count($assignedFeatures), 0);
+    }
+
+    /**
+     * Add a feature to the live database
+     * Get the features from the test database
+     * Verify - The feature added to live should be added to test as well
+     */
+    public function testDeleteOptInFeatureFromLiveVerifyPresenceInTest()
+    {
+        $optInFeature = FeatureConstants::DUMMY;
+
+        // This will also add it to test
+        $this->addFeatureToMode($optInFeature, 'live');
+
+        $this->deleteFeatureFromMode($optInFeature, 'live');
 
         $this->ba->appAuthTest();
 
@@ -140,14 +210,29 @@ class FeaturesTest extends TestCase
     }
 
     /**
-     * Add a feature to test and then to live. Adding a feature to live should not sync if
-     * it is already present in test.
+     * Add a feature to the live database
+     * Get the features from the test database
+     * Verify - The feature added to live should be added to test as well
      */
-    public function testAddFeatureToTestAndLive()
+    public function testDeleteOptOutFeatureFromLiveVerifyAbsenceInTest()
     {
-        $this->addFeatureToMode('test');
+        $optOutFeature = FeatureConstants::NOFLASHCHECKOUT;
 
-        $this->addFeatureToMode('live');
+        $this->addFeatureToMode($optOutFeature, 'test');
+
+        $this->addFeatureToMode($optOutFeature, 'live');
+
+        $this->deleteFeatureFromMode($optOutFeature, 'live');
+
+        $this->ba->appAuthTest();
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $assignedFeatures = $response['assigned_features'];
+
+        $this->assertEquals(count($assignedFeatures), 0);
     }
 
     /**
@@ -159,10 +244,8 @@ class FeaturesTest extends TestCase
      *
      * @param $addToMode
      */
-    private function addFeatureToMode(string $addToMode)
+    private function addFeatureToMode(string $featureName, string $addToMode)
     {
-        $featureName = "dummy";
-
         $authMethod = 'appAuth' . studly_case($addToMode);
 
         $this->ba->$authMethod();
@@ -185,64 +268,13 @@ class FeaturesTest extends TestCase
     }
 
     /**
-     * Add a feature to live [adds to both, test and live]
-     * Delete a feature from the test database
-     * Get the features from the live database
-     * Verify - The feature deleted from test should not be deleted from live
-     */
-    public function testDeleteFeatureFromTestAndVerifyLive()
-    {
-        $this->deleteFeatureFromMode('test');
-
-        $this->ba->appAuthLive();
-
-        $this->startTest();
-    }
-
-    /**
-     * Add a feature to live [adds to both, test and live]
-     * Delete a feature from the live database
-     * Get the features from the test database
-     * Verify - The feature deleted from live should not be deleted from test
-     */
-    public function testDeleteFeatureFromLiveAndVerifyTest()
-    {
-        $this->deleteFeatureFromMode('live');
-
-        $this->ba->appAuthTest();
-
-        $this->startTest();
-    }
-
-    /**
-     * Add a feature to live [adds to both, test and live]
      * Delete a feature from the database linked to mode received
      * Verify - The feature deleted from database1 should not be deleted from database2
      *
      * @param string $deleteFromMode
      */
-    private function deleteFeatureFromMode(string $deleteFromMode)
+    private function deleteFeatureFromMode(string $featureName, string $deleteFromMode)
     {
-        $featureName = "dummy";
-
-        $this->ba->appAuthLive();
-
-        $request = [
-            'url'       => '/features',
-            'method'    => 'post',
-            'server' => [
-                'HTTP_X-Dashboard'                => 'true',
-                'HTTP_X-Dashboard-User-Email'     => 'user@rzp.dev',
-            ],
-            'content'   => [
-                'names'             => [$featureName],
-                'entity_type'       => 'merchant',
-                'entity_id'         => '10000000000000'
-            ]
-        ];
-
-        $this->makeRequestAndGetContent($request);
-
         $this->ba->adminAuth($deleteFromMode, null, 'org_100000razorpay');
 
         $request = [
