@@ -5,16 +5,29 @@ import Time from 'rzp/ui/Time';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 
 export default props => {
-  let { goToLink, item, index, loading, activeSecEntityId } = props;
+  let {
+    goToLink,
+    item,
+    index,
+    loading,
+    activeSecEntityId,
+    subscriptionStatus,
+  } = props;
   console.log(
     'ITEM...',
     loading,
+    subscriptionStatus,
     item.issued_at,
     item.currency,
     item.amount / 100,
     item.status,
     index
   );
+
+  let timeDiff;
+  if (item.status === 'next_due' && item.issued_at) {
+    timeDiff = item.issued_at - Math.round(new Date().getTime() / 1000);
+  }
 
   return (
     <div
@@ -27,9 +40,15 @@ export default props => {
           <div class="row-element left">
             {loading
               ? <PlaceholderLoader style={{ width: '70%' }} />
-              : <span class="label--primary">
-                  <Time value={item.issued_at} format="MMM DD, YYYY" />
-                </span>}
+              : item.issued_at
+                ? <span class="label--primary">
+                    <Time value={item.issued_at} format="MMM DD, YYYY" />
+                    {timeDiff > 0 &&
+                      <span>
+                        {' '}(due in {Math.ceil(timeDiff / (3600 * 24))} days)
+                      </span>}
+                  </span>
+                : 'Upcoming Payment'}
           </div>
           <div class="row-element right">
             {loading
@@ -37,6 +56,7 @@ export default props => {
               : <Amount currency={item.currency} value={item.amount} />}
           </div>
         </div>
+
         <div class="detail-row">
           <div class="row-element left">
             {loading
