@@ -4,6 +4,7 @@ import Amount from 'rzp/ui/Amount';
 import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
 import Definition from 'rzp/ui/Definition';
 import DataTable from 'rzp/ui/Table/DataTable';
+import LoaderDots from 'rzp/ui/LoaderDots';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 import { refundId, amount } from 'rzp/ui/item/pair';
 
@@ -20,7 +21,7 @@ import ShowWhen from 'merchant/components/ShowWhen';
  * will display refund status and actions
  */
 
-const getRefundDetails = refunds => {
+const RefundsList = ({ refunds }) => {
   return (
     <ContentToggler>
       <span>Refund Details</span>
@@ -39,12 +40,25 @@ const getRefundDetails = refunds => {
   );
 };
 
+const NumRefunds = ({ refunds }) => {
+  if (refunds.loading) {
+    return <LoaderDots />;
+  }
+
+  const numRefunds = refunds.items.length,
+    refundSuffix = numRefunds > 1 ? 's' : '';
+
+  return (
+    <span>
+      {numRefunds} refund{refundSuffix}
+    </span>
+  );
+};
+
 export default ({ payment, refunds, openRefundModal }) => {
   const paymentStatus = payment.status,
     refundStatus = payment.refund_status,
-    refundAmount = payment.amount_refunded,
-    numRefunds = refunds.items.length,
-    refundSuffix = numRefunds > 1 ? 's' : '';
+    refundAmount = payment.amount_refunded;
 
   if (['created', 'authorized', 'failed'].indexOf(paymentStatus) >= 0) {
     return (
@@ -61,11 +75,9 @@ export default ({ payment, refunds, openRefundModal }) => {
               <span>
                 <Amount value={refundAmount} /> Refunded
               </span>
-              {!refunds.loading &&
-                <span>
-                  Partially refunded in {numRefunds + ' '}
-                  refund{refundSuffix}
-                </span>}
+              <span>
+                Partially refunded in <NumRefunds refunds={refunds} />
+              </span>
             </Definition>
           : <Definition>No refunds issued yet</Definition>}
         <p />
@@ -78,7 +90,9 @@ export default ({ payment, refunds, openRefundModal }) => {
             </p>
           </ShowWhen>
         }
-        {refunds.loading ? <PlaceholderLoader /> : getRefundDetails(refunds)}
+        {refunds.loading
+          ? <PlaceholderLoader />
+          : <RefundsList refunds={refunds} />}
       </div>
     );
   } else if (paymentStatus === 'refunded') {
@@ -95,13 +109,16 @@ export default ({ payment, refunds, openRefundModal }) => {
       );
     } else if (refundStatus === 'full') {
       return (
-        <Definition>
-          <span>Fully Refunded</span>
-          <span>
-            Fully Refunded in {numRefunds} refund{refundSuffix}
-          </span>
-          {getRefundDetails(refunds)}
-        </Definition>
+        <div>
+          <Definition>
+            <span>Fully Refunded</span>
+            <span>
+              Fully Refunded in <NumRefunds refunds={refunds} />
+            </span>
+          </Definition>
+          <p />
+          {<RefundsList refunds={refunds} />}
+        </div>
       );
     }
   }
