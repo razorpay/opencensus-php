@@ -10,8 +10,6 @@ use RZP\Constants\Mode;
 use RZP\Gateway\Utility;
 use RZP\Trace\TraceCode;
 
-use Carbon\Carbon;
-
 class Reporting
 {
     const REQUEST_TIMEOUT = 20;
@@ -57,66 +55,49 @@ class Reporting
     {
         $url = self::REPORT_CONFIG;
 
-        $headers = ['X-Merchant-Id' => $this->auth->getMerchantId()];
-
-        return $this->makeRequestAndSend($input, $url, 'post', $headers);
+        return $this->makeRequestAndSend($input, $url, 'post');
     }
 
     public function fetchConfigMultiple($input) : array
     {
         $url = self::REPORT_CONFIG;
 
-        $headers = ['X-Merchant-Id' => $this->auth->getMerchantId()];
-
-        return $this->makeRequestAndSend($input, $url, 'get', $headers);
+        return $this->makeRequestAndSend($input, $url, 'get');
     }
 
     public function fetchConfigById($id, $input) : array
     {
         $url = self::REPORT_CONFIG . '/' . $id;
 
-        $headers = ['X-Merchant-Id' => $this->auth->getMerchantId()];
-
-        return $this->makeRequestAndSend($input, $url, 'get', $headers);
+        return $this->makeRequestAndSend($input, $url, 'get');
     }
 
     public function editConfig($id, $input) : array
     {
         $url = self::REPORT_CONFIG . '/' . $id;
 
-        $headers = ['X-Merchant-Id' => $this->auth->getMerchantId()];
-
-        return $this->makeRequestAndSend($input, $url, 'patch', $headers);
+        return $this->makeRequestAndSend($input, $url, 'patch');
     }
 
     public function deleteConfig($id) : array
     {
         $url = self::REPORT_CONFIG . '/' . $id;
 
-        $headers = ['X-Merchant-Id' => $this->auth->getMerchantId()];
-
-        return $this->makeRequestAndSend(null, $url, 'delete', $headers);
+        return $this->makeRequestAndSend(null, $url, 'delete');
     }
 
-    public function generateReport(string $configId)
+    public function generateReport($configId, $input)
     {
         $url = self::REPORT_GENERATE;
 
-        $headers = ['X-Merchant-Id' => $this->auth->getMerchantId()];
-
         // Prepare input
-        $input = [
-            'config_id'    => $configId,
-            'generated_by' => '20000000000000',
-            'start_time'   => Carbon::now()->subDays(30)->timestamp,
-            'end_time'     => Carbon::now()->timestamp,
-            'mode'         => $this->app['rzp.mode'],
-        ];
+        $input['mode'] = $this->app['rzp.mode'];
+        $input['config_id'] = $configId;
 
-        return $this->makeRequestAndSend($input, $url, 'post', $headers);
+        return $this->makeRequestAndSend($input, $url, 'post');
     }
 
-    protected function makeRequestAndSend($input = null, $url, $method = 'post', $headers = [])
+    protected function makeRequestAndSend($input = null, $url, $method = 'post')
     {
         $request = [];
         $response = null;
@@ -124,6 +105,10 @@ class Reporting
         $options = [
             'timeout' => self::REQUEST_TIMEOUT,
             'auth'    => $this->getAuthHeaders(),
+        ];
+
+        $headers = [
+            'X-Merchant-Id' => $this->auth->getMerchantId()
         ];
 
         $request['url'] =  $this->config['url'] . $url;
