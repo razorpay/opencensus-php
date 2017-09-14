@@ -139,7 +139,7 @@ class Company
              * In that case, we just trace the exception with info level else throw the same exception
              * Reference => https://curl.haxx.se/libcurl/c/libcurl-errors.html
              */
-            if (strpos($errorMessage, "28") !== false)
+            if (strpos($errorMessage, "cURL error 28:") !== false)
             {
                 Trace::info(TraceCode::MISC_TRACE_CODE, [
                     'message'   => $exception->getMessage(),
