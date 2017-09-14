@@ -74,6 +74,26 @@ class NetbankingBobGatewayTest extends TestCase
         $this->assertTestResponse($gatewayPayment, 'testPaymentVerifySuccessEntity');
     }
 
+    public function testAuthFailedVerifySuccess()
+    {
+        $this->testAuthorizeFailed();
+
+        $data = $this->testData['testVerifyMismatch'];
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertTestResponse($gatewayPayment, 'testAuthFailedVerifySuccessEntity');
+    }
+
     protected function mockFailedCallbackResponse()
     {
         $this->mockServerContentFunction(function(& $content, $action = null)

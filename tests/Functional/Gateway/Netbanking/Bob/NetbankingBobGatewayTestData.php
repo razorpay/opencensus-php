@@ -57,7 +57,7 @@ return [
 
     'testPaymentFailedNetbankingEntity' => [
         'bank_payment_id' => null,
-        'received'        => true,
+        'received'        => false,
         'bank'            => 'BARB',
         'status'          => Constants::STATUS_FAILURE
     ],
@@ -67,5 +67,28 @@ return [
         'received'        => true,
         'bank'            => 'BARB',
         'status'          => Constants::STATUS_SUCCESS
+    ],
+
+    'testAuthFailedVerifySuccessEntity' => [
+        'bank_payment_id' => 'AB1234',
+        'received'        => false,
+        'bank'            => 'BARB',
+        'status'          => Constants::STATUS_SUCCESS
+    ],
+
+    'testVerifyMismatch' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\PaymentVerificationException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+        ],
     ],
 ];

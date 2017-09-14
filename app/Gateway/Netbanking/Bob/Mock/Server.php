@@ -39,7 +39,7 @@ class Server extends Base\Mock\Server
         $id = $input[RequestFields::PAYMENT_ID];
 
         $content = [
-            ResponseFields::BANK_REF_NUMBER => '434323',
+            ResponseFields::BANK_REF_NUMBER => self::BANK_REF_NUMBER,
             ResponseFields::PAYMENT_ID => $id,
             ResponseFields::STATUS => Constants::STATUS_SUCCESS,
         ];

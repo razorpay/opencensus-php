@@ -64,6 +64,11 @@ class Gateway extends Base\Gateway
         // This asserts the payment id and amount from the response
         $this->checkCallbackResponse($gatewayPayment, $content);
 
+        if ($this->isGatewaySuccess($content) === false)
+        {
+            $content[NetbankingEntity::RECEIVED] = false;
+        }
+
         $this->updateGatewayPaymentEntity($gatewayPayment, $content);
 
         $this->checkCallbackStatus($content);
@@ -218,7 +223,7 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
-        $this->saveVerifyContentIfNeeded($gatewayPayment, $verify->input['payment']);
+        $this->saveVerifyContentIfNeeded($gatewayPayment, $verify);
     }
 
     protected function getVerifyRequestData($verify)
@@ -257,20 +262,30 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function saveVerifyContentIfNeeded($gatewayPayment, $payment)
+    protected function saveVerifyContentIfNeeded($gatewayPayment, $verify)
     {
+        $payment = $verify->payment;
+
+        $content = $verify->verifyResponseContent;
+
         $this->action = Action::AUTHORIZE;
 
         $gatewayAttributes = $this->getAuthorizeNetbankingContentToSave($payment);
 
+        $gatewayAttributes[ResponseFields::BANK_REF_NUMBER] = $content[ResponseFields::BANK_REF_NUMBER];
+
+        // Setting success status, since verification is success
+        $gatewayAttributes[ResponseFields::STATUS] = Constants::STATUS_SUCCESS;
+
+        // Timed out auth request
         if ($gatewayPayment === null)
         {
             $gatewayPayment = $this->createGatewayPaymentEntity($gatewayAttributes, Action::AUTHORIZE);
         }
+        // Callback gave failure status, but verify is success
         else if ($gatewayPayment[NetbankingEntity::RECEIVED] === false)
         {
-            $gatewayPayment->fill($gatewayAttributes);
-            $gatewayPayment->saveOrFail();
+            $gatewayPayment = $this->updateGatewayPaymentEntity($gatewayPayment, $gatewayAttributes);
         }
 
         $this->action = Action::VERIFY;
