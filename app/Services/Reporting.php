@@ -10,8 +10,6 @@ use RZP\Constants\Mode;
 use RZP\Gateway\Utility;
 use RZP\Trace\TraceCode;
 
-use Carbon\Carbon;
-
 class Reporting
 {
     const REQUEST_TIMEOUT = 20;
