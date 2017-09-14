@@ -87,17 +87,27 @@ export default class InvoiceDetail extends Component {
                           />}
                       />
 
-                      {invoice.status !== 'paid' &&
-                        <EntityDetailRow
-                          label={`${subscriptionStatus === 'pending'
-                            ? 'Next Charge at'
-                            : 'Charge at'}`}
-                          value={() =>
-                            <Time
-                              value={nextChargeAt}
-                              format="DD MMM YYYY, hh:mm:ss a"
-                            />}
-                        />}
+                      {/* dummy invoice with 'next_due' status won't be added if subscriptionStatus is pending, so label will be 'Charge at'*/}
+                      {
+                        do {
+                          if (
+                            invoice.status === 'next_due' ||
+                            (invoice.status === 'issued' &&
+                              subscriptionStatus !== 'halted')
+                          ) {
+                            <EntityDetailRow
+                              label={`${subscriptionStatus === 'pending'
+                                ? 'Next Charge at'
+                                : 'Charge at'}`}
+                              value={() =>
+                                <Time
+                                  value={nextChargeAt}
+                                  format="DD MMM YYYY, hh:mm:ss a"
+                                />}
+                            />;
+                          }
+                        }
+                      }
 
                       <EntityDetailRow
                         label="Amount"
