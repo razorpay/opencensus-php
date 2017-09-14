@@ -34,6 +34,11 @@ class AdminAccess
 
     public function handle($request, Closure $next)
     {
+        $orgId = $this->getOrgIdForRoute($request);
+
+        //setting here so app auth also uses orgId.
+        $this->ba->setOrgId($orgId);
+
         if ($this->ba->isAdminAuth() === true)
         {
             $admin = $this->ba->getAdmin();

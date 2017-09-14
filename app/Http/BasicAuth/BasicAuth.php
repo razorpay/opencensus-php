@@ -194,6 +194,9 @@ class BasicAuth
 
     protected $adminOrgId = null;
 
+    //Org Id will be used only in appAuth.
+    protected $orgId      = null;
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -1367,4 +1370,15 @@ class BasicAuth
                 $data);
         }
     }
+
+    public function setOrgId(string $orgId)
+    {
+        $this->orgId = $orgId;
+    }
+
+    public function getOrgId()
+    {
+        return $this->orgId;
+    }
+
 }

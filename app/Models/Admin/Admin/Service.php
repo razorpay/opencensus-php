@@ -407,19 +407,14 @@ class Service extends Base\Service
     {
         if (empty($this->adminOrgId))
         {
-            // In App auth AdminOrg will not be set so fetching org from header sent by client.
-            $orgHeader = Request::header('X-Org-Hostname');
-
-            // This will never be empty.
-            if (empty($orgHeader) === false)
-            {
-                $org = $this->repo->org->findOrFailByHostname($orgHeader);
-
-                $this->adminOrgId = $org->getId();
-            }
+            $orgId = $this->app['basicauth']->getOrgId();
+        }
+        else
+        {
+            $orgId = $this->adminOrgId;
         }
 
-        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $this->adminOrgId);
+        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
 
         if (empty($input[Entity::ROLES]) === false)
         {
