@@ -42,7 +42,9 @@ const getCustomerDetail = invoice =>
             </span>
           : null}
       </span>}
-    {invoice.customer_id}
+    <code>
+      {invoice.customer_id}
+    </code>
   </Definition>;
 
 export default props => {
