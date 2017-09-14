@@ -61,4 +61,11 @@ return [
         'bank'            => 'BARB',
         'status'          => Constants::STATUS_FAILURE
     ],
+
+    'testPaymentVerifySuccessEntity' => [
+        'bank_payment_id' => 'AB1234',
+        'received'        => true,
+        'bank'            => 'BARB',
+        'status'          => Constants::STATUS_SUCCESS
+    ],
 ];
