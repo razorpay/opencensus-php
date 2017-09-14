@@ -5,6 +5,8 @@ namespace RZP\Gateway\Netbanking\Bob;
 use phpseclib\Crypt\AES;
 
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
