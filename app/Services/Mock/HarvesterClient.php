@@ -11,7 +11,7 @@ class HarvesterClient extends BaseHarvesterClient
     {
         $response = new Response();
 
-        $response->url = $this->queryBaseUrl . $this->queryPath;
+        $response->url = $this->queryPath;
         $response->headers = ['Content-Type' => 'application/json'];
         $response->status_code = 200;
         $response->success = true;

@@ -41,13 +41,13 @@ return array(
         'mock'      => env('SLACK_MOCK'),
     ),
 
-    'sns' => [
+    'sns' => array(
         'mock'      => env('SNS_MOCK'),
-    ],
+    ),
 
-    'zapier' => [
+    'zapier' => array(
         'mock'      => env('ZAPIER_MOCK'),
-    ],
+    ),
 
     'hosted' => array(
         'secret'    => env('APP_HOSTED_SECRET'),
@@ -88,56 +88,57 @@ return array(
         'identifier'    => env('LUMBERJACK_API_IDENTIFIER')
     ),
 
-    'harvester' => [
-        'url'           => env('HARVESTER_URL'),
-        'secret'        => env('HARVESTER_SECRET'),
-        'mock'          => env('HARVESTER_MOCK', false),
-        'identifier'    => env('HARVESTER_API_IDENTIFIER')
-    ],
+    'harvester' => array(
+        'url'               => env('HARVESTER_URL'),
+        'secret'            => env('HARVESTER_SECRET'),
+        'mock'              => env('HARVESTER_MOCK', false),
+        'identifier'        => env('HARVESTER_API_IDENTIFIER'),
+        'analytics_token'   => env('HARVESTER_ANALYTICS_TOKEN'),
+    ),
 
-    'elfin' => [
+    'elfin' => array(
         'mock'     => env('ELFIN_MOCK', true),
         'services' => env('ELFIN_SERVICES', 'gimli,bitly'),
-        'gimli'    => [
+        'gimli'    => array(
             'secret'   => env('GIMLI_SECRET'),
             'base_url' => env('GIMLI_BASE_URL')
-        ],
-        'bitly'    => [
+        ),
+        'bitly'    => array(
             'secret'   => env('BITLY_ACCESS_TOKEN_PUBLIC'),
-        ],
+        ),
         'allow_fallback' => true,
-    ],
+    ),
 
-    'exchange'  => [
+    'exchange'  => array(
         'mock'      => env('EXCHANGE_MOCK', false),
         'url'       => env('EXCHANGE_URL'),
         'appId'     => env('EXCHANGE_APP_ID')
-    ],
+    ),
 
-    'zoho' => [
+    'zoho' => array(
         'header'    => env('ZOHO_HEADER'),
-    ],
+    ),
 
-    'drip' => [
+    'drip' => array(
         'mock'      => env('DRIP_MOCK', false),
         'url'       => env('DRIP_URL'),
         'accountId' => env('DRIP_ACCOUNT_ID'),
         'token'     => env('DRIP_TOKEN')
-    ],
+    ),
 
-    'gateway_downtime' => [
-        'statuscake' => [
+    'gateway_downtime' => array(
+        'statuscake' => array(
             'username' => env('STATUSCAKE_USERNAME'),
             'api_key'  => env('STATUSCAKE_API_KEY')
-        ]
-    ],
+        )
+    ),
 
-    'nodal' => [
+    'nodal' => array(
         'mock' => env('NODAL_MOCK', false),
-        'auth' => [
+        'auth' => array(
             'username' => env('NODAL_USERNAME'),
             'password' => env('NODAL_PASSWORD'),
-        ],
+        ),
         'url' => env('NODAL_BASE_URL'),
-    ],
+    ),
 );

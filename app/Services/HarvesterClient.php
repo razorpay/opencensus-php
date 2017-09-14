@@ -26,11 +26,7 @@ class HarvesterClient extends AbstractEventClient
 
     const TRACK_EVENT_URL_PATTERN = 'track/merchants';
 
-    const QUERY_BASE_URL = 'https://api.razorpay.com';      // TODO : Retrieve from env variables
-
-    const QUERY_API_PATH = '/v1/analytics/pokedex';
-
-    const HARVESTER_ACCESS_TOKEN = 'prePublishedApiKey';      // TODO : Retrieve from env variables
+    const QUERY_API_PATH = '/v1/analytics/dashboard';
 
     public function __construct($app)
     {
@@ -38,17 +34,17 @@ class HarvesterClient extends AbstractEventClient
 
         $this->urlPattern = self::TRACK_EVENT_URL_PATTERN;
 
-        $this->queryBaseUrl = self::QUERY_BASE_URL;     // TODO : Retrieve this from environment variables
-
-        $this->queryPath = self::QUERY_API_PATH;
-
-        $this->accessToken = self::HARVESTER_ACCESS_TOKEN;      // TODO : Retrieve this from environment variables
-
         $this->config = $app['config']->get('applications.harvester');
 
         $this->trace = $app['trace'];
 
         $this->mock = $this->config['mock'];
+
+        $this->queryBaseUrl = $this->config['url'];
+
+        $this->queryPath = self::QUERY_API_PATH;
+
+        $this->accessToken = $this->config['analytics_token'];
     }
 
     /**
@@ -132,10 +128,9 @@ class HarvesterClient extends AbstractEventClient
         $request['options'] = $options;
 
         $retryCount = 0;
-        $maxRetryTimes += 1;
         $response = null;
 
-        while ($retryCount < $maxRetryTimes)
+        while ($retryCount <= $maxRetryTimes)
         {
             try
             {
@@ -160,16 +155,26 @@ class HarvesterClient extends AbstractEventClient
             }
         }
 
-        $this->checkErrors($response);
+        $this->checkErrors($urlPath, $data ,$response);
 
         return $response;
     }
 
-    protected function checkErrors(Response $response)
+    protected function checkErrors($urlPath, $data, Response $response)
     {
-        // Check for errors and log them
+        if ($response->status_code != 200)
+        {
+            $this->trace->error(
+                TraceCode::HARVESTER_FAILURE,
+                [
+                    'url'       => $urlPath,
+                    'data'      => $data,
+                    'status'    => $response->status_code,
+                    'body'      => $response->body
+                ]);
+        }
 
-        // Send email/slack message for $response->status_code != 200
+        // TODO : Send email/slack message for $response->status_code != 200
     }
 
     protected function getResponse($request)
