@@ -54,7 +54,9 @@ class Core extends Base\Core
 
         $tax =  $adjInput[MerchantInvoice\Entity::TAX] ?? 0;
 
-        $adjInput[Entity::AMOUNT] = $amount + $tax;
+        $fees = $adjInput[Entity::FEES] ?? 0;
+
+        $adjInput[Entity::AMOUNT] = $amount + $tax + $fees;
 
         $adj = (new Adjustment\Entity)->build($adjInput);
 
@@ -65,16 +67,21 @@ class Core extends Base\Core
 
         // 1. Create adjustment
         // 2. Create Invoice entity for adjustment
-        $adjustment = $this->repo->transaction(function() use ($adj, $merchant, $input)
+        if($tax != 0 or $fees != 0)
         {
-            $adjustment = $this->createAdjInTransaction($adj, $merchant);
+            $adjustment = $this->repo->transaction(function () use ($adj, $merchant, $input) {
+                $adjustment = $this->createAdjInTransaction($adj, $merchant);
 
-            (new Merchant\Invoice\Core)->createAdjustmentInvoiceEntity($adj, $input);
+                (new Merchant\Invoice\Core)->createAdjustmentInvoiceEntity($adj, $input);
 
+                return $adjustment;
+            });
             return $adjustment;
-        });
-
-        return $adjustment;
+        }
+        else
+        {
+            return $this->transaction([$this, 'createAdjInTransaction'], $adj, $merchant);
+        }
     }
 
     public function createDisputeAdjustment(array $input, Dispute\Entity $dispute): Entity
