@@ -307,6 +307,7 @@ class Payment extends Base
         $defaultValues = [
             'status'        => 'captured',
             'method'        => 'transfer',
+            'captured_at'   => time(),
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

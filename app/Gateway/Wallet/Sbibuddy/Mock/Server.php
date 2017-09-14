@@ -114,7 +114,9 @@ class Server extends Base\Mock\Server
             ResponseFields::TRACKING_ID             => 123,
             ResponseFields::AMOUNT                  => $amount,
             ResponseFields::FEE                     => "0.00",
-            ResponseFields::STATUS_CODE             => ResponseCodeMap::SUCCESS_CODE
+            ResponseFields::STATUS_CODE             => ResponseCodeMap::SUCCESS_CODE,
+            ResponseFields::REFUND_ID               => "123,234,345",
+            ResponseFields::REFUNDED_AMOUNT         => "80.00",
         ];
 
         return $content;

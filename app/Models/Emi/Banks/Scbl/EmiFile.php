@@ -15,9 +15,7 @@ class EmiFile extends Base\EmiFile
 
     protected $bankName  = 'Scbl';
 
-    const EXTENSION = FileStore\Format::XLSX;
-
-    const TYPE = FileStore\Type::SCBL_EMI_FILE;
+    protected $type = FileStore\Type::SCBL_EMI_FILE;
 
     protected function getEmiData($input)
     {

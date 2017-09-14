@@ -4,12 +4,9 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
-use RZP\Models\Invitation;
 
 class InvitationController extends Controller
 {
-    protected $service = Invitation\Service::class;
-
     public function create()
     {
         $input = Request::all();

@@ -414,6 +414,13 @@ class Repository extends Base\Repository
                     ->whereBetween('created_at', [$from, $to]);
     }
 
+    public function findByGatewayPaymentIdOrFail(string $gatewayPaymentId)
+    {
+        return $this->newQuery()
+                    ->where('gateway_payment_id', '=', $gatewayPaymentId)
+                    ->firstOrFail();
+    }
+
     public function findByGatewayTransactionIdOrFail($gatewayTxnId)
     {
         return $this->newQuery()

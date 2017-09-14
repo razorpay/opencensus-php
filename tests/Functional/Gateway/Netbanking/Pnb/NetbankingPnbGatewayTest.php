@@ -270,8 +270,8 @@ class NetbankingPnbGatewayTest extends TestCase
         foreach ($payments['items'] as $payment)
         {
             $this->fixtures->edit('payment', $payment['id'], ['created_at'    => $createdAt,
-                                                              'authorized_at' => $createdAt + 10,
-                                                              'captured_at'   => $createdAt + 20]);
+                                                              'authorized_at' => $createdAt,
+                                                              'captured_at'   => $createdAt]);
         }
 
         $p1 = $this->doAuthAndCapturePayment($this->payment);
@@ -362,9 +362,9 @@ class NetbankingPnbGatewayTest extends TestCase
         $testData = [
             'subject' => 'Pnb Netbanking claims and refund files for '.$date,
                 'amount' => [
-                    'claims'  => 1500.0,
+                    'claims'  => 500.0,
                     'refunds' => 500.0,
-                    'total'   => 1000.0,
+                    'total'   => 500.0,
                 ],
                 'count'   => [
                     'claims'  => 4,

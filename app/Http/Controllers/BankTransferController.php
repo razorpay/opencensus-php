@@ -4,17 +4,9 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
-use RZP\Models\BankTransfer;
 
 class BankTransferController extends Controller
 {
-    protected $service = BankTransfer\Service::class;
-
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     public function processBankTransfer()
     {
         $input = Request::all();

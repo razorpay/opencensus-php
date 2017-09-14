@@ -342,7 +342,7 @@
                     options.image = merchant.image;
                   }
                 }
-                var razorpay = Razorpay(options);
+                var razorpay = window.razorpay = Razorpay(options);
                 if (!data.error && invoiceObj.status !== 'partially_paid') {
                   razorpay.open();
                 }

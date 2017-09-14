@@ -15,32 +15,34 @@ use Razorpay\IFSC\IFSC as BaseIFSC;
 
 class Gateway
 {
-    const AMEX               = 'amex';
-    const ATOM               = 'atom';
-    const AXIS_GENIUS        = 'axis_genius';
-    const AXIS_MIGS          = 'axis_migs';
-    const BILLDESK           = 'billdesk';
-    const CYBERSOURCE        = 'cybersource';
-    const EBS                = 'ebs';
-    const FIRST_DATA         = 'first_data';
-    const HDFC               = 'hdfc';
-    const MOBIKWIK           = 'mobikwik';
-    const NETBANKING_AIRTEL  = 'netbanking_airtel';
-    const NETBANKING_AXIS    = 'netbanking_axis';
-    const NETBANKING_FEDERAL = 'netbanking_federal';
-    const NETBANKING_BOB     = 'netbanking_bob';
-    const NETBANKING_HDFC    = 'netbanking_hdfc';
-    const NETBANKING_ICICI   = 'netbanking_icici';
-    const NETBANKING_INDUSIND= 'netbanking_indusind';
-    const NETBANKING_KOTAK   = 'netbanking_kotak';
-    const NETBANKING_RBL     = 'netbanking_rbl';
-    const NETBANKING_PNB     = 'netbanking_pnb';
-    const PAYTM              = 'paytm';
-    const SHARP              = 'sharp';
-    const UPI_MINDGATE       = 'upi_mindgate';
-    const UPI_ICICI          = 'upi_icici';
-    const UPI_IDFC           = 'upi_idfc';
-    const AEPS_ICICI         = 'aeps_icici';
+    const AMEX                   = 'amex';
+    const ATOM                   = 'atom';
+    const AXIS_GENIUS            = 'axis_genius';
+    const AXIS_MIGS              = 'axis_migs';
+    const BILLDESK               = 'billdesk';
+    const BLADE                  = 'blade';
+    const CYBERSOURCE            = 'cybersource';
+    const EBS                    = 'ebs';
+    const FIRST_DATA             = 'first_data';
+    const HDFC                   = 'hdfc';
+    const MOBIKWIK               = 'mobikwik';
+    const NETBANKING_AIRTEL      = 'netbanking_airtel';
+    const NETBANKING_AXIS        = 'netbanking_axis';
+    const NETBANKING_FEDERAL     = 'netbanking_federal';
+    const NETBANKING_BOB         = 'netbanking_bob';
+    const NETBANKING_HDFC        = 'netbanking_hdfc';
+    const NETBANKING_CORPORATION = 'netbanking_corporation';
+    const NETBANKING_ICICI       = 'netbanking_icici';
+    const NETBANKING_INDUSIND    = 'netbanking_indusind';
+    const NETBANKING_KOTAK       = 'netbanking_kotak';
+    const NETBANKING_RBL         = 'netbanking_rbl';
+    const NETBANKING_PNB         = 'netbanking_pnb';
+    const PAYTM                  = 'paytm';
+    const SHARP                  = 'sharp';
+    const UPI_MINDGATE           = 'upi_mindgate';
+    const UPI_ICICI              = 'upi_icici';
+    const UPI_IDFC               = 'upi_idfc';
+    const AEPS_ICICI             = 'aeps_icici';
 
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
     const WALLET_FREECHARGE  = 'wallet_freecharge';
@@ -116,6 +118,7 @@ class Gateway
         self::WALLET_JIOMONEY,
         self::NETBANKING_RBL,
         self::NETBANKING_INDUSIND,
+        self::NETBANKING_PNB,
     ];
 
     /**
@@ -135,9 +138,11 @@ class Gateway
         Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::AMEX,
         Payment\Gateway::WALLET_JIOMONEY,
+        Payment\Gateway::WALLET_SBIBUDDY,
         Payment\Gateway::WALLET_AIRTELMONEY,
         Payment\Gateway::FIRST_DATA,
         Payment\Gateway::UPI_ICICI,
+        Payment\Gateway::WALLET_PAYZAPP,
     ];
 
     public static $channels = [
@@ -145,6 +150,7 @@ class Gateway
         self::ATOM                => Settlement\Channel::ATOM,
         self::AXIS_GENIUS         => Settlement\Channel::KOTAK,
         self::AXIS_MIGS           => Settlement\Channel::KOTAK,
+        self::BLADE               => Settlement\Channel::KOTAK,
         self::BILLDESK            => Settlement\Channel::KOTAK,
         self::EBS                 => Settlement\Channel::KOTAK,
         self::HDFC                => Settlement\Channel::KOTAK,
@@ -191,6 +197,7 @@ class Gateway
             self::AMEX,
             self::CYBERSOURCE,
             self::FIRST_DATA,
+            self::BLADE,
         ],
 
         Method::NETBANKING => [
@@ -200,6 +207,7 @@ class Gateway
             self::NETBANKING_ICICI,
             self::NETBANKING_BOB,
             self::NETBANKING_HDFC,
+            self::NETBANKING_CORPORATION,
             self::NETBANKING_KOTAK,
             self::NETBANKING_AIRTEL,
             self::NETBANKING_AXIS,
@@ -314,21 +322,31 @@ class Gateway
             Network::MAES,
             Network::DICL,
             Network::RUPAY,
-            Network::UNKNOWN],
+            Network::UNKNOWN
+        ],
         self::AXIS_MIGS => [
             Network::MC,
-            Network::VISA],
+            Network::VISA
+        ],
         self::AXIS_GENIUS => [
             Network::MC,
-            Network::VISA],
+            Network::VISA
+        ],
         self::ATOM => [
             Network::MC,
-            Network::VISA],
+            Network::VISA
+        ],
         self::AMEX => [
-            Network::AMEX],
+            Network::AMEX
+        ],
+        self::BLADE => [
+            Network::MC,
+            Network::VISA
+        ],
         self::PAYTM => [
             Network::MC,
-            Network::VISA],
+            Network::VISA
+        ],
         self::SHARP => [
             Network::MC,
             Network::VISA,
@@ -336,10 +354,12 @@ class Gateway
             Network::AMEX,
             Network::DICL,
             Network::RUPAY,
-            Network::UNKNOWN],
+            Network::UNKNOWN
+        ],
         self::CYBERSOURCE => [
             Network::MC,
-            Network::VISA],
+            Network::VISA
+        ],
         self::FIRST_DATA => [
             Network::MC,
             Network::VISA,
@@ -440,6 +460,7 @@ class Gateway
         Gateway::UPI_MINDGATE,
         Gateway::UPI_ICICI,
         Gateway::WALLET_OLAMONEY,
+        Gateway::NETBANKING_CORPORATION,
         Gateway::SHARP
     ];
 
@@ -449,6 +470,7 @@ class Gateway
      * @var array
      */
     public static $internationalCardGateways = [
+        Gateway::BLADE,
         Gateway::HDFC,
         Gateway::AXIS_MIGS,
         Gateway::AMEX,
@@ -492,6 +514,7 @@ class Gateway
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::BARB => Gateway::NETBANKING_BOB,
+        IFSC::CORP => Gateway::NETBANKING_CORPORATION,
         IFSC::AIRP => Gateway::NETBANKING_AIRTEL,
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,

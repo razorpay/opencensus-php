@@ -436,9 +436,9 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY,
             [
                 'raw_content' => $response->body,
-                'content' => $content,
-                'gateway' => 'upi_icici',
-                'payment_id' => $input['payment']['id'],
+                'content'     => $content,
+                'gateway'     => 'upi_icici',
+                'payment_id'  => $input['payment']['id'],
             ]);
 
         $verify->verifyResponse = $this->response;
@@ -450,7 +450,30 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getPaymentVerifyRequestArray(array $input): array
+    protected function sendRefundVerifyRequest(array $input)
+    {
+        $request = $this->getRefundVerifyRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->response = $response;
+
+        $content = $this->parseGatewayResponse($response->body);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
+            [
+                'raw_content' => $response->body,
+                'content'     => $content,
+                'gateway'     => 'upi_icici',
+                'refund_id'   => $input['refund']['id'],
+            ]);
+
+        return $content;
+    }
+
+
+    protected function getPaymentVerifyRequestArray(array $input)
     {
         $data = [
             'merchantId'        => $this->getMerchantId(),
@@ -459,13 +482,7 @@ class Gateway extends Base\Gateway
             'terminalId'        => '1234',
         ];
 
-        $content = $this->transformRequestArrayToContent($data);
-
-        $request = $this->getStandardRequestArray($content);
-
-        $request['headers'] = [
-            'Content-Type' => 'text/plain'
-        ];
+        $request = $this->getRequest($data);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
@@ -473,6 +490,47 @@ class Gateway extends Base\Gateway
                 'request' => $request,
                 'decrypted_content' => $data
             ]);
+
+        return $request;
+    }
+
+    protected function getRefundVerifyRequestArray(array $input)
+    {
+        $attempts = '';
+
+        if ($input['refund']['attempts'] !== 2)
+        {
+            $attempts = $input['refund']['attempts'] - 1;
+        }
+
+        $data = [
+            'merchantId'        => $this->getMerchantId(),
+            'merchantTranId'    => $input['refund']['id'] . $attempts,
+            'subMerchantId'     => $this->getSubMerchantId($input),
+            'terminalId'        => '1234',
+        ];
+
+        $request = $this->getRequest($data);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
+            [
+                'request' => $request,
+                'decrypted_content' => $data
+            ]);
+
+        return $request;
+    }
+
+    protected function getRequest(array $data): array
+    {
+        $content = $this->transformRequestArrayToContent($data);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $request['headers'] = [
+            'Content-Type' => 'text/plain'
+        ];
 
         return $request;
     }
@@ -526,19 +584,27 @@ class Gateway extends Base\Gateway
 
     public function verifyRefund(array $input)
     {
-        $refundIds = [
-            '8Q8AmBCfmOcvB8',
-            '8QzbBD25Fbd5wq',
-            '8QzbE8dtTRvBw9',
-        ];
+        parent::verify($input);
 
-        if (in_array($input['refund']['id'], $refundIds, true) === true)
+        $content = $this->sendRefundVerifyRequest($input);
+
+        if ($content['status'] === Status::SUCCESS)
+        {
+            return true;
+        }
+
+        if ($content['status'] === Status::FAILURE)
         {
             return false;
         }
 
-        throw new Exception\LogicException(
-            'UPI ICICI verify refund is not implemented');
+         throw new Exception\LogicException(
+                'Shouldn\'t reach here',
+                null,
+                [
+                    'gateway_status' => $content['status'],
+                    'refund_id'      => $input['refund']['id'],
+                ]);
     }
 
     /**
@@ -682,16 +748,9 @@ class Gateway extends Base\Gateway
             Fields::MERCHANT_TRAN_ID                => $this->getRefundId($refund),
             Fields::ORIGINAL_MERCHANT_TRAN_ID       => $payment['id'],
             Fields::REFUND_AMOUNT                   => $this->formatAmount($refund['amount']),
-            Fields::PAYEE_VA                        => strtolower($payment['vpa']),
             Fields::NOTE                            => 'Razorpay Refund ' . $refund['id'],
             Fields::ONLINE_REFUND                   => 'Y',
         ];
-
-        // ICICI has confirmed that the vpa is not a mandatory field now.
-        if ($input['merchant']['id'] === Merchant\Account::DEMO_PAGE_ACCOUNT)
-        {
-            unset($data[Fields::PAYEE_VA]);
-        }
 
         $content = $this->transformRequestArrayToContent($data);
 
@@ -717,12 +776,7 @@ class Gateway extends Base\Gateway
      */
     protected function getRefundId(array $refund)
     {
-        if ($refund['attempts'] >= 1)
-        {
-            return $refund['id'] . '_' . $refund['attempts'];
-        }
-
-        return $refund['id'];
+        return $refund['id'] . ($refund['attempts'] ?: '');
     }
 
 

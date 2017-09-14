@@ -4,9 +4,7 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
-use RZP\Models\Settlement;
-use RZP\Models\Settlement\Details;
-use RZP\Models\Transaction;
+use RZP\Constants\Entity as E;
 
 class SettlementController extends Controller
 {
@@ -14,7 +12,7 @@ class SettlementController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Settlement\Service)->initiateSettlements($input, $channel);
+        $data = $this->service()->initiateSettlements($input, $channel);
 
         return ApiResponse::json($data);
     }
@@ -23,7 +21,7 @@ class SettlementController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Settlement\Service)->processFailedSettlements($input);
+        $data = $this->service()->processFailedSettlements($input);
 
         return ApiResponse::json($data);
     }
@@ -32,7 +30,7 @@ class SettlementController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Settlement\Service)->generateSettlementFile($input);
+        $data = $this->service()->generateSettlementFile($input);
 
         return ApiResponse::json($data);
     }
@@ -41,14 +39,14 @@ class SettlementController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Settlement\Service)->editSettlement($id, $input);
+        $data = $this->service()->editSettlement($id, $input);
 
         return ApiResponse::json($data);
     }
 
     public function getSettlement($id)
     {
-        $data = (new Settlement\Service)->fetch($id);
+        $data = $this->service()->fetch($id);
 
         return ApiResponse::json($data);
     }
@@ -57,7 +55,7 @@ class SettlementController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Settlement\Service)->fetchMultiple($input);
+        $data = $this->service()->fetchMultiple($input);
 
         return ApiResponse::json($data);
     }
@@ -66,7 +64,7 @@ class SettlementController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Settlement\Service)->reconcileSettlements($input);
+        $data = $this->service()->reconcileSettlements($input);
 
         return ApiResponse::json($data);
     }
@@ -75,7 +73,7 @@ class SettlementController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Settlement\Service)->reconcileH2HSettlements($input);
+        $data = $this->service()->reconcileH2HSettlements($input);
 
         return ApiResponse::json($data);
     }
@@ -84,7 +82,7 @@ class SettlementController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Settlement\Service)->generateSettlementReconciliation($input);
+        $data = $this->service()->generateSettlementReconciliation($input);
 
         return ApiResponse::json($data);
     }
@@ -93,35 +91,35 @@ class SettlementController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Settlement\Service)->reconcileSettlementsInTestMode($input);
+        $data = $this->service()->reconcileSettlementsInTestMode($input);
 
         return ApiResponse::json($data);
     }
 
     public function deleteSettlementFile($setlFileType)
     {
-        $data = (new Settlement\Service)->deleteSetlFile($setlFileType);
+        $data = $this->service()->deleteSetlFile($setlFileType);
 
         return ApiResponse::json($data);
     }
 
     public function getSettlementTransactions($id)
     {
-        $data = (new Settlement\Service)->fetchSettlementTransactions($id);
+        $data = $this->service()->fetchSettlementTransactions($id);
 
         return ApiResponse::json($data);
     }
 
     public function getSettlementFixer()
     {
-        $data = (new Transaction\Service)->settlementFixer();
+        $data = $this->service(E::TRANSACTION)->settlementFixer();
 
         return ApiResponse::json($data);
     }
 
     public function getSettlementDetails($id)
     {
-        $data = (new Settlement\Details\Service)->getSettlementDetails($id);
+        $data = $this->service(E::SETTLEMENT_DETAILS)->getSettlementDetails($id);
 
         return ApiResponse::json($data);
     }
@@ -130,7 +128,7 @@ class SettlementController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Settlement\Details\Service)->postSettlementDetailsForOldTxns($input);
+        $data = $this->service(E::SETTLEMENT_DETAILS)->postSettlementDetailsForOldTxns($input);
 
         return ApiResponse::json($data);
     }
@@ -139,7 +137,7 @@ class SettlementController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Settlement\Service)->getSettlementCombinedReport($input);
+        $data = $this->service()->getSettlementCombinedReport($input);
 
         return ApiResponse::json($data);
     }
@@ -148,7 +146,7 @@ class SettlementController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Settlement\Service)->postInitiateTransfer($input);
+        $data = $this->service()->postInitiateTransfer($input);
 
         return ApiResponse::json($data);
     }

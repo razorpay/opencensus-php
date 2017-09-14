@@ -5,13 +5,15 @@ namespace RZP\Tests\Functional\Merchant;
 use Carbon\Carbon;
 
 use RZP\Constants\Timezone;
-use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Merchant\Invoice;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class MerchantInvoiceTest extends TestCase
 {
     use PaymentTrait;
+    use HeimdallTrait;
 
     public function setUp()
     {
@@ -20,6 +22,46 @@ class MerchantInvoiceTest extends TestCase
         parent::setUp();
 
         $this->ba->publicAuth();
+    }
+
+    public function testBulkCreate()
+    {
+        $this->ba->adminAuth();
+
+        $request = [
+            'url'     => '/merchants/invoice/bulk',
+            'method'  => 'POST',
+            'content' => [
+                'invoice_entities' => [
+                    [
+                        'merchant_id'   => '10000000000000',
+                        'gstin'         => '29kjsngjk213900',
+                        'amount'        => 50000,
+                        'tax'           => 400,
+                        'description'   => 'adding invoice for something',
+                        'month'         => 8,
+                        'year'          => 2017,
+                    ],
+                    [
+                        'merchant_id'   => '10000000000000',
+                        'gstin'         => '29kjsngjk213900',
+                        'amount'        => -51100,
+                        'tax'           => -600,
+                        'description'   => 'adding invoice for something',
+                        'month'         => 8,
+                        'year'          => 2017,
+                    ],
+                ]
+            ],
+        ];
+
+        $this->makeRequestAndGetContent($request);
+
+        $entities = $this->getEntities('merchant_invoice', [], true);
+
+        $this->assertEquals(2, $entities['count']);
+
+        $this->assertEquals(substr($entities['items'][0]['invoice_number'], -4), '0817');
     }
 
     public function testEditGstin()
@@ -31,7 +73,7 @@ class MerchantInvoiceTest extends TestCase
                 'gstin'         => '29kjsngjk213900',
             ]);
 
-        $invoiceNumber = '10000000000000/08/2017';
+        $invoiceNumber = '100820171111';
 
         $this->fixtures->create('merchant_invoice',
             [
@@ -82,7 +124,7 @@ class MerchantInvoiceTest extends TestCase
 
         $entities = $this->getEntities('merchant_invoice', [], true);
 
-        $this->assertEquals(3, $entities['count']);
+        $this->assertEquals(15, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -101,6 +143,15 @@ class MerchantInvoiceTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceEntities['non_card'], $data['non_card']);
         $this->assertArraySelectiveEquals($invoiceEntities['card_gt_2k'], $data['card_gt_2k']);
         $this->assertArraySelectiveEquals($invoiceEntities['card_lte_2k'], $data['card_lte_2k']);
+
+        $dateString = Carbon::createFromDate(
+                            $entities[0]['year'],
+                            $entities[0]['month'],
+                            1,
+                            Timezone::IST
+                        )->format('my');
+
+        $this->assertEquals(substr($entities[0]['invoice_number'], -4), $dateString);
 
         Carbon::setTestNow();
     }
@@ -127,7 +178,7 @@ class MerchantInvoiceTest extends TestCase
 
         $entities = $this->getEntities('merchant_invoice', [], true);
 
-        $this->assertEquals(3, $entities['count']);
+        $this->assertEquals(15, $entities['count']);
 
         $entities = $entities['items'];
 
@@ -148,6 +199,59 @@ class MerchantInvoiceTest extends TestCase
         $this->assertArraySelectiveEquals($invoiceEntities['card_lte_2k'], $data['card_lte_2k']);
 
         Carbon::setTestNow();
+    }
+
+    public function testFeeAdjustment()
+    {
+        $md1 = $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'gstin' => '29kjsngjk213922',
+            ]);
+
+        $adjustmentData =[
+            'merchant_id'   => '10000000000000',
+            'amount'        => -1300,
+            'currency'      => 'INR',
+            'description'   => 'Fee adjustment',
+        ];
+
+        $request = [
+            'method'    => 'POST',
+            'url'       => '/adjustments/fees',
+            'content'   => $adjustmentData
+        ];
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->setAdminForInternalAuth();
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->ba->addAdminAuthHeaders(null, null);
+
+        // Check adjustment entity
+        $data = $this->getLastEntity('adjustment', true);
+
+        $this->assertArraySelectiveEquals($content, $data);
+
+        // Check invoice entity
+        $merchantInvoice = $this->getLastEntity('merchant_invoice', true);
+
+        $this->assertTestResponse($merchantInvoice);
+
+        $dateString = Carbon::createFromDate(
+                            $merchantInvoice['year'],
+                            $merchantInvoice['month'],
+                            1,
+                            Timezone::IST
+                        )->format('my');
+
+        $this->assertEquals(substr($merchantInvoice[Invoice\Entity::INVOICE_NUMBER], -4), $dateString);
     }
 
     public function testInvoiceEntityCreateForGivenMerchant()
@@ -198,6 +302,7 @@ class MerchantInvoiceTest extends TestCase
         $this->fixtures->edit('merchant', '10000000000000', [
                                 'activated' => 1,
                                 'activated_at' => Carbon::now(Timezone::IST)->timestamp,
+                                'invoice_code' => 'hello1234567',
                             ]);
 
         $md1 = $this->fixtures->create(
@@ -229,6 +334,13 @@ class MerchantInvoiceTest extends TestCase
         $p3['amount'] = 40000;
 
         $p3 = $this->doAuthAndCapturePayment($p3);
+    }
+
+    protected function setAdminForInternalAuth()
+    {
+        $this->org = $this->fixtures->create('org');
+
+        $this->authToken = $this->getAuthTokenForOrg($this->org);
     }
 
 }

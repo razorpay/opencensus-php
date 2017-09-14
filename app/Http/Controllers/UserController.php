@@ -3,7 +3,6 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
-use RZP\Models\User;
 
 class UserController extends Controller
 {
@@ -11,7 +10,7 @@ class UserController extends Controller
     {
         $input = Request::all();
 
-        $data = (new User\Service)->create($input);
+        $data = $this->service()->create($input);
 
         return ApiResponse::json($data);
     }
@@ -20,14 +19,14 @@ class UserController extends Controller
     {
         $input = Request::all();
 
-        $data = (new User\Service)->edit($id, $input);
+        $data = $this->service()->edit($id, $input);
 
         return ApiResponse::json($data);
     }
 
     public function confirmUser(string $id)
     {
-        $data = (new User\Service)->confirm($id);
+        $data = $this->service()->confirm($id);
 
         return ApiResponse::json($data);
     }
@@ -36,7 +35,7 @@ class UserController extends Controller
     {
         $input = Request::all();
 
-        $data = (new User\Service)->confirmUserByData($input);
+        $data = $this->service()->confirmUserByData($input);
 
         return ApiResponse::json($data);
     }
@@ -45,7 +44,7 @@ class UserController extends Controller
     {
         $input = Request::all();
 
-        $data = (new User\Service)->changePassword($id, $input);
+        $data = $this->service()->changePassword($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -56,7 +55,7 @@ class UserController extends Controller
 
         $input['action'] = $action;
 
-        $data = (new User\Service)->updateUserMerchantMapping($id, $input);
+        $data = $this->service()->updateUserMerchantMapping($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -65,14 +64,14 @@ class UserController extends Controller
     {
         $input = Request::all();
 
-        $data = (new User\Service)->login($input);
+        $data = $this->service()->login($input);
 
         return ApiResponse::json($data);
     }
 
     public function getUser(string $id)
     {
-        $data = (new User\Service)->get($id);
+        $data = $this->service()->get($id);
 
         return ApiResponse::json($data);
     }

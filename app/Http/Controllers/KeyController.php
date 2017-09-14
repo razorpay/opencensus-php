@@ -3,14 +3,13 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
-use RZP\Models\Key;
 use Request;
 
 class KeyController extends Controller
 {
     public function getKey($id)
     {
-        $data = (new Key\Service)->fetch($id);
+        $data = $this->service()->fetch($id);
 
         return ApiResponse::json($data);
     }
@@ -19,7 +18,7 @@ class KeyController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Key\Service)->fetchMultiple($input);
+        $data = $this->service()->fetchMultiple($input);
 
         return ApiResponse::json($data);
     }

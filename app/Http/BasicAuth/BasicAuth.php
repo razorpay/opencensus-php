@@ -1007,6 +1007,11 @@ class BasicAuth
 
     public function getMerchantId()
     {
+        if ($this->getMerchant() === null)
+        {
+            return null;
+        }
+
         return $this->merchant->getKey();
     }
 
@@ -1185,7 +1190,7 @@ class BasicAuth
         }
         else
         {
-            $mode = $this->mode;
+            $mode = Mode::TEST;
         }
 
         // Admin token check should always be done in the

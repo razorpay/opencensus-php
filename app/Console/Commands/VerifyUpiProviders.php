@@ -11,6 +11,7 @@ class VerifyUpiProviders extends Command
     // and this is the published CSV export of the first worksheet
     const SPREADSHEET_URL = 'https://goo.gl/AqFY8Y';
 
+    // See http://www.rubular.com/r/cCMuz21dlX for regex
     const PSP_REGEX = '/@([a-z]+)/';
     /**
      * The name and signature of the console command.
@@ -28,8 +29,6 @@ class VerifyUpiProviders extends Command
 
     /**
      * Create a new command instance.
-     *
-     * @return void
      */
     public function __construct()
     {
@@ -47,15 +46,14 @@ class VerifyUpiProviders extends Command
 
         $psps = [];
 
-        // See http://www.rubular.com/r/cCMuz21dlX for regex
         foreach ($csv as $row)
         {
-            if (!isset($row[7]))
+            if (!isset($row[8]))
             {
                 continue;
             }
 
-            $vpa = $row[7];
+            $vpa = $row[8];
 
             $matches = null;
 
