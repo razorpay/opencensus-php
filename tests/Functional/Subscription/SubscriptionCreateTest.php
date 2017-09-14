@@ -465,6 +465,20 @@ class SubscriptionCreateTest extends TestCase
         $this->ba->privateAuth();
     }
 
+    // Type should be exposed only when merchant is accessing the subscription from dashboard
+    public function testSubscriptionTypeExposure()
+    {
+        // This uses private auth
+        $subscription = $this->createSubscription();
+
+        $this->assertArrayNotHasKey('type', $subscription);
+
+        // This uses proxy auth
+        $subscription = $this->getEntityById('subscription', $subscription['id']);
+
+        $this->assertArrayHasKey('type', $subscription);
+    }
+
     protected function getCreateSubscriptionRequestContent($function, $planId = null)
     {
         $requestContent = $this->testData[$function];

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Plan\Subscription;
 
+use App;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
@@ -106,6 +107,7 @@ class Entity extends Base\PublicEntity
         //
         // self::ADDONS,
         self::STATUS,
+        self::TYPE,
         self::CURRENT_START,
         self::CURRENT_END,
         self::ENDED_AT,
@@ -140,6 +142,10 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         // self::TOKEN_ID,
         self::PLAN_ID,
+        // Later, we will come up with a proper structure to show
+        // fields based on proper auth structure.
+        // TODO: Remove this when the above is implemented
+        self::TYPE,
     ];
 
     protected $appends = [
@@ -569,6 +575,18 @@ class Entity extends Base\PublicEntity
         $planId = $this->getAttribute(self::PLAN_ID);
 
         $array[self::PLAN_ID] = Plan\Entity::getSignedIdOrNull($planId);
+    }
+
+    public function setPublicTypeAttribute(array & $array)
+    {
+        $app = App::getFacadeRoot();
+
+        $basicAuth = $app['basicauth'];
+
+        if ($basicAuth->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($array[self::TYPE]);
+        }
     }
 
     public function setPublicCustomerIdAttribute(array & $array)
