@@ -41,14 +41,20 @@ export const saveAddOn = (params, isNew = true) => {
   };
 };
 
-export const fetchAddOns = () => {
+export const fetchAddOns = params => {
+  const data = {
+    route_name: 'addon_fetch_multiple',
+  };
+
+  if (params) {
+    data.query_params = JSON.stringify(params);
+  }
+
   return ajax({
     url: 'user/generic',
     appendModeInURL: false,
     appendModeInQueryParam: true,
-    data: {
-      route_name: 'addon_fetch_multiple',
-    },
+    data,
   });
 };
 
