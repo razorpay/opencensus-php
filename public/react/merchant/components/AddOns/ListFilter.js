@@ -11,7 +11,7 @@ export default props => {
 
       <div class="form-group list-filter-item">
         <label>Add-on Name</label>
-        <Field name="id" component="input" class="form-control input-sm" />
+        <Field name="name" component="input" class="form-control input-sm" />
       </div>
 
       <div class="form-group list-filter-item count">
