@@ -918,12 +918,6 @@ class AdminTest extends TestCase
 
     public function testCreateAdminWithoutPassword()
     {
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         $this->startTest();
     }
 

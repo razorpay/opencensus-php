@@ -704,7 +704,7 @@ return [
 
     'testCreateAdminWithoutPassword' => [
         'request' => [
-            'url' => '/orgs/%s/admins',
+            'url' => '/admins',
             'method' => 'post',
             'content' => [
                 'name'                  => 'test admin',
