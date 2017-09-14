@@ -951,4 +951,28 @@ class Gateway
                     ['json' => $json]);
         }
     }
+
+    /*
+     * Updates the gateway payment entity
+     *
+     * @param gatewayPayment Gateway\Base\Entity      Gateway Payment Entity
+     * @param attributes     array
+     * @param mapped         boolean                 If the attrs are mapped to gateway codes
+     */
+    protected function updateGatewayPaymentEntity(
+        Entity $gatewayPayment,
+        array $attributes,
+        bool $mapped = true)
+    {
+        if ($mapped === true)
+        {
+            $attributes = $this->getMappedAttributes($attributes);
+        }
+
+        $gatewayPayment->fill($attributes);
+
+        $this->getRepository()->saveOrFail($gatewayPayment);
+
+        return $gatewayPayment;
+    }
 }

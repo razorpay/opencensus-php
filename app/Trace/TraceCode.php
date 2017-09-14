@@ -833,6 +833,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const VERIFY_ENROLLMENT_RESPONSE                    = 'VERIFY_ENROLLMENT_RESPONSE';
 
+    // Trace code for \Models\Settings
+    const SETTINGS_UPSERT_REQUEST                       = 'SETTINGS_UPSERT_REQUEST';
+    const SETTINGS_DELETE_REQUEST                       = 'SETTINGS_DELETE_REQUEST';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
