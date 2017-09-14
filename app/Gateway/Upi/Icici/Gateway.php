@@ -496,9 +496,9 @@ class Gateway extends Base\Gateway
 
     protected function getRefundVerifyRequestArray(array $input)
     {
-        $attempts = $input['refund']['attempts'];
+        $attempts = $input['refund']['attempts'] - 1;
 
-        if (empty($input['refund']['attempts']) === true)
+        if ($input['refund']['attempts'] === 1)
         {
             $attempts = '';
         }
