@@ -193,6 +193,8 @@ export default class SubscriptionDetailsContainer extends Component {
         {secView === 'invoice' &&
           <InvoiceDetail
             curInvoiceIndex={this.state.curInvoiceIndex}
+            subscriptionStatus={entity.status}
+            nextChargeAt={entity.charge_at}
             invoice={invoice}
             onClose={this.secClose}
             statusMsg={makeErrorStatus(invoiceErrors)}

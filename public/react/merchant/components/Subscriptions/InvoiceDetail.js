@@ -20,7 +20,14 @@ const notificationClassMap = {
 // Note: class is needed for "ref" to work in parent component
 export default class InvoiceDetail extends Component {
   render() {
-    let { invoice, isLoading, statusMsg, curInvoiceIndex } = this.props;
+    let {
+      invoice,
+      isLoading,
+      statusMsg,
+      curInvoiceIndex,
+      subscriptionStatus,
+      nextChargeAt,
+    } = this.props;
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -72,13 +79,26 @@ export default class InvoiceDetail extends Component {
                           <InvoiceStatusLabel status={invoice.status} />}
                       />
                       <EntityDetailRow
-                        label="Due at"
+                        label="Created at"
                         value={() =>
                           <Time
-                            value={1546222273}
+                            value={invoice.date}
                             format="DD MMM YYYY, hh:mm:ss a"
                           />}
                       />
+
+                      {invoice.status !== 'paid' &&
+                        <EntityDetailRow
+                          label={`${subscriptionStatus === 'pending'
+                            ? 'Next Charge at'
+                            : 'Charge at'}`}
+                          value={() =>
+                            <Time
+                              value={nextChargeAt}
+                              format="DD MMM YYYY, hh:mm:ss a"
+                            />}
+                        />}
+
                       <EntityDetailRow
                         label="Amount"
                         value={() =>
