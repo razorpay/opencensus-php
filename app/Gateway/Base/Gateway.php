@@ -555,8 +555,8 @@ class Gateway
             throw new Exception\RuntimeException(
                 'Payment amount verification failed.',
                 [
-                    'payment' => $this->input['payment'],
-                    'gateway' => $this->gateway
+                    'payment_id' => $this->input['payment']['id'],
+                    'gateway'    => $this->gateway
                 ]
             );
         }
