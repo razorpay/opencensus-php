@@ -25,8 +25,8 @@ export default class PaymentDetailsContainer extends Component {
 
   componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
-      this.props.fetchItem(nextProps.id).then(() => {
-        this.props.fetchRefunds(nextProps.payment);
+      this.props.fetchItem(nextProps.id).then(payment => {
+        this.props.fetchRefunds(payment);
       });
     }
   }
@@ -39,15 +39,15 @@ export default class PaymentDetailsContainer extends Component {
     this.context
       .confirm({
         header: 'Are you sure you want to capture this payment?',
-        message: () => (
+        message: () =>
           <div class="text-semi-muted">
             <p>
-              The payment amount is
-              {' '}
-              <b><Amount value={payment.capturableAmount} /></b>
+              The payment amount is{' '}
+              <b>
+                <Amount value={payment.capturableAmount} />
+              </b>
             </p>
-          </div>
-        ),
+          </div>,
         affirmativeLabel: 'Yes, Capture',
         affirmativePendingLabel: 'Capturing...',
         abortLabel: "No, don't!",
