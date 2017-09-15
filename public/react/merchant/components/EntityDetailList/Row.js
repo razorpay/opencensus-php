@@ -14,6 +14,7 @@ export default props => {
     activeSecEntityId,
     subscriptionStatus,
     onManualAttempt,
+    isUpfront,
   } = props;
   console.log(
     'ITEM...',
@@ -41,7 +42,7 @@ export default props => {
   }
 
   let timeDiff;
-  // Issued at in next_due invoice is charge_at of subscription
+  // issued_at in next_due invoice is charge_at of subscription. Check FE creation of next_due invoice. (Not api related)
   if (item.status === 'next_due' && item.issued_at) {
     timeDiff = item.issued_at - Math.round(new Date().getTime() / 1000);
   }
@@ -79,7 +80,9 @@ export default props => {
             {loading
               ? <PlaceholderLoader style={{ width: '60%', height: '10px' }} />
               : <span class="label--secondary">
-                  Recurring payment #{index}
+                  {index ? `Recurring payment # ${index}` : ''}
+                  {index && isUpfront ? ', ' : ''}
+                  {isUpfront ? 'Upfront Amount' : ''}
                 </span>}
           </div>
           <div class="row-element right">
@@ -92,7 +95,8 @@ export default props => {
         </div>
 
         <div class="detail-row">
-          {retryingText && [
+          {item.id &&
+          retryingText && [
             <span key="info" class="text-danger">
               <i class="icon icon-info-circle" />{' '}
               {item.attempts > 1
@@ -104,13 +108,23 @@ export default props => {
               {' '}{retryingText}
             </span>,
           ]}
-          {item.status === 'issued' &&
-            <AsyncButton
-              class="btn-link no-padding"
-              text=" Manually Charge?"
-              pendingText="Attempting..."
-              onClick={() => onManualAttempt(item.id)}
-            />}
+          {
+            do {
+              if (
+                item.status === 'issued' &&
+                ['active', 'pending', 'authenticated', 'halted'].indexOf(
+                  subscriptionStatus
+                ) > -1
+              ) {
+                <AsyncButton
+                  class="btn-link no-padding"
+                  text=" Manually Charge?"
+                  pendingText="Attempting..."
+                  onClick={() => onManualAttempt(item.id)}
+                />;
+              }
+            }
+          }
         </div>
       </div>
 

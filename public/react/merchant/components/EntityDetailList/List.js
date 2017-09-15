@@ -22,6 +22,7 @@ export default class EntityDetailList extends Component {
       goToLink,
       activeSecEntityId,
       onManualAttempt,
+      subscriptionType,
     } = this.props;
     let list = [];
 
@@ -33,17 +34,42 @@ export default class EntityDetailList extends Component {
     for (let index = 0; index < limit; index++) {
       let item = {};
       if (items.length) {
-        item = items[index];
+        item = items[index]; // 0th is latest item
       }
+
+      let isFirstInvoiceUpfront = false;
+      let isFirstInvoiceRecurring = true;
+
+      if (subscriptionType === 2) {
+        // Start date : future, Invoice: Upfront
+        isFirstInvoiceUpfront = true;
+        isFirstInvoiceRecurring = false;
+      } else if (subscriptionType === 3) {
+        // Start date : immediate, Invoice: Upfront
+        isFirstInvoiceUpfront = true;
+      }
+
+      // If 1st invoice is not recurring, newer invoices will have 1 lesser index than otherwise
+      let recurringInvoiceIndex;
+      if (isFirstInvoiceRecurring) {
+        recurringInvoiceIndex = items.length ? items.length - index : index;
+      } else {
+        recurringInvoiceIndex = items.length ? items.length - index - 1 : index;
+      }
+
+      // Check if 1st(last in array) invoice is upfront invoice
+      let isUpfrontInvoice =
+        index === items.length - 1 ? isFirstInvoiceUpfront : false; // Set true for 1st invoice if it's upfront
 
       list.push(
         <EntityRow
           key={index}
           goToLink={goToLink}
           activeSecEntityId={activeSecEntityId}
-          index={items.length ? items.length - index : index}
+          index={recurringInvoiceIndex}
           item={item}
           loading={loading}
+          isUpfront={isUpfrontInvoice}
           onManualAttempt={onManualAttempt}
         />
       );

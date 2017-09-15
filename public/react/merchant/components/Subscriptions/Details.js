@@ -149,6 +149,7 @@ export default ({
                   activeSecEntityId={activeSecEntityId}
                   loading={invoices.loading}
                   onManualAttempt={onManualAttempt}
+                  subscriptionType={subscription.type}
                 />
 
                 <NestedEntityDetailRow
