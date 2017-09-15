@@ -468,11 +468,11 @@ final class Route
         'permission_create'                       => ['post',     'permissions',                                    'OrganizationController@createPermission'                           ],
         'permission_get_by_type'                  => ['get',      'permissions/get/{type}',                         'OrganizationController@getPermissionsByType'                       ],
         'permission_get'                          => ['get',      'permissions/{id}',                               'OrganizationController@getPermission'                              ],
-        'permission_get_multiple'                 => ['get',      'orgs/{orgId}/permissions',                       'OrganizationController@getMultiplePermissions'                     ],
+        'permission_get_multiple'                 => ['get',      'permissions-multiple',                           'OrganizationController@getMultiplePermissions'                     ],
         'permission_delete'                       => ['delete',   'permissions/{id}',                               'OrganizationController@deletePermission'                           ],
         'permission_edit'                         => ['put',      'permissions/{id}',                               'OrganizationController@putPermission',                             ],
         'permission_get_roles'                    => ['get',      'permissions/{id}/roles',                         'OrganizationController@getRolesForPermission'                      ],
-        'auditlog_search'                         => ['get',      'orgs/{orgId}/auditlog/search',                   'OrganizationController@auditLogSearch'                             ],
+        'auditlog_search'                         => ['get',      'auditlog/search',                                'OrganizationController@auditLogSearch'                             ],
         'admin_logout'                            => ['post',     'orgs/{orgId}/admin/logout',                      'OrganizationController@logoutAdmin'                                ],
 
         // Workflows API

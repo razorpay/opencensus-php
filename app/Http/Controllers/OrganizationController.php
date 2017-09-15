@@ -348,8 +348,10 @@ class OrganizationController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getMultiplePermissions(string $orgId)
+    public function getMultiplePermissions()
     {
+        $orgId = $this->ba->getAdminOrgId();
+
         $input = Request::all();
 
         $data = $this->service(E::PERMISSION)->getMultiplePermissions($orgId, $input);
@@ -480,22 +482,15 @@ class OrganizationController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function auditLogSearch($id)
+    public function auditLogSearch()
     {
-        try
-        {
-            // Indexes use lower case of orgid
-            $id = strtolower($id);
+        // Indexes use lower case of orgid
+        $orgId = strtolower($this->ba->getAdminOrgId());
 
-            $input = Request::all();
+        $input = Request::all();
 
-            $response = $this->service(E::ADMIN)->searchAuditLogs($id, $input);
+        $response = $this->service(E::ADMIN)->searchAuditLogs($orgId, $input);
 
-            return ApiResponse::json($response);
-        }
-        catch(\Exception $e)
-        {
-            throw $e;
-        }
+        return ApiResponse::json($response);
     }
 }
