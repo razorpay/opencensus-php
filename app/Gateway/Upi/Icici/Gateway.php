@@ -496,11 +496,11 @@ class Gateway extends Base\Gateway
 
     protected function getRefundVerifyRequestArray(array $input)
     {
-        $attempts = '';
+        $attempts = $input['refund']['attempts'] - 1;
 
-        if ($input['refund']['attempts'] !== 2)
+        if ($input['refund']['attempts'] === 1)
         {
-            $attempts = $input['refund']['attempts'] - 1;
+            $attempts = '';
         }
 
         $data = [
