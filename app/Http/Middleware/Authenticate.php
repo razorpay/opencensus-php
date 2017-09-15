@@ -206,8 +206,6 @@ class Authenticate
 
         $featureCheck = $this->ba->feature();
 
-        $this->addTraceDataForMerchantAndAdmin();
-
         if ($featureCheck !== null)
         {
             return $featureCheck;
@@ -226,27 +224,6 @@ class Authenticate
         $throttle = new Throttle($this->app);
 
         $throttle->process($auth);
-    }
-
-    /**
-     * Adds details in trace for merchant_id who or on whose behalf request
-     * is being made. Adds dashboard headers details for admin etc. making
-     * the request.
-     */
-    private function addTraceDataForMerchantAndAdmin()
-    {
-        $merchantId = $this->ba->getMerchantIdOfKey();
-
-        $data = ['merchant_id' => $merchantId];
-
-        if ($this->ba->isDashboardApp() === true)
-        {
-            $dashboardHeaders = $this->ba->getDashboardHeaders();
-
-            $data = array_merge($data, $dashboardHeaders);
-        }
-
-        $this->app['trace']->processor('web')->addServerData($data);
     }
 
     private function getBearerTokenFromHeaders($request)
