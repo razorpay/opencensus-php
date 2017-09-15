@@ -690,7 +690,7 @@ return [
 
     'testAdminLogout' => [
         'request' => [
-            'url'     => '/orgs/%s/admin/logout',
+            'url'     => '/admin/logout',
             'method'  => 'post',
             'content' => [],
         ],

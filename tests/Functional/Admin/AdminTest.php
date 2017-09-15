@@ -752,12 +752,6 @@ class AdminTest extends TestCase
 
         $token = $adminToken->getValidToken();
 
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, 'org_' . Org::RZP_ORG);
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         // Replace auth with this route
         $this->ba->adminAuth('test', $token);
 

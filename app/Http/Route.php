@@ -473,7 +473,7 @@ final class Route
         'permission_edit'                         => ['put',      'permissions/{id}',                               'OrganizationController@putPermission',                             ],
         'permission_get_roles'                    => ['get',      'permissions/{id}/roles',                         'OrganizationController@getRolesForPermission'                      ],
         'auditlog_search'                         => ['get',      'auditlog/search',                                'OrganizationController@auditLogSearch'                             ],
-        'admin_logout'                            => ['post',     'orgs/{orgId}/admin/logout',                      'OrganizationController@logoutAdmin'                                ],
+        'admin_logout'                            => ['post',     'admin/logout',                                   'OrganizationController@logoutAdmin'                                ],
 
         // Workflows API
         'workflow_create'                         => ['post',     'workflows',                                      'WorkflowController@createWorkflow'                                 ],
