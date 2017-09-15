@@ -112,7 +112,7 @@ class Creator extends Base\Core
     protected $encryptionSecret;
 
      /**
-     * Excryption format for File
+     * Excryption type for file
      *
      * @var string Encryption type
      */
@@ -264,8 +264,8 @@ class Creator extends Base\Core
 
     /** Encrypts contents of file
      *
-     * @param string $type  Type of Encryption
-     * @param string $secret secret for Encryption
+     * @param string $type  type of rncryption
+     * @param string $secret secret for encryption
      *
      * @return Creator object
      */
@@ -279,7 +279,6 @@ class Creator extends Base\Core
 
         return $this;
     }
-
 
     /**
      * Set the Store  of File Store

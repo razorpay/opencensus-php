@@ -2,9 +2,7 @@
 
 namespace RZP\Models\FileStore;
 
-use RZP\Constants;
 use RZP\Exception;
-use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 
 class Encryption
 {
@@ -37,7 +35,7 @@ class Encryption
     {
         if (in_array($type, self::VALID_ENCRYPTION_TYPES) === false)
         {
-            //throw exception
+           throw new Exception\LogicException('Not A Valid Encryption Type');
         }
     }
 
@@ -48,8 +46,6 @@ class Encryption
         gnupg_addencryptkey($res,$secret);
 
         $data = file_get_contents($filePath);
-
-        file_put_contents($filePath, "");
 
         $enc = gnupg_encrypt($res, $data);
 
