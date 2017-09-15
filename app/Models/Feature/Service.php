@@ -11,22 +11,15 @@ class Service extends Base\Service
 {
     public function addFeatures($input)
     {
-        $options = array();
-
-        $shouldSync = EntityConstants::SHOULD_SYNC;
-
-        if ((isset($input[$shouldSync]))
-            and (((int) $input[$shouldSync]) === 1))
-        {
-            // Setting this key to 1 will sync the feature
-            $options[EntityConstants::SHOULD_SYNC] = 1;
-        }
+        $shouldSyncKey = EntityConstants::SHOULD_SYNC;
 
         $featureParams = $this->buildFeatureParams($input);
 
-        $features = $featureParams->map(function ($item) use ($options)
+        $shouldSync = boolval($input[$shouldSyncKey] ?? false);
+
+        $features = $featureParams->map(function ($item) use ($shouldSync)
         {
-            return (new Core)->create($item, $options);
+            return (new Core)->create($item, $shouldSync);
         });
 
         return $features->toArray();
@@ -44,11 +37,15 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function deleteFeature(string $entityId, string $featureName)
+    public function deleteFeature(string $entityId, string $featureName, array $input)
     {
+        $shouldSyncKey = EntityConstants::SHOULD_SYNC;
+
         $feature = $this->repo->feature->findByEntityIdAndNameOrFail($entityId, $featureName);
 
-        (new Core)->delete($entityId, $feature);
+        $shouldSync = boolval($input[$shouldSyncKey] ?? false);
+
+        (new Core)->delete($entityId, $feature, $shouldSync);
 
         return $feature->toArrayDeleted();
     }
@@ -58,6 +55,10 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::FEATURE_MULTI_ASSIGN_REQUEST, $input);
 
         $entityIds = $input[Constants::ENTITY_IDS];
+
+        $shouldSyncKey = EntityConstants::SHOULD_SYNC;
+
+        $shouldSync = boolval($input[$shouldSyncKey] ?? false);
 
         $response = new Base\Collection;
 
@@ -71,7 +72,7 @@ class Service extends Base\Service
 
             try
             {
-                $feature = (new Core)->create($featureParam);
+                $feature = (new Core)->create($featureParam, $shouldSync);
 
                 $response->push($feature);
             }

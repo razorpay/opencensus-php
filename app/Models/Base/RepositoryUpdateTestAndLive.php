@@ -5,7 +5,6 @@ namespace RZP\Models\Base;
 use Config;
 use RZP\Exception;
 use RZP\Constants\Mode;
-use RZP\Models\Base\Repository;
 
 trait RepositoryUpdateTestAndLive
 {
@@ -19,7 +18,7 @@ trait RepositoryUpdateTestAndLive
      */
     public function saveOrFail($entity, array $options = array())
     {
-        if ($this->entityShouldSync($entity, $options) === false)
+        if ($this->entityShouldSync($entity) === false)
         {
             return parent::saveOrFail($entity, $options);
         }
@@ -253,7 +252,7 @@ trait RepositoryUpdateTestAndLive
         return array($testEntity, $liveEntity);
     }
 
-    protected function cloneEntity($entity)
+    public function cloneEntity($entity)
     {
         $testEntity = clone $entity;
         $testEntity->resetAuditAction();
@@ -314,19 +313,17 @@ trait RepositoryUpdateTestAndLive
     * - For cases where we want to sync based on conditions: define
     *   function `shouldSync` in the entity's repository class, returning
     *   `boolean`
-    *   Example: `Feature\Repository::shouldSync($entity, 'save')`
-    * - $action param can be used to achieve different syncing behavior for
-    *   different actions. Example values - 'save', 'delete', etc
+    *   Example: `Feature\Repository::shouldSync($entity)`
     *
     * @param  PublicEntity   $entity
-    * @param  array         $options
+    * @param  array          $options
     *
     * @return bool
     */
-    protected function entityShouldSync($entity, array $options = array()) : bool
+    protected function entityShouldSync($entity) : bool
     {
         $shouldSync = ((method_exists($this, 'shouldSync') === false) or
-                       ($this->shouldSync($entity, $options) === true));
+                       ($this->shouldSync($entity) === true));
 
         return $shouldSync;
     }

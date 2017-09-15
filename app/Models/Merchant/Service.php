@@ -26,6 +26,7 @@ use RZP\Models\BankAccount;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Settlement\Holidays;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
@@ -1001,15 +1002,19 @@ class Service extends Base\Service
 
         $merchant = $this->merchant;
 
+        $shouldSyncKey = EntityConstants::SHOULD_SYNC;
+
+        $shouldSync = boolval($input[$shouldSyncKey] ?? false);
+
         $merchant->validateInput('feature', $input);
 
         $featuresToAdd = $this->getFeatureNamesToAdd($input['features']);
 
         $featuresToRemove = $this->getFeatureNamesToRemove($input['features']);
 
-        $this->addFeatures($featuresToAdd);
+        $this->addFeatures($featuresToAdd, $shouldSync);
 
-        $this->removeFeatures($featuresToRemove);
+        $this->removeFeatures($featuresToRemove, $shouldSync);
 
         $data = (new Feature\Service)->getFeaturesForEntity($merchant);
 
@@ -1203,35 +1208,38 @@ class Service extends Base\Service
         return $featureNames;
     }
 
-    private function addFeatures($featureNames)
+    private function addFeatures($featureNames, $shouldSync = false)
     {
         $merchant = $this->merchant;
 
         if (count($featureNames) > 0)
         {
             $featureParams = [
-                Feature\Entity::ENTITY_ID => $merchant->getId(),
-                Feature\Entity::ENTITY_TYPE => 'merchant',
-                'names' => $featureNames
+                Feature\Entity::ENTITY_ID    => $merchant->getId(),
+                Feature\Entity::ENTITY_TYPE  => 'merchant',
+                'names'                      => $featureNames,
+                EntityConstants::SHOULD_SYNC => intval($shouldSync)
             ];
 
             (new Feature\Service)->addFeatures($featureParams);
         }
     }
 
-    private function removeFeatures($featureNames)
+    private function removeFeatures($featureNames, $shouldSync = false)
     {
         $merchant = $this->merchant;
+
+        $entityId = $merchant->getId();
 
         foreach ($featureNames as $featureName)
         {
             $feature = $this->repo->feature->findByEntityIdAndNameOrFail(
-                $merchant->getId(),
+                $entityId,
                 $featureName);
 
             if ($feature !== null)
             {
-                $this->repo->feature->delete($feature);
+                (new Feature\Core)->delete($entityId, $feature, $shouldSync);
             }
         }
     }
