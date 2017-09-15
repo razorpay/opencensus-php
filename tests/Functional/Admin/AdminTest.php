@@ -422,12 +422,6 @@ class AdminTest extends TestCase
             'oauth_provider_id'  => 'test oauth provider id',
         ]);
 
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         $this->ba->appAuth();
 
         $this->startTest();
@@ -441,12 +435,6 @@ class AdminTest extends TestCase
             'oauth_access_token' => 'test oauth token 2',
             'oauth_provider_id'  => 'test oauth provider id',
         ]);
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->ba->appAuth();
 

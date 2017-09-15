@@ -125,8 +125,10 @@ class OrganizationController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postAdminLead(string $orgId)
+    public function postAdminLead()
     {
+        $orgId = $this->ba->getAdminOrgId();
+
         $input = Request::all();
 
         $data = $this->service(E::ADMIN_LEAD)->sendInvitation($orgId, $input);
@@ -134,8 +136,11 @@ class OrganizationController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function putAdminLead(string $orgId, string $id)
+    public function putAdminLead(string $id)
     {
+        //getting from orgId since merchant dash also use this route.
+        $orgId = $this->ba->getOrgId();
+
         $input = Request::all();
 
         $data = $this->service(E::ADMIN_LEAD)->editInvitation(
@@ -144,8 +149,10 @@ class OrganizationController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getAdminLeadMultiple(string $orgId)
+    public function getAdminLeadMultiple()
     {
+        $orgId = $this->ba->getAdminOrgId();
+
         $data = $this->service(E::ADMIN_LEAD)->getInvitations($orgId);
 
         return ApiResponse::json($data);
@@ -383,27 +390,31 @@ class OrganizationController extends Controller
     /**
     * Admin related functons
     */
-    public function postAuthenticate(string $id)
+    public function postAuthenticate()
     {
         $input = Request::all();
 
-        $response = $this->service(E::ADMIN)->authenticate($id, $input);
+        $response = $this->service(E::ADMIN)->authenticate($input);
 
         return ApiResponse::json($response);
     }
 
-    public function postForgotPassword(string $orgId)
+    public function postForgotPassword()
     {
         $input = Request::all();
+
+        $orgId = $this->ba->getOrgId();
 
         $response = $this->service(E::ADMIN)->forgotPassword($orgId, $input);
 
         return ApiResponse::json($response);
     }
 
-    public function postResetPassword(string $orgId)
+    public function postResetPassword()
     {
         $input = Request::all();
+
+        $orgId = $this->ba->getOrgId();
 
         $response = $this->service(E::ADMIN)->resetPassword($orgId, $input);
 
@@ -419,7 +430,7 @@ class OrganizationController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function oAuthLogin(string $id)
+    public function oAuthLogin()
     {
         $input = Request::all();
 

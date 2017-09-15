@@ -369,7 +369,7 @@ return [
 
     'testLoginOauth' => [
         'request' => [
-            'url' => '/orgs/%s/admin/oauth_login',
+            'url' => '/admin/oauth_login',
             'method' => 'post',
             'content' => [
                 'email' => 'test@email.com',
@@ -385,7 +385,7 @@ return [
 
     'testFailedLoginOauth' => [
         'request' => [
-            'url' => '/orgs/%s/admin/oauth_login',
+            'url' => '/admin/oauth_login',
             'method' => 'post',
             'content' => [
                 'email' => 'test@email.com',

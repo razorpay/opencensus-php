@@ -41,9 +41,9 @@ class Service extends Base\Service
         $this->adminOrgId = $this->app['basicauth']->getAdminOrgId();
     }
 
-    public function authenticate(string $orgId, array $input)
+    public function authenticate(array $input)
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+        $orgId = $this->ba->getOrgId();
 
         return $this->login($orgId, $input);
     }
@@ -176,7 +176,7 @@ class Service extends Base\Service
     {
         $validator = new Validator();
 
-        $org = $this->repo->org->findByPublicId($orgId);
+        $org = $this->repo->org->find($orgId);
 
         $input[Org\Entity::AUTH_TYPE] = $org->getAuthType();
 
