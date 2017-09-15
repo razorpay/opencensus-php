@@ -8,7 +8,27 @@ import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import EntityDetailList from 'merchant/components/EntityDetailList/List';
 import { getFixedINRAmount, getIntervalCycle } from 'rzp/utils/rzp-utils';
 import { SubscriptionStatusLabel } from 'merchant/components/StatusLabel';
+import Definition from 'rzp/ui/Definition';
 
+// Customer component
+const getCustomerDetail = customer =>
+  <Definition placeholder="--">
+    {customer.name}
+    {customer.email &&
+      <span>
+        {customer.email}
+      </span>}
+    {customer.contact &&
+      <span>
+        {customer.contact}
+      </span>}
+    {customer.id &&
+      <code>
+        {customer.id}
+      </code>}
+  </Definition>;
+
+// Get plan description
 const getDescription = (interval, period) => {
   switch (period) {
     case 'monthly':
@@ -48,10 +68,10 @@ export default ({
             <div class="SliderPanel__Body">
               <div class="panel-body">
                 <Alert type={statusMsg.type} message={statusMsg.message} />
-                <EntityDetailRow
-                  label="Customer"
-                  value={customer.displayName}
-                />
+
+                <EntityDetailRow label="Customer">
+                  {getCustomerDetail(customer)}
+                </EntityDetailRow>
 
                 <EntityDetailRow
                   label="Plan"
