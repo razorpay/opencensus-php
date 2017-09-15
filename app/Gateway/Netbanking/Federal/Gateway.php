@@ -335,12 +335,12 @@ class Gateway extends Base\Gateway
     protected function parseVerifyResponse(string $body)
     {
         // We get the number of rows in the verify response string
-        $numRows = substr_count($body, '\n') + 1;
+        $numRows = substr_count($body, "\n");
 
         // We use this to separate the rows of the response string
-        $body = str_replace('\n', '|', $body);
+        $body = str_replace("\n", "|", $body);
 
-        $values = explode('|', $body);
+        $values = explode("|", $body);
 
         if ($numRows > 1)
         {
@@ -369,6 +369,9 @@ class Gateway extends Base\Gateway
 
         $content[ResponseFields::STATUS] = $status;
 
+        // Values to be processed being traced here
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT, ['content' => $content]);
+
         return $content;
     }
 
@@ -379,10 +382,24 @@ class Gateway extends Base\Gateway
      *
      * @param array $values
      * @return mixed
-     * @throws Exception\LogicException
+     * @throws Exception\PaymentVerificationException
      */
     protected function handleMultipleTablesVerifyResponse(array $values)
     {
+        // Removing the 0000's at the end of the string before tracing
+        unset($values[sizeof($values) - 1]);
+
+        $data = [
+            'response_array' => $values,
+            'payment_id'     => $this->input['payment']['id'],
+            'gateway'        => $this->gateway,
+        ];
+
+        //
+        // We log that we have multiple tables in the verify response
+        //
+        $this->trace->info(TraceCode::MULTIPLE_TABLES_IN_VERIFY_RESPONSE, ['response_data' => $data]);
+
         $keys = $this->getVerifyResponseKeys();
 
         $numKeys = count($keys);
@@ -416,14 +433,10 @@ class Gateway extends Base\Gateway
         //
         if ($numSuccess > 1)
         {
-            $data = [
-                'response_array' => $values,
-                'payment_id'     => $this->input['payment']['id'],
-                'num_success'    => $numSuccess,
-                'gateway'        => $this->gateway,
-            ];
+            // Adding num success to the data to be traced
+            $data['num_sucess'] = $numSuccess;
 
-            $this->trace->error(TraceCode::MULTIPLE_TABLES_IN_VERIFY_RESPONSE, ['response_data' => $data]);
+            $this->trace->error(TraceCode::MULTIPLE_SUCCESS_TABLES_IN_VERIFY_RESPONSE, ['response_data' => $data]);
 
             throw new Exception\PaymentVerificationException(
                 $data,

@@ -267,7 +267,7 @@ return [
             'url' => '/current_admin',
             'method' => 'post',
             'content' => [
-                'token' => 'secondToken',
+                'token' => 'secondTokenAdminToken1234',
             ],
         ],
         'response' => [

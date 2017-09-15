@@ -35,7 +35,7 @@ class Validator extends Base\Validator
         Entity::TYPE                        => 'sometimes|array',
         Entity::MODE                        => 'sometimes|in:1,2,3',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
-        Entity::TPV                         => 'sometimes_if:netbanking,1|boolean',
+        Entity::TPV                         => 'sometimes_if:netbanking,1|in:0,1,2',
         Entity::CORPORATE                   => 'sometimes_if:netbanking,1|boolean',
         Entity::EMI_SUBVENTION              => 'sometimes|in:customer,merchant',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
@@ -164,7 +164,7 @@ class Validator extends Base\Validator
 
     protected static $billdeskEditTerminalRules = [
         Entity::GATEWAY                    => 'sometimes|in:billdesk',
-        Entity::TPV                        => 'sometimes|boolean|in:0,1',
+        Entity::TPV                        => 'sometimes|in:0,1,2',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
     ];
 
@@ -298,6 +298,12 @@ class Validator extends Base\Validator
     protected static $netbankingPnbTerminalRules = [
         Entity::GATEWAY                    => 'required|in:netbanking_pnb',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
+    ];
+
+    protected static $netbankingCorporationTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:netbanking_corporation',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string|size:3',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|max:32',
     ];
 
     protected function validateGateway($input)

@@ -101,7 +101,7 @@ trait WorkflowTrait
      */
     private function approveWorkflowAction($workflowActionId)
     {
-        $this->ba->adminAuth('test', Org::DEFAULT_TOKEN, Org::RZP_ORG_SIGNED);
+        $this->ba->adminAuth('test', Org::DEFAULT_ADMIN_TOKEN, Org::RZP_ORG_SIGNED);
 
         $request = [
             'method'    => 'POST',

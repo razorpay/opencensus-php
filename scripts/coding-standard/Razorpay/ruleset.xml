@@ -69,11 +69,7 @@
     </rule>
     <rule ref="Squiz.Classes.ClassDeclaration"/>
     <rule ref="Squiz.Classes.LowercaseClassKeywords"/>
-    <rule ref="Generic.NamingConventions.CamelCapsFunctionName">
-        <properties>
-            <property name="strict" value="false" />
-        </properties>
-    </rule>
+    <rule ref="Generic.NamingConventions.CamelCapsFunctionName"/>
     <rule ref="Generic.NamingConventions.UpperCaseConstantName"/>
 
     <!-- all uses of true, false and null are lowerrcase -->
@@ -120,8 +116,6 @@
         <exclude-pattern>app/Error/*Description.php</exclude-pattern>
         <exclude-pattern>app/Http/Route.php</exclude-pattern>
         <exclude-pattern>tests/*Data.php</exclude-pattern>
-        <exclude-pattern>database/seeds/DatabaseSeeder.php</exclude-pattern>
-        <exclude-pattern>public/test/obscure.php</exclude-pattern>
     </rule>
 
     <!-- opening PHP tag is the first content in a file -->

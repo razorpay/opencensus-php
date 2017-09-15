@@ -43,6 +43,7 @@ class Constants
     const EMI_MERCHANT_SUBVENTION  = 'emi_merchant_subvention';
     const FSS_RISK_UDF             = 'fss_risk_udf';
     const RULE_FILTER              = 'rule_filter';
+    const TPV                      = 'tpv';
 
     // TODO: Use this instead of allFeatures once in final code change pr
     public static $featureValueMap = [
@@ -83,6 +84,7 @@ class Constants
         self::EMI_MERCHANT_SUBVENTION  => true,
         self::FSS_RISK_UDF             => true,
         self::RULE_FILTER              => true,
+        self::TPV                      => true,
     ];
 
     public static $visibleFeaturesMap = [

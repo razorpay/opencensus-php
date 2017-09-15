@@ -15,6 +15,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Terminal\Shared;
+use RZP\Models\Feature;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
@@ -27,6 +28,7 @@ class TransactionFilter extends Terminal\Filter
         'bank',
         'recurring',
         'subscription',
+        'tpv'
     ];
 
     public function methodFilter($terminal)
@@ -297,5 +299,15 @@ class TransactionFilter extends Terminal\Filter
         $subvention = $this->input['payment']->emiPlan->getSubvention();
 
         return $terminal->isValidEmiTerminal($gateway, $emiDuration, $subvention);
+    }
+
+    public function tpvFilter($terminal)
+    {
+        if ($this->input['merchant']->isFeatureEnabled(Feature\Constants::TPV))
+        {
+            return ($terminal->isTpvAllowed() === true);
+        }
+
+        return ($terminal->isNonTpvAllowed() === true);
     }
 }
