@@ -11,6 +11,7 @@ import {
 import { fetchPlan } from 'merchant/modules/plans';
 import { fetchCustomer } from 'merchant/modules/customers';
 import { fetchInvoice } from 'merchant/modules/invoices/details';
+import { fetchSubscriptionAddOns } from 'merchant/modules/addons';
 import { showNotification } from 'rzp/modules/notifications';
 import { expandSlider, compactSlider } from 'rzp/modules/slider';
 
@@ -46,8 +47,8 @@ export default class SubscriptionDetailsContainer extends Component {
 
   componentWillMount() {
     this.props.id && this.fetchSubscriptionDetails(this.props.id);
+    this.checkSecView(); // Reset view
     this.props.invoice_id && this.fetchInvoice(this.props.invoice_id);
-    this.checkSecView();
   }
 
   componentWillReceiveProps(nextProps) {
@@ -72,25 +73,31 @@ export default class SubscriptionDetailsContainer extends Component {
 
       // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
       if (this.invoiceView && findDOMNode(this.invoiceView)) {
-        findDOMNode(this.invoiceView).classList.toggle('toggle-slider');
+        findDOMNode(this.invoiceView).classList.add('toggle-slider');
       }
 
       this.setState({
         invoice: {},
         invoiceLoading: false,
       });
+    } else if (this.invoiceView && findDOMNode(this.invoiceView)) {
+      // If already opened then close it
+      findDOMNode(this.invoiceView).classList.remove('toggle-slider');
     }
   }
 
   fetchInvoice(id) {
     let { invoice } = this.props;
-    if (!invoice || invoice.id !== id) {
-      this.props.expandSlider();
-      this.setState({
-        secView: 'invoice',
-        invoiceErrors: null,
-        invoiceLoading: true,
-      });
+
+    this.props.expandSlider();
+    this.setState({
+      secView: 'invoice',
+      invoiceErrors: null,
+      invoiceLoading: true,
+    });
+
+    // invoice with next_due(inv_upcoming) will be auto created in render fn.
+    if (id !== 'inv_upcoming') {
       this.props
         .fetchInvoice(id)
         .then(invoice => {
@@ -118,19 +125,39 @@ export default class SubscriptionDetailsContainer extends Component {
           return Promise.all([
             fetchPlan(subscription.plan_id),
             fetchCustomer(subscription.customer_id),
-          ]).then(() => {
+            fetchSubscriptionAddOns(subscription.id)
+              .then(response => {
+                console.log('ADDONS..', response);
+                this.setState({
+                  addons: response.data.items,
+                });
+
+                return response.data; // To success the chain of Promise.all
+              })
+              .catch(err => {
+                // Throw some error // To fail the chain of Promise.all. Will be caught below
+              }),
+          ]).then(response => {
             this.props.fetchInvoices(id).then(data => {
               // Set curInvoiceIndex when /{subscription_id}/{invoice_id} is direct hit
               if (data.data && !this.state.curInvoiceIndex) {
                 const invoicesItems = data.data.items;
 
-                invoicesItems.forEach((item, index) => {
-                  if (item.id === this.props.invoice_id) {
-                    this.setState({
-                      curInvoiceIndex: invoicesItems.length - index,
-                    });
-                  }
-                });
+                // Calculate recurring id #
+                if (this.props.invoice_id === 'inv_upcoming') {
+                  this.setState({
+                    curInvoiceIndex: invoicesItems.length + 1,
+                  });
+                } else {
+                  // Iterate list to find which invoice id is matching url(props)
+                  invoicesItems.forEach((item, index) => {
+                    if (item.id === this.props.invoice_id) {
+                      this.setState({
+                        curInvoiceIndex: invoicesItems.length - index,
+                      });
+                    }
+                  });
+                }
               }
             });
             this.setState({ isLoading: false });
@@ -166,6 +193,24 @@ export default class SubscriptionDetailsContainer extends Component {
     history.push(location.pathname.replace(/\/[^\/]+\/?$/, ''));
   };
 
+  // Create FE only invoice for status next_due
+  getUpcomingInvoiceDetails(chargeAt, planAmount, addOnsList = []) {
+    // addOnsList to calculate the total amount for invoice
+    const totalAddOnsAmount = addOnsList.reduce(
+      (sum, addOn) => sum + addOn.quantity * addOn.item.amount,
+      0
+    );
+
+    //TODO: Add addons list as well depending upon type in line_items
+    return {
+      id: 'inv_upcoming',
+      status: 'next_due',
+      issued_at: chargeAt,
+      currency: 'INR',
+      amount: planAmount + totalAddOnsAmount,
+    };
+  }
+
   render() {
     let { entity, plan, customer, invoices, activeSecEntityId } = this.props;
     let {
@@ -178,21 +223,55 @@ export default class SubscriptionDetailsContainer extends Component {
     } = this.state;
 
     let invoicesList = invoices;
-    console.log('INVOICES....', invoices);
+    let invoiceSecView;
 
+    // Add 'next_due' invoice in the Invoices list
     if (!invoices.loading && invoices.items && invoices.items.length) {
       if (['authenticated', 'active', 'halted'].indexOf(entity.status) !== 1) {
         invoicesList = { ...invoices };
+        invoicesList.items = [...invoices.items]; // To avoid multiple additions when render is called multiple times
 
-        let nextDueInvoice = {
-          id: 'inv_upcoming',
-          status: 'next_due',
-          issued_at: entity.charge_at,
-          amount: plan.item.amount,
-        };
+        let nextDueInvoice = this.getUpcomingInvoiceDetails(
+          entity.charge_at,
+          plan.item ? plan.item.amount : 0,
+          this.state.addons
+        );
 
         invoicesList.items.unshift(nextDueInvoice);
       }
+    }
+
+    // Secondary view : Invoice details
+    if (secView === 'invoice') {
+      let invoiceData = invoice;
+
+      if (
+        this.props.invoice_id === 'inv_upcoming' &&
+        Object.keys(entity).length
+      ) {
+        invoiceData = this.getUpcomingInvoiceDetails(
+          entity.charge_at,
+          plan.item.amount,
+          this.state.addons
+        );
+      }
+
+      invoiceSecView = (
+        <InvoiceDetail
+          curInvoiceIndex={this.state.curInvoiceIndex}
+          subscriptionStatus={entity.status}
+          nextChargeAt={entity.charge_at}
+          invoice={invoiceData}
+          onClose={this.secClose}
+          statusMsg={makeErrorStatus(invoiceErrors)}
+          isLoading={
+            invoiceData.status === 'next_due' && invoiceData
+              ? false
+              : invoiceLoading
+          }
+          ref={comp => (this.invoiceView = comp)}
+        />
+      );
     }
 
     return (
@@ -208,17 +287,8 @@ export default class SubscriptionDetailsContainer extends Component {
           activeSecEntityId={activeSecEntityId}
           onCancelClick={this.cancelSubscription}
         />
-        {secView === 'invoice' &&
-          <InvoiceDetail
-            curInvoiceIndex={this.state.curInvoiceIndex}
-            subscriptionStatus={entity.status}
-            nextChargeAt={entity.charge_at}
-            invoice={invoice}
-            onClose={this.secClose}
-            statusMsg={makeErrorStatus(invoiceErrors)}
-            isLoading={secView && invoiceLoading}
-            ref={comp => (this.invoiceView = comp)}
-          />}
+
+        {invoiceSecView}
       </div>
     );
   }
@@ -228,15 +298,6 @@ export default class SubscriptionDetailsContainer extends Component {
     compactSlider();
     history.push(location.pathname.replace(/\/[^\/]+\/?$/, ''));
   };
-}
-
-function makeErrorStatus(message) {
-  return (
-    message && {
-      type: 'error',
-      message: invoiceErrors,
-    }
-  );
 }
 
 function makeErrorStatus(message) {
