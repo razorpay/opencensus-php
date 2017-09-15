@@ -3,6 +3,7 @@
 namespace RZP\Base;
 
 use RZP\Exception;
+use RZP\Constants\Mode;
 
 class Validator extends \Razorpay\Spine\Validation\Validator
 {
@@ -23,5 +24,17 @@ class Validator extends \Razorpay\Spine\Validation\Validator
             throw new Exception\BadRequestValidationFailureException(
                 $key . ' not given in the input');
         }
+    }
+
+    protected function isTestMode()
+    {
+        $app = App::getFacadeRoot();
+        return ($app['rzp.mode'] === Mode::TEST);
+    }
+
+    protected function isLiveMode()
+    {
+        $app = App::getFacadeRoot();
+        return ($app['rzp.mode'] === Mode::LIVE);
     }
 }

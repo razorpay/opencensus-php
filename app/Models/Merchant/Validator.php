@@ -118,8 +118,8 @@ class Validator extends Base\Validator
     ];
 
     /**
-     * If any of the features that can be enabled or disabled only by an admin in the LIVE mode,
-     * is being edited by the merchant, an error is thrown.
+     * Throw an error, if any of the features that can be enabled or disabled only by
+     * an admin in the LIVE mode, is being edited by the merchant.
      *
      * @param $features
      *
@@ -127,9 +127,8 @@ class Validator extends Base\Validator
      */
     protected function validateFeatureUpdateForMode(array $input)
     {
-        $app = App::getFacadeRoot();
 
-        if ($app['rzp.mode'] === Mode::TEST)
+        if ($this->isTestMode() === true)
         {
             return;
         }
