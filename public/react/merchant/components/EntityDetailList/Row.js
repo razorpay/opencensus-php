@@ -4,6 +4,7 @@ import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
 
+//TODO: Make this component generalized as per requirement later. Currently only used for subscriptions details view(invoice list)
 export default props => {
   let {
     goToLink,
@@ -24,7 +25,18 @@ export default props => {
     index
   );
 
+  let retryingText;
+
+  if (item.status === 'issued') {
+    if (subscriptionStatus === 'halted') {
+      retryingText = 'No retrying automatically.';
+    } else if (subscriptionStatus === 'pending') {
+      retryingText = 'Retrying in 23 hrs.';
+    }
+  }
+
   let timeDiff;
+  // Issued at in next_due invoice is charge_at of subscription
   if (item.status === 'next_due' && item.issued_at) {
     timeDiff = item.issued_at - Math.round(new Date().getTime() / 1000);
   }
@@ -72,6 +84,24 @@ export default props => {
                   <InvoiceStatusLabel status={item.status} />
                 </span>}
           </div>
+        </div>
+
+        <div class="detail-row">
+          {retryingText && [
+            <span class="icon icon-info-circle" />,
+            <span>
+              {retryingText}
+            </span>,
+          ]}
+          {item.status === 'issued' &&
+            <a
+              class="btn-link"
+              onClick={() => {
+                console.log('HELLO CHARGING... Make it < AsyncButton>!');
+              }}
+            >
+              Manually Charge?
+            </a>}
         </div>
       </div>
 

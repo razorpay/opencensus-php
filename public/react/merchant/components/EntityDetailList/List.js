@@ -2,6 +2,7 @@ import { Component } from 'react';
 import Alert from 'rzp/ui/Forms/Alert';
 import EntityRow from 'merchant/components/EntityDetailList/Row';
 
+//TODO: Make this component generalized as per requirement later. Currently only used for subscriptions details view(invoice list)
 /*
  // Usage: Check slider/details view of payments, plans, etc.
  // Constraint: 1. Pass props 'progressLoader' to <Table> only when progress loaders is shown instead of <Spinner>.
