@@ -28,6 +28,7 @@ if [[ "${APP_CONTEXT}" == "dev" ]]; then
   # Set DB name for testing
   sed -i 's/^DB_LIVE_DATABASE=api_live/DB_LIVE_DATABASE=api_testing_live/' environment/.env.testing_docker
   sed -i 's/^DB_TEST_DATABASE=api_test/DB_TEST_DATABASE=api_testing_test/' environment/.env.testing_docker
+  sed -i 's/^DB_TEST_DATABASE=auth/DB_TEST_DATABASE=auth_test/' environment/.env.testing_docker
   sed -i 's/^SLAVE_DB_LIVE_DATABASE=api_live/SLAVE_DB_LIVE_DATABASE=api_testing_live/' environment/.env.testing_docker
   sed -i 's/^SLAVE_DB_TEST_DATABASE=api_test/SLAVE_DB_TEST_DATABASE=api_testing_test/' environment/.env.testing_docker
 
