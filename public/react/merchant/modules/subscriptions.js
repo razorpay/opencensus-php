@@ -31,6 +31,7 @@ export const fetchSubscription = id => {
 
 export const fetchInvoices = subs_id => {
   let subscription = new Subscription();
+  subs_id = subs_id.replace(/\/$/, '');
 
   return {
     type: SUBSCRIPTION_INVOICES_FETCH,
