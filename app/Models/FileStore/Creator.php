@@ -104,6 +104,20 @@ class Creator extends Base\Core
      */
     protected $shouldEncrypt = false;
 
+     /**
+     * Secret for file encryption
+     *
+     * @var string Encryption Secret
+     */
+    protected $encryptionSecret;
+
+     /**
+     * Excryption format for File
+     *
+     * @var string Encryption type
+     */
+    protected $encryptionType;
+
     /**
      * Format in which file has to be Compress
      *
@@ -247,6 +261,25 @@ class Creator extends Base\Core
 
         return $this;
     }
+
+    /** Encrypts contents of file
+     *
+     * @param string $type  Type of Encryption
+     * @param string $secret secret for Encryption
+     *
+     * @return Creator object
+     */
+    public function encrypt($type, $secret)
+    {
+        $this->shouldEncrypt = true;
+
+        $this->encryptionType = $type;
+
+        $this->encryptionSecret = $secret;
+
+        return $this;
+    }
+
 
     /**
      * Set the Store  of File Store
@@ -650,6 +683,13 @@ class Creator extends Base\Core
         }
 
         $this->updateFilePermission();
+    }
+
+    protected function encryptFile()
+    {
+        $unzippedFilePath = $this->getFullFilePath();
+
+        Encryption::encrypt($this->encryptionType, $this->encryptionSecret, $unzippedFilePath);
     }
 
     /*

@@ -15,14 +15,16 @@ class Encryption
     ];
 
      /**
-     * Check if Filestore Type is valid
+     * Encrypts the file
      *
-     * @param string $type Filestore type value
+     * @param string $type     encryption type
+     * @param string $secret   encryption secret
+     * @param string $filePath Full File Path
      *
-     * @return boolean
+     * @return null
      * @throws Exception\LogicException
      */
-    public static function encrypt(string $type, string $secret)
+    public static function encrypt(string $type, string $secret, string $filePath)
     {
         $this->validateEncryptionType($type);
 
@@ -42,10 +44,15 @@ class Encryption
     protected function doPgpEncryption($secret, $filePath)
     {
         $res = gnupg_init();
+
         gnupg_addencryptkey($res,$secret);
+
         $data = file_get_contents($filePath);
+
         file_put_contents($filePath, "");
+
         $enc = gnupg_encrypt($res, $data);
+
         file_put_contents($filePath, $enc);
     }
 }
