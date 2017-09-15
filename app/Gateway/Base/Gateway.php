@@ -550,7 +550,8 @@ class Gateway
                 $verify);
         }
 
-        if ($verify->amountMismatch === true)
+        if (($verify->amountMismatch === true) and
+            ($verify->throwExceptionOnMismatch))
         {
             throw new Exception\RuntimeException(
                 'Payment amount verification failed.',
