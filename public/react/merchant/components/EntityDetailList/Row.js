@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import AsyncButton from 'react-async-button';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
 import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
@@ -13,6 +13,7 @@ export default props => {
     loading,
     activeSecEntityId,
     subscriptionStatus,
+    onManualAttempt,
   } = props;
   console.log(
     'ITEM...',
@@ -25,13 +26,17 @@ export default props => {
     index
   );
 
+  //TODO: Get from api
+  item.attempts = 1;
+  item.next_try = 4;
+
   let retryingText;
 
-  if (item.status === 'issued') {
+  if (true || item.status === 'issued') {
     if (subscriptionStatus === 'halted') {
-      retryingText = 'No retrying automatically.';
-    } else if (subscriptionStatus === 'pending') {
-      retryingText = 'Retrying in 23 hrs.';
+      retryingText = 'No retrying automatically. ';
+    } else if (true || subscriptionStatus === 'pending') {
+      retryingText = `Retrying in ${item.next_try} Hours. `; // TODO: Calculate the time remaining
     }
   }
 
@@ -88,20 +93,24 @@ export default props => {
 
         <div class="detail-row">
           {retryingText && [
-            <span class="icon icon-info-circle" />,
-            <span>
-              {retryingText}
+            <span key="info" class="text-danger">
+              <i class="icon icon-info-circle" />{' '}
+              {item.attempts > 1
+                ? item.attempts + ' charge attempts '
+                : item.attempts + ' charge attempt'}{' '}
+              failed.
+            </span>,
+            <span key="info-notice">
+              {' '}{retryingText}
             </span>,
           ]}
           {item.status === 'issued' &&
-            <a
-              class="btn-link"
-              onClick={() => {
-                console.log('HELLO CHARGING... Make it < AsyncButton>!');
-              }}
-            >
-              Manually Charge?
-            </a>}
+            <AsyncButton
+              class="btn-link no-padding"
+              text=" Manually Charge?"
+              pendingText="Attempting..."
+              onClick={() => onManualAttempt(item.id)}
+            />}
         </div>
       </div>
 

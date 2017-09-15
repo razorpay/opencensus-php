@@ -1,3 +1,4 @@
+import ajax from 'merchant/utils/ajax';
 import { set } from 'rzp/utils/immutable';
 import Subscription from 'merchant/models/Subscription';
 import {
@@ -64,6 +65,22 @@ export const cancelSubscription = ({ id, cancel_at_cycle_end }) => {
     type: SUBSCRIPTION_CANCEL,
     payload: subscription.cancel(cancel_at_cycle_end),
   };
+};
+
+// Manual Attempt for pending invoice payment
+export const paymentManualAttempt = invoiceId => {
+  return ajax({
+    method: 'post',
+    url: 'user/generic',
+    appendModeInURL: false,
+    appendModeInQueryParam: true,
+    data: {
+      route_name: 'subscription_manual_retry',
+      url_params: JSON.stringify({
+        '{invoice_id}': invoiceId,
+      }),
+    },
+  });
 };
 
 // List Reducer

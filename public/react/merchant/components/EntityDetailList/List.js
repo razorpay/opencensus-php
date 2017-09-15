@@ -16,7 +16,13 @@ export default class EntityDetailList extends Component {
   }
 
   getRowList() {
-    const { loading, items, goToLink, activeSecEntityId } = this.props;
+    const {
+      loading,
+      items,
+      goToLink,
+      activeSecEntityId,
+      onManualAttempt,
+    } = this.props;
     let list = [];
 
     let limit = this.state.curLimit; // Show curLimit number of loaders. Also, default curLimit rows unless items.length is lesser
@@ -38,6 +44,7 @@ export default class EntityDetailList extends Component {
           index={items.length ? items.length - index : index}
           item={item}
           loading={loading}
+          onManualAttempt={onManualAttempt}
         />
       );
     }
@@ -58,7 +65,7 @@ export default class EntityDetailList extends Component {
     ) {
       showBtn = (
         <button
-          class="primary-link"
+          class="show-btn primary-link"
           style={{ display: 'block', margin: '0 auto' }}
           onClick={() =>
             this.setState({

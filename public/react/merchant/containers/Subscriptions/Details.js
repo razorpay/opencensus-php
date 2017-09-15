@@ -7,6 +7,7 @@ import InvoiceDetail from 'merchant/components/Subscriptions/InvoiceDetail';
 import {
   fetchSubscription as fetchItem,
   fetchInvoices,
+  paymentManualAttempt,
 } from 'merchant/modules/subscriptions';
 import { fetchPlan } from 'merchant/modules/plans';
 import { fetchCustomer } from 'merchant/modules/customers';
@@ -211,6 +212,28 @@ export default class SubscriptionDetailsContainer extends Component {
     };
   }
 
+  // Manual Attempt to invoice charge
+  onManualAttempt = invoiceId => {
+    return paymentManualAttempt(invoiceId)
+      .then(response => {
+        // Show success notification
+        this.props.showNotification({
+          type: 'success',
+          message: 'Manual charge attempt is successful',
+        });
+
+        // Fetch the list of invoices again
+
+        return response;
+      })
+      .catch(err => {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+      });
+  };
+
   render() {
     let { entity, plan, customer, invoices, activeSecEntityId } = this.props;
     let {
@@ -264,6 +287,7 @@ export default class SubscriptionDetailsContainer extends Component {
           invoice={invoiceData}
           onClose={this.secClose}
           statusMsg={makeErrorStatus(invoiceErrors)}
+          onManualAttempt={this.onManualAttempt}
           isLoading={
             invoiceData.status === 'next_due' && invoiceData
               ? false
@@ -286,6 +310,7 @@ export default class SubscriptionDetailsContainer extends Component {
           goToLink={this.goToLink}
           activeSecEntityId={activeSecEntityId}
           onCancelClick={this.cancelSubscription}
+          onManualAttempt={this.onManualAttempt}
         />
 
         {invoiceSecView}

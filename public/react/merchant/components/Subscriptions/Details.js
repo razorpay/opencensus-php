@@ -52,6 +52,7 @@ export default ({
   goToLink,
   activeSecEntityId,
   onCancelClick,
+  onManualAttempt,
 }) => {
   return (
     <div class="content-wrapper content-sm txn-details">
@@ -147,6 +148,7 @@ export default ({
                   items={invoices.items}
                   activeSecEntityId={activeSecEntityId}
                   loading={invoices.loading}
+                  onManualAttempt={onManualAttempt}
                 />
 
                 <NestedEntityDetailRow
