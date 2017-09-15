@@ -14,11 +14,11 @@ class AnalyticsValidator extends Base\Validator
 
     protected $strict = false;
 
-    const METHODS = ['netbanking', 'cards', 'wallets'];
+    const METHOD = ['netbanking', 'cards', 'wallets'];
 
     const NETWORK = ['visa', 'mastercard'];
 
-    const DEVICES = ['desktop', 'mobile', 'tablet'];
+    const DEVICE = ['desktop', 'mobile', 'tablet'];
 
     const BROWSER = ['chrome', 'IE', 'firefox'];
 
@@ -43,143 +43,53 @@ class AnalyticsValidator extends Base\Validator
 
     public function validateMethod(string $attribute, $value)
     {
-        if (is_array($value) === true)
-        {
-            if ($this->isSubsetWithoutOrder(self::METHODS, $value) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Invalid method',
-                    null,
-                    $value);
-            }
-        }
-        else
-        {
-            if (in_array($value, self::METHODS) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Invalid method',
-                    null,
-                    $value);
-            }
-        }
+        $this->validateFilter($attribute, $value, self::METHOD);
     }
 
     public function validateNetwork(string $attribute, $value)
     {
-        if (is_array($value) === true)
-        {
-            if ($this->isSubsetWithoutOrder(self::NETWORK, $value) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Invalid network',
-                    null,
-                    $value);
-            }
-        }
-        else
-        {
-            if (in_array($value, self::NETWORK) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Invalid network',
-                    null,
-                    $value);
-            }
-        }
+        $this->validateFilter($attribute, $value, self::NETWORK);
     }
 
     public function validateDevice(string $attribute, $value)
     {
-        if (is_array($value) === true)
-        {
-            if ($this->isSubsetWithoutOrder(self::DEVICES, $value) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Invalid device',
-                    null,
-                    $value);
-            }
-        }
-        else
-        {
-            if (in_array($value, self::DEVICES) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Invalid device',
-                    null,
-                    $value);
-            }
-        }
+        $this->validateFilter($attribute, $value, self::DEVICE);
     }
 
     public function validateBrowser(string $attribute, $value)
     {
-        if (is_array($value) === true)
-        {
-            if ($this->isSubsetWithoutOrder(self::BROWSER, $value) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Invalid browser',
-                    null,
-                    $value);
-            }
-        }
-        else
-        {
-            if (in_array($value, self::BROWSER) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Invalid browser',
-                    null,
-                    $value);
-            }
-        }
+        $this->validateFilter($attribute, $value, self::BROWSER);
     }
 
     public function validateOs(string $attribute, $value)
     {
-        if (is_array($value) === true)
-        {
-            if ($this->isSubsetWithoutOrder(self::OS, $value) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Invalid os',
-                    null,
-                    $value);
-            }
-        }
-        else
-        {
-            if (in_array($value, self::OS) === false)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Invalid os',
-                    null,
-                    $value);
-            }
-        }
+        $this->validateFilter($attribute, $value, self::OS);
     }
 
     public function validatePlatform(string $attribute, $value)
     {
+        $this->validateFilter($attribute, $value, self::PLATFORM);
+    }
+
+    protected function validateFilter(string $attribute, $value, array $parentArray)
+    {
         if (is_array($value) === true)
         {
-            if ($this->isSubsetWithoutOrder(self::PLATFORM, $value) === false)
+            if ($this->isSubsetWithoutOrder($parentArray, $value) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Invalid platform',
-                    null,
+                    'Invalid '.$attribute,
+                    $attribute,
                     $value);
             }
         }
         else
         {
-            if (in_array($value, self::PLATFORM) === false)
+            if (in_array($value, $parentArray) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Invalid platform',
-                    null,
+                    'Invalid '.$attribute,
+                    $attribute,
                     $value);
             }
         }
