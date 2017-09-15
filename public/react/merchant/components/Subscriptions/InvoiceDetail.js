@@ -29,6 +29,9 @@ export default class InvoiceDetail extends Component {
       nextChargeAt,
     } = this.props;
 
+    {
+      /*For next_due invoice, issued_at is charge_at of subscription*/
+    }
     return (
       <div class="content-wrapper content-sm txn-details">
         {isLoading
@@ -63,15 +66,19 @@ export default class InvoiceDetail extends Component {
                   <div class="panel-body">
                     <div class="list-group details-row-container">
                       <EntityDetailRow
-                        label="Invoice"
-                        value={() =>
-                          <NavLink
-                            to={`/invoices/${invoice.id}`}
-                            target="_blank"
-                          >
-                            {invoice.id}
-                            <i class="icon icon-external-link" />
-                          </NavLink>}
+                        label="Invoice Id"
+                        value={
+                          invoice.status === 'next_due'
+                            ? 'Not yet created'
+                            : () =>
+                                <NavLink
+                                  to={`/invoices/${invoice.id}`}
+                                  target="_blank"
+                                >
+                                  {invoice.id}
+                                  <i class="icon icon-external-link" />
+                                </NavLink>
+                        }
                       />
                       <EntityDetailRow
                         label="Invoice Status"
