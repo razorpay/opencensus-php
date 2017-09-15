@@ -35,12 +35,9 @@ class OAuth
     {
         $app = App::getFacadeRoot();
 
-        $this->app = $app;
-
-        $this->ba = $app['basicauth'];
-
-        $this->router = $app['router'];
-
+        $this->app     = $app;
+        $this->ba      = $app['basicauth'];
+        $this->router  = $app['router'];
         $this->request = $app['request'];
     }
 

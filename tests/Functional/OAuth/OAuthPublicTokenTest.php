@@ -29,7 +29,7 @@ class OAuthPublicTokenTest extends OAuthTestCase
 
     public function testAuthenticatePublicTokenViaKeyIdParam()
     {
-        $this->ba->oauthPublicToken($this->publicToken);
+        $this->ba->oauthPublicTokenAuth($this->publicToken);
 
         $this->startTest();
     }
@@ -45,7 +45,7 @@ class OAuthPublicTokenTest extends OAuthTestCase
     {
         $token = 'rzp_test_oauth_10000000Random';
 
-        $this->ba->oauthPublicToken($token);
+        $this->ba->oauthPublicTokenAuth($token);
 
         $this->startTest();
     }
@@ -62,7 +62,7 @@ class OAuthPublicTokenTest extends OAuthTestCase
 
         $publicToken = $token->getPublicTokenWithPrefix();
 
-        $this->ba->oauthPublicToken($publicToken);
+        $this->ba->oauthPublicTokenAuth($publicToken);
 
         $this->startTest();
     }
@@ -78,7 +78,7 @@ class OAuthPublicTokenTest extends OAuthTestCase
 
         $publicToken = $token->getPublicTokenWithPrefix();
 
-        $this->ba->oauthPublicToken($publicToken);
+        $this->ba->oauthPublicTokenAuth($publicToken);
 
         $this->startTest();
     }

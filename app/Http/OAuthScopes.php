@@ -17,7 +17,9 @@ class OAuthScopes
      * @var array
      */
     protected static $scopes = [
-        'transfer_create' => ['transfer.write']
+
+        // Just a dummy route, gets used in tests
+        'feature_dummy' => ['dummy.read']
     ];
 
     /**

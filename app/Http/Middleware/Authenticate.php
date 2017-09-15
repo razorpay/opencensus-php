@@ -67,20 +67,7 @@ class Authenticate
 
         $this->ba->init($this->app);
 
-        $authHeader = getallheaders()['Authorization'] ?? null;
-
-        $bearerToken = '';
-
-        if ($authHeader !== null)
-        {
-            if (Str::startsWith($authHeader, 'Bearer '))
-            {
-                $bearerToken = Str::substr($authHeader, 7);
-            }
-        }
-
-        // Does not work due to Apache's CGIAuthPass setting
-        // $bearerToken = $request->bearerToken();
+        $bearerToken = $this->getBearerTokenFromHeaders($request);
 
         //
         // If the request was sent with Bearer auth (OAuth),
@@ -260,5 +247,44 @@ class Authenticate
         }
 
         $this->app['trace']->processor('web')->addServerData($data);
+    }
+
+    private function getBearerTokenFromHeaders($request)
+    {
+        //
+        // After a fix in infra code we will use following to get bearer token:
+        // $request->getBearerToken();
+        //
+        // But for now following are the issues:
+        // - With apache, 'Authorization' headers is missing unless specific
+        //   configuration. So for that we started using getallheaders(). This
+        //   method is available when PHP is running with apache and so we have
+        //   added a polyfill utility method in case on local someone is using
+        //   nginx.
+        // - Now with tests, it's not actually an HTTP request during request
+        //   response flow. Framework forms a Symfony request object and directly
+        //   starts from framework kernel's instantiation(by passing actual HTTP flow).
+        //   And so extra $_SERVER headers are missing. So in tests using $request's
+        //   bearerToken() method.
+        //
+
+        if ($this->app->runningUnitTests() === true)
+        {
+            return $request->bearerToken();
+        }
+
+        $authHeader = getallheaders()['Authorization'] ?? null;
+
+        $bearerToken = '';
+
+        if ($authHeader !== null)
+        {
+            if (Str::startsWith($authHeader, 'Bearer '))
+            {
+                $bearerToken = Str::substr($authHeader, 7);
+            }
+        }
+
+        return $bearerToken;
     }
 }

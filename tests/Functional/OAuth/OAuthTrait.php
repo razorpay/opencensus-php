@@ -2,10 +2,15 @@
 
 namespace RZP\Tests\Functional\OAuth;
 
-use RZP\Services\AuthService;
-
+use Razorpay\OAuth\Token;
 use Razorpay\OAuth\Client;
 use Razorpay\OAuth\Application;
+use Lcobucci\JWT\Token as JWTToken;
+use Razorpay\OAuth\Tests\Helpers\OAuthTestHelper;
+
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
+use RZP\Services\AuthService;
 
 trait OAuthTrait
 {
@@ -31,6 +36,59 @@ trait OAuthTrait
             ]);
 
         return $application;
+    }
+
+    public function createOAuthApplicationAndGetClientByEnv(string $env = 'dev')
+    {
+        $application = $this->createOAuthApplication();
+
+        return $application->clients()
+                           ->get()
+                           ->filter(
+                                function($client, $key) use ($env)
+                                {
+                                    return $client->getEnvironment() === $env;
+                                })
+                           ->first();
+    }
+
+    public function generateOAuthAccessToken(array $attributes = [], string $env = 'dev')
+    {
+        $client = $this->createOAuthApplicationAndGetClientByEnv($env);
+
+        $defaultValues = $this->getDefaultAccessTokenValues($client);
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $accessToken = factory(Token\Entity::class)->create($attributes);
+
+        $jwt = (new OAuthTestHelper)->getJWT($accessToken);
+
+        return $jwt;
+    }
+
+    public function tamperExpiryOfAccessToken(JWTToken $accessToken): string
+    {
+        $tokenComponents = explode('.', $accessToken);
+
+        $payload = json_decode(base64_decode($tokenComponents[1]), true);
+
+        $payload['exp'] = Carbon::today(Timezone::IST)->addDays(40)->timestamp;
+
+        $tokenComponents[1] = base64_encode(json_encode($payload));
+
+        $accessToken = implode('.', $tokenComponents);
+
+        return $accessToken;
+    }
+
+    protected function getDefaultAccessTokenValues(Client\Entity $client): array
+    {
+        return [
+            'client_id'  => $client->getId(),
+            'expires_at' => Carbon::today(Timezone::IST)->addDays(30)->timestamp,
+            'scopes'     => ['read_only']
+        ];
     }
 
     /**
