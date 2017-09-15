@@ -13,12 +13,12 @@ class AESCrypto extends Base\AESCrypto
     {
         $formattedData = $this->encodeData($data);
 
-        return urlencode($this->encryptString($formattedData));
+        return base64_encode($this->encryptString($formattedData));
     }
 
     public function decryptData(string $input)
     {
-        $input = urldecode($input);
+        $input = base64_decode($input);
 
         return $this->decodeData($this->decryptString($input));
     }

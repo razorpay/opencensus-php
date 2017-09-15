@@ -102,8 +102,6 @@ class Gateway extends Base\Gateway
 
         $encryptedData = $this->getEncryptor()->encryptData($content);
 
-        $decrypted = $this->getEncryptor()->decryptData($encryptedData);
-
         $requestData = [
             RequestFields::ENCRYPTED_DATA => $encryptedData
         ];
@@ -323,7 +321,7 @@ class Gateway extends Base\Gateway
 
         assert($secret !== null);
 
-        return (new AESCrypto(AES::MODE_CBC, $secret));
+        return (new AESCrypto(AES::MODE_CBC, $secret, $secret));
     }
 
     public function formatAmount(int $amount): string
