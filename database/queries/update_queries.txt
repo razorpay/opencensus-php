@@ -668,3 +668,7 @@ UPDATE gateway_tokens SET terminal_id = '7Y30j1EY3JG8ob'
 
 UPDATE offers SET issuer = payment_network WHERE payment_method != 'card';
 UPDATE offers SET payment_network = NULL WHERE payment_method != 'card';
+
+# Netbanking Federal terminal supports both tpv and non tpv
+UPDATE terminals SET tpv = '2' WHERE gateway = 'netbanking_federal' AND
+    id = '7j1qFPcYQhXbsk';
