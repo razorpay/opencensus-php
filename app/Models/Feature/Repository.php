@@ -75,7 +75,8 @@ class Repository extends BaseRepository
             {
                 $this->trace->info(TraceCode::FEATURE_SYNCED, [
                     $entityId,
-                    $entityName
+                    $entityName,
+                    $options
                 ]);
 
                 return true;
@@ -84,7 +85,8 @@ class Repository extends BaseRepository
 
         $this->trace->info(TraceCode::FEATURE_NOT_SYNCED, [
             $entityId,
-            $entityName
+            $entityName,
+            $options
         ]);
 
         return false;
