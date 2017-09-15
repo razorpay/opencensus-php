@@ -334,31 +334,25 @@ class Gateway extends Base\Gateway
 
     protected function parseVerifyResponse(string $body)
     {
-        // We get the number of rows in the verify response string
-        $numRows = substr_count($body, "\n");
+        // Separating out the rows of the string
+        $rows = explode("\n", $body);
 
-        // We use this to separate the rows of the response string
-        $body = str_replace("\n", "|", $body);
-
-        $values = explode("|", $body);
-
-        if ($numRows > 1)
+        // Removing the 0000's at the end of the string before proceeding
+        // The whitespaces don't contain the pip as a separator character
+        if (strpos($rows[sizeof($rows) - 1], "|") === false)
         {
-            $values = $this->handleMultipleTablesVerifyResponse($values);
+            unset($rows[sizeof($rows) - 1]);
         }
+
+        // We get the most relevant row in the response
+        $values = $this->getVerifyResponseArray($rows);
 
         //
         // Manually setting success to failed for verify response "||||"
-        // In the success case, eliminating the \n0000's to clean the data
         //
         if (empty($values[0]) === true)
         {
             $values[4] = Status::NO;
-        }
-        else
-        {
-            // Cleaning data
-            $values[4] = trim($values[4]);
         }
 
         $keys = $this->getVerifyResponseKeys();
@@ -376,21 +370,18 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * We slice the $values array into $numRows number of arrays of size 5.
-     * We then return the first successful sub-array or return any failed sub-array
-     * If there is more than 1 sub-array that is successful, we throw an error
+     * We go over each row in the table and count the number of success rows.
+     * If there's only one success row, we return it. Else we return the first row in the rows by default.
+     * If there's more than 1 success row, we throw an exception.
      *
-     * @param array $values
+     * @param array $rows
      * @return mixed
      * @throws Exception\PaymentVerificationException
      */
-    protected function handleMultipleTablesVerifyResponse(array $values)
+    protected function getVerifyResponseArray(array $rows)
     {
-        // Removing the 0000's at the end of the string before tracing
-        unset($values[sizeof($values) - 1]);
-
         $data = [
-            'response_array' => $values,
+            'response_array' => $rows,
             'payment_id'     => $this->input['payment']['id'],
             'gateway'        => $this->gateway,
         ];
@@ -400,31 +391,28 @@ class Gateway extends Base\Gateway
         //
         $this->trace->info(TraceCode::MULTIPLE_TABLES_IN_VERIFY_RESPONSE, ['response_data' => $data]);
 
-        $keys = $this->getVerifyResponseKeys();
-
-        $numKeys = count($keys);
-
-        $chunks = array_chunk($values, $numKeys);
-
         //
         // Initialize number of success chunks to 0 and
         // chunk to be returned to the first chunk
         //
         $numSuccess = 0;
-        $chunkToBeReturned = $chunks[0];
 
-        foreach ($chunks as $chunk)
+        $rowToBeReturned = $rows[0];
+
+        foreach ($rows as $row)
         {
             //
             // If we find a chunk with a success status,
             // we increment numSuccess and assign $chunk
             // to $chunkToBeReturned
             //
-            if ($chunk[4] === Status::SUCCESS)
+            $rowArray = explode('|', $row);
+
+            if ($rowArray[4] === Status::SUCCESS)
             {
                 $numSuccess++;
 
-                $chunkToBeReturned = $chunk;
+                $rowToBeReturned = $row;
             }
         }
 
@@ -446,7 +434,8 @@ class Gateway extends Base\Gateway
             );
         }
 
-        return $chunkToBeReturned;
+        // Returning the correct row in array form
+        return explode('|', $rowToBeReturned);
     }
 
     protected function getVerifyResponseKeys()
