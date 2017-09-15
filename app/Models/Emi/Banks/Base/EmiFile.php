@@ -14,6 +14,7 @@ use RZP\Models\Card;
 use RZP\Models\Emi\Banks\Base\EmiMode;
 use RZP\Models\FileStore;
 use RZP\Trace\TraceCode;
+use RZP\Models\FileStore\Encryption;
 
 class EmiFile extends Base\Core
 {
@@ -22,7 +23,11 @@ class EmiFile extends Base\Core
 
     protected $shouldCompress = true;
 
+    protected $shouldEncrypt = false;
+
     protected $transferMode = EmiMode::MAIL;
+
+    protected $encryptionType = Encryption::PGP_ENCRYPTION;
 
     const EMI_FILE_PASSWORD_LENGTH = 7;
 
@@ -68,6 +73,11 @@ class EmiFile extends Base\Core
                 ->store($store)
                 ->type($this->type)
                 ->metadata($metadata);
+
+        if ($this->shouldEncrypt === true)
+        {
+            $creator->encrypt($this->encryptionType, $this->getEncryptionKey());
+        }
 
         if ($this->shouldCompress === true)
         {
@@ -198,5 +208,11 @@ class EmiFile extends Base\Core
             $this->emailIdsToSendTo);
 
         Mail::queue($emiPasswordMail);
+    }
+
+    //Should be implemented in child class
+    protected function getEncryptionKey()
+    {
+
     }
 }

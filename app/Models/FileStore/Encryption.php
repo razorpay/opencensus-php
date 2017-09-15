@@ -49,8 +49,6 @@ class Encryption
 
         $data = file_get_contents($filePath);
 
-        file_put_contents($filePath, "");
-
         $enc = gnupg_encrypt($res, $data);
 
         file_put_contents($filePath, $enc);

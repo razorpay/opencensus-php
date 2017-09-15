@@ -8,6 +8,7 @@ use RZP\Models\Card;
 use RZP\Models\FileStore;
 use RZP\Models\Payment;
 use RZP\Models\Emi\Banks\Base;
+use RZP\Models\FileStore\Encryption;
 
 class EmiFile extends Base\EmiFile
 {
@@ -24,6 +25,8 @@ class EmiFile extends Base\EmiFile
         parent::__construct();
 
         $this->shouldCompress = false;
+
+        $this->shouldEncrypt = true;
 
         $this->transferMode = Base\EmiMode::SFTP;
     }
@@ -126,5 +129,10 @@ class EmiFile extends Base\EmiFile
     private function formattedDateFromTimestamp($timestamp)
     {
         return Carbon::createFromTimestamp($timestamp, Timezone::IST)->format('j/n/Y');
+    }
+
+    protected function getEncryptionKey()
+    {
+        return 'C45858B3041DA910EBFB51D16037D95C5D0C7902';
     }
 }
