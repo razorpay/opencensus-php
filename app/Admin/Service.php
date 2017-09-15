@@ -1391,13 +1391,9 @@ class Service extends Base\Service
 
         $this->setAdminCredentials();
 
-        $user = Auth::guard('api')->user();
-
-        $orgId = $user->org_id;
-
         try
         {
-            $data = $this->api->admin->logout($orgId);
+            $data = $this->api->admin->logout();
 
             // Dashboard logout
             Auth::guard('api')->logout();

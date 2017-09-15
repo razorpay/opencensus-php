@@ -36,9 +36,9 @@ class Admin extends Entity
         return $this->request('GET', $relativeUrl);
     }
 
-    public function logout($orgId)
+    public function logout()
     {
-        $relativeUrl = "orgs/$orgId/admin/logout";
+        $relativeUrl = "admin/logout";
 
         return $this->request('POST', $relativeUrl);
     }
