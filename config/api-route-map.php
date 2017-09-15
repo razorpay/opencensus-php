@@ -58,12 +58,12 @@ return [
         'org_fieldmap_delete'               => 'orgs/{orgId}/field-map/{id}',
         'org_fieldmap_get_by_entity'        => 'orgs/{orgId}/field-map/entity/{entity}',
 
-        'admin_lead_create'                 => 'orgs/{orgId}/admin-lead',
-        'admin_lead_get_multiple'           => 'orgs/{orgId}/admin-lead',
-        'admin_lead_put'                    => 'orgs/{orgId}/admin-lead/{id}',
+        'admin_lead_create'                 => 'admin-lead',
+        'admin_lead_get_multiple'           => 'admin-lead-multiple',
+        'admin_lead_put'                    => 'admin-lead/{id}',
 
         // Admin Change Password
-        'admin_change_password'             => 'orgs/admin/change_password',
+        'admin_change_password'             => 'admin/change_password',
 
         // Get Admin File
         'admin_get_file'                    => 'files/{fileId}/signed-url',
@@ -573,7 +573,7 @@ return [
         'merchant_tag_delete'               => 'merchants/{id}/tags/{tagName}',
 
         'admin_lead_verify'                 => 'admin-lead/verify/{token}',
-        'merchant_admin_lead_put'           => 'orgs/{orgId}/admin-lead-merchant/{id}',
+        'merchant_admin_lead_put'           => 'admin-lead-merchant/{id}',
 
         // Get Org details by hostname (for heimdall specifics)
         'org_get_by_hostname'               => 'orgs/hostname/{hostname}',

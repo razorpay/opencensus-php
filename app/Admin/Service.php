@@ -70,12 +70,10 @@ class Service extends Base\Service
 
         $this->setApiCredentials();
 
-        $org = $this->getOrgFromCache($domain);
-
         try
         {
             // This is password based login
-            $data = $this->api->admin->passwordLogin($org['id'], $input)->toArray();
+            $data = $this->api->admin->passwordLogin($input)->toArray();
 
             Session::put(config('auth.guards.api.session_key'), $data);
         }
@@ -87,13 +85,13 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
-    public function oAuthLogin($input, $orgId)
+    public function oAuthLogin($input)
     {
         $error = $data = null;
 
         $this->setApiCredentials();
 
-        $data = $this->api->admin->oAuthLogin($input, $orgId)->toArray();
+        $data = $this->api->admin->oAuthLogin($input)->toArray();
 
         return $data;
     }
@@ -144,7 +142,7 @@ class Service extends Base\Service
 
             try
             {
-                $data = $this->oAuthLogin($oAuthLoginInput, $orgId);
+                $data = $this->oAuthLogin($oAuthLoginInput);
 
                 Session::put(config('auth.guards.api.session_key'), $data);
             }

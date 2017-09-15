@@ -185,17 +185,16 @@ class Admin extends Entity
         return $className.'/';
     }
 
-    public function passwordLogin($orgId, array $params)
+    public function passwordLogin(array $params)
     {
-        $relativeUrl = "orgs/$orgId/admin/authenticate";
+        $relativeUrl = "admin/authenticate";
 
         return $this->request('POST', $relativeUrl, $params);
     }
 
-    public function oAuthLogin(array $params, $orgId)
+    public function oAuthLogin(array $params)
     {
-        // $relativeUrl = $this->getEntityUrl().'oauth_login';
-        $relativeUrl = "orgs/$orgId/admin/oauth_login";
+        $relativeUrl = "admin/oauth_login";
 
         return $this->request('POST', $relativeUrl, $params);
     }
