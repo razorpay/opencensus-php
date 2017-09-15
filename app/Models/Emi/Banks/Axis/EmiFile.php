@@ -15,9 +15,9 @@ class EmiFile extends Base\EmiFile
 
     protected $bankName  = 'Axis';
 
-    const EXTENSION = FileStore\Format::CSV;
+    protected $type = FileStore\Type::AXIS_EMI_FILE;
 
-    const TYPE = FileStore\Type::AXIS_EMI_FILE;
+    const EXTENSION = FileStore\Format::CSV;
 
     protected function getEmiData($input)
     {

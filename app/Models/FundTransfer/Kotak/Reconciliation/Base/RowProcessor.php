@@ -112,7 +112,7 @@ class RowProcessor extends BaseCore
 
         $now = Carbon::now()->getTimestamp();
 
-        $tenPm = $recordDate->hour(22)->timestamp;
+        $tenPm = $recordDate->hour(22)->getTimestamp();
 
         $failureReason = null;
 

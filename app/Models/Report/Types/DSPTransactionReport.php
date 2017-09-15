@@ -299,8 +299,8 @@ class DSPTransactionReport extends BasicEntityReport
                               ->startOfDay();
             }
 
-            $from = $date->timestamp;
-            $to = $date->addDay()->timestamp - 1;
+            $from = $date->getTimestamp();
+            $to = $date->addDay()->getTimestamp() - 1;
         }
         else if (isset($input['month']) === true)
         {
@@ -314,17 +314,17 @@ class DSPTransactionReport extends BasicEntityReport
 
             $from = Carbon::createFromDate($year, $month, 1, Timezone::IST)
                           ->startOfDay()
-                          ->timestamp;
+                          ->getTimestamp();
 
             $to = Carbon::createFromDate($year, $month, 1, Timezone::IST)
                         ->endOfMonth()
-                        ->timestamp;
+                        ->getTimestamp();
         }
         else
         {
-            $from = Carbon::yesterday(Timezone::IST)->timestamp;
+            $from = Carbon::yesterday(Timezone::IST)->getTimestamp();
 
-            $to = Carbon::today(Timezone::IST)->timestamp - 1;
+            $to = Carbon::today(Timezone::IST)->getTimestamp() - 1;
 
             if (isset($input['from']) === true)
             {

@@ -12,6 +12,7 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 class Gateway extends Base\Gateway
 {
@@ -154,8 +155,6 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment(Verify $verify)
     {
-        $content = $verify->verifyResponseContent;
-
         $status = $this->getVerifyMatchStatus($verify);
 
         $verify->status = $status;
@@ -335,7 +334,18 @@ class Gateway extends Base\Gateway
 
     protected function parseVerifyResponse(string $body)
     {
-        $values = explode('|', $body);
+        // We get the number of rows in the verify response string
+        $numRows = substr_count($body, "\n");
+
+        // We use this to separate the rows of the response string
+        $body = str_replace("\n", "|", $body);
+
+        $values = explode("|", $body);
+
+        if ($numRows > 1)
+        {
+            $values = $this->handleMultipleTablesVerifyResponse($values);
+        }
 
         //
         // Manually setting success to failed for verify response "||||"
@@ -359,7 +369,84 @@ class Gateway extends Base\Gateway
 
         $content[ResponseFields::STATUS] = $status;
 
+        // Values to be processed being traced here
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT, ['content' => $content]);
+
         return $content;
+    }
+
+    /**
+     * We slice the $values array into $numRows number of arrays of size 5.
+     * We then return the first successful sub-array or return any failed sub-array
+     * If there is more than 1 sub-array that is successful, we throw an error
+     *
+     * @param array $values
+     * @return mixed
+     * @throws Exception\PaymentVerificationException
+     */
+    protected function handleMultipleTablesVerifyResponse(array $values)
+    {
+        // Removing the 0000's at the end of the string before tracing
+        unset($values[sizeof($values) - 1]);
+
+        $data = [
+            'response_array' => $values,
+            'payment_id'     => $this->input['payment']['id'],
+            'gateway'        => $this->gateway,
+        ];
+
+        //
+        // We log that we have multiple tables in the verify response
+        //
+        $this->trace->info(TraceCode::MULTIPLE_TABLES_IN_VERIFY_RESPONSE, ['response_data' => $data]);
+
+        $keys = $this->getVerifyResponseKeys();
+
+        $numKeys = count($keys);
+
+        $chunks = array_chunk($values, $numKeys);
+
+        //
+        // Initialize number of success chunks to 0 and
+        // chunk to be returned to the first chunk
+        //
+        $numSuccess = 0;
+        $chunkToBeReturned = $chunks[0];
+
+        foreach ($chunks as $chunk)
+        {
+            //
+            // If we find a chunk with a success status,
+            // we increment numSuccess and assign $chunk
+            // to $chunkToBeReturned
+            //
+            if ($chunk[4] === Status::SUCCESS)
+            {
+                $numSuccess++;
+
+                $chunkToBeReturned = $chunk;
+            }
+        }
+
+        //
+        // If numSuccess is greater than 1, we throw an exception
+        //
+        if ($numSuccess > 1)
+        {
+            // Adding num success to the data to be traced
+            $data['num_sucess'] = $numSuccess;
+
+            $this->trace->error(TraceCode::MULTIPLE_SUCCESS_TABLES_IN_VERIFY_RESPONSE, ['response_data' => $data]);
+
+            throw new Exception\PaymentVerificationException(
+                $data,
+                null,
+                VerifyAction::FINISH,
+                ErrorCode::SERVER_ERROR_MULTIPLE_SUCCESS_TRANSACTIONS_IN_VERIFY
+            );
+        }
+
+        return $chunkToBeReturned;
     }
 
     protected function getVerifyResponseKeys()

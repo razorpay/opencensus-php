@@ -394,4 +394,28 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_CANNOT_UPDATE_CLOSED_DISPUTE,
         ],
     ],
+
+    'testDisputeReversalWinLogic' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                'status'        => 'won'
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
+
+    'testDisputeReversalLostLogic' => [
+        'request' => [
+            'method'  => 'patch',
+            'content' => [
+                'status'        => 'lost'
+            ],
+        ],
+        'response' => [
+            'content' => [],
+        ],
+    ],
 ];

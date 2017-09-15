@@ -15,9 +15,9 @@ class Collection extends Base\PublicCollection
      *
      * @return array Formatted data
      */
-    public function toArrayExternal()
+    public function toArrayCheckout()
     {
-        $formattedData = [];
+        $array = [];
 
         foreach ($this->items as $downtime)
         {
@@ -42,7 +42,7 @@ class Collection extends Base\PublicCollection
                 case Method::WALLET:
                 case Method::UPI:
 
-                    $downtimeData = $downtime->toArrayExternal();
+                    $downtimeData = $downtime->toArrayCheckout();
 
                     break;
 
@@ -52,16 +52,31 @@ class Collection extends Base\PublicCollection
 
             if ($downtimeData !== null)
             {
-                $formattedData[$method][] = $downtimeData;
+                $array[$method][] = $downtimeData;
             }
         }
 
-        return $formattedData;
+        return $array;
+    }
+
+    public function toArrayPublic()
+    {
+        $array = [];
+
+        $items = $this->itemsToArrayPublic();
+
+        $array[static::ENTITY] = $this->entity;
+
+        $array[static::COUNT] = count($items);
+
+        $array[static::ITEMS] = $items;
+
+        return $array;
     }
 
     protected function getFormattedDowntimeDataForCard(Entity $downtime)
     {
-        $data = $downtime->toArrayExternal();
+        $data = $downtime->toArrayCheckout();
 
         $gateway = $downtime->getGateway();
 
@@ -120,7 +135,7 @@ class Collection extends Base\PublicCollection
 
     protected function getFormattedDowntimeDataForNetbanking(Entity $downtime)
     {
-        $data = $downtime->toArrayExternal();
+        $data = $downtime->toArrayCheckout();
 
         $gateway = $downtime->getGateway();
 
@@ -171,6 +186,28 @@ class Collection extends Base\PublicCollection
 
             return $data;
         }
+    }
+
+    protected function itemsToArrayPublic(): array
+    {
+        $array = [];
+
+        foreach ($this->items as $item)
+        {
+            $item = $item->toArrayPublic();
+
+            if ($item !== null)
+            {
+                if (is_associative_array($item) === true)
+                {
+                    $item = [$item];
+                }
+
+                $array = array_merge($array, $item);
+            }
+        }
+
+        return $array;
     }
 
     protected function isUnknownOrNA(string $value)

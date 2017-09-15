@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Mail;
 
+use RZP\Mail\Settlement\AxisSettlement as AxisSettlementMail;
 use RZP\Mail\Settlement\IciciSettlement as IciciSettlementMail;
 use RZP\Mail\Settlement\KotakSettlement as KotakSettlementMail;
 use RZP\Mail\Settlement\KotakPayout as KotakPayoutMail;
@@ -622,7 +623,7 @@ class SettlementTest extends TestCase
         $this->assertSame($content['count'], 4);
     }
 
-    public function testIciciNodalTransferWithGateway()
+    public function testNodalTransferWithGateway()
     {
         Mail::fake();
 
@@ -641,10 +642,10 @@ class SettlementTest extends TestCase
         Carbon::setTestNow($testTime);
 
         $request = [
-            'url'     => '/nodal/transfer/icici',
+            'url'     => '/nodal/transfer',
             'method'  => 'POST',
             'content' => [
-                'gateway' => 'first_data'
+                'gateway' => 'first_data',
             ]
         ];
 
@@ -657,25 +658,25 @@ class SettlementTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function testIciciNodalTransferWithAmount()
+    public function testNodalTransferWithAmount()
     {
         Mail::fake();
 
         $this->ba->appAuth();
 
         $request = [
-            'url'     => '/nodal/transfer/icici',
+            'url'     => '/nodal/transfer',
             'method'  => 'POST',
             'content' => [
-                'amount' => 1076
-            ]
+                'amount'  => 1076,
+                'channel' => 'axis',]
         ];
 
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertNotEquals(null, $content['file']);
 
-        Mail::assertSent(IciciSettlementMail::class);
+        Mail::assertSent(AxisSettlementMail::class);
     }
 
     public function testSettlementWithAccountTransfer()
@@ -695,6 +696,11 @@ class SettlementTest extends TestCase
                 'updated_at'  => $createdAt + 10
             ]);
 
+        // Check if the recipient_settlement_id for the transfer entity created is null
+        $defaultSettlementId1 = $transfer->getRecipientSettlementId();
+
+        $this->assertEquals($defaultSettlementId1, null);
+
         // Generate settlements
         $content = $this->initiateSettlements();
 
@@ -706,6 +712,59 @@ class SettlementTest extends TestCase
 
         // (1 payment txn + 1 transfer txn + 1 transfer payment txn)
         $this->assertEquals(3, $content['kotak']['transaction_count']);
+
+        // Reload the entities so that the cached values are not returned
+        $transfer->reload();
+
+        $updatedSettlementId1 = $transfer->getRecipientSettlementId();
+
+        $this->assertNotEquals($updatedSettlementId1, null);
+
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->ba->privateAuth();
+
+        // The response should not contain details of the Settlement entity
+        $request = [
+            'url'     => '/transfers',
+            'method'  => 'GET'
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $transferResponse = $content['items'][0];
+
+        $this->assertArrayNotHasKey('recipient_settlement', $transferResponse);
+
+        // The response should contain details of the Settlement entity,
+        // since expand[]=recipient_settlement flag is being passed.
+        $request = [
+            'url'     => '/transfers',
+            'method'  => 'GET',
+            'content' => [
+                'expand'    =>  [
+                    'recipient_settlement'
+                ]
+            ]
+        ];
+
+        $response = [
+            'recipient_settlement'  => [
+                'entity'        => 'settlement',
+                'amount'        => 5000,
+                'status'        => 'created',
+                'fees'          => 0,
+                'service_tax'   => 0,
+                'utr'           => null,
+                'settled_on'    => null
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $transferResponse = $content['items'][0];
+
+        $this->assertArraySelectiveEquals($response, $transferResponse);
     }
 
     public function testSettlementAccountTransferOnHold()

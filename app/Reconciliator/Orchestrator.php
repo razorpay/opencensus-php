@@ -54,6 +54,7 @@ class Orchestrator extends Base\Core
     const NETBANKING_FEDERAL  = 'NetbankingFederal';
     const NETBANKING_RBL      = 'NetbankingRbl';
     const NETBANKING_INDUSIND = 'NetbankingIndusind';
+    const NETBANKING_PNB      = 'NetbankingPnb';
     const VIRTUAL_ACC_KOTAK   = 'VirtualAccKotak';
     const JIOMONEY            = 'Jiomoney';
     const EBS                 = 'Ebs';
@@ -80,6 +81,7 @@ class Orchestrator extends Base\Core
         self::NETBANKING_FEDERAL  => ['fednetrm@federalbank.co.in'],
         self::NETBANKING_RBL      => ['internetbanking@rblbank.com'],
         self::NETBANKING_INDUSIND => [],
+        self::NETBANKING_PNB      => [],
         self::JIOMONEY            => [],
         self::EBS                 => [],
         self::FIRST_DATA          => ['customer.care@icici.mailserv.in'],

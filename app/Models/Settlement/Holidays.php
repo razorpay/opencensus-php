@@ -158,9 +158,10 @@ class Holidays
         return $prevDay;
     }
 
-    public static function getNthWorkingDayFrom($date,
-                                                $countDays,
-                                                $ignoreBankHolidays = false): Carbon
+    public static function getNthWorkingDayFrom(
+                                            $date,
+                                            $countDays,
+                                            $ignoreBankHolidays = false): Carbon
     {
         $workingDay = $date->copy()->hour(0)->minute(0)->second(0);
 

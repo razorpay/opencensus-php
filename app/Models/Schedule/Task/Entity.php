@@ -116,7 +116,7 @@ class Entity extends Base\PublicEntity
     {
         if (isset($input[self::NEXT_RUN_AT]) === false)
         {
-            $nextRunAt = Carbon::today(Timezone::IST)->timestamp;
+            $nextRunAt = Carbon::today(Timezone::IST)->getTimestamp();
 
             $input[self::NEXT_RUN_AT] = $nextRunAt;
         }
@@ -186,11 +186,11 @@ class Entity extends Base\PublicEntity
 
         $nextRun = Library::computeFutureRun($this->schedule, $currentTime, $lastRun->copy(), $considerHolidays);
 
-        $this->setNextRunAt($nextRun->timestamp);
+        $this->setNextRunAt($nextRun->getTimestamp());
 
         if ($lastRun !== null)
         {
-            $this->setLastRunAt($lastRun->timestamp);
+            $this->setLastRunAt($lastRun->getTimestamp());
         }
     }
 
@@ -205,8 +205,8 @@ class Entity extends Base\PublicEntity
 
         $nextRun = $lastRun->copy()->addDay();
 
-        $this->setNextRunAt($nextRun->timestamp);
-        $this->setLastRunAt($lastRun->timestamp);
+        $this->setNextRunAt($nextRun->getTimestamp());
+        $this->setLastRunAt($lastRun->getTimestamp());
     }
 
     public function updateNextRunAt($timestamp)

@@ -206,6 +206,7 @@ class EntityReportTest extends TestCase
 
         $this->assertNotEmpty($invoiceEntries['invoice_number']);
         $this->assertNotEmpty($invoiceEntries['invoice_date']);
+        $this->assertArrayHasKey('gstin', $invoiceEntries);
 
         $data = $this->testData[__FUNCTION__];
 
@@ -238,7 +239,7 @@ class EntityReportTest extends TestCase
 
         $lastRowOfSummary = array_pop($invoiceEntries['Summary']['Invoice Summary']['rows']);
 
-        $this->assertEquals(1356, $lastRowOfSummary['Amount']);
+        $this->assertEquals(177600, $lastRowOfSummary['Amount']);
     }
 
     public function testPaymentReportWithoutAcquirerData()

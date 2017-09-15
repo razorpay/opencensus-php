@@ -55,7 +55,7 @@ return [
         'action'               => 'authorize',
         'received'             => true,
         'wallet'               => 'mpesa',
-        'amount'               => 500,
+        'amount'               => '500',
         'response_code'        => '100',
         'response_description' => 'SUCCESS'
     ],
@@ -64,7 +64,7 @@ return [
         'action'               => 'authorize',
         'received'             => true,
         'wallet'               => 'mpesa',
-        'amount'               => 500.5,
+        'amount'               => '500.5',
         'response_code'        => '100',
         'response_description' => 'SUCCESS'
     ],

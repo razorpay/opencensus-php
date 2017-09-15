@@ -8,6 +8,7 @@ use Config;
 use Crypt;
 use Lib\PhoneBook;
 use Mail;
+use RZP\Constants\TLD;
 use RZP\Constants\Mode;
 use RZP\Http\BasicAuth;
 use RZP\Listeners\ApiEventSubscriber;
@@ -194,11 +195,7 @@ trait Authorize
 
                 $internalErrorCode = $payment->getInternalErrorCode();
 
-                // TODO: Remove this after testing on prod
-                if ($payment->getMerchantId() === Merchant\Account::DEMO_PAGE_ACCOUNT)
-                {
-                    $this->logRiskFailureForGateway($payment, $internalErrorCode);
-                }
+                $this->logRiskFailureForGateway($payment, $internalErrorCode);
 
                 throw $e;
             }
@@ -972,9 +969,24 @@ trait Authorize
     {
         if ($payment->shouldRunFraudChecks() === true)
         {
+            $this->validateEmailTld($payment);
+
             $this->validateFraudDetection($payment, $this->merchant);
 
             $this->validateBlockedCard($payment);
+        }
+    }
+
+    protected function validateEmailTld(Payment\Entity $payment)
+    {
+        $email = $payment->getEmail();
+
+        $tld = last(explode('.', $email));
+
+        if (TLD::isValid($tld) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The email must be a valid email address.', 'email');
         }
     }
 
@@ -1875,8 +1887,22 @@ trait Authorize
 
             $token->incrementUsedCount();
 
+            //
+            // For subscriptions, we always create and set terminal in
+            // gateway token, irrespective of whether the token is already
+            // recurring or not.
+            // If an existing recurring token is used for another subscription,
+            // we create another gateway token, since these two subscriptions
+            // can have different terminals.
+            // In case of charge-at-will, we don't have any way to know whether
+            // it's a different subscription that is being done with an existing
+            // recurring token. We cannot use public_auth check since we can
+            // get the request from private_auth also.
+            //
             if (($payment->isCard() === true) and
-                ($payment->isRecurring() === true))
+                ($payment->isRecurring() === true) and
+                (($token->isRecurring() === false) or
+                 ($payment->hasSubscription() === true)))
             {
                 $token->setRecurring(true);
 
@@ -2796,7 +2822,7 @@ trait Authorize
 
         $merchantMethods = (new Methods\Core)->getMethods($merchant);
 
-        $merchantBanks = ($merchantMethods === null) ? [] : $merchantMethods->getBanks();
+        $merchantBanks = ($merchantMethods === null) ? [] : $merchantMethods->getSupportedBanks();
 
         $paymentBank = $payment->getBank();
 

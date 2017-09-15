@@ -160,6 +160,27 @@ class SbibuddyGatewayTest extends TestCase
         return $refund;
     }
 
+    public function testVerifyRefund()
+    {
+        $refund = $this->testRefundFailedPayment();
+
+        // If refund failed and if on retry the response is duplicate transaction,
+        // it means the refund was initially successfull at gateway
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'refund')
+            {
+                $content[ResponseFields::STATUS_CODE] = ResponseCodeMap::DUPLICATE_TRANSACTION;
+
+                $content[ResponseFields::ERROR_DESCRIPTION] = 'Duplicate transaction';
+            }
+        });
+
+        $response = $this->retryFailedRefund($refund['id']);
+
+        $this->assertEquals(RefundStatus::PROCESSED, $response['status']);
+    }
+
     public function testVerifyPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('sbibuddy');
@@ -169,6 +190,33 @@ class SbibuddyGatewayTest extends TestCase
         $this->payment = $this->verifyPayment($authPayment['razorpay_payment_id']);
 
         $this->assertSame($this->payment['payment']['verified'], 1);
+    }
+
+    public function testAmountMismatchVerifyFailure()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('sbibuddy');
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $this->mockServerContentFunction(
+            function (& $content, $action = null)
+            {
+                if ($action === 'verify')
+                {
+                    $content[ResponseFields::AMOUNT] = '1000.00';
+                }
+            }
+        );
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($authPayment)
+            {
+                $this->verifyPayment($authPayment['razorpay_payment_id']);
+            }
+        );
     }
 
     public function testVerifyFailedPayment()

@@ -46,6 +46,8 @@ class TerminalRotatorTest extends TestCase
 
     public function testCheckoutMultipleAttempts()
     {
+        $this->mockTokenex();
+
         $this->fixtures->times(5)->create('terminal:dynamic_shared_hdfc_terminal');
 
         $this->fixtures->times(5)->create('terminal:dynamic_shared_cybersource_hdfc_terminal');
@@ -123,6 +125,15 @@ class TerminalRotatorTest extends TestCase
         $this->fixtures->times(5)->create('terminal:dynamic_shared_hdfc_terminal');
 
         $this->fixtures->times(5)->create('terminal:dynamic_shared_cybersource_hdfc_terminal');
+
+        // Throw timeout exception from cybersource server
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if ($action === 'enrollment')
+            {
+                throw new \SoapFault('HTTP', 'Error Fetching http headers');
+            }
+        }, 'cybersource');
 
         $payment1 = $this->getPaymentArray();
 

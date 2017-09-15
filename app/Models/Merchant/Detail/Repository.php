@@ -4,12 +4,36 @@ namespace RZP\Models\Merchant\Detail;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
+use RZP\Models\Merchant;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryUpdateTestAndLive;
+    use Base\RepositoryUpdateTestAndLive
+    {
+        saveOrFail as saveOrFailTestAndLive;
+    }
 
     protected $entity = 'merchant_detail';
+
+    /**
+     * @override
+     *
+     * Once merchant details is saved, we need to trigger es sync for corresponding
+     * merchant. This handling is required as merchant detail relation is part
+     * of merchant index content.
+     *
+     * @param Detail\Entity $merchantDetail
+     * @param array         $options
+     */
+    public function saveOrFail($merchantDetail, array $options = [])
+    {
+        $this->saveOrFailTestAndLive($merchantDetail, $options);
+
+        $merchant = $merchantDetail->merchant;
+
+        $this->repo->merchant->syncToEsLiveAndTest($merchant, Merchant\EsRepository::UPDATE);
+    }
 
     protected function addQueryOrder($query)
     {

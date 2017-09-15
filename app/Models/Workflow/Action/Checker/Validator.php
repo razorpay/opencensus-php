@@ -18,7 +18,6 @@ class Validator extends Base\Validator
 
     protected static $createValidators = [
         Entity::ADMIN_ID,
-        Entity::ACTION_ID,
     ];
 
     public function validateAdminId(array $input)
@@ -43,22 +42,5 @@ class Validator extends Base\Validator
         //         ErrorCode::BAD_REQUEST_WORKFLOW_INVALID_CHECKER, null,
         //         $data);
         // }
-    }
-
-    public function validateActionId(array $input)
-    {
-        $action = (new Action\Repository)->findOrFailPublic(
-            $input[Entity::ACTION_ID]);
-
-        if ($action->isValid() === false)
-        {
-            $data = [
-                'action_id' => $action->getId(),
-            ];
-
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_CLOSED,
-                $data);
-        }
     }
 }

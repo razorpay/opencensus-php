@@ -566,7 +566,7 @@ class Validator extends Base\Validator
         $now = Carbon::now(Timezone::IST);
         $minExpireBy = $now->copy()->addSeconds(self::MIN_EXPIRY_SECS);
 
-        if ($invoice->getExpireBy() < $minExpireBy->timestamp)
+        if ($invoice->getExpireBy() < $minExpireBy->getTimestamp())
         {
             $message = 'expire_by should be at least ' .
                         $minExpireBy->diffForHumans($now) . ' the time of issue.';

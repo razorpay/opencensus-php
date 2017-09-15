@@ -6,29 +6,26 @@ use DB;
 use Mail;
 use Config;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
+
+use Razorpay\OAuth\Token as OAuthToken;
+use Razorpay\OAuth\Client as OAuthClient;
 
 use RZP\Exception;
-use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
-use RZP\Models\Base;
-use RZP\Models\Emi;
 use RZP\Models\Key;
 use RZP\Models\User;
+use RZP\Models\Base;
 use RZP\Models\Offer;
 use RZP\Models\Coupon;
-use RZP\Models\Payment;
-use RZP\Models\Pricing;
 use RZP\Constants\Mode;
 use RZP\Models\Feature;
 use RZP\Models\Schedule;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Org;
+use RZP\Constants\Timezone;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Admin\Group;
-use RZP\Constants\MailTags;
 use RZP\Models\BankAccount;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Webhook;
@@ -36,12 +33,14 @@ use Requests_Response as Response;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Merchant\SlackActions as SlackActions;
+use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 
 class Service extends Base\Service
 {
     use Notify;
 
     const COUPON_RESPONSE = 'apply_coupon';
+    const OAUTH_MAIL      = 'oauth_mail';
 
     /**
      * Creates a merchant and saves in database
@@ -129,7 +128,7 @@ class Service extends Base\Service
             }
             catch (\Throwable $e)
             {
-                $result = ['message'=> $e->getMessage()];
+                $result = ['message' => $e->getMessage()];
             }
         }
 
@@ -646,14 +645,9 @@ class Service extends Base\Service
 
     public function getEnabledBanks()
     {
-        $methods = (new Methods\Core)->getMethods($this->merchant);
+        $methods = (new Methods\Core)->getEnabledAndDisabledBanks($this->merchant);
 
-        if ($methods === null)
-        {
-            return [];
-        }
-
-        return $methods->toArrayWithBankNames();
+        return $methods['enabled'];
     }
 
     public function setPaymentBanks($id, $input)
@@ -805,14 +799,14 @@ class Service extends Base\Service
         $from = Holidays::getPreviousWorkingDay($today);
 
         $newBeneficiaryCount = $this->repo->bank_account->getCountOfBankAccountsCreatedBetween(
-                                                        $from->timestamp,
-                                                        $today->timestamp);
+                                                        $from->getTimestamp(),
+                                                        $today->getTimestamp());
 
         if ($newBeneficiaryCount > 0)
         {
             (new BankAccount\BeneficiaryFile)->generateBetweenTimestamps(
-                                                        $from->timestamp,
-                                                        $today->timestamp);
+                                                        $from->getTimestamp(),
+                                                        $today->getTimestamp());
         }
 
         $message = "Merchant Beneficiary file generated. Beneficiary added since".
@@ -1066,6 +1060,8 @@ class Service extends Base\Service
 
         $merchant->retag($tags);
 
+        $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
+
         return $merchant->tagNames();
     }
 
@@ -1079,6 +1075,8 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $merchant->untag($tagName);
+
+        $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
 
         return $merchant->tagNames();
     }
@@ -1156,9 +1154,11 @@ class Service extends Base\Service
      */
     public function getSubmerchants(): array
     {
-        $merchant = $this->merchant;
+        $merchantId = $this->merchant->getId();
 
-        return [ $merchant->getId() ];
+        $merchants = $this->fetchReferredMerchants();
+
+        return array_merge([$merchantId], $merchants->pluck('id')->toArray());
     }
 
     /**
@@ -1240,6 +1240,118 @@ class Service extends Base\Service
                 $this->repo->feature->delete($feature);
             }
         }
+    }
+
+    public function getMerchantDetails()
+    {
+        $data = [];
+
+        /**
+         * Merchant needs to be set using X-Razorpay-account header.
+         * Setting Merchant in header validates admin access to
+         * that merchant in admin access middleware.
+         */
+        if (empty($this->merchant) === false)
+        {
+            $merchant = $this->repo->merchant->findOrFailPublicWithRelations(
+                $this->merchant->getId(), ['methods', Entity::GROUPS, Entity::ADMINS]);
+
+            // Merchant to array public
+            $data = $merchant->toArrayPublic();
+
+            // Merchant confirmed details
+            $data['confirmed'] = $this->getMerchantConfirmed($merchant);
+
+            // Fetch formatted merchant details.
+            $data['merchant_details'] = (new Detail\Service)->getMerchantDetailsForAdmin();
+
+            $data['tags'] = $merchant->tagNames();
+        }
+
+        return $data;
+    }
+    /**
+     * Will provide if merchant is confirmed or not.
+     *
+     * @param $merchant
+     * @return bool
+     */
+    public function getMerchantConfirmed($merchant)
+    {
+        $parentId = $merchant->getParentId();
+
+        // Market place sub accounts are confirmed.
+        if (empty($parentId) === false)
+        {
+            return true;
+        }
+        else
+        {
+            $owner = $this->core()->getMerchantConfirmedOwner($merchant);
+
+            // True if an confirmed owner is present.
+            return !empty($owner);
+        }
+    }
+
+    /**
+     * Sends a mail to the merchant when an action is taken
+     * on oauth access to his account
+     *
+     * @param array  $input
+     * @param string $type
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function sendOAuthMail(array $input, string $type): array
+    {
+        $this->trace->info(TraceCode::SEND_OAUTH_MAIL_REQUEST, ['type' => $type, 'input' => $input]);
+
+        (new Merchant\Validator)->validateInput(self::OAUTH_MAIL, $input);
+
+        $merchant = $this->repo->merchant->findOrFail($input[Entity::MERCHANT_ID]);
+        $user     = $this->repo->user->findOrFail($input[User\Entity::USER_ID]);
+        $client   = (new OAuthClient\Repository)->findOrFail($input[OAuthToken\Entity::CLIENT_ID]);
+
+        $mailer = $this->getOAuthMailerClassByType($type);
+
+        $data = [
+            'merchant'    => $merchant->toArrayPublic(),
+            'user'        => $user->toArrayPublic(),
+            'application' => $client->application->toArrayPublic(),
+        ];
+
+        Mail::queue((new $mailer($data)));
+
+        return ['success' => true];
+    }
+
+    /**
+     * Returns OAuth mailer class name by event type. Also validates that
+     * the same exists. If not throws a bad request exception.
+     *
+     * @param string $type
+     *
+     * @return string
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function getOAuthMailerClassByType(string $type): string
+    {
+        $mailer = 'RZP\\Mail\\OAuth\\' . studly_case($type);
+
+        if (class_exists($mailer) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_OAUTH_MAIL_TYPE,
+                null,
+                [
+                    'type' => $type,
+                ]);
+        }
+
+        return $mailer;
     }
 
     public function fetchAnalytics($input): Response

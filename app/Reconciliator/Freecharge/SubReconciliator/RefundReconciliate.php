@@ -63,7 +63,7 @@ class RefundReconciliate extends Base\RefundReconciliate
                                     $row[self::COLUMN_SETTLED_AT],
                                     Timezone::IST);
 
-            $gatewaySettledAt = $gatewaySettledAt->timestamp;
+            $gatewaySettledAt = $gatewaySettledAt->getTimestamp();
         }
         catch (\Exception $ex)
         {

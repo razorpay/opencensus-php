@@ -9,7 +9,7 @@ return [
     'testWorkflowCheckerRequests' => [
         'request' => [
             'method'  => 'GET',
-            'url'     => '/w-actions?duty=checker&type=all',
+            'url'     => '/w-actions?duty=checker&type=requested',
             'content' => []
         ],
         'response' => [
@@ -33,7 +33,7 @@ return [
     'testWorkflowMakerRequests' => [
         'request' => [
             'method'    => 'GET',
-            'url'       => '/w-actions?duty=maker&type=maker',
+            'url'       => '/w-actions?duty=maker&type=created',
             'content'   => [],
         ],
         'response'      => [
@@ -81,7 +81,7 @@ return [
     'testAdminCheckedRequests' => [
         'request' => [
             'method'    => 'GET',
-            'url'       => '/w-actions?duty=admin_checked&type=all',
+            'url'       => '/w-actions?duty=checker&type=created',
             'content'   => [],
         ],
         'response'      => [
@@ -102,4 +102,43 @@ return [
             ]
         ],
     ],
+    'testWorkflowSuperAdminAllRequests' => [
+        'request' => [
+            'method'    => 'GET',
+            'url'       => '/v1/w-actions?duty=super&type=all',
+            'content'   => [],
+        ],
+        'response' => [
+            'content'   => [
+                'entity'    => 'collection',
+                'count'     => 2,
+                'items'     => [
+                    [
+                        'state'             => 'closed',
+                    ],
+                    [
+                        'state'             => 'open',
+                    ]
+                ]
+            ]
+        ]
+    ],
+    'testWorkflowSuperAdminOpenRequests' => [
+        'request' => [
+            'method'    => 'GET',
+            'url'       => '/v1/w-actions?duty=super&type=open',
+            'content'   => [],
+        ],
+        'response' => [
+            'content'   => [
+                'entity'    => 'collection',
+                'count'     => 1,
+                'items'     => [
+                    [
+                        'state'             => 'open',
+                    ]
+                ]
+            ]
+        ]
+    ]
 ];

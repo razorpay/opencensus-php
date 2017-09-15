@@ -38,7 +38,7 @@ class Service extends Base\Service
 
         (new Core)->delete($entityId, $feature);
 
-        return $feature->toArrayPublic();
+        return $feature->toArrayDeleted();
     }
 
     public function multiAssignFeature($input)

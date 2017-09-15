@@ -29,7 +29,7 @@ class Validator extends Base\Validator
         Entity::ORG_ID                      => 'sometimes|alpha_num|size:14',
         Entity::GROUPS                      => 'sometimes|array',
         Entity::ADMINS                      => 'sometimes|array',
-        Entity::COUPON_CODE                 => 'sometimes|string'
+        Entity::COUPON_CODE                 => 'sometimes|string',
     ];
 
     protected static $editRules = [
@@ -82,6 +82,12 @@ class Validator extends Base\Validator
 
     protected static $actionRules = [
         Entity::ACTION                      => 'required|custom'
+    ];
+
+    protected static $oauthMailRules = [
+        'client_id'    => 'required|alpha_num|size:14',
+        'user_id'      => 'required|alpha_num|size:14',
+        'merchant_id'  => 'required|alpha_num|size:14'
     ];
 
     protected static $featureRules = [

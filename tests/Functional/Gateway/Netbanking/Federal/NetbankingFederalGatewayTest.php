@@ -28,7 +28,7 @@ class NetbankingFederalGatewayTest extends TestCase
 
         $this->setMockGatewayTrue();
 
-        $this->fixtures->create('terminal:shared_netbanking_federal_terminal');
+        $this->terminal = $this->fixtures->create('terminal:shared_netbanking_federal_terminal');
     }
 
     public function testPayment()
@@ -46,8 +46,6 @@ class NetbankingFederalGatewayTest extends TestCase
 
     public function testTpvPayment()
     {
-        $terminal = $this->fixtures->create('terminal:shared_netbanking_federal_tpv_terminal');
-
         $this->ba->privateAuth();
 
         $this->fixtures->merchant->enableTPV();
@@ -62,7 +60,7 @@ class NetbankingFederalGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment['terminal_id'], $terminal->getId());
+        $this->assertEquals($payment['terminal_id'], $this->terminal->getId());
 
         $this->fixtures->merchant->disableTPV();
 
@@ -212,13 +210,63 @@ class NetbankingFederalGatewayTest extends TestCase
 
     public function testEmptyExcelRefundFileGeneration()
     {
-        $payments = $this->createPaymentsToClaim();
+        $this->createPaymentsToClaim();
 
         $data = $this->generateRefundsExcelForNb($this->bank);
 
         // Refund file is never generated as count is 0
         $this->assertEmpty($data['netbanking_federal']['refunds']);
     }
+
+    /**
+     * This tests the handling of the case when there's two verify tables in the response
+     * One table contains a success response and the other contains failure
+     * The verify logic should handle this smoothly, with no fuss
+     */
+    public function testPaymentVerifyExtraParameters()
+    {
+         $payment = $this->doAuthAndCapturePayment($this->payment);
+
+         $this->mockVerifyExtraParameters();
+
+         $verify = $this->verifyPayment($payment['id']);
+
+         $this->assertEquals(1, $verify['payment']['verified']);
+    }
+
+    /**
+     * This tests the handling of the case when there's two verify tables in the response
+     * One table contains a success response and the other contains success as well
+     * The verify logic should throw an exception for this case
+     */
+    public function testPaymentVerifyTwoSuccessTables()
+    {
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        $this->mockVerifyExtraParameters('S');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
+    }
+
+     protected function mockVerifyExtraParameters($status = 'N')
+     {
+         $this->mockServerContentFunction(
+             function(& $content, $action = null) use ($status)
+             {
+                $content .= "\n" . $content;
+
+                $content[strlen($content) - 1] = $status;
+                $content .= "\n\u0000\u0000\u0000\u0000\u0000";
+             });
+     }
+
 
     protected function createPaymentsToClaim()
     {

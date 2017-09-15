@@ -11,15 +11,15 @@ use RZP\Models\Admin\Action;
 
 class Validator extends Base\Validator
 {
-    const TOKEN = 'token';
+    const TOKEN              = 'token';
     const RESET_PASSWORD_URL = 'reset_password_url';
 
-    const SUSPENDED     = 'suspended';
-    const ARCHIVED      = 'archived';
-    const ACTIVATED     = 'activated';
-    const PENDING       = 'pending';
-    const DEAD          = 'dead';
-    const SUB_ACCOUNTS  = 'sub_accounts';
+    const SUSPENDED          = 'suspended';
+    const ARCHIVED           = 'archived';
+    const ACTIVATED          = 'activated';
+    const PENDING            = 'pending';
+    const DEAD               = 'dead';
+    const SUB_ACCOUNTS       = 'sub_accounts';
 
     protected static $createRules = [
         // The unique validation on email will run only on rows that have deleted_at = NULL
@@ -94,6 +94,9 @@ class Validator extends Base\Validator
         Entity::OLD_PASSWORD          => 'required|string',
     ];
 
+    /**
+     * @deprecated Ref: #4216
+     */
     protected static $filterRules = [
         self::SUSPENDED         => 'sometimes|boolean',
         self::ARCHIVED          => 'sometimes|boolean',

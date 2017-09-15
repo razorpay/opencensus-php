@@ -13,7 +13,7 @@ class RepositoryTest extends TestCase
 
         $entity = (new Merchant\Entity);
 
-        $this->setExpectedException(
+        $this->expectException(
             'RZP\Exception\LogicException',
             'Unique id not generated for the entity');
 

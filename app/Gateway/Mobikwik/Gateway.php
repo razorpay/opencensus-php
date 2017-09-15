@@ -102,6 +102,31 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
+    public function sendRefundVerifyRequest($input)
+    {
+        $request = $this->getVerifyRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+        $this->response = $response;
+
+        $content = $this->xmlToArray($response->body);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
+            [
+                'content'    => $content,
+                'gateway'    => 'mobikwik',
+                'payment_id' => $input['payment']['id'],
+                'refund_id'  => $input['refund']['id'],
+            ]);
+
+        $this->verifySecureHashForQueryRequest($content);
+
+        unset($content['checksum']);
+
+        return $content;
+    }
+
     public function verify(array $input)
     {
         parent::verify($input);
@@ -167,9 +192,11 @@ class Gateway extends Base\Gateway
 
     public function verifyRefund(array $input)
     {
+        parent::verify($input);
+
         // Hardcoding these refunds for processing
         $unprocessedRefunds = [
-            '8O4eS695VHLvgD'
+            '8S8BMDSRhKCVaZ'
         ];
 
         $processedRefund = [];
@@ -193,6 +220,17 @@ class Gateway extends Base\Gateway
         {
             throw new Exception\LogicException(
                 'Verify refund is only supported for full refunds and specific partial refunds');
+        }
+
+        if ($input['refund']['amount'] === $input['payment']['amount'])
+        {
+            $content = $this->sendRefundVerifyRequest($input);
+
+            if (($content['statuscode'] === Status::SUCCESS) and
+                ($content['statusmessage'] === 'Refund'))
+            {
+                return true;
+            }
         }
 
         return false;

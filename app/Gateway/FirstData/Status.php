@@ -4,13 +4,26 @@ namespace RZP\Gateway\FirstData;
 
 class Status
 {
-    const APPROVED   = 'APPROVED';
-    const AUTHORIZED = 'AUTHORIZED';
-    const CAPTURED   = 'CAPTURED';
-    const SETTLED    = 'SETTLED';
-    const FAILED     = 'FAILED';
-    const VOIDED     = 'VOIDED';
-    const WAITING    = 'WAITING_3D_SECURE';
+    const APPROVED    = 'APPROVED';
+    const AUTHORIZED  = 'AUTHORIZED';
+    const CAPTURED    = 'CAPTURED';
+    const SETTLED     = 'SETTLED';
+    const FAILED      = 'FAILED';
+    const VOIDED      = 'VOIDED';
+    const WAITING_3DS = 'WAITING_3D_SECURE';
+    const WAITING     = 'WAITING';
+
+    // Used for verify payment flow. The verify response usually contains
+    // either AUTHORIZED or CAPTURED to indicate a successful payment.
+    //
+    // However, for Rupay and Maestro cards (which use sale)
+    // this is changed to SETTLED after a few days.
+    //
+    const SUCCESSFUL_AUTH_STATES = [
+        self::AUTHORIZED,
+        self::CAPTURED,
+        self::SETTLED,
+    ];
 
     // Voided is not actually a valid state for a credit transaction
     // However, this is being used for verify refund flow, where, if
@@ -18,9 +31,18 @@ class Status
     // original preauth transaction and not a credit transaction.
     //
     // If that transaction is voided, refund was successful.
-    const VALID_REFUND_STATES = [
+    const SUCCESSFUL_REFUND_STATES = [
         self::SETTLED,
         self::CAPTURED,
         self::VOIDED,
+    ];
+
+    // Yes, FirstData seriously has more than one of these.
+    //
+    // The latter was observed for sale txns, might have a
+    // different meaning than waiting for issuing bank.
+    const WAITING_STATES = [
+        self::WAITING_3DS,
+        self::WAITING,
     ];
 }

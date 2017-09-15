@@ -116,6 +116,28 @@ return [
             ],
         ],
     ],
+    'testWorkflowClosedActionApproveOrRejectShouldFail' => [
+        'request' => [
+            'method'    => 'POST',
+            'url'       => '/w-actions/%s/checkers',
+            'content'   => [
+                'approved'  => 1
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Workflow action is not in any open state',
+                ]
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ACTION_NOT_IN_OPEN_STATES,
+        ]
+    ],
     'testWorkflowActionApproveDiffRole' => [
         'request' => [
             'method'    => 'POST',
@@ -184,4 +206,35 @@ return [
             ],
         ],
     ],
+    'testWorkflowCloseAction' => [
+        'request' => [
+            'method'    => 'PUT',
+            'url'       => '/w-actions/close/%s',
+        ],
+        'response' => [
+            'content' => [
+                "state"         => "closed",
+                "approved"      => false,
+            ]
+        ]
+    ],
+    'testWorkflowCanOnlyBeClosedByMaker' => [
+        'request' => [
+            'method'    => 'PUT',
+            'url'       => '/w-actions/close/%s',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'An action can only be closed by maker',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_CLOSE_UNAUTHORIZED,
+        ],
+    ]
 ];

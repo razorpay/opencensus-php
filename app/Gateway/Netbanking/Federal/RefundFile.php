@@ -7,8 +7,6 @@ use RZP\Constants\Timezone;
 use Mail;
 use RZP\Constants\MailTags;
 use RZP\Gateway\Base;
-use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
-use RZP\Mail\Gateway\RefundFile\Constants as MailConstants;
 use RZP\Models\FileStore;
 use RZP\Models\Payment\Gateway;
 

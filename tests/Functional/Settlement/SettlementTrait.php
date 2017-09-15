@@ -113,7 +113,7 @@ trait SettlementTrait
             ]
         ];
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $content = $this->makeRequestAndGetContent($request);
 

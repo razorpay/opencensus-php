@@ -212,8 +212,9 @@ class Service extends Base\Service
 
     protected function getTimestamps($input)
     {
-        $from = Carbon::yesterday(Timezone::IST)->timestamp;
-        $to = Carbon::today(Timezone::IST)->timestamp - 1;
+        $from = Carbon::yesterday(Timezone::IST)->getTimestamp();
+        $to = Carbon::today(Timezone::IST)->getTimestamp() - 1;
+
         $frequency = 'daily';
 
         if (isset($input['frequency']))
@@ -227,15 +228,15 @@ class Service extends Base\Service
             {
                 $dt = Carbon::createFromFormat('Y-m-d', $input['on'], Timezone::IST);
 
-                $from = $dt->startOfMonth()->timestamp;
-                $to   = $dt->endOfMonth()->addDay()->timestamp - 1;
+                $from = $dt->startOfMonth()->getTimestamp();
+                $to   = $dt->endOfMonth()->addDay()->getTimestamp() - 1;
             }
             else
             {
                 $dt = Carbon::yesterday(Timezone::IST);
 
-                $from = $dt->startOfMonth()->timestamp;
-                $to   = $dt->endOfMonth()->addDay()->timestamp - 1;
+                $from = $dt->startOfMonth()->getTimestamp();
+                $to   = $dt->endOfMonth()->addDay()->getTimestamp() - 1;
             }
         }
         else
@@ -244,9 +245,9 @@ class Service extends Base\Service
             {
                 $from = Carbon::createFromFormat('Y-m-d', $input['on'], Timezone::IST)->setTime(0,0,0);
 
-                $fromTimeStamp = $from->timestamp;
+                $fromTimeStamp = $from->getTimestamp();
 
-                $to = $from->addDay()->timestamp - 1;
+                $to = $from->addDay()->getTimestamp() - 1;
 
                 $from = $fromTimeStamp;
             }

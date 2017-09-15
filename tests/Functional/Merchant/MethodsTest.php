@@ -83,7 +83,6 @@ class MethodsTest extends TestCase
 
         $this->assertEquals($content['netbanking'], true);
         $this->assertEquals($content['mobikwik'], true);
-        $this->assertNotEquals($content['banks'], null);
     }
 
 }

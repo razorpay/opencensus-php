@@ -753,8 +753,8 @@ class InvoiceTest extends TestCase
                ->method('delete')
                ->with(
                     [
-                        'index' => 'invoice_test',
-                        'type'  => 'invoice_test',
+                        'index' => 'testing_invoice_test',
+                        'type'  => 'testing_invoice_test',
                         'id'    => '1000000invoice',
                     ]);
 

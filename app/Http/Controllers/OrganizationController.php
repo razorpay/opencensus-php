@@ -4,6 +4,7 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
+use RZP\Models\Admin;
 use RZP\Constants\Entity as E;
 
 class OrganizationController extends Controller
@@ -436,6 +437,9 @@ class OrganizationController extends Controller
         return ApiResponse::json([], $responseStatus);
     }
 
+    /**
+     * @deprecated Ref: #4216
+     */
     public function getMerchantIds($id, $adminId)
     {
         $merchantIds = $this->service(E::ADMIN)->getMerchantIds($id, $adminId);
@@ -443,11 +447,30 @@ class OrganizationController extends Controller
         return ApiResponse::json($merchantIds);
     }
 
+    /**
+     * @deprecated Ref: #4216
+     */
     public function getMerchants($id, $adminId)
     {
         $input = Request::all();
 
         $response = $this->service(E::ADMIN)->getMerchants($id, $adminId, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getMerchantIdsFromEs(Admin\Admin\Service $service)
+    {
+        $response = $service->getMerchantIdsFromEs();
+
+        return ApiResponse::json($response);
+    }
+
+    public function getMerchantsFromEs(Admin\Admin\Service $service)
+    {
+        $input = Request::all();
+
+        $response = $service->getMerchantsFromEs($input);
 
         return ApiResponse::json($response);
     }

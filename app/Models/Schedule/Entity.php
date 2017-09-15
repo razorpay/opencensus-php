@@ -13,9 +13,16 @@ class Entity extends Base\PublicEntity
     const NAME        = 'name';
     const MERCHANT_ID = 'merchant_id';
     const PERIOD      = 'period';
+    /**
+     * Interval is not used only for hourly schedules.
+     */
     const INTERVAL    = 'interval';
     const ANCHOR      = 'anchor';
     const HOUR        = 'hour';
+    /**
+     * Hourly schedules have delay in hours
+     * Other schedules have delay in days
+     */
     const DELAY       = 'delay';
 
     const DELETED_AT  = 'deleted_at';
@@ -68,6 +75,11 @@ class Entity extends Base\PublicEntity
         return ($this->getPeriod() === Period::HOURLY);
     }
 
+    public function isYearly()
+    {
+        return ($this->getPeriod() === Period::YEARLY);
+    }
+
     public function hasHour()
     {
         return (($this->isHourly() === false) and
@@ -87,15 +99,30 @@ class Entity extends Base\PublicEntity
     {
         $period = $input[self::PERIOD];
 
-        $anchoredPeriods = Period::ANCHORED_PERIODS;
-
-        if ((in_array($period, $anchoredPeriods, true) === true) and
-            isset($input[self::ANCHOR]) === false)
+        if ((Period::isPeriodAnchored($period) === true) and
+            (isset($input[self::ANCHOR]) === false))
         {
-            // For weekly periods, default anchor is Monday (Sunday is zero)
-            // For monthly-week periods, default anchor is first week
-            // For monthly-date periods, default anchor is 1st of the month
-            $input[self::ANCHOR] = 1;
+            //
+            // Default anchors:
+            //   - weekly: Monday (Sunday = 0)
+            //   - monthly-week: First week
+            //   - monthly-date: First of the month
+            //   - yearly: Jan 1st
+            //
+
+            $anchor = 1;
+
+            if ($this->isYearly() === true)
+            {
+                //
+                // For yearly, the default anchor is set to Jan 1st.
+                //
+                $janFirst = Carbon::createFromDate(2016, 1, 1, 'Asia/Kolkata');
+
+                $anchor = Anchor::getAnchorForYearly($janFirst);
+            }
+
+            $input[self::ANCHOR] = $anchor;
         }
     }
 

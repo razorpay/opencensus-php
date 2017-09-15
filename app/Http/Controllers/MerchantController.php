@@ -7,9 +7,10 @@ use ApiResponse;
 use RZP\Exception;
 use RZP\Models\Key;
 use RZP\Models\Report;
-use RZP\Models\Terminal;
-use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
+use RZP\Models\Terminal;
+use RZP\Constants\Entity;
 use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Credits;
@@ -769,5 +770,36 @@ class MerchantController extends Controller
         $response = $this->service()->fetchAnalytics($input);
 
         return ApiResponse::json($response);
+    }
+
+    public function getMerchantDetails()
+    {
+        $response = $this->service()->getMerchantDetails();
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * Sends OAuth notification mails. This route is called by auth service.
+     *
+     * @param string $type - Type of event, e.g. app_authorized (When merchant
+     *                       authorizes an application we send the merchant a mail)
+     *
+     * @return ApiResponse
+     */
+    public function sendOAuthNotification(string $type)
+    {
+        $input = Request::all();
+
+        $response = (new Merchant\Service)->sendOAuthMail($input, $type);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getPublicGatewayDowntimeData()
+    {
+        $data = $this->service(Entity::GATEWAY_DOWNTIME)->getDowntimeDataForMerchant();
+
+        return ApiResponse::json($data);
     }
 }

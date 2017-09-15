@@ -117,7 +117,7 @@ class RowProcessor extends Base\RowProcessor
                 (empty($this->parsedData['instrument_date']) === false))
             {
                 $settledOn = Carbon::createFromFormat(
-                                'd-M-y', $this->parsedData['instrument_date'], Timezone::IST)->timestamp;
+                                'd-M-y', $this->parsedData['instrument_date'], Timezone::IST)->getTimestamp();
 
                 $this->source->setSettledOn($settledOn);
             }

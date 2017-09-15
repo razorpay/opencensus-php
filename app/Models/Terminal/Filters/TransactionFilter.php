@@ -15,35 +15,20 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Terminal\Shared;
+use RZP\Models\Feature;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
 {
-    const DISALLOW_EDUCATION_IFSC = [
-        IFSC::ICIC,
-        IFSC::ALLA,
-        IFSC::DBSS,
-        IFSC::IDFB,
-        IFSC::SVCB,
-        IFSC::UTIB,
-    ];
-
-    const PREPAID_IINS = [
-        '457392',
-    ];
-
     protected $properties = [
         'method',
         'network',
         'currency',
         'international',
         'bank',
-        'education_bank',
-        'amount',
-        'maestro',
         'recurring',
         'subscription',
-        'iin',
+        'tpv'
     ];
 
     public function methodFilter($terminal)
@@ -159,43 +144,6 @@ class TransactionFilter extends Terminal\Filter
                 // ICICI debit cards currently don't work on FirstData
                 // This allows transactions only on test merchant
                 return false;
-            }
-        }
-
-        return true;
-    }
-
-    public function educationBankFilter($terminal)
-    {
-        if (($this->input['payment']->isNetbanking() === true) and
-            ($terminal->getGateway() === Gateway::BILLDESK))
-        {
-            $bank = $this->input['payment']->getBank();
-
-            // 7KORSqVp2oR0GH is shared billdesk PVT education terminal
-            if (($terminal->getId() === '7KORSqVp2oR0GH') and
-                (in_array($bank, self::DISALLOW_EDUCATION_IFSC, true) === true))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    public function maestroFilter($terminal)
-    {
-        if ($this->input['payment']->isMethodCardOrEmi())
-        {
-            $network = $this->input['payment']->card->getNetworkCode();
-
-            // For HDFC, only shared terminals support
-            // Maestro cards on Live mode.
-            if (($network === Network::MAES) and
-                ($this->isLiveMode() === true) and
-                ($terminal->getGateway() === Gateway::HDFC))
-            {
-                return $terminal->isShared();
             }
         }
 
@@ -353,48 +301,13 @@ class TransactionFilter extends Terminal\Filter
         return $terminal->isValidEmiTerminal($gateway, $emiDuration, $subvention);
     }
 
-    public function amountFilter(Terminal\Entity $terminal)
+    public function tpvFilter($terminal)
     {
-        $method = $this->input['payment']->getMethod();
-
-        $gateway = $terminal->getGateway();
-
-        $network = $this->input['payment']->isMethodCardOrEmi() ?
-                        $this->input['payment']->card->getNetworkCode() :
-                        null;
-
-        $category = $terminal->getNetworkCategory();
-
-        $minAmount = Terminal\MinAmount::getMinAmount($method, $gateway, $network, $category);
-
-        $amount = $this->input['payment']->getAmount();
-
-        return ($amount >= $minAmount);
-    }
-
-    // Filters few card terminals for prepaid iins to improve pricing on the cost
-    // of success rate
-    public function iinFilter(Terminal\Entity $terminal)
-    {
-        if ($this->input['payment']->isMethodCardOrEmi())
+        if ($this->input['merchant']->isFeatureEnabled(Feature\Constants::TPV))
         {
-            $iin = $this->input['payment']->card->getIin();
-
-            $acquirer = $terminal->getGatewayAcquirer();
-
-            $gateway = $terminal->getGateway();
-
-            // For certain iins prepaid cards Axis
-            // offers debit card pricing as opposed to
-            // HDFC who charge credit card pricing.
-            // For such iins allow only axis terminals
-            if (in_array($iin, self::PREPAID_IINS, true) === true)
-            {
-                return (($acquirer === Gateway::ACQUIRER_AXIS) or
-                        ($gateway === Gateway::AXIS_MIGS));
-            }
+            return ($terminal->isTpvAllowed() === true);
         }
 
-        return true;
+        return ($terminal->isNonTpvAllowed() === true);
     }
 }

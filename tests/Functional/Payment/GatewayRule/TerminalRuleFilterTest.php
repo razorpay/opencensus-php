@@ -20,20 +20,7 @@ class TerminalRuleFilterTest extends TestCase
         'network',
         'currency',
         'international',
-        'bank',
-        'education_bank',
-        'amount',
-        'maestro',
-        'iin',
-        'billdesk_category',
-        'billdesk_merchant',
-        'incompatible',
-        'category',
-        'pharma',
-        'cryptocurrency',
-        'gateway',
-        'wallet',
-        'shared_terminal',
+        'bank'
     ];
 
     public function setUp()

@@ -3,10 +3,10 @@
 namespace RZP\Gateway;
 
 use Config;
-use RZP\Constants\Mode;
-use RZP\Constants\Entity;
 use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Constants\Entity;
 use RZP\Gateway\Base\Mock;
 
 class GatewayManager extends \Illuminate\Support\Manager

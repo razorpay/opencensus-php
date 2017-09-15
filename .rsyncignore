@@ -16,3 +16,4 @@
 /report
 /docs
 /storage/certs/*
+/vendor/razorpay/oauth/keys/*

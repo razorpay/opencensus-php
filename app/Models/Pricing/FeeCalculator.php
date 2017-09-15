@@ -571,7 +571,7 @@ class FeeCalculator
 
     protected function validateAndGetOnePricingRule($pricing)
     {
-        if (count($pricing) > 1)
+        if (count($pricing) !== 1)
         {
             throw new Exception\LogicException(
                 'Only 1 pricing rule should have been present here. Found: ' . count($pricing));

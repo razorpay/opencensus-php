@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Emi\Banks\Icici;
 
+use Mail;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
+use RZP\Mail\Emi as EmiMail;
 use RZP\Models\Emi\Banks\Base;
 use RZP\Models\FileStore;
 use RZP\Models\Base\UniqueIdEntity;
@@ -14,28 +16,42 @@ class EmiFile extends Base\EmiFile
 {
     protected static $fileToWriteName = 'Icici_Emi_File';
 
-    protected $emailIdsToSendTo = [];
+    protected $emailIdsToSendTo = ['icicicards.emi@razorpay.com'];
 
     protected $bankName  = 'Icici';
 
-    const TYPE = FileStore\Type::ICICI_EMI_FILE;
+    protected $type = FileStore\Type::ICICI_EMI_FILE_SFTP;
+
+    protected $totalAmount;
+
+    protected $totalTransactions;
 
     public function __construct()
     {
         parent::__construct();
 
         $this->shouldCompress = false;
+
+        $this->transferMode = Base\EmiMode::SFTP;
     }
 
     protected function getEmiData($input)
     {
         $data = [];
 
+        $totalAmount = 0;
+
+        $totalTransactions = 0;
+
         foreach ($input as $emiPayment)
         {
             $emiPlan = $emiPayment->emiPlan;
 
             $principalAmount = $emiPayment->getAmount()/100;
+
+            $totalAmount = $totalAmount + $principalAmount;
+
+            $totalTransactions++;
 
             $merchantPayback = 'NA';
 
@@ -89,6 +105,10 @@ class EmiFile extends Base\EmiFile
             ];
         }
 
+        $this->totalTransactions = $totalTransactions;
+
+        $this->totalAmount = $totalAmount;
+
         return $data;
     }
 
@@ -99,9 +119,16 @@ class EmiFile extends Base\EmiFile
 
     protected function generateEmiFile(array $emiData, array $metadata = [])
     {
-        if (empty($this->emailIdsToSendTo) === true)
+        $fileData = null;
+
+        // for sftp file is uploaded to
+        if ($this->transferMode === Base\EmiMode::SFTP)
         {
             $metadata = $this->getH2HMetadata();
+        }
+        else
+        {
+            $this->type = FileStore\Type::ICICI_EMI_FILE_MAIL;
         }
 
         $fileData = parent::generateEmiFile($emiData, $metadata);
@@ -111,18 +138,21 @@ class EmiFile extends Base\EmiFile
 
     protected function getFileToWriteName(array $data)
     {
-        $count = count($data);
+        $count = $this->totalTransactions;
 
         $date = Carbon::now(Timezone::IST)->format('dmY');
 
-        $fileToWriteName = 'icici/outgoing/Razorpay_ICICIEMI_' . $date . '_' . $count;
+        static::$fileToWriteName = 'Razorpay_ICICIEMI_' . $date . '_' . $count;
 
-        if (empty($this->emailIdsToSendTo) === false)
+        $filePath = '';
+
+        // for sftp we put the file in a H2H path
+        if ($this->transferMode === Base\EmiMode::SFTP)
         {
-            $fileToWriteName = 'icici/temp/Razorpay_ICICIEMI_' . $date . '_' . $count;
+           $filePath = 'icici/outgoing/';
         }
 
-        return $fileToWriteName;
+        return $filePath . static::$fileToWriteName;
     }
 
     protected function getH2HMetadata()
@@ -133,5 +163,22 @@ class EmiFile extends Base\EmiFile
             'mtime' => Carbon::now()->getTimestamp(),
             'mode'  => '33188'
         ];
+    }
+
+    protected function sendEmiFile(array $fileData, $mailData = null)
+    {
+        $body = 'Emi File Uploaded <br />';
+        $body = $body . 'File Name : ' . static::$fileToWriteName . '<br />';
+        $body = $body . 'Total Amount : ' . $this->totalAmount . '<br />';
+        $body = $body . 'Transactions Count : ' . $this->totalTransactions;
+
+        $mailData = ['body'  =>  $body];
+
+        if ($this->transferMode === Base\EmiMode::SFTP)
+        {
+            $fileData = [];
+        }
+
+        parent::sendEmiFile($fileData, $mailData);
     }
 }

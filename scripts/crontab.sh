@@ -90,7 +90,6 @@ add_cron "0 2 * * *"       "prod_merchant_schdule_mig" POST "$BASE_URL/merchants
 # Refund
 add_cron "0 3 * * *"        "nb_refunds_prod"                POST "$BASE_URL/refunds/excel"                             "method=netbanking"              $LIVE_AUTH
 add_cron "1-59/10 * * * *"  "authorized_old_refund"          POST "$BASE_URL/payments/refund/authorized"                 ""                              $LIVE_AUTH
-add_cron "0 4 * * *"        "upi_refunds_prod"               POST "$BASE_URL/refunds/excel"                              "method=upi&bank=icici"         $LIVE_AUTH
 add_cron "6-51/15 * * * *"  "order_refund_multiple_aut"      POST "$BASE_URL/orders/payments/refund"                     ""                              $LIVE_AUTH
 add_cron "48 3-21/6 * * *"  "batch_processor_prod_live"      POST "$BASE_URL/batches/process"                            ""                              $LIVE_AUTH
 add_cron "48 3-21/6 * * *"  "batch_processor_prod_test"      POST "$BASE_URL/batches/process"                            ""                              $TEST_AUTH
@@ -105,10 +104,18 @@ add_cron "*/15 * * * *"     "virtual_account_refund_excess"  POST "$BASE_URL/vir
 add_cron "*/10 * * * *"     "invoice_expire_bulk_test"       POST "$BASE_URL/invoices/expire"                            ""                              $TEST_AUTH
 add_cron "*/10 * * * *"     "invoice_expire_bulk_live"       POST "$BASE_URL/invoices/expire"                            ""                              $LIVE_AUTH
 
+# Merchant Invoice
+add_cron "10 0 1 * *"       "merchant_create_invoice"        POST "$BASE_URL/merchants/invoice/create"                   ""                              $LIVE_AUTH
+
+# Nodal Transfer
+add_cron "30 16 * * *"      "nodal_transfer_icici_nb"        POST "$BASE_URL/nodal/transfer"                             "gateway=netbanking_icici"      $LIVE_AUTH
+add_cron "0 1 * * *"        "nodal_transfer_icici_upi"       POST "$BASE_URL/nodal/transfer"                             "gateway=upi_icici"             $LIVE_AUTH
+add_cron "0 10 * * *"       "nodal_transfer_icici_fd"        POST "$BASE_URL/nodal/transfer"                             "gateway=first_data"            $LIVE_AUTH
+
 # Subscription
 add_cron "0 */2 * * *"      "subscriptions_charge"           POST "$BASE_URL/subscriptions/charge/invoices"              ""                              $LIVE_AUTH
 add_cron "0 * * * *"        "subscriptions_auth_retry"       POST "$BASE_URL/subscriptions/retry"                        ""                              $LIVE_AUTH
-add_cron "*/10 * * * *"       "subscriptions_expire"           POST "$BASE_URL/subscriptions/expire"                       ""                              $LIVE_AUTH
+add_cron "*/10 * * * *"     "subscriptions_expire"           POST "$BASE_URL/subscriptions/expire"                       ""                              $LIVE_AUTH
 
 # DSP Blackrock
 add_cron "0 15 * * *"       "dsp_report_today"               GET  "$BASE_URL/reports/transaction/dsp"    "mail=1&email=dummy@dspblackrock.com&day=today"      $LIVE_AUTH

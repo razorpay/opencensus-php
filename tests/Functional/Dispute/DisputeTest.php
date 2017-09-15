@@ -11,6 +11,8 @@ class DisputeTest extends TestCase
 
     protected $payment = null;
 
+    protected $merchant = null;
+
     public function setUp()
     {
         $this->testDataFilePath = __DIR__ . '/helpers/DisputeTestData.php';
@@ -203,6 +205,60 @@ class DisputeTest extends TestCase
         $this->startTest();
     }
 
+    public function testDisputeReversalWinLogic()
+    {
+        // Input params while creating
+        $input = [
+            'amount'                => 10100,
+            'deduct_at_onset'       => 1,
+        ];
+        $testdata = $this->updateEditTestData($input);
+
+        $oldMerchantBalance = $this->getEntityById('balance', $this->merchant['id'], true)['balance'];
+
+        $content = $this->runRequestResponseFlow($testdata);
+
+        $reversal = $this->getLastEntity('reversal', true);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $newMerchantBalance = $this->getEntityById('balance', $dispute['merchant_id'], true)['balance'];
+
+        $this->assertEquals($dispute['id'], $content['id']);
+        $this->assertEquals($testdata['request']['content']['status'], $content['status']);
+        $this->assertEquals($input['amount'], $dispute['amount_deducted']);
+        $this->assertEquals($dispute['amount_deducted'], $dispute['amount_reversed']);
+        $this->assertEquals($reversal['amount'], $dispute['amount_reversed']);
+        $this->assertEquals($input['amount'], ($newMerchantBalance - $oldMerchantBalance));
+        $this->assertEquals('reversal', $txn['type']);
+    }
+
+    public function testDisputeReversalLostLogic()
+    {
+        // Input params while creating
+        $input = [
+            'amount'                => 10100,
+            'deduct_at_onset'       => 1,
+        ];
+        $testdata = $this->updateEditTestData($input);
+
+        $content = $this->runRequestResponseFlow($testdata);
+
+        $dispute = $this->getLastEntity('dispute', true);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals($dispute['id'], $content['id']);
+        $this->assertEquals($testdata['request']['content']['status'], $content['status']);
+        $this->assertEquals($input['amount'], $dispute['amount_deducted']);
+        $this->assertEquals(0, $dispute['amount_reversed']);
+        $this->assertEquals('dispute', $txn['type']);
+    }
+
+    // ---------------------------- helper methods-------------------------------
+
     protected function updateCreateTestData(string $paymentId = null): array
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
@@ -234,6 +290,8 @@ class DisputeTest extends TestCase
         $name = $trace[1]['function'];
 
         $dispute = $this->fixtures->create('dispute', $attributes);
+
+        $this->merchant = $dispute->merchant;
 
         $testData = &$this->testData[$name];
 

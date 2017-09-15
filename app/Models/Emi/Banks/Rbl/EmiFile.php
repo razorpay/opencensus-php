@@ -17,7 +17,7 @@ class EmiFile extends Base\EmiFile
 
     protected $bankName  = 'Rbl';
 
-    const TYPE = FileStore\Type::RBL_EMI_FILE;
+    protected $type = FileStore\Type::RBL_EMI_FILE;
 
     protected function getEmiData($input)
     {

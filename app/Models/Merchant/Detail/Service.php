@@ -95,7 +95,8 @@ class Service extends Base\Service
 
         $eventAttributes['activation_progress'] = $activationProgress;
 
-        $this->app['eventManager']->trackEvents($this->merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
+        $this->app['eventManager']
+             ->trackEvents($this->merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
 
         return $response;
     }
@@ -234,9 +235,13 @@ class Service extends Base\Service
         }
         catch (\Throwable $e)
         {
-            $this->trace->info(
+            $this->trace->traceException(
+                $e,
+                null,
                 TraceCode::CREATE_MERCHANT_DETAIL_FAILED,
-                [ 'merchant_id'   => $merchant->getId()]);
+                [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                ]);
         }
 
         return $merchantDetail;
@@ -292,9 +297,6 @@ class Service extends Base\Service
 
         $response = $merchantDetails->toArrayPublic();
 
-        // List of all the required fields which are not set
-        $detailsKeys = array_keys($merchantDetailsArr);
-
         $requiredFields = [];
 
         $validationFields = ValidationFields::DASHBOARD_FIELDS;
@@ -343,5 +345,82 @@ class Service extends Base\Service
         $response['activated'] = (int) $merchantDetails->merchant->isActivated();
 
         return $response;
+    }
+
+    private function getFieldsToStepMap() : array
+    {
+        // Fetching Action Form details schema based on account type.
+        $isLinkedAccount = $this->merchant->isLinkedAccount();
+
+        if ($isLinkedAccount === true)
+        {
+            return Merchant\Constants::STEP_MAP_ACCOUNT;
+        }
+        else
+        {
+            return Merchant\Constants::STEP_MAP;
+        }
+    }
+
+    private function getStepsList() : array
+    {
+        $stepsList = array_values($this->getFieldsToStepMap());
+
+        return array_values(array_unique($stepsList));
+    }
+
+    private function calculateSteps($merchantDetails) : array
+    {
+        $stepFinished = [];
+
+        $stepMap = $this->getFieldsToStepMap();
+
+        $requiredFields = $merchantDetails['verification']['required_fields'] ?? [];
+
+        foreach ($requiredFields as $key)
+        {
+            if (isset($stepMap[$key]) === true)
+            {
+                $stepFinished[] = $stepMap[$key];
+            }
+        }
+
+        return $stepFinished;
+    }
+
+    public function getMerchantDetailsForAdmin() : array
+    {
+        // Formatting the data as required by the controller.
+        $merchantDetails = $this->fetchMerchantDetails();
+
+        // Finished steps will be calculated based on required fields.
+        $this->calculateFinishedSteps($merchantDetails);
+
+        return $merchantDetails;
+    }
+
+    private function calculateFinishedSteps(array & $merchantDetails)
+    {
+        // Get steps for the current merchant.
+        $steps = $this->getStepsList();
+
+        if($merchantDetails['can_submit'] === true)
+        {
+            $merchantDetails['steps_finished'] = $steps;
+        }
+        else
+        {
+            // By checking merchant details unfinished steps will be calculated.
+            $unfinishedSteps = $this->calculateSteps($merchantDetails);
+
+            if(count($unfinishedSteps) !== 0)
+            {
+                $unfinishedSteps = array_unique($unfinishedSteps);
+
+                $finishedSteps = array_values(array_diff($steps, $unfinishedSteps));
+
+                $merchantDetails['steps_finished'] = $finishedSteps;
+            }
+        }
     }
 }

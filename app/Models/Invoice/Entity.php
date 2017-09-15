@@ -1045,8 +1045,9 @@ class Entity extends Base\PublicEntity
         }
         else
         {
-            $dueBy = Carbon::now(Timezone::IST)->addDays(self::DEFAULT_DUE_DAYS)
-                                                ->timestamp;
+            $dueBy = Carbon::now(Timezone::IST)
+                           ->addDays(self::DEFAULT_DUE_DAYS)
+                           ->getTimestamp();
         }
 
         $this->setAttribute(self::DUE_BY, $dueBy);

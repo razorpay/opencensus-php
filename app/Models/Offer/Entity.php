@@ -66,7 +66,7 @@ class Entity extends Base\PublicEntity
     const PAYMENT_METHOD_LENGTH     = 10;
     const PAYMENT_METHOD_TYPE_LENTH = 10;
     const PAYMENT_NETWORK_LENGTH    = 20;
-    const ISSUER_LENGTH             = 10;
+    const ISSUER_LENGTH             = 20;
     const DISPLAY_TEXT_LENGTH       = 255;
 
     const DEFAULT_ERROR_MESSAGE = 'Payment method used is not eligible for offer. Please try with a different payment method.';
@@ -357,6 +357,7 @@ class Entity extends Base\PublicEntity
             self::NAME            => $this->getAttribute(self::NAME),
             self::PAYMENT_METHOD  => $this->getAttribute(self::PAYMENT_METHOD),
             self::PAYMENT_NETWORK => $this->getAttribute(self::PAYMENT_NETWORK),
+            self::ISSUER          => $this->getAttribute(self::ISSUER),
             self::DISPLAY_TEXT    => $this->getAttribute(self::DISPLAY_TEXT),
         ];
 

@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Helpers\Heimdall;
 
 use Carbon\Carbon;
 use Config;
+use Hash;
 
 use RZP\Models\Admin\Permission;
 
@@ -41,6 +42,9 @@ trait HeimdallTrait
         return $response;
     }
 
+    /**
+     * Edit an admin as superadmin
+     */
     protected function editAdmin($orgId, $adminId, $content = [])
     {
         $defaultContent = [
@@ -81,14 +85,16 @@ trait HeimdallTrait
             $admin->roles()->attach($superAdminRole);
         }
 
+        $bearerToken = 'ThisIsATokenFORAdmin';
+
         $adminToken = $this->fixtures->create('admin_token', [
             'admin_id'   => $admin->getId(),
-            'token'      => str_random(40),
+            'token'      => Hash::make($bearerToken),
             'created_at' => $now->timestamp,
             'expires_at' => $now->addDays(2)->timestamp,
         ]);
 
-        return $adminToken->getToken();
+        return $bearerToken . $adminToken->getId();
     }
 
     public function adminForgotPassword($orgId, $email)

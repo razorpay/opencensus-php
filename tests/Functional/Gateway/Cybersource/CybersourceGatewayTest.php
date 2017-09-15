@@ -449,7 +449,7 @@ class CybersourceGatewayTest extends TestCase
 
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
         $this->assertEquals('failed', $actualRefund['status']);
-        $this->assertEquals(2, $actualRefund['attempts']);
+        $this->assertEquals(1, $actualRefund['attempts']);
         $this->assertEquals(false, $actualRefund['gateway_refunded']);
     }
 
@@ -552,7 +552,7 @@ class CybersourceGatewayTest extends TestCase
 
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
         $this->assertEquals('failed', $actualRefund['status']);
-        $this->assertEquals(3, $actualRefund['attempts']);
+        $this->assertEquals(1, $actualRefund['attempts']);
         $this->assertEquals(false, $actualRefund['gateway_refunded']);
     }
 

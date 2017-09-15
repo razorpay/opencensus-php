@@ -4,11 +4,11 @@ namespace RZP\Base;
 
 class Common
 {
-    const MERCHANT_ID   = 'merchant_id';
+    const ID          = 'id';
 
-    const CREATED_AT    = 'created_at';
+    const NOTES       = 'notes';
 
-    const ID            = 'id';
+    const CREATED_AT  = 'created_at';
 
-    const NOTES         = 'notes';
+    const MERCHANT_ID = 'merchant_id';
 }

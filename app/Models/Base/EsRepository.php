@@ -4,23 +4,15 @@ namespace RZP\Models\Base;
 
 use App;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Exception\ServerErrorException;
 
 class EsRepository extends \Razorpay\Spine\Repository
 {
     use Base\Traits\Es\QueryBuilder;
-
-    /**
-     * Maximum number of attempts for a given ES sync queue job.
-     */
-    const MAX_JOB_ATTEMPTS = 3;
-
-    /**
-     * Wait for 120 s before re-queuing the failed job.
-     */
-    const JOB_RELEASE_WAIT = 120;
 
     // Different actions on ES document
     const CREATE           = 'create';
@@ -46,6 +38,9 @@ class EsRepository extends \Razorpay\Spine\Repository
 
     protected $esDao;
     protected $trace;
+    protected $mode;
+    protected $entity;
+    protected $indexPrefix;
 
     /**
      * Name of the index to which this repo might correspond to.
@@ -94,18 +89,24 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $app = App::getFacadeRoot();
 
+        $this->mode = $app['rzp.mode'];
+
+        $this->entity = $entity;
+
         $this->trace = $app['trace'];
 
         $this->esDao = new Base\EsDao;
 
-        $esEntityIndexPrefix = $app['config']->get('database.es_entity_index_prefix');
+        $this->indexPrefix = $app['config']->get('database.es_entity_index_prefix');
 
-        // Index name is of following format:
-        // <prefix><entity>_<mode>, Eg. 'delta_api_invoice_live'.
+        //
+        // Sets index name for this repository
+        // Format: <prefix_><entity>_<mode>
+        //
+        $index = "{$this->indexPrefix}{$this->entity}_{$this->mode}";
 
-        $indexName = $esEntityIndexPrefix . $entity . '_' . $app['rzp.mode'];
+        $this->setIndexNameByValue($index);
 
-        $this->setIndexNameByValue($indexName);
     }
 
     public function setIndexNameByValue(string $indexName)
@@ -131,8 +132,6 @@ class EsRepository extends \Razorpay\Spine\Repository
     }
 
     /**
-     * Makes search in ES on this model with given params.
-     *
      * @param array       $params
      * @param string|null $merchantId
      *
@@ -146,18 +145,28 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $esRequestParams = $this->buildQueryAndGetEsRequestParams($params);
 
-        $this->trace->info(TraceCode::MISC_TRACE_CODE, $esRequestParams);
+        $this->trace->info(TraceCode::ES_REQUEST_PARAMS, $esRequestParams);
 
-        $response = $this->esDao->search($esRequestParams);
+        return $this->esDao->search($esRequestParams);
+    }
 
-        // Plucks the source fields if set, else ids and forms an uniform array
-        // to be returned to callee.
-        return array_map(
-                    function ($res)
-                    {
-                        return $res['_source'] ?? ['id' => $res['_id']];
-                    },
-                    $response['hits']['hits']);
+    /**
+     * Yields Es search results until exhausted. Usage ES scroll endpoint.
+     *
+     * @param array       $params
+     * @param string|null $merchantId
+     *
+     * @return Generator
+     */
+    public function buildQuerySearchAndScroll(
+        array $params,
+        string $merchantId = null): \Generator
+    {
+        $this->addMerchantIdInEsParamsIfSet($params, $merchantId);
+
+        $esRequestParams = $this->buildQueryAndGetEsRequestParams($params);
+
+        return $this->esDao->searchAndScroll($esRequestParams);
     }
 
     /**
@@ -185,9 +194,6 @@ class EsRepository extends \Razorpay\Spine\Repository
      */
     public function buildQueryAndGetEsRequestParams(array $params): array
     {
-        // Initializes query to empty array, which follows formation of the same
-        // using methods defined in QueryBuilder.
-
         $query = [];
 
         list($from, $size, $source) = $this->extractQueryMetaFromParams($params);
@@ -208,6 +214,11 @@ class EsRepository extends \Razorpay\Spine\Repository
             }
         }
 
+        $this->buildQueryAdditional($query, $params);
+
+        // If $query is [], this is considered as match all query.
+        $query = $query ?: ['match_all' => new \stdClass];
+
         $sort = $this->getSortParameter();
 
         return [
@@ -221,6 +232,10 @@ class EsRepository extends \Razorpay\Spine\Repository
                 'sort'    => $sort,
             ],
         ];
+    }
+
+    public function buildQueryAdditional(array & $query, array $params)
+    {
     }
 
     /**
@@ -249,12 +264,13 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $res = $this->esDao->bulkUpdate($params);
 
-        $error = $res['errors'] ?? true;
+        $errors = $res['errors'] ?? true;
 
-        if ($error === true)
+        if ($errors === true)
         {
-            $this->trace->error(
-                TraceCode::ES_BULK_UPDATE_FAILED,
+            throw new ServerErrorException(
+                'Errors in bulkUpdate response',
+                ErrorCode::SERVER_ERROR_ES_OPERATION_ERRORED,
                 [
                     'params' => $params,
                     'res'    => $res,

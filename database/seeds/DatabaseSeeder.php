@@ -167,6 +167,7 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => self::RAZORPAY_ORG_ID,
+                    'invoice_code'  => '10NodalAount',
                     )
                 );
 
@@ -201,6 +202,7 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => self::RAZORPAY_ORG_ID,
+                    'invoice_code'  => '100AtomAount',
                 ));
 
             DB::table(Table::MERCHANT_DETAIL)->insert(
@@ -234,6 +236,7 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => self::RAZORPAY_ORG_ID,
+                    'invoice_code'  => '1ApiFeeAount',
                     )
                 );
 
@@ -270,6 +273,7 @@ class DatabaseSeeder extends Seeder
                     'fee_bearer'    => 0,
                     'billing_label' => 'Test Account',
                     'org_id'        => self::RAZORPAY_ORG_ID,
+                    'invoice_code'  => '100000000000',
                     )
                 );
 
@@ -346,6 +350,7 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => self::RAZORPAY_ORG_ID,
+                    'invoice_code'  => '100000Rarpay',
                     )
                 );
 
@@ -381,6 +386,7 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => self::RAZORPAY_ORG_ID,
+                    'invoice_code'  => '100DemoAount',
                     )
                 );
 
@@ -418,7 +424,8 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::METHODS)->insert(
                 array(
                     'merchant_id'   => Account::DEMO_ACCOUNT,
-                    'banks'         => json_encode(Netbanking::getAllBanks()),
+                    'banks'         => '[]',
+                    'disabled_banks'=> '[]',
                     'paytm'         => '1',
                     'olamoney'      => '1',
                     'freecharge'    => '1',
@@ -439,7 +446,8 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::METHODS)->insert(
                 array(
                     'merchant_id'   => Account::TEST_ACCOUNT,
-                    'banks'         => json_encode(Netbanking::getAllBanks()),
+                    'banks'         => '[]',
+                    'disabled_banks'=> '[]',
                     'paytm'         => '1',
                     'mobikwik'      => '1',
                     'olamoney'      => '1',
@@ -812,6 +820,7 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
+                'type'                  => 1,
                 )
             );
 
@@ -827,6 +836,7 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
+                'type'                  => 1,
                 )
             );
 
@@ -873,6 +883,7 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
+                'type'                  => 1,
                 )
             );
 
@@ -919,6 +930,7 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
+                'type'                  => 1,
                 )
             );
 
@@ -978,6 +990,7 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
+                'type'                  => 1,
                 )
             );
 
@@ -1023,6 +1036,7 @@ class DatabaseSeeder extends Seeder
         $this->createCybersourceTerminals();
         $this->createBilldeskGatewayTerminals();
         $this->createNetbankingHdfcTerminals();
+        $this->createNetbankingCorporationTerminals();
         $this->createMobikwikTerminals();
         $this->createPayzappTerminals();
         $this->createPayumoneyTerminals();
@@ -1044,6 +1058,37 @@ class DatabaseSeeder extends Seeder
         $this->createVodafoneMpesaTerminal();
         $this->createNetbankingRblTerminal();
         $this->createEbsTerminal();
+    }
+
+    protected function createNetbankingCorporationTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                        => '22nP3sEf2tQco1',
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::NETBANKING_CORPORATION,
+                'card'                      => '0',
+                'netbanking'                => '1',
+                'gateway_merchant_id'       => 'test_merchant_netbanking_corporation',
+                'gateway_secure_secret'     => Crypt::encrypt('test_account_netbanking_corp_secret'),
+                'created_at'                => time(),
+                'updated_at'                => time(),
+            ]
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_CORPORATION_TERMINAL,
+                'merchant_id'           => Account::DEMO_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_CORPORATION,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'demo_merchant_netbanking_corporation',
+                'gateway_secure_secret' => Crypt::encrypt('test_account_netbanking_corp_secret'),
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
     }
 
     protected function createNetbankingHdfcTerminals()

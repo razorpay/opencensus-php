@@ -63,6 +63,11 @@ class EsDao
         return $this->es->search($params);
     }
 
+    public function searchAndScroll(array $params): \Generator
+    {
+        return $this->es->searchAndScroll($params);
+    }
+
     /**
      * Returns the EsClient instance.
      *

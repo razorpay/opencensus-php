@@ -436,9 +436,9 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY,
             [
                 'raw_content' => $response->body,
-                'content' => $content,
-                'gateway' => 'upi_icici',
-                'payment_id' => $input['payment']['id'],
+                'content'     => $content,
+                'gateway'     => 'upi_icici',
+                'payment_id'  => $input['payment']['id'],
             ]);
 
         $verify->verifyResponse = $this->response;
@@ -450,7 +450,30 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getPaymentVerifyRequestArray(array $input): array
+    protected function sendRefundVerifyRequest(array $input)
+    {
+        $request = $this->getRefundVerifyRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->response = $response;
+
+        $content = $this->parseGatewayResponse($response->body);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
+            [
+                'raw_content' => $response->body,
+                'content'     => $content,
+                'gateway'     => 'upi_icici',
+                'refund_id'   => $input['refund']['id'],
+            ]);
+
+        return $content;
+    }
+
+
+    protected function getPaymentVerifyRequestArray(array $input)
     {
         $data = [
             'merchantId'        => $this->getMerchantId(),
@@ -459,13 +482,7 @@ class Gateway extends Base\Gateway
             'terminalId'        => '1234',
         ];
 
-        $content = $this->transformRequestArrayToContent($data);
-
-        $request = $this->getStandardRequestArray($content);
-
-        $request['headers'] = [
-            'Content-Type' => 'text/plain'
-        ];
+        $request = $this->getRequest($data);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
@@ -473,6 +490,47 @@ class Gateway extends Base\Gateway
                 'request' => $request,
                 'decrypted_content' => $data
             ]);
+
+        return $request;
+    }
+
+    protected function getRefundVerifyRequestArray(array $input)
+    {
+        $attempts = $input['refund']['attempts'] - 1;
+
+        if ($input['refund']['attempts'] === 1)
+        {
+            $attempts = '';
+        }
+
+        $data = [
+            'merchantId'        => $this->getMerchantId(),
+            'merchantTranId'    => $input['refund']['id'] . $attempts,
+            'subMerchantId'     => $this->getSubMerchantId($input),
+            'terminalId'        => '1234',
+        ];
+
+        $request = $this->getRequest($data);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
+            [
+                'request' => $request,
+                'decrypted_content' => $data
+            ]);
+
+        return $request;
+    }
+
+    protected function getRequest(array $data): array
+    {
+        $content = $this->transformRequestArrayToContent($data);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $request['headers'] = [
+            'Content-Type' => 'text/plain'
+        ];
 
         return $request;
     }
@@ -526,119 +584,27 @@ class Gateway extends Base\Gateway
 
     public function verifyRefund(array $input)
     {
-        $refundIds = [
-            '8DBuziIXL80sg9',
-            '8GZxnX7qNUCxbn',
-            '8GkizdwgzWCrzH',
-            '8J0wJyY71kYNTJ',
-            '8KTHDD6btnGfBR',
-            '8LReQFSxFbl32Q',
-            '8LT4ndX4PwitHd',
-            '8Q4lHbGwkqyawW',
-            '8Q5ijAQG4LMkgY',
-            '8Q8slVFiiL2gaZ',
-            '8Q97anqdfzwFML',
-            '8QDEL4k8AH1Kjy',
-            '8QDhEcnmswNgjs',
-            '8QDzdRsvo2sqf3',
-            '8QWew4ThMba3gj',
-            '8QWwC7KCafOImh',
-            '8QWwD6lASawx8d',
-            '8QYyOOFAcnLPJB',
-            '8QaZDbd1PTpwG3',
-            '8QdJUZrLCp3gHe',
-            '8Qep444Nchd6dH',
-            '8QepvMQv44DKjx',
-            '8QiBdd5Q4TblkP',
-            '8QiEKvfkRamd4k',
-            '8QiQMTSmQHyxFP',
-            '8QoLF80vcFcx0T',
-            '8QqQKbYWR4uFzJ',
-            '8QrPoig2eesRjo',
-            '8QtRuMKBJzIQh3',
-            '8QxBx8M7jHxzmQ',
-            '8QzbE8dtTRvBw9',
-            '8R3IaJKe10mXMA',
-            '8REYC0G1NBrJJw',
-            '8RGx8PwcBBLFha',
-            '8RHO3pQ0sFd8eD',
-            '8RbjFD9tIXWq5S',
-            '8RbxiVpCsAQbsf',
-            '8Retk7DxvaLJhe',
-            '8RfvOSiE1uQCct',
-            '8RhLnPMubWtlfW',
-            '8Ri1MXEApu87UO',
-            '8RmcmI1Db4SIPl',
-            '8Rnt7Vq1OVuItk',
-            '8RoI2Vjlb6Rqnj',
-            '8Rq4Dr4LcbDo2B',
-            '8RqeaQnqFIYMLq',
-            '8S2g3xotpJhR6z',
-            '8S5vh0kJh3RW6K',
-            '8S6BXIxNP10o3s',
-            '8S7v332XkgWcmS',
-            '8S9lyMyfy8tU0U',
-            '8S9qxnDd2a4iwx',
-            '8S9qyry8fFEaF2',
-            '8SDCii5I0bma8s',
-            '8SDD82VkwV3miH',
-            '8SPQkUV7xPIXzh',
-            '8SWTtgsoitROy6',
-            '8SXucrt1KdUA28',
-            '8Sa3OoHVo50Y7W',
-            '8Sa4UJRZe7jTCr',
-            '8SaAsnR7qdgimA',
-            '8SdWqynh6INVEk',
-            '8ShC9csv850bGq',
-            '8SoreDD7PRSnxq',
-            '8Sp4KrBelBATt5',
-            '8Ss7I2lOgHiyUr',
-            '8SsxC9tzu07CWZ',
-            '8StcBdO0yJzV95',
-            '8StdEJs0H5Acln',
-            '8SwKKSJmq0Zo8g',
-            '8SwpqpySv4cXdF',
-            '8T0Ut4AQhwIoM6',
-            '8T11Nbm0N3Pt0F',
-            '8T9CvM4SEAmtdO',
-            '8TFRXYlOsK3UP8',
-            '8TGZFFLW32lRZT',
-            '8THLrGaAVsnTVW',
-            '8TIP3c6svGdNax',
-            '8TKRAlh5PVFPVN',
-            '8TKiF5qvKBkM2M',
-            '8TNloclmpNdNjj',
-            '8TO0gNfWfL7k6t',
-            '8TOGxsmnqTMlI5',
-            '8TQU1g1rgfgJnB',
-            '8TcPqQxSxXtHHT',
-            '8Te3HOySmsJirk',
-            '8TecjdzlRDKXV2',
-            '8TflIJSmuMBILG',
-            '8TgfhZxjSK2OcX',
-            '8ThSwkGQjjuyPl',
-            '8ThTq5rdLCd420',
-            '8TjpiNEigm9oy3',
-            '8TkIAYOBiqwKGb',
-            '8TmUrW5XMtXkoF',
-            '8U0xewmTI7Q8oq',
-            '8U8pgNNGazaG5u',
-            '8UBPAJCq5AJNJm',
-            '8UNyjtWLbwPqic',
-            '8UOO4cLCf6itEr',
-            '8UVazqlnbqZ2Dt',
-            '8UWaa6CqbbJuji',
-            '8UYr4VjsmAwQAA',
-            '8UZcN9ysBDTNv2',
-        ];
+        parent::verify($input);
 
-        if (in_array($input['refund']['id'], $refundIds, true) === true)
+        $content = $this->sendRefundVerifyRequest($input);
+
+        if ($content['status'] === Status::SUCCESS)
+        {
+            return true;
+        }
+
+        if ($content['status'] === Status::FAILURE)
         {
             return false;
         }
 
-        throw new Exception\LogicException(
-            'UPI ICICI verify refund is not implemented');
+         throw new Exception\LogicException(
+                'Shouldn\'t reach here',
+                null,
+                [
+                    'gateway_status' => $content['status'],
+                    'refund_id'      => $input['refund']['id'],
+                ]);
     }
 
     /**

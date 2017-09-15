@@ -2413,3 +2413,45 @@ ALTER TABLE merchant_banks
 ALTER TABLE merchant_invoice
     DROP INDEX `merchant_invoice_merchant_id_year_month_type_unique`,
     ADD COLUMN description VARCHAR(255) DEFAULT NULL AFTER `type`;
+
+# pre deployment query for PR : 4655
+ALTER TABLE `merchant_banks`
+    ADD COLUMN `disabled_banks` TEXT NULL AFTER `banks`;
+
+ALTER TABLE merchant_invoice
+    MODIFY COLUMN invoice_number CHAR(16) NOT NULL;
+
+ALTER TABLE merchants
+    ADD COLUMN invoice_code CHAR(12) DEFAULT NULL AFTER category2;
+
+# Adding index on settlements.updated_at, refunds.updated_at, transactions.updated_at
+# Useful for Merchant analytics queries
+ALTER TABLE settlements
+    ADD INDEX settlements_updated_at_index (updated_at);
+
+ALTER TABLE refunds
+    ADD INDEX refunds_updated_at_index (updated_at);
+
+ALTER TABLE transactions
+    ADD INDEX transactions_updated_at_index (updated_at);
+
+# Adding recipient_settlement_id in transfers table
+ALTER TABLE transfers
+    ADD COLUMN recipient_settlement_id CHAR(14) AFTER transaction_id,
+    ADD CONSTRAINT transfers_recipient_settlement_id_foreign FOREIGN KEY(recipient_settlement_id)
+    REFERENCES settlements(id) ON DELETE RESTRICT;
+
+ALTER TABLE gateway_rules
+    MODIFY COLUMN gateway VARCHAR(50) DEFAULT NULL;
+
+ALTER TABLE offers
+    MODIFY COLUMN issuer VARCHAR(20);
+
+ALTER TABLE offers
+    MODIFY COLUMN payment_method VARCHAR(10) NULL;
+
+ALTER TABLE bank_transfers
+    MODIFY COLUMN payer_ifsc varchar(13) NOT NULL;
+
+ALTER TABLE bank_accounts
+    MODIFY COLUMN ifsc_code varchar(11) NULL;

@@ -74,11 +74,14 @@ class Repository extends Base\Repository
 
     public function findSuccessfulRefundByRefundId(string $refundId)
     {
-        $actions = [Base\Action::REFUND, Base\Action::REVERSE];
+        $refundActions = [Base\Action::REFUND, Base\Action::REVERSE];
+
+        $failStates = [Status::FAILED, Status::VOIDED];
 
         $refundEntities =  $this->newQuery()
                                 ->where(Entity::REFUND_ID, '=', $refundId)
-                                ->whereIn(Entity::ACTION, $actions)
+                                ->whereIn(Entity::ACTION, $refundActions)
+                                ->whereNotIn(Entity::STATUS, $failStates)
                                 ->get();
         //
         // There should never be more than one successful gateway refund entity

@@ -540,7 +540,6 @@ class Entity extends Base\Entity
                     ErrorCode::BAD_REQUEST_ACCESS_DENIED);
         }
 
-        // $hasPermission === true
         return $hasPermission;
     }
 

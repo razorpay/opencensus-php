@@ -94,7 +94,7 @@ class Gateway extends Base\Gateway
         'headers' => ['Content-Type' => 'text/xml'],
         'data' => [],
         'options' => [
-            'timeout' => 15
+            'timeout' => 5
         ]];
 
     /**
@@ -371,9 +371,9 @@ class Gateway extends Base\Gateway
                     ['network' => $network]);
             }
 
-            $trackId = $authResponse['data']['paymentid'];
+            $gatewayPaymentId = $authResponse['data']['paymentid'];
 
-            $this->model = $this->repo->findByGatewayTransactionIdOrFail($trackId);
+            $this->model = $this->repo->findByGatewayPaymentIdOrFail($gatewayPaymentId);
 
             $this->verifyAuthResponse($authResponse);
 
@@ -386,7 +386,7 @@ class Gateway extends Base\Gateway
 
         $this->id = $input['payment']['id'];
 
-        $this->model = $this->repo->findByGatewayTransactionIdOrFail(
+        $this->model = $this->repo->findByGatewayPaymentIdOrFail(
             $input['gateway']['MD']);
 
         $paymentId = $this->model->getPaymentId();

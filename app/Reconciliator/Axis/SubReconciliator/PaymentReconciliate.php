@@ -366,7 +366,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             try
             {
                 $gatewaySettledAt = Carbon::createFromFormat($possibleDateFormat, $columnSettledAt, Timezone::IST);
-                $gatewaySettledAt = $gatewaySettledAt->timestamp;
+                $gatewaySettledAt = $gatewaySettledAt->getTimestamp();
             }
             catch (\Exception $ex)
             {

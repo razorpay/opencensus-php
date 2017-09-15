@@ -26,7 +26,7 @@ class FileStoreTest extends TestCase
     {
         $store = 'invalid';
 
-        $this->setExpectedException('RZP\Exception\LogicException', 'Not a valid Store:');
+        $this->expectException('RZP\Exception\LogicException', 'Not a valid Store:');
 
         $this->creator->extension($this->extension)
                 ->content($this->content)
@@ -40,7 +40,7 @@ class FileStoreTest extends TestCase
     {
         $type = 'invalid';
 
-        $this->setExpectedException('RZP\Exception\LogicException', 'Not a valid Type:');
+        $this->expectException('RZP\Exception\LogicException', 'Not a valid Type:');
 
         $this->creator->extension($this->extension)
                 ->content($this->content)
@@ -54,7 +54,7 @@ class FileStoreTest extends TestCase
     {
         $extension = 'invalid';
 
-        $this->setExpectedException('RZP\Exception\BadRequestValidationFailureException', 'Invalid Extension');
+        $this->expectException('RZP\Exception\BadRequestValidationFailureException', 'Invalid Extension');
 
         $this->creator->extension($extension)
                 ->content($this->content)
