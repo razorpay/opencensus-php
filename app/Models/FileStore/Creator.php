@@ -97,6 +97,13 @@ class Creator extends Base\Core
      */
     protected $shouldCompress = false;
 
+     /**
+     * Flag to signify if file has to be encrypted
+     *
+     * @var boolean Encrypt flag
+     */
+    protected $shouldEncrypt = false;
+
     /**
      * Format in which file has to be Compress
      *
@@ -630,6 +637,11 @@ class Creator extends Base\Core
 
             default:
                 throw new Exception\LogicException('Not A Valid Extension');
+        }
+
+        if ($this->shouldEncrypt === true)
+        {
+            $this->encryptFile();
         }
 
         if ($this->shouldCompress === true)
