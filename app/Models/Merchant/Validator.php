@@ -10,6 +10,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
+use RZP\Constants\Entity as EntityConstants;
 
 class Validator extends Base\Validator
 {
@@ -85,8 +86,9 @@ class Validator extends Base\Validator
     ];
 
     protected static $featureRules = [
-        'features'          => 'required|array',
-        'optout_reason'     => 'sometimes|string|max:200'
+        'features'                   => 'required|array',
+        'optout_reason'              => 'sometimes|string|max:200',
+        EntityConstants::SHOULD_SYNC => 'sometimes|string',
     ];
 
     protected static $addTagsRules = [
