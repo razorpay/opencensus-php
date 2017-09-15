@@ -96,6 +96,11 @@ class ApiServiceProvider extends BaseServiceProvider
             return new Raven($app);
         });
 
+        $this->app->singleton('authservice', function($app)
+        {
+            return new AuthService($app);
+        });
+
         $this->app->singleton('es', function($app)
         {
             return new EsClient($app);
@@ -176,6 +181,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'exchange',
             'pigeon',
             'workflow',
+            'authservice',
             'sns',
         ];
     }

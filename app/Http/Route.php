@@ -285,6 +285,7 @@ final class Route
         'gateway_payment_callback_post'           => ['post',     'callback/{gateway}',                             'GatewayController@callbackGateway'                                 ],
         'gateway_payment_callback_kotak'          => ['get',      'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotak'                                   ],
         'gateway_payment_callback_kotak_cancel'   => ['post',     'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotakCancel'                             ],
+        'gateway_payment_callback_corporation'    => ['post',     'gateway/netbanking_corporation/callback',        'GatewayController@callbackCorporation'                             ],
         'reconciliate'                            => ['post',     'reconciliate',                                   'ReconciliatorController@postReconciliation'                        ],
         'dummy_return_callback'                   => ['post',     'return/callback',                                'PaymentController@postDummyReturnCallback'                         ],
         'dummy_critical_error'                    => ['get',      'trigger/error',                                  'AdminController@getTriggerError'                                   ],
@@ -586,10 +587,29 @@ final class Route
         'risk_update'                             => ['patch',    'risk/{id}',                                      'RiskController@update'                                             ],
         'risk_fetch_multiple'                     => ['get',      'risk',                                           'RiskController@list'                                               ],
         'risk_get'                                => ['get',      'risk/{id}',                                      'RiskController@get'                                                ],
+
         // Dispute routes
         'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
+
         'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                          ],
         'merchant_payout'                         => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
+
+        // Settings routes
+        'settings_delete'                         => ['delete',   'settings/{module}/{key}',                        'SettingsController@delete'                                         ],
+        'settings_fetch_defined'                  => ['get',      'settings/{module}/defined_keys',                 'SettingsController@getDefined'                                     ],
+        'settings_fetch'                          => ['get',      'settings/{module}/{key?}',                       'SettingsController@get'                                            ],
+        'settings_upsert'                         => ['post',     'settings/{module}',                              'SettingsController@upsert'                                         ],
+
+        // OAuth routes
+        'oauth_token_fetch_multiple'              => ['get',      'oauth/tokens',                                   'OAuthTokenController@getAll'                                       ],
+        'oauth_token_fetch'                       => ['get',      'oauth/tokens/{id}',                              'OAuthTokenController@get'                                          ],
+        'oauth_token_revoke'                      => ['put',      'oauth/tokens/{id}/revoke',                       'OAuthTokenController@revoke'                                       ],
+        'oauth_application_create'                => ['post',     'oauth/applications',                             'OAuthApplicationController@create'                                 ],
+        'oauth_application_fetch_multiple'        => ['get',      'oauth/applications',                             'OAuthApplicationController@getMultiple'                            ],
+        'oauth_application_fetch'                 => ['get',      'oauth/applications/{id}',                        'OAuthApplicationController@get'                                    ],
+        'oauth_application_delete'                => ['delete',   'oauth/applications/{id}',                        'OAuthApplicationController@delete'                                 ],
+        'oauth_merchant_notify'                   => ['post',     'oauth/notify/{type}',                            'MerchantController@sendOAuthNotification'                          ],
+        'oauth_application_update'                => ['post',     'oauth/applications/{id}',                        'OAuthApplicationController@update'                                 ],
     ];
 
     public static $public = [
@@ -989,9 +1009,14 @@ final class Route
         'risk_get',
         'merchant_create_invoice_entities',
         'merchant_payout',
+        'oauth_merchant_notify',
         'gateway_file_create',
         'gateway_file_retry',
         'gateway_file_acknowledge',
+        'settings_fetch_defined',
+        'settings_fetch',
+        'settings_upsert',
+        'settings_delete',
     ];
 
     public static $proxy = [
@@ -1054,6 +1079,14 @@ final class Route
         'invitation_resend',
         'invitation_edit',
         'invitation_delete',
+        'oauth_token_fetch_multiple',
+        'oauth_token_fetch',
+        'oauth_token_revoke',
+        'oauth_application_create',
+        'oauth_application_fetch_multiple',
+        'oauth_application_fetch',
+        'oauth_application_delete',
+        'oauth_application_update',
     ];
 
     // These will run on internal auth with the assurance
@@ -1260,6 +1293,10 @@ final class Route
         'merchant_invoice_add_bulk'        => '*',
         'payment_dispute_create'           => Permission::CREATE_DISPUTE,
         'dispute_edit'                     => Permission::EDIT_DISPUTE,
+        'settings_fetch'                   => Permission::VIEW_WALLET_CONFIG,
+        'settings_fetch_defined'           => Permission::VIEW_WALLET_CONFIG,
+        'settings_upsert'                  => Permission::EDIT_WALLET_CONFIG,
+        'settings_delete'                  => Permission::EDIT_WALLET_CONFIG,
     ];
 
     public static $direct = [
@@ -1282,6 +1319,7 @@ final class Route
         'gateway_payment_callback_post',
         'gateway_payment_callback_kotak',
         'gateway_payment_callback_kotak_cancel',
+        'gateway_payment_callback_corporation',
         'mailgun_webhook',
         'gateway_downtime_source_webhook',
         'checkout_onyx',
@@ -1374,6 +1412,10 @@ final class Route
 
         'h2h' => [
             'setl_reconcile_h2h',
+        ],
+
+        'auth_service' => [
+            'oauth_merchant_notify',
         ],
     ];
 

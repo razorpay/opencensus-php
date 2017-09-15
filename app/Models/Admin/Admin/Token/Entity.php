@@ -29,7 +29,6 @@ class Entity extends Base\Entity
     protected $visible = [
         self::ID,
         self::ADMIN_ID,
-        self::TOKEN,
         self::EXPIRES_AT,
         self::CREATED_AT,
         self::UPDATED_AT
@@ -38,7 +37,6 @@ class Entity extends Base\Entity
     protected $public = [
         self::ID,
         self::ADMIN_ID,
-        self::TOKEN,
         self::EXPIRES_AT
     ];
 
