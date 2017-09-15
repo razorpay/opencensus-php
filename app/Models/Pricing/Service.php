@@ -27,7 +27,7 @@ class Service extends Base\Service
     {
         (new Pricing\Core())->createMultiplePricing($input);
 
-        $plan = $this->repo->pricing->getPricingPlanByName($input[0][Entity::PLAN_NAME]);
+        $plan = $this->repo->pricing->getPricingPlanByName($input[Entity::PLAN_NAME]);
 
         return $plan->toArrayPublic();
     }

@@ -1,6 +1,5 @@
 <?php
 
-use RZP\Gateway\Hdfc;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
@@ -129,29 +128,31 @@ return [
     'testUploadPricingPlan' => [
         'request' => [
             'content' => [
-                [
-                    'plan_name'      => 'TestUploadPlan2',
-                    'payment_method' => 'netbanking',
-                    'percent_rate' => 1000,
-                    'payment_network' => 'SIBL',
+                'plan_name' => 'TestUploadPlan2',
+                'rules'     => [
+                        [
+                            'payment_method' => 'netbanking',
+                            'percent_rate' => 1000,
+                            'payment_network' => 'SIBL',
+                        ],
+                        [
+                            'payment_method' => 'card',
+                            'payment_method_type'  => 'credit',
+                            'payment_network' => 'DICL',
+                            'payment_issuer' => 'HDFC',
+                            'percent_rate' => 1000,
+                            'amount_range_active' => false,
+                            'amount_range_min' => null,
+                            'amount_range_max' => null,
+                            'min_fee'   => 10,
+                            'max_fee'   => 10000,
+                        ],
+                        [
+                            'payment_method' => 'wallet',
+                            'payment_network' => 'paytm',
+                            'percent_rate' => 1000
+                        ]
                 ],
-                [
-                    'payment_method' => 'card',
-                    'payment_method_type'  => 'credit',
-                    'payment_network' => 'DICL',
-                    'payment_issuer' => 'HDFC',
-                    'percent_rate' => 1000,
-                    'amount_range_active' => false,
-                    'amount_range_min' => null,
-                    'amount_range_max' => null,
-                    'min_fee'   => 10,
-                    'max_fee'   => 10000,
-                ],
-                [
-                    'payment_method' => 'wallet',
-                    'payment_network' => 'paytm',
-                    'percent_rate' => 1000
-                ]
             ],
             'url' => '/pricing',
             'method' => 'POST'
@@ -161,22 +162,22 @@ return [
                 'name' => 'TestUploadPlan2',
                 'entity' => 'pricing',
                 'count' => 3,
-                'rules' => array(
-                    array(
+                'rules' => [
+                    [
                         'plan_name' => 'TestUploadPlan2',
                         'payment_method' => 'wallet',
                         'payment_method_type' => null,
                         'payment_network' => 'paytm',
                         'payment_issuer' => null,
                         'percent_rate' => 1000
-                    ),
-                    array(
+                    ],
+                    [
                         'plan_name' => 'TestUploadPlan2',
                         'payment_method' => 'netbanking',
                         'percent_rate' => 1000,
                         'payment_network' => 'SIBL',
-                    ),
-                    array(
+                    ],
+                    [
                         'plan_name' => 'TestUploadPlan2',
                         'payment_method' => 'card',
                         'payment_method_type'  => 'credit',
@@ -188,10 +189,32 @@ return [
                         'amount_range_max' => null,
                         'min_fee'   => 10,
                         'max_fee'   => 10000,
-                    ),
-                ),
+                    ],
+                ],
             ],
         ],
+    ],
+    'testEmptyUploadPricingPlan' => [
+        'request' => [
+            'content' => [
+                'plan_name' => 'TestUploadPlan2',
+                'rules'     => [],
+            ],
+            'url' => '/pricing',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_BULK_CREATE,
+        ]
     ],
     'testAddPricingPlanRule' => [
         'request' => [
@@ -364,8 +387,8 @@ return [
                 'name' => 'TestPlan2',
                 'entity' => 'pricing',
                 'count' => 4,
-                'rules' => array(
-                    array(
+                'rules' => [
+                    [
                         'plan_name' => 'TestPlan2',
                         'payment_method' => 'card',
                         'payment_method_type' => 'credit',
@@ -377,8 +400,8 @@ return [
                         'amount_range_active' => false,
                         'amount_range_min' => null,
                         'amount_range_max' => null,
-                    ),
-                    array(
+                    ],
+                    [
                         'plan_name' => 'TestPlan2',
                         'payment_method' => 'card',
                         'payment_method_type' => 'debit',
@@ -390,8 +413,8 @@ return [
                         'amount_range_active' => false,
                         'amount_range_min' => null,
                         'amount_range_max' => null,
-                    ),
-                    array(
+                    ],
+                    [
                         'plan_name' => 'TestPlan2',
                         'payment_method' => 'card',
                         'payment_method_type' => 'credit',
@@ -403,8 +426,8 @@ return [
                         'amount_range_active' => false,
                         'amount_range_min' => null,
                         'amount_range_max' => null,
-                    ),
-                    array(
+                    ],
+                    [
                         'plan_name' => 'TestPlan2',
                         'gateway' => NULL,
                         'payment_method' => 'card',
@@ -417,10 +440,10 @@ return [
                         'amount_range_active' => false,
                         'amount_range_min' => null,
                         'amount_range_max' => null,
-                    ),
-                )
-            ]
-        ]
+                    ],
+                ],
+            ],
+        ],
     ],
 
     'testGetPricingPlans' => [
@@ -432,13 +455,13 @@ return [
             'content' => [
                 'count' => 4,
                 'entity' => 'collection',
-                'items' => array(
-                    array(
+                'items' => [
+                    [
                         'name' => 'TestPlan2',
                         'entity' => 'pricing',
                         'count' => 4,
-                        'rules' => array(
-                            array(
+                        'rules' => [
+                            [
                                 'plan_name' => 'TestPlan2',
                                 'gateway' => NULL,
                                 'payment_method' => 'card',
@@ -448,8 +471,8 @@ return [
                                 'percent_rate' => 0,
                                 'fixed_rate' => 3000,
                                 'international' => false,
-                            ),
-                            array(
+                            ],
+                            [
                                 'plan_name' => 'TestPlan2',
                                 'payment_method' => 'card',
                                 'payment_method_type' => 'debit',
@@ -458,8 +481,8 @@ return [
                                 'percent_rate' => 250,
                                 'fixed_rate' => 0,
                                 'international' => false,
-                            ),
-                            array(
+                            ],
+                            [
                                 'plan_name' => 'TestPlan2',
                                 'payment_method' => 'card',
                                 'payment_method_type' => 'credit',
@@ -468,8 +491,8 @@ return [
                                 'percent_rate' => 250,
                                 'fixed_rate' => 0,
                                 'international' => false,
-                            ),
-                            array(
+                            ],
+                            [
                                 'plan_name' => 'TestPlan2',
                                 'payment_method' => 'card',
                                 'payment_method_type' => 'credit',
@@ -478,15 +501,15 @@ return [
                                 'percent_rate' => 275,
                                 'fixed_rate' => 0,
                                 'international' => false,
-                            ),
-                        )
-                    ),
-                    array(
+                            ],
+                        ]
+                    ],
+                    [
                         'name' => 'TestPlan1',
                         'entity' => 'pricing',
                         'count' => 1,
-                        'rules' => array(
-                            array(
+                        'rules' => [
+                            [
                                 'plan_name' =>  'TestPlan1',
                                 'gateway' => NULL,
                                 'payment_method' =>  'card',
@@ -497,18 +520,18 @@ return [
                                 'international' => false,
                                 'fixed_rate' =>  0,
                                 'expired_at' => NULL
-                            )
-                        )
-                    ),
-                    array(
+                            ]
+                        ]
+                    ],
+                    [
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
                         'count' => 12,
-                        'rules' => array(
-                            array(),
-                        ),
-                    ),
-                )
+                        'rules' => [
+                            [],
+                        ],
+                    ],
+                ]
             ]
         ]
     ],
@@ -522,13 +545,13 @@ return [
             'content' => [
                 'count' => 4,
                 'entity' => 'collection',
-                'items' => array(
-                    array(
+                'items' => [
+                    [
                         'name' => 'TestPlan2',
                         'entity' => 'pricing',
                         'count' => 4,
-                        'rules' => array(
-                            array(
+                        'rules' => [
+                            [
                                 'plan_name' => 'TestPlan2',
                                 'gateway' => NULL,
                                 'payment_method' => 'card',
@@ -538,8 +561,8 @@ return [
                                 'percent_rate' => 0,
                                 'fixed_rate' => 3000,
                                 'international' => false,
-                            ),
-                            array(
+                            ],
+                            [
                                 'plan_name' => 'TestPlan2',
                                 'payment_method' => 'card',
                                 'payment_method_type' => 'debit',
@@ -548,8 +571,8 @@ return [
                                 'percent_rate' => 250,
                                 'fixed_rate' => 0,
                                 'international' => false,
-                            ),
-                            array(
+                            ],
+                            [
                                 'plan_name' => 'TestPlan2',
                                 'payment_method' => 'card',
                                 'payment_method_type' => 'credit',
@@ -558,8 +581,8 @@ return [
                                 'percent_rate' => 250,
                                 'fixed_rate' => 0,
                                 'international' => false,
-                            ),
-                            array(
+                            ],
+                            [
                                 'plan_name' => 'TestPlan2',
                                 'payment_method' => 'card',
                                 'payment_method_type' => 'credit',
@@ -568,15 +591,15 @@ return [
                                 'percent_rate' => 275,
                                 'fixed_rate' => 0,
                                 'international' => false,
-                            ),
-                        )
-                    ),
-                    array(
+                            ],
+                        ]
+                    ],
+                    [
                         'name' => 'TestPlan1',
                         'entity' => 'pricing',
                         'count' => 2,
-                        'rules' => array(
-                            array(
+                        'rules' => [
+                            [
                                 'plan_name' =>  'TestPlan1',
                                 'gateway' => NULL,
                                 'payment_method' =>  'card',
@@ -587,8 +610,8 @@ return [
                                 'international' => false,
                                 'fixed_rate' =>  0,
                                 'expired_at' => NULL
-                            ),
-                            array(
+                            ],
+                            [
                                 'plan_name' =>  'TestPlan1',
                                 'gateway' => NULL,
                                 'payment_method' =>  'card',
@@ -599,18 +622,18 @@ return [
                                 'international' => false,
                                 'fixed_rate' =>  0,
                                 'expired_at' => NULL
-                            )
-                        )
-                    ),
-                    array(
+                            ]
+                        ]
+                    ],
+                    [
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
                         'count' => 12,
-                        'rules' => array(
-                            array(),
-                        ),
-                    ),
-                )
+                        'rules' => [
+                            [],
+                        ],
+                    ],
+                ]
             ]
         ]
     ],
@@ -625,16 +648,16 @@ return [
                 'name' => 'TestPlan1',
                 'entity' => 'pricing',
                 'count' => 1,
-                'rules' => array(
-                    array(
+                'rules' => [
+                    [
                         'payment_method' => 'card',
                         'payment_method_type' => 'credit',
                         'payment_network' => 'DICL',
                         'payment_issuer' => 'HDFC',
                         'percent_rate' => 1000,
                         'international' => false,
-                    ),
-                ),
+                    ],
+                ],
             ],
         ]
     ],
@@ -706,16 +729,16 @@ return [
                 'name' => 'TestPlan1',
                 'entity' => 'pricing',
                 'count' => 1,
-                'rules' => array(
-                    array(
+                'rules' => [
+                    [
                         'payment_method' => 'card',
                         'payment_method_type' => 'credit',
                         'payment_network' => 'DICL',
                         'payment_issuer' => 'HDFC',
                         'percent_rate' => 1000,
                         'international' => false,
-                    ),
-                ),
+                    ],
+                ],
             ],
         ]
     ],
@@ -730,12 +753,12 @@ return [
                 'name' => 'TestPlan2',
                 'entity' => 'pricing',
                 'count' => 4,
-                'rules' => array(
-                    array(),
-                    array(),
-                    array(),
-                    array()
-                ),
+                'rules' => [
+                    [],
+                    [],
+                    [],
+                    []
+                ],
             ],
         ]
     ],
@@ -762,8 +785,8 @@ return [
                 'name' => 'testFixturePlan',
                 'entity' => 'pricing',
                 'count' => 1,
-                'rules' => array(
-                    array(
+                'rules' => [
+                    [
                         'payment_method' => 'card',
                         'payment_method_type' => 'credit',
                         'payment_network' => 'VISA',
@@ -771,8 +794,8 @@ return [
                         'percent_rate' => 1000,
                         'fixed_rate' => 10000,
                         'international' => false,
-                    ),
-                ),
+                    ],
+                ],
             ],
         ]
     ],

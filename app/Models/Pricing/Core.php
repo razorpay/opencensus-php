@@ -2,10 +2,14 @@
 
 namespace RZP\Models\Pricing;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Pricing;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin\Action;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
+
 
 class Core extends Base\Core
 {
@@ -66,9 +70,22 @@ class Core extends Base\Core
 
     public function createMultiplePricing($input)
     {
-        $this->repo->transactionOnLiveAndTest(function() use ($input){
+        $plan_name = $input[Entity::PLAN_NAME];
+        $input = $input['rules'];
 
-            $rules = array();
+        if (sizeof($input) === 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PRICING_BULK_CREATE,
+                null,
+                $input);
+        }
+
+        $input[0][Entity::PLAN_NAME] = $plan_name;
+
+        $this->repo->transactionOnLiveAndTest(function() use ($input)
+        {
+            $rules = [];
 
             $rule = $this->buildPricing($input[0]);
 
@@ -84,7 +101,6 @@ class Core extends Base\Core
 
                 array_push($rules, $rule);
             }
-
             // $rules to be injected in workflow here
 
             foreach ($rules as $rule)

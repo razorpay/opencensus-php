@@ -51,6 +51,13 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testEmptyUploadPricingPlan()
+    {
+        $testData['request']['url'] = '/pricing/upload';
+
+        $this->startTest($testData);
+    }
+
     public function testAddPricingPlanNBRule()
     {
         $content = $this->createPricingPlan();
