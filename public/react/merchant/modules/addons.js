@@ -5,10 +5,8 @@ import { makeEntityReducer, updateEntity } from 'rzp/modules/entity';
 import { set } from 'rzp/utils/immutable';
 import { formatFields } from 'merchant/resources/addons';
 
-export const ADDONS_FETCH = 'ADDONS_FETCH';
 export const ADDONS_CREATE = 'ADDONS_CREATE';
 export const ADDONS_EDIT = 'ADDONS_EDIT';
-export const ADDONS_DELETE = 'ADDONS_DELETE';
 
 // Fn. to create / edit add ons
 export const saveAddOn = (params, isNew = true) => {
@@ -41,6 +39,7 @@ export const saveAddOn = (params, isNew = true) => {
   };
 };
 
+// Fetch entire addon list
 export const fetchAddOns = params => {
   const data = {
     route_name: 'addon_fetch_multiple',
@@ -58,6 +57,22 @@ export const fetchAddOns = params => {
   });
 };
 
+// Fetch addon list for subscription id
+export const fetchSubscriptionAddOns = subscriptionId => {
+  return ajax({
+    url: '/user/generic',
+    appendModeInURL: false,
+    appendModeInQueryParam: true,
+    data: {
+      route_name: 'addons_fetch_due',
+      url_params: JSON.stringify({
+        '{subscription_id}': subscriptionId,
+      }),
+    },
+  });
+};
+
+// Delete addons
 export const deleteAddOn = addon_id => {
   return ajax({
     method: 'delete',
@@ -74,4 +89,4 @@ export const deleteAddOn = addon_id => {
 };
 
 // List Reducer
-export const addOnsReducer = makeActionCollectionReducer('ADDONS_FETCH');
+export const addOnsReducer = makeActionCollectionReducer(ADDONS_CREATE);
