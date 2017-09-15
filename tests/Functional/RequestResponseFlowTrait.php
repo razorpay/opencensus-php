@@ -265,7 +265,6 @@ trait RequestResponseFlowTrait
             }
         }
 
-
         if ($this->ba->isAppAuth() === true)
         {
             $appHeaders = $this->ba->getAppHeaders();

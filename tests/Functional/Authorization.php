@@ -25,7 +25,7 @@ class Authorization
     protected $defaultDeviceToken       = 'authentication_token';
     protected $defaultToken             = Org::DEFAULT_TOKEN . Org::DEFAULT_TOKEN_PRINCIPAL;
     protected $defaultOrgId             = Org::RZP_ORG_SIGNED;
-  
+
     protected $defaultDashboardHostname = 'dashboard.razorpay.dev';
     protected $defaultAccountId         = 'acc_10000000000001';
 
@@ -461,11 +461,11 @@ class Authorization
         return $this->orgId;
     }
 
-
     public function isAppAuth()
     {
         return ($this->type === 'app');
     }
+
     public function isBearerAuth()
     {
         return ($this->type === 'bearer');

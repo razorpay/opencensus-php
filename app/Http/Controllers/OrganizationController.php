@@ -93,8 +93,6 @@ class OrganizationController extends Controller
 
     public function fetchAdminMultiple()
     {
-        $input = Request::all();
-
         $data = $this->service(E::ADMIN)->fetchMultiple();
 
         return ApiResponse::json($data);
