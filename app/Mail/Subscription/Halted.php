@@ -2,17 +2,24 @@
 
 namespace RZP\Mail\Subscription;
 
+use RZP\Constants\MailTags;
+
 class Halted extends Base
 {
     protected function addTextView()
     {
-        $this->text('emails.subscriptions.halted');
+        $this->text('emails.subscription.halted_text');
 
         return $this;
     }
 
-    public function isCustomerReceiptEmail()
+    protected function getResult()
     {
-        return true;
+        return 'Subscription halted';
+    }
+
+    protected function getMailTag()
+    {
+        return MailTags::SUBSCRIPTION_HALTED;
     }
 }

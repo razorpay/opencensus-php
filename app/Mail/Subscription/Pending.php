@@ -4,22 +4,22 @@ namespace RZP\Mail\Subscription;
 
 use RZP\Constants\MailTags;
 
-class Activated extends Base
+class Pending extends Base
 {
     protected function addTextView()
     {
-        $this->text('emails.subscription.activated_text');
+        $this->text('emails.subscription.pending_text');
 
         return $this;
     }
 
     protected function getResult()
     {
-        return 'Subscription activated successfully';
+        return 'Subscription charge failed';
     }
 
     protected function getMailTag()
     {
-        return MailTags::SUBSCRIPTION_ACTIVATED;
+        return MailTags::SUBSCRIPTION_PENDING;
     }
 }

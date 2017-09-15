@@ -2,17 +2,24 @@
 
 namespace RZP\Mail\Subscription;
 
+use RZP\Constants\MailTags;
+
 class Charged extends Base
 {
     protected function addTextView()
     {
-        $this->text('emails.subscriptions.charged');
+        $this->text('emails.subscription.charged_text');
 
         return $this;
     }
 
-    public function isCustomerReceiptEmail()
+    protected function getResult()
     {
-        return true;
+        return 'Subscription charged successfully';
+    }
+
+    protected function getMailTag()
+    {
+        return MailTags::SUBSCRIPTION_CHARGED;
     }
 }

@@ -245,6 +245,11 @@ class Notify extends Processor\Notify
     protected function templateData()
     {
         $data = [
+            'subscription' => [
+                'id'         => $this->subscription->getId(),
+                'status'     => $this->subscription->getStatus(),
+                'public_id'  => $this->subscription->getPublicId(),
+            ],
             'merchant'  => [
                 'billing_label' => $this->subscription->merchant->getBillingLabel(),
                 'website'       => $this->subscription->merchant->getWebsite(),
@@ -294,22 +299,6 @@ class Notify extends Processor\Notify
             {
                 $data['payment']['error_description'] = $this->payment->getErrorDescription();
             }
-        }
-
-        if ($this->refund !== null)
-        {
-            $data['refund'] = [
-                'id'         => $this->refund->getId(),
-                'amount'     => $this->refund->getFormattedAmount(),
-                'timestamp'  => $this->refund->getCreatedAt(),
-                'payment_id' => $this->refund->payment->getId(),
-                'public_id'  => $this->refund->getPublicId(),
-            ];
-        }
-
-        if ($this->subscription !== null)
-        {
-            // TODO: Add subscription things
         }
 
         return $data;

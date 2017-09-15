@@ -2270,7 +2270,7 @@ trait Authorize
 
             $core->fireWebhookForStatusUpdate($subscription, Subscription\Status::ACTIVE, $payment);
 
-            $core->triggerSubscriptionNotification($subscription, $payment, Payment\Event::ACTIVATED);
+            $core->triggerSubscriptionNotification($subscription, $payment, Subscription\Event::ACTIVATED);
         }
     }
 
