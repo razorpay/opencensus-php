@@ -37,12 +37,12 @@ return [
         'admin_get_app_auth'                => 'current_admin',
 
         // AuditLog
-        'auditlog_search'                   => 'orgs/{orgId}/auditlog/search',
+        'auditlog_search'                   => 'auditlog/search',
 
         // Permissions
         'permission_get_by_type'            => 'permissions/get/{type}',
         'permission_get_roles'              => 'permissions/{id}/roles',
-        'permission_get_multiple'           => 'orgs/{orgId}/permissions',
+        'permission_get_multiple'           => 'permissions-multiple',
         'permission_create'                 => 'permissions',
         'permission_get'                    => 'permissions/{id}',
         'permission_edit'                   => 'permissions/{id}',
