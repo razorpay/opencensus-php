@@ -689,7 +689,7 @@ class Creator extends Base\Core
     {
         $unzippedFilePath = $this->getFullFilePath();
 
-        Encryption::encrypt($this->encryptionType, $this->encryptionSecret, $unzippedFilePath);
+        (new Encryption)->encrypt($this->encryptionType, $this->encryptionSecret, $unzippedFilePath);
     }
 
     /*

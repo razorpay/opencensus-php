@@ -24,7 +24,7 @@ class Encryption
      * @return null
      * @throws Exception\LogicException
      */
-    public static function encrypt(string $type, string $secret, string $filePath)
+    public function encrypt(string $type, string $secret, string $filePath)
     {
         $this->validateEncryptionType($type);
 
