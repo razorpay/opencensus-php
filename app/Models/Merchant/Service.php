@@ -1002,15 +1002,19 @@ class Service extends Base\Service
 
         $merchant = $this->merchant;
 
+        $shouldSyncKey = EntityConstants::SHOULD_SYNC;
+
+        $shouldSync = boolval($input[$shouldSyncKey] ?? false);
+
         $merchant->validateInput('feature', $input);
 
         $featuresToAdd = $this->getFeatureNamesToAdd($input['features']);
 
         $featuresToRemove = $this->getFeatureNamesToRemove($input['features']);
 
-        $this->addFeatures($featuresToAdd, $input[EntityConstants::SHOULD_SYNC]);
+        $this->addFeatures($featuresToAdd, $shouldSync);
 
-        $this->removeFeatures($featuresToRemove, $input[EntityConstants::SHOULD_SYNC]);
+        $this->removeFeatures($featuresToRemove, $shouldSync);
 
         $data = (new Feature\Service)->getFeaturesForEntity($merchant);
 
@@ -1204,7 +1208,7 @@ class Service extends Base\Service
         return $featureNames;
     }
 
-    private function addFeatures($featureNames, $shouldSync)
+    private function addFeatures($featureNames, $shouldSync = false)
     {
         $merchant = $this->merchant;
 
@@ -1214,14 +1218,14 @@ class Service extends Base\Service
                 Feature\Entity::ENTITY_ID    => $merchant->getId(),
                 Feature\Entity::ENTITY_TYPE  => 'merchant',
                 'names'                      => $featureNames,
-                EntityConstants::SHOULD_SYNC => (int) $shouldSync
+                EntityConstants::SHOULD_SYNC => intval($shouldSync)
             ];
 
             (new Feature\Service)->addFeatures($featureParams);
         }
     }
 
-    private function removeFeatures($featureNames, $shouldSync)
+    private function removeFeatures($featureNames, $shouldSync = false)
     {
         $merchant = $this->merchant;
 
@@ -1235,9 +1239,6 @@ class Service extends Base\Service
 
             if ($feature !== null)
             {
-                $options = [
-                    EntityConstants::SHOULD_SYNC => (int) $shouldSync
-                ];
                 (new Feature\Core)->delete($entityId, $feature, $shouldSync);
             }
         }

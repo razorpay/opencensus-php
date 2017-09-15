@@ -37,7 +37,7 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function deleteFeature(string $entityId, string $featureName, $input)
+    public function deleteFeature(string $entityId, string $featureName, array $input)
     {
         $shouldSyncKey = EntityConstants::SHOULD_SYNC;
 

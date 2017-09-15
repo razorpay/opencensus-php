@@ -18,7 +18,7 @@ trait RepositoryUpdateTestAndLive
      */
     public function saveOrFail($entity, array $options = array())
     {
-        if ($this->entityShouldSync($entity, $options) === false)
+        if ($this->entityShouldSync($entity) === false)
         {
             return parent::saveOrFail($entity, $options);
         }
@@ -316,14 +316,14 @@ trait RepositoryUpdateTestAndLive
     *   Example: `Feature\Repository::shouldSync($entity)`
     *
     * @param  PublicEntity   $entity
-    * @param  array         $options
+    * @param  array          $options
     *
     * @return bool
     */
-    protected function entityShouldSync($entity, array $options = array()) : bool
+    protected function entityShouldSync($entity) : bool
     {
         $shouldSync = ((method_exists($this, 'shouldSync') === false) or
-                       ($this->shouldSync($entity, $options) === true));
+                       ($this->shouldSync($entity) === true));
 
         return $shouldSync;
     }

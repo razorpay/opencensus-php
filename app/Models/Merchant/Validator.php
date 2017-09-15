@@ -88,7 +88,7 @@ class Validator extends Base\Validator
     protected static $featureRules = [
         'features'                   => 'required|array',
         'optout_reason'              => 'sometimes|string|max:200',
-        EntityConstants::SHOULD_SYNC => 'required|string',
+        EntityConstants::SHOULD_SYNC => 'sometimes|string',
     ];
 
     protected static $addTagsRules = [

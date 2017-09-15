@@ -5,10 +5,7 @@ namespace RZP\Models\Feature;
 use DB;
 
 use RZP\Constants\Mode;
-use RZP\Constants\Entity as EntityConstants;
-use RZP\Models\Base;
 use RZP\Models\Base\Repository as BaseRepository;
-use RZP\Trace\TraceCode;
 
 class Repository extends BaseRepository
 {
