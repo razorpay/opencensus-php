@@ -550,6 +550,8 @@ class Core extends Base\Core
                     $this->cancelImmediately($subscription);
                 }
 
+                $this->triggerSubscriptionNotification($subscription, Event::ACTIVATED);
+
                 return $subscription;
             },
             self::MUTEX_LOCK_TIMEOUT,
@@ -731,7 +733,10 @@ class Core extends Base\Core
         }
     }
 
-    public function triggerSubscriptionNotification(Entity $subscription, Payment\Entity $payment = null, string $event)
+    public function triggerSubscriptionNotification(
+        Entity $subscription,
+        string $event,
+        Payment\Entity $payment = null)
     {
         $notifier = new Notify($subscription, $payment);
 

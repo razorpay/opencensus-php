@@ -11,6 +11,8 @@ class Event
     const PENDING       = 'pending';
     const HALTED        = 'halted';
     const CANCELLED     = 'cancelled';
+    const COMPLETED     = 'completed';
+    const CARD_CHANGED  = 'card_changed';
 
     const CUSTOMER_EVENTS = [
         self::ACTIVATED,
@@ -18,6 +20,8 @@ class Event
         self::PENDING,
         self::HALTED,
         self::CANCELLED,
+        self::COMPLETED,
+        self::CARD_CHANGED,
     ];
 
     const MERCHANT_EVENTS = [
@@ -26,6 +30,7 @@ class Event
         self::PENDING,
         self::HALTED,
         self::CANCELLED,
+        self::COMPLETED,
     ];
 
     const MAIL_TAG_MAP = [

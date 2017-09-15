@@ -2269,8 +2269,6 @@ trait Authorize
             $core = (new Subscription\Core);
 
             $core->fireWebhookForStatusUpdate($subscription, Subscription\Status::ACTIVE, $payment);
-
-            $core->triggerSubscriptionNotification($subscription, $payment, Subscription\Event::ACTIVATED);
         }
     }
 
@@ -2637,9 +2635,7 @@ trait Authorize
             $event = Payment\Event::INVOICE_PAYMENT_AUTHORIZED;
         }
 
-        $notifier = new Notify($this->payment);
-
-        $notifier->trigger($trigger);
+        (new Notify($this->payment))->trigger($event);
     }
 
     protected function notifyIfCardSaved()

@@ -207,6 +207,7 @@ class SubscriptionChargeTest extends TestCase
         $oldSubcription = $subscription;
 
         $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
         // Invoice got created
         $this->assertEquals(1, $result['invoices_created']);
 

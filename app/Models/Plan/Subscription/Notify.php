@@ -113,7 +113,7 @@ class Notify extends Processor\Notify
      *
      * @return string
      */
-    protected function getSlackPostColor(string $event)
+    protected function getSlackPostColor(string $event = null)
     {
         switch ($event)
         {
@@ -167,7 +167,7 @@ class Notify extends Processor\Notify
         {
             // Shouldn't fail for any reason
             $this->trace->error(
-                TraceCode::PAYMENT_NOTIFY_FAILED,
+                TraceCode::SUBSCRIPTION_NOTIFY_FAILED,
                 [
                     'subscription_id' => $this->subscription->getPublicId(),
                     'message'         => 'Subscription Notify raised an exception'

@@ -34,6 +34,8 @@ class Biller extends Base\Core
     {
         $data = $this->createInvoiceBeforeCharge($subscription);
 
+        $core = (new Core);
+
         if ($data['activated'] === true)
         {
             //
@@ -41,7 +43,7 @@ class Biller extends Base\Core
             // in sync. Otherwise charge webhook might go before
             // this since our queue doesn't maintain order.
             //
-            (new Core)->fireWebhookForStatusUpdate($subscription, Status::ACTIVE);
+            $core->fireWebhookForStatusUpdate($subscription, Status::ACTIVE);
         }
 
         $invoice = $data['invoice'];
