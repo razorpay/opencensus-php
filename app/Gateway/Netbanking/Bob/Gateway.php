@@ -61,9 +61,6 @@ class Gateway extends Base\Gateway
             Action::AUTHORIZE
         );
 
-        // This asserts the payment id and amount from the response
-        $this->checkCallbackResponse($gatewayPayment, $content);
-
         if ($this->isGatewaySuccess($content) === false)
         {
             $content[NetbankingEntity::RECEIVED] = false;
@@ -166,13 +163,6 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
-    }
-
-    protected function checkCallbackResponse($gatewayPayment, $content)
-    {
-        assert($content[ResponseFields::AMOUNT] === $gatewayPayment[NetbankingEntity::AMOUNT]);
-
-        assert($content[ResponseFields::PAYMENT_ID] === $gatewayPayment[NetbankingEntity::PAYMENT_ID]);
     }
 
     // -------------------- Callback helper methods end -----------------
