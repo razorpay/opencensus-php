@@ -6,6 +6,7 @@ import * as ModalActions from 'rzp/modules/modals';
 import HeaderAction from 'rzp/ui/HeaderAction';
 import { updateFeatures } from 'merchant/modules/config';
 import AsyncButton from 'react-async-button';
+import { showNotification } from 'rzp/modules/notifications';
 
 import PaymentsList from 'merchant/containers/Marketplace/Payments/List';
 import TransfersList from 'merchant/containers/Marketplace/Transfers/List';
@@ -21,7 +22,7 @@ import FeatureOnboardingModal from 'merchant/containers/FeatureOnboardingModal';
       mode: state.session.mode,
     };
   },
-  { ...ModalActions, updateFeatures }
+  { ...ModalActions, updateFeatures, showNotification }
 )
 export default class MarketplaceContainer extends Component {
   componentWillMount() {
@@ -60,10 +61,7 @@ export default class MarketplaceContainer extends Component {
   };
 
   render() {
-    if (
-      this.props.user.isMarketplaceEnabled === false &&
-      this.props.mode === 'test'
-    ) {
+    if (this.props.user.isMarketplaceEnabled === false) {
       return (
         <tabbed-container>
           <header>
@@ -82,17 +80,21 @@ export default class MarketplaceContainer extends Component {
             </HeaderAction>
           </header>
           <content>
-            <div class="content-wrapper content-sm">
-              <div class="col-md-8">Try out Razorpay Route in test mode.</div>
-              <div class="col-md-4">
-                <AsyncButton
-                  class="btn btn-default pull-right"
-                  text="Enable Razorpay Route"
-                  pendingText="Enabling..."
-                  onClick={this.enableFeature}
-                />
-              </div>
-            </div>
+            {this.props.mode === 'test'
+              ? <div class="content-wrapper content-sm">
+                  <div class="col-md-8">
+                    Try out Razorpay Route in test mode.
+                  </div>
+                  <div class="col-md-4">
+                    <AsyncButton
+                      class="btn btn-default pull-right"
+                      text="Enable Razorpay Route"
+                      pendingText="Enabling..."
+                      onClick={this.enableFeature}
+                    />
+                  </div>
+                </div>
+              : <div class="content-wrapper content-sm">Placeholder text</div>}
           </content>
         </tabbed-container>
       );
