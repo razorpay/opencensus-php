@@ -260,9 +260,10 @@ class NetbankingFederalGatewayTest extends TestCase
          $this->mockServerContentFunction(
              function(& $content, $action = null) use ($status)
              {
-                $content .= '\n' . $content;
+                $content .= "\n" . $content;
 
                 $content[strlen($content) - 1] = $status;
+                $content .= "\n\u0000\u0000\u0000\u0000\u0000";
              });
      }
 

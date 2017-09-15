@@ -192,6 +192,33 @@ class SbibuddyGatewayTest extends TestCase
         $this->assertSame($this->payment['payment']['verified'], 1);
     }
 
+    public function testAmountMismatchVerifyFailure()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('sbibuddy');
+
+        $authPayment = $this->doAuthPayment($payment);
+
+        $this->mockServerContentFunction(
+            function (& $content, $action = null)
+            {
+                if ($action === 'verify')
+                {
+                    $content[ResponseFields::AMOUNT] = '1000.00';
+                }
+            }
+        );
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($authPayment)
+            {
+                $this->verifyPayment($authPayment['razorpay_payment_id']);
+            }
+        );
+    }
+
     public function testVerifyFailedPayment()
     {
         $this->ba->publicAuth();

@@ -253,7 +253,10 @@ class Entity extends Base\PublicEntity
 
     protected function setIfscCodeAttribute($code)
     {
-        $code = strtoupper($code);
+        if ($code !== null)
+        {
+            $code = strtoupper($code);
+        }
 
         $this->attributes[self::IFSC_CODE] = $code;
     }
@@ -270,9 +273,14 @@ class Entity extends Base\PublicEntity
 
     protected function getIfscCodeAttribute()
     {
-        $ifscCode = $this->attributes[self::IFSC_CODE];
+        $code = $this->attributes[self::IFSC_CODE];
 
-        return strtoupper($ifscCode);
+        if ($code !== null)
+        {
+            $code = strtoupper($code);
+        }
+
+        return $code;
     }
 
     protected function getIfscAttribute()
