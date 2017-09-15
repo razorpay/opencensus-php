@@ -4,6 +4,7 @@ namespace RZP\Base;
 
 use RZP\Exception;
 use RZP\Constants\Mode;
+use App;
 
 class Validator extends \Razorpay\Spine\Validation\Validator
 {
