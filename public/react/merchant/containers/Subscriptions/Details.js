@@ -250,7 +250,7 @@ export default class SubscriptionDetailsContainer extends Component {
 
     // Add 'next_due' invoice in the Invoices list
     if (!invoices.loading && invoices.items && invoices.items.length) {
-      if (['authenticated', 'active', 'halted'].indexOf(entity.status) !== 1) {
+      if (['authenticated', 'active', 'halted'].indexOf(entity.status) > -1) {
         invoicesList = { ...invoices };
         invoicesList.items = [...invoices.items]; // To avoid multiple additions when render is called multiple times
 
@@ -266,19 +266,27 @@ export default class SubscriptionDetailsContainer extends Component {
 
     // Secondary view : Invoice details
     if (secView === 'invoice') {
-      let invoiceData = invoice;
+      let invoiceData;
+      let isValidInvoice = true;
 
       if (
         this.props.invoice_id === 'inv_upcoming' &&
-        Object.keys(entity).length
+        Object.keys(entity).length // Helps to simulate the loader for 'inv_upcoming' invoice
       ) {
-        invoiceData = this.getUpcomingInvoiceDetails(
-          entity.charge_at,
-          plan.item.amount,
-          this.state.addons
-        );
+        // inv_upcoming exists only for these subscriptions status only
+        if (['authenticated', 'active', 'halted'].indexOf(entity.status) > -1) {
+          invoiceData = this.getUpcomingInvoiceDetails(
+            entity.charge_at,
+            plan.item.amount,
+            this.state.addons
+          );
+        } else {
+          isValidInvoice = false; // '/inv_upcoming' is invalid url for such subscriptions
+        }
       }
 
+      // If request is for /inv_upcoming then invoiceData will exist only if it's validInvoice.
+      // And in this case InvoiceDetails won't show loader but error message
       invoiceSecView = (
         <InvoiceDetail
           curInvoiceIndex={this.state.curInvoiceIndex}
@@ -288,8 +296,9 @@ export default class SubscriptionDetailsContainer extends Component {
           onClose={this.secClose}
           statusMsg={makeErrorStatus(invoiceErrors)}
           onManualAttempt={this.onManualAttempt}
+          isValidInvoice={isValidInvoice}
           isLoading={
-            invoiceData.status === 'next_due' && invoiceData
+            this.props.invoice_id === 'inv_upcoming' && invoiceData
               ? false
               : invoiceLoading
           }
