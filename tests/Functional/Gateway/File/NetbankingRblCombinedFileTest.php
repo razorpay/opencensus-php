@@ -10,7 +10,7 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
-class NebtankingRblCombinedFileTest extends TestCase
+class NetbankingRblCombinedFileTest extends TestCase
 {
     use PaymentTrait;
 
@@ -42,6 +42,8 @@ class NebtankingRblCombinedFileTest extends TestCase
         $this->ba->appAuth();
 
         $content = $this->startTest();
+
+        $content = $content['items'][0];
 
         $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
         $this->assertNotNull(File\Entity::SENT_AT);

@@ -30,8 +30,8 @@ trait GenerateRefundFile
             $refunds = $this->repo->refund->fetchRefundsForGatewayBetweenTimestamps(
                             static::PAYMENT_TYPE_ATTRIBUTE,
                             static::GATEWAY_CODE,
-                            $from,
-                            $to,
+                            $begin,
+                            $end,
                             static::GATEWAY
                         );
         }
@@ -40,8 +40,8 @@ trait GenerateRefundFile
             $refunds = $this->repo->refund->fetchRefundsForTpvBetweenTimestamps(
                             static::PAYMENT_TYPE_ATTRIBUTE,
                             static::GATEWAY_CODE,
-                            $from,
-                            $to,
+                            $begin,
+                            $end,
                             static::GATEWAY,
                             $tpv
                         );
@@ -184,6 +184,14 @@ trait GenerateRefundFile
     protected function shouldNotReportFailure(string $code): bool
     {
         return ($code === ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND);
+    }
+
+    protected function getComment(string $code): string
+    {
+        if ($code === ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND)
+        {
+            return 'Valid data not available for file processing';
+        }
     }
 
     /**

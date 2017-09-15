@@ -14,7 +14,6 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Constants;
 use RZP\Exception\GatewayFileException;
-use RZP\Models\Gateway\File\FailureCode;
 
 trait GenerateClaimFile
 {
@@ -26,8 +25,8 @@ trait GenerateClaimFile
             Payment\Status::REFUNDED
         ];
 
-        $from = $this->gatewayFile->getFrom();
-        $to = $this->gatewayFile->getTo();
+        $begin = $this->gatewayFile->getBegin();
+        $end = $this->gatewayFile->getEnd();
         $gateway = static::GATEWAY;
         $tpv = $this->gatewayFile->getTpv();
 
@@ -37,7 +36,7 @@ trait GenerateClaimFile
         }
         else
         {
-            $claims = $this->repo->payment->fetchPaymentsWithStatus($from, $to, static::GATEWAY, $statuses);
+            $claims = $this->repo->payment->fetchPaymentsWithStatus($begin, $end, static::GATEWAY, $statuses);
         }
 
         return $claims;
@@ -45,23 +44,23 @@ trait GenerateClaimFile
 
     protected function fetchReconciledPayments(array $statuses)
     {
-        $from = Carbon::createFromTimestamp($this->gatewayFile->getFrom())->addDay()->timestamp;
-        $to = Carbon::createFromTimestamp($this->gatewayFile->getTo())->addDay()->timestamp;
+        $begin = Carbon::createFromTimestamp($this->gatewayFile->getBegin())->addDay()->timestamp;
+        $end = Carbon::createFromTimestamp($this->gatewayFile->getEnd())->addDay()->timestamp;
         $tpv = $this->gatewayFile->getTpv();
 
         if ($tpv === null)
         {
             $claims = $this->repo->payment
-                                 ->fetchReconciledPaymentsForGateway($from,
-                                                                    $to,
+                                 ->fetchReconciledPaymentsForGateway($begin,
+                                                                    $end,
                                                                     static::GATEWAY,
                                                                     $statuses);
         }
         else
         {
             $claims = $this->repo->payment->fetchReconciledPaymentsForTpv(
-                            $from,
-                            $to,
+                            $begin,
+                            $end,
                             static::GATEWAY,
                             $statuses,
                             $tpv);
@@ -72,9 +71,22 @@ trait GenerateClaimFile
 
     protected function shouldFetchReconciledPayments(): bool
     {
-        $source = $this->gatewayFile->getSource();
+        $target = $this->gatewayFile->getTarget();
 
-        return (in_array($source, [Constants::KOTAK, Constants::RBL], true) === true);
+        return (in_array($target, [Constants::KOTAK, Constants::RBL], true) === true);
+    }
+
+    protected function shouldNotReportFailure(string $code): bool
+    {
+        return ($code === ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND);
+    }
+
+    protected function getComment(string $code): string
+    {
+        if ($code === ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND)
+        {
+            return 'Valid data not available for file processing';
+        }
     }
 
     public function checkIfValidDataAvailable(PublicCollection $claims)
@@ -82,7 +94,7 @@ trait GenerateClaimFile
         if ($claims->isEmpty() === true)
         {
             throw new GatewayFileException(
-                    FailureCode::NO_DATA_FOR_FILE_GENERATION);
+                    ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND);
         }
     }
 
@@ -160,8 +172,13 @@ trait GenerateClaimFile
                             ]);
 
             throw new GatewayFileException(
-                FailureCode::ERROR_CREATING_FILE);
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE);
         }
+    }
+
+    public function sendMail()
+    {
+        return;
     }
 
     protected function canRetry(): bool
@@ -173,9 +190,9 @@ trait GenerateClaimFile
 
         if ($this->gatewayFile->isFailed() === true)
         {
-            $failureCode = $this->gatewayFile->getFailureCode();
+            $errorCode = $this->gatewayFile->getErrorCode();
 
-            return ($failureCode !== FailureCode::NO_DATA_FOR_FILE_GENERATION);
+            return ($errorCode !== ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND);
         }
 
         return true;

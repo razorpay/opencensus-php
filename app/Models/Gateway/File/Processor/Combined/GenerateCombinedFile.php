@@ -3,14 +3,14 @@
 namespace RZP\Models\Gateway\File\Processor\Combined;
 
 use Mail;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Models\Gateway\File\Type;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Gateway\File\Status;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
-use RZP\Models\Gateway\File\FailureCode;
 use RZP\Models\Gateway\File\ProcessorFactory;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 
@@ -20,9 +20,9 @@ trait GenerateCombinedFile
     {
         $entities = new PublicCollection;
 
-        $refundFileProcessor = $this->getFileProcesor(Type::REFUND);
+        $refundFileProcessor = $this->getFileProcessor(Type::REFUND);
 
-        $claimFileProcessor = $this->getFileProcesor(Type::CLAIM);
+        $claimFileProcessor = $this->getFileProcessor(Type::CLAIM);
 
         $refunds = $refundFileProcessor->fetchEntities();
 
@@ -44,21 +44,21 @@ trait GenerateCombinedFile
         if (($refunds->isEmpty() === true) and ($claims->isEmpty() === true))
         {
             throw new GatewayFileException(
-                FailureCode::NO_DATA_FOR_FILE_GENERATION);
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND);
         }
 
         if ($this->isTotalAmountValid($refunds, $claims) === false)
         {
             throw new GatewayFileException(
-                FailureCode::CLAIM_AMOUNT_LESS_THAN_REFUND_AMOUNT);
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_CLAIMS_LESSER_THAN_REFUNDS);
         }
     }
 
     public function generateData(PublicCollection $entities): array
     {
-        $refundFileProcessor = $this->getFileProcesor(Type::REFUND);
+        $refundFileProcessor = $this->getFileProcessor(Type::REFUND);
 
-        $claimFileProcessor = $this->getFileProcesor(Type::CLAIM);
+        $claimFileProcessor = $this->getFileProcessor(Type::CLAIM);
 
         if ($entities->get('refunds')->isNotEmpty() === true)
         {
@@ -77,14 +77,14 @@ trait GenerateCombinedFile
     {
         if (isset($this->data['refunds']) === true)
         {
-            $refundFileProcessor = $this->getFileProcesor(Type::REFUND);
+            $refundFileProcessor = $this->getFileProcessor(Type::REFUND);
 
             $refundFileProcessor->createFile();
         }
 
         if (isset($this->data['claims']) === true)
         {
-            $claimFileProcessor = $this->getFileProcesor(Type::CLAIM);
+            $claimFileProcessor = $this->getFileProcessor(Type::CLAIM);
 
             $claimFileProcessor->createFile();
         }
@@ -115,7 +115,7 @@ trait GenerateCombinedFile
                             ]);
 
             throw new GatewayFileException(
-                FailureCode::ERROR_SENDING_MAIL);
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_MAIL);
         }
     }
 
@@ -128,15 +128,37 @@ trait GenerateCombinedFile
         return ($totalClaimAmount >= $totalRefundAmount);
     }
 
-    protected function getFileProcesor(string $type)
+    protected function getFileProcessor(string $type)
     {
-        $source = $this->gatewayFile->getSource();
+        $target = $this->gatewayFile->getTarget();
 
-        $processor = $this->app['gateway']
-                          ->getFileProcessor($type, $source)
+        $processor = $this->app['gateway_file']
+                          ->getProcessor($type, $target)
                           ->setGatewayFile($this->gatewayFile);
 
         return $processor;
+    }
+
+    protected function shouldNotReportFailure(string $code): bool
+    {
+        return (in_array($code,
+                [
+                    ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND,
+                    ErrorCode::SERVER_ERROR_GATEWAY_FILE_CLAIMS_LESSER_THAN_REFUNDS
+                ],
+                true) === true);
+    }
+
+    protected function getComment(string $code): string
+    {
+        if ($code === ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND)
+        {
+            return 'Valid data not available for file processing';
+        }
+        else if ($code === ErrorCode::SERVER_ERROR_GATEWAY_FILE_CLAIMS_LESSER_THAN_REFUNDS)
+        {
+            return 'File not generated as claims amount is lesser than refunds amount.';
+        }
     }
 
     /**
@@ -156,11 +178,11 @@ trait GenerateCombinedFile
 
         if ($this->gatewayFile->isFailed() === true)
         {
-            $failureCode = $this->gatewayFile->getFailureCode();
+            $failureCode = $this->gatewayFile->getErrorCode();
 
             return (in_array($failureCode,
-                    [FailureCode::NO_DATA_FOR_FILE_GENERATION,
-                        FailureCode::CLAIM_AMOUNT_LESS_THAN_REFUND_AMOUNT], true) === false);
+                    [ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND,
+                        ErrorCode::SERVER_ERROR_GATEWAY_FILE_CLAIMS_LESSER_THAN_REFUNDS], true) === false);
         }
 
         return true;

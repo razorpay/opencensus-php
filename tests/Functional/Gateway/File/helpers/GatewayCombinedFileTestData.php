@@ -8,24 +8,31 @@ return [
         'request' => [
             'content' => [
                 'type'    => 'combined',
-                'source'  => 'axis',
-                'from'    => Carbon::today(Timezone::IST)->timestamp,
-                'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
+                'targets'  => ['axis'],
+                'begin'    => Carbon::today(Timezone::IST)->timestamp,
+                'end'      => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'status'              => 'mail_sent',
-                'scheduled'           => true,
-                'partially_processed' => false,
-                'attempts'            => 1,
-                'sender'              => 'refunds@razorpay.com',
-                'type'                => 'combined',
-                'source'              => 'axis',
-                'entity'              => 'gateway_file',
-                'admin'               => true
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'mail_sent',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'refunds@razorpay.com',
+                        'type'                => 'combined',
+                        'target'              => 'axis',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ]
+                ]
             ]
         ]
     ],
@@ -34,25 +41,32 @@ return [
         'request' => [
             'content' => [
                 'type'    => 'combined',
-                'source'  => 'axis',
-                'from'    => Carbon::today(Timezone::IST)->timestamp,
-                'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
+                'targets'  => ['axis'],
+                'begin'    => Carbon::today(Timezone::IST)->timestamp,
+                'end'      => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'status'              => 'failed',
-                'failure_code'        => 'no_data_for_file_generation',
-                'scheduled'           => true,
-                'partially_processed' => false,
-                'attempts'            => 1,
-                'sender'              => 'refunds@razorpay.com',
-                'type'                => 'combined',
-                'source'              => 'axis',
-                'entity'              => 'gateway_file',
-                'admin'               => true
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'acknowledged',
+                        'comments'            => 'Valid data not available for file processing',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'refunds@razorpay.com',
+                        'type'                => 'combined',
+                        'target'              => 'axis',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ],
+                ],
             ],
         ],
     ],
@@ -61,25 +75,32 @@ return [
         'request' => [
             'content' => [
                 'type'    => 'combined',
-                'source'  => 'axis',
-                'from'    => Carbon::today(Timezone::IST)->timestamp,
-                'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
+                'targets'  => ['axis'],
+                'begin'    => Carbon::today(Timezone::IST)->timestamp,
+                'end'      => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'status'              => 'failed',
-                'failure_code'        => 'claim_amount_less_than_refund_amount',
-                'scheduled'           => true,
-                'partially_processed' => false,
-                'attempts'            => 1,
-                'sender'              => 'refunds@razorpay.com',
-                'type'                => 'combined',
-                'source'              => 'axis',
-                'entity'              => 'gateway_file',
-                'admin'               => true
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'acknowledged',
+                        'comments'            => 'File not generated as claims amount is lesser than refunds amount.',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'refunds@razorpay.com',
+                        'type'                => 'combined',
+                        'target'              => 'axis',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ],
+                ],
             ],
         ],
     ]

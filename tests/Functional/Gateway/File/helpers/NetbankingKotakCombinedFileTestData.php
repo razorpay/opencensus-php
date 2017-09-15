@@ -8,25 +8,32 @@ return [
         'request' => [
             'content' => [
                 'type'    => 'combined',
-                'source'  => 'kotak',
-                'from'    => Carbon::today(Timezone::IST)->timestamp,
-                'to'      => Carbon::tomorrow(Timezone::IST)->timestamp
+                'targets' => ['kotak'],
+                'begin'    => Carbon::today(Timezone::IST)->timestamp,
+                'end'      => Carbon::tomorrow(Timezone::IST)->timestamp
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
         ],
         'response' => [
             'content' => [
-                'status'              => 'mail_sent',
-                'scheduled'           => true,
-                'partially_processed' => false,
-                'attempts'            => 1,
-                'sender'              => 'refunds@razorpay.com',
-                'type'                => 'combined',
-                'source'              => 'kotak',
-                'entity'              => 'gateway_file',
-                'admin'               => true
-            ]
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'mail_sent',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'refunds@razorpay.com',
+                        'type'                => 'combined',
+                        'target'              => 'kotak',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ],
+                ],
+            ],
         ],
     ],
 
@@ -34,9 +41,9 @@ return [
         'request' => [
             'content' => [
                 'type'    => 'combined',
-                'source'  => 'kotak',
-                'from'    => Carbon::today(Timezone::IST)->timestamp,
-                'to'      => Carbon::tomorrow(Timezone::IST)->timestamp,
+                'targets' => ['kotak'],
+                'begin'   => Carbon::today(Timezone::IST)->timestamp,
+                'end'     => Carbon::tomorrow(Timezone::IST)->timestamp,
                 'tpv'     => '1'
             ],
             'url' => '/gateway/files',
@@ -44,17 +51,24 @@ return [
         ],
         'response' => [
             'content' => [
-                'status'              => 'mail_sent',
-                'scheduled'           => true,
-                'partially_processed' => false,
-                'attempts'            => 1,
-                'sender'              => 'refunds@razorpay.com',
-                'type'                => 'combined',
-                'source'              => 'kotak',
-                'entity'              => 'gateway_file',
-                'tpv'                 => true,
-                'admin'               => true
-            ]
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'mail_sent',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'refunds@razorpay.com',
+                        'type'                => 'combined',
+                        'target'              => 'kotak',
+                        'entity'              => 'gateway_file',
+                        'tpv'                 => true,
+                        'admin'               => true
+                    ],
+                ],
+            ],
         ],
     ]
 ];

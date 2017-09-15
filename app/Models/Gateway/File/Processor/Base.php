@@ -86,7 +86,7 @@ abstract class Base extends Core
         if ($this->shouldNotReportFailure($e->getCode()) === true)
         {
             $this->acknowledge($this->gatewayFile, [
-                File\Entity::COMMENTS => 'Valid data not available for file processing'
+                File\Entity::COMMENTS => $this->getComment($e->getCode()),
             ]);
 
             return;
@@ -133,6 +133,8 @@ abstract class Base extends Core
      * @return bool
      */
     abstract protected function shouldNotReportFailure(string $code): bool;
+
+    abstract protected function getComment(string $code): string;
 
     abstract public function fetchEntities(): PublicCollection;
 

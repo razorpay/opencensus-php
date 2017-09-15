@@ -43,6 +43,8 @@ class NetbankingKotakCombinedFileTest extends TestCase
 
         $content = $this->startTest();
 
+        $content = $content['items'][0];
+
         $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
         $this->assertNotNull(File\Entity::SENT_AT);
         $this->assertNull($content[File\Entity::FAILED_AT]);
@@ -121,6 +123,8 @@ class NetbankingKotakCombinedFileTest extends TestCase
         $this->ba->appAuth();
 
         $content = $this->startTest();
+
+        $content = $content['items'][0];
 
         $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
         $this->assertNotNull(File\Entity::SENT_AT);

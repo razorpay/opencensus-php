@@ -36,6 +36,7 @@ class NetbankingFederalCombinedFileTest extends TestCase
         $this->ba->appAuth();
 
         $content = $this->startTest();
+        $content = $content['items'][0];
 
         $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
         $this->assertNotNull(File\Entity::SENT_AT);
