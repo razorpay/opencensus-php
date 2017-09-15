@@ -57,7 +57,7 @@ class Repository extends BaseRepository
 
         if ((isset($options[$shouldSync])) and ($options[$shouldSync] === 1))
         {
-            if ($this->app['rzp.mode'] === Mode::TEST)
+            if ($this->isTestMode() === true)
             {
                 $findInMode = Mode::LIVE;
             }
