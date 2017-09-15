@@ -31,7 +31,7 @@ return [
 
     'testWeakPassword' => [
         'request' => [
-            'url' => '/orgs/%s/admins',
+            'url' => '/admins',
             'method' => 'post',
             'content' => [
                 'name'                  => 'testadmin',
@@ -67,7 +67,7 @@ return [
 
     'testShortPassword' => [
         'request' => [
-            'url' => '/orgs/%s/admins',
+            'url' => '/admins',
             'method' => 'post',
             'content' => [
                 'name'                  => 'testadmin',
@@ -103,7 +103,7 @@ return [
 
     'testLongPassword' => [
         'request' => [
-            'url' => '/orgs/%s/admins',
+            'url' => '/admins',
             'method' => 'post',
             'content' => [
                 'name'                  => 'testadmin',
@@ -187,7 +187,7 @@ return [
 
     'testPasswordRetainPolicy' => [
         'request' => [
-            'url' => '/orgs/%s/admins/%s',
+            'url' => '/admin/%s',
             'method' => 'put',
             'content' => [
                 'password'              => '@#12$%^&dfgh',
@@ -211,7 +211,7 @@ return [
 
     'testPasswordRetainPolicyWithNewPassword' => [
         'request' => [
-            'url' => '/orgs/%s/admins/%s',
+            'url' => '/admin/%s',
             'method' => 'put',
             'content' => [
                 'password'              => '@#12$%^&dfghq',

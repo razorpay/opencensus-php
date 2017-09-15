@@ -195,7 +195,7 @@ return [
 
     'testDeleteAllRolesAdmin' => [
         'request' => [
-            'url' => '/orgs/%s/admins/%s',
+            'url' => '/admin/%s',
             'method' => 'put',
             'content' => [
                 'name' => 'test',

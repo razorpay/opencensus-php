@@ -25,7 +25,7 @@ class AuthPolicyTest extends TestCase
 
         $this->authToken = $this->getAuthTokenForOrg($this->org);
 
-        $this->ba->adminAuth('test', $this->authToken);
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $this->adminRepo = (new Admin\Repository);
     }
@@ -65,34 +65,16 @@ class AuthPolicyTest extends TestCase
 
     public function testWeakPassword()
     {
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         $this->startTest();
     }
 
     public function testShortPassword()
     {
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         $this->startTest();
     }
 
     public function testLongPassword()
     {
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         $this->startTest();
     }
 
@@ -154,7 +136,7 @@ class AuthPolicyTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $admin->getPublicId());
+        $url = sprintf($url, $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -198,7 +180,7 @@ class AuthPolicyTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $admin->getPublicId());
+        $url = sprintf($url, $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 

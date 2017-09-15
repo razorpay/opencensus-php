@@ -1381,4 +1381,22 @@ class BasicAuth
         return $this->orgId;
     }
 
+    public function fetchOrgByHostname($orgHostname)
+    {
+        if ($this->app->environment('testing') === false)
+        {
+            $mode = Mode::LIVE;
+        }
+        else
+        {
+            $mode = Mode::TEST;
+        }
+
+        // Org Hostname check should always be done in the
+        // live mode (since we don't sync it in heimdall)
+        $org = $this->repo->org->connection($mode)->findOrFailByHostname($orgHostname);
+
+        return $org;
+    }
+
 }
