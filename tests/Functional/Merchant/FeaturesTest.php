@@ -289,7 +289,7 @@ class FeaturesTest extends TestCase
 
         $assignedFeatures = $response['assigned_features'];
 
-        $this->assertEquals(count($assignedFeatures), 0);
+        $this->assertEquals(0, count($assignedFeatures));
     }
 
     /**

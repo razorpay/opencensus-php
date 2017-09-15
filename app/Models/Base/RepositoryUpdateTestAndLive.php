@@ -252,7 +252,7 @@ trait RepositoryUpdateTestAndLive
         return array($testEntity, $liveEntity);
     }
 
-    protected function cloneEntity($entity)
+    public function cloneEntity($entity)
     {
         $testEntity = clone $entity;
         $testEntity->resetAuditAction();
