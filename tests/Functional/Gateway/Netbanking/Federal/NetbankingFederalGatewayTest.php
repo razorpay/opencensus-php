@@ -28,7 +28,7 @@ class NetbankingFederalGatewayTest extends TestCase
 
         $this->setMockGatewayTrue();
 
-        $this->fixtures->create('terminal:shared_netbanking_federal_terminal');
+        $this->terminal = $this->fixtures->create('terminal:shared_netbanking_federal_terminal');
     }
 
     public function testPayment()
@@ -46,8 +46,6 @@ class NetbankingFederalGatewayTest extends TestCase
 
     public function testTpvPayment()
     {
-        $terminal = $this->fixtures->create('terminal:shared_netbanking_federal_tpv_terminal');
-
         $this->ba->privateAuth();
 
         $this->fixtures->merchant->enableTPV();
@@ -62,7 +60,7 @@ class NetbankingFederalGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($payment['terminal_id'], $terminal->getId());
+        $this->assertEquals($payment['terminal_id'], $this->terminal->getId());
 
         $this->fixtures->merchant->disableTPV();
 
@@ -262,9 +260,10 @@ class NetbankingFederalGatewayTest extends TestCase
          $this->mockServerContentFunction(
              function(& $content, $action = null) use ($status)
              {
-                $content .= '\n' . $content;
+                $content .= "\n" . $content;
 
                 $content[strlen($content) - 1] = $status;
+                $content .= "\n\u0000\u0000\u0000\u0000\u0000";
              });
      }
 

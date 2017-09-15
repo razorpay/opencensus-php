@@ -931,6 +931,7 @@ class Terminal extends Base
         $attributes = [
             'id'                => Shared::NETBANKING_ICICI_TPV_TERMINAL,
             'network_category'  => 'securities',
+            'tpv'               => 1,
         ];
 
         return $this->createSharedNetbankingIciciTerminal($attributes);
@@ -976,6 +977,7 @@ class Terminal extends Base
         $attributes = [
             'id'                => Shared::NETBANKING_AXIS_TPV_TERMINAL,
             'network_category'  => 'securities',
+            'tpv'               => 1,
         ];
 
         return $this->createSharedNetbankingAxisTerminal($attributes);
@@ -1004,7 +1006,8 @@ class Terminal extends Base
     {
         $attributes = [
             'id'               => Shared::NETBANKING_INDUSIND_TPV_TERMINAL,
-            'network_category' => 'securities'
+            'network_category' => 'securities',
+            'tpv'              => 1,
         ];
 
         return $this->createSharedNetbankingIndusindTerminal($attributes);
@@ -1036,6 +1039,7 @@ class Terminal extends Base
             'gateway'                   => 'netbanking_federal',
             'gateway_merchant_id'       => 'netbanking_federal_merchant_id',
             'netbanking'                => 1,
+            'tpv'                       => 2,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -1047,7 +1051,8 @@ class Terminal extends Base
     {
         $attributes = [
             'id'               => Shared::NETBANKING_FEDERAL_TPV_TERMINAL,
-            'network_category' => 'securities'
+            'network_category' => 'securities',
+            'tpv'              => 1,
         ];
 
         return $this->createSharedNetbankingFederalTerminal($attributes);
@@ -1094,7 +1099,8 @@ class Terminal extends Base
     {
         $attributes = [
             'id'               => Shared::NETBANKING_RBL_TPV_TERMINAL,
-            'network_category' => 'securities'
+            'network_category' => 'securities',
+            'tpv'              => 1,
         ];
 
         return $this->createSharedNetbankingRblTerminal($attributes);

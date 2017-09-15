@@ -7,31 +7,24 @@ use RZP\Tests\Functional\Fixtures\Entity\Org;
 class Authorization
 {
     protected $test;
-
-    protected $auth = array();
-
+    protected $auth  = array();
     protected $type;
-
     protected $proxy = false;
+    protected $key;
+    protected $token;
+    protected $secret;
+    protected $account;
+    protected $orgId;
+    protected $adminHeaders;
+    protected $admin;
 
-    protected $key = null;
-    protected $token = null;
-    protected $secret = null;
-    protected $account = null;
-    protected $orgId = null;
-    protected $adminHeaders = null;
-
-    protected $admin = null;
-
-    protected $defaultKey = 'rzp_test_TheTestAuthKey';
-    protected $defaultSecret = 'TheKeySecretForTests';
-    protected $defaultDeviceToken = 'authentication_token';
-
-    protected $defaultToken = Org::DEFAULT_TOKEN . Org::DEFAULT_TOKEN_PRINCIPAL;
-    protected $defaultOrgId = Org::RZP_ORG_SIGNED;
+    protected $defaultKey               = 'rzp_test_TheTestAuthKey';
+    protected $defaultSecret            = 'TheKeySecretForTests';
+    protected $defaultDeviceToken       = 'authentication_token';
+    protected $defaultToken             = Org::DEFAULT_TOKEN . Org::DEFAULT_TOKEN_PRINCIPAL;
+    protected $defaultOrgId             = Org::RZP_ORG_SIGNED;
     protected $defaultDashboardHostname = 'dashboard.razorpay.dev';
-
-    protected $defaultAccountId = 'acc_10000000000001';
+    protected $defaultAccountId         = 'acc_10000000000001';
 
     public function __construct($test)
     {
@@ -48,7 +41,25 @@ class Authorization
     {
         $this->auth = [
             'PHP_AUTH_USER' => $user,
-            'PHP_AUTH_PW' => $pwd
+            'PHP_AUTH_PW'   => $pwd
+        ];
+    }
+
+    public function oauthPublicTokenAuth(string $token)
+    {
+        $this->type = 'public';
+
+        $this->auth = [
+            'PHP_AUTH_USER' => $token
+        ];
+    }
+
+    public function oauthBearerAuth(string $accessToken)
+    {
+        $this->type = 'bearer';
+
+        $this->bearerHeaders = [
+            'Authorization' => 'Bearer ' . $accessToken
         ];
     }
 
@@ -421,5 +432,15 @@ class Authorization
     public function getOrgId()
     {
         return $this->orgId;
+    }
+
+    public function isBearerAuth()
+    {
+        return ($this->type === 'bearer');
+    }
+
+    public function getBearerHeader()
+    {
+        return $this->bearerHeaders;
     }
 }
