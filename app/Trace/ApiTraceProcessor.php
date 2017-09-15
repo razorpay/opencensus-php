@@ -19,6 +19,8 @@ class ApiTraceProcessor
     {
         $this->addMode($record);
 
+        $this->addOAuthAttributes($record);
+
         $this->updateClientIp($record);
 
         $this->addMerchantId($record);
@@ -28,9 +30,16 @@ class ApiTraceProcessor
         return $record;
     }
 
-    protected function addMode(&$record)
+    protected function addMode(& $record)
     {
         $record['mode'] = $this->app['basicauth']->getMode();
+    }
+
+    protected function addOAuthAttributes(& $record)
+    {
+        $record['access_token_id'] = $this->app['basicauth']->getAccessTokenId();
+
+        $record['oauth_client_id'] = $this->app['basicauth']->getOAuthClientId();
     }
 
     protected function updateClientIp(&$record)
