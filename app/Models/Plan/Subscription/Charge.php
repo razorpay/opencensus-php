@@ -335,27 +335,40 @@ class Charge extends Base\Core
             // Update task by a day
             $this->updateScheduleTask($subscription, true);
 
+            //
             // TODO: Replace below function with updateSubscriptionTimeFields?
             // This will call setEndedAtIfApplicable, which could end up setting
             // the wrong time as ended_at, if current_start is not equal to current
             // time (happens in case of retries).
+            //
             $subscription->setChargeAt($subscription->task->getNextRunAt());
         }
         else if ($authAttempts === self::MAX_AUTH_ATTEMPTS)
         {
+            //
             // TODO: Make this merchant configurable. It can either
             // go into halted or cancelled state.
+            //
             $subscription->setStatus(Status::HALTED);
             $invoice->setSubscriptionStatus(Invoice\Status::HALTED);
 
+            //
             // Update task by a full plan period
+            //
             $this->updateScheduleTask($subscription);
 
+            //
             // TODO: Replace below function with updateSubscriptionTimeFields?
             // This will call setEndedAtIfApplicable, which could end up setting
             // the wrong time as ended_at, if current_start is not equal to current
             // time (happens in case of retries).
+            //
             $subscription->setChargeAt($subscription->task->getNextRunAt());
+
+            //
+            // TODO: Should we be resetting auth_attempts here? We don't actually use
+            // it anywhere, but we do need to decide what we want the merchant to see.
+            //
         }
         else
         {
