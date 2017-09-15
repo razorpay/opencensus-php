@@ -48,6 +48,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_PRESSING_BACK_ON_ANDROID             = 'Payment processing cancelled by pressing back button on android';
     const BAD_REQUEST_PAYMENT_CANCELLED_AT_LOGIN_SCREEN                         = 'Payment processing cancelled by customer at login screen';
     const BAD_REQUEST_PAYMENT_CANCELLED_AT_WALLET_PAYMENT_PAGE                  = 'Payment processing cancelled by customer at wallet payment page';
+    const BAD_REQUEST_PAYMENT_CANCELLED_AT_NETBANKING_PAYMENT_PAGE              = 'Payment processing cancelled by customer at netbanking payment page';
     const BAD_REQUEST_RATE_LIMIT_EXCEEDED                                       = 'Request failed. Please try after sometime.';
     const BAD_REQUEST_PAYMENT_ALREADY_PROCESSED                                 = 'The payment has already been processed';
     const BAD_REQUEST_PAYMENT_ALREADY_CAPTURED                                  = 'This payment has already been captured';

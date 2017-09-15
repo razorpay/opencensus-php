@@ -701,6 +701,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FEATURE_MULTI_ASSIGN_REQUEST                  = 'FEATURE_MULTI_ASSIGN_REQUEST';
     const FEATURE_MULTI_REMOVE_REQUEST                  = 'FEATURE_MULTI_REMOVE_REQUEST';
     const FEATURE_SYNCED                                = 'FEATURE_SYNCED';
+    const FEATURE_NOT_SYNCED                            = 'FEATURE_NOT_SYNCED';
 
     const MERCHANT_METHODS_BULK_UPDATE                  = 'MERCHANT_METHODS_BULK_UPDATE';
     const MERCHANT_HOLD_FUNDS_BULK_UPDATE_REQUEST       = 'MERCHANT_HOLD_FUNDS_BULK_UPDATE_REQUEST';

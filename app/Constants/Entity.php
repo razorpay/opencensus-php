@@ -149,6 +149,9 @@ class Entity
     const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
     const WALLET_MPESA          = 'wallet_mpesa';
 
+    // Constants used while syncing entities
+    const SHOULD_SYNC           = 'should_sync';
+
     // Tax and Tax Groups
 
     const TAX                   = 'tax';

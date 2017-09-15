@@ -6,6 +6,7 @@ use DB;
 
 use RZP\Models\Base;
 use RZP\Constants\Mode;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Base\Repository as BaseRepository;
 use RZP\Trace\TraceCode;
 
@@ -37,49 +38,56 @@ class Repository extends BaseRepository
     }
 
     /**
-     * Features added to live should sync and be added to test.
-     * Features when removed from live should not be removed from test.
-     *
-     * If the selected mode is live, then the features will be enabled for both
-     * test as well as live mode. The features table in both the dbs will be populated.
-     * Deleting a feature from test mode will only delete the feature from the
-     * api_test.features table.
-     * Deleting a feature from live mode will only delete the feature from the
-     * api_live.features table.
-     *
-     * When a feature is enabled on test and request is received to enable it on live,
-     * shouldSync() returns false, to avoid the duplicate entry constraint error.
-     *
+     * Merchant features are de-synced by default.
      * The AUTH used will determine the mode selected
+     * To sync them while insertion, $options should have the key 'should_sync' set to 1.
      *
-     * @param      $entity
-     * @param null $action
+     * @param       $entity
+     * @param array $options
      *
      * @return bool
      */
-    public function shouldSync($entity, $action = null): bool
+    public function shouldSync($entity, $options = array()): bool
     {
-        if (($this->isLiveMode() === true) and ($action !== BaseRepository::DELETE))
+        $shouldSync = EntityConstants::SHOULD_SYNC;
+
+        $entityId = $entity->getEntityId();
+
+        $entityName = $entity->getName();
+
+        if ((isset($options[$shouldSync])) and ($options[$shouldSync] === 1))
         {
-            $entityId = $entity->getEntityId();
+            if ($this->isTestMode() === true)
+            {
+                $findInMode = Mode::LIVE;
+            }
+            else
+            {
+                $findInMode = Mode::TEST;
+            }
 
-            $entityName = $entity->getName();
-
-            // Sync if the feature is not already enabled on test
-            $feature = $this->newQueryWithConnection(Mode::TEST)
-                            ->where(Entity::ENTITY_ID,  '=', $entityId)
-                            ->where(Entity::NAME,       '=', $entityName)
-                            ->first();
+            $feature = $this->newQueryWithConnection($findInMode)
+                ->where(Entity::ENTITY_ID,  '=', $entityId)
+                ->where(Entity::NAME,       '=', $entityName)
+                ->first();
 
             if ($feature === null)
             {
                 $this->trace->info(TraceCode::FEATURE_SYNCED, [
                     $entityId,
-                    $entityName
+                    $entityName,
+                    $options
                 ]);
+
                 return true;
             }
         }
+
+        $this->trace->info(TraceCode::FEATURE_NOT_SYNCED, [
+            $entityId,
+            $entityName,
+            $options
+        ]);
 
         return false;
     }

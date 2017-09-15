@@ -4,17 +4,29 @@ namespace RZP\Models\Feature;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Entity as EntityConstants;
 
 
 class Service extends Base\Service
 {
     public function addFeatures($input)
     {
+        $options = array();
+
+        $shouldSync = EntityConstants::SHOULD_SYNC;
+
+        if ((isset($input[$shouldSync]))
+            and (((int) $input[$shouldSync]) === 1))
+        {
+            // Setting this key to 1 will sync the feature
+            $options[EntityConstants::SHOULD_SYNC] = 1;
+        }
+
         $featureParams = $this->buildFeatureParams($input);
 
-        $features = $featureParams->map(function ($item)
+        $features = $featureParams->map(function ($item) use ($options)
         {
-            return (new Core)->create($item);
+            return (new Core)->create($item, $options);
         });
 
         return $features->toArray();

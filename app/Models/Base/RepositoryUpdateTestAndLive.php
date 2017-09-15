@@ -19,12 +19,13 @@ trait RepositoryUpdateTestAndLive
      */
     public function saveOrFail($entity, array $options = array())
     {
-        if ($this->entityShouldSync($entity, Repository::SAVE) === false)
+        if ($this->entityShouldSync($entity, $options) === false)
         {
             return parent::saveOrFail($entity, $options);
         }
 
         $this->validateInstanceIsOfCurrentEntity($entity);
+
         $this->validateIdGenerated($entity);
 
         $action = $entity->exists ? EsRepository::UPDATE : EsRepository::CREATE;
@@ -53,6 +54,7 @@ trait RepositoryUpdateTestAndLive
 
                 // Persist the entity in both live and test databases.
                 $liveEntity->saveOrFail($options);
+
                 $testEntity->saveOrFail($options);
 
                 $this->validateEntitiesMatch($liveEntity, $testEntity);
@@ -171,7 +173,7 @@ trait RepositoryUpdateTestAndLive
 
     public function delete($entity)
     {
-        if ($this->entityShouldSync($entity, Repository::DELETE) === false)
+        if ($this->entityShouldSync($entity) === false)
         {
             return parent::delete($entity);
         }
@@ -205,7 +207,7 @@ trait RepositoryUpdateTestAndLive
 
     public function forceDelete($entity)
     {
-        if ($this->entityShouldSync($entity, Repository::DELETE) === false)
+        if ($this->entityShouldSync($entity) === false)
         {
             return parent::forceDelete($entity);
         }
@@ -316,15 +318,15 @@ trait RepositoryUpdateTestAndLive
     * - $action param can be used to achieve different syncing behavior for
     *   different actions. Example values - 'save', 'delete', etc
     *
-    * @param PublicEntity   $entity
-    * @param string         $action
+    * @param  PublicEntity   $entity
+    * @param  array         $options
     *
     * @return bool
     */
-    protected function entityShouldSync($entity, string $action = null) : bool
+    protected function entityShouldSync($entity, array $options = array()) : bool
     {
         $shouldSync = ((method_exists($this, 'shouldSync') === false) or
-                       ($this->shouldSync($entity, $action) === true));
+                       ($this->shouldSync($entity, $options) === true));
 
         return $shouldSync;
     }
