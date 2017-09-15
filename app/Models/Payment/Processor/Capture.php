@@ -519,9 +519,17 @@ trait Capture
      */
     protected function notifyPaymentCaptured()
     {
-        $hasInvoice = $this->payment->hasInvoice();
+        if ($this->payment->hasSubscription() === true)
+        {
+            return;
+        }
 
-        $event = $hasInvoice ? Payment\Event::INVOICE_PAYMENT_CAPTURED : Payment\Event::CAPTURED;
+        $event = Payment\Event::CAPTURED;
+
+        if ($this->payment->hasInvoice() === true)
+        {
+            $event = Payment\Event::INVOICE_PAYMENT_CAPTURED;
+        }
 
         (new Notify($this->payment))->trigger($event);
     }

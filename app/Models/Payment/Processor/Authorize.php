@@ -2266,7 +2266,11 @@ trait Authorize
 
         if ($activated === true)
         {
-            (new Subscription\Core)->fireWebhookForStatusUpdate($subscription, Subscription\Status::ACTIVE, $payment);
+            $core = (new Subscription\Core);
+
+            $core->fireWebhookForStatusUpdate($subscription, Subscription\Status::ACTIVE, $payment);
+
+            $core->triggerSubscriptionNotification($subscription, $payment, Payment\Event::ACTIVATED);
         }
     }
 
@@ -2607,33 +2611,33 @@ trait Authorize
     protected function notifyAuthorized(bool $wasFailed)
     {
         // Trigger notification events for authorization
-        $notifier = new Notify($this->payment);
 
-        $hasInvoiceAndNotSubscription = (
-            ($this->payment->hasInvoice() === true) and
-            ($this->payment->hasSubscription() === false));
-
-        if ($wasFailed)
+        if ($this->payment->hasSubscription() === true)
         {
+            return;
+        }
+
+        $event = Payment\Event::AUTHORIZED;
+
+        if ($wasFailed === true)
+        {
+            $event = Payment\Event::FAILED_TO_AUTHORIZED;
+
             $currentTime = Carbon::now()->getTimestamp();
 
-            // If a payment has been authorized 15 minutes after the creation, we do not send a notification.
-
+            // If a payment has been authorized 15 minutes after the creation, we do notsend a notification.
             if (($this->payment->getCreatedAt() - $currentTime) > self::FAILED_TO_AUTHORIZED_NOTIFY_DURATION)
             {
                 return;
             }
+        }
 
-            $trigger = $hasInvoiceAndNotSubscription ?
-                        Payment\Event::INVOICE_PAYMENT_AUTHORIZED :
-                        Payment\Event::FAILED_TO_AUTHORIZED;
-        }
-        else
+        if ($this->payment->hasInvoice() === true)
         {
-            $trigger = $hasInvoiceAndNotSubscription ?
-                            Payment\Event::INVOICE_PAYMENT_AUTHORIZED :
-                            Payment\Event::AUTHORIZED;
+            $event = Payment\Event::INVOICE_PAYMENT_AUTHORIZED;
         }
+
+        $notifier = new Notify($this->payment);
 
         $notifier->trigger($trigger);
     }

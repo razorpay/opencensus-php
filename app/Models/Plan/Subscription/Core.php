@@ -2,21 +2,23 @@
 
 namespace RZP\Models\Plan\Subscription;
 
-use RZP\Constants;
 use Carbon\Carbon;
+
+use RZP\Constants;
 use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
-use RZP\Exception\LogicException;
-use RZP\Listeners\ApiEventSubscriber;
+use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Plan;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
-use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Plan\Subscription;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Jobs\Plan\ChargeSubscription;
+use RZP\Exception\LogicException;
+use RZP\Exception\BadRequestException;
+
 use Illuminate\Foundation\Bus\DispatchesJobs;
 
 class Core extends Base\Core
@@ -727,5 +729,12 @@ class Core extends Base\Core
                 $recurringPayload['description'] = 'Failed Recurring Payment via Subscription';
             }
         }
+    }
+
+    public function triggerSubscriptionNotification(Entity $subscription, Payment\Entity $payment = null, string $event)
+    {
+        $notifier = new Notify($subscription, $payment);
+
+        $notifier->trigger($event);
     }
 }

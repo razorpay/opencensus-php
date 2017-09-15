@@ -532,12 +532,16 @@ class Charge extends Base\Core
             $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
 
             $core->fireWebhookForStatusUpdate($subscription, Status::PENDING, $payment);
+
+            $core->triggerSubscriptionNotification($subscription, $payment, Event::PENDING);
         }
         else if ($updatedStatus === Status::HALTED)
         {
             $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
 
             $core->fireWebhookForStatusUpdate($subscription, Status::HALTED, $payment);
+
+            $core->triggerSubscriptionNotification($subscription, $payment, Event::HALTED);
         }
         else if ($updatedStatus === Status::COMPLETED)
         {
@@ -556,6 +560,8 @@ class Charge extends Base\Core
             $this->repo->saveOrFail($subscription);
 
             $core->fireWebhookForStatusUpdate($subscription, Status::COMPLETED, $payment);
+
+            $core->triggerSubscriptionNotification($subscription, $payment, Event::COMPLETED);
         }
         else
         {
