@@ -1,15 +1,17 @@
 import { Link } from 'react-router-dom';
-import CheckIcon from 'rzp/ui/CheckIcon';
-import Spinner from 'rzp/ui/Spinner';
-import ListToggler from 'rzp/ui/Toggler/ListToggler';
-import DataTable from 'rzp/ui/Table/DataTable';
-import Alert from 'rzp/ui/Forms/Alert';
-import Time from 'rzp/ui/Time';
-import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import OtherDetail from 'merchant/components/OtherDetail';
-import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 
+import Alert from 'rzp/ui/Forms/Alert';
+import CheckIcon from 'rzp/ui/CheckIcon';
+import DataTable from 'rzp/ui/Table/DataTable';
+import ListToggler from 'rzp/ui/Toggler/ListToggler';
 import { reversalId, amount, createdAt } from 'rzp/ui/item/pair';
+import Spinner from 'rzp/ui/Spinner';
+import Time from 'rzp/ui/Time';
+
+import EntityDetailRow from 'merchant/components/EntityDetailRow';
+import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
+import OtherDetail from 'merchant/components/OtherDetail';
+import TransferReversal from 'merchant/components/Marketplace/Transfers/TransferReversal';
 
 // Below keys are not to be shown through OtherDetail component
 const shownByDefault = {
@@ -72,77 +74,58 @@ export default ({
                 {/* Payment Link */}
                 <EntityDetailRow
                   label="Source ID"
-                  value={() => (
+                  value={() =>
                     <div>
                       <Link to={`/payments/${transfer.source}`}>
                         {transfer.source}
                       </Link>
-                    </div>
-                  )}
+                    </div>}
                 />
 
                 {/* All entities of Transfer not present shownByDefault*/}
-                {otherKeys.map(key => (
+                {otherKeys.map(key =>
                   <OtherDetail
                     key={key}
                     label={key}
                     value={transfer[key]}
                     entity={transfer}
                   />
-                ))}
+                )}
 
                 <EntityDetailRow
                   label="On Hold"
                   value={() => <CheckIcon value={transfer.on_hold} />}
                 />
 
-                {/* Notes */}
-                <NestedEntityDetailRow label="Notes" value={transfer.notes} />
-
                 {/* Create At */}
                 <EntityDetailRow
                   label="Created At"
-                  value={() => (
+                  value={() =>
                     <Time
                       value={transfer.created_at}
                       format="DD MMM YYYY, hh:mm:ss a"
-                    />
-                  )}
+                    />}
                 />
 
-                {reversals
-                  ? <ListToggler
-                      label="Recently created Reversals"
-                      subLabel="to this transfer"
-                      loading={reversals.loading}
-                      totalItems={reversals.items.length}
-                    >
-                      <DataTable
-                        customClass="reversals-table"
-                        progressLoader={true}
-                        title="Reversals"
-                        columns={[reversalId, amount, createdAt]}
-                        items={reversals.items}
-                        loading={reversals.loading}
-                        showHeaders={true}
-                      />
-                    </ListToggler>
-                  : <EntityDetailRow label="Reversals" value="No Reversals" />}
+                <EntityDetailRow label="Reversal">
+                  <TransferReversal
+                    transfer={transfer}
+                    reversals={reversals}
+                    openTransferReversalModal={openReversalModal}
+                  />
+                </EntityDetailRow>
 
-                <hr />
-
-                {transfer.amount_reversed !== transfer.amount &&
-                  <div class="col-sm-offset-4 col-sm-8">
-                    <button
-                      class="btn btn-primary"
-                      onClick={() => {
-                        openReversalModal(transfer);
-                      }}
-                    >
-                      Reverse
-                    </button>
-                  </div>}
-
+                {/* Notes */}
+                <EntityDetailRow label="Notes">
+                  {Object.keys(transfer.notes).length === 0
+                    ? '--'
+                    : Object.keys(transfer.notes).map((key, index) =>
+                        <Definition key={index}>
+                          {key}
+                          {String(transfer.notes[key])}
+                        </Definition>
+                      )}
+                </EntityDetailRow>
               </div>
             </div>
           </div>}
