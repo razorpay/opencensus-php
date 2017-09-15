@@ -707,7 +707,7 @@ class TerminalSelectionTest extends TestCase
             [
                 'id'          => 'DrctNbBdkTmnl1',
                 'merchant_id' => Merchant\Account::TEST_ACCOUNT,
-                'tpv'         => 1,
+                'tpv'         => 0,
                 'shared'      => 0
             ]);
 
@@ -716,7 +716,7 @@ class TerminalSelectionTest extends TestCase
                 'id'               => 'DrctNbBdkTmnl2',
                 'merchant_id'      => Merchant\Account::TEST_ACCOUNT,
                 'network_category' => 'ecommerce',
-                'tpv'              => 1,
+                'tpv'              => 0,
                 'shared'           => 0
             ]);
 
@@ -790,12 +790,14 @@ class TerminalSelectionTest extends TestCase
              ['id' => 'DrctNbKtkTmnl3',
               'merchant_id' => Merchant\Account::TEST_ACCOUNT,
               'network_category' => 'securities',
-              'shared' => 0]);
+              'shared' => 0,
+              'tpv'    => 1]);
 
         $this->fixtures->create('terminal:shared_netbanking_kotak_terminal',
              ['id' => 'SharNbKtkTmnl1',
               'merchant_id' => Merchant\Account::SHARED_ACCOUNT,
-              'network_category' => 'securities']);
+              'network_category' => 'securities',
+              'tpv'    => 1]);
 
         $this->fixtures->create('gateway_rule', [
             'method'           => 'netbanking',

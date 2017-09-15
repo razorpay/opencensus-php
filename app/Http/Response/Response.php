@@ -96,6 +96,11 @@ class Response
         return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_ONLY_HTTPS_ALLOWED);
     }
 
+    public function oauthInvalidScope()
+    {
+        return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_OAUTH_SCOPE_INVALID);
+    }
+
     public function generateErrorResponse($error, $debug = false)
     {
         list($publicError, $httpStatusCode) = $this->getErrorResponseFields($error, $debug);
@@ -323,14 +328,16 @@ class Response
 
     protected function setAccessControlAllowOriginStarOnSpecificRoutes($route, $response)
     {
-        $routes = array(
+        $routes = [
             'payment_cancel',
             'payment_create_ajax',
             'payment_otp_submit',
             'payment_otp_resend',
-            'payment_topup_ajax');
+            'payment_topup_ajax',
+            'merchant_methods_downtime',
+        ];
 
-        if (in_array($route, $routes))
+        if (in_array($route, $routes, true) === true)
         {
             //
             // These routes are being hit from razorpay.js which is being called

@@ -97,6 +97,27 @@ class Creator extends Base\Core
      */
     protected $shouldCompress = false;
 
+     /**
+     * Flag to signify if file has to be encrypted
+     *
+     * @var boolean Encrypt flag
+     */
+    protected $shouldEncrypt = false;
+
+     /**
+     * Secret for file encryption
+     *
+     * @var string Encryption Secret
+     */
+    protected $encryptionSecret;
+
+     /**
+     * Excryption format for File
+     *
+     * @var string Encryption type
+     */
+    protected $encryptionType;
+
     /**
      * Format in which file has to be Compress
      *
@@ -240,6 +261,25 @@ class Creator extends Base\Core
 
         return $this;
     }
+
+    /** Encrypts contents of file
+     *
+     * @param string $type  Type of Encryption
+     * @param string $secret secret for Encryption
+     *
+     * @return Creator object
+     */
+    public function encrypt($type, $secret)
+    {
+        $this->shouldEncrypt = true;
+
+        $this->encryptionType = $type;
+
+        $this->encryptionSecret = $secret;
+
+        return $this;
+    }
+
 
     /**
      * Set the Store  of File Store
@@ -632,12 +672,24 @@ class Creator extends Base\Core
                 throw new Exception\LogicException('Not A Valid Extension');
         }
 
+        if ($this->shouldEncrypt === true)
+        {
+            $this->encryptFile();
+        }
+
         if ($this->shouldCompress === true)
         {
             $this->compressFile();
         }
 
         $this->updateFilePermission();
+    }
+
+    protected function encryptFile()
+    {
+        $unzippedFilePath = $this->getFullFilePath();
+
+        (new Encryption)->encrypt($this->encryptionType, $this->encryptionSecret, $unzippedFilePath);
     }
 
     /*

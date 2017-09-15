@@ -16,6 +16,7 @@ class ProviderCode
      * These are all the providers we know of
      * This appears after @ in the VPA
      */
+    const AIRTEL            = 'airtel';
     const ALLBANK           = 'allbank';
     const ANDB              = 'andb';
     const AXISBANK          = 'axisbank';
@@ -72,6 +73,7 @@ class ProviderCode
     const RAZORPAY         = 'razorpay';
 
     protected static $bankCodes = [
+        self::AIRTEL            => IFSC::AIRP,
         self::ALLBANK           => IFSC::ALLA,
         self::ANDB              => IFSC::ANDB,
         self::AXISBANK          => IFSC::UTIB,

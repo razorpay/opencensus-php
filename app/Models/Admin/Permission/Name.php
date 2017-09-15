@@ -70,6 +70,7 @@ class Name
     const EDIT_TERMINAL                       = 'edit_terminal';
     const CREATE_SETTLEMENTS_RECONCILE        = 'create_settlements_reconcile';
     const RETRY_SETTLEMENT                    = 'retry_settlement';
+    const EDIT_MERCHANT_INVOICE_GSTIN         = 'edit_merchant_invoice_gstin';
     const CREATE_RECONCILIATE                 = 'create_reconciliate';
     const VIEW_ACTIVATION_FORM                = 'view_activation_form';
     const EDIT_MERCHANT_LOCK_ACTIVATION       = 'edit_merchant_lock_activation';
@@ -150,6 +151,11 @@ class Name
     const EDIT_MERCHANT_OFFER                 = 'edit_merchant_offer';
     const ASSIGN_MERCHANT_HANDLE              = 'assign_merchant_handle';
     const VIEW_MERCHANT_PRICING               = 'view_merchant_pricing';
+    const CREATE_DISPUTE                      = 'create_dispute';
+    const EDIT_DISPUTE                        = 'edit_dispute';
+    const VIEW_WALLET_CONFIG                  = 'view_wallet_config';
+    const CREATE_WALLET_CONFIG                = 'create_wallet_config';
+    const EDIT_WALLET_CONFIG                  = 'edit_wallet_config';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,

@@ -152,6 +152,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const GATEWAY_MULTIPLE_BANK_PAYMENT_IDS             = 'GATEWAY_MULTIPLE_BANK_PAYMENT_IDS';
     const MULTIPLE_TABLES_IN_VERIFY_RESPONSE            = 'MULTIPLE_TABLES_IN_VERIFY_RESPONSE';
+    const MULTIPLE_SUCCESS_TABLES_IN_VERIFY_RESPONSE    = 'MULTIPLE_SUCCESS_TABLES_IN_VERIFY_RESPONSE';
 
     const ORDER_MULTIPLE_CAPTURED_PAYMENTS              = 'ORDER_MULTIPLE_CAPTURED_PAYMENTS';
     const GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT       = 'GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT';
@@ -446,6 +447,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_SOAP_REQUEST                      = 'GATEWAY_SOAP_REQUEST';
     const GATEWAY_SOAP_FAULT                        = 'GATEWAY_SOAP_FAULT';
     const GATEWAY_REQUEST_TIMEOUT                   = 'GATEWAY_REQUEST_TIMEOUT';
+    const GATEWAY_INVALID_PARES_SIGNATURE_ERROR     = 'GATEWAY_INVALID_PARES_SIGNATURE_ERROR';
     const GATEWAY_RUPAY_CALLBACK                    = 'GATEWAY_RUPAY_CALLBACK';
     const GATEWAY_HDFC_CALLBACK_EMPTY               = 'GATEWAY_HDFC_CALLBACK_EMPTY';
     const GATEWAY_CALLBACK_EMPTY                    = 'GATEWAY_CALLBACK_EMPTY';
@@ -559,6 +561,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const AWS_INSTANCE_DATA_RECORD_FAILURE          = 'AWS_INSTANCE_DATA_RECORD_FAILURE';
     const AWS_INSTANCE_DATA_WRITE_FAILURE           = 'AWS_INSTANCE_DATA_WRITE_FAILURE';
     const AWS_INSTANCE_DATA_READ_FAILURE            = 'AWS_INSTANCE_DATA_READ_FAILURE';
+    const BLADE_VERES_PARSE_FAILURE                 = 'BLADE_VERES_PARSE_FAILURE';
     const AWS_S3_LOGO_UPLOAD                        = 'AWS_S3_LOGO_UPLOAD';
     const AWS_S3_LOGO_UPLOADED                      = 'AWS_S3_LOGO_UPLOADED';
     const AWS_FILE_UPLOAD                           = 'AWS_FILE_UPLOAD';
@@ -821,7 +824,23 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_INVOICE_REPORT_REQUEST               = 'MERCHANT_INVOICE_REPORT_REQUEST';
     const MERCHANT_INVOICE_ENTITY_CREATION_REQUEST      = 'MERCHANT_INVOICE_ENTITY_CREATION_REQUEST';
 
+    // Trace code for OAuth and Authentication service
+    const AUTH_SERVICE_REQUEST                          = 'AUTH_SERVICE_REQUEST';
+    const SEND_OAUTH_MAIL_REQUEST                       = 'SEND_OAUTH_MAIL_REQUEST';
+
     const SERVER_ERROR_MISSING_HANDLER                  = 'SERVER_ERROR_MISSING_HANDLER';
+    const GATEWAY_FILE_CREATE_REQUEST                   = 'GATEWAY_FILE_CREATE_REQUEST';
+    const GATEWAY_FILE_PROCESSING                       = 'GATEWAY_FILE_PROCESSING';
+    const GATEWAY_FILE_DATA_GENERATION_ERROR            = 'GATEWAY_FILE_DATA_GENERATION_ERROR';
+    const GATEWAY_FILE_FILE_GEN_ERROR                   = 'GATEWAY_FILE_FILE_GEN_ERROR';
+    const GATEWAY_FILE_MAIL_SEND_ERROR                  = 'GATEWAY_FILE_MAIL_SEND_ERROR';
+    const GATEWAY_FILE_ACKNOWLEDGE_REQUEST              = 'GATEWAY_FILE_ACKNOWLEDGE_REQUEST';
+
+    const VERIFY_ENROLLMENT_RESPONSE                    = 'VERIFY_ENROLLMENT_RESPONSE';
+
+    // Trace code for \Models\Settings
+    const SETTINGS_UPSERT_REQUEST                       = 'SETTINGS_UPSERT_REQUEST';
+    const SETTINGS_DELETE_REQUEST                       = 'SETTINGS_DELETE_REQUEST';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

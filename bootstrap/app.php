@@ -63,5 +63,6 @@ $app->singleton(
 require_once __DIR__.'/../app/lib/utility.php';
 require_once __DIR__.'/../app/lib/utility2.php';
 require_once __DIR__.'/../app/lib/PhoneBook.php';
+require_once __DIR__.'/../app/lib/Formatters/Xml.php';
 
 return $app;
