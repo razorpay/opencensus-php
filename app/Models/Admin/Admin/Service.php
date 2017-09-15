@@ -43,7 +43,7 @@ class Service extends Base\Service
 
     public function authenticate(array $input)
     {
-        $orgId = $this->ba->getOrgId();
+        $orgId = $this->app['basicauth']->getOrgId();
 
         return $this->login($orgId, $input);
     }
@@ -176,7 +176,7 @@ class Service extends Base\Service
     {
         $validator = new Validator();
 
-        $org = $this->repo->org->find($orgId);
+        $org = $this->repo->org->findByPublicId($orgId);
 
         $input[Org\Entity::AUTH_TYPE] = $org->getAuthType();
 

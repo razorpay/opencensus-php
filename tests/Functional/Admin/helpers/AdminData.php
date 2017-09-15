@@ -325,7 +325,7 @@ return [
 
     'testLoginUserDoesNotExist' => [
         'request' => [
-            'url' => '/orgs/%s/admin/authenticate',
+            'url' => '/admin/authenticate',
             'method' => 'post',
             'content' => [
                 'username' => 'test admin not exist',
@@ -447,7 +447,7 @@ return [
 
     'testForgotPasswordSuccess' => [
         'request' => [
-            'url' => '/orgs/%s/admin/forgot_password',
+            'url' => '/admin/forgot_password',
             'method' => 'post',
             'content' => [
                 'email' => 'abc@razorpay.com',
@@ -463,7 +463,7 @@ return [
 
     'testAdminUnlockOnResetPasswordSuccess' => [
         'request' => [
-            'url' => '/orgs/%s/admin/reset_password',
+            'url' => '/admin/reset_password',
             'method' => 'post',
             'content' => [
                 'email'                 => 'abc@razorpay.com',
@@ -480,7 +480,7 @@ return [
 
     'testForgotPasswordInvalidUser' => [
         'request' => [
-            'url' => '/orgs/%s/admin/forgot_password',
+            'url' => '/admin/forgot_password',
             'method' => 'post',
             'content' => [
                 'email' => 'xyz@razorpay.com',
@@ -503,7 +503,7 @@ return [
 
     'testForgotPasswordResetUrlBlank' => [
         'request' => [
-            'url' => '/orgs/%s/admin/forgot_password',
+            'url' => '/admin/forgot_password',
             'method' => 'post',
             'content' => [
                 'email' => 'xyz@razorpay.com',
@@ -525,7 +525,7 @@ return [
 
     'testPasswordResetSuccess' => [
         'request' => [
-            'url' => '/orgs/%s/admin/reset_password',
+            'url' => '/admin/reset_password',
             'method' => 'post',
             'content' => [
                 'email'                 => 'abc@razorpay.com',
@@ -542,7 +542,7 @@ return [
 
     'testAdminUnlockFailOnPasswordResetFail' => [
         'request' => [
-            'url' => '/orgs/%s/admin/reset_password',
+            'url' => '/admin/reset_password',
             'method' => 'post',
             'content' => [
                 'email'                 => 'abc@razorpay.com',
@@ -568,7 +568,7 @@ return [
 
     'testPasswordResetTokenMismatch' => [
         'request' => [
-            'url' => '/orgs/%s/admin/reset_password',
+            'url' => '/admin/reset_password',
             'method' => 'post',
             'content' => [
                 'email'                 => 'abc@razorpay.com',
@@ -594,7 +594,7 @@ return [
 
     'testPasswordResetPasswordMismatch' => [
         'request' => [
-            'url' => '/orgs/%s/admin/reset_password',
+            'url' => '/admin/reset_password',
             'method' => 'post',
             'content' => [
                 'email'                 => 'abc@razorpay.com',
@@ -618,7 +618,7 @@ return [
 
     'testPasswordResetInvalidPassword' => [
         'request' => [
-            'url' => '/orgs/%s/admin/reset_password',
+            'url' => '/admin/reset_password',
             'method' => 'post',
             'content' => [
                 'email'                 => 'abc@razorpay.com',
@@ -642,7 +642,7 @@ return [
 
     'testPasswordResetMaxRetain' => [
         'request' => [
-            'url' => '/orgs/%s/admin/reset_password',
+            'url' => '/admin/reset_password',
             'method' => 'post',
             'content' => [
                 'email'                 => 'abc@razorpay.com',
@@ -666,7 +666,7 @@ return [
 
     'testPasswordResetInvalidAuthType' => [
         'request' => [
-            'url' => '/orgs/%s/admin/reset_password',
+            'url' => '/admin/reset_password',
             'method' => 'post',
             'content' => [
                 'email'                 => 'abc@razorpay.com',

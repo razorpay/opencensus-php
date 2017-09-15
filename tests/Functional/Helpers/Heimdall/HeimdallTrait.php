@@ -94,10 +94,10 @@ trait HeimdallTrait
         return $adminToken->getToken();
     }
 
-    public function adminForgotPassword($orgId, $email)
+    public function adminForgotPassword($email)
     {
         $request = [
-            'url'     => '/orgs/' . $orgId . '/admin/forgot_password',
+            'url'     => '/admin/forgot_password',
             'method'  => 'POST',
             'content' => [
                 'email' => $email,
@@ -105,7 +105,7 @@ trait HeimdallTrait
             ],
         ];
 
-        $this->ba->appAuth();
+        $this->ba->appAuth('rzp_test', '', $this->hostName);
 
         $content = $this->makeRequestAndGetContent($request);
 
