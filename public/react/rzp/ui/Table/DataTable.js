@@ -24,7 +24,11 @@ export default function DataTable(props) {
     limit,
     progressLoader,
     customClass,
+    noStripe,
   } = props;
+
+  const classes = `${noStripe ? '' : 'table-striped '}
+                   ${columns ? customClass : ''}`;
 
   return (
     <div>
@@ -37,11 +41,13 @@ export default function DataTable(props) {
         limit={limit}
         progressLoader={progressLoader}
         loading={loading}
-        class={`table-striped ${columns ? customClass : ''}`}
+        className={classes}
       />
       {!progressLoader &&
         loading &&
-        <div style={{ padding: 77 }}><Spinner /></div>}
+        <div style={{ padding: 77 }}>
+          <Spinner />
+        </div>}
       {!loading &&
         !items.length &&
         <h4 class="empty-table-message">{`No ${title} Found!`}</h4>}
@@ -53,7 +59,6 @@ export default function DataTable(props) {
           length={items.length}
           onClick={paginate}
         />}
-
     </div>
   );
 }
