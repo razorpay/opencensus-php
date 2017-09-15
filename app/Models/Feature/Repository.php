@@ -6,6 +6,7 @@ use DB;
 
 use RZP\Models\Base;
 use RZP\Constants\Mode;
+use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Base\Repository as BaseRepository;
 use RZP\Trace\TraceCode;
 
@@ -36,123 +37,56 @@ class Repository extends BaseRepository
                     ->firstOrFailPublic();
     }
 
-    public function findByEntityIdAndName(string $entityId, string $entityName, $mode = Mode::TEST)
-    {
-        return $this->newQueryWithConnection($mode)
-                    ->where(Entity::ENTITY_ID,  '=', $entityId)
-                    ->where(Entity::NAME,       '=', $entityName)
-                    ->first();
-    }
-
     /**
-     * Features added to live should sync and be added to test.
-     * Features when removed from live should not be removed from test.
-     *
-     * If the selected mode is live, then the features will be enabled for both
-     * test as well as live mode. The features table in both the dbs will be populated.
-     * Deleting a feature from test mode will only delete the feature from the
-     * api_test.features table.
-     * Deleting a feature from live mode will only delete the feature from the
-     * api_live.features table.
-     *
-     * When a feature is enabled on test and request is received to enable it on live,
-     * shouldSync() returns false, to avoid the duplicate entry constraint error.
-     *
+     * Merchant features are de-synced by default.
      * The AUTH used will determine the mode selected
+     * To sync them while insertion, $options should have the key 'should_sync' set to 1.
      *
-     * @param      $entity
-     * @param null $action
+     * @param       $entity
+     * @param array $options
      *
      * @return bool
      */
-    public function shouldSync($entity, $action = null): bool
+    public function shouldSync($entity, $options = array()): bool
     {
+        $shouldSync = EntityConstants::SHOULD_SYNC;
+
         $entityId = $entity->getEntityId();
 
         $entityName = $entity->getName();
 
-        if ($this->isLiveMode() === true)
+        if ((isset($options[$shouldSync])) and ($options[$shouldSync] === 1))
         {
-            if (($this->isOptOutFeature($entityName) === true)
-                and ($action === BaseRepository::DELETE))
+            if ($this->app['rzp.mode'] === Mode::TEST)
             {
-                return true;
+                $findInMode = Mode::LIVE;
             }
-            else if (($this->isOptOutFeature($entityName) === false)
-                and ($action === BaseRepository::SAVE))
+            else
             {
-                // Sync if the feature is not already enabled on test
-                $feature = $this->findByEntityIdAndName($entityId, $entityName, Mode::TEST);
+                $findInMode = Mode::TEST;
+            }
 
-                if ($feature === null)
-                {
-                    $this->trace->info(TraceCode::FEATURE_SYNCED, [
-                        $entityId,
-                        $entityName,
-                        $action
-                    ]);
+            $feature = $this->newQueryWithConnection($findInMode)
+                ->where(Entity::ENTITY_ID,  '=', $entityId)
+                ->where(Entity::NAME,       '=', $entityName)
+                ->first();
 
-                    return true;
-                }
+            if ($feature === null)
+            {
+                $this->trace->info(TraceCode::FEATURE_SYNCED, [
+                    $entityId,
+                    $entityName
+                ]);
+
+                return true;
             }
         }
 
         $this->trace->info(TraceCode::FEATURE_NOT_SYNCED, [
             $entityId,
-            $entityName,
-            $action
+            $entityName
         ]);
 
         return false;
-    }
-
-    public function isOptOutFeature($featureName)
-    {
-        return in_array($featureName, Constants::$optOutFeatures);
-    }
-
-    public function delete($entity)
-    {
-        if ($this->entityShouldSync($entity, Repository::DELETE) === false)
-        {
-            return parent::delete($entity);
-        }
-
-        $liveEntity     = $entity;
-
-        $liveEntityId   = $entity->getEntityId();
-
-        $liveEntityName = $entity->getName();
-
-        // Sync if the feature is not already enabled on test
-        $testEntity = $this->findByEntityIdAndName($liveEntityId, $liveEntityName, Mode::TEST);
-
-        if ($testEntity === null)
-        {
-            $this->trace->info(TraceCode::FEATURE_NOT_SYNCED, [
-                $liveEntityId,
-                $liveEntityName,
-                Repository::DELETE
-            ]);
-
-            $liveEntity->delete();
-
-            return;
-        }
-
-        $res = $this->repo->transactionOnLiveAndTest(function () use ($liveEntity, $testEntity)
-        {
-            $res1 = $liveEntity->delete();
-
-            $res2 = $testEntity->delete();
-
-            return $res1;
-        });
-
-        $this->syncToEs($testEntity, Base\EsRepository::DELETE, null, Mode::TEST);
-
-        $this->syncToEs($liveEntity, Base\EsRepository::DELETE, null, Mode::LIVE);
-
-        return $res;
     }
 }

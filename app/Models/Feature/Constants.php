@@ -92,10 +92,6 @@ class Constants
         ]
     ];
 
-    public static $optOutFeatures = [
-        self::NOFLASHCHECKOUT
-    ];
-
     public static function getFeatureValue($featureName)
     {
         return self::$featureValueMap[$featureName];

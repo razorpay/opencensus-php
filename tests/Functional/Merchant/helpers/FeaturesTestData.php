@@ -285,7 +285,7 @@ return [
         ]
     ],
 
-    'testAddFeatureToTestVerifyAbsenceInLive' => [
+    'verifyFeatureAbsence' => [
         'request'  => [
             'url'    => '/features/10000000000000',
             'method' => 'get',
@@ -296,61 +296,7 @@ return [
         ]
     ],
 
-    'testDeleteFeatureFromTestAndVerifyPresenceInLive' => [
-        'request'  => [
-            'url'    => '/features/10000000000000',
-            'method' => 'get',
-            'server' => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'assigned_features' => [
-                    [
-                        'name'        => 'dummy',
-                        'entity_id'   => '10000000000000',
-                        'entity_type' => 'merchant'
-                    ],
-                    [
-                        'name'        => 'noflashcheckout',
-                        'entity_id'   => '10000000000000',
-                        'entity_type' => 'merchant'
-                    ]
-                ],
-                'all_features'      => [
-                    'dummy',
-                    'webhooks',
-                    'aggregator',
-                    'tokens',
-                    's2swallet',
-                    's2supi',
-                    's2saeps',
-                    'setl_report',
-                    'noflashcheckout',
-                    'recurring',
-                    's2s',
-                    'invoice',
-                    'nozeropricing',
-                    'reverse',
-                ]
-            ]
-        ]
-    ],
-
-    'testAddOptOutFeatureToLiveVerifyAbsenceInTest' => [
-        'request'  => [
-            'url'    => '/features/10000000000000',
-            'method' => 'get',
-            'server' => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-        ]
-    ],
-
-    'testDeleteOptInFeatureFromLiveVerifyPresenceInTest' => [
+    'verifyFeaturePresence' => [
         'request'  => [
             'url'    => '/features/10000000000000',
             'method' => 'get',
@@ -387,16 +333,4 @@ return [
             ]
         ]
     ],
-
-    'testDeleteOptOutFeatureFromLiveVerifyAbsenceInTest' => [
-        'request'  => [
-            'url'    => '/features/10000000000000',
-            'method' => 'get',
-            'server' => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-        ]
-    ],
-
 ];

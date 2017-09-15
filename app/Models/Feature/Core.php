@@ -9,7 +9,7 @@ use RZP\Models\Merchant;
 
 class Core extends Base\Core
 {
-    public function create($input)
+    public function create($input, array $options = array())
     {
         $feature = (new Entity)->build($input);
 
@@ -26,7 +26,7 @@ class Core extends Base\Core
                       'old_features' => $assignedFeatureNames,
                       'new_feature'  => $feature->getName()));
 
-            $this->repo->saveOrFail($feature);
+            $this->repo->saveOrFail($feature, $options);
 
             $this->notifyOnSlack($feature);
 

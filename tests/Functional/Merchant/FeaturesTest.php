@@ -114,137 +114,91 @@ class FeaturesTest extends TestCase
     }
 
     /**
-     * Add an opt-in feature and an opt-out feature to the test database
+     * Add a feature to test
      * Get the features from the live database
-     * Verify - Any feature added to test, should not be synced to live
+     * Verify - Any feature added to test should not be added to live
      */
     public function testAddFeatureToTestVerifyAbsenceInLive()
     {
-        $optInFeature  = FeatureConstants::DUMMY;
+        $featureName  = FeatureConstants::DUMMY;
 
-        $optOutFeature = FeatureConstants::NOFLASHCHECKOUT;
+        $this->addFeature($featureName, Mode::TEST);
 
-        $this->addFeatureToMode($optInFeature, Mode::TEST);
-
-        $this->addFeatureToMode($optOutFeature, Mode::TEST);
-
-        $this->ba->appAuthLive();
-
-        $request = $this->testData[__FUNCTION__]['request'];
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $assignedFeatures = $response['assigned_features'];
-
-        $this->assertEquals(count($assignedFeatures), 0);
+        $this->verifyFeatureAbsence(Mode::LIVE);
     }
 
     /**
-     * Add an opt-in feature to live [syncs to test]
-     * Add an opt-in feature to live [does not sync to test] and then to test
-     * Delete the opt-in feature from the test database
-     * Delete the opt-out feature from the test database
+     * Add a feature to live
+     * Get the features from the test database
+     * Verify - Any feature added to live should not be added to test
+     */
+    public function testAddFeatureToLiveVerifyAbsenceInTest()
+    {
+        $featureName  = FeatureConstants::DUMMY;
+
+        $this->addFeature($featureName, Mode::LIVE);
+
+        $this->verifyFeatureAbsence(Mode::TEST);
+    }
+
+    /**
+     * Add a feature to the test database and sync it to live
+     * Get the features from the live database
+     * Verify - Any feature added to test with the should_sync flag, should be synced to live
+     */
+    public function testAddFeatureToTestAndSyncToLive()
+    {
+        $featureName  = FeatureConstants::DUMMY;
+
+        $this->addFeature($featureName, Mode::TEST, true);
+
+        $this->verifyFeaturePresence(Mode::LIVE);
+    }
+
+    /**
+     * Add a feature to live and sync it to test
+     * Delete the feature from the test database
      * Get the features from the live database
      * Verify - Any feature deleted from test should not be deleted from live
      */
     public function testDeleteFeatureFromTestAndVerifyPresenceInLive()
     {
-        $optInFeature  = FeatureConstants::DUMMY;
+        $featureName  = FeatureConstants::DUMMY;
 
-        $optOutFeature = FeatureConstants::NOFLASHCHECKOUT;
+        // This step also tests for testAddFeatureToLiveAndSyncToTest
+        $this->addFeature($featureName, Mode::LIVE, true);
 
-        $this->addFeatureToMode($optInFeature, Mode::LIVE);
+        $this->deleteFeatureFromMode($featureName, Mode::TEST);
 
-        $this->addFeatureToMode($optOutFeature, Mode::LIVE);
-
-        $this->addFeatureToMode($optOutFeature, Mode::TEST);
-
-        $this->deleteFeatureFromMode($optInFeature, Mode::TEST);
-
-        $this->deleteFeatureFromMode($optOutFeature, Mode::TEST);
-
-        $this->ba->appAuthLive();
-
-        $this->startTest();
+        $this->verifyFeaturePresence(Mode::LIVE);
     }
 
     /**
-     * Add a feature to the live database
+     * Add a feature to live and sync it to test
+     * Delete the feature from the live database
      * Get the features from the test database
-     * Verify - The feature added to live should be added to test as well
+     * Verify - Any feature deleted from live should not be deleted from test
      */
-    public function testAddOptOutFeatureToLiveVerifyAbsenceInTest()
+    public function testDeleteFeatureFromLiveAndVerifyPresenceInTest()
     {
-        $optInFeature = FeatureConstants::NOFLASHCHECKOUT;
+        $featureName  = FeatureConstants::DUMMY;
 
-        $this->addFeatureToMode($optInFeature, 'live');
+        // This step also tests for testAddFeatureToLiveAndSyncToTest
+        $this->addFeature($featureName, Mode::LIVE, true);
 
-        $this->ba->appAuthTest();
+        $this->deleteFeatureFromMode($featureName, Mode::LIVE);
 
-        $request = $this->testData[__FUNCTION__]['request'];
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $assignedFeatures = $response['assigned_features'];
-
-        $this->assertEquals(count($assignedFeatures), 0);
+        $this->verifyFeaturePresence(Mode::TEST);
     }
 
     /**
-     * Add a feature to the live database
-     * Get the features from the test database
-     * Verify - The feature added to live should be added to test as well
-     */
-    public function testDeleteOptInFeatureFromLiveVerifyPresenceInTest()
-    {
-        $optInFeature = FeatureConstants::DUMMY;
-
-        // This will also add it to test
-        $this->addFeatureToMode($optInFeature, 'live');
-
-        $this->deleteFeatureFromMode($optInFeature, 'live');
-
-        $this->ba->appAuthTest();
-
-        $this->startTest();
-    }
-
-    /**
-     * Add a feature to the live database
-     * Get the features from the test database
-     * Verify - The feature added to live should be added to test as well
-     */
-    public function testDeleteOptOutFeatureFromLiveVerifyAbsenceInTest()
-    {
-        $optOutFeature = FeatureConstants::NOFLASHCHECKOUT;
-
-        $this->addFeatureToMode($optOutFeature, 'test');
-
-        $this->addFeatureToMode($optOutFeature, 'live');
-
-        $this->deleteFeatureFromMode($optOutFeature, 'live');
-
-        $this->ba->appAuthTest();
-
-        $request = $this->testData[__FUNCTION__]['request'];
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $assignedFeatures = $response['assigned_features'];
-
-        $this->assertEquals(count($assignedFeatures), 0);
-    }
-
-    /**
-     * Add a feature to the database which is linked to the mode passed as parameter
-     * Get the features from the second database
-     * Verify -
-     *  If added to live - The feature should be added to test as well
-     *  If added to test - The feature should not be added to live
+     * Adds a feature to the database which is linked to the mode passed as parameter.
      *
-     * @param $addToMode
+     * @param string $featureName
+     * @param string $addToMode
+     * @param bool   $shouldSync
      */
-    private function addFeatureToMode(string $featureName, string $addToMode)
+    private function addFeature(string $featureName, string $addToMode, bool $shouldSync = false)
     {
         $authMethod = 'appAuth' . studly_case($addToMode);
 
@@ -264,13 +218,18 @@ class FeaturesTest extends TestCase
             ]
         ];
 
+        if ($shouldSync === true)
+        {
+            $request['content']['should_sync'] = 1;
+        }
+
         $this->makeRequestAndGetContent($request);
     }
 
     /**
-     * Delete a feature from the database linked to mode received
-     * Verify - The feature deleted from database1 should not be deleted from database2
+     * Deletes a feature from the database linked to mode received
      *
+     * @param string $deleteFromMode
      * @param string $deleteFromMode
      */
     private function deleteFeatureFromMode(string $featureName, string $deleteFromMode)
@@ -292,5 +251,42 @@ class FeaturesTest extends TestCase
         ];
 
         $this->makeRequestAndGetContent($request);
+    }
+
+    /**
+     * Performs a GET request based on the mode received and verifies the
+     * absence of the dummy feature
+     *
+     * @param string $feature
+     * @param string $mode
+     */
+    private function verifyFeatureAbsence($mode)
+    {
+        $authMethod = 'appAuth' . studly_case($mode);
+
+        $this->ba->$authMethod();
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $assignedFeatures = $response['assigned_features'];
+
+        $this->assertEquals(count($assignedFeatures), 0);
+    }
+
+    /**
+     * Performs a GET request based on the mode received and verifies the
+     * presence of the dummy feature
+     *
+     * @param string $mode
+     */
+    private function verifyFeaturePresence($mode)
+    {
+        $authMethod = 'appAuth' . studly_case($mode);
+
+        $this->ba->$authMethod();
+
+        $this->startTest();
     }
 }

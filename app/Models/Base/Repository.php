@@ -7,8 +7,7 @@ use RZP\Constants\Mode;
 
 class Repository extends BaseRepository
 {
-    const SAVE              = 'save';
-    const DELETE            = 'delete';
+    const SHOULD_SYNC   = 'should_sync';
 
     public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $relations = [])
     {
