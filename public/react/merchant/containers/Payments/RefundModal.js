@@ -11,6 +11,7 @@ import { isBlank } from 'rzp/utils/rzp-utils';
 import {
   refundPayment,
   fetchItem as fetchPayment,
+  fetchRefunds,
   fetchTransfers,
 } from 'merchant/modules/payments/details';
 import { closeModal } from 'rzp/modules/modals';
@@ -29,7 +30,10 @@ const amountValidation = (value, allValues, props) => {
       return `Amount can't be negative.`;
     }
     if (value > (props.payment.amount - props.payment.amount_refunded) / 100) {
-      return `Amount can't be greater than the amount paid (${(props.payment.amount - props.payment.amount_refunded) / 100}).`;
+      return `Amount can't be greater than the amount paid (${(props.payment
+        .amount -
+        props.payment.amount_refunded) /
+        100}).`;
     }
   }
 };
@@ -54,6 +58,7 @@ const selector = formValueSelector('refundModal');
     closeModal,
     refundPayment,
     fetchPayment,
+    fetchRefunds,
     fetchTransfers,
     ...NotificationsActions,
   }
@@ -136,7 +141,9 @@ export default class RefundModal extends Component {
                 message: 'Payment refunded',
                 closeTimeout: 5000,
               });
-              this.props.fetchPayment(payment.id);
+              this.props.fetchPayment(payment.id).then(payment => {
+                this.props.fetchRefunds(payment);
+              });
               this.props.closeModal();
             })
             .catch(({ errors }) => {
@@ -208,8 +215,7 @@ export default class RefundModal extends Component {
               ? <div class="form-group">
                   <label class="col-sm-4 control-label">
                     <div>
-                      Reverse All
-                      {' '}
+                      Reverse All{' '}
                       <a href="https://razorpay.com/docs/route/operations/#reversals">
                         Route Transfers
                       </a>
@@ -249,16 +255,14 @@ export default class RefundModal extends Component {
 
             <div class="form-group">
               <div class="col-sm-8 col-sm-offset-4">
-                The payment will be
-                {' '}
+                The payment will be{' '}
                 {this.props.partial ? 'partially ' : 'completely '}
-                refunded with the refund amount set to
-                {' '}
+                refunded with the refund amount set to{' '}
                 <b>
                   {(this.props.partial
                     ? this.props.payable_amount
-                    : (payment.amount - payment.amount_refunded) / 100) || 0}
-                  {' '}
+                    : (payment.amount - payment.amount_refunded) / 100) ||
+                    0}{' '}
                   INR
                 </b>
               </div>
