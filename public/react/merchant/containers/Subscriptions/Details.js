@@ -19,6 +19,16 @@ import { expandSlider, compactSlider } from 'rzp/modules/slider';
 import { openModal } from 'rzp/modules/modals';
 import CancellationModal from './CancellationModal';
 
+/*
+ * Invoice (Upfront?) |    Subscription(Start?)     | Type
+ * --------------------------------------------------------------------
+ *  Yes(has addon)    |  Immediate(start_at: null)  |  3
+ *  Yes(has addon)    |  Future(start_at: future)   |  2
+ *      No            |  Immediate(start_at: null)  |  1
+ *      No            |  Future(start_at: future)   |  0
+ * --------------------------------------------------------------------
+ * */
+
 @withRouter
 @connect(
   state => {
@@ -250,7 +260,11 @@ export default class SubscriptionDetailsContainer extends Component {
 
     // Add 'next_due' invoice in the Invoices list
     if (!invoices.loading && invoices.items && invoices.items.length) {
-      if (['authenticated', 'active', 'halted'].indexOf(entity.status) > -1) {
+      if (
+        ['authenticated', 'active', 'halted'].indexOf(entity.status) > -1 ||
+        (entity.status === 'created' &&
+          (entity.type === 2 || entity.type === 3))
+      ) {
         invoicesList = { ...invoices };
         invoicesList.items = [...invoices.items]; // To avoid multiple additions when render is called multiple times
 
@@ -266,7 +280,7 @@ export default class SubscriptionDetailsContainer extends Component {
 
     // Secondary view : Invoice details
     if (secView === 'invoice') {
-      let invoiceData;
+      let invoiceData = {};
       let isValidInvoice = true;
 
       if (
@@ -274,7 +288,11 @@ export default class SubscriptionDetailsContainer extends Component {
         Object.keys(entity).length // Helps to simulate the loader for 'inv_upcoming' invoice
       ) {
         // inv_upcoming exists only for these subscriptions status only
-        if (['authenticated', 'active', 'halted'].indexOf(entity.status) > -1) {
+        if (
+          ['authenticated', 'active', 'halted'].indexOf(entity.status) > -1 ||
+          (entity.status === 'created' &&
+            (entity.type === 2 || entity.type === 3))
+        ) {
           invoiceData = this.getUpcomingInvoiceDetails(
             entity.charge_at,
             plan.item.amount,
@@ -283,6 +301,8 @@ export default class SubscriptionDetailsContainer extends Component {
         } else {
           isValidInvoice = false; // '/inv_upcoming' is invalid url for such subscriptions
         }
+      } else {
+        invoiceData = invoice;
       }
 
       // If request is for /inv_upcoming then invoiceData will exist only if it's validInvoice.
