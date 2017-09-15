@@ -247,16 +247,23 @@ app
         $scope.tagMerchant(tags);
       };
 
-      $scope.featureMerchant = function(features, mode) {
+      $scope.featureMerchant = function(features, mode, shouldSync) {
         // Tags will be a csv field
+        var requestData = {
+            features: features,
+            mode: mode
+        }
+        if (shouldSync === true) {
+            requestData['mode']         = 'live';
+            requestData['should_sync']  = 1;
+        } else {
+            requestData['should_sync']  = 0;
+        }
         var request = $http({
           url: '/admin/features/merchant/' + $scope.merchant.id,
           method: 'POST',
           transformRequest: transformRequestAsFormPost,
-          data: {
-            features: features,
-            mode: mode
-          },
+          data: requestData,
         });
 
         request
@@ -267,13 +274,13 @@ app
                 'Features have been added successfully.',
                 true
               );
-              $scope.merchant.details.allowedFeatures[mode] = data.data.all_features;
-              $scope.merchant.details.features[mode] = getFeatureNames(
+              $scope.merchant.details.allowedFeatures[requestData.mode] = data.data.all_features;
+              $scope.merchant.details.features[requestData.mode] = getFeatureNames(
                 data.data.assigned_features
               );
-              // If features were added to live, they will be added to test as well.
+              // If features were added to both, the response will have features for live
               // So fetch all test features again.
-              if (mode === 'live') {
+              if (shouldSync === true) {
                   $scope.getModeBasedFeatures('test');
               }
             } else {
@@ -955,7 +962,7 @@ app
         }
 
         var dropUnchangedFields = function(merchant) {
-          for (var i in merchant) {
+          for (var i in merhant) {
             var val = $scope.merchant.details[i];
             if (val && Array === val.constructor) {
               val = val.join(',');
@@ -1390,11 +1397,18 @@ app
 
       $scope.openFeatureMerchant = function() {
         var features = {}
-        features.test = $scope.merchant.details.features.test || [];
+        features.test = []
+        features.live = []
+        if ($scope.merchant.details.features) {
+          features.test = $scope.merchant.details.features.test || [];
+        }
         features.test = features.test.map(function(f) {
           return f.name;
         });
-        features.live = $scope.merchant.details.features.live || [];
+        if ($scope.merchant.details.features) {
+
+            features.live = $scope.merchant.details.features.live || [];
+        }
         features.live = features.live.map(function(f) {
             return f.name;
         });
@@ -1420,7 +1434,7 @@ app
           },
         });
         modalInstance.result.then(function(data) {
-          $scope.featureMerchant(data.features, data.mode);
+          $scope.featureMerchant(data.features, data.mode, data.shouldSync);
         }, $.noop);
       };
       $scope.openAssignTerminal = function() {
@@ -2759,8 +2773,8 @@ app
       $scope.assigned_features.live = assignedFeatures.live.join(',');
       $scope.selectedFeatures = [];
       $scope.featuremode = "test";
-      $scope.ok = function(features, mode) {
-        $modalInstance.close({ features: features, mode: mode});
+      $scope.ok = function(features, mode, shouldSync) {
+        $modalInstance.close({ features: features, mode: mode, shouldSync: shouldSync});
       };
       $scope.cancel = function() {
         $modalInstance.dismiss('cancel');

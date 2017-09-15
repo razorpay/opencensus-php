@@ -2012,6 +2012,7 @@
             <option value="test" selected>Test</option>
             <option value="live">Live</option>
           </select>
+          <input type="checkbox" ng-model="shouldSync">&nbsp;Add to Test and Live
         </div>
       </div>
       <div class="form-group">
@@ -2032,7 +2033,7 @@
   </div>
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" ng-click="ok(selectedFeatures, featuremode)">OK</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(selectedFeatures, featuremode, shouldSync)">OK</button>
   </div>
 </script>
 <script type="text/ng-template" id="openAutofillForms.html">

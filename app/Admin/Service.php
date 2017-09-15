@@ -1022,7 +1022,8 @@ class Service extends Base\Service
             $params = [
                         'names'       => $input['features'],
                         'entity_type' => $entityType,
-                        'entity_id'   => $entityId
+                        'entity_id'   => $entityId,
+                        'should_sync' => $input['should_sync']
                     ];
 
             $response = $this->api->feature->setFeatures($params);
