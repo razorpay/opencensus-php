@@ -13,8 +13,8 @@ import * as ModalActions from 'rzp/modules/modals';
 import RefundModal from './RefundModal';
 
 import { expandSlider, compactSlider } from 'rzp/modules/slider';
-import PaymentTransferNew from 'merchant/containers/Payments/Transfer/New';
-import PaymentTransferDetails from 'merchant/containers/Payments/Transfer/Details';
+import PaymentTransferNew from 'merchant/containers/Marketplace/Transfers/New';
+import PaymentTransferDetails from 'merchant/containers/Marketplace/Transfers/Details';
 
 @withRouter
 @connect(
@@ -48,67 +48,40 @@ export default class PaymentDetailsContainer extends Component {
         console.log(arguments);
       });
     });
-
-    this.checkSecView(this.props.entity_name);
   };
+
+  checkSecView(entityName) {
+    if (!entityName) {
+      this.props.compactSlider();
+
+      // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
+      if (this.transfersView && findDOMNode(this.transfersView)) {
+        findDOMNode(this.transfersView).classList.add('toggle-slider');
+      }
+    } else {
+      this.props.expandSlider();
+      this.setState({
+        secView: 'new_transfer',
+      });
+      // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
+      if (this.transfersView && findDOMNode(this.transfersView)) {
+        findDOMNode(this.transfersView).classList.remove('toggle-slider');
+      }
+    }
+  }
 
   componentWillMount() {
     this.fetchData(this.props.id);
+    this.checkSecView(this.props.entity_name);
   }
 
   componentWillReceiveProps(nextProps) {
     if (this.props.id !== nextProps.id) {
-      this.props.fetchItem(nextProps.id).then(payment => {
-        this.props.fetchRefunds(payment);
-      });
+      this.fetchData(nextProps.id);
     }
 
     if (nextProps.entity_name != this.props.entity_name) {
       this.checkSecView(nextProps.entity_name);
-    }
-  }
-
-  checkSecView(entityName) {
-    if (!entityName) {
-      this.props.compactSlider();
-
-      // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
-      if (this.transfersView && findDOMNode(this.transfersView)) {
-        findDOMNode(this.transfersView).classList.add('toggle-slider');
-      }
-    } else {
-      this.props.expandSlider();
-      this.setState({
-        secView: 'new_transfer',
-      });
-      // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
-      if (this.transfersView && findDOMNode(this.transfersView)) {
-        findDOMNode(this.transfersView).classList.remove('toggle-slider');
-      }
-    }
-
-    if (nextProps.entity_name != this.props.entity_name) {
-      this.checkSecView(nextProps.entity_name);
-    }
-  }
-
-  checkSecView(entityName) {
-    if (!entityName) {
-      this.props.compactSlider();
-
-      // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
-      if (this.transfersView && findDOMNode(this.transfersView)) {
-        findDOMNode(this.transfersView).classList.add('toggle-slider');
-      }
-    } else {
-      this.props.expandSlider();
-      this.setState({
-        secView: 'new_transfer',
-      });
-      // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
-      if (this.transfersView && findDOMNode(this.transfersView)) {
-        findDOMNode(this.transfersView).classList.remove('toggle-slider');
-      }
     }
   }
 
@@ -169,7 +142,15 @@ export default class PaymentDetailsContainer extends Component {
 
   openRefundModal = payment => {
     this.props.openModal({
-      component: <RefundModal payment={payment} />,
+      component: (
+        <RefundModal
+          payment={payment}
+          onRefund={() => {
+            this.props.fetchItem(this.props.id);
+            this.props.fetchRefunds(this.props.payment);
+          }}
+        />
+      ),
     });
   };
 
@@ -192,8 +173,12 @@ export default class PaymentDetailsContainer extends Component {
       };
     }
 
+    const hasMultiContent =
+      this.state.secView === 'new_transfer' ||
+      this.state.secView === 'transfer';
+
     return (
-      <div>
+      <div className={`${hasMultiContent ? 'multi-content' : ''}`}>
         <PaymentDetails
           payment={payment}
           card={card}

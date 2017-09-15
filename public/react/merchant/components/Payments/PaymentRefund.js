@@ -21,37 +21,46 @@ import ShowWhen from 'merchant/components/ShowWhen';
  * will display refund status and actions
  */
 
-const RefundsList = ({ refunds }) => {
-  return (
-    <ContentToggler>
-      <span>Refund Details</span>
-      <div className="full-width-item">
-        <DataTable
-          customClass="refunds-table"
-          progressLoader={true}
-          title="Refunds"
-          columns={[refundId, amount]}
-          items={refunds.items}
-          loading={refunds.loading}
-          showHeaders={false}
-        />
-      </div>
-    </ContentToggler>
-  );
-};
-
 const NumRefunds = ({ refunds }) => {
   if (refunds.loading) {
     return <LoaderDots />;
   }
 
   const numRefunds = refunds.items.length,
-    refundSuffix = numRefunds > 1 ? 's' : '';
+    refundSuffix = numRefunds === 0 || numRefunds > 1 ? 's' : '';
 
   return (
     <span>
       {numRefunds} refund{refundSuffix}
     </span>
+  );
+};
+
+const RefundsList = ({ refunds }) => {
+  return (
+    <ContentToggler>
+      <span>Refund Details</span>
+      <div className="refunds-list full-width-item">
+        <div className="panel-heading">
+          <span className="label--primary">Refund Details</span>
+          <span className="label--secondary">
+            <NumRefunds refunds={refunds} />
+          </span>
+        </div>
+        <div className="panel-content">
+          <DataTable
+            customClass="refunds-table"
+            progressLoader={true}
+            title="Refunds"
+            columns={[refundId, amount]}
+            items={refunds.items}
+            loading={refunds.loading}
+            showHeaders={false}
+            noStripe={true}
+          />
+        </div>
+      </div>
+    </ContentToggler>
   );
 };
 

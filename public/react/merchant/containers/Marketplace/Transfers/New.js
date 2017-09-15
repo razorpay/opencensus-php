@@ -1,20 +1,24 @@
+import AsyncButton from 'react-async-button';
 import { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-import { withRouter } from 'react-router-dom';
 import { Field, FieldArray, reduxForm } from 'redux-form';
-import AsyncButton from 'react-async-button';
-import InputField from 'rzp/ui/Forms/InputField';
 import { TypeAhead } from 'react-power-select';
-import InputGroupField from 'rzp/ui/Forms/InputField/InputGroupField';
+import { withRouter } from 'react-router-dom';
+
 import Alert from 'rzp/ui/Forms/Alert';
+import DatePickerField from 'rzp/ui/Forms/DatePickerField';
+import InputField from 'rzp/ui/Forms/InputField';
+import InlineField from 'rzp/ui/Forms/InlineField';
+import InputGroupField from 'rzp/ui/Forms/InputField/InputGroupField';
 import { required } from 'rzp/utils/validators';
-import { savePlan } from 'merchant/modules/plans';
+import RadioButton from 'rzp/ui/Forms/RadioButton';
 import { showNotification } from 'rzp/modules/notifications';
-import NotesFieldArray from 'merchant/components/NotesFieldArray';
-import FormItem from 'merchant/components/FormItem';
 import { titleCase } from 'rzp/utils/rzp-utils';
 
 import { fetchAccounts } from 'merchant/modules/marketplace/accounts';
+import FormItem from 'merchant/components/FormItem';
+import NotesFieldArray from 'merchant/components/NotesFieldArray';
+import { savePlan } from 'merchant/modules/plans';
 
 let Label = ({ text, htmlFor, required }) => {
   var classes = typeof required !== 'undefined' ? 'label-required' : '';
@@ -196,6 +200,34 @@ export default class TransferNew extends Component {
                     component={NotesFieldArray}
                     required
                   />}
+              />
+
+              <FormItem
+                label={_ => <Label text="Settlement schedule" />}
+                field={_ =>
+                  <div>
+                    <Field
+                      component={RadioButton}
+                      name="on-hold"
+                      htmlValue="on_hold_until"
+                      label={_ =>
+                        <div>
+                          <span>Schedule settlement on</span>
+                        </div>}
+                    />
+                    <div className="transfers-onhold-datepicker">
+                      <Field component={DatePickerField} name="onHoldDate" />
+                    </div>
+                    <Field
+                      component={RadioButton}
+                      name="on-hold"
+                      htmlValue="on_hold"
+                      label={_ =>
+                        <div>
+                          <span>Put on hold</span>
+                        </div>}
+                    />
+                  </div>}
               />
 
               <Alert type="error" message={this.state.errors} />

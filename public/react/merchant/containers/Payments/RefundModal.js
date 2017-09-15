@@ -141,9 +141,11 @@ export default class RefundModal extends Component {
                 message: 'Payment refunded',
                 closeTimeout: 5000,
               });
-              this.props.fetchPayment(payment.id).then(payment => {
-                this.props.fetchRefunds(payment);
-              });
+
+              if (typeof this.props.onRefund === 'function') {
+                this.props.onRefund();
+              }
+
               this.props.closeModal();
             })
             .catch(({ errors }) => {

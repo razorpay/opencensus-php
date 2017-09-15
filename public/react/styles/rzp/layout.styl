@@ -382,6 +382,44 @@ body.ReactModal__Body--open {
   top: 45px;
 }
 
+.transfers-onhold-datepicker {
+
+  .SingleDatePicker {
+
+    .DateInput--with-caret:before, .DateInput--with-caret:after {
+      border: 10px solid transparent;
+      z-index: 3;
+    }
+
+    .DateInput--with-caret:before {
+      top: -12px;
+      border-top-color: rgba(0, 0, 0, 0.1);
+      border-bottom: 0;
+    }
+
+    .DateInput--with-caret:after {
+      top: -13px;
+      border-top-color: #fff;
+      border-bottom: 0;
+    }
+  }
+
+  .SingleDatePicker__picker {
+    top: auto;
+    bottom: 46px;
+    z-index: 2;
+  }
+}
+.SingleDatePicker__picker.SingleDatePicker__picker--open-up {
+  top: auto;
+  bottom: 58px;
+  z-index: 2;
+}
+
+.DateInput--open-up.DateInput--with-caret::after {
+  z-index: 3;
+}
+
 .DateInput__input {
   cursor: pointer;
 }

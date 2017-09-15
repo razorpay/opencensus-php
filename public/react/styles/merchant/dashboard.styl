@@ -494,8 +494,18 @@
     border-top: 1px solid #dfe0e2;
     padding: 12px;
 
+    &:before {
+      display: table;
+      content: " ";
+    }
+
+    &:after {
+      clear: both;
+    }
+
     .label--secondary {
       line-height: 21px;
+      float: right;
     }
   }
 }
@@ -545,4 +555,24 @@ div.data-table.has-panel {
     margin-bottom: 0;
     border-bottom: none;
   }
+}
+
+.refunds-list {
+  margin-top: 16px;
+  margin-bottom: 24px;
+
+  div.table-responsive {
+
+    table.refunds-table {
+      margin: 0;
+
+      tr:first-child td {
+        border-top: 0;
+      }
+    }
+  } 
+}
+
+.pair-group-item .pair-value .refunds-list .table-responsive {
+  margin-top: 0;
 }
