@@ -1064,13 +1064,14 @@ class Entity extends Base\PublicEntity
      * we need to verify the bank account number of customer during payment
      * which is not required for a normal payment flow.
      *
+     * This now enforced via a feature flag, because certain merchants
+     * from mutual_funds do not require the
+     *
      * @return boolean
      */
     public function isTPVRequired()
     {
-        $category2 = $this->getCategory2();
-
-        return Terminal\Category::isMerchantCategoryTpv($category2);
+        return ($this->isFeatureEnabled(Feature\Constants::TPV) === true);
     }
 
     public function isTestAccount()
