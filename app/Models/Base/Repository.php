@@ -7,8 +7,6 @@ use RZP\Constants\Mode;
 
 class Repository extends BaseRepository
 {
-    const SHOULD_SYNC   = 'should_sync';
-
     public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $relations = [])
     {
         return $this->fetchBetweenTimestampWithRelations($merchantId, $from, $to, $count, $skip, $relations);

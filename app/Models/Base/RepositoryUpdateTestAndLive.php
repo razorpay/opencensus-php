@@ -5,7 +5,6 @@ namespace RZP\Models\Base;
 use Config;
 use RZP\Exception;
 use RZP\Constants\Mode;
-use RZP\Models\Base\Repository;
 
 trait RepositoryUpdateTestAndLive
 {
@@ -314,9 +313,7 @@ trait RepositoryUpdateTestAndLive
     * - For cases where we want to sync based on conditions: define
     *   function `shouldSync` in the entity's repository class, returning
     *   `boolean`
-    *   Example: `Feature\Repository::shouldSync($entity, 'save')`
-    * - $action param can be used to achieve different syncing behavior for
-    *   different actions. Example values - 'save', 'delete', etc
+    *   Example: `Feature\Repository::shouldSync($entity)`
     *
     * @param  PublicEntity   $entity
     * @param  array         $options

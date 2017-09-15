@@ -4,9 +4,9 @@ namespace RZP\Models\Feature;
 
 use DB;
 
-use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Constants\Entity as EntityConstants;
+use RZP\Models\Base;
 use RZP\Models\Base\Repository as BaseRepository;
 use RZP\Trace\TraceCode;
 
@@ -67,9 +67,9 @@ class Repository extends BaseRepository
             }
 
             $feature = $this->newQueryWithConnection($findInMode)
-                ->where(Entity::ENTITY_ID,  '=', $entityId)
-                ->where(Entity::NAME,       '=', $entityName)
-                ->first();
+                            ->where(Entity::ENTITY_ID,  '=', $entityId)
+                            ->where(Entity::NAME,       '=', $entityName)
+                            ->first();
 
             if ($feature === null)
             {

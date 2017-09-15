@@ -146,11 +146,28 @@ class FeaturesTest extends TestCase
      * Get the features from the live database
      * Verify - Any feature added to test with the should_sync flag, should be synced to live
      */
-    public function testAddFeatureToTestAndSyncToLive()
+    public function testAddFeatureToTestSyncedToLive()
     {
         $featureName  = FeatureConstants::DUMMY;
 
         $this->addFeature($featureName, Mode::TEST, true);
+
+        $this->verifyFeaturePresence(Mode::LIVE);
+    }
+
+    /**
+     * Add a feature to the test database
+     * Add a feature to the live database and sync it to test
+     * Get the features from the live database
+     * Verify - Any feature added to test with the should_sync flag, should be synced to live
+     */
+    public function testAddFeatureToTestAddFeatureToLiveSyncedToTest()
+    {
+        $featureName  = FeatureConstants::DUMMY;
+
+        $this->addFeature($featureName, Mode::TEST);
+
+        $this->addFeature($featureName, Mode::LIVE, true);
 
         $this->verifyFeaturePresence(Mode::LIVE);
     }
