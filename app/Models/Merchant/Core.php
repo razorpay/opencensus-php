@@ -385,7 +385,7 @@ class Core extends Base\Core
 
     public function extractFilterAttributesAndValidate($input)
     {
-        $filters = $input['query']['filters'];
+        $filters = $input['filters'];
 
         $validator = new AnalyticsValidator();
 

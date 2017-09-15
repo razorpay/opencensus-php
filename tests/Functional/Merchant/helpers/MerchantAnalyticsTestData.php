@@ -9,7 +9,6 @@ return [
         'request' => [
             'method' => 'POST',
             'content' => [
-                'query'=> [
                     'filters' =>  [
                         'default' =>  [
                             [
@@ -41,7 +40,6 @@ return [
                                     ],
                             ],
                     ],
-                ],
             ],
         ],
         'response' => [
@@ -56,7 +54,6 @@ return [
         'request' => [
             'method' => 'POST',
             'content' => [
-                'query'=> [
                     'filters' =>  [
                         'default' =>  [
                             [
@@ -88,7 +85,6 @@ return [
                             ],
                         ],
                     ],
-                ],
             ],
         ],
         'response' => [
@@ -110,7 +106,6 @@ return [
         'request' => [
             'method' => 'POST',
             'content' => [
-                'query'=> [
                     'filters' =>  [
                         'default' =>  [
                             [
@@ -143,7 +138,6 @@ return [
                             ],
                         ],
                     ],
-                ],
             ],
         ],
         'response' => [

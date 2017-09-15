@@ -26,7 +26,7 @@ class HarvesterClient extends AbstractEventClient
 
     const TRACK_EVENT_URL_PATTERN = 'track/merchants';
 
-    const QUERY_API_PATH = '/v1/analytics/dashboard';
+    const QUERY_API_PATH = '/v1/analytics/pokedex';
 
     public function __construct($app)
     {
@@ -117,7 +117,7 @@ class HarvesterClient extends AbstractEventClient
             ];
 
         $headers = [
-            'AuthKey'       => $this->accessToken,
+            'x-signature'   => $this->accessToken,
             'Accept'        => 'application/json'
         ];
 
