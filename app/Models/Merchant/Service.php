@@ -1242,7 +1242,7 @@ class Service extends Base\Service
         }
     }
 
-    public function getAnalytics($input): Response
+    public function fetchAnalytics($input): Response
     {
         (new Core())->extractFilterAttributesAndValidate($input);
 

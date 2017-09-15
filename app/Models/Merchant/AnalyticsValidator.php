@@ -14,17 +14,17 @@ class AnalyticsValidator extends Base\Validator
 
     protected $strict = false;
 
-    const METHOD = ['netbanking', 'cards', 'wallets'];
+    static $_method = ['netbanking', 'cards', 'wallets'];
 
-    const NETWORK = ['visa', 'mastercard'];
+    static $_network = ['visa', 'mastercard'];
 
-    const DEVICE = ['desktop', 'mobile', 'tablet'];
+    static $_device = ['desktop', 'mobile', 'tablet'];
 
-    const BROWSER = ['chrome', 'IE', 'firefox'];
+    static $_browser = ['chrome', 'IE', 'firefox'];
 
-    const OS = ['windows', 'linux', 'macos'];
+    static $_os = ['windows', 'linux', 'macos'];
 
-    const PLATFORM = ['browser', 'mobile-sdk'];
+    static $_platform = ['browser', 'mobile-sdk'];
 
     protected static $analyticsRules = [
 
@@ -41,34 +41,11 @@ class AnalyticsValidator extends Base\Validator
         $this->validateInput(self::ANALYTICS, $input);
     }
 
-    public function validateMethod(string $attribute, $value)
+    protected function callCustomRuleValidatorFunction($func, $attribute, $value, $parameters)
     {
-        $this->validateFilter($attribute, $value, self::METHOD);
-    }
+        $parentArrayVar = '_'.$attribute;
 
-    public function validateNetwork(string $attribute, $value)
-    {
-        $this->validateFilter($attribute, $value, self::NETWORK);
-    }
-
-    public function validateDevice(string $attribute, $value)
-    {
-        $this->validateFilter($attribute, $value, self::DEVICE);
-    }
-
-    public function validateBrowser(string $attribute, $value)
-    {
-        $this->validateFilter($attribute, $value, self::BROWSER);
-    }
-
-    public function validateOs(string $attribute, $value)
-    {
-        $this->validateFilter($attribute, $value, self::OS);
-    }
-
-    public function validatePlatform(string $attribute, $value)
-    {
-        $this->validateFilter($attribute, $value, self::PLATFORM);
+        $this->validateFilter($attribute, $value, self::$$parentArrayVar);
     }
 
     protected function validateFilter(string $attribute, $value, array $parentArray)
