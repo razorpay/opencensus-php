@@ -133,7 +133,6 @@ class Validator extends Base\Validator
      */
     protected function validateFeatureUpdateForMode(array $input)
     {
-
         if ($this->isTestMode() === true)
         {
             return;

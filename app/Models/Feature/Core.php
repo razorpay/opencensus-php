@@ -4,10 +4,12 @@ namespace RZP\Models\Feature;
 
 use Config;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Base\EsRepository;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
-use RZP\Models\Base\EsRepository;
 
 class Core extends Base\Core
 {
@@ -30,6 +32,12 @@ class Core extends Base\Core
 
         if ($shouldSync === true)
         {
+            if (in_array($feature->getName(), Constants::$featuresUneditableOnLive, true) === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE, $feature->getName());
+            }
+
             $this->trace->info(TraceCode::FEATURE_SYNCED,
                 [
                     'entity_id'     => $feature->getEntityId(),
