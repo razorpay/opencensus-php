@@ -42,9 +42,10 @@ class Core extends Base\Core
         $lineItem->merchant()->associate($merchant);
         $lineItem->entity()->associate($morphEntity);
 
-        $this->setRefAssociationIfApplicable($input, $lineItem);
-
         $lineItem->build($input);
+
+        // TODO: Check why following only works when called after build()?
+        $this->setRefAssociationIfApplicable($input, $lineItem);
 
         $morphEntity->getValidator()->validateMaxAllowedLineItems();
 
