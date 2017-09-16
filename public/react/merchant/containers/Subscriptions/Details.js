@@ -358,7 +358,7 @@ function makeErrorStatus(message) {
   if (message) {
     return {
       type: 'error',
-      message: invoiceErrors,
+      message: message,
     };
   } else {
     return {};
