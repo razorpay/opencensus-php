@@ -14,6 +14,8 @@ import ReversalsList from 'merchant/containers/Marketplace/Reversals/List';
 import AccountsList from 'merchant/containers/Marketplace/Accounts/List';
 
 import FeatureOnboardingModal from 'merchant/containers/FeatureOnboardingModal';
+import { getOnboardingResponse } from 'merchant/modules/onboarding';
+import Spinner from 'rzp/ui/Spinner';
 
 @connect(
   state => {
@@ -22,20 +24,44 @@ import FeatureOnboardingModal from 'merchant/containers/FeatureOnboardingModal';
       mode: state.session.mode,
     };
   },
-  { ...ModalActions, updateFeatures, showNotification }
+  { ...ModalActions, updateFeatures, showNotification, getOnboardingResponse }
 )
 export default class MarketplaceContainer extends Component {
+  state = {
+    onboardingSubmitted: false,
+    isLoading: false,
+  };
+
   componentWillMount() {
     if (
       this.props.mode === 'live' &&
       this.props.user.isMarketplaceEnabled === false
     ) {
-      this.props.openModal({
-        size: 'large',
-        component: <FeatureOnboardingModal feature="virtual_accounts" />,
+      this.setState({
+        isLoading: true,
       });
+
+      this.props
+        .getOnboardingResponse('marketplace')
+        .then(responses => {
+          var submitted = responses.data && !(responses.data instanceof Array);
+
+          this.setState({
+            isLoading: false,
+            onboardingSubmitted: submitted,
+          });
+        })
+        .catch
+        // handle errors
+        ();
     }
   }
+  openOnboardingModal = () => {
+    this.props.openModal({
+      size: 'large',
+      component: <FeatureOnboardingModal feature="marketplace" />,
+    });
+  };
 
   enableFeature = () => {
     var data = {
@@ -94,11 +120,32 @@ export default class MarketplaceContainer extends Component {
                     />
                   </div>
                 </div>
-              : <div class="content-wrapper content-sm">Placeholder text</div>}
+              : <div class="content-wrapper content-sm">
+                  {this.state.onboardingSubmitted
+                    ? <div>
+                        <div class="col-md-8">
+                          Form submitted and is pending.
+                        </div>
+                      </div>
+                    : <div>
+                        <div class="col-md-8">
+                          Answer a few questions to enable Razorpay Route
+                        </div>
+                        <div class="col-md-4">
+                          <AsyncButton
+                            class="btn btn-default pull-right"
+                            text="Enable Razorpay Route"
+                            pendingText="Enabling..."
+                            onClick={this.openOnboardingModal}
+                          />
+                        </div>
+                      </div>}
+                </div>}
           </content>
         </tabbed-container>
       );
     }
+
     return (
       <tabbed-container>
         <header id="marketplace-header">

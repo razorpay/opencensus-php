@@ -503,6 +503,10 @@ return [
             'url'       => 'feature/onboarding',
             'routeName' => 'feature_onboarding_create'
         ],
+        'feature_onboarding_fetch_responses' => [
+            'url'       => 'feature/onboarding/{feature}/responses',
+            'routeName' => 'feature_onboarding_fetch_responses'
+        ],
     ],
 
     // auth

@@ -2,6 +2,7 @@ import ajax from 'merchant/utils/ajax';
 import { set } from 'rzp/utils/immutable';
 
 const FEATURE_ONBOARDING_SAVE = 'FEATURE_ONBOARDING_SAVE';
+const FEATURE_ONBOARDING_FETCH_RESPONSES = 'FEATURE_ONBOARDING_FETCH_RESPONSES';
 
 // Save onboarding questions
 export const saveOnboarding = data => {
@@ -22,17 +23,22 @@ export const saveOnboarding = data => {
   };
 };
 
-// Initial state
-let initialState = {
-  onboarding: {},
+// Get responses
+export const getOnboardingResponse = feature => {
+  let body = {
+    route_name: 'feature_onboarding_fetch_responses',
+    mode: 'live',
+    url_params: {
+      '{feature}': feature,
+    },
+  };
+
+  return () => {
+    return ajax({
+      url: '/user/generic',
+      method: 'GET',
+      appendModeInURL: false,
+      data: body,
+    });
+  };
 };
-
-export default function(state = initialState, action) {
-  switch (action.type) {
-    case `${FEATURE_ONBOARDING_SAVE}::SUCCESS`:
-      return set(state, 'onboarding', action.payload.data);
-
-    default:
-      return state;
-  }
-}

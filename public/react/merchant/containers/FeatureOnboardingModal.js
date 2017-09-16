@@ -14,7 +14,11 @@ import { saveOnboarding } from 'merchant/modules/onboarding';
 
 const selector = formValueSelector('uploadBatch');
 @withRouter
-@connect(state => ({}), { saveOnboarding, ...ModalActions, showNotification })
+@connect(null, {
+  saveOnboarding,
+  ...ModalActions,
+  showNotification,
+})
 @reduxForm({
   form: 'featureOnboardingModal',
 })
@@ -75,7 +79,7 @@ export default class FeatureOnboardingModal extends Component {
                 validate={[required()]}
               >
                 <option value="Businesses" key="vendors">
-                  Third party businesses
+                  Third-party businesses
                 </option>
                 <option value="Own Accounts" key="own_accounts">
                   Own bank accounts
@@ -188,6 +192,7 @@ export default class FeatureOnboardingModal extends Component {
               />
             </div>
           </div>
+          }
         </form>
       </div>
     );
