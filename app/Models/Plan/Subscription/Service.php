@@ -241,7 +241,7 @@ class Service extends Base\Service
                 'subscription'      => $subscription->toArray(),
             ]);
 
-        if (in_array($subscription->getStatus(), Status::$invoiceManualChargeableStatuses, true) === false)
+        if ($subscription->isInvoiceManualChargeableStatus() === false)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_NOT_IN_ACTIVE_OR_HALTED_STATE,

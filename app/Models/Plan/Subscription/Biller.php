@@ -10,7 +10,6 @@ use RZP\Models\LineItem;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Schedule\Library;
-use RZP\Exception\LogicException;
 
 /**
  * Takes care of billing life-cycle of a subscription which can include
@@ -47,37 +46,55 @@ class Biller extends Base\Core
 
         $invoice = $data['invoice'];
 
-        //
-        // Update current period and billing period before the charge itself. This
-        // saves us the hassle of having to update them separately in retry flows.
-        //
-        $this->updateSubscriptionInvoiceBillingPeriod($subscription, $invoice);
-
-        //
-        // We should not charge any invoice which is in halted status,
-        // since, the subscription would also be in halted status here.
-        // We do not charge halted subscriptions, we only create an invoice.
-        //
-        if ($invoice->getSubscriptionStatus() === Invoice\Status::HALTED)
+        if ($this->shouldCharge($subscription, $invoice) === true)
         {
-            $this->trace->info(
-                TraceCode::SUBSCRIPTION_INVOICE_HALTED,
-                [
-                    'invoice_id'        => $invoice->getId(),
-                    'subscription_id'   => $subscription->getId(),
-                ]);
-
+            (new Core)->charge($subscription, $invoice, $options);
+        }
+        else
+        {
             //
             // Some attributes of the subscription still need
             // to be updated, so that the flow continues as it
             // is even if the subscription is in halted state.
             //
-            $this->handleHaltedSubscriptionAtInvoiceCreation($subscription, $invoice);
-
-            return;
+            $this->handleNoSubscriptionChargeAtInvoiceCreation($subscription, $invoice);
         }
+    }
 
-        (new Core)->charge($subscription, $invoice, $options);
+    public function createInvoiceForSubscription(
+        Entity $subscription,
+        Base\PublicCollection $addons,
+        bool $first = false): Invoice\Entity
+    {
+        //
+        // This is in a transaction even though the calling functions
+        // are already in a transaction, because it's a public function
+        // and can be used independently.
+        // If a new calling function does not implement this in a transaction,
+        // it might be an issue and hence putting this here.
+        //
+
+        return $this->repo->transaction(
+            function() use($subscription, $addons, $first)
+            {
+                $merchant = $subscription->merchant;
+
+                $invoiceInput = $this->getInvoiceInput($subscription, $addons, $first);
+
+                $invoice = (new Invoice\Core)->create($invoiceInput, $merchant, $subscription);
+
+                $this->associateInvoiceToAddons($invoice, $addons);
+
+                $this->trace->info(
+                    TraceCode::SUBSCRIPTION_INVOICE_CREATED,
+                    [
+                        'invoice_id'      => $invoice->getId(),
+                        'subscription_id' => $subscription->getId(),
+                        'invoice_details' => $invoice->toArray(),
+                    ]);
+
+                return $invoice;
+            });
     }
 
     /**
@@ -88,35 +105,42 @@ class Biller extends Base\Core
      * @param  Entity         $subscription Subscription to be updated
      * @param  Invoice\Entity $invoice      Newly created invoice
      */
-    public function updateSubscriptionInvoiceBillingPeriod(Entity $subscription, Invoice\Entity $invoice)
-    {
-        $this->setCurrentPeriod($subscription);
-
-        $this->setInvoiceBillingPeriod($subscription, $invoice);
-
-        $this->repo->transaction(
-            function() use ($subscription, $invoice)
-            {
-                $this->repo->saveOrFail($subscription);
-
-                $this->repo->saveOrFail($invoice);
-            });
-    }
-
-    /**
-     * If first subscription, set
-     * [currentStart, currentEnd] = [startAt, startAt + interval]
-     * If NOT first subscription, set
-     * [currentStart, currentEnd] = [currentStart+interval, currentStart + (2 * interval)]
-     *
-     * @param Entity $subscription
-     */
-    protected function setCurrentPeriod(Entity $subscription)
+    public function updateSubscriptionAndInvoiceBillingPeriod(Entity $subscription, Invoice\Entity $invoice)
     {
         $billingPeriod = $this->getBillingPeriod($subscription);
 
-        $subscription->setCurrentStart($billingPeriod['start']);
-        $subscription->setCurrentEnd($billingPeriod['end']);
+        $subscription->setCurrentPeriod($billingPeriod);
+
+        $invoice->setBillingPeriod($billingPeriod);
+    }
+
+    /**
+     *
+     * We should not charge any invoice which is in halted status,
+     * since, the subscription would also be in halted status here.
+     * We do not charge halted subscriptions, we only create an invoice.
+     *
+     * @param Entity         $subscription
+     * @param Invoice\Entity $invoice
+     *
+     * @return bool
+     */
+    protected function shouldCharge(Entity $subscription, Invoice\Entity $invoice)
+    {
+        if ($invoice->getSubscriptionStatus() === Invoice\Status::HALTED)
+        {
+            $this->trace->info(
+                TraceCode::SUBSCRIPTION_INVOICE_HALTED,
+                [
+                    'invoice_id'            => $invoice->getId(),
+                    'subscription_id'       => $subscription->getId(),
+                    'subscription_status'   => $subscription->getStatus(),
+                ]);
+
+            return true;
+        }
+
+        return false;
     }
 
     protected function getBillingPeriod(Entity $subscription)
@@ -157,48 +181,6 @@ class Biller extends Base\Core
         return $billingPeriod;
     }
 
-    protected function setInvoiceBillingPeriod(Entity $subscription, Invoice\Entity $invoice)
-    {
-        $invoice->setBillingStart($subscription->getCurrentStart());
-        $invoice->setBillingEnd($subscription->getCurrentEnd());
-    }
-
-    public function createInvoiceForSubscription(
-        Entity $subscription,
-        Base\PublicCollection $addons,
-        bool $first = false): Invoice\Entity
-    {
-        //
-        // This is in a transaction even though the calling functions
-        // are already in a transaction, because it's a public function
-        // and can be used independently.
-        // If a new calling function does not implement this in a transaction,
-        // it might be an issue and hence putting this here.
-        //
-
-        return $this->repo->transaction(
-            function() use($subscription, $addons, $first)
-            {
-                $merchant = $subscription->merchant;
-
-                $invoiceInput = $this->getInvoiceInput($subscription, $addons, $first);
-
-                $invoice = (new Invoice\Core)->create($invoiceInput, $merchant, $subscription);
-
-                $this->associateInvoiceToAddons($invoice, $addons);
-
-                $this->trace->info(
-                    TraceCode::SUBSCRIPTION_INVOICE_CREATED,
-                    [
-                        'invoice_id'      => $invoice->getId(),
-                        'subscription_id' => $subscription->getId(),
-                        'invoice_details' => $invoice->toArray(),
-                    ]);
-
-                return $invoice;
-            });
-    }
-
     protected function createInvoiceBeforeCharge(Entity $subscription): array
     {
         return $this->repo->transaction(
@@ -209,6 +191,12 @@ class Biller extends Base\Core
                 $addons = $this->repo->addon->getUnusedAddonsForSubscription($subscription);
 
                 $invoice = $this->createInvoiceForSubscription($subscription, $addons);
+
+                //
+                // Update current period and billing period before the charge itself. This
+                // saves us the hassle of having to update them separately in retry flows.
+                //
+                $this->updateSubscriptionAndInvoiceBillingPeriod($subscription, $invoice);
 
                 //
                 // If first charge, we set the status to active.
@@ -227,10 +215,18 @@ class Biller extends Base\Core
                 if (($subscription->getPaidCount() === 0) and
                     ($subscription->isHalted() === false))
                 {
-                    $this->activateSubscription($subscription);
+                    $subscription->setStatus(Status::ACTIVE);
 
                     $activated = true;
                 }
+
+                //
+                // Subscription billing period updated
+                // Subscription status updated
+                // Invoice billing period updated
+                //
+                $this->repo->saveOrFail($invoice);
+                $this->repo->saveOrFail($subscription);
 
                 return ['invoice' => $invoice, 'activated' => $activated];
             });
@@ -240,18 +236,15 @@ class Biller extends Base\Core
      * @param Entity         $subscription
      * @param Invoice\Entity $invoice
      */
-    protected function handleHaltedSubscriptionAtInvoiceCreation(Entity $subscription, Invoice\Entity $invoice)
+    protected function handleNoSubscriptionChargeAtInvoiceCreation(Entity $subscription, Invoice\Entity $invoice)
     {
         $charge = (new Charge);
 
-        //
-        // Schedule task needs to be updated before setting time
-        // fields in subscription, as the next_run_at of
-        // schedule_task is used to set subscription charge_at
-        //
-        $charge->updateScheduleTask($subscription);
+        $task = $subscription->task;
 
-        $charge->updateChargeAtAndEndedAt($subscription);
+        $task->updateForSubscription($this->mode);
+
+        $charge->setEndedAtIfApplicable($subscription);
 
         $this->repo->transaction(
             function() use ($subscription, $invoice)
@@ -267,23 +260,6 @@ class Biller extends Base\Core
         {
             (new Core)->fireWebhookForStatusUpdate($subscription, Status::COMPLETED);
         }
-    }
-
-    protected function activateSubscription(Entity $subscription)
-    {
-        if ($subscription->getStatus() !== Status::AUTHENTICATED)
-        {
-            throw new LogicException(
-                'The status should have been authenticated since the subscription has not been paid even once.',
-                null,
-                [
-                    'status'          => $subscription->getStatus(),
-                    'subscription_id' => $subscription->getId()
-                ]);
-        }
-
-        $subscription->setStatus(Status::ACTIVE);
-        $this->repo->saveOrFail($subscription);
     }
 
     protected function associateInvoiceToAddons(Invoice\Entity $invoice, Base\PublicCollection $addons)

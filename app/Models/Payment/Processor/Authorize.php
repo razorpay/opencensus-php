@@ -521,16 +521,14 @@ trait Authorize
 
         $subscription = $payment->subscription;
 
-        $subscriptionStatus = $subscription->getStatus();
-
-        if (in_array($subscriptionStatus, Subscription\Status::$nonChargeableStatuses, true) === true)
+        if ($subscription->isTerminalStatus() === true)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_EXPIRED_OR_CANCELLED,
                 null,
                 [
                     'subscription_id'   => $subscription->getId(),
-                    'status'            => $subscriptionStatus
+                    'status'            => $subscription->getStatus()
                 ]);
         }
 
@@ -2178,7 +2176,7 @@ trait Authorize
             // on a failing subscription. Since payment has succeeded, the error fields
             // can now be reset. These fields would have been reset in another flow
             // if the charge had succeeded without card change anyway.
-            (new Subscription\Charge)->resetErrorFields($subscription);
+            $subscription->resetErrorFields();
 
             $activated = true;
         }
@@ -2245,6 +2243,12 @@ trait Authorize
             $invoice = $payment->invoice;
 
             //
+            // TODO: Below two lines should be in a transaction since
+            // `updateSubscriptionDetails` updates and saves schedule also.
+            // `handleCaptureSuccess` will be saving subscription, invoice, task.
+            //
+
+            //
             // If this is auth txn charge, it means that start_at was null. This,
             // in turn, means that some fields were not filled when the subscription
             // was created. We fill those fields here.
@@ -2270,7 +2274,7 @@ trait Authorize
 
         $subscriptionCore->fillScheduleDetailsForNewSubscription($subscription);
 
-        (new Subscription\Biller)->updateSubscriptionInvoiceBillingPeriod($subscription, $invoice);
+        (new Subscription\Biller)->updateSubscriptionAndInvoiceBillingPeriod($subscription, $invoice);
 
         (new Subscription\Creator)->fillEndAtAndTotalCount($subscription, $plan);
     }

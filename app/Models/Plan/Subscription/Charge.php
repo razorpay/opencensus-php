@@ -3,20 +3,14 @@
 namespace RZP\Models\Plan\Subscription;
 
 use App;
-use Carbon\Carbon;
 
-use RZP\Models\Plan;
+use RZP\Base\RepositoryManager;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\Merchant;
-use RZP\Constants\Timezone;
 use RZP\Exception\LogicException;
 use Razorpay\Trace\Logger as Trace;
-use RZP\Exception\BadRequestException;
 
 class Charge extends Base\Core
 {
@@ -27,6 +21,9 @@ class Charge extends Base\Core
      */
     protected $trace;
 
+    /**
+     * @var RepositoryManager
+     */
     protected $repo;
 
     /**
@@ -102,8 +99,6 @@ class Charge extends Base\Core
             return false;
         }
 
-        $this->processor = new Payment\Processor\Processor($subscription->merchant);
-
         if ($manual === false)
         {
             //
@@ -114,21 +109,18 @@ class Charge extends Base\Core
         }
 
         $payment = null;
+        $exception = false;
+        $captureFailure = true;
 
         try
         {
-            $payment = $this->authorizePayment($data['recurring_payload']);
+            $payment = $this->authorizePayment($subscription, $data['recurring_payload']);
         }
         catch (\Exception $ex)
         {
             $this->trace->traceException($ex);
 
-            if ($manual === false)
-            {
-                $this->handleAuthorizationOrCaptureFailure($subscription, $invoice, $payment);
-            }
-
-            return false;
+            $exception = true;
         }
 
         //
@@ -136,10 +128,16 @@ class Charge extends Base\Core
         // called in the auto capture flow itself.
         // Hence, we don't have to handle for captured successfully flow, here.
         //
-        if (($payment->isCaptured() === false) and
+        if ((($payment->isCaptured() === false) or
+             ($exception === true)) and
             ($manual === false))
         {
-            $this->handleAuthorizationOrCaptureFailure($subscription, $invoice, $payment, true);
+            if ($exception === false)
+            {
+                $captureFailure = true;
+            }
+
+            $this->handleAuthorizationOrCaptureFailure($subscription, $invoice, $payment, $captureFailure);
 
             return false;
         }
@@ -196,38 +194,40 @@ class Charge extends Base\Core
         //        Halted       |   Older       |         No
         //
         //
-        if (($this->isLatestInvoiceForSubscription($subscription, $invoice) === true) and
+        if (($subscription->isLatestInvoiceForSubscription($invoice) === true) and
             (($subscription->getStatus() === Status::ACTIVE) or
              ($subscription->getStatus() === Status::PENDING)))
         {
-            //
-            // Schedule task needs to be updated before setting time
-            // fields in subscription, as the next_run_at of
-            // schedule_task is used to set subscription charge_at
-            //
-            $this->updateScheduleTask($subscription);
+            $task->updateForSubscription($this->mode);
 
             //
             // Even though we are updating it in the invoice now,
             // we will be keeping the current billing cycle period
             // in subscriptions also.
             //
-            $this->updateChargeAtAndEndedAt($subscription);
+            $this->setEndedAtIfApplicable($subscription);
         }
 
         //
-        // Not sending webhook here because the transaction might fail later
-        // in the flow. Will be sending it after the transaction is committed.
+        // If the subscription is in a terminal state,
+        // we can NOT change the status!
         //
-        $subscription->setStatus(Status::ACTIVE);
+        if ($subscription->isTerminalStatus() === false)
+        {
+            //
+            // Not sending webhook here because the transaction might fail later
+            // in the flow. Will be sending it after the transaction is committed.
+            //
+            $subscription->setStatus(Status::ACTIVE);
+        }
 
-        $this->resetErrorFields($subscription);
+        $subscription->resetErrorFields();
 
-        $this->incrementPaidCount($subscription);
+        $subscription->incrementPaidCount();
 
         if ($oldStatus === Status::AUTHENTICATED)
         {
-            $this->setActivatedAt($subscription, $capturedPayment);
+            $subscription->setActivatedAt($capturedPayment->getCaptureTimestamp());
         }
 
         $this->repo->transaction(
@@ -246,19 +246,7 @@ class Charge extends Base\Core
                 'task_details' => $task->toArray()
             ]);
 
-        $core = (new Core);
-
-        if ($oldStatus !== Status::ACTIVE)
-        {
-            $core->fireWebhookForStatusUpdate($subscription, Status::ACTIVE, $capturedPayment);
-        }
-
-        $core->eventSubscriptionCharged($subscription, $capturedPayment);
-
-        if ($subscription->isCompleted() === true)
-        {
-            $core->fireWebhookForStatusUpdate($subscription, Status::COMPLETED);
-        }
+        $this->fireWebhooksOnCaptureSuccess($subscription, $capturedPayment, $oldStatus);
 
         //
         // This must be sent after saving the invoice and subscription
@@ -269,41 +257,13 @@ class Charge extends Base\Core
     }
 
     /**
-     * Update charge_at and ended_at. Current period does not need to
-     * be updated as these were set before the charge was attempted.
-     * See updateSubscriptionInvoiceBillingPeriod.
+     * @param Entity              $subscription
+     * @param Invoice\Entity      $invoice
+     * @param Payment\Entity|null $payment
+     * @param bool                $captureFailure
      *
-     * @param  Entity $subscription
+     * @throws LogicException
      */
-    public function updateChargeAtAndEndedAt(Entity $subscription)
-    {
-        $subscription->setChargeAt($subscription->task->getNextRunAt());
-
-        $this->setEndedAtIfApplicable($subscription);
-    }
-
-    /**
-     * Checks if invoice is the latest one generated for the subscription.
-     * This would be the case if the invoice billing period matches that
-     * of the subscription, which is always current.
-     *
-     * @param  Entity         $subscription
-     * @param  Invoice\Entity $invoice
-     * @return boolean
-     */
-    protected function isLatestInvoiceForSubscription(Entity $subscription, Invoice\Entity $invoice)
-    {
-        $isLatest = false;
-
-        if (($subscription->getCurrentStart() === $invoice->getBillingStart()) and
-            ($subscription->getCurrentEnd() === $invoice->getBillingEnd()))
-        {
-            $isLatest = true;
-        }
-
-        return $isLatest;
-    }
-
     public function handleAuthorizationOrCaptureFailure(
         Entity $subscription,
         Invoice\Entity $invoice,
@@ -327,21 +287,17 @@ class Charge extends Base\Core
 
         $authAttempts = $subscription->getAuthAttempts();
 
+        $task = $subscription->task;
+
         if ($authAttempts < self::MAX_AUTH_ATTEMPTS)
         {
             // Charge has failed an acceptable number of times
             $subscription->setStatus(Status::PENDING);
 
             // Update task by a day
-            $this->updateScheduleTask($subscription, true);
+            $task->updateForSubscription($this->mode, true);
 
-            //
-            // TODO: Replace below function with updateSubscriptionTimeFields?
-            // This will call setEndedAtIfApplicable, which could end up setting
-            // the wrong time as ended_at, if current_start is not equal to current
-            // time (happens in case of retries).
-            //
-            $subscription->setChargeAt($subscription->task->getNextRunAt());
+            // TODO: Handle completed
         }
         else if ($authAttempts === self::MAX_AUTH_ATTEMPTS)
         {
@@ -355,20 +311,14 @@ class Charge extends Base\Core
             //
             // Update task by a full plan period
             //
-            $this->updateScheduleTask($subscription);
-
-            //
-            // TODO: Replace below function with updateSubscriptionTimeFields?
-            // This will call setEndedAtIfApplicable, which could end up setting
-            // the wrong time as ended_at, if current_start is not equal to current
-            // time (happens in case of retries).
-            //
-            $subscription->setChargeAt($subscription->task->getNextRunAt());
+            $this->updateForSubscription($subscription);
 
             //
             // TODO: Should we be resetting auth_attempts here? We don't actually use
             // it anywhere, but we do need to decide what we want the merchant to see.
             //
+
+            // TODO: Handle completed
         }
         else
         {
@@ -391,129 +341,6 @@ class Charge extends Base\Core
         (new Core)->fireWebhookForStatusUpdate($subscription, $subscription->getStatus(), $payment);
     }
 
-    protected function validateInvoiceStatusBeforeCharging(
-        Invoice\Entity $invoice,
-        Entity $subscription,
-        bool $manual)
-    {
-        $valid = true;
-
-        //
-        // This happens when two crons picked up the same invoice
-        // and queued the charge on them.
-        // If one of the queue picks it up first, it would have marked the
-        // invoice as paid and now this queue gets executed.
-        //
-        if ($invoice->isPaid() === true)
-        {
-            $traceCode = TraceCode::SUBSCRIPTION_INVOICE_ALREADY_PAID;
-
-            $valid = false;
-        }
-        //
-        // When a different cron picked up the invoice for a charge
-        // and got queued, the status could have gone into
-        // halted. If this happened, we should not attempt
-        // to charge the subscription now.
-        //
-        else if (($invoice->getSubscriptionStatus() === Invoice\Status::HALTED) and
-                 ($manual === false))
-        {
-            $traceCode = TraceCode::SUBSCRIPTION_INVOICE_HALTED;
-
-            $valid = false;
-        }
-
-        if ($valid === false)
-        {
-            $this->trace->critical(
-                $traceCode,
-                [
-                    'invoice_id'        => $invoice->getId(),
-                    'subscription_id'   => $subscription->getId(),
-                ]);
-        }
-
-        return $valid;
-    }
-
-    protected function authorizePayment(array $recurringPayload)
-    {
-        $recurringPayment = $this->processor->process($recurringPayload);
-
-        $authorizedPayment = $this->repo->payment->findByPublicId($recurringPayment['razorpay_payment_id']);
-
-        return $authorizedPayment;
-    }
-
-    public function resetErrorFields(Entity $subscription)
-    {
-        $subscription->setFailedAt(null);
-        $subscription->setErrorStatus(null);
-        $subscription->resetAuthAttempts();
-    }
-
-    /**
-     * This just uses the captured_at.
-     *
-     * @param Entity $subscription
-     * @param Payment\Entity $capturedPayment
-     */
-    protected function setActivatedAt(Entity $subscription, Payment\Entity $capturedPayment)
-    {
-        $capturedAt = $capturedPayment->getCaptureTimestamp();
-
-        $subscription->setActivatedAt($capturedAt);
-    }
-
-    protected function incrementPaidCount(Entity $subscription)
-    {
-        $subscription->incrementPaidCount();
-    }
-
-    /**
-     * In case of retries, we would explicitly change the task's next_run_at
-     * to the next day instead of next month or so. If the retry is successful,
-     * we would call this function and the next_run_at will get set to
-     * whatever it's supposed to get set to initially without retry.
-     *
-     * @param Entity $subscription
-     * @param bool   $retry
-     */
-    public function updateScheduleTask(Entity $subscription, $retry = false)
-    {
-        $task = $subscription->task;
-
-        if ($retry === true)
-        {
-            $task->incrementNextRunByOneDayAndUpdateLastRun();
-
-            return;
-        }
-
-        //
-        // Calling updateNextRunAndLastRun for task sets the next_run starting
-        // from current time. This works fine in most cases, since charge time
-        // is usually equal to current time. But in the merchant-initiated test
-        // charge flow, we allow merchants to simulate a future charge for a
-        // subscription. So in this case, using current time will give the wrong
-        // result. So we use charge_at instead, which is equal to current time
-        // in normal flow, and equal to simulated current time in test charge flow.
-        //
-        $referenceTime = $subscription->getChargeAt();
-
-        // However, if charge_at is currently null, that means this is the auth txn.
-        // In that case, we can use actual current time as the reference time.
-        if ($referenceTime === null)
-        {
-            $referenceTime = Carbon::now(Timezone::IST)->getTimestamp();
-        }
-
-        $referenceTime = Carbon::createFromTimestamp($referenceTime, Timezone::IST);
-
-        $task->updateNextRunAndLastRunFromGivenRefTime($referenceTime, false);
-    }
-
     /**
      * Count the number of invoices generated for the subscription that were part of
      * the plan (so exclude upfront amounts with future start_at). When this count
@@ -522,10 +349,14 @@ class Charge extends Base\Core
      *
      * @param Entity $subscription
      */
-    protected function setEndedAtIfApplicable(Entity $subscription)
+    public function setEndedAtIfApplicable(Entity $subscription)
     {
         $planChargeInvoiceCount = $subscription->getPlanChargeInvoicesCount();
 
+        //
+        // Ideally, planChargeInvoiceCount would never be greater than the
+        // subscription's total_count. `>` is simply there.
+        //
         if ($planChargeInvoiceCount >= $subscription->getTotalCount())
         {
             //
@@ -539,39 +370,59 @@ class Charge extends Base\Core
             //
             $subscription->setEndedAt($subscription->getCurrentStart());
 
-            $subscription->setChargeAt(null);
-
             $subscription->setStatus(Status::COMPLETED);
         }
     }
 
-    protected function logToSlack(array $data)
+    protected function fireWebhooksOnCaptureSuccess(
+        Entity $subscription,
+        Payment\Entity $capturedPayment,
+        string $oldStatus)
     {
-        // Do not log for test mode
-        if ($this->app['rzp.mode'] === Mode::TEST)
+        $core = new Core;
+
+        //
+        // In case the old status was a terminal status
+        // (completed, expired, cancelled), we wouldn't
+        // have marked the subscription as active.
+        // Hence, we shouldn't fire any webhook.
+        //
+        if (($oldStatus !== Status::ACTIVE) and
+            ($subscription->isActive() === true))
         {
-            return;
+            $core->fireWebhookForStatusUpdate($subscription, Status::ACTIVE, $capturedPayment);
         }
 
-        $settings = $this->getSlackSettings();
+        $core->eventSubscriptionCharged($subscription, $capturedPayment);
 
-        $headline = 'Subscription Payment Failed';
+        // TODO: It will not fire activated webhook because we would have marked it
+        // as active from pending and then to completed. So, subscription status at
+        // this point would be completed.
 
-        $this->app['slack']->queue($headline, $data, $settings);
+        //
+        // If the merchant manually charges a completed subscription, the subscription status
+        // would still be completed. but, in this case we should not fire the webhook.
+        // We would have already fired the completed webhook once before.
+        //
+        // We should fire this webhook only if it was not marked as completed before.
+        //
+        if (($oldStatus !== Status::COMPLETED) and
+            ($subscription->isCompleted() === true))
+        {
+            $core->fireWebhookForStatusUpdate($subscription, Status::COMPLETED);
+        }
     }
 
-    protected function getSlackSettings()
+    protected function authorizePayment(Entity $subscription, array $recurringPayload)
     {
-        $settings['channel'] = $this->app['config']->get('slack.channels.subscriptions');
-        $settings['color'] = 'danger';
+        $processor = new Payment\Processor\Processor($subscription->merchant);
 
-        return $settings;
+        $recurringPayment = $processor->process($recurringPayload);
+
+        $authorizedPayment = $this->repo->payment->findByPublicId($recurringPayment['razorpay_payment_id']);
+
+        return $authorizedPayment;
     }
 
-    protected function getPeriodFunction(Plan\Entity $plan)
-    {
-        $period = $plan->getPeriod();
-
-        return 'add' . $period . 's';
-    }
+    // TODO: Implement Slack Logging! Pliss
 }

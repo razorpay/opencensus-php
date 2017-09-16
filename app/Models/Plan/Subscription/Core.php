@@ -305,6 +305,18 @@ class Core extends Base\Core
             return;
         }
 
+        //
+        // TODO: This should go in some class where every
+        // webhook passes through. Even in tests.
+        // This is applicable for all webhooks and
+        // not just subscription webhooks.
+        // CREATE AN ISSUE FOR THIS!
+        //
+        if ($this->repo->isTransactionActive())
+        {
+            // TODO: Throw an exception
+        }
+
         $event = Status::$webhookStatuses[$status];
 
         $eventPayload = [
@@ -358,8 +370,6 @@ class Core extends Base\Core
      */
     public function charge(Entity $subscription, Invoice\Entity $invoice, array $options = [])
     {
-        $manual = boolval($options['manual'] ?? false);
-
         $recurringPayload = $this->constructRecurringPayload($subscription, $invoice, $options);
 
         $queuePayload = [
@@ -371,7 +381,7 @@ class Core extends Base\Core
             // functions mostly work on the key. Hence, sending the key
             // across rather than the mode.
             'key_id'            => $this->app['basicauth']->getPublicKey(),
-            'manual'            => $manual,
+            'manual'            => boolval($options['manual'] ?? false),
         ];
 
         $this->trace->info(
@@ -379,11 +389,10 @@ class Core extends Base\Core
             $queuePayload);
 
         //
-        // If the status is in created state, this means that the token has not
-        // been associated with it yet. An authorized payment for this subscription
-        // has not been done.
+        // If the subscription has not been authenticated yet, we won't have any token
+        // to charge this with. Ideally, should never reach this stage though.
         //
-        if ($subscription->getStatus() === Status::CREATED)
+        if ($subscription->hasBeenAuthenticated() === false)
         {
             throw new LogicException(
                 'Should not have reached here. The subscription is not ' .
@@ -523,8 +532,6 @@ class Core extends Base\Core
 
     protected function setFieldsOnCancel(Entity $subscription)
     {
-        $subscription->setChargeAt(null);
-
         $subscription->resetAuthAttempts();
 
         $subscription->setEndedAt($subscription->getCancelledAt());

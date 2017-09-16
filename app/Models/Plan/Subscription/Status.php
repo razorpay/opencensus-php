@@ -93,18 +93,6 @@ class Status
         self::HALTED,
     ];
 
-    public static $nonCancellableStatuses = [
-        self::EXPIRED,
-        self::COMPLETED,
-        self::CANCELLED
-    ];
-
-    public static $nonChargeableStatuses = [
-        self::EXPIRED,
-        self::CANCELLED,
-        self::COMPLETED,
-    ];
-
     public static $cronChargeableStatuses = [
         self::AUTHENTICATED,
         self::ACTIVE,
@@ -124,6 +112,12 @@ class Status
     public static $invoiceManualChargeableStatuses = [
         self::ACTIVE,
         self::HALTED,
+    ];
+
+    public static $terminalStatuses = [
+        self::EXPIRED,
+        self::CANCELLED,
+        self::COMPLETED,
     ];
 
     public static function isStatusValid($status) : bool

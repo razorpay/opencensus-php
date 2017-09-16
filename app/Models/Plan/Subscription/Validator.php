@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 use RZP\Base;
 use RZP\Exception;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Invoice;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -118,7 +119,7 @@ class Validator extends Base\Validator
 
         $currentStatus = $subscription->getStatus();
 
-        if (in_array($currentStatus, Status::$nonCancellableStatuses, true) === true)
+        if ($subscription->isTerminalStatus() === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Subscription is not cancellable in ' . $currentStatus . ' status.',
@@ -141,7 +142,7 @@ class Validator extends Base\Validator
         //
         $traceCode = '';
 
-        if (in_array($subscription->getStatus(), Status::$nonChargeableStatuses, true) === true)
+        if ($subscription->isTerminalStatus() === true)
         {
             $traceCode = TraceCode::SUBSCRIPTION_NOT_IN_CHARGEABLE_STATE;
 
@@ -194,7 +195,7 @@ class Validator extends Base\Validator
         }
 
         if (($subscription->hasEnded() === true) or
-            (in_array($subscription->getStatus(), Status::$manualTestChargeableStatuses, true) === false))
+            ($subscription->isManualTestChargeableStatus() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_NOT_TEST_CHARGEABLE,

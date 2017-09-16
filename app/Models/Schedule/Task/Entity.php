@@ -5,6 +5,7 @@ namespace RZP\Models\Schedule\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Carbon\Carbon;
+use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Models\Schedule\Library;
@@ -226,6 +227,51 @@ class Entity extends Base\PublicEntity
 
             $this->setNextRunAt($nextRunAt->getTimestamp());
         }
+    }
+
+    /**
+     * In case of retries, we would explicitly change the task's next_run_at
+     * to the next day instead of next month or so. If the retry is successful,
+     * we would call this function and the next_run_at will get set to
+     * whatever it's supposed to get set to initially without retry.
+     *
+     * @param string $mode
+     * @param bool   $retry
+     */
+    public function updateForSubscription(string $mode , $retry = false)
+    {
+        if ($retry === true)
+        {
+            $this->incrementNextRunByOneDayAndUpdateLastRun();
+
+            return;
+        }
+
+        //
+        // TODO: We should be able to use `getNextRunAt()` for Live Mode also.
+        //
+        $referenceTime = Carbon::now(Timezone::IST);
+
+        if ($mode === Mode::TEST)
+        {
+            //
+            // Calling updateNextRunAndLastRun for task sets the next_run starting
+            // from current time. This works fine in most cases, since charge time
+            // is usually equal to current time. But in the merchant-initiated test
+            // charge flow, we allow merchants to simulate a future charge for a
+            // subscription. So in this case, using current time will give the wrong
+            // result. So we use charge_at instead, which is equal to current time
+            // in normal flow, and equal to simulated current time in test charge flow.
+            //
+            // In case of auth transaction (immediate), charge_at would be null.
+            // In that case, we can use actual current time as the reference time.
+            //
+            $referenceTime = $this->getNextRunAt() ?? Carbon::now()->getTimestamp();
+
+            $referenceTime = Carbon::createFromTimestamp($referenceTime, Timezone::IST);
+        }
+
+        $this->updateNextRunAndLastRunFromGivenRefTime($referenceTime, false);
     }
 
     public function isTypeSettlement()

@@ -820,6 +820,12 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BILLING_END, $billingEnd);
     }
 
+    public function setBillingPeriod(array $billingPeriod)
+    {
+        $this->setBillingStart($billingPeriod['start']);
+        $this->setBillingEnd($billingPeriod['end']);
+    }
+
     public function setGrossAmount(int $amount)
     {
         $this->setAttribute(self::GROSS_AMOUNT, $amount);

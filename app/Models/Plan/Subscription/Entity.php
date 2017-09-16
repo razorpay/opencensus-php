@@ -7,11 +7,18 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
 use RZP\Models\Base;
-use RZP\Models\Customer;
 use RZP\Models\Plan;
-use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Invoice;
+use RZP\Models\Customer;
+use RZP\Models\Merchant;
+use RZP\Models\Schedule\Task;
 use RZP\Models\Schedule\Anchor;
+use RZP\Models\Base\Traits\NotesTrait;
 
+/**
+ * @property Task\Entity        $task
+ * @property Merchant\Entity    $merchant
+ */
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
@@ -233,6 +240,11 @@ class Entity extends Base\PublicEntity
             $invoiceCount = $invoiceCount - 1;
         }
 
+        if ($invoiceCount > $this->getTotalCount())
+        {
+            // TODO: Throw an exception
+        }
+
         return $invoiceCount;
     }
 
@@ -326,6 +338,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::STATUS) === Status::COMPLETED);
     }
 
+    public function isCancelled()
+    {
+        return ($this->getAttribute(self::STATUS) === Status::CANCELLED);
+    }
+
     public function setType(string $type, bool $value)
     {
         $currentHex = $this->getType();
@@ -377,8 +394,45 @@ class Entity extends Base\PublicEntity
         return (in_array($this->getStatus(), Status::$changeCardStatuses, true) === true);
     }
 
+    public function isManualTestChargeableStatus()
+    {
+        return (in_array($this->getStatus(), Status::$manualTestChargeableStatuses, true) === true);
+    }
+
+    public function isInvoiceManualChargeableStatus()
+    {
+        return (in_array($this->getStatus(), Status::$invoiceManualChargeableStatuses, true) === true);
+    }
+
+    public function isTerminalStatus()
+    {
+        return (in_array($this->getStatus(), Status::$terminalStatuses, true) === true);
+    }
+
+    /**
+     * Checks if invoice is the latest one generated for the subscription.
+     * This would be the case if the invoice billing period matches that
+     * of the subscription, which is always current.
+     *
+     * @param  Invoice\Entity $invoice
+     * @return boolean
+     */
+    public function isLatestInvoiceForSubscription(Invoice\Entity $invoice)
+    {
+        $isLatest = false;
+
+        if (($this->getCurrentStart() === $invoice->getBillingStart()) and
+            ($this->getCurrentEnd() === $invoice->getBillingEnd()))
+        {
+            $isLatest = true;
+        }
+
+        return $isLatest;
+    }
+
     public function followLocalFlow()
     {
+        /** @var $localCustomer Customer\Entity|null */
         $localCustomer = $this->customer;
 
         // If local customer is null, then it needs to be created and mapped
@@ -516,6 +570,19 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TOKEN_ID, $tokenId);
     }
 
+    public function setCurrentPeriod(array $billingPeriod)
+    {
+        $this->setCurrentStart($billingPeriod['start']);
+        $this->setCurrentEnd($billingPeriod['end']);
+    }
+
+    public function resetErrorFields()
+    {
+        $this->setFailedAt(null);
+        $this->setErrorStatus(null);
+        $this->resetAuthAttempts();
+    }
+
     // --------------------- END SETTERS ---------------------
 
     // --------------------- RELATIONS ---------------------
@@ -596,6 +663,19 @@ class Entity extends Base\PublicEntity
         $array[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
     }
 
+    public function setPublicChargeAtAttribute(array & $array)
+    {
+        $chargeAt = null;
+
+        if (($this->isCancelled() === false) and
+            ($this->isCompleted() === false))
+        {
+            $chargeAt = $this->task->getNextRunAt();
+        }
+
+        $array[self::CHARGE_AT] = $chargeAt;
+    }
+
     // public function setPublicTokenIdAttribute(array & $array)
     // {
     //     $tokenId = $this->getAttribute(self::TOKEN_ID);
@@ -618,6 +698,7 @@ class Entity extends Base\PublicEntity
             $chargeAt = (int) $input[Entity::START_AT];
         }
 
+        // TODO: Test that this is working
         $this->setAttribute(self::CHARGE_AT, $chargeAt);
     }
 

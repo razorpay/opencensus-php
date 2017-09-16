@@ -9,6 +9,7 @@ use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
+use RZP\Models\Base\Collection;
 use RZP\Models\Schedule\Task;
 use RZP\Models\Customer;
 
