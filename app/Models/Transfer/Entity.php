@@ -374,10 +374,15 @@ class Entity extends Base\PublicEntity
     /**
      * Add the `recipient_details` attribute via $appends
      *
-     * @return array
+     * @return array|null
      */
     public function getRecipientDetailsAttribute()
     {
+        if ($this->getToType() !== E::MERCHANT)
+        {
+            return null;
+        }
+
         $account = $this->to;
 
         $accountAttributes = [
