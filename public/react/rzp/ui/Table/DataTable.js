@@ -35,7 +35,7 @@ export default function DataTable(props) {
     : ''}`;
 
   return (
-    <div class="data-table">
+    <div class={`data-table ${panelHeading ? 'has-panel' : ''}`}>
       {error && <Alert type="error" message={error} />}
       {panelHeading &&
         <div class="list-heading">

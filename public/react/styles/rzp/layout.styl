@@ -1,3 +1,5 @@
+@import "mixins/clearfix.styl";
+
 // Only page layout styles should reside in this file.
 // This will be moved under `rzp` later
 
@@ -520,21 +522,23 @@ tr:hover .row-action.btn-group {
 }
 
 .pair-group-item {
-  display: table;
   width: 100%;
   padding: 8px;
   margin-bottom: -1px;
   position: relative;
+  clearfix() 
 
   .pair-label, .pair-value, .pair-separator {
-    display: table-cell;
     vertical-align: top;
+    float: left;
   }
+
   .pair-label {
     width: 39%;
     color: #8991AE;
     padding: 0; // to override col- padding
   }
+
   /*
   // Separator is colon as per old design. Currently not being used but will be removed once design is concretely confirmed all across
   .pair-separator {
@@ -885,8 +889,8 @@ tr:hover .row-action.btn-group {
 }
 
 .ReactModal__Overlay .pair-group-item .pair-value .full-width-item {
-  width: 169%;
-  margin-left: -69%;
+  width: 170%;
+  margin-left: -70%;
 }
 
 .secondary-details {

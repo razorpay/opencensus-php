@@ -5,8 +5,7 @@ import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
 import Definition from 'rzp/ui/Definition';
 import DataTable from 'rzp/ui/Table/DataTable';
 import LoaderDots from 'rzp/ui/LoaderDots';
-import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
-import { transferId, amount } from 'rzp/ui/item/pair';
+import { reversalId, amount, createdAt } from 'rzp/ui/item/pair';
 
 /*
  * Design:
@@ -24,7 +23,9 @@ import { transferId, amount } from 'rzp/ui/item/pair';
  * reversal amounts, status and actions according to the design
  */
 
-const NumReversals = ({ reversals }) => {
+const createdAtWithStyle = { columnClass: 'text-right', ...createdAt };
+
+const NumReversals = ({ reversals, titleCase = false }) => {
   if (reversals.loading) {
     return <LoaderDots />;
   }
@@ -34,33 +35,31 @@ const NumReversals = ({ reversals }) => {
 
   return (
     <span>
-      {numReversals} reversal{reversalSuffix}
+      {numReversals} {titleCase ? 'R' : 'r'}eversal{reversalSuffix}
     </span>
   );
 };
 
 const ReversalsList = ({ reversals }) => {
+  const reversalHeading = {
+    title: 'Reversal Details',
+    subTitle: <NumReversals reversals={reversals} titleCase={true} />,
+  };
+
   return (
     <ContentToggler>
       <span>Reversal Details</span>
-      <div className="reversals-list full-width-item">
-        <div className="panel-heading">
-          <span className="label--primary">Reversal Details</span>
-          <span className="label--secondary">
-            <NumReversals reversals={reversals} />
-          </span>
-        </div>
-        <div className="panel-content">
-          <DataTable
-            customClass="reversals-table"
-            progressLoader={true}
-            columns={[transferId, amount]}
-            items={reversals.items}
-            loading={reversals.loading}
-            showHeaders={false}
-            noStripe={true}
-          />
-        </div>
+      <div className="reversals-list full-width-item sub-entity-list">
+        <DataTable
+          customClass="reversals-table"
+          progressLoader={true}
+          columns={[reversalId, amount, createdAtWithStyle]}
+          items={reversals.items}
+          loading={reversals.loading}
+          showHeaders={false}
+          noStripe={true}
+          panelHeading={reversalHeading}
+        />
       </div>
     </ContentToggler>
   );
@@ -79,7 +78,7 @@ export default ({ transfer, reversals, openTransferReversalModal }) => {
         <p>No reversals created</p>
         <button
           className="btn btn-default"
-          onClick={openTransferReversalModal(transfer)}
+          onClick={() => openTransferReversalModal(transfer)}
         >
           Create reversal
         </button>
@@ -96,15 +95,16 @@ export default ({ transfer, reversals, openTransferReversalModal }) => {
 
   return (
     <div>
-      <Definition>
-        <span>
-          <Amount value={reversedAmount} /> Reversed
-        </span>
-        <span>
-          Partially Reversed in <NumReversals reversals={reversals} />
-        </span>
-      </Definition>
-      <p />
+      <div className="m-b">
+        <Definition>
+          <span>
+            <Amount value={reversedAmount} /> Reversed
+          </span>
+          <span>
+            Partially Reversed in <NumReversals reversals={reversals} />
+          </span>
+        </Definition>
+      </div>
       <p>
         <button
           className="btn btn-default"
