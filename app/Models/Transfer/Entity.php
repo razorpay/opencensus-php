@@ -126,10 +126,6 @@ class Entity extends Base\PublicEntity
         self::RECIPIENT_DETAILS,
     ];
 
-    protected $expands = [
-        self::TO,
-    ];
-
     protected $casts = [
         self::AMOUNT          => 'int',
         self::AMOUNT_REVERSED => 'int',
