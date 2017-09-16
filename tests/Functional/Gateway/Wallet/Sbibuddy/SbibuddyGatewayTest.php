@@ -49,8 +49,11 @@ class SbibuddyGatewayTest extends TestCase
 
         $this->mockServerContentFunction(function (& $content, $action = null)
         {
-            $content[ResponseFields::STATUS_CODE] = ResponseCodeMap::GENERAL_ERROR;
-            $content[ResponseFields::ERROR_DESCRIPTION] = 'Error occured';
+            if($action === 'authorize')
+            {
+                $content[ResponseFields::STATUS_CODE] = ResponseCodeMap::GENERAL_ERROR;
+                $content[ResponseFields::ERROR_DESCRIPTION] = 'Error occured';
+            }
         });
 
         $data = $this->testData[__FUNCTION__];
@@ -219,7 +222,7 @@ class SbibuddyGatewayTest extends TestCase
         );
     }
 
-    public function testVerifyFailedPayment()
+    public function testAuthFailedVerifySuccessPayment()
     {
         $this->ba->publicAuth();
 
@@ -255,6 +258,31 @@ class SbibuddyGatewayTest extends TestCase
         {
             $this->verifyPayment($id);
         });
+    }
+
+    public function testAuthFailedVerifyFailurePayment()
+    {
+        $this->testPaymentFailure();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->mockServerContentFunction(
+            function (& $content, $action = null)
+            {
+                if ($action === 'verify')
+                {
+                    $content[ResponseFields::AMOUNT] = '';
+
+                    $content[ResponseFields::STATUS_CODE] = ResponseCodeMap::INSUFFICIENT_BALANCE;
+                }
+            }
+        );
+
+        $this->verifyPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment);
     }
 
     //----------------------Helper methods-----------------------
