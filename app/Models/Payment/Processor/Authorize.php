@@ -2231,6 +2231,10 @@ trait Authorize
     {
         $event = Subscription\Event::CHARGED;
 
+        // TODO Pass options to triggerSubscriptionNotification to treat charge mails differently
+        // - Normal charge
+        // - Card change
+
         if ($subscription->getStatus() === Subscription\Status::COMPLETED)
         {
             if ($oldStatus === Subscription\Status::HALTED)
@@ -2239,6 +2243,9 @@ trait Authorize
             }
 
             $event = Subscription\Event::COMPLETED;
+
+            // TODO Pass options to triggerSubscriptionNotification to treat completed mails differently
+            // - Active to completed (here)
         }
 
         (new Subscription\Core)->triggerSubscriptionNotification($subscription, $event, $payment);
@@ -2381,6 +2388,10 @@ trait Authorize
 
             (new Subscription\Charge)->handleCaptureSuccess($subscription, $payment, $invoice);
         }
+
+        // TODO Pass options to triggerSubscriptionNotification to treat authenticated mails differently
+        // - Upfront Amount
+        // - Immediate
 
         (new Subscription\Core)->triggerSubscriptionNotification($subscription, Subscription\Event::AUTHENTICATED, $payment);
 

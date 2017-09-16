@@ -561,6 +561,8 @@ class Charge extends Base\Core
 
             $core->fireWebhookForStatusUpdate($subscription, Status::COMPLETED, $payment);
 
+            // TODO Pass options to triggerSubscriptionNotification to treat completed mails differently
+            // - pending to completed (here)
             $core->triggerSubscriptionNotification($subscription, Event::COMPLETED, $payment);
         }
         else

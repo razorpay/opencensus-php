@@ -13,6 +13,13 @@ class Halted extends Base
         return $this;
     }
 
+    protected function addHtmlView()
+    {
+        $this->view('emails.subscription.halted');
+
+        return $this;
+    }
+
     protected function getResult()
     {
         return 'Subscription halted';

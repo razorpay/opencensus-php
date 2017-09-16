@@ -43,7 +43,6 @@ class MailTags
     const ECOD                             = 'ecod';
 
     const SUBSCRIPTION_AUTHENTICATED       = 'subscription_authenticated';
-    const SUBSCRIPTION_ACTIVATED           = 'subscription_activated';
     const SUBSCRIPTION_CHARGED             = 'subscription_charged';
     const SUBSCRIPTION_PENDING             = 'subscription_pending';
     const SUBSCRIPTION_HALTED              = 'subscription_halted';

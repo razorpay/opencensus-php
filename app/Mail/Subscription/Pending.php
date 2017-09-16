@@ -13,6 +13,13 @@ class Pending extends Base
         return $this;
     }
 
+    protected function addHtmlView()
+    {
+        $this->view('emails.subscription.pending');
+
+        return $this;
+    }
+
     protected function getResult()
     {
         return 'Subscription charge failed';

@@ -1484,7 +1484,8 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('authenticated', $subscription['status']);
 
         // subscription.activated event fired after first charge
-        // $this->mockAndTestWebhookDataCustom('subscription.activated', 'subscriptionWebhookDataForFirstActivated');
+        $this->mockAndTestWebhookDataCustom('subscription.activated', 'subscriptionWebhookDataForFirstActivated');
+
         $this->chargeSubscriptionsViaCron($subscription['charge_at'] + 10);
 
         $subscription = $this->getLastEntity('subscription', true);

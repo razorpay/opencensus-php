@@ -13,6 +13,13 @@ class Cancelled extends Base
         return $this;
     }
 
+    protected function addHtmlView()
+    {
+        $this->view('emails.subscription.cancelled');
+
+        return $this;
+    }
+
     protected function getResult()
     {
         return 'Subscription cancelled';

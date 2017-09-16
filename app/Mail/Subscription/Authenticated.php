@@ -13,6 +13,13 @@ class Authenticated extends Base
         return $this;
     }
 
+    protected function addHtmlView()
+    {
+        $this->view('emails.subscription.authenticated');
+
+        return $this;
+    }
+
     protected function getResult()
     {
         return 'Subscription initialized';

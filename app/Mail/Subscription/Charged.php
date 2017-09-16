@@ -13,6 +13,13 @@ class Charged extends Base
         return $this;
     }
 
+    protected function addHtmlView()
+    {
+        $this->view('emails.subscription.charged');
+
+        return $this;
+    }
+
     protected function getResult()
     {
         return 'Subscription charged successfully';

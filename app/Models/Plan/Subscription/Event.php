@@ -7,7 +7,6 @@ use RZP\Constants\MailTags;
 class Event
 {
     const AUTHENTICATED = 'authenticated';
-    const ACTIVATED     = 'activated';
     const CHARGED       = 'charged';
     const PENDING       = 'pending';
     const HALTED        = 'halted';
@@ -17,7 +16,6 @@ class Event
 
     const CUSTOMER_EVENTS = [
         self::AUTHENTICATED,
-        self::ACTIVATED,
         self::CHARGED,
         self::PENDING,
         self::HALTED,
@@ -28,7 +26,6 @@ class Event
 
     const MERCHANT_EVENTS = [
         self::AUTHENTICATED,
-        self::ACTIVATED,
         self::CHARGED,
         self::PENDING,
         self::HALTED,
@@ -39,7 +36,6 @@ class Event
 
     const MAIL_TAG_MAP = [
         self::AUTHENTICATED => MailTags::SUBSCRIPTION_AUTHENTICATED,
-        self::ACTIVATED     => MailTags::SUBSCRIPTION_ACTIVATED,
         self::CHARGED       => MailTags::SUBSCRIPTION_CHARGED,
         self::PENDING       => MailTags::SUBSCRIPTION_PENDING,
         self::HALTED        => MailTags::SUBSCRIPTION_HALTED,

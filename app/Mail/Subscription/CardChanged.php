@@ -13,6 +13,13 @@ class CardChanged extends Base
         return $this;
     }
 
+    protected function addHtmlView()
+    {
+        $this->view('emails.subscription.card_changed');
+
+        return $this;
+    }
+
     protected function getResult()
     {
         return 'Subscription Card changed';

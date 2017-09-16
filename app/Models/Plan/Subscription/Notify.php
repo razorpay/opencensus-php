@@ -7,11 +7,15 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Constants\Mode;
-use RZP\Models\Payment;
-use RZP\Models\Plan\Subscription;
 use RZP\Trace\TraceCode;
-use RZP\Mail\Subscription as SubscriptionMail;
+use RZP\Models\Payment;
+use RZP\Models\Merchant;
+use RZP\Models\Invoice;
+use RZP\Models\Card;
+use RZP\Models\Customer;
+use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Processor;
+use RZP\Mail\Subscription as SubscriptionMail;
 
 class Notify extends Processor\Notify
 {
@@ -23,6 +27,12 @@ class Notify extends Processor\Notify
     protected $invoice = null;
     protected $subscription = null;
     protected $slackEnabled = true;
+
+    const TIMESTAMP_FIELDS = [
+        Invoice\Entity::BILLING_START,
+        Invoice\Entity::BILLING_END,
+        Subscription\Entity::CHARGE_AT,
+    ];
 
     /**
      * Creates a new Notify instance
@@ -161,7 +171,7 @@ class Notify extends Processor\Notify
         try
         {
             // Send out notification for Slack
-            $this->notifyViaSlack($event);
+            // $this->notifyViaSlack($event);
 
             // Mails use the entire template
             // So there is no need to get separate data for each
@@ -259,17 +269,17 @@ class Notify extends Processor\Notify
     {
         $data = [
             'subscription' => [
-                'id'         => $this->subscription->getId(),
-                'status'     => $this->subscription->getStatus(),
-                'public_id'  => $this->subscription->getPublicId(),
-                'type'       => $this->subscription->getType(),
+                Subscription\Entity::ID         => $this->subscription->getId(),
+                Subscription\Entity::STATUS     => $this->subscription->getStatus(),
+                Subscription\Entity::PUBLIC_ID  => $this->subscription->getPublicId(),
+                Subscription\Entity::TYPE       => $this->subscription->getType(),
+                Subscription\Entity::CHARGE_AT  => $this->formatTime($this->subscription->getType()),
             ],
             'merchant'  => [
-                'billing_label' => $this->merchant->getBillingLabel(),
-                'website'       => $this->merchant->getWebsite(),
-                // This is the reporting email address for the merchant
-                'email'         => $this->merchant->getTransactionReportEmail(),
-                'id'            => $this->merchant->getId(),
+                Merchant\Entity::BILLING_LABEL => $this->merchant->getBillingLabel(),
+                Merchant\Entity::WEBSITE       => $this->merchant->getWebsite(),
+                Merchant\Entity::EMAIL         => $this->merchant->getTransactionReportEmail(),
+                Merchant\Entity::ID            => $this->merchant->getId(),
             ],
             'customer' => [
                 'email' => $this->subscription->customer->getEmail(),
@@ -280,18 +290,25 @@ class Notify extends Processor\Notify
         if ($this->payment !== null)
         {
             $data['payment']  = [
-                'id'              => $this->payment->getId(),
-                'public_id'       => $this->payment->getPublicId(),
-                'amount'          => $this->payment->getFormattedAmount(),
-                'raw_amount'      => $this->payment->getBaseAmount(),
-                'adjusted_amount' => $this->payment->getAdjustedAmountWrtCustFeeBearer(),
-                'timestamp'       => $this->payment->getUpdatedAt(),
-                'captured_at'     => $this->payment->getAttribute('captured_at'),
+                Payment\Entity::ID              => $this->payment->getId(),
+                Payment\Entity::PUBLIC_ID       => $this->payment->getPublicId(),
+                Payment\Entity::AMOUNT          => $this->payment->getFormattedAmount(),
+                // Payment\Entity::TIMESTAMP       => $this->payment->getUpdatedAt(),
+                Payment\Entity::CAPTURED_AT     => $this->formatTime($this->payment->getAttribute('captured_at')),
 
                 // note that payment method is unavailable to the merchant
-                'method'    => $this->payment->getMethodWithDetail(),
-                'orderId'   => $this->payment->getOrderId(),
+                Payment\Entity::METHOD    => $this->payment->getMethodWithDetail(),
             ];
+
+            if ($this->invoice !== null)
+            {
+                $data['invoice']  = [
+                    Invoice\Entity::ID            => $this->invoice->getId(),
+                    Invoice\Entity::PUBLIC_ID     => $this->invoice->getPublicId(),
+                    Invoice\Entity::BILLING_START => $this->formatTime($this->invoice->getBillingStart()),
+                    Invoice\Entity::BILLING_END   => $this->formatTime($this->invoice->getBillingEnd()),
+                ];
+            }
 
             if ($this->payment->hasCard() === true)
             {
@@ -334,6 +351,16 @@ class Notify extends Processor\Notify
         }
 
         return Carbon::createFromTimestamp($time, "Asia/Kolkata")->format('j M Y');
+    }
+
+    protected function isTimestamp($key, $value)
+    {
+        if (in_array($key, self::TIMESTAMP_FIELDS, true) === true)
+        {
+            return true;
+        }
+
+        return parent::isTimestamp($key, $value);
     }
 
     /**
