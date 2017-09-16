@@ -4,10 +4,9 @@ import Amount from 'rzp/ui/Amount';
 import Time from 'rzp/ui/Time';
 import Spinner from 'rzp/ui/Spinner';
 import { titleCase } from 'rzp/utils/rzp-utils';
-import CopyLink from 'merchant/components/Invoices/CopyLink';
-import ShowWhen from 'merchant/components/ShowWhen';
-import LineItemReadOnlyTable from 'merchant/components/Invoices/LineItemReadOnlyTable';
 import { InvoiceStatusLabel } from 'merchant/components/StatusLabel';
+import { paymentId, status, createdAt } from 'rzp/ui/item/pair';
+import DataTable from 'rzp/ui/Table/DataTable';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
@@ -127,6 +126,25 @@ export default class InvoiceDetail extends Component {
                               value={invoice.amount}
                             />}
                         />
+
+                        {invoice.payments &&
+                          <DataTable
+                            customClass="payments-table"
+                            progressLoader={true}
+                            title="Payments"
+                            columns={[paymentId, status, createdAt]}
+                            items={invoice.payments.items}
+                            loading={isLoading}
+                            showHeaders={false}
+                            noStripe={true}
+                            panelHeading={{
+                              title: 'Payments',
+                              subTitle: `${invoice.payments.count} ${invoice
+                                .payments.count > 1
+                                ? 'attempts'
+                                : 'attempt'}`,
+                            }}
+                          />}
                       </div>
                     </div>
                   </div>
