@@ -9,7 +9,9 @@ class TransferController extends Controller
 {
     public function getTransfer(string $id)
     {
-        $transfer = $this->service()->fetch($id);
+        $input = Request::all();
+
+        $transfer = $this->service()->fetch($id, $input);
 
         return ApiResponse::json($transfer);
     }
