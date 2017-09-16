@@ -105,18 +105,11 @@ class Creator extends Base\Core
     protected $shouldEncrypt = false;
 
      /**
-     * Secret for file encryption
+     * Encryption Handler Instance
      *
-     * @var string Encryption Secret
+     * @var Encryption Handler
      */
-    protected $encryptionSecret;
-
-     /**
-     * Excryption type for file
-     *
-     * @var string Encryption type
-     */
-    protected $encryptionType;
+    protected $encryptionHandler;
 
     /**
      * Format in which file has to be Compress
@@ -269,13 +262,11 @@ class Creator extends Base\Core
      *
      * @return Creator object
      */
-    public function encrypt($type, $secret)
+    public function encrypt(string $type, array $params)
     {
         $this->shouldEncrypt = true;
 
-        $this->encryptionType = $type;
-
-        $this->encryptionSecret = $secret;
+        $this->encryptionHandler = new Encryption($type, $params);
 
         return $this;
     }
@@ -686,9 +677,9 @@ class Creator extends Base\Core
 
     protected function encryptFile()
     {
-        $unzippedFilePath = $this->getFullFilePath();
+        $fileToBeEncrypted = $this->getFullFilePath();
 
-        (new Encryption)->encrypt($this->encryptionType, $this->encryptionSecret, $unzippedFilePath);
+        $this->encryptionHandler->encryptFile($fileToBeEncrypted);
     }
 
     /*

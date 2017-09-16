@@ -12,43 +12,38 @@ class Encryption
         self::PGP_ENCRYPTION,
     ];
 
-     /**
-     * Encrypts the file
-     *
-     * @param string $type     encryption type
-     * @param string $secret   encryption secret
-     * @param string $filePath Full File Path
-     *
-     * @return null
-     * @throws Exception\LogicException
-     */
-    public function encrypt(string $type, string $secret, string $filePath)
+    protected $params;
+
+    protected $cipher;
+
+    public function __construct(string $type, array $params)
     {
-        $this->validateEncryptionType($type);
+        $this->params = $params;
 
-        $function = 'do' . studly_case($type);
-
-        $this->$function($secret, $filePath);
+        $this->cipher = $this->getCipher($type);
     }
 
-    protected function validateEncryptionType(string $type)
+    public function getCipher($type)
     {
-        if (in_array($type, self::VALID_ENCRYPTION_TYPES) === false)
+        switch ($type)
         {
-           throw new Exception\LogicException('Not A Valid Encryption Type');
+            case self::PGP_ENCRYPTION:
+                 // below is not implemented, needs to be implemented or
+                 // used from a library preferably if available
+                 return new PGPEncrypter($this->params);
+
+            default:
+                throw new Exception\LogicException('Not A Valid Encryption Type');
         }
+
     }
 
-    protected function doPgpEncryption($secret, $filePath)
+    public function encryptFile(string $filePath)
     {
-        $res = gnupg_init();
-
-        gnupg_addencryptkey($res,$secret);
-
         $data = file_get_contents($filePath);
 
-        $enc = gnupg_encrypt($res, $data);
+        $encryptedData = $this->cipher->encrypt($data);
 
-        file_put_contents($filePath, $enc);
+        file_put_contents($filePath, $encryptedData);
     }
 }
