@@ -124,7 +124,19 @@ export default ({
                 <EntityDetailRow
                   label="Status"
                   value={() =>
-                    <SubscriptionStatusLabel status={subscription.status} />}
+                    <div>
+                      <SubscriptionStatusLabel status={subscription.status} />
+
+                      <span>
+                        {['cancelled', 'completed', 'expired'].indexOf(
+                          subscription.status
+                        ) === -1
+                          ? <button class="btn-link" onClick={onCancelClick}>
+                              Cancel Subscription
+                            </button>
+                          : null}
+                      </span>
+                    </div>}
                 />
 
                 <EntityDetailRow
@@ -158,15 +170,6 @@ export default ({
                 />
 
                 <hr />
-                <div class="col-sm-offset-4 col-sm-8">
-                  {['cancelled', 'completed', 'expired'].indexOf(
-                    subscription.status
-                  ) === -1
-                    ? <button class="btn btn-primary" onClick={onCancelClick}>
-                        Cancel Subscription
-                      </button>
-                    : null}
-                </div>
               </div>
             </div>
           </div>}
