@@ -7,7 +7,6 @@ import InvoiceDetail from 'merchant/components/Subscriptions/InvoiceDetail';
 import {
   fetchSubscription as fetchItem,
   fetchInvoices,
-  cancelSubscription,
 } from 'merchant/modules/subscriptions';
 import { fetchPlan } from 'merchant/modules/plans';
 import { fetchCustomer } from 'merchant/modules/customers';
@@ -34,9 +33,8 @@ import CancellationModal from './CancellationModal';
     fetchInvoices,
     fetchPlan,
     fetchCustomer,
-    cancelSubscription,
     showNotification,
-    openModal
+    openModal,
   }
 )
 export default class SubscriptionDetailsContainer extends Component {
