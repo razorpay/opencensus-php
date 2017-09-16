@@ -6,8 +6,10 @@ import { NavLink } from 'react-router-dom';
 
 /*
   // Usage: Check slider/details view of payments, plans, etc.
-  // Constraint: 1. Pass props 'progressLoader' to <Table> only when progress loaders is shown instead of <Spinner>.
-                 2. Passing props 'customClass' is advised so as to have more control on `progress loader` length
+  // Constraint:
+     1. Pass props 'progressLoader' to <Table> only when progress loaders is shown instead of <Spinner>.
+     2. Passing props 'customClass' is advised so as to have more control on `progress loader` length
+     3. Passing props 'panelHeading = {title:, subTitle}' is kind of header but it's not table th (Check subscriptions dual view)
 */
 
 export default function DataTable(props) {
@@ -25,14 +27,25 @@ export default function DataTable(props) {
     progressLoader,
     customClass,
     noStripe,
+    panelHeading,
   } = props;
 
-  const classes = `${noStripe ? '' : 'table-striped '}
-                   ${columns ? customClass : ''}`;
+  const classes = `${noStripe ? '' : 'table-striped'} ${columns
+    ? customClass
+    : ''}`;
 
   return (
-    <div>
+    <div class="data-table">
       {error && <Alert type="error" message={error} />}
+      {panelHeading &&
+        <div class="list-heading">
+          <span class="label--primary">
+            {panelHeading.title}
+          </span>
+          <span class="label--secondary" style={{ float: 'right' }}>
+            {panelHeading.subTitle}
+          </span>
+        </div>}
 
       <Table
         rows={items}
