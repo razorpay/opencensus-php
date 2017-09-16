@@ -274,8 +274,9 @@ app
                 'Features have been added successfully.',
                 true
               );
-              $scope.merchant.details.allowedFeatures[mode] = data.data.all_features;
-              $scope.merchant.details.features[mode] = getFeatureNames(
+              // When shouldSync is true, requestData.mode will be live but mode can be test/live
+              $scope.merchant.details.allowedFeatures[requestData.mode] = data.data.all_features;
+              $scope.merchant.details.features[requestData.mode] = getFeatureNames(
                 data.data.assigned_features
               );
               // If features were added to both, the response will have features for live
