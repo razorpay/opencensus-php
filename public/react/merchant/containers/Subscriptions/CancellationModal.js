@@ -74,11 +74,7 @@ export default class CancellationModal extends Component {
               will move to cancelled state.
             </div>
 
-            <div
-              style={{
-                padding: '8px 0',
-              }}
-            >
+            <div style={{ padding: '8px 0' }}>
               <Field
                 component={RadioButton}
                 name="cancel_at_cycle_end"
