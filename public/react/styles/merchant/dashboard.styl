@@ -460,21 +460,29 @@
   }
 }
 
-// Entity Detail List
-.entity-detail-list {
-  margin: 16px 0;
-  border-bottom: 1px solid #C6CFD9;
-
-  .panel-heading {
+// Entity Detail List & Data Table
+.entity-detail-list, .data-table {
+  .list-heading {
     background-color: #F7F8FA;
     border-top: 1px solid #dfe0e2;
-    border-bottom: 1px solid #e2e3e5;
     padding: 12px;
 
     .label--secondary {
       line-height: 21px;
     }
   }
+}
+
+// Data table
+.details-row-container .data-table {
+  margin: 20px 0;
+  border-bottom: 1px solid #C6CFD9;
+}
+
+// Entity Detail List
+.entity-detail-list {
+  margin: 16px 0;
+  border-bottom: 1px solid #C6CFD9;
 
   button {
     padding: 12px;
@@ -485,6 +493,14 @@
     }
   }
 
-  .panel-content {
+  .list-heading {
+    border-bottom: 1px solid #e2e3e5;
+  }
+}
+
+.details-row-container .data-table {
+  table {
+    margin-bottom: 0;
+    border-bottom: none;
   }
 }

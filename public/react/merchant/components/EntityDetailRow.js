@@ -1,4 +1,4 @@
-export default ({ label, value, ...otherProps }) => {
+export default ({ label, value, children, ...otherProps }) => {
   if (value === null || value === undefined || value === '') {
     value = '--';
   }
@@ -12,11 +12,13 @@ export default ({ label, value, ...otherProps }) => {
           </div>}
       {/*<span class="pair-separator">:</span>*/}
       <div class="pair-value">
-        {typeof value === 'function'
-          ? value()
-          : <span class="label--primary">
-              {value + ''}
-            </span>}
+        {children
+          ? children
+          : typeof value === 'function'
+            ? value()
+            : <span class="label--primary">
+                {value + ''}
+              </span>}
       </div>
     </div>
   );

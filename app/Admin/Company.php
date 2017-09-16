@@ -4,6 +4,8 @@ namespace App\Admin;
 
 use Requests_Session;
 use Sunra\PhpSimple\HtmlDomParser;
+use Trace;
+use App\Trace\TraceCode;
 
 /**
  * Fetches company data from MCA website
@@ -35,7 +37,6 @@ class Company
         $this->defaultersDINList = file(__DIR__.'/mca/din.txt', FILE_IGNORE_NEW_LINES);
 
         $this->session = new Requests_Session(self::PORTAL_BASE_URL);
-        $res = $this->session->get(self::INDEX_URL);
     }
 
     public function parseCompanyDetails($dom)
@@ -118,12 +119,44 @@ class Company
             'companyID'     =>  $this->cin
         ];
 
-        $response = $this->session->post(
-            self::INFO_URL,
-            self::HEADERS,
-            $data,
-            self::OPTIONS
-        );
+        $response = null;
+
+        try
+        {
+            $response = $this->session->post(
+                self::INFO_URL,
+                self::HEADERS,
+                $data,
+                self::OPTIONS
+            );
+        }
+        catch (\Exception $exception)
+        {
+            $errorMessage = $exception->getMessage();
+
+            /*
+             * We search for 28 error code in the error message, which denotes for a timout exception.
+             * In that case, we just trace the exception with info level else throw the same exception
+             * Reference => https://curl.haxx.se/libcurl/c/libcurl-errors.html
+             */
+            if (strpos($errorMessage, "cURL error 28:") !== false)
+            {
+                Trace::info(TraceCode::MISC_TRACE_CODE, [
+                    'message'   => $exception->getMessage(),
+                    'code'      => $exception->getCode(),
+                    'stack'     => $exception->getTraceAsString(),
+                ]);
+            }
+            else
+            {
+                throw $exception;
+            }
+        }
+
+        if (empty($response) === true)
+        {
+            return $response;
+        }
 
         return $response->body;
     }
@@ -131,7 +164,16 @@ class Company
     public function fetch()
     {
         $newCin = $this->retry();
+
         $res = $this->fetchData();
+
+        if (empty($res) === true)
+        {
+            return [
+                'company'     => [],
+                'signatories' => []
+            ];
+        }
 
         if (strpos($res, self::NOT_FOUND_ERROR) !== false)
         {

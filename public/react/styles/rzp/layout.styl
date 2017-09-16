@@ -569,6 +569,11 @@ tr:hover .row-action.btn-group {
       resize: vertical;
     }
 
+    .full-width-item {
+      width: 168%;
+      margin-left: -68%;
+    }
+
     // For nested values
     .table-responsive {
       margin-top: 8px;
@@ -739,10 +744,6 @@ tr:hover .row-action.btn-group {
   }
 }
 
-.amount {
-  white-space: nowrap;
-}
-
 .ProfileDropdown {
   min-width: 300px;
   padding: 0;
@@ -864,12 +865,28 @@ tr:hover .row-action.btn-group {
     border-color: #eaeff0;
     border-top-width: 0;
   }
+
+  .rzp-definition {
+    color: inherit;
+
+    dd {
+      color: #7B8199;
+    }
+
+    .LoaderDots > span {
+      font-size: inherit;
+    }
+  }
 }
 
 .ReactModal__Overlay .rzp-banner {
-
   border-width: 0;
   border-bottom-width: 1px;
+}
+
+.ReactModal__Overlay .pair-group-item .pair-value .full-width-item {
+  width: 169%;
+  margin-left: -69%;
 }
 
 .secondary-details {

@@ -93,59 +93,44 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function postActivation($accountId = null)
+    public function postActivation()
     {
-        $service = new MerchantDetails\Service;
+        $input = ['submit' => true];
 
-        if ($accountId !== null)
+        list($error, $data) = (new Merchant\Service)->saveActivationData($input);
+
+        if (empty($error) === true)
         {
-            $service->forAccount($accountId);
+            if ($data['can_submit'] === false)
+            {
+                $error = ['Some mandatory fields are required'];
+            }
         }
-
-        $error = $service->submitDetails();
 
         return AppResponse::jsonResponse($error);
     }
 
-    public function postSaveActivationStep($stepNumber, $accountId = null)
+    public function postSaveActivationStep($stepNumber)
     {
         $input = Input::all();
-
-        $service = new MerchantDetails\Service;
 
         $uploadStep = 5;
 
-        if ($accountId !== null)
-        {
-            $service->forAccount($accountId);
-
-            $uploadStep = 3;
-        }
+        $error = [];
 
         if ((int) $stepNumber !== $uploadStep)
         {
-            $error = $service->saveDetails($stepNumber, $input);
-        }
-        else
-        {
-            $error = $service->checkUploads();
+            list($error, $data) = (new Merchant\Service)->saveActivationData($input);
         }
 
         return AppResponse::jsonResponse($error);
     }
 
-    public function postSaveActivationFile($accountId = null)
+    public function postSaveActivationFile()
     {
         $input = Input::all();
 
-        $service = new MerchantDetails\Service;
-
-        if ($accountId !== null)
-        {
-            $service->forAccount($accountId);
-        }
-
-        $error = $service->saveUploadedFile($input);
+        list($error, $data) = (new Merchant\Service)->saveActivationFilesData($input);
 
         return AppResponse::jsonResponse($error);
     }
@@ -187,9 +172,7 @@ class MerchantController extends Controller
     {
         $this->checkMode($mode);
 
-        $input = Input::all();
-
-        list($error, $data) = (new Api\Service)->fetchCollection($input, $mode, 'invoice');
+        list($error, $data) = (new Merchant\Service)->fetchInvoices($mode);
 
         return AppResponse::jsonResponse($error, $data);
     }

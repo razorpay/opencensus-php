@@ -1923,6 +1923,12 @@ app
 
         return request;
       }
+      function addEntityMode(items, mode) {
+        items = items.map(function(obj) {
+          obj.entity_mode = mode;
+          return obj;
+        });
+      }
       function fetchTerminals() {
         var items = [];
         var count = 0;
@@ -1931,6 +1937,7 @@ app
         liveTerminalRequest
           .success(function(data) {
             if (data.success) {
+              addEntityMode(data.data.items, 'live');
               $scope.merchant.terminals.items = $scope.merchant.terminals.items.concat(
                 data.data.items
               );
@@ -1951,6 +1958,7 @@ app
         testTerminalRequest
           .success(function(data) {
             if (data.success) {
+              addEntityMode(data.data.items, 'test');
               $scope.merchant.terminals.items = $scope.merchant.terminals.items.concat(
                 data.data.items
               );
