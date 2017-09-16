@@ -21,6 +21,13 @@ class Core extends Base\Core
 
         $assignedFeatureNames = $existingFeatures->pluck(Entity::NAME)->toArray();
 
+        $this->trace->info(TraceCode::MERCHANT_FEATURE_EDIT_REQUEST,
+            [
+                'merchant_id'  => $feature->getEntityId(),
+                'old_features' => $assignedFeatureNames,
+                'new_feature'  => $feature->getName()
+            ]);
+
         if ($shouldSync === true)
         {
             $this->trace->info(TraceCode::FEATURE_SYNCED,
@@ -33,32 +40,30 @@ class Core extends Base\Core
         }
         else
         {
-            if (in_array($feature->getName(), $assignedFeatureNames, true) === false)
-            {
-                $this->trace->info(TraceCode::MERCHANT_FEATURE_EDIT,
-                    [
-                        'merchant_id'  => $feature->getEntityId(),
-                        'old_features' => $assignedFeatureNames,
-                        'new_feature'  => $feature->getName()
-                    ]);
-
-                $this->trace->info(TraceCode::FEATURE_NOT_SYNCED,
-                    [
-                        'entity_id'     => $feature->getEntityId(),
-                        'entity_name'   => $feature->getName()
-                    ]);
-
-                $this->repo->feature->saveOrFail($feature);
-            }
-            else
-            {
-                return null;
-            }
+            $this->saveFeatureOrFail($feature, $assignedFeatureNames);
         }
 
         $this->notifyOnSlack($feature);
 
         return $feature;
+    }
+
+    public function saveFeatureOrFail($feature, $assignedFeatureNames)
+    {
+        if (in_array($feature->getName(), $assignedFeatureNames, true) === false)
+        {
+            $this->trace->info(TraceCode::FEATURE_NOT_SYNCED,
+                [
+                    'entity_id'     => $feature->getEntityId(),
+                    'entity_name'   => $feature->getName()
+                ]);
+
+            $this->repo->feature->saveOrFail($feature);
+        }
+        else
+        {
+            return null;
+        }
     }
 
     public function delete($entityId, $feature, bool $shouldSync = false)
@@ -145,7 +150,6 @@ class Core extends Base\Core
             if ($testEntity === null)
             {
                 $testEntity = clone $entity;
-                $testEntity->resetAuditAction();
                 $testEntity->setConnection(Mode::TEST);
                 $testEntity->saveOrFail();
             }
@@ -153,7 +157,6 @@ class Core extends Base\Core
             if ($liveEntity === null)
             {
                 $liveEntity = clone $entity;
-                $liveEntity->resetAuditAction();
                 $liveEntity->setConnection(Mode::LIVE);
                 $liveEntity->saveOrFail();
             }
