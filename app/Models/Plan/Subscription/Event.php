@@ -6,6 +6,7 @@ use RZP\Constants\MailTags;
 
 class Event
 {
+    const AUTHENTICATED = 'authenticated';
     const ACTIVATED     = 'activated';
     const CHARGED       = 'charged';
     const PENDING       = 'pending';
@@ -15,6 +16,7 @@ class Event
     const CARD_CHANGED  = 'card_changed';
 
     const CUSTOMER_EVENTS = [
+        self::AUTHENTICATED,
         self::ACTIVATED,
         self::CHARGED,
         self::PENDING,
@@ -25,20 +27,25 @@ class Event
     ];
 
     const MERCHANT_EVENTS = [
+        self::AUTHENTICATED,
         self::ACTIVATED,
         self::CHARGED,
         self::PENDING,
         self::HALTED,
         self::CANCELLED,
         self::COMPLETED,
+        self::CARD_CHANGED,
     ];
 
     const MAIL_TAG_MAP = [
-        self::ACTIVATED => MailTags::SUBSCRIPTION_ACTIVATED,
-        self::CHARGED   => MailTags::SUBSCRIPTION_CHARGED,
-        self::PENDING   => MailTags::SUBSCRIPTION_PENDING,
-        self::HALTED    => MailTags::SUBSCRIPTION_HALTED,
-        self::CANCELLED => MailTags::SUBSCRIPTION_CANCELLED,
+        self::AUTHENTICATED => MailTags::SUBSCRIPTION_AUTHENTICATED,
+        self::ACTIVATED     => MailTags::SUBSCRIPTION_ACTIVATED,
+        self::CHARGED       => MailTags::SUBSCRIPTION_CHARGED,
+        self::PENDING       => MailTags::SUBSCRIPTION_PENDING,
+        self::HALTED        => MailTags::SUBSCRIPTION_HALTED,
+        self::CANCELLED     => MailTags::SUBSCRIPTION_CANCELLED,
+        self::COMPLETED     => MailTags::SUBSCRIPTION_COMPLETED,
+        self::CARD_CHANGED  => MailTags::SUBSCRIPTION_CARD_CHANGED,
     ];
 
     public static function isCustomerEvent(string $event)

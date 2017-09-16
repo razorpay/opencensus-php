@@ -10,11 +10,13 @@ use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Plan\Subscription;
 use RZP\Trace\TraceCode;
+use RZP\Mail\Subscription as SubscriptionMail;
 use RZP\Models\Payment\Processor;
 
 class Notify extends Processor\Notify
 {
     protected $payment;
+    protected $merchant;
     protected $mode;
     protected $trace;
     protected $template;
@@ -36,6 +38,8 @@ class Notify extends Processor\Notify
         $this->trace = $this->app['trace'];
 
         $this->subscription = $subscription;
+
+        $this->merchant = $this->subscription->merchant;
 
         if ($payment !== null)
         {
@@ -91,7 +95,7 @@ class Notify extends Processor\Notify
         {
             $mailable = new $mailableClass($this->template);
 
-            if ($this->isCustomerMailEnabled($mailable) === true)
+            if ($this->isCustomerMailEnabledForMerchant($mailable) === true)
             {
                 Mail::queue($mailable);
             }
@@ -208,18 +212,27 @@ class Notify extends Processor\Notify
         $data = $this->template['subscription'];
         $data['id'] = $this->getSubscriptionLinkForSlack($data['id']);
 
+        $payment   = null;
+        $paymentId = null;
+
+        if ($this->payment !== null)
+        {
+            $payment = $this->template['payment'];
+
+            $paymentId = $payment['id'];
+        }
+
         switch ($event)
         {
             // Both cases are the same
             case Event::ACTIVATED:
             case Event::CHARGED:
-                $payment = $this->template['payment'];
-                $data['payment_id'] = $this->getPaymentLinkForSlack($payment['id']);
+                $data['payment_id'] = $this->getPaymentLinkForSlack($paymentId);
                 break;
             case Event::PENDING:
             case Event::HALTED:
-                $data['payment'] = $this->template['payment'];
-                $data['payment']['id'] = $this->getPaymentLinkForSlack($data['payment']['id']);
+                $data['payment'] = $payment;
+                $data['payment']['id'] = $this->getPaymentLinkForSlack($paymentId);
                 break;
             case Event::CANCELLED:
                 break;
@@ -251,26 +264,25 @@ class Notify extends Processor\Notify
                 'public_id'  => $this->subscription->getPublicId(),
             ],
             'merchant'  => [
-                'billing_label' => $this->subscription->merchant->getBillingLabel(),
-                'website'       => $this->subscription->merchant->getWebsite(),
+                'billing_label' => $this->merchant->getBillingLabel(),
+                'website'       => $this->merchant->getWebsite(),
                 // This is the reporting email address for the merchant
-                'email'         => $this->subscription->merchant->getTransactionReportEmail(),
-                'id'            => $this->subscription->merchant->getId(),
+                'email'         => $this->merchant->getTransactionReportEmail(),
+                'id'            => $this->merchant->getId(),
+            ],
+            'customer' => [
+                'email' => $this->subscription->customer->getEmail(),
+                'phone' => $this->subscription->customer->getContact()
             ],
         ];
 
         if ($this->payment !== null)
         {
-            $data['customer'] = [
-                'email' => $this->payment->getEmail(),
-                'phone' => $this->payment->getContact()
-            ];
-
             $data['payment']  = [
                 'id'              => $this->payment->getId(),
                 'public_id'       => $this->payment->getPublicId(),
                 'amount'          => $this->payment->getFormattedAmount(),
-                'raw_amount'      => $this->payment['base_amount'],
+                'raw_amount'      => $this->payment->getBaseAmount(),
                 'adjusted_amount' => $this->payment->getAdjustedAmountWrtCustFeeBearer(),
                 'timestamp'       => $this->payment->getUpdatedAt(),
                 'captured_at'     => $this->payment->getAttribute('captured_at'),
@@ -278,7 +290,6 @@ class Notify extends Processor\Notify
                 // note that payment method is unavailable to the merchant
                 'method'    => $this->payment->getMethodWithDetail(),
                 'orderId'   => $this->payment->getOrderId(),
-                'risk'      => $this->payment->merchant->getRiskRating()
             ];
 
             if ($this->payment->hasCard() === true)
@@ -302,6 +313,24 @@ class Notify extends Processor\Notify
         }
 
         return $data;
+    }
+
+    /**
+     * Decides if we send a mail to customer for a payment event
+     *
+     *
+     * @return bool
+     */
+    protected function isCustomerMailEnabledForMerchant()
+    {
+        // If the merchant has disabled customer emails
+        // And this was a customer receipt email don't send a mail
+        if ($this->merchant->isReceiptEmailsEnabled() === false)
+        {
+            return false;
+        }
+
+        return $this->isEnabled();
     }
 
     protected function getMailableClass(string $event)

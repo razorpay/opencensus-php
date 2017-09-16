@@ -35,6 +35,7 @@ class Notify
 
     protected $payment;
     protected $refund;
+    protected $merchant;
     protected $mode;
     protected $trace;
     protected $template;
@@ -51,6 +52,8 @@ class Notify
         $this->app = App::getFacadeRoot();
 
         $this->payment = $payment;
+
+        $this->merchant = $this->payment->merchant;
 
         if ($this->payment->hasInvoice())
         {
@@ -281,7 +284,7 @@ class Notify
         $website = $this->template['merchant']['website'];
         $text    = $this->template['merchant']['billing_label'];
 
-        $dashboardLink = $this->payment->merchant->getDashboardEntityLink();
+        $dashboardLink = $this->merchant->getDashboardEntityLink();
         $merchantId = $this->template['merchant']['id'];
 
         // If we don't have billing label or website, just send to dashboard
@@ -400,11 +403,11 @@ class Notify
                 'phone' => $this->payment->getContact()
             ],
             'merchant'  => [
-                'billing_label' => $this->payment->merchant->getBillingLabel(),
-                'website'       => $this->payment->merchant->getWebsite(),
+                'billing_label' => $this->merchant->getBillingLabel(),
+                'website'       => $this->merchant->getWebsite(),
                 // This is the reporting email address for the merchant
-                'email'         => $this->payment->merchant->getTransactionReportEmail(),
-                'id'            => $this->payment->merchant->getId(),
+                'email'         => $this->merchant->getTransactionReportEmail(),
+                'id'            => $this->merchant->getId(),
             ],
             'payment'   => [
                 'id'              => $this->payment->getId(),
@@ -418,7 +421,7 @@ class Notify
                 // note that payment method is unavailable to the merchant
                 'method'    => $this->payment->getMethodWithDetail(),
                 'orderId'   => $this->payment->getOrderId(),
-                'risk'      => $this->payment->merchant->getRiskRating()
+                'risk'      => $this->merchant->getRiskRating()
             ],
         ];
 
@@ -551,7 +554,7 @@ class Notify
 
         // If the merchant has disabled customer emails
         // And this was a customer receipt email don't send a mail
-        if (($this->payment->merchant->isReceiptEmailsEnabled() === false) and
+        if (($this->merchant->isReceiptEmailsEnabled() === false) and
             ($mailable->isCustomerReceiptEmail() === true))
         {
             return false;
@@ -562,7 +565,7 @@ class Notify
 
     protected function isMerchantMailEnabled(PaymentMail\Base $mailable)
     {
-        $merchantTransactionReportEmail = $this->payment->merchant->getTransactionReportEmail();
+        $merchantTransactionReportEmail = $this->merchant->getTransactionReportEmail();
 
         return (($this->isEnabled() === true) and
                 (empty($merchantTransactionReportEmail) === false));

@@ -550,8 +550,6 @@ class Core extends Base\Core
                     $this->cancelImmediately($subscription);
                 }
 
-                $this->triggerSubscriptionNotification($subscription, Event::ACTIVATED);
-
                 return $subscription;
             },
             self::MUTEX_LOCK_TIMEOUT,
@@ -628,6 +626,8 @@ class Core extends Base\Core
 
     public function cancelImmediately(Entity $subscription)
     {
+        $oldStatus = $subscription->getStatus();
+
         $subscription->setStatus(Status::CANCELLED);
 
         $this->setFieldsOnCancel($subscription);
@@ -635,6 +635,19 @@ class Core extends Base\Core
         $this->repo->saveOrFail($subscription);
 
         $this->fireWebhookForStatusUpdate($subscription, Status::CANCELLED);
+
+        $this->triggerSubscriptionCancelledNotification($subscription, $oldStatus);
+    }
+
+    protected function triggerSubscriptionCancelledNotification(Entity $subscription, string $oldStatus)
+    {
+        if (($oldStatus !== Status::HALTED) and
+            ($oldStatus !== Status::CREATED))
+        {
+            // TODO: Add a subscription setting flag to send cancel emails
+
+            $this->triggerSubscriptionNotification($subscription, Event::CANCELLED);
+        }
     }
 
     protected function setFieldsOnCancel(Entity $subscription)
@@ -738,6 +751,8 @@ class Core extends Base\Core
         string $event,
         Payment\Entity $payment = null)
     {
+        assert ($this->repo->isTransactionActive() === false);
+
         $notifier = new Notify($subscription, $payment);
 
         $notifier->trigger($event);

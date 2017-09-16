@@ -2166,7 +2166,11 @@ trait Authorize
             return;
         }
 
+        $oldStatus = $subscription->getStatus();
+
         $this->captureSubscriptionPayment($subscription, $payment);
+
+        $this->triggerAlreadyAuthenticatedSubscriptionNotification($subscription, $oldStatus, $payment);
     }
 
     /**
@@ -2220,6 +2224,26 @@ trait Authorize
         }
     }
 
+    protected function triggerAlreadyAuthenticatedSubscriptionNotification(
+        Subscription\Entity $subscription,
+        string $oldStatus,
+        Payment\Entity $payment)
+    {
+        $event = Subscription\Event::CHARGED;
+
+        if ($subscription->getStatus() === Subscription\Status::COMPLETED)
+        {
+            if ($oldStatus === Subscription\Status::HALTED)
+            {
+                return;
+            }
+
+            $event = Subscription\Event::COMPLETED;
+        }
+
+        (new Subscription\Core)->triggerSubscriptionNotification($subscription, $event, $payment);
+    }
+
     protected function processCardChangeForSubscription(
         Subscription\Entity $subscription,
         Payment\Entity $payment)
@@ -2264,9 +2288,12 @@ trait Authorize
 
         $this->repo->saveOrFail($subscription);
 
+        $core = (new Subscription\Core);
+
+        $core->triggerSubscriptionNotification($subscription, Subscription\Event::CARD_CHANGED, $payment);
+
         if ($activated === true)
         {
-            $core = (new Subscription\Core);
 
             $core->fireWebhookForStatusUpdate($subscription, Subscription\Status::ACTIVE, $payment);
         }
@@ -2354,6 +2381,8 @@ trait Authorize
 
             (new Subscription\Charge)->handleCaptureSuccess($subscription, $payment, $invoice);
         }
+
+        (new Subscription\Core)->triggerSubscriptionNotification($subscription, Subscription\Event::AUTHENTICATED, $payment);
 
         $this->autoRefundAuthTransactionIfApplicable($payment, $subscription);
     }

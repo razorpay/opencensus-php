@@ -757,6 +757,7 @@ class SubscriptionChargeTest extends TestCase
         $this->failCharge();
 
         $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
         $this->assertEquals(1, $result['invoices_created']);
 
         $subscription = $this->getLastEntity('subscription', true);
