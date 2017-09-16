@@ -40,7 +40,12 @@ class Core extends Base\Core
         }
         else
         {
-            $this->saveFeatureOrFail($feature, $assignedFeatureNames);
+            $saved = $this->saveFeatureOrFail($feature, $assignedFeatureNames);
+
+            if ($saved === false)
+            {
+                return null;
+            }
         }
 
         $this->notifyOnSlack($feature);
@@ -59,10 +64,12 @@ class Core extends Base\Core
                 ]);
 
             $this->repo->feature->saveOrFail($feature);
+
+            return true;
         }
         else
         {
-            return null;
+            return false;
         }
     }
 
