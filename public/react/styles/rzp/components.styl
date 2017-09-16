@@ -473,24 +473,14 @@ a.breadcrumb__backNav--link {
 div.rzp-content-toggler {
   div.less-content {
     display: table;
-    position: relative;
-    padding-right: 16px;
     cursor: pointer;
-    line-height: 1.4285714285714286;
+    line-height: 1.43;
+    max-width: 100%;
 
     > div {
 
-      &.less-content-wrapper {
-        width: 100%;
-        display: table;
-      }
-
-      &.less-content-arrow {
-        position: absolute;
-        top: 50%;
-        right: 0;
-        margin-top: -10px;
-      }
+      display: table-cell;
+      vertical-align:middle;
     }
   }
 }
