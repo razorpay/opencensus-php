@@ -161,6 +161,7 @@ export default ({
                   activeSecEntityId={activeSecEntityId}
                   loading={invoices.loading}
                   onManualAttempt={onManualAttempt}
+                  subscriptionStatus={subscription.status}
                   subscriptionType={subscription.type}
                 />
 

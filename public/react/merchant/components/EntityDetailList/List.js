@@ -23,6 +23,7 @@ export default class EntityDetailList extends Component {
       activeSecEntityId,
       onManualAttempt,
       subscriptionType,
+      subscriptionStatus,
     } = this.props;
     let list = [];
 
@@ -71,6 +72,7 @@ export default class EntityDetailList extends Component {
           loading={loading}
           isUpfront={isUpfrontInvoice}
           onManualAttempt={onManualAttempt}
+          subscriptionStatus={subscriptionStatus}
         />
       );
     }
