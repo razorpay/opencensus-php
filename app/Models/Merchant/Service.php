@@ -30,7 +30,6 @@ use RZP\Models\BankAccount;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Settlement\Holidays;
-use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
@@ -1007,7 +1006,7 @@ class Service extends Base\Service
 
         $merchant = $this->merchant;
 
-        $shouldSyncKey = EntityConstants::SHOULD_SYNC;
+        $shouldSyncKey = Feature\Entity::SHOULD_SYNC;
 
         $shouldSync = boolval($input[$shouldSyncKey] ?? false);
 
@@ -1213,7 +1212,7 @@ class Service extends Base\Service
         return $featureNames;
     }
 
-    private function addFeatures($featureNames, $shouldSync = false)
+    private function addFeatures($featureNames, bool $shouldSync = false)
     {
         $merchant = $this->merchant;
 
@@ -1223,14 +1222,14 @@ class Service extends Base\Service
                 Feature\Entity::ENTITY_ID    => $merchant->getId(),
                 Feature\Entity::ENTITY_TYPE  => 'merchant',
                 'names'                      => $featureNames,
-                EntityConstants::SHOULD_SYNC => intval($shouldSync)
+                Feature\Entity::SHOULD_SYNC  => (int) $shouldSync
             ];
 
             (new Feature\Service)->addFeatures($featureParams);
         }
     }
 
-    private function removeFeatures($featureNames, $shouldSync = false)
+    private function removeFeatures($featureNames, bool $shouldSync = false)
     {
         $merchant = $this->merchant;
 

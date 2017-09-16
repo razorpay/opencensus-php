@@ -24,10 +24,10 @@ class Core extends Base\Core
         if ($shouldSync === true)
         {
             $this->trace->info(TraceCode::FEATURE_SYNCED,
-                array (
+                [
                     'entity_id'     => $feature->getEntityId(),
                     'entity_name'   => $feature->getName()
-                ));
+                ]);
 
             $this->saveAndSyncOrFail($feature);
         }
@@ -36,16 +36,17 @@ class Core extends Base\Core
             if (in_array($feature->getName(), $assignedFeatureNames, true) === false)
             {
                 $this->trace->info(TraceCode::MERCHANT_FEATURE_EDIT,
-                    array(
+                    [
                         'merchant_id'  => $feature->getEntityId(),
                         'old_features' => $assignedFeatureNames,
-                        'new_feature'  => $feature->getName()));
+                        'new_feature'  => $feature->getName()
+                    ]);
 
                 $this->trace->info(TraceCode::FEATURE_NOT_SYNCED,
-                    array (
+                    [
                         'entity_id'     => $feature->getEntityId(),
                         'entity_name'   => $feature->getName()
-                    ));
+                    ]);
 
                 $this->repo->feature->saveOrFail($feature);
             }
@@ -77,19 +78,19 @@ class Core extends Base\Core
         if ($shouldSync === true)
         {
             $this->trace->info(TraceCode::FEATURE_SYNCED,
-                array (
+                [
                     'entity_id'     => $feature->getEntityId(),
                     'entity_name'   => $feature->getName()
-                ));
+                ]);
             $this->deleteAndSyncOrFail($feature);
         }
         else
         {
             $this->trace->info(TraceCode::FEATURE_NOT_SYNCED,
-                array (
+                [
                     'entity_id'     => $feature->getEntityId(),
                     'entity_name'   => $feature->getName()
-                ));
+                ]);
             $this->repo->feature->delete($feature);
         }
 

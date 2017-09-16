@@ -4,18 +4,15 @@ namespace RZP\Models\Feature;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Entity as EntityConstants;
 
 
 class Service extends Base\Service
 {
     public function addFeatures($input)
     {
-        $shouldSyncKey = EntityConstants::SHOULD_SYNC;
-
         $featureParams = $this->buildFeatureParams($input);
 
-        $shouldSync = boolval($input[$shouldSyncKey] ?? false);
+        $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
 
         $features = $featureParams->map(function ($item) use ($shouldSync)
         {
@@ -39,11 +36,9 @@ class Service extends Base\Service
 
     public function deleteFeature(string $entityId, string $featureName, array $input)
     {
-        $shouldSyncKey = EntityConstants::SHOULD_SYNC;
-
         $feature = $this->repo->feature->findByEntityIdAndNameOrFail($entityId, $featureName);
 
-        $shouldSync = boolval($input[$shouldSyncKey] ?? false);
+        $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
 
         (new Core)->delete($entityId, $feature, $shouldSync);
 
@@ -56,9 +51,7 @@ class Service extends Base\Service
 
         $entityIds = $input[Constants::ENTITY_IDS];
 
-        $shouldSyncKey = EntityConstants::SHOULD_SYNC;
-
-        $shouldSync = boolval($input[$shouldSyncKey] ?? false);
+        $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
 
         $response = new Base\Collection;
 
