@@ -252,7 +252,7 @@ trait RepositoryUpdateTestAndLive
         return array($testEntity, $liveEntity);
     }
 
-    public function cloneEntity($entity)
+    protected function cloneEntity($entity)
     {
         $testEntity = clone $entity;
         $testEntity->resetAuditAction();
@@ -313,11 +313,9 @@ trait RepositoryUpdateTestAndLive
     * - For cases where we want to sync based on conditions: define
     *   function `shouldSync` in the entity's repository class, returning
     *   `boolean`
-    *   Example: `Feature\Repository::shouldSync($entity)`
+    *   Example: `Schedule\Repository::shouldSync()`
     *
     * @param  PublicEntity   $entity
-    * @param  array          $options
-    *
     * @return bool
     */
     protected function entityShouldSync($entity) : bool
