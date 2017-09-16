@@ -516,9 +516,8 @@ final class FactoryData
         $factory(\RZP\Models\Admin\Admin\Token\Entity::class, [
             'id'            => $faker->uniqueid,
             'admin_id'      => 'RazorpayUserId',
-            'token'         => $faker->name(20),
             'created_at'    => $faker->timestamp,
-            'expires_at'    => $faker->timestamp
+            'expires_at'    => Carbon::now()->addDays(30)->getTimestamp(),
         ]);
 
         $factory(\RZP\Models\Merchant\Detail\Entity::class, [

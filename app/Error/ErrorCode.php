@@ -124,7 +124,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_P2P                                                   = 'BAD_REQUEST_INVALID_P2P';
     const BAD_REQUEST_VPA_DOESNT_EXIST                                              = 'BAD_REQUEST_VPA_DOESNT_EXIST';
 
-// Unauthorized bad requests
+    // Unauthorized bad requests
     const BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED                               = 'BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY                                  = 'BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET                               = 'BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET';
@@ -137,7 +137,11 @@ class ErrorCode
     const BAD_REQUEST_UNAUTHORIZED_API_KEY_EXPIRED                                  = 'BAD_REQUEST_UNAUTHORIZED_API_KEY_EXPIRED';
     const BAD_REQUEST_UNAUTHORIZED                                                  = 'BAD_REQUEST_UNAUTHORIZED';
 
-// Payment bad requests
+    // OAuth Authorization errors
+    const BAD_REQUEST_UNAUTHORIZED_OAUTH_TOKEN_INVALID                              = 'BAD_REQUEST_UNAUTHORIZED_OAUTH_TOKEN_INVALID';
+    const BAD_REQUEST_UNAUTHORIZED_OAUTH_SCOPE_INVALID                              = 'BAD_REQUEST_UNAUTHORIZED_OAUTH_SCOPE_INVALID';
+
+    // Payment bad requests
     const BAD_REQUEST_PAYMENT_FAILED                                                = 'BAD_REQUEST_PAYMENT_FAILED';
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_USER                                     = 'BAD_REQUEST_PAYMENT_CANCELLED_BY_USER';
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_PRESSING_BACK_ON_ANDROID                 = 'BAD_REQUEST_PAYMENT_CANCELLED_BY_PRESSING_BACK_ON_ANDROID';
@@ -491,6 +495,8 @@ class ErrorCode
     const SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE                           = 'SERVER_ERROR_GATEWAY_FILE_ERROR_GENERATING_FILE';
     const SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_MAIL                              = 'SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_MAIL';
 
+    const SERVER_ERROR_AUTH_SERVICE_FAILURE                                         = 'SERVER_ERROR_AUTH_SERVICE_FAILURE';
+
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED                                     = 'BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED';
     const BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS                                  = 'BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS';
@@ -627,6 +633,9 @@ class ErrorCode
 
     const BAD_REQUEST_TOTAL_LOAD_EXCEEDS_MAX_LOAD                                   = 'BAD_REQUEST_TOTAL_LOAD_EXCEEDS_MAX_LOAD';
 
+    const BAD_REQUEST_INVALID_OAUTH_MAIL_TYPE                                       = 'BAD_REQUEST_INVALID_OAUTH_MAIL_TYPE';
+    const BAD_REQUEST_AUTH_SERVICE_ERROR                                            = 'BAD_REQUEST_AUTH_SERVICE_ERROR';
+
     const BAD_REQUEST_COUPON_LIMIT_REACHED                                          = 'BAD_REQUEST_COUPON_LIMIT_REACHED';
     const BAD_REQUEST_COUPON_ALREADY_USED                                           = 'BAD_REQUEST_COUPON_ALREADY_USED';
     const BAD_REQUEST_COUPON_NOT_VALID_FOR_MERCHANT                                 = 'BAD_REQUEST_COUPON_NOT_VALID_FOR_MERCHANT';
@@ -636,5 +645,6 @@ class ErrorCode
 
     const BAD_REQUEST_SNS_PUBLISH_FAILED                                            = 'BAD_REQUEST_SNS_PUBLISH_FAILED';
 
+    const BAD_REQUEST_ADMIN_TOKEN_MISMATCH                                          = 'BAD_REQUEST_ADMIN_TOKEN_MISMATCH';
     const BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE                                    = 'BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE';
 }

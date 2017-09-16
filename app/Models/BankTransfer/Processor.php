@@ -3,7 +3,7 @@
 namespace RZP\Models\BankTransfer;
 
 use RZP\Models\Base;
-use RZP\Constants\Mode;
+use RZP\Constants\Mode as RzpMode;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Payment\Method;
@@ -139,7 +139,7 @@ class Processor extends Base\Core
         //
         // UTR is not sent by dashboard in test mode, but is exposed to the merchant.
         // So we add a mock UTR here itself, and skip the uniqueness check.
-        if (($this->mode === Mode::TEST) and
+        if (($this->mode === RzpMode::TEST) and
             ($this->provider === VirtualAccount\Provider::DASHBOARD) and
             ($this->env !== 'testing'))
         {
@@ -331,8 +331,16 @@ class Processor extends Base\Core
 
         $label = substr(preg_replace('/[^a-zA-Z0-9 ]+/', '', $label), 0, 39);
 
+        $ifscCode = $bankTransfer->getPayerIfsc();
+
+        if ((strlen($ifscCode) !== BankAccount\Entity::IFSC_CODE_LENGTH) and
+            ($bankTransfer->getMode() === Mode::IMPS))
+        {
+            $ifscCode = null;
+        }
+
         return [
-            BankAccount\Entity::IFSC_CODE        => $bankTransfer->getPayerIfsc(),
+            BankAccount\Entity::IFSC_CODE        => $ifscCode,
             BankAccount\Entity::ACCOUNT_NUMBER   => $bankTransfer->getPayerAccount(),
             BankAccount\Entity::BENEFICIARY_NAME => $label,
         ];

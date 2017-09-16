@@ -110,7 +110,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->xmlToArray($response->body);
 
-        $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, $content);
+        $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, ['response' => $content]);
 
         $refundData = $this->getRefundWalletEntityData($input);
 

@@ -37,6 +37,14 @@ trait RequestResponseFlowTrait
 
             $response = $e->generatePublicJsonResponse();
         }
+        catch (\Razorpay\OAuth\Exception\BaseException $e)
+        {
+            $this->checkException($e, $data);
+
+            $this->processAndAssertOAuthException($e, $data['exception']);
+
+            $response = $this->generateOAuthPublicJsonResponse($e);
+        }
         finally
         {
             if ((isset($e) === false) and
@@ -109,6 +117,17 @@ trait RequestResponseFlowTrait
         $internalError = $actual->getError()->getAttributes();
 
         $this->assertErrorDataEquals($expected, $internalError);
+    }
+
+    public function processAndAssertOAuthException($actual, $expected)
+    {
+        $class = (isset($expected['class'])) ? $expected['class'] : Exception\RecoverableException::class;
+
+        $this->assertExceptionClass($actual, $class);
+
+        $internalError = $actual->getMessage();
+
+        $this->assertEquals($expected['message'], $internalError);
     }
 
     protected function processAndAssertResponseData($data, $response)
@@ -246,6 +265,13 @@ trait RequestResponseFlowTrait
             }
         }
 
+        if ($this->ba->isBearerAuth() === true)
+        {
+            $bearerHeaders = $this->ba->getBearerHeader();
+
+            $request['server'] += $this->transformHeadersToServerVars($bearerHeaders);
+        }
+
         /**
          * This is the function signature
          *
@@ -268,7 +294,7 @@ trait RequestResponseFlowTrait
             $request['raw']);
 
         $this->response = $response;
-// sd($response->getContent());
+
         $this->app['request']->generateId();
 
         return $response;
@@ -350,5 +376,19 @@ trait RequestResponseFlowTrait
                 $content[$key] = (string) $value;
             }
         }
+    }
+
+    protected function generateOAuthPublicJsonResponse(\Exception $ex)
+    {
+        if ($ex instanceOf SpineException)
+        {
+            $data = ['error' => ['description' => $ex->getMessage()]];
+
+            return response()->json($data, 500);
+        }
+
+        $httpStatusCode = $ex->getHttpStatusCode();
+
+        return response()->json($ex->toPublicArray(), $httpStatusCode);
     }
 }
