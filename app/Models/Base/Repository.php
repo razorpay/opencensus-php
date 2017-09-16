@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Base;
 
-use RZP\Constants\Mode;
 use RZP\Base\Repository as BaseRepository;
 
 class Repository extends BaseRepository

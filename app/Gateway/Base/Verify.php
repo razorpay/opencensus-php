@@ -31,6 +31,8 @@ class Verify
 
     public $throwExceptionOnMismatch = true;
 
+    public $amountMismatch = false;
+
     public function __construct($gateway, array $input)
     {
         $this->input = $input;
@@ -71,6 +73,7 @@ class Verify
             'status'                    => $this->status,
             'gateway'                   => $this->gateway,
             'verifyResponseContent'     => $this->verifyResponseContent,
+            'amountMismatch'            => $this->amountMismatch,
             'apiSuccess'                => $this->apiSuccess,
             'verifyRequest'             => $this->verifyRequest,
             'gatewaySuccess'            => $this->gatewaySuccess,

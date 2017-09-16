@@ -10,7 +10,6 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Feature;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
-use RZP\Constants\Entity as EntityConstants;
 
 class Validator extends Base\Validator
 {
@@ -85,10 +84,16 @@ class Validator extends Base\Validator
         Entity::ACTION                      => 'required|custom'
     ];
 
+    protected static $oauthMailRules = [
+        'client_id'    => 'required|alpha_num|size:14',
+        'user_id'      => 'required|alpha_num|size:14',
+        'merchant_id'  => 'required|alpha_num|size:14'
+    ];
+
     protected static $featureRules = [
         'features'                   => 'required|array',
         'optout_reason'              => 'sometimes|string|max:200',
-        EntityConstants::SHOULD_SYNC => 'sometimes|string',
+        Feature\Entity::SHOULD_SYNC  => 'sometimes|integer',
     ];
 
     protected static $addTagsRules = [

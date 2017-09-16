@@ -728,6 +728,35 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
+    public function createNetbankingCorporationTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'merchant_id'               => '10000000000000',
+            'card'                      => 0,
+            'netbanking'                => 1,
+            'gateway'                   => 'netbanking_corporation',
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_secure_secret'     => 'secure_secret'
+        ];
+
+        return parent::create($attributes);
+    }
+
+    public function createSharedNetbankingCorporationTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'                        => Shared::NETBANKING_CORPORATION_TERMINAL,
+            'card'                      => 0,
+            'netbanking'                => 1,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'netbanking_corporation',
+            'gateway_merchant_id'       => 'abcd',
+            'gateway_secure_secret'     => 'secure_secret'
+        ];
+
+        return parent::create($attributes);
+    }
+
     public function createSharedSharpTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::SHARP_RAZORPAY_TERMINAL;
@@ -901,6 +930,7 @@ class Terminal extends Base
         $attributes = [
             'id'                => Shared::NETBANKING_ICICI_TPV_TERMINAL,
             'network_category'  => 'securities',
+            'tpv'               => 1,
         ];
 
         return $this->createSharedNetbankingIciciTerminal($attributes);
@@ -946,6 +976,7 @@ class Terminal extends Base
         $attributes = [
             'id'                => Shared::NETBANKING_AXIS_TPV_TERMINAL,
             'network_category'  => 'securities',
+            'tpv'               => 1,
         ];
 
         return $this->createSharedNetbankingAxisTerminal($attributes);
@@ -974,7 +1005,8 @@ class Terminal extends Base
     {
         $attributes = [
             'id'               => Shared::NETBANKING_INDUSIND_TPV_TERMINAL,
-            'network_category' => 'securities'
+            'network_category' => 'securities',
+            'tpv'              => 1,
         ];
 
         return $this->createSharedNetbankingIndusindTerminal($attributes);
@@ -1006,6 +1038,7 @@ class Terminal extends Base
             'gateway'                   => 'netbanking_federal',
             'gateway_merchant_id'       => 'netbanking_federal_merchant_id',
             'netbanking'                => 1,
+            'tpv'                       => 2,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -1017,7 +1050,8 @@ class Terminal extends Base
     {
         $attributes = [
             'id'               => Shared::NETBANKING_FEDERAL_TPV_TERMINAL,
-            'network_category' => 'securities'
+            'network_category' => 'securities',
+            'tpv'              => 1,
         ];
 
         return $this->createSharedNetbankingFederalTerminal($attributes);
@@ -1046,7 +1080,8 @@ class Terminal extends Base
     {
         $attributes = [
             'id'               => Shared::NETBANKING_RBL_TPV_TERMINAL,
-            'network_category' => 'securities'
+            'network_category' => 'securities',
+            'tpv'              => 1,
         ];
 
         return $this->createSharedNetbankingRblTerminal($attributes);

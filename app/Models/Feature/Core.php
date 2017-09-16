@@ -21,28 +21,44 @@ class Core extends Base\Core
 
         $assignedFeatureNames = $existingFeatures->pluck(Entity::NAME)->toArray();
 
-        if (in_array($feature->getName(), $assignedFeatureNames, true) === false)
+        if ($shouldSync === true)
         {
-            $this->trace->info(TraceCode::MERCHANT_FEATURE_EDIT,
-                array('merchant_id'  => $feature->getEntityId(),
-                      'old_features' => $assignedFeatureNames,
-                      'new_feature'  => $feature->getName()));
+            $this->trace->info(TraceCode::FEATURE_SYNCED,
+                [
+                    'entity_id'     => $feature->getEntityId(),
+                    'entity_name'   => $feature->getName()
+                ]);
 
-            if ($shouldSync === true)
+            $this->saveAndSyncOrFail($feature);
+        }
+        else
+        {
+            if (in_array($feature->getName(), $assignedFeatureNames, true) === false)
             {
-                $this->saveAndSyncOrFail($feature);
+                $this->trace->info(TraceCode::MERCHANT_FEATURE_EDIT,
+                    [
+                        'merchant_id'  => $feature->getEntityId(),
+                        'old_features' => $assignedFeatureNames,
+                        'new_feature'  => $feature->getName()
+                    ]);
+
+                $this->trace->info(TraceCode::FEATURE_NOT_SYNCED,
+                    [
+                        'entity_id'     => $feature->getEntityId(),
+                        'entity_name'   => $feature->getName()
+                    ]);
+
+                $this->repo->feature->saveOrFail($feature);
             }
             else
             {
-                $this->repo->feature->saveOrFail($feature);
+                return null;
             }
-
-            $this->notifyOnSlack($feature);
-
-            return $feature;
         }
 
-        return null;
+        $this->notifyOnSlack($feature);
+
+        return $feature;
     }
 
     public function delete($entityId, $feature, bool $shouldSync = false)
@@ -61,10 +77,20 @@ class Core extends Base\Core
 
         if ($shouldSync === true)
         {
+            $this->trace->info(TraceCode::FEATURE_SYNCED,
+                [
+                    'entity_id'     => $feature->getEntityId(),
+                    'entity_name'   => $feature->getName()
+                ]);
             $this->deleteAndSyncOrFail($feature);
         }
         else
         {
+            $this->trace->info(TraceCode::FEATURE_NOT_SYNCED,
+                [
+                    'entity_id'     => $feature->getEntityId(),
+                    'entity_name'   => $feature->getName()
+                ]);
             $this->repo->feature->delete($feature);
         }
 

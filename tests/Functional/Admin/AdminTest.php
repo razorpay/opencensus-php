@@ -285,8 +285,9 @@ class AdminTest extends TestCase
         $admin->roles()->sync([Org::ADMIN_ROLE]);
 
         $adminToken = $this->fixtures->create('admin_token', [
-            'token' => 'secondToken',
-            'admin_id' => $admin->getId(),
+            'id'        => 'AdminToken1234',
+            'token'     => Hash::make('secondToken'),
+            'admin_id'  => $admin->getId(),
         ]);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
@@ -340,10 +341,12 @@ class AdminTest extends TestCase
         $token = $this->fixtures->create('admin_token', [
             'admin_id'   => $admin->getId(),
             'created_at' => $now->timestamp,
+            'token'      => Hash::make('ThisIsATokenForTest'),
             'expires_at' => $now->addYear(1)->timestamp,
         ]);
 
-        $token = $token->getValidToken();
+        // Token Generation is bearer + principal (Id).
+        $token = 'ThisIsATokenForTest' . $token->getId();
 
         // Replace auth with this route
         $this->ba->adminAuth('test', $token);
@@ -369,10 +372,12 @@ class AdminTest extends TestCase
         $token = $this->fixtures->create('admin_token', [
             'admin_id'   => $admin->getId(),
             'created_at' => $now->timestamp,
+            'token'      => Hash::make('ThisIsATokenForTest'),
             'expires_at' => $now->addYear(1)->timestamp,
         ]);
 
-        $token = $token->getValidToken();
+        // Token Generation is bearer + principal (Id).
+        $token = 'ThisIsATokenForTest' . $token->getId();
 
         // Replace auth with this route
         $this->ba->adminAuth('test', $token);
@@ -857,17 +862,27 @@ class AdminTest extends TestCase
         $admin->roles()->sync([Org::ADMIN_ROLE]);
 
         // Create some admin tokens
-        $adminTokens = $this->fixtures->times(3)->create(
+        $adminTokens[] = $this->fixtures->create(
             'admin_token',
             [
                 'admin_id'   => $admin->getId(),
                 'created_at' => $now->timestamp,
+                'token'      => Hash::make('ThisIsATokenForTest'),
+                'expires_at' => $now->addYear(1)->timestamp,
+            ]);
+
+        $adminTokens[] = $this->fixtures->create(
+            'admin_token',
+            [
+                'admin_id'   => $admin->getId(),
+                'created_at' => $now->timestamp,
+                'token'      => Hash::make('ThisIsASecondAdminToken'),
                 'expires_at' => $now->addYear(1)->timestamp,
             ]);
 
         $adminToken = $adminTokens[0];
 
-        $token = $adminToken->getValidToken();
+        $token = 'ThisIsATokenForTest' . $adminToken->getId();
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -887,17 +902,17 @@ class AdminTest extends TestCase
         // Check if the associated token is deleted on logout
         $allTokens = $this->getEntities('admin_token', [], true);
 
-        $remainingTokens = [];
+        $remainingTokenIds = [];
 
         foreach ($allTokens['items'] as $t)
         {
             if ($t['admin_id'] === $adminPublicId)
             {
-                $remainingTokens[] = $t['token'];
+                $remainingTokenIds[] = $t['id'];
             }
         }
 
-        $this->assertArrayNotHasKey($token, $remainingTokens);
+        $this->assertArrayNotHaskey($adminToken->getId(), $remainingTokenIds);
     }
 
     public function testGetAdminByEmailOnAppAuth()

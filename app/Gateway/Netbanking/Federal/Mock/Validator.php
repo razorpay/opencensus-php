@@ -26,7 +26,7 @@ class Validator extends Base\Validator
 
     protected static $verifyRules = [
         RequestFields::PAYEE_ID        => 'required|string',
-        RequestFields::PAYMENT_ID      => 'required|alpha_num|size:14',
+        RequestFields::PAYMENT_ID      => 'required|string|max:29',
         RequestFields::ITEM_CODE       => 'required|alpha_num|size:14',
         RequestFields::AMOUNT          => 'required',
     ];

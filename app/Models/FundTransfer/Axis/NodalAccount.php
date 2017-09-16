@@ -4,6 +4,7 @@ namespace RZP\Models\FundTransfer\Axis;
 
 use Mail;
 use Carbon\Carbon;
+use PHPExcel_Shared_Date;
 
 use RZP\Models\Base;
 use RZP\Models\FileStore;
@@ -35,7 +36,7 @@ class NodalAccount extends Base\Core
     {
         parent::__construct();
 
-        $this->date = Carbon::today(Timezone::IST)->format('m-d-Y');
+        $this->date = Carbon::today(Timezone::IST)->format('n/j/y');
 
         $this->id = Base\UniqueIdEntity::generateUniqueId();
     }
@@ -64,9 +65,9 @@ class NodalAccount extends Base\Core
                         ->name($fileName)
                         ->store(FileStore\Store::S3)
                         ->type(FileStore\Type::FUND_TRANSFER_H2H)
-                        ->id($this->id)
                         ->metadata($metadata)
                         ->headers(false)
+                        ->columnFormat(['C3' => 'dd/mm/yy', 'E3' => 'dd/mm/yy', 'F3' => 'dd/mm/yy'])
                         ->save();
 
         $fileInstance = $file->get();
@@ -98,29 +99,31 @@ class NodalAccount extends Base\Core
         // Deciding on based of amount to choose mode as R or N
         $mode = ($amount >= 200000) ? 'R' : 'N';
 
-        $formattedAmount = sprintf('%0.2f', $amount);
+        $formattedAmount = (float) sprintf('%0.2f', $amount);
 
         // Record Identifier is set as 'D' for Axis bank always in first row
         $headerValues = [
             'D',
             $this->id,
-            '917020041206002',
+            917020041206002,
             $formattedAmount,
-            '1',
+            1,
             '',
         ];
 
         // Mode is set as I for Axis bank always in non-header rows
+        $excelDate = PHPExcel_Shared_Date::PHPToExcel(strtotime($this->date));
+
         $transactionValues = [
             $mode,
             'RZRNAXISCARD',
-            $this->date,
+            $excelDate,
             $formattedAmount,
-            $this->date,
-            $this->date,
+            $excelDate,
+            $excelDate,
         ];
 
-        $values = [self::HEADINGS, $headerValues, $transactionValues,];
+        $values = [self::HEADINGS, $headerValues, $transactionValues];
 
         return $values;
     }

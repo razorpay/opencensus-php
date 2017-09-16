@@ -7,8 +7,12 @@ use Mail;
 use Config;
 use Carbon\Carbon;
 
+use Razorpay\OAuth\Token as OAuthToken;
+use Razorpay\OAuth\Client as OAuthClient;
+
 use RZP\Exception;
 use RZP\Models\Key;
+use RZP\Models\User;
 use RZP\Models\Base;
 use RZP\Models\Offer;
 use RZP\Models\Coupon;
@@ -26,7 +30,6 @@ use RZP\Models\BankAccount;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Settlement\Holidays;
-use RZP\Constants\Entity as EntityConstants;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
@@ -36,6 +39,7 @@ class Service extends Base\Service
     use Notify;
 
     const COUPON_RESPONSE = 'apply_coupon';
+    const OAUTH_MAIL      = 'oauth_mail';
 
     /**
      * Creates a merchant and saves in database
@@ -1002,7 +1006,7 @@ class Service extends Base\Service
 
         $merchant = $this->merchant;
 
-        $shouldSyncKey = EntityConstants::SHOULD_SYNC;
+        $shouldSyncKey = Feature\Entity::SHOULD_SYNC;
 
         $shouldSync = boolval($input[$shouldSyncKey] ?? false);
 
@@ -1208,7 +1212,7 @@ class Service extends Base\Service
         return $featureNames;
     }
 
-    private function addFeatures($featureNames, $shouldSync = false)
+    private function addFeatures($featureNames, bool $shouldSync = false)
     {
         $merchant = $this->merchant;
 
@@ -1218,14 +1222,14 @@ class Service extends Base\Service
                 Feature\Entity::ENTITY_ID    => $merchant->getId(),
                 Feature\Entity::ENTITY_TYPE  => 'merchant',
                 'names'                      => $featureNames,
-                EntityConstants::SHOULD_SYNC => intval($shouldSync)
+                Feature\Entity::SHOULD_SYNC  => (int) $shouldSync
             ];
 
             (new Feature\Service)->addFeatures($featureParams);
         }
     }
 
-    private function removeFeatures($featureNames, $shouldSync = false)
+    private function removeFeatures($featureNames, bool $shouldSync = false)
     {
         $merchant = $this->merchant;
 
@@ -1272,7 +1276,6 @@ class Service extends Base\Service
 
         return $data;
     }
-
     /**
      * Will provide if merchant is confirmed or not.
      *
@@ -1295,5 +1298,65 @@ class Service extends Base\Service
             // True if an confirmed owner is present.
             return !empty($owner);
         }
+    }
+
+    /**
+     * Sends a mail to the merchant when an action is taken
+     * on oauth access to his account
+     *
+     * @param array  $input
+     * @param string $type
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function sendOAuthMail(array $input, string $type): array
+    {
+        $this->trace->info(TraceCode::SEND_OAUTH_MAIL_REQUEST, ['type' => $type, 'input' => $input]);
+
+        (new Merchant\Validator)->validateInput(self::OAUTH_MAIL, $input);
+
+        $merchant = $this->repo->merchant->findOrFail($input[Entity::MERCHANT_ID]);
+        $user     = $this->repo->user->findOrFail($input[User\Entity::USER_ID]);
+        $client   = (new OAuthClient\Repository)->findOrFail($input[OAuthToken\Entity::CLIENT_ID]);
+
+        $mailer = $this->getOAuthMailerClassByType($type);
+
+        $data = [
+            'merchant'    => $merchant->toArrayPublic(),
+            'user'        => $user->toArrayPublic(),
+            'application' => $client->application->toArrayPublic(),
+        ];
+
+        Mail::queue((new $mailer($data)));
+
+        return ['success' => true];
+    }
+
+    /**
+     * Returns OAuth mailer class name by event type. Also validates that
+     * the same exists. If not throws a bad request exception.
+     *
+     * @param string $type
+     *
+     * @return string
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function getOAuthMailerClassByType(string $type): string
+    {
+        $mailer = 'RZP\\Mail\\OAuth\\' . studly_case($type);
+
+        if (class_exists($mailer) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_OAUTH_MAIL_TYPE,
+                null,
+                [
+                    'type' => $type,
+                ]);
+        }
+
+        return $mailer;
     }
 }
