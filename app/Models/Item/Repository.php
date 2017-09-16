@@ -53,7 +53,7 @@ class Repository extends Base\Repository
     {
         $item = $this->findByPublicIdAndMerchant($id, $merchant);
 
-        $item->getValidator()->validateItemTypeIsInAllowedList([$type]);
+        $item->getValidator()->validateItemIsOfType($type);
 
         return $item;
     }

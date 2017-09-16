@@ -3,11 +3,11 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use RZP\Models\LineItem\Entity;
+use RZP\Models\Item;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant;
-use RZP\Models\Item;
 use RZP\Constants\Table;
+use RZP\Models\LineItem\Entity;
 
 class CreateLineItems extends Migration
 {
@@ -57,6 +57,9 @@ class CreateLineItems extends Migration
             $table->string(Entity::UNIT, 512)
                   ->nullable();
 
+            $table->char(Entity::TYPE, 16)
+                  ->default(Item\Type::INVOICE);
+
             $table->char(Entity::ENTITY_ID, Entity::ID_LENGTH);
 
             $table->string(Entity::ENTITY_TYPE, 32);
@@ -79,6 +82,7 @@ class CreateLineItems extends Migration
             $table->index(Entity::DELETED_AT);
             $table->index(Entity::ENTITY_ID);
             $table->index(Entity::ENTITY_TYPE);
+            $table->index(Entity::TYPE);
             $table->index(Entity::REF_ID);
             $table->index(Entity::REF_TYPE);
 

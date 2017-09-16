@@ -39,19 +39,14 @@ class Core extends Base\Core
             $input[Entity::CURRENCY] = $morphEntity->getCurrency();
         }
 
-        $lineItem->build($input);
-
-        // Validations:
-        $morphEntity->getValidator()->validateInvoiceMaxAllowedLineItems();
-
-        $lineItem->getValidator()
-                 ->validateCurrency($morphEntity->getCurrency());
-
-        // Associations:
         $lineItem->merchant()->associate($merchant);
         $lineItem->entity()->associate($morphEntity);
 
         $this->setRefAssociationIfApplicable($input, $lineItem);
+
+        $lineItem->build($input);
+
+        $morphEntity->getValidator()->validateMaxAllowedLineItems();
 
         (new Tax\Core)->createLineItemTaxes($lineItem, $input, $merchant);
 
@@ -107,9 +102,6 @@ class Core extends Base\Core
         $this->setItemAssociationAndModifyInput($lineItem, $input, $merchant, $morphEntity);
 
         $lineItem->edit($input);
-
-        $lineItem->getValidator()
-                 ->validateCurrency($morphEntity->getCurrency());
 
         (new Tax\Core)->cleanUpAndCreateLineItemTaxes(
                             $lineItem,
@@ -305,8 +297,6 @@ class Core extends Base\Core
         }
 
         $item = $this->repo->item->findActiveByPublicIdAndMerchant($input[Entity::ITEM_ID], $merchant);
-
-        $item->getValidator()->validateItemTypeIsAllowedForEntity($item, $morphEntity);
 
         $lineItem->item()->associate($item);
 

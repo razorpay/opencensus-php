@@ -2455,3 +2455,9 @@ ALTER TABLE bank_transfers
 
 ALTER TABLE bank_accounts
     MODIFY COLUMN ifsc_code varchar(11) NULL;
+
+# Pre deployment of branch 'invoice_items_constraints'
+
+ALTER TABLE line_items
+    ADD COLUMN type VARCHAR(16) DEFAULT 'invoice' AFTER currency,
+    ADD INDEX line_items_type_index (type);

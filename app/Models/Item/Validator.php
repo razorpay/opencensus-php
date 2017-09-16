@@ -19,7 +19,7 @@ class Validator extends Base\Validator
         Entity::AMOUNT              => 'required_without:unit_amount|integer|min:100',
         Entity::UNIT_AMOUNT         => 'required_without:amount|integer|min:100',
         Entity::CURRENCY            => 'required|size:3|in:INR',
-        Entity::TYPE                => 'sometimes|string|max:16|custom',
+        Entity::TYPE                => 'filled|string|max:16|custom',
         Entity::UNIT                => 'sometimes|string|max:512',
         Entity::TAX_INCLUSIVE       => 'sometimes|boolean',
         Entity::TAX_ID              => 'sometimes|public_id|size:18',
@@ -123,39 +123,19 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateItemTypeIsInAllowedList(array $allowedTypes)
+    public function validateItemIsOfType(string $type)
     {
         $item = $this->entity;
 
-        $isItemTypeInAllowed = in_array($item->getType(), $allowedTypes, true);
-
-        if ($isItemTypeInAllowed === false)
+        if ($item->isNotOfType($type))
         {
             $payload = [
-                Entity::ID   => $item->getId(),
-                Entity::TYPE => $item->getType(),
+                Entity::ENTITY => $item->getEntity(),
+                Entity::ID     => $item->getId(),
+                Entity::TYPE   => $item->getType(),
             ];
 
             throw new BadRequestException(ErrorCode::BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE, null, $payload);
         }
-    }
-
-
-    public function validateItemTypeIsAllowedForEntity(Entity $item, BaseModel\PublicEntity $morphEntity)
-    {
-        if ($morphEntity instanceof Invoice\Entity === false)
-        {
-            $allowedTypes = [];
-        }
-        else if ($morphEntity->hasSubscription() === true)
-        {
-            $allowedTypes = [Type::PLAN, Type::ADDON];
-        }
-        else
-        {
-            $allowedTypes = [Type::INVOICE];
-        }
-
-        $this->validateItemTypeIsInAllowedList($allowedTypes);
     }
 }

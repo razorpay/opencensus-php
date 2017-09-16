@@ -84,6 +84,7 @@ class Core extends Base\Core
         else
         {
             $itemInput = $input[Entity::ITEM];
+
             $itemInput[Entity::TYPE] = $type;
 
             $item = $this->create($itemInput, $merchant);

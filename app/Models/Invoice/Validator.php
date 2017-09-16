@@ -646,15 +646,14 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateInvoiceMaxAllowedLineItems()
+    public function validateMaxAllowedLineItems()
     {
-        $invoice        = $this->entity;
-        $lineItemsCount = $invoice->lineItems()->count();
+        $invoice = $this->entity;
+        $count   = $invoice->lineItems()->count();
 
-        if ($lineItemsCount >= self::MAX_ALLOWED_LINE_ITEMS)
+        if ($count >= self::MAX_ALLOWED_LINE_ITEMS)
         {
-            $message = 'The line items may not have more than ' .
-                        self::MAX_ALLOWED_LINE_ITEMS . ' items in total.';
+            $message = 'The invoice may not have more than ' . self::MAX_ALLOWED_LINE_ITEMS . ' items in total.';
 
             throw new BadRequestValidationFailureException($message);
         }

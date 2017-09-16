@@ -8,6 +8,7 @@ use RZP\Constants\Timezone;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
+use RZP\Models\Item;
 use RZP\Models\Order;
 use RZP\Models\Customer;
 use RZP\Models\Address;
@@ -654,9 +655,9 @@ class Entity extends Base\PublicEntity
         return ($this->getAmount() === $this->getAmountPaid());
     }
 
-    public function hasSubscription()
+    public function getAllowedLineItemTypes()
     {
-        return ($this->getAttribute(self::SUBSCRIPTION_ID) !== null);
+        return $this->isOfSubscription() ? [Item\Type::PLAN, Item\Type::ADDON] : [Item\Type::INVOICE];
     }
 
     /**

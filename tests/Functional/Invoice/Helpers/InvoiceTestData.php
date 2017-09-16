@@ -1803,7 +1803,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The line items may not have more than 20 items in total.',
+                    'description' => 'The invoice may not have more than 20 items in total.',
                 ],
             ],
             'status_code' => 400,
