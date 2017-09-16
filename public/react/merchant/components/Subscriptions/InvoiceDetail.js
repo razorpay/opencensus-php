@@ -27,6 +27,7 @@ export default class InvoiceDetail extends Component {
       curInvoiceIndex,
       subscriptionStatus,
       nextChargeAt,
+      onManualAttempt,
     } = this.props;
 
     // For next_due invoice, issued_at is charge_at of subscription*
@@ -85,7 +86,27 @@ export default class InvoiceDetail extends Component {
                         <EntityDetailRow
                           label="Invoice Status"
                           value={() =>
-                            <InvoiceStatusLabel status={invoice.status} />}
+                            <div>
+                              <InvoiceStatusLabel status={invoice.status} />
+                              {
+                                do {
+                                  if (
+                                    invoice.status === 'issued' &&
+                                    ['active', 'pending', 'halted'].indexOf(
+                                      subscriptionStatus
+                                    ) > -1
+                                  ) {
+                                    <AsyncButton
+                                      class="btn-link no-padding"
+                                      text=" Manually Charge?"
+                                      pendingText="Attempting..."
+                                      onClick={() =>
+                                        onManualAttempt(invoice.id)}
+                                    />;
+                                  }
+                                }
+                              }
+                            </div>}
                         />
                         <EntityDetailRow
                           label="Created at"

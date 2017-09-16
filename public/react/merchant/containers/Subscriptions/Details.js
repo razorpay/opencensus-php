@@ -244,6 +244,13 @@ export default class SubscriptionDetailsContainer extends Component {
       });
   };
 
+  // Check if next due invoice is valid for current subscription
+  checkNextDueInvoiceValidity(subsStatus) {
+    return (
+      ['authenticated', 'active', 'halted', 'created'].indexOf(subsStatus) > -1
+    );
+  }
+
   render() {
     let { entity, plan, customer, invoices, activeSecEntityId } = this.props;
     let {
@@ -259,17 +266,16 @@ export default class SubscriptionDetailsContainer extends Component {
     let invoiceSecView;
 
     // Add 'next_due' invoice in the Invoices list
-    if (!invoices.loading && invoices.items && invoices.items.length) {
-      if (
-        ['authenticated', 'active', 'halted'].indexOf(entity.status) > -1 ||
-        (entity.status === 'created' &&
-          (entity.type === 2 || entity.type === 3))
-      ) {
+    if (!invoices.loading && !invoices.error) {
+      if (this.checkNextDueInvoiceValidity(entity.status)) {
         invoicesList = { ...invoices };
         invoicesList.items = [...invoices.items]; // To avoid multiple additions when render is called multiple times
 
         let nextDueInvoice = this.getUpcomingInvoiceDetails(
-          entity.charge_at,
+          entity.status === 'created' &&
+          (entity.type === 0 || entity.type === 2)
+            ? entity.charge_at
+            : null,
           plan.item ? plan.item.amount : 0,
           this.state.addons
         );
@@ -282,19 +288,21 @@ export default class SubscriptionDetailsContainer extends Component {
     if (secView === 'invoice') {
       let invoiceData = {};
       let isValidInvoice = true;
-
       if (
         this.props.invoice_id === 'inv_upcoming' &&
         Object.keys(entity).length // Helps to simulate the loader for 'inv_upcoming' invoice
       ) {
         // inv_upcoming exists only for these subscriptions status only
-        if (
-          ['authenticated', 'active', 'halted'].indexOf(entity.status) > -1 ||
-          (entity.status === 'created' &&
-            (entity.type === 2 || entity.type === 3))
-        ) {
+        if (this.checkNextDueInvoiceValidity(entity.status)) {
+          // Charge at is not available in such type of subscriptions
+          let chargeAt =
+            entity.status === 'created' &&
+            (entity.type === 0 || entity.type === 2)
+              ? entity.charge_at
+              : null;
+
           invoiceData = this.getUpcomingInvoiceDetails(
-            entity.charge_at,
+            chargeAt,
             plan.item.amount,
             this.state.addons
           );
