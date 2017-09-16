@@ -121,24 +121,30 @@ export default class MarketplaceContainer extends Component {
                   </div>
                 </div>
               : <div class="content-wrapper content-sm">
-                  {this.state.onboardingSubmitted
-                    ? <div>
-                        <div class="col-md-8">
-                          Form submitted and is pending.
-                        </div>
+                  {this.state.isLoading
+                    ? <div class="page-spinner-container">
+                        <Spinner />
                       </div>
                     : <div>
-                        <div class="col-md-8">
-                          Answer a few questions to enable Razorpay Route
-                        </div>
-                        <div class="col-md-4">
-                          <AsyncButton
-                            class="btn btn-default pull-right"
-                            text="Enable Razorpay Route"
-                            pendingText="Enabling..."
-                            onClick={this.openOnboardingModal}
-                          />
-                        </div>
+                        {this.state.onboardingSubmitted
+                          ? <div>
+                              <div class="col-md-8">
+                                Form submitted and is pending.
+                              </div>
+                            </div>
+                          : <div>
+                              <div class="col-md-8">
+                                Answer a few questions to enable Razorpay Route
+                              </div>
+                              <div class="col-md-4">
+                                <AsyncButton
+                                  class="btn btn-default pull-right"
+                                  text="Enable Razorpay Route"
+                                  pendingText="Enabling..."
+                                  onClick={this.openOnboardingModal}
+                                />
+                              </div>
+                            </div>}
                       </div>}
                 </div>}
           </content>
