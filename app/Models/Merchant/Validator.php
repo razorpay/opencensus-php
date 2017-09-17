@@ -93,7 +93,7 @@ class Validator extends Base\Validator
     protected static $featureRules = [
         'features'                   => 'required|array',
         'optout_reason'              => 'sometimes|string|max:200',
-        Feature\Entity::SHOULD_SYNC  => 'sometimes|integer',
+        Feature\Entity::SHOULD_SYNC  => 'sometimes|boolean',
     ];
 
     protected static $addTagsRules = [

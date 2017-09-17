@@ -32,7 +32,7 @@ class Repository extends BaseRepository
                     ->firstOrFailPublic();
     }
 
-    public function findByEntityIdAndName(string $entityId, string $featureName, string $mode = Mode::TEST): Entity
+    public function findByEntityIdAndName(string $entityId, string $featureName, string $mode = Mode::TEST)
     {
         return $this->newQueryWithConnection($mode)
                     ->where(Entity::ENTITY_ID, '=', $entityId)

@@ -6,9 +6,12 @@ use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    const NAME             = 'name';
-    const ENTITY_ID        = 'entity_id';
-    const ENTITY_TYPE      = 'entity_type';
+    const NAME        = 'name';
+    const ENTITY_ID   = 'entity_id';
+    const ENTITY_TYPE = 'entity_type';
+
+    // Input attributes
+    const SHOULD_SYNC = 'should_sync';
 
     protected $table = \RZP\Constants\Table::FEATURE;
 
@@ -16,9 +19,6 @@ class Entity extends Base\PublicEntity
 
     // We are explicitly generating Id so that same Id gets stored in live and test db
     protected $generateIdOnCreate = false;
-
-    // Constants used while syncing features
-    const SHOULD_SYNC = 'should_sync';
 
     protected $fillable = [
         self::NAME,

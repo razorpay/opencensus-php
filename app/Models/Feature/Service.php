@@ -5,7 +5,6 @@ namespace RZP\Models\Feature;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 
-
 class Service extends Base\Service
 {
     public function addFeatures($input)
