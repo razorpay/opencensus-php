@@ -1222,7 +1222,7 @@ class Service extends Base\Service
                 Feature\Entity::ENTITY_ID    => $merchant->getId(),
                 Feature\Entity::ENTITY_TYPE  => 'merchant',
                 'names'                      => $featureNames,
-                Feature\Entity::SHOULD_SYNC  => (int) $shouldSync
+                Feature\Entity::SHOULD_SYNC  => $shouldSync
             ];
 
             (new Feature\Service)->addFeatures($featureParams);
