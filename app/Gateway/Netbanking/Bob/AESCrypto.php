@@ -9,8 +9,18 @@ class AESCrypto extends Base\AESCrypto
     const VALUE_SEPARATOR = "=";
     const PAIR_SEPARATOR  = "|";
 
+    public function __construct(int $mode, string $masterKey, string $initializationVector = '')
+    {
+        parent::__construct($mode, $masterKey, $initializationVector);
+
+        $this->aes->setKeyLength(128);
+
+        $this->aes->setBlockLength(128);
+    }
+
     public function encryptData(array $data)
     {
+
         $formattedData = $this->encodeData($data);
 
         return base64_encode($this->encryptString($formattedData));
