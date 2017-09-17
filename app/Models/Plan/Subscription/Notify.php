@@ -262,6 +262,7 @@ class Notify extends Processor\Notify
                 'id'         => $this->subscription->getId(),
                 'status'     => $this->subscription->getStatus(),
                 'public_id'  => $this->subscription->getPublicId(),
+                'type'       => $this->subscription->getType(),
             ],
             'merchant'  => [
                 'billing_label' => $this->merchant->getBillingLabel(),
@@ -312,7 +313,27 @@ class Notify extends Processor\Notify
             }
         }
 
+        if ($this->invoice !== null)
+        {
+            $data['invoice']  = [
+                'id'              => $this->invoice->getId(),
+                'public_id'       => $this->invoice->getPublicId(),
+                'billing_start'   => $this->invoice->getBillingStart(),
+                'billing_end'     => $this->invoice->getBillingEnd(),
+            ];
+        }
+
         return $data;
+    }
+
+    protected function formatTime($time)
+    {
+        if ($time === null)
+        {
+            return;
+        }
+
+        return Carbon::createFromTimestamp($time, "Asia/Kolkata")->format('j M Y');
     }
 
     /**

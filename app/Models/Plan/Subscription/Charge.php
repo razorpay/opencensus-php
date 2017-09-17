@@ -533,7 +533,7 @@ class Charge extends Base\Core
 
             $core->fireWebhookForStatusUpdate($subscription, Status::PENDING, $payment);
 
-            $core->triggerSubscriptionNotification($subscription, $payment, Event::PENDING);
+            $core->triggerSubscriptionNotification($subscription, Event::PENDING, $payment);
         }
         else if ($updatedStatus === Status::HALTED)
         {
@@ -541,7 +541,7 @@ class Charge extends Base\Core
 
             $core->fireWebhookForStatusUpdate($subscription, Status::HALTED, $payment);
 
-            $core->triggerSubscriptionNotification($subscription, $payment, Event::HALTED);
+            $core->triggerSubscriptionNotification($subscription, Event::HALTED, $payment);
         }
         else if ($updatedStatus === Status::COMPLETED)
         {
@@ -561,7 +561,7 @@ class Charge extends Base\Core
 
             $core->fireWebhookForStatusUpdate($subscription, Status::COMPLETED, $payment);
 
-            $core->triggerSubscriptionNotification($subscription, $payment, Event::COMPLETED);
+            $core->triggerSubscriptionNotification($subscription, Event::COMPLETED, $payment);
         }
         else
         {
