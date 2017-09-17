@@ -134,7 +134,7 @@ export default class Sidebar extends Component {
                     icon="icon icon-store text-primary"
                     to={routes.marketplace}
                     notMyRole="sellerapp support"
-                    featureEnabled="Marketplace"
+                    apiFeatureEnabled="Marketplace"
                     beta={true}
                   />
 
@@ -279,7 +279,7 @@ export default class Sidebar extends Component {
                     icon="icon icon-store text-success"
                     to={routes.marketplace}
                     notMyRole="sellerapp support"
-                    featureEnabled="Marketplace"
+                    apiFeatureEnabled="Marketplace"
                     beta={true}
                   />
                   <MainNavLink
