@@ -342,9 +342,12 @@ class Service extends Base\Service
 
         $activationDetails = $merchantDetail->getActivationFiles($id);
 
+        $onboardingDetails = $merchantDetail->getFeatureOnboardingResponses($id);
+
         $data = [
             'activation' => $activationDetails,
-            'merchant'   => $details
+            'merchant'   => $details,
+            'onboarding' => $onboardingDetails
         ];
 
         return [[], $data];
