@@ -2264,6 +2264,19 @@ return [
         ],
     ],
 
+    'testSendNotificationWithEmailModeByPrivateAuthRoute' => [
+        'request' => [
+            'url'     => '/invoices/inv_1000000invoice/notify_by/email',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ],
+    ],
+
     // ------------------------------------------------------------
     // Get invoice
     // ------------------------------------------------------------
