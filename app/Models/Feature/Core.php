@@ -3,8 +3,8 @@
 namespace RZP\Models\Feature;
 
 use Config;
-use RZP\Constants\Mode;
 use RZP\Models\Base;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\EsRepository;
@@ -28,14 +28,10 @@ class Core extends Base\Core
                 'new_feature'  => $feature->getName()
             ]);
 
+        $this->traceFeatureSyncing($feature, $shouldSync);
+
         if ($shouldSync === true)
         {
-            $this->trace->info(TraceCode::FEATURE_SYNCED,
-                [
-                    'entity_id'     => $feature->getEntityId(),
-                    'entity_name'   => $feature->getName()
-                ]);
-
             $this->saveAndSyncOrFail($feature);
         }
         else
@@ -53,26 +49,6 @@ class Core extends Base\Core
         return $feature;
     }
 
-    public function saveFeatureOrFail($feature, $assignedFeatureNames)
-    {
-        if (in_array($feature->getName(), $assignedFeatureNames, true) === false)
-        {
-            $this->trace->info(TraceCode::FEATURE_NOT_SYNCED,
-                [
-                    'entity_id'     => $feature->getEntityId(),
-                    'entity_name'   => $feature->getName()
-                ]);
-
-            $this->repo->feature->saveOrFail($feature);
-
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
     public function delete($entityId, $feature, bool $shouldSync = false)
     {
         $this->trace->info(TraceCode::FEATURE_DELETE_REQUEST, $feature->toArrayPublic());
@@ -87,28 +63,20 @@ class Core extends Base\Core
              ->setEntity($feature->getEntity())
              ->handle($original, $dirty);
 
+        $this->traceFeatureSyncing($feature, $shouldSync);
+
         if ($shouldSync === true)
         {
-            $this->trace->info(TraceCode::FEATURE_SYNCED,
-                [
-                    'entity_id'     => $feature->getEntityId(),
-                    'entity_name'   => $feature->getName()
-                ]);
             $this->deleteAndSyncOrFail($feature);
         }
         else
         {
-            $this->trace->info(TraceCode::FEATURE_NOT_SYNCED,
-                [
-                    'entity_id'     => $feature->getEntityId(),
-                    'entity_name'   => $feature->getName()
-                ]);
             $this->repo->feature->delete($feature);
         }
 
         (new Core)->notifyOnSlack($feature, true);
 
-        //we create tag also along with feature.
+        // We create tag also along with feature.
         (new Merchant\Service)->deleteTag($entityId, $feature->getName());
     }
 
@@ -142,17 +110,21 @@ class Core extends Base\Core
         );
     }
 
-    public function saveAndSyncOrFail($entity): bool
+    /**
+     * Save feature with sync: Adds features to test and live
+     * DB's if they don't already exist
+     *
+     * @param Entity $entity
+     */
+    protected function saveAndSyncOrFail(Entity $entity)
     {
         $this->repo->transactionOnLiveAndTest(function () use ($entity)
         {
-            $entityName = $entity->getName();
+            $featureName = $entity->getName();
+            $entityId    = $entity->getEntityId();
 
-            $entityId = $entity->getEntityId();
-
-            $testEntity = $this->repo->feature->findByEntityIdAndName($entityId, $entityName, Mode::TEST);
-
-            $liveEntity = $this->repo->feature->findByEntityIdAndName($entityId, $entityName, Mode::LIVE);
+            $testEntity = $this->repo->feature->findByEntityIdAndName($entityId, $featureName, Mode::TEST);
+            $liveEntity = $this->repo->feature->findByEntityIdAndName($entityId, $featureName, Mode::LIVE);
 
             if ($testEntity === null)
             {
@@ -167,39 +139,66 @@ class Core extends Base\Core
                 $liveEntity->setConnection(Mode::LIVE);
                 $liveEntity->saveOrFail();
             }
-
-            return true;
         });
-
-        return false;
     }
 
-    public function deleteAndSyncOrFail($entity): bool
+    protected function saveFeatureOrFail(Entity $feature, array $assignedFeatureNames): bool
+    {
+        $isFeatureAssigned = in_array($feature->getName(), $assignedFeatureNames, true);
+
+        //
+        // If the feature is already assigned, there's nothing
+        // to save
+        //
+        if ($isFeatureAssigned === true)
+        {
+            return false;
+        }
+
+        $this->repo->feature->saveOrFail($feature);
+
+        return true;
+    }
+
+    /**
+     * Delete a feature with sync: removes the record
+     * from both test/live DB's if present
+     *
+     * @param Entity $entity
+     */
+    protected function deleteAndSyncOrFail(Entity $entity)
     {
         $this->repo->transactionOnLiveAndTest(function () use ($entity)
         {
-            $entityName = $entity->getName();
+            $featureName = $entity->getName();
+            $entityId    = $entity->getEntityId();
 
-            $entityId = $entity->getEntityId();
-
-            $testEntity = $this->repo->feature->findByEntityIdAndName($entityId, $entityName, Mode::TEST);
-
-            $liveEntity = $this->repo->feature->findByEntityIdAndName($entityId, $entityName, Mode::LIVE);
+            $testEntity = $this->repo->feature->findByEntityIdAndName($entityId, $featureName, Mode::TEST);
+            $liveEntity = $this->repo->feature->findByEntityIdAndName($entityId, $featureName, Mode::LIVE);
 
             if ($testEntity !== null)
             {
                 $testEntity->deleteOrFail();
                 $this->repo->feature->syncToEs($entity, EsRepository::DELETE, null, Mode::TEST);
             }
+
             if ($liveEntity !== null)
             {
                 $liveEntity->deleteOrFail();
                 $this->repo->feature->syncToEs($entity, EsRepository::DELETE, null, Mode::LIVE);
             }
-
-            return true;
         });
+    }
 
-        return false;
+    protected function traceFeatureSyncing(Entity $feature, bool $shouldSync)
+    {
+        $traceCode = ($shouldSync === true) ? TraceCode::FEATURE_SYNCING : TraceCode::FEATURE_NOT_SYNCING;
+
+        $traceData = [
+            'entity_id'     => $feature->getEntityId(),
+            'feature_name'  => $feature->getName()
+        ];
+
+        $this->trace->info($traceCode, $traceData);
     }
 }
