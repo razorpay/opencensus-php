@@ -4,6 +4,7 @@ namespace RZP\Models\FileStore;
 
 use Config;
 use RZP\Exception;
+use RZP\Encryption;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -266,7 +267,7 @@ class Creator extends Base\Core
     {
         $this->shouldEncrypt = true;
 
-        $this->encryptionHandler = new Encryption($type, $params);
+        $this->encryptionHandler = new Encryption\Handler($type, $params);
 
         return $this;
     }
