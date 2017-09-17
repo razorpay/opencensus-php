@@ -1245,6 +1245,23 @@ class InvoiceTest extends TestCase
         $this->assertNotEmpty($response['payment_id']);
     }
 
+    public function testGetInvoiceWithPaymentsCard()
+    {
+        $this->createOrder();
+
+        $invoice = $this->createIssuedInvoice();
+
+        $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $this->assertNotEmpty($response['payments']['items'][0]['card_id']);
+    }
+
     public function testGetMultipleInvoices()
     {
         $this->createOrder();

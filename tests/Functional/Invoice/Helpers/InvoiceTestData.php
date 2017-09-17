@@ -2430,6 +2430,83 @@ return [
         ],
     ],
 
+    'testGetInvoiceWithPaymentsCard' => [
+        'request' => [
+            'url' => '/invoices/inv_1000000invoice',
+            'method'  => 'get',
+            'content' => [
+                'expand'   => [
+                    'payments.card',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'             => 'inv_1000000invoice',
+                'entity'         => 'invoice',
+                'customer_id'    => 'cust_100000customer',
+                'customer_details' => [
+                    'name'            => 'test',
+                    'email'           => 'test@razorpay.com',
+                    'contact'         => '1234567890',
+                    'billing_address' => null,
+                ],
+                'order_id'       => 'order_100000000order',
+                'line_items'     => [],
+                'payments'       => [
+                    'entity' => 'collection',
+                    'count'  => 1,
+                    'items'  => [
+                        [
+                            'entity'            => 'payment',
+                            'amount'            => 100000,
+                            'currency'          => 'INR',
+                            'status'            => 'captured',
+                            'order_id'          => 'order_100000000order',
+                            'invoice_id'        => 'inv_1000000invoice',
+                            'international'     => false,
+                            'method'            => 'card',
+                            'amount_refunded'   => 0,
+                            'refund_status'     => null,
+                            'captured'          => true,
+                            'description'       => 'random description',
+                            'bank'              => null,
+                            'wallet'            => null,
+                            'vpa'               => null,
+                            'email'             => 'a@b.com',
+                            'contact'           => '+919918899029',
+                            'notes'             => [
+                                'merchant_order_id' => 'random order id',
+                            ],
+                            'fee'               => 2000,
+                            'service_tax'       => 0,
+                            'error_code'        => null,
+                            'error_description' => null,
+                            'acquirer_data'     => [],
+                            'tax'               => 0,
+                            'card' => [
+                                'entity'        => 'card',
+                                'name'          => 'Harshil',
+                                'last4'         => '3335',
+                                'network'       => 'Visa',
+                                'type'          => 'credit',
+                                'issuer'        => 'HDFC',
+                                'international' => false,
+                                'emi'           => true
+                            ]
+                        ],
+                    ],
+                ],
+                'status'         => 'paid',
+                'amount'         => 100000,
+                'amount_paid'    => 100000,
+                'amount_due'     => 0,
+                'currency'       => 'INR',
+                'type'           => 'invoice',
+            ],
+        ],
+    ],
+
     'testGetInvoiceStatusAfterPayment' => [
         'request' => [
             'url' => '/invoices/inv_1000000invoice/status',
