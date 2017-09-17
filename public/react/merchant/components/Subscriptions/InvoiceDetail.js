@@ -30,6 +30,153 @@ export default class InvoiceDetail extends Component {
       onManualAttempt,
     } = this.props;
 
+    let invoiceContent;
+
+    if (!isValidInvoice) {
+      invoiceContent = (
+        <div class="panel panel-default SliderPanel">
+          <div>
+            {this.props.onClose &&
+              <button
+                type="button"
+                class="close close-secondary"
+                onClick={this.props.onClose}
+              >
+                <i class="icon icon-arrow-back" />
+                <i class="icon icon-close" />
+              </button>}
+          </div>
+
+          <div class="no-data-message">
+            There is no upcoming invoice for this subscription.
+          </div>
+        </div>
+      );
+    } else if (Object.keys(invoice).length) {
+      invoiceContent = (
+        <div class="panel panel-default SliderPanel">
+          <div class="panel-heading">
+            {this.props.onClose &&
+              <button
+                type="button"
+                class="close close-secondary"
+                onClick={this.props.onClose}
+              >
+                <i class="icon icon-arrow-back" />
+                <i class="icon icon-close" />
+              </button>}
+            <i class="icon icon-link text-primary icon--formal" />{' '}
+            <span class="txn-details-title">
+              <div class="txn-details-title--primary">
+                <Time value={invoice.issued_at} format="MMM DD, YYYY" />
+              </div>
+              {curInvoiceIndex &&
+                <div class="txn-details-title--secondary">
+                  Recurring Payment #{curInvoiceIndex}
+                </div>}
+            </span>
+          </div>
+
+          <div class="SliderPanel__Body">
+            <div class="panel-body">
+              <div class="list-group details-row-container">
+                <EntityDetailRow
+                  label="Invoice Id"
+                  value={
+                    invoice.status === 'next_due'
+                      ? 'Not yet created'
+                      : () =>
+                          <NavLink
+                            to={`/invoices/${invoice.id}`}
+                            target="_blank"
+                          >
+                            {invoice.id}
+                            <i class="icon icon-external-link" />
+                          </NavLink>
+                  }
+                />
+                <EntityDetailRow label="Invoice Status">
+                  <div>
+                    <InvoiceStatusLabel status={invoice.status} />
+                    {invoice.status === 'issued' &&
+                      ['active', 'pending', 'halted'].indexOf(
+                        subscriptionStatus
+                      ) > -1 &&
+                      <AsyncButton
+                        class="btn-link no-padding"
+                        text=" Manually Charge?"
+                        pendingText="Attempting..."
+                        onClick={() => onManualAttempt(invoice.id)}
+                      />}
+                  </div>
+                </EntityDetailRow>
+                <EntityDetailRow
+                  label="Created at"
+                  value={() =>
+                    <Time
+                      value={invoice.date}
+                      format="DD MMM YYYY, hh:mm:ss a"
+                    />}
+                />
+
+                {/* dummy invoice with 'next_due' status won't be added if subscriptionStatus is pending, so label will be 'Charge at'*/}
+                {
+                  do {
+                    if (
+                      invoice.status === 'next_due' ||
+                      (invoice.status === 'issued' &&
+                        subscriptionStatus !== 'halted')
+                    ) {
+                      <EntityDetailRow
+                        label={`${subscriptionStatus === 'pending'
+                          ? 'Next Charge at'
+                          : 'Charge at'}`}
+                        value={() =>
+                          <Time
+                            value={nextChargeAt}
+                            format="DD MMM YYYY, hh:mm:ss a"
+                          />}
+                      />;
+                    }
+                  }
+                }
+
+                <EntityDetailRow
+                  label="Amount"
+                  value={() =>
+                    <Amount
+                      currency={invoice.currency}
+                      value={invoice.amount}
+                    />}
+                />
+
+                {invoice.payments &&
+                  <DataTable
+                    customClass="payments-table"
+                    progressLoader={true}
+                    title="Payments"
+                    columns={[paymentId, status, createdAt]}
+                    items={invoice.payments.items}
+                    loading={isLoading}
+                    showHeaders={false}
+                    noStripe={true}
+                    panelHeading={{
+                      title: 'Payments',
+                      subTitle: `${invoice.payments.count} ${invoice.payments
+                        .count > 1
+                        ? 'attempts'
+                        : 'attempt'}`,
+                    }}
+                  />}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    } else {
+      invoiceContent = <div class="empty-content" />;
+    }
+
     // For next_due invoice, issued_at is charge_at of subscription*
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -37,130 +184,7 @@ export default class InvoiceDetail extends Component {
           ? <div class="page-spinner-container">
               <Spinner />
             </div>
-          : !isValidInvoice
-            ? <div class="no-data-message">
-                There is no upcoming invoice for this subscription.
-              </div>
-            : Object.keys(invoice).length
-              ? <div class="panel panel-default SliderPanel">
-                  <div class="panel-heading">
-                    {this.props.onClose &&
-                      <button
-                        type="button"
-                        class="close close-secondary"
-                        onClick={this.props.onClose}
-                      >
-                        <i class="icon icon-arrow-back" />
-                        <i class="icon icon-close" />
-                      </button>}
-                    <i class="icon icon-link text-primary icon--formal" />{' '}
-                    <span class="txn-details-title">
-                      <div class="txn-details-title--primary">
-                        <Time value={invoice.issued_at} format="MMM DD, YYYY" />
-                      </div>
-                      {curInvoiceIndex &&
-                        <div class="txn-details-title--secondary">
-                          Recurring Payment #{curInvoiceIndex}
-                        </div>}
-                    </span>
-                  </div>
-
-                  <div class="SliderPanel__Body">
-                    <div class="panel-body">
-                      <div class="list-group details-row-container">
-                        <EntityDetailRow
-                          label="Invoice Id"
-                          value={
-                            invoice.status === 'next_due'
-                              ? 'Not yet created'
-                              : () =>
-                                  <NavLink
-                                    to={`/invoices/${invoice.id}`}
-                                    target="_blank"
-                                  >
-                                    {invoice.id}
-                                    <i class="icon icon-external-link" />
-                                  </NavLink>
-                          }
-                        />
-                        <EntityDetailRow label="Invoice Status">
-                          <div>
-                            <InvoiceStatusLabel status={invoice.status} />
-                            {invoice.status === 'issued' &&
-                              ['active', 'pending', 'halted'].indexOf(
-                                subscriptionStatus
-                              ) > -1 &&
-                              <AsyncButton
-                                class="btn-link no-padding"
-                                text=" Manually Charge?"
-                                pendingText="Attempting..."
-                                onClick={() => onManualAttempt(invoice.id)}
-                              />}
-                          </div>
-                        </EntityDetailRow>
-                        <EntityDetailRow
-                          label="Created at"
-                          value={() =>
-                            <Time
-                              value={invoice.date}
-                              format="DD MMM YYYY, hh:mm:ss a"
-                            />}
-                        />
-
-                        {/* dummy invoice with 'next_due' status won't be added if subscriptionStatus is pending, so label will be 'Charge at'*/}
-                        {
-                          do {
-                            if (
-                              invoice.status === 'next_due' ||
-                              (invoice.status === 'issued' &&
-                                subscriptionStatus !== 'halted')
-                            ) {
-                              <EntityDetailRow
-                                label={`${subscriptionStatus === 'pending'
-                                  ? 'Next Charge at'
-                                  : 'Charge at'}`}
-                                value={() =>
-                                  <Time
-                                    value={nextChargeAt}
-                                    format="DD MMM YYYY, hh:mm:ss a"
-                                  />}
-                              />;
-                            }
-                          }
-                        }
-
-                        <EntityDetailRow
-                          label="Amount"
-                          value={() =>
-                            <Amount
-                              currency={invoice.currency}
-                              value={invoice.amount}
-                            />}
-                        />
-
-                        {invoice.payments &&
-                          <DataTable
-                            customClass="payments-table"
-                            progressLoader={true}
-                            title="Payments"
-                            columns={[paymentId, status, createdAt]}
-                            items={invoice.payments.items}
-                            loading={isLoading}
-                            showHeaders={false}
-                            noStripe={true}
-                            panelHeading={{
-                              title: 'Payments',
-                              subTitle: `${invoice.payments.count} ${invoice
-                                .payments.count > 1
-                                ? 'attempts'
-                                : 'attempt'}`,
-                            }}
-                          />}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              : <div class="empty-content" />}
+          : invoiceContent}
       </div>
     );
   }
