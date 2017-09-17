@@ -145,6 +145,17 @@ class Entity extends Base\PublicEntity
     const ORDER                    = 'order';
     const PAYMENTS                 = 'payments';
 
+    // ------------------------ Other constants ----------------------
+
+    const ALLOWED_LINE_ITEM_TYPES_INVOICE = [
+        Item\Type::INVOICE,
+    ];
+
+    const ALLOWED_LINE_ITEM_TYPES_SUBSCRIPTION_INVOICE = [
+        Item\Type::PLAN,
+        Item\Type::ADDON,
+    ];
+
     protected static $sign         = 'inv';
 
     protected $entity              = 'invoice';
@@ -658,7 +669,14 @@ class Entity extends Base\PublicEntity
 
     public function getAllowedLineItemTypes()
     {
-        return $this->isOfSubscription() ? [Item\Type::PLAN, Item\Type::ADDON] : [Item\Type::INVOICE];
+        if ($this->isOfSubscription() === true)
+        {
+            return self::ALLOWED_LINE_ITEM_TYPES_SUBSCRIPTION_INVOICE;
+        }
+        else
+        {
+            return self::ALLOWED_LINE_ITEM_TYPES_INVOICE;
+        }
     }
 
     /**

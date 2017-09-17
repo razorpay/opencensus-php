@@ -1968,7 +1968,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The selected currency is invalid.',
+                    'description' => 'Currency of all items should be the same as of the invoice.',
                 ],
             ],
             'status_code' => 400,

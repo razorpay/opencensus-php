@@ -29,16 +29,22 @@ class Core extends Base\Core
 
         $lineItem = (new Entity)->generateId();
 
-        $this->setItemAssociationAndModifyInput($lineItem, $input, $merchant, $morphEntity);
+        $this->setItemAssociationAndModifyInput($lineItem, $input, $merchant);
 
+        //
         // For Backward compatibility: If without ITEM_ID (template),
         // no CURRENCY is sent, we use invoice's currency.
+        //
         if ((isset($input[Entity::ITEM_ID]) === false) and
             (isset($input[Entity::CURRENCY]) === false))
         {
             $input[Entity::CURRENCY] = $morphEntity->getCurrency();
         }
 
+        //
+        // Following associations should happen before build() as these
+        // are getting used in validations.
+        //
         $lineItem->merchant()->associate($merchant);
         $lineItem->entity()->associate($morphEntity);
 
@@ -100,7 +106,7 @@ class Core extends Base\Core
 
         $this->modifyInputToHandleRenamedAttributes($input);
 
-        $this->setItemAssociationAndModifyInput($lineItem, $input, $merchant, $morphEntity);
+        $this->setItemAssociationAndModifyInput($lineItem, $input, $merchant);
 
         $lineItem->edit($input);
 
@@ -282,15 +288,13 @@ class Core extends Base\Core
      * @param Entity            $lineItem
      * @param array             $input
      * @param Merchant\Entity   $merchant
-     * @param Base\PublicEntity $morphEntity
      *
      * @return null
      */
     protected function setItemAssociationAndModifyInput(
         Entity $lineItem,
         array & $input,
-        Merchant\Entity $merchant,
-        Base\PublicEntity $morphEntity)
+        Merchant\Entity $merchant)
     {
         if (isset($input[Entity::ITEM_ID]) === false)
         {

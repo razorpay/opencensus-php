@@ -442,16 +442,14 @@ class Validator extends Base\Validator
             (empty($invoice->getCustomerEmail())))
         {
             throw new BadRequestValidationFailureException(
-                'Email can not be sent since email address has not been provided.'
-            );
+                'Email can not be sent since email address has not been provided.');
         }
 
         if (($medium === NotifyMedium::SMS) and
             (empty($invoice->getCustomerContact())))
         {
             throw new BadRequestValidationFailureException(
-                'SMS can not be sent since contact number has not been provided.'
-            );
+                'SMS can not be sent since contact number has not been provided.');
         }
     }
 
@@ -655,7 +653,14 @@ class Validator extends Base\Validator
         {
             $message = 'The invoice may not have more than ' . self::MAX_ALLOWED_LINE_ITEMS . ' items in total.';
 
-            throw new BadRequestValidationFailureException($message);
+            throw new BadRequestValidationFailureException(
+                        $message,
+                        Entity::LINE_ITEMS,
+                        [
+                            Entity::ID                => $invoice->getId(),
+                            'max_allowed_line_items'  => self::MAX_ALLOWED_LINE_ITEMS,
+                            'actual_line_items_count' => $count,
+                        ]);
         }
     }
 

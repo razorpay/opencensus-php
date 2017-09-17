@@ -78,32 +78,43 @@ class Validator extends Base\Validator
 
     public function validateUpdateOperation(Entity $item)
     {
-        if ($item->isNotOfType(Type::INVOICE))
+        if ($item->isNotOfType(Type::INVOICE) === true)
         {
             $type = $item->getType();
 
             throw new BadRequestValidationFailureException(
-                "Update operation not allowed for item of type: $type");
+                "Update operation not allowed for item of type: $type",
+                null,
+                [
+                    Entity::ID   => $item->getId(),
+                    Entity::TYPE => $item->getType(),
+                ]);
         }
     }
 
     public function validateDeleteOperation(Entity $item)
     {
-        if ($item->isNotOfType(Type::INVOICE))
+        if ($item->isNotOfType(Type::INVOICE) === true)
         {
             $type = $item->getType();
 
             throw new BadRequestValidationFailureException(
-                "Delete operation not allowed for item of type: $type");
+                "Delete operation not allowed for item of type: $type",
+                null,
+                [
+                    Entity::ID   => $item->getId(),
+                    Entity::TYPE => $item->getType(),
+                ]);
         }
 
         if ($item->lineItems()->count() > 0)
         {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED,
+            throw new BadRequestValidationFailureException(
+                'Cannot edit/delete an item with which invoices have been created already',
                 null,
                 [
-                    'item_id' => $item->getId(),
+                    Entity::ID   => $item->getId(),
+                    Entity::TYPE => $item->getType(),
                 ]);
         }
     }
@@ -112,14 +123,14 @@ class Validator extends Base\Validator
     {
         $item = $this->entity;
 
-        if ($item->isNotActive())
+        if ($item->isNotActive() === true)
         {
-            $payload = [
+            $traceData = [
                 Entity::ID     => $item->getId(),
                 Entity::ACTIVE => $item->isActive(),
             ];
 
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_ITEM_INACTIVE, null, $payload);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_ITEM_INACTIVE, null, $traceData);
         }
     }
 
@@ -127,15 +138,15 @@ class Validator extends Base\Validator
     {
         $item = $this->entity;
 
-        if ($item->isNotOfType($type))
+        if ($item->isNotOfType($type) === true)
         {
-            $payload = [
+            $traceData = [
                 Entity::ENTITY => $item->getEntity(),
                 Entity::ID     => $item->getId(),
                 Entity::TYPE   => $item->getType(),
             ];
 
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE, null, $payload);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE, null, $traceData);
         }
     }
 }
