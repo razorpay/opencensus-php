@@ -600,7 +600,7 @@ final class Route
 
         // Onboarding routes
         'feature_onboarding_fetch_default'        => ['get',      'feature/onboarding',                            'FeatureController@getOnboardingQuestions',                          ],
-        'feature_onboarding_create'               => ['post',     'feature/onboarding',                            'FeatureController@createOnboardingResponses',                       ],
+        'feature_onboarding_create'               => ['post',     'feature/onboarding/{feature}',                  'FeatureController@createOnboardingResponses',                       ],
         'feature_onboarding_fetch_responses'      => ['get',      'feature/onboarding/{feature}/responses',        'FeatureController@getOnboardingResponses',                          ],
         'feature_onboarding_fetch_all_responses'  => ['get',      'feature/onboarding/responses',                  'FeatureController@getOnboardingResponses',                          ],
     ];

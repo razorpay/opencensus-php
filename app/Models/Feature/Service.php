@@ -151,20 +151,20 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function createOnboardingResponses($input)
+    public function createOnboardingResponses(array $input, string $feature)
     {
-        $merchantId = $this->merchant->getId();
-
-        (new Validator())->validateInput(Constants::ONBOARDING, $input);
+        $data[$feature] = $input;
 
         $saved = false;
 
+        (new Validator)->validateInput(Constants::ONBOARDING, $data);
+
         try
         {
-            $this->processFiles($input);
+            $this->processFiles($data);
 
             Accessor::for($this->merchant, Constants::ONBOARDING)
-                ->upsert($input)
+                ->upsert($data)
                 ->save();
 
             $saved = true;
