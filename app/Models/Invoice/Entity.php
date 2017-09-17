@@ -359,6 +359,8 @@ class Entity extends Base\PublicEntity
         self::AMOUNT                => 'int',
         self::AMOUNT_PAID           => 'int',
         self::AMOUNT_DUE            => 'int',
+        self::BILLING_START         => 'int',
+        self::BILLING_END           => 'int',
         self::GROUP_TAXES_DISCOUNTS => 'bool',
     ];
 
