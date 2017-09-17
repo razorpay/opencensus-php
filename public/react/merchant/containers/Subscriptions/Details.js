@@ -224,24 +224,35 @@ export default class SubscriptionDetailsContainer extends Component {
 
   // Manual Attempt to invoice charge
   onManualAttempt = invoiceId => {
-    return paymentManualAttempt(invoiceId)
-      .then(response => {
-        // Show success notification
-        this.props.showNotification({
-          type: 'success',
-          message: 'Manual charge attempt is successful',
-        });
+    this.context.confirm({
+      header: 'Are you sure you want to manually charge it?',
+      message: null,
+      affirmativeLabel: 'Yes',
+      affirmativePendingLabel: 'Charging...',
+      abortLabel: "No, don't!",
+      action: () => {
+        return paymentManualAttempt(invoiceId)
+          .then(response => {
+            // Show success notification
+            this.props.showNotification({
+              type: 'success',
+              message: 'Manual charge attempt is successful',
+            });
 
-        // Fetch the list of invoices again
+            this.props.closeModal();
 
-        return response;
-      })
-      .catch(err => {
-        this.props.showNotification({
-          type: 'error',
-          message: err.errors,
-        });
-      });
+            // Fetch the list of invoices again
+
+            return response;
+          })
+          .catch(err => {
+            this.props.showNotification({
+              type: 'error',
+              message: err.errors,
+            });
+          });
+      },
+    });
   };
 
   // Check if next due invoice is valid for current subscription
