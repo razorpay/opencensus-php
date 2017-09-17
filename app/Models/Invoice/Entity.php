@@ -10,8 +10,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
 use RZP\Models\Item;
 use RZP\Models\Order;
-use RZP\Models\Customer;
+use RZP\Models\Payment;
 use RZP\Models\Address;
+use RZP\Models\Customer;
 use RZP\Models\LineItem;
 use RZP\Models\FileStore;
 use RZP\Models\Plan\Subscription;
@@ -1141,7 +1142,8 @@ class Entity extends Base\PublicEntity
 
     public function payments()
     {
-        return $this->hasMany('RZP\Models\Payment\Entity');
+        return $this->hasMany(Payment\Entity::class)
+                    ->orderBy(Payment\Entity::CREATED_AT, 'desc');
     }
 
     public function files()
