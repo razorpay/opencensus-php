@@ -9,7 +9,7 @@ import { paymentId, status, createdAt } from 'rzp/ui/item/pair';
 import DataTable from 'rzp/ui/Table/DataTable';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
-import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
+import AsyncButton from 'react-async-button';
 
 const notificationClassMap = {
   sent: 'text-success',
@@ -83,31 +83,21 @@ export default class InvoiceDetail extends Component {
                                   </NavLink>
                           }
                         />
-                        <EntityDetailRow
-                          label="Invoice Status"
-                          value={() =>
-                            <div>
-                              <InvoiceStatusLabel status={invoice.status} />
-                              {
-                                do {
-                                  if (
-                                    invoice.status === 'issued' &&
-                                    ['active', 'pending', 'halted'].indexOf(
-                                      subscriptionStatus
-                                    ) > -1
-                                  ) {
-                                    <AsyncButton
-                                      class="btn-link no-padding"
-                                      text=" Manually Charge?"
-                                      pendingText="Attempting..."
-                                      onClick={() =>
-                                        onManualAttempt(invoice.id)}
-                                    />;
-                                  }
-                                }
-                              }
-                            </div>}
-                        />
+                        <EntityDetailRow label="Invoice Status">
+                          <div>
+                            <InvoiceStatusLabel status={invoice.status} />
+                            {invoice.status === 'issued' &&
+                              ['active', 'pending', 'halted'].indexOf(
+                                subscriptionStatus
+                              ) > -1 &&
+                              <AsyncButton
+                                class="btn-link no-padding"
+                                text=" Manually Charge?"
+                                pendingText="Attempting..."
+                                onClick={() => onManualAttempt(invoice.id)}
+                              />}
+                          </div>
+                        </EntityDetailRow>
                         <EntityDetailRow
                           label="Created at"
                           value={() =>
