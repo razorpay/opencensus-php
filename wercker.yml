@@ -79,7 +79,7 @@ build:
       - script:
           name: Run unit tests
           # TODO: Revert this before merging!
-          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --filter Subscription --debug --verbose
+          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --debug --verbose --filter Subscription
       - script:
           name: List directory
           code: ls -lah
