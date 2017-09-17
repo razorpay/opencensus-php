@@ -7,15 +7,12 @@ import HeaderAction from 'rzp/ui/HeaderAction';
 import { updateFeatures } from 'merchant/modules/config';
 import AsyncButton from 'react-async-button';
 import { showNotification } from 'rzp/modules/notifications';
+import FeatureOnboarding from 'merchant/containers/FeatureOnboarding';
 
 import PaymentsList from 'merchant/containers/Marketplace/Payments/List';
 import TransfersList from 'merchant/containers/Marketplace/Transfers/List';
 import ReversalsList from 'merchant/containers/Marketplace/Reversals/List';
 import AccountsList from 'merchant/containers/Marketplace/Accounts/List';
-
-import FeatureOnboardingModal from 'merchant/containers/FeatureOnboardingModal';
-import { getOnboardingResponse } from 'merchant/modules/onboarding';
-import Spinner from 'rzp/ui/Spinner';
 
 @connect(
   state => {
@@ -24,45 +21,9 @@ import Spinner from 'rzp/ui/Spinner';
       mode: state.session.mode,
     };
   },
-  { ...ModalActions, updateFeatures, showNotification, getOnboardingResponse }
+  { ...ModalActions, updateFeatures, showNotification }
 )
 export default class MarketplaceContainer extends Component {
-  state = {
-    onboardingSubmitted: false,
-    isLoading: false,
-  };
-
-  componentWillMount() {
-    if (
-      this.props.mode === 'live' &&
-      this.props.user.isMarketplaceEnabled === false
-    ) {
-      this.setState({
-        isLoading: true,
-      });
-
-      this.props
-        .getOnboardingResponse('marketplace')
-        .then(responses => {
-          var submitted = responses.data && !(responses.data instanceof Array);
-
-          this.setState({
-            isLoading: false,
-            onboardingSubmitted: submitted,
-          });
-        })
-        .catch
-        // handle errors
-        ();
-    }
-  }
-  openOnboardingModal = () => {
-    this.props.openModal({
-      size: 'large',
-      component: <FeatureOnboardingModal feature="marketplace" />,
-    });
-  };
-
   enableFeature = () => {
     var data = {
       features: {
@@ -121,31 +82,7 @@ export default class MarketplaceContainer extends Component {
                   </div>
                 </div>
               : <div class="content-wrapper content-sm">
-                  {this.state.isLoading
-                    ? <div class="page-spinner-container">
-                        <Spinner />
-                      </div>
-                    : <div>
-                        {this.state.onboardingSubmitted
-                          ? <div>
-                              <div class="col-md-8">
-                                Form submitted and is pending.
-                              </div>
-                            </div>
-                          : <div>
-                              <div class="col-md-8">
-                                Answer a few questions to enable Razorpay Route
-                              </div>
-                              <div class="col-md-4">
-                                <AsyncButton
-                                  class="btn btn-default pull-right"
-                                  text="Enable Razorpay Route"
-                                  pendingText="Enabling..."
-                                  onClick={this.openOnboardingModal}
-                                />
-                              </div>
-                            </div>}
-                      </div>}
+                  <FeatureOnboarding feature="marketplace" />
                 </div>}
           </content>
         </tabbed-container>

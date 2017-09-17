@@ -5,7 +5,37 @@ const FEATURE_ONBOARDING_SAVE = 'FEATURE_ONBOARDING_SAVE';
 const FEATURE_ONBOARDING_FETCH_RESPONSES = 'FEATURE_ONBOARDING_FETCH_RESPONSES';
 
 // Save onboarding questions
-export const saveOnboarding = data => {
+export const saveOnboarding = (feature, fields, file, fileName) => {
+  let formData = new FormData();
+
+  if (file) {
+    formData.append('file', file);
+    formData.append('file_name', fileName);
+  }
+
+  formData.append('route_name', 'feature_onboarding_create');
+  formData.append('mode', 'live');
+  formData.append('mode', 'live');
+  formData.append('url_params[{feature}]', feature);
+
+  for (let key in fields) {
+    if (fields.hasOwnProperty(key)) {
+      formData.append(`body[${key}]`, fields[key]);
+    }
+  }
+
+  return {
+    type: FEATURE_ONBOARDING_SAVE,
+    payload: ajax({
+      url: '/user/generic',
+      method: 'POST',
+      data: formData,
+      appendModeInURL: false,
+      processData: false,
+      contentType: false,
+    }),
+  };
+
   let body = {
     route_name: 'feature_onboarding_create',
     mode: 'live',
@@ -19,6 +49,8 @@ export const saveOnboarding = data => {
       method: 'POST',
       appendModeInURL: false,
       data: body,
+      processData: false,
+      contentType: false,
     }),
   };
 };

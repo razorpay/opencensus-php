@@ -500,7 +500,7 @@ return [
 
         // Onboarding
         'feature_onboarding_create' => [
-            'url'       => 'feature/onboarding',
+            'url'       => 'feature/onboarding/{feature}',
             'routeName' => 'feature_onboarding_create'
         ],
         'feature_onboarding_fetch_responses' => [
