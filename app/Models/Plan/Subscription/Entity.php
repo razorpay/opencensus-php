@@ -149,6 +149,7 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         // self::TOKEN_ID,
         self::PLAN_ID,
+        self::CHARGE_AT,
         // Later, we will come up with a proper structure to show
         // fields based on proper auth structure.
         // TODO: Remove this when the above is implemented
@@ -268,6 +269,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CANCELLED_AT);
     }
 
+    public function getEndedAt()
+    {
+        return $this->getAttribute(self::ENDED_AT);
+    }
+
     public function getAuthAttempts()
     {
         return $this->getAttribute(self::AUTH_ATTEMPTS);
@@ -341,15 +347,6 @@ class Entity extends Base\PublicEntity
     public function isCancelled()
     {
         return ($this->getAttribute(self::STATUS) === Status::CANCELLED);
-    }
-
-    public function setType(string $type, bool $value)
-    {
-        $currentHex = $this->getType();
-
-        $newHex = Type::getHexWithTypeMarked($currentHex, $type, $value);
-
-        $this->setTypeHex($newHex);
     }
 
     public function getType()
@@ -432,7 +429,6 @@ class Entity extends Base\PublicEntity
 
     public function followLocalFlow()
     {
-        /** @var $localCustomer Customer\Entity|null */
         $localCustomer = $this->customer;
 
         // If local customer is null, then it needs to be created and mapped
@@ -570,6 +566,15 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TOKEN_ID, $tokenId);
     }
 
+    public function setType(string $type, bool $value)
+    {
+        $currentHex = $this->getType();
+
+        $newHex = Type::getHexWithTypeMarked($currentHex, $type, $value);
+
+        $this->setTypeHex($newHex);
+    }
+
     public function setCurrentPeriod(array $billingPeriod)
     {
         $this->setCurrentStart($billingPeriod['start']);
@@ -667,8 +672,15 @@ class Entity extends Base\PublicEntity
     {
         $chargeAt = null;
 
+        //
+        // If start_at is null, it means that subscription is still in
+        // created state and is of type `immediate`. If the type is immediate,
+        // charge_at should be null, since we don't know when to charge.
+        // But, task sets a default value to `next_run_at` via modifier.
+        //
         if (($this->isCancelled() === false) and
-            ($this->isCompleted() === false))
+            ($this->isCompleted() === false) and
+            ($this->getStartAt() !== null))
         {
             $chargeAt = $this->task->getNextRunAt();
         }

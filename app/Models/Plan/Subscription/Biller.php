@@ -115,7 +115,6 @@ class Biller extends Base\Core
     }
 
     /**
-     *
      * We should not charge any invoice which is in halted status,
      * since, the subscription would also be in halted status here.
      * We do not charge halted subscriptions, we only create an invoice.
@@ -127,7 +126,7 @@ class Biller extends Base\Core
      */
     protected function shouldCharge(Entity $subscription, Invoice\Entity $invoice)
     {
-        if ($invoice->getSubscriptionStatus() === Invoice\Status::HALTED)
+        if ($invoice->getSubscriptionStatus() !== Invoice\Status::HALTED)
         {
             $this->trace->info(
                 TraceCode::SUBSCRIPTION_INVOICE_HALTED,

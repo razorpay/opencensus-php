@@ -111,7 +111,7 @@ class SubscriptionChargeTest extends TestCase
         $expectedEndAt = Carbon::createFromTimestamp($subscription['start_at'], Timezone::IST)
                                ->addMonthsNoOverflow(2)
                                ->startOfDay()
-                               ->timestamp;
+                               ->getTimestamp();
         $this->assertEquals($expectedEndAt, $subscription['current_end']);
         $this->assertEquals($expectedEndAt, $subscription['charge_at']);
         $this->assertNull($subscription['ended_at']);
@@ -131,7 +131,7 @@ class SubscriptionChargeTest extends TestCase
 
         $this->assertEquals(2, $allPayments['count']);
 
-        Carbon::setTestNow();
+        // Carbon::setTestNow();
     }
 
     public function testSubscriptionCompleteCycle()
@@ -182,14 +182,14 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals($subscription['total_count'] + 1, $invoices['count']);
 
         // Long time from now
-        $longTimeFromNow = Carbon::now()->addYear()->timestamp;
+        $longTimeFromNow = Carbon::now()->addYear()->getTimestamp();
         $result = $this->chargeSubscriptionsViaCron($longTimeFromNow);
 
         // Subscription is complete, so will not get charged
         $this->assertEquals(0, $result['total']);
 
         // Reset time
-        Carbon::setTestNow();
+        // Carbon::setTestNow();
     }
 
     public function testSubscriptionRetryAuth()
@@ -286,7 +286,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('paid', $order['status']);
 
         // Reset time
-        Carbon::setTestNow();
+        // Carbon::setTestNow();
     }
 
     public function testSubscriptionRetryCapture()
@@ -342,7 +342,7 @@ class SubscriptionChargeTest extends TestCase
         $expectedNextRun = Carbon::createFromTimestamp($subscription['start_at'], Timezone::IST)
                                  ->addMonthsNoOverflow(2)
                                  ->addDays(1)
-                                 ->timestamp;
+                                 ->getTimestamp();
         $this->assertEquals($expectedNextRun, $task['next_run_at']);
 
         $this->clearMock();
@@ -369,7 +369,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('paid', $order['status']);
 
         // Reset time
-        Carbon::setTestNow();
+        // Carbon::setTestNow();
     }
 
     public function testSubscriptionChangeCardOnAuthenticated()
@@ -385,6 +385,8 @@ class SubscriptionChargeTest extends TestCase
         $this->runRequestResponseFlow($data, function() use ($paymentRequest) {
             $this->doAuthPayment($paymentRequest);
         });
+
+        // Carbon::setTestNow();
     }
 
     public function testSubscriptionRetryAuthAndThenCapture()
@@ -464,7 +466,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals(3, $invoices['count']);
 
         // Reset time
-        Carbon::setTestNow();
+        // Carbon::setTestNow();
     }
 
     public function testSubscriptionManualRetrySuccess()
@@ -517,7 +519,7 @@ class SubscriptionChargeTest extends TestCase
         $expectedChargeAt = Carbon::createFromTimestamp($subscription['start_at'], Timezone::IST)
                                   ->addMonthsNoOverflow(2)
                                   ->startOfDay()
-                                  ->timestamp;
+                                  ->getTimestamp();
 
         $this->assertEquals($expectedChargeAt, $subscription['charge_at']);
 
@@ -528,104 +530,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('paid', $invoice['status']);
         $this->assertEquals($payments['items'][0]['id'], $invoice['payment_id']);
 
-        Carbon::setTestNow();
-    }
-
-    protected function failSubscriptionFirstCharge()
-    {
-        $this->doAuthTxnForNewSubscription();
-        $subscription = $this->getLastEntity('subscription', true);
-        $this->assertEquals('authenticated', $subscription['status']);
-        $oldSubcription = $subscription;
-
-        $this->failCharge();
-
-        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
-        $this->assertEquals(1, $result['invoices_created']);
-
-        $subscription = $this->getLastEntity('subscription', true);
-        $this->assertEquals('pending', $subscription['status']);
-        $this->assertEquals(0, $subscription['paid_count']);
-        $this->assertEquals(1, $subscription['auth_attempts']);
-        // Billing period was updated even though charge failed
-        $this->assertEquals($oldSubcription['charge_at'], $subscription['current_start']);
-        $this->assertEquals($oldSubcription['charge_at']+(24*60*60), $subscription['charge_at']);
-        $oldSubcription = $subscription;
-
-        $invoice = $this->getLastEntity('invoice', true);
-        $this->assertEquals('issued', $invoice['status']);
-        $this->assertNull($invoice['subscription_status']);
-        $this->assertEquals($subscription['current_start'], $invoice['billing_start']);
-        $this->assertEquals($subscription['current_end'], $invoice['billing_end']);
-        $this->assertInvoiceCount(1, $subscription['id']);
-
-        $this->clearMock();
-
-        return $subscription;
-    }
-
-    protected function failSubscriptionTillHalted()
-    {
-        $subscription = $this->failSubscriptionFirstCharge();
-        $oldSubcription = $subscription;
-
-        $invoice = $this->getLastEntity('invoice', true);
-        $oldInvoice = $invoice;
-
-        $this->failCharge();
-
-        $result = $this->retrySubscriptionsViaCron($subscription['charge_at']);
-        $this->assertEquals(1, $result['queued']);
-
-        $subscription = $this->getLastEntity('subscription', true);
-        $this->assertEquals('pending', $subscription['status']);
-        $this->assertEquals(0, $subscription['paid_count']);
-        $this->assertEquals(2, $subscription['auth_attempts']);
-        $this->assertEquals($oldSubcription['current_start'], $subscription['current_start']);
-        $this->assertEquals($oldSubcription['charge_at']+(24*60*60), $subscription['charge_at']);
-        $oldSubcription = $subscription;
-
-        // No new invoices created
-        $this->assertInvoiceCount(1, $subscription['id']);
-        // Existing invoice not updated
-        $this->assertArraySelectiveEquals($oldInvoice, $invoice);
-
-        $result = $this->retrySubscriptionsViaCron($subscription['charge_at']);
-        $this->assertEquals(1, $result['queued']);
-
-        $subscription = $this->getLastEntity('subscription', true);
-        $this->assertEquals('pending', $subscription['status']);
-        $this->assertEquals(0, $subscription['paid_count']);
-        $this->assertEquals(3, $subscription['auth_attempts']);
-        $this->assertEquals($oldSubcription['current_start'], $subscription['current_start']);
-        $this->assertEquals($oldSubcription['charge_at']+(24*60*60), $subscription['charge_at']);
-        $oldSubcription = $subscription;
-
-        $this->assertInvoiceCount(1, $subscription['id']);
-
-        $result = $this->retrySubscriptionsViaCron($subscription['charge_at']);
-        $this->assertEquals(1, $result['queued']);
-
-        $subscription = $this->getLastEntity('subscription', true);
-        $this->assertEquals('halted', $subscription['status']);
-        $this->assertEquals(0, $subscription['paid_count']);
-        $this->assertEquals(4, $subscription['auth_attempts']);
-        $this->assertEquals($oldSubcription['current_start'], $subscription['current_start']);
-        // Charge at has moved to next plan period
-        $this->assertEquals($oldSubcription['current_end'], $subscription['charge_at']);
-        $oldSubcription = $subscription;
-
-        $this->assertInvoiceCount(1, $subscription['id']);
-        $invoice = $this->getLastEntity('invoice', true);
-        $this->assertEquals('halted', $invoice['subscription_status']);
-
-        $result = $this->retrySubscriptionsViaCron($subscription['charge_at']);
-        // Nothing happens
-        $this->assertEquals(0, $result['queued']);
-
-        $this->clearMock();
-
-        return $subscription;
+        // Carbon::setTestNow();
     }
 
     public function testSubscriptionHaltAndKeepCharging()
@@ -883,7 +788,7 @@ class SubscriptionChargeTest extends TestCase
         $expectedChargeAt = Carbon::createFromTimestamp($subscription['start_at'], Timezone::IST)
                                   ->addMonthsNoOverflow(2)
                                   ->startOfDay()
-                                  ->timestamp;
+                                  ->getTimestamp();
         $this->assertEquals($expectedChargeAt, $subscription['charge_at']);
 
         $task = $this->getLastEntity('schedule_task', true);
@@ -894,7 +799,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('issued', $invoice['status']);
         $this->assertNull($invoice['payment_id']);
 
-        Carbon::setTestNow();
+        // Carbon::setTestNow();
     }
 
     public function testSubscriptionManualChargeTestMode()
@@ -903,14 +808,14 @@ class SubscriptionChargeTest extends TestCase
         $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('authenticated', $subscription['status']);
 
-        $oldSubcription = $subscription;
+        $oldSubscription = $subscription;
 
-        // First test charge marks the subscrition as active
+        // First test charge marks the subscription as active
         // Billing period has been updated, paid count increased
-        $subscription = $this->chargeSubscriptionManuallyTestMode($oldSubcription['id'], true);
+        $subscription = $this->chargeSubscriptionManuallyTestMode($oldSubscription['id'], true);
         $this->assertEquals('active', $subscription['status']);
         $this->assertEquals(1, $subscription['paid_count']);
-        $this->assertEquals($oldSubcription['charge_at'], $subscription['current_start']);
+        $this->assertEquals($oldSubscription['charge_at'], $subscription['current_start']);
 
         $invoice = $this->getLastEntity('invoice', true);
         $this->assertEquals('paid', $invoice['status']);
@@ -919,17 +824,17 @@ class SubscriptionChargeTest extends TestCase
 
         $this->assertInvoiceCount(1, $subscription['id']);
 
-        $oldSubcription = $subscription;
+        $oldSubscription = $subscription;
 
-        // Failed test charge marks the subscrition as pending
+        // Failed test charge marks the subscription as pending
         // Paid count remains the same, billing period is updated
         // Charge_at increments by only one day
-        $subscription = $this->chargeSubscriptionManuallyTestMode($oldSubcription['id'], false);
+        $subscription = $this->chargeSubscriptionManuallyTestMode($oldSubscription['id'], false);
         $this->assertEquals('pending', $subscription['status']);
         $this->assertEquals(1, $subscription['paid_count']);
         $this->assertEquals(1, $subscription['auth_attempts']);
-        $this->assertEquals($oldSubcription['current_end'], $subscription['current_start']);
-        $this->assertEquals($oldSubcription['charge_at']+(24*60*60), $subscription['charge_at']);
+        $this->assertEquals($oldSubscription['current_end'], $subscription['current_start']);
+        $this->assertEquals($oldSubscription['charge_at']+(24*60*60), $subscription['charge_at']);
 
         // An invoice is created, but remains in issued state
         $invoice = $this->getLastEntity('invoice', true);
@@ -943,15 +848,15 @@ class SubscriptionChargeTest extends TestCase
 
         $this->assertInvoiceCount(2, $subscription['id']);
 
-        $oldSubcription = $subscription;
+        $oldSubscription = $subscription;
 
         // Another charge acts as a retry, makes no real difference.
-        $subscription = $this->chargeSubscriptionManuallyTestMode($oldSubcription['id'], false);
+        $subscription = $this->chargeSubscriptionManuallyTestMode($oldSubscription['id'], false);
         $this->assertEquals('pending', $subscription['status']);
         $this->assertEquals(1, $subscription['paid_count']);
         $this->assertEquals(2, $subscription['auth_attempts']);
-        $this->assertEquals($oldSubcription['current_start'], $subscription['current_start']);
-        $this->assertEquals($oldSubcription['charge_at']+(24*60*60), $subscription['charge_at']);
+        $this->assertEquals($oldSubscription['current_start'], $subscription['current_start']);
+        $this->assertEquals($oldSubscription['charge_at']+(24*60*60), $subscription['charge_at']);
 
         // Retry does not cause a new invoice to be created
         $this->assertInvoiceCount(2, $subscription['id']);
@@ -959,7 +864,7 @@ class SubscriptionChargeTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('failed', $payment['status']);
 
-        // More failed test charges marks the subscrition as halted
+        // More failed test charges marks the subscription as halted
         while($subscription['auth_attempts'] < self::MAX_AUTH_ATTEMPTS)
         {
             $subscription = $this->chargeSubscriptionManuallyTestMode($subscription['id'], false);
@@ -969,7 +874,7 @@ class SubscriptionChargeTest extends TestCase
         // Retry does not cause a new invoice to be created
         $this->assertInvoiceCount(2, $subscription['id']);
 
-        $oldSubcription = $subscription;
+        $oldSubscription = $subscription;
 
         // Another test charge leaves the subscriptions status unchanged
         // But since subscription is halted anyway, billing period is updated
@@ -993,18 +898,18 @@ class SubscriptionChargeTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('captured', $payment['status']);
 
-        // Successful test charge marks the subscrition as active again
+        // Successful test charge marks the subscription as active again
         $subscription = $this->getLastEntity('subscription', true);
         $this->assertEquals('active', $subscription['status']);
         $this->assertEquals(3, $subscription['paid_count']);
 
-        $oldSubcription = $subscription;
+        $oldSubscription = $subscription;
 
         // Subsequent successful charges update billing period and paid count
-        $subscription = $this->chargeSubscriptionManuallyTestMode($oldSubcription['id'], true);
+        $subscription = $this->chargeSubscriptionManuallyTestMode($oldSubscription['id'], true);
         $this->assertEquals('active', $subscription['status']);
         $this->assertEquals(4, $subscription['paid_count']);
-        $this->assertEquals($oldSubcription['charge_at'], $subscription['current_start']);
+        $this->assertEquals($oldSubscription['charge_at'], $subscription['current_start']);
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('captured', $payment['status']);
@@ -1128,7 +1033,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals(2000, $invoice['amount']);
 
         // Reset time
-        Carbon::setTestNow();
+        // Carbon::setTestNow();
     }
 
     public function testSubscriptionHaltedCaptureFailure()
@@ -1209,7 +1114,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals(2000, $invoice['amount']);
 
         // Reset time
-        Carbon::setTestNow();
+        // Carbon::setTestNow();
     }
 
     public function testSubscriptionHaltedInvoicesCreate()
@@ -1306,7 +1211,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('expired', $subscription['status']);
 
         // Reset time
-        Carbon::setTestNow();
+        // Carbon::setTestNow();
     }
 
     public function testSubscriptionCycleWebhooks()
@@ -1376,7 +1281,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('active', $subscription['status']);
 
         // Reset time
-        Carbon::setTestNow();
+        // Carbon::setTestNow();
     }
 
     public function testAuthFailurePendingWebhookEventData()
@@ -1415,7 +1320,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals(1, $subscription['auth_attempts']);
 
         // Reset time
-        Carbon::setTestNow();
+        // Carbon::setTestNow();
     }
 
     public function testCaptureFailurePendingWebhookEventData()
@@ -1455,7 +1360,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals(1, $subscription['auth_attempts']);
 
         // Reset time
-        Carbon::setTestNow();
+        // Carbon::setTestNow();
     }
 
     public function testSuccessAfterPendingActivateWebhookEventData()
@@ -1502,7 +1407,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals(0, $subscription['auth_attempts']);
 
         // Reset time
-        Carbon::setTestNow();
+        // Carbon::setTestNow();
     }
 
     public function testChargeWebhookEventData()
@@ -1529,7 +1434,7 @@ class SubscriptionChargeTest extends TestCase
 
         $this->assertEquals(1, $result['total']);
 
-        Carbon::setTestNow();
+        // Carbon::setTestNow();
     }
 
     public function testToArrayPublicConversion()
@@ -1559,5 +1464,102 @@ class SubscriptionChargeTest extends TestCase
         $this->assertArrayHasKey('deleted_at', $entityArray['item']);
 
         $this->assertArrayNotHasKey('deleted_at', $publicArray['item']);
+    }
+
+    protected function failSubscriptionFirstCharge()
+    {
+        $this->doAuthTxnForNewSubscription();
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('authenticated', $subscription['status']);
+        $oldSubcription = $subscription;
+
+        $this->failCharge();
+
+        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+        $this->assertEquals(1, $result['invoices_created']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('pending', $subscription['status']);
+        $this->assertEquals(0, $subscription['paid_count']);
+        $this->assertEquals(1, $subscription['auth_attempts']);
+        // Billing period was updated even though charge failed
+        $this->assertEquals($oldSubcription['charge_at'], $subscription['current_start']);
+        $this->assertEquals($oldSubcription['charge_at']+(24*60*60), $subscription['charge_at']);
+        $oldSubcription = $subscription;
+
+        $invoice = $this->getLastEntity('invoice', true);
+        $this->assertEquals('issued', $invoice['status']);
+        $this->assertNull($invoice['subscription_status']);
+        $this->assertEquals($subscription['current_start'], $invoice['billing_start']);
+        $this->assertEquals($subscription['current_end'], $invoice['billing_end']);
+        $this->assertInvoiceCount(1, $subscription['id']);
+
+        $this->clearMock();
+
+        return $subscription;
+    }
+
+    protected function failSubscriptionTillHalted()
+    {
+        $subscription = $this->failSubscriptionFirstCharge();
+        $oldSubcription = $subscription;
+
+        $invoice = $this->getLastEntity('invoice', true);
+        $oldInvoice = $invoice;
+
+        $this->failCharge();
+
+        $result = $this->retrySubscriptionsViaCron($subscription['charge_at']);
+        $this->assertEquals(1, $result['queued']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('pending', $subscription['status']);
+        $this->assertEquals(0, $subscription['paid_count']);
+        $this->assertEquals(2, $subscription['auth_attempts']);
+        $this->assertEquals($oldSubcription['current_start'], $subscription['current_start']);
+        $this->assertEquals($oldSubcription['charge_at']+(24*60*60), $subscription['charge_at']);
+        $oldSubcription = $subscription;
+
+        // No new invoices created
+        $this->assertInvoiceCount(1, $subscription['id']);
+        // Existing invoice not updated
+        $this->assertArraySelectiveEquals($oldInvoice, $invoice);
+
+        $result = $this->retrySubscriptionsViaCron($subscription['charge_at']);
+        $this->assertEquals(1, $result['queued']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('pending', $subscription['status']);
+        $this->assertEquals(0, $subscription['paid_count']);
+        $this->assertEquals(3, $subscription['auth_attempts']);
+        $this->assertEquals($oldSubcription['current_start'], $subscription['current_start']);
+        $this->assertEquals($oldSubcription['charge_at']+(24*60*60), $subscription['charge_at']);
+        $oldSubcription = $subscription;
+
+        $this->assertInvoiceCount(1, $subscription['id']);
+
+        $result = $this->retrySubscriptionsViaCron($subscription['charge_at']);
+        $this->assertEquals(1, $result['queued']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('halted', $subscription['status']);
+        $this->assertEquals(0, $subscription['paid_count']);
+        $this->assertEquals(4, $subscription['auth_attempts']);
+        $this->assertEquals($oldSubcription['current_start'], $subscription['current_start']);
+        // Charge at has moved to next plan period
+        $this->assertEquals($oldSubcription['current_end'], $subscription['charge_at']);
+        $oldSubcription = $subscription;
+
+        $this->assertInvoiceCount(1, $subscription['id']);
+        $invoice = $this->getLastEntity('invoice', true);
+        $this->assertEquals('halted', $invoice['subscription_status']);
+
+        $result = $this->retrySubscriptionsViaCron($subscription['charge_at']);
+        // Nothing happens
+        $this->assertEquals(0, $result['queued']);
+
+        $this->clearMock();
+
+        return $subscription;
     }
 }
