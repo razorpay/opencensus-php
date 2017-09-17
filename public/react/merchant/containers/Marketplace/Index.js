@@ -91,7 +91,7 @@ export default class MarketplaceContainer extends Component {
       return (
         <tabbed-container>
           <header>
-            <NavLink to="/reports">Razorpay Route</NavLink>
+            <NavLink to="/route">Razorpay Route</NavLink>
             <HeaderAction>
               <div class="btn-toolbar pull-right">
                 <a
