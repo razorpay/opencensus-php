@@ -26,6 +26,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         Orchestrator::NETBANKING_FEDERAL,
         Orchestrator::NETBANKING_RBL,
         Orchestrator::NETBANKING_INDUSIND,
+        Orchestrator::NETBANKING_BOB,
         Orchestrator::JIOMONEY,
         Orchestrator::VIRTUAL_ACC_KOTAK,
         Orchestrator::NETBANKING_PNB,
