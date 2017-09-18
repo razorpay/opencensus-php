@@ -24,7 +24,7 @@ return [
                 'admin' => true,
                 'items' => [
                     [
-                        'status'              => 'mail_sent',
+                        'status'              => 'file_sent',
                         'scheduled'           => true,
                         'partially_processed' => false,
                         'attempts'            => 1,
@@ -189,7 +189,7 @@ return [
                 'admin' => true,
                 'items' => [
                     [
-                        'status'              => 'mail_sent',
+                        'status'              => 'file_sent',
                         'scheduled'           => true,
                         'partially_processed' => false,
                         'attempts'            => 1,
@@ -295,7 +295,7 @@ return [
                         'sender'              => 'refunds@razorpay.com',
                         'type'                => 'refund',
                         'target'              => 'hdfc',
-                        'error_code'          => 'error_sending_mail',
+                        'error_code'          => 'error_sending_file',
                         'entity'              => 'gateway_file',
                     ]
                 ]
@@ -311,7 +311,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'status'              => 'mail_sent',
+                'status'              => 'file_sent',
                 'scheduled'           => true,
                 'partially_processed' => false,
                 'attempts'            => 2,
@@ -331,7 +331,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'status'              => 'mail_sent',
+                'status'              => 'file_sent',
                 'scheduled'           => true,
                 'partially_processed' => false,
                 'attempts'            => 2,

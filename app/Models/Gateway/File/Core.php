@@ -81,12 +81,12 @@ class Core extends Base\Core
     public function acknowledge(Entity $gatewayFile, array $data): Entity
     {
 
-        // Only gateway_file entities for which we have sent a mail successfully
+        // Only gateway_file entities for which we have sent the file successfully
         // can be acknowledged
-        if ($gatewayFile->isMailSent() === false)
+        if ($gatewayFile->isFileSent() === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Cannot acknoewledge given gateway_file entity before mail is sent.');
+                'Cannot acknoewledge given gateway_file entity before file is sent.');
         }
 
         $type = $gatewayFile->getType();

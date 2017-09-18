@@ -22,7 +22,7 @@ return [
                 'admin' => true,
                 'items' => [
                     [
-                        'status'              => 'mail_sent',
+                        'status'              => 'file_sent',
                         'scheduled'           => true,
                         'partially_processed' => false,
                         'attempts'            => 1,
