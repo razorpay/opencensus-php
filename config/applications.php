@@ -2,44 +2,44 @@
 
 use RZP\Models\VirtualAccount;
 
-return [
-    'dashboard' => [
+return array(
+    'dashboard' => array(
         'url'       => env('APP_DASHBOARD_URL'),
         'secret'    => env('APP_DASHBOARD_SECRET'),
         'pretend'   => env('APP_DASHBOARD_PRETEND'),
         'cloud'     => true,
-    ],
+    ),
 
-    'mock_gateways' => [
+    'mock_gateways' => array(
         'secret'    => env('MOCK_GATEWAY_SECRET'),
-    ],
+    ),
 
-    'cron' => [
+    'cron' => array(
         'secret'    => env('CRON_PASSWORD'),
-    ],
+    ),
 
-    'h2h' => [
+    'h2h' => array(
         'secret'   => env('APP_H2H_SECRET'),
-    ],
+    ),
 
-    'mailgun' => [
+    'mailgun' => array(
         'url'       => 'razorpay.com',
         'key'       => env('MAILGUN_SECRET'),
         'mock'      => env('MAILGUN_MOCK'),
         'secret'    => env('APP_MAILGUN_SECRET'),
         'from_name' => 'Team Razorpay',
         'from_email' => 'support@razorpay.com'
-    ],
+    ),
 
-    'emi' => [
+    'emi' => array(
         'password'  => env('EMI_FILE_PASSWORD')
-    ],
+    ),
 
-    'slack' => [
+    'slack' => array(
         'team'      => 'razorpay',
         'token'     => env('SLACK_TOKEN'),
         'mock'      => env('SLACK_MOCK'),
-    ],
+    ),
 
     'sns' => [
         'mock'      => env('SNS_MOCK'),
@@ -49,51 +49,50 @@ return [
         'mock'      => env('ZAPIER_MOCK'),
     ],
 
-    'hosted' => [
+    'hosted' => array(
         'secret'    => env('APP_HOSTED_SECRET'),
-    ],
+    ),
 
-    'card_tokenex' => [
+    'card_tokenex' => array(
         'mock'      => env('TOKENEX_MOCK', false),
         'id'        => env('TOKENEX_ID'),
         'key'       => env('TOKENEX_API_KEY'),
         'url'       => env('TOKENEX_API_URL'),
         'scheme'    => env('TOKENEX_TOKEN_SCHEME'),
-    ],
+    ),
 
-    'raven' => [
+    'raven' => array(
         'url'       => env('RAVEN_URL'),
         'secret'    => env('RAVEN_SECRET'),
-    ],
+    ),
 
-    'maxmind' => [
+    'maxmind' => array(
         'mock'      => env('MAXMIND_MOCK', false),
         'id'        => '115820',
         'secret'    => env('MAXMIND_SECRET'),
         'secretv2'  => env('MAXMIND_V2_SECRET')
-    ],
+    ),
 
-    VirtualAccount\Provider::KOTAK => [
+    VirtualAccount\Provider::KOTAK => array(
         'secret'    => env('KOTAK_SECRET'),
-    ],
-    VirtualAccount\Provider::YESBANK => [
+    ),
+    VirtualAccount\Provider::YESBANK => array(
         'secret'    => env('YESBANK_SECRET'),
-    ],
+    ),
 
-    'lumberjack' => [
+    'lumberjack' => array(
         'url'           => env('LUMBERJACK_URL'),
         'secret'        => env('LUMBERJACK_SECRET'),
         'key'           => env('LUMBERJACK_KEY'),
         'mock'          => env('LUMBERJACK_MOCK', false),
         'identifier'    => env('LUMBERJACK_API_IDENTIFIER')
-    ],
+    ),
 
     'harvester' => [
-        'url'               => env('HARVESTER_URL'),
-        'secret'            => env('HARVESTER_SECRET'),
-        'mock'              => env('HARVESTER_MOCK', false),
-        'identifier'        => env('HARVESTER_API_IDENTIFIER'),
-        'analytics_token'   => env('HARVESTER_ANALYTICS_TOKEN'),
+        'url'           => env('HARVESTER_URL'),
+        'secret'        => env('HARVESTER_SECRET'),
+        'mock'          => env('HARVESTER_MOCK', false),
+        'identifier'    => env('HARVESTER_API_IDENTIFIER')
     ],
 
     'elfin' => [
@@ -132,6 +131,7 @@ return [
             'api_key'  => env('STATUSCAKE_API_KEY')
         ]
     ],
+
     //
     // Configuration for one of the internal applications allowed
     // access to select routes of APIs.
@@ -139,6 +139,7 @@ return [
     'auth_service' => [
         'secret' => env('APP_OAUTH_SECRET'),
     ],
+
     'nodal' => [
         'mock' => env('NODAL_MOCK', false),
         'auth' => [
@@ -147,12 +148,13 @@ return [
         ],
         'url' => env('NODAL_BASE_URL'),
     ],
+
     //
     // Configuration(URL and basic authentication details) for api to make
     // service calls to authentication service.
     //
-    'api_auth_service' => [
+    'api_auth_service' => array(
         'url'       => env('AUTH_SERVICE_URL'),
         'secret'    => env('AUTH_SERVICE_SECRET'),
-    ],
-];
+    ),
+);
