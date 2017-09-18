@@ -424,7 +424,13 @@ class Core extends Base\Core
     {
         $merchant->getValidator()->validateInput('create_batch', $input);
 
-        $attachments = $input['attachment'];
+        $type = $input['type'];
+
+        $input = $input['data'];
+
+        $merchant->getValidator()->validateInput($type, $input);
+
+/*        $attachments = $input['attachment'];
 
         $filenames = [];
 
@@ -441,23 +447,26 @@ class Core extends Base\Core
 
         $merchant->getValidator()->validateAttachment($filenames);
 
+*/
         $batches  = [];
 
-        foreach ($attachments as $attachment)
+        foreach ($input as $key => $file)
         {
-            $type = Batch\Type::getMerchantBatchType($merchant->getName(), $attachment->getClientOriginalName());
+            $batchType = $type . '_' . $key;
 
             $params = [
-                Batch\Entity::FILE => $attachment,
-                Batch\Entity::TYPE => $type
+                Batch\Entity::FILE => $file,
+                Batch\Entity::TYPE => $batchType
             ];
 
             $batch = (new Batch\Core)->create($params);
 
-            $batches[$type] = $batch->getId();
+            $batches[$batchType] = $batch->getId();
         }
 
-        $job = new IrctcBatch($this->mode, $batches);
+        $class = studly_case($type) . 'Batch::class';
+
+        $job = new $class($this->mode, $batches);
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
 

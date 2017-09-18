@@ -38,13 +38,11 @@ class IrctcBatch extends Job implements ShouldQueue
 
         try
         {
-            $this->trace->debug(
-                        TraceCode::BATCH_JOB_RECEIVED,
-                        $this->batches);
+            $this->trace->info(TraceCode::BATCH_JOB_RECEIVED, $this->batches);
 
-            if (isset($this->batches[BatchModel\Type::REFUND_IRCTC]) === true)
+            if (isset($this->batches[BatchModel\Type::IRCTC_REFUND]) === true)
             {
-                $batchId = $this->batches[BatchModel\Type::REFUND_IRCTC];
+                $batchId = $this->batches[BatchModel\Type::IRCTC_REFUND];
 
                 $batch = $this->repoManager->batch->findOrFail($batchId);
 
@@ -60,7 +58,7 @@ class IrctcBatch extends Job implements ShouldQueue
                 $this->trace->debug(
                             TraceCode::BATCH_JOB_HANDLED,
                             [
-                                'type'       => BatchModel\Type::REFUND_IRCTC,
+                                'type'       => BatchModel\Type::IRCTC_REFUND,
                                 'batch_id'   => $batchId,
                                 'time_taken' => $timeTaken,
                             ]);

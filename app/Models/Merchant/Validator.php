@@ -104,6 +104,16 @@ class Validator extends Base\Validator
         'merchant_ids'   => 'required|array'
     ];
 
+    protected static $createBatchRules = [
+        'type'  => 'required|string|max:50|custom',
+        'data'  => 'required|array'
+    ];
+
+    protected static $irctcRules = [
+        'refund'     => 'sometimes|filled|file|mimes:txt|max:1024',
+        'settlement' => 'sometimes|filled|file|mimes:txt|max:1024',
+    ];
+
     protected static $editConfigValidators = [
         'csv_email',
     ];
@@ -114,10 +124,6 @@ class Validator extends Base\Validator
 
     protected static $featureValidators = [
         'visible_features',
-    ];
-
-    protected static $createBatchRules = [
-        'attachment'   => 'required|array',
     ];
 
     protected function validateHandle($attribute, $handle)
