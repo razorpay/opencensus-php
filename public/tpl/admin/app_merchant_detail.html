@@ -17,11 +17,12 @@
         <a ui-sref="app.merchants.activation({id: merchant.details.id})" dynamic-tooltip="view_activation_form" ng-show="admin.permissions.indexOf('view_activation_form') !== -1" class="list-group-item see-activation-form">
           See Activation Form Details
         </a>
-
         <a ui-sref="app.merchants.team({id: merchant.details.id})" dynamic-tooltip="view_activation_form" ng-show="admin.permissions.indexOf('view_activation_form') !== -1" class="list-group-item see-activation-form">
           See Team Details
         </a>
-
+        <a ui-sref="app.merchants.stats({id: merchant.details.id})" class="list-group-item">
+          See Merchant Analytics Stats
+        </a>
         <a href class="list-group-item lock-form" dynamic-tooltip="edit_merchant_lock_activation" ng-show="(merchant.details.locked==0) && (admin.permissions.indexOf('edit_merchant_lock_activation') !== -1)" ng-click="lockForm()">
           Lock Activation Form <i class="pull-right fa fa-lock"></i>
         </a>
