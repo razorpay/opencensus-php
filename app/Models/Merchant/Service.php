@@ -1077,9 +1077,6 @@ class Service extends Base\Service
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        // Always delete the tags from the live mode. No tags are stored in the test mode.
-        $merchant->setConnection(Mode::LIVE);
-
         $merchant->untag($tagName);
 
         $this->repo->merchant->syncToEsLiveAndTest($merchant, EsRepository::UPDATE);
