@@ -95,12 +95,12 @@ class HarvesterClient extends AbstractEventClient
         $this->events[$channel][] = $event;
     }
 
-    public function query($data = ''): Response
+    public function query($data = '')
     {
         return $this->sendRequest($this->queryPath, $data, true, 3);
     }
 
-    protected function sendRequest(string $urlPath, $data, bool $retry = false, int $maxRetryTimes = 0): Response
+    protected function sendRequest(string $urlPath, $data, bool $retry = false, int $maxRetryTimes = 0)
     {
         $this->trace->info(
             TraceCode::HARVESTER_REQUEST,

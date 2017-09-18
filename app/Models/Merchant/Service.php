@@ -1354,7 +1354,7 @@ class Service extends Base\Service
         return $mailer;
     }
 
-    public function fetchAnalytics($input): Response
+    public function fetchAnalytics($input)
     {
         (new Core())->validateFilterAttributesAndAddMerchantId($this->merchant->getId(), $input);
 
