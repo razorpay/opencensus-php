@@ -37,4 +37,32 @@ class Validator extends Base\Validator
                 'Payment failed');
         }
    }
+
+   /**
+    * Validates that the feature is not in already assigned list of merchant
+    * features.
+    *
+    * @param array $assignedFeatureNames
+    *
+    * @throws Exception\BadRequestException
+    */
+   public function validateFeatureIsNotAlreadyAssigned(array $assignedFeatureNames)
+   {
+        $feature = $this->entity;
+
+        $name = $feature->getName();
+
+        if (in_array($name, $assignedFeatureNames, true) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_ALREADY_ASSIGNED,
+                null,
+                [
+                    Entity::ID           => $feature->getId(),
+                    Entity::NAME         => $feature->getName(),
+                    Entity::OLD_FEATURES => $assignedFeatureNames,
+                    Entity::MERCHANT_ID  => $feature->getMerchantId(),
+                ]);
+        }
+   }
 }

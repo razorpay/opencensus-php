@@ -43,7 +43,7 @@ class Repository extends BaseRepository
                     ->first();
     }
 
-    public function saveAndSyncIfApplicableOrFail(Entity $feature, array $assignedFeatureNames, bool $shouldSync)
+    public function saveAndSyncIfApplicableOrFail(Entity $feature, bool $shouldSync)
     {
         if ($shouldSync === true)
         {
@@ -51,7 +51,7 @@ class Repository extends BaseRepository
         }
         else
         {
-            $this->saveFeatureOrFail($feature, $assignedFeatureNames);
+            $this->repo->saveOrFail($feature);
         }
     }
 
@@ -65,33 +65,6 @@ class Repository extends BaseRepository
         {
             $this->deleteOrFail($feature);
         }
-    }
-
-    /**
-     * Saves the feature only in one mode
-     *
-     * @param Entity $feature
-     * @param array  $assignedFeatureNames
-     *
-     * @return bool
-     */
-    protected function saveFeatureOrFail(Entity $feature, array $assignedFeatureNames): bool
-    {
-        $isFeatureAssigned = in_array($feature->getName(), $assignedFeatureNames, true);
-
-        //
-        // If the feature is already assigned, there's nothing
-        // to save
-        //
-        if ($isFeatureAssigned === true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_ALREADY_ASSIGNED);
-        }
-
-        $this->repo->saveOrFail($feature);
-
-        return true;
     }
 
     /**
@@ -114,7 +87,9 @@ class Repository extends BaseRepository
             {
                 $testEntity = clone $entity;
                 $testEntity->setConnection(Mode::TEST);
-                $this->saveOrFail($testEntity);
+
+                $testEntity->saveOrFail();
+
                 $this->syncToEs($entity, EsRepository::CREATE, null, Mode::TEST);
             }
 
@@ -122,7 +97,9 @@ class Repository extends BaseRepository
             {
                 $liveEntity = clone $entity;
                 $liveEntity->setConnection(Mode::LIVE);
-                $this->saveOrFail($liveEntity);
+
+                $liveEntity->saveOrFail();
+
                 $this->syncToEs($entity, EsRepository::CREATE, null, Mode::LIVE);
             }
         });
@@ -147,12 +124,14 @@ class Repository extends BaseRepository
             if ($testEntity !== null)
             {
                 $testEntity->deleteOrFail();
+
                 $this->syncToEs($entity, EsRepository::DELETE, null, Mode::TEST);
             }
 
             if ($liveEntity !== null)
             {
                 $liveEntity->deleteOrFail();
+
                 $this->syncToEs($entity, EsRepository::DELETE, null, Mode::LIVE);
             }
         });
