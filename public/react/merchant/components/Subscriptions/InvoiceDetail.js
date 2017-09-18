@@ -38,6 +38,9 @@ export default class InvoiceDetail extends Component {
               />
             </div>}
           <div style={{ position: 'relative' }}>
+            <div class="label--primary" style={{ marginBottom: '4px' }}>
+              {addon.item.name}
+            </div>
             <div class="label--primary">
               <Amount
                 currency={addon.item.currency}
