@@ -6,7 +6,7 @@ use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
-class SettlementIrctc extends Base
+class IrctcSettlement extends Base
 {
     protected function processEntry(array & $entry)
     {
@@ -17,11 +17,13 @@ class SettlementIrctc extends Base
         $paymentProcessor = (new PaymentProcessor($payment->merchant));
 
         $params = [
-            Payment\Entity::AMOUNT => intval($entry[Batch\Header::PAYMENT_AMOUNT] * 100)
+            Payment\Entity::AMOUNT => $payment->getAmount(),
+            Payment\Entity::CURRENCY => $payment->getCurrency()
         ];
 
         // We do not capture the payment if its already refunded
-        if ($payment->isPartiallyOrFullyRefunded() === false)
+        if (($payment->isPartiallyOrFullyRefunded() === false) and
+            ($payment->hasBeenCaptured() === false))
         {
             $paymentProcessor->capture($payment, $params);
         }

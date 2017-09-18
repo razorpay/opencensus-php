@@ -10,7 +10,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
-class RefundIrctc extends Base
+class IrctcRefund extends Base
 {
     protected function processEntry(array & $entry)
     {
@@ -33,6 +33,8 @@ class RefundIrctc extends Base
     {
         $paymentProcessor = (new PaymentProcessor($payment->merchant));
 
+        $input = $this->getRefundParams($entry);
+
         $input = [
             Refund\Entity::RECEIPT => $entry[Batch\Header::CANCELLATION_ID] . '_' . $entry[Batch\Header::MERCHANT_REFERENCE],
             Refund\Entity::NOTES   => [
@@ -51,25 +53,19 @@ class RefundIrctc extends Base
         $paymentProcessor = (new PaymentProcessor($payment->merchant));
 
         // In case the payment is not captured, we need to capture the payment before initiating the refund
-        if ($payment->isCaptured() === false)
+        if ($payment->hasBeenCaptured() === false)
         {
             $params = [
-                Payment\Entity::AMOUNT => intval($entry[Batch\Header::PAYMENT_AMOUNT] * 100),
+                Payment\Entity::AMOUNT      => $payment->getAmount(),
+                Payment\Entity::CURRENCY    => $payment->getCurrency()
             ];
 
             $paymentProcessor->capture($payment, $params);
         }
 
-        $input = [
-            Refund\Entity::AMOUNT  => intval($entry[Batch\Header::REFUND_AMOUNT] * 100),
-            Refund\Entity::RECEIPT => $entry[Batch\Header::CANCELLATION_ID] . '_' . $entry[Batch\Header::MERCHANT_REFERENCE],
-            Refund\Entity::NOTES   => [
-                'reservation_id'    => $entry[Batch\Header::MERCHANT_REFERENCE],
-                'cancellation_id'   => $entry[Batch\Header::CANCELLATION_ID],
-                'cancellation_date' => $entry[Batch\Header::CANCELLATION_DATE],
-                'refund_type'       => $entry[Batch\Header::REFUND_TYPE],
-            ],
-        ];
+        $input = $this->getRefundParams($entry);
+
+        $input[Refund\Entity::AMOUNT]  = intval($entry[Batch\Header::REFUND_AMOUNT] * 100);
 
         return $paymentProcessor->createRefundFromMerchantFile($payment, $input, $this->batch);
     }
@@ -83,6 +79,21 @@ class RefundIrctc extends Base
                           ->format('Ymd');
 
         return $refundDate;
+    }
+
+    protected function getRefundParams(array $entry)
+    {
+        $input = [
+            Refund\Entity::RECEIPT => $entry[Batch\Header::CANCELLATION_ID] . '_' . $entry[Batch\Header::MERCHANT_REFERENCE],
+            Refund\Entity::NOTES   => [
+                'reservation_id'    => $entry[Batch\Header::MERCHANT_REFERENCE],
+                'cancellation_id'   => $entry[Batch\Header::CANCELLATION_ID],
+                'cancellation_date' => $entry[Batch\Header::CANCELLATION_DATE],
+                'refund_type'       => $entry[Batch\Header::REFUND_TYPE],
+            ],
+        ];
+
+        return $input;
     }
 
     /**

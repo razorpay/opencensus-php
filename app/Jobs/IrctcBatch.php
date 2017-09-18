@@ -5,6 +5,7 @@ namespace RZP\Jobs;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
+use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Batch as BatchModel;
 
@@ -18,12 +19,19 @@ class IrctcBatch extends Job implements ShouldQueue
 {
     use InteractsWithQueue;
 
+    // Define retry attempts and max tries varialb
+
     /**
      * Batches array.
      *
      * @var array
      */
     protected $batches;
+
+    const BATCH_ORDER = [
+        BatchModel\Type::IRCTC_REFUND,
+        BatchModel\Type::IRCTC_SETTLEMENT
+    ];
 
     public function __construct(string $mode, array $batches)
     {
@@ -40,9 +48,14 @@ class IrctcBatch extends Job implements ShouldQueue
         {
             $this->trace->info(TraceCode::BATCH_JOB_RECEIVED, $this->batches);
 
-            if (isset($this->batches[BatchModel\Type::IRCTC_REFUND]) === true)
+            foreach (self::BATCH_ORDER as $batchType)
             {
-                $batchId = $this->batches[BatchModel\Type::IRCTC_REFUND];
+                if (isset($this->batches[$batchType]) === false)
+                {
+                    continue;
+                }
+
+                $batchId = $this->batches[$batchType];
 
                 $batch = $this->repoManager->batch->findOrFail($batchId);
 
@@ -50,57 +63,32 @@ class IrctcBatch extends Job implements ShouldQueue
 
                 $timeStarted = microtime(true);
 
-                BatchModel\Processor\Base::get($batch)
-                                         ->process();
+                BatchModel\Processor\Base::get($batch)->process();
 
                 $timeTaken = microtime(true) - $timeStarted;
 
-                $this->trace->debug(
-                            TraceCode::BATCH_JOB_HANDLED,
-                            [
-                                'type'       => BatchModel\Type::IRCTC_REFUND,
-                                'batch_id'   => $batchId,
-                                'time_taken' => $timeTaken,
-                            ]);
-            }
-
-            if (isset ($this->batches[BatchModel\Type::SETTLEMENT_IRCTC]) === true)
-            {
-                $batchId = $this->batches[BatchModel\Type::SETTLEMENT_IRCTC];
-
-                $batch = $this->repoManager->batch->findOrFail($batchId);
-
-                $batch->getValidator()->validateNotProcessedAlready();
-
-                $timeStarted = microtime(true);
-
-                BatchModel\Processor\Base::get($batch)
-                                         ->process();
-
-                $timeTaken = microtime(true) - $timeStarted;
-
-                $this->trace->debug(
-                            TraceCode::BATCH_JOB_HANDLED,
-                            [
-                                'type'       => BatchModel\Type::SETTLEMENT_IRCTC,
-                                'batch_id'   => $batchId,
-                                'time_taken' => $timeTaken,
-                            ]);
+                $this->trace->info(
+                    TraceCode::BATCH_JOB_HANDLED,
+                    [
+                        'type'       => $batchType,
+                        'batch_id'   => $batchId,
+                        'time_taken' => $timeTaken,
+                    ]);
             }
         }
         catch (\Throwable $e)
         {
             $this->trace->traceException(
-                            $e,
-                            null,
-                            TraceCode::BATCH_JOB_ERROR,
-                            [
-                                'data' => $this->batches,
-                            ]);
+                $e,
+                Trace::ERROR,
+                TraceCode::BATCH_JOB_ERROR,
+                [
+                    'data' => $this->batches
+                ]);
         }
-        finally
-        {
-            $this->delete();
-        }
+        // finally
+        // {
+        //     $this->delete();
+        // }
     }
 }
