@@ -161,7 +161,7 @@ class ResponseCode
 
     public static function getErrorCode(string $code)
     {
-        if(isset(self::$responseCodeToErrorCodeMap[$code]) === true)
+        if (isset(self::$responseCodeToErrorCodeMap[$code]) === true)
         {
             return self::$responseCodeToErrorCodeMap[$code];
         }
@@ -171,7 +171,7 @@ class ResponseCode
 
     public static function getResponseMessage(string $code)
     {
-        if(isset(self::$map[$code]) === true)
+        if (isset(self::$map[$code]) === true)
         {
             return self::$map[$code];
         }

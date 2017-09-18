@@ -32,12 +32,7 @@ class PublicErrorDescription
     const GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR                            = 'Payment failed because card holder couldn\'t be authenticated';
     const GATEWAY_ERROR_FALSE_AUTHORIZE                                         = 'The payment was wrongly authorized';
     const GATEWAY_ERROR_REFUND_DUPLICATE_REQUEST                                = 'Duplicate Refund Request';
-    const GATEWAY_ERROR_PAYMENT_FAILED                                          = 'Payment Failed';
-    const GATEWAY_ERROR_PIN_CRYPTOGRAPHY_ERROR                                  = 'PIN cryptographic error found';
-    const GATEWAY_ERROR_PIN_CHANGE_FAILED                                       = 'PIN Change/Unblock request declined';
-    const GATEWAY_ERROR_SWITCH_UNOPERATIVE                                      = 'Issuer unavailable or switch inoperative';
 
-    const BAD_REQUEST_PAYMENT_LATE_RESPONSE_RECEIVED_FROM_BANK                  = 'Response received too late';
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                              = 'The reset link has expired or invalid';
     const BAD_REQUEST_CHANGE_PASSWORD_NOT_ALLWOED                               = 'Password Change is not allowed for this Org';
     const BAD_REQUEST_URL_NOT_FOUND                                             = 'The requested URL was not found on the server.';
@@ -522,7 +517,7 @@ class PublicErrorDescription
     const BAD_REQUEST_SNS_PUBLISH_FAILED                                        = 'Sns Publish failed';
 
     const BAD_REQUEST_ADMIN_TOKEN_MISMATCH                                      = 'Admin Token Mismatch';
-  
+
     const BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE                                = 'This gateway file generation attempt is not retriable';
 
     const SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND                               = 'No data present for gateway file processing in the given time period';
