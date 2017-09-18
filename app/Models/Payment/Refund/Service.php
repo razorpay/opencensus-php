@@ -203,9 +203,7 @@ class Service extends Base\Service
 
         $gateway = $terminal->getGateway();
 
-        $action = 'generateRefunds';
-
-        $file = $this->app['gateway']->call($gateway, $action, $input, $this->mode);
+        $file = $this->app['gateway']->call($gateway, Payment\Action::GENERATE_REFUNDS, $input, $this->mode);
 
         return ['file' => $file, 'count' => $count];
     }

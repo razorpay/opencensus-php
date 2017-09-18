@@ -116,7 +116,7 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED);
         }
 
-        return $this->getCallbackResponseData($input);
+        return $gatewayPayment->toArray();
     }
 
     protected function getVeresAttributesToSave(array $response, array $input)

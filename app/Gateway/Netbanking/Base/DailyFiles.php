@@ -92,9 +92,7 @@ class DailyFiles
 
         $gateway = $terminal->getGateway();
 
-        $action = 'generateRefunds';
-
-        return $this->app['gateway']->call($gateway, $action, $input, $this->mode);
+        return $this->app['gateway']->call($gateway, Payment\Action::GENERATE_REFUNDS, $input, $this->mode);
     }
 
     protected function getClaimsData($from, $to)
@@ -133,9 +131,7 @@ class DailyFiles
 
         $gateway = $claim->terminal->getGateway();
 
-        $action = 'generateClaims';
-
-        return $this->app['gateway']->call($gateway, $action, $input, $this->mode);
+        return $this->app['gateway']->call($gateway, Payment\Action::GENERATE_CLAIMS, $input, $this->mode);
     }
 
     protected function sendMail($amount, $claimsFileData, $refundsFileData, $email = null)

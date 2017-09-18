@@ -260,16 +260,10 @@ class Processor extends Base\Core
             return $entity->getId();
         });
 
-        $failureAmount = 0;
-
         foreach ($failureEntities as $entity)
         {
             $failureEntityIds[] = $entity->getId();
-
-            $failureAmount += $entity->getAmount();
         }
-
-        $failureAmount = $failureAmount / 100;
 
         // If multiple, let's say 2, attempts were made, on the same day for a settlement,
         // the recon file would have both failure and success rows corresponding to each
@@ -277,6 +271,18 @@ class Processor extends Base\Core
         // both successEntities, and failureEntities. To avoid a false alarm for this
         // settlement, we do this
         $failureEntityIds = array_diff($failureEntityIds, $successEntityIds);
+
+        $failureAmount = 0;
+
+        foreach ($failureEntities as $entity)
+        {
+            if (in_array($entity->getId(), $failureEntityIds, true) === true)
+            {
+                $failureAmount += $entity->getAmount();
+            }
+        }
+
+        $failureAmount = $failureAmount / 100;
 
         $totalCount = count($allEntityIds);
         $failureCount = count($failureEntityIds);

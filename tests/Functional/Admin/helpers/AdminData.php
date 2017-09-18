@@ -267,7 +267,7 @@ return [
             'url' => '/orgs/%s/current_admin',
             'method' => 'post',
             'content' => [
-                'token' => 'secondToken',
+                'token' => 'secondTokenAdminToken1234',
             ],
         ],
         'response' => [
@@ -795,4 +795,16 @@ return [
             'terminal_selection_log_verbose' => '1',
         ],
     ],
+
+    'testAdminAllEntitiesApi' => [
+        'request' => [
+            'url'       => '/admin/entities/all',
+            'method'    => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'entities' => []
+            ]
+        ]
+    ]
 ];
