@@ -691,3 +691,16 @@ DELETE from merchant_users
 # Update refund for processing
 # https://razorpay.slack.com/archives/C0SG9Q7TM/p1505719892000263
 UPDATE refunds SET status = "failed", gateway_refunded = "0" WHERE id = "87eSYBPtCyTapi" and status = "processed";
+
+## FirstData Manual Refund of old Payment
+UPDATE refunds
+    SET status='processed',
+    reference1='85215227251735742614512',
+    gateway_refunded=1
+WHERE id='8DMPxDQxATRqpQ';
+
+UPDATE refunds
+    SET status='processed',
+    reference1='74766517256736059272031',
+    gateway_refunded=1
+WHERE id='8U7K6IOgt3PVPP';
