@@ -100,6 +100,7 @@ export default class SubscriptionDetailsContainer extends Component {
     }
   }
 
+  // Fetch invoice details
   fetchInvoice(id) {
     let { invoice } = this.props;
 
@@ -128,18 +129,39 @@ export default class SubscriptionDetailsContainer extends Component {
     }
   }
 
-  fetchAddOns(subscriptionId) {
-    return fetchSubscriptionAddOns(subscriptionId)
-      .then(response => {
-        this.setState({
-          addons: response.data.items,
-        });
+  // Fetch list of invoices for subscriptions id
+  fetchInvoicesList(subscriptionId) {
+    return this.props.fetchInvoices(subscriptionId).then(data => {
+      if (data.data && !this.state.curInvoiceIndex) {
+        const invoicesItems = data.data.items;
 
-        return response.data; // To success the chain of Promise.all
-      })
-      .catch(err => {
-        // Throw some error // To fail the chain of Promise.all. Will be caught below
+        // Calculate recurring id #
+        if (this.props.invoice_id === 'inv_upcoming') {
+          this.setState({
+            curInvoiceIndex: invoicesItems.length + 1,
+          });
+        } else {
+          // Iterate list to find which invoice id is matching url(props)
+          invoicesItems.forEach((item, index) => {
+            if (item.id === this.props.invoice_id) {
+              this.setState({
+                curInvoiceIndex: invoicesItems.length - index,
+              });
+            }
+          });
+        }
+      }
+    });
+  }
+
+  fetchAddOns(subscriptionId) {
+    return fetchSubscriptionAddOns(subscriptionId).then(response => {
+      this.setState({
+        addons: response.data.items,
       });
+
+      return response.data; // To success the chain of Promise.all
+    });
   }
 
   fetchSubscriptionDetails(id) {
@@ -155,29 +177,8 @@ export default class SubscriptionDetailsContainer extends Component {
             fetchCustomer(subscription.customer_id),
             this.fetchAddOns(subscription.id),
           ]).then(response => {
-            this.props.fetchInvoices(id).then(data => {
-              // Set curInvoiceIndex when /{subscription_id}/{invoice_id} is direct hit
-              if (data.data && !this.state.curInvoiceIndex) {
-                const invoicesItems = data.data.items;
-
-                // Calculate recurring id #
-                if (this.props.invoice_id === 'inv_upcoming') {
-                  this.setState({
-                    curInvoiceIndex: invoicesItems.length + 1,
-                  });
-                } else {
-                  // Iterate list to find which invoice id is matching url(props)
-                  invoicesItems.forEach((item, index) => {
-                    if (item.id === this.props.invoice_id) {
-                      this.setState({
-                        curInvoiceIndex: invoicesItems.length - index,
-                      });
-                    }
-                  });
-                }
-              }
-            });
             this.setState({ isLoading: false });
+            this.fetchInvoicesList(id);
           });
         })
         .catch(({ errors }) => {
@@ -248,7 +249,7 @@ export default class SubscriptionDetailsContainer extends Component {
             this.props.closeModal();
 
             // Fetch the list of invoices again
-            // this.props.fetchInvoices();
+            this.fetchInvoicesList(this.props.entity.id);
 
             return response;
           })
