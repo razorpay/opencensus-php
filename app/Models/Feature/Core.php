@@ -5,7 +5,6 @@ namespace RZP\Models\Feature;
 use Config;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
-use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\EsRepository;
 
@@ -49,7 +48,7 @@ class Core extends Base\Core
         return $feature;
     }
 
-    public function delete($entityId, $feature, bool $shouldSync = false)
+    public function delete(Entity $feature, bool $shouldSync = false)
     {
         $this->trace->info(TraceCode::FEATURE_DELETE_REQUEST, $feature->toArrayPublic());
 
@@ -58,6 +57,8 @@ class Core extends Base\Core
             ['feature' => $feature->getName()],
             ['feature' => null],
         ];
+
+        $entityId = $feature->getEntityId();
 
         $this->app['workflow']
              ->setEntity($feature->getEntity())
@@ -74,10 +75,7 @@ class Core extends Base\Core
             $this->repo->feature->delete($feature);
         }
 
-        (new Core)->notifyOnSlack($feature, true);
-
-        // We create tag also along with feature.
-        (new Merchant\Service)->deleteTag($entityId, $feature->getName());
+        $this->notifyOnSlack($feature, true);
     }
 
     public function notifyOnSlack($feature, $featureDeleted = false)
@@ -130,18 +128,26 @@ class Core extends Base\Core
             {
                 $testEntity = clone $entity;
                 $testEntity->setConnection(Mode::TEST);
-                $testEntity->saveOrFail();
+                $this->repo->saveOrFail($testEntity);
             }
 
             if ($liveEntity === null)
             {
                 $liveEntity = clone $entity;
                 $liveEntity->setConnection(Mode::LIVE);
-                $liveEntity->saveOrFail();
+                $this->repo->saveOrFail($liveEntity);
             }
         });
     }
 
+    /**
+     * Saves the feature only in one mode
+     *
+     * @param Entity $feature
+     * @param array  $assignedFeatureNames
+     *
+     * @return bool
+     */
     protected function saveFeatureOrFail(Entity $feature, array $assignedFeatureNames): bool
     {
         $isFeatureAssigned = in_array($feature->getName(), $assignedFeatureNames, true);

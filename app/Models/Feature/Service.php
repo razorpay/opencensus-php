@@ -3,6 +3,7 @@
 namespace RZP\Models\Feature;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
@@ -39,7 +40,10 @@ class Service extends Base\Service
 
         $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
 
-        (new Core)->delete($entityId, $feature, $shouldSync);
+        (new Core)->delete($feature, $shouldSync);
+
+        // We delete the tag also along with feature.
+        (new Merchant\Service)->deleteTag($entityId, $feature->getName());
 
         return $feature->toArrayDeleted();
     }
@@ -87,6 +91,8 @@ class Service extends Base\Service
 
         $entityIds = $input[Constants::ENTITY_IDS];
 
+        $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
+
         $featureName = $input[Entity::NAME];
 
         $response = new Base\Collection;
@@ -101,7 +107,7 @@ class Service extends Base\Service
             {
                 $response->push($feature);
 
-                $this->repo->deleteOrFail($feature);
+                (new Core)->delete($feature, $shouldSync);
             }
         }
 
