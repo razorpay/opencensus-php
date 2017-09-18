@@ -22,6 +22,8 @@ class GatewayRefundFileTest extends TestCase
 
     public function setUp()
     {
+        Carbon::setTestNow();
+
         $this->testDataFilePath = __DIR__ . '/helpers/GatewayRefundFileTestData.php';
 
         parent::setUp();

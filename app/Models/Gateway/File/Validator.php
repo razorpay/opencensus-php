@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\File;
 
 use RZP\Base;
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Gateway;
@@ -59,7 +60,7 @@ class Validator extends Base\Validator
         $from = $input[Entity::BEGIN];
         $to = $input[Entity::END];
 
-        $now = time();
+        $now = Carbon::now()->getTimestamp();
 
         if ($from > $now)
         {
