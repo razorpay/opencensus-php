@@ -125,7 +125,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
     ],
-    'testUploadPricingPlan' => [
+    'testBulkPricingPlan' => [
         'request' => [
             'content' => [
                 'plan_name' => 'TestUploadPlan2',
@@ -194,7 +194,7 @@ return [
             ],
         ],
     ],
-    'testEmptyUploadPricingPlan' => [
+    'testEmptyBulkPricingPlan' => [
         'request' => [
             'content' => [
                 'plan_name' => 'TestUploadPlan2',

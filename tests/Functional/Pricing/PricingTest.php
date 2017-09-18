@@ -44,16 +44,16 @@ class PricingTest extends TestCase
         $this->startTest($testData);
     }
 
-    public function testUploadPricingPlan()
+    public function testBulkPricingPlan()
     {
-        $testData['request']['url'] = '/pricing/upload';
+        $testData['request']['url'] = '/pricing/bulk';
 
         $this->startTest($testData);
     }
 
-    public function testEmptyUploadPricingPlan()
+    public function testEmptyBulkPricingPlan()
     {
-        $testData['request']['url'] = '/pricing/upload';
+        $testData['request']['url'] = '/pricing/bulk';
 
         $this->startTest($testData);
     }

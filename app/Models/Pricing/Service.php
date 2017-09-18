@@ -23,9 +23,9 @@ class Service extends Base\Service
         return $plan->toArrayPublic();
     }
 
-    public function uploadPricingPlan($input)
+    public function createBulkPricingPlan($input)
     {
-        (new Pricing\Core())->createMultiplePricing($input);
+        (new Pricing\Core())->createBulkPricing($input);
 
         $plan = $this->repo->pricing->getPricingPlanByName($input[Entity::PLAN_NAME]);
 
