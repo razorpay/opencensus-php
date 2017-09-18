@@ -6,6 +6,9 @@ class Verify
 {
     public $input;
 
+    /**
+     * @var Entity
+     */
     public $payment;
 
     /**
@@ -32,6 +35,8 @@ class Verify
     public $throwExceptionOnMismatch = true;
 
     public $amountMismatch = false;
+
+    public $match;
 
     public function __construct($gateway, array $input)
     {

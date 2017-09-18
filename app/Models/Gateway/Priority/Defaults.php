@@ -23,7 +23,8 @@ class Defaults
                 Gateway::AXIS_MIGS,
                 Gateway::AMEX,
                 Gateway::CYBERSOURCE,
-                Gateway::FIRST_DATA
+                Gateway::FIRST_DATA,
+                Gateway::HITACHI,
             ],
 
             /**
