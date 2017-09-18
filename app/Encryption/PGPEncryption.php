@@ -2,7 +2,7 @@
 
 namespace RZP\Encryption;
 
-class PGPEncryption implements IEncryption
+class PGPEncryption extends IEncryption
 {
     const SECRET    = 'secret';
 
@@ -25,7 +25,7 @@ class PGPEncryption implements IEncryption
 
         if ($enc === false)
         {
-            //throw exception
+            throw new Exception\LogicException('PGP Encryption Failed');
         }
 
         return $enc;
@@ -38,6 +38,6 @@ class PGPEncryption implements IEncryption
 
     protected function validateParams(array $params)
     {
-        (new Validator)->validate('pgpEncryption', $params);
+        (new Validator)->validate('pgp_encryption', $params);
     }
 }

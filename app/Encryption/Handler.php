@@ -14,8 +14,6 @@ class Handler
 
     public function __construct(string $type, array $params)
     {
-        parent::__construct($params);
-
         $this->params = $params;
 
         $this->cipher = $this->getCipher($type);

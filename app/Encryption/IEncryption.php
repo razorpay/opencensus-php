@@ -8,7 +8,7 @@ abstract class IEncryption
 
     public function __construct(array $params)
     {
-        $this->$params = $params;
+        $this->params = $params;
 
         $this->validateParams($params);
     }
