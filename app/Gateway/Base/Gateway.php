@@ -50,6 +50,8 @@ class Gateway
      */
     const CHECKSUM_ATTRIBUTE = '';
 
+    const CACHE_KEY = 'base_%s_card_details';
+
     /**
      * The application instance.
      *
