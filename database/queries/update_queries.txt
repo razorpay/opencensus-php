@@ -678,3 +678,9 @@ UPDATE offers SET payment_network = NULL WHERE payment_method != 'card';
 # Netbanking Federal terminal supports both tpv and non tpv
 UPDATE terminals SET tpv = '2' WHERE gateway = 'netbanking_federal' AND
     id = '7j1qFPcYQhXbsk';
+
+# Data correction for merchant_users mapping
+DELETE from merchant_users
+    WHERE user_id = '68AQH6PenuCx9Y'
+        AND merchant_id = '4Exx6ZgWrvFHZL'
+        AND role = 'manager';
