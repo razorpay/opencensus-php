@@ -514,6 +514,9 @@ return [
             'routeName' => 'put_config'
         ],
 
+        // Merchant Analytics Stats
+        'merchant_analytics'                => 'merchant/analytics',
+
         // Refund Payment
         'payment_refund'                    => 'payments/{id}/refund',
         // Capture Payment

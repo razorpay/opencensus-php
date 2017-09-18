@@ -10,7 +10,7 @@ export default ({ value, currency = 'INR', className, ...attrs }) => {
   return (
     <span class={`rzp-amount ${className ? className : ''}`} {...attrs}>
       {currencies[currency]} {amount.split('.')[0]}
-      <span class="text-fade">.{amount.split('.')[1]}</span>
+      <span class="rzp-paise">.{amount.split('.')[1]}</span>
     </span>
   );
 };
