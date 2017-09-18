@@ -79,11 +79,15 @@ class Gateway extends Base\Gateway
 
         $this->checkCallbackStatus($content);
 
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                                    $content[ResponseFields::PAYMENT_ID],
+                                    Payment\Action::AUTHORIZE);
+
         // If callback status was a success, we verify the payment immediately
-        $this->verifyCallback($input);
+        $this->verifyCallback($gatewayPayment, $input);
 
         // Saving callback response only if the above checks pass
-        $gatewayPayment = $this->saveCallbackResponse($content);
+        $gatewayPayment = $this->saveCallbackResponse($gatewayPayment, $content);
 
         $acquirerData = $this->getAcquirerData($gatewayPayment);
 
@@ -103,11 +107,13 @@ class Gateway extends Base\Gateway
      * Verifying the payment after callback response is saved to
      * prevent user tampering with the data while making a payment.
      */
-    protected function verifyCallback(array $input)
+    protected function verifyCallback($gatewayPayment, array $input)
     {
         parent::verify($input);
 
         $verify = new Verify($this->gateway, $input);
+
+        $verify->payment = $gatewayPayment;
 
         $this->sendPaymentVerifyRequest($verify);
 
@@ -126,7 +132,7 @@ class Gateway extends Base\Gateway
 
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
-        $content = $this->getVerifyRequestData($verify->input);
+        $content = $this->getVerifyRequestData($verify);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -196,14 +202,22 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getVerifyRequestData(array $input)
+    protected function getVerifyRequestData($verify)
     {
+        $input = $verify->input;
+        $gatewayEntity = $verify->payment;
+
         $data = [
             RequestFields::PAYEE_ID   => $this->getMerchantId(),
             RequestFields::PAYMENT_ID => $input['payment']['id'],
             RequestFields::ITEM_CODE  => strtoupper($input['payment']['id']),
             RequestFields::AMOUNT     => $input['payment']['amount'] / 100,
         ];
+
+        if ($gatewayEntity->isTpv() === true)
+        {
+            $data[RequestFields::PAYMENT_ID] = $input['payment']['id'] . '.' . $gatewayEntity->getAccountNumber();
+        }
 
         return $data;
     }
@@ -246,17 +260,13 @@ class Gateway extends Base\Gateway
         return $entityAttributes;
     }
 
-    protected function saveCallbackResponse(array $content)
+    protected function saveCallbackResponse($gatewayPayment, array $content)
     {
         $attributes = [
             Base\Entity::RECEIVED        => true,
             Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_PAYMENT_ID],
             Base\Entity::STATUS          => $content[ResponseFields::PAID],
         ];
-
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-                                    $content[ResponseFields::PAYMENT_ID],
-                                    Payment\Action::AUTHORIZE);
 
         $gatewayPayment->fill($attributes);
 
@@ -339,9 +349,9 @@ class Gateway extends Base\Gateway
 
         // Removing the 0000's at the end of the string before proceeding
         // The whitespaces don't contain the pip as a separator character
-        if (strpos($rows[sizeof($rows) - 1], "|") === false)
+        if (strpos($rows[count($rows) - 1], "|") === false)
         {
-            unset($rows[sizeof($rows) - 1]);
+            unset($rows[count($rows) - 1]);
         }
 
         // We get the most relevant row in the response
