@@ -33,7 +33,18 @@ class PGPEncryption extends IEncryption
 
     public function decrypt(string $data) : string
     {
-        // TODO
+        $res = gnupg_init();
+
+        gnupg_adddecryptkey($res, $this->secret);
+
+        $dec = gnupg_decrypt($res, $data);
+
+        if ($dec === false)
+        {
+            throw new Exception\LogicException('PGP Decryption Failed');
+        }
+
+        return $dec;
     }
 
     protected function validateParams(array $params)
