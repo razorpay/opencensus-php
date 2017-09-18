@@ -704,3 +704,5 @@ UPDATE refunds
     reference1='74766517256736059272031',
     gateway_refunded=1
 WHERE id='8U7K6IOgt3PVPP';
+
+UPDATE `terminals` SET `network_category`='logistics' WHERE `id`='8MsSwOzxxWnjkv';
