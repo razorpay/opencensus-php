@@ -3,10 +3,10 @@
 namespace RZP\Services;
 
 use Carbon\Carbon;
-use Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use Razorpay\Trace\Logger as Trace;
+use Requests;
+use Requests_Response as Response;
 
 class HarvesterClient extends AbstractEventClient
 {
@@ -16,7 +16,21 @@ class HarvesterClient extends AbstractEventClient
 
     protected $mock;
 
+    protected $queryBaseUrl;
+
+    protected $queryPath;
+
+    protected $accessToken;
+
+    protected $trace;
+
     const TRACK_EVENT_URL_PATTERN = 'track/merchants';
+
+    const QUERY_API_PATH = 'analytics/pokedex';
+
+    const RETRY = true;
+
+    const RETRY_TIMES = 3;
 
     public function __construct($app)
     {
@@ -26,7 +40,13 @@ class HarvesterClient extends AbstractEventClient
 
         $this->config = $app['config']->get('applications.harvester');
 
+        $this->trace = $app['trace'];
+
         $this->mock = $this->config['mock'];
+
+        $this->queryBaseUrl = $this->config['url'];
+
+        $this->accessToken = $this->config['analytics_token'];
     }
 
     /**
@@ -75,5 +95,100 @@ class HarvesterClient extends AbstractEventClient
         }
 
         $this->events[$channel][] = $event;
+    }
+
+    public function query($data = '')
+    {
+        return $this->sendRequest(self::QUERY_API_PATH, $data, self::RETRY, self::RETRY_TIMES);
+    }
+
+    protected function sendRequest(string $urlPath, $data, bool $retry = false, int $maxRetryTimes = 0)
+    {
+        $this->trace->info(
+            TraceCode::HARVESTER_REQUEST,
+            [
+                'path'    => $urlPath,
+                'data'    => $data
+            ]);
+
+        $request = [
+            'url'           => $this->queryBaseUrl . $urlPath,
+            'method'        => 'POST',
+            'content'       => json_encode($data),
+            'content-type'  => 'application/json',
+        ];
+
+        $headers = [
+            'x-signature'   => $this->accessToken,
+            'Accept'        => 'application/json'
+        ];
+
+        $options['timeout'] = self::REQUEST_TIMEOUT;
+
+        $request['headers'] = $headers;
+
+        $request['options'] = $options;
+
+        $retryCount = 0;
+
+        $response = null;
+
+        while ($retryCount <= $maxRetryTimes)
+        {
+            try
+            {
+                $response = $this->getResponse($request);
+
+            }catch(\Requests_Exception $e)
+            {
+                $this->trace->info(
+                    TraceCode::HARVESTER_RETRY,
+                    [
+                        'message' => $e->getMessage(),
+                        'type'    => $e->getType(),
+                        'data'    => $e->getData()
+                    ]);
+            }
+
+            $retryCount++;
+
+            if (($retry === false) or ($response != null and $response->status_code === 200))
+            {
+                break;
+            }
+        }
+
+        $this->checkErrors($urlPath, $data ,$response);
+
+        return json_decode($response->body, true);
+    }
+
+    protected function checkErrors($urlPath, $data, $response)
+    {
+        if (($response != null) and ($response->status_code != 200))
+        {
+            $this->trace->error(
+                TraceCode::HARVESTER_FAILURE,
+                [
+                    'url'       => $urlPath,
+                    'data'      => $data,
+                    'status'    => $response->status_code,
+                    'body'      => $response->body
+                ]);
+        }
+
+        // TODO : Send email/slack message for $response->status_code != 200
+    }
+
+    protected function getResponse($request)
+    {
+        $response = Requests::request(
+            $request['url'],
+            $request['headers'],
+            $request['content'],
+            $request['method'],
+            $request['options']);
+
+        return $response;
     }
 }
