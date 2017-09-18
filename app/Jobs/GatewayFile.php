@@ -41,8 +41,6 @@ class GatewayFile extends Job implements ShouldQueue
 
             $gatewayFileCore->process($gatewayFile);
 
-            $gatewayFile->reload();
-
             $this->retryFailedProcessing($gatewayFile);
         }
         catch (\Throwable $e)
@@ -59,6 +57,7 @@ class GatewayFile extends Job implements ShouldQueue
      */
     protected function retryFailedProcessing(File\Entity $gatewayFile)
     {
+        s($gatewayFile->isFailed());
         if ($gatewayFile->isFailed() === true)
         {
             if ($this->attempts() >= self::MAX_ALLOWED_ATTEMPTS)
