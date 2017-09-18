@@ -41,7 +41,7 @@ abstract class Base extends Core
 
             $this->createFile();
 
-            $this->sendMail();
+            $this->sendFile();
         }
         catch (Exception\GatewayFileException $e)
         {
@@ -140,5 +140,5 @@ abstract class Base extends Core
 
     abstract public function createFile();
 
-    abstract public function sendMail();
+    abstract public function sendFile();
 }
