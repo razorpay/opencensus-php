@@ -1220,7 +1220,7 @@ final class Route
         'workflow_action_get_multiple',
         'merchants_update_hold_funds',
         'adj_add',
-        'adj_add_fee',
+        //'adj_add_fee',
         'payment_authorize_refund',
         'admin_change_password',
         'pricing_create_plan',
@@ -1315,7 +1315,7 @@ final class Route
         'merchant_fetch_bank_account'      => Permission::VIEW_MERCHANT_BANK_ACCOUNTS,
         'merchant_edit'                    => '*', // permission handled in code
         'adj_add'                          => Permission::ADD_MERCHANT_ADJUSTMENT,
-        'adj_add_fee'                      => Permission::ADD_MERCHANT_ADJUSTMENT,
+        //'adj_add_fee'                      => Permission::ADD_MERCHANT_ADJUSTMENT,
         'merchant_add_bank_account'        => Permission::EDIT_MERCHANT_BANK_DETAIL,
         'merchant_activate'                => Permission::EDIT_ACTIVATE_MERCHANT,
         'admin_fetch_terminal_by_id'       => '*',
