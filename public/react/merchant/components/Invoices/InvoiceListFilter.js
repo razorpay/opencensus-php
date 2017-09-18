@@ -1,5 +1,6 @@
 import ListFilter from '../ListFilter';
 import { Field } from 'redux-form';
+import ShowWhen from 'merchant/components/ShowWhen';
 
 export default ({ type, ...otherProps }) => {
   let label = type === 'link' ? 'Payment Link' : 'Invoice';
@@ -7,11 +8,16 @@ export default ({ type, ...otherProps }) => {
   return (
     <ListFilter {...otherProps}>
       <div class="form-group list-filter-item">
-        <label>{label} Status</label>
+        <label>
+          {label} Status
+        </label>
         <Field name="status" component="select" class="form-control input-sm">
           <option value="">All</option>
           <option value="draft">Draft</option>
           <option value="issued">Issued</option>
+          <ShowWhen featureEnabled="Invoice_Partial_Payments">
+            <option value="partially_paid">Partially Paid</option>
+          </ShowWhen>
           <option value="paid">Paid</option>
           <option value="cancelled">Cancelled</option>
           <option value="expired">Expired</option>
@@ -19,7 +25,9 @@ export default ({ type, ...otherProps }) => {
       </div>
 
       <div class="form-group list-filter-item">
-        <label>{label} Id</label>
+        <label>
+          {label} Id
+        </label>
         <Field name="id" component="input" class="form-control input-sm" />
       </div>
 
@@ -44,6 +52,11 @@ export default ({ type, ...otherProps }) => {
           component="input"
           class="form-control input-sm"
         />
+      </div>
+
+      <div class="form-group list-filter-item">
+        <label>Notes</label>
+        <Field name="notes" component="input" class="form-control input-sm" />
       </div>
 
       <div class="form-group list-filter-item count">

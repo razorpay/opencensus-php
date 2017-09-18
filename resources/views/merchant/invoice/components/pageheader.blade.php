@@ -46,7 +46,7 @@
               <td class="text-right">
                 <b>From:</b><br/>
                 Razorpay Software Pvt. Ltd.<br/>
-                #22, 1st Floor, SJR Cyder,<br/>
+                #22, 1st Floor, SJR Cyber,<br/>
                 Laskar Hosur Road, Adugodi,<br/>
                 Bangalore, Karnataka - 560 030.<br/>
                 GSTIN - 29AAGCR4375J1ZU<br/>

@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { Field, reduxForm, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
+import Banner from 'rzp/ui/Banner';
 import InputField from 'rzp/ui/Forms/InputField';
 import Alert from 'rzp/ui/Forms/Alert';
 import ModalHeader from 'rzp/ui/ModalHeader';
@@ -54,13 +55,14 @@ const selector = formValueSelector('newGST');
 export default class AddGST extends Component {
   state = {};
 
+  gst_success_msg = 'Entered GSTIN will be applicable only from current month onwards.';
+
   componentWillMount() {
     let { merchant_gst } = this.props;
 
     let initialValues = {
-      gst_type: !merchant_gst.gstin && !merchant_gst.p_gstin
-        ? 'p_gstin'
-        : 'gstin',
+      gst_type:
+        !merchant_gst.gstin && !merchant_gst.p_gstin ? 'p_gstin' : 'gstin',
     };
 
     this.props.initialize({
@@ -83,7 +85,8 @@ export default class AddGST extends Component {
         } else {
           this.props.showNotification({
             type: 'success',
-            message: 'GST saved successfully',
+            message: `Your GST details have been updated. Note: ${this
+              .gst_success_msg}`,
           });
           this.props.closeModal();
         }
@@ -115,7 +118,7 @@ export default class AddGST extends Component {
             />
           : null}
 
-        <div class="modal-body">
+        <div class="modal-body rzp-gst-content">
           {openedFromTopbar
             ? <div class="rzp-gst">
                 <button
@@ -128,7 +131,9 @@ export default class AddGST extends Component {
 
                 <label>Razorpay's GST number</label>
                 <div>
-                  <span>{rzp_gst.gstin}</span>
+                  <span>
+                    {rzp_gst.gstin}
+                  </span>
                   <CustomClipboard value={rzp_gst.gstin}>
                     <button
                       class="btn btn-default btn-xs"
@@ -149,11 +154,19 @@ export default class AddGST extends Component {
 
           {this.state.saved
             ? <div>
-                Your GST details have been updated. You can access it anytime from the
-                {' '}
-                <Link to="/profile" onClick={this.props.closeModal}>
-                  Profile Section
-                </Link>
+                <div>
+                  Your GST details have been updated. You can access it anytime
+                  from the{' '}
+                  <Link to="/profile" onClick={this.props.closeModal}>
+                    Profile Section
+                  </Link>
+                </div>
+
+                <div className="gst-update-note">
+                  <Banner>
+                    <b>Note:</b> {this.gst_success_msg}
+                  </Banner>
+                </div>
 
                 <div class="Modal__actions">
                   <Link
@@ -212,6 +225,11 @@ export default class AddGST extends Component {
                           placeholder="19AAAAAA1234YYY"
                         />
                       </div>
+                      <div className="gst-update-note">
+                        <Banner>
+                          <b>Note:</b> {this.gst_success_msg}
+                        </Banner>
+                      </div>
                     </div>
                   : <div class="form-group">
                       <label class="label-required">GSTIN</label>
@@ -224,20 +242,23 @@ export default class AddGST extends Component {
                           placeholder="19AAAAAA1234YYY"
                         />
                       </div>
+                      <div className="gst-update-note">
+                        <Banner>
+                          <b>Note:</b> {this.gst_success_msg}
+                        </Banner>
+                      </div>
                     </div>}
 
                 <div class="help-block">
                   {isPGST
                     ? 'You can submit your final GSTIN here once you have received it.'
                     : <span>
-                        Final GSTIN once submitted cannot be updated via dashboard.
-                        To update it, write to us at
-                        {' '}
+                        Final GSTIN once submitted cannot be updated via
+                        dashboard. To update it, write to us at{' '}
                         <a href="mailto:support@razorpay.com">
                           support@razorpay.com
                         </a>
                       </span>}
-
                 </div>
 
                 <div class="Modal__actions">

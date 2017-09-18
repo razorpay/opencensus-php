@@ -11,6 +11,23 @@ app.controller('WorkflowRequestsCtrl', [
   function($scope, $http, alertsFactory, $state, $modal, $stateParams, admin) {
     $scope.workflow_request_type = $stateParams.type;
 
+    $scope.stats = {
+      count: 50,
+      countStart: 0,
+      countEnd: 0,
+      skip: 0,
+    };
+
+    $scope.next = function() {
+      $scope.stats.skip += $scope.stats.count;
+      $scope.regenerateList();
+    };
+
+    $scope.prev = function() {
+      $scope.stats.skip -= $scope.stats.count;
+      $scope.regenerateList();
+    };
+
     $scope.getStateClass = function(state) {
       switch (state) {
         case 'approved':
@@ -35,6 +52,8 @@ app.controller('WorkflowRequestsCtrl', [
           query_params: {
             duty: duty,
             type: type,
+            count: $scope.stats.count,
+            skip: $scope.stats.skip,
           },
         },
       });
@@ -43,6 +62,15 @@ app.controller('WorkflowRequestsCtrl', [
         .success(function(data) {
           if (data.success) {
             $scope.workflow_requests = data.data.items;
+            $scope.stats.countStart = $scope.stats.skip + 1;
+            if (data.data.count === 0) {
+              $scope.stats.countEnd = $scope.stats.countStart;
+            } else {
+              $scope.stats.countEnd =
+                $scope.stats.countStart + data.data.count - 1;
+            }
+            $scope.allowPrev = $scope.stats.countStart != 1;
+            $scope.allowNext = $scope.stats.count == data.data.count;
           }
         })
         .error(function() {});

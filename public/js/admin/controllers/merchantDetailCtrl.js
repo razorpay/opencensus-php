@@ -1893,6 +1893,12 @@ app
 
         return request;
       }
+      function addEntityMode(items, mode) {
+        items = items.map(function(obj) {
+          obj.entity_mode = mode;
+          return obj;
+        });
+      }
       function fetchTerminals() {
         var items = [];
         var count = 0;
@@ -1901,6 +1907,7 @@ app
         liveTerminalRequest
           .success(function(data) {
             if (data.success) {
+              addEntityMode(data.data.items, 'live');
               $scope.merchant.terminals.items = $scope.merchant.terminals.items.concat(
                 data.data.items
               );
@@ -1921,6 +1928,7 @@ app
         testTerminalRequest
           .success(function(data) {
             if (data.success) {
+              addEntityMode(data.data.items, 'test');
               $scope.merchant.terminals.items = $scope.merchant.terminals.items.concat(
                 data.data.items
               );
@@ -2542,18 +2550,14 @@ app
 
       // Payment network map to have different dropdown values depending upon payment method
       $scope.updatePaymentNetworkMap = function() {
-        switch ($scope.offer.payment_method) {
-          case 'card':
-          case 'emi':
-            $scope.paymentNetworkMap = utilMapping.getMap('networkMap');
-            break;
-          case 'wallet':
-            $scope.paymentNetworkMap = utilMapping.getMap('walletMap');
-            break;
-          default:
-            $scope.paymentNetworkMap = {};
+        $scope.paymentNetworkMap = {};
+        if ($scope.offer.payment_method === 'wallet') {
+          $scope.paymentNetworkMap = utilMapping.getMap('walletMap');
         }
       };
+
+      $scope.walletMap = utilMapping.getMap('walletMap');
+      $scope.cardNetworkMap = utilMapping.getMap('networkMap');
 
       $scope.date = dateFactory.getHandler($scope);
       $scope.date.dateOptions['showWeeks'] = false;

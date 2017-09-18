@@ -241,11 +241,11 @@ export default class CreateVirtualAccount extends Component {
                         name="descriptor"
                         component="input"
                         class="form-control"
-                        placeholder="Accepts alphanumberic, upto 10 chars"
+                        placeholder="Accepts alphanumberic, upto 9 chars"
                         normalize={value => value.toUpperCase()}
                         onChange={event => {
                           let value = event.target.value;
-                          if (/^[a-z0-9]{0,10}$/i.test(value)) {
+                          if (/^[a-z0-9]{0,9}$/i.test(value)) {
                             this.props.change('descriptor', value);
                           } else {
                             event.preventDefault();

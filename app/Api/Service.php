@@ -35,17 +35,6 @@ class Service extends Base\Service
         $this->trace = $app['trace'];
     }
 
-    public function fetchCollection(array $input, $mode, $entity)
-    {
-        $method = 'fetchCollection' . $entity;
-        if (method_exists($this, $method))
-        {
-            return $this->$method($input, $mode);
-        }
-
-        return $this->fetchEntityCollection($input, $mode, $entity);
-    }
-
     public function fetchCollectionForAutocomplete($mode, $entity)
     {
         $error = null;
@@ -92,34 +81,6 @@ class Service extends Base\Service
         }
 
         return [$error, $collection];
-    }
-
-    protected function fetchEntityCollection(array $input, $mode, $entity)
-    {
-        $data = array();
-
-        $error = (new Validator)->validateInput('fetch', $input)->messages();
-
-        if (empty($error) === false)
-        {
-            return [$error, null];
-        }
-
-        $collection = array();
-
-        try
-        {
-            $this->setApiCredentials($this->merchantId, $mode);
-            $collection = $this->api->$entity->all($input)->toArray();
-
-            $this->mapKeys($collection);
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $collection);
     }
 
     protected function mapKeys(array & $collection)

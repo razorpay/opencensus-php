@@ -49,7 +49,8 @@
           Disable International <i class="pull-right fa fa-globe"></i>
         </a>
         <a href class="list-group-item"
-           dynamic-tooltip="edit_merchant_hold_funds" ng-show="merchant.details.hold_funds==0 && admin.permissions.indexOf('edit_merchant_hold_funds') !== -1"
+           dynamic-tooltip="edit_merchant_hold_funds" ng-show="merchant.details.activated==1 &&
+           merchant.details.hold_funds==0 && admin.permissions.indexOf('edit_merchant_hold_funds') !== -1"
            ng-confirm-click="Are you sure you want to hold funds for this merchant?"
            ng-click="holdMerchantFunds()"
         >
@@ -653,7 +654,7 @@
                   <tbody ng-repeat="filteredKey in ['undeleted_enabled', 'undeleted_disabled', 'deleted']">
                   <tr ng-repeat="terminal in terminals[filteredKey]">
                     <td>
-                      <a target="_blank" ui-sref="app.entitiesdetail({type:'terminal', id: terminal.id, mode: terminal.mode})">
+                      <a target="_blank" ui-sref="app.entitiesdetail({type:'terminal', id: terminal.id, mode: terminal.entity_mode})">
                         <code>{{terminal.id}}</code>
                       </a>
                     </td>
@@ -1487,12 +1488,12 @@
 
       <div class="row">
         <div class="form-group col-lg-6">
-          <label for="payment_method" class="col-lg-6 control-label">Payment Method<span style="color:red">*</span>:</label>
+          <label for="payment_method" class="col-lg-6 control-label">Payment Method:</label>
           <div class="col-lg-6" >
             <select class="form-control m-b"
                     name="payment_method"
-                    ng-change="updatePaymentNetworkMap()"
-                    ng-model="offer.payment_method" required>
+                    ng-model="offer.payment_method">
+              <option value="">All</option>
               <option value="card">Card</option>
               <option value="netbanking">Netbanking</option>
               <option value="emi">EMI</option>
@@ -1502,7 +1503,7 @@
           </div>
         </div>
 
-        <div class="form-group col-lg-6" ng-if="['card', 'emi'].indexOf(offer.payment_method) !== -1">
+        <div class="form-group col-lg-6" ng-if="['netbanking', 'wallet', 'upi'].indexOf(offer.payment_method) === -1">
           <label for="payment_method_type" class="col-lg-5 control-label">Payment Method Type:</label>
           <div class="col-lg-7">
             <select class="form-control m-b"
@@ -1515,33 +1516,33 @@
           </div>
         </div>
       </div>
-      <div class="form-group" ng-if="offer.payment_method && offer.payment_method !== 'upi'">
+      <div class="form-group" ng-if="['netbanking', 'wallet', 'upi'].indexOf(offer.payment_method) === -1">
         <label for="payment_network" class="col-lg-3 control-label">Payment Network:</label>
         <div class="col-lg-9" >
           <select name="payment_network" class="form-control m-b" ng-model="offer.payment_network"
-                  ng-if="['card', 'emi', 'wallet'].indexOf(offer.payment_method) !== -1">
-            {{paymentNetworkMap}}
-            <option ng-repeat="(value, network) in paymentNetworkMap" ng-value="value">{{network}}</option>
+                  ng-if="['netbanking', 'wallet', 'upi'].indexOf(offer.payment_method) === -1">
+            {{cardNetworkMap}}
+            <option ng-repeat="(value, network) in cardNetworkMap" ng-value="value">{{network}}</option>
           </select>
-
-          <input type="text" class="form-control m-b"
-                 name="payment_network"
-                 ng-if="offer.payment_method === 'netbanking'"
-                 placeholder="Enter bank code for netbanking"
-                 ng-model="offer.payment_network" />
         </div>
       </div>
 
       <!--Issuer-->
-      <div class="form-group" ng-if="offer.payment_method === 'card'">
+      <div class="form-group" ng-if="['upi'].indexOf(offer.payment_method) === -1">
         <label for="issuer" class="col-lg-3 control-label">Issuer:</label>
         <div class="col-lg-9" >
-          <input type="text" class="form-control m-b" name="issuer" ng-model="offer.issuer" />
+          <input type="text" class="form-control m-b" name="issuer" ng-model="offer.issuer"
+            ng-if="['upi', 'wallet'].indexOf(offer.payment_method) === -1" />
+          <select name="issuer" class="form-control m-b" ng-model="offer.issuer"
+                  ng-if="offer.payment_method === 'wallet'">
+            {{walletMap}}
+            <option ng-repeat="(value, wallet) in walletMap" ng-value="value">{{wallet}}</option>
+          </select>
         </div>
       </div>
 
       <!--IINS-->
-      <div class="form-group" ng-if="['card', 'emi'].indexOf(offer.payment_method) !== -1">
+      <div class="form-group" ng-if="['netbanking', 'wallet', 'upi'].indexOf(offer.payment_method) === -1">
         <label for="iins" class="col-lg-3 control-label">iins:</label>
         <div class="col-lg-9" >
           <input type="text" class="form-control m-b" name="iins" ng-model="offer.iins" placeholder="Enter comma(,) separated values" required/>

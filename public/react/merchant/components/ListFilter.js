@@ -9,15 +9,26 @@ import { withRouter } from 'react-router-dom';
 export default class ListFilter extends Component {
   // populate the search filters based on query params
   componentWillMount() {
-    let count = this.props.count;
+    this.initSearchForm(this.props);
+  }
+
+  // update search query
+  componentWillReceiveProps(nextProps) {
+    if (this.props.location.search !== nextProps.location.search) {
+      this.initSearchForm(nextProps);
+    }
+  }
+
+  initSearchForm(props) {
+    let count = props.count;
     let params = {};
 
     if (count) {
       params['count'] = count;
     }
 
-    if (this.props.location.search) {
-      params = getURLQueryParams(this.props.location.search);
+    if (props.location.search) {
+      params = getURLQueryParams(props.location.search);
     }
 
     this.props.initialize(params);
@@ -33,8 +44,16 @@ export default class ListFilter extends Component {
     return this.props.onSubmit(props);
   };
 
+  // update query params as empty for auto search in willReceiveProps
+  resetForm = () => {
+    this.props.history.push({
+      pathname: this.props.location.pathname,
+      search: stringifyQueryParams({}),
+    });
+  };
+
   render() {
-    let { handleSubmit, onSubmit, reset, form } = this.props;
+    let { handleSubmit, onSubmit, form } = this.props;
     return (
       <form
         name={form}
@@ -50,7 +69,7 @@ export default class ListFilter extends Component {
           />
           <AsyncButton
             class="btn btn-sm btn-link"
-            onClick={reset}
+            onClick={this.resetForm}
             text="Clear"
           />
         </div>
