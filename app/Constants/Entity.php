@@ -129,7 +129,6 @@ class Entity
     const AEPS_ICICI             = 'aeps_icici';
     const UPI_MINDGATE           = 'upi_mindgate';
     const UPI_ICICI              = 'upi_icici';
-    const UPI_IDFC               = 'upi_idfc';
     const NETBANKING_AXIS        = 'netbanking_axis';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
     const NETBANKING_CORPORATION = 'netbanking_corporation';
@@ -219,7 +218,6 @@ class Entity
         self::BILLDESK               => \RZP\Gateway\Billdesk::class,
         self::MOBIKWIK               => \RZP\Gateway\Mobikwik::class,
         self::UPI_NPCI               => \RZP\Gateway\Upi\Npci::class,
-        self::UPI_IDFC               => \RZP\Gateway\Upi\Idfc::class,
         self::UPI_MINDGATE           => \RZP\Gateway\Upi\Mindgate::class,
         self::UPI_ICICI              => \RZP\Gateway\Upi\Icici::class,
         self::AEPS                   => \RZP\Gateway\Aeps\Base::class,
@@ -284,7 +282,6 @@ class Entity
 
         self::UPI_MINDGATE          => \RZP\Gateway\Upi\Base::class,
         self::UPI_ICICI             => \RZP\Gateway\Upi\Base::class,
-        self::UPI_IDFC              => \RZP\Gateway\Upi\Base::class,
         self::UPI_NPCI              => \RZP\Gateway\Upi\Base::class,
 
         self::AEPS_ICICI            => \RZP\Gateway\Aeps\Base::class,
@@ -310,6 +307,11 @@ class Entity
         self::USER,
         self::SCHEDULE,
     ];
+
+    public static function getAllEntities()
+    {
+        return array_keys(self::$namespace);
+    }
 
     public static function getEntityNamespace(string $entity)
     {

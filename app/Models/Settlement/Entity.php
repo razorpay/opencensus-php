@@ -210,6 +210,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PROCESSED_AT);
     }
 
+    public function getBatchFundTransferId()
+    {
+        return $this->getAttribute(self::BATCH_FUND_TRANSFER_ID);
+    }
+
     // --------------------------------- setters -------------------------------
 
     public function setAmount($amount)
