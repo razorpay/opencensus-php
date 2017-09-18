@@ -15,7 +15,6 @@ class Entity extends Base\PublicEntity
     const SHOULD_SYNC = 'should_sync';
 
     // Keys used for tracing requests
-    const MERCHANT_ID  = 'merchant_id';
     const OLD_FEATURES = 'old_features';
     const NEW_FEATURE  = 'new_feature';
     const FEATURE      = 'feature';

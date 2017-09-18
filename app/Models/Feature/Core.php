@@ -4,8 +4,8 @@ namespace RZP\Models\Feature;
 
 use Config;
 use RZP\Models\Base;
-use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Base\PublicEntity;
 
 class Core extends Base\Core
 {
@@ -21,10 +21,10 @@ class Core extends Base\Core
 
         $this->trace->info(TraceCode::MERCHANT_FEATURE_EDIT_REQUEST,
             [
-                Entity::MERCHANT_ID  => $feature->getEntityId(),
-                Entity::OLD_FEATURES => $assignedFeatureNames,
-                Entity::NEW_FEATURE  => $feature->getName(),
-                Entity::SHOULD_SYNC  => $shouldSync
+                PublicEntity::MERCHANT_ID => $feature->getEntityId(),
+                Entity::OLD_FEATURES      => $assignedFeatureNames,
+                Entity::NEW_FEATURE       => $feature->getName(),
+                Entity::SHOULD_SYNC       => $shouldSync
             ]);
 
         $feature->getValidator()->validateFeatureIsNotAlreadyAssigned($assignedFeatureNames);
@@ -38,7 +38,8 @@ class Core extends Base\Core
 
     public function delete(Entity $feature, bool $shouldSync = false)
     {
-        $this->trace->info(TraceCode::FEATURE_DELETE_REQUEST,
+        $this->trace->info(
+            TraceCode::FEATURE_DELETE_REQUEST,
             [
                 Entity::FEATURE     => $feature->toArrayPublic(),
                 Entity::SHOULD_SYNC => $shouldSync
@@ -54,9 +55,7 @@ class Core extends Base\Core
              ->setEntity($feature->getEntity())
              ->handle($original, $dirty);
 
-        $this->repo->feature->deleteAndSyncIfApplicableOrFail(
-            $feature,
-            $shouldSync);
+        $this->repo->feature->deleteAndSyncIfApplicableOrFail($feature, $shouldSync);
 
         $this->notifyOnSlack($feature, true);
     }

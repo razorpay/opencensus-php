@@ -5,6 +5,7 @@ namespace RZP\Models\Feature;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant;
 use Illuminate\Http\Request;
 
@@ -58,10 +59,10 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_ALREADY_ASSIGNED,
                 null,
                 [
-                    Entity::ID           => $feature->getId(),
-                    Entity::NAME         => $feature->getName(),
-                    Entity::OLD_FEATURES => $assignedFeatureNames,
-                    Entity::MERCHANT_ID  => $feature->getMerchantId(),
+                    Entity::ID                => $feature->getId(),
+                    Entity::NAME              => $feature->getName(),
+                    Entity::OLD_FEATURES      => $assignedFeatureNames,
+                    PublicEntity::MERCHANT_ID => $feature->getMerchantId(),
                 ]);
         }
    }
