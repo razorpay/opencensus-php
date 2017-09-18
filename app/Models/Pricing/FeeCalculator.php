@@ -688,15 +688,12 @@ class FeeCalculator
 
             $taxValue = ($eligibleForGst === true) ? $taxValue: 0;
 
-            $taxBreakup = $this->createFeeBreakup(
-                                            $name,
-                                            $percentage,
-                                            $taxValue);
-
-            $this->feesSplit->push($taxBreakup);
-
             $totalTaxes += $taxValue;
         }
+
+        $tax = $this->createFeeBreakup(FeeBreakupName::TAX, 1800, $totalTaxes);
+
+        $this->feesSplit->push($tax);
 
         return $totalTaxes;
     }
