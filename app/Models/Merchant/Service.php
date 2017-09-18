@@ -29,7 +29,6 @@ use RZP\Models\Admin\Group;
 use RZP\Models\BankAccount;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Webhook;
-use Requests_Response as Response;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Merchant\SlackActions as SlackActions;
@@ -1353,12 +1352,4 @@ class Service extends Base\Service
 
         return $mailer;
     }
-
-    public function fetchAnalytics($input)
-    {
-        (new Core())->validateFilterAttributesAndAddMerchantId($this->merchant->getId(), $input);
-
-        return $this->app['eventManager']->query($input);
-    }
-
 }
