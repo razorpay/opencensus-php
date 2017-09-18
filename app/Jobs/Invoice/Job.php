@@ -41,7 +41,6 @@ class Job extends BaseJob implements ShouldQueue
 
     protected $invoice;
     protected $core;
-    protected $handler;
 
     public function __construct(string $mode, string $event, string $id)
     {
@@ -65,11 +64,11 @@ class Job extends BaseJob implements ShouldQueue
 
             $timeStarted = microtime(true);
 
-            $this->setAndValidateHandler();
+            $handler = $this->getHandlerForJobEvent();
 
             $this->invoice = $this->repoManager->invoice->findOrFail($this->id);
 
-            $handlerResult = $this->{$this->handler}();
+            $handlerResult = $this->{$handler}();
 
             $timeTaken = microtime(true) - $timeStarted;
 
@@ -90,24 +89,27 @@ class Job extends BaseJob implements ShouldQueue
     }
 
     /**
-     * Sets and validates the handler method based on the event.
+     * Gets handler for the job event
      *
-     * @return null
+     * @return string
+     *
      * @throws LogicException
      */
-    private function setAndValidateHandler()
+    protected function getHandlerForJobEvent(): string
     {
-        $this->handler = 'handle' . studly_case($this->event);
+        $handler = 'handle' . studly_case($this->event);
 
-        if (method_exists($this, $this->handler) === false)
+        if (method_exists($this, $handler) === false)
         {
-            $error = "InvoiceAction: Handler - $this->handler not found.";
+            $error = "InvoiceAction: Handler - $handler not found.";
 
             throw new LogicException(
                 $error,
                 ErrorCode::SERVER_ERROR_MISSING_HANDLER,
                 $this->getTracePayload());
         }
+
+        return $handler;
     }
 
     // ------------------------- Handlers for various events ---------
@@ -118,7 +120,7 @@ class Job extends BaseJob implements ShouldQueue
     //   as error otherwise fine. Also, any exception thrown is considered error too.
     //
 
-    private function handleUpdated()
+    protected function handleUpdated()
     {
         $pdfPath = $this->core->createInvoicePdf($this->invoice);
 
@@ -126,7 +128,7 @@ class Job extends BaseJob implements ShouldQueue
                     ->notifyInvoiceIssuedToCustomer();
     }
 
-    private function handleIssued()
+    protected function handleIssued()
     {
         $pdfPath = $this->core->createInvoicePdf($this->invoice);
 
@@ -134,13 +136,13 @@ class Job extends BaseJob implements ShouldQueue
                     ->notifyInvoiceIssuedToCustomer();
     }
 
-    private function handleExpired()
+    protected function handleExpired()
     {
         return (new Invoice\Notifier($this->invoice))
                     ->notifyInvoiceExpiredToCustomer();
     }
 
-    private function handleAuthorized()
+    protected function handleAuthorized()
     {
         $this->core->createInvoicePdf($this->invoice);
 
@@ -152,7 +154,7 @@ class Job extends BaseJob implements ShouldQueue
 
     // ---------------------------------------------------------------
 
-    private function handleException(\Throwable $e)
+    protected function handleException(\Throwable $e)
     {
         // By default job gets deleted
 
@@ -182,7 +184,7 @@ class Job extends BaseJob implements ShouldQueue
         );
     }
 
-    private function getTracePayload(array $with = [])
+    protected function getTracePayload(array $with = [])
     {
         $payload = [
             'job_attempts' => $this->attempts(),
