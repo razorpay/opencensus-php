@@ -3,6 +3,7 @@
 namespace RZP\Functional\Gateway\File;
 
 use Mail;
+use Excel;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
@@ -73,6 +74,11 @@ class NetbankingIciciRefundFileTest extends TestCase
             $this->assertArraySelectiveEquals($testData, $mail->viewData);
 
             $this->assertNotEmpty($mail->attachments);
+
+            $sheet = Excel::load($mail->attachments[0]['file'])->all()->toArray();
+
+            $this->assertCount(10, $sheet[0]);
+            $this->assertEquals($sheet[0]['refund_amount'], 500);
 
             return ($mail->hasFrom('refunds@razorpay.com') and
                     ($mail->hasTo(RefundFileMailConstants::RECIPIENT_EMAILS_MAP[Gateway::NETBANKING_ICICI])));
