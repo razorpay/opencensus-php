@@ -7,6 +7,7 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Gateway\Hitachi\Entity as Hitachi;
+use RZP\Models\Payment\Refund\Entity as Refund;
 
 class CreateHitachiGateway extends Migration
 {
@@ -25,7 +26,7 @@ class CreateHitachiGateway extends Migration
 
             $table->char(Hitachi::PAYMENT_ID, Payment::ID_LENGTH);
 
-            $table->char(Hitachi::REFUND_ID, Payment::ID_LENGTH)
+            $table->char(Hitachi::REFUND_ID, Refund::ID_LENGTH)
                   ->nullable();
 
             $table->char(Hitachi::ACQUIRER, 10)
@@ -46,9 +47,6 @@ class CreateHitachiGateway extends Migration
                   ->nullable();
 
             $table->string(Hitachi::RESPONSE_CODE)
-                  ->nullable();
-
-            $table->char(Hitachi::ENROLLED, 1)
                   ->nullable();
 
             $table->char(Hitachi::AUTH_STATUS, 1)
