@@ -35,23 +35,18 @@ class Core extends Base\Core
 
         $adjInput[Entity::AMOUNT] = $amount + $tax + $fees;
 
-        if ($amount > 0 and $tax == 0 and $fees == 0)
+        if (isset($adjInput[Entity::AMOUNT]) === true and
+            isset($adjInput[MerchantInvoice\Entity::TAX]) === false and
+            isset($adjInput[Entity::FEES]) === false)
         {
-            $adj = (new Adjustment\Entity)->build($adjInput);
-
-            $this->app['workflow']
-                ->setEntityAndId($adj->getEntity(), $merchant->getId())
-                ->handle((new \stdClass), $adj);
+            $adj = $this->createAdjEntityAndSetWorkflow($adjInput, $merchant);
 
             return $this->transaction([$this, 'createAdjInTransaction'], $adj, $merchant);
         }
-        elseif ($amount == 0 and ($tax > 0 or $fees > 0))
+        elseif ((isset($adjInput[Entity::AMOUNT]) === false) and
+            (isset($adjInput[MerchantInvoice\Entity::TAX]) or isset($adjInput[Entity::FEES])) === true)
         {
-            $adj = (new Adjustment\Entity)->build($adjInput);
-
-            $this->app['workflow']
-                ->setEntityAndId($adj->getEntity(), $merchant->getId())
-                ->handle((new \stdClass), $adj);
+            $adj = $this->createAdjEntityAndSetWorkflow($adjInput, $merchant);
 
             $adjustment = $this->repo->transaction(function () use ($adj, $merchant, $input) {
                 $adjustment = $this->createAdjInTransaction($adj, $merchant);
@@ -335,5 +330,16 @@ class Core extends Base\Core
         $newId = substr_replace($oldId, ++$last, -1, 1);
 
         return $newId;
+    }
+
+    protected function createAdjEntityAndSetWorkflow($adjInput, $merchant): Entity
+    {
+        $adj = (new Adjustment\Entity)->build($adjInput);
+
+        $this->app['workflow']
+            ->setEntityAndId($adj->getEntity(), $merchant->getId())
+            ->handle((new \stdClass), $adj);
+
+        return $adj;
     }
 }
