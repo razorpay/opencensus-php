@@ -143,18 +143,18 @@ class Server extends Base\Mock\Server
     {
         $input = json_decode($input, true);
 
-            return $this->getErrorResponse('E018');
-
         $this->validateActionInput($input, 'otpGenerate');
 
-        $response = array(
+        $content = [
             ResponseFields::OTP_ID         => '1daea2345',
             ResponseFields::REDIRECT_URL   => '',
             ResponseFields::IS_IVR_ENABLED => 'false',
             ResponseFields::STATUS         => 'VERIFY',
-        );
+        ];
 
-        return $this->makeResponse($response);
+        $this->content($content);
+
+        return $this->makePostResponse($content);
     }
 
     public function otpResend($input)
@@ -269,6 +269,22 @@ class Server extends Base\Mock\Server
         $response = $this->makeResponse($response);
 
         $response->setStatusCode(202);
+
+        return $response;
+    }
+
+    protected function makePostResponse($content)
+    {
+        $response = $this->makeResponse($content);
+
+        if (empty($content[ResponseFields::ERROR_CODE]) === false)
+        {
+            $response->setStatusCode(202);
+        }
+        else
+        {
+            $response->setStatusCode(200);
+        }
 
         return $response;
     }

@@ -7,7 +7,7 @@ use Carbon\Carbon;
 use RZP\Http\Route;
 use RZP\Gateway\Wallet;
 use RZP\Gateway\Wallet\Base\Otp;
-use RZP\Gateway\Wallet\Freecharge\Mock\Server as MockServer;
+use RZP\Gateway\Wallet\Freecharge\ResponseFields;
 use RZP\Models\Payment\Refund;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
@@ -564,24 +564,6 @@ class FreechargeGatewayTest extends TestCase
         $this->assertEquals(1, $result['total_success_refunds']);
     }
 
-    public function testApplicationErrorOccurred()
-    {
-        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
-
-        $this->mockServerContentFunction(function (& $content, $action = null)
-        {
-            $server = new MockServer();
-            $content = $server->getErrorResponse('E018');
-        });
-
-        $data = $this->testData[__FUNCTION__];
-
-        $data = $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            return $this->doAuthPayment($payment);
-        });
-    }
-
     public function deleteGatewayRefundEntity($id)
     {
         $id = Refund\Entity::verifyIdAndStripSign($id);
@@ -668,5 +650,36 @@ class FreechargeGatewayTest extends TestCase
         (new Refund\Repository)->saveOrFail($refund);
 
         return $refund;
+    }
+
+    public function testApplicationErrorOccurred()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            $data = [
+                ResponseFields::ERROR_MESSAGE => 'ApplicationErrorOccurred',
+                ResponseFields::ERROR_CODE => 'E018',
+            ];
+
+            $content = $data;
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            return $this->doAuthPayment($payment);
+        });
+
+        $this->clearMock();
+    }
+
+    protected function clearMock()
+    {
+        $this->mockServerContentFunction(function(&$input)
+        {
+        });
     }
 }
