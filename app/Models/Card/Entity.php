@@ -42,6 +42,7 @@ class Entity extends Base\PublicEntity
 
     const DUMMY_EXPIRY_YEAR  = '2021';
     const DUMMY_EXPIRY_MONTH = '12';
+    const DUMMY_CVV          = '123';
 
     const NETWORK_CODE      = 'network_code';
 
@@ -185,35 +186,41 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function modifyExpiryYear(& $input)
+    public static function modifyMaestro(& $input)
     {
         $iin = substr($input['number'] ?? null, 0, 6);
         $cardNetwork = Network::detectNetwork($iin);
 
-        if (($cardNetwork === Network::MAES) and
-            (empty($input['expiry_year']) === true))
+        if ($cardNetwork === Network::MAES)
         {
-            $input['expiry_year'] = self::DUMMY_EXPIRY_YEAR;
-        }
+            if (empty($input[Entity::EXPIRY_YEAR]) === true)
+            {
+                $input[Entity::EXPIRY_YEAR] = self::DUMMY_EXPIRY_YEAR;
+            }
 
+            if (empty($input[Entity::EXPIRY_MONTH]) === true)
+            {
+                $input[Entity::EXPIRY_MONTH] = self::DUMMY_EXPIRY_MONTH;
+            }
+
+            if (empty($input[Entity::CVV]) === true)
+            {
+                $input[Entity::CVV] = self::DUMMY_CVV;
+            }
+        }
+    }
+
+    public function modifyExpiryYear(& $input)
+    {
         if ((isset($input['expiry_year'])) and
             (strlen($input['expiry_year']) === 2))
         {
-            $input['expiry_year'] = '20'.$input['expiry_year'];
+            $input['expiry_year'] = '20' . $input['expiry_year'];
         }
     }
 
     public function modifyExpiryMonth(& $input)
     {
-        $iin = substr($input['number'] ?? null, 0, 6);
-        $cardNetwork = Network::detectNetwork($iin);
-
-        if (($cardNetwork === Network::MAES) and
-            (empty($input['expiry_month']) === true))
-        {
-            $input['expiry_month'] = self::DUMMY_EXPIRY_MONTH;
-        }
-
         if (isset($input['expiry_month']))
         {
             $input['expiry_month'] = ltrim($input['expiry_month'], '0');
