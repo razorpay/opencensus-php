@@ -1006,9 +1006,7 @@ class Service extends Base\Service
 
         $merchant = $this->merchant;
 
-        $shouldSyncKey = Feature\Entity::SHOULD_SYNC;
-
-        $shouldSync = boolval($input[$shouldSyncKey] ?? false);
+        $shouldSync = boolval($input[Feature\Entity::SHOULD_SYNC] ?? false);
 
         $merchant->validateInput('feature', $input);
 
@@ -1221,7 +1219,7 @@ class Service extends Base\Service
             $featureParams = [
                 Feature\Entity::ENTITY_ID    => $merchant->getId(),
                 Feature\Entity::ENTITY_TYPE  => 'merchant',
-                'names'                      => $featureNames,
+                Feature\Entity::NAMES        => $featureNames,
                 Feature\Entity::SHOULD_SYNC  => $shouldSync
             ];
 

@@ -414,6 +414,7 @@ class PublicErrorDescription
     const BAD_REQUEST_LINK_TYPE_HAS_NO_TAXATION                                 = 'Payment link does not support taxation';
 
     const BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE                               = 'You cannot change the value of this feature';
+    const BAD_REQUEST_MERCHANT_FEATURE_ALREADY_ASSIGNED                         = 'The merchant feature is already assigned';
 
     const BAD_REQUEST_INVALID_ADMIN_EMAIL                                       = 'Email provided is not a valid email';
     const BAD_REQUEST_INVALID_ADMIN_EMAIL_HOSTNAME                              = 'Email provided does not have the correct hostname';

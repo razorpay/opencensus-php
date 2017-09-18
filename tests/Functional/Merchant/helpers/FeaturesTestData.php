@@ -81,10 +81,16 @@ return [
         ],
         'response' => [
             'content' => [
-                null
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
             ],
-            'status_code' => 200,
-        ]
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_ALREADY_ASSIGNED,
+        ],
     ],
 
     'testMultiAssignFeature' => [
@@ -282,6 +288,50 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
+        ]
+    ],
+
+    'addFeature' => [
+        'request' => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+            'content' => [
+                'names'       => ['dummy'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name'          => 'dummy',
+                    'entity_id'     => '10000000000000',
+                    'entity_type'   => 'merchant'
+                ]
+            ]
+        ]
+    ],
+
+    'deleteFeature' => [
+        'request' => [
+            'url'       => "/features/10000000000000/dummy",
+            'method'    => 'delete',
+            'server' => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-User-Email'     => 'user@rzp.dev',
+            ],
+            'content'   => [
+                'names'             => ['dummy'],
+                'entity_type'       => 'merchant',
+                'entity_id'         => '10000000000000'
+            ]
+        ],
+        'response' => [
+            'content' => [ ]
         ]
     ],
 
