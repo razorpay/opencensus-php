@@ -1,12 +1,10 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Route, Switch, NavLink } from 'react-router-dom';
-import TestModeBanner from 'merchant/containers/TestModeBanner';
-import * as ModalActions from 'rzp/modules/modals';
-import HeaderAction from 'rzp/ui/HeaderAction';
-import { updateFeatures } from 'merchant/modules/config';
 import AsyncButton from 'react-async-button';
+import { Route, Switch, NavLink } from 'react-router-dom';
+import { updateFeatures } from 'merchant/modules/config';
 import { showNotification } from 'rzp/modules/notifications';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 import FeatureOnboarding from 'merchant/containers/FeatureOnboarding';
 
 import PaymentsList from 'merchant/containers/Marketplace/Payments/List';
@@ -21,7 +19,7 @@ import AccountsList from 'merchant/containers/Marketplace/Accounts/List';
       mode: state.session.mode,
     };
   },
-  { ...ModalActions, updateFeatures, showNotification }
+  { updateFeatures, showNotification }
 )
 export default class MarketplaceContainer extends Component {
   enableFeature = () => {
@@ -53,18 +51,6 @@ export default class MarketplaceContainer extends Component {
         <tabbed-container>
           <header>
             <NavLink to="/route">Razorpay Route</NavLink>
-            <HeaderAction>
-              <div class="btn-toolbar pull-right">
-                <a
-                  class="btn btn-link"
-                  href="https://razorpay.com/docs/route"
-                  target="_blank"
-                >
-                  Razorpay Route Documentation &nbsp;
-                  <i class="icon icon-external-link" />
-                </a>
-              </div>
-            </HeaderAction>
           </header>
           <content>
             {this.props.mode === 'test'
