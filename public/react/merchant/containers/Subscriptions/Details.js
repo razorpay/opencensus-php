@@ -262,7 +262,9 @@ export default class SubscriptionDetailsContainer extends Component {
   // Check if next due invoice is valid for current subscription
   checkNextDueInvoiceValidity(subsStatus) {
     return (
-      ['authenticated', 'active', 'halted', 'created'].indexOf(subsStatus) > -1
+      ['authenticated', 'active', 'halted', 'created', 'pending'].indexOf(
+        subsStatus
+      ) > -1
     );
   }
 
