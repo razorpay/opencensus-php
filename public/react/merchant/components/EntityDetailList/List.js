@@ -23,6 +23,7 @@ export default class EntityDetailList extends Component {
       activeSecEntityId,
       onManualAttempt,
       subscriptionType,
+      subscriptionchargeAt,
       subscriptionStatus,
     } = this.props;
     let list = [];
