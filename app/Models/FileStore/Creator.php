@@ -258,7 +258,7 @@ class Creator extends Base\Core
 
     /** Encrypts contents of file
      *
-     * @param string $type  type of rncryption
+     * @param string $type  type of encryption
      * @param string $secret secret for encryption
      *
      * @return Creator object
