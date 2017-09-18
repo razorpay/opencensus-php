@@ -48,6 +48,40 @@ return [
         ],
     ],
 
+    'testMerchantAnalyticsPayment' => [
+        'request' => [
+            'method' => 'POST',
+            'content' => [
+                'filters' =>  [
+                    'default' =>  [
+                        [
+                            'created_at' =>  ['gte' =>  0,'lte' =>  1505396637]
+                        ]
+                    ],
+                ],
+                'aggregations'  => [
+                    'agg1' => [
+                        'agg_type'  => 'sum',
+                        'details'   => [
+                            'index'     => 'payments',
+                            'column'    => 'base_amount',
+                            'group_by'  => [
+                                'method',
+                                'status',
+                            ]
+                        ],
+                    ],
+                ],
+            ],
+        ],
+        'response' => [
+            'status_code'   => 200,
+            'success'       => true,
+            'url'           => '/v1/analytics/dashboard',
+            'content'       => [],
+        ],
+    ],
+
     'testMerchantAnalyticsDeviceValidation' => [
         'request' => [
             'method' => 'POST',

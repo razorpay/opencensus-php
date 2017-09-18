@@ -25,6 +25,13 @@ class MerchantAnalyticsTest extends TestCase
         $this->startTest($testData);
     }
 
+    public function testMerchantAnalyticsPayment()
+    {
+        $testData = $this->initializeMerchantAnalyticsRequest();
+
+        $this->startTest($testData);
+    }
+
     public function testMerchantAnalyticsDeviceValidation()
     {
         $testData = $this->initializeMerchantAnalyticsRequest();

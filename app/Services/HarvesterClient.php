@@ -157,7 +157,7 @@ class HarvesterClient extends AbstractEventClient
 
         $this->checkErrors($urlPath, $data ,$response);
 
-        return $response;
+        return json_decode($response->body, true);
     }
 
     protected function checkErrors($urlPath, $data, $response)
