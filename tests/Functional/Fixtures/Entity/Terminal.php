@@ -30,6 +30,7 @@ class Terminal extends Base
         $this->createSharedCybersourceHdfcTerminal();
         $this->createSharedCybersourceHdfcRecurringTerminals();
         $this->createSharedCybersourceAxisTerminal();
+        $this->createSharedHitachiTerminal();
         $this->createSharedFirstDataTerminal();
         $this->createSharedEbsTerminal();
         $this->createSharedBladeTerminal();
@@ -579,6 +580,28 @@ class Terminal extends Base
             'gateway_merchant_id'       => 'cybersource',
             'gateway_terminal_id'       => 'cybersource',
             'gateway_terminal_password' => 'cybersource',
+            'gateway_access_code'       => '111111',
+            'gateway_secure_secret'     => 'secret',
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedHitachiTerminal(array $attributes = [])
+    {
+        $terminalId = \RZP\Models\Terminal\Shared::HITACHI_TERMINAL;
+
+        $attributes = [
+            'id'                        => $terminalId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'hitachi',
+            'card'                      => 1,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_acquirer'          => 'rbl',
+            'gateway_merchant_id'       => 'hitachi',
+            'gateway_terminal_id'       => 'hitachi',
+            'gateway_terminal_password' => 'hitachi',
             'gateway_access_code'       => '111111',
             'gateway_secure_secret'     => 'secret',
         ];
