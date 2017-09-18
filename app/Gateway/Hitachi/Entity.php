@@ -11,10 +11,7 @@ class Entity extends Base\Entity
     const CURRENCY      = 'currency';
     const REQUEST_ID    = 'pRequestId';
     const RESPONSE_CODE = 'pRespCode';
-    const ENROLLED      = 'pEnrolled';
     const AUTH_STATUS   = 'pAuthStatus';
-    const ECI           = 'pECI';
-    const XID           = 'pXID';
     const ALGORITHM     = 'pALGO';
     const CAVV2         = 'pCAVV2';
     const UCAF          = 'pUCAF';
@@ -34,10 +31,7 @@ class Entity extends Base\Entity
         self::CURRENCY,
         self::REQUEST_ID,
         self::RESPONSE_CODE,
-        self::ENROLLED,
         self::AUTH_STATUS,
-        self::ECI,
-        self::XID,
         self::ALGORITHM,
         self::CAVV2,
         self::UCAF,
@@ -49,10 +43,7 @@ class Entity extends Base\Entity
     protected $fillable = [
         self::REQUEST_ID,
         self::RESPONSE_CODE,
-        self::ENROLLED,
         self::AUTH_STATUS,
-        self::ECI,
-        self::XID,
         self::ALGORITHM,
         self::CAVV2,
         self::UCAF,
