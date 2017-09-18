@@ -185,11 +185,4 @@ class Admin extends Entity
 
         return $this->request('GET', $relativeUrl, $options);
     }
-
-    public function getAdminData($body)
-    {
-        $relativeUrl = "current_admin";
-
-        return $this->request('POST', $relativeUrl, $body);
-    }
 }

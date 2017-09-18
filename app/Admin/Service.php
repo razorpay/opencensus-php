@@ -1342,7 +1342,14 @@ class Service extends Base\Service
                 'token' => $admin->token
             ];
 
-            $data = $this->api->admin->getAdminData($params)->toArray();
+            $requestConfig = [
+                'route_name'    => 'admin_get_app_auth',
+                'query_params'  => $params,
+            ];
+
+            $genericService = new Generic\Service;
+
+            list($error, $data) = $genericService->call('POST', $requestConfig);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {

@@ -34,7 +34,6 @@ return [
         'admin_edit'                        => 'admin/{adminId}',
         'admin_delete'                      => 'admin/{adminId}',
         'admin_create'                      => 'admins',
-        'admin_get_app_auth'                => 'current_admin',
         'admin_logout'                      => 'admin/logout',
 
         // AuditLog
@@ -591,6 +590,7 @@ return [
         'admin_authentication'              => 'admin/authenticate',
         'admin_oauth_authenticate'          => 'admin/oauth_login',
         'admin_edit_app_auth'               => 'admin-app-auth/{id}',
+        'admin_get_app_auth'                => 'current_admin',
     ],
 
     // auth
