@@ -25,7 +25,8 @@ export default class InvoiceDetail extends Component {
       isLoading,
       statusMsg,
       curInvoiceIndex,
-      subscriptionStatus,
+      subscription,
+      plan,
       nextChargeAt,
       onManualAttempt,
     } = this.props;
@@ -100,7 +101,7 @@ export default class InvoiceDetail extends Component {
                     <InvoiceStatusLabel status={invoice.status} />
                     {invoice.status === 'issued' &&
                       ['active', 'pending', 'halted'].indexOf(
-                        subscriptionStatus
+                        subscription.status
                       ) > -1 &&
                       <AsyncButton
                         class="btn-link no-padding"
@@ -119,16 +120,16 @@ export default class InvoiceDetail extends Component {
                     />}
                 />
 
-                {/* dummy invoice with 'next_due' status won't be added if subscriptionStatus is pending, so label will be 'Charge at'*/}
+                {/* dummy invoice with 'next_due' status won't be added if subscription status is pending, so label will be 'Charge at'*/}
                 {
                   do {
                     if (
                       invoice.status === 'next_due' ||
                       (invoice.status === 'issued' &&
-                        subscriptionStatus !== 'halted')
+                        subscription.status !== 'halted')
                     ) {
                       <EntityDetailRow
-                        label={`${subscriptionStatus === 'pending'
+                        label={`${subscription.status === 'pending'
                           ? 'Next Charge at'
                           : 'Charge at'}`}
                         value={() =>
@@ -142,7 +143,28 @@ export default class InvoiceDetail extends Component {
                 }
 
                 <EntityDetailRow
-                  label="Amount"
+                  label="Recurring Amount"
+                  value={() =>
+                    <div>
+                      <div class="label--primary">
+                        <Amount
+                          currency={plan.item.currency}
+                          value={subscription.quantity * plan.item.unit_amount}
+                        />
+                      </div>
+                      <small class="label--secondary">
+                        {subscription.quantity} x{' '}
+                        <Amount
+                          currency={plan.item.currency}
+                          value={plan.item.unit_amount}
+                        />{' '}
+                        per unit
+                      </small>
+                    </div>}
+                />
+
+                <EntityDetailRow
+                  label="Total Amount"
                   value={() =>
                     <Amount
                       currency={invoice.currency}
