@@ -42,6 +42,13 @@ class AnalyticsValidator extends Base\Validator
 
     protected function callCustomRuleValidatorFunction($func, $attribute, $value, $parameters)
     {
+        if (function_exists($func))
+        {
+            parent::callCustomRuleValidatorFunction($func, $attribute, $value, $parameters);
+
+            return;
+        }
+
         $parentArrayVar = '_'.$attribute;
 
         $this->validateFilter($attribute, $value, self::$$parentArrayVar);

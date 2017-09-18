@@ -26,7 +26,7 @@ class HarvesterClient extends AbstractEventClient
 
     const TRACK_EVENT_URL_PATTERN = 'track/merchants';
 
-    const QUERY_API_PATH = '/v1/analytics/pokedex';
+    const QUERY_API_PATH = 'analytics/pokedex';
 
     public function __construct($app)
     {
@@ -128,6 +128,7 @@ class HarvesterClient extends AbstractEventClient
         $request['options'] = $options;
 
         $retryCount = 0;
+
         $response = null;
 
         while ($retryCount <= $maxRetryTimes)
