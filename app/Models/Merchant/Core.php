@@ -385,13 +385,13 @@ class Core extends Base\Core
 
     public function validateFilterAttributesAndAddMerchantId($merchantId, $input)
     {
-        $filters = $input['filters'];
+        $filters = $input[Entity::FILTERS];
 
         $validator = new AnalyticsValidator();
 
         foreach ($filters as $key => $filter)
         {
-            array_push($input['filters'][$key], ['merchant_id' => $merchantId]);
+            array_push($input[Entity::FILTERS][$key], [Entity::KEY_MERCHANT_ID => $merchantId]);
 
             foreach ($filter as $attributes)
             {

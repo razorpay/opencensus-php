@@ -14,17 +14,17 @@ class AnalyticsValidator extends Base\Validator
 
     protected $strict = false;
 
-    static $_method = ['netbanking', 'cards', 'wallets'];
+    protected static $method = ['netbanking', 'cards', 'wallets'];
 
-    static $_network = ['visa', 'mastercard'];
+    protected static $network = ['visa', 'mastercard'];
 
-    static $_device = ['desktop', 'mobile', 'tablet'];
+    protected static $device = ['desktop', 'mobile', 'tablet'];
 
-    static $_browser = ['chrome', 'IE', 'firefox'];
+    protected static $browser = ['chrome', 'IE', 'firefox'];
 
-    static $_os = ['windows', 'linux', 'macos'];
+    protected static $os = ['windows', 'linux', 'macos'];
 
-    static $_platform = ['browser', 'mobile-sdk'];
+    protected static $platform = ['browser', 'mobile-sdk'];
 
     protected static $analyticsRules = [
         Order\Entity::METHOD          => 'sometimes|custom',
@@ -42,14 +42,14 @@ class AnalyticsValidator extends Base\Validator
 
     protected function callCustomRuleValidatorFunction($func, $attribute, $value, $parameters)
     {
-        if (function_exists($func))
+        if (function_exists($func) === true)
         {
             parent::callCustomRuleValidatorFunction($func, $attribute, $value, $parameters);
 
             return;
         }
 
-        $parentArrayVar = '_'.$attribute;
+        $parentArrayVar = $attribute;
 
         $this->validateFilter($attribute, $value, self::$$parentArrayVar);
     }
@@ -80,7 +80,7 @@ class AnalyticsValidator extends Base\Validator
 
     protected function isValuesSubsetOfParent(array $parentArray, array $values): bool
     {
-        return count(array_values(array_diff($values, $parentArray))) === 0;
+        return (count(array_values(array_diff($values, $parentArray))) === 0);
     }
 
 }

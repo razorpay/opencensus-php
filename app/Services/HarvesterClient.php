@@ -28,6 +28,10 @@ class HarvesterClient extends AbstractEventClient
 
     const QUERY_API_PATH = 'analytics/pokedex';
 
+    const RETRY = true;
+
+    const RETRY_TIMES = 3;
+
     public function __construct($app)
     {
         parent::__construct();
@@ -41,8 +45,6 @@ class HarvesterClient extends AbstractEventClient
         $this->mock = $this->config['mock'];
 
         $this->queryBaseUrl = $this->config['url'];
-
-        $this->queryPath = self::QUERY_API_PATH;
 
         $this->accessToken = $this->config['analytics_token'];
     }
@@ -97,7 +99,7 @@ class HarvesterClient extends AbstractEventClient
 
     public function query($data = '')
     {
-        return $this->sendRequest($this->queryPath, $data, true, 3);
+        return $this->sendRequest(self::QUERY_API_PATH, $data, self::RETRY, self::RETRY_TIMES);
     }
 
     protected function sendRequest(string $urlPath, $data, bool $retry = false, int $maxRetryTimes = 0)
