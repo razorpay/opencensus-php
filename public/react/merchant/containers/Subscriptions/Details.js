@@ -17,8 +17,9 @@ import { deleteAddOn } from 'merchant/modules/addons';
 import { showNotification } from 'rzp/modules/notifications';
 import { expandSlider, compactSlider } from 'rzp/modules/slider';
 
-import { openModal } from 'rzp/modules/modals';
+import { openModal, closeModal } from 'rzp/modules/modals';
 import CancellationModal from './CancellationModal';
+import AddOnCreation from 'merchant/containers/AddOns/New';
 
 /*
  * Invoice (Upfront?) |    Subscription(Start?)     | Type
@@ -48,6 +49,7 @@ import CancellationModal from './CancellationModal';
     fetchCustomer,
     showNotification,
     openModal,
+    closeModal,
   }
 )
 export default class SubscriptionDetailsContainer extends Component {
@@ -216,7 +218,7 @@ export default class SubscriptionDetailsContainer extends Component {
       0
     );
 
-    //TODO: Add addons list as well depending upon type in line_items
+    //TODO: Add addons list as well depending upon type in line_items (Will help in updating invoices list)
     return {
       id: 'inv_upcoming',
       status: 'next_due',
@@ -246,6 +248,7 @@ export default class SubscriptionDetailsContainer extends Component {
             this.props.closeModal();
 
             // Fetch the list of invoices again
+            // this.props.fetchInvoices();
 
             return response;
           })
@@ -277,7 +280,7 @@ export default class SubscriptionDetailsContainer extends Component {
       action: () =>
         deleteAddOn(id)
           .then(response => {
-            this.fetchAddOns();
+            this.fetchAddOns(this.props.entity.id);
 
             this.props.showNotification({
               type: 'success',
@@ -289,6 +292,25 @@ export default class SubscriptionDetailsContainer extends Component {
               errors: err.errors,
             });
           }),
+    });
+  };
+
+  handleOnCreateAddOn = () => {
+    this.props.closeModal();
+    this.fetchAddOns(this.props.entity.id);
+  };
+
+  showAddOnModal = (addon = null) => {
+    this.props.openModal({
+      size: 'small',
+      component: (
+        <AddOnCreation
+          addon={addon}
+          subscriptionId={this.props.entity.id}
+          onSave={this.handleOnCreateAddOn}
+          closeModal={this.props.closeModal}
+        />
+      ),
     });
   };
 
@@ -379,6 +401,7 @@ export default class SubscriptionDetailsContainer extends Component {
           statusMsg={makeErrorStatus(invoiceErrors)}
           onManualAttempt={this.onManualAttempt}
           onAddOnDelete={this.deleteAddOn}
+          showAddOnModal={this.showAddOnModal}
           isValidInvoice={isValidInvoice}
           isLoading={
             this.props.invoice_id === 'inv_upcoming' && invoiceData

@@ -61,6 +61,18 @@ export default class InvoiceDetail extends Component {
       );
     });
 
+    if (invoiceStatus === 'next_due') {
+      addonsList.push(
+        <button
+          class="btn-link no-padding"
+          key="include-more"
+          onClick={this.props.showAddOnModal}
+        >
+          + Include {addonsList.length > 0 ? 'another' : ''} Add-on
+        </button>
+      );
+    }
+
     return (
       <EntityDetailRow
         label="Add-Ons"
