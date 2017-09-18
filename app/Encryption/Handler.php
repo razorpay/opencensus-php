@@ -8,16 +8,14 @@ class Handler
 {
     const PGP_ENCRYPTION = 'pgp_encryption';
 
-    const VALID_ENCRYPTION_TYPES = [
-        self::PGP_ENCRYPTION,
-    ];
-
     protected $params;
 
     protected $cipher;
 
     public function __construct(string $type, array $params)
     {
+        parent::__construct($params);
+
         $this->params = $params;
 
         $this->cipher = $this->getCipher($type);

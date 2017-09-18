@@ -8,9 +8,10 @@ class PGPEncryption implements IEncryption
 
     protected $secret = null;
 
-    public function __construct($params)
+    public function __construct(array $params)
     {
-        // TODO : add validations
+        parent::__construct($params);
+
         $this->secret = $params[self::SECRET];
     }
 
@@ -22,11 +23,21 @@ class PGPEncryption implements IEncryption
 
         $enc = gnupg_encrypt($res, $data);
 
+        if ($enc === false)
+        {
+            //throw exception
+        }
+
         return $enc;
     }
 
     public function decrypt(string $data) : string
     {
         // TODO
+    }
+
+    protected function validateParams(array $params)
+    {
+        (new Validator)->validate('pgpEncryption', $params);
     }
 }
