@@ -46,6 +46,7 @@ return [
                         'description' => 'Some item description',
                         'amount'      => 100000,
                         'quantity'    => 1,
+                        'type'        => 'invoice',
                     ]
                 ],
                 'status'       => 'issued',
@@ -81,9 +82,10 @@ return [
                 ],
                 'line_items'    => [
                     [
-                        'name'          => 'Some item name',
-                        'description'   => 'Some item description',
-                        'amount'        => 100000,
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                        'type'        => 'invoice',
                     ]
                 ],
                 'currency' => 'INR',
@@ -117,6 +119,7 @@ return [
                         'description' => 'Some item description',
                         'amount'      => 100000,
                         'quantity'    => 1,
+                        'type'        => 'invoice',
                     ]
                 ],
                 'status'       => 'issued',
