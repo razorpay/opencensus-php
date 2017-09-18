@@ -12,7 +12,7 @@ class Issuer
     const RBL           = 'Rbl';
     const SCBL          = 'Scbl';
     const ICICI         = 'Icici';
-    const YES           = 'Yes';
+    const YESB           = 'Yesb';
 
     public static $emiFileBanks = array(
         IFSC::KKBK  => self::KOTAK,
@@ -21,7 +21,7 @@ class Issuer
         IFSC::RATN  => self::RBL,
         IFSC::SCBL  => self::SCBL,
         IFSC::ICIC  => self::ICICI,
-        IFSC::YESB  => self::YES,
+        IFSC::YESB  => self::YESB,
     );
 
 }

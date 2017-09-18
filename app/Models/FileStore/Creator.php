@@ -4,6 +4,7 @@ namespace RZP\Models\FileStore;
 
 use Config;
 use RZP\Exception;
+use RZP\Encryption;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -105,18 +106,11 @@ class Creator extends Base\Core
     protected $shouldEncrypt = false;
 
      /**
-     * Secret for file encryption
+     * Encryption Handler Instance
      *
-     * @var string Encryption Secret
+     * @var Encryption Handler
      */
-    protected $encryptionSecret;
-
-     /**
-     * Excryption format for File
-     *
-     * @var string Encryption type
-     */
-    protected $encryptionType;
+    protected $encryptionHandler;
 
     /**
      * Format in which file has to be Compress
@@ -264,22 +258,19 @@ class Creator extends Base\Core
 
     /** Encrypts contents of file
      *
-     * @param string $type  Type of Encryption
-     * @param string $secret secret for Encryption
+     * @param string $type  type of rncryption
+     * @param string $secret secret for encryption
      *
      * @return Creator object
      */
-    public function encrypt($type, $secret)
+    public function encrypt(string $type, array $params)
     {
         $this->shouldEncrypt = true;
 
-        $this->encryptionType = $type;
-
-        $this->encryptionSecret = $secret;
+        $this->encryptionHandler = new Encryption\Handler($type, $params);
 
         return $this;
     }
-
 
     /**
      * Set the Store  of File Store
@@ -687,9 +678,9 @@ class Creator extends Base\Core
 
     protected function encryptFile()
     {
-        $unzippedFilePath = $this->getFullFilePath();
+        $fileToBeEncrypted = $this->getFullFilePath();
 
-        (new Encryption)->encrypt($this->encryptionType, $this->encryptionSecret, $unzippedFilePath);
+        $this->encryptionHandler->encryptFile($fileToBeEncrypted);
     }
 
     /*
