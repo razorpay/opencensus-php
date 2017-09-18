@@ -68,8 +68,6 @@ class Service extends Base\Service
     {
         $error = $data = null;
 
-        $this->setApiCredentials();
-
         try
         {
             // This is password based login
@@ -96,9 +94,15 @@ class Service extends Base\Service
     {
         $error = $data = null;
 
-        $this->setApiCredentials();
+        // This is oAuth based login
+        $requestConfig = [
+            'route_name'   => 'admin_oauth_authenticate',
+            'query_params' => $input,
+        ];
 
-        $data = $this->api->admin->oAuthLogin($input)->toArray();
+        $genericService = new Generic\Service;
+
+        list($error, $data) = $genericService->call('POST', $requestConfig);
 
         return $data;
     }
@@ -136,7 +140,17 @@ class Service extends Base\Service
 
             // 1. Save the data (oauth token and provider) to API
 
-            $updatedAdmin = $this->api->admin->updateAdmin($admin['id'], $updateData);
+            $requestConfig = [
+                'route_name'   => 'admin_edit_app_auth',
+                'query_params' => $updateData,
+                'url_params'   => [
+                    '{id}'  => $admin['id'],
+                ],
+            ];
+
+            $genericService = new Generic\Service;
+
+            list($error, $updatedAdmin) = $genericService->call('PUT', $requestConfig);
 
             // 2. Login the user to dashboard. Have to make an API call
             // to login the user and get an admin_token

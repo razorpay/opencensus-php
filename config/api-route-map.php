@@ -589,6 +589,8 @@ return [
         'bank_transfer_process'             => 'ecollect/validate',
 
         'admin_authentication'              => 'admin/authenticate',
+        'admin_oauth_authenticate'          => 'admin/oauth_login',
+        'admin_edit_app_auth'               => 'admin-app-auth/{id}',
     ],
 
     // auth
