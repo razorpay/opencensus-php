@@ -114,7 +114,7 @@ class Gateway extends Base\Gateway
     {
         $content = $this->getPaymentVerifyData($verify);
 
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray($content ,'post', $this->getActionType());
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,

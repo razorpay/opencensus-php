@@ -28,8 +28,6 @@ class NetbankingAxisGatewayTest extends TestCase
         $this->setMockGatewayTrue();
 
         $this->terminal = $this->fixtures->create('terminal:shared_netbanking_axis_terminal');
-
-        $this->markTestSkipped('Marking test skipped till code response is available');
     }
 
     public function testPayment()
