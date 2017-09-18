@@ -13,6 +13,7 @@ import { fetchPlan } from 'merchant/modules/plans';
 import { fetchCustomer } from 'merchant/modules/customers';
 import { fetchInvoice } from 'merchant/modules/invoices/details';
 import { fetchSubscriptionAddOns } from 'merchant/modules/addons';
+import { deleteAddOn } from 'merchant/modules/addons';
 import { showNotification } from 'rzp/modules/notifications';
 import { expandSlider, compactSlider } from 'rzp/modules/slider';
 
@@ -125,6 +126,20 @@ export default class SubscriptionDetailsContainer extends Component {
     }
   }
 
+  fetchAddOns(subscriptionId) {
+    return fetchSubscriptionAddOns(subscriptionId)
+      .then(response => {
+        this.setState({
+          addons: response.data.items,
+        });
+
+        return response.data; // To success the chain of Promise.all
+      })
+      .catch(err => {
+        // Throw some error // To fail the chain of Promise.all. Will be caught below
+      });
+  }
+
   fetchSubscriptionDetails(id) {
     let { entity, fetchItem, fetchPlan, fetchCustomer } = this.props;
 
@@ -136,18 +151,7 @@ export default class SubscriptionDetailsContainer extends Component {
           return Promise.all([
             fetchPlan(subscription.plan_id),
             fetchCustomer(subscription.customer_id),
-            fetchSubscriptionAddOns(subscription.id)
-              .then(response => {
-                console.log('ADDONS..', response);
-                this.setState({
-                  addons: response.data.items,
-                });
-
-                return response.data; // To success the chain of Promise.all
-              })
-              .catch(err => {
-                // Throw some error // To fail the chain of Promise.all. Will be caught below
-              }),
+            this.fetchAddOns(subscription.id),
           ]).then(response => {
             this.props.fetchInvoices(id).then(data => {
               // Set curInvoiceIndex when /{subscription_id}/{invoice_id} is direct hit
@@ -262,6 +266,30 @@ export default class SubscriptionDetailsContainer extends Component {
     );
   }
 
+  // Only next_due addons will have delete btn
+  deleteAddOn = id => {
+    this.context.confirm({
+      message: 'Are you sure to delete this addon?', // TODO: Show name and id of Addon to be deleted
+      affirmativeLabel: 'Delete',
+      affirmativePendingLabel: 'Deleting...',
+      action: () =>
+        deleteAddOn(id)
+          .then(response => {
+            this.fetchAddOns();
+
+            this.props.showNotification({
+              type: 'success',
+              message: 'Add-on details successfully deleted',
+            });
+          })
+          .catch(err => {
+            this.setState({
+              errors: err.errors,
+            });
+          }),
+    });
+  };
+
   render() {
     let { entity, plan, customer, invoices, activeSecEntityId } = this.props;
     let {
@@ -324,6 +352,17 @@ export default class SubscriptionDetailsContainer extends Component {
         invoiceData = invoice;
       }
 
+      let addonsList = [];
+      if (invoiceData) {
+        if (invoiceData.status === 'next_due' && this.state.addons) {
+          addonsList = this.state.addons;
+        } else if (invoiceData.line_items) {
+          addonsList = invoiceData.line_items.filter(
+            item => item.type === 'addon'
+          );
+        }
+      }
+
       // If request is for /inv_upcoming then invoiceData will exist only if it's validInvoice.
       // And in this case InvoiceDetails won't show loader but error message
       invoiceSecView = (
@@ -333,9 +372,11 @@ export default class SubscriptionDetailsContainer extends Component {
           invoice={invoiceData}
           subscription={entity}
           plan={plan}
+          addons={addonsList}
           onClose={this.secClose}
           statusMsg={makeErrorStatus(invoiceErrors)}
           onManualAttempt={this.onManualAttempt}
+          onAddOnDelete={this.deleteAddOn}
           isValidInvoice={isValidInvoice}
           isLoading={
             this.props.invoice_id === 'inv_upcoming' && invoiceData

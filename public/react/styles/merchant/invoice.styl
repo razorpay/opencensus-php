@@ -397,3 +397,35 @@ $muted = rgba(0, 0, 0, 0.27)
     }
   }
 }
+
+.edit-layer {
+  display: none;
+
+  .icon {
+    padding: 5px;
+    position: absolute;
+    right: 0;
+    cursor: pointer;
+    z-index: 3;
+  }
+}
+
+.addons {
+  position: relative;
+  margin-bottom: 12px;
+
+  &:hover {
+
+    .edit-layer {
+      display: block;
+      width: 106%;
+      height: 116%;
+      position: absolute;
+      top: -8%;
+      left: -3%;
+      border: 1px solid #E5E5E5
+      border-radius: 4px;
+      background-color: rgba(250, 251, 252, 0.5);
+    }
+  }
+}

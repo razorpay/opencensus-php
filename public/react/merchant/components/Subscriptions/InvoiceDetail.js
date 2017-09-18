@@ -18,6 +18,56 @@ const notificationClassMap = {
 
 // Note: class is needed for "ref" to work in parent component
 export default class InvoiceDetail extends Component {
+  getAddOnList() {
+    let invoiceStatus = this.props.invoice.status;
+    let addons = this.props.addons;
+
+    let addonsList;
+
+    addonsList = addons.map((addon, key) => {
+      return (
+        <div
+          class={`m-b ${invoiceStatus === 'next_due' && 'addons'}`}
+          key={`addon-${key}`}
+        >
+          {invoiceStatus === 'next_due' &&
+            <div class="edit-layer">
+              <span
+                class="icon icon-close text-danger"
+                onClick={() => this.props.onAddOnDelete(addon.id)}
+              />
+            </div>}
+          <div style={{ position: 'relative' }}>
+            <div class="label--primary">
+              <Amount
+                currency={addon.item.currency}
+                value={addon.quantity * addon.item.unit_amount}
+              />
+            </div>
+            <small class="label--secondary">
+              {addon.quantity} x{'  '}
+              <Amount
+                currency={addon.item.currency}
+                value={addon.item.unit_amount}
+              />
+              {'  '}
+              per unit
+            </small>
+          </div>
+        </div>
+      );
+    });
+
+    return (
+      <EntityDetailRow
+        label="Add-Ons"
+        value={() => {
+          return addonsList.length ? addonsList : '--';
+        }}
+      />
+    );
+  }
+
   render() {
     let {
       invoice,
@@ -162,6 +212,8 @@ export default class InvoiceDetail extends Component {
                       </small>
                     </div>}
                 />
+
+                {this.getAddOnList()}
 
                 <EntityDetailRow
                   label="Total Amount"
