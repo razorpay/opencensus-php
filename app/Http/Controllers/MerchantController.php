@@ -763,7 +763,7 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function postAnalytics($id)
+    public function postAnalytics()
     {
         $input = Request::all();
 

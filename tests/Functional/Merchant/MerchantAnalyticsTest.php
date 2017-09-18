@@ -18,28 +18,28 @@ class MerchantAnalyticsTest extends TestCase
         parent::setUp();
     }
 
-    public function testRouteAnalytics()
+    public function testMerchantAnalytics()
     {
-        $testData = $this->initializeRouteAnalyticsRequest();
+        $testData = $this->initializeMerchantAnalyticsRequest();
 
         $this->startTest($testData);
     }
 
-    public function testRouteAnalyticsDeviceValidation()
+    public function testMerchantAnalyticsDeviceValidation()
     {
-        $testData = $this->initializeRouteAnalyticsRequest();
+        $testData = $this->initializeMerchantAnalyticsRequest();
 
         $this->startTest($testData);
     }
 
-    public function testRouteAnalyticsMethodValidation()
+    public function testMerchantAnalyticsMethodValidation()
     {
-        $testData = $this->initializeRouteAnalyticsRequest();
+        $testData = $this->initializeMerchantAnalyticsRequest();
 
         $this->startTest($testData);
     }
 
-    protected function initializeRouteAnalyticsRequest()
+    protected function initializeMerchantAnalyticsRequest()
     {
         $this->ba->proxyAuth();
 
@@ -49,10 +49,7 @@ class MerchantAnalyticsTest extends TestCase
 
         $testData = & $this->testData[__FUNCTION__];
 
-        $testData['request']['url'] = '/merchant/10000000000000/analytics';
-
-        // For validations
-        $testData['request']['content']['filters']['default'][0]['merchant_id'] = '10000000000000';
+        $testData['request']['url'] = '/merchant/analytics';
 
         return $testData;
     }

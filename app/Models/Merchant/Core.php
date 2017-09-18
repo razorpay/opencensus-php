@@ -383,14 +383,16 @@ class Core extends Base\Core
         }
     }
 
-    public function extractFilterAttributesAndValidate($input)
+    public function validateFilterAttributesAndAddMerchantId($merchantId, $input)
     {
         $filters = $input['filters'];
 
         $validator = new AnalyticsValidator();
 
-        foreach ($filters as $filter)
+        foreach ($filters as $key => $filter)
         {
+            array_push($input['filters'][$key], ['merchant_id' => $merchantId]);
+
             foreach ($filter as $attributes)
             {
                 $validator->validateAnalyticsInputFilter($attributes);
