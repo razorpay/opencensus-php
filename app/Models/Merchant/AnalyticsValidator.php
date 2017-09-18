@@ -27,13 +27,12 @@ class AnalyticsValidator extends Base\Validator
     static $_platform = ['browser', 'mobile-sdk'];
 
     protected static $analyticsRules = [
-
-        Order\Entity::METHOD          => 'sometimes | custom',
-        Card\Entity::NETWORK          => 'sometimes | custom',
-        Analytics\Entity::DEVICE      => 'sometimes | custom',
-        Analytics\Entity::BROWSER     => 'sometimes | custom',
-        Analytics\Entity::OS          => 'sometimes | custom',
-        Analytics\Entity::PLATFORM    => 'sometimes | custom',
+        Order\Entity::METHOD          => 'sometimes|custom',
+        Card\Entity::NETWORK          => 'sometimes|custom',
+        Analytics\Entity::DEVICE      => 'sometimes|custom',
+        Analytics\Entity::BROWSER     => 'sometimes|custom',
+        Analytics\Entity::OS          => 'sometimes|custom',
+        Analytics\Entity::PLATFORM    => 'sometimes|custom',
     ];
 
     public function validateAnalyticsInputFilter($input)
@@ -52,7 +51,7 @@ class AnalyticsValidator extends Base\Validator
     {
         if (is_array($value) === true)
         {
-            if ($this->isSubsetWithoutOrder($parentArray, $value) === false)
+            if ($this->isValuesSubsetOfParent($parentArray, $value) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Invalid '.$attribute,
@@ -72,16 +71,9 @@ class AnalyticsValidator extends Base\Validator
         }
     }
 
-    protected function isSubsetWithoutOrder(array $parentArray, array $childArray): bool
+    protected function isValuesSubsetOfParent(array $parentArray, array $values): bool
     {
-        foreach ($childArray as $item)
-        {
-            if (in_array($item, $parentArray) === false)
-            {
-                return false;
-            }
-        }
-        return true;
+        return count(array_values(array_diff($values, $parentArray))) === 0;
     }
 
 }

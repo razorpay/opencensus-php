@@ -109,10 +109,10 @@ class HarvesterClient extends AbstractEventClient
                 'data'    => $data
             ]);
 
-        $request= [
+        $request = [
             'url'           => $this->queryBaseUrl . $urlPath,
             'method'        => 'POST',
-            'content'          => $data,
+            'content'       => $data,
             'content-type'  => 'application/json',
             ];
 

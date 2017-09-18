@@ -2,136 +2,136 @@
 
 use RZP\Models\VirtualAccount;
 
-return array(
-    'dashboard' => array(
+return [
+    'dashboard' => [
         'url'       => env('APP_DASHBOARD_URL'),
         'secret'    => env('APP_DASHBOARD_SECRET'),
         'pretend'   => env('APP_DASHBOARD_PRETEND'),
         'cloud'     => true,
-    ),
+    ],
 
-    'mock_gateways' => array(
+    'mock_gateways' => [
         'secret'    => env('MOCK_GATEWAY_SECRET'),
-    ),
+    ],
 
-    'cron' => array(
+    'cron' => [
         'secret'    => env('CRON_PASSWORD'),
-    ),
+    ],
 
-    'h2h' => array(
+    'h2h' => [
         'secret'   => env('APP_H2H_SECRET'),
-    ),
+    ],
 
-    'mailgun' => array(
+    'mailgun' => [
         'url'       => 'razorpay.com',
         'key'       => env('MAILGUN_SECRET'),
         'mock'      => env('MAILGUN_MOCK'),
         'secret'    => env('APP_MAILGUN_SECRET'),
         'from_name' => 'Team Razorpay',
         'from_email' => 'support@razorpay.com'
-    ),
+    ],
 
-    'emi' => array(
+    'emi' => [
         'password'  => env('EMI_FILE_PASSWORD')
-    ),
+    ],
 
-    'slack' => array(
+    'slack' => [
         'team'      => 'razorpay',
         'token'     => env('SLACK_TOKEN'),
         'mock'      => env('SLACK_MOCK'),
-    ),
+    ],
 
-    'sns' => array(
+    'sns' => [
         'mock'      => env('SNS_MOCK'),
-    ),
+    ],
 
-    'zapier' => array(
+    'zapier' => [
         'mock'      => env('ZAPIER_MOCK'),
-    ),
+    ],
 
-    'hosted' => array(
+    'hosted' => [
         'secret'    => env('APP_HOSTED_SECRET'),
-    ),
+    ],
 
-    'card_tokenex' => array(
+    'card_tokenex' => [
         'mock'      => env('TOKENEX_MOCK', false),
         'id'        => env('TOKENEX_ID'),
         'key'       => env('TOKENEX_API_KEY'),
         'url'       => env('TOKENEX_API_URL'),
         'scheme'    => env('TOKENEX_TOKEN_SCHEME'),
-    ),
+    ],
 
-    'raven' => array(
+    'raven' => [
         'url'       => env('RAVEN_URL'),
         'secret'    => env('RAVEN_SECRET'),
-    ),
+    ],
 
-    'maxmind' => array(
+    'maxmind' => [
         'mock'      => env('MAXMIND_MOCK', false),
         'id'        => '115820',
         'secret'    => env('MAXMIND_SECRET'),
         'secretv2'  => env('MAXMIND_V2_SECRET')
-    ),
+    ],
 
-    VirtualAccount\Provider::KOTAK => array(
+    VirtualAccount\Provider::KOTAK => [
         'secret'    => env('KOTAK_SECRET'),
-    ),
-    VirtualAccount\Provider::YESBANK => array(
+    ],
+    VirtualAccount\Provider::YESBANK => [
         'secret'    => env('YESBANK_SECRET'),
-    ),
+    ],
 
-    'lumberjack' => array(
+    'lumberjack' => [
         'url'           => env('LUMBERJACK_URL'),
         'secret'        => env('LUMBERJACK_SECRET'),
         'key'           => env('LUMBERJACK_KEY'),
         'mock'          => env('LUMBERJACK_MOCK', false),
         'identifier'    => env('LUMBERJACK_API_IDENTIFIER')
-    ),
+    ],
 
-    'harvester' => array(
+    'harvester' => [
         'url'               => env('HARVESTER_URL'),
         'secret'            => env('HARVESTER_SECRET'),
         'mock'              => env('HARVESTER_MOCK', false),
         'identifier'        => env('HARVESTER_API_IDENTIFIER'),
         'analytics_token'   => env('HARVESTER_ANALYTICS_TOKEN'),
-    ),
+    ],
 
-    'elfin' => array(
+    'elfin' => [
         'mock'     => env('ELFIN_MOCK', true),
         'services' => env('ELFIN_SERVICES', 'gimli,bitly'),
-        'gimli'    => array(
+        'gimli'    => [
             'secret'   => env('GIMLI_SECRET'),
             'base_url' => env('GIMLI_BASE_URL')
-        ),
-        'bitly'    => array(
+        ],
+        'bitly'    => [
             'secret'   => env('BITLY_ACCESS_TOKEN_PUBLIC'),
-        ),
+        ],
         'allow_fallback' => true,
-    ),
+    ],
 
-    'exchange'  => array(
+    'exchange'  => [
         'mock'      => env('EXCHANGE_MOCK', false),
         'url'       => env('EXCHANGE_URL'),
         'appId'     => env('EXCHANGE_APP_ID')
-    ),
+    ],
 
-    'zoho' => array(
+    'zoho' => [
         'header'    => env('ZOHO_HEADER'),
-    ),
+    ],
 
-    'drip' => array(
+    'drip' => [
         'mock'      => env('DRIP_MOCK', false),
         'url'       => env('DRIP_URL'),
         'accountId' => env('DRIP_ACCOUNT_ID'),
         'token'     => env('DRIP_TOKEN')
-    ),
+    ],
 
-    'gateway_downtime' => array(
-        'statuscake' => array(
+    'gateway_downtime' => [
+        'statuscake' => [
             'username' => env('STATUSCAKE_USERNAME'),
             'api_key'  => env('STATUSCAKE_API_KEY')
-        )
-    ),
+        ]
+    ],
     //
     // Configuration for one of the internal applications allowed
     // access to select routes of APIs.
@@ -151,8 +151,8 @@ return array(
     // Configuration(URL and basic authentication details) for api to make
     // service calls to authentication service.
     //
-    'api_auth_service' => array(
+    'api_auth_service' => [
         'url'       => env('AUTH_SERVICE_URL'),
         'secret'    => env('AUTH_SERVICE_SECRET'),
-    ),
-);
+    ],
+];
