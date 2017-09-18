@@ -372,8 +372,20 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateNonZeroInputSizeInBulkCreate($input)
+    {
+        if (count($input['rules']) === 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PRICING_BULK_CREATE,
+                null,
+                $input);
+        }
+    }
+
     protected function between($n, $min, $max)
     {
         return (($min < $n) and ($n < $max));
     }
+
 }
