@@ -52,7 +52,7 @@ class MerchantAnalyticsTest extends TestCase
         $testData['request']['url'] = '/merchant/10000000000000/analytics';
 
         // For validations
-        $testData['request']['content']['query']['filters']['default'][0]['merchant_id'] = '10000000000000';
+        $testData['request']['content']['filters']['default'][0]['merchant_id'] = '10000000000000';
 
         return $testData;
     }

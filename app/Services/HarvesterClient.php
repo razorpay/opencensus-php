@@ -112,7 +112,7 @@ class HarvesterClient extends AbstractEventClient
         $request = [
             'url'           => $this->queryBaseUrl . $urlPath,
             'method'        => 'POST',
-            'content'       => $data,
+            'content'       => json_encode($data),
             'content-type'  => 'application/json',
             ];
 
@@ -160,9 +160,9 @@ class HarvesterClient extends AbstractEventClient
         return $response;
     }
 
-    protected function checkErrors($urlPath, $data, Response $response)
+    protected function checkErrors($urlPath, $data, $response)
     {
-        if ($response->status_code != 200)
+        if (($response != null) and ($response->status_code != 200))
         {
             $this->trace->error(
                 TraceCode::HARVESTER_FAILURE,
