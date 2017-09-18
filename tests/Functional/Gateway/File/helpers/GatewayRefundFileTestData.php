@@ -39,6 +39,39 @@ return [
         ]
     ],
 
+    'testProcessRefundFileAsync' => [
+        'request' => [
+            'content' => [
+                'type'    => 'refund',
+                'targets' => ['hdfc'],
+                'begin'   => Carbon::today(Timezone::IST)->timestamp,
+                'end'     => Carbon::tomorrow(Timezone::IST)->timestamp
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'created',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 0,
+                        'sender'              => 'refunds@razorpay.com',
+                        'type'                => 'refund',
+                        'target'              => 'hdfc',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ]
+                ]
+            ]
+        ]
+    ],
+
     'testProcessGatewayFileWithInvalidType' => [
         'request' => [
             'content' => [

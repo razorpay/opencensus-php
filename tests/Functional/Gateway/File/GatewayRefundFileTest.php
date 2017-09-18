@@ -3,6 +3,7 @@
 namespace RZP\Functional\Gateway\File;
 
 use Mail;
+use Queue;
 use Excel;
 use Mockery;
 use Carbon\Carbon;
@@ -10,6 +11,7 @@ use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
 use RZP\Models\Payment\Gateway;
 use RZP\Tests\Functional\TestCase;
+use RZP\Jobs\GatewayFile as GatewayFileJob;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Mail\Gateway\RefundFile\Constants as RefundFileMailConstants;
@@ -60,6 +62,27 @@ class GatewayRefundFileTest extends TestCase
         $this->assertArraySelectiveEquals($expectedFileContent, $file);
 
         Mail::assertSent(RefundFileMail::class);
+    }
+
+    public function testProcessRefundFileAsync()
+    {
+        $this->fixtures->create('terminal:shared_netbanking_hdfc_terminal');
+
+        $payment = $this->getDefaultNetbankingPaymentArray('HDFC');
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $refund = $this->refundPayment($payment['id']);
+
+        Queue::fake();
+
+        $this->ba->cronAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        Queue::assertPushed(GatewayFileJob::class);
     }
 
     public function testProcessGatewayFileWithInvalidType()
