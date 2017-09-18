@@ -684,3 +684,7 @@ DELETE from merchant_users
     WHERE user_id = '68AQH6PenuCx9Y'
         AND merchant_id = '4Exx6ZgWrvFHZL'
         AND role = 'manager';
+
+# Update refund for processing
+# https://razorpay.slack.com/archives/C0SG9Q7TM/p1505719892000263
+UPDATE refunds SET status = "failed", gateway_refunded = "0" WHERE id = "87eSYBPtCyTapi" and status = "processed";
