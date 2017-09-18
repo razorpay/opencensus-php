@@ -73,7 +73,14 @@ class Service extends Base\Service
         try
         {
             // This is password based login
-            $data = $this->api->admin->passwordLogin($input)->toArray();
+            $requestConfig = [
+                'route_name'   => 'admin_authentication',
+                'query_params' => $input,
+            ];
+
+            $genericService = new Generic\Service;
+
+            list($error, $data) = $genericService->call('POST', $requestConfig);
 
             Session::put(config('auth.guards.api.session_key'), $data);
         }
@@ -1393,7 +1400,13 @@ class Service extends Base\Service
 
         try
         {
-            $data = $this->api->admin->logout();
+            $requestConfig = [
+                'route_name' => 'admin_logout',
+            ];
+
+            $genericService = new Generic\Service;
+
+            list($error, $data) = $genericService->call('POST', $requestConfig);
 
             // Dashboard logout
             Auth::guard('api')->logout();

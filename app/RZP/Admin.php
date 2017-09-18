@@ -36,13 +36,6 @@ class Admin extends Entity
         return $this->request('GET', $relativeUrl);
     }
 
-    public function logout()
-    {
-        $relativeUrl = "admin/logout";
-
-        return $this->request('POST', $relativeUrl);
-    }
-
     public function makeReconciliateRequest($input, $mode = 'live')
     {
         // Makes a guzzle file request
@@ -183,13 +176,6 @@ class Admin extends Entity
         $className = substr($fullClassName, $pos + 1);
         $className = lcfirst($className);
         return $className.'/';
-    }
-
-    public function passwordLogin(array $params)
-    {
-        $relativeUrl = "admin/authenticate";
-
-        return $this->request('POST', $relativeUrl, $params);
     }
 
     public function oAuthLogin(array $params)

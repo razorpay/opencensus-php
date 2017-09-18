@@ -35,6 +35,7 @@ return [
         'admin_delete'                      => 'admin/{adminId}',
         'admin_create'                      => 'admins',
         'admin_get_app_auth'                => 'current_admin',
+        'admin_logout'                      => 'admin/logout',
 
         // AuditLog
         'auditlog_search'                   => 'auditlog/search',
@@ -586,6 +587,8 @@ return [
 
         // Make test payment for Virtual Account
         'bank_transfer_process'             => 'ecollect/validate',
+
+        'admin_authentication'              => 'admin/authenticate',
     ],
 
     // auth
