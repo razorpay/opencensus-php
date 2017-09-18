@@ -127,7 +127,7 @@ return [
         'entity'               => 'wallet'
     ],
 
-    'testVerifyFailedPayment'   => [
+    'testAuthFailedVerifySuccessPayment' => [
         'response' => [
             'content' => [
                 'error' => [
@@ -158,4 +158,10 @@ return [
             'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR
         ],
     ],
+
+    'testAuthFailedVerifyFailurePayment' => [
+        'status'        => 'failed',
+        'wallet'        => 'sbibuddy',
+        'gateway'       => 'wallet_sbibuddy'
+    ]
 ];

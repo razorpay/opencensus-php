@@ -36,7 +36,6 @@ return [
         'netbanking_pnb',
         'sharp',
         'wallet_olamoney',
-        'upi_idfc',
         'upi_icici',
         'upi_mindgate',
         'upi_npci',
@@ -84,7 +83,6 @@ return [
     'mock_wallet_sbibuddy'        => env('SBIBUDDY_MOCK'),
     'mock_upi_mindgate'           => env('UPI_MINDGATE_MOCK'),
     'mock_upi_icici'              => env('UPI_ICICI_MOCK'),
-    'mock_upi_idfc'               => env('UPI_IDFC_MOCK'),
     'mock_upi_npci'               => env('UPI_NPCI_MOCK'),
     'mock_aeps_icici'             => env('AEPS_ICICI_MOCK'),
     'mock_wallet_freecharge'      => env('FREECHARGE_MOCK'),
@@ -203,14 +201,6 @@ return [
 
     'aeps_icici' => [
         'terminal_id'           => env('AEPS_TERMINAL_ID'),
-    ],
-
-    'upi_idfc' => [
-    ],
-
-    'upi_idfc'  => [
-        'test_kek'               => env('UPI_IDFC_TEST_KEK'),
-        'test_password'          => env('UPI_IDFC_TEST_PASSWORD'),
     ],
 
     'upi_npci' => [

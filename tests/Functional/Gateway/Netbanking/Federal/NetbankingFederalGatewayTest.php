@@ -260,10 +260,14 @@ class NetbankingFederalGatewayTest extends TestCase
          $this->mockServerContentFunction(
              function(& $content, $action = null) use ($status)
              {
-                $content .= "\n" . $content;
+                 $content = explode("\n", $content);
+                 
+                 unset($content[1]);
+                 $content = $content[0];
 
-                $content[strlen($content) - 1] = $status;
-                $content .= "\n\u0000\u0000\u0000\u0000\u0000";
+                 $content .= "\n" . $content;
+
+                 $content[strlen($content) - 1] = $status;
              });
      }
 
@@ -389,7 +393,7 @@ class NetbankingFederalGatewayTest extends TestCase
         {
             if ($action === 'verify')
             {
-                $content = '||||';
+                $content = "||||";
             }
         });
     }
