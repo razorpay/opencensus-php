@@ -178,6 +178,9 @@ class ReconciliationTest extends TestCase
     public function testRetryRecon()
     {
         $settlement = $this->testReconciliationFailure();
+
+        $firstAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
         $oldBatchFundTransferId = $settlement['batch_fund_transfer_id'];
 
         $content = $this->retryIntiateSettlements([$settlement['id']]);
@@ -200,7 +203,7 @@ class ReconciliationTest extends TestCase
         $content = $this->getEntities('file_store', [], true);
         $this->assertSame($content['count'], 4);
 
-        $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile);
+        $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile, false, $firstAttempt['id']);
 
         // Reconcile settlements
         $data = $this->reconcileSettlements($setlReconciliationFile);

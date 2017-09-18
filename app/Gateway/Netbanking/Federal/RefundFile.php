@@ -64,10 +64,21 @@ class RefundFile extends Base\RefundFile
                     Timezone::IST)
                     ->format('Y-d-m');
 
+            $netbanking = $this->repo->netbanking->findByPaymentIdAndAction($row['payment']['id'], Action::AUTHORIZE);
+
+            $prn = $row['payment']['id'];
+
+            if ($netbanking->isTpv() === true)
+            {
+                $accountNumber = $netbanking->getAccountNumber();
+
+                $prn .= '.' . $accountNumber;
+            }
+
             $data[] = [
                 'Payee ID'      => $row['terminal']['gateway_merchant_id'],
                 'Date'          => $date,
-                'PRN'           => $row['payment']['id'],
+                'PRN'           => $prn,
                 'FREEFIELD'     => Constants::FREEFIELD,
                 'BID'           => $row['gateway']['bank_payment_id'],
                 'TXN Amount'    => $row['payment']['amount'] / 100,

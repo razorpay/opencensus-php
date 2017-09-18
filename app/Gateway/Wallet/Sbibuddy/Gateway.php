@@ -393,8 +393,11 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
-        // If the amount from verify does not match the amount in our payment entity
-        if ($this->formatAmount($input['payment'][Payment::AMOUNT]) !== $content[ResponseFields::AMOUNT])
+        // If the verify status is success, we need to check the amount from verify response
+        // And if the amount from verify does not match the amount in our payment entity,
+        // we should throw amount mismatch critical error
+        if (($verify->gatewaySuccess === true) and
+            ($this->formatAmount($input['payment'][Payment::AMOUNT]) !== $content[ResponseFields::AMOUNT]))
         {
             $verify->amountMismatch = true;
         }

@@ -5,7 +5,6 @@ namespace RZP\Models\Payment\Processor;
 class Upi
 {
     const ICICI     = 'icici';
-    const IDFC      = 'idfc';
     const HDFC      = 'hdfc';
 
     public static $fullName = array(

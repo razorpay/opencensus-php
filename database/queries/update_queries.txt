@@ -659,6 +659,12 @@ WHERE (merchant_invoice.gstin IS NULL OR merchant_invoice.gstin = '')
     AND merchant_details.p_gstin IS NOT NULL
     AND merchant_details.p_gstin != '';
 
+UPDATE settlements SET utr = 'KKBK172481505881'
+WHERE id = '8ZcBkIirxzto8C';
+
+UPDATE fund_transfer_attempts SET utr = 'KKBK172481505881'
+WHERE source_id = '8ZcBkIirxzto8C' AND utr IS NULL;
+
 # Data correction for FirstData terminal tokens
 UPDATE tokens SET terminal_id = '7Y30j1EY3JG8ob'
     WHERE terminal_id = '7bOl7tgaZ5kWvf'
@@ -672,3 +678,9 @@ UPDATE offers SET payment_network = NULL WHERE payment_method != 'card';
 # Netbanking Federal terminal supports both tpv and non tpv
 UPDATE terminals SET tpv = '2' WHERE gateway = 'netbanking_federal' AND
     id = '7j1qFPcYQhXbsk';
+
+# Data correction for merchant_users mapping
+DELETE from merchant_users
+    WHERE user_id = '68AQH6PenuCx9Y'
+        AND merchant_id = '4Exx6ZgWrvFHZL'
+        AND role = 'manager';

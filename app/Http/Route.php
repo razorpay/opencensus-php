@@ -273,6 +273,7 @@ final class Route
         'mock_wallet_payment_with_paymentid'      => ['post',     'gateway/mock/wallet/{wallet}/{paymentId}',       'MockGatewayController@walletPayment'                               ],
         'mock_generate_reconciliation'            => ['post',     'gateway/mock/reconciliation/{bank}',             'MockGatewayController@generateNetbankingReconciliation'            ],
         'mock_upi_payment'                        => ['post',     'gateway/mock/upi/{bank}',                        'MockGatewayController@postUpiPayment'                              ],
+        'admin_fetch_all_entities'                => ['get',      'admin/entities/all',                             'AdminController@getEntities'                                       ],
         'admin_fetch_entity_multiple'             => ['get',      'admin/{type}',                                   'AdminController@getEntityMultiple'                                 ],
         'admin_fetch_terminal_by_id'              => ['get',      'admin/terminal/{id}',                            'AdminController@getTerminalById'                                   ],
         'admin_fetch_entity_by_id'                => ['get',      'admin/{type}/{id}',                              'AdminController@getEntityById'                                     ],
@@ -802,6 +803,7 @@ final class Route
     ];
 
     public static $internal = [
+        'admin_fetch_all_entities',
         'admin_fetch_entity_multiple',
         'admin_fetch_terminal_by_id',
         'admin_fetch_entity_by_id',
@@ -1260,6 +1262,7 @@ final class Route
         'admin_fetch_terminal_by_id'       => '*',
         'merchants_update_hold_funds'      => Permission::EDIT_BULK_MERCHANT_HOLD_FUNDS,
         'schedule_fetch_multiple'          => Permission::SCHEDULE_FETCH_MULTIPLE,
+        'admin_fetch_all_entities'         => '*',
         'admin_fetch_entity_multiple'      => '*',
         'payment_authorize_refund'         => Permission::EDIT_AUTHORIZED_REFUND_PAYMENT,
         'payment_fetch_refunds'            => Permission::VIEW_REFUND_PAYMENTS,
