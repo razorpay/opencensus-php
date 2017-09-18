@@ -948,7 +948,26 @@ trait Authorize
                 ]);
         }
 
+        $this->validateTokenRecurringStatus($token, $payment);
+
         $this->validateTokenMaxAmount($token, $payment);
+    }
+
+    protected function validateTokenRecurringStatus(Token\Entity $token, Payment\Entity $payment)
+    {
+        if ($payment->isSecondRecurring())
+        {
+            if ($token->getRecurringStatus() !== Token\RecurringStatus::CONFIRMED)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_NB_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING,
+                    Payment\Entity::BANK,
+                        [
+                             'payment' => $payment->toArray(),
+                             'token'   => $token->toArray(),
+                        ]);
+            }
+        }
     }
 
     protected function validateTokenMaxAmount(Token\Entity $token, Payment\Entity $payment)
