@@ -124,7 +124,7 @@ trait GenerateRefundFile
             $this->trace->traceException(
                             $e,
                             Trace::INFO,
-                            TraceCode::GATEWAY_FILE_FILE_GEN_ERROR,
+                            TraceCode::GATEWAY_FILE_ERROR_GENERATING_FILE,
                             [
                                 'id' => $this->gatewayFile->getId()
                             ]);
@@ -155,7 +155,7 @@ trait GenerateRefundFile
             $this->trace->traceException(
                             $e,
                             Trace::INFO,
-                            TraceCode::GATEWAY_FILE_FILE_SEND_ERROR,
+                            TraceCode::GATEWAY_FILE_ERROR_SENDING_FILE,
                             [
                                 'id' => $this->gatewayFile->getId()
                             ]);

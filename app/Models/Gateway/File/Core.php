@@ -32,7 +32,7 @@ class Core extends Base\Core
             $gatewayFiles->push($gatewayFile);
 
             // If the request is made via cron, we do the processing
-            // asynchronously via queue, else we do  it in sync
+            // asynchronously via queue, else we do it in sync
             if ($this->app['basicauth']->isCron() === true)
             {
                 $this->processAsync($gatewayFile);
