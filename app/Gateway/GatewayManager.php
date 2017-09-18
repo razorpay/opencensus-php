@@ -36,6 +36,9 @@ class GatewayManager extends \Illuminate\Support\Manager
 
         $gateway->setGatewayParams($input, $mode, $terminal);
 
+        // Validate action
+        Payment\Action::validateAction($action);
+
         // Laravel helper function converts snake case to camel case
         $action = camel_case($action);
 
