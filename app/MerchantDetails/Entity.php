@@ -245,19 +245,6 @@ class Entity extends Base\Entity
         );
     }
 
-    public static function getFileUploadData($input)
-    {
-        // Make sure that field is never filled
-        // using user input
-        $field = self::UPLOAD_KEYS[key($input)];
-
-        return [
-            'key'   => key($input),
-            'file'  => current($input),
-            'field' => $field
-        ];
-    }
-
     public function checkUploadedFiles($isAccount = false)
     {
         $error = array();

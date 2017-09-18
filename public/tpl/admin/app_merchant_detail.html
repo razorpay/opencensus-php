@@ -49,7 +49,8 @@
           Disable International <i class="pull-right fa fa-globe"></i>
         </a>
         <a href class="list-group-item"
-           dynamic-tooltip="edit_merchant_hold_funds" ng-show="merchant.details.hold_funds==0 && admin.permissions.indexOf('edit_merchant_hold_funds') !== -1"
+           dynamic-tooltip="edit_merchant_hold_funds" ng-show="merchant.details.activated==1 &&
+           merchant.details.hold_funds==0 && admin.permissions.indexOf('edit_merchant_hold_funds') !== -1"
            ng-confirm-click="Are you sure you want to hold funds for this merchant?"
            ng-click="holdMerchantFunds()"
         >
@@ -653,7 +654,7 @@
                   <tbody ng-repeat="filteredKey in ['undeleted_enabled', 'undeleted_disabled', 'deleted']">
                   <tr ng-repeat="terminal in terminals[filteredKey]">
                     <td>
-                      <a target="_blank" ui-sref="app.entitiesdetail({type:'terminal', id: terminal.id, mode: terminal.mode})">
+                      <a target="_blank" ui-sref="app.entitiesdetail({type:'terminal', id: terminal.id, mode: terminal.entity_mode})">
                         <code>{{terminal.id}}</code>
                       </a>
                     </td>
@@ -985,6 +986,7 @@
              <option value="first_data">FirstData</option>
              <option value="kotak">Kotak</option>
              <option value="netbanking_hdfc">Netbanking HDFC</option>
+             <option value="netbanking_corp">Netbanking Corporation</option>
              <option value="netbanking_kotak">Netbanking KOTAK</option>
              <option value="netbanking_axis">Netbanking AXIS</option>
              <option value="netbanking_airtel">Netbanking AIRTEL</option>
