@@ -904,4 +904,12 @@ class AdminTest extends TestCase
 
         $this->makeRequestAndGetContent($request);
     }
+
+    public function testAdminAllEntitiesApi()
+    {
+        $result = $this->startTest();
+
+        $this->assertCount(7, $result['fields']);
+        $this->assertCount(117, $result['entities']);
+    }
 }

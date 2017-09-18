@@ -9,6 +9,10 @@ class Repository extends Base\Repository
 {
     protected $entity = 'transfer';
 
+    protected $expands = [
+        Entity::TO,
+    ];
+
     protected $entityFetchParamRules = [
         Entity::RECIPIENT           => 'sometimes|string|max:20',
         self::EXPAND . '.*'         => 'string|in:recipient_settlement,',

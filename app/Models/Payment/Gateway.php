@@ -40,7 +40,6 @@ class Gateway
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
     const UPI_ICICI              = 'upi_icici';
-    const UPI_IDFC               = 'upi_idfc';
     const AEPS_ICICI             = 'aeps_icici';
 
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
@@ -238,7 +237,6 @@ class Gateway
         Method::UPI => [
             self::UPI_MINDGATE,
             self::UPI_ICICI,
-            self::UPI_IDFC,
         ],
 
         Method::AEPS => [
@@ -302,7 +300,6 @@ class Gateway
     public static $asynchronous = [
         self::UPI_MINDGATE,
         self::UPI_ICICI,
-        self::UPI_IDFC,
         self::SHARP,
     ];
 
@@ -383,7 +380,6 @@ class Gateway
     public static $upiToGatewayMap = [
         Upi::HDFC   => Gateway::UPI_MINDGATE,
         Upi::ICICI  => Gateway::UPI_ICICI,
-        Upi::IDFC   => Gateway::UPI_IDFC,
     ];
 
     public static $acquirerToCodeMap = [
@@ -427,7 +423,6 @@ class Gateway
         self::WALLET_SBIBUDDY,
         self::WALLET_MPESA,
         self::UPI_ICICI,
-        self::UPI_IDFC,
     ];
 
     public static $verifyDisabled = [

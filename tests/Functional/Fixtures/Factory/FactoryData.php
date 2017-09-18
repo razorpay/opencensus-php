@@ -818,5 +818,11 @@ final class FactoryData
             'id'                => $faker->uniqueid,
             'name'              => \RZP\Models\Workflow\Action\State\Entity::OPEN,
         ]);
+
+        $factory(\RZP\Models\Gateway\File\Entity::class, [
+            'id'         => $faker->uniqueid,
+            'created_at' => $faker->timestamp,
+            'updated_at' => $faker->timestamp,
+        ]);
     }
 }
