@@ -2,13 +2,15 @@
 
 namespace RZP\Tests\Functional\Gateway\Wallet\Freecharge;
 
+use Carbon\Carbon;
+
+use RZP\Http\Route;
+use RZP\Gateway\Wallet;
+use RZP\Gateway\Wallet\Base\Otp;
+use RZP\Gateway\Wallet\Freecharge\Mock\Server as MockServer;
+use RZP\Models\Payment\Refund;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
-use RZP\Gateway\Wallet;
-use RZP\Models\Payment\Refund;
-use RZP\Gateway\Wallet\Base\Otp;
-use Carbon\Carbon;
-use RZP\Http\Route;
 
 class FreechargeGatewayTest extends TestCase
 {
@@ -566,7 +568,11 @@ class FreechargeGatewayTest extends TestCase
     {
         $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
 
-        $payment['contact'] = '9999123456';
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            $server = new MockServer();
+            $content = $server->getErrorResponse('E018');
+        });
 
         $data = $this->testData[__FUNCTION__];
 
