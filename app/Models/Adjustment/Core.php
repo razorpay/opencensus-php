@@ -334,6 +334,8 @@ class Core extends Base\Core
 
     protected function createAdjEntityAndSetWorkflow($adjInput, $merchant): Entity
     {
+        unset($adjInput[MerchantInvoice\Entity::FEES]);
+
         $adj = (new Adjustment\Entity)->build($adjInput);
 
         $this->app['workflow']
