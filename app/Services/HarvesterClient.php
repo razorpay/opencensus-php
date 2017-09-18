@@ -114,7 +114,7 @@ class HarvesterClient extends AbstractEventClient
             'method'        => 'POST',
             'content'       => json_encode($data),
             'content-type'  => 'application/json',
-            ];
+        ];
 
         $headers = [
             'x-signature'   => $this->accessToken,

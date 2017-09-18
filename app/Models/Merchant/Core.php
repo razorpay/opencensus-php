@@ -400,7 +400,6 @@ class Core extends Base\Core
         }
     }
 
-
     /**
      * If a merchant user has a role as owner and has confirm_token set to null
      * then the user will be considered as a confirmed owner.
