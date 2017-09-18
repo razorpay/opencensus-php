@@ -103,6 +103,11 @@ class RowProcessor extends Base\RowProcessor
 
     protected function updateSourceEntity()
     {
+        if ($this->source->getBatchFundTransferId() !== $this->reconEntity->getBatchFundTransferId())
+        {
+            return;
+        }
+
         $sourceStatus = $this->getSourceStatusFromReconEntityStatus();
 
         $this->source->setStatus($sourceStatus);
