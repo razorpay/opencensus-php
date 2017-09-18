@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Adjustment;
 
-use DB;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Dispute;
@@ -26,28 +25,6 @@ class Core extends Base\Core
                 'merchant' => $merchant->getId()
             ]);
 
-        $adj = (new Adjustment\Entity)->build($input);
-
-        // Workflow
-        $this->app['workflow']
-             ->setEntityAndId($adj->getEntity(), $merchant->getId())
-             ->handle((new \stdClass), $adj);
-
-        return $this->transaction([$this, 'createAdjInTransaction'], $adj, $merchant);
-    }
-
-    public function createFeesAdjustment(array $input, Merchant\Entity $merchant): Entity
-    {
-        $this->trace->info(
-            TraceCode::FEE_ADJUSTMENT_CREATE_REQUEST,
-            [
-                'input' => $input,
-                'merchant' => $merchant->getId()
-            ]);
-
-        (new Validator)->validateInput('fee_adjustment', $input);
-
-        // Create input for adjustment
         $adjInput = $input;
 
         $amount = $adjInput[Entity::AMOUNT] ?? 0;
@@ -58,17 +35,24 @@ class Core extends Base\Core
 
         $adjInput[Entity::AMOUNT] = $amount + $tax + $fees;
 
-        $adj = (new Adjustment\Entity)->build($adjInput);
-
-        // Workflow
-        $this->app['workflow']
-             ->setEntityAndId($adj->getEntity(), $merchant->getId())
-             ->handle((new \stdClass), $adj);
-
-        // 1. Create adjustment
-        // 2. Create Invoice entity for adjustment
-        if($tax != 0 or $fees != 0)
+        if ($amount > 0 and $tax == 0 and $fees == 0)
         {
+            $adj = (new Adjustment\Entity)->build($adjInput);
+
+            $this->app['workflow']
+                ->setEntityAndId($adj->getEntity(), $merchant->getId())
+                ->handle((new \stdClass), $adj);
+
+            return $this->transaction([$this, 'createAdjInTransaction'], $adj, $merchant);
+        }
+        elseif ($amount == 0 and ($tax > 0 or $fees > 0))
+        {
+            $adj = (new Adjustment\Entity)->build($adjInput);
+
+            $this->app['workflow']
+                ->setEntityAndId($adj->getEntity(), $merchant->getId())
+                ->handle((new \stdClass), $adj);
+
             $adjustment = $this->repo->transaction(function () use ($adj, $merchant, $input) {
                 $adjustment = $this->createAdjInTransaction($adj, $merchant);
 
@@ -80,8 +64,9 @@ class Core extends Base\Core
         }
         else
         {
-            return $this->transaction([$this, 'createAdjInTransaction'], $adj, $merchant);
+            throw new Exception\BadRequestValidationFailureException('Either amount OR tax/fees should be passed');
         }
+
     }
 
     public function createDisputeAdjustment(array $input, Dispute\Entity $dispute): Entity
