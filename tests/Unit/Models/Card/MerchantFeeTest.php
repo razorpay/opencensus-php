@@ -730,11 +730,6 @@ class MerchantFeeTest extends TestCase
 
             list($fee, $tax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 
-            s($data);
-            s($fee);
-            s($tax);
-            s($feesSplit->toArray());
-
             $this->assertFeesAndTax(
                 $fee, $tax, $feesSplit->toArray(),
                 $data['fee'], $data['tax'], $data['fee_components']);
@@ -747,8 +742,6 @@ class MerchantFeeTest extends TestCase
 
         foreach ($this->testData[__FUNCTION__] as $data)
         {
-            s($data);
-            s($data['tax']);
             $this->runFeeTestWithMaxFeeForCard($data['amount'],
                                                 $data['card_type'],
                                                 $data['fee'],
