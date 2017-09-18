@@ -35,11 +35,11 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function updateGstin(string $merchantId, string $invoiceNo, string $gstin)
+    public function fetchByInvoiceNumber(string $merchantId, string $invoiceNo)
     {
         return $this->newQuery()
                     ->merchantId($merchantId)
                     ->where(Entity::INVOICE_NUMBER, '=', $invoiceNo)
-                    ->update([Entity::GSTIN => $gstin]);
+                    ->get();
     }
 }
