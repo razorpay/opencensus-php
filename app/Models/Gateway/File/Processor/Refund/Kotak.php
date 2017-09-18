@@ -59,9 +59,9 @@ class Kotak extends Processor\Base
         return $formattedData;
     }
 
-    public function sendMail()
+    public function sendFile()
     {
-        ;
+        return;
     }
 
 

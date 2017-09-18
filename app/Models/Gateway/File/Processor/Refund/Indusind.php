@@ -58,8 +58,8 @@ class Indusind extends Processor\Base
         return static::FILE_NAME . $time;
     }
 
-    public function sendMail()
+    public function sendFile()
     {
-        ;
+        return;
     }
 }

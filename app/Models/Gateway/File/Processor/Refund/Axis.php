@@ -64,9 +64,9 @@ class Axis extends Processor\Base
         return $formattedData;
     }
 
-    public function sendMail()
+    public function sendFile()
     {
-        return ;
+        return;
     }
 
     protected function getFileToWriteNameWithoutExt()

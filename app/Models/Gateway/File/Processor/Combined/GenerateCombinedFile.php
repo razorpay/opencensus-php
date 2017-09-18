@@ -90,7 +90,7 @@ trait GenerateCombinedFile
         }
     }
 
-    public function sendMail()
+    public function sendFile()
     {
         try
         {
@@ -100,22 +100,22 @@ trait GenerateCombinedFile
 
             Mail::send($dailyFileMail);
 
-            $this->gatewayFile->setMailSentAt(time());
+            $this->gatewayFile->setFileSentAt(time());
 
-            $this->gatewayFile->setStatus(Status::MAIL_SENT);
+            $this->gatewayFile->setStatus(Status::FILE_SENT);
         }
         catch (\Throwable $e)
         {
             $this->trace->traceException(
                             $e,
                             Trace::INFO,
-                            TraceCode::GATEWAY_FILE_MAIL_SEND_ERROR,
+                            TraceCode::GATEWAY_FILE_FILE_SEND_ERROR,
                             [
                                 'id' => $this->gatewayFile->getId()
                             ]);
 
             throw new GatewayFileException(
-                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_MAIL);
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE);
         }
     }
 

@@ -176,7 +176,7 @@ trait GenerateClaimFile
         }
     }
 
-    public function sendMail()
+    public function sendFile()
     {
         return;
     }
