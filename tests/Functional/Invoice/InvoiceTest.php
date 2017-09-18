@@ -1969,8 +1969,8 @@ class InvoiceTest extends TestCase
         $this->createWebhook(['events' => ['invoice.expired' => '1']]);
 
         // Creates expire-able invoice
-        $yesterday = Carbon::yesterday();
-        $now       = Carbon::now();
+        $yesterday = Carbon::yesterday(Timezone::IST);
+        $now       = Carbon::now(Timezone::IST);
         $issuedAt  = $yesterday->timestamp;
         $expireBy  = $now->subSecond()->timestamp;
 

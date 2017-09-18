@@ -348,24 +348,30 @@ class ApiEventSubscriber extends Base\Core
 
     protected function getInvoicePayload(Invoice\Entity $invoice)
     {
-        return [Constants\Entity::INVOICE => ['entity' => $invoice->toArrayPublic()]];
+        $payload = [
+            Constants\Entity::INVOICE => [
+                'entity' => $invoice->toArrayPublic(),
+            ],
+        ];
+
+        return $payload;
     }
 
     protected function getInvoicePayloadWithPayment($payment)
     {
-        $order = $payment->order;
+        $order   = $payment->order;
         $invoice = $order->invoice;
 
         $partialPayload[Constants\Entity::PAYMENT] = [
-            'entity' => $payment->toArrayPublic()
+            'entity' => $payment->toArrayPublic(),
         ];
 
         $partialPayload[Constants\Entity::ORDER] = [
-            'entity' => $order->toArrayPublic()
+            'entity' => $order->toArrayPublic(),
         ];
 
         $partialPayload[Constants\Entity::INVOICE] = [
-            'entity' => $invoice->toArrayPublic()
+            'entity' => $invoice->toArrayPublic(),
         ];
 
         return $partialPayload;
@@ -375,8 +381,8 @@ class ApiEventSubscriber extends Base\Core
     {
         $payload = [
             Constants\Entity::PAYMENT => [
-                'entity' => $payment->toArrayPublic()
-            ]
+                'entity' => $payment->toArrayPublic(),
+            ],
         ];
 
         return $payload;

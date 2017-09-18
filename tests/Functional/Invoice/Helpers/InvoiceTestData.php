@@ -3005,7 +3005,7 @@ return [
             'content' => [
                 'total_invoices_count' => 1,
                 'failed_invoice_ids'   => [],
-                // 'time_taken'          : '1 secs'
+                // 'time_taken'           => '1 secs',
             ],
         ],
     ],

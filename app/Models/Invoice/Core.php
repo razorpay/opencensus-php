@@ -447,10 +447,6 @@ class Core extends Base\Core
         // Sends expiration mails to customer asynchronously
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
 
-        //
-        // Fires web hook event invoice.expired; We do this here instead of above
-        // ASYNC job because there can be state change during queue delay.
-        //
         $this->eventService->fire('api.invoice.expired', [$invoice]);
     }
 

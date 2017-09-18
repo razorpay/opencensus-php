@@ -112,7 +112,7 @@ class Event
         self::SUBSCRIPTION_CHARGED      => 13,
         self::SUBSCRIPTION_CANCELLED    => 14,
         self::SUBSCRIPTION_COMPLETED    => 15,
-        // self::SUBSCRIPTION_EXPIRED      => 15,
+        // self::SUBSCRIPTION_EXPIRED      => 16,
         self::INVOICE_EXPIRED           => 17,
     ];
 

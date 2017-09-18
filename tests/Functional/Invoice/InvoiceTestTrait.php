@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Invoice;
 use Closure;
 use Mockery;
 
+use RZP\Jobs;
 use RZP\Models\Merchant\Webhook\Inferno;
 
 trait InvoiceTestTrait
@@ -98,7 +99,7 @@ trait InvoiceTestTrait
 
         $inferno->shouldReceive('fire')
                 ->once()
-                ->with(Mockery::type('RZP\Jobs\WebHook'), Mockery::on($closure));
+                ->with(Mockery::type(Jobs\WebHook::class), Mockery::on($closure));
 
         $this->app->instance('webhook.inferno', $inferno);
     }
