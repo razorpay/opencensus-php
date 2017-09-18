@@ -11,8 +11,8 @@ return [
             'content' => [
                 'type'    => 'refund',
                 'targets' => ['hdfc'],
-                'begin'   => Carbon::today(Timezone::IST)->timestamp,
-                'end'     => Carbon::tomorrow(Timezone::IST)->timestamp
+                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp()
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -44,8 +44,8 @@ return [
             'content' => [
                 'type'    => 'refund',
                 'targets' => ['hdfc'],
-                'begin'   => Carbon::today(Timezone::IST)->timestamp,
-                'end'     => Carbon::tomorrow(Timezone::IST)->timestamp
+                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp()
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -77,8 +77,8 @@ return [
             'content' => [
                 'type'   => 'xyz',
                 'targets' => ['hdfc'],
-                'begin'   => Carbon::today(Timezone::IST)->timestamp,
-                'end'     => Carbon::tomorrow(Timezone::IST)->timestamp
+                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp()
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -103,8 +103,8 @@ return [
             'content' => [
                 'type'    => 'refund',
                 'targets' => ['kotak'],
-                'begin'    => Carbon::today(Timezone::IST)->timestamp,
-                'end'      => Carbon::tomorrow(Timezone::IST)->timestamp
+                'begin'    => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'      => Carbon::tomorrow(Timezone::IST)->getTimestamp()
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -129,8 +129,8 @@ return [
             'content' => [
                 'type'       => 'refund',
                 'targets'    => ['hdfc'],
-                'begin'      => Carbon::today(Timezone::IST)->timestamp,
-                'end'        => Carbon::tomorrow(Timezone::IST)->timestamp,
+                'begin'      => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'        => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
                 'recipients' => ['abc']
             ],
             'url' => '/gateway/files',
@@ -156,8 +156,8 @@ return [
             'content' => [
                 'type'    => 'refund',
                 'targets' => ['hdfc'],
-                'begin'   => Carbon::tomorrow(Timezone::IST)->timestamp,
-                'end'     => Carbon::tomorrow(Timezone::IST)->timestamp,
+                'begin'   => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -182,8 +182,8 @@ return [
             'content' => [
                 'type'    => 'refund',
                 'targets' => ['hdfc'],
-                'begin'   => Carbon::today(Timezone::IST)->timestamp,
-                'end'     => Carbon::yesterday(Timezone::IST)->timestamp,
+                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::yesterday(Timezone::IST)->getTimestamp(),
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -209,8 +209,8 @@ return [
                 'type'       => 'refund',
                 'targets'    => ['hdfc'],
                 'recipients' => ['test@razorpay.com'],
-                'begin'      => Carbon::today(Timezone::IST)->timestamp,
-                'end'        => Carbon::tomorrow(Timezone::IST)->timestamp
+                'begin'      => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'        => Carbon::tomorrow(Timezone::IST)->getTimestamp()
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -242,8 +242,8 @@ return [
             'content' => [
                 'type'    => 'refund',
                 'targets' => ['hdfc'],
-                'begin'   => Carbon::today(Timezone::IST)->timestamp,
-                'end'     => Carbon::tomorrow(Timezone::IST)->timestamp
+                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp()
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -275,8 +275,8 @@ return [
             'content' => [
                 'type'    => 'refund',
                 'targets' => ['hdfc'],
-                'begin'   => Carbon::today(Timezone::IST)->timestamp,
-                'end'     => Carbon::tomorrow(Timezone::IST)->timestamp
+                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp()
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -308,8 +308,8 @@ return [
             'content' => [
                 'type'    => 'refund',
                 'targets' => ['hdfc'],
-                'begin'   => Carbon::today(Timezone::IST)->timestamp,
-                'end'     => Carbon::tomorrow(Timezone::IST)->timestamp
+                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp()
             ],
             'url' => '/gateway/files',
             'method' => 'POST'
@@ -468,8 +468,8 @@ return [
         'request' => [
             'content' => [
                 'type'  => 'refund',
-                'begin' => Carbon::today(Timezone::IST)->timestamp,
-                'end'   => Carbon::tomorrow(Timezone::IST)->timestamp,
+                'begin' => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'   => Carbon::tomorrow(Timezone::IST)->getTimestamp(),
             ],
             'url' => '/gateway/files/',
             'method' => 'POST'

@@ -64,6 +64,10 @@ class ErrorCode
 
     const GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH                                   = 'GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH';
 
+    const GATEWAY_ERROR_PIN_CRYPTOGRAPHY_ERROR                                      = 'GATEWAY_ERROR_PIN_CRYPTOGRAPHY_ERROR';
+    const GATEWAY_ERROR_PIN_CHANGE_FAILED                                           = 'GATEWAY_ERROR_PIN_CHANGE_FAILED';
+    const GATEWAY_ERROR_SWITCH_UNOPERATIVE                                          = 'GATEWAY_ERROR_SWITCH_UNOPERATIVE';
+
     const GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST                                   = 'GATEWAY_ERROR_PAYMENT_DUPLICATE_REQUEST';
     const GATEWAY_ERROR_REFUND_DUPLICATE_REQUEST                                    = 'GATEWAY_ERROR_REFUND_DUPLICATE_REQUEST';
     const GATEWAY_ERROR_REFUND_NOT_ALLOWED_ON_THE_WALLET                            = 'GATEWAY_ERROR_REFUND_NOT_ALLOWED_ON_THE_WALLET';
@@ -101,7 +105,7 @@ class ErrorCode
 
     const GATEWAY_ERROR_CALLBACK_EMPTY_INPUT                                        = 'GATEWAY_ERROR_CALLBACK_EMPTY_INPUT';
 
-// Generic bad requests
+    // Generic bad requests
     const BAD_REQUEST_INVALID_ID                                                    = 'BAD_REQUEST_INVALID_ID';
     const BAD_REQUEST_INVALID_IDS                                                   = 'BAD_REQUEST_INVALID_IDS';
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                                  = 'BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN';
@@ -164,6 +168,7 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_CANCEL_ONLY_CREATED                                   = 'BAD_REQUEST_PAYMENT_CANCEL_ONLY_CREATED';
     const BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED                                     = 'BAD_REQUEST_PAYMENT_CARD_NOT_PROVIDED';
     const BAD_REQUEST_PAYMENT_CARD_CVV_NOT_PROVIDED                                 = 'BAD_REQUEST_PAYMENT_CARD_CVV_NOT_PROVIDED';
+    const BAD_REQUEST_PAYMENT_CARD_INVALID_PIN                                      = 'BAD_REQUEST_PAYMENT_CARD_INVALID_PIN';
     const BAD_REQUEST_PAYMENT_CARD_INVALID_CVV                                      = 'BAD_REQUEST_PAYMENT_CARD_INVALID_CVV';
     const BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED                     = 'BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED';
     const BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_NOT_AVAILABLE                     = 'BAD_REQUEST_PAYMENT_CARD_AUTHENTICATION_NOT_AVAILABLE';
