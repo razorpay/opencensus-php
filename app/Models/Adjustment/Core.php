@@ -31,20 +31,20 @@ class Core extends Base\Core
 
         $tax =  $adjInput[MerchantInvoice\Entity::TAX] ?? 0;
 
-        $fees = $adjInput[MerchantInvoice\Entity::FEES] ?? 0;
+        $fees = $adjInput[Adjustment\Entity::FEES] ?? 0;
 
         $adjInput[Entity::AMOUNT] = $amount + $tax + $fees;
 
         if (isset($adjInput[Entity::AMOUNT]) === true and
             isset($adjInput[MerchantInvoice\Entity::TAX]) === false and
-            isset($adjInput[MerchantInvoice\Entity::FEES]) === false)
+            isset($adjInput[Adjustment\Entity::FEES]) === false)
         {
             $adj = $this->createAdjEntityAndSetWorkflow($adjInput, $merchant);
 
             return $this->transaction([$this, 'createAdjInTransaction'], $adj, $merchant);
         }
         elseif ((isset($adjInput[Entity::AMOUNT]) === false) and
-            (isset($adjInput[MerchantInvoice\Entity::TAX]) or isset($adjInput[MerchantInvoice\Entity::FEES])) === true)
+            (isset($adjInput[MerchantInvoice\Entity::TAX]) or isset($adjInput[Adjustment\Entity::FEES])) === true)
         {
             $adj = $this->createAdjEntityAndSetWorkflow($adjInput, $merchant);
 
@@ -334,8 +334,8 @@ class Core extends Base\Core
 
     protected function createAdjEntityAndSetWorkflow($adjInput, $merchant): Entity
     {
-        unset($adjInput[MerchantInvoice\Entity::FEES]);
-
+        unset($adjInput[Adjustment\Entity::FEES]);
+        
         $adj = (new Adjustment\Entity)->build($adjInput);
 
         $this->app['workflow']

@@ -23,7 +23,6 @@ class Entity extends Base\PublicEntity
     const AMOUNT_DUE        = 'amount_due';
     const CREATED_AT        = 'created_at';
     const UPDATED_AT        = 'updated_at';
-    const FEES              = 'fees';
 
     protected $entity = 'merchant_invoice';
 
