@@ -988,7 +988,6 @@ final class Route
         'risk_get',
         'merchant_create_invoice_entities',
         'merchant_payout',
-        'merchant_batches',
     ];
 
     public static $proxy = [
@@ -1133,6 +1132,7 @@ final class Route
         'merchant_get_terminals',
         'merchant_invoice_add_bulk',
         'setl_retry',
+        'merchant_batches',
     ];
 
     public static $routePermission = [
@@ -1254,6 +1254,7 @@ final class Route
         'merchant_invoice_update_gstin'    => '*',
         'merchant_details_fetch'           => '*',
         'setl_retry'                       => Permission::RETRY_SETTLEMENT,
+        'merchant_batches'                 => Permission::MERCHANT_BATCH_UPLOAD,
         'merchant_invoice_add_bulk'        => '*',
     ];
 
