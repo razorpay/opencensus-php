@@ -2,6 +2,9 @@
 
 namespace RZP\Gateway\Base;
 
+use Crypt;
+use Cache;
+use RZP\Models\Card;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -33,6 +36,12 @@ class Gateway
      * @var integer
      */
     const OTP_ATTEMPTS_LIMIT = 3;
+
+    /**
+     * Number of minutes that the cache key will be stored
+     * @var integer
+     */
+    const CACHE_TTL = 15;
 
     /**
      * In gateway responses one particular field contains
