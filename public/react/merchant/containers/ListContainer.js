@@ -45,7 +45,9 @@ export default class ListContainer extends Component {
     }
 
     // props.fetchAll is available only when model is implemented. Addons doesn't have model hence calling 'fetchList' class fn.
-    if (this.props.fetchAll || this.fetchEntityList) {
+    if (!this.props.fetchAll && this.fetchList) {
+      this.fetchList(params);
+    } else if (this.props.fetchAll || this.fetchEntityList) {
       return this.fetchEntityList(params)
         .then(() => {
           this.setState({
@@ -63,8 +65,6 @@ export default class ListContainer extends Component {
             },
           });
         });
-    } else if (this.fetchList) {
-      this.fetchList(params);
     }
   };
 
