@@ -163,6 +163,8 @@ export default ({
                   onManualAttempt={onManualAttempt}
                   subscriptionStatus={subscription.status}
                   subscriptionType={subscription.type}
+                  subscriptionchargeAt={subscription.charge_at}
+                  authAttempts={subscription.auth_attempts}
                 />
 
                 <NestedEntityDetailRow

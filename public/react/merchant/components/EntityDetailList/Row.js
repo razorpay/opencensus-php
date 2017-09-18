@@ -13,6 +13,8 @@ export default props => {
     loading,
     activeSecEntityId,
     subscriptionStatus,
+    authAttempts,
+    subscriptionchargeAt,
     onManualAttempt,
     isUpfront,
   } = props;
@@ -28,16 +30,19 @@ export default props => {
   );
 
   //TODO: Get from api
-  item.attempts = 1;
   item.next_try = 4;
 
   let retryingText;
 
-  if (true || item.status === 'issued') {
+  // To b shown only for latest issued invoice. As per authAttempts condition calc in parent componen
+  if (item.status === 'issued' && authAttempts) {
     if (subscriptionStatus === 'halted') {
-      retryingText = 'No retrying automatically. ';
-    } else if (true || subscriptionStatus === 'pending') {
-      retryingText = `Retrying in ${item.next_try} Hours. `; // TODO: Calculate the time remaining
+      retryingText = 'Not retrying automatically. ';
+    } else if (subscriptionStatus === 'pending') {
+      let timeDiff =
+        subscriptionchargeAt - Math.round(new Date().getTime() / 1000);
+      timeDiff = Math.ceil(timeDiff / (3600 * 24));
+      retryingText = `Retrying in ${timeDiff} days. `;
     }
   }
 
@@ -99,10 +104,14 @@ export default props => {
           retryingText && [
             <span key="info" class="text-danger">
               <i class="icon icon-info-circle" />{' '}
-              {item.attempts > 1
-                ? item.attempts + ' charge attempts '
-                : item.attempts + ' charge attempt'}{' '}
-              failed.
+              {
+                <span>
+                  {authAttempts}  ${authAttempts > 1
+                    ? 'charge attempts'
+                    : 'charge attempt'}{' '}
+                    failed.
+                </span>
+              }
             </span>,
             <span key="info-notice">
               {' '}{retryingText}

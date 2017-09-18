@@ -32,6 +32,7 @@ export default class EntityDetailList extends Component {
       limit = items.length < this.state.curLimit ? items.length : limit;
     }
 
+    let isChargeAttemptFailed = false;
     for (let index = 0; index < limit; index++) {
       let item = {};
       if (items.length) {
@@ -62,6 +63,16 @@ export default class EntityDetailList extends Component {
       let isUpfrontInvoice =
         index === items.length - 1 ? isFirstInvoiceUpfront : false; // Set true for 1st invoice if it's upfront
 
+      // Check for the latest invoice with status 'issued' and if any attempts failed
+      // (To set authAttempts only for latest invoice for now)
+      if (
+        item.status === 'issued' &&
+        this.props.authAttempts > 0 &&
+        !isChargeAttemptFailed
+      ) {
+        isChargeAttemptFailed = true;
+      }
+
       list.push(
         <EntityRow
           key={index}
@@ -71,6 +82,8 @@ export default class EntityDetailList extends Component {
           item={item}
           loading={loading}
           isUpfront={isUpfrontInvoice}
+          authAttempts={isChargeAttemptFailed ? this.props.authAttempts : null}
+          subscriptionchargeAt={subscriptionchargeAt}
           onManualAttempt={onManualAttempt}
           subscriptionStatus={subscriptionStatus}
         />
