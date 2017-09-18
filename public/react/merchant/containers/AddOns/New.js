@@ -17,19 +17,20 @@ import { showNotification } from 'rzp/modules/notifications';
 })
 @reduxForm({
   form: 'newAddOn',
-  initialValues: {
-    item: {
-      currency: 'INR',
-    },
-  },
 })
 export default class CreateAddOn extends Component {
   state = {};
 
   componentWillMount() {
-    if (this.props.addon) {
-      this.props.initialize(this.props.addon);
-    }
+    let { addon, subscriptionId } = this.props;
+
+    let initProps = {
+      addon,
+      subscription_id: subscriptionId,
+      item: { currency: 'INR' },
+    };
+
+    this.props.initialize(initProps);
   }
 
   handleSubmit = props => {

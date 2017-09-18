@@ -29,9 +29,6 @@ export default props => {
     index
   );
 
-  //TODO: Get from api
-  item.next_try = 4;
-
   let retryingText;
 
   // To b shown only for latest issued invoice. As per authAttempts condition calc in parent componen
@@ -106,10 +103,10 @@ export default props => {
               <i class="icon icon-info-circle" />{' '}
               {
                 <span>
-                  {authAttempts}  ${authAttempts > 1
+                  {authAttempts} ${authAttempts > 1
                     ? 'charge attempts'
                     : 'charge attempt'}{' '}
-                    failed.
+                  failed.
                 </span>
               }
             </span>,
