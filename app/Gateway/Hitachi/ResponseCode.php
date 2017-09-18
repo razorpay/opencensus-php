@@ -8,8 +8,6 @@ class ResponseCode
 {
     const DEFAULT_MESSAGE = 'No Response Message found in mapping';
 
-    const SUCCESS_CODE = '00';
-
     const DEFAULT_ERROR_CODE = ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
 
     protected static $map = [
@@ -177,10 +175,5 @@ class ResponseCode
         }
 
         return self::DEFAULT_MESSAGE;
-    }
-
-    public static function getSuccessCode()
-    {
-        return self::SUCCESS_CODE;
     }
 }
