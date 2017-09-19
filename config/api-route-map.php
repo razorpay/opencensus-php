@@ -476,6 +476,10 @@ return [
             'url'       => 'invoices/{invoice_id}/charge',
             'routeName' => 'subscriptions_write'
         ],
+        'subscription_test_charge' => [
+            'url'       => 'subscriptions/{id}/charge',
+            'routeName' => 'subscriptions_write'
+        ],
 
         // Plans
         'plan_fetch_multiple'    => [
