@@ -16,6 +16,8 @@ class NetbankingRblCombinedFileTest extends TestCase
 
     public function setUp()
     {
+        Carbon::setTestNow();
+
         $this->testDataFilePath = __DIR__ . '/helpers/NebtankingRblCombinedFileTestData.php';
 
         parent::setUp();

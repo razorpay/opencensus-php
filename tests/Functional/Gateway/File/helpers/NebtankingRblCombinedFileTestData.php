@@ -9,8 +9,8 @@ return [
             'content' => [
                 'type'    => 'combined',
                 'targets' => ['rbl'],
-                'begin'    => Carbon::today(Timezone::IST)->timestamp,
-                'end'      => Carbon::tomorrow(Timezone::IST)->timestamp
+                'begin'    => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'      => Carbon::tomorrow(Timezone::IST)->getTimestamp()
             ],
             'url' => '/gateway/files',
             'method' => 'POST'

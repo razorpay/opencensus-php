@@ -1,5 +1,8 @@
 <?php
 
+namespace RZP\Tests\Functional\Gateway\File;
+
+use Mail;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File;
@@ -13,6 +16,8 @@ class GatewayCombinedFileTest extends TestCase
 
     public function setUp()
     {
+        Carbon::setTestNow();
+
         $this->testDataFilePath = __DIR__ . '/helpers/GatewayCombinedFileTestData.php';
 
         parent::setUp();

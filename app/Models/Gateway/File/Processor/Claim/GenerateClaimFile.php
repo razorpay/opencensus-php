@@ -166,7 +166,7 @@ trait GenerateClaimFile
             $this->trace->traceException(
                             $e,
                             Trace::INFO,
-                            TraceCode::GATEWAY_FILE_FILE_GEN_ERROR,
+                            TraceCode::GATEWAY_FILE_ERROR_GENERATING_FILE,
                             [
                                 'id' => $this->gatewayFile->getId()
                             ]);

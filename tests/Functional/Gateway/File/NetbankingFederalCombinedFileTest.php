@@ -16,6 +16,8 @@ class NetbankingFederalCombinedFileTest extends TestCase
 
     public function setUp()
     {
+        Carbon::setTestNow();
+
         $this->testDataFilePath = __DIR__ . '/helpers/NebtankingFederalCombinedFileTestData.php';
 
         parent::setUp();

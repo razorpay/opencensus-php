@@ -19,6 +19,8 @@ class NetbankingIciciRefundFileTest extends TestCase
 
     public function setUp()
     {
+        Carbon::setTestNow();
+
         $this->testDataFilePath = __DIR__ . '/helpers/NetbankingIciciRefundFileTestData.php';
 
         parent::setUp();

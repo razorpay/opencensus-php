@@ -109,7 +109,7 @@ trait GenerateCombinedFile
             $this->trace->traceException(
                             $e,
                             Trace::INFO,
-                            TraceCode::GATEWAY_FILE_FILE_SEND_ERROR,
+                            TraceCode::GATEWAY_FILE_ERROR_SENDING_FILE,
                             [
                                 'id' => $this->gatewayFile->getId()
                             ]);

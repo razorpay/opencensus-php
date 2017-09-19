@@ -20,7 +20,7 @@ trait GenerateRefundFile
 {
     public function fetchEntities(): PublicCollection
     {
-        $begin = $this->gatewayFile->getbegin();
+        $begin = $this->gatewayFile->getBegin();
         $end = $this->gatewayFile->getEnd();
 
         $tpv = $this->gatewayFile->getTpv();
