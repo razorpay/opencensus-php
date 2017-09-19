@@ -209,6 +209,10 @@ class BasicAuth
         8, 14, 23, 33
     ];
 
+    protected $adminOrgId = null;
+
+    protected $orgId      = null;
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -1420,4 +1424,33 @@ class BasicAuth
                 $data);
         }
     }
+
+    public function setOrgId($orgId)
+    {
+        $this->orgId = $orgId;
+    }
+
+    public function getOrgId()
+    {
+        return $this->orgId;
+    }
+
+    public function fetchOrgByHostname($orgHostname)
+    {
+        if ($this->app->environment('testing') === false)
+        {
+            $mode = Mode::LIVE;
+        }
+        else
+        {
+            $mode = Mode::TEST;
+        }
+
+        // Org Hostname check should always be done in the
+        // live mode (since we don't sync it in heimdall)
+        $org = $this->repo->org->connection($mode)->findOrFailByHostname($orgHostname);
+
+        return $org;
+    }
+
 }

@@ -265,6 +265,16 @@ trait RequestResponseFlowTrait
             }
         }
 
+        if ($this->ba->isAppAuth() === true)
+        {
+            $appHeaders = $this->ba->getAppHeaders();
+
+            if (empty($appHeaders) === false)
+            {
+                $request['server'] += $this->transformHeadersToServerVars($appHeaders);
+            }
+        }
+
         if ($this->ba->isBearerAuth() === true)
         {
             $bearerHeaders = $this->ba->getBearerHeader();
