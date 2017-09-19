@@ -2,10 +2,11 @@
 
 namespace RZP\Models\LineItem;
 
-use RZP\Models\Base;
-use RZP\Models\Merchant;
-use RZP\Models\Item;
 use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Models\Item;
+use RZP\Models\Invoice;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
@@ -30,27 +31,29 @@ class Core extends Base\Core
 
         $this->setItemAssociationAndModifyInput($lineItem, $input, $merchant);
 
+        //
         // For Backward compatibility: If without ITEM_ID (template),
         // no CURRENCY is sent, we use invoice's currency.
+        //
         if ((isset($input[Entity::ITEM_ID]) === false) and
             (isset($input[Entity::CURRENCY]) === false))
         {
             $input[Entity::CURRENCY] = $morphEntity->getCurrency();
         }
 
-        $lineItem->build($input);
-
-        // Validations:
-        $morphEntity->getValidator()->validateInvoiceMaxAllowedLineItems();
-
-        $lineItem->getValidator()
-                 ->validateCurrency($morphEntity->getCurrency());
-
-        // Associations:
+        //
+        // Following associations should happen before build() as these
+        // are getting used in validations.
+        //
         $lineItem->merchant()->associate($merchant);
         $lineItem->entity()->associate($morphEntity);
 
+        $lineItem->build($input);
+
+        // TODO: Check why following only works when called after build()?
         $this->setRefAssociationIfApplicable($input, $lineItem);
+
+        $morphEntity->getValidator()->validateMaxAllowedLineItems();
 
         (new Tax\Core)->createLineItemTaxes($lineItem, $input, $merchant);
 
@@ -106,9 +109,6 @@ class Core extends Base\Core
         $this->setItemAssociationAndModifyInput($lineItem, $input, $merchant);
 
         $lineItem->edit($input);
-
-        $lineItem->getValidator()
-                 ->validateCurrency($morphEntity->getCurrency());
 
         (new Tax\Core)->cleanUpAndCreateLineItemTaxes(
                             $lineItem,
@@ -301,11 +301,7 @@ class Core extends Base\Core
             return;
         }
 
-        $item = $this->repo->item
-                           ->findActiveByPublicIdAndMerchantOrFail(
-                                $input[Entity::ITEM_ID],
-                                $merchant
-                            );
+        $item = $this->repo->item->findActiveByPublicIdAndMerchant($input[Entity::ITEM_ID], $merchant);
 
         $lineItem->item()->associate($item);
 

@@ -439,6 +439,7 @@ class ErrorCode
     const BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL                                       = 'BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL';
     const BAD_REQUEST_MERCHANT_INVALID                                              = 'BAD_REQUEST_MERCHANT_INVALID';
     const BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE                                   = 'BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE';
+    const BAD_REQUEST_MERCHANT_FEATURE_ALREADY_ASSIGNED                             = 'BAD_REQUEST_MERCHANT_FEATURE_ALREADY_ASSIGNED';
     const BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED                                = 'BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED';
     const BAD_REQUEST_MERCHANT_DETAIL_FILE_TYPE                                     = 'BAD_REQUEST_MERCHANT_DETAIL_FILE_TYPE';
     const BAD_REQUEST_MERCHANT_HANDLE_UPPERCASE_ONLY                                = 'BAD_REQUEST_MERCHANT_HANDLE_UPPERCASE_ONLY';
@@ -542,7 +543,6 @@ class ErrorCode
     const BAD_REQUEST_INVOICE_FEE_BEARER_CUSTOMER                                   = 'BAD_REQUEST_INVOICE_FEE_BEARER_CUSTOMER';
     const BAD_REQUEST_PAYMENT_LINK_BATCH_ISSUED_ALREADY                             = 'BAD_REQUEST_PAYMENT_LINK_BATCH_ISSUED_ALREADY';
 
-    const BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED                                    = 'BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED';
     const BAD_REQUEST_ITEM_INACTIVE                                                 = 'BAD_REQUEST_ITEM_INACTIVE';
     const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                         = 'BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED';
     const BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE                                        = 'BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE';

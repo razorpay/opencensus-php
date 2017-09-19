@@ -123,6 +123,13 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->app->singleton('eventManager', function($app)
         {
+            $harvesterClientMock = $app['config']->get('applications.harvester.mock');
+
+            if ($harvesterClientMock === true)
+            {
+                return new Mock\HarvesterClient($app);
+            }
+
             return new HarvesterClient($app);
         });
 

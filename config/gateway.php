@@ -17,6 +17,7 @@ return [
         'billdesk',
         'blade',
         'cybersource',
+        'hitachi',
         'first_data',
         'ebs',
         'hdfc',
@@ -54,6 +55,7 @@ return [
     'mock_cybersource'            => env('CYBERSOURCE_MOCK'),
     'mock_first_data'             => env('FIRST_DATA_MOCK'),
     'mock_atom'                   => env('ATOM_MOCK'),
+    'mock_hitachi'                => env('HITACHI_MOCK'),
     'mock_axis_migs'              => env('AXIS_MIGS_MOCK'),
     'mock_axis_genius'            => env('AXIS_GENIUS_MOCK'),
     'mock_kotak'                  => env('KOTAK_MOCK'),
@@ -70,7 +72,6 @@ return [
     'mock_netbanking_indusind'    => env('NETBANKING_INDUSIND_MOCK'),
     'mock_netbanking_pnb'         => env('NETBANKING_PNB_MOCK'),
     'mock_billdesk'               => env('BILLDESK_MOCK'),
-    //TODO add this env
     'mock_blade'                  => env('BLADE_MOCK'),
     'mock_ebs'                    => env('EBS_MOCK'),
     'mock_wallet_olamoney'        => env('OLAMONEY_MOCK'),
@@ -99,6 +100,12 @@ return [
         'test_password'         => env('CYBERSOURCE_GATEWAY_TEST_ACCESS_CODE'),
         'test_merchant_id'      => env('CYBERSOURCE_GATEWAY_TEST_USERNAME', 'cybersource_id'),
         'test_merchant_secret'  => env('CYBERSOURCE_GATEWAY_TEST_SECRET', 'cybersource_secret'),
+    ],
+
+    'hitachi' => [
+        'test_merchant_id'  => env('HITACHI_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'  => env('HITACHI_GATEWAY_TEST_HASH_SECRET'),
+        'test_hash_secret2' => env('HITACHI_GATEWAY_TEST_HASH_SECRET2'),
     ],
 
     'first_data' => [

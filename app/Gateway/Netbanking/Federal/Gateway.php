@@ -89,7 +89,7 @@ class Gateway extends Base\Gateway
         // Saving callback response only if the above checks pass
         $gatewayPayment = $this->saveCallbackResponse($gatewayPayment, $content);
 
-        $acquirerData = $this->getAcquirerData($gatewayPayment);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }
