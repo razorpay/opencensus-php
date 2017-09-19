@@ -2,7 +2,11 @@
 
 namespace RZP\Tests\Functional\Gateway\File;
 
+use Mail;
+use Excel;
 use Carbon\Carbon;
+use RZP\Models\Gateway\File;
+use RZP\Mail\Emi as EmiMail;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -29,6 +33,8 @@ class GatewayEmiFileTest extends TestCase
 
     public function testGenerateEmiFile()
     {
+        Mail::fake();
+
         $this->fixtures->merchant->enableEmi();
 
         $this->ba->publicAuth();
@@ -38,6 +44,85 @@ class GatewayEmiFileTest extends TestCase
         $this->ba->appAuth();
 
         $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFileContent = [
+            'type'        => 'axis_emi_file',
+            'entity_type' => File\Entity::class,
+            'entity_id'   => $content['id'],
+            'extension'   => 'zip',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        Mail::assertSent(EmiMail\Password::class);
+        Mail::assertSent(EmiMail\File::class);
+    }
+
+    public function testGenerateEmiFileWithNoEmiPayments()
+    {
+        Mail::fake();
+
+        $this->ba->appAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNull($content[File\Entity::SENT_AT]);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNotNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        Mail::assertNotSent(EmiMail\Password::class);
+        Mail::assertNotSent(EmiMail\File::class);
+    }
+
+    public function testGenerateEmiFileWithFileGenerationError()
+    {
+        Mail::fake();
+
+        Excel::shouldReceive('create')->andThrow(new \Exception('file_generation_exception'));
+
+        $this->fixtures->merchant->enableEmi();
+
+        $this->ba->publicAuth();
+
+        $this->makeEmiPaymentOnCard('4111460212312338', 3);
+
+        $this->ba->appAuth();
+
+        $content = $this->startTest();
+    }
+
+    public function testGenerateEmiFileWithMailSendError()
+    {
+        Mail::shouldReceive('send')->andThrow(new \Exception('mail_send_exceptiopn'));
+
+        $this->fixtures->merchant->enableEmi();
+
+        $this->ba->publicAuth();
+
+        $this->makeEmiPaymentOnCard('4111460212312338', 3);
+
+        $this->ba->appAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNull($content[File\Entity::SENT_AT]);
+        $this->assertNotNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
     }
 
     protected function makeEmiPaymentOnCard($card, $emiDuration,
