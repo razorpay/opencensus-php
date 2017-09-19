@@ -1,86 +1,175 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+
 import { reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
+import { required } from 'rzp/utils/validators';
 
-import { RouteForm } from './Forms';
+import { showNotification } from 'rzp/modules/notifications';
+import {
+  saveOnboarding,
+  getOnboardingResponse,
+} from 'merchant/modules/onboarding';
 
-const FORM_TYPE = {
-  routes: {
-    formComponent: RouteForm,
-    imagePath: 'styles/assets/route-landing.svg',
-    links: {
-      docs: '',
-      knowMore: '',
-    },
-    formText: '',
-  },
-};
+import FORM_TYPE from './Forms';
 
-@connect(state => state.session)
-@reduxForm({
-  form: 'onboardingForm',
+import './OnBoarding.styl';
+
+@connect(null, {
+  saveOnboarding,
+  getOnboardingResponse,
+  showNotification,
 })
-export default class TestModeBanner extends Component {
-  save = () => {};
+@reduxForm({
+  form: 'featureOnboardingForm',
+})
+export default class OnBoarding extends Component {
+  state = {
+    submitted: false,
+    isLoading: false,
+    uploadedFile: null,
+  };
+
+  componentWillMount() {
+    this.setState({
+      isLoading: true,
+    });
+
+    this.props
+      .getOnboardingResponse(this.props.feature)
+      .then(response => {
+        const submitted = response.data && !(response.data instanceof Array);
+
+        this.setState({
+          isLoading: false,
+          submitted: submitted,
+        });
+      })
+      .catch(err => {
+        // Handle errors
+      });
+  }
+
+  // For file uploader
+  handleChange = event => {
+    this.setState({ uploadedFile: event.target.files[0] });
+  };
+
+  // Form submit handler
+  onSubmitClick = props => {
+    console.log('FEATURE FORM:...', props);
+
+    const prom = new Promise(() => {
+      let data = {};
+      let file = null;
+      let fileName = null;
+
+      if (this.state.uploadedFile && this.props.feature === 'marketplace') {
+        file = this.state.uploadedFile;
+        fileName = 'vendor_agreement';
+      }
+
+      return this.props
+        .saveOnboarding(this.props.feature, props, file, fileName)
+        .then(() => {
+          this.props.showNotification({
+            type: 'success',
+            message: 'Successful',
+          });
+          this.setState({ submitted: true });
+        })
+        .catch(({ errors }) => {
+          this.props.showNotification({
+            type: 'error',
+            message: errors,
+          });
+        });
+    });
+
+    return prom;
+  };
+
+  requireImage(formType, currentForm) {
+    switch (formType) {
+      case 'marketplace':
+        currentForm.formImage = require('styles/assets/route-landing.svg');
+        break;
+    }
+  }
 
   render() {
-    const { heading, description, links, formType, handleSubmit } = this.props;
+    const {
+      heading,
+      description,
+      formType,
+      handleSubmit,
+      enableFeatureInTestMode,
+      isTestMode,
+    } = this.props;
 
-    const CURRENT_FORM = FORM_TYPE[formType];
-    CURRENT_FORM.link.docs += 'https://razorpay.com/docs/';
-    const formImage = require(CURRENT_FORM.imagePath);
+    const currentForm = FORM_TYPE[formType];
+    const WizardForm = currentForm.formComponent;
+    currentForm.links.docs += 'https://razorpay.com/docs/';
+    this.requireImage(formType, currentForm);
 
-    let testMode = true;
+    if (this.state.submitted) {
+      console.log(
+        '....................Form submitted and is pending.................display on UI.......'
+      );
+    }
 
-    <div class="onboarding-container">
-      {/* Feature Description */}
-      <div class="onboarding-overview">
-        <h1>
-          {heading}
-        </h1>
-        <p>
-          {description}
-        </p>
+    return (
+      <div class="onboarding-container">
+        {/* Feature Description */}
+        <main class="onboarding-overview">
+          <h1>
+            {heading}
+          </h1>
+          <p>
+            {description}
+          </p>
 
-        <div class="action-container">
-          {testMode &&
+          <div class="action-container">
+            {/* Test mode only button to enable feature in test mode */}
+            {isTestMode &&
+              <AsyncButton
+                type="button"
+                class="btn btn-primary pull-left"
+                text="Enabling in Test Mode"
+                pendingText="Enabling..."
+                onClick={this.enableFeatureInTestMode}
+              />}
+
+            <a class="btn-link" href={currentForm.links.knowMore}>
+              Know More
+            </a>
+            <span class="dot" />
+            <a class="btn-link" href={currentForm.links.docs}>
+              View Docs
+            </a>
+          </div>
+
+          <img class="feature-image" src={currentForm.formImage} />
+        </main>
+
+        {/* Feature Form for live mode*/}
+        {!isTestMode &&
+          <aside class="onboarding-form">
+            <h2>Get Started</h2>
+            <p>
+              {currentForm.formText}
+            </p>
+            <WizardForm handleChange={this.handleChange} />
+
             <AsyncButton
               type="button"
               class="btn btn-primary pull-left"
-              text="Enabling in Test Mode"
-              pendingText="Enabling..."
-              onClick={handleSubmit(this.save)}
-            />}
-
-          <a class="btn-link" href={CURRENT_FORM.link.knowMore}>
-            Know More
-          </a>
-          <span class="dot" />
-          <a class="btn-link" href={CURRENT_FORM.link.docs}>
-            View Docs
-          </a>
-        </div>
-
-        <img class="feature-image" src={formImage} />
+              text="Apply Now"
+              pendingText="Applying..."
+              onClick={handleSubmit(this.onSubmitClick)}
+            />
+          </aside>}
       </div>
-
-      {/* Feature Form */}
-      <div class="onboarding-form">
-        <h2>Get Started</h2>
-        <p>
-          {CURRENT_FORM.formText}
-        </p>
-        <CURRENT_FORM.formComponent />
-
-        <AsyncButton
-          type="button"
-          class="btn btn-primary pull-left"
-          text="Apply Now"
-          pendingText="Applying..."
-          onClick={handleSubmit(this.save)}
-        />
-      </div>
-    </div>;
+    );
   }
 }
