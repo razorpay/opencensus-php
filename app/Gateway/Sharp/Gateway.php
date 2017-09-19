@@ -105,7 +105,7 @@ class Gateway extends Base\Gateway
 
         $this->verifyPaymentCreateResponse($input);
 
-        $acquirerData = $this->getAcquirerData($input);
+        $acquirerData = $this->getAcquirerData($input, null);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }
@@ -138,7 +138,7 @@ class Gateway extends Base\Gateway
         return [];
     }
 
-    protected function getAcquirerData(array $input)
+    protected function getAcquirerData($input, $gatewayPayment)
     {
         $acquirer = [];
 

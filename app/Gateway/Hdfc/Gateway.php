@@ -399,19 +399,9 @@ class Gateway extends Base\Gateway
 
         $this->postAuthEnrolledRequest($input);
 
-        $acquirerData = $this->getAcquirerData($this->model);
+        $acquirerData = $this->getAcquirerData($input, $this->model);
 
         return $this->getCallbackResponseData($input, $acquirerData);
-    }
-
-    protected function getAcquirerData($gatewayPayment)
-    {
-        return [
-            'acquirer' => [
-                PaymentEntity::APPROVAL_CODE => $gatewayPayment->getAuthCode(),
-                PaymentEntity::REFERENCE1    => $gatewayPayment->getRef()
-            ]
-        ];
     }
 
     public function verify(array $input)

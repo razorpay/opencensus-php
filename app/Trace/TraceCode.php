@@ -601,6 +601,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MAXMIND_RESPONSE                          = 'MAXMIND_RESPONSE';
 
+    const HARVESTER_REQUEST                         = 'HARVESTER_REQUEST';
+    const HARVESTER_RETRY                           = 'HARVESTER_RETRY';
+    const HARVESTER_FAILURE                         = 'HARVESTER_FAILURE';
+
     // ES related trace codes
     const ES_CAT_RESPONSE                           = 'ES_CAT_RESPONSE';
     const ES_MAPPING_RESPONSE                       = 'ES_MAPPING_RESPONSE';
@@ -827,6 +831,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Trace code for OAuth and Authentication service
     const AUTH_SERVICE_REQUEST                          = 'AUTH_SERVICE_REQUEST';
     const SEND_OAUTH_MAIL_REQUEST                       = 'SEND_OAUTH_MAIL_REQUEST';
+    const OAUTH_TOKEN_INVALID                           = 'OAUTH_TOKEN_INVALID';
 
     const SERVER_ERROR_MISSING_HANDLER                  = 'SERVER_ERROR_MISSING_HANDLER';
     const GATEWAY_FILE_CREATE_REQUEST                   = 'GATEWAY_FILE_CREATE_REQUEST';
