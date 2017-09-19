@@ -13,12 +13,12 @@ export default class SettlementSchedule extends Component {
 
     const { transfer, onHold, holdUntil } = props;
 
-    this.state = {
-      onHold,
-      holdUntil,
-    };
-
-    if (transfer) {
+    if (!transfer) {
+      this.state = {
+        onHold,
+        holdUntil,
+      };
+    } else {
       this.state = {
         onHold: transfer.on_hold
           ? transfer.on_hold_until ? 'on_hold_until' : 'on_hold'
@@ -40,6 +40,26 @@ export default class SettlementSchedule extends Component {
   }
 
   render() {
+    let actionButtons = [];
+
+    if (this.props.onDiscard && this.props.onSave) {
+      actionButtons = [
+        <button
+          key="discard-btn"
+          className="btn btn-default btn-half"
+          onClick={this.props.onDiscard}
+        >
+          Discard
+        </button>,
+        <AsyncButton
+          key="save-btn"
+          className="btn btn-primary btn-half"
+          text="Save"
+          pendingText="Saving..."
+          onClick={() => this.props.onSave({ ...this.state })}
+        />,
+      ];
+    }
     return (
       <div>
         <Field
@@ -87,20 +107,7 @@ export default class SettlementSchedule extends Component {
         />
         {this.props.transfer &&
           <div className="btn-toolbar text-center m-t">
-            {typeof this.props.onDiscard === 'function' &&
-              <button
-                className="btn btn-default btn-half"
-                onClick={this.props.onDiscard()}
-              >
-                Discard
-              </button>}
-            {typeof this.props.onSave === 'function' &&
-              <AsyncButton
-                className="btn btn-primary btn-half"
-                text="Save"
-                pendingText="Saving..."
-                onClick={this.props.onSave({ ...this.state })}
-              />}
+            {actionButtons}
           </div>}
       </div>
     );
