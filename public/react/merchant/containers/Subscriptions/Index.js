@@ -44,9 +44,7 @@ export default class SubscriptionsController extends Component {
   };
 
   render() {
-    // TODO: Link feature
-    let featureEnabled = false;
-
+    let featureEnabled = this.props.user.isSubscriptionsEnabled;
     if (!featureEnabled) {
       const heading =
         'Automate you recurring billing with Razorpay Subscriptions and powerful APIs';

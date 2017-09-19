@@ -1,10 +1,15 @@
 import ajax from 'merchant/utils/ajax';
+import { filterBy } from 'rzp/utils/rzp-utils';
 
 export default class User {
   merchants = {};
 
   constructor(props) {
     Object.assign(this, props);
+  }
+
+  isFeatureEnabled(feature) {
+    return (this.enabledFeatures || []).indexOf(feature.toLowerCase()) !== -1;
   }
 
   fetch() {
@@ -45,10 +50,32 @@ export default class User {
   }
 
   get isMarketplaceEnabled() {
-    return (this.tags || []).indexOf('Marketplace') !== -1;
+    return this.isFeatureEnabled('marketplace');
+  }
+
+  get isVirtualAccountsEnabled() {
+    return this.isFeatureEnabled('virtual_accounts');
+  }
+
+  get isSubscriptionsEnabled() {
+    return this.isFeatureEnabled('virtual_accounts');
   }
 
   get isGSTDisabled() {
     return (this.tags || []).indexOf('Gst_Invoice_Disabled') !== -1;
+  }
+
+  setFeatures(features) {
+    let enabledFeatures = filterBy(features, 'value', true);
+
+    this.features = enabledFeatures;
+  }
+
+  get enabledFeatures() {
+    let pluckKey = 'feature';
+
+    return (this.features || []).map(object => {
+      return object[pluckKey];
+    });
   }
 }

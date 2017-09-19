@@ -47,7 +47,8 @@ export default class MarketplaceContainer extends Component {
   };
 
   render() {
-    if (!this.props.user.isMarketplaceEnabled) {
+    let featureEnabled = this.props.user.isMarketplaceEnabled;
+    if (!featureEnabled) {
       const heading =
         'Automate you payment transfers for Marketplace, Vendor, payouts, Regional splits, etc. and manage complete payment cycle with Razorpay Route.';
 

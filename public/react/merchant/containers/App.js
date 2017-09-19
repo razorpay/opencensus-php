@@ -52,7 +52,6 @@ export default class App extends Component {
         }
 
         this.props.updateSession({ mode: currentMode });
-        this.props.fetchFeatures(this.props.user.current);
         this.redirectToRoute(role);
         setTimeout(() => {
           this.initSmooch(user);
@@ -65,10 +64,15 @@ export default class App extends Component {
         }
       }),
     ]).then(() => {
-      let $splash = document.getElementById('splash');
-      $splash.parentElement.removeChild($splash);
+      // Fetch features before displaying other views
+      this.props.fetchFeatures(this.props.user.current).then(data => {
+        this.props.user.setFeatures(data.data.features || []);
 
-      this.setState({ isLoading: false });
+        let $splash = document.getElementById('splash');
+        $splash.parentElement.removeChild($splash);
+
+        this.setState({ isLoading: false });
+      });
     });
   }
 
