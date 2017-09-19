@@ -137,7 +137,7 @@ export default class Sidebar extends Component {
                   />
 
                   <MainNavLink
-                    label="Virtual Accounts"
+                    label="Smart Collect"
                     icon="icon icon-account-balance text-success"
                     to="/virtualaccounts"
                     notMyRole="sellerapp support"
@@ -278,7 +278,7 @@ export default class Sidebar extends Component {
                     beta={true}
                   />
                   <MainNavLink
-                    label="Virtual Accounts"
+                    label="Smart Collect"
                     icon="icon icon-account-balance text-primary"
                     to="/virtualaccounts"
                     notMyRole="sellerapp support"
