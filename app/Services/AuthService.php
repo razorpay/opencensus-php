@@ -32,7 +32,7 @@ class AuthService
     {
         $this->key     = 'rzp';
         $this->trace   = $app['trace'];
-        $this->config  = $app['config']->get('applications.api_auth_service');
+        $this->config  = $app['config']->get('applications.auth_service');
         $this->baseUrl = $this->config['url'];
         $this->secret  = $this->config['secret'];
     }

@@ -379,6 +379,48 @@ class FeaturesTest extends TestCase
     }
 
     /**
+     * Adds subscriptions feature to the live database
+     * Since the route is accessed by an admin, it should
+     * allow even when should sync is sent as 1.
+     *
+     * @param string $addToMode
+     * @param bool   $shouldSync
+     */
+    public function testAddFeatureNonEditableByMerchantOnLive()
+    {
+        $this->addFeatureNonEditableByMerchantOnLive(Mode::LIVE, true);
+    }
+
+    /**
+     * Adds subscriptions feature to the test database
+     * Since the route is accessed by an admin, it should
+     * allow even when should sync is sent as 1.
+     *
+     * @param string $addToMode
+     * @param bool   $shouldSync
+     */
+    public function testAddFeatureNonEditableByMerchantOnTest()
+    {
+        $this->addFeatureNonEditableByMerchantOnLive(Mode::TEST, true);
+    }
+
+    protected function addFeatureNonEditableByMerchantOnLive(string $addToMode, bool $shouldSync = false)
+    {
+        $authMethod = 'appAuth' . studly_case($addToMode);
+
+        $this->ba->$authMethod();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        if ($shouldSync === true)
+        {
+            $testData['request']['content']['should_sync'] = 1;
+        }
+
+        $this->startTest($testData);
+    }
+
+    /**
      * Adds dummy feature to the database which is linked to the mode passed as parameter.
      *
      * @param string $addToMode
