@@ -754,3 +754,7 @@ WHERE cybersource.action = "authorize" AND
 UPDATE payments
     SET reference1 = null
 WHERE method = "card";
+
+
+# Data fix, ref: https://github.com/razorpay/api/pull/5116
+UPDATE invoices SET type = 'invoice' WHERE id = '8XFQF7kIzFceBI';
