@@ -2170,7 +2170,12 @@ trait Authorize
 
         $this->captureSubscriptionPayment($subscription, $payment);
 
-        $this->triggerAlreadyAuthenticatedSubscriptionNotification($subscription, $oldStatus, $payment);
+        $options = [
+            Subscription\Event::PAYMENT     => $payment,
+            Subscription\Event::OLD_STATUS  => $oldStatus,
+        ];
+
+        $this->triggerAlreadyAuthenticatedSubscriptionNotification($subscription, $options);
     }
 
     /**
@@ -2226,10 +2231,11 @@ trait Authorize
 
     protected function triggerAlreadyAuthenticatedSubscriptionNotification(
         Subscription\Entity $subscription,
-        string $oldStatus,
-        Payment\Entity $payment)
+        array $options)
     {
         $event = Subscription\Event::CHARGED;
+
+        $oldStatus = $options[Subscription\Event::OLD_STATUS];
 
         //
         // If new status is completed, then that _might_ be the mail we have to send
@@ -2264,11 +2270,15 @@ trait Authorize
             if ($oldStatus !== Subscription\Status::COMPLETED)
             {
                 $event = Subscription\Event::COMPLETED;
-            }
 
-            // TODO Pass options to triggerSubscriptionNotification to treat completed mails differently
-            // - Active to completed (here)
+                //
+                // Completed mails can come via a charge failure as well
+                //
+                $options[Subscription\Event::CHARGE_SUCCESS] = true;
+            }
         }
+
+        $payment = $options[Subscription\Event::PAYMENT];
 
         //
         // If the charge is on an older invoice, send a different mail
@@ -2279,7 +2289,7 @@ trait Authorize
             $event = Subscription\Event::INVOICE_CHARGED;
         }
 
-        (new Subscription\Core)->triggerSubscriptionNotification($subscription, $event, $payment);
+        (new Subscription\Core)->triggerSubscriptionNotification($subscription, $event, $options);
     }
 
     protected function processCardChangeForSubscription(
@@ -2299,8 +2309,13 @@ trait Authorize
 
             $this->captureSubscriptionPayment($subscription, $payment);
 
-            // TODO Pass card change options here
-            $this->triggerAlreadyAuthenticatedSubscriptionNotification($subscription, $oldStatus, $payment);
+            $options = [
+                Subscription\Event::CARD_CHANGE => true,
+                Subscription\Event::PAYMENT     => $payment,
+                Subscription\Event::OLD_STATUS  => $oldStatus,
+            ];
+
+            $this->triggerAlreadyAuthenticatedSubscriptionNotification($subscription, $options);
 
             return;
         }
@@ -2333,11 +2348,14 @@ trait Authorize
 
         $core = (new Subscription\Core);
 
-        $core->triggerSubscriptionNotification($subscription, Subscription\Event::CARD_CHANGED, $payment);
+        $options = [
+            Subscription\Event::PAYMENT     => $payment,
+        ];
+
+        $core->triggerSubscriptionNotification($subscription, Subscription\Event::CARD_CHANGED, $options);
 
         if ($activated === true)
         {
-
             $core->fireWebhookForStatusUpdate($subscription, Subscription\Status::ACTIVE, $payment);
         }
     }
@@ -2429,7 +2447,13 @@ trait Authorize
         // - Upfront Amount
         // - Immediate
 
-        (new Subscription\Core)->triggerSubscriptionNotification($subscription, Subscription\Event::AUTHENTICATED, $payment);
+        $options = [
+            Subscription\Event::UPFRONT     => $subscription->hadUpfrontAmount(),
+            Subscription\Event::IMMEDIATE   => $subscription->wasImmediate(),
+            Subscription\Event::PAYMENT     => $payment,
+        ];
+
+        (new Subscription\Core)->triggerSubscriptionNotification($subscription, Subscription\Event::AUTHENTICATED, $options);
 
         $this->autoRefundAuthTransactionIfApplicable($payment, $subscription);
     }

@@ -509,7 +509,11 @@ class Core extends Base\Core
         //
         (new Charge)->handleCaptureSuccess($subscription, $capturedPayment, $invoice);
 
-        $this->triggerSubscriptionNotification($subscription, Event::CHARGED);
+        $notifyOptions = [
+            Event::PAYMENT     => $payment,
+        ];
+
+        $this->triggerSubscriptionNotification($subscription, Event::CHARGED, $notifyOptions);
     }
 
     public function triggerSubscriptionFailureNotification(Entity $subscription)
@@ -654,17 +658,23 @@ class Core extends Base\Core
 
         $this->fireWebhookForStatusUpdate($subscription, Status::CANCELLED);
 
-        $this->triggerSubscriptionCancelledNotification($subscription, $oldStatus);
+        $options = [
+            Event::OLD_STATUS  => $oldStatus,
+        ];
+
+        $this->triggerSubscriptionCancelledNotification($subscription, $options);
     }
 
     protected function triggerSubscriptionCancelledNotification(Entity $subscription, string $oldStatus)
     {
+        $oldStatus = $options[Event::OLD_STATUS];
+
         if (($oldStatus !== Status::HALTED) and
             ($oldStatus !== Status::CREATED))
         {
             // TODO: Add a subscription setting flag to send cancel emails
 
-            $this->triggerSubscriptionNotification($subscription, Event::CANCELLED);
+            $this->triggerSubscriptionNotification($subscription, Event::CANCELLED, $options);
         }
     }
 
@@ -767,11 +777,11 @@ class Core extends Base\Core
     public function triggerSubscriptionNotification(
         Entity $subscription,
         string $event,
-        Payment\Entity $payment = null)
+        array $options = [])
     {
         assert ($this->repo->isTransactionActive() === false);
 
-        $notifier = new Notify($subscription, $payment);
+        $notifier = new Notify($subscription, $options);
 
         $notifier->trigger($event);
     }

@@ -39,7 +39,7 @@ class Notify extends Processor\Notify
      *
      * @param Payment\Entity $payment The payment associated with the Notify
      */
-    function __construct(Subscription\Entity $subscription, Payment\Entity $payment = null)
+    function __construct(Subscription\Entity $subscription, array $options = [])
     {
         $this->app = App::getFacadeRoot();
 
@@ -51,13 +51,13 @@ class Notify extends Processor\Notify
 
         $this->merchant = $this->subscription->merchant;
 
-        if ($payment !== null)
+        if (isset($options[Event::PAYMENT]) === true)
         {
-            $this->payment = $payment;
+            $this->payment = $options[Event::PAYMENT];
 
-            if ($payment->hasInvoice() === true)
+            if ($this->payment->hasInvoice() === true)
             {
-                $this->invoice = $payment->invoice;
+                $this->invoice = $this->payment->invoice;
             }
         }
 

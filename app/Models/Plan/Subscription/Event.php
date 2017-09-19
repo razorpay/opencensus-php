@@ -15,6 +15,14 @@ class Event
     const CARD_CHANGED    = 'card_changed';
     const INVOICE_CHARGED = 'invoice_charged';
 
+    // Event options
+    const CHARGE_SUCCESS = 'charge_success';
+    const CARD_CHANGE    = 'card_change';
+    const IMMEDIATE      = 'immediate';
+    const UPFRONT        = 'upfront';
+    const PAYMENT        = 'payment';
+    const OLD_STATUS     = 'old_status';
+
     const CUSTOMER_EVENTS = [
         self::AUTHENTICATED,
         self::CHARGED,
