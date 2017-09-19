@@ -1009,6 +1009,12 @@ class Service extends Base\Service
 
         $shouldSync = (bool) ($input[Feature\Entity::SHOULD_SYNC] ?? false);
 
+        //
+        // Temporary: To ensure BC until dashboard code for this is deployed
+        // PR: https://github.com/razorpay/dashboard/pull/1592
+        //
+        $shouldSync = true;
+
         $merchant->validateInput('feature', $input);
 
         $featuresToAdd = $this->getFeatureNamesToAdd($input['features']);
