@@ -42,11 +42,6 @@ class Entity extends Base\PublicEntity
     // Input Keys
 
     /**
-     * Used to search in fetchMultiple
-     */
-    const SUBSCRIPTION_ID   = 'subscription_id';
-
-    /**
      * Add-on needs to be at a subscription level because
      * the add-on amount can change based on the subscription period.
      * For example: if the subscription is for 3 months, add-on amount can

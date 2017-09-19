@@ -234,7 +234,7 @@ return [
 
     'testCreateAddon' => [
         'request' => [
-            'url'       => '/subscriptions/{subscriptionId}/addon',
+            'url'       => '/subscriptions/{subscriptionId}/addons',
             'method'    => 'post',
             'content'   => [
                 'quantity'  => 2,

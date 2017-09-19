@@ -103,7 +103,7 @@ class SubscriptionCreateTest extends TestCase
 
         $subscriptionId = $subscription['id'];
 
-        $this->testData[__FUNCTION__]['request']['url'] = "/subscriptions/$subscriptionId/addon";
+        $this->testData[__FUNCTION__]['request']['url'] = "/subscriptions/$subscriptionId/addons";
 
         $response = $this->startTest();
 
@@ -258,7 +258,7 @@ class SubscriptionCreateTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = "/subscriptions/$subscriptionId/addons/due";
 
-        $this->ba->privateAuth();
+        $this->ba->proxyAuth();
 
         $response = $this->startTest();
 

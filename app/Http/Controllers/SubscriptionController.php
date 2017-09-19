@@ -2,8 +2,8 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
 use Request;
+use ApiResponse;
 use RZP\Constants\Entity as E;
 
 class SubscriptionController extends Controller
@@ -19,9 +19,9 @@ class SubscriptionController extends Controller
         return ApiResponse::json($plan);
     }
 
-    public function getPlan(string $id)
+    public function getPlan(string $planId)
     {
-        $plan = $this->service(E::PLAN)->fetch($id);
+        $plan = $this->service(E::PLAN)->fetch($planId);
 
         return ApiResponse::json($plan);
     }
@@ -35,22 +35,22 @@ class SubscriptionController extends Controller
         return ApiResponse::json($plans);
     }
 
-    // -------------------- Plan endpoints end --------------------
+    // -------------------- Plan endpoints end ----------------------
 
-    // -------------------- Addon endpoints start ---------------------
+    // -------------------- Addon endpoints start -------------------
 
-    public function postAddon($subscriptionId)
+    public function postAddonForSubscription(string $subscriptionId)
     {
         $input = Request::all();
 
-        $addon = $this->service(E::ADDON)->create($subscriptionId, $input);
+        $addon = $this->service(E::ADDON)->create($input, $subscriptionId);
 
         return ApiResponse::json($addon);
     }
 
-    public function getAddon($id)
+    public function getAddon(string $addonId)
     {
-        $addon = $this->service(E::ADDON)->fetch($id);
+        $addon = $this->service(E::ADDON)->fetch($addonId);
 
         return ApiResponse::json($addon);
     }
@@ -64,21 +64,21 @@ class SubscriptionController extends Controller
         return ApiResponse::json($addon);
     }
 
-    public function fetchDueAddons($subscriptionId)
+    public function getDueAddonsForSubscription(string $subscriptionId)
     {
-        $addons = $this->service(E::ADDON)->fetchDueAddons($subscriptionId);
+        $addons = $this->service(E::ADDON)->fetchDueAddonsForSubscription($subscriptionId);
 
         return ApiResponse::json($addons);
     }
 
-    public function deleteAddon($id)
+    public function deleteAddon($addonId)
     {
-        $addon = $this->service(E::ADDON)->delete($id);
+        $addon = $this->service(E::ADDON)->delete($addonId);
 
         return ApiResponse::json($addon);
     }
 
-    // -------------------- Addon endpoints start ---------------------
+    // -------------------- Addon endpoints end -------------------
 
     public function postCreateSubscription()
     {
@@ -89,9 +89,9 @@ class SubscriptionController extends Controller
         return ApiResponse::json($subscription);
     }
 
-    public function getSubscription(string $id)
+    public function getSubscription(string $subscriptionId)
     {
-        $subscription = $this->service()->fetch($id);
+        $subscription = $this->service()->fetch($subscriptionId);
 
         return ApiResponse::json($subscription);
     }

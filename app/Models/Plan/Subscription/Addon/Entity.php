@@ -149,7 +149,7 @@ class Entity extends Base\PublicEntity
 
     // -------------------- End Relations -----------------------
 
-    public function createAssociations(
+    public function setAssociations(
         Merchant\Entity $merchant,
         Item\Entity $item,
         Subscription\Entity $subscription)

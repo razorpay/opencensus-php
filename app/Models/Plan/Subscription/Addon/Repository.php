@@ -2,19 +2,17 @@
 
 namespace RZP\Models\Plan\Subscription\Addon;
 
+use RZP\Exception;
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Exception;
 use RZP\Models\Plan\Subscription;
-use RZP\Constants;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'addon';
 
     protected $entityFetchParamRules = [
-        // This is also used to fetch all
-        // addons of a subscription in processor
         Entity::SUBSCRIPTION_ID     => 'filled|string|public_id',
         Entity::INVOICE_ID          => 'filled|string|public_id',
     ];

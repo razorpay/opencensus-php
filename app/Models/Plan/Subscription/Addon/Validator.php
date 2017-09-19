@@ -3,8 +3,8 @@
 namespace RZP\Models\Plan\Subscription\Addon;
 
 use RZP\Base;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
@@ -24,8 +24,8 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_ADDON_DELETE_NOT_ALLOWED,
                 null,
                 [
-                    'addon_id' => $addon->getId(),
-                    'invoice_id' => $addon->getInvoiceId(),
+                    Entity::ID         => $addon->getId(),
+                    Entity::INVOICE_ID => $addon->getInvoiceId(),
                 ]);
         }
     }

@@ -18,7 +18,7 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Payment;
-use RZP\Models\Plan\Subscription;
+use RZP\Models\Plan\Subscription\Addon;
 use RZP\Models\Payment\Processor\Notify;
 use RZP\Models\Payment\Status;
 use RZP\Models\Pricing;
@@ -832,7 +832,7 @@ class Processor
         if ($subscriptionInvoices->count() === 0)
         {
             $fetchInput = [
-                Subscription\Entity::SUBSCRIPTION_ID => $subscription->getPublicId()
+                Addon\Entity::SUBSCRIPTION_ID => $subscription->getPublicId()
             ];
 
             //

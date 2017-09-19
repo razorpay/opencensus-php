@@ -15,7 +15,7 @@ class Service extends Base\Service
         $this->core = new Core;
     }
 
-    public function create(string $subscriptionId, array $input) : array
+    public function create(array $input, string $subscriptionId) : array
     {
         $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
 
@@ -38,7 +38,7 @@ class Service extends Base\Service
         return $addons->toArrayPublic();
     }
 
-    public function fetchDueAddons(string $subscriptionId): array
+    public function fetchDueAddonsForSubscription(string $subscriptionId): array
     {
         $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
 
