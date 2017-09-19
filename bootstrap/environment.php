@@ -48,22 +48,30 @@ $cascadingEnvFile = '.env.' . $env;
 
 if (! function_exists('read_env_file'))
 {
-    function read_env_file($envDir, $fileName)
+    if (! $app->configurationIsCached())
     {
-        $file = $envDir . '/' . $fileName;
-
-        if (file_exists($file) === false)
+        // Don't read the environment if config is cached
+        function read_env_file($envDir, $fileName)
         {
-            return;
+            $file = $envDir . '/' . $fileName;
+
+            if (file_exists($file) === false)
+            {
+                return;
+            }
+
+            $dotenv = new Dotenv($envDir, $fileName);
+
+            $dotenv->load();
         }
-
-        $dotenv = new Dotenv($envDir, $fileName);
-
-        $dotenv->load();
     }
+
 }
 
-read_env_file($envDir, '.env.vault');
-read_env_file($envDir, $cascadingEnvFile);
-read_env_file($envDir, '.env.defaults');
+if (function_exists('read_env_file'))
+{
+    read_env_file($envDir, '.env.vault');
+    read_env_file($envDir, $cascadingEnvFile);
+    read_env_file($envDir, '.env.defaults');
+}
 
