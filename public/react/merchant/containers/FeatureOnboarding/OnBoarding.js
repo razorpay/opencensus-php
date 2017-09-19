@@ -130,68 +130,70 @@ export default class OnBoarding extends Component {
     }
 
     return (
-      <div class="onboarding-container clearfix">
-        {/* Feature Description */}
-        <main class="onboarding-overview col-md-7 col-xs-12">
-          <h2>
-            {heading}
-          </h2>
-          <p>
-            {description}
-          </p>
+      <div class="page-container">
+        <div class="onboarding-container clearfix">
+          {/* Feature Description */}
+          <main class="onboarding-overview col-md-7 col-xs-12">
+            <h2>
+              {heading}
+            </h2>
+            <p>
+              {description}
+            </p>
 
-          <div class="action-container">
-            {/* Test mode only button to enable feature in test mode */}
-            {isTestMode &&
-              <AsyncButton
-                type="button"
-                class="btn btn-primary"
-                text="Enable in Test Mode"
-                pendingText="Enabling..."
-                onClick={enableFeatureInTestMode}
-              />}
+            <div class="action-container">
+              {/* Test mode only button to enable feature in test mode */}
+              {isTestMode &&
+                <AsyncButton
+                  type="button"
+                  class="btn btn-primary"
+                  text="Enable in Test Mode"
+                  pendingText="Enabling..."
+                  onClick={enableFeatureInTestMode}
+                />}
 
-            <div>
-              <a class="btn-link" href={currentForm.links.knowMore}>
-                Know more
-              </a>
-              <span class="dot" />
-              <a class="btn-link" href={currentForm.links.docs}>
-                View Docs
-              </a>
+              <div>
+                <a class="btn-link" href={currentForm.links.knowMore}>
+                  Know more
+                </a>
+                <span class="dot" />
+                <a class="btn-link" href={currentForm.links.docs}>
+                  View Docs
+                </a>
+              </div>
             </div>
-          </div>
 
-          {/* semi-view hides image on small screen.
+            {/* semi-view hides image on small screen.
             Live mode will have semi view if form is not submitted
           */}
-          <div
-            class={`banner-figure clearfix ${!isTestMode &&
-            !this.state.submitted
-              ? 'semi-view'
-              : ''}`}
-          >
-            <img class="feature-image" src={currentForm.formImage} />
-          </div>
-        </main>
+            <div
+              class={`banner-figure clearfix ${!isTestMode &&
+              !this.state.submitted
+                ? 'semi-view'
+                : ''}`}
+            >
+              <img class="feature-image" src={currentForm.formImage} />
+            </div>
+          </main>
 
-        {/* Feature Form for live mode*/}
-        {!isTestMode &&
-          <aside class="onboarding-form col-md-5 col-xs-12">
-            <h3>Get Started</h3>
-            <p>
-              {currentForm.formText}
-            </p>
-            <WizardForm handleChange={this.handleChange} />
+          {/* Feature Form for live mode*/}
+          {!isTestMode &&
+            <aside class="onboarding-form col-md-5 col-xs-12">
+              <h3>Get Started</h3>
+              <p>
+                {currentForm.formText}
+              </p>
+              <WizardForm handleChange={this.handleChange} />
 
-            <AsyncButton
-              type="button"
-              class="btn btn-primary pull-left"
-              text="Apply Now"
-              pendingText="Applying..."
-              onClick={handleSubmit(this.onSubmitClick)}
-            />
-          </aside>}
+              <AsyncButton
+                type="button"
+                class="btn btn-primary pull-left"
+                text="Apply Now"
+                pendingText="Applying..."
+                onClick={handleSubmit(this.onSubmitClick)}
+              />
+            </aside>}
+        </div>
       </div>
     );
   }
