@@ -55,10 +55,11 @@ export default class OnBoarding extends Component {
   }
 
   componentDidMount() {
-    var img = document.querySelector('.feature-image');
+    const img = document.querySelector('.feature-image');
 
     if (img.complete) {
-      img.classList.add('fadein');
+      img.classList.remove('fadein');
+      setTimeout(() => img.classList.add('fadein'));
     } else {
       img.addEventListener('load', () => {
         img.classList.add('fadein');
