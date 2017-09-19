@@ -67,6 +67,24 @@ export const cancelSubscription = ({ id, cancel_at_cycle_end }) => {
   };
 };
 
+export const testChargeSubscription = (subscriptionId, success) => {
+  return ajax({
+    method: 'post',
+    url: 'user/generic',
+    appendModeInURL: false,
+    appendModeInQueryParam: true,
+    data: {
+      route_name: 'subscription_test_charge',
+      body: {
+        success,
+      },
+      url_params: JSON.stringify({
+        '{id}': subscriptionId,
+      }),
+    },
+  });
+};
+
 // Manual Attempt for pending invoice payment
 export const paymentManualAttempt = invoiceId => {
   return ajax({
