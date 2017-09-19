@@ -502,7 +502,7 @@ class Core extends Base\Core
         // Auth details have to be initialized before
         // the actual code (Controller@action) runs.
         $this->initAuthDetails($authDetails);
-        s($this->app['db']->connection()->getDatabaseName());
+
         $internalResponse = App::call([$controller, $functionName], array_values($routeParams));
 
         $state = State\Entity::EXECUTED;
