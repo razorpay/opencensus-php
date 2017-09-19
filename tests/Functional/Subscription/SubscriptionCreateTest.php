@@ -112,7 +112,7 @@ class SubscriptionCreateTest extends TestCase
 
     public function testFetchAddon()
     {
-        $this->fixtures->create('item', ['id' => '2000000000item']);
+        $this->fixtures->create('item', ['id' => '2000000000item', 'type' => 'addon']);
 
         $this->testCreateSubscriptionWithNoStartAt();
 

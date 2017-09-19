@@ -56,6 +56,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::ITEM,
+        self::QUANTITY,
         self::CREATED_AT,
         self::SUBSCRIPTION_ID,
         self::INVOICE_ID,
@@ -77,10 +78,6 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::QUANTITY => 'int',
-    ];
-
-    protected $relations = [
-        self::ITEM,
     ];
 
     // -------------------------- Getters --------------------------

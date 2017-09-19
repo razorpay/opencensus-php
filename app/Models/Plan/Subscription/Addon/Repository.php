@@ -24,6 +24,10 @@ class Repository extends Base\Repository
         Entity::INVOICE_ID,
     ];
 
+    protected $expands = [
+        Entity::ITEM
+    ];
+
     public function getUnusedAddonsForSubscription(Subscription\Entity $subscription)
     {
         return $this->newQuery()

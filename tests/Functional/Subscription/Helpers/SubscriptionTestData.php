@@ -266,7 +266,12 @@ return [
         ],
         'response'  => [
             'content'   => [
-                'entity'    => 'addon',
+                'entity'        => 'addon',
+                'item'          => [
+                    'name'  => 'Some item name',
+                    'type'  => 'addon',
+                ],
+                'invoice_id'    => null,
             ]
         ]
     ],
