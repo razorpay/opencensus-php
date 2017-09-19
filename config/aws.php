@@ -1,11 +1,6 @@
 <?php
 
 use Aws\Laravel\AwsServiceProvider;
-use Aws\Credentials\CredentialProvider;
-use Aws\S3\S3Client;
-
-$provider = CredentialProvider::instanceProfile();
-$memoizedProvider = CredentialProvider::memoize($provider);
 
 return [
 
@@ -29,6 +24,7 @@ return [
         'L5MOD/' . AwsServiceProvider::VERSION,
     ],
     'mock' => env('S3_MOCK', false),
+
     'activation_bucket' => env('AWS_ACTIVATION_BUCKET'),
-    'credentials'   =>  $memoizedProvider
+
 ];
