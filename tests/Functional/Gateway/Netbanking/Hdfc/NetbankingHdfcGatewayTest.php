@@ -90,6 +90,9 @@ class NetbankingHdfcGatewayTest extends TestCase
 
     public function testRefundExcelFile()
     {
+        // Will remove test in separate pr
+        $this->markTestSkipped();
+
         Mail::fake();
 
         $payment = $this->doNetbankingHdfcAuthAndCapturePayment();

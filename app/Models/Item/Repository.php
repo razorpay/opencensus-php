@@ -13,7 +13,10 @@ class Repository extends Base\Repository
 
     protected $entityFetchParamRules = [
         Entity::ACTIVE      => 'filled|boolean',
-        Entity::TYPE        => 'filled|string|custom',
+    ];
+
+    protected $proxyFetchParamRules = [
+        Entity::TYPE        => 'filled|custom'
     ];
 
     protected $appFetchParamRules = [

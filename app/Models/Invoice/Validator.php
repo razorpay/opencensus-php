@@ -460,6 +460,7 @@ class Validator extends Base\Validator
      * @param string $operation
      *
      * @throws BadRequestValidationFailureException
+     * @throws LogicException
      */
     public function validateOperation(string $operation)
     {
@@ -468,7 +469,7 @@ class Validator extends Base\Validator
         if (in_array($operation, $invoice->getValidOperations(), true) === false)
         {
             throw new LogicException(
-                "Invoice validator: $operation is not a valid",
+                "Invoice validator: $operation is not valid operation",
                 null,
                 ['id' => $invoice->getId()]);
         }

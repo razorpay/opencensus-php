@@ -115,6 +115,7 @@ class Entity
     const BLADE                  = 'blade';
     const ATOM                   = 'atom';
     const HDFC                   = 'hdfc';
+    const HITACHI                = 'hitachi';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
     const WALLET                 = 'wallet';
@@ -212,6 +213,7 @@ class Entity
         self::ATOM                   => \RZP\Gateway\Atom::class,
         self::AMEX                   => \RZP\Gateway\Amex::class,
         self::HDFC                   => \RZP\Gateway\Hdfc::class,
+        self::HITACHI                => \RZP\Gateway\Hitachi::class,
         self::PAYTM                  => \RZP\Gateway\Paytm::class,
         self::SHARP                  => \RZP\Gateway\Sharp::class,
         self::WALLET                 => \RZP\Gateway\Wallet\Base::class,

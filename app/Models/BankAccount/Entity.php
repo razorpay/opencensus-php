@@ -297,7 +297,6 @@ class Entity extends Base\PublicEntity
             $orig[self::CREATED_AT],
             $orig[self::UPDATED_AT],
             $orig[self::DELETED_AT],
-            $orig[self::BENEFICIARY_ADDRESS3],
             $orig[self::BENEFICIARY_ADDRESS4]);
 
         $copy = $baCopy->toArray();
@@ -307,7 +306,6 @@ class Entity extends Base\PublicEntity
             $copy[self::CREATED_AT],
             $copy[self::UPDATED_AT],
             $copy[self::DELETED_AT],
-            $copy[self::BENEFICIARY_ADDRESS3],
             $copy[self::BENEFICIARY_ADDRESS4]);
 
         return ($orig === $copy);
