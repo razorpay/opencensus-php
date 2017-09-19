@@ -27,6 +27,7 @@ class Entity extends Base\PublicEntity
     const TAX_AMOUNT       = 'tax_amount';
     const NET_AMOUNT       = 'net_amount';
     const CURRENCY         = 'currency';
+    const TYPE             = 'type';
     const TAX_INCLUSIVE    = 'tax_inclusive';
     const UNIT             = 'unit';
     const QUANTITY         = 'quantity';
@@ -59,6 +60,7 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::QUANTITY      => 1,
         self::DESCRIPTION   => null,
+        self::TYPE          => Item\Type::INVOICE,
         self::REF_ID        => null,
         self::REF_TYPE      => null,
         self::TAX_INCLUSIVE => false,
@@ -81,6 +83,7 @@ class Entity extends Base\PublicEntity
         self::TAX_AMOUNT,
         self::NET_AMOUNT,
         self::CURRENCY,
+        self::TYPE,
         self::TAX_INCLUSIVE,
         self::UNIT,
         self::CREATED_AT,
@@ -102,6 +105,7 @@ class Entity extends Base\PublicEntity
         self::TAX_AMOUNT,
         self::NET_AMOUNT,
         self::CURRENCY,
+        self::TYPE,
         self::TAX_INCLUSIVE,
         self::UNIT,
         self::QUANTITY,
@@ -113,6 +117,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::AMOUNT,
         self::CURRENCY,
+        self::TYPE,
         self::TAX_INCLUSIVE,
         self::UNIT,
         self::QUANTITY,
@@ -149,6 +154,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::UNIT,
+        self::TYPE,
         self::TAX_INCLUSIVE,
         self::TAX_ID,
         self::TAX_GROUP_ID,

@@ -109,12 +109,51 @@ class Constants
     const FEATURES = 'features';
     const MERCHANT = 'merchant';
 
-    /*
+    /**
+     * Features that are exposed to the merchant and can be
+     * enabled/disabled
+     *
+     * @var array
+     */
+    public static $visibleFeaturesMap = [
+        self::NOFLASHCHECKOUT  => [
+            'feature'      => self::NOFLASHCHECKOUT,
+            'display_name' => 'No Flash Checkout'
+        ],
+        self::MARKETPLACE      => [
+            'feature'      => self::MARKETPLACE,
+            'display_name' => 'Marketplace'
+        ],
+        self::SUBSCRIPTIONS    => [
+            'feature'      => self::SUBSCRIPTIONS,
+            'display_name' => 'Subscriptions'
+        ],
+        self::VIRTUAL_ACCOUNTS => [
+            'feature'      => self::VIRTUAL_ACCOUNTS,
+            'display_name' => 'Virtual accounts'
+        ],
+    ];
+
+    /**
+     * Lists features that can be enabled/disabled on test mode by the merchant
+     * but not on live
+     *
+     * @var array
+     */
+    public static $featuresUneditableOnLive = [
+        self::MARKETPLACE,
+        self::SUBSCRIPTIONS,
+        self::VIRTUAL_ACCOUNTS
+    ];
+
+    /**
      * Note: If the RESPONSE_TYPE is file, then,
      * a corresponding entry should be made in the class 'Models/Filestore/Type'
      */
 
-    // Stores the details for each question irrespective of the feature that it belongs to
+    /**
+     * Stores the details for each question irrespective of the feature that it belongs to
+     */
     public static $questionMap = [
         self::USE_CASE => [
             self::QUESTION            => 'What is your use case?',
@@ -177,7 +216,9 @@ class Constants
         ]
     ];
 
-    // Stores the mapping of the features to their corresponding questions
+    /**
+     * Stores the mapping of the features to their corresponding questions
+     */
     public static $featureQuestionsMap = [
         self::MARKETPLACE => [
             self::USE_CASE,
@@ -221,13 +262,6 @@ class Constants
 
         return $response;
     }
-
-    public static $visibleFeaturesMap = [
-        'noflashcheckout' => [
-            'feature'      => self::NOFLASHCHECKOUT,
-            'display_name' => 'No Flash Checkout'
-        ]
-    ];
 
     public static function getFeatureValue($featureName)
     {

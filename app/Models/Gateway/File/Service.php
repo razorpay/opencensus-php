@@ -2,9 +2,11 @@
 
 namespace RZP\Models\Gateway\File;
 
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 
 class Service extends Base\Service
 {
@@ -52,7 +54,7 @@ class Service extends Base\Service
         $targets = $input['targets'];
         unset($input['targets']);
 
-        $data = [];
+        $this->updateTimePeriodIfApplicable($input);
 
         foreach ($targets as $target)
         {
@@ -62,5 +64,17 @@ class Service extends Base\Service
         }
 
         return $data;
+    }
+
+    protected function updateTimePeriodIfApplicable(array & $input)
+    {
+        // When called via cron, we update the timestamps for the gateway file for the
+        // to indicate the previous days time period
+        if ($this->app['basicauth']->isCron() === true)
+        {
+            $input[Entity::BEGIN] = Carbon::yesterday(Timezone::IST)->getTimestamp();
+
+            $input[Entity::END] = Carbon::today(Timezone::IST)->getTimestamp() - 1;
+        }
     }
 }

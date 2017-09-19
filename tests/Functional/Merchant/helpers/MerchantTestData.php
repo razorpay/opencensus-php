@@ -38,7 +38,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_KEY_CREATE_FAILED,
         ],
     ],
@@ -182,7 +182,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_KEY_EXPIRED,
         ],
     ],
@@ -204,7 +204,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_KEY_OF_DEMO_ACCOUNT,
         ],
     ],
@@ -259,7 +259,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -311,7 +311,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -374,7 +374,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -574,7 +574,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED,
         ],
     ],
@@ -595,7 +595,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
         ]
     ],
@@ -2179,7 +2179,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -2195,7 +2195,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_LOGO_NOT_IMAGE,
         ],
     ],
@@ -2211,7 +2211,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL,
         ],
     ],
@@ -2227,7 +2227,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE,
         ],
     ],
@@ -2243,7 +2243,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_LOGO_TOO_BIG,
         ],
     ],
@@ -2269,9 +2269,24 @@ return [
             'content' => [
                 'features' => [
                     [
-                        'feature' => "noflashcheckout",
+                        'feature' => 'noflashcheckout',
                         'value' => false,
-                        'display_name' => "No Flash Checkout"
+                        'display_name' => 'No Flash Checkout'
+                    ],
+                    [
+                        'feature' => 'marketplace',
+                        'value' => false,
+                        'display_name' => 'Marketplace'
+                    ],
+                    [
+                        'feature' => 'subscriptions',
+                        'value' => false,
+                        'display_name' => 'Subscriptions'
+                    ],
+                    [
+                        'feature' => 'virtual_accounts',
+                        'value' => false,
+                        'display_name' => 'Virtual accounts'
                     ],
                 ]
             ],
@@ -2282,10 +2297,10 @@ return [
     'testUpdateMerchantFeatures' => [
         'request' => [
             'content' => [
-                "features" => [
-                    "noflashcheckout" => "1",
+                'features' => [
+                    'noflashcheckout' => '1',
                 ],
-                "optout_reason" => "some reason"
+                'optout_reason' => 'some reason'
             ],
             'url' => '/merchants/10000000000000/features',
             'method' => 'post',
@@ -2298,9 +2313,9 @@ return [
             'content' => [
                 'features' => [
                     [
-                        'feature' => "noflashcheckout",
+                        'feature' => 'noflashcheckout',
                         'value' => true,
-                        'display_name' => "No Flash Checkout"
+                        'display_name' => 'No Flash Checkout'
                     ]
                 ]
             ],
@@ -2311,8 +2326,8 @@ return [
     'testUpdateMerchantUnEditableFeatures' => [
         'request' => [
             'content' => [
-                "features" => [
-                    "dummy" => "1"
+                'features' => [
+                    'dummy' => '1'
                 ]
             ],
             'url' => '/merchants/10000000000000/features',
@@ -2328,8 +2343,279 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+        ],
+    ],
+
+    'testAddMerchantUnEditableFeaturesOnLive' => [
+        'request' => [
+            'content' => [
+                'features' => [
+                    'marketplace' => '1'
+                ]
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
+        ],
+    ],
+
+    'testAddMerchantEditableFeaturesOnTest' => [
+        'request' => [
+            'content' => [
+                'features' => [
+                    'marketplace' => '1',
+                ]
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'features' => [
+                    [
+                        'feature'      => 'noflashcheckout',
+                        'value'        => false,
+                        'display_name' => 'No Flash Checkout'
+                    ],
+                    [
+                        'feature'      => 'marketplace',
+                        'value'        => true,
+                        'display_name' => 'Marketplace'
+                    ],
+                    [
+                        'feature'      => 'subscriptions',
+                        'value'        => false,
+                        'display_name' => 'Subscriptions'
+                    ],
+                    [
+                        'feature'      => 'virtual_accounts',
+                        'value'        => false,
+                        'display_name' => 'Virtual accounts'
+                    ],
+                ]
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testAddMerchantFeaturesWithSyncOnTest' => [
+        'request' => [
+            'content' => [
+                'features'      => [
+                    'noflashcheckout' => '1',
+                ],
+                'should_sync'   => 1
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'features' => [
+                    [
+                        'feature'      => 'noflashcheckout',
+                        'value'        => true,
+                        'display_name' => 'No Flash Checkout'
+                    ],
+                    [
+                        'feature'      => 'marketplace',
+                        'value'        => false,
+                        'display_name' => 'Marketplace'
+                    ],
+                    [
+                        'feature'      => 'subscriptions',
+                        'value'        => false,
+                        'display_name' => 'Subscriptions'
+                    ],
+                    [
+                        'feature'      => 'virtual_accounts',
+                        'value'        => false,
+                        'display_name' => 'Virtual accounts'
+                    ],
+                ]
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testAddMerchantFeaturesWithSyncOnLive' => [
+        'request' => [
+            'content' => [
+                'features'      => [
+                    'noflashcheckout' => '1',
+                ],
+                'should_sync'   => 1
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'features' => [
+                    [
+                        'feature'      => 'noflashcheckout',
+                        'value'        => true,
+                        'display_name' => 'No Flash Checkout'
+                    ],
+                    [
+                        'feature'      => 'marketplace',
+                        'value'        => false,
+                        'display_name' => 'Marketplace'
+                    ],
+                    [
+                        'feature'      => 'subscriptions',
+                        'value'        => false,
+                        'display_name' => 'Subscriptions'
+                    ],
+                    [
+                        'feature'      => 'virtual_accounts',
+                        'value'        => false,
+                        'display_name' => 'Virtual accounts'
+                    ],
+                ]
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testAddMerchantUneditableFeaturesWithSyncOnLive' => [
+        'request' => [
+            'content' => [
+                'features'      => [
+                    'subscriptions' => '1',
+                ],
+                'should_sync'   => 1
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
+        ],
+    ],
+
+    'testAddMerchantEditableFeaturesWithSyncOnTest' => [
+        'request' => [
+            'content' => [
+                'features'      => [
+                    'subscriptions' => '1',
+                ],
+                'should_sync'   => 1
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
+        ],
+    ],
+
+    'testDeleteMerchantUnEditableFeatureFromLive' => [
+        'request' => [
+            'content' => [
+                'features' => [
+                    'marketplace' => '0'
+                ]
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
+        ],
+    ],
+
+    'testDeleteMerchantEditableFeatureFromTest' => [
+        'request' => [
+            'content' => [
+                'features' => [
+                    'marketplace' => '0',
+                ],
+                'should_sync'   => 1
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
         ],
     ],
 
@@ -2367,7 +2653,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_DOES_NOT_EXISTS,
         ],
     ],
@@ -2390,7 +2676,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ARCHIVED,
         ],
     ],
@@ -2429,7 +2715,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_ARCHIVED,
         ],
     ],
@@ -2470,7 +2756,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_SUSPENDED,
         ],
     ],
@@ -2511,7 +2797,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_SUSPENDED,
         ],
     ],
@@ -2534,7 +2820,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED,
         ],
     ],
@@ -2554,5 +2840,43 @@ return [
             ],
             'status_code' => 200,
         ],
-    ]
+    ],
+
+    'verifyFeaturePresence' => [
+        'request'  => [
+            'url'    => '/features/10000000000000',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'assigned_features' => [
+                    [
+                        'name'        => 'noflashcheckout',
+                        'entity_id'   => '10000000000000',
+                        'entity_type' => 'merchant'
+                    ]
+                ],
+                'all_features'      => [
+                    'dummy',
+                    'webhooks',
+                    'aggregator',
+                    'tokens',
+                    's2swallet',
+                    's2supi',
+                    's2saeps',
+                    'setl_report',
+                    'noflashcheckout',
+                    'recurring',
+                    's2s',
+                    'invoice',
+                    'nozeropricing',
+                    'reverse',
+                ]
+            ]
+        ]
+    ],
 ];

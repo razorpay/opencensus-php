@@ -116,12 +116,12 @@ class Gateway extends Base\Gateway
 
         assertTrue($content['CustomerID'] === $input['payment']['id']);
 
-        $acquirerData = $this->getAcquirerData($gatewayPayment);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
-    protected function getAcquirerData($gatewayPayment)
+    protected function getAcquirerData($input, $gatewayPayment)
     {
         return [
             'acquirer' => [

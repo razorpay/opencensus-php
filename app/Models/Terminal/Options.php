@@ -36,6 +36,7 @@ class Options
         'gateway_exclusion_filter',
         'billdesk_education_filter',
         'maestro_filter',
+        'currency_filter',
     ];
 
     public function __construct()

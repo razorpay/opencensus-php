@@ -23,8 +23,6 @@ class TransactionFilter extends Terminal\Filter
     protected $properties = [
         'method',
         'network',
-        'currency',
-        'international',
         'bank',
         'recurring',
         'subscription',
@@ -82,39 +80,6 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return true;
-    }
-
-    public function currencyFilter($terminal)
-    {
-        $payment = $this->input['payment'];
-
-        $paymentCurrency = $payment->getCurrency();
-
-        if ($payment->getConvertCurrency() === true)
-        {
-            $paymentCurrency = Currency::INR;
-        }
-
-        $terminalCurrency = $terminal->getCurrency();
-
-        return ($paymentCurrency === $terminalCurrency);
-    }
-
-    public function internationalFilter($terminal)
-    {
-        if ($this->input['payment']->isMethodCardOrEmi() === false)
-        {
-            return true;
-        }
-
-        $isPaymentInternational = $this->input['payment']->isInternational();
-
-        if ($isPaymentInternational === true)
-        {
-            return $terminal->isInternational();
-        }
-
-        return $terminal->isDomestic();
     }
 
     public function bankFilter($terminal)
