@@ -11,7 +11,7 @@ export const fetchTransfer = id => {
 
   return {
     type: TRANSFER_FETCH,
-    payload: transfer.fetch(id),
+    payload: transfer.fetch(id, { expand: ['recipient_settlement'] }),
   };
 };
 
@@ -31,6 +31,13 @@ export const fetchReversals = id => {
     type: TRANSFER_FETCH_REVERSAL,
     payload: transfer.fetchReversals(),
   };
+};
+
+export const createTransfer = data => {
+  const { id, ...params } = data;
+  const transfer = new Transfer(params);
+
+  return transfer.save({ id, ...data });
 };
 
 let defaultInitialState = {

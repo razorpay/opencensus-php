@@ -1,11 +1,13 @@
 import AsyncButton from 'react-async-button';
 import { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-import { Field, FieldArray, reduxForm } from 'redux-form';
+import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form';
+import moment from 'moment';
 import { TypeAhead } from 'react-power-select';
 import { withRouter } from 'react-router-dom';
 
 import Alert from 'rzp/ui/Forms/Alert';
+import { isHoliday } from 'rzp/utils/bankHolidays';
 import DatePickerField from 'rzp/ui/Forms/DatePickerField';
 import InputField from 'rzp/ui/Forms/InputField';
 import InlineField from 'rzp/ui/Forms/InlineField';
@@ -18,7 +20,7 @@ import { titleCase } from 'rzp/utils/rzp-utils';
 import { fetchAccounts } from 'merchant/modules/marketplace/accounts';
 import FormItem from 'merchant/components/FormItem';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
-import { savePlan } from 'merchant/modules/plans';
+import { createTransfer } from 'merchant/modules/marketplace/transfer';
 
 let Label = ({ text, htmlFor, required }) => {
   var classes = typeof required !== 'undefined' ? 'label-required' : '';
@@ -32,15 +34,31 @@ let Label = ({ text, htmlFor, required }) => {
   );
 };
 
-@connect(state => ({ accounts: state.accounts }), {
-  savePlan,
-  showNotification,
-  fetchAccounts,
-})
+const selector = formValueSelector('createPaymentTransfer');
+
+@connect(
+  state => {
+    return {
+      accounts: state.accounts,
+      onHold: selector(state, 'onHold'),
+      holdUntil: selector(state, 'holdUntil'),
+      notes: selector(state, 'notes'),
+      amount: selector(state, 'amount'),
+      accountId: state.accountId,
+    };
+  },
+  {
+    createTransfer,
+    showNotification,
+    fetchAccounts,
+  }
+)
 @reduxForm({
   form: 'createPaymentTransfer',
   initialValues: {
+    onHold: null,
     notes: [],
+    account_id: null,
   },
 })
 @withRouter
@@ -49,32 +67,97 @@ export default class TransferNew extends Component {
     confirm: PropTypes.func,
   };
 
-  state = {};
+  state = {
+    selectedAccount: null,
+    accountId: null,
+  };
 
   componentWillMount() {
     if (this.props.plan) {
       this.props.initialize(this.props.plan);
     }
 
-    this.props.fetchAccounts({ count: 100 }); // Currently keeping count = 100
+    // Currently keeping count = 100
+    this.props.fetchAccounts({ count: 100 });
+  }
+
+  showTransferCreationError(errors) {
+    return this.props.showNotification({
+      type: 'error',
+      message: errors,
+      closeTimeout: 5000,
+    });
   }
 
   save = props => {
-    return this.props
-      .savePlan(props)
-      .then(plan => {
-        this.props.onSave(plan);
-        this.props.history.push(`/plans/${plan[plan.resourceIdField]}`);
+    if (!this.state.selectedAccount) {
+      return this.props.showNotification({
+        type: 'error',
+        message: 'Please select an Account',
+      });
+    }
+
+    const { onHold, holdUntil, notes, amount } = props,
+      accountId = this.state.selectedAccount.id;
+
+    if (onHold === 'on_hold_until' && !holdUntil) {
+      return this.props.showNotification({
+        type: 'error',
+        message: 'Please select a date',
+      });
+    }
+
+    let transformedNotes = notes;
+
+    if (notes && notes.length > 0) {
+      transformedNotes = notes.reduce((result, current) => {
+        result[current.key] = current.value;
+        return result;
+      }, {});
+    }
+
+    const holdData = {
+      ...(onHold !== null &&
+        (onHold === 'on_hold'
+          ? { on_hold: 1 }
+          : {
+              on_hold: 1,
+              on_hold_until:
+                moment(holdUntil * 1000).startOf('day').toDate() / 1000 - 600,
+            })),
+    };
+
+    return createTransfer({
+      id: this.props.paymentId,
+      transfers: [
+        {
+          account: `acc_${accountId}`,
+          amount: window.parseInt(amount) * 100,
+          notes: transformedNotes,
+          currency: 'INR',
+          ...holdData,
+        },
+      ],
+    }).then(
+      data => {
         this.props.showNotification({
           type: 'success',
-          message: 'Plan saved successfully',
+          message: 'Transfer created Successfully',
         });
-      })
-      .catch(err => {
+
         this.setState({
-          errors: err.errors,
+          selectedAccount: null,
+          accountId: null,
         });
-      });
+
+        this.props.reset();
+
+        if (typeof this.props.onCreate === 'function') {
+          this.props.onCreate();
+        }
+      },
+      ({ errors }) => this.showTransferCreationError(errors)
+    );
   };
 
   handleClick = () => {
@@ -92,11 +175,10 @@ export default class TransferNew extends Component {
   handleSelect = ({ option }) => {
     this.typeAheadSkin.classList.remove('hide');
 
-    // For setting in redux-form
     if (option) {
       this.props.change('account_id', option.id);
     } else {
-      this.props.untouch('createPaymentTransfer', 'account_id');
+      this.props.untouch('account_id');
     }
 
     // For display purpose only in TypeAhead
@@ -124,7 +206,11 @@ export default class TransferNew extends Component {
           </div>
 
           <div class="SliderPanel__Body">
-            <form class="panel-body" onSubmit={handleSubmit(this.save)}>
+            <form
+              class="panel-body"
+              name="createPaymentTransfer"
+              onSubmit={handleSubmit(this.save)}
+            >
               <FormItem
                 label={() => <Label text="Account" required />}
                 field={() =>
@@ -178,12 +264,13 @@ export default class TransferNew extends Component {
                 field={_ =>
                   <div>
                     <Field
-                      name="item[amount]"
+                      name="amount"
                       component={InputGroupField}
                       prefix="INR"
                       class="form-control"
                       validate={required('Transfer amount is required')}
                       placeholder="199.99"
+                      type="number"
                     />
                     <span class="help-block label--secondary">
                       <i class="icon icon-info-outline" />
@@ -195,11 +282,7 @@ export default class TransferNew extends Component {
               <FormItem
                 label={_ => <Label text="Internal Notes" />}
                 field={_ =>
-                  <FieldArray
-                    name="notes"
-                    component={NotesFieldArray}
-                    required
-                  />}
+                  <FieldArray name="notes" component={NotesFieldArray} />}
               />
 
               <FormItem
@@ -208,23 +291,50 @@ export default class TransferNew extends Component {
                   <div>
                     <Field
                       component={RadioButton}
-                      name="on-hold"
+                      name="onHold"
                       htmlValue="on_hold_until"
+                      onChange={() => {
+                        console.log(this.props);
+                      }}
                       label={_ =>
                         <div>
                           <span>Schedule settlement on</span>
                         </div>}
                     />
                     <div className="transfers-onhold-datepicker">
-                      <Field component={DatePickerField} name="onHoldDate" />
+                      <Field
+                        component={DatePickerField}
+                        name="holdUntil"
+                        required
+                        disabled={
+                          this.props.onHold === null ||
+                          this.props.onHold === 'on_hold'
+                        }
+                        isDayBlocked={date => {
+                          const dateWithOffset = moment()
+                              .startOf('day')
+                              .add(3, 'days')
+                              .toDate(),
+                            currDate = date.clone().startOf('day').toDate();
+
+                          return (
+                            currDate < dateWithOffset ||
+                            isHoliday(date.toDate())
+                          );
+                        }}
+                      />
                     </div>
                     <Field
                       component={RadioButton}
-                      name="on-hold"
+                      name="onHold"
                       htmlValue="on_hold"
                       label={_ =>
                         <div>
                           <span>Put on hold</span>
+                          <div className="text-fade">
+                            The settlement will be on hold till specified
+                            otherwise.
+                          </div>
                         </div>}
                     />
                   </div>}
@@ -239,23 +349,24 @@ export default class TransferNew extends Component {
                   pendingText="Creating..."
                   onClick={handleSubmit(this.save)}
                 />
-                <button
-                  type="button"
-                  class="btn btn-default btn-half"
-                  onClick={() => {
-                    this.context
-                      .confirm({
-                        header: 'Do you want to close this panel?',
-                        message: 'Changes that you made may not be saved',
-                        affirmativeLabel: 'Leave',
-                        abortLabel: 'Stay',
-                        action: () => this.props.history.push(`/plans`),
-                      })
-                      .catch(() => {});
-                  }}
-                >
-                  Discard
-                </button>
+                {typeof this.props.onClose === 'function' &&
+                  <button
+                    type="button"
+                    class="btn btn-default btn-half"
+                    onClick={() => {
+                      this.context
+                        .confirm({
+                          header: 'Do you want to close this panel?',
+                          message: 'Changes that you made may not be saved',
+                          affirmativeLabel: 'Leave',
+                          abortLabel: 'Stay',
+                          action: () => this.props.onClose(),
+                        })
+                        .catch(() => {});
+                    }}
+                  >
+                    Discard
+                  </button>}
               </div>
             </form>
           </div>

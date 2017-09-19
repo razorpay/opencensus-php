@@ -18,12 +18,14 @@ import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import PaymentMethod from 'merchant/components/Payments/PaymentMethod';
 import PaymentRefund from 'merchant/components/Payments/PaymentRefund';
+import PaymentTransfers from 'merchant/components/Payments/PaymentTransfers.js';
 
 export default props => {
   let {
     payment,
     card,
     refunds,
+    transfers,
     isLoading,
     openRefundModal,
     statusMsg = {},
@@ -92,12 +94,11 @@ export default props => {
 
                   <ShowWhen featureEnabled="Marketplace">
                     <EntityDetailRow label="Transfer">
-                      <button
-                        className="btn btn-default"
-                        onClick={props.goToLink}
-                      >
-                        Create Transfer
-                      </button>
+                      <PaymentTransfers
+                        payment={payment}
+                        transfers={transfers}
+                        onCreateTransfer={props.goToLink}
+                      />
                     </EntityDetailRow>
                   </ShowWhen>
 

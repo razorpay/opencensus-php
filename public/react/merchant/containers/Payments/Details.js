@@ -37,21 +37,25 @@ export default class PaymentDetailsContainer extends Component {
   };
 
   fetchData = id => {
-    this.props.fetchItem(id).then(() => {
-      const additionReqs = [this.props.fetchRefunds(this.props.payment)];
+    this.props.resetPayment();
 
-      if (this.props.payment.method === 'card') {
-        additionReqs.push(this.props.fetchCardDetails(this.props.payment));
+    this.props.fetchItem(id).then(payment => {
+      if (payment.amount_refunded !== 0) {
+        this.props.fetchRefunds(payment);
       }
 
-      return Promise.all(additionReqs).then(function() {
-        console.log(arguments);
-      });
+      if (payment.method === 'card') {
+        this.props.fetchCardDetails(payment);
+      }
+
+      if (this.props.payment.amount_transferred !== 0) {
+        this.props.fetchTransfers(payment);
+      }
     });
   };
 
-  checkSecView(entityName) {
-    if (!entityName) {
+  checkSecView(props) {
+    if (!props.entity_name && !props.transfer_id) {
       this.props.compactSlider();
 
       // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
@@ -61,7 +65,7 @@ export default class PaymentDetailsContainer extends Component {
     } else {
       this.props.expandSlider();
       this.setState({
-        secView: 'new_transfer',
+        secView: props.entity_name ? 'new_transfer' : 'transfer',
       });
       // To avoid not toggling issue when browser back btn is clicked when secondary view is overlayed in dual view while small-screen
       if (this.transfersView && findDOMNode(this.transfersView)) {
@@ -72,7 +76,7 @@ export default class PaymentDetailsContainer extends Component {
 
   componentWillMount() {
     this.fetchData(this.props.id);
-    this.checkSecView(this.props.entity_name);
+    this.checkSecView(this.props);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -80,8 +84,11 @@ export default class PaymentDetailsContainer extends Component {
       this.fetchData(nextProps.id);
     }
 
-    if (nextProps.entity_name != this.props.entity_name) {
-      this.checkSecView(nextProps.entity_name);
+    if (
+      nextProps.entity_name !== this.props.entity_name ||
+      nextProps.transfer_id !== this.props.entity_id
+    ) {
+      this.checkSecView(nextProps);
     }
   }
 
@@ -140,20 +147,6 @@ export default class PaymentDetailsContainer extends Component {
       .catch(() => {});
   };
 
-  openRefundModal = payment => {
-    this.props.openModal({
-      component: (
-        <RefundModal
-          payment={payment}
-          onRefund={() => {
-            this.props.fetchItem(this.props.id);
-            this.props.fetchRefunds(this.props.payment);
-          }}
-        />
-      ),
-    });
-  };
-
   secClose = () => {
     let { compactSlider, history, location } = this.props;
     findDOMNode(this.transfersView).classList.toggle('toggle-slider');
@@ -162,8 +155,33 @@ export default class PaymentDetailsContainer extends Component {
     history.push(location.pathname.replace(/\/[^\/]+\/[^\/]+\/?$/, ''));
   };
 
+  onCreateTransfer = () => {
+    this.secClose();
+    this.props.fetchItem(this.props.id).then(payment => {
+      this.props.fetchTransfers(payment);
+    });
+  };
+
+  onTransferReverse = () => {
+    this.props.fetchItem(this.props.id);
+  };
+
+  onPaymentRefund = () => {
+    this.props.fetchItem(this.props.id).then(payment => {
+      this.props.fetchRefunds(payment);
+    });
+  };
+
+  openRefundModal = payment => {
+    this.props.openModal({
+      component: (
+        <RefundModal payment={payment} onRefund={this.onPaymentRefund} />
+      ),
+    });
+  };
+
   render() {
-    let { loading, error, payment, card, refunds } = this.props;
+    let { loading, error, payment, card, refunds, transfers } = this.props;
     let statusMsg = {};
 
     if (error) {
@@ -183,6 +201,7 @@ export default class PaymentDetailsContainer extends Component {
           payment={payment}
           card={card}
           refunds={refunds}
+          transfers={transfers}
           isLoading={loading}
           statusMsg={statusMsg}
           onToggleCardDetails={this.fetchCardDetails}
@@ -196,6 +215,7 @@ export default class PaymentDetailsContainer extends Component {
             <PaymentTransferNew
               paymentId={payment && payment.id}
               onClose={this.secClose}
+              onCreate={this.onCreateTransfer}
               ref={c => (this.transfersView = c)}
             />}
         </ShowWhen>
@@ -203,8 +223,11 @@ export default class PaymentDetailsContainer extends Component {
         <ShowWhen featureEnabled="Marketplace">
           {this.state.secView === 'transfer' &&
             <PaymentTransferDetails
+              id={this.props.transfer_id}
               onClose={this.secClose}
               ref={c => (this.transfersView = c)}
+              onReverse={this.onTransferReverse}
+              onRefund={this.onPaymentRefund}
             />}
         </ShowWhen>
       </div>

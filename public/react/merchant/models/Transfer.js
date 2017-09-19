@@ -4,6 +4,18 @@ export default class Transfer extends GenericEntity {
   listRouteName = 'transfer_fetch_multiple';
   detailsRouteName = 'transfer_fetch';
 
+  resourceFields = [
+    'account',
+    'amount',
+    'currency',
+    'on_hold',
+    'on_hold_until',
+  ];
+
+  getRouteName() {
+    return 'payment_transfer';
+  }
+
   reverse(data) {
     let params = { '{id}': this.id };
 

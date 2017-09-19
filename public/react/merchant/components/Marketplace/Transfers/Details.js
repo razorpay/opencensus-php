@@ -23,6 +23,7 @@ export default ({
   openReversalModal,
   reversals,
   onToggleReversalsList,
+  onClose,
 }) => {
   return (
     <div class="content-wrapper content-sm txn-details">
@@ -32,6 +33,15 @@ export default ({
           </div>
         : <div class="panel panel-default SliderPanel">
             <div class="panel-heading">
+              {onClose &&
+                <button
+                  type="button"
+                  class="close close-secondary"
+                  onClick={onClose}
+                >
+                  <i class="icon icon-arrow-back" />
+                  <i class="icon icon-close" />
+                </button>}
               Transfer ID: <strong>{transfer.id}</strong>
             </div>
 
@@ -41,6 +51,13 @@ export default ({
 
                 <EntityDetailRow label="Linked Account">
                   <Definition>
+                    <span>
+                      {transfer.recipient_details.name}
+                    </span>
+                    {transfer.recipient_details.email &&
+                      <span>
+                        {transfer.recipient_details.email}
+                      </span>}
                     <code>
                       {transfer.recipient}
                     </code>
@@ -93,16 +110,17 @@ export default ({
 
                 {/* Notes */}
                 <EntityDetailRow label="Notes">
-                  {Object.keys(transfer.notes).length === 0
-                    ? '--'
-                    : Object.keys(transfer.notes).map((key, index) =>
-                        <div className="m-b" key={index}>
-                          <Definition>
-                            {key}
-                            {String(transfer.notes[key])}
-                          </Definition>
-                        </div>
-                      )}
+                  {transfer.notes &&
+                    (Object.keys(transfer.notes).length === 0
+                      ? '--'
+                      : Object.keys(transfer.notes).map((key, index) =>
+                          <div className="m-b" key={index}>
+                            <Definition>
+                              {key}
+                              {String(transfer.notes[key])}
+                            </Definition>
+                          </div>
+                        ))}
                 </EntityDetailRow>
               </div>
             </div>

@@ -7,6 +7,7 @@ const PAYMENT_FETCH_REFUNDS = 'PAYMENT_FETCH_REFUNDS';
 const PAYMENT_FETCH_TRANSFERS = 'PAYMENT_FETCH_TRANSFERS';
 const PAYMENT_CAPTURE = 'PAYMENT_CAPTURE';
 const PAYMENT_REFUND = 'PAYMENT_REFUND';
+const PAYMENT_RESET = 'PAYMENT_RESET';
 
 export const fetchItem = id => {
   let payment = new Payment();
@@ -52,23 +53,30 @@ export const refundPayment = (payment, data) => {
   };
 };
 
+export const resetPayment = () => {
+  return {
+    type: PAYMENT_RESET,
+    payload: null,
+  };
+};
+
 let initialState = {
   loading: true,
   payment: {
     notes: {},
   },
   card: {
-    loading: true,
+    loading: false,
     details: {},
     error: null,
   },
   refunds: {
-    loading: true,
+    loading: false,
     items: [],
     error: null,
   },
   transfers: {
-    loading: true,
+    loading: false,
     items: [],
     error: null,
   },
@@ -160,6 +168,9 @@ export default function(state = initialState, action) {
         items: [],
         error: action.payload.errors,
       });
+
+    case `${PAYMENT_RESET}`:
+      return initialState;
 
     default:
       return state;

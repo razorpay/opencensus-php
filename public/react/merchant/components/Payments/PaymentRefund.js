@@ -6,7 +6,7 @@ import Definition from 'rzp/ui/Definition';
 import DataTable from 'rzp/ui/Table/DataTable';
 import LoaderDots from 'rzp/ui/LoaderDots';
 import PlaceholderLoader from 'rzp/ui/PlaceholderLoader';
-import { refundId, amount } from 'rzp/ui/item/pair';
+import { refundId, amount, createdAt } from 'rzp/ui/item/pair';
 
 import ShowWhen from 'merchant/components/ShowWhen';
 
@@ -21,44 +21,42 @@ import ShowWhen from 'merchant/components/ShowWhen';
  * will display refund status and actions
  */
 
-const NumRefunds = ({ refunds }) => {
-  if (refunds.loading) {
-    return <LoaderDots />;
-  }
+const createdAtWithStyle = { columnClass: 'text-right', ...createdAt };
 
-  const numRefunds = refunds.items.length,
+const NumRefunds = ({ refunds, titleCase = false }) => {
+  const refundItems = refunds.items || [];
+
+  const numRefunds = refundItems.length,
     refundSuffix = numRefunds === 0 || numRefunds > 1 ? 's' : '';
 
   return (
     <span>
-      {numRefunds} refund{refundSuffix}
+      {refunds.loading ? <LoaderDots /> : numRefunds} {titleCase ? 'R' : 'r'}efund{refundSuffix}
     </span>
   );
 };
 
 const RefundsList = ({ refunds }) => {
+  const refundsHeading = {
+    title: 'Refund Details',
+    subTitle: <NumRefunds refunds={refunds} titleCase={true} />,
+  };
+
   return (
     <ContentToggler>
       <span>Refund Details</span>
-      <div className="refunds-list full-width-item">
-        <div className="panel-heading">
-          <span className="label--primary">Refund Details</span>
-          <span className="label--secondary">
-            <NumRefunds refunds={refunds} />
-          </span>
-        </div>
-        <div className="panel-content">
-          <DataTable
-            customClass="refunds-table"
-            progressLoader={true}
-            title="Refunds"
-            columns={[refundId, amount]}
-            items={refunds.items}
-            loading={refunds.loading}
-            showHeaders={false}
-            noStripe={true}
-          />
-        </div>
+      <div className="full-width-item sub-entity-list">
+        <DataTable
+          customClass="refunds-table"
+          progressLoader={true}
+          title="Refunds"
+          columns={[refundId, amount, createdAtWithStyle]}
+          items={refunds.items}
+          loading={refunds.loading}
+          showHeaders={false}
+          noStripe={true}
+          panelHeading={refundsHeading}
+        />
       </div>
     </ContentToggler>
   );
@@ -79,17 +77,18 @@ export default ({ payment, refunds, openRefundModal }) => {
   } else if (paymentStatus === 'captured') {
     return (
       <div>
-        {refundStatus === 'partial'
-          ? <Definition>
-              <span>
-                <Amount value={refundAmount} /> Refunded
-              </span>
-              <span>
-                Partially refunded in <NumRefunds refunds={refunds} />
-              </span>
-            </Definition>
-          : <Definition>No refunds issued yet</Definition>}
-        <p />
+        <div className="m-b">
+          {refundStatus === 'partial'
+            ? <Definition>
+                <span>
+                  <Amount value={refundAmount} /> Refunded
+                </span>
+                <span>
+                  Partially refunded in <NumRefunds refunds={refunds} />
+                </span>
+              </Definition>
+            : <Definition>No refunds issued yet</Definition>}
+        </div>
         {
           <ShowWhen myRole="owner manager operations admin">
             <p>
@@ -99,9 +98,7 @@ export default ({ payment, refunds, openRefundModal }) => {
             </p>
           </ShowWhen>
         }
-        {refunds.loading
-          ? <PlaceholderLoader />
-          : <RefundsList refunds={refunds} />}
+        {refundStatus === 'partial' && <RefundsList refunds={refunds} />}
       </div>
     );
   } else if (paymentStatus === 'refunded') {

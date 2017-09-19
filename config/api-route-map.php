@@ -147,7 +147,10 @@ return [
             'url'       => 'payments/{id}/refund',
             'routeName' => 'post_refund'
         ],
-
+        'payment_transfer'                  => [
+            'url'       => 'payments/{id}/transfers',
+            'routeName' => 'post_transfer'
+        ],
         // Orders
         'order_fetch'                       => [
             'url'       => 'orders',

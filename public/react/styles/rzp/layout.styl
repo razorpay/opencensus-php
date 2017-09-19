@@ -1008,3 +1008,26 @@ tr:hover .row-action.btn-group {
     font-size: 70%;
   }
 }
+
+.transfers-onhold-datepicker div.DateInput {
+  width: 100%;
+}
+
+form[name="createPaymentTransfer"] {
+  div.pair-value div.RadioButton:first-child {
+    margin-top: 0;
+  }
+
+  div.RadioButton .RadioButton__button {
+    cursor: pointer;
+  }
+
+  .CalendarMonth__caption {
+    margin-bottom: 10px;
+  }
+
+  .CalendarDay--blocked-calendar {
+    background-color: rgba(0,0,0,0.05);
+    cursor: not-allowed;
+  }
+}
