@@ -169,6 +169,7 @@ class Merchant
                 case Transaction\Type::REFUND:
                 case Transaction\Type::PAYOUT:
                 case Transaction\Type::TRANSFER:
+                case Transaction\Type::DISPUTE:
                     $details[$componentType]['amount'] -= $txn->getAmount();
                     break;
 
@@ -176,6 +177,7 @@ class Merchant
                     $details[$componentType]['amount'] += $txn->getCredit();
                     $details[$componentType]['amount'] -= $txn->getDebit();
                     break;
+
                 default:
                     throw new Exception\LogicException('Invalid Settlement-component-type:' . $componentType);
             }

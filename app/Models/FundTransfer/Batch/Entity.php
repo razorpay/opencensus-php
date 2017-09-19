@@ -5,6 +5,7 @@ namespace RZP\Models\FundTransfer\Batch;
 use RZP\Models\Base;
 use RZP\Models\FileStore\Entity as FileStore;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 /**
  * This entity contains aggregated settlement/payout data.
@@ -125,7 +126,7 @@ class Entity extends Base\PublicEntity
 
     protected function generateDate($input)
     {
-        $timestamp = Carbon::today('Asia/Kolkata')->timestamp;
+        $timestamp = Carbon::today(Timezone::IST)->getTimestamp();
 
         $this->setAttribute(self::DATE, $timestamp);
     }

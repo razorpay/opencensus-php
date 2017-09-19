@@ -70,7 +70,7 @@ class Validator extends Base\Validator
             return;
         }
 
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         if ($startAt < $currentTime)
         {
@@ -232,7 +232,7 @@ class Validator extends Base\Validator
 
     protected function validateStartAt($attribute, $value)
     {
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         if ($value < $currentTime)
         {

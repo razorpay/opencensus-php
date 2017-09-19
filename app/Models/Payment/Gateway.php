@@ -15,34 +15,38 @@ use Razorpay\IFSC\IFSC as BaseIFSC;
 
 class Gateway
 {
-    const AMEX               = 'amex';
-    const ATOM               = 'atom';
-    const AXIS_GENIUS        = 'axis_genius';
-    const AXIS_MIGS          = 'axis_migs';
-    const BILLDESK           = 'billdesk';
-    const CYBERSOURCE        = 'cybersource';
-    const EBS                = 'ebs';
-    const FIRST_DATA         = 'first_data';
-    const HDFC               = 'hdfc';
-    const MOBIKWIK           = 'mobikwik';
-    const NETBANKING_AIRTEL  = 'netbanking_airtel';
-    const NETBANKING_AXIS    = 'netbanking_axis';
-    const NETBANKING_FEDERAL = 'netbanking_federal';
-    const NETBANKING_HDFC    = 'netbanking_hdfc';
-    const NETBANKING_ICICI   = 'netbanking_icici';
-    const NETBANKING_INDUSIND= 'netbanking_indusind';
-    const NETBANKING_KOTAK   = 'netbanking_kotak';
-    const NETBANKING_RBL     = 'netbanking_rbl';
-    const PAYTM              = 'paytm';
-    const SHARP              = 'sharp';
-    const UPI_MINDGATE       = 'upi_mindgate';
-    const UPI_ICICI          = 'upi_icici';
-    const UPI_IDFC           = 'upi_idfc';
-    const AEPS_ICICI         = 'aeps_icici';
+    const AMEX                   = 'amex';
+    const ATOM                   = 'atom';
+    const AXIS_GENIUS            = 'axis_genius';
+    const AXIS_MIGS              = 'axis_migs';
+    const BILLDESK               = 'billdesk';
+    const BLADE                  = 'blade';
+    const CYBERSOURCE            = 'cybersource';
+    const HITACHI                = 'hitachi';
+    const EBS                    = 'ebs';
+    const FIRST_DATA             = 'first_data';
+    const HDFC                   = 'hdfc';
+    const MOBIKWIK               = 'mobikwik';
+    const NETBANKING_AIRTEL      = 'netbanking_airtel';
+    const NETBANKING_AXIS        = 'netbanking_axis';
+    const NETBANKING_FEDERAL     = 'netbanking_federal';
+    const NETBANKING_HDFC        = 'netbanking_hdfc';
+    const NETBANKING_CORPORATION = 'netbanking_corporation';
+    const NETBANKING_ICICI       = 'netbanking_icici';
+    const NETBANKING_INDUSIND    = 'netbanking_indusind';
+    const NETBANKING_KOTAK       = 'netbanking_kotak';
+    const NETBANKING_RBL         = 'netbanking_rbl';
+    const NETBANKING_PNB         = 'netbanking_pnb';
+    const PAYTM                  = 'paytm';
+    const SHARP                  = 'sharp';
+    const UPI_MINDGATE           = 'upi_mindgate';
+    const UPI_ICICI              = 'upi_icici';
+    const AEPS_ICICI             = 'aeps_icici';
 
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
     const WALLET_FREECHARGE  = 'wallet_freecharge';
     const WALLET_JIOMONEY    = 'wallet_jiomoney';
+    const WALLET_SBIBUDDY    = 'wallet_sbibuddy';
     const WALLET_MPESA       = 'wallet_mpesa';
     const WALLET_OLAMONEY    = 'wallet_olamoney';
     const WALLET_OPENWALLET  = 'wallet_openwallet';
@@ -113,6 +117,7 @@ class Gateway
         self::WALLET_JIOMONEY,
         self::NETBANKING_RBL,
         self::NETBANKING_INDUSIND,
+        self::NETBANKING_PNB,
     ];
 
     /**
@@ -132,9 +137,11 @@ class Gateway
         Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::AMEX,
         Payment\Gateway::WALLET_JIOMONEY,
+        Payment\Gateway::WALLET_SBIBUDDY,
         Payment\Gateway::WALLET_AIRTELMONEY,
         Payment\Gateway::FIRST_DATA,
         Payment\Gateway::UPI_ICICI,
+        Payment\Gateway::WALLET_PAYZAPP,
     ];
 
     public static $channels = [
@@ -142,6 +149,7 @@ class Gateway
         self::ATOM                => Settlement\Channel::ATOM,
         self::AXIS_GENIUS         => Settlement\Channel::KOTAK,
         self::AXIS_MIGS           => Settlement\Channel::KOTAK,
+        self::BLADE               => Settlement\Channel::KOTAK,
         self::BILLDESK            => Settlement\Channel::KOTAK,
         self::EBS                 => Settlement\Channel::KOTAK,
         self::HDFC                => Settlement\Channel::KOTAK,
@@ -156,6 +164,7 @@ class Gateway
         self::NETBANKING_FEDERAL  => Settlement\Channel::KOTAK,
         self::NETBANKING_RBL      => Settlement\Channel::KOTAK,
         self::NETBANKING_INDUSIND => Settlement\Channel::KOTAK,
+        self::NETBANKING_PNB      => Settlement\Channel::KOTAK,
         self::WALLET_PAYZAPP      => Settlement\Channel::KOTAK,
         self::WALLET_PAYUMONEY    => Settlement\Channel::KOTAK,
         self::WALLET_OLAMONEY     => Settlement\Channel::KOTAK,
@@ -169,6 +178,7 @@ class Gateway
         self::UPI_ICICI           => Settlement\Channel::KOTAK,
         self::AEPS_ICICI          => Settlement\Channel::KOTAK,
         self::CYBERSOURCE         => Settlement\Channel::KOTAK,
+        self::HITACHI             => Settlement\Channel::KOTAK,
     ];
 
     /**
@@ -187,6 +197,8 @@ class Gateway
             self::AMEX,
             self::CYBERSOURCE,
             self::FIRST_DATA,
+            self::BLADE,
+            self::HITACHI,
         ],
 
         Method::NETBANKING => [
@@ -195,12 +207,14 @@ class Gateway
             self::EBS,
             self::NETBANKING_ICICI,
             self::NETBANKING_HDFC,
+            self::NETBANKING_CORPORATION,
             self::NETBANKING_KOTAK,
             self::NETBANKING_AIRTEL,
             self::NETBANKING_AXIS,
             self::NETBANKING_FEDERAL,
             self::NETBANKING_RBL,
             self::NETBANKING_INDUSIND,
+            self::NETBANKING_PNB,
         ],
 
         Method::WALLET => [
@@ -212,6 +226,7 @@ class Gateway
             self::WALLET_AIRTELMONEY,
             self::WALLET_FREECHARGE,
             self::WALLET_JIOMONEY,
+            self::WALLET_SBIBUDDY,
             self::WALLET_OPENWALLET,
             self::WALLET_MPESA,
         ],
@@ -225,7 +240,6 @@ class Gateway
         Method::UPI => [
             self::UPI_MINDGATE,
             self::UPI_ICICI,
-            self::UPI_IDFC,
         ],
 
         Method::AEPS => [
@@ -263,6 +277,7 @@ class Gateway
             self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY]
         ],
         self::WALLET_OPENWALLET     => [],
+        self::HITACHI               => [],
     ];
 
     /**
@@ -276,6 +291,7 @@ class Gateway
         self::AXIS_MIGS,
         self::AMEX,
         self::WALLET_OPENWALLET,
+        self::HITACHI,
     ];
 
 
@@ -289,7 +305,6 @@ class Gateway
     public static $asynchronous = [
         self::UPI_MINDGATE,
         self::UPI_ICICI,
-        self::UPI_IDFC,
         self::SHARP,
     ];
 
@@ -307,21 +322,31 @@ class Gateway
             Network::MAES,
             Network::DICL,
             Network::RUPAY,
-            Network::UNKNOWN],
+            Network::UNKNOWN
+        ],
         self::AXIS_MIGS => [
             Network::MC,
-            Network::VISA],
+            Network::VISA
+        ],
         self::AXIS_GENIUS => [
             Network::MC,
-            Network::VISA],
+            Network::VISA
+        ],
         self::ATOM => [
             Network::MC,
-            Network::VISA],
+            Network::VISA
+        ],
         self::AMEX => [
-            Network::AMEX],
+            Network::AMEX
+        ],
+        self::BLADE => [
+            Network::MC,
+            Network::VISA
+        ],
         self::PAYTM => [
             Network::MC,
-            Network::VISA],
+            Network::VISA
+        ],
         self::SHARP => [
             Network::MC,
             Network::VISA,
@@ -329,10 +354,15 @@ class Gateway
             Network::AMEX,
             Network::DICL,
             Network::RUPAY,
-            Network::UNKNOWN],
+            Network::UNKNOWN
+        ],
         self::CYBERSOURCE => [
             Network::MC,
-            Network::VISA],
+            Network::VISA
+        ],
+        self::HITACHI => [
+            Network::MC,
+        ],
         self::FIRST_DATA => [
             Network::MC,
             Network::VISA,
@@ -350,6 +380,7 @@ class Gateway
         Wallet::AIRTELMONEY => Gateway::WALLET_AIRTELMONEY,
         Wallet::FREECHARGE  => Gateway::WALLET_FREECHARGE,
         Wallet::JIOMONEY    => Gateway::WALLET_JIOMONEY,
+        Wallet::SBIBUDDY    => Gateway::WALLET_SBIBUDDY,
         Wallet::OPENWALLET  => Gateway::WALLET_OPENWALLET,
         Wallet::MPESA       => Gateway::WALLET_MPESA,
     ];
@@ -357,7 +388,6 @@ class Gateway
     public static $upiToGatewayMap = [
         Upi::HDFC   => Gateway::UPI_MINDGATE,
         Upi::ICICI  => Gateway::UPI_ICICI,
-        Upi::IDFC   => Gateway::UPI_IDFC,
     ];
 
     public static $acquirerToCodeMap = [
@@ -389,6 +419,7 @@ class Gateway
         self::NETBANKING_AXIS,
         self::NETBANKING_FEDERAL,
         self::NETBANKING_INDUSIND,
+        self::NETBANKING_PNB,
         self::WALLET_PAYZAPP,
         self::FIRST_DATA,
         self::CYBERSOURCE,
@@ -397,9 +428,9 @@ class Gateway
         self::WALLET_OLAMONEY,
         self::WALLET_FREECHARGE,
         self::WALLET_JIOMONEY,
+        self::WALLET_SBIBUDDY,
         self::WALLET_MPESA,
         self::UPI_ICICI,
-        self::UPI_IDFC,
     ];
 
     public static $verifyDisabled = [
@@ -416,6 +447,7 @@ class Gateway
         Gateway::CYBERSOURCE,
         Gateway::FIRST_DATA,
         Gateway::AXIS_MIGS,
+        Gateway::HDFC,
     ];
 
     /**
@@ -429,6 +461,7 @@ class Gateway
         Gateway::UPI_MINDGATE,
         Gateway::UPI_ICICI,
         Gateway::WALLET_OLAMONEY,
+        Gateway::NETBANKING_CORPORATION,
         Gateway::SHARP
     ];
 
@@ -438,6 +471,7 @@ class Gateway
      * @var array
      */
     public static $internationalCardGateways = [
+        Gateway::BLADE,
         Gateway::HDFC,
         Gateway::AXIS_MIGS,
         Gateway::AMEX,
@@ -455,6 +489,7 @@ class Gateway
         IFSC::FDRL,
         IFSC::RATN,
         IFSC::INDB,
+        IFSC::PUNB,
     ];
 
     /**
@@ -479,12 +514,14 @@ class Gateway
     public static $netbankingToGatewayMap = [
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
+        IFSC::CORP => Gateway::NETBANKING_CORPORATION,
         IFSC::AIRP => Gateway::NETBANKING_AIRTEL,
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
-        IFSC::RATN => Gateway::NETBANKING_RBL
+        IFSC::RATN => Gateway::NETBANKING_RBL,
+        IFSC::PUNB => Gateway::NETBANKING_PNB,
     ];
 
     /**
@@ -500,7 +537,8 @@ class Gateway
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
         IFSC::RATN => Gateway::NETBANKING_RBL,
-        IFSC::INDB => Gateway::NETBANKING_INDUSIND
+        IFSC::INDB => Gateway::NETBANKING_INDUSIND,
+        IFSC::PUNB => Gateway::NETBANKING_PNB,
     ];
 
     /**
@@ -612,7 +650,11 @@ class Gateway
         if (in_array($gateway, self::$methodMap[Method::WALLET]) === false)
         {
             throw new Exception\LogicException(
-                'Unknown wallet gateway. Gateway: ' . $gateway);
+                'Unknown wallet gateway',
+                null,
+                [
+                    'gateway' => $gateway,
+                ]);
         }
 
         return array_flip(self::$walletToGatewayMap)[$gateway];
@@ -623,7 +665,11 @@ class Gateway
         if (self::isValidGateway($gateway) === false)
         {
             throw new Exception\LogicException(
-                'Unknown gateway. Gateway: ' . $gateway);
+                'Unknown gateway',
+                null,
+                [
+                    'gateway' => $gateway,
+                ]);
         }
     }
 

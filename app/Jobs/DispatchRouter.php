@@ -17,14 +17,16 @@ class DispatchRouter extends Base\Core
      * to fetch the config from config/queue.php
      */
 
-    const ES        = 'es';
-    const ES_V2     = 'es_v2';
-    const DASHBOARD = 'dashboard';
-    const WEBHOOK   = 'webhook';
-    const REPORTS   = 'reports';
-    const INVOICE   = 'invoice';
-    const BATCH     = 'batch';
-    const CAPTURE   = 'capture';
+    const ES                = 'es';
+    const ES_V2             = 'es_v2';
+    const DASHBOARD         = 'dashboard';
+    const WEBHOOK           = 'webhook';
+    const REPORTS           = 'reports';
+    const INVOICE           = 'invoice';
+    const BATCH             = 'batch';
+    const CAPTURE           = 'capture';
+    const GATEWAY_FILE      = 'gateway_file';
+    const MERCHANT_INVOICE  = 'merchant_invoice';
 
     protected $mock;
 

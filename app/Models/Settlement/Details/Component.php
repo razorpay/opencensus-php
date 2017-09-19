@@ -15,13 +15,14 @@ class Component
     const FEE_CREDITS   = 'fee_credits';
     const TRANSFER      = 'transfer';
     const REVERSAL      = 'reversal';
+    const DISPUTE       = 'dispute';
 
-    public static function validateComponent($component)
+    public static function validateComponent(string $component)
     {
-        if (defined(__CLASS__.'::'.strtoupper($component)) === false)
+        if (defined(__CLASS__ . '::' . strtoupper($component)) === false)
         {
             throw new Exception\InvalidArgumentException(
-                'Not a valid settlemnt component: ' . $component);
+                'Not a valid settlement component: ' . $component);
         }
     }
 
@@ -37,6 +38,7 @@ class Component
             self::FEE_CREDITS,
             self::TRANSFER,
             self::REVERSAL,
+            self::DISPUTE,
         ];
     }
 }

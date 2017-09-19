@@ -24,3 +24,7 @@ app/config/**/dev/
 /environment/env.php
 _*
 storage/
+
+#eclipse
+.buildpath
+.project

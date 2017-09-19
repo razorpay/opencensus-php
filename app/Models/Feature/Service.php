@@ -3,7 +3,7 @@
 namespace RZP\Models\Feature;
 
 use RZP\Models\Base;
-use RZP\Trace\Trace;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
@@ -12,9 +12,13 @@ class Service extends Base\Service
     {
         $featureParams = $this->buildFeatureParams($input);
 
-        $features = $featureParams->map(function ($item)
+        $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
+
+        $featureCore = new Core;
+
+        $features = $featureParams->map(function ($item) use ($featureCore, $shouldSync)
         {
-            return (new Core)->create($item);
+            return $featureCore->create($item, $shouldSync);
         });
 
         return $features->toArray();
@@ -32,28 +36,18 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function deleteFeature(string $entityId, string $featureName)
+    public function deleteFeature(string $entityId, string $featureName, array $input)
     {
         $feature = $this->repo->feature->findByEntityIdAndNameOrFail($entityId, $featureName);
 
-        $this->trace->info(TraceCode::FEATURE_DELETE_REQUEST, $feature->toArrayPublic());
+        $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
 
-        // Workflow
+        (new Core)->delete($feature, $shouldSync);
 
-        list($original, $dirty) = [
-            ['feature' => $featureName],
-            ['feature' => null],
-        ];
+        // We delete the tag also along with feature.
+        (new Merchant\Service)->deleteTag($entityId, $feature->getName());
 
-        $this->app['workflow']
-             ->setEntity($feature->getEntity())
-             ->handle($original, $dirty);
-
-        $this->repo->feature->delete($feature);
-
-        (new Core)->notifyOnSlack($feature, true);
-
-        return $feature->toArrayPublic();
+        return $feature->toArrayDeleted();
     }
 
     public function multiAssignFeature($input)
@@ -61,6 +55,8 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::FEATURE_MULTI_ASSIGN_REQUEST, $input);
 
         $entityIds = $input[Constants::ENTITY_IDS];
+
+        $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
 
         $response = new Base\Collection;
 
@@ -74,7 +70,7 @@ class Service extends Base\Service
 
             try
             {
-                $feature = (new Core)->create($featureParam);
+                $feature = (new Core)->create($featureParam, $shouldSync);
 
                 $response->push($feature);
             }
@@ -97,6 +93,8 @@ class Service extends Base\Service
 
         $entityIds = $input[Constants::ENTITY_IDS];
 
+        $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
+
         $featureName = $input[Entity::NAME];
 
         $response = new Base\Collection;
@@ -111,7 +109,7 @@ class Service extends Base\Service
             {
                 $response->push($feature);
 
-                $this->repo->deleteOrFail($feature);
+                (new Core)->delete($feature, $shouldSync);
             }
         }
 

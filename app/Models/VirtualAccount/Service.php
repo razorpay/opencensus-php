@@ -171,7 +171,15 @@ class Service extends Base\Service
 
         if ($paymentToRefund->getAmount() < $amountToRefund)
         {
-            throw new Exception\LogicException('Last payment amount is less than VA excess');
+            throw new Exception\LogicException(
+                'Last payment amount is less than VA excess',
+                null,
+                [
+                    'payment_amount'    => $paymentToRefund->getAmount(),
+                    'va_excess'         => $amountToRefund,
+                    'payment_id'        => $paymentToRefund->getId(),
+                    'va_id'             => $virtualAccount->getId(),
+                ]);
         }
 
         return [$paymentToRefund, $amountToRefund];

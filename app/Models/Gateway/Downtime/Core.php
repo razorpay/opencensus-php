@@ -57,7 +57,13 @@ class Core extends Base\Core
         return $downtime;
     }
 
-    public function getFormattedGatewayDowntimeCheckoutData(Merchant\Entity $merchant)
+    /**
+     * Fetches downtime information at the current time
+     * @param  array  $methods Array of methods for which to fetch downtime
+     *                         If empty, then downtime for all methods are returned
+     * @return Collection      Collection of downtimes
+     */
+    public function getPublicGatewayDowntimeData(array $methods = []): Base\PublicCollection
     {
         // set the from time to current time. For all practical
         // purposes, this is usually not set by input.
@@ -69,9 +75,10 @@ class Core extends Base\Core
         // as only a particular gateway terminal having a systemic downtime hasn't
         // been encountered yet. Will need to modify this later when we deal with
         // such downtimes
-        $downtimes = $this->repo->gateway_downtime->fetchDowntimesWithoutTerminal($input);
+        $downtimes = $this->repo->gateway_downtime
+                                ->fetchDowntimesWithoutTerminal($input, $methods);
 
-        return $downtimes->toArrayExternal();
+        return $downtimes;
     }
 
     public function fetchMostRecentActive(array $input)
@@ -131,7 +138,7 @@ class Core extends Base\Core
 
         $gateways[] = Entity::ALL;
 
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         $params = [
             Entity::GATEWAY => $gateways,

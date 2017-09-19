@@ -3,6 +3,7 @@
 namespace RZP\Mail\Gateway\RefundFile;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Models\Payment\Gateway;
@@ -13,14 +14,11 @@ class Base extends Mailable
 
     protected $data;
 
-    protected $email;
-
-    protected $template;
+    protected $emails;
 
     public function __construct(array $data,
                                 string $type,
-                                string $email = null,
-                                string $template = 'emails.message')
+                                array $emails = [])
     {
         parent::__construct();
 
@@ -28,9 +26,7 @@ class Base extends Mailable
 
         $this->type = $type;
 
-        $this->email = $email;
-
-        $this->template = $template;
+        $this->emails = $emails;
     }
 
     protected function addSender()
@@ -46,7 +42,9 @@ class Base extends Mailable
 
     protected function addRecipients()
     {
-        $emails = $this->email ?? Constants::RECIPIENT_EMAILS_MAP[$this->type];
+        $emails = (empty($this->emails) === true) ?
+                    Constants::RECIPIENT_EMAILS_MAP[$this->type] :
+                    $this->emails;
 
         $this->to($emails);
 
@@ -84,7 +82,7 @@ class Base extends Mailable
 
     protected function getSubject()
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $today = Carbon::now(Timezone::IST)->format('d-m-Y');
 
         $subject = Constants::SUBJECT_MAP[$this->type] . $today;
 
@@ -93,7 +91,7 @@ class Base extends Mailable
 
     protected function addHtmlView()
     {
-        $this->view($this->template);
+        $this->view(Constants::MAIL_TEMPLATE_MAP[$this->type]);
 
         return $this;
     }

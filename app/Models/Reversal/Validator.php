@@ -10,7 +10,6 @@ use RZP\Models\Transfer;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        'transfer'          => 'sometimes',
         Entity::AMOUNT      => 'required|integer|min:100',
         Entity::CURRENCY    => 'required|string|size:3|in:INR',
         Entity::NOTES       => 'sometimes|notes',

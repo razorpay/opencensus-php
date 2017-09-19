@@ -3,21 +3,16 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
-use RZP\Models\Customer;
-use RZP\Models\BankAccount;
-use RZP\Models\Upi\Vpa;
 use Request;
+use RZP\Constants\Entity as E;
 
 class CustomerController extends Controller
 {
-    protected $customer;
-    protected $token;
-
     public function createLocalCustomer()
     {
         $input = Request::all();
 
-        $data = $this->service('customer')->createLocalCustomer($input);
+        $data = $this->service()->createLocalCustomer($input);
 
         return ApiResponse::json($data);
     }
@@ -26,28 +21,28 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('customer')->edit($id, $input);
+        $data = $this->service()->edit($id, $input);
 
         return ApiResponse::json($data);
     }
 
     public function getCustomer($id)
     {
-        $data = $this->service('customer')->fetch($id);
+        $data = $this->service()->fetch($id);
 
         return ApiResponse::json($data);
     }
 
     public function fetchUpiCustomer()
     {
-        $data = $this->service('customer')->fetchByDeviceAuth();
+        $data = $this->service()->fetchByDeviceAuth();
 
         return ApiResponse::json($data);
     }
 
     public function getDeviceCustomer()
     {
-        $data = $this->service('customer')->getDeviceCustomer();
+        $data = $this->service()->getDeviceCustomer();
 
         return ApiResponse::json($data);
     }
@@ -56,14 +51,14 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $customers = $this->service('customer')->fetchMultiple($input);
+        $customers = $this->service()->fetchMultiple($input);
 
         return ApiResponse::json($customers);
     }
 
     public function deleteCustomer($id)
     {
-        $data = $this->service('customer')->delete($id);
+        $data = $this->service()->delete($id);
 
         return ApiResponse::json($data);
     }
@@ -72,7 +67,7 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('token')->add($id, $input);
+        $data = $this->service(E::TOKEN)->add($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -81,49 +76,49 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('token')->edit($id, $token, $input);
+        $data = $this->service(E::TOKEN)->edit($id, $token, $input);
 
         return ApiResponse::json($data);
     }
 
     public function deleteToken($id, $token)
     {
-        $data = $this->service('token')->deleteTokenForLocalCustomer($id, $token);
+        $data = $this->service(E::TOKEN)->deleteTokenForLocalCustomer($id, $token);
 
         return ApiResponse::json($data);
     }
 
     public function fetchBalance($accountId)
     {
-        $data = $this->service('customer')->fetchBalance($accountId);
+        $data = $this->service()->fetchBalance($accountId);
 
         return ApiResponse::json($data);
     }
 
     public function fetchBankAccount($accountId)
     {
-        $data = $this->service('customer')->fetchBankAccount($accountId);
+        $data = $this->service()->fetchBankAccount($accountId);
 
         return ApiResponse::json($data);
     }
 
     public function fetchToken($id, $token)
     {
-        $data = $this->service('token')->fetch($id, $token);
+        $data = $this->service(E::TOKEN)->fetch($id, $token);
 
         return ApiResponse::json($data);
     }
 
     public function fetchTokens($id)
     {
-        $data = $this->service('token')->fetchMultiple($id);
+        $data = $this->service(E::TOKEN)->fetchMultiple($id);
 
         return ApiResponse::json($data);
     }
 
     public function fetchTokensForGlobalCustomer()
     {
-        $tokens = $this->service('token')->fetchTokensForGlobalCustomer();
+        $tokens = $this->service(E::TOKEN)->fetchTokensForGlobalCustomer();
 
         return ApiResponse::json($tokens);
     }
@@ -132,7 +127,7 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $payments = $this->service('customer')->fetchPaymentsForGlobalCustomer($input);
+        $payments = $this->service()->fetchPaymentsForGlobalCustomer($input);
 
         return ApiResponse::json($payments);
     }
@@ -141,14 +136,14 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $status = $this->service('customer')->fetchGlobalCustomerStatus($contact, $input, true);
+        $status = $this->service()->fetchGlobalCustomerStatus($contact, $input, true);
 
         return ApiResponse::json($status);
     }
 
     public function deleteTokenForGlobalCustomer($token)
     {
-        $data = $this->service('token')->deleteTokenForGlobalCustomer($token);
+        $data = $this->service(E::TOKEN)->deleteTokenForGlobalCustomer($token);
 
         return ApiResponse::json($data);
     }
@@ -157,7 +152,7 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Customer\AppToken\Service)->deleteAppTokensForGlobalCustomer($input);
+        $data = $this->service(E::APP_TOKEN)->deleteAppTokensForGlobalCustomer($input);
 
         return ApiResponse::json($data);
     }
@@ -166,7 +161,7 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('customer')->addBankAccount($id, $input);
+        $data = $this->service()->addBankAccount($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -175,35 +170,35 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Vpa\Service)->create($input);
+        $data = $this->service(E::VPA)->create($input);
 
         return ApiResponse::json($data);
     }
 
     public function getBankAccounts($id)
     {
-        $data = $this->service('customer')->getBankAccounts($id);
+        $data = $this->service()->getBankAccounts($id);
 
         return ApiResponse::json($data);
     }
 
     public function fetchUpiBankAccounts($ifsc = 'RAZR')
     {
-        return $this->service('customer')->fetchUpiBankAccounts($ifsc);
+        return $this->service()->fetchUpiBankAccounts($ifsc);
     }
 
     public function setMpin($bankAccountId)
     {
         $input = Request::all();
 
-        return $this->service('customer')->setMpin($bankAccountId, $input);
+        return $this->service()->setMpin($bankAccountId, $input);
     }
 
     public function resetMpin($bankAccountId)
     {
         $input = Request::all();
 
-        $data = $this->service('customer')->resetMpin($bankAccountId, $input);
+        $data = $this->service()->resetMpin($bankAccountId, $input);
 
         return $data;
     }
@@ -212,7 +207,7 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('customer')->sendOtp($input);
+        $data = $this->service()->sendOtp($input);
 
         return ApiResponse::json($data);
     }
@@ -221,7 +216,7 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('customer')->verifyOtp($input);
+        $data = $this->service()->verifyOtp($input);
 
         return ApiResponse::json($data);
     }
@@ -235,7 +230,7 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('customer')->verifyOtpApp($input);
+        $data = $this->service()->verifyOtpApp($input);
 
         return ApiResponse::json($data);
     }
@@ -244,7 +239,7 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('customer')->validateDeviceToken($deviceToken, $input);
+        $data = $this->service()->validateDeviceToken($deviceToken, $input);
 
         return ApiResponse::json($data);
     }
@@ -253,7 +248,7 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $data = $this->service('customer')->updateSmsStatus($id, $input);
+        $data = $this->service()->updateSmsStatus($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -262,7 +257,7 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $address = $this->service('customer')->createAddress($customerId, $input);
+        $address = $this->service()->createAddress($customerId, $input);
 
         return ApiResponse::json($address);
     }
@@ -271,28 +266,28 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $addresses = $this->service('customer')->fetchAddresses($customerId, $input);
+        $addresses = $this->service()->fetchAddresses($customerId, $input);
 
         return ApiResponse::json($addresses);
     }
 
     public function putPrimaryAddress($customerId, $addressId)
     {
-        $address = $this->service('customer')->setPrimaryAddress($customerId, $addressId);
+        $address = $this->service()->setPrimaryAddress($customerId, $addressId);
 
         return ApiResponse::json($address);
     }
 
     public function deleteAddress($customerId, $addressId)
     {
-        $data = $this->service('customer')->deleteAddress($customerId, $addressId);
+        $data = $this->service()->deleteAddress($customerId, $addressId);
 
         return ApiResponse::json($data);
     }
 
     public function getCustomerWalletBalance(string $customerId)
     {
-        $customerBalance = $this->service('customer')->getCustomerBalance($customerId);
+        $customerBalance = $this->service()->getCustomerBalance($customerId);
 
         return ApiResponse::json($customerBalance);
     }
@@ -301,7 +296,7 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $statement = $this->service('customer')->getCustomerBalanceStatement($customerId, $input);
+        $statement = $this->service()->getCustomerBalanceStatement($customerId, $input);
 
         return ApiResponse::json($statement);
     }
@@ -310,7 +305,7 @@ class CustomerController extends Controller
     {
         $input = Request::all();
 
-        $summary = $this->service('token')->migrateToGatewayTokens($input);
+        $summary = $this->service(E::TOKEN)->migrateToGatewayTokens($input);
 
         return ApiResponse::json($summary);
     }

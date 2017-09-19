@@ -446,6 +446,25 @@ class SubscriptionCreateTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetInvoicesForSubscription()
+    {
+        $this->testCreateSubscriptionWithNoStartAt();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['subscription_id'] = $subscription['id'];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($subscription['id'], $response['items'][0]['subscription_id']);
+
+        $this->ba->privateAuth();
+    }
+
     protected function getCreateSubscriptionRequestContent($function, $planId = null)
     {
         $requestContent = $this->testData[$function];

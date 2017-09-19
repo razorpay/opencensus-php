@@ -361,8 +361,8 @@ return [
     // Expectations for ES
 
     'testListInvoiceWithUserIdHeaderEsExpectedSearchParams' => [
-        'index' => 'invoice_test',
-        'type'  => 'invoice_test',
+        'index' => 'testing_invoice_test',
+        'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,

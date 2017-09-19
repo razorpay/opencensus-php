@@ -9,6 +9,7 @@ use RZP\Models\Payment\Refund;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant;
+use RZP\Models\Dispute;
 
 class Entity extends Base\PublicEntity
 {
@@ -267,6 +268,11 @@ class Entity extends Base\PublicEntity
     public function getCreditType()
     {
         return $this->getAttribute(self::CREDIT_TYPE);
+    }
+
+    public function getSettlementId()
+    {
+        return $this->getAttribute(self::SETTLEMENT_ID);
     }
 
 /* ----------------------------- Accessors -----------------------------------*/
@@ -582,6 +588,11 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::TRANSFER);
     }
 
+    public function isTypeDispute()
+    {
+        return ($this->getType() === Type::DISPUTE);
+    }
+
     public function isGratis()
     {
         return $this->getAttribute(self::GRATIS);
@@ -605,6 +616,11 @@ class Entity extends Base\PublicEntity
     public function isFeeBearerCustomer()
     {
         return $this->getAttribute(self::FEE_BEARER) === Merchant\FeeBearer::CUSTOMER;
+    }
+
+    public function isPostpaid()
+    {
+        return ($this->getAttribute(self::FEE_MODEL) === Merchant\FeeModel::POSTPAID);
     }
 
     public function toArrayReport()
@@ -633,7 +649,7 @@ class Entity extends Base\PublicEntity
         // while we only want to provide date.
         $reportTxn[self::SETTLED_AT] = $this->getDateInFormatDMY(self::SETTLED_AT);
 
-        if ($this->isTypePayment())
+        if ($this->isTypePayment() === true)
         {
             $payment = $this->source;
 
@@ -648,7 +664,7 @@ class Entity extends Base\PublicEntity
 
             $this->fillPaymentDetails($payment, $reportTxn);
         }
-        else if ($this->isTypeRefund())
+        else if ($this->isTypeRefund() === true)
         {
             $refund = $this->source;
 
@@ -665,18 +681,28 @@ class Entity extends Base\PublicEntity
 
             $this->fillPaymentDetails($payment, $reportTxn);
         }
-        else if ($this->isTypeSettlement())
+        else if ($this->isTypeSettlement() === true)
         {
             $settlement = $this->source;
 
             $reportTxn['settlement_utr'] = $settlement->getUtr();
             $reportTxn[self::SETTLED] = null;
         }
-        else if ($this->isTypeAdjustment())
+        else if ($this->isTypeAdjustment() === true)
         {
             $adjustment = $this->source;
 
             $reportTxn[Adjustment\Entity::DESCRIPTION] = $adjustment->getDescription();
+        }
+        else if ($this->isTypeDispute() === true)
+        {
+            $dispute = $this->source;
+
+            $payment = $dispute->payment;
+
+            $reportTxn[Dispute\Entity::PAYMENT_ID] = $payment->getPublicId();
+
+            $this->fillPaymentDetails($payment, $reportTxn);
         }
 
         $reportTxn[self::TAX] = $tax;

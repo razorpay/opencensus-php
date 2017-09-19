@@ -14,8 +14,12 @@ build:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: root
       - redis
+      - elasticsearch
     # The steps that will be executed on build
     steps:
+      - script:
+          name: ENV Variables
+          code: env
       - script:
           name: copy env file
           code: cp ./environment/.env.wercker ./environment/.env.testing
@@ -27,10 +31,17 @@ build:
           overwrite: true
           content:
       - script:
+          name: Export ES env var to API environment variables
+          code: >
+              export ES_HOST="$ELASTICSEARCH_PORT_9200_TCP_ADDR"
+              export ES_AUDIT_HOST="$ELASTICSEARCH_PORT_9200_TCP_ADDR"
+      - script:
           name: Export wercker DB env var to API environment variables
           code: >
               export DB_TEST_HOST="$MYSQL_PORT_3306_TCP_ADDR"
               export DB_TEST_PORT="$MYSQL_PORT_3306_TCP_PORT"
+              export DB_AUTH_HOST="$MYSQL_PORT_3306_TCP_ADDR"
+              export DB_AUTH_PORT="$MYSQL_PORT_3306_TCP_PORT"
       - script:
           name: Export wercker Redis env var to API environment variables
           code: >
@@ -67,7 +78,7 @@ build:
               mkdir -p /opt/razorpay/certs/first_data
       - script:
           name: Run unit tests
-          code: php -d memory_limit=4G vendor/phpunit/phpunit/phpunit --debug --verbose
+          code: php -d memory_limit=512M vendor/phpunit/phpunit/phpunit --debug --verbose
       - script:
           name: List directory
           code: ls -lah

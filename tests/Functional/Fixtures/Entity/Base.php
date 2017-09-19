@@ -59,6 +59,7 @@ class Base
         'fee_breakup'       => \RZP\Models\Transaction\FeeBreakup\Entity::class,
         'schedule_task'     => \RZP\Models\Schedule\Task\Entity::class,
         'gateway_token'     => \RZP\Models\Customer\GatewayToken\Entity::class,
+        'risk'              => \RZP\Models\Risk\Entity::class,
 
         'atom'              => \RZP\Gateway\Atom\Entity::class,
         'hdfc'              => \RZP\Gateway\Hdfc\Entity::class,

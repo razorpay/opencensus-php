@@ -111,6 +111,12 @@ return [
         'live'       => env('AWS_REPORTS_QUEUE'),
     ],
 
+    'merchant_invoice' => [
+        'connection' => 'sqs_multi_default',
+        'test'       => env('AWS_INVOICE_REPORTS_QUEUE'),
+        'live'       => env('AWS_INVOICE_REPORTS_QUEUE'),
+    ],
+
     'invoice' => [
         'connection' => 'sqs_multi_default',
         'test'       => env('AWS_INVOICE_EMAILS_QUEUE'),
@@ -128,6 +134,12 @@ return [
     ],
 
     'capture' => [
+        'connection' => 'sqs_multi_default',
+        'test'       => env('AWS_GENERAL_TEST_QUEUE'),
+        'live'       => env('AWS_GENERAL_LIVE_QUEUE'),
+    ],
+
+    'gateway_file' => [
         'connection' => 'sqs_multi_default',
         'test'       => env('AWS_GENERAL_TEST_QUEUE'),
         'live'       => env('AWS_GENERAL_LIVE_QUEUE'),

@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\FileStore;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mail;
 use Mockery;
 
@@ -112,7 +113,7 @@ class FileStoreTest extends TestCase
     {
         $payments = $this->getEntities('payment', [], true);
 
-        $createdAt = Carbon::yesterday('Asia/Kolkata')->addHours(10)->addMinutes(30)->timestamp;
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(10)->addMinutes(30)->timestamp;
 
         // Set payment dates to yesterday
         foreach ($payments['items'] as $payment)
@@ -139,7 +140,7 @@ class FileStoreTest extends TestCase
 
     protected function mockMail($amount)
     {
-        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+        $date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
         $testData = [
             'subject' => 'Kotak Netbanking claims and refund files for '.$date,

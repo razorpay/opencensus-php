@@ -20,9 +20,12 @@ class GatewayErrorException extends RecoverableException
         $code,
         $gatewayErrorCode = null,
         $gatewayErrorDesc = null,
+        $data = [],
         \Exception $previous = null)
     {
         $this->initError($code);
+
+        $this->setData($data);
 
         $this->setGatewayErrorCodeAndDesc(
             $gatewayErrorCode,

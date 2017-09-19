@@ -12,7 +12,7 @@ use RZP\Exception\BadRequestException;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::FILE                 => 'required|file|mimes:xlsx,application/zip,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/octet-stream|max:1024',
+        Entity::FILE                 => 'required|file|mimes:xlsx,application/zip,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/octet-stream,txt|max:1024',
         Entity::TYPE                 => 'required|string|max:14|custom',
 
         //

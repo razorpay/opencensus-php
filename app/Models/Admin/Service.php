@@ -2,14 +2,34 @@
 
 namespace RZP\Models\Admin;
 
+use Cache;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Base\Common;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
+use RZP\Constants\AdminFetch;
 
 class Service extends Base\Service
 {
+    public function getAllEntities($input)
+    {
+        $fields = AdminFetch::fields();
+        $entities = AdminFetch::entities();
+
+        // Fetching all entities and fill them with null
+        $allEntities = array_fill_keys(Entity::getAllEntities(), null);
+
+        $mergedEntities = array_merge($allEntities, $entities);
+
+        return [
+            'version'   => 1,
+            'fields'    => $fields,
+            'entities'  => $mergedEntities
+        ];
+    }
+
     public function fetchEntityById($entity, $id)
     {
         $entity = $this->fetchEntityByNameAndId($entity, $id);
@@ -88,6 +108,59 @@ class Service extends Base\Service
         $mailer->setRecipient($input['lists']);
 
         return $mailer->send();
+    }
+
+    public function setConfigKeys(array $input): array
+    {
+        (new Validator)->validateInput('set_config_keys', $input);
+
+        $result = [];
+
+        foreach ($input as $key => $value)
+        {
+            $result[] = $this->setConfigKey($key, $value);
+        }
+
+        return $result;
+    }
+
+    protected function setConfigKey(string $key, string $newValue): array
+    {
+        $oldValue = Cache::get($key);
+
+        Cache::forever($key, $newValue);
+
+        $data = [
+            'key'       => $key,
+            'old_value' => $oldValue,
+            'new_value' => $newValue,
+        ];
+
+        if (ConfigKey::isSensitive($key) === false)
+        {
+            $this->trace->info(TraceCode::REDIS_KEY_SET, $data);
+        }
+
+        return $data;
+    }
+
+    public function getConfigKeys(): array
+    {
+        $result = [];
+
+        foreach (ConfigKey::PUBLIC_KEYS as $key)
+        {
+            $result[$key] = Cache::get($key);
+        }
+
+        return $result;
+    }
+
+    public function generateScorecard(array $input)
+    {
+        $data = (new Scorecard)->generateScorecard($input);
+
+        return $data;
     }
 
     public function processMailgunCallback($type, $input)

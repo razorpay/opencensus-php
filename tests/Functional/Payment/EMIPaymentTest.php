@@ -6,6 +6,7 @@ use Str;
 use File;
 use ZipArchive;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mail;
 
 use RZP\Mail\Emi as EmiMail;
@@ -71,7 +72,7 @@ class EmiPaymentTest extends TestCase
         $emiPlan = $this->emiPlan;
 
         //Making transactions hapen yesterday
-        $yesterdayAtTen = Carbon::yesterday('Asia/Kolkata')->addHours(10)->timestamp;
+        $yesterdayAtTen = Carbon::yesterday(Timezone::IST)->addHours(10)->timestamp;
 
         $this->fixtures->merchant->enableEmi();
 
@@ -102,7 +103,7 @@ class EmiPaymentTest extends TestCase
         $request = array(
             'method' => 'POST',
             'url' => '/emi/generate/excel',
-            'content' => array());
+            'content' => []);
 
         $this->ba->appAuth();
 

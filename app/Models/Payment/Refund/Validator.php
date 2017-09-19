@@ -3,16 +3,17 @@
 namespace RZP\Models\Payment\Refund;
 
 use RZP\Base;
-use RZP\Models\Base\PublicCollection;
-use RZP\Models\Payment;
 use RZP\Exception;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
+use RZP\Models\Base\PublicCollection;
 
 class Validator extends Base\Validator
 {
     protected static $createRules = [
         'amount'                => 'sometimes|integer|min:100',
         'notes'                 => 'sometimes|notes',
+        'receipt'               => 'sometimes|string|max:40',
         'reverse_all'           => 'sometimes|boolean',
         'reversals'             => 'sometimes|array',
         'reversals.*.transfer'  => 'required',
@@ -29,7 +30,8 @@ class Validator extends Base\Validator
     protected static $directRules = [
         'payment_id'    => 'required',
         'amount'        => 'sometimes|integer|min:100',
-        'notes'         => 'sometimes|notes'
+        'notes'         => 'sometimes|notes',
+        'receipt'       => 'sometimes|string|max:40',
     ];
 
     protected static $verifyInternalRefundGateways = [

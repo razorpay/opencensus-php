@@ -18,8 +18,6 @@ class Service extends Base\Service
 
         $admin = $this->app['basicauth']->getAdmin();
 
-        Org\Entity::verifyIdAndStripSign($orgId);
-
         $entity = (new Entity)->getEntityName();
 
         (new Validator)->validateOrgSpecificInput(
@@ -68,7 +66,7 @@ class Service extends Base\Service
 
         if (empty($input[Entity::SIGNED_UP]) === false)
         {
-            $input[Entity::SIGNED_UP_AT] = Carbon::now('Asia/Kolkata')->timestamp;
+            $input[Entity::SIGNED_UP_AT] = Carbon::now()->getTimestamp();
 
             unset($input[Entity::SIGNED_UP]);
         }

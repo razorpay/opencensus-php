@@ -145,6 +145,7 @@ return [
                 [
                     'type'    => 'sorter',
                     'gateway' => 'wallet_mobikwik',
+                    'issuer'  => 'mobikwik',
                     'load'    => 70,
                 ]
             ],

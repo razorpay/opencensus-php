@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 class Offer extends Base
 {
@@ -27,8 +28,8 @@ class Offer extends Base
     public function createWallet(array $attributes = [])
     {
         $walletAttributes = [
-            'payment_method'      => 'wallet',
-            'payment_network'     => 'olamoney',
+            'payment_method' => 'wallet',
+            'issuer'         => 'olamoney',
         ];
 
         $attributes = array_merge($walletAttributes, $attributes);
@@ -53,7 +54,7 @@ class Offer extends Base
 
     public function createLiveCard(array $attributes = [])
     {
-        $startDate = ['starts_at' => Carbon::now('Asia/Kolkata')->subMonth()->timestamp];
+        $startDate = ['starts_at' => Carbon::now(Timezone::IST)->subMonth()->timestamp];
 
         $attributes = array_merge($startDate, $attributes);
 

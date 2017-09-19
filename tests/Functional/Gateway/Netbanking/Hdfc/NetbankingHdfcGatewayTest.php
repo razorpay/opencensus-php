@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\Netbanking\Hdfc;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mail;
 
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
@@ -89,6 +90,9 @@ class NetbankingHdfcGatewayTest extends TestCase
 
     public function testRefundExcelFile()
     {
+        // Will remove test in separate pr
+        $this->markTestSkipped();
+
         Mail::fake();
 
         $payment = $this->doNetbankingHdfcAuthAndCapturePayment();
@@ -105,7 +109,7 @@ class NetbankingHdfcGatewayTest extends TestCase
         // up during refund excel generation
         foreach ($refunds['items'] as $refund)
         {
-            $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 10;
+            $createdAt = Carbon::yesterday(Timezone::IST)->timestamp + 10;
             $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
         }
 

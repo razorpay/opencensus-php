@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Upi\Mindgate;
 
 use RZP\Exception;
-use RZP\Trace\Trace;
 use RZP\Constants\Mode;
 use phpseclib\Crypt\AES;
 use RZP\Error\ErrorCode;
@@ -12,6 +11,7 @@ use RZP\Gateway\Upi\Base;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Base\VerifyResult;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Gateway\Base\AuthorizeFailed;
 
 class Gateway extends Base\Gateway

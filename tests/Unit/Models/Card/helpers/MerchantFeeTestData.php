@@ -11,34 +11,12 @@ return [
             'tax' => 0,
             'fee_components' => [
                 'payment' => 20,
-                'igst' => 0            ],
-        ],
-        [
-            'amount' => '300000',
-            'card_type' => Card\Type::CREDIT,
-            'fee' => 1180,
-            'tax' => 180,
-            'fee_components' => [
-                'payment' => 1000,
-                'igst' => 180
-            ]
-        ]
-    ],
-
-    'testIntrastateGstForCard' => [
-        [
-            'amount' => '1000',
-            'card_type' => Card\Type::CREDIT,
-            'fee' => 20,
-            'tax' => 0,
-            'fee_components' => [
-                'payment' => 20,
                 'cgst' => 0,
                 'sgst' => 0,
             ],
         ],
         [
-            'amount' => '225100',
+            'amount' => '300000',
             'card_type' => Card\Type::CREDIT,
             'fee' => 1180,
             'tax' => 180,
@@ -50,6 +28,29 @@ return [
         ]
     ],
 
+    'testInterstateGstForCard' => [
+        [
+            'amount' => '1000',
+            'card_type' => Card\Type::CREDIT,
+            'fee' => 20,
+            'tax' => 0,
+            'fee_components' => [
+                'payment' => 20,
+                'igst' => 0,
+            ],
+        ],
+        [
+            'amount' => '225100',
+            'card_type' => Card\Type::CREDIT,
+            'fee' => 1180,
+            'tax' => 180,
+            'fee_components' => [
+                'payment' => 1000,
+                'igst' => 180,
+            ]
+        ]
+    ],
+
     'testFeeWithMaxFeeForWallet' => [
         [
             'amount' => 60000,
@@ -57,7 +58,8 @@ return [
             'tax' => 324,
             'fee_components' => [
                 'payment' => 1800,
-                'igst' => 324
+                'cgst' => 162,
+                'sgst' => 162,
             ]
         ],
         // For amounts greater that 66667 fee will remain constant
@@ -69,7 +71,8 @@ return [
             'tax' => 360,
             'fee_components' => [
                 'payment' => 2000,
-                'igst' => 360,
+                'cgst' => 180,
+                'sgst' => 180,
             ]
         ],
         [
@@ -78,7 +81,8 @@ return [
             'tax' => 360,
             'fee_components' => [
                 'payment' => 2000,
-                'igst' => 360,
+                'cgst' => 180,
+                'sgst' => 180,
             ]
         ],
         [
@@ -87,7 +91,8 @@ return [
             'tax' => 360,
             'fee_components' => [
                 'payment' => 2000,
-                'igst' => 360,
+                'cgst' => 180,
+                'sgst' => 180,
             ]
         ],
     ],

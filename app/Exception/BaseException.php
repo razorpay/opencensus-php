@@ -8,6 +8,9 @@ use RZP\Error\Error;
 
 class BaseException extends Exception
 {
+    /**
+     * @var null|Error
+     */
     protected $error = null;
 
     protected $data = [];

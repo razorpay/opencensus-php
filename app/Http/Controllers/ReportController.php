@@ -5,15 +5,8 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 
-use RZP\Models\Report;
-
 class ReportController extends Controller
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     /**
      * 'reports_fetch_multiple' : GET /reports
      *
@@ -23,7 +16,7 @@ class ReportController extends Controller
     {
         $input = Request::all();
 
-        $reports = (new Report\Service)->fetchMultiple($input);
+        $reports = $this->service()->fetchMultiple($input);
 
         return ApiResponse::json($reports);
     }
@@ -36,7 +29,7 @@ class ReportController extends Controller
     {
         $input = Request::all();
 
-        (new Report\Service)->generateReport($input, $entity);
+        $this->service()->generateReport($input, $entity);
 
         return ApiResponse::json([]);
     }

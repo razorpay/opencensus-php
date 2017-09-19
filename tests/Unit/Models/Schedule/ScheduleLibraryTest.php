@@ -5,6 +5,7 @@ namespace RZP\Tests\Unit\Models\Schedule;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Schedule;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 class ScheduleLibraryTest extends TestCase
 {
@@ -96,14 +97,14 @@ class ScheduleLibraryTest extends TestCase
 
     private function getTimestampFromFormatted($formattedTime)
     {
-        return $this->getTimeObjectFromFormatted($formattedTime)->getTimeStamp();
+        return $this->getTimeObjectFromFormatted($formattedTime)->getTimestamp();
     }
 
     private function getInitialNextRun($formattedTime)
     {
         $timeObject = $this->getTimeObjectFromFormatted($formattedTime);
 
-        return $timeObject->hour(0)->minute(0)->second(0)->getTimeStamp();
+        return $timeObject->hour(0)->minute(0)->second(0)->getTimestamp();
     }
 
     private function getFormattedTimeFromTimestamp($timestamp)
@@ -113,11 +114,11 @@ class ScheduleLibraryTest extends TestCase
 
     private function getTimeObjectFromFormatted($formattedTime)
     {
-        return Carbon::createFromFormat('Y-m-d H:i:s', $formattedTime, 'Asia/Kolkata');
+        return Carbon::createFromFormat('Y-m-d H:i:s', $formattedTime, Timezone::IST);
     }
 
     private function getTimeObjectFromTimestamp($timestamp)
     {
-        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata');
+        return Carbon::createFromTimestamp($timestamp, Timezone::IST);
     }
 }

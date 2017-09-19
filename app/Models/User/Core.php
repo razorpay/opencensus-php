@@ -3,6 +3,7 @@
 namespace RZP\Models\User;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -133,7 +134,7 @@ class Core extends Base\Core
      */
     protected function attach(Entity $user, array $input)
     {
-        $currentTimestamp = Carbon::now('Asia/Kolkata')->getTimestamp();
+        $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
         $mappingParams = [
              'role'       => $input[Entity::ROLE],
@@ -173,7 +174,7 @@ class Core extends Base\Core
      */
     protected function update(Entity $user, array $input)
     {
-        $currentTimestamp = Carbon::now('Asia/Kolkata')->getTimestamp();
+        $currentTimestamp = Carbon::now(Timezone::IST)->getTimestamp();
 
         $mappingParams = [
             'role'       => $input[Entity::ROLE],

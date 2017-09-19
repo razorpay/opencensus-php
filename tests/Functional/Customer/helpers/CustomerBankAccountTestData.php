@@ -30,9 +30,7 @@ return [
             'content' => [
                 'entity'           => 'bank_account',
                 'ifsc'             => 'ICIC0001206',
-                'ifsc_code'        => 'ICIC0001206',
                 'name'             => 'Test R4zorpay',
-                'beneficiary_name' => 'Test R4zorpay',
                 'account_number'   => '0002020000304030434',
             ]
         ]

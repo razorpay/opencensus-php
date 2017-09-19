@@ -6,9 +6,9 @@ use App;
 use Response;
 use Exception;
 use ApiResponse;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use Razorpay\Trace\Logger as Trace;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -77,6 +77,9 @@ class Handler extends ExceptionHandler
                 $response = $this->gatewayExceptionHandler($e);
                 break;
 
+            case $e instanceof GatewayFileException:
+                $response = $this->gatewayFileExceptionHandler($e);
+
             case $e instanceof BaseException:
             case $e instanceof RecoverableException:
                 $response = $this->baseExceptionHandler($e);
@@ -107,6 +110,10 @@ class Handler extends ExceptionHandler
                 $response = ApiResponse::json($workflowActionData);
 
                 break;
+
+            case $e instanceof \Razorpay\OAuth\Exception\BaseException:
+                $response = $this->oauthRecoverableErrorResponse($this->isDebug(), $e);
+                break;
         }
 
         if ($response !== null)
@@ -115,6 +122,19 @@ class Handler extends ExceptionHandler
         }
 
         return $this->genericExceptionHandler($e);
+    }
+
+    public function oauthRecoverableErrorResponse(bool $debug, \Exception $exception = null)
+    {
+        $this->traceException($exception, Trace::WARNING, TraceCode::RECOVERABLE_EXCEPTION);
+
+        $this->ifTestingThenRethrowException($exception);
+
+        $httpStatusCode = $exception->getHttpStatusCode();
+
+        $data = $debug ? $exception->toDebugArray() : $exception->toPublicArray();
+
+        return response()->json($data, $httpStatusCode);
     }
 
     public function traceException(
@@ -191,6 +211,16 @@ class Handler extends ExceptionHandler
         return $this->recoverableErrorResponse($this->isDebug(), $exception);
     }
 
+    protected function gatewayFileExceptionHandler(GatewayFileException $exception)
+    {
+        $level = Trace::INFO;
+        $code = TraceCode::RECOVERABLE_EXCEPTION;
+
+        $this->traceException($exception, $level, $code);
+
+        return $this->recoverableErrorResponse($this->isDebug(), $exception);
+    }
+
     protected function getExceptionDetails(
         $exception,
         $level = 0,
@@ -206,6 +236,11 @@ class Handler extends ExceptionHandler
         }
 
         $data = $this->getDataArrayPropertyFromException($exception, $extraData);
+
+        if ($exception instanceof \Razorpay\OAuth\Exception\BaseException === true)
+        {
+            unset($data['token']);
+        }
 
         /**
          * @note getTraceAsString logs function arguments, contrary to the older comment here
@@ -331,7 +366,8 @@ class Handler extends ExceptionHandler
         {
             $data = $e->getData();
 
-            if (method_exists($data, 'toArray'))
+            if ((is_object($data) === true) and
+                (method_exists($data, 'toArray') === true))
             {
                 $data = $data->toArray();
             }

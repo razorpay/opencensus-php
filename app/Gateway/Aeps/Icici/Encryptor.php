@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Aeps\Icici;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use phpseclib\Crypt\AES;
 use RZP\Constants\Mode;
 
@@ -16,7 +17,7 @@ class Encryptor
 
     protected function createPidXml($fpData)
     {
-        $date = Carbon::now('Asia/Kolkata')->format('Y-m-d\TH:i:s');
+        $date = Carbon::now(Timezone::IST)->format('Y-m-d\TH:i:s');
 
         $pidBlock = '<Pid ts="' . $date . '" ver="1.0"><Bios><Bio type="FMR" posh="UNKNOWN">' . $fpData . '</Bio></Bios></Pid>';
 

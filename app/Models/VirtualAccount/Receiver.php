@@ -22,10 +22,15 @@ class Receiver
 
     const ROOT_LENGTH               = 4;
     const HANDLE_LENGTH             = 4;
-    const DESCRIPTOR_LENGTH         = 10;
-    const ACCOUNT_NUMBER_LENGTH     = 18;
+    const DESCRIPTOR_LENGTH         = 9;
+    const ACCOUNT_NUMBER_LENGTH     = 17;
+
     // No 0s and Os
-    const ACCOUNT_NUMBER_CHAR_SPACE       = '123456789ABCDEFGHIJKLMNPQRSTUVWXYZ';
+    // No 1s and Is
+    // No 5s and Ss
+    // No 8s and Bs
+    // No 2s and Zs
+    const ACCOUNT_NUMBER_CHAR_SPACE       = '34679ACDEFGHJKLMNPQRTUVWXY';
     const MAX_ACCOUNT_GENERATION_ATTEMPTS = 10;
 
     protected $merchant;
@@ -113,12 +118,12 @@ class Receiver
 
         $root = $this->getRoot($provider);
 
-        $accountNumber = $this->generateNewAccountNumberWithRoot($root);
-
         $attempts = 0;
 
         while ($attempts <= self::MAX_ACCOUNT_GENERATION_ATTEMPTS)
         {
+            $accountNumber = $this->generateNewAccountNumberWithRoot($root);
+
             $existingAccount = $this->repo->bank_account
                                     ->findVirtualBankAccountByAccountNumberAndBankCode($accountNumber, $bankCode);
 
@@ -146,7 +151,9 @@ class Receiver
      * otherwise use random characters.
      *
      * @param  string $root Root given by for provider of Virtual a/c services
+     *
      * @return string Unique account number
+     * @throws Exception\LogicException
      */
     protected function generateNewAccountNumberWithRoot(string $root)
     {
@@ -168,7 +175,13 @@ class Receiver
 
         if (strlen($accountNumber) > self::ACCOUNT_NUMBER_LENGTH)
         {
-            throw new Exception\LogicException('Error in account number generation.');
+            throw new Exception\LogicException(
+                'Error in account number generation.',
+                null,
+                [
+                    'account_number'    => $accountNumber,
+                    'max_length'        => self::ACCOUNT_NUMBER_LENGTH,
+                ]);
         }
 
         return $accountNumber;

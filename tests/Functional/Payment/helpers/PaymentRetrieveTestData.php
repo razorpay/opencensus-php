@@ -6,6 +6,163 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
+
+    'testRetrievePaymentWithCardDetails' => [
+        'request' => [
+            // Updated dynamically via test method
+            // 'url'     => '/payments/id',
+            'method'  => 'get',
+            'content' => [
+                'expand' => ['card']
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'            => 'payment',
+                'amount'            => 1000000,
+                'currency'          => 'INR',
+                'status'            => 'captured',
+                'order_id'          => null,
+                'invoice_id'        => null,
+                'international'     => false,
+                'method'            => 'card',
+                'amount_refunded'   => 0,
+                'refund_status'     => null,
+                'captured'          => true,
+                'description'       => null,
+                'card' => [
+                    'entity'        => 'card',
+                    'last4'         => '1111',
+                    'network'       => 'Visa',
+                    'type'          => 'debit',
+                    'issuer'        => 'hdfc',
+                    'international' => false,
+                    'emi'           => false,
+                ],
+                'bank'              => null,
+                'wallet'            => null,
+                'vpa'               => null,
+                'notes'             => [],
+                'fee'               => 23000,
+                'service_tax'       => null,
+                'error_code'        => null,
+                'error_description' => null,
+                'acquirer_data'     => [],
+                'tax'               => null,
+            ],
+        ],
+    ],
+
+    'testRetrieveMultiplePaymentsWithCardDetails' => [
+        'request' => [
+            'url'     => '/payments',
+            'method'  => 'get',
+            'content' => [
+                'expand' => ['card']
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count'  => 3,
+                'items' => [
+                    [
+                        'entity'            => 'payment',
+                        'amount'            => 1000000,
+                        'currency'          => 'INR',
+                        'status'            => 'captured',
+                        'order_id'          => null,
+                        'invoice_id'        => null,
+                        'international'     => null,
+                        'method'            => 'netbanking',
+                        'amount_refunded'   => 0,
+                        'refund_status'     => null,
+                        'captured'          => true,
+                        'description'       => null,
+                        'card_id'           => null,
+                        'card'              => null,
+                        'bank'              => 'HDFC',
+                        'wallet'            => null,
+                        'vpa'               => null,
+                        'notes'             => [],
+                        'fee'               => 23000,
+                        'service_tax'       => null,
+                        'error_code'        => null,
+                        'error_description' => null,
+                        'acquirer_data'     => [],
+                        'tax'               => null,
+                    ],
+                    [
+                        'entity'            => 'payment',
+                        'amount'            => 1000000,
+                        'currency'          => 'INR',
+                        'status'            => 'captured',
+                        'order_id'          => null,
+                        'invoice_id'        => null,
+                        'international'     => false,
+                        'method'            => 'card',
+                        'amount_refunded'   => 0,
+                        'refund_status'     => null,
+                        'captured'          => true,
+                        'description'       => null,
+                        'card' => [
+                            'entity'        => 'card',
+                            'last4'         => '1111',
+                            'network'       => 'Visa',
+                            'type'          => 'debit',
+                            'issuer'        => 'hdfc',
+                            'international' => false,
+                            'emi'           => false,
+                        ],
+                        'bank'              => null,
+                        'wallet'            => null,
+                        'vpa'               => null,
+                        'notes'             => [],
+                        'fee'               => 23000,
+                        'service_tax'       => null,
+                        'error_code'        => null,
+                        'error_description' => null,
+                        'acquirer_data'     => [],
+                        'tax'               => null,
+                    ],
+                    [
+                        'entity'            => 'payment',
+                        'amount'            => 1000000,
+                        'currency'          => 'INR',
+                        'status'            => 'captured',
+                        'order_id'          => null,
+                        'invoice_id'        => null,
+                        'international'     => false,
+                        'method'            => 'card',
+                        'amount_refunded'   => 0,
+                        'refund_status'     => null,
+                        'captured'          => true,
+                        'description'       => null,
+                        'card' => [
+                            'entity'        => 'card',
+                            'last4'         => '1111',
+                            'network'       => 'Visa',
+                            'type'          => 'debit',
+                            'issuer'        => 'hdfc',
+                            'international' => false,
+                            'emi'           => false,
+                        ],
+                        'bank'              => null,
+                        'wallet'            => null,
+                        'vpa'               => null,
+                        'notes'             => [],
+                        'fee'               => 23000,
+                        'service_tax'       => null,
+                        'error_code'        => null,
+                        'error_description' => null,
+                        'acquirer_data'     => [],
+                        'tax'               => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testSearchEsForNotesPrivateAuth' => [
         'request' => [
             'url' => '/payments',
@@ -87,8 +244,8 @@ return [
     ],
 
     'testSearchEsForNotesOnAdminAuthExpectedSearchParams' => [
-        'index' => 'payment_test',
-        'type'  => 'payment_test',
+        'index' => 'testing_payment_test',
+        'type'  => 'testing_payment_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,
@@ -98,10 +255,11 @@ return [
                     'must' => [
                         [
                             'multi_match' => [
-                                'query'  => 'es',
-                                'type'   => 'best_fields',
-                                'fields' => 'notes.*',
-                                'boost'  => 2,
+                                'query'                => 'es',
+                                'type'                 => 'best_fields',
+                                'fields'               => 'notes.*',
+                                'boost'                => 2,
+                                'minimum_should_match' => '75%',
                             ],
                         ],
                     ],
@@ -150,8 +308,8 @@ return [
     ],
 
     'testSearchEsForNotesExpectedSearchParams' => [
-        'index' => 'payment_test',
-        'type'  => 'payment_test',
+        'index' => 'testing_payment_test',
+        'type'  => 'testing_payment_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,
@@ -161,10 +319,11 @@ return [
                     'must' => [
                         [
                             'multi_match' => [
-                                'query'  => 'es_random_1',
-                                'type'   => 'best_fields',
-                                'fields' => 'notes.*',
-                                'boost'  => 2,
+                                'query'                => 'es_random_1',
+                                'type'                 => 'best_fields',
+                                'fields'               => 'notes.*',
+                                'boost'                => 2,
+                                'minimum_should_match' => '75%',
                             ],
                         ],
                     ],

@@ -6,9 +6,9 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
 use RZP\Models\Base;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
+use Razorpay\Trace\Logger as Trace;
 
 /**
  * Es sync job class.
@@ -17,6 +17,9 @@ use RZP\Exception\LogicException;
 class EsSync extends Job implements ShouldQueue
 {
     use InteractsWithQueue;
+
+    const MAX_JOB_ATTEMPTS = 3;
+    const JOB_RELEASE_WAIT = 30;
 
     private $action;
     private $entity;
@@ -74,13 +77,13 @@ class EsSync extends Job implements ShouldQueue
             // just delete the job, else retry the job after a wait.
 
             if (($e instanceof LogicException) or
-                ($this->attempts() >= Base\EsRepository::MAX_JOB_ATTEMPTS))
+                ($this->attempts() >= self::MAX_JOB_ATTEMPTS))
             {
                 $this->delete();
             }
             else
             {
-                $this->release(Base\EsRepository::JOB_RELEASE_WAIT);
+                $this->release(self::JOB_RELEASE_WAIT);
             }
         }
     }
@@ -96,9 +99,7 @@ class EsSync extends Job implements ShouldQueue
     {
         $this->repo = $this->repoManager->{$this->entity};
 
-        $this->repo->setEsRepoIfExist();
-
-        $this->esRepo = $this->repo->getEsRepo();
+        $this->esRepo = $this->repo->setAndGetEsRepoIfExist();
 
         if ($this->esRepo === null)
         {

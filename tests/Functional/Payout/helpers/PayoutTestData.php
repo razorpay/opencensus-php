@@ -40,6 +40,81 @@ return [
         ],
     ],
 
+    'testCreateMerchantPayout' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout',
+            'content' => [
+                'amount'         => 1000,
+                'merchant_id'    => '10000000000000',
+                'customer_id'    => 'cust_100000customer',
+                'destination_id' => 'ba_1000000lcustba',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'payout',
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'customer_id' => 'cust_100000customer',
+                'method'      => 'fund_transfer',
+                'destination' => 'ba_1000000lcustba',
+                'service_tax' => 92,
+                'tax'         => 92,
+                'fees'        => 602,
+                'notes'       => []
+            ],
+        ],
+    ],
+
+    'testCreateMerchantPayoutWithModulo' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout',
+            'content' => [
+                'amount'         => 1200,
+                'merchant_id'    => '10000000000000',
+                'customer_id'    => 'cust_100000customer',
+                'destination_id' => 'ba_1000000lcustba',
+                'modulo'         => 1000
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'payout',
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'customer_id' => 'cust_100000customer',
+                'method'      => 'fund_transfer',
+                'destination' => 'ba_1000000lcustba',
+                'service_tax' => 92,
+                'tax'         => 92,
+                'fees'        => 602,
+                'notes'       => []
+            ],
+        ],
+    ],
+
+    'testCreateMerchantPayoutWithMinAmount' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/merchant/payout',
+            'content' => [
+                'amount'         => 2200,
+                'merchant_id'    => '10000000000000',
+                'customer_id'    => 'cust_100000customer',
+                'destination_id' => 'ba_1000000lcustba',
+                'min_amount'     => 3000,
+                'modulo'         => 1000
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'message' => 'amount to be transferred is less than 3000'
+            ],
+        ],
+    ],
+
     'testCreatePayoutFundsOnHold' => [
         'request' => [
             'method'  => 'POST',

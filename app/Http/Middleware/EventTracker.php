@@ -25,8 +25,7 @@ class EventTracker
     /**
      * Create a new filter instance.
      *
-     * @param  Guard  $auth
-     * @return void
+     * @param Application $app
      */
     public function __construct(Application $app)
     {
@@ -46,17 +45,42 @@ class EventTracker
     }
 
     /**
-     * Data can be sent to segment once the response has been
-     * already sent.
-     * See doc for terminable middleware -
-     *     https://laravel.com/docs/5.2/middleware#terminable-middleware
+     * Data can be sent to lumberjack and eventManager once the
+     * response has been already sent.
+     *
+     * @param $request
+     * @param $response
      */
     public function terminate($request, $response)
     {
-        // send the in-memory segment events to lumberjack
+        $this->sendEventsToLumberjack();
+
+        $this->sendEventsToEventManager();
+    }
+
+    /**
+     * Data can be sent to lumberjack once the response has been already sent.
+     */
+    protected function sendEventsToLumberjack()
+    {
         try
         {
             $this->app['segment']->buildRequestAndSend();
+        }
+        catch (\Throwable $e)
+        {
+            $this->app['trace']->traceException($e);
+        }
+    }
+
+    /**
+     * Data can be sent to eventManager once the response has been already sent.
+     */
+    protected function sendEventsToEventManager()
+    {
+        try
+        {
+            $this->app['eventManager']->buildRequestAndSend();
         }
         catch (\Throwable $e)
         {

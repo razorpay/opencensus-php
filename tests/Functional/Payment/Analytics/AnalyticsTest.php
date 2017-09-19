@@ -405,8 +405,12 @@ class AnalyticsTest extends TestCase
 
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
-        $this->assertEquals((float) 60.3, $paymentAnalytic[AnalyticsEntity::RISK_SCORE]);
+        $this->assertEquals((float) 15.3, $paymentAnalytic[AnalyticsEntity::RISK_SCORE]);
         $this->assertEquals('maxmind', $paymentAnalytic[AnalyticsEntity::RISK_ENGINE]);
+
+        // Increases risk threshold for merchant from 5 to 15
+        $this->fixtures->merchant->edit('10000000000000', ['risk_threshold' => '16']);
+        $this->doAuthPayment($payment, $requestServer);
     }
 
     public function testAnalyticsCountOnSuccessfulPayment()

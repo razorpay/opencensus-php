@@ -3,6 +3,7 @@
 namespace RZP\Mail\Gateway;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Constants;
 use RZP\Mail\Base\Mailable;
@@ -109,7 +110,7 @@ class DailyFile extends Mailable
 
     protected function getSubject()
     {
-        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $today = Carbon::now(Timezone::IST)->format('d-m-Y');
 
         $subject = $this->data['bankName'] . ' Netbanking claims and refund files for ' . $today;
 

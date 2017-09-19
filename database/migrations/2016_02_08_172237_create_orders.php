@@ -83,6 +83,8 @@ class CreateOrders extends Migration
             $table->index(Order::STATUS);
             $table->index(Order::RECEIPT);
             $table->index(Order::AUTHORIZED);
+            $table->index(Order::AMOUNT);
+            $table->index(Order::AMOUNT_PAID);
 
             // Commented parts to be added incrementally
 

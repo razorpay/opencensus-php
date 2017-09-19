@@ -50,6 +50,12 @@ class Entity extends Base\PublicEntity
     	self::CREATED_AT,
     ];
 
+    protected $hidden = [
+        self::PASSWORD,
+        self::REMEMBER_TOKEN,
+        self::CONFIRM_TOKEN,
+    ];
+
     protected $generateIdOnCreate = false;
 
     protected $appends = [self::CONFIRMED];

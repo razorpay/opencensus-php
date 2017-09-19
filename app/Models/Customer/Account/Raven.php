@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 
 class Raven extends Base\Core
 {
@@ -29,23 +30,17 @@ class Raven extends Base\Core
 
         $request = $this->getRavenSendOtpRequestInput($input, $merchant);
 
-        // Enabling it for non-LIVE mode and for test merchant only
-        if (($merchant->getId() === '2aTeFCKTYWwfrF') or ($this->env !== 'production'))
+        try
         {
-            try
-            {
-                $this->sns->publish(json_encode($request));
-            }
-            catch (Exception $e)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_SNS_PUBLISH_FAILED);
+            $this->trace->info(TraceCode::RAVEN_REQUEST, $request);
 
-                $success = false;
-            }
+            $this->sns->publish(json_encode($request));
         }
-        else
+        catch (\Throwable $e)
         {
+            $this->trace->error(TraceCode::RAVEN_ASYNC_REQUEST_FAILED, $request);
+
+            $success = false;
             $response = $this->raven->sendOtp($request);
 
             if (isset($response['sms_id']) === false)

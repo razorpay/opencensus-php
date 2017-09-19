@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Paytm\Mock;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Paytm;
 use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
@@ -202,7 +203,7 @@ class Server extends Base\Mock\Server
     protected function getBankTxnId()
     {
         // Format YYYYMMDD
-        $bankTxnId = Carbon::today('Asia/Kolkata')->format('YmdHis');
+        $bankTxnId = Carbon::today(Timezone::IST)->format('YmdHis');
         $bankTxnId .=  random_integer(1);
 
         return $bankTxnId;
@@ -211,6 +212,6 @@ class Server extends Base\Mock\Server
     protected function getTxnDate()
     {
         // Format - YYYY-MM-DD HH:MM:SS.U
-        return Carbon::now('Asia/Kolkata')->format('Y-m-d H-i-s.0');
+        return Carbon::now(Timezone::IST)->format('Y-m-d H-i-s.0');
     }
 }

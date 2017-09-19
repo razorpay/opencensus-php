@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Base;
 
+use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Gateway\Netbanking;
@@ -9,6 +10,10 @@ use RZP\Gateway\Base\Action;
 
 class Gateway extends \RZP\Gateway\Base\Gateway
 {
+    const RETAIL = 'retail';
+
+    const CORPORATE = 'corporate';
+
     protected function createGatewayPaymentEntity($attributes)
     {
         $attr = $this->getMappedAttributes($attributes);
@@ -94,6 +99,26 @@ class Gateway extends \RZP\Gateway\Base\Gateway
         return (new $class)->generate($input);
     }
 
+    public function setBankingType($bankingType)
+    {
+        $this->bankingType = $bankingType;
+    }
+
+    protected function setCorporateBanking()
+    {
+        $this->bankingType = 'corporate';
+    }
+
+    protected function isCorporateBanking()
+    {
+        return ($this->bankingType === 'corporate');
+    }
+
+    protected function getBankingType()
+    {
+        return $this->bankingType;
+    }
+
     protected function shouldStatusBeUpdated(Entity $gatewayPayment)
     {
         //
@@ -109,12 +134,28 @@ class Gateway extends \RZP\Gateway\Base\Gateway
         return true;
     }
 
-    protected function getAcquirerData($gatewayPayment)
+    protected function getAcquirerData($input, $gatewayPayment)
     {
         return [
             'acquirer' => [
                 Payment\Entity::REFERENCE1 => $gatewayPayment->getBankPaymentId()
             ]
         ];
+    }
+
+    protected function traceGatewayPaymentRequest(
+        array $request,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST,
+        array $extraData = [])
+    {
+        $this->trace->info(
+            $traceCode,
+            [
+                'request'    => $request,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+                'extra_data' => $extraData
+            ]);
     }
 }

@@ -16,6 +16,7 @@ class Wallet
     const AIRTELMONEY = 'airtelmoney';
     const FREECHARGE  = 'freecharge';
     const JIOMONEY    = 'jiomoney';
+    const SBIBUDDY    = 'sbibuddy';
     const OPENWALLET  = 'openwallet';
     const MPESA       = 'mpesa';
 
@@ -28,6 +29,7 @@ class Wallet
         self::AIRTELMONEY   => 'Airtelmoney',
         self::FREECHARGE    => 'Freecharge',
         self::JIOMONEY      => 'JioMoney',
+        self::SBIBUDDY      => 'SBI Buddy',
         self::OPENWALLET    => 'RZP Open Wallet',
         self::MPESA         => 'Vodafone mPesa'
     );

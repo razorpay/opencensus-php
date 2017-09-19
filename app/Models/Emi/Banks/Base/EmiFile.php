@@ -7,17 +7,22 @@ use Mail;
 use Carbon\Carbon;
 
 use RZP\Exception;
+use RZP\Constants\MailTags;
 use RZP\Mail\Emi as EmiMail;
+use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Emi\Banks\Base\EmiMode;
 use RZP\Models\FileStore;
 use RZP\Trace\TraceCode;
-use RZP\Models\Base;
-use RZP\Constants\MailTags;
 
 class EmiFile extends Base\Core
 {
     // Regenerated every time the EMI file is created
     protected $emiFilePassword;
+
+    protected $shouldCompress = true;
+
+    protected $transferMode = EmiMode::MAIL;
 
     const EMI_FILE_PASSWORD_LENGTH = 7;
 
@@ -40,24 +45,37 @@ class EmiFile extends Base\Core
 
         $this->trace->info(
             TraceCode::EMI_FILE_SENT,
-            ['bank' => $this->bankName, 'payment_ids' => $input->getIds()]
+            [
+                'bank' => $this->bankName,
+                'payment_ids' => $input->getIds()
+            ]
         );
 
         return $fileData['signed_url'];
     }
 
-    protected function generateEmiFile(array $emiData, $store = 's3')
+    protected function generateEmiFile(array $emiData, array $metadata = [])
     {
+        $store = FileStore\Store::S3;
+
+        $fileName = $this->getFileToWriteName($emiData);
+
         $creator = new FileStore\Creator;
 
         $creator->extension(static::EXTENSION)
-                ->password($this->emiFilePassword)
                 ->content($emiData)
-                ->name(static::$fileToWriteName)
+                ->name($fileName)
                 ->store($store)
-                ->type(static::TYPE)
-                ->compress()
-                ->save();
+                ->type($this->type)
+                ->metadata($metadata);
+
+        if ($this->shouldCompress === true)
+        {
+            $creator->password($this->emiFilePassword)
+                    ->compress();
+        }
+
+        $creator->save();
 
         $file = $creator->get();
 
@@ -71,11 +89,22 @@ class EmiFile extends Base\Core
         return $fileData;
     }
 
+    protected function getFileToWriteName(array $data)
+    {
+        return static::$fileToWriteName;
+    }
+
     protected function resetEmail($email)
     {
+        // if email is specified, set email id list
+        // Mode should be mail only and file must be compressed
         if (empty($email) === false)
         {
             $this->emailIdsToSendTo = [$email];
+
+            $this->transferMode = EmiMode::MAIL;
+
+            $this->shouldCompress = true;
         }
     }
 
@@ -116,6 +145,12 @@ class EmiFile extends Base\Core
 
     protected function fetchAndSendPassword()
     {
+        // skip password generation and sending for sftp
+        if ($this->transferMode === EmiMode::SFTP)
+        {
+            return;
+        }
+
         $this->emiFilePassword = $this->generateEmiFilePassword();
 
         $this->sendEmiPassword();
@@ -144,12 +179,13 @@ class EmiFile extends Base\Core
         return floor($num / $den);
     }
 
-    protected function sendEmiFile(array $fileData)
+    protected function sendEmiFile(array $fileData, $data = null)
     {
         $emiFileMail = new EmiMail\File(
             $this->bankName,
             $fileData,
-            $this->emailIdsToSendTo);
+            $this->emailIdsToSendTo,
+            $data);
 
         Mail::queue($emiFileMail);
     }

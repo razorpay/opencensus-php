@@ -3,14 +3,13 @@
 namespace RZP\Tests\Functional\Refund;
 
 use DB;
+use Mail;
 use Mockery;
 use Carbon\Carbon;
-use Mail;
 
-use RZP\Mail\Payment\Refunded as RefundedMail;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
-use RZP\Models\Payment\Entity as PaymentEntity;
-use RZP\Models\Batch\Status;
+use RZP\Mail\Payment\Refunded as RefundedMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 /**
@@ -66,6 +65,38 @@ class RefundTest extends TestCase
         Mail::assertSent(RefundedMail::class);
     }
 
+    public function testRefundDisputedPayment()
+    {
+        $dispute = $this->fixtures->create('dispute');
+
+        $this->startTest(
+            $dispute->payment->getPublicId(),
+            (string) $dispute->payment->getAmount()
+        );
+    }
+
+    public function testRefundWithReceipt()
+    {
+        Mail::fake();
+
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $this->mockDashboardRequest();
+
+        $refund = $this->startTest($payment['id'], (string) $payment['amount']);
+
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
+
+        $this->assertGreaterThan(time() - 30, $refund['created_at']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(true, $refund['gateway_refunded']);
+
+        Mail::assertSent(RefundedMail::class);
+    }
+
     public function testRefundDirect()
     {
         $payment = $this->fixtures->create('payment:captured');
@@ -74,6 +105,7 @@ class RefundTest extends TestCase
             [
                 'payment_id' => $payment->getPublicId(),
                 'notes'      => ['a' => 'b'],
+                'receipt'    => '2544325',
             ]);
 
         $this->assertEquals('refund', $refund['entity']);
@@ -97,6 +129,30 @@ class RefundTest extends TestCase
 
         $refunds = $this->getEntities('refund', ['payment_id' => $payment['id']]);
         $this->assertEquals($refunds['count'], 4);
+    }
+
+    public function testRefundsWithDuplicateReceipt()
+    {
+        $payment = $this->defaultAuthPayment();
+        $payment = $this->capturePayment($payment['id'], $payment['amount']);
+
+        $refund = $this->refund(
+            [
+                'payment_id' => $payment['id'],
+                'notes'      => ['a' => 'b'],
+                'amount'     => '1000',
+                'receipt'    => '2544325',
+            ]);
+
+        $this->expectException('Illuminate\Database\QueryException');
+
+        $response =  $this->refund(
+                    [
+                        'payment_id' => $payment['id'],
+                        'notes'      => ['a' => 'b'],
+                        'amount'     => '1000',
+                        'receipt'    => '2544325',
+                    ]);
     }
 
     public function testRefundWithHigherAmount()
@@ -166,13 +222,34 @@ class RefundTest extends TestCase
 
     public function testRefundOfOldAuthorizedPayments()
     {
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(6)->timestamp;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(6)->timestamp;
 
         $payments = $this->fixtures->times(2)->create(
             'payment:authorized',
             ['created_at' => $createdAt]);
 
         $payments = $this->fixtures->times(2)->create('payment:authorized');
+
+        $content = $this->refundOldAuthorizedPayments();
+
+        $this->assertArrayHasKey('refunded', $content);
+        $this->assertEquals(2, $content['refunded']);
+        $this->assertArrayHasKey('authorized', $content);
+        $this->assertEquals(2, $content['authorized']);
+    }
+
+    public function testRefundOfOldAuthorizedPaymentsContainingDisputed()
+    {
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(6)->timestamp;
+
+        $this->fixtures->times(2)->create(
+            'payment:authorized',
+            ['created_at' => $createdAt]);
+
+        $this->fixtures->create(
+            'payment:authorized',
+            ['created_at' => $createdAt,
+             'disputed'   => 1]);
 
         $content = $this->refundOldAuthorizedPayments();
 
@@ -191,6 +268,7 @@ class RefundTest extends TestCase
     {
         $this->ba->appAuth();
 
+        //
         // Order 1: - Created, Partial payment allowed
         //          - 2 Authorized payment exist, 1 Failed payment
         //          - Payments NOT PICKED for refund
@@ -218,6 +296,11 @@ class RefundTest extends TestCase
         // Order 7: - Attempted, Partial payment allowed
         //          - 2 Captured and 2 Authorized payment exists
         //          - Payments NOT PICKED for refund
+        //
+        // Order 8: - Paid
+        //          - 1 Captured and 1 Authorized payment exists, 1 Disputed payment
+        //          - 1 Payment PICKED for refund
+        //
 
         $order1 = $this->fixtures->order->create(['partial_payment' => true]);
 
@@ -323,6 +406,30 @@ class RefundTest extends TestCase
                                         'amount'   => '250000',
                                     ]);
 
+        $order8 = $this->fixtures->order->createPaid();
+
+        $this->fixtures->times(1)->create(
+                                    'payment:captured',
+                                    [
+                                        'order_id' => $order8->getId(),
+                                        'amount'   => '1000000',
+                                    ]);
+
+        $this->fixtures->times(1)->create(
+                                    'payment:authorized',
+                                    [
+                                        'order_id' => $order8->getId(),
+                                        'amount'   => '1000000',
+                                    ]);
+
+        $this->fixtures->times(1)->create(
+                                    'payment:authorized',
+                                    [
+                                        'order_id' => $order8->getId(),
+                                        'amount'   => '1000000',
+                                        'disputed' => 1,
+                                    ]);
+
         // Run test
 
         $testData = $this->testData[__FUNCTION__];
@@ -333,19 +440,25 @@ class RefundTest extends TestCase
 
         $payments = $this->getEntities('payment', [], true);
 
-        $authorizedCount = $capturedCount = $failedCount = $refundedCount = 0;
+        $authorizedCount = $capturedCount = $failedCount = $refundedCount = $disputedCount = 0;
 
         foreach ($payments['items'] as $payment)
         {
+            if ($payment['disputed'] === true)
+            {
+                $disputedCount += 1;
+            }
+
             $holder = $payment['status'] . 'Count';
 
             $$holder += 1;
         }
 
-        $this->assertEquals(5, $authorizedCount);
-        $this->assertEquals(9, $capturedCount);
+        $this->assertEquals(6, $authorizedCount);
+        $this->assertEquals(10, $capturedCount);
         $this->assertEquals(3, $failedCount);
-        $this->assertEquals(4, $refundedCount);
+        $this->assertEquals(5, $refundedCount);
+        $this->assertEquals(1, $disputedCount);
     }
 
     public function testRefundCreateOnGatewayForMissingRefunds()
@@ -362,20 +475,20 @@ class RefundTest extends TestCase
         // Change auto refund delay to 2 days
         $this->fixtures->merchant->editAutoRefundDelay('2 days');
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(2)->timestamp;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(2)->timestamp;
 
         $payments = $this->fixtures->times(3)->create(
             'payment:authorized',
             ['created_at' => $createdAt]);
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(6)->timestamp;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(6)->timestamp;
         $this->fixtures->on('test')->create('balance', ['id' => '1MercShareTerm', 'balance' => '1000000']);
 
         $payment = $this->fixtures->create(
             'payment:authorized',
             ['created_at' => $createdAt, 'merchant_id' => '1MercShareTerm', 'transaction_id' => null]);
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(1)->timestamp;
 
         $payments = $this->fixtures->times(2)->create(
             'payment:authorized',
@@ -391,7 +504,7 @@ class RefundTest extends TestCase
 
     public function testRefundCalledOnPurchaseWithoutCapture()
     {
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(6)->timestamp;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(6)->timestamp;
 
         $payments = $this->fixtures->times(2)->create(
             'payment:purchased',
@@ -420,8 +533,8 @@ class RefundTest extends TestCase
     // This will also be picked up for a refund and refunded.
     public function testRefundOnHdfcCapturedPaymentAuthorized()
     {
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(6)->timestamp;
-        $authorizedAt = Carbon::today('Asia/Kolkata')->timestamp;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(6)->timestamp;
+        $authorizedAt = Carbon::today(Timezone::IST)->timestamp;
 
         $payment = $this->fixtures->create(
             'payment:captured',
@@ -470,7 +583,7 @@ class RefundTest extends TestCase
     {
         // Case where refunded payment has no entry in hdfc
 
-        $authorizedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;
+        $authorizedAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp;
 
         $payment = $this->fixtures->create(
             'payment:purchased',
@@ -521,7 +634,7 @@ class RefundTest extends TestCase
     {
         $this->markTestSkipped('Transactions are getting created now');
 
-        $authorizedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;
+        $authorizedAt = Carbon::today(Timezone::IST)->subDays(10)->timestamp;
 
         $payment = $this->fixtures->create(
             'payment:purchased',
@@ -597,6 +710,26 @@ class RefundTest extends TestCase
         ];
     }
 
+    public function testFetchRefundsAdminAuth()
+    {
+        $this->ba->privateAuth();
+        $payment1 = $this->fixtures->create('payment:captured', ['gateway' => 'cybersource']);
+        $rfnd1 = $this->fixtures->create('refund:from_payment', ['payment' => $payment1]);
+        $payment2 = $this->fixtures->create('payment:captured', ['gateway' => 'hdfc']);
+        $rfnd2 = $this->fixtures->create('refund:from_payment', ['payment' => $payment2]);
+
+        $refunds  = $this->getEntities(
+                        'refund',
+                        [
+                            'gateway'     => $payment1->getGateway(),
+                            'amount'      => $rfnd1->getAmount()
+                        ],
+                        true);
+
+        $this->assertEquals(1, $refunds['count']);
+
+        $this->assertEquals($rfnd1->getPublicId(), $refunds['items'][0]['id']);
+    }
 
     public function testRefundValidationOnWrongGateway()
     {

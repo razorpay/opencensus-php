@@ -5,7 +5,6 @@ namespace RZP\Models\Base\Traits;
 
 use App;
 use RZP\Events\AuditLogEntry;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 trait RevisionableTrait
@@ -112,7 +111,8 @@ trait RevisionableTrait
             // so for now we drop any object based items, like DateTime
             foreach ($this->updatedData as $key => $val)
             {
-                if (gettype($val) === 'object' and  !method_exists($val, '__toString'))
+                if ((gettype($val) === 'object') and
+                    (method_exists($val, '__toString') === false))
                 {
                     unset($this->originalData[$key]);
 
@@ -175,7 +175,7 @@ trait RevisionableTrait
     public function postSave()
     {
         // check if the model already exists
-        if ((!isset($this->revisionEnabled) or $this->revisionEnabled) && $this->updating)
+        if ((!isset($this->revisionEnabled) or ($this->revisionEnabled)) and ($this->updating))
         {
             // if it does, it means we're updating
 
@@ -258,7 +258,7 @@ trait RevisionableTrait
 
                 if ($admin === null)
                 {
-                    return ;
+                    return;
                 }
 
                 $action = $this->getAuditAction();
@@ -282,12 +282,10 @@ trait RevisionableTrait
     {
         $app = App::getFacadeRoot();
 
-        if ((!isset($this->revisionEnabled) || $this->revisionEnabled)
-            and $this->isSoftDelete()
-            and $this->isRevisionable($this->getDeletedAtColumn())
-        )
+        if (((isset($this->revisionEnabled) === false) or ($this->revisionEnabled)) and
+             ($this->isSoftDelete() === true) and
+             ($this->isRevisionable($this->getDeletedAtColumn()) === true))
         {
-
             $revisions = [
                 'revisionable_type' => $this->getMorphClass(),
                 'revisionable_id' => $this->getKey(),
@@ -331,9 +329,11 @@ trait RevisionableTrait
         {
             // check that the field is revisionable, and double check
             // that it's actually new data in case dirty is, well, clean
-            if ($this->isRevisionable($key) && !is_array($value))
+            if (($this->isRevisionable($key) === true) and
+                (is_array($value) === false))
             {
-                if (!isset($this->originalData[$key]) || $this->originalData[$key] != $this->updatedData[$key])
+                if ((isset($this->originalData[$key]) === false) or
+                    ($this->originalData[$key] != $this->updatedData[$key]))
                 {
                     $changes_to_record[$key] = $value;
                 }
@@ -365,11 +365,13 @@ trait RevisionableTrait
         // If it's explicitly not revisionable, return false.
         // Otherwise, if neither condition is met, only return true if
         // we aren't specifying revisionable fields.
-        if (isset($this->doKeep) && in_array($key, $this->doKeep))
+        if ((isset($this->doKeep) === true) and
+            (in_array($key, $this->doKeep) === true))
         {
             return true;
         }
-        if (isset($this->dontKeep) && in_array($key, $this->dontKeep))
+        if ((isset($this->dontKeep) === true) and
+            (in_array($key, $this->dontKeep) === true))
         {
             return false;
         }

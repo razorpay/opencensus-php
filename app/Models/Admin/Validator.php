@@ -30,4 +30,8 @@ class Validator extends Base\Validator
         'message-headers'   => 'sometimes|string',
         'reason'            => 'sometimes|string',
     ];
+
+    protected static $setConfigKeysRules = [
+        ConfigKey::TERMINAL_SELECTION_LOG_VERBOSE => 'filled|boolean',
+    ];
 }

@@ -9,8 +9,18 @@ class Status
     const LOST              = 'lost';
     const WON               = 'won';
 
-    public static function exists($status)
+    protected static $closedStatuses = [
+        self::WON,
+        self::LOST
+    ];
+
+    public static function exists(string $status): bool
     {
         return defined(get_class() . '::' . strtoupper($status));
+    }
+
+    public static function getClosedStatuses(): array
+    {
+        return self::$closedStatuses;
     }
 }

@@ -27,14 +27,4 @@ class Service extends Base\Service
 
         return $comment;
     }
-
-    public function fetchByActionId(string $actionId)
-    {
-        Action::verifyIdAndStripSign($actionId);
-
-        $comments = $this->repo->action_comment->fetchByActionIdWithRelations(
-            $actionId, [Entity::ADMIN]);
-
-        return $comments->toArrayPublic();
-    }
 }

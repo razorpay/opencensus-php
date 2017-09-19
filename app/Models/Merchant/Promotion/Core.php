@@ -6,11 +6,11 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Promotion;
 use RZP\Models\Schedule\Task;
 use RZP\Models\Merchant\Credits;
+use Razorpay\Trace\Logger as Trace;
 
 class Core extends Base\Core
 {

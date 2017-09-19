@@ -3,6 +3,7 @@
 namespace RZP\Models\Customer\Balance;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Exception;
 use RZP\Models\Base;
@@ -201,9 +202,9 @@ class Entity extends Base\PublicEntity
 
         $lastTxnTime = $this->getLastLoadedAt();
 
-        $lastTxnTime = Carbon::createFromTimestamp($lastTxnTime, 'Asia/Kolkata');
+        $lastTxnTime = Carbon::createFromTimestamp($lastTxnTime, Timezone::IST);
 
-        $now = Carbon::now('Asia/Kolkata');
+        $now = Carbon::now(Timezone::IST);
 
         if ($lastTxnTime->month !== $now->month)
         {

@@ -17,7 +17,6 @@ class Name
     const VIEW_MERCHANT_LOGIN                 = 'view_merchant_login';
     const VIEW_ACTIVITY                       = 'view_activity';
     const VIEW_PRICING_LIST                   = 'view_pricing_list';
-    const VIEW_MERCHANT_PRICING_RULES         = 'view_merchant_pricing_rules';
     const VIEW_MERCHANT_HDFC_EXCEL            = 'view_merchant_hdfc_excel';
     const VIEW_BENEFICIARY_FILE               = 'view_beneficiary_file';
     const VIEW_MERCHANT_SCREENSHOT            = 'view_merchant_screenshot';
@@ -59,15 +58,19 @@ class Name
     const EDIT_AUTHORIZED_FAILED_PAYMENT      = 'edit_authorized_failed_payment';
     const VIEW_REFUND_PAYMENTS                = 'view_refund_payments';
     const EDIT_AUTHORIZED_REFUND_PAYMENT      = 'edit_authorized_refund_payment';
+    const RETRY_REFUND_FAILED                 = 'retry_refund_failed';
     const EDIT_PAYMENT_REFUND                 = 'edit_payment_refund';
     const EDIT_PAYMENT_CAPTURE                = 'edit_payment_capture';
     const EDIT_MERCHANT_CONFIRM               = 'edit_merchant_confirm';
     const CREATE_BENEFICIARY_FILE             = 'create_beneficiary_file';
     const CREATE_NETBANKING_REFUND            = 'create_netbanking_refund';
+    const CREATE_EMI_FILES                    = 'create_emi_files';
     const CREATE_SETTLEMENT_INITIATE          = 'create_settlement_initiate';
     const DELETE_TERMINAL                     = 'delete_terminal';
     const EDIT_TERMINAL                       = 'edit_terminal';
     const CREATE_SETTLEMENTS_RECONCILE        = 'create_settlements_reconcile';
+    const RETRY_SETTLEMENT                    = 'retry_settlement';
+    const EDIT_MERCHANT_INVOICE_GSTIN         = 'edit_merchant_invoice_gstin';
     const CREATE_RECONCILIATE                 = 'create_reconciliate';
     const VIEW_ACTIVATION_FORM                = 'view_activation_form';
     const EDIT_MERCHANT_LOCK_ACTIVATION       = 'edit_merchant_lock_activation';
@@ -147,6 +150,12 @@ class Name
     const CREATE_MERCHANT_OFFER               = 'create_merchant_offer';
     const EDIT_MERCHANT_OFFER                 = 'edit_merchant_offer';
     const ASSIGN_MERCHANT_HANDLE              = 'assign_merchant_handle';
+    const VIEW_MERCHANT_PRICING               = 'view_merchant_pricing';
+    const CREATE_DISPUTE                      = 'create_dispute';
+    const EDIT_DISPUTE                        = 'edit_dispute';
+    const VIEW_WALLET_CONFIG                  = 'view_wallet_config';
+    const CREATE_WALLET_CONFIG                = 'create_wallet_config';
+    const EDIT_WALLET_CONFIG                  = 'edit_wallet_config';
 
     public static $actionMap = [
         Merchant\Action::ARCHIVE                => self::EDIT_MERCHANT_ARCHIVE,

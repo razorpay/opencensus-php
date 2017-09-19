@@ -3,12 +3,14 @@
 namespace RZP\Gateway\Netbanking\Icici;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use phpseclib\Crypt\AES;
+use RZP\Models\Payment\Verify as PaymentVerify;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\AESCrypto;
 use RZP\Gateway\Netbanking\Base;
@@ -24,9 +26,18 @@ class Gateway extends Base\Gateway
 
     protected $bank = 'icici';
 
+    protected $bankingType = self::RETAIL;
+
     protected $map = [
         RequestFields::AMOUNT  => 'amount'
     ];
+
+    public function setGatewayParams($input, $mode, $terminal)
+    {
+        parent::setGatewayParams($input, $mode, $terminal);
+
+        $this->setBankingTypeAndDomainType($terminal);
+    }
 
     public function authorize(array $input)
     {
@@ -38,7 +49,7 @@ class Gateway extends Base\Gateway
 
         $this->createGatewayPaymentEntity($entity);
 
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray($content, 'post', $this->getUrlType());
 
         $this->traceGatewayPaymentRequest($request, $input);
 
@@ -67,7 +78,7 @@ class Gateway extends Base\Gateway
 
         $this->checkCallbackStatus($attrs, $content);
 
-        $acquirerData = $this->getAcquirerData($gatewayPayment);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }
@@ -81,11 +92,23 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
+    protected function setBankingTypeAndDomainType($terminal)
+    {
+        // Default banking type is retail
+        if ((isset($terminal) === true) and
+            ($terminal->isCorporate() === true))
+        {
+            $this->setBankingType(self::CORPORATE);
+        }
+
+        $this->setDomainType();
+    }
+
     public function sendPaymentVerifyRequest(Verify $verify)
     {
         $content = $this->getVerifyRequestData($verify);
 
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray($content, 'post', $this->getUrlType());
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
@@ -96,16 +119,18 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $responseBody = $response->body;
+        $verify->verifyResponseBody = $response->body;
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
                 'payment_id' => $verify->input['payment']['id'],
-                'response'   => $responseBody
+                'response'   => $response->body
             ]);
 
-        $verify->verifyResponseContent = $this->getResponseArray($responseBody);
+        $this->preProcessVerifyResponse($verify->verifyResponseBody);
+
+        $verify->verifyResponseContent = $this->getResponseArray($verify);
     }
 
     public function verifyPayment(Verify $verify)
@@ -160,10 +185,20 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        if ((isset($content[ResponseFields::STATUS]) === true) and
-            ($content[ResponseFields::STATUS] === Status::SUCCESS))
+        if (isset($content[ResponseFields::STATUS]) === true)
         {
-            $verify->gatewaySuccess = true;
+            $status = $content[ResponseFields::STATUS];
+
+            // Yes, the corporate verify success is Y
+            if ($this->isCorporateBanking() === true)
+            {
+                $verify->gatewaySuccess = ($status === Status::Y);
+            }
+            // Whereas, the retail verify success is success
+            else
+            {
+                $verify->gatewaySuccess = ($status === Status::SUCCESS);
+            }
         }
     }
 
@@ -182,12 +217,13 @@ class Gateway extends Base\Gateway
     protected function getVerifyRequestData(Verify $verify)
     {
         $input = $verify->input;
+
         $payment = $verify->payment;
 
         $data = $this->createDefaultRequestData($input);
 
         $paymentDate = Carbon::createFromTimestamp($payment['created_at'],
-                                                   'Asia/Kolkata')
+                                                   Timezone::IST)
                                                    ->format('Y-m-d');
 
         $data[RequestFields::PAYMENT_DATE] = $paymentDate;
@@ -196,7 +232,12 @@ class Gateway extends Base\Gateway
 
         $additionalData = $this->getPaymentReferenceData($input);
 
-        $this->setTpvFieldIfNeeded($additionalData, $input);
+        if ($this->isCorporateBanking() === true)
+        {
+            $data[RequestFields::SHOW_ON_SAME_PAGE]  = Status::Y;
+            // This is a dummy url that is being set to use the api
+            $data[RequestFields::RETURN_URL]  = $this->app['config']->get('app.url');
+        }
 
         $data = array_merge($data, $additionalData);
 
@@ -328,31 +369,68 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $verify->payment;
 
-        if ($content[ResponseFields::STATUS] === Status::SUCCESS)
-        {
-            $status = Confirmation::YES;
-        }
-        else
-        {
-            $status = Confirmation::NO;
-        }
-
-        $attributes = [];
-
-        if ($this->shouldStatusBeUpdated($gatewayPayment) === true)
-        {
-            $attributes = [Base\Entity::STATUS => $status];
-        }
-
-        if ((empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true) and
-            (isset($content[ResponseFields::BANK_PAYMENT_ID]) === true))
-        {
-            $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_PAYMENT_ID];
-        }
+        $attributes = $this->getAttributesFromPaymentAndContent($gatewayPayment, $content);
 
         $gatewayPayment->fill($attributes);
 
         $this->repo->saveOrFail($gatewayPayment);
+    }
+
+    protected function getAttributesFromPaymentAndContent($gatewayPayment, $content)
+    {
+        $attributes = [];
+
+        list($status, $bankPaymentIdKey) = $this->getKeysBasedOnBankingType();
+
+        if ($this->shouldStatusBeUpdated($gatewayPayment) === true)
+        {
+            $attributes[Base\Entity::STATUS] = $this->getConfirmationFromContent($content, $status);
+        }
+
+        if (empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true)
+        {
+            $attributes[Base\Entity::BANK_PAYMENT_ID] = $this->getBankPaymentIdFromContent($content, $bankPaymentIdKey);
+        }
+
+        return $attributes;
+    }
+
+    protected function getKeysBasedOnBankingType()
+    {
+        if ($this->isCorporateBanking() === true)
+        {
+            return [
+                Status::Y,
+                ResponseFields::PAYMENTID,
+            ];
+        }
+        else
+        {
+            return [
+                Status::SUCCESS,
+                ResponseFields::BANK_PAYMENT_ID,
+            ];
+        }
+    }
+
+    protected function getConfirmationFromContent($content, $status)
+    {
+        $confirmation = Confirmation::NO;
+
+        if (isset($content[ResponseFields::STATUS]) === true)
+        {
+            if ($content[ResponseFields::STATUS] === $status)
+            {
+                $confirmation = Confirmation::YES;
+            }
+        }
+
+        return $confirmation;
+    }
+
+    protected function getBankPaymentIdFromContent($content, $bankPaymentIdKey)
+    {
+        return $content[$bankPaymentIdKey] ?? null;
     }
 
     protected function getAuthSuccessStatus()
@@ -360,16 +438,34 @@ class Gateway extends Base\Gateway
         return Confirmation::getAuthSuccessStatus();
     }
 
-    protected function getResponseArray($content)
+    /**
+     * In case of corporate payments the verify response returned is an
+     * ill formed xml. To parse the same, we will reploace the offending keys
+     * with an appropriate parsable version of the same.
+     * */
+    protected function preProcessVerifyResponse(&$content)
     {
-        $xml = (array) simplexml_load_string($content);
+        // successful case
+        $content = str_replace(ResponseFields::BILL_REF_NUM, ResponseFields::US_BILL_REF_NUM, $content);
 
-        if (isset($xml['@attributes']) === false)
+        $content = str_replace(ResponseFields::CONSUMER_CODE, ResponseFields::US_CONSUMER_CODE, $content);
+    }
+
+    protected function getResponseArray(Verify $verify)
+    {
+        try
         {
-            return [];
-        }
+            $xml = (array) simplexml_load_string($verify->verifyResponseBody);
 
-        return $xml['@attributes'];
+            return $xml['@attributes'];
+        }
+        catch (\Exception $e)
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify,
+                PaymentVerify\Action::RETRY);
+        }
     }
 
     public function getSpid()
@@ -386,10 +482,37 @@ class Gateway extends Base\Gateway
     {
         if ($this->mode === Mode::TEST)
         {
-            return $this->getTestMerchantId2();
+            if ($this->isCorporateBanking() === true)
+            {
+                return $this->getTestMerchantId2Corporate();
+            }
+            else
+            {
+                return $this->getTestMerchantId2();
+            }
         }
 
         return $this->getLiveMerchantId2();
+    }
+
+    protected function getTestMerchantId2Corporate()
+    {
+        return $this->config['test_merchant_id2_corp'];
+    }
+
+    protected function getTestSecret()
+    {
+        if ($this->isCorporateBanking() === true)
+        {
+            return $this->getTestSecretCorporate();
+        }
+
+        return parent::getTestSecret();
+    }
+
+    protected function getTestSecretCorporate()
+    {
+        return $this->config['test_hash_secret_corp'];
     }
 
     /**
@@ -404,6 +527,19 @@ class Gateway extends Base\Gateway
 
             case $this->config['live_merchant_id2_tpv']:
                 return $this->config['live_hash_secret_tpv'];
+
+            case $this->config['live_merchant_id2_corp'];
+                return $this->config['live_hash_secret_corp'];
         }
+    }
+
+    protected function setDomainType()
+    {
+        $this->domainType = $this->getBankingType() . '_' . $this->getMode();
+    }
+
+    protected function getUrlType()
+    {
+        return $this->getBankingType() . '_QUERY';
     }
 }

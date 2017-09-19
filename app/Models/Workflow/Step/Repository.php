@@ -14,28 +14,6 @@ class Repository extends Base\Repository
         Entity::LEVEL         => 'sometimes|integer|max:14',
     ];
 
-    /*
-        Get required checkers across (roles, levels)
-    */
-    public function getNumCheckers(string $workflowId)
-    {
-        // sum() returns string
-
-        return (int) $this->newQuery()
-                          ->where(Entity::WORKFLOW_ID, '=', $workflowId)
-                          ->sum(Entity::REVIEWER_COUNT);
-    }
-
-    public function getTotalReviewerCountAtLevel(
-        int $level,
-        string $workflowId)
-    {
-        return $this->newQuery()
-                    ->where(Entity::WORKFLOW_ID, '=', $workflowId)
-                    ->where(Entity::LEVEL, '=', $level)
-                    ->sum(Entity::REVIEWER_COUNT);
-    }
-
     public function findByLevelAndWorkflowId(
         int $level,
         string $workflowId,
@@ -71,33 +49,6 @@ class Repository extends Base\Repository
                     ->where(Entity::LEVEL, '=', $level)
                     ->whereIN(Entity::ROLE_ID, $roleIds)
                     ->get($columns);
-    }
-
-    public function getNumCheckersByLevel(
-        int $level,
-        string $workflowId)
-    {
-        return $this->newQuery()
-                    ->where(Entity::LEVEL, '=', $level)
-                    ->where(Entity::WORKFLOW_ID, '=', $workflowId)
-                    ->sum(Entity::REVIEWER_COUNT);
-    }
-
-    public function fetchByWorkflowIdAndStepId(string $wid, string $stepId)
-    {
-        return $this->newQuery()
-                    ->where(Entity::ID, '=', $stepId)
-                    ->where(Entity::WORKFLOW_ID, '=', $wid)
-                    ->with(Entity::WORKFLOW)
-                    ->get();
-    }
-
-    public function fetchByWorkflowId(string $wid)
-    {
-        return $this->newQuery()
-                    ->where(Entity::WORKFLOW_ID, '=', $wid)
-                    ->with(Entity::WORKFLOW)
-                    ->get();
     }
 
     public function getLastLevelOfWorkflow(string $workflowId)

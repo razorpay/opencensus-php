@@ -29,7 +29,7 @@ class Validator extends Base\Validator
         Entity::ORG_ID                      => 'sometimes|alpha_num|size:14',
         Entity::GROUPS                      => 'sometimes|array',
         Entity::ADMINS                      => 'sometimes|array',
-        Entity::COUPON_CODE                 => 'sometimes|string'
+        Entity::COUPON_CODE                 => 'sometimes|string',
     ];
 
     protected static $editRules = [
@@ -45,6 +45,7 @@ class Validator extends Base\Validator
         Entity::SETTLEMENT_SCHEDULE         => 'sometimes|integer|min:1|max:30',
         Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
         Entity::RISK_RATING                 => 'sometimes|min:0|max:5',
+        Entity::RISK_THRESHOLD              => 'sometimes|integer|min:0|max:20',
         Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
         Entity::FEE_MODEL                   => 'sometimes|in:prepaid,postpaid',
         Entity::MAX_PAYMENT_AMOUNT          => 'sometimes|integer',
@@ -83,9 +84,20 @@ class Validator extends Base\Validator
         Entity::ACTION                      => 'required|custom'
     ];
 
+    protected static $oauthMailRules = [
+        'client_id'    => 'required|alpha_num|size:14',
+        'user_id'      => 'required|alpha_num|size:14',
+        'merchant_id'  => 'required|alpha_num|size:14'
+    ];
+
     protected static $featureRules = [
-        'features'          => 'required|array',
-        'optout_reason'     => 'sometimes|string|max:200'
+        'features'                   => 'required|array',
+        'optout_reason'              => 'sometimes|string|max:200',
+        Feature\Entity::SHOULD_SYNC  => 'sometimes|boolean',
+    ];
+
+    protected static $addTagsRules = [
+        'tags' => 'required|array'
     ];
 
     protected static $updateHoldFundsRules = [
@@ -289,18 +301,18 @@ class Validator extends Base\Validator
         switch ($duration)
         {
             case 'mins':
-                $min = 30;
-                $max = 7200;
+                $min = (int) (Entity::MIN_AUTO_REFUND_DELAY / 60);
+                $max = (int) (Entity::MAX_AUTO_REFUND_DELAY / 60);
                 break;
 
             case 'hours':
-                $min = 1;
-                $max = 120;
+                $min = (int) (ceil(Entity::MIN_AUTO_REFUND_DELAY / 3600));
+                $max = (int) (ceil(Entity::MAX_AUTO_REFUND_DELAY / 3600));
                 break;
 
             case 'days':
-                $min = 1;
-                $max = 5;
+                $min = (int) (ceil(Entity::MIN_AUTO_REFUND_DELAY / 86400));
+                $max = (int) (ceil(Entity::MAX_AUTO_REFUND_DELAY / 86400));
                 break;
 
             default:

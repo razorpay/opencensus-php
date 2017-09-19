@@ -83,6 +83,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <td>
             <select name="bank">
                 <option value="HDFC">HDFC Bank</option>
+                <option value="CORP">Corporation Bank</option>
                 <option value="SBIN">SBI Bank</option>
                 <option value="ICIC">ICICI Bank</option>
                 <option value="AIRP">Airtel Payments Bank</option>
@@ -99,6 +100,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
                 <option value="UBIN">United Bank</option>
                 <option value="BARB">Bank of Baroda</option>
                 <option value="INDB">Indusind Bank</option>
+                <option value="PUNB">Punjab National Bank</option>
             </select>
         </td>
     </tr>
@@ -114,6 +116,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
                 <option value="airtelmoney">Airtelmoney</option>
                 <option value="freecharge">Freecharge</option>
                 <option value="jiomoney">JioMoney</option>
+                <option value="sbibuddy">SBI Buddy</option>
                 <option value="openwallet">Openwallet (B2B)</option>
                 <option value="mpesa">Vodafone Mpesa</option>
             </select>

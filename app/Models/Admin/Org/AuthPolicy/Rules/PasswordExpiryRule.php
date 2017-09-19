@@ -16,7 +16,7 @@ class PasswordExpiryRule extends Base
 
     public function validate($admin, $password)
     {
-        $time = Carbon::now()->subDays($this->passwordExpiry)->timestamp;
+        $time = Carbon::now()->subDays($this->passwordExpiry)->getTimestamp();
 
         $passwordChangedAt = $admin->getPasswordChangedAt();
 

@@ -15,14 +15,6 @@ class Repository extends Base\Repository
         Entity::ACTION_ID => 'sometimes|string|max:14',
     ];
 
-    public function fetchByActionId(string $actionId)
-    {
-        return $this->newQuery()
-                    ->where(Entity::ACTION_ID, '=', $actionId)
-                    ->whereNotNull(Entity::APPROVED)
-                    ->get();
-    }
-
     public function fetchByActionIdWithRelations(string $actionId, $relations = [])
     {
         return $this->newQuery()
@@ -53,16 +45,6 @@ class Repository extends Base\Repository
                     ->where(Entity::APPROVED, '=', 1) // checked
                     ->groupBy(Entity::STEP_ID)
                     ->get();
-    }
-
-    public function findByIdAndActionId($checkerId, $actionId)
-    {
-        Action\Entity::verifyIdAndSilentlyStripSign($actionId);
-
-        return $this->newQuery()
-                    ->where(Entity::ID, '=', $checkerId)
-                    ->where(Entity::ACTION_ID, '=', $actionId)
-                    ->firstOrFail();
     }
 
     public function findManyByStepIds(array $stepIds)

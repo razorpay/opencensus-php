@@ -19,7 +19,7 @@ return [
 
     'testGetMultipleForRazorpayOrg' => [
         'request' => [
-            'url' => '/orgs/%s/permissions',
+            'url' => '/permissions-multiple',
             'method' => 'get',
             'content' => [
             ]
@@ -103,13 +103,16 @@ return [
 
     'testEditPermissionWithOrg' => [
         'request' => [
-            'url' => '/permissions',
-            'method' => 'put',
-            'content' => [
-                'description' => 'test description 2',
-                'orgs' => [
-                    'org_100000razorpay'
-                ]
+            'url'       => '/permissions',
+            'method'    => 'put',
+            'content'   => [
+                'description'   => 'test description 2',
+                'orgs'          => [
+                    'org_100000razorpay',
+                ],
+                'workflow_orgs' => [
+                    'org_100000razorpay',
+                ],
             ],
         ],
         'response' => [
@@ -129,5 +132,23 @@ return [
             'content' => [],
             'status_code' => 200,
         ]
+    ],
+    'testGetMultipleWorkflowPermForRazorpayOrg' => [
+        'request'   => [
+            'url'       => '/permissions-multiple?type=workflow',
+            'method'    => 'GET',
+        ],
+        'response'  => [
+            'content'   => [],
+        ]
+    ],
+    'testGetPermissionsByType' => [
+        'request'   => [
+            'url'       => '/permissions/get/%s',
+            'method'    => 'GET',
+        ],
+        'response'  => [
+            'content'   => [],
+        ],
     ]
 ];

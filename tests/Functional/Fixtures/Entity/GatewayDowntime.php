@@ -3,14 +3,15 @@
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 class GatewayDowntime extends Base
 {
     public function createCard(array $attributes = [])
     {
-        $begin = Carbon::now('Asia/Kolkata')->subMinutes(60)->timestamp;
+        $begin = Carbon::now(Timezone::IST)->subMinutes(60)->timestamp;
 
-        $end = Carbon::now('Asia/Kolkata')->addMinutes(60)->timestamp;
+        $end = Carbon::now(Timezone::IST)->addMinutes(60)->timestamp;
 
         $cardAttributes = [
             'method'      => 'card',
@@ -32,9 +33,9 @@ class GatewayDowntime extends Base
 
     public function createNetbanking(array $attributes = [])
     {
-        $begin = Carbon::now('Asia/Kolkata')->subMinutes(60)->timestamp;
+        $begin = Carbon::now(Timezone::IST)->subMinutes(60)->timestamp;
 
-        $end = Carbon::now('Asia/Kolkata')->addMinutes(60)->timestamp;
+        $end = Carbon::now(Timezone::IST)->addMinutes(60)->timestamp;
 
         $netbankingAttributes = [
             'method'      => 'netbanking',
@@ -55,9 +56,9 @@ class GatewayDowntime extends Base
 
     public function createWallet(array $attributes = [])
     {
-        $begin = Carbon::now('Asia/Kolkata')->subMinutes(60)->timestamp;
+        $begin = Carbon::now(Timezone::IST)->subMinutes(60)->timestamp;
 
-        $end = Carbon::now('Asia/Kolkata')->addMinutes(60)->timestamp;
+        $end = Carbon::now(Timezone::IST)->addMinutes(60)->timestamp;
 
         $walletAttributes = [
             'method'      => 'wallet',

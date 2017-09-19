@@ -254,5 +254,33 @@ return [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD,
         ],
-    ]
+    ],
+
+    'testPaymentAfterTransferReversal' => [
+        'request'  => [
+            'method'  => 'POST',
+            'url'     => '', // set dynamically
+            'content' => [
+                'transfers' => [
+                    [
+                        'account'  => 'acc_10000000000001',
+                        'amount'   => 1000,
+                        'currency' => 'INR',
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'recipient' => 'acc_10000000000001',
+                        'amount'    => 1000,
+                        'currency'  => 'INR',
+                    ]
+                ],
+            ],
+        ],
+    ],
 ];

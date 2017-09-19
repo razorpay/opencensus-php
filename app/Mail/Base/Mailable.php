@@ -8,7 +8,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Mail\Mailer as MailerContract;
 use Illuminate\Contracts\Queue\Factory as Queue;
 use Illuminate\Mail\Mailable as BaseMailable;
-use RZP\Trace\Trace;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 
 class Mailable extends BaseMailable
@@ -16,9 +16,7 @@ class Mailable extends BaseMailable
     use Queueable;
 
     #TODO : decrease the number of attempts after daily files are fixed
-    public $tries = 50;
-
-    public $timeout = 120;
+    public $tries = 5;
 
     public $taskId;
 

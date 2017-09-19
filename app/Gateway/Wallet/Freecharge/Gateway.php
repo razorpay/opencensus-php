@@ -18,7 +18,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Processor;
 use RZP\Models\Payment\TwoFactorAuth;
-use RZP\Trace\Trace;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 use View;
 
@@ -659,7 +659,7 @@ class Gateway extends Base\Gateway
 
         $expiryTime = $content[ResponseFields::ACCESS_TOKEN_EXPIRY];
         $expiryTime = Carbon::createFromFormat('Y-m-d\TH:i:s', $expiryTime)
-                        ->timestamp;
+                            ->getTimestamp();
 
         $attributes = array(
             Token\Entity::METHOD           => 'wallet',

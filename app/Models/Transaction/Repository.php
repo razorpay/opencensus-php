@@ -10,6 +10,8 @@ use RZP\Exception;
 use RZP\Gateway\Billdesk;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Merchant\Invoice\Type as InvoiceType;
+use RZP\Models\Pricing\FeeCalculator;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Models\Schedule;
@@ -293,8 +295,10 @@ class Repository extends Base\Repository
     }
 
     /**
-     * @param $txns - Array of transaction entities to be updated
-     * @param $values - Array. Key - Column name, Value - Column value
+     * @param       $txns   - Array of transaction entities to be updated
+     * @param array $values - Array. Key - Column name, Value - Column value
+     *
+     * @throws Exception\LogicException
      */
     public function settled($txns, array $values)
     {
@@ -314,8 +318,12 @@ class Repository extends Base\Repository
         if ($count !== $expected)
         {
             throw new Exception\LogicException(
-                'Failed to update expected number of rows. \n' .
-                'Expected: ' . $expected . ' Updated: ' . $count);
+                'Failed to update expected number of rows.',
+                null,
+                [
+                    'expected' => $expected,
+                    'updated'  => $count,
+                ]);
         }
 
         return $count;
@@ -341,8 +349,13 @@ class Repository extends Base\Repository
         if ($count !== $expected)
         {
             throw new Exception\LogicException(
-                'Failed to update expected number of rows. \n' .
-                'Expected: ' . $expected . ' Updated: ' . $count);
+                'Failed to update expected number of rows.',
+                null,
+                [
+                    'expected'      => $expected,
+                    'updated'       => $count,
+                    'settlement_id' => $settlementId
+                ]);
         }
 
         return $count;
@@ -359,7 +372,12 @@ class Repository extends Base\Repository
             ($fail))
         {
             throw new Exception\LogicException(
-                'Failed to find transaction with entity_id: ' . $entityId);
+                'Failed to find transaction with entity_id',
+                null,
+                [
+                    'entity_id'     => $entityId,
+                    'merchant_id'   => $merchant->getId(),
+                ]);
         }
 
         return $txn;
@@ -503,5 +521,57 @@ class Repository extends Base\Repository
                     ->whereNotNull(Payment\Entity::CAPTURED_AT)
                     ->select($transactionData)
                     ->get();
+    }
+
+    public function fetchFeesAndTaxForTransactionsByType(
+        string $merchantId, int $start, int $end, string $filterType)
+    {
+        $createdAtCol = $this->dbColumn(Entity::CREATED_AT);
+
+        $merchantIdCol = $this->dbColumn(Entity::MERCHANT_ID);
+
+        $amountCol = $this->dbColumn(Entity::AMOUNT);
+
+        $feeCol = $this->dbColumn(Entity::FEE);
+
+        $taxCol = $this->dbColumn(Entity::TAX);
+
+        $paymentIdCol = $this->repo->payment->dbColumn(Payment\Entity::ID);
+
+        $paymentCardIdCol = $this->repo->payment->dbColumn(Payment\Entity::CARD_ID);
+
+        $transactionData = $this->dbColumn('*');
+
+        $query = $this->newQuery()
+                      ->selectRaw(
+                            'SUM(' . $taxCol .') AS tax, SUM(' . $feeCol . ') AS fee')
+                      ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', $paymentIdCol)
+                      ->whereBetween($createdAtCol, [$start, $end])
+                      ->merchantId($merchantId)
+                      ->whereNotNull(Payment\Entity::CAPTURED_AT)
+                      ->where(Entity::TYPE, Type::PAYMENT)
+                      ->groupBy($merchantIdCol);
+
+        switch ($filterType)
+        {
+            case InvoiceType::NON_CARD:
+                $query = $query->whereNull($paymentCardIdCol);
+                break;
+
+            case InvoiceType::CARD_LTE_2K:
+                $query = $query->whereNotNull($paymentCardIdCol)
+                               ->where($amountCol, '<=', FeeCalculator::CARD_TAX_CUT_OFF);
+                break;
+
+            case InvoiceType::CARD_GT_2K:
+                $query = $query->whereNotNull($paymentCardIdCol)
+                               ->where($amountCol, '>', FeeCalculator::CARD_TAX_CUT_OFF);
+                break;
+
+            default:
+                throw new Exception\LogicException('Invalid merchant invoice type: ', $filterType);
+        }
+
+        return $query->first();
     }
 }

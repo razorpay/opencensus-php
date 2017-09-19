@@ -5,6 +5,7 @@ namespace RZP\Models\BankAccount;
 use App;
 use Mail;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Exception;
 use RZP\Models\Base;
@@ -105,7 +106,7 @@ class BeneficiaryFile extends Base\Core
 
     protected function getFileToWriteNameWithoutExt(): string
     {
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
 
         $mode = $this->mode;
 

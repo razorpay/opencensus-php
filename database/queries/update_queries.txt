@@ -570,3 +570,191 @@ LOAD DATA LOCAL INFILE '/tmp/dispute_reasons.csv' INTO TABLE dispute_reasons FIE
 
 UPDATE gateway_rules
     SET type='sorter';
+
+# Tags Migration
+# Add column `tag_group_id` to Dashboard DB and get the dump, then remove that column from Dashboard DB
+# Dump tags from Dashboard
+mysqldump -h host --no-create-info --complete-insert -u user -p dbd tagging_tagged tagging_tags > tag_dump.sql;
+
+# Import tags on API
+truncate table tagging_tagged;
+truncate table tagging_tags;
+source tag_dump.sql;
+# Update tagging_tagged table
+UPDATE `tagging_tagged` SET `taggable_type` = 'merchant' WHERE `taggable_type` = 'App\\Merchant\\Entity';
+
+# Type 4 terminals are Non-3DS for recurring
+# FirstData N3DS terminals are always in Purchase mode
+UPDATE terminals SET mode=2 WHERE gateway='first_data' AND type=4;
+
+UPDATE hdfc
+SET gateway_transaction_id = 8160981421672291, gateway_payment_id = 7696205411672290
+WHERE id = 8402808
+LIMIT 1;
+
+# Reversal migration
+UPDATE reversals
+    SET entity_type='transfer', entity_id=transfer_id
+    WHERE transfer_id IS NOT NULL;
+
+# Update ARNs of fss manual refunds
+UPDATE refunds SET reference1 = "74332747231616391536152", status = "processed", gateway_refunded = 1, updated_at = 1503555446 WHERE id = "8EEK8vsA2jrkPK";
+UPDATE refunds SET reference1 = "74332747231613891536147", status = "processed", gateway_refunded = 1, updated_at = 1503555446 WHERE id = "8EEOD9QSO1rage";
+UPDATE refunds SET reference1 = "74332747231611991536132", status = "processed", gateway_refunded = 1, updated_at = 1503555446 WHERE id = "8HRhxHD4D2KTJf";
+UPDATE refunds SET reference1 = "74332747231611991536132", status = "processed", gateway_refunded = 1, updated_at = 1503555446 WHERE id = "8HRrVtl2nckjPl";
+UPDATE refunds SET reference1 = "75503727231014848144501", status = "processed", gateway_refunded = 1, updated_at = 1503555446 WHERE id = "8OxmZfpmVywQjR";
+UPDATE refunds SET reference1 = "75503727235014912824224", status = "processed", gateway_refunded = 1, updated_at = 1503555446 WHERE id = "897lDRdq5x9QL1";
+UPDATE refunds SET status = "processed", gateway_refunded = 1, updated_at = 1503555446 WHERE id = "8GLpbEovh2CQdt";
+
+UPDATE hdfc
+    SET gateway_transaction_id = null
+    WHERE enroll_result = "3" AND gateway_payment_id = gateway_transaction_id AND gateway_payment_id is NOT NULL AND status = 'captured';
+
+update merchants
+set invoice_code = upper(concat(substr(`id`,1, 8), substr(`id`, -4)));
+
+update merchant_invoice
+set invoice_number = upper(concat(substr(`merchant_id`,1, 8), substr(`merchant_id`, -4), '0717'));
+
+######## Queries run for merchant invoices
+UPDATE merchant_invoice
+JOIN
+  (SELECT merchant_id,
+          amount
+   FROM adjustment
+   WHERE description = 'GST reversal') AS t ON merchant_invoice.merchant_id = t.merchant_id
+SET tax = t.amount
+WHERE MONTH = 7
+  AND YEAR = 2017
+  AND TYPE = 'card_lte_2k';
+
+
+UPDATE merchant_invoice
+SET invoice_number = upper(concat(substr(`merchant_id`,1, 8), substr(`merchant_id`, -4), '0817'))
+WHERE MONTH=8;
+
+########
+
+# Adding the settlement id in the transfers table
+UPDATE transfers as tr
+    JOIN payments as p
+        ON p.transfer_id = tr.id
+    JOIN transactions as txn
+        ON txn.entity_id = p.id
+    SET recipient_settlement_id = txn.settlement_id
+    WHERE txn.type = 'payment'
+    AND p.transfer_id IS NOT NULL
+
+UPDATE merchant_invoice
+JOIN merchant_details ON merchant_details.merchant_id = merchant_invoice.merchant_id
+SET merchant_invoice.gstin = merchant_details.gstin
+WHERE (merchant_invoice.gstin IS NULL or merchant_invoice.gstin = '')
+    AND merchant_details.gstin IS NOT NULL
+    AND merchant_details.gstin != '';
+
+UPDATE merchant_invoice
+JOIN merchant_details ON merchant_details.merchant_id = merchant_invoice.merchant_id
+SET merchant_invoice.gstin = merchant_details.p_gstin
+WHERE (merchant_invoice.gstin IS NULL OR merchant_invoice.gstin = '')
+    AND merchant_details.p_gstin IS NOT NULL
+    AND merchant_details.p_gstin != '';
+
+UPDATE settlements SET utr = 'KKBK172481505881'
+WHERE id = '8ZcBkIirxzto8C';
+
+UPDATE fund_transfer_attempts SET utr = 'KKBK172481505881'
+WHERE source_id = '8ZcBkIirxzto8C' AND utr IS NULL;
+
+# Data correction for FirstData terminal tokens
+UPDATE tokens SET terminal_id = '7Y30j1EY3JG8ob'
+    WHERE terminal_id = '7bOl7tgaZ5kWvf'
+
+UPDATE gateway_tokens SET terminal_id = '7Y30j1EY3JG8ob'
+    WHERE terminal_id = '7bOl7tgaZ5kWvf'
+
+UPDATE offers SET issuer = payment_network WHERE payment_method != 'card';
+UPDATE offers SET payment_network = NULL WHERE payment_method != 'card';
+
+# Netbanking Federal terminal supports both tpv and non tpv
+UPDATE terminals SET tpv = '2' WHERE gateway = 'netbanking_federal' AND
+    id = '7j1qFPcYQhXbsk';
+
+
+UPDATE refunds SET status = "processed", gateway_refunded = 1, updated_at = UNIX_TIMESTAMP() WHERE id IN ("8OCaLQWlQ2GU6F", "8GZxnX7qNUCxbn", "8DBuziIXL80sg9", "8Ey3S0es6jh7le", "8K8LtVTtE4CoW1", "8Hw9ZMV0M8fGyc", "8VEqpr2nTL7PDx", "8LmidpwWQQ1Jqr", "8J0wJyY71kYNTJ", "8KTHDD6btnGfBR", "8MIFtJdjZJFHQd", "8KFO379X6apUhF", "8ODs9H0wb2VKdq", "8LotddEjtS9f0q", "8LpEkQtQ2zNMWz", "8MDQiaqNAeWjud", "8MYeL7b2W3GzT4", "8OCuOfFs5RR3oD", "8MzVt9AiUhFLL0", "8MYxxASJPrexG3", "8ST4UF0gzizsZu", "8NPx5jBPbrKftl", "8ODujr2rC8eiMT", "8P2eTvsq3fsKUO", "8PSXudK8pLpzEP", "8UTgUD8gxzu0M1", "8R2dlPROxKZ7x5", "8PjItVSxB7NixX", "8R2eiC6pluCOdI", "8R2ecJoh2T08m2", "8PLqghEWnPWpvR", "8RR9GmOXvOQiax", "8Te3HOySmsJirk", "8RRA0VAchw3hKk", "8PjqxNfFDVQggm", "8QaifjpT5bwKbw", "8Q4lHbGwkqyawW", "8RQFxPz3TNYLyZ", "8QoLF80vcFcx0T", "8R4unvMopuQ1GA", "8T1I2fs0gHpLAP", "8T1JAXwfVu0pW4", "8RPuBGD3pqyCZq", "8QzbBD25Fbd5wq", "8RicDRaOyD5wGY", "8RbjFD9tIXWq5S", "8SUmQM6YqHlfI8", "8TgfB4owKaZ0Qh", "8TgfG2AswpuXd2", "8UbRQWs7mf7dj4", "8TbFuL6YLu9dLr", "8Vn2Bln7dQSjTi", "8WBZW6StSh6g1a", "8VnC3bt91TTltD", "8USDSC4alQuGOd", "8WBYcTEkHapJH0", "8Wa7jNZ60OZCHX", "8UuyCDTWxoVOKb", "8VhPfdEwqFfoZK", "8WuFa4R0ejk2i7", "8WaBP5ZBV9nEFZ", "8Z8wN35MU5p6Wj", "8YNb3r7rZfMkgc", "8ZAV55LzoD7Sz5", "8Z9SJg7kldhZoL", "8YV9jckgh5s24T", "8Z6BAb6h8HeHW7") AND status = "failed";
+
+# Data correction for merchant_users mapping
+DELETE from merchant_users
+    WHERE user_id = '68AQH6PenuCx9Y'
+        AND merchant_id = '4Exx6ZgWrvFHZL'
+        AND role = 'manager';
+
+# Update refund for processing
+# https://razorpay.slack.com/archives/C0SG9Q7TM/p1505719892000263
+UPDATE refunds SET status = "failed", gateway_refunded = "0" WHERE id = "87eSYBPtCyTapi" and status = "processed";
+
+## FirstData Manual Refund of old Payment
+UPDATE refunds
+    SET status='processed',
+    reference1='85215227251735742614512',
+    gateway_refunded=1
+WHERE id='8DMPxDQxATRqpQ';
+
+UPDATE refunds
+    SET status='processed',
+    reference1='74766517256736059272031',
+    gateway_refunded=1
+WHERE id='8U7K6IOgt3PVPP';
+
+UPDATE `terminals` SET `network_category`='logistics' WHERE `id`='8MsSwOzxxWnjkv';
+
+UPDATE payments
+    SET reference2 = approval_code
+WHERE approval_code is NOT NULL AND
+method = 'card';
+
+UPDATE payments
+    JOIN hdfc ON hdfc.payment_id = payments.id
+    SET payments.reference2 = hdfc.auth
+WHERE hdfc.action = 4 AND
+    hdfc.status = "authorized" AND
+    hdfc.auth IS NOT NULL AND
+    payments.gateway = "hdfc" AND
+    payments.reference2 is NULL;
+
+UPDATE payments
+    JOIN first_data ON first_data.payment_id = payments.id
+    SET payments.reference2 = first_data.auth_code
+WHERE first_data.action = "capture" AND
+    first_data.status = "CAPTURED" AND
+    first_data.transaction_result = "APPROVED" AND
+    first_data.auth_code IS NOT NULL AND
+    payments.gateway = "first_data" AND
+    (payments.reference2 is NULL OR payments.reference2 = "00");
+
+UPDATE payments
+    JOIN axis ON axis.payment_id = payments.id
+    SET payments.reference2 = axis.vpc_AuthorizeId
+WHERE axis.action = "authorize" AND
+    axis.vpc_TxnResponseCode = "0" AND
+    axis.received = 1 AND
+    axis.vpc_AuthorizeId IS NOT NULL AND
+    payments.gateway = "axis_migs" AND
+    payments.reference2 is NULL;
+
+UPDATE payments
+    JOIN cybersource ON cybersource.payment_id = payments.id
+    SET payments.reference2 = cybersource.authorizationCode
+WHERE cybersource.action = "authorize" AND
+    cybersource.status = "authorized" AND
+    cybersource.received = 1 AND
+    cybersource.authorizationCode IS NOT NULL AND
+    payments.gateway = "cybersource" AND
+    payments.reference2 is NULL;
+
+UPDATE payments
+    SET reference1 = null
+WHERE method = "card";
+
+
+# Data fix, ref: https://github.com/razorpay/api/pull/5116
+UPDATE invoices SET type = 'invoice' WHERE id = '8XFQF7kIzFceBI';

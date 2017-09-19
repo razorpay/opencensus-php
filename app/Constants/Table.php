@@ -12,10 +12,12 @@ class Table
     const CARD                  = 'cards';
     const PLAN                  = 'plans';
     const ITEM                  = 'items';
+    const RISK                  = 'risk';
     const USER                  = 'users';
     const OFFER                 = 'offers';
     const ORDER                 = 'orders';
     const TOKEN                 = 'tokens';
+    const BLADE                 = 'blade';
     const ADDON                 = 'addons';
     const COUPON                = 'coupons';
     const BATCH                 = 'batches';
@@ -63,6 +65,7 @@ class Table
     const CUSTOMER_BALANCE      = 'customer_balance';
     const MERCHANT_TERMINAL     = 'merchant_terminal';
     const MERCHANT_PROMOTION    = 'merchant_promotion';
+    const MERCHANT_INVOICE      = 'merchant_invoice';
     const CREDIT_TRANSACTION    = 'credit_transaction';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const BATCH_FUND_TRANSFER   = 'daily_settlements';
@@ -110,6 +113,7 @@ class Table
     const PAYTM                 = 'paytm';
     const WALLET                = 'wallet';
     const BILLDESK              = 'billdesk';
+    const HITACHI               = 'hitachi';
     const MOBIKWIK              = 'mobikwik';
     const NETBANKING            = 'netbanking';
     const FIRST_DATA            = 'first_data';
@@ -122,10 +126,11 @@ class Table
     const CREDITS               = 'credits';
 
     // Terminal Performance
-
     const TERMINAL_ACTION       = 'terminal_action_logs';
     const GATEWAY_DOWNTIME      = 'gateway_downtimes';
+
     const GATEWAY_RULE          = 'gateway_rules';
+    const GATEWAY_FILE          = 'gateway_files';
 
     // Payment Analytics
     const PAYMENT_ANALYTICS     = 'payment_analytics';
@@ -136,6 +141,8 @@ class Table
     const TAX                   = 'taxes';
     const TAX_GROUP             = 'tax_groups';
     const TAX_GROUP_TAX_MAP     = 'tax_group_tax_map';
+
+    const SETTING               = 'settings';
 
     protected static $entityToTableMap = array(
         Entity::AXIS_MIGS           => self::MIGS,

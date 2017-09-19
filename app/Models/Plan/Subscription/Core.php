@@ -395,10 +395,9 @@ class Core extends Base\Core
                 ]);
         }
 
-        $paymentId = $authorizedPayment->getPublicId();
-
         $capturePayload = [
-            Payment\Entity::AMOUNT => $authorizedPayment->getAmount(),
+            Payment\Entity::AMOUNT   => $authorizedPayment->getAmount(),
+            Payment\Entity::CURRENCY => $authorizedPayment->getCurrency()
         ];
 
         $processor = (new Payment\Processor\Processor($subscription->merchant));
@@ -413,7 +412,7 @@ class Core extends Base\Core
             }
 
             // Might want to move this to a queue later.
-            $capturedPayment = $processor->capture($paymentId, $capturePayload);
+            $capturedPayment = $processor->capture($authorizedPayment, $capturePayload);
         }
         catch (\Exception $ex)
         {

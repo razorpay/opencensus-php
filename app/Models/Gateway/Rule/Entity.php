@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
+use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 
 class Entity extends Base\PublicEntity
@@ -59,6 +60,7 @@ class Entity extends Base\PublicEntity
      * Attributes used for comparing terminal to rule
      */
     const COMPARISON_ATTRIBUTES = [
+        self::METHOD,
         self::GATEWAY,
         self::GATEWAY_ACQUIRER,
         self::INTERNATIONAL,
@@ -76,6 +78,7 @@ class Entity extends Base\PublicEntity
     const NULLABLE_ATTRIBUTES = [
         self::GROUP,
         self::FILTER_TYPE,
+        self::GATEWAY,
         self::METHOD_TYPE,
         self::NETWORK,
         self::ISSUER,
@@ -85,9 +88,8 @@ class Entity extends Base\PublicEntity
         self::CATEGORY2,
         self::SHARED_TERMINAL,
         self::INTERNATIONAL,
-        self::IINS,
         self::EMI_DURATION,
-        self::EMI_SUBVENTION,
+        self::IINS,
         self::CURRENCY,
     ];
 
@@ -101,6 +103,7 @@ class Entity extends Base\PublicEntity
         self::LOAD            => 'int',
         self::MIN_AMOUNT      => 'int',
         self::MAX_AMOUNT      => 'int',
+        self::EMI_DURATION    => 'int',
         self::IINS            => 'array',
     ];
 
@@ -183,9 +186,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MERCHANT_ID);
     }
 
+    public function getGroup()
+    {
+        return $this->getAttribute(self::GROUP);
+    }
+
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
+    }
+
+    public function getFilterType()
+    {
+        return $this->getAttribute(self::FILTER_TYPE);
     }
 
     public function getMethod()
@@ -258,11 +271,15 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMI_DURATION);
     }
 
+    public function getEmiSubvention()
+    {
+        return $this->getAttribute(self::EMI_SUBVENTION);
+    }
+
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
     }
-
     //----------------- Public Setters------------------------------------------
 
     public function setPublicLoadAttribute(array & $array)
@@ -309,7 +326,8 @@ class Entity extends Base\PublicEntity
 
     protected function modifyIssuer(array & $input)
     {
-        if (empty($input[self::ISSUER]) === false)
+        if ((empty($input[self::ISSUER]) === false) and
+            ($input[self::METHOD] !== Method::WALLET))
         {
             $input[self::ISSUER] = strtoupper($input[self::ISSUER]);
         }
@@ -347,7 +365,7 @@ class Entity extends Base\PublicEntity
      * @param  Terminal\Entity $terminal Terminal entity to compare against
      * @return bool whether rule matches terminal
      */
-    public function matches(Terminal\Entity $terminal): bool
+    public function matches(Terminal\Entity $terminal, Merchant\Entity $merchant): bool
     {
         foreach (self::COMPARISON_ATTRIBUTES as $key)
         {
@@ -359,7 +377,7 @@ class Entity extends Base\PublicEntity
                 continue;
             }
 
-            if ($this->match($key, $terminal) === false)
+            if ($this->compare($key, $terminal, $merchant) === false)
             {
                 return false;
             }
@@ -368,8 +386,59 @@ class Entity extends Base\PublicEntity
         return true;
     }
 
-    protected function match(string $key, Terminal\Entity $terminal): bool
+    protected function compare(string $key, Terminal\Entity $terminal, Merchant\Entity $merchant): bool
     {
+        $compareFunc = 'compare' . studly_case($key);
+
+        if (method_exists($this, $compareFunc) === true)
+        {
+            return $this->$compareFunc($terminal, $merchant);
+        }
+
         return ($this->getAttribute($key) === $terminal->getAttribute($key));
+    }
+
+    protected function compareMethod(Terminal\Entity $terminal): bool
+    {
+        $method = $this->getMethod();
+
+        switch ($method)
+        {
+            case Method::CARD:
+                return (($terminal->isCardEnabled() === true) and ($terminal->isEmiEnabled() === false));
+
+            case Method::NETBANKING:
+                return ($terminal->isNetbankingEnabled() === true);
+
+            case Method::EMI:
+                return ($terminal->isEmiEnabled() === true);
+
+            case Method::WALLET:
+                return ($this->getGateway() === $terminal->getGateway());
+
+            case Method::UPI:
+                return ($terminal->isUpiEnabled() === true);
+
+            case Method::AEPS:
+                return ($terminal->isAepsEnabled() === true);
+        }
+    }
+
+    /**
+     * Checks if a terminal is shared / direct against against what the rule
+     * specifies. The cases for the same are listed below
+     * - Shared terminal, with a submerchant assigned as given merchant
+     * - Terminal directly assigned to merchant
+     * - Terminal assigned to some other merchant with given merchant as a submerchant
+     *
+     * @param  Terminal\Entity $terminal Terminal to check against
+     * @param  Merchant\Entity $merchant Merchant making the payment
+     * @return bool                      Comparison result
+     */
+    protected function compareSharedTerminal(Terminal\Entity $terminal, Merchant\Entity $merchant): bool
+    {
+        $isApplicableForSharedTerminal = $this->getAttribute(self::SHARED_TERMINAL);
+
+        return ($isApplicableForSharedTerminal !== $terminal->isDirectForMerchant($merchant)) ? true : false;
     }
 }

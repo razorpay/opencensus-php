@@ -3,6 +3,7 @@
 namespace RZP\Models\FundTransfer\Kotak\Reconciliation\V3;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Constants\Entity;
 use RZP\Exception;
@@ -102,6 +103,11 @@ class RowProcessor extends Base\RowProcessor
 
     protected function updateSourceEntity()
     {
+        if ($this->source->getBatchFundTransferId() !== $this->reconEntity->getBatchFundTransferId())
+        {
+            return;
+        }
+
         $sourceStatus = $this->getSourceStatusFromReconEntityStatus();
 
         $this->source->setStatus($sourceStatus);
@@ -116,7 +122,7 @@ class RowProcessor extends Base\RowProcessor
                 (empty($this->parsedData['instrument_date']) === false))
             {
                 $settledOn = Carbon::createFromFormat(
-                                'd-M-y', $this->parsedData['instrument_date'], 'Asia/Kolkata')->timestamp;
+                                'd-M-y', $this->parsedData['instrument_date'], Timezone::IST)->getTimestamp();
 
                 $this->source->setSettledOn($settledOn);
             }

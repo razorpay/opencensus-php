@@ -20,7 +20,8 @@ class Validator extends Base\Validator
         RequestFields::CURRENCY_CODE       => 'required|in:INR',
         RequestFields::RETURN_URL          => 'required',
         RequestFields::ITEM_CODE           => 'required',
-        RequestFields::CONFIRMATION       =>  'required|in:Y,N',
+        RequestFields::CONFIRMATION        => 'required|in:Y,N',
+        RequestFields::ACCOUNT_NUMBER      => 'sometimes',
     ];
 
     protected static $verifyRules = [

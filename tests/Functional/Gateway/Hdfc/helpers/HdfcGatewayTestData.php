@@ -32,7 +32,7 @@ return [
         'entity' => 'payment',
     ],
 
-    'testTamparedPayment' => [
+    'testTamperedPayment' => [
         'response' => [
             'content' => [
                 'error' => [

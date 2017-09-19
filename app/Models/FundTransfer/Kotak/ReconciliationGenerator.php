@@ -4,6 +4,7 @@ namespace RZP\Models\FundTransfer\Kotak;
 
 use App;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Excel;
 use RZP\Exception;
 use RZP\Models\FileStore\Accessor;
@@ -99,6 +100,12 @@ class ReconciliationGenerator
             $generateFailedReconciliations = ($input['failed_recons'] === '1');
         }
 
+        $prevAttemptId = null;
+        if (empty($input['prev_attempt_id']) === false)
+        {
+            $prevAttemptId = $input['prev_attempt_id'];
+        }
+
         $data = $this->parseTextFile($setlFile);
 
         // Modify data to replicate Kotak bug
@@ -115,7 +122,36 @@ class ReconciliationGenerator
             $modifiedData[] = $row;
         }
 
+        // $prevAttemptId is the ID of the previous fund_transfer_attempt
+        //
+        // This value needs to be passed when we need the reconciliation file to
+        // contain the recon data for that attempt also, besided for the latest attempt
+        //
+        // It will be a failed row because more than 1 attempt for a settlement signifies
+        // that the previous attempts had failed
+        //
+        // Note: This works only when there's only settlement ID for which the reconciliation
+        // is to be generated
+        $failedRow = null;
+        if ($prevAttemptId !== null)
+        {
+            // Copt the success row
+            $failedRow = $modifiedData[0];
+
+            // Change the attempt ID in that row
+            $failedRow[Headings::PAYMENT_REF_NO] = $prevAttemptId;
+
+            $newFields = $this->generateReconciliationFields(Carbon::now(Timezone::IST), true);
+
+            $failedRow = array_merge($failedRow, $newFields);
+        }
+
         $modifiedData = $this->addNewFields($modifiedData, $generateFailedReconciliations);
+
+        if ($failedRow !== null)
+        {
+            $modifiedData[] = $failedRow;
+        }
 
         $txt = $this->generateText($modifiedData);
 
@@ -135,7 +171,7 @@ class ReconciliationGenerator
 
     protected function addNewFields(array $data, bool $generateFailedReconciliations = false)
     {
-        $date = Carbon::now('Asia/Kolkata');
+        $date = Carbon::now(Timezone::IST);
 
         foreach ($data as &$row)
         {
@@ -177,17 +213,17 @@ class ReconciliationGenerator
     {
         if (isset($input['on']) === true)
         {
-            $from = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata')->setTime(0,0,0);
+            $from = Carbon::createFromFormat('Y-m-d', $input['on'], Timezone::IST)->setTime(0,0,0);
 
-            $startTimestamp = $from->timestamp;
+            $startTimestamp = $from->getTimestamp();
 
-            $endTimestamp = $from->addDay()->timestamp - 1;
+            $endTimestamp = $from->addDay()->getTimestamp() - 1;
         }
         else
         {
-            $startTimestamp = Carbon::today("Asia/Kolkata")->timestamp;
+            $startTimestamp = Carbon::today("Asia/Kolkata")->getTimestamp();
 
-            $endTimestamp = Carbon::tomorrow("Asia/Kolkata")->timestamp - 1;
+            $endTimestamp = Carbon::tomorrow("Asia/Kolkata")->getTimestamp() - 1;
         }
 
         return [$startTimestamp, $endTimestamp];

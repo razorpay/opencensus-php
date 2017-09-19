@@ -4,6 +4,7 @@ namespace RZP\Gateway\Netbanking\Federal;
 
 use Mail;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Constants\MailTags;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
@@ -51,7 +52,7 @@ class DailyFiles extends Base\DailyFiles
 
     protected function sendMail($amount, $claimsFile, $refundsFile, $count = [], $email = null)
     {
-        $date = Carbon::now('Asia/Kolkata')->format('jS F Y');
+        $date = Carbon::now(Timezone::IST)->format('jS F Y');
 
         $bankName = $this->getBankName();
 

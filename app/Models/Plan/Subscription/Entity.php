@@ -3,6 +3,7 @@
 namespace RZP\Models\Plan\Subscription;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Models\Base;
 use RZP\Models\Customer;
@@ -416,7 +417,7 @@ class Entity extends Base\PublicEntity
         {
             $timestampKey = $status . '_at';
 
-            $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+            $currentTime = Carbon::now()->getTimestamp();
 
             $currentTimestamp = $this->getAttribute($timestampKey);
 
@@ -610,9 +611,27 @@ class Entity extends Base\PublicEntity
 
         if ($this->getStartAt() !== null)
         {
-            $startAt = Carbon::createFromTimestamp($this->getStartAt(), 'Asia/Kolkata');
+            $startAt = Carbon::createFromTimestamp($this->getStartAt(), Timezone::IST);
 
-            $anchor = $startAt->{Anchor::CHECKS[$period]};
+            $anchor = Anchor::getAnchor($period, $startAt);
+
+            //
+            // Commenting this out for now, since we are not
+            // clear on what should be the behaviour.
+            // If the subscription is starting on Feb 28th,
+            // we'll end up charging on March 31st, April 30th
+            // and so on. This may not be the expected behaviour.
+            // Also, there will be subscriptions which should
+            // always be charged on 28th of every month.
+            // If we implement the below block, there will be no
+            // way to do something like start_at = 28th Feb,
+            // charge on 28th of every month.
+            //
+            // if (($period === Plan\Cycle::MONTHLY) and
+            //     ($startAt->lastOfMonth() === true))
+            // {
+            //     $anchor = -1;
+            // }
         }
 
         return $anchor;

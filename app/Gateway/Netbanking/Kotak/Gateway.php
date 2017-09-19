@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Kotak;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -117,7 +118,7 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
 
-        $acquirerData = $this->getAcquirerData($gatewayPayment);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }
@@ -228,7 +229,7 @@ class Gateway extends Base\Gateway
     protected function getPaymentRequestData($input)
     {
         // Kotak asks for date in IST
-        $date = Carbon::now('Asia/Kolkata')->format('dmYHis');
+        $date = Carbon::now(Timezone::IST)->format('dmYHis');
 
         $billingLabel = $input['merchant']['billing_label'];
 
@@ -266,7 +267,7 @@ class Gateway extends Base\Gateway
 
         $input = $verify->input;
 
-        $date = Carbon::now('Asia/Kolkata')->format('dmYHis');
+        $date = Carbon::now(Timezone::IST)->format('dmYHis');
 
         $content = [
             'MessageCode'   => MessageCodes::VERIFY,

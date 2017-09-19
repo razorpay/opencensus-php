@@ -2,13 +2,14 @@
 
 namespace RZP\Models\Gateway\Rule;
 
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Account;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Account;
+use RZP\Models\Currency\Currency;
 
 class Core extends Base\Core
 {
@@ -67,35 +68,14 @@ class Core extends Base\Core
                                 ->gateway_rule
                                 ->fetchApplicableRulesForPayment($ruleFetchParams);
 
-        // Checks if merchant specific rules are present. If present we only use them
-        // and discard other rules
-        $merchantSpecificRules = $this->getMerchantSpecificRules(
-                                            $applicableRules,
-                                            $input['merchant']);
-
-        if ($merchantSpecificRules->isEmpty() === false)
+        if ($input['payment']->isMethodCardOrEmi() === true)
         {
-            $applicableRules = $merchantSpecificRules;
+            $iins = (array) $input['payment']->card->getIin();
+
+            $applicableRules = $this->getRulesWithOverLappingIins($iins, $applicableRules);
         }
 
         return $applicableRules;
-    }
-
-    /**
-     * Selects rules for the merchant from the set of all rules
-     *
-     * @param  Base\PublicCollection $rules    Set of all applicable rules
-     * @param  Merchant\Entity       $merchant Merchant making the payment
-     * @return Base\PublicCollection merchant specific rules
-     */
-    protected function getMerchantSpecificRules(
-                            Base\PublicCollection $rules,
-                            Merchant\Entity $merchant): Base\PublicCollection
-    {
-        return $rules->filter(function ($rule) use ($merchant)
-        {
-            return ($rule->getMerchantId() === $merchant->getId());
-        });
     }
 
     /**
@@ -164,13 +144,14 @@ class Core extends Base\Core
 
         $merchant = $input['merchant'];
 
+        $currency = ($payment->getConvertCurrency() === true) ? Currency::INR : $payment->getCurrency();
+
         $params = [
-            Entity::TYPE          => Entity::SORTER,
             Entity::MERCHANT_ID   => [$merchant->getId(), Account::SHARED_ACCOUNT],
             Entity::METHOD        => $payment->getMethod(),
             Entity::INTERNATIONAL => false,
             Entity::CATEGORY2     => $merchant->getCategory2(),
-            Entity::CURRENCY      => $payment->getCurrency(),
+            Entity::CURRENCY      => $currency,
             // Here min_amount and max_amount are both set to payment_amount
             // as the final query will be min_amount <= payment_amount <= max_amount
             Entity::MIN_AMOUNT    => $payment->getAmount(),
@@ -187,6 +168,7 @@ class Core extends Base\Core
         $method = $payment->getMethod();
         $card = $payment->card;
         $emiPlan = $payment->emiPlan;
+        $bank = $payment->getBank();
 
         switch ($method)
         {
@@ -199,6 +181,13 @@ class Core extends Base\Core
                 break;
 
             case Payment\Method::EMI:
+                // For certain banks whose emi payments need to go through card terminals
+                // we set the method sa card both while fetching applicable rules
+                if (in_array($bank, Payment\Gateway::$emiBanksUsingCardTerminals, true) === true)
+                {
+                    $params[Entity::METHOD] = Payment\Method::CARD;
+                }
+
                 $params[Entity::METHOD_TYPE]    = $card->getType();
                 $params[Entity::NETWORK]        = $card->getNetworkCode();
                 $params[Entity::ISSUER]         = $payment->getBank();
@@ -209,6 +198,12 @@ class Core extends Base\Core
 
             case Payment\Method::NETBANKING:
                 $params[Entity::ISSUER] = $payment->getBank();
+
+                break;
+
+            case Payment\Method::WALLET:
+                $params[Entity::ISSUER] = $payment->getWallet();
+
                 break;
         }
     }

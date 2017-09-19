@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Hdfc;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -127,7 +128,7 @@ class Gateway extends Base\Gateway
                     $message);
         }
 
-        $acquirerData = $this->getAcquirerData($gatewayPayment);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }
@@ -156,7 +157,7 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentRequestData($input)
     {
-        $date = Carbon::now('Asia/Kolkata')->format('d/m/Y H:m:s');
+        $date = Carbon::now(Timezone::IST)->format('d/m/Y H:m:s');
 
         $clientCode = $this->stripEmailSpecialChars($input['payment']['email']);
 
@@ -200,7 +201,7 @@ class Gateway extends Base\Gateway
         $payment = $verify->payment;
         $input = $verify->input;
 
-        $date = Carbon::createFromTimestamp($payment['created_at'], 'Asia/Kolkata')
+        $date = Carbon::createFromTimestamp($payment['created_at'], Timezone::IST)
                       ->format('d/m/Y H:m:s');
 
         // if (empty($payment['date']) === false)

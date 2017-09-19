@@ -61,6 +61,11 @@ class Entity extends Base\Entity
         self::OLD_PASSWORDS
     ];
 
+    protected $embeddedRelations = [
+        self::ROLES,
+        self::GROUPS,
+    ];
+
     protected $revisionEnabled = true;
 
     protected $revisionCreationsEnabled = true;
@@ -100,7 +105,6 @@ class Entity extends Base\Entity
         self::NAME,
         self::USERNAME,
         self::EMAIL,
-        self::REMEMBER_TOKEN,
         self::OAUTH_PROVIDER_ID,
         self::USER_TYPE,
         self::EMPLOYEE_CODE,
@@ -143,6 +147,10 @@ class Entity extends Base\Entity
         self::ROLES,
         self::GROUPS,
         self::MERCHANTS,
+    ];
+
+    protected $hidden = [
+        self::REMEMBER_TOKEN
     ];
 
     protected $casts = [
@@ -259,7 +267,7 @@ class Entity extends Base\Entity
 
     public function updateLastLoginAt()
     {
-        $this->setAttribute(self::LAST_LOGIN_AT, Carbon::now()->timestamp);
+        $this->setAttribute(self::LAST_LOGIN_AT, Carbon::now()->getTimestamp());
     }
 
     public function getLastLoginAt()
@@ -367,7 +375,7 @@ class Entity extends Base\Entity
 
     protected function updatePasswordChangedAt()
     {
-        $this->setAttribute(self::PASSWORD_CHANGED_AT, Carbon::now()->timestamp);
+        $this->setAttribute(self::PASSWORD_CHANGED_AT, Carbon::now()->getTimestamp());
     }
 
     protected function setOldPasswordsAttribute($oldPasswords = [])
@@ -532,7 +540,6 @@ class Entity extends Base\Entity
                     ErrorCode::BAD_REQUEST_ACCESS_DENIED);
         }
 
-        // $hasPermission === true
         return $hasPermission;
     }
 

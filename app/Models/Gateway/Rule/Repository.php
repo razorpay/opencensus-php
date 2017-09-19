@@ -86,8 +86,6 @@ class Repository extends Base\Repository
     */
     public function getRulesWithMatchingCriteria(Entity $rule)
     {
-        $input = $rule->toArray();
-
         $params = $this->getQueryParams($rule);
 
         $query = $this->newQuery();
@@ -173,6 +171,13 @@ class Repository extends Base\Repository
                     $query->orWhereNull($key);
                 }
             });
+        }
+        else
+        {
+            if (in_array($key, Entity::NULLABLE_ATTRIBUTES, true) === true)
+            {
+                $query->whereNull($key);
+            }
         }
     }
 

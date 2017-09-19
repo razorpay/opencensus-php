@@ -5,6 +5,7 @@ namespace RZP\Models\Schedule\Task;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Models\Schedule\Library;
 
@@ -115,7 +116,7 @@ class Entity extends Base\PublicEntity
     {
         if (isset($input[self::NEXT_RUN_AT]) === false)
         {
-            $nextRunAt = Carbon::today('Asia/Kolkata')->timestamp;
+            $nextRunAt = Carbon::today(Timezone::IST)->getTimestamp();
 
             $input[self::NEXT_RUN_AT] = $nextRunAt;
         }
@@ -179,17 +180,17 @@ class Entity extends Base\PublicEntity
 
     public function updateNextRunAndLastRun($considerHolidays = true)
     {
-        $lastRun = Carbon::createFromTimestamp($this->getNextRunAt(), 'Asia/Kolkata');
+        $lastRun = Carbon::createFromTimestamp($this->getNextRunAt(), Timezone::IST);
 
-        $currentTime = Carbon::now('Asia/Kolkata');
+        $currentTime = Carbon::now(Timezone::IST);
 
         $nextRun = Library::computeFutureRun($this->schedule, $currentTime, $lastRun->copy(), $considerHolidays);
 
-        $this->setNextRunAt($nextRun->timestamp);
+        $this->setNextRunAt($nextRun->getTimestamp());
 
         if ($lastRun !== null)
         {
-            $this->setLastRunAt($lastRun->timestamp);
+            $this->setLastRunAt($lastRun->getTimestamp());
         }
     }
 
@@ -200,12 +201,12 @@ class Entity extends Base\PublicEntity
      */
     public function incrementNextRunByOneDayAndUpdateLastRun()
     {
-        $lastRun = Carbon::createFromTimestamp($this->getNextRunAt(), 'Asia/Kolkata');
+        $lastRun = Carbon::createFromTimestamp($this->getNextRunAt(), Timezone::IST);
 
         $nextRun = $lastRun->copy()->addDay();
 
-        $this->setNextRunAt($nextRun->timestamp);
-        $this->setLastRunAt($lastRun->timestamp);
+        $this->setNextRunAt($nextRun->getTimestamp());
+        $this->setLastRunAt($lastRun->getTimestamp());
     }
 
     public function updateNextRunAt($timestamp)
@@ -214,7 +215,7 @@ class Entity extends Base\PublicEntity
 
         if ($schedule->hasHour() === true)
         {
-            $nextRunAt = Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata');
+            $nextRunAt = Carbon::createFromTimestamp($timestamp, Timezone::IST);
 
             $nextRunAt->hour($schedule->getHour());
 

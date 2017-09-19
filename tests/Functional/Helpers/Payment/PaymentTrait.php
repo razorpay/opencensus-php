@@ -5,15 +5,16 @@ namespace RZP\Tests\Functional\Helpers\Payment;
 use RZP\Http\BasicAuth\BasicAuth;
 use RZP\Exception\BaseException;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use Mockery;
 use Requests;
+use RZP\Models\Payment\Entity as PaymentEntity;
 use Symfony\Component\DomCrawler\Crawler;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
 use RZP\Tests\Functional\Fixtures\Entity\MerchantFluid;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Payment\Verify\Action;
 
 trait PaymentTrait
 {
@@ -29,6 +30,8 @@ trait PaymentTrait
     use PaymentSharpTrait;
     use PaymentMobikwikTrait;
     use PaymentCybersourceTrait;
+    use PaymentHitachiTrait;
+    use PaymentBladeTrait;
     use PaymentFirstDataTrait;
     use PaymentEbsTrait;
     use PaymentCreationTrait;
@@ -237,7 +240,7 @@ trait PaymentTrait
         $this->assertArrayHasKey('razorpay_payment_id', $content);
 
         $count = count($content);
-        $this->assertLessThanOrEqual(4, $count);
+        $this->assertLessThanOrEqual(6, $count);
 
         return $content;
     }
@@ -681,6 +684,33 @@ trait PaymentTrait
         }
 
         return $refund;
+    }
+
+    protected function disputePayment(PaymentEntity $payment, int $deduct = 0): array
+    {
+        $this->ba->appAuth();
+
+        $reason = $this->fixtures->create('dispute_reason');
+
+        $content = [
+            'gateway_dispute_id' => '4342frf34r',
+            'raised_on'          => '946684800',
+            'expires_on'         => '1912162918',
+            'amount'             => $payment->getAmount(),
+            'phase'              => 'chargeback',
+            'deduct_at_onset'    => $deduct,
+            'reason_id'          => $reason->getId(),
+        ];
+
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments/' . $payment->getPublicId() . '/disputes',
+            'content' => $content
+        ];
+
+        $dispute = $this->makeRequestAndGetContent($request);
+
+        return $dispute;
     }
 
     protected function verifyRefund($id)
@@ -1272,37 +1302,57 @@ trait PaymentTrait
         $this->assertTrue($this->isResponseInstanceType($response, $type));
     }
 
-    protected function mockServerContentFunction($closure)
+    protected function mockServerContentFunction($closure, $gateway = null)
     {
-        $server = $this->mockServer()
+        $server = $this->mockServer($gateway)
                        ->shouldReceive('content')
                        ->andReturnUsing($closure)
                        ->mock();
 
-        $this->setMockServer($server);
+        $this->setMockServer($server, $gateway);
 
         return $server;
     }
 
-    protected function mockServer()
+    protected function mockServerRequestFunction($closure, $gateway = null)
     {
-        $class = $this->app['gateway']->getServerClass($this->gateway);
+        $server = $this->mockServer($gateway)
+                       ->shouldReceive('request')
+                       ->andReturnUsing($closure)
+                       ->mock();
+
+        $this->setMockServer($server, $gateway);
+
+        return $server;
+    }
+
+    protected function mockServer($gateway = null)
+    {
+        $gateway = $gateway ?: $this->gateway;
+
+        $class = $this->app['gateway']->getServerClass($gateway);
 
         return Mockery::mock($class, [])->makePartial();
     }
 
-    protected function setMockServer($server)
+    protected function setMockServer($server, $gateway = null)
     {
-         return $this->app['gateway']->setServer($this->gateway, $server);
+        $gateway = $gateway ?: $this->gateway;
+
+        return $this->app['gateway']->setServer($gateway, $server);
     }
 
-    protected function resetMockServer()
+    protected function resetMockServer($gateway = null)
     {
+        $gateway = $gateway ?: $this->gateway;
+
         return $this->app['gateway']->resetServer($this->gateway);
     }
 
-    protected function resetGatewayDriver()
+    protected function resetGatewayDriver($gateway = null)
     {
+        $gateway = $gateway ?: $this->gateway;
+
         return $this->app['gateway']->resetDriver($this->gateway);
     }
 
@@ -1318,7 +1368,7 @@ trait PaymentTrait
 
                     $binRiskMapping = [
                         '510510' => '22.0',
-                        '401201' => '60.3',
+                        '401201' => '15.3',
                         '555555' => '2.4'
                     ];
 
@@ -1400,5 +1450,56 @@ trait PaymentTrait
         $response = $this->sendRequest($request);
 
         return json_decode($response->getContent(), true);
+    }
+
+    public function getVerificationSkipError()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            throw new Exception\PaymentVerificationException(
+                ['test' => 'test'],
+                '',
+                Action::FINISH);
+        });
+    }
+
+    public function getFatalErrorInVerify()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            throw new Exception\FatalThrowableError();
+        });
+    }
+
+    public function getTimeoutInVerify()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            throw new Exception\GatewayTimeoutException(
+                'cURL error 28: Operation timed out after ' .
+                '10001 milliseconds with 0 bytes received');
+        });
+    }
+
+    public function getVerificationRetryError()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            throw new Exception\PaymentVerificationException(
+                ['test' => 'test'],
+                '',
+                Action::RETRY);
+        });
+    }
+
+    public function getVerificationBlockError()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            throw new Exception\PaymentVerificationException(
+                ['test' => 'test'],
+                '',
+                Action::BLOCK);
+        });
     }
 }

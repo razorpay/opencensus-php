@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mail;
 
 use RZP\Mail\Merchant\DailyReport as DailyReportMail;
@@ -40,7 +41,7 @@ class DailyReportTest extends TestCase
 
         $setl = $this->getLastEntity('settlement', true);
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp + 5;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(1)->timestamp + 5;
         $this->fixtures->settlement->edit($setl['id'], ['created_at' => $createdAt]);
 
         $testData = [
@@ -62,8 +63,8 @@ class DailyReportTest extends TestCase
 
     protected function setUpFixture()
     {
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(5)->timestamp + 5;
-        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(5)->timestamp + 10;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(5)->timestamp + 5;
+        $capturedAt = Carbon::today(Timezone::IST)->subDays(5)->timestamp + 10;
 
         $capturedPayments = $this->fixtures->times(4)->create(
             'payment:captured',
@@ -84,8 +85,8 @@ class DailyReportTest extends TestCase
             $refund = $this->fixtures->create('refund:from_payment', $attrs);
         }
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp + 5;
-        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp + 10;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(1)->timestamp + 5;
+        $capturedAt = Carbon::today(Timezone::IST)->subDays(1)->timestamp + 10;
 
         $this->settleAtTimestamp = (new Transaction\Core)->calculateSettledAtTimestamp($capturedAt, 3);
 

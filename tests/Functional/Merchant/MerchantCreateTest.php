@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Merchant;
 use Mail;
 
 use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -67,13 +68,13 @@ class MerchantCreateTest extends TestCase
 
     protected function checkTerminals()
     {
-        $this->ba->appAuthTest();
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
 
         $testData = $this->testData['testGetTerminalsInTestForCreatedMerchant'];
 
         $content = $this->runRequestResponseFlow($testData);
 
-        $this->ba->appAuthLive();
+        $this->ba->adminAuth('live', null, 'org_' . Org::RZP_ORG);
 
         $testData = $this->testData['testGetTerminalsInLiveForCreatedMerchant'];
 

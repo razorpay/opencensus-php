@@ -3,6 +3,7 @@
 namespace RZP\Models\Base\Traits\Es;
 
 use RZP\Base\Common;
+use RZP\Constants\Es;
 
 /**
  * Trait used in Es/Repository class for forming es queries.
@@ -43,11 +44,31 @@ trait QueryBuilder
         string $field,
         string $value)
     {
+        //
+        // In match query we want at least 75% of terms to match given doc's field.
+        // This ensures we avoid false results. The same is done in multi_match
+        // query as well.
+        //
+        // Refs:
+        // - https://www.elastic.co/guide/en/elasticsearch/reference/5.5/query-dsl-match-query.html
+        // - https://www.elastic.co/guide/en/elasticsearch/reference/5.5/query-dsl-minimum-should-match.html
+        //
+
         $clause = [
-            'match' => [
+            Es::MATCH => [
                 $field => [
-                    'query' => strtolower($value),
-                    'boost' => 2,
+
+                    //
+                    // Some fields have 'standard' search analyzer but some fields
+                    // are 'keyword' type and there there is no search analysis.
+                    // 'strtolower' is done just to be on safe side. Eg. someone
+                    // sends 'status' as 'PENDING' instead of 'pending'.
+                    //
+                    //
+
+                    Es::QUERY                => strtolower($value),
+                    Es::BOOST                => 2,
+                    Es::MINIMUM_SHOULD_MATCH => '75%',
                 ],
             ],
         ];
@@ -63,38 +84,44 @@ trait QueryBuilder
      */
     public function buildQueryForQ(array & $query, string $value)
     {
+        //
         // - Boost given for 'q' is 1 to lower it's contribution when there are more
         //   matches by exact fields(eg. receipt, description etc) when used in
         //   combination with other
         // - It's a multi match query as given query is run against a set of fields
         //   (defined in $queryFields). Also we use type 'best_fields' (default).
         //   Ref: https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-multi-match-query.html
+        //
 
         $clause = [
-            'multi_match' => [
-                'query'  => $value,
-                'type'   => 'best_fields',
-                'fields' => $this->queryFields,
-                'boost'  => 1,
+            Es::MULTI_MATCH => [
+                Es::QUERY                => $value,
+                Es::TYPE                 => Es::BEST_FIELDS,
+                Es::FIELDS               => $this->queryFields,
+                Es::BOOST                => 1,
+                Es::MINIMUM_SHOULD_MATCH => '75%',
             ],
         ];
 
         $this->addMust($query, $clause);
     }
 
-    public function  buildQueryForNotes(array & $query, string $value)
+    public function buildQueryForNotes(array & $query, string $value)
     {
+        //
         // - Notes search is again on an specific object (unlike 'q') and so
         //   we give boost of 2.
         // - The query construct is same as above (for 'q') but the fields here
         //   are all keys of notes object (denoted as notes.*).
+        //
 
         $clause = [
-            'multi_match' => [
-                'query'  => $value,
-                'type'   => 'best_fields',
-                'fields' => 'notes.*',
-                'boost'  => 2,
+            Es::MULTI_MATCH => [
+                Es::QUERY                => $value,
+                Es::TYPE                 => Es::BEST_FIELDS,
+                Es::FIELDS               => 'notes.*',
+                Es::BOOST                => 2,
+                Es::MINIMUM_SHOULD_MATCH => '75%',
             ],
         ];
 
@@ -113,9 +140,9 @@ trait QueryBuilder
         // fields.
 
         $filter = [
-            'term' => [
-                'merchant_id' => [
-                    'value' => $value,
+            Es::TERM => [
+                Common::MERCHANT_ID => [
+                    Es::VALUE => $value,
                 ],
             ],
         ];
@@ -135,8 +162,8 @@ trait QueryBuilder
      */
     public function buildQueryForFromAndToIfApplies(array & $query, array & $params)
     {
-        $clause['gte'] = $params[self::FROM] ?? null;
-        $clause['lte'] = $params[self::TO] ?? null;
+        $clause[Es::GTE] = $params[self::FROM] ?? null;
+        $clause[Es::LTE] = $params[self::TO] ?? null;
 
         $clause = array_filter($clause);
 
@@ -145,7 +172,7 @@ trait QueryBuilder
             return;
         }
 
-        $filter = ['range' => [Common::CREATED_AT => $clause]];
+        $filter = [Es::RANGE => [Common::CREATED_AT => $clause]];
 
         $this->addFilter($query, $filter);
 
@@ -161,24 +188,49 @@ trait QueryBuilder
     public function getSortParameter()
     {
         return [
-            '_score' => [
-                'order' => 'desc',
+            Es::_SCORE => [
+                Es::ORDER => Es::DESC,
             ],
             Common::CREATED_AT => [
-                'order' => 'desc',
+                Es::ORDER => Es::DESC,
             ],
         ];
     }
 
     // Helper methods
 
+    public function getExistsQueryForField(string $field): array
+    {
+        return [Es::EXISTS => [Es::FIELD => $field]];
+    }
+
+    public function addNotNullFilterForField(array & $query, string $field)
+    {
+        $this->addFilter($query, $this->getExistsQueryForField($field));
+    }
+
+    public function addNullFilterForField(array & $query, string $field)
+    {
+        $this->addNegativeFilter($query, $this->getExistsQueryForField($field));
+    }
+
+    public function addShould(array & $query, array $clause)
+    {
+        $query[Es::BOOLQ][Es::SHOULD][] = $clause;
+    }
+
     public function addMust(array & $query, array $clause)
     {
-        $query['bool']['must'][] = $clause;
+        $query[Es::BOOLQ][Es::MUST][] = $clause;
     }
 
     public function addFilter(array & $query, array $filter)
     {
-        $query['bool']['filter']['bool']['must'][] = $filter;
+        $query[Es::BOOLQ][Es::FILTER][Es::BOOLQ][Es::MUST][] = $filter;
+    }
+
+    public function addNegativeFilter(array & $query, array $filter)
+    {
+        $query[Es::BOOLQ][Es::FILTER][Es::BOOLQ][Es::MUST_NOT][] = $filter;
     }
 }

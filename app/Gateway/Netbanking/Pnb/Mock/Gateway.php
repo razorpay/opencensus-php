@@ -1,0 +1,23 @@
+<?php
+
+namespace RZP\Gateway\Netbanking\Pnb\Mock;
+
+use RZP\Gateway\Base;
+use RZP\Gateway\Netbanking\Pnb;
+
+class Gateway extends Pnb\Gateway
+{
+    use Base\Mock\GatewayTrait;
+
+    public function authorize(array $input): array
+    {
+        $request = parent::authorize($input);
+
+        $url = $this->route->getUrlWithPublicAuth('mock_netbanking_payment',
+                                                  ['bank' => $this->bank]);
+
+        $request['url'] = $url;
+
+        return $request;
+    }
+}

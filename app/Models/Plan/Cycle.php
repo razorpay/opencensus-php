@@ -3,6 +3,7 @@
 namespace RZP\Models\Plan;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Models\Schedule\Library;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -15,8 +16,8 @@ class Cycle
     const DAILY   = 'daily';
 
     const ONE_YEAR          = 1;
-    const MONTHS_IN_YEAR    = 12;
-    const WEEKS_IN_YEAR     = 52;
+    const MONTHS_IN_YEAR    = Carbon::MONTHS_PER_YEAR;
+    const WEEKS_IN_YEAR     = Carbon::WEEKS_PER_YEAR;
     // TODO: This can be 366 too. Fix.
     const DAYS_IN_YEAR      = 365;
 
@@ -107,8 +108,8 @@ class Cycle
 
         $schedule = $subscription->schedule;
 
-        $start = Carbon::createFromTimestamp($start, 'Asia/Kolkata');
-        $end = Carbon::createFromTimestamp($end, 'Asia/Kolkata');
+        $start = Carbon::createFromTimestamp($start, Timezone::IST);
+        $end = Carbon::createFromTimestamp($end, Timezone::IST);
 
         $nextRun = $start;
 
@@ -137,7 +138,7 @@ class Cycle
         $start = $subscription->getStartAt();
         $totalCount = $subscription->getTotalCount();
 
-        $start = Carbon::createFromTimestamp($start, 'Asia/Kolkata');
+        $start = Carbon::createFromTimestamp($start, Timezone::IST);
 
         //
         // We are subtracting one because we would be
@@ -152,7 +153,7 @@ class Cycle
             $start = $nextRun;
         }
 
-        $end = $start->timestamp;
+        $end = $start->getTimestamp();
 
         return $end;
     }

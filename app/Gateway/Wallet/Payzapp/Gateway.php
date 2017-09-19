@@ -361,6 +361,18 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
+    public function verifyRefund(array $input)
+    {
+        // We have to initiate a manual refund for this payment
+        // Last request was timed out
+        if ($input['refund']['id'] === '8PSYErwdew9tza')
+        {
+            return false;
+        }
+
+        parent::verifyRefund($input);
+    }
+
     protected function getRefundEntityAttributesFromRefundResponse($input, $content)
     {
         $refundAttributes = array(

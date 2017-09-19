@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Kotak;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Base;
 use RZP\Models\FileStore;
 
@@ -84,7 +85,7 @@ class ClaimsFile extends Base\RefundFile
         foreach ($input['data'] as $row)
         {
             $date = Carbon::createFromTimestamp(
-                $row['payment']['authorized_at'], 'Asia/Kolkata')->format('d-M-Y');
+                $row['payment']['authorized_at'], Timezone::IST)->format('d-M-Y');
 
             $data[] = array(
                 $i++,

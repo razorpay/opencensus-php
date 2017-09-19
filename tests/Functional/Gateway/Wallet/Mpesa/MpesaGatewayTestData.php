@@ -55,7 +55,7 @@ return [
         'action'               => 'authorize',
         'received'             => true,
         'wallet'               => 'mpesa',
-        'amount'               => 500,
+        'amount'               => '500',
         'response_code'        => '100',
         'response_description' => 'SUCCESS'
     ],
@@ -64,7 +64,7 @@ return [
         'action'               => 'authorize',
         'received'             => true,
         'wallet'               => 'mpesa',
-        'amount'               => 500.5,
+        'amount'               => '500.5',
         'response_code'        => '100',
         'response_description' => 'SUCCESS'
     ],
@@ -179,5 +179,37 @@ return [
         'amount' => 10000,
         'currency' => 'INR',
         'gateway_refunded' => true,
+    ],
+
+    'testSoapTimeoutError' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR_REQUEST_TIMEOUT,
+                ],
+            ],
+            'status_code' => 504,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\GatewayTimeoutException::class,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        ],
+    ],
+
+    'testSoapError' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_SOAP_ERROR,
+        ],
     ],
 ];

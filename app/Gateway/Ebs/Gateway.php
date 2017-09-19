@@ -25,6 +25,13 @@ class Gateway extends Base\Gateway
     const MERCHANT_ID  = 'test_merchant_id';
     const HASH_SECRET  = 'test_hash_secret';
 
+    /**
+     * TODO Remove this after the shared terminal logic is changed
+     * Currently, there is no retry logic for netbanking terminals
+     */
+    const SHARED_TERMINAL_ID = '6DFrTjBda3DQXB';
+    const TEST_TERMINAL_ID   = '100000EbsTrmnl';
+
     const CHECKSUM_ATTRIBUTE = Resp::SECURE_HASH;
 
     const API          = 'api';
@@ -52,7 +59,8 @@ class Gateway extends Base\Gateway
         $this->traceGatewayPaymentRequest($request, $input);
 
         if (($input['payment']['method'] === Payment\Method::NETBANKING) and
-           (in_array($input['payment'][Payment\Entity::BANK], BankCodes::$redircetDisabledBanks, true) === false))
+            (in_array($input['payment'][Payment\Entity::BANK], BankCodes::$redircetDisabledBanks, true) === false) and
+            ($this->checkForSharedTerminal($input['terminal']) === true))
         {
             $request = $this->makeRequestAndGetBankUrl($request, $input);
         }
@@ -67,9 +75,35 @@ class Gateway extends Base\Gateway
         $this->setReferer($terminal, $input);
     }
 
+    protected function checkForSharedTerminal($terminal)
+    {
+        if (in_array(
+                $terminal->getId(),
+                [
+                    self::TEST_TERMINAL_ID,
+                    self::SHARED_TERMINAL_ID
+                ],
+                true
+            ) === true)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     protected function setReferer($terminal, array $input)
     {
-        $this->referer = $this->app['config']->get('app.url');
+        $referer = $this->app['config']->get('app.url');
+
+        if ($this->checkForSharedTerminal($terminal) === false)
+        {
+            $merchant = $input['merchant'];
+
+            $referer = $merchant->getWebsite();
+        }
+
+        $this->referer = $referer;
     }
 
     public function capture(array $input)
@@ -132,7 +166,7 @@ class Gateway extends Base\Gateway
         return $this->getCallbackResponseData($input);
     }
 
-    protected function getAcquirerData($gatewayPayment)
+    protected function getAcquirerData($input, $gatewayPayment)
     {
         return [
             'acquirer' => [
@@ -737,7 +771,12 @@ class Gateway extends Base\Gateway
         if (empty($paymentMode) === true)
         {
             throw new Exception\LogicException(
-                'Invalid payment mode');
+                'Invalid payment mode',
+                null,
+                [
+                    'payment_id'   => $input['payment']['id'],
+                    'payment_mode' => $paymentMode,
+                ]);
         }
 
         return $paymentMode;

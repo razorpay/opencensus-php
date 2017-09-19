@@ -3,13 +3,14 @@
 namespace RZP\Base;
 
 use RZP\Constants;
+use RZP\Constants\Es;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
 use RZP\Constants\Entity as E;
-use RZP\Models\Base\PublicCollection;
 use RZP\Models\Base\EsRepository;
+use RZP\Models\Base\PublicEntity;
+use RZP\Models\Base\PublicCollection;
 use RZP\Exception\InvalidArgumentException;
 use RZP\Models\Base\Traits\Es\Hydrator as EsHydrator;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -18,11 +19,43 @@ trait RepositoryFetch
 {
     use EsHydrator;
 
-    protected $fetchParamRules = array(
-        'from'          => 'integer',
-        'to'            => 'integer',
-        'count'         => 'integer|min:1',
-        'skip'          => 'integer');
+    /**
+     * Until now query parameters were only expected in 'fetch'
+     * routes (e.g. GET /invoices) and so we have validation
+     * rule sets on it based on authentication type. But now
+     * with new use cases (e.g. expands) we would need validations
+     * on 'find' routes (eg. GET /invoices/{id}).
+     *
+     * Also observation is allowed 'find' parameters set is always
+     * going to be subset of 'fetch' parameters set. Following is
+     * a set of query parameters to be allowed in 'find' routes.
+     * We use this to validate the query parameters in those routes.
+     *
+     * @var array
+     */
+    protected $findParamRuleKeys = [
+        self::EXPAND,
+        self::EXPAND . '.*',
+    ];
+
+    protected $fetchParamRules = [
+        self::FROM          => 'integer',
+        self::TO            => 'integer',
+        self::COUNT         => 'integer|min:1',
+        self::SKIP          => 'integer',
+
+        //
+        // Idea is, by default expand can be send in query for all current
+        // fetch routes, similar to other common query parameter eg. skip etc.
+        //
+        // By default no value is allowed, one must specify the same(2nd line)
+        // in respective repository branch. This is done to avoid unnecessary
+        // exposing of relation attributes.
+        //
+
+        self::EXPAND        => 'sometimes|array|max:5',
+        self::EXPAND . '.*' => 'string|in:',
+    ];
 
     protected $defaultFetchParamRules;
 
@@ -85,21 +118,14 @@ trait RepositoryFetch
      */
     public function fetch(array $params, string $merchantId = null): PublicCollection
     {
-        $params = $this->unsetEmptyParams($params);
+        // Process params (sanitization, validation, modification, etc.)
+        $this->processFetchParams($params);
 
-        $query = $this->newQuery();
+        $expands = $this->getExpandsForQueryFromInput($params);
+
+        $query = $this->newQuery()->with($expands);
 
         $this->addCommonQueryParamMerchantId($query, $merchantId);
-
-        $this->addDefaultParams($params);
-
-        // validateFetchParams modifies fetchParamRules.
-        // To check for ES fetch, we needs the original set of fetchParamRules (basically the default set)
-        $this->defaultFetchParamRules = $this->fetchParamRules;
-
-        $this->validateFetchParams($params);
-
-        $this->modifyFetchParams($params);
 
         // Splits the params into mysqlParams and esParams. Check methods doc on
         // how that happens.
@@ -111,7 +137,7 @@ trait RepositoryFetch
         // such thing.
         if (count($esParams) > 0)
         {
-            return $this->runEsFetch($esParams, $merchantId);
+            return $this->runEsFetch($esParams, $merchantId, $expands);
         }
 
         // If above doesn't happen we build query for mysql fetch and return the
@@ -163,10 +189,13 @@ trait RepositoryFetch
                                 $commonFetchKeys));
 
         //
-        // Get the keys send as part of $params.
-        // This is filtered list (defaults and common keys removed).
-        // Now this list has to be subset of MySQL keys or Es Keys exclusively,
-        // otherwise raises error.
+        // Get input params which are not a part of the:
+        // - Default param rules (see $fetchParamRules definition above), plus
+        // - Common keys defined in EsRepo.
+        //
+        // The remainder/filtered list has to be a subset of either MySQL or ES keys
+        // exclusively, otherwise an error will be raised. Hence both MySQL and
+        // ES cannot be searched together in a single fetch operation.
         //
 
         $filteredParamsKeys = array_values(array_diff(
@@ -176,10 +205,12 @@ trait RepositoryFetch
 
         if (empty(array_diff($filteredParamsKeys, $mysqlFetchKeys)) === true)
         {
+            // First value is MySQL params, so fetch will happen via MySQL
             return [$params, []];
         }
         else if (empty(array_diff($filteredParamsKeys, $esFetchKeys)) === true)
         {
+            // Second value is Es params, so fetch will happen via Es
             return [[], $params];
         }
         else
@@ -209,21 +240,33 @@ trait RepositoryFetch
      *
      * @return PublicCollection
      */
-    protected function runEsFetch(array $params, string $merchantId = null): PublicCollection
+    protected function runEsFetch(
+        array $params,
+        string $merchantId = null,
+        array $expands): PublicCollection
     {
-        $entity = $this->entity;
+        $response = $this->esRepo->buildQueryAndSearch($params, $merchantId);
 
-        // Build query and get es response
-        $result = $this->esRepo->buildQueryAndSearch($params, $merchantId);
+        //
+        // Extract results from ES response: If hit has _source get that else
+        // just the document id.
+        //
+        $result = array_map(
+                    function ($res)
+                    {
+                        return $res[ES::_SOURCE] ?? [Common::ID => $res[ES::_ID]];
+                    },
+                    $response[ES::HITS][ES::HITS]);
 
-        // If no results from es, return empty collection
         if (count($result) === 0)
         {
             return new PublicCollection;
         }
 
+        //
         // If callee expects only es data (no mysql queries) then hydrate
         // the es array result into model and return the collection.
+        //
         $esHitsOnly = boolval(($params[EsRepository::SEARCH_HITS]) ?? false);
 
         if ($esHitsOnly)
@@ -231,13 +274,17 @@ trait RepositoryFetch
             return $this->hydrate($result);
         }
 
+        //
         // Else extract the matched ids and return collection by making a mysql
         // query on found ids.
+        //
         $ids = array_column($result, 'id');
 
-        $entities = $this->newQuery()->findMany($ids, ['*']);
+        $entities = $this->newQuery()
+                         ->with($expands)
+                         ->findMany($ids, ['*']);
 
-        // If the not all the ids from es are found in mysql, just raise an error.
+        // If the not all the ids from es are found in MySQL, just raise an error.
         if (count($ids) !== $entities->count())
         {
             $this->trace->critical(TraceCode::ES_MYSQL_RESULTS_MISMATCH, ['ids' => $ids]);
@@ -322,14 +369,137 @@ trait RepositoryFetch
         }
     }
 
+    /**
+     * Temporary:
+     * There are clients(including Dashboard) which is sending
+     * skip,count like extra parameters in GET routes. For now
+     * everything which is not expected would be ignored. We'll
+     * keep trace of violations and act on it later.
+     *
+     * @param array $params
+     */
+    protected function modifyFindParams(array $params): array
+    {
+        $filtered = array_only($params, $this->findParamRuleKeys);
+
+        if (count($filtered) !== count($params))
+        {
+            $this->trace->info(TraceCode::EXTRA_QUERY_PARAM_IN_GET_ROUTE, $params);
+        }
+
+        return $filtered;
+    }
+
+    /**
+     * Validates query parameters passed during GET by id endpoints.
+     * E.g. GET /invoices/inv_123?expand[]=payments
+     *
+     * @param array $params
+     */
+    protected function validateFindParams(array $params)
+    {
+        $findParamRules = $this->getFindParamRulesForCurrentAuth();
+
+        (new JitValidator)->rules($findParamRules)
+                          ->caller($this)
+                          ->input($params)
+                          ->validate();
+    }
+
+    /**
+     * Do a bunch of processing on the fetch param rules:
+     * - Unset all the empty params (w/o any value)
+     * - Add default params (internal [count] and user-defined)
+     *   to the params list.
+     * - Validate all the params basis auth as well ($appFetchParamRules,
+     *   $proxyFetchParamRules, $adminFetchParamRules, etc.)
+     *
+     * @param  array $params Input params
+     */
+    protected function processFetchParams(array & $params)
+    {
+        $params = $this->unsetEmptyParams($params);
+
+        $this->addDefaultParams($params);
+
+        // validateFetchParams modifies fetchParamRules.
+        // To check for ES fetch, we needs the original set of fetchParamRules (basically the default set)
+        $this->defaultFetchParamRules = $this->fetchParamRules;
+
+        $this->validateFetchParams($params);
+
+        $this->modifyFetchParams($params);
+    }
+
+    /**
+     * Returns the relations to be eager loaded in fetch/find query. It is list
+     * of input expand(from query parameter) merged with the default list
+     * defined in Repository.
+     *
+     * @param array $params
+     *
+     * @return array
+     */
+    protected function getExpandsForQueryFromInput(array & $params): array
+    {
+        $extraExpands = $params[self::EXPAND] ?? [];
+
+        unset($params[self::EXPAND]);
+
+        return $this->getExpandsForQuery($extraExpands);
+    }
+
+    /**
+     * Validates query parameters passed during GET endpoints.
+     * E.g. GET /invoices?status=paid&expand[]=payments
+     *
+     * @param array $params
+     */
     protected function validateFetchParams(array $params)
     {
+        $this->fetchParamRules = $this->getFetchParamRulesForCurrentAuth();
+
+        (new JitValidator)->rules($this->fetchParamRules)
+                          ->caller($this)
+                          ->input($params)
+                          ->validate();
+
+        $this->validateAdditional($params);
+    }
+
+    /**
+     * Builds and returns rules to be used to validate query parameters
+     * sent during get requests.
+     *
+     * @return array
+     */
+    protected function getFindParamRulesForCurrentAuth(): array
+    {
+        $fetchParamRules = $this->getFetchParamRulesForCurrentAuth();
+
+        $rules = array_intersect_key(
+                    $fetchParamRules,
+                    array_flip($this->findParamRuleKeys));
+
+        return $rules;
+    }
+
+    /**
+     * Builds and returns rules to be used to validate query parameters
+     * sent during fetch request.
+     *
+     * @return array
+     */
+    protected function getFetchParamRulesForCurrentAuth(): array
+    {
+        // Assign the default rules
+        $rules = $this->fetchParamRules;
+
         // TODO: Check for uniqueness. Privileged auth should override proxy auth and so on.
 
         if (isset($this->entityFetchParamRules))
         {
-            $this->fetchParamRules = array_merge(
-                $this->fetchParamRules, $this->entityFetchParamRules);
+            $rules = array_merge($rules, $this->entityFetchParamRules);
         }
 
         //
@@ -340,39 +510,37 @@ trait RepositoryFetch
         if (($this->auth->isProxyOrPrivilegeAuth()) and
             (isset($this->proxyFetchParamRules)))
         {
-            $this->fetchParamRules = array_merge(
-                    $this->fetchParamRules, $this->proxyFetchParamRules);
+            $rules = array_merge($rules, $this->proxyFetchParamRules);
         }
 
         if (($this->auth->isPrivilegeAuth()) and
             (isset($this->appFetchParamRules)))
         {
-            $this->fetchParamRules = array_merge(
-                    $this->fetchParamRules, $this->appFetchParamRules);
+            $rules = array_merge($rules, $this->appFetchParamRules);
         }
 
         if (($this->auth->isAdminAuth()) and
             (isset($this->adminFetchParamRules)))
         {
-            $this->fetchParamRules = array_merge(
-                    $this->fetchParamRules, $this->adminFetchParamRules);
+            $rules = array_merge($rules, $this->adminFetchParamRules);
         }
 
-        (new JitValidator)->rules($this->fetchParamRules)
-                          ->caller($this)
-                          ->input($params)
-                          ->validate();
-
-        $this->validateAdditional($params);
+        return $rules;
     }
 
-    protected function unsetEmptyParams(array $params)
+    /**
+     * Get rid of empty input params
+     *
+     * @param  array  $params   Input params
+     * @return array            Sanitizied input params
+     */
+    protected function unsetEmptyParams(array $params): array
     {
         $newParams = [];
 
         foreach ($params as $key => $value)
         {
-            if (($params[$key]) !== '')
+            if ($params[$key] !== '')
             {
                 $newParams[$key] = $value;
             }
@@ -410,18 +578,40 @@ trait RepositoryFetch
         return $this->findOrFailPublic($id);
     }
 
-    public function findByPublicIdAndMerchant($id, $merchant)
+    public function findByPublicIdAndMerchant(
+        string $id,
+        Merchant\Entity $merchant,
+        array $params = []): PublicEntity
     {
         $entity = $this->getEntityClass();
 
         $entity::verifyIdAndStripSign($id);
 
-        return $this->findByIdAndMerchant($id, $merchant);
+        return $this->findByIdAndMerchant($id, $merchant, $params);
     }
 
-    public function findByIdAndMerchant($id, Merchant\Entity $merchant)
+    /**
+     * Finds entity against given id and merchant.
+     *
+     * @param string          $id
+     * @param Merchant\Entity $merchant
+     * @param array           $params
+     *
+     * @return PublicEntity
+     */
+    public function findByIdAndMerchant(
+        string $id,
+        Merchant\Entity $merchant,
+        array $params = []): PublicEntity
     {
+        $params = $this->modifyFindParams($params);
+
+        $this->validateFindParams($params);
+
+        $expands = $this->getExpandsForQueryFromInput($params);
+
         $entity = $this->newQuery()
+                       ->with($expands)
                        ->merchantId($merchant->getId())
                        ->findOrFailPublic($id);
 
@@ -461,6 +651,13 @@ trait RepositoryFetch
         }
     }
 
+    /**
+     * Filter fetch operation by merchantId. Super important for
+     * private auth calls.
+     *
+     * @param BuilderEx $query
+     * @param string    $merchantId
+     */
     protected function addCommonQueryParamMerchantId($query, $merchantId)
     {
         // For admins, merchant ID may not be required.
@@ -514,10 +711,18 @@ trait RepositoryFetch
         $query->skip($params['skip']);
     }
 
+    /**
+     * Add default params to the param list required
+     * for fetch operation.
+     *
+     * @param array $params
+     */
     protected function addDefaultParams(array & $params)
     {
+        // Add `count`
         $this->addDefaultParamCount($params);
 
+        // Add other default params
         if (isset($this->defaultFetchParams))
         {
             foreach ($this->defaultFetchParams as $key => $value)
@@ -532,22 +737,28 @@ trait RepositoryFetch
         $query->merchantId($params[Common::MERCHANT_ID]);
     }
 
+    /**
+     * Add `count` param specifying number of
+     * records to fetch.
+     *
+     * @param array $params
+     */
     protected function addDefaultParamCount(array & $params)
     {
         if ($this->auth->isAdminAuth() === true)
         {
-            $max = 1000;
-            $count = 1000;
+            $max    = 1000;
+            $count  = 1000;
         }
         else if ($this->auth->isPrivilegeAuth() === false)
         {
-            $max = 100;
-            $count = 10;
+            $max    = 100;
+            $count  = 10;
         }
         else
         {
-            $max = 1000;
-            $count = 1000;
+            $max    = 1000;
+            $count  = 1000;
         }
 
         $this->fetchParamRules['count'] .= '|max:'.$max;

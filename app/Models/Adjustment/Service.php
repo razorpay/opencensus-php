@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Adjustment;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
@@ -35,6 +36,26 @@ class Service extends Base\Service
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
         $adj = (new Adjustment\Core)->createAdjustment($input, $merchant);
+
+        $this->logActionToSlack($merchant, SlackActions::ADD_ADJUSTMENT, $input);
+
+        return $adj->toArrayPublic();
+    }
+
+    public function addFeesAdjustment($input)
+    {
+        if (isset($input[Entity::MERCHANT_ID]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('Merchant ID not passed!');
+        }
+
+        $merchantId = $input[Entity::MERCHANT_ID];
+
+        unset($input[Entity::MERCHANT_ID]);
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $adj = (new Adjustment\Core)->createFeesAdjustment($input, $merchant);
 
         $this->logActionToSlack($merchant, SlackActions::ADD_ADJUSTMENT, $input);
 

@@ -437,6 +437,34 @@ return [
                 'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
             ],
         ],
+        [
+            'request' => [
+                'content' => [
+                    'type'        => 'sorter',
+                    'merchant_id' => '10000000000000',
+                    'gateway'     => 'hdfc',
+                    'method'      => 'card',
+                    'min_amount'  => 500,
+                    'max_amount'  => 100,
+                    'load'        => 50
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'min_amount should be lesser than max_amount',
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ],
         // Create wallet sorter rule
         [
             'request' => [
@@ -444,6 +472,7 @@ return [
                     'merchant_id' => '10000000000000',
                     'type'        => 'sorter',
                     'gateway'     => 'wallet_jiomoney',
+                    'issuer'      => 'jiomoney',
                     'method'      => 'wallet',
                     'load'        => 50
                 ],
@@ -459,6 +488,32 @@ return [
                     'load'        => 50,
                     'admin'       => true,
                 ],
+            ],
+        ],
+        // Create sorter rule with null gateway
+        [
+            'request' => [
+                'content' => [
+                    'merchant_id' => '10000000000000',
+                    'type'        => 'sorter',
+                    'method'      => 'card',
+                    'load'        => 50
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'The gateway field is required when type is sorter.',
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
             ],
         ],
         // test create sorter rule with total load less than 100
@@ -625,6 +680,32 @@ return [
                     'network_category' => 'ecommerce',
                     'shared_terminal'  => true,
                     'gateway_acquirer' => 'axis',
+                    'admin'            => true
+                ],
+            ],
+        ],
+        // Create filter rule with null gateway
+        [
+            'request' => [
+                'content' => [
+                    'merchant_id'      => '10000000000000',
+                    'type'             => 'filter',
+                    'filter_type'      => 'reject',
+                    'group'            => 'test',
+                    'method'           => 'card',
+                    'issuer'           => 'HDFC',
+                ],
+                'url' => '/gateway/rules',
+                'method' => 'POST',
+            ],
+            'response' => [
+                'content' => [
+                    'merchant_id'      => '10000000000000',
+                    'type'             => 'filter',
+                    'filter_type'      => 'reject',
+                    'group'            => 'test',
+                    'method'           => 'card',
+                    'issuer'           => 'HDFC',
                     'admin'            => true
                 ],
             ],

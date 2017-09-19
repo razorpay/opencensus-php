@@ -3,6 +3,7 @@
 namespace RZP\Mail\Settlement;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Constants\MailTags;
 
@@ -15,7 +16,7 @@ class IciciSettlement extends Base
 
     protected function addSubject()
     {
-        $today = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+        $today = Carbon::today(Timezone::IST)->format('d-m-Y');
 
         $subject = "Icici Transfer files for $today";
 

@@ -97,6 +97,11 @@ class Entity extends \RZP\Base\EloquentEx
         return false;
     }
 
+    protected function hasAttribute($key)
+    {
+        return (array_key_exists($key, $this->attributes) === true);
+    }
+
     public function fromDateTime($value)
     {
         return $value;

@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Billdesk\Mock;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Requests;
 use RZP\Exception;
 use RZP\Gateway\Base;
@@ -15,8 +16,22 @@ class Server extends Base\Mock\Server
 {
     public function authorize($input)
     {
+        $request = array(
+            'url' => $this->route->getUrl('mock_billdesk_payment'),
+            'content' => $input,
+            'method' => 'post',
+        );
+
+        $this->request($request);
+
+        return $this->makePostResponse($request);
+    }
+
+    public function bank(array $input)
+    {
         parent::authorize($input);
 
+        // Create request array here
         $input = $this->getContentFromInput($input);
 
         $gatewayPayment = $this->getRepo()->findByPaymentIdAndAction(
@@ -36,7 +51,7 @@ class Server extends Base\Mock\Server
         $this->validateAuthorizeInput($input);
 
         // Format - YYYYMMDD
-        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y H:i:s');
+        $date = Carbon::today(Timezone::IST)->format('d-m-Y H:i:s');
 
         $content = array(
             'MerchantID'        => $input['MerchantID'],
@@ -93,7 +108,7 @@ class Server extends Base\Mock\Server
 
         $content = ['msg' => $msg];
 
-        $this->content($content);
+        $this->content($content, 'bank');
 
         $request = array(
             'url' => $input['RU'],
@@ -101,7 +116,7 @@ class Server extends Base\Mock\Server
             'method' => 'post',
         );
 
-        return $this->makePostResponse($request);
+        return $request;
     }
 
     public function verify($input)
@@ -168,7 +183,7 @@ class Server extends Base\Mock\Server
 
         // Format yyyymmdd24hhmmss (in docs), actually yyyymmdd0hhmmss,
         // hh is in 24 hrs
-        $now = Carbon::now('Asia/Kolkata')->format('Ymd0His');
+        $now = Carbon::now(Timezone::IST)->format('Ymd0His');
 
         $content = array(
             'RequestType'   => '0410',

@@ -9,6 +9,7 @@ use Hash;
 use Mail;
 use Event;
 use Str;
+use Request;
 
 use RZP\Constants\HashAlgo;
 use RZP\Error;
@@ -33,9 +34,16 @@ class Service extends Base\Service
 
     const TOKEN = 'token';
 
-    public function authenticate(string $orgId, array $input)
+    public function __construct()
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+        parent::__construct();
+
+        $this->adminOrgId = $this->app['basicauth']->getAdminOrgId();
+    }
+
+    public function authenticate(array $input)
+    {
+        $orgId = $this->app['basicauth']->getOrgId();
 
         return $this->login($orgId, $input);
     }
@@ -236,6 +244,16 @@ class Service extends Base\Service
         $this->handleAuthFailure($admin, Action::LOGIN_FAIL_OAUTH);
     }
 
+    /**
+     * Here we are generating a bearer token
+     * and savnig bcrypted token and considering token Id as principal.
+     * Ref https://security.stackexchange.com/a/94792
+     * concat bearer token and principal and sending to client as admin token.
+     * last 14 characters of the token will be extracted and will be matched bycrypting the token.
+     *
+     * @param $admin
+     * @return mixed
+     */
     private function generateLoginToken($admin)
     {
         $this->fireAdminAction($admin, Action::GENERATE_LOGIN_TOKEN);
@@ -246,23 +264,25 @@ class Service extends Base\Service
 
         $this->repo->saveOrFail($admin);
 
+        $bearerToken = str_random(20);
+
         $tokenAttributes = [
-            'token'      => str_random(40),
-            'expires_at' => Carbon::now()->addDays(30)->timestamp
+            'token'      => Hash::make($bearerToken),
+            'expires_at' => Carbon::now()->addDays(30)->getTimestamp()
         ];
 
         $token = $this->core()->createAuthToken($admin, $tokenAttributes);
 
         $admin = $admin->toArrayPublic();
 
-        $admin['token'] = $token->getToken();
+        $admin['token'] = $bearerToken . $token->getId();
 
         return $admin;
     }
 
-    public function createAdmin(string $orgId, array $input)
+    public function createAdmin(array $input)
     {
-        $org = $this->repo->org->findByPublicId($orgId);
+        $org = $this->repo->org->find($this->adminOrgId);
 
         if (empty($input[Entity::ROLES]) === false)
         {
@@ -293,16 +313,16 @@ class Service extends Base\Service
         Mail::queue($createAdminMail);
     }
 
-    public function getAdmin(string $orgId, string $adminId)
+    public function getAdmin(string $adminId)
     {
         // Fetch admin with relations
         $admin = $this->repo->admin->findByPublicIdAndOrgIdWithRelations(
-            $adminId, $orgId, [Entity::GROUPS, Entity::ROLES]);
+            $adminId, $this->adminOrgId, [Entity::GROUPS, Entity::ROLES]);
 
         return $admin->toArrayPublic();
     }
 
-    public function getAdminByAppAuth(string $orgId, array $input)
+    public function getAdminByAppAuth(array $input)
     {
         $token = $input['token'];
 
@@ -310,11 +330,12 @@ class Service extends Base\Service
 
         $adminId = $adminToken->getAdminId();
 
+        $orgId = $adminToken->admin->getOrgId();
+
         $admin = $this->repo->admin->findByIdAndOrgIdWithRelations(
             $adminId, $orgId, ['groups', 'roles', 'roles.permissions']);
 
         $roles = $admin->roles;
-        $permissions = [];
         $roleNames = [];
         $groupRules = [];
 
@@ -356,11 +377,11 @@ class Service extends Base\Service
         return $admin;
     }
 
-    public function deleteAdmin(string $orgId, string $adminId)
+    public function deleteAdmin(string $adminId)
     {
         $authAdmin = $this->app['basicauth']->getAdmin();
 
-        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
+        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $this->adminOrgId);
 
         $admin->getValidator()->validateSelfEditForbidden($authAdmin, $admin);
 
@@ -369,11 +390,9 @@ class Service extends Base\Service
         return $this->core()->delete($admin);
     }
 
-    public function fetchMultiple(string $orgId, array $input)
+    public function fetchMultiple()
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-
-        $admins = $this->repo->admin->fetchByOrgId($orgId, [Entity::GROUPS, Entity::ROLES]);
+        $admins = $this->repo->admin->fetchByOrgId($this->adminOrgId, [Entity::GROUPS, Entity::ROLES]);
 
         return $admins->toArrayPublic();
     }
@@ -396,8 +415,17 @@ class Service extends Base\Service
         return [];
     }
 
-    public function editAdmin(string $orgId, string $adminId, array $input)
+    public function editAdmin(string $adminId, array $input)
     {
+        if (empty($this->adminOrgId))
+        {
+            $orgId = $this->app['basicauth']->getOrgId();
+        }
+        else
+        {
+            $orgId = $this->adminOrgId;
+        }
+
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
 
         if (empty($input[Entity::ROLES]) === false)
@@ -424,6 +452,9 @@ class Service extends Base\Service
         return $admin->toArrayPublic();
     }
 
+    /**
+     * @deprecated Ref: #4216
+     */
     public function getMerchantIds($orgId, $adminId)
     {
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
@@ -524,7 +555,7 @@ class Service extends Base\Service
 
         $responseHash = [];
 
-        $merchants = $this->repo->merchant->findManyByIdsWithRelations($merchantIds);
+        $merchants = $this->repo->merchant->findManyWithRelations($merchantIds, ['admins']);
 
         foreach ($merchants as $merchant)
         {
@@ -541,6 +572,60 @@ class Service extends Base\Service
         return $responseHash;
     }
 
+    public function getMerchantsFromEs(array $input): array
+    {
+        $admin = $this->auth->getAdmin();
+
+        // Appends more payload in $input for ES search:
+
+        // Always add this ORG_ID filter.
+        $input[Merchant\Entity::ORG_ID] = $this->auth->getAdminOrgId();
+
+        // If admin not allowed to see all merchants, get all group
+        // ids he belongs to and pass in $input. This gets used to
+        // filter results.
+
+        if ($admin->canSeeAllMerchants() === false)
+        {
+            $groupIds = $admin->groups()->get()->getIds();
+
+            $input[Merchant\Entity::GROUPS] = $groupIds;
+
+            // Adds following to $input so all merchant to which this admin
+            // has direct access to can be filtered.
+
+            $input[Merchant\Entity::ADMINS] = [$admin->getId()];
+        }
+
+        // We would want to receive the ES payload
+
+        $input[Base\EsRepository::SEARCH_HITS] = 1;
+
+        $merchants = $this->repo->merchant->fetch($input);
+
+        return $merchants->toArrayAdmin();
+    }
+
+    public function getMerchantIdsFromEs(): array
+    {
+        $result = $this->getMerchantsFromEs([]);
+
+        //
+        // Existing consumer(dashboard) expect the result as following:
+        // [
+        //   "id" => "referrer",
+        //   ...
+        // ]
+        //
+
+        $items = $result['items'];
+
+        return array_pluck($items, Merchant\Entity::REFERRER, Merchant\Entity::ID);
+    }
+
+    /**
+     * @deprecated Ref: #4216
+     */
     public function getMerchants($orgId, $adminId, $input)
     {
         $responseHash = $this->getMerchantIds($orgId, $adminId);
@@ -564,11 +649,11 @@ class Service extends Base\Service
 
     public function lockUnusedAccounts()
     {
-        $timestamp = Carbon::now()->subDays(30)->timestamp;
+        $timestamp = Carbon::now()->subDays(30)->getTimestamp();
 
         $unactivatedAccounts = $this->repo->admin->lockUnactivatedAccounts($timestamp);
 
-        $timestamp = Carbon::now()->subDays(90)->timestamp;
+        $timestamp = Carbon::now()->subDays(90)->getTimestamp();
 
         $unusedAccounts = $this->repo->admin->lockUnusedAccounts($timestamp);
 

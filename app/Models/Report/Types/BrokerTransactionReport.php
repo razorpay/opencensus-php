@@ -3,6 +3,7 @@
 namespace RZP\Models\Report\Types;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Exception;
 use RZP\Base\JitValidator;
@@ -206,7 +207,7 @@ class BrokerTransactionReport extends BasicEntityReport
 
         // Format yyyy-mm-dd hh:mm,
         // hh is in 24 hrs
-        $txnDate = Carbon::createFromTimestamp($ts, 'Asia/Kolkata')
+        $txnDate = Carbon::createFromTimestamp($ts, Timezone::IST)
                          ->format('Y-m-d H:i');
 
         return $txnDate;

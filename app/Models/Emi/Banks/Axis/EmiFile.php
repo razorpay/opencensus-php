@@ -3,6 +3,7 @@
 namespace RZP\Models\Emi\Banks\Axis;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\FileStore;
 use RZP\Models\Emi\Banks\Base;
 
@@ -14,9 +15,9 @@ class EmiFile extends Base\EmiFile
 
     protected $bankName  = 'Axis';
 
-    const EXTENSION = FileStore\Format::CSV;
+    protected $type = FileStore\Type::AXIS_EMI_FILE;
 
-    const TYPE = FileStore\Type::AXIS_EMI_FILE;
+    const EXTENSION = FileStore\Format::CSV;
 
     protected function getEmiData($input)
     {
@@ -49,6 +50,6 @@ class EmiFile extends Base\EmiFile
 
     private function formattedDateFromTimestamp($timestamp)
     {
-        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d-M-Y');
+        return Carbon::createFromTimestamp($timestamp, Timezone::IST)->format('d-M-Y');
     }
 }

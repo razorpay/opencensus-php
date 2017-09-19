@@ -71,14 +71,20 @@ class Service extends Base\Service
 
         $response = $this->createResponse($merchantDetails);
 
+        $eventAttributes = $this->merchant->toArrayEvent();
+
         if ($this->canSubmit($input, $response) === true)
         {
             $this->markSubmitted($merchantDetails);
+
+            $this->app['eventManager']->trackEvents($this->merchant, Merchant\Action::SUBMITTED, $eventAttributes);
         }
 
         $response = $this->createResponse($merchantDetails);
 
-        $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
+        $activationProgress = $response['verification']['activation_progress'];
+
+        $merchantDetails->setActivationProgress($activationProgress);
 
         $this->repo->saveOrFail($merchantDetails);
 
@@ -87,9 +93,13 @@ class Service extends Base\Service
             (new Detail\Core)->fireActivationTrigger($merchantDetails);
         }
 
+        $eventAttributes['activation_progress'] = $activationProgress;
+
+        $this->app['eventManager']
+             ->trackEvents($this->merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
+
         return $response;
     }
-
 
     public function uploadActivationFileAdmin(string $merchantId, array $input)
     {
@@ -225,9 +235,13 @@ class Service extends Base\Service
         }
         catch (\Throwable $e)
         {
-            $this->trace->info(
+            $this->trace->traceException(
+                $e,
+                null,
                 TraceCode::CREATE_MERCHANT_DETAIL_FAILED,
-                [ 'merchant_id'   => $merchant->getId()]);
+                [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                ]);
         }
 
         return $merchantDetail;
@@ -242,7 +256,7 @@ class Service extends Base\Service
 
     protected function markSubmitted($merchantDetails)
     {
-        $submittedAt = Carbon::now('Asia/Kolkata')->timestamp;
+        $submittedAt = Carbon::now()->getTimestamp();
 
         $input = [
             Entity::SUBMITTED     => 1,
@@ -282,9 +296,6 @@ class Service extends Base\Service
         $merchantDetailsArr = $merchantDetails->toArray();
 
         $response = $merchantDetails->toArrayPublic();
-
-        // List of all the required fields which are not set
-        $detailsKeys = array_keys($merchantDetailsArr);
 
         $requiredFields = [];
 
@@ -334,5 +345,82 @@ class Service extends Base\Service
         $response['activated'] = (int) $merchantDetails->merchant->isActivated();
 
         return $response;
+    }
+
+    private function getFieldsToStepMap() : array
+    {
+        // Fetching Action Form details schema based on account type.
+        $isLinkedAccount = $this->merchant->isLinkedAccount();
+
+        if ($isLinkedAccount === true)
+        {
+            return Merchant\Constants::STEP_MAP_ACCOUNT;
+        }
+        else
+        {
+            return Merchant\Constants::STEP_MAP;
+        }
+    }
+
+    private function getStepsList() : array
+    {
+        $stepsList = array_values($this->getFieldsToStepMap());
+
+        return array_values(array_unique($stepsList));
+    }
+
+    private function calculateSteps($merchantDetails) : array
+    {
+        $stepFinished = [];
+
+        $stepMap = $this->getFieldsToStepMap();
+
+        $requiredFields = $merchantDetails['verification']['required_fields'] ?? [];
+
+        foreach ($requiredFields as $key)
+        {
+            if (isset($stepMap[$key]) === true)
+            {
+                $stepFinished[] = $stepMap[$key];
+            }
+        }
+
+        return $stepFinished;
+    }
+
+    public function getMerchantDetailsForAdmin() : array
+    {
+        // Formatting the data as required by the controller.
+        $merchantDetails = $this->fetchMerchantDetails();
+
+        // Finished steps will be calculated based on required fields.
+        $this->calculateFinishedSteps($merchantDetails);
+
+        return $merchantDetails;
+    }
+
+    private function calculateFinishedSteps(array & $merchantDetails)
+    {
+        // Get steps for the current merchant.
+        $steps = $this->getStepsList();
+
+        if($merchantDetails['can_submit'] === true)
+        {
+            $merchantDetails['steps_finished'] = $steps;
+        }
+        else
+        {
+            // By checking merchant details unfinished steps will be calculated.
+            $unfinishedSteps = $this->calculateSteps($merchantDetails);
+
+            if(count($unfinishedSteps) !== 0)
+            {
+                $unfinishedSteps = array_unique($unfinishedSteps);
+
+                $finishedSteps = array_values(array_diff($steps, $unfinishedSteps));
+
+                $merchantDetails['steps_finished'] = $finishedSteps;
+            }
+        }
     }
 }

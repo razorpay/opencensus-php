@@ -805,6 +805,26 @@ return [
         ],
     ],
 
+    'testGetInvoicesForSubscription' => [
+        'request' => [
+            'url'       => '/invoices',
+            'method'    => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity'        => 'invoice',
+                        'customer_id'   => 'cust_100000customer',
+                        'payment_id'    => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testFetchSubscription' => [
         'request' => [
             // 'url'     => '/subscriptions/{id}',

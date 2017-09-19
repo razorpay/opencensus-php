@@ -19,7 +19,10 @@ class TxnResponseCode
             'E5000'   => 'Username and/or password for merchant is invalid.',
             'E5159'   => 'Invalid Card Type',
             'E5408'   => 'Not an auth transaction',
-            'E5414'   => 'Requested capture amount exceeds outstanding authorized amount',
+            'E5414'   => [
+                'no payments identified' => 'No payments identified',
+                'requested capture amount exceeds outstanding authorized amount' => 'Requested capture amount exceeds outstanding authorized amount',
+            ],
             'E5415'   => 'Excessive refund attempted',
             'I5154'   => 'Invalid Card Number : Card number is best match for card range in card brand MS and not expected card brand MC',
             'I5166'   => 'Invalid credit card: incorrect secure code number length : Invalid Card Security Code length',
@@ -60,9 +63,12 @@ class TxnResponseCode
             'E5000'   => Error\ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL,
             'E5159'   => Error\ErrorCode::GATEWAY_ERROR_UNSUPPORTED_CARD_NETWORK,
             'E5408'   => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED,
-            'E5414'   => Error\ErrorCode::GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH,
+            'E5414'   => [
+                'no payments identified' => Error\ErrorCode::GATEWAY_ERROR_PAYMENT_CAPTURE_FAILED,
+                'requested capture amount exceeds outstanding authorized amount' => Error\ErrorCode::GATEWAY_ERROR_CAPTURE_GREATER_THAN_AUTH,
+            ],
             'E5415'   => Error\ErrorCode::GATEWAY_ERROR_REFUND_AMOUNT_GREATER_THAN_CAPTURED,
-            'I5154'   => Error\ErrorCode::GATEWAY_ERROR_CARD_INVALID_NUMBER,
+            'I5154'   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_NUMBER_NOT_LEGITIMATE,
             'I5166'   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV,
             'I5426'   => Error\ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL,
             'W9520'   => Error\ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
@@ -71,7 +77,7 @@ class TxnResponseCode
         '8' => Error\ErrorCode::GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED,
         '9' => Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK,
         'A' => Error\ErrorCode::SERVER_ERROR_PAYMENT_ABORTED,
-        'B' => Error\ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_BY_BANK_DUE_TO_RISK_CHECKS_FAILURE,
+        'B' => Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK,
         'C' => Error\ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED,
         'E' => Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_CONTACT_ISSUING_BANK,
         'F' => Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
@@ -98,14 +104,28 @@ class TxnResponseCode
     {
         if (is_array(self::$map[$code]) === true)
         {
-            $msgCode = explode('-', explode(':', $msg)[0])[0];
+            $subCode = explode('-', explode(':', $msg)[0])[0];
 
-            if (isset(self::$map[$code][$msgCode]) === false)
+            if (isset(self::$map[$code][$subCode]) === true)
             {
-                $msgCode = 'default';
+                if (is_array(self::$map[$code][$subCode]) === true)
+                {
+                    $msgCode = strtolower(last(explode('reason: ', $msg)));
+
+                    if (isset(self::$map[$code][$subCode][$msgCode]) === true)
+                    {
+                        return self::$map[$code][$subCode][$msgCode];
+                    }
+
+                    $subCode = 'default';
+                }
+            }
+            else
+            {
+                $subCode = 'default';
             }
 
-            return self::$map[$code][$msgCode];
+            return self::$map[$code][$subCode];
         }
 
         return self::$map[$code];

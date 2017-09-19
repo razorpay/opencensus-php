@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Indusind;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mail;
 
 use RZP\Constants\MailTags;
@@ -44,7 +45,7 @@ class RefundFile extends Base\RefundFile
 
         $file = $creator->get();
 
-        $today = Carbon::now('Asia/Kolkata')->format('d_m_Y');
+        $today = Carbon::now(Timezone::IST)->format('d_m_Y');
 
         $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
 
@@ -96,7 +97,7 @@ class RefundFile extends Base\RefundFile
      */
     protected function getFileToWriteNameWithoutExt()
     {
-        $time = Carbon::now('Asia/Kolkata')->format('dmY');
+        $time = Carbon::now(Timezone::IST)->format('dmY');
 
         if ($this->mode === Mode::TEST)
         {

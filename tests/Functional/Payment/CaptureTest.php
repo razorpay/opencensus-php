@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Payment;
 
 use Redis;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mockery;
 use Mail;
 
@@ -70,6 +71,31 @@ class CaptureTest extends TestCase
         Mail::assertSent(CapturedMail::class);
     }
 
+    public function testBulkCapture()
+    {
+        Mail::fake();
+
+        $count = 3;
+
+        $payments = [];
+
+        for ($i=0; $i < $count; $i++) {
+            $payments[] = $this->defaultAuthPayment();
+        }
+
+        $this->ba->appAuth();
+
+        $this->mockDashboardRequest($count);
+
+        $this->startBulkTest($payments);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(true, $payment['gateway_captured']);
+
+        Mail::assertSent(CapturedMail::class);
+    }
+
     public function testCaptureWithFeeBreakupException()
     {
         $payment = $this->fixtures->create('payment:card_authorized');
@@ -96,7 +122,7 @@ class CaptureTest extends TestCase
 
         try
         {
-            $processor->capture('pay_' .$payment['id'], $params);
+            $processor->capture($payment, $params);
         }
         catch (Exception\LogicException $ex)
         {
@@ -314,7 +340,7 @@ class CaptureTest extends TestCase
     {
         $payment = $this->createFailedPayment('1', false);
 
-        $past = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp;
+        $past = Carbon::today(Timezone::IST)->subDays(1)->timestamp;
         $this->fixtures->payment->edit($payment['id'], ['created_at' => $past]);
 
         $this->fixtures->merchant->edit(
@@ -354,7 +380,7 @@ class CaptureTest extends TestCase
     {
         $payment = $this->createFailedPayment();
 
-        $past = Carbon::today('Asia/Kolkata')->subDays(6)->timestamp;
+        $past = Carbon::today(Timezone::IST)->subDays(6)->timestamp;
         $this->fixtures->payment->edit($payment['id'], ['created_at' => $past]);
 
         $this->authorizeFailedPayment($payment['id']);
@@ -372,7 +398,7 @@ class CaptureTest extends TestCase
     {
         $payment = $this->createFailedPayment();
 
-        $past = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp;
+        $past = Carbon::today(Timezone::IST)->subDays(1)->timestamp;
         $this->fixtures->payment->edit($payment['id'], ['created_at' => $past]);
 
         $defaultMerchantId = '10000000000000';
@@ -396,7 +422,7 @@ class CaptureTest extends TestCase
 
         $invoice = $this->getLastEntity('invoice', true);
 
-        $past = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp;
+        $past = Carbon::today(Timezone::IST)->subDays(1)->timestamp;
         $invoice = $this->fixtures->invoice->edit($invoice['id'], ['status' => 'expired']);
 
         $this->authorizeFailedPayment($payment['id']);
@@ -434,7 +460,7 @@ class CaptureTest extends TestCase
             'payment_capture' => '1'
             ]);
 
-        $dueBy = Carbon::now('Asia/Kolkata')->addDays(10)->timestamp;
+        $dueBy = Carbon::now(Timezone::IST)->addDays(10)->timestamp;
 
         $this->fixtures->create(
                             'invoice',
@@ -551,7 +577,7 @@ class CaptureTest extends TestCase
 
     public function testAutoCaptureEmail()
     {
-        $time = Carbon::today('Asia/Kolkata')->timestamp;
+        $time = Carbon::today(Timezone::IST)->timestamp;
         $createdAt = $time - rand(0, 23) * 60 * 60;
 
         $attributes = [
@@ -1128,6 +1154,45 @@ class CaptureTest extends TestCase
         $this->assertEquals($transaction['fee_model'], 'postpaid');
     }
 
+    public function startBulkTest(array $payments)
+    {
+        $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+        $name = $trace[1]['function'];
+
+        $testData = $this->testData[$name];
+
+        $this->setBulkRequestData($testData['request'], $payments);
+        $this->setBulkResponseData($testData['response'], $payments);
+
+        return $this->runRequestResponseFlow($testData);
+    }
+
+    /**
+     * Since the response data contains the count of payments in test
+     * it would be better if we set the "count" and "success" dynamically.
+     * This way, in the future, if we added more count to this test,
+     * it would not require us to change the fixture.
+     */
+    protected function setBulkResponseData(& $response, $payments)
+    {
+        $response['content']['count']   = count($payments);
+        $response['content']['success'] = count($payments);
+    }
+
+    protected function setBulkRequestData(& $request, $payments)
+    {
+        $request['content']['payment_ids'] = [];
+
+        foreach ($payments as $payment)
+        {
+            $request['content']['payment_ids'][] = $payment['id'];
+        }
+
+        $url = '/payments/capture/bulk';
+
+        $this->setRequestUrlAndMethod($request, $url, 'POST');
+    }
+
     public function startTest($id = null, $amount = null)
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
@@ -1205,7 +1270,7 @@ class CaptureTest extends TestCase
 
         if ($withInvoice)
         {
-            $dueBy = Carbon::now('Asia/Kolkata')->addDays(10)->timestamp;
+            $dueBy = Carbon::now(Timezone::IST)->addDays(10)->timestamp;
 
             $this->fixtures->create(
                                 'invoice',

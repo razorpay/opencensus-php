@@ -106,19 +106,10 @@ return [
     ],
 
     'testAuthFailedVerifyNullResponse' => [
-        'gateway' => [
-            'status'                => 'status_match',
-            'gateway'               => 'netbanking_axis',
-            'verifyResponseContent' => "",
-            'apiSuccess'            => false,
-            'gatewaySuccess'        => false,
-            'gatewayPayment'        => [
-                'action' => 'authorize',
-                'bank'   => 'UTIB',
-                'status' => 'N',
-                'received' => true,
-            ],
-        ],
+        'action' => 'authorize',
+        'bank'   => 'UTIB',
+        'status' => 'N',
+        'received' => true,
     ],
 
     'testVerifyMismatch' => [
@@ -148,8 +139,8 @@ return [
             'status_code' => 500,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\LogicException',
-            'internal_error_code'   => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+            'class'                 => RZP\Exception\PaymentVerificationException::class,
+            'internal_error_code'   => ErrorCode::SERVER_ERROR_MULTIPLE_SUCCESS_TRANSACTIONS_IN_VERIFY,
         ],
     ],
 

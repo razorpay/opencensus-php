@@ -1,5 +1,33 @@
 <?php
 
+/**
+ * getallheaders() polyfill for nginx servers
+ *
+ * From http://php.net/manual/en/function.getallheaders.php
+ */
+if (!function_exists('getallheaders'))
+{
+    function getallheaders()
+    {
+        $headers = [];
+
+        foreach ($_SERVER as $name => $value)
+        {
+            if (substr($name, 0, 5) == 'HTTP_')
+            {
+                $headerKey = str_replace(
+                        ' ',
+                        '-',
+                                ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))));
+
+                $headers[$headerKey] = $value;
+            }
+        }
+
+        return $headers;
+    }
+}
+
 if (! function_exists('array_merge_intersect'))
 {
 	function array_merge_intersect(array &$array1, $array2, $array3)
@@ -335,4 +363,25 @@ if (! function_exists('isJson'))
 function is_valid_utf8(String $string)
 {
     return (max(array_map('ord', str_split($string))) < 240);
+}
+
+if (! function_exists('camel_case_array'))
+{
+    /**
+     * Camel cases all values of given array and
+     * returns the new array.
+     *
+     * @param array $arr
+     *
+     * @return array
+     */
+    function camel_case_array(array $arr)
+    {
+        return array_map(
+                    function ($v)
+                    {
+                        return camel_case($v);
+                    },
+                    $arr);
+    }
 }

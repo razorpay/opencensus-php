@@ -3,6 +3,7 @@
 namespace RZP\Mail\Merchant;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
@@ -62,7 +63,7 @@ class AuthorizedPaymentsReminder extends Mailable
     protected function addSubject()
     {
         // date format = 6th July 2015
-        $date = Carbon::today('Asia/Kolkata')->format('jS F Y');
+        $date = Carbon::today(Timezone::IST)->format('jS F Y');
 
         $final = $this->data['final'];
 

@@ -36,7 +36,7 @@ return [
             Permission::VIEW_MERCHANT         => [
                 'description' => 'View a particular merchant details',
                 'assignable'  => true,
-            ]
+            ],
         ],
 
         PermissionCategory::MERCHANT_DETAIL => [
@@ -52,7 +52,6 @@ return [
             ],
             Permission::VIEW_MERCHANT_LOGIN => '',
             Permission::VIEW_ACTIVITY => '',
-            Permission::VIEW_MERCHANT_PRICING_RULES => '',
             Permission::VIEW_MERCHANT_HDFC_EXCEL => '',
             Permission::VIEW_BENEFICIARY_FILE => '',
             Permission::VIEW_MERCHANT_SCREENSHOT => [
@@ -135,6 +134,7 @@ return [
             Permission::EDIT_AUTHORIZED_FAILED_PAYMENT => '',
             Permission::VIEW_REFUND_PAYMENTS => '',
             Permission::EDIT_AUTHORIZED_REFUND_PAYMENT => '',
+            Permission::RETRY_REFUND_FAILED => '',
             Permission::EDIT_PAYMENT_REFUND => '',
             Permission::EDIT_PAYMENT_CAPTURE => '',
             Permission::EDIT_MERCHANT_CONFIRM => [
@@ -143,6 +143,7 @@ return [
             ],
             Permission::CREATE_BENEFICIARY_FILE => '',
             Permission::CREATE_NETBANKING_REFUND => '',
+            Permission::CREATE_EMI_FILES => '',
             Permission::CREATE_SETTLEMENT_INITIATE => '',
             Permission::DELETE_TERMINAL => '',
             Permission::EDIT_TERMINAL => '',
@@ -189,6 +190,8 @@ return [
             ],
             Permission::ADD_RECONCILIATION_FILE => '',
             Permission::ADD_SETTLEMENT_RECONCILIATION => '',
+            Permission::RETRY_SETTLEMENT => '',
+            Permission::EDIT_MERCHANT_INVOICE_GSTIN => '',
             Permission::SEND_NEWSLETTER => '',
             Permission::TRIGGER_DUMMY_ERROR => '',
             Permission::MAKE_API_CALL => '',
@@ -216,6 +219,20 @@ return [
                 'description' => 'Edit offer for a merchant',
             ],
             Permission::ASSIGN_MERCHANT_HANDLE => 'Assign merchant handle',
+            Permission::VIEW_MERCHANT_PRICING  => 'View Mercant Pricing Plan',
+        ],
+
+        PermissionCategory::DISPUTE => [
+            Permission::CREATE_DISPUTE => [
+                'description'   => 'Create Dispute Permission',
+                'assignable'    => true,
+                'workflow'      => true,
+            ],
+            Permission::EDIT_DISPUTE    => [
+                'description'   => 'Edit Dispute Permission',
+                'assignable'    => true,
+                'workflow'      => true,
+            ],
         ],
 
         PermissionCategory::PRICING => [
@@ -366,12 +383,12 @@ return [
                 'workflow'    => true
             ],
             Permission::EDIT_ADMIN        => [
-                'description' => 'create workflow',
+                'description' => 'edit admin',
                 'assignable'  => true,
                 'workflow'    => true
             ],
             Permission::DELETE_ADMIN      => [
-                'description' => 'create workflow',
+                'description' => 'delete admin',
                 'assignable'  => true,
                 'workflow'    => true
             ],
@@ -448,7 +465,24 @@ return [
                 'workflow'    => true
             ],
         ],
+
+        // RZP White label wallet config
+        PermissionCategory::WALLET_CONFIG => [
+            Permission::CREATE_WALLET_CONFIG => [
+                'description' => 'Create Wallet Config',
+                'assignable'  => true
+            ],
+            Permission::EDIT_WALLET_CONFIG   => [
+                'description' => 'Edit Wallet Config',
+                'assignable'  => true
+            ],
+            Permission::VIEW_WALLET_CONFIG   => [
+                'description' => 'View Wallet Config',
+                'assignable'  => true
+            ],
+        ],
     ],
+
     'workflows' => [
         'mock'  => env('HEIMDALL_WORKFLOWS_MOCK', false),
     ],

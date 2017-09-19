@@ -21,7 +21,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $nodalTransferRules = [
-        Entity::AMOUNT => 'required|integer|min:100|max:10000000000',
+        Entity::AMOUNT  => 'required|integer|min:100|max:10000000000',
+        Entity::CHANNEL => 'required|string'
     ];
 
     protected static $retryRules = [

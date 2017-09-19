@@ -10,11 +10,22 @@ use RZP\Models\Admin;
 
 class AdminController extends Controller
 {
+    protected $service = Admin\Service::class;
+
+    public function getEntities()
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Service)->getAllEntities($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getEntityMultiple($type)
     {
         $input = Request::all();
 
-        $data = (new Admin\Service)->fetchMultipleEntities($type, $input);
+        $data = $this->service()->fetchMultipleEntities($type, $input);
 
         return ApiResponse::json($data);
     }
@@ -27,14 +38,14 @@ class AdminController extends Controller
 
         $type = 'terminal';
 
-        $data = (new Admin\Service)->fetchTerminalEntityByIdWithFlag($type, $id, $subMerchantFlag);
+        $data = $this->service()->fetchTerminalEntityByIdWithFlag($type, $id, $subMerchantFlag);
 
         return ApiResponse::json($data);
     }
 
     public function getEntityById($type, $id)
     {
-        $data = (new Admin\Service)->fetchEntityById($type, $id);
+        $data = $this->service()->fetchEntityById($type, $id);
 
         return ApiResponse::json($data);
     }
@@ -43,7 +54,7 @@ class AdminController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Admin\Service)->sendTestNewsletter($input);
+        $data = $this->service()->sendTestNewsletter($input);
 
         return ApiResponse::json($data);
     }
@@ -52,7 +63,7 @@ class AdminController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Admin\Service)->sendNewsletter($input);
+        $data = $this->service()->sendNewsletter($input);
 
         return ApiResponse::json($data);
     }
@@ -78,11 +89,27 @@ class AdminController extends Controller
         $input = Request::all();
     }
 
+    public function setConfigKeys()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->setConfigKeys($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getConfigKeys()
+    {
+        $data = $this->service()->getConfigKeys();
+
+        return ApiResponse::json($data);
+    }
+
     public function getScorecard()
     {
         $input = Request::all();
 
-        $data = (new Admin\Scorecard)->generateScorecard($input);
+        $data = $this->service()->generateScorecard($input);
 
         return ApiResponse::json($data);
     }
@@ -91,7 +118,7 @@ class AdminController extends Controller
     {
         $input = Request::all();
 
-        $responseStatus = (new Admin\Service)->processMailgunCallback($type, $input);
+        $responseStatus = $this->service()->processMailgunCallback($type, $input);
 
         return ApiResponse::json([], $responseStatus);
     }
@@ -102,7 +129,7 @@ class AdminController extends Controller
 
         $limit = $input['limit'];
 
-        $data = (new Admin\Service)->updateTaxColumnValue($entity, $limit);
+        $data = $this->service()->updateTaxColumnValue($entity, $limit);
 
         return ApiResponse::json($data);
     }

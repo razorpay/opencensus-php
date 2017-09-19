@@ -3,6 +3,7 @@
 namespace RZP\Gateway\FirstData;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Requests_Hooks;
 use SimpleXMLElement;
 
@@ -123,19 +124,9 @@ class Gateway extends Base\Gateway
 
         $this->checkApprovalCode($gatewayPayment);
 
-        $acquirerData = $this->getAcquirerData($gatewayPayment);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
-    }
-
-    protected function getAcquirerData($gatewayPayment)
-    {
-        return [
-            'acquirer' => [
-                Payment\Entity::APPROVAL_CODE => $gatewayPayment->getAuthCode(),
-                Payment\Entity::REFERENCE1    => $gatewayPayment->getEndpointTransactionId()
-            ]
-        ];
     }
 
     protected function runCallbackVerify(array $input)
@@ -153,8 +144,23 @@ class Gateway extends Base\Gateway
         if (($verify->gatewaySuccess === false) and
             ($this->approval === true))
         {
+            $verifyStatus = $verify->payment->getStatus();
+
+            // Callback verify is failing, but possibly only
+            // because verify status has not been updated.
+            //
+            // This should still be considered a failure,
+            // but not a case of data tampering.
+            if (in_array($verifyStatus, Status::WAITING_STATES, true) === true)
+            {
+                throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
+            }
+
             throw new Exception\LogicException(
-                'Data tampering found.', null, [
+                'Data tampering found.',
+                null,
+                [
+                    'payment_id'      => $input['payment']['id'],
                     'callback_result' => $this->approval,
                     'verify_result'   => $verify->gatewaySuccess,
                 ]);
@@ -316,7 +322,7 @@ class Gateway extends Base\Gateway
 
         $refundGatewayStatus = (string) $verifyRefundResponse->children('a1', true)->TransactionState;
 
-        return in_array($refundGatewayStatus, Status::VALID_REFUND_STATES, true);
+        return in_array($refundGatewayStatus, Status::SUCCESSFUL_REFUND_STATES, true);
     }
 
     protected function updateOrCreateRefundEntity(array $refundFields, array $input)
@@ -362,7 +368,12 @@ class Gateway extends Base\Gateway
 
         // For refunds older than this, verification is not possible.
         throw new Exception\LogicException(
-                'Verification is not possible for older refunds.');
+                'Verification is not possible for older refunds.',
+                null,
+                [
+                    'payment_id' => $input['refund']['payment_id'],
+                    'refund_id'  => $input['refund']['id'],
+                ]);
     }
 
     // First Data is not returning approval code in some cases.
@@ -673,6 +684,8 @@ class Gateway extends Base\Gateway
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
+        $verifyAuthResponse = null;
+
         if($verifyResponse === null)
         {
             // Verify request failed, as FirstData API returned successfully flag set to false
@@ -716,6 +729,11 @@ class Gateway extends Base\Gateway
                 }
             }
 
+            if ($verifyAuthResponse === null)
+            {
+                throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_FATAL_ERROR);
+            }
+
             // A example of the verify response structure can be found
             // in the verifyResponseWrapper method of SoapWrapper class.
             //
@@ -727,7 +745,7 @@ class Gateway extends Base\Gateway
 
             $authGatewayStatus = (string) $verifyAuthResponse->children('a1', true)->TransactionState;
 
-            $verify->gatewaySuccess = in_array($authGatewayStatus, [Status::AUTHORIZED, Status::CAPTURED], true);
+            $verify->gatewaySuccess = (in_array($authGatewayStatus, Status::SUCCESSFUL_AUTH_STATES, true) === true);
         }
 
         $verify->apiSuccess = $this->getVerifyApiStatus($gatewayPayment, $input['payment']);
@@ -840,6 +858,11 @@ class Gateway extends Base\Gateway
                 'code'    => $response->status_code,
             ]
         );
+
+        if ($response->body === null)
+        {
+            throw new Exception\GatewayErrorException(ErrorCode::GATEWAY_ERROR_REQUEST_ERROR);
+        }
 
         $xml = simplexml_load_string(trim($response->body));
 
@@ -998,7 +1021,7 @@ class Gateway extends Base\Gateway
     {
         $createdAt = $input['payment'][Payment\Entity::CREATED_AT];
 
-        $dateTime = Carbon::createFromTimestamp($createdAt, 'Asia/Kolkata');
+        $dateTime = Carbon::createFromTimestamp($createdAt, Timezone::IST);
 
         $txnDateTime = $dateTime->format(Codes::DATE_TIME_FORMAT);
 
@@ -1020,7 +1043,7 @@ class Gateway extends Base\Gateway
         }
 
         $content = [
-            ConnectRequestFields::TIME_ZONE                 => 'Asia/Kolkata',
+            ConnectRequestFields::TIME_ZONE                 => Timezone::IST,
             ConnectRequestFields::TXN_DATE_TIME             => $txnDateTime,
             ConnectRequestFields::HASH_ALGORITHM            => strtoupper(HashAlgo::SHA1),
             ConnectRequestFields::HASH                      => $requestHash,
@@ -1283,7 +1306,7 @@ class Gateway extends Base\Gateway
     }
 
     protected function traceGatewayPaymentRequest(
-        $request,
+        array $request,
         $input,
         $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
     {

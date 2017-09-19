@@ -49,6 +49,7 @@ class Gateway extends Hdfc\Gateway
         $server->setInput($requestVar['content']);
 
         $response = null;
+
         switch($requestVar['type'])
         {
             case 'enroll':
@@ -60,6 +61,10 @@ class Gateway extends Hdfc\Gateway
                 $response = $server->authEnrolled();
                 break;
 
+            case 'auth_second_recurring':
+                $response = $server->gatewayTransaction('auth_second_recurring');
+                break;
+
             case 'auth_not_enrolled':
             case 'capture':
             case 'refund':
@@ -68,7 +73,13 @@ class Gateway extends Hdfc\Gateway
                 break;
 
             default:
-                throw new Exception\LogicException('Unrecognized request type: ' . $requestVar['type']);
+                throw new Exception\LogicException(
+                    'Unrecognized request type.',
+                    null,
+                    [
+                        'payment_id'   => $requestVar['data']['trackid'],
+                        'request_type' => $requestVar['type'],
+                    ]);
         }
 
         return $response;

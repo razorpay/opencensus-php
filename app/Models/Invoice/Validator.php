@@ -3,6 +3,7 @@
 namespace RZP\Models\Invoice;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Base;
 use RZP\Models\Feature;
@@ -62,6 +63,8 @@ class Validator extends Base\Validator
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|boolean',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
+        Entity::CALLBACK_URL        => 'sometimes|url',
+        Entity::CALLBACK_METHOD     => 'required_with:callback_url|string|in:get',
     ];
 
     //
@@ -93,6 +96,8 @@ class Validator extends Base\Validator
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|boolean',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
+        Entity::CALLBACK_URL        => 'sometimes|url',
+        Entity::CALLBACK_METHOD     => 'required_with:callback_url|string|in:get',
     ];
 
     protected static $createIssuedRules = [
@@ -119,6 +124,8 @@ class Validator extends Base\Validator
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|in:0',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
+        Entity::CALLBACK_URL        => 'sometimes|url',
+        Entity::CALLBACK_METHOD     => 'required_with:callback_url|string|in:get',
     ];
 
     protected static $editDraftRules  = [
@@ -140,6 +147,8 @@ class Validator extends Base\Validator
         Entity::BILLING_END         => 'sometimes|epoch',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
         Entity::DRAFT               => 'sometimes|boolean',
+        Entity::CALLBACK_URL        => 'sometimes|url',
+        Entity::CALLBACK_METHOD     => 'required_with:callback_url|string|in:get',
     ];
 
     protected static $editIssuedRules  = [
@@ -149,6 +158,8 @@ class Validator extends Base\Validator
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40|nullable',
         Entity::EXPIRE_BY           => 'sometimes|epoch|nullable',
         Entity::PARTIAL_PAYMENT     => 'sometimes|boolean|custom',
+        Entity::CALLBACK_URL        => 'sometimes|url',
+        Entity::CALLBACK_METHOD     => 'required_with:callback_url|string|in:get',
     ];
 
     protected static $issueBatchRules = [
@@ -431,16 +442,14 @@ class Validator extends Base\Validator
             (empty($invoice->getCustomerEmail())))
         {
             throw new BadRequestValidationFailureException(
-                'Email can not be sent since email address has not been provided.'
-            );
+                'Email can not be sent since email address has not been provided.');
         }
 
         if (($medium === NotifyMedium::SMS) and
             (empty($invoice->getCustomerContact())))
         {
             throw new BadRequestValidationFailureException(
-                'SMS can not be sent since contact number has not been provided.'
-            );
+                'SMS can not be sent since contact number has not been provided.');
         }
     }
 
@@ -552,10 +561,10 @@ class Validator extends Base\Validator
             return;
         }
 
-        $now = Carbon::now('Asia/Kolkata');
+        $now = Carbon::now(Timezone::IST);
         $minExpireBy = $now->copy()->addSeconds(self::MIN_EXPIRY_SECS);
 
-        if ($invoice->getExpireBy() < $minExpireBy->timestamp)
+        if ($invoice->getExpireBy() < $minExpireBy->getTimestamp())
         {
             $message = 'expire_by should be at least ' .
                         $minExpireBy->diffForHumans($now) . ' the time of issue.';
@@ -591,17 +600,67 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateInvoiceMaxAllowedLineItems()
+    public function validateInvoiceViewable()
     {
-        $invoice        = $this->entity;
-        $lineItemsCount = $invoice->lineItems()->count();
+        $invoice = $this->entity;
 
-        if ($lineItemsCount >= self::MAX_ALLOWED_LINE_ITEMS)
+        $id    = $invoice->getPublicId();
+        $label = $invoice->getTypeLabel();
+
+        switch ($invoice->getStatus())
         {
-            $message = 'The line items may not have more than ' .
-                        self::MAX_ALLOWED_LINE_ITEMS . ' items in total.';
+            //
+            // If invoice is in draft, cancelled state we don't send any data
+            // but just following error message to view.
+            //
 
-            throw new BadRequestValidationFailureException($message);
+            case Status::DRAFT:
+
+                throw new BadRequestValidationFailureException("$label with id $id is not issued yet");
+
+            case Status::CANCELLED:
+
+                throw new BadRequestValidationFailureException("$label with id $id is cancelled");
+
+            //
+            // If invoice type is expired we still send the data and JS code
+            // shows a torn page with other basic attributes. But in case of
+            // other types we would throw error so the error page with proper
+            // message is rendered.
+            //
+
+            case Status::EXPIRED:
+
+                if ($invoice->isTypeInvoice() === false)
+                {
+                    throw new BadRequestValidationFailureException("$label with id $id is expired");
+                }
+
+                break;
+
+            default:
+
+                break;
+        }
+    }
+
+    public function validateMaxAllowedLineItems()
+    {
+        $invoice = $this->entity;
+        $count   = $invoice->lineItems()->count();
+
+        if ($count >= self::MAX_ALLOWED_LINE_ITEMS)
+        {
+            $message = 'The invoice may not have more than ' . self::MAX_ALLOWED_LINE_ITEMS . ' items in total.';
+
+            throw new BadRequestValidationFailureException(
+                        $message,
+                        Entity::LINE_ITEMS,
+                        [
+                            Entity::ID                => $invoice->getId(),
+                            'max_allowed_line_items'  => self::MAX_ALLOWED_LINE_ITEMS,
+                            'actual_line_items_count' => $count,
+                        ]);
         }
     }
 

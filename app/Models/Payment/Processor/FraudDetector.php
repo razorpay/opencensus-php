@@ -5,28 +5,44 @@ namespace RZP\Models\Payment\Processor;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
-use RZP\Models\Card;
-use RZP\Trace\Trace;
+use RZP\Models\Merchant;
+use RZP\Models\Risk;
 use RZP\Exception;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Analytics\Metadata;
 
 trait FraudDetector
 {
-    protected function validateFraudDetection($payment)
+    protected function validateFraudDetection(Payment\Entity $payment, Merchant\Entity $merchant)
     {
         $riskScore = $this->getRiskScore($payment);
 
-        if (($payment->shouldFailOnRiskFailure() === true) and
-            ($riskScore > 5))
+        if ($riskScore > $merchant->getRiskThreshold())
         {
-            $e = new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD);
+            $data = [
+                'payment_id' => $payment->getPublicId(),
+                'risk_score' => $riskScore,
+            ];
 
-            $this->updatePaymentAuthFailedAndThrowException($e);
+            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD;
+
+            $e = new Exception\BadRequestException($errorCode, null, $data);
+
+            $this->updatePaymentAuthFailed($e);
+
+            $riskData = [
+                Risk\Entity::RISK_SCORE => $riskScore,
+                Risk\Entity::REASON     => Risk\RiskCode::PAYMENT_SUSPECTED_FRAUD_BY_MAXMIND,
+                Risk\Entity::FRAUD_TYPE => Risk\Type::SUSPECTED,
+            ];
+
+            (new Risk\Core)->logPaymentForSource($payment, Risk\Source::MAXMIND, $riskData);
+
+            throw $e;
         }
     }
 
-    public function getRiskScore($payment)
+    public function getRiskScore(Payment\Entity $payment)
     {
         $riskFields = $this->getRiskDetectionField($payment);
 
@@ -41,7 +57,7 @@ trait FraudDetector
         return 0;
     }
 
-    protected function getRiskDetectionField($payment)
+    protected function getRiskDetectionField(Payment\Entity $payment)
     {
         $response = null;
 
@@ -49,9 +65,9 @@ trait FraudDetector
         {
             $response = $this->app['maxmind']->query($payment);
         }
-        catch (\Throwable $e)
+        catch (\MaxMind\Exception\IpAddressNotFoundException $e)
         {
-            $this->trace->traceException($e, Trace::WARNING, TraceCode::RECOVERABLE_EXCEPTION);
+            $this->trace->traceException($e, Trace::INFO);
         }
 
         return $response;

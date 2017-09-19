@@ -3,8 +3,6 @@
 namespace RZP\Services\Elfin\Mock;
 
 use Illuminate\Config\Repository as Config;
-
-use RZP\Trace\Trace;
 use RZP\Services\Elfin;
 
 class Service extends Elfin\Service

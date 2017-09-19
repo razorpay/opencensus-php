@@ -4,6 +4,7 @@ namespace RZP\Models\Merchant;
 
 use Config;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mail;
 
 use RZP\Base\RuntimeManager;
@@ -13,8 +14,8 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Settlement;
 use RZP\Trace\TraceCode;
-use RZP\Trace\Trace;
 use RZP\Constants\MailTags;
+use Razorpay\Trace\Logger as Trace;
 
 class DailyReport extends Base\Core
 {
@@ -205,19 +206,19 @@ class DailyReport extends Base\Core
     {
         if (isset($input['on']) === true)
         {
-            $on = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata');
+            $on = Carbon::createFromFormat('Y-m-d', $input['on'], Timezone::IST);
         }
         else
         {
-            $on = Carbon::yesterday('Asia/Kolkata');
+            $on = Carbon::yesterday(Timezone::IST);
         }
 
         // date format = 6th July 2015
         $this->date = $on->format('jS F Y');
 
-        $this->timeLowerLimit = $on->timestamp;
+        $this->timeLowerLimit = $on->getTimestamp();
 
-        $this->timeUpperLimit = $on->addDay()->timestamp;
+        $this->timeUpperLimit = $on->addDay()->getTimestamp();
     }
 
     protected function increaseAllowedSystemLimits()

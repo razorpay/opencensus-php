@@ -1,0 +1,17 @@
+<?php
+
+namespace RZP\Constants;
+
+class TLD
+{
+    const TLDS = [
+        tldList
+    ];
+
+    public static function isValid($tld)
+    {
+        $tld = mb_strtolower($tld);
+
+        return (in_array($tld, self::TLDS, true));
+    }
+}

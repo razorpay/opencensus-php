@@ -3,6 +3,7 @@
 namespace RZP\Models\FundTransfer\Icici;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mail;
 use phpseclib\Crypt;
 
@@ -45,7 +46,7 @@ class NodalAccount extends Base\Core
     {
         parent::__construct();
 
-        $this->date = Carbon::today('Asia/Kolkata');
+        $this->date = Carbon::today(Timezone::IST);
 
         $this->id = Base\UniqueIdEntity::generateUniqueId();
     }
@@ -137,7 +138,7 @@ class NodalAccount extends Base\Core
         return [
             'gid'   => '10000',
             'uid'   => '10002',
-            'mtime' => Carbon::now()->timestamp,
+            'mtime' => Carbon::now()->getTimestamp(),
             'mode'  => '33188'
         ];
     }

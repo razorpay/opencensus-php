@@ -6,8 +6,9 @@ use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Models\Payment;
 use RZP\Exception;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+
+use Razorpay\Trace\Logger as Trace;
 
 class Action
 {
@@ -29,6 +30,12 @@ class Action
     const CREATE_REFUND_RECORD    = 'create_refund_record';
     const ALREADY_REFUNDED        = 'already_refunded';
     const VALIDATE_UNKNOWN_REFUND = 'validate_unknown_refund';
+    const AUTHORIZE_FAILED        = 'authorize_failed';
+    const FORCE_AUTHORIZE_FAILED  = 'force_authorize_failed';
+    const CALLBACK_OTP_SUBMIT     = 'callback_otp_submit';
+    const CHECK_BALANCE           = 'check_balance';
+    const GENERATE_REFUNDS        = 'generate_refunds';
+    const GENERATE_CLAIMS         = 'generate_claims';
 
     protected $merchant;
 
@@ -52,6 +59,14 @@ class Action
         $this->mode = $mode;
 
         $this->checkMerchantPermissions();
+    }
+
+    public static function validateAction(string $action)
+    {
+        if (defined(__CLASS__ . '::' . strtoupper($action)) === false)
+        {
+            throw new Exception\RuntimeException('Action provided is invalid: ' . $action);
+        }
     }
 
     public static function create($action, $bindings)

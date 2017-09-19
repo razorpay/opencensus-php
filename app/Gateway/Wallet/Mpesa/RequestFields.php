@@ -18,6 +18,7 @@ class RequestFields
     const NARRATION                 = 'NARRATION';
     const RETURN_URL                = 'RETURNURL';
     const SURCHARGE                 = 'SURCHARGE';
+    const FILLER3                   = 'FILLER3';
 
     // S2S params
     const QUERY_TRANSACTION_DATE    = 'txnDate';

@@ -69,14 +69,4 @@ class Entity extends Base\Entity
         // TODO Sanitize the comment
         $this->attributes[self::COMMENT] = $comment;
     }
-
-    public function setComment(string $comment)
-    {
-        $this->setAttribute(self::COMMENT);
-    }
-
-    public function getComment() : string
-    {
-        return $this->getAttribute(self::COMMENT);
-    }
 }

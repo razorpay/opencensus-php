@@ -51,15 +51,16 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $this->trace->info(
+        $content = $this->getDataFromCallbackResponse($input['gateway']);
+
+         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
                 'gateway_response' => $input['gateway'],
                 'payment_id'       => $input['payment']['id'],
+                'content'          => $content,
             ]
         );
-
-        $content = $this->getDataFromCallbackResponse($input['gateway']);
 
         $this->assertPaymentId($input['payment']['id'],
              $content[RequestFields::MERCHANT_REFERENCE]);
@@ -71,7 +72,7 @@ class Gateway extends Base\Gateway
 
         $this->checkCallbackStatus($content);
 
-        $acquirerData = $this->getAcquirerData($gatewayEntity);
+        $acquirerData = $this->getAcquirerData($input, $gatewayEntity);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }
@@ -144,19 +145,6 @@ class Gateway extends Base\Gateway
         return $status;
     }
 
-    protected function checkApiSuccess(Verify $verify)
-    {
-        $verify->apiSuccess = true;
-
-        $input = $verify->input;
-
-        if ($input['payment']['status'] === 'failed' or
-            $input['payment']['status'] === 'created')
-        {
-            $verify->apiSuccess = false;
-        }
-    }
-
     protected function checkGatewaySuccess(Verify $verify, array $response)
     {
         $verify->gatewaySuccess = false;
@@ -203,6 +191,11 @@ class Gateway extends Base\Gateway
 
         if ($this->action === Action::AUTHORIZE)
         {
+            if ($input['merchant']->isTPVRequired())
+            {
+                $data[RequestFields::ACCOUNT_NUMBER] = $input['order']['account_number'];
+            }
+
             $data[RequestFields::RETURN_URL] = $input['callbackUrl'];
         }
         else
@@ -301,7 +294,7 @@ class Gateway extends Base\Gateway
         $attrs = [
             Base\Entity::RECEIVED        => true,
             Base\Entity::STATUS          => $content[ResponseFields::PAID],
-            Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_REFERENCE_ID]
+            Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_REFERENCE_ID] ?? null,
         ];
 
         $gatewayEntity->fill($attrs);

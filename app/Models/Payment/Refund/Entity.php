@@ -3,9 +3,8 @@
 namespace RZP\Models\Payment\Refund;
 
 use RZP\Models\Base;
-use RZP\Models\Currency;
 use RZP\Models\Payment;
-use RZP\Models\Batch;
+use RZP\Models\Currency;
 use RZP\Models\Transaction\Channel;
 use RZP\Models\Base\Traits\NotesTrait;
 use Razorpay\Spine\DataTypes\Dictionary;
@@ -22,6 +21,10 @@ class Entity extends Base\PublicEntity
     const BASE_AMOUNT            = 'base_amount';
     const STATUS                 = 'status';
     const NOTES                  = 'notes';
+
+    //merchant reference number for refund if provided by merchant
+    const RECEIPT                = 'receipt';
+
     const TRANSACTION_ID         = 'transaction_id';
     const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
     const BATCH_ID               = 'batch_id';
@@ -53,7 +56,8 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::AMOUNT,
         self::CURRENCY,
-        self::NOTES
+        self::NOTES,
+        self::RECEIPT,
     ];
 
     protected $visible = [
@@ -66,9 +70,9 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::GATEWAY_REFUNDED,
         self::NOTES,
+        self::RECEIPT,
         self::TRANSACTION_ID,
         self::BATCH_ID,
-        self::GATEWAY_REFUNDED,
         self::ARN,
         self::ACQUIRER_DATA,
         self::ATTEMPTS,
@@ -84,6 +88,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::PAYMENT_ID,
         self::NOTES,
+        self::RECEIPT,
         self::ACQUIRER_DATA,
         self::CREATED_AT
     ];
@@ -96,6 +101,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_REFUNDED  => null,
         self::ATTEMPTS          => null,
         self::LAST_ATTEMPTED_AT => null,
+        self::RECEIPT           => null,
     ];
 
     protected $casts = [
@@ -360,7 +366,8 @@ class Entity extends Base\PublicEntity
         // 'test merchant', 'ABOF', 'Nykaa',
         // '1mg', 'Playo', 'Nestaway',
         // 'RailYatri', 'Treebo', 'Goibibo',
-        // 'Goeventz', 'RentoMojo', Voonik
+        // 'Goeventz', 'RentoMojo', 'Voonik',
+        // 'Zomato', 'Swiggy', 'Yatra'
         //
 
         $merchantIds = [
@@ -368,6 +375,7 @@ class Entity extends Base\PublicEntity
             '6e9vU1F6c16Wgy', '6LCgLZgRjTI8ws', '4IAipsLXQZ8HfL',
             '5yvFZKqbBjEBsr', '3d2EGdZF6CAYVc', '6ZLE5BE57SExGF',
             '6B94xSUfS76yht', '4bnk7yysqr5Wx5', '4zGGr9ZwCTH1gh',
+            '6H7N6hlcv29OMG', '8S0i1kWYyF2woQ', '87qTXzFTBLFN7i',
         ];
 
         $currentMerchantId = $this->getMerchantId();
@@ -393,6 +401,11 @@ class Entity extends Base\PublicEntity
     public function setReference2(string $value)
     {
         $this->setAttribute(self::REFERENCE2, $value);
+    }
+
+    public function setReceipt(string $value)
+    {
+        $this->setAttribute(self::RECEIPT, $value);
     }
 
     public function setUtr(string $value)

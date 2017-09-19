@@ -6,6 +6,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Wallet\Base\Otp;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Http\Route;
 use Closure;
 
@@ -614,7 +615,7 @@ class PayumoneyGatewayTest extends TestCase
         // up during refund excel generation
         foreach ($refunds['items'] as $refund)
         {
-            $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 5;
+            $createdAt = Carbon::yesterday(Timezone::IST)->timestamp + 5;
             $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
         }
 
@@ -650,7 +651,7 @@ class PayumoneyGatewayTest extends TestCase
         // up during refund excel generation
         foreach ($refunds['items'] as $refund)
         {
-            $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 5;
+            $createdAt = Carbon::yesterday(Timezone::IST)->timestamp + 5;
             $this->fixtures->edit('refund', $refund['id'], [
                 'created_at' => $createdAt,
                 'updated_at' => $createdAt

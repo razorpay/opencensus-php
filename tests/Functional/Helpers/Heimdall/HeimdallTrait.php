@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Helpers\Heimdall;
 
 use Carbon\Carbon;
 use Config;
+use Hash;
 
 use RZP\Models\Admin\Permission;
 
@@ -16,11 +17,11 @@ trait HeimdallTrait
     protected function deleteAdmin($orgId, $adminId, $token = null)
     {
         $request = [
-            'url'    => '/orgs/' . $orgId . '/admins/' . $adminId,
+            'url'    => '/admin/' . $adminId,
             'method' => 'DELETE'
         ];
 
-        $this->ba->adminAuth('test', $token);
+        $this->ba->adminAuth('test', $token, $orgId);
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -30,25 +31,32 @@ trait HeimdallTrait
     protected function getAdmin($orgId, $adminId, $token = null)
     {
         $request = [
-            'url'    => '/orgs/' . $orgId . '/admins/' . $adminId,
+            'url'    => '/admin/' . $adminId . '/fetch',
             'method' => 'GET'
         ];
 
-        $this->ba->adminAuth('test', $token);
+        $this->ba->adminAuth('test', $token, $orgId);
 
         $response = $this->makeRequestAndGetContent($request);
 
         return $response;
     }
 
-    protected function editAdmin($orgId, $adminId)
+    /**
+     * Edit an admin as superadmin
+     */
+    protected function editAdmin($orgId, $adminId, $content = [])
     {
+        $defaultContent = [
+            'name' => 'Test Name',
+        ];
+
+        $content = array_merge($defaultContent, $content);
+
         $request = [
-            'url'     => '/orgs/' . $orgId . '/admins/' . $adminId,
+            'url'     => '/admin/' . $adminId,
             'method'  => 'PUT',
-            'content' => [
-                'name' => "Test Name",
-            ],
+            'content' => $content,
         ];
 
         $this->ba->adminAuth('test', null, $orgId);
@@ -77,20 +85,22 @@ trait HeimdallTrait
             $admin->roles()->attach($superAdminRole);
         }
 
+        $bearerToken = 'ThisIsATokenFORAdmin';
+
         $adminToken = $this->fixtures->create('admin_token', [
             'admin_id'   => $admin->getId(),
-            'token'      => str_random(40),
+            'token'      => Hash::make($bearerToken),
             'created_at' => $now->timestamp,
             'expires_at' => $now->addDays(2)->timestamp,
         ]);
 
-        return $adminToken->getToken();
+        return $bearerToken . $adminToken->getId();
     }
 
-    public function adminForgotPassword($orgId, $email)
+    public function adminForgotPassword($email)
     {
         $request = [
-            'url'     => '/orgs/' . $orgId . '/admin/forgot_password',
+            'url'     => '/admin/forgot_password',
             'method'  => 'POST',
             'content' => [
                 'email' => $email,
@@ -98,7 +108,7 @@ trait HeimdallTrait
             ],
         ];
 
-        $this->ba->appAuth();
+        $this->ba->appAuth('rzp_test', '', $this->hostName);
 
         $content = $this->makeRequestAndGetContent($request);
 

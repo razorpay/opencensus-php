@@ -74,8 +74,8 @@ return [
         'body' => [
             [
                 'index' => [
-                    '_index' => 'payment_test',
-                    '_type'  => 'payment_test',
+                    '_index' => 'testing_payment_test',
+                    '_type'  => 'testing_payment_test',
                 ],
             ],
             [

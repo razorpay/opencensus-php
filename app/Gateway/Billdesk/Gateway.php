@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Billdesk;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -49,6 +50,8 @@ class Gateway extends Base\Gateway
 
         $request = $this->makeRequestAndGetFormData($request);
 
+        $this->checkForErrors($input, $request);
+
         return $request;
     }
 
@@ -73,6 +76,7 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
+                'gateway' => 'billdesk',
                 'payment_id' => $input['payment']['id'],
             ]
         );
@@ -99,21 +103,25 @@ class Gateway extends Base\Gateway
 
         if ($content['AuthStatus'] !== AuthStatus::SUCCESS)
         {
+            $errorCode = Billdesk\ErrorCode::getMappedCode(
+                $content['ErrorStatus'],
+                $content['ErrorDescription']);
+
             // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                    $errorCode,
                     $content['AuthStatus'],
-                    '');
+                    $content['ErrorDescription']);
         }
 
         assertTrue($content['CustomerID'] === $input['payment']['id']);
 
-        $acquirerData = $this->getAcquirerData($gatewayPayment);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
-    protected function getAcquirerData($gatewayPayment)
+    protected function getAcquirerData($input, $gatewayPayment)
     {
         return [
             'acquirer' => [
@@ -481,10 +489,10 @@ class Gateway extends Base\Gateway
     {
         $refStatus = $verifyResponse['RefStatus'];
 
-        $txnDate = Carbon::createFromTimestamp($input['payment'][Payment\Entity::CREATED_AT], 'Asia/Kolkata');
+        $txnDate = Carbon::createFromTimestamp($input['payment'][Payment\Entity::CREATED_AT], Timezone::IST);
         $txnDate = $txnDate->format('Ymd');
 
-        $refDate = Carbon::createFromTimestamp($input['refund'][Payment\Refund\Entity::CREATED_AT], 'Asia/Kolkata');
+        $refDate = Carbon::createFromTimestamp($input['refund'][Payment\Refund\Entity::CREATED_AT], Timezone::IST);
         $refDate = $refDate->format('YmdHis');
 
         $refundContent = [
@@ -732,7 +740,7 @@ class Gateway extends Base\Gateway
     protected function getPaymentVerifyRequestContentArray($verify)
     {
         // Format yyyymmdd24hhmmss (in docs), actually yyyymmdd0hhmmss
-        $now = Carbon::now('Asia/Kolkata')->format('Ymd0His');
+        $now = Carbon::now(Timezone::IST)->format('Ymd0His');
 
         $input = $verify->input;
 
@@ -756,12 +764,12 @@ class Gateway extends Base\Gateway
     protected function getPaymentRefundRequestContent($payment, $input)
     {
         // Format YYYYMMDD
-        $txnDate = Carbon::createFromFormat('d-m-Y H:i:s', $payment['TxnDate'], 'Asia/Kolkata');
+        $txnDate = Carbon::createFromFormat('d-m-Y H:i:s', $payment['TxnDate'], Timezone::IST);
         $txnDate = $txnDate->format('Ymd');
 
         // Format yyyymmdd24hhmmss (in docs), actually yyyymmddhhmmss,
         // hh is in 24 hrs
-        $now = Carbon::now('Asia/Kolkata')->format('YmdHis');
+        $now = Carbon::now(Timezone::IST)->format('YmdHis');
 
         $refundAmount = (float) ($input['refund']['amount']);
 
@@ -820,6 +828,35 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
+    protected function checkForErrors($input, $request)
+    {
+        $merchantId = $input['merchant']->getId();
+
+        // Callback check is only enabled for DEMO and TEST Account for now
+        $shouldCheck = (($merchantId === Merchant\Account::DEMO_PAGE_ACCOUNT) or
+                        ($merchantId === Merchant\Account::TEST_ACCOUNT));
+
+        if (($shouldCheck === true) and
+            ($input['callbackUrl'] === $request['url']))
+        {
+            $rawMsg = $request['content']['msg'];
+
+            $content = $this->getContentAfterChecksumVerification($rawMsg, 'callback');
+
+            if ($content['AuthStatus'] !== AuthStatus::SUCCESS)
+            {
+                $errorCode = Billdesk\ErrorCode::getMappedCode(
+                                    $content['ErrorStatus'],
+                                    $content['ErrorDescription']);
+
+                throw new Exception\GatewayErrorException(
+                        $errorCode,
+                        $content['AuthStatus'],
+                        $content['ErrorDescription']);
+            }
+        }
+    }
+
     /**
      * This function only purpose is so that it can be overridden
      * during testing.
@@ -841,9 +878,11 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getContentAfterChecksumVerification($responseBody)
+    protected function getContentAfterChecksumVerification($responseBody, $action = null)
     {
-        $fields = $this->getFieldsForAction($this->action);
+        $action = $action ?: $this->action;
+
+        $fields = $this->getFieldsForAction($action);
 
         $this->trace->info(
             TraceCode::GATEWAY_CHECKSUM_VERIFY,
@@ -866,7 +905,10 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_CHECKSUM_VERIFY,
-            [$content]);
+            [
+                'gateway' => 'billdesk',
+                'content' => $content
+            ]);
 
         $this->verifySecureHash($content);
 
@@ -1057,13 +1099,13 @@ class Gateway extends Base\Gateway
             // If merchant is tpv then terminal should also be tpv
             if ($this->input['merchant']->isTPVRequired())
             {
-                assert ($this->input['terminal']->isTpv() === true);
+                assert ($this->input['terminal']->isTpvAllowed() === true);
 
                 return true;
             }
 
             // If merchant is not tpv then terminal should also not be tpv
-            assert ($this->input['terminal']->isNotTpv() === true);
+            assert ($this->input['terminal']->isNonTpvAllowed() === true);
         }
 
         return false;

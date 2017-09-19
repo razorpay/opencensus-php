@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use Config;
+use Conner\Tagging\Taggable;
 use RZP\Models\User;
 use RZP\Models\Base;
 use RZP\Models\Emi;
@@ -16,6 +17,8 @@ use RZP\Exception\LogicException;
 
 class Entity extends Base\PublicEntity
 {
+    use Taggable;
+
     const ID                        = 'id';
     const ORG_ID                    = 'org_id';
     const NAME                      = 'name';
@@ -34,12 +37,14 @@ class Entity extends Base\PublicEntity
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
     const CATEGORY2                 = 'category2';
+    const INVOICE_CODE              = 'invoice_code';
     const SCOPE                     = 'scope';
     const FEE_BEARER                = 'fee_bearer';
     const FEE_MODEL                 = 'fee_model';
     const BRAND_COLOR               = 'brand_color';
     const HANDLE                    = 'handle';
     const RISK_RATING               = 'risk_rating';
+    const RISK_THRESHOLD            = 'risk_threshold';
     const LOGO_URL                  = 'logo_url';
     const AWS_LOGO_URL              = 'aws_logo_url';
     const MAX_PAYMENT_AMOUNT        = 'max_payment_amount';
@@ -48,15 +53,52 @@ class Entity extends Base\PublicEntity
     const CONVERT_CURRENCY          = 'convert_currency';
     const ARCHIVED_AT               = 'archived_at';
     const SUSPENDED_AT              = 'suspended_at';
-    const GROUPS                    = 'groups';
-    const ADMINS                    = 'admins';
 
     // Coupon Related Data for display only
     const COUPON_CODE               = 'coupon_code';
 
-    // constants
+    //
+    // Followings are derived data indexed in ES and goes to
+    // admin dashboard as it is.
+    //
+
+    // Whether the entity is marketplace entity or not
+    const IS_MARKETPLACE            = 'is_marketplace';
+    // Referrer for the entity is name of first admin.
+    const REFERRER                  = 'referrer';
+    // List of tags this entity is tagged as.
+    const TAG_LIST                  = 'tag_list';
+
+    /**
+     * Constants for merchant analytics keys
+     */
+    const FILTERS                   = 'filters';
+    const KEY_MERCHANT_ID           = 'merchant_id';
+
+    //
+    // Configs
+    //
+
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
     const SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 3;
+    // 30 minutes in seconds
+    const MIN_AUTO_REFUND_DELAY = 1800;
+    // 10 days in seconds
+    const MAX_AUTO_REFUND_DELAY = 864000;
+
+    /**
+     * A query parameter to filter results based on
+     * account status which can be one of suspended,
+     * archived, activated, pending or dead.
+     */
+    const ACCOUNT_STATUS            = 'account_status';
+
+    /**
+     * A query parameters to get only merchants who
+     * are sub accounts(if value is 1) or sub accounts
+     * of specific merchant (if value is an id).
+     */
+    const SUB_ACCOUNTS              = 'sub_accounts';
 
     /**
      * Refers to methods relation and not a property;
@@ -64,6 +106,11 @@ class Entity extends Base\PublicEntity
     const METHODS                   = 'methods';
     const ORIGINAL_SIZE             = 'original';
     const ACTION                    = 'action';
+    const MEDIUM_SIZE               = 'medium';
+    const MERCHANT_DETAIL           = 'merchant_detail';
+    const GROUPS                    = 'groups';
+    const ADMINS                    = 'admins';
+    const FEATURES                  = 'features';
 
     const ROLE                      = 'role';
     const PIVOT                     = 'pivot';
@@ -79,7 +126,13 @@ class Entity extends Base\PublicEntity
     protected $revisionCreationsEnabled = true;
 
     protected static $generators = [
-        self::TRANSACTION_REPORT_EMAIL
+        self::TRANSACTION_REPORT_EMAIL,
+        self::INVOICE_CODE,
+    ];
+
+    protected $embeddedRelations = [
+        self::GROUPS,
+        self::ADMINS,
     ];
 
     protected $fillable = [
@@ -96,6 +149,7 @@ class Entity extends Base\PublicEntity
         self::FEE_BEARER,
         self::HOLD_FUNDS,
         self::RISK_RATING,
+        self::RISK_THRESHOLD,
         self::BRAND_COLOR,
         self::HANDLE,
         self::INTERNATIONAL,
@@ -171,6 +225,7 @@ class Entity extends Base\PublicEntity
         self::BRAND_COLOR            => null,
         self::HANDLE                 => null,
         self::RISK_RATING            => 3,
+        self::RISK_THRESHOLD         => null,
         self::LOGO_URL               => null,
         self::MAX_PAYMENT_AMOUNT     => null,
         self::ORG_ID                 => null,
@@ -196,8 +251,18 @@ class Entity extends Base\PublicEntity
         self::HOLD_FUNDS                => 'bool',
         self::CATEGORY                  => 'int',
         self::SETTLEMENT_SCHEDULE       => 'int',
+        self::RISK_THRESHOLD            => 'int',
         self::CONVERT_CURRENCY          => 'bool',
         self::AUTO_CAPTURE_LATE_AUTH    => 'bool',
+    ];
+
+    protected $eventFields = [
+        self::ID,
+        self::NAME,
+        self::EMAIL,
+        self::WEBSITE,
+        self::CATEGORY,
+        self::CATEGORY2,
     ];
 
     protected $dates = [
@@ -207,12 +272,26 @@ class Entity extends Base\PublicEntity
     ];
 
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
+    const RISK_THRESHOLD_DEFAULT     = 5;
 
     protected function generateTransactionReportEmail($input)
     {
         $email = array($input[self::EMAIL]);
 
         $this->setAttribute(self::TRANSACTION_REPORT_EMAIL, $email);
+    }
+
+    protected function generateInvoiceCode($input)
+    {
+        $id = $this->getAttribute(self::ID);
+
+        $first8 = substr($id, 0, 8);
+
+        $last4 = substr($id, -4);
+
+        $invoiceCode = strtoupper($first8 . $last4);
+
+        $this->setAttribute(self::INVOICE_CODE, $invoiceCode);
     }
 
     public function isActivated()
@@ -640,6 +719,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ORG_ID);
     }
 
+    public function getInvoiceCode()
+    {
+        return $this->getAttribute(self::INVOICE_CODE);
+    }
+
     /**
      * check if api or gateway should do currency conversion for merchant
      *
@@ -886,6 +970,23 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RISK_RATING);
     }
 
+    public function getRiskThreshold()
+    {
+        return $this->getAttribute(self::RISK_THRESHOLD);
+    }
+
+    protected function getRiskThresholdAttribute()
+    {
+        $riskThreshold = $this->attributes[self::RISK_THRESHOLD];
+
+        if ($riskThreshold === null)
+        {
+            $riskThreshold = self::RISK_THRESHOLD_DEFAULT;
+        }
+
+        return (int) $riskThreshold;
+    }
+
     public function getSubventionType()
     {
         // Move to subvention type if ever.
@@ -925,6 +1026,16 @@ class Entity extends Base\PublicEntity
         return $businessStateCode;
     }
 
+    public function getGstin()
+    {
+        if ($this->merchantDetail === null)
+        {
+            return null;
+        }
+
+        return $this->merchantDetail->getGstin() ?? $this->merchantDetail->getPGstin();
+    }
+
     public function enableReceiptEmails()
     {
         $this->setAttribute(self::RECEIPT_EMAIL_ENABLED, true);
@@ -960,13 +1071,14 @@ class Entity extends Base\PublicEntity
      * we need to verify the bank account number of customer during payment
      * which is not required for a normal payment flow.
      *
+     * This now enforced via a feature flag, because certain merchants
+     * from mutual_funds do not require the
+     *
      * @return boolean
      */
     public function isTPVRequired()
     {
-        $category2 = $this->getCategory2();
-
-        return Terminal\Category::isMerchantCategoryTpv($category2);
+        return ($this->isFeatureEnabled(Feature\Constants::TPV) === true);
     }
 
     public function isTestAccount()
@@ -996,7 +1108,7 @@ class Entity extends Base\PublicEntity
      *
      * @return array
      */
-    public function toArrayReport() : array
+    public function toArrayReport(): array
     {
         $data = parent::toArrayReport();
 
@@ -1076,6 +1188,7 @@ class Entity extends Base\PublicEntity
             self::ACTIVATED    => $this->getAttribute(self::ACTIVATED),
             self::ARCHIVED_AT  => $this->getAttribute(self::ARCHIVED_AT),
             self::SUSPENDED_AT => $this->getAttribute(self::SUSPENDED_AT),
+            self::LOGO_URL     => $this->getFullLogoUrlWithSize(self::MEDIUM_SIZE),
             self::CREATED_AT   => $this->getAttribute(self::CREATED_AT),
             self::UPDATED_AT   => $this->getAttribute(self::UPDATED_AT),
         ];
@@ -1083,5 +1196,27 @@ class Entity extends Base\PublicEntity
         $attributes[self::ROLE] = $this->getAttribute(self::PIVOT)->role;
 
         return $attributes;
+    }
+
+    public function toArrayEvent()
+    {
+        $merchantAttributes = [];
+
+        foreach ($this->eventFields as $eventField)
+        {
+            if ($this->hasAttribute($eventField))
+            {
+                $merchantAttributes[$eventField] = $this->getAttribute($eventField);
+            }
+        }
+
+        if ($this->merchantDetail !== null)
+        {
+            $merchantDetailAttributes = $this->merchantDetail->toArrayEvent();
+
+            $merchantAttributes = array_merge($merchantAttributes, $merchantDetailAttributes);
+        }
+
+        return $merchantAttributes;
     }
 }

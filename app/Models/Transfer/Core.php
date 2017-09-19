@@ -318,9 +318,12 @@ class Core extends Base\Core
                    ->merchant
                    ->fetchByAccountIdAndMerchant($accountId, $merchant);
 
-        $merchant->getValidator()->validateMerchantForMarketplaceTransfer($to, $this->mode);
+        if (($source instanceof Payment\Entity) === true)
+        {
+            $originPayment = $source;
+        }
 
-        $originPayment = $this->checkAndSetSourcePayment($source, $accountId, $merchant);
+        $merchant->getValidator()->validateMerchantForMarketplaceTransfer($to, $this->mode);
 
         $transfer = $this->createTransfer($source, $to, $input, $merchant);
 
@@ -339,56 +342,6 @@ class Core extends Base\Core
         {
             throw new Exception\BadRequestValidationFailureException(
                     'This transfer is not supported');
-        }
-    }
-
-    /**
-     * If the transfer source is a Payment, set
-     * $originPayment for the transfer and validate
-     * Returns null if not.
-     *
-     * @param  mixed                  $source
-     * @param  string                 $accountId
-     * @param  Merchant\Entity        $merchant
-     * @return mixed
-     */
-    protected function checkAndSetSourcePayment($source, string $accountId, Merchant\Entity $merchant)
-    {
-        $originPayment = null;
-
-        if (($source instanceof Payment\Entity) === true)
-        {
-            $originPayment = $source;
-
-            $this->checkMultipleMarketplaceTransfer($originPayment->getId(), $accountId, $merchant);
-        }
-
-        return $originPayment;
-    }
-
-    /**
-     * A transfer can only be done once to an account
-     * from a source payment. This function validates that.
-     *
-     * @param  string         $paymentId
-     * @param  string         $accountId
-     * @param Merchant\Entity $merchant
-     *
-     * @throws Exception\BadRequestException
-     */
-    protected function checkMultipleMarketplaceTransfer(string $paymentId, string $accountId, Merchant\Entity $merchant)
-    {
-        Merchant\AccountEntity::verifyIdAndStripSign($accountId);
-
-        $transfers = $this->repo
-                          ->transfer
-                          ->fetchBySourcePaymentToAccountAndMerchant(
-                            $paymentId, $accountId, $merchant);
-
-        if (count($transfers) !== 0)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_MULTIPLE_TRANSFERS_TO_SAME_ACCOUNT);
         }
     }
 

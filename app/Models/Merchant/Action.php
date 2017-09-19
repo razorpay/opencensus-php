@@ -19,6 +19,11 @@ class Action
     const DISABLE_RECEIPT_EMAILS = 'disable_receipt_emails';
     const ENABLE_INTERNATIONAL   = 'enable_international';
     const DISABLE_INTERNATIONAL  = 'disable_international';
+    const UPDATED                = 'updated';
+    const SUBMITTED              = 'submitted';
+    const ACTIVATION_PROGRESS    = 'activation_progress';
+    const TEST_KEYS_CREATED      = 'test_keys_created';
+    const LIVE_KEYS_CREATED      = 'live_keys_created';
 
     public static function exists($action)
     {

@@ -3,12 +3,12 @@
 namespace RZP\Gateway\Cybersource;
 
 use Cache;
-use Crypt;
 use Config;
 use SoapVar;
 use SoapFault;
 use SoapClient;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Constants;
 use RZP\Gateway\Base;
@@ -27,6 +27,7 @@ use RZP\Gateway\Cybersource\Entity as E;
 
 class Gateway extends Base\Gateway
 {
+    use Base\CardCacheTrait;
     use Base\AuthorizeFailed;
 
     const CACHE_KEY = 'cybersource_%s_card_details';
@@ -157,7 +158,7 @@ class Gateway extends Base\Gateway
 
         $this->authorizeEnrolled($input, $response, $gatewayPayment);
 
-        $acquirerData = $this->getAcquirerData($gatewayPayment);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }
@@ -394,7 +395,7 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getVerifyRequestContent($input, 'refund');
 
-        $targetDate = Carbon::createFromTimestamp($input['refund']['last_attempted_at'], 'Asia/Kolkata')
+        $targetDate = Carbon::createFromTimestamp($input['refund']['last_attempted_at'], Timezone::IST)
                             ->format('Ymd');
 
         $request['content'][F::TARGET_DATE] = $targetDate;
@@ -404,7 +405,7 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyRequestContent(array $input, $entity)
     {
-        $targetDate = Carbon::createFromTimestamp($input[$entity]['created_at'], 'Asia/Kolkata')
+        $targetDate = Carbon::createFromTimestamp($input[$entity]['created_at'], Timezone::IST)
                             ->format('Ymd');
 
         $content = [
@@ -592,7 +593,13 @@ class Gateway extends Base\Gateway
 
         // @codeCoverageIgnoreStart
         // Adding this as a defensive code, code should never reach here.
-        throw new Exception\LogicException('Unexpected response');
+        throw new Exception\LogicException(
+            'Unexpected response',
+            null,
+            [
+                'payment_id'  => $input['payment']['id'],
+                'reason_code' => $response[F::REASON_CODE],
+            ]);
         // @codeCoverageIgnoreEnd
     }
 
@@ -857,47 +864,6 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function persistCardDetailsTemporarily(array $input)
-    {
-        $cvv = $input['card']['cvv'];
-
-        $vaultToken = null;
-
-        if (empty($input['card']['vault_token']) === false)
-        {
-            $vaultToken = $input['card']['vault_token'];
-        }
-        else
-        {
-            $vaultToken = (new Card\Tokenex)->getVaultToken($input['card']['number']);
-        }
-
-        $key = $this->getCacheKey($input['payment']['id']);
-
-        $data = [
-            'cvv'         => Crypt::encrypt($cvv),
-            'vault_token' => $vaultToken
-        ];
-
-        Cache::store($this->secureCacheDriver)->put($key, $data, self::CACHE_TTL);
-    }
-
-    protected function setCardNumberAndCvv(&$input)
-    {
-        $data = $this->getCardDetailsFromCache($input);
-
-        $input['card']['number'] = (new Card\Tokenex)->getCardNumber($data['vault_token']);
-
-        $input['card']['cvv']    = Crypt::decrypt($data['cvv']);
-    }
-
-    protected function getCardDetailsFromCache($input)
-    {
-        $key = $this->getCacheKey($input['payment']['id']);
-
-        return Cache::store($this->secureCacheDriver)->get($key) ?: [];
-    }
-
     protected function getAttributeFromAuthEnrollResponse(array $input, array $response)
     {
         $payerAuthEnrollReply = $response[F::PA_ENROLL_REPLY];
@@ -1135,6 +1101,17 @@ class Gateway extends Base\Gateway
         ];
 
         $content[F::BILL_TO] = $this->getBillingInfo($input);
+
+        //
+        // We are doing this because not all the terminals have this configuration
+        // from CYBS end. This is to decrease the cases of "Do Not Honour" which was
+        // happening because of the AVS checks at the issuer end.
+        //
+        if (($input['terminal']['gateway_terminal_id'] === 'RAZORPAYCYBS') or
+            ($input['terminal']['gateway_terminal_id'] === 'hdfc_89050055'))
+        {
+            unset($content[F::BILL_TO]);
+        }
 
         $request = $this->getStandardSoapRequest($content);
 
@@ -1540,7 +1517,7 @@ class Gateway extends Base\Gateway
     // Logging
 
     protected function traceGatewayPaymentRequest(
-        $request,
+        array $request,
         $input,
         $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
     {
@@ -1566,13 +1543,6 @@ class Gateway extends Base\Gateway
     protected function isSequentialArray($array)
     {
         return array_keys($array) === range(0, count($array) - 1);
-    }
-
-    protected function getCacheKey($paymentId)
-    {
-        $key = sprintf(self::CACHE_KEY, $paymentId);
-
-        return $key;
     }
 
     // Exception handling
@@ -1640,7 +1610,13 @@ class Gateway extends Base\Gateway
             ($actualXid !== $expectedXid))
         {
             throw new Exception\LogicException(
-                'Invalid XID given');
+                'Invalid XID given',
+                null,
+                [
+                    'payment_id'   => $gatewayPayment->getPaymentId(),
+                    'expected_xid' => $expectedXid,
+                    'actual_xid'   => $actualXid,
+                ]);
         }
     }
 
@@ -1661,15 +1637,6 @@ class Gateway extends Base\Gateway
     protected function fixParesIfRequired(&$input)
     {
         $input['gateway']['PaRes'] = str_replace(["\n", "\r"], "", $input['gateway']['PaRes']);
-    }
-
-    protected function getAcquirerData($gatewayPayment)
-    {
-        return [
-            'acquirer' => [
-                Payment\Entity::APPROVAL_CODE => $gatewayPayment->getAuthCode()
-            ]
-        ];
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Axis;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
 use RZP\Models\FileStore;
@@ -59,7 +60,7 @@ class ClaimsFile extends Base\RefundFile
         foreach ($input['data'] as $row)
         {
             $date = Carbon::createFromTimestamp(
-                    $row['payment']['created_at'], 'Asia/Kolkata')
+                    $row['payment']['created_at'], Timezone::IST)
                     ->format('Y-m-d');
 
             $data[] = [
@@ -107,7 +108,7 @@ class ClaimsFile extends Base\RefundFile
      */
     protected function getFileToWriteNameWithoutExt()
     {
-        $time = Carbon::now('Asia/Kolkata')->format('Ymd');
+        $time = Carbon::now(Timezone::IST)->format('Ymd');
 
         if ($this->mode === Mode::TEST)
         {

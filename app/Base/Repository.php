@@ -6,18 +6,20 @@ use DB;
 use Illuminate\Support\Facades\App;
 
 use RZP\Models;
-use RZP\Base\Common;
-use RZP\Models\Base\EsRepository;
 use RZP\Exception;
-use RZP\Constants;
-use RZP\Constants\Entity as E;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
 use RZP\Jobs\EsSync;
+use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
 use RZP\Jobs\DispatchRouter;
+use RZP\Constants\Entity as E;
+use RZP\Models\Base\PublicEntity;
+use RZP\Models\Base\EsRepository;
+use Razorpay\Trace\Logger as Trace;
 
 class Repository extends \Razorpay\Spine\Repository
 {
+    use RepositoryFetch;
+
     /**
      * Delay in making es job available for queue consumer.
      * Value is in seconds.
@@ -30,7 +32,19 @@ class Repository extends \Razorpay\Spine\Repository
      */
     const ES_JOB_DELAY = 3;
 
-    use RepositoryFetch;
+    /**
+     * Query parameter: Holds list of relations to be
+     * eager loaded when doing getting entity(s).
+     *
+     */
+    const EXPAND       = 'expand';
+
+    // Other common query parameters
+
+    const FROM         = 'from';
+    const TO           = 'to';
+    const COUNT        = 'count';
+    const SKIP         = 'skip';
 
     protected $app;
 
@@ -41,6 +55,14 @@ class Repository extends \Razorpay\Spine\Repository
     protected $trace;
 
     protected $manager;
+
+    /**
+     * List of relations to be eager loaded when entity(s) is fetched via GET,
+     * used in RepositoryFetch's methods.
+     *
+     * @var array
+     */
+    protected $expands = [];
 
     /**
      * Corresponding esRepo instance of entity.
@@ -147,11 +169,11 @@ class Repository extends \Razorpay\Spine\Repository
 
         $dirty = $entity->getDirty();
 
-        $esAction = $entity->exists ? EsRepository::UPDATE : EsRepository::CREATE;
+        $action = $entity->exists ? EsRepository::UPDATE : EsRepository::CREATE;
 
         $entity->saveOrFail($options);
 
-        $this->syncToEs($entity, $esAction, $dirty);
+        $this->syncToEs($entity, $action, $dirty);
     }
 
     public function deleteOrFail($entity)
@@ -170,6 +192,8 @@ class Repository extends \Razorpay\Spine\Repository
     public function sync($entity, $relation, $ids = [], bool $detaching = true)
     {
         $entity->$relation()->sync($ids, $detaching);
+
+        $this->syncToEs($entity, EsRepository::UPDATE);
 
         return $this;
     }
@@ -403,13 +427,10 @@ class Repository extends \Razorpay\Spine\Repository
         }
     }
 
-    /**
-     * Gets $esRepo
-     *
-     * @return EsRepository|null
-     */
-    public function getEsRepo()
+    public function setAndGetEsRepoIfExist()
     {
+        $this->setEsRepoIfExist();
+
         return $this->esRepo;
     }
 
@@ -485,7 +506,10 @@ class Repository extends \Razorpay\Spine\Repository
      *
      * @return
      */
-    protected function modifyQueryForIndexing(BuilderEx $query) {}
+    protected function modifyQueryForIndexing(BuilderEx $query)
+    {
+        //
+    }
 
     /**
      * Serializes a given model for indexing.
@@ -521,24 +545,32 @@ class Repository extends \Razorpay\Spine\Repository
      * Syncs model changes to es.
      * Upserts in case of addition/updates and deletes es document otherwise.
      *
+     * - $dirty: If dirty is not null then this will be used to check
+     *           if es sync is required.
+     *
+     * - $mode:  If mode is passed then this will be used, else rzp.mode
+     *           will be used.
+     *
      * @param Models\Base\PublicEntity $entity
      * @param string                   $action
      * @param array                    $dirty
+     * @param string                   $mode
      */
-    protected function syncToEs(
+    public function syncToEs(
         Models\Base\PublicEntity $entity,
         string $action,
-        array $dirty = [])
+        array $dirty = null,
+        string $mode = null)
     {
         $this->setEsRepoIfExist();
 
-        if (($this->esRepo === null) or
-            ($this->isEsSyncNeeded($action, $dirty) === false))
+        if (($this->esRepo === null) or ($this->isEsSyncNeeded($action, $dirty) === false))
         {
             return;
         }
 
-        $mode = $this->app['rzp.mode'];
+        // If $mode is provided use that else default to set rzp.mode
+        $mode = $mode ?: $this->app['rzp.mode'];
 
         $tracePayload = [
             'action'    => $action,
@@ -570,6 +602,15 @@ class Repository extends \Razorpay\Spine\Repository
         }
     }
 
+    public function syncToEsLiveAndTest(
+        Models\Base\PublicEntity $entity,
+        string $action,
+        array $dirty = null)
+    {
+        $this->syncToEs($entity, $action, $dirty, Mode::LIVE);
+        $this->syncToEs($entity, $action, $dirty, Mode::TEST);
+    }
+
     /**
      * Checks if es sync after a model operation is needed or not.
      *
@@ -578,7 +619,7 @@ class Repository extends \Razorpay\Spine\Repository
      *
      * @return bool
      */
-    public function isEsSyncNeeded(string $action, array $dirty): bool
+    public function isEsSyncNeeded(string $action, array $dirty = null): bool
     {
         $esFields = $this->esRepo->getIndexedFields();
 
@@ -595,7 +636,8 @@ class Repository extends \Razorpay\Spine\Repository
             return false;
         }
 
-        if ($action === EsRepository::DELETE)
+        // If $dirty is null, i.e. we don't have to do dirty check.
+        if ($dirty === null)
         {
             return true;
         }
@@ -609,11 +651,16 @@ class Repository extends \Razorpay\Spine\Repository
             return false;
         }
 
+        // If it's update action and there is something dirtied, just sync.
         if ($action === EsRepository::UPDATE)
         {
             return true;
         }
 
+        //
+        // Otherwise if it's insert action then need to check if there is at least
+        // one value in $dirty that IS set(not null values, e.g null, [], {} etc.).
+        //
         $shouldSync = false;
 
         foreach ($esFields as $esField)
@@ -637,6 +684,49 @@ class Repository extends \Razorpay\Spine\Repository
         }
 
         return $shouldSync;
+    }
+
+    public function getExpands(): array
+    {
+        return $this->expands;
+    }
+
+    /**
+     * Returns an array which can be used in with() of BuilderEx.
+     *
+     * It camel cases $expands (which is generally the snake cased output key)
+     * and returns unique list of it.
+     *
+     * @param array $extra - Optional, if provided returns list merged with default.
+     *
+     * @return array
+     */
+    public function getExpandsForQuery(array $extra = []): array
+    {
+        $defaultExpands = $this->expands;
+
+        $expands = array_merge($defaultExpands, $extra);
+
+        $relations = camel_case_array($expands);
+
+        return array_values(array_unique($relations));
+    }
+
+    /**
+     * Loads the relations as specified in $expands parameter.
+     * This method will not unset existing loaded relations.
+     *
+     * @param PublicEntity $entity
+     *
+     * @return PublicEntity
+     */
+    public function loadRelations(PublicEntity $entity): PublicEntity
+    {
+        $relations = $this->getExpandsForQuery();
+
+        $entity->load($relations);
+
+        return $entity;
     }
 
     protected function getParentNamespace()

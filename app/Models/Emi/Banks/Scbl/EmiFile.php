@@ -3,6 +3,7 @@
 namespace RZP\Models\Emi\Banks\Scbl;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\FileStore;
 use RZP\Models\Emi\Banks\Base;
 
@@ -14,9 +15,7 @@ class EmiFile extends Base\EmiFile
 
     protected $bankName  = 'Scbl';
 
-    const EXTENSION = FileStore\Format::XLSX;
-
-    const TYPE = FileStore\Type::SCBL_EMI_FILE;
+    protected $type = FileStore\Type::SCBL_EMI_FILE;
 
     protected function getEmiData($input)
     {
@@ -60,7 +59,7 @@ class EmiFile extends Base\EmiFile
 
     protected function getFormattedDateFromTimestamp($timestamp)
     {
-        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d/m/Y');
+        return Carbon::createFromTimestamp($timestamp, Timezone::IST)->format('d/m/Y');
     }
 
     protected function getFormattedEmiRate($emiRate)

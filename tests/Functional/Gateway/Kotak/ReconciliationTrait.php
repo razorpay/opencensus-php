@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\Kotak;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Models\Payout\Status as PayoutStatus;
 use RZP\Models\FundTransfer\Attempt\Status as AttemptStatus;
@@ -17,8 +18,8 @@ trait ReconciliationTrait
 
         $r = range(1,5);
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(20)->timestamp + 5;
-        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(20)->timestamp + 10;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(20)->timestamp + 5;
+        $capturedAt = Carbon::today(Timezone::IST)->subDays(20)->timestamp + 10;
 
         foreach ($r as $i)
         {
@@ -48,7 +49,7 @@ trait ReconciliationTrait
 
         $r = range(1,5);
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(4)->timestamp + 5;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(4)->timestamp + 5;
 
         foreach ($r as $i)
         {

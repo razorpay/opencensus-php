@@ -3,6 +3,7 @@
 namespace RZP\Models\Customer\Balance;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -148,7 +149,7 @@ class Core extends Base\Core
             return $this->resetAllUsages($balance, $amount);
         }
 
-        $lastTxnTime = Carbon::createFromTimestamp($lastTxnTime, 'Asia/Kolkata');
+        $lastTxnTime = Carbon::createFromTimestamp($lastTxnTime, Timezone::IST);
 
         $resetParams = $this->checkTimestampForReset($lastTxnTime);
 
@@ -161,7 +162,7 @@ class Core extends Base\Core
 
     protected function checkTimestampForReset(Carbon $lastTxnTime) : array
     {
-        $now = Carbon::now('Asia/Kolkata');
+        $now = Carbon::now(Timezone::IST);
 
         $resetDay = $resetWeek = $resetMonth = false;
 

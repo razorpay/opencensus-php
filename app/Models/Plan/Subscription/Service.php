@@ -7,10 +7,10 @@ use RZP\Exception\BadRequestException;
 use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Models\Plan;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
+use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {

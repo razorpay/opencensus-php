@@ -83,134 +83,179 @@ class Gateway extends Base\Gateway
      * for enrolling a card
      * @var array
      */
-    protected $enrollRequest = array(
+    protected $enrollRequest = [
         'url' => Hdfc\Urls::ENROLL_URL,
         'type' => 'enroll',
-        'fields' => array('trackid', 'member', 'card', 'expmonth', 'expyear', 'cvv2',
-            'amt', 'action', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
+        'fields' => [
+            'trackid', 'member', 'card', 'expmonth', 'expyear', 'cvv2',
+            'amt', 'action', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'
+            ],
         'xml' => '',
-        'headers' => array('Content-Type' => 'text/xml'),
-        'data' => array(),
-        'options' => array(
-            'timeout' => 15
-        ));
+        'headers' => ['Content-Type' => 'text/xml'],
+        'data' => [],
+        'options' => [
+            'timeout' => 5
+        ]];
 
     /**
      * Response received after sending enroll card request
      * @var array
      */
-    protected $enrollResponse = array(
-       'fields' => array(
-            'result', 'eci', 'paymentid', 'trackid', 'PAReq', 'url', 'error_text'),
-        'fieldsEnrolled' => array('result', 'url', 'PAReq', 'paymentid', 'trackid',
-            'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
-        'fieldsNotEnrolled' => array('result', 'PAReq', 'paymentid', 'trackid',
-            'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
+    protected $enrollResponse = [
+       'fields' => [
+            'result', 'eci', 'paymentid', 'trackid', 'PAReq', 'url', 'error_text'
+            ],
+        'fieldsEnrolled' => [
+            'result', 'url', 'PAReq', 'paymentid', 'trackid', 'udf1', 'udf2',
+            'udf3', 'udf4', 'udf5'
+            ],
+        'fieldsNotEnrolled' => [
+            'result', 'PAReq', 'paymentid', 'trackid', 'udf1', 'udf2', 'udf3',
+            'udf4', 'udf5'
+            ],
         'type' => 'enroll',
         'xml' => '',
         'data' => array(),
-        'error' => null);
+        'error' => null
+    ];
 
     /**
      * The assoc array is used to construct auth
      * request for debit cards
      * @var array
      */
-    protected $authEnrolledRequest = array(
+    protected $authEnrolledRequest = [
         'url'       => Hdfc\Urls::AUTH_ENROLLED_URL,
         'type'      => 'auth_enrolled',
-        'fields'    => array('paymentid', 'PaRes'),
-        'headers'   => array('Content-Type:text/xml'),
+        'fields'    => ['paymentid', 'PaRes'],
+        'headers'   => ['Content-Type:text/xml'],
         'xml'       => '',
-        'data'      => array());
+        'data'      => []
+    ];
 
-    protected $authEnrolledResponse = array(
-        'fields'    => array('result', 'auth', 'ref', 'avr', 'postdate',
-                        'paymentid', 'tranid', 'trackid', 'udf1', 'udf2', 'udf3',
-                        'udf4', 'udf5', 'error_text'),
+    protected $authEnrolledResponse = [
+        'fields'    => [
+            'result', 'auth', 'ref', 'avr', 'postdate', 'paymentid', 'tranid',
+            'trackid', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'error_text'
+            ],
         'type'      => 'auth_enrolled',
         'xml'       => '',
-        'data'      => array(),
-        'error'     => null);
+        'data'      => [],
+        'error'     => null
+    ];
 
     /**
      * The assoc array is used to constructing
      * auth request for enrolled card cases
      * @var array
      */
-    protected $authNotEnrolledRequest = array(
+    protected $authNotEnrolledRequest = [
         'url' => Hdfc\Urls::AUTH_NOT_ENROLLED_URL,
         'type' => 'auth_not_enrolled',
-        'fields' => array('trackid', 'member', 'card', 'expmonth', 'expyear', 'cvv2', 'action',
-            'zip', 'addr', 'amt', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
+        'fields' => [
+            'trackid', 'member', 'card', 'expmonth', 'expyear', 'cvv2', 'action',
+            'zip', 'addr', 'amt', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'
+            ],
         'headers' => array('Content-Type:text/xml'),
         'xml' => '',
-        'data' => array());
+        'data' => []
+        ];
 
     /**
      * Response received after sending authNotEnrolledRequest
      * @var array
      */
-    protected $authNotEnrolledResponse = array(
-        'fields' => array(
+    protected $authNotEnrolledResponse = [
+        'fields' => [
             'result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid',
-            'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'amt', 'error_text'),
+            'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'amt', 'error_text'
+            ],
         'type' => 'auth_not_enrolled',
         'xml' => '',
-        'data' => array(),
-        'error' => null);
+        'data' => [],
+        'error' => null
+    ];
+
+
+    protected $authSecondRecurringRequest = [
+        'url' => Hdfc\Urls::AUTH_NOT_ENROLLED_URL,
+        'type' => 'auth_second_recurring',
+        'fields' => [
+            'trackid', 'member', 'card', 'expmonth', 'expyear', 'action',
+                'amt', 'udf1', 'udf2', 'udf3', 'udf4', 'udf5'
+        ],
+        'headers' => ['Content-Type:text/xml'],
+        'xml' => '',
+        'data' => []
+    ];
+
+    /**
+     * Response received after sending authSecondRecurringRequest
+     * @var array
+     */
+    protected $authSecondRecurringResponse = [
+        'fields' => [
+            'result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid',
+             'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'amt',
+            ],
+        'type' => 'auth_second_recurring',
+        'xml' => '',
+        'data' => [],
+        'error' => null
+    ];
 
     /**
      * The assoc array is used to construct
      * request for refunds/captures
      * @var array
      */
-    protected $supportPaymentRequest = array(
+    protected $supportPaymentRequest = [
         'url'       => Hdfc\Urls::SUPPORT_PAYMENT_URL,
         'type'      => '',
-        'fields'    => array('action', 'amt', 'member', 'transid', 'trackid', 'udf5'),
-        'headers'   => array('Content-Type:text/xml'),
+        'fields'    => ['action', 'amt', 'member', 'transid', 'trackid', 'udf5'],
+        'headers'   => ['Content-Type:text/xml'],
         'xml'       => '',
-        'data'      => array());
+        'data'      => []];
 
-    protected $supportPaymentResponse = array(
-        'fields'    => array('result', 'auth', 'ref', 'avr', 'postdate', 'tranid',
-                        'trackid', 'payid', 'udf2', 'udf5', 'amt', 'error_text'),
+    protected $supportPaymentResponse = [
+        'fields'    => ['result', 'auth', 'ref', 'avr', 'postdate', 'tranid',
+                        'trackid', 'payid', 'udf2', 'udf5', 'amt', 'error_text'],
         'type'      => '',
         'xml'       => '',
-        'data'      => array(),
-        'error'     => null);
+        'data'      => [],
+        'error'     => null];
 
-    protected $inquiryRequest = array(
+    protected $inquiryRequest = [
         'url'       => Hdfc\Urls::SUPPORT_PAYMENT_URL,
-        'fields'    => array('action', 'amt', 'member', 'transid', 'trackid', 'udf5'),
+        'fields'    => ['action', 'amt', 'member', 'transid', 'trackid', 'udf5'],
         'type'      => 'inquiry',
         'xml'       => '',
-        'data'      => array(),
-        'error'     => null);
+        'data'      => [],
+        'error'     => null];
 
-    protected $inquiryResponse = array(
+    protected $inquiryResponse = [
         'type' => 'inquiry',
-        'fields' => array('result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid', 'amt',
-            'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
-        'data' => array(),
+        'fields' => ['result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid', 'amt',
+            'udf1', 'udf2', 'udf3', 'udf4', 'udf5'],
+        'data' => [],
         'xml' => '',
-        'error' => null);
+        'error' => null];
 
     /**
      * The array is used to specify fields that are not to be logged by trace class
      * they are stripped by calling stripSensitive function of this class on the request/response object
      * @var array
      */
-    protected $stripFieldsList = array(
+    protected $stripFieldsList = [
         'password', 'currencycode', 'id', 'udf1', 'udf2', 'udf3', 'udf4',
         'card', 'expmonth', 'expyear', 'cvv2', 'PAReq', 'zip', 'addr', 'PaRes', 'number', 'cvv'
-    );
+    ];
 
-    protected $bankAcsResponseRules = array(
+    protected $bankAcsResponseRules = [
         'PaRes'     => 'required',
         'MD'        => 'required|numeric|digits_between:1,19',
-        'PaReq'     => 'sometimes');
+        'PaReq'     => 'sometimes'
+    ];
 
     /**
      * Either ENROLLED or NOT_ENROLLED
@@ -269,6 +314,11 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        if ($this->isSecondRecurringPaymentRequest($input) === true)
+        {
+            return $this->authorizeRecurring($input);
+        }
+
         $status = $this->enrollCard($input);
 
         return $this->decideAuthStepAfterEnroll($status);
@@ -321,9 +371,9 @@ class Gateway extends Base\Gateway
                     ['network' => $network]);
             }
 
-            $trackId = $authResponse['data']['paymentid'];
+            $gatewayPaymentId = $authResponse['data']['paymentid'];
 
-            $this->model = $this->repo->findByGatewayTransactionIdOrFail($trackId);
+            $this->model = $this->repo->findByGatewayPaymentIdOrFail($gatewayPaymentId);
 
             $this->verifyAuthResponse($authResponse);
 
@@ -332,9 +382,11 @@ class Gateway extends Base\Gateway
 
         $this->validateCallbackGatewayFields($input, $network);
 
+        $this->validateParesStatusIfApplicable($input);
+
         $this->id = $input['payment']['id'];
 
-        $this->model = $this->repo->findByGatewayTransactionIdOrFail(
+        $this->model = $this->repo->findByGatewayPaymentIdOrFail(
             $input['gateway']['MD']);
 
         $paymentId = $this->model->getPaymentId();
@@ -347,19 +399,9 @@ class Gateway extends Base\Gateway
 
         $this->postAuthEnrolledRequest($input);
 
-        $acquirerData = $this->getAcquirerData($this->model);
+        $acquirerData = $this->getAcquirerData($input, $this->model);
 
         return $this->getCallbackResponseData($input, $acquirerData);
-    }
-
-    protected function getAcquirerData($gatewayPayment)
-    {
-        return [
-            'acquirer' => [
-                PaymentEntity::APPROVAL_CODE => $gatewayPayment->getAuthCode(),
-                PaymentEntity::REFERENCE1    => $gatewayPayment->getRef()
-            ]
-        ];
     }
 
     public function verify(array $input)
@@ -805,4 +847,38 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function validateParesStatusIfApplicable(array $input)
+    {
+        if (isset($input['gateway']['PaRes']) === false)
+        {
+            return;
+        }
+
+        try
+        {
+            $PaRes = $input['gateway']['PaRes'];
+
+            $PaRes = base64_decode($PaRes);
+            $PaRes = gzinflate(substr($PaRes, 2));
+
+            $PaResObject = simplexml_load_string($PaRes);
+            $PaRes = json_decode(json_encode($PaResObject), true);
+        }
+        catch (\Throwable $e)
+        {
+            // Trace and ignore the exeption
+            $this->trace->traceException($e);
+
+            return;
+        }
+
+        // We are doing this only for N right now as Y, A and U
+        // depends on the processor
+        if ((isset($PaRes['Message']['PARes']['TX']['status']) === true) and
+            ($PaRes['Message']['PARes']['TX']['status'] === 'N'))
+        {
+            throw new Exception\GatewayErrorException(
+                Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED);
+        }
+    }
 }

@@ -5,27 +5,40 @@ namespace RZP\Tests\Functional\Fixtures\Entity;
 use Carbon\Carbon;
 use Config;
 use DB;
+use Hash;
 
 class Org extends Base
 {
-    const HDFC_ORG       = 'HDFCbankOrgnId';
-    const RZP_ORG        = '100000razorpay';
-    const DEFAULT_GRP    = '1RazorpayGrpId';
-    const ADMIN_ROLE     = 'RzpAdminRoleId';
-    const MANAGER_ROLE   = 'RzpMngerRoleId';
-    const SUPER_ADMIN    = 'RzrpySprAdmnId';
+    const HDFC_ORG                  = 'HDFCbankOrgnId';
+    const RZP_ORG                   = '100000razorpay';
+    const RZP_ORG_SIGNED            = 'org_100000razorpay';
+    const DEFAULT_GRP               = '1RazorpayGrpId';
+    const DEFAULT_GRP_SIGNED        = 'grp_1RazorpayGrpId';
+    const ADMIN_ROLE                = 'RzpAdminRoleId';
+    const MANAGER_ROLE              = 'RzpMngerRoleId';
+    const SUPER_ADMIN               = 'RzrpySprAdmnId';
+    const SUPER_ADMIN_SIGNED        = 'admin_RzrpySprAdmnId';
 
     // Workflow related roles
-    const MAKER_ROLE     = 'RzpMakerRoleId';
-    const MAKER_ADMIN    = 'RzpMakerAdmnId';
-    const CHECKER_ROLE   = 'RzpChekrRoleId';
-    const CHECKER_ADMIN  = 'RzpChekrAdmnId';
+    const MAKER_ROLE                = 'RzpMakerRoleId';
+    const MAKER_ROLE_SIGNED         = 'role_RzpMakerRoleId';
+    const MAKER_ADMIN               = 'RzpMakerAdmnId';
+    const CHECKER_ROLE              = 'RzpChekrRoleId';
+    const CHECKER_ROLE_SIGNED       = 'role_RzpChekrRoleId';
+    const CHECKER_ADMIN             = 'RzpChekrAdmnId';
+    const CHECKER_ADMIN_SIGNED      = 'admin_RzpChekrAdmnId';
 
-    const DEFAULT_TOKEN  = 'SecretTokenForRazorpayAdminAuthentication';
+    const DEFAULT_TOKEN             = 'SuperSecretTokenForRazorpay';
+    const DEFAULT_TOKEN_PRINCIPAL   = 'SuprAdminToken';
+    const DEFAULT_ADMIN_TOKEN       = self::DEFAULT_TOKEN . self::DEFAULT_TOKEN_PRINCIPAL;
 
     //Workflow related role tokens
-    const MAKER_TOKEN    = 'SecretTokenForRazorpayMAKERAdminAuthentic';
-    const CHECKER_TOKEN  = 'SecretTokenForRazorpayCHECKERAdminAuthent';
+    const MAKER_TOKEN               = 'MakerSecretTokenForRazorpay';
+    const MAKER_TOKEN_PRINCIPAL     = 'MakrAdminToken';
+    const MAKER_ADMIN_TOKEN         = self::MAKER_TOKEN . self::MAKER_TOKEN_PRINCIPAL;
+    const CHECKER_TOKEN             = 'CheckerSecretTokenForRazorpay';
+    const CHECKER_TOKEN_PRINCIPAL   = 'ChkrAdminToken';
+    const CHECKER_ADMIN_TOKEN       = self::CHECKER_TOKEN . self::CHECKER_TOKEN_PRINCIPAL;
 
     public function setUp()
     {
@@ -51,7 +64,7 @@ class Org extends Base
 
     public function createRazorpayOrg()
     {
-        $now = Carbon::now()->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         $permissions = $this->fixtures->create(
             'permission:default_permissions');
@@ -104,8 +117,9 @@ class Org extends Base
         $admin->roles()->attach($adminRole);
 
         $this->fixtures->create('admin_token', [
+            'id'         => self::DEFAULT_TOKEN_PRINCIPAL,
             'admin_id'   => self::SUPER_ADMIN,
-            'token'      => self::DEFAULT_TOKEN,
+            'token'      => Hash::make(self::DEFAULT_TOKEN),
             'created_at' => $now,
             'expires_at' => Carbon::now()->addYear()->timestamp,
         ]);
@@ -117,7 +131,7 @@ class Org extends Base
     {
         $org = $attributes['org'];
 
-        $now = Carbon::now()->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         $makerRole = $this->fixtures->create('role', [
             'id'     => self::MAKER_ROLE,
@@ -148,15 +162,17 @@ class Org extends Base
         $adminChecker->roles()->attach($checkerRole);
 
         $this->fixtures->create('admin_token', [
+            'id'         => self::MAKER_TOKEN_PRINCIPAL,
             'admin_id'   => self::MAKER_ADMIN,
-            'token'      => self::MAKER_TOKEN,
+            'token'      => Hash::make(self::MAKER_TOKEN),
             'created_at' => $now,
             'expires_at' => Carbon::now()->addYear()->timestamp,
         ]);
 
         $this->fixtures->create('admin_token', [
+            'id'         => self::CHECKER_TOKEN_PRINCIPAL,
             'admin_id'   => self::CHECKER_ADMIN,
-            'token'      => self::CHECKER_TOKEN,
+            'token'      => Hash::make(self::CHECKER_TOKEN),
             'created_at' => $now,
             'expires_at' => Carbon::now()->addYear()->timestamp,
         ]);

@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Gateway\Cybersource;
 
 use RZP\Exception;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Tests\Functional\TestCase;
@@ -54,7 +55,7 @@ class CybersourceGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertNotNull($payment['approval_code']);
+        $this->assertNotNull($payment['reference2']);
         $this->assertTestResponse($payment);
 
         $payment = $this->getLastEntity('cybersource', true);
@@ -365,7 +366,7 @@ class CybersourceGatewayTest extends TestCase
             }
         });
 
-        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
         $response = $this->retryFailedRefunds();
@@ -401,7 +402,7 @@ class CybersourceGatewayTest extends TestCase
             }
         });
 
-        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
         $response = $this->retryFailedRefunds();
@@ -437,7 +438,7 @@ class CybersourceGatewayTest extends TestCase
             }
         });
 
-        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
         $response = $this->retryFailedRefunds();
@@ -448,7 +449,7 @@ class CybersourceGatewayTest extends TestCase
 
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
         $this->assertEquals('failed', $actualRefund['status']);
-        $this->assertEquals(2, $actualRefund['attempts']);
+        $this->assertEquals(1, $actualRefund['attempts']);
         $this->assertEquals(false, $actualRefund['gateway_refunded']);
     }
 
@@ -496,7 +497,7 @@ class CybersourceGatewayTest extends TestCase
             }
         });
 
-        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
         $response = $this->retryFailedRefunds();
@@ -536,7 +537,7 @@ class CybersourceGatewayTest extends TestCase
             }
         });
 
-        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
         $response = $this->retryFailedRefunds();
@@ -551,7 +552,7 @@ class CybersourceGatewayTest extends TestCase
 
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
         $this->assertEquals('failed', $actualRefund['status']);
-        $this->assertEquals(3, $actualRefund['attempts']);
+        $this->assertEquals(1, $actualRefund['attempts']);
         $this->assertEquals(false, $actualRefund['gateway_refunded']);
     }
 
@@ -566,7 +567,7 @@ class CybersourceGatewayTest extends TestCase
         $this->assertEquals('processed', $refund['status']);
         $this->assertEquals(1, $refund['attempts']);
 
-        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
         $response = $this->retryFailedRefunds();

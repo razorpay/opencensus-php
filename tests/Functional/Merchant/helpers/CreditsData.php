@@ -119,14 +119,14 @@ return [
             'url' => '/merchants/10000000000000/credits_log',
             'method' => 'post',
             'content' => [
-                'value' => -150,
+                'value' => -2339160,
                 'campaign' => 'silent-ads',
                 'type' => 'fee'
             ],
         ],
         'response' => [
             'content' => [
-                'value' => -150,
+                'value' => -2339160,
                 'campaign' => 'silent-ads',
                 'type'  => 'fee',
             ],

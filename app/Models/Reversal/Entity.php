@@ -3,20 +3,25 @@
 namespace RZP\Models\Reversal;
 
 use RZP\Models\Base;
-use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Transfer;
+use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Constants\Entity as EntityConstant;
 
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
 
     const ID                = 'id';
-    const TRANSFER_ID       = 'transfer_id';
     const MERCHANT_ID       = 'merchant_id';
+    const ENTITY_ID         = 'entity_id';
+    const ENTITY_TYPE       = 'entity_type';
     const AMOUNT            = 'amount';
     const CURRENCY          = 'currency';
     const NOTES             = 'notes';
     const TRANSACTION_ID    = 'transaction_id';
+
+    // response attribute const
+    const TRANSFER_ID       = 'transfer_id';
 
     protected static $sign = 'rvrsl';
 
@@ -33,8 +38,9 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::MERCHANT_ID,
-        self::TRANSFER_ID,
         self::TRANSACTION_ID,
+        self::ENTITY_TYPE,
+        self::ENTITY_ID,
         self::AMOUNT,
         self::CURRENCY,
         self::NOTES,
@@ -53,7 +59,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::AMOUNT        => 'int',
+        self::AMOUNT    => 'int',
     ];
 
     protected $amounts = [
@@ -82,27 +88,44 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
-    public function transfer()
+    /**
+     * Get all of the owning reversable models.
+     */
+    public function entity()
     {
-        return $this->belongsTo('RZP\Models\Transfer\Entity');
+        return $this->morphTo();
     }
 
     // -------------------- End Relations -----------------------
 
+    // -------------------- Getters -----------------------------
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
     }
 
-    public function getTransferId()
+    public function getEntityId()
     {
-        return $this->getAttribute(self::TRANSFER_ID);
+        return $this->getAttribute(self::ENTITY_ID);
     }
 
-    public function setPublicTransferIdAttribute(array & $attributes)
+    public function getEntityType()
     {
-        $transferId = $this->getAttribute(self::TRANSFER_ID);
-
-        $attributes[self::TRANSFER_ID] = Transfer\Entity::getSignedId($transferId);
+        return $this->getAttribute(self::ENTITY_TYPE);
     }
+
+    // -------------------- End Getters --------------------------
+
+    // -------------------- Setters ------------------------------
+
+    public function setPublicTransferIdAttribute(array & $array)
+    {
+       if ($this->getAttribute(self::ENTITY_TYPE) === EntityConstant::TRANSFER)
+        {
+            $array[self::TRANSFER_ID] = Transfer\Entity::getSignedId(
+                                                $this->getAttribute(self::ENTITY_ID));
+        }
+    }
+
+    // -------------------- End Setters --------------------------
 }

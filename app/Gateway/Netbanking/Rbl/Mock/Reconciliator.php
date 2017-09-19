@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Rbl\Mock;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Gateway\Base;
 use RZP\Models\FileStore;
@@ -71,7 +72,7 @@ class Reconciliator extends Base\RefundFile
         {
             $date = Carbon::createFromTimestamp(
                         $row[self::PAYMENT_ENTITY][Payment\Entity::CREATED_AT],
-                        'Asia/Kolkata')
+                        Timezone::IST)
                         ->format('m-d-y h:m:s');
 
             $data[] = [

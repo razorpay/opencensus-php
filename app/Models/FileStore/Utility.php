@@ -3,8 +3,8 @@
 namespace RZP\Models\FileStore;
 
 use RZP\Models\Base;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 class Utility extends Base\Core
 {

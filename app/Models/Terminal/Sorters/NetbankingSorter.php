@@ -16,9 +16,9 @@ class NetbankingSorter extends Terminal\Sorter
     // Arrange netbanking terminals in the order
     // Direct bank first, next Direct gateway, finally shared
     // In This order as well use,
-    public function gatewaySorter($terminals, $input)
+    public function gatewaySorter($terminals)
     {
-        $method = $input['payment']->getMethod();
+        $method = $this->input['payment']->getMethod();
 
         // No need unless doing for netbanking
         if ($method !== Method::NETBANKING)
@@ -26,14 +26,14 @@ class NetbankingSorter extends Terminal\Sorter
             return $terminals;
         }
 
-        $bank = $input['payment']->getBank();
+        $bank = $this->input['payment']->getBank();
 
         $gatewaysForBank = Gateway::getGatewaysForNetbankingBankIndexed($bank);
 
         $gatewaysPriority = (new GatewayPriority\Core)
                             ->getGatewaysForMethod($method);
 
-        $this->arrangePriorityByMerchantAndBank($gatewaysPriority, $input['merchant']->getId(), $bank);
+        $this->arrangePriorityByMerchantAndBank($gatewaysPriority, $this->input['merchant']->getId(), $bank);
 
         $sortedTerminals = [];
 

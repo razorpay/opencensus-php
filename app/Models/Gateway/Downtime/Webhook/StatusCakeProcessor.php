@@ -69,7 +69,7 @@ class StatusCakeProcessor implements ProcessorInterface
 
                     $this->repo->saveOrFail($downtime);
 
-                    return $downtime->toArrayPublic();
+                    return $downtime->toArrayAdmin();
                 }
 
                 return [];
@@ -82,7 +82,7 @@ class StatusCakeProcessor implements ProcessorInterface
             // events for the same url.
             $downtime = $this->core->create($data);
 
-            return $downtime->toArrayPublic();
+            return $downtime->toArrayAdmin();
         }
         catch (\Exception $e)
         {

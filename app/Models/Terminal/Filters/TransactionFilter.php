@@ -3,7 +3,6 @@
 namespace RZP\Models\Terminal\Filters;
 
 use App;
-use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Card\Network;
@@ -16,49 +15,23 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Terminal\Shared;
+use RZP\Models\Feature;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
 {
-    const DISALLOW_EDUCATION_IFSC = [
-        IFSC::ICIC,
-        IFSC::ALLA,
-        IFSC::DBSS,
-        IFSC::IDFB,
-        IFSC::SVCB,
-        IFSC::UTIB,
-    ];
-
-    const PREPAID_IINS = [
-        '457392',
-    ];
-
     protected $properties = [
         'method',
         'network',
-        'currency',
-        'international',
         'bank',
-        'education_bank',
-        'amount',
-        'maestro',
         'recurring',
         'subscription',
-        'iin',
+        'tpv'
     ];
 
-    protected $repo;
-
-    public function __construct()
+    public function methodFilter($terminal)
     {
-        $app = App::getFacadeRoot();
-
-        $this->repo = $app['repo'];
-    }
-
-    public function methodFilter($terminal, $input)
-    {
-        $method = $input['payment']->getMethod();
+        $method = $this->input['payment']->getMethod();
 
         switch ($method)
         {
@@ -69,11 +42,11 @@ class TransactionFilter extends Terminal\Filter
                 return $terminal->isNetbankingEnabled();
 
             case Method::EMI:
-                return $this->isValidEmiTerminal($terminal, $input);
+                return $this->isValidEmiTerminal($terminal);
 
             // Pick the right terminal only
             case Method::WALLET:
-                $wallet = $input['payment']->getWallet();
+                $wallet = $this->input['payment']->getWallet();
 
                 $gateway = Gateway::getGatewayForWallet($wallet);
 
@@ -86,16 +59,22 @@ class TransactionFilter extends Terminal\Filter
                 return $terminal->isAepsEnabled();
 
             default:
-                throw new Exception\LogicException('Unknown payment method passed.', null, ['method' => $method]);
+                throw new Exception\LogicException(
+                    'Unknown payment method passed.',
+                    null,
+                    [
+                        'terminal_id'   => $terminal->getId(),
+                        'method'        => $method
+                    ]);
         }
     }
 
     // Applicable only for card and emi
-    public function networkFilter($terminal, $input)
+    public function networkFilter($terminal)
     {
-        if ($input['payment']->isMethodCardOrEmi())
+        if ($this->input['payment']->isMethodCardOrEmi())
         {
-            $network = $input['payment']->card->getNetworkCode();
+            $network = $this->input['payment']->card->getNetworkCode();
 
             return Gateway::isCardNetworkSupported($network, $terminal->getGateway());
         }
@@ -103,62 +82,29 @@ class TransactionFilter extends Terminal\Filter
         return true;
     }
 
-    public function currencyFilter($terminal, $input)
+    public function bankFilter($terminal)
     {
-        $payment = $input['payment'];
-
-        $paymentCurrency = $payment->getCurrency();
-
-        if ($payment->getConvertCurrency() === true)
+        if ($this->input['payment']->isNetbanking())
         {
-            $paymentCurrency = Currency::INR;
-        }
-
-        $terminalCurrency = $terminal->getCurrency();
-
-        return ($paymentCurrency === $terminalCurrency);
-    }
-
-    public function internationalFilter($terminal, $input)
-    {
-        if ($input['payment']->isMethodCardOrEmi() === false)
-        {
-            return true;
-        }
-
-        $isPaymentInternational = $input['payment']->isInternational();
-
-        if ($isPaymentInternational === true)
-        {
-            return $terminal->isInternational();
-        }
-
-        return $terminal->isDomestic();
-    }
-
-    public function bankFilter($terminal, $input)
-    {
-        if ($input['payment']->isNetbanking())
-        {
-            $bank = $input['payment']->getBank();
+            $bank = $this->input['payment']->getBank();
 
             $terminalGateway = $terminal->getGateway();
 
-            $isTPV = $input['merchant']->isTPVRequired();
+            $isTPV = $this->input['merchant']->isTPVRequired();
 
             $gateways = Gateway::getGatewaysForNetbankingBank($bank, $isTPV);
 
             return in_array($terminalGateway, $gateways);
         }
-        else if ($input['payment']->isCard())
+        else if ($this->input['payment']->isCard())
         {
-            $issuer = $input['payment']->card->getIssuer();
-            $type = $input['payment']->card->getType();
+            $issuer = $this->input['payment']->card->getIssuer();
+            $type = $this->input['payment']->card->getType();
 
             if (($issuer === Issuer::ICIC) and
                 ($type !== Type::CREDIT) and
                 ($terminal->getGateway() === Gateway::FIRST_DATA) and
-                ($input['merchant']->getId() !== '5ubLZpACTmD8D4'))
+                ($this->input['merchant']->getId() !== '5ubLZpACTmD8D4'))
             {
                 // ICICI debit cards currently don't work on FirstData
                 // This allows transactions only on test merchant
@@ -169,46 +115,9 @@ class TransactionFilter extends Terminal\Filter
         return true;
     }
 
-    public function educationBankFilter($terminal, $input)
+    public function recurringFilter($terminal)
     {
-        if (($input['payment']->isNetbanking() === true) and
-            ($terminal->getGateway() === Gateway::BILLDESK))
-        {
-            $bank = $input['payment']->getBank();
-
-            // 7KORSqVp2oR0GH is shared billdesk PVT education terminal
-            if (($terminal->getId() === '7KORSqVp2oR0GH') and
-                (in_array($bank, self::DISALLOW_EDUCATION_IFSC, true) === true))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    public function maestroFilter($terminal, $input)
-    {
-        if ($input['payment']->isMethodCardOrEmi())
-        {
-            $network = $input['payment']->card->getNetworkCode();
-
-            // For HDFC, only shared terminals support
-            // Maestro cards on Live mode.
-            if (($network === Network::MAES) and
-                ($input['mode'] === Mode::LIVE) and
-                ($terminal->getGateway() === Gateway::HDFC))
-            {
-                return $terminal->isShared();
-            }
-        }
-
-        return true;
-    }
-
-    public function recurringFilter($terminal, $input)
-    {
-        $payment = $input['payment'];
+        $payment = $this->input['payment'];
 
         // for cybersource, check get the terminal based on recurring type
         if ($payment->isRecurring() === true)
@@ -288,9 +197,16 @@ class TransactionFilter extends Terminal\Filter
         return ($terminal->isNonRecurring() === true);
     }
 
-    protected function subscriptionFilter(Terminal\Entity $terminal, array $input)
+    protected function subscriptionFilter(Terminal\Entity $terminal)
     {
-        $payment = $input['payment'];
+        //
+        // For now, not filtering based on gateway.
+        // Assuming that all gateways work without
+        // one year limitation. /cc @shk
+        //
+        return true;
+
+        $payment = $this->input['payment'];
 
         //
         // If it's NOT a subscription payment,
@@ -315,19 +231,12 @@ class TransactionFilter extends Terminal\Filter
         $currentGateway = $terminal->getGateway();
         $allowedGateways = Gateway::$subscriptionOverOneYearGateways;
 
-        // return (in_array($currentGateway, $allowedGateways, true) === true);
-
-        //
-        // For now, not filtering based on gateway.
-        // Assuming that all gateways work without
-        // one year limitation. /cc @shk
-        //
-        return true;
+        return (in_array($currentGateway, $allowedGateways, true) === true);
     }
 
-    protected function isValidEmiTerminal($terminal, $input)
+    protected function isValidEmiTerminal($terminal)
     {
-        $payment = $input['payment'];
+        $payment = $this->input['payment'];
 
         $bank = $payment->getBank();
 
@@ -339,7 +248,7 @@ class TransactionFilter extends Terminal\Filter
         }
 
         // validate terminal using the gateway and emi duration
-        $network = $payment->card->getNetworkCode();
+        $network = $this->input['payment']->card->getNetworkCode();
 
         if ($network === Network::AMEX)
         {
@@ -350,53 +259,20 @@ class TransactionFilter extends Terminal\Filter
             $gateway = Gateway::$emiBankToGatewayMap[$bank];
         }
 
-        $emiDuration = $payment->emiPlan->getDuration();
+        $emiDuration = $this->input['payment']->emiPlan->getDuration();
 
-        $subvention = $payment->emiPlan->getSubvention();
+        $subvention = $this->input['payment']->emiPlan->getSubvention();
 
         return $terminal->isValidEmiTerminal($gateway, $emiDuration, $subvention);
     }
 
-    public function amountFilter(Terminal\Entity $terminal, array $input)
+    public function tpvFilter($terminal)
     {
-        $method = $input['payment']->getMethod();
-
-        $gateway = $terminal->getGateway();
-
-        $network = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
-
-        $category = $terminal->getNetworkCategory();
-
-        $minAmount = Terminal\MinAmount::getMinAmount($method, $gateway, $network, $category);
-
-        $amount = $input['payment']->getAmount();
-
-        return ($amount >= $minAmount);
-    }
-
-    // Filters few card terminals for prepaid iins to improve pricing on the cost
-    // of success rate
-    public function iinFilter(Terminal\Entity $terminal, array $input)
-    {
-        if ($input['payment']->isMethodCardOrEmi())
+        if ($this->input['merchant']->isFeatureEnabled(Feature\Constants::TPV))
         {
-            $iin = $input['payment']->card->getIin();
-
-            $acquirer = $terminal->getGatewayAcquirer();
-
-            $gateway = $terminal->getGateway();
-
-            // For certain iins prepaid cards Axis
-            // offers debit card pricing as opposed to
-            // HDFC who charge credit card pricing.
-            // For such iins allow only axis terminals
-            if (in_array($iin, self::PREPAID_IINS, true) === true)
-            {
-                return (($acquirer === Gateway::ACQUIRER_AXIS) or
-                        ($gateway === Gateway::AXIS_MIGS));
-            }
+            return ($terminal->isTpvAllowed() === true);
         }
 
-        return true;
+        return ($terminal->isNonTpvAllowed() === true);
     }
 }

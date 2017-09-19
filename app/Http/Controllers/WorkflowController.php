@@ -6,26 +6,11 @@ use App;
 use Request;
 use ApiResponse;
 
-use RZP\Models\Workflow;
-use RZP\Models\Workflow\Action;
+use RZP\Constants\Entity as E;
 use RZP\Models\Workflow\Action\Differ;
-use RZP\Models\Workflow\Action\Comment;
-use RZP\Models\Workflow\Action\Checker;
-use RZP\Models\Admin\Org;
 
 class WorkflowController extends Controller
 {
-
-    // Not being used
-    public function postActionDiff(string $id)
-    {
-        $input = Request::all();
-
-        $result = (new Differ\Service)->create($id, $input);
-
-        return ApiResponse::json($result);
-    }
-
     public function getActionDiff(string $id)
     {
         $result = (new Differ\Service)->get($id);
@@ -37,21 +22,21 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Action\Service)->fetchMultiple($input);
+        $data = $this->service(E::WORKFLOW_ACTION)->fetchMultiple($input);
 
         return ApiResponse::json($data);
     }
 
     public function getActionDetails(string $id)
     {
-        $data = (new Action\Service)->getActionDetails($id);
+        $data = $this->service(E::WORKFLOW_ACTION)->getActionDetails($id);
 
         return ApiResponse::json($data);
     }
 
     public function postExecuteAction(string $id)
     {
-        $response = (new Action\Service)->executeAction($id);
+        $response = $this->service(E::WORKFLOW_ACTION)->executeAction($id);
 
         return $this->getActionDetails($id);
     }
@@ -60,46 +45,23 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Checker\Service)->create($id, $input);
+        $data = $this->service(E::ACTION_CHECKER)->create($id, $input);
 
         return $this->getActionDetails($id);
     }
 
     public function closeWorkflowAction(string $id)
     {
-        $data = (new Action\Service)->closeAction($id);
+        $data = $this->service(E::WORKFLOW_ACTION)->closeAction($id);
 
         return $this->getActionDetails($id);
-    }
-
-    public function getActionCheckerMultiple(string $id)
-    {
-        $input = Request::all();
-
-        $data = (new Checker\Service)->fetchMultiple($id, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function getActionChecker(string $id, string $checkerId)
-    {
-        $data = (new Checker\Service)->get($id, $checkerId);
-
-        return ApiResponse::json($data);
-    }
-
-    public function getActionStates(string $id)
-    {
-        $data = (new Action\Service)->getStatesOfAction($id);
-
-        return ApiResponse::json($data);
     }
 
     public function updateWorkflowAction(string $id)
     {
         $input = Request::all();
 
-        $data = (new Action\Service)->updateWorkflowAction($id, $input);
+        $data = $this->service(E::WORKFLOW_ACTION)->updateWorkflowAction($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -108,7 +70,7 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Workflow\Service)->create($input);
+        $data = $this->service()->create($input);
 
         return ApiResponse::json($data);
     }
@@ -121,16 +83,20 @@ class WorkflowController extends Controller
                       ->getAdmin()
                       ->getPublicOrgId();
 
-        $data = (new Workflow\Service)->fetch($orgId, $id);
+        $data = $this->service()->fetch($orgId, $id);
 
         return ApiResponse::json($data);
     }
 
-    public function getWorkflowMultiple(string $orgId)
+    public function getWorkflowMultiple()
     {
         $input = Request::all();
 
-        $data = (new Workflow\Service)->fetchMultiple($orgId, $input);
+        $orgId = $this->ba
+                      ->getAdmin()
+                      ->getPublicOrgId();
+
+        $data = $this->service()->fetchMultiple($orgId, $input);
 
         return ApiResponse::json($data);
     }
@@ -139,39 +105,14 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Workflow\Service)->update($id, $input);
+        $data = $this->service()->update($id, $input);
 
         return ApiResponse::json($data);
     }
 
     public function deleteWorkflow(string $id)
     {
-        $data = (new Workflow\Service)->delete($id);
-
-        return ApiResponse::json($data);
-    }
-
-    // Not being used
-    public function createWorkflowStep(string $id)
-    {
-        $input = Request::all();
-
-        $data = (new Workflow\Step\Service)->create($id, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    // Not being used
-    public function getWorkflowStep(string $id, string $stepId)
-    {
-        $data = (new Workflow\Step\Service)->fetch($id, $stepId);
-
-        return ApiResponse::json($data);
-    }
-
-    public function getWorkflowSteps(string $id)
-    {
-        $data = (new Workflow\Step\Service)->fetchMultiple($id);
+        $data = $this->service()->delete($id);
 
         return ApiResponse::json($data);
     }
@@ -180,40 +121,8 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
-        $result = (new Comment\Service)->create($actionId, $input);
+        $result = $this->service(E::ACTION_COMMENT)->create($actionId, $input);
 
         return ApiResponse::json($result);
-    }
-
-    public function getActionComments(string $actionId)
-    {
-        $result = (new Comment\Service)->fetchByActionId($actionId);
-
-        return ApiResponse::json($result);
-    }
-
-
-    // Workflow Manager API
-    public function getActionsForChecker()
-    {
-        $data = (new Workflow\Service)->getActionsForChecker();
-
-        return ApiResponse::json($data);
-    }
-
-    public function getActionsByMaker()
-    {
-        $input = Request::all();
-
-        $data = (new Workflow\Service)->getActionsByMakerAndType($input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function getActionsChecked()
-    {
-        $data = (new Workflow\Manager)->getActionsCheckedByAdmin();
-
-        return ApiResponse::json($data);
     }
 }

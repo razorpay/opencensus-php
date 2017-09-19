@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Payment;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Exception\RuntimeException;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -272,7 +273,7 @@ class GatewayDowntimeSorterTest extends TestCase
 
         // with downtime
         $hdfcUnkownIssuerNetworkData = $this->testData['hdfcUnkownIssuerNetworkData'];
-        $hdfcUnkownIssuerNetworkData['begin'] = Carbon::now('Asia/Kolkata')->addHours(24)->timestamp;
+        $hdfcUnkownIssuerNetworkData['begin'] = Carbon::now(Timezone::IST)->addHours(24)->timestamp;
 
         $this->fixtures->create('gateway_downtime:card', $hdfcUnkownIssuerNetworkData);
 

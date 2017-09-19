@@ -2,33 +2,35 @@
 
 namespace RZP\Services;
 
+use App;
+use Carbon\Carbon;
 use Exception;
-use RZP\Models\Base;
-use RZP\Trace\Trace;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
-use RZP\Jobs\RequestJob;
-use Illuminate\Foundation\Bus\DispatchesJobs;
+use RZP\Models\Merchant\Account;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Analytics\Entity as Analytics;
 
-use GuzzleHttp\Client;
-
-class EventTrackerClient extends Base\Core
+class EventTrackerClient extends AbstractEventClient
 {
-    use DispatchesJobs;
+    protected $request;
+
+    protected $payment = null;
+
+    protected $urlPattern;
+
+    protected $config;
 
     protected $mock;
 
-    protected $request;
+    protected $sns;
 
-    protected $ljConfig;
+    const TRACK_EVENT_URL_PATTERN = 'track';
 
-    protected $events = [];
-
-    protected $payment = null;
+    const SNS_CLIENT = 'lumberjack';
 
     const CONTEXT_KEYS = [
         Analytics::IP,
@@ -45,148 +47,29 @@ class EventTrackerClient extends Base\Core
         Analytics::DEVICE,
     ];
 
-    /**
-     * List of sensitive keys to exclude from sengding to segment
-     */
-    const SENSITIVE_KEYS = [
-        'CARD_NUMBER'           => 'card.number',
-        'GATEWAY_CARD_NUMBER'   => 'terminal_gateway_input.card.number',
-        'CVV'                   => 'card.cvv',
-        'CARD_ID'               => 'card.id',
-        'GATEWAY_CVV'           => 'terminal_gateway_input.card.cvv',
-        'CARD_EXP_MONTH'        => 'card.expiry_month',
-        'CARD_EXP_YEAR'         => 'card.expiry_year',
-        'PAYMENT_CARD_ID'       => 'payment.card_id',
-        'VPC_ACCESSCODE'        => 'request.content.vpc_AccessCode',
-        'VPC_CARDEXP'           => 'request.content.vpc_CardExp',
-    ];
-
     const VERSION = '2.0';
-
-    const TRACK_EVENT_URLPATTERN = 'track';
 
     public function __construct($app)
     {
         parent::__construct();
 
+        $this->urlPattern = self::TRACK_EVENT_URL_PATTERN;
+
         $this->request = $app['request'];
 
-        $this->ljConfig = $app['config']->get('applications.lumberjack');
+        $this->config = $app['config']->get('applications.lumberjack');
 
-        $this->mock = $this->ljConfig['is_mock'];
+        $this->mock = $this->config['mock'];
+
+        $this->sns = $app['sns'];
     }
 
     /**
-     * constructs headers and fetches url
-     * to be sent to lumberjack
+     * Method to build all the events together
      */
     public function buildRequestAndSend()
     {
-        $url = $this->ljConfig['url'] . self::TRACK_EVENT_URLPATTERN;
-
-        $headers = [
-            'content-type'  => 'application/json',
-            'x-signature'   => $this->generateSignature(),
-            'x-identifier'  => $this->ljConfig['identifier'],
-        ];
-
-        $this->sendLumberjackRequest($headers, $url);
-    }
-
-    /**
-     * Sends POST request to Lumberjack
-     * url_pattern = /v1/track
-     *
-     * Sets events and defaults null after request
-     *
-     * @param $headers array
-     * @param $url string
-     */
-    protected function sendLumberjackRequest(array $headers, string $url)
-    {
-        try
-        {
-            // remove comment after testing
-            if (($this->mock) or
-                ($this->mode === Mode::TEST))
-            {
-                return;
-            }
-
-            $eventData = $this->getEventTrackerData();
-
-            if (empty($eventData) === true)
-            {
-                return;
-            }
-
-            $request  = [
-                'method'    => 'post',
-                'url'       => $url,
-                'headers'   => $headers,
-                'content'   => json_encode($eventData),
-                'options'   => [
-                    'timeout' => 20
-                ],
-            ];
-
-            $job = new RequestJob($request);
-
-            $this->dispatch($job);
-        }
-        catch (Exception $e)
-        {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_QUEUE_SEND_FAILED);
-        }
-        finally
-        {
-            $this->events = [];
-
-            $this->payment = null;
-        }
-    }
-
-    /**
-     * Generates hmac signature for authenticating request
-     * @return string
-     */
-    protected function generateSignature()
-    {
-        $key = $this->ljConfig['key'];
-
-        $secret = $this->ljConfig['secret'];
-
-        $signature = hash_hmac('sha1', $key, $secret);
-
-        return $signature;
-    }
-
-    /**
-     * Formats and builds the lumberjack event data
-     * before posting to the lumberjack service.
-     * @return array|void
-     */
-    protected function getEventTrackerData()
-    {
-        if (empty($this->events) === true)
-        {
-            return [];
-        }
-
-        $defaults = [
-            'key'       => $this->ljConfig['key'],
-            'mode'      => $this->mode,
-            'events'    => $this->events
-        ];
-
-        $context = $this->getEventContext();
-
-        if ((isset($context) === true) and (empty($context) === false))
-        {
-            $defaults['context'] = $context;
-        }
-
-        return $defaults;
+        return parent::buildRequestAndSend();
     }
 
     /**
@@ -202,7 +85,7 @@ class EventTrackerClient extends Base\Core
         }
         catch (Exception $e)
         {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_CONTEXT_FETCH_FAILED);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::EVENT_CONTEXT_FETCH_FAILED);
         }
 
         return [];
@@ -213,9 +96,9 @@ class EventTrackerClient extends Base\Core
      * Forms an event object with properites
      * appends it to $this->events array
      *
-     * @param $payment Payment\Entity
-     * @param $eventName string
-     * @param $customProperties array
+     * @param Payment\Entity $payment
+     * @param string $eventName
+     * @param array $customProperties
      */
     protected function appendEvent(Payment\Entity $payment, string $eventName, array $customProperties = [])
     {
@@ -248,21 +131,22 @@ class EventTrackerClient extends Base\Core
         // cleaning properties of sensitive data
         $this->removeSensitiveInformation($properties);
 
-        $event = array(
+        $event = [
             'event'         => $eventName,
-            'timestamp'     => time(),
+            'timestamp'     => Carbon::now(self::TIMEZONE)->timestamp,
             'properties'    => $properties,
-        );
+        ];
 
-        array_push($this->events, $event);
+        $this->events[] = $event;
     }
 
     /**
      * For the custom properties sent as part of the event
      * remove the ones that are common across the entire
      * request lifecycle
+     *
      * @param array $customProperties
-     * @return array
+     * @return array $customProperties
      */
     protected function removeCommonProperties(array $customProperties)
     {
@@ -274,24 +158,12 @@ class EventTrackerClient extends Base\Core
     }
 
     /**
-     * Remove all sorts of sensitive information
-     * @param array $properties
-     */
-    protected function removeSensitiveInformation(array & $properties)
-    {
-        foreach (self::SENSITIVE_KEYS as $name => $key)
-        {
-            unset($properties[$key]);
-        }
-    }
-
-    /**
      *
      * Gets data related to a particular payment
      * appends it to the properties of the event
      *
-     * @param $payment Payment\Entity
-     * @return $properties array
+     * @param Payment\Entity $payment
+     * @return array $properties
      */
     protected function getPaymentProperties(Payment\Entity $payment)
     {
@@ -344,7 +216,7 @@ class EventTrackerClient extends Base\Core
         }
         catch (Exception $e)
         {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_MISSING_PAYMENT_PROPERTY);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::EVENT_MISSING_PAYMENT_PROPERTY);
         }
     }
 
@@ -353,9 +225,8 @@ class EventTrackerClient extends Base\Core
      * Gets data of terminal associated
      * with a payment entitity
      *
-     * @param $terminal Terminal\Entity
-     * @return $data array
-     *
+     * @param Terminal\Entity $terminal
+     * @return array $data
      */
     protected function fetchTerminalData(Terminal\Entity $terminal)
     {
@@ -366,7 +237,7 @@ class EventTrackerClient extends Base\Core
                 'gateway'   => $terminal->getGateway(),
                 'acquirer'  => $terminal->getGatewayAcquirer(),
                 'category'  => $terminal->getCategory(),
-                'shared'    => $terminal->getShared(),
+                'shared'    => $terminal->isShared(),
                 'type'      => $terminal->getType(),
                 'mode'      => $terminal->getMode(),
             ];
@@ -375,17 +246,15 @@ class EventTrackerClient extends Base\Core
         }
         catch (Exception $e)
         {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_MISSING_TERMINAL_DATA);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::EVENT_MISSING_TERMINAL_DATA);
         }
     }
 
     /**
      *
-     * Gets Payment Metadata
-     * from payment entity
+     * Gets Payment Metadata from payment entity
      *
-     * @return $analytics array (context)
-     *
+     * @return array $analytics (context)
      */
     protected function fetchAndFilterMetadata()
     {
@@ -413,7 +282,8 @@ class EventTrackerClient extends Base\Core
     /**
      * Gets data from Payment\Analytics Entity
      * corresponding to the paymentId
-     * @return array
+     *
+     * @return array $analytics
      */
     protected function fetchPaymentAnalytics()
     {
@@ -455,14 +325,21 @@ class EventTrackerClient extends Base\Core
                     'key'        => $key
                 ];
 
-               $this->trace->warning(TraceCode::LUMBERJACK_MISSING_PAYMENT_CONTEXT, $msg);
+               $this->trace->warning(TraceCode::EVENT_MISSING_PAYMENT_CONTEXT, $msg);
             }
         }
 
         return $analytics;
     }
 
-    public function trackPayment(Payment\Entity $payment, $eventName, array $customProperties = [])
+    /**
+     * Track a payment through lumberjack
+     *
+     * @param Payment\Entity $payment
+     * @param string $eventName
+     * @param array $customProperties
+     */
+    public function trackPayment(Payment\Entity $payment, string $eventName, array $customProperties = [])
     {
         // remove comment after testing
         if ($this->mock === true)
@@ -481,7 +358,29 @@ class EventTrackerClient extends Base\Core
         }
         catch (Exception $e)
         {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_TRACK_FAILED);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::EVENT_TRACK_FAILED);
+        }
+    }
+
+    /**
+     * Dispatch a job request via SQS for normal flow
+     * For DEMO merchant dispatch using SNS
+     *
+     * @param array $headers
+     * @param string $url
+     * @param array $eventData
+     */
+    protected function sendEventRequest(array $headers, string $url, array $eventData)
+    {
+        try
+        {
+            $this->sns->publish(json_encode($eventData), self::SNS_CLIENT);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->error(TraceCode::LUMBERJACK_ASYNC_REQUEST_FAILED, $eventData);
+
+            parent::sendEventRequest($headers, $url, $eventData);
         }
     }
 }

@@ -3,6 +3,7 @@
 namespace RZP\Tests\Unit\Models\Transaction;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mockery;
 use RZP\Models\Settlement\Holidays;
 
@@ -14,7 +15,7 @@ class HolidayTest extends TestCase
 {
     public function testHolidayTimestamp()
     {
-        $now = Carbon::now('Asia/Kolkata');
+        $now = Carbon::now(Timezone::IST);
 
         $nextWorkingDay = Holidays::getNextWorkingDay($now);
 

@@ -16,13 +16,14 @@ class Validator extends Base\Validator
     const AMOUNTS = 'amounts';
 
     protected static $createRules = [
-        Entity::GATEWAY          => 'required|string|max:50|custom',
+        Entity::GATEWAY          => 'required_if:type,sorter|string|max:50|custom',
         Entity::MERCHANT_ID      => 'required|alpha_num|size:14',
         Entity::TYPE             => 'required|in:sorter,filter',
         Entity::GROUP            => 'sometimes|filled|string|max:50',
         Entity::FILTER_TYPE      => 'required_unless:type,sorter|required_only_if:type,filter|in:select,reject',
         Entity::LOAD             => 'required_unless:type,filter|required_only_if:type,sorter|numeric|between:0,100',
         Entity::GATEWAY_ACQUIRER => 'sometimes|filled|string|max:30',
+        Entity::GATEWAY_ACQUIRER => 'sometimes|filled|string',
         Entity::INTERNATIONAL    => 'sometimes|filled|boolean',
         Entity::NETWORK_CATEGORY => 'sometimes_if:type,filter|string|max:30',
         Entity::CATEGORY2        => 'sometimes_if:type,filter|string|max:30|custom',
@@ -33,8 +34,8 @@ class Validator extends Base\Validator
         Entity::NETWORK          => 'sometimes|filled|string|max:10',
         Entity::MIN_AMOUNT       => 'sometimes|filled|integer|min:0',
         Entity::MAX_AMOUNT       => 'sometimes|filled|integer|min:1',
-        Entity::EMI_DURATION     => 'sometimes_if:method,emi|integer|in:3,6,9,12,18,24',
-        Entity::EMI_SUBVENTION   => 'sometimes_if:method,emi|in:customer,merchant',
+        Entity::EMI_DURATION     => 'required_only_if:method,emi|integer|in:3,6,9,12,18,24',
+        Entity::EMI_SUBVENTION   => 'required_only_if:method,emi|in:customer,merchant',
         Entity::IINS             => 'sometimes|filled|array',
         Entity::CURRENCY         => 'sometimes|filled|in:INR,USD'
     ];
@@ -74,11 +75,11 @@ class Validator extends Base\Validator
 
     protected function validateGatewayAcquirer(array $input)
     {
-        $gateway = $input[Entity::GATEWAY];
+        $gateway = $input[Entity::GATEWAY] ?? null;
 
         $gatewayAcquirer = $input[Entity::GATEWAY_ACQUIRER] ?? null;
 
-        if (empty($gatewayAcquirer) === true)
+        if ((empty($gateway) === true) or (empty($gatewayAcquirer) === true))
         {
             return;
         }
@@ -99,13 +100,18 @@ class Validator extends Base\Validator
     {
         $method = $input[Entity::METHOD];
 
-        $gateway = $input[Entity::GATEWAY];
-
         if (Method::isValid($method) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                         $method . ' is not a valid payment method');
         }
+
+        if (empty($input[Entity::GATEWAY]) === true)
+        {
+            return;
+        }
+
+        $gateway = $input[Entity::GATEWAY];
 
         // If it is a reject filter type  don't check if gateway supports method
         if (self::isRejectFilter($input) === true)
@@ -113,7 +119,8 @@ class Validator extends Base\Validator
             return;
         }
 
-        if (Gateway::isMethodSupported($method, $gateway) === false)
+        if (($gateway !== Gateway::SHARP) and
+            (Gateway::isMethodSupported($method, $gateway) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Gateway ' . $gateway . ' does not support ' . $method . ' method');
@@ -145,13 +152,25 @@ class Validator extends Base\Validator
     {
         $method = $input[Entity::METHOD];
 
+        $gateway = $input[Entity::GATEWAY] ?? null;
+
+        //
+        // skip issuer validation if gateway is sharp,
+        // as sharp is test gateway and works for everything
+        //
+        if ((empty($gateway) === true) or ($gateway === Gateway::SHARP))
+        {
+            return;
+        }
+
         switch($method)
         {
             case Method::CARD:
-            case Method::EMI:
-
                 $this->validateCardIssuer($input);
+                break;
 
+            case Method::EMI:
+                $this->validateEmiIssuer($input);
                 break;
 
             case Method::NETBANKING:
@@ -160,9 +179,15 @@ class Validator extends Base\Validator
 
                 break;
 
+            case Method::WALLET:
+
+                $this->validateWalletIssuer($input);
+
+                break;
+
             default:
 
-                // For certain methods like UPI / wallet there is no concept of issuer, so
+                // For certain methods like UPI there is no concept of issuer, so
                 // we don't validate if issuer is null
                 if (empty($input[Entity::ISSUER]) === false)
                 {
@@ -180,6 +205,25 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 $issuer . ' is not a valid bank code');
+        }
+    }
+
+    protected function validateEmiIssuer(array $input)
+    {
+        if (self::isRejectFilter($input) === true)
+        {
+            return;
+        }
+
+        $gatewayToEmiBankMap = array_flip(Gateway::$emiBankToGatewayMap);
+
+        $gateway = $input[Entity::GATEWAY];
+        $issuer = $input[Entity::ISSUER] ?? null;
+
+        if ((isset($gatewayToEmiBankMap[$gateway]) === true) and ($issuer !== $gatewayToEmiBankMap[$gateway]))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $issuer . ' is not a valid for emi for gateway ' . $gateway);
         }
     }
 
@@ -214,17 +258,43 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateWalletIssuer(array $input)
+    {
+        if (self::isRejectFilter($input) === true)
+        {
+            return;
+        }
+
+        $issuer = $input[Entity::ISSUER] ?? null;
+        $gateway = $input[Entity::GATEWAY];
+
+        if ($issuer === null)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'issuer cannot be null for wallet select filter rules');
+        }
+
+        if ($gateway !== Gateway::$walletToGatewayMap[$issuer])
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'wallet issuer not valid for gateway');
+        }
+    }
+
     protected function validateNetwork(array $input)
     {
         $network = $input[Entity::NETWORK] ?? null;
 
         $method = $input[Entity::METHOD];
 
-        $gateway = $input[Entity::GATEWAY];
+        $gateway = $input[Entity::GATEWAY] ?? null;
 
-        // Don't validate if method is not card/emi or if network is null
+        // Don't validate if method is not card/emi or if network is null or gateway is
+        // sharp or null
         if ((in_array($method, [Method::CARD, Method::EMI], true) === false) or
-            ($network === null))
+            ($network === null) or
+            ($gateway === Gateway::SHARP) or
+            (empty($gateway) === true))
         {
             return;
         }
@@ -309,7 +379,8 @@ class Validator extends Base\Validator
 
     protected function validateNetworkCategory(array $input)
     {
-        if (empty($input[Entity::NETWORK_CATEGORY]) === true)
+        if ((empty($input[Entity::NETWORK_CATEGORY]) === true) or
+            (empty($input[Entity::GATEWAY]) === true))
         {
             return;
         }

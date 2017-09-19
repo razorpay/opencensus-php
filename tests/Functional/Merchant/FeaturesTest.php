@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use RZP\Constants\Mode;
+use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -53,15 +55,11 @@ class FeaturesTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $resultData = [
-            "id"            => (string)$features->first()->getId(),
-            "name"          => 'dummy',
-            "entity_id"     => '10000000000000',
-            "entity_type"   => 'merchant'
+            "id"            => (string) $features->first()->getId(),
+            "deleted"       => true,
         ];
 
         $this->assertArraySelectiveEquals($resultData, $content);
-
-        $this->ba->appAuth();
     }
 
     public function testDeleteNonExistentFeatureFromMerchant()
@@ -69,8 +67,6 @@ class FeaturesTest extends TestCase
         $this->ba->adminAuth('test', null, 'org_100000razorpay');
 
         $this->startTest();
-
-        $this->ba->appAuth();
     }
 
     public function testMultiAssignFeature()
@@ -113,6 +109,350 @@ class FeaturesTest extends TestCase
         $this->fixtures->merchant->addFeatures(['dummy']);
 
         $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * Add a feature to test
+     * Get the features from the live database
+     * Verify - Any feature added to test should not be added to live
+     */
+    public function testAddFeatureToTestVerifyAbsenceInLive()
+    {
+        $this->addFeature(Mode::TEST);
+
+        $this->verifyFeaturePresence(Mode::TEST);
+
+        $this->verifyFeatureAbsence(Mode::LIVE);
+    }
+
+    /**
+     * Add a feature to live
+     * Get the features from the test database
+     * Verify - Any feature added to live should not be added to test
+     */
+    public function testAddFeatureToLiveVerifyAbsenceInTest()
+    {
+        $this->addFeature(Mode::LIVE);
+
+        $this->verifyFeaturePresence(Mode::LIVE);
+
+        $this->verifyFeatureAbsence(Mode::TEST);
+    }
+
+    /**
+     * Add a feature to the test database and sync it to live
+     * Get the features from the live database
+     * Verify - Any feature added to test with the should_sync flag, should be synced to live
+     */
+    public function testAddFeatureToTestSyncedToLive()
+    {
+        $this->addFeature(Mode::TEST, true);
+
+        $this->verifyFeaturePresence(Mode::TEST);
+
+        $this->verifyFeaturePresence(Mode::LIVE);
+    }
+
+    /**
+     * Add a feature to the live database and sync it to test
+     * Get the features from the test database
+     * Verify - Any feature added to live with the should_sync flag, should be synced to test
+     */
+    public function testAddFeatureToLiveSyncedToTest()
+    {
+        $this->addFeature(Mode::LIVE, true);
+
+        $this->verifyFeaturePresence(Mode::LIVE);
+
+        $this->verifyFeaturePresence(Mode::TEST);
+    }
+
+    /**
+     * Add a feature to the test database
+     * Add a feature to the live database and sync it to test
+     * Get the features from the live database
+     * Verify - Any feature added to live with the should_sync flag, should not
+     * fail even if it is already present in test
+     */
+    public function testAddFeatureToTestAddFeatureToLiveSyncedToTest()
+    {
+        $this->addFeature(Mode::TEST);
+
+        $this->verifyFeaturePresence(Mode::TEST);
+
+        $this->addFeature(Mode::LIVE, true);
+
+        $this->verifyFeaturePresence(Mode::LIVE);
+    }
+
+    /**
+     * Add a feature to the live database
+     * Add a feature to the test database and sync it to live
+     * Get the features from the test database
+     * Verify - Any feature added to test with the should_sync flag, should not
+     * fail even if it is already present in live
+     */
+    public function testAddFeatureToLiveAddFeatureToTestSyncedToLive()
+    {
+        $this->addFeature(Mode::LIVE);
+
+        $this->verifyFeaturePresence(Mode::LIVE);
+
+        $this->addFeature(Mode::TEST, true);
+
+        $this->verifyFeaturePresence(Mode::TEST);
+    }
+
+    /**
+     * Add a feature to the live database
+     * Add a feature to the live database and sync it to test
+     * Get the features from the test database
+     * Verify - Any feature added to live with the should_sync flag, should not
+     * fail even if it is already present in live. It should add it to test
+     */
+    public function testAddFeatureToLiveAddFeatureToLiveSyncedToTest()
+    {
+        $this->addFeature(Mode::LIVE);
+
+        $this->verifyFeaturePresence(Mode::LIVE);
+
+        $this->addFeature(Mode::LIVE, true);
+
+        $this->verifyFeaturePresence(Mode::TEST);
+    }
+
+    /**
+     * Add a feature to the live database
+     * Add a feature to the live database and sync it to test
+     * Get the features from the test database
+     * Verify - Any feature added to live with the should_sync flag, should not
+     * fail even if it is already present in live. It should add it to test
+     */
+    public function testAddFeatureToTestAddFeatureToTestSyncedToLive()
+    {
+        $this->addFeature(Mode::TEST);
+
+        $this->verifyFeaturePresence(Mode::TEST);
+
+        $this->addFeature(Mode::TEST, true);
+
+        $this->verifyFeaturePresence(Mode::LIVE);
+    }
+
+    /**
+     * Add a feature to live and sync it to test
+     * Delete the feature from the test database
+     * Get the features from the live database
+     * Verify - Any feature deleted from test should not be deleted from live
+     */
+    public function testDeleteFeatureFromTestAndVerifyPresenceInLive()
+    {
+        $this->addFeature(Mode::LIVE, true);
+
+        $this->verifyFeaturePresence(Mode::TEST);
+
+        $this->verifyFeaturePresence(Mode::LIVE);
+
+        $this->deleteFeature(Mode::TEST);
+
+        $this->verifyFeatureAbsence(Mode::TEST);
+
+        $this->verifyFeaturePresence(Mode::LIVE);
+    }
+
+    /**
+     * Add a feature to live and sync it to test
+     * Delete the feature from the live database
+     * Get the features from the test database
+     * Verify - Any feature deleted from live should not be deleted from test
+     */
+    public function testDeleteFeatureFromLiveAndVerifyPresenceInTest()
+    {
+        $this->addFeature( Mode::LIVE, true);
+
+        $this->verifyFeaturePresence(Mode::TEST);
+
+        $this->verifyFeaturePresence(Mode::LIVE);
+
+        $this->deleteFeature(Mode::LIVE);
+
+        $this->verifyFeatureAbsence(Mode::LIVE);
+
+        $this->verifyFeaturePresence(Mode::TEST);
+    }
+
+    /**
+     * Add a feature to live and sync it to test
+     * Delete the feature from the test database and sync it to live
+     * Get the features from the live as well as test
+     * Verify - Any feature deleted from test and synced to live,
+     * should be deleted from live as well
+     */
+    public function testDeleteFeatureFromTestSyncedToLive()
+    {
+        $this->addFeature(Mode::LIVE, true);
+
+        $this->verifyFeaturePresence(Mode::TEST);
+
+        $this->verifyFeaturePresence(Mode::LIVE);
+
+        $this->deleteFeature(Mode::TEST, true);
+
+        $this->verifyFeatureAbsence(Mode::TEST);
+
+        $this->verifyFeatureAbsence(Mode::LIVE);
+    }
+
+    /**
+     * Add a feature to live and sync it to test
+     * Delete the feature from the live database and sync it to test
+     * Get the features from the test as well as live
+     * Verify - Any feature deleted from live and synced to test,
+     * should be deleted from test as well
+     */
+    public function testDeleteFeatureFromLiveSyncedToTest()
+    {
+        $this->addFeature(Mode::LIVE, true);
+
+        $this->verifyFeaturePresence(Mode::TEST);
+
+        $this->verifyFeaturePresence(Mode::LIVE);
+
+        $this->deleteFeature(Mode::LIVE, true);
+
+        $this->verifyFeatureAbsence(Mode::TEST);
+
+        $this->verifyFeatureAbsence(Mode::LIVE);
+    }
+
+    /**
+     * Add a feature to live and sync it to test
+     * Delete the feature from the live database.
+     * Delete the feature from the test database and sync it to live
+     * Get the features from the test as well as live
+     * Verify - Deleting the feature from test with sync, should not
+     * fail even if the feature does not exist on live
+     */
+    public function testDeleteFeatureFromLiveDeleteFeatureFromTestSyncedToLive()
+    {
+        $this->addFeature(Mode::LIVE, true);
+
+        $this->verifyFeaturePresence(Mode::TEST);
+
+        $this->verifyFeaturePresence(Mode::LIVE);
+
+        $this->deleteFeature(Mode::LIVE);
+
+        $this->verifyFeatureAbsence(Mode::LIVE);
+
+        $this->deleteFeature(Mode::TEST, true);
+
+        $this->verifyFeatureAbsence(Mode::TEST);
+    }
+
+    /**
+     * Add a feature to live and sync it to test
+     * Delete the feature from the test database.
+     * Delete the feature from the live database and sync it to test
+     * Get the features from the live as well as test
+     * Verify - Deleting the feature from test with sync, should not
+     * fail even if the feature does not exist on test. Feature should be
+     * deleted from live
+     */
+    public function testDeleteFeatureFromTestDeleteFeatureFromLiveSyncedToTest()
+    {
+        $this->addFeature(Mode::LIVE, true);
+
+        $this->verifyFeaturePresence(Mode::TEST);
+
+        $this->verifyFeaturePresence(Mode::LIVE);
+
+        $this->deleteFeature(Mode::TEST);
+
+        $this->verifyFeatureAbsence(Mode::TEST);
+
+        $this->deleteFeature(Mode::LIVE, true);
+
+        $this->verifyFeatureAbsence(Mode::LIVE);
+    }
+
+    /**
+     * Adds dummy feature to the database which is linked to the mode passed as parameter.
+     *
+     * @param string $addToMode
+     * @param bool   $shouldSync
+     */
+    private function addFeature(string $addToMode, bool $shouldSync = false)
+    {
+        $authMethod = 'appAuth' . studly_case($addToMode);
+
+        $this->ba->$authMethod();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        if ($shouldSync === true)
+        {
+            $testData['request']['content']['should_sync'] = 1;
+        }
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * Deletes a feature from the database linked to mode received
+     *
+     * @param string $deleteFromMode
+     * @param bool   $shouldSync
+     */
+    private function deleteFeature(string $deleteFromMode, bool $shouldSync = false)
+    {
+        $this->ba->adminAuth($deleteFromMode, null, 'org_100000razorpay');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        if ($shouldSync === true)
+        {
+            $testData['request']['content']['should_sync'] = 1;
+        }
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * Performs a GET request based on the mode received and verifies the
+     * absence of the dummy feature
+     *
+     * @param string $feature
+     * @param string $mode
+     */
+    private function verifyFeatureAbsence($mode)
+    {
+        $authMethod = 'appAuth' . studly_case($mode);
+
+        $this->ba->$authMethod();
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $assignedFeatures = $response['assigned_features'];
+
+        $this->assertEquals(0, count($assignedFeatures));
+    }
+
+    /**
+     * Performs a GET request based on the mode received and verifies the
+     * presence of the dummy feature
+     *
+     * @param string $mode
+     */
+    private function verifyFeaturePresence($mode)
+    {
+        $authMethod = 'appAuth' . studly_case($mode);
+
+        $this->ba->$authMethod();
 
         $this->startTest();
     }

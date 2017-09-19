@@ -41,7 +41,7 @@ class PublicController extends Controller
 
         // decode base64 string
         $getParams = str_replace(' ', '+', $getParams);
-        $data = json_decode(base64_decode($getParams), true);
+        $data = utf8_json_decode(base64_decode($getParams), true);
 
         // Relevant info for re-directing to merchant url.
 

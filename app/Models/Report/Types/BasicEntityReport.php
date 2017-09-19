@@ -34,7 +34,13 @@ class BasicEntityReport extends BaseReport
             E::PAYMENT  => [E::ORDER],
             E::REFUND   => [
                 E::PAYMENT,
-                E::PAYMENT . '.' . E::ORDER
+                E::PAYMENT . '.' . E::CARD,
+                E::PAYMENT . '.' . E::ORDER,
+            ],
+            E::DISPUTE => [
+                E::PAYMENT,
+                E::PAYMENT . '.' . E::CARD,
+                E::PAYMENT . '.' . E::ORDER,
             ],
         ],
         E::MERCHANT     => [],
@@ -42,7 +48,9 @@ class BasicEntityReport extends BaseReport
         E::REFUND       => [E::PAYMENT],
         E::ORDER        => [],
         E::SETTLEMENT   => [],
-        E::TRANSFER     => [],
+        E::TRANSFER     => [
+            'recipientSettlement'
+        ],
         E::REVERSAL     => [],
         E::INVOICE      => [E::ORDER],
     ];
@@ -158,7 +166,7 @@ class BasicEntityReport extends BaseReport
 
         $this->createReportEntity($input);
 
-        $now = Carbon::now()->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         $filename = $this->generateFilename($now);
 

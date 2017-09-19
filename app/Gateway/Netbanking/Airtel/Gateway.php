@@ -4,6 +4,7 @@ namespace RZP\Gateway\Netbanking\Airtel;
 
 use RZP\Exception;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -71,7 +72,7 @@ class Gateway extends Base\Gateway
 
         $this->checkActionStatus($content);
 
-        $acquirerData = $this->getAcquirerData($gatewayPayment);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }
@@ -154,19 +155,6 @@ class Gateway extends Base\Gateway
         }
 
         return $status;
-    }
-
-    protected function checkApiSuccess($verify)
-    {
-        $verify->apiSuccess = true;
-
-        $input = $verify->input;
-
-        if (($input['payment']['status'] === 'failed') or
-            ($input['payment']['status'] === 'created'))
-        {
-            $verify->apiSuccess = false;
-        }
     }
 
     protected function checkGatewaySuccess($verify, $authContent)
@@ -413,7 +401,7 @@ class Gateway extends Base\Gateway
 
     protected function getFormattedDate($input)
     {
-        $date = Carbon::createFromTimestamp($input['payment']['created_at'], 'Asia/Kolkata')
+        $date = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST)
                                             ->format(self::TIME_FORMAT);
 
         return $date;

@@ -82,46 +82,6 @@ class Service extends Base\Service
         return $workflow->toArrayPublic();
     }
 
-    public function getActionsForChecker()
-    {
-        $admin = $this->app['basicauth']->getAdmin();
-
-        $data = (new Manager)->getActionsForChecker($admin);
-
-        return $data;
-    }
-
-    public function getActionsByMakerAndType(array $input)
-    {
-        $admin = $this->app['basicauth']->getAdmin();
-
-        $orgId = $admin->getOrgId();
-
-        $type = $input['type'] ?? 'maker';
-
-        switch ($type)
-        {
-            case 'all':
-                $actions = (new Manager)->getAllActionsByOrg($orgId);
-                break;
-
-            case 'closed':
-                $actions = (new Manager)->getClosedActionsByMaker($admin);
-                break;
-
-            case 'open':
-                $actions = (new Manager)->getOpenActionsByOrg($orgId);
-                break;
-
-            case 'maker':
-            default:
-                $actions = (new Manager)->getActionsByMaker($admin);
-                break;
-        }
-
-        return $actions->toArrayPublic();
-    }
-
     public function permissionHasWorkflow(string $routePermission, string $orgId)
     {
         $permissionIds = $this->repo

@@ -119,4 +119,14 @@ class Header
                         ]);
         }
     }
+
+    public static function getInputHeadersForType(string $type): array
+    {
+        return self::PER_TYPE[$type][self::INPUT];
+    }
+
+    public static function getOutputHeadersForType(string $type): array
+    {
+        return self::PER_TYPE[$type][self::OUTPUT];
+    }
 }

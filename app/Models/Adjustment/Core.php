@@ -5,19 +5,22 @@ namespace RZP\Models\Adjustment;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
 use RZP\Models\Adjustment;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Invoice as MerchantInvoice;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function createAdjustment(array $input, $merchant)
+    public function createAdjustment(array $input, $merchant): Entity
     {
         $this->trace->info(
             TraceCode::ADJUSTMENT_CREATE_REQUEST,
-            ['input' => $input, 'merchant' => $merchant->getId()]);
-
-        $updateEscrow = $this->shouldUpdateEscrow($input);
+            [
+                'input' => $input,
+                'merchant' => $merchant->getId()
+            ]);
 
         $adj = (new Adjustment\Entity)->build($input);
 
@@ -26,37 +29,51 @@ class Core extends Base\Core
              ->setEntityAndId($adj->getEntity(), $merchant->getId())
              ->handle((new \stdClass), $adj);
 
-        return $this->transaction(
-            [$this, 'createAdjInTransaction'], $adj, $merchant, $updateEscrow);
+        return $this->transaction([$this, 'createAdjInTransaction'], $adj, $merchant);
     }
 
-    protected function shouldUpdateEscrow(array & $input)
+    public function createFeesAdjustment(array $input, Merchant\Entity $merchant): Entity
     {
-        $updateEscrow = null;
+        $this->trace->info(
+            TraceCode::FEE_ADJUSTMENT_CREATE_REQUEST,
+            [
+                'input' => $input,
+                'merchant' => $merchant->getId()
+            ]);
 
-        if (isset($input['update_escrow']))
+        (new Validator)->validateInput('fee_adjustment', $input);
+
+        // Create input for adjustment
+        $adjInput = $input;
+
+        $amount = $adjInput[Entity::AMOUNT] ?? 0;
+
+        $tax =  $adjInput[MerchantInvoice\Entity::TAX] ?? 0;
+
+        $adjInput[Entity::AMOUNT] = $amount + $tax;
+
+        $adj = (new Adjustment\Entity)->build($adjInput);
+
+        // Workflow
+        $this->app['workflow']
+             ->setEntityAndId($adj->getEntity(), $merchant->getId())
+             ->handle((new \stdClass), $adj);
+
+        // 1. Create adjustment
+        // 2. Create Invoice entity for adjustment
+        $adjustment = $this->repo->transaction(function() use ($adj, $merchant, $input)
         {
-            if ($input['update_escrow'] === '1')
-            {
-                $updateEscrow = true;
-            }
-            else if ($input['update_escrow'] === '0')
-            {
-                $updateEscrow = false;
-            }
-            else
-            {
-                throw new BadRequestValidationFailureException(
-                    'update_escrow field should be boolean', 'update_escrow');
-            }
+            $adjustment = $this->createAdjInTransaction($adj, $merchant);
 
-            unset($input['update_escrow']);
-        }
+            (new Merchant\Invoice\Core)->createAdjustmentInvoiceEntity($adj, $input);
 
-        return $updateEscrow;
+            return $adjustment;
+        });
+
+        return $adjustment;
     }
 
-    protected function createAdjInTransaction($adj, $merchant, $updateEscrow)
+    protected function createAdjInTransaction($adj, $merchant): Entity
     {
         $this->repo->assertTransactionActive();
 
@@ -66,7 +83,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($adj);
 
-        $txn = (new Transaction\Core)->createFromAdjustment($adj, $updateEscrow);
+        $txn = (new Transaction\Core)->createFromAdjustment($adj);
 
         $this->repo->saveOrFail($txn);
         $this->repo->saveOrFail($adj);

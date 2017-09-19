@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Axis;
 use Mail;
 use Mockery;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -315,11 +316,18 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $this->mockVerifyNullResponse();
 
-        $data = $this->testData[__FUNCTION__];
+        $data = $this->testData['testVerifyMismatch'];
 
-        $verify = $this->verifyPayment($payment['id']);
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
 
-        $this->assertArraySelectiveEquals($data, $verify);
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertTestResponse($gatewayPayment, 'testAuthFailedVerifyNullResponse');
     }
 
     // Auth fails but verify shows success
@@ -359,7 +367,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $payments = $this->getEntities('payment', [], true);
 
-        $createdAt = Carbon::yesterday('Asia/Kolkata')->addHours(10)
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(10)
                                                       ->addMinutes(30)
                                                       ->timestamp;
 
@@ -385,7 +393,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $refunds = $this->getEntities('refund', [], true);
 
-        $createdAt = Carbon::yesterday('Asia/Kolkata')->addHours(10)->addMinutes(45)->timestamp;
+        $createdAt = Carbon::yesterday(Timezone::IST)->addHours(10)->addMinutes(45)->timestamp;
 
         // Mark refunds as created yesterday
         foreach ($refunds['items'] as $refund)
@@ -396,7 +404,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
     protected function checkMailQueue()
     {
-        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+        $date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
         // Amounts are in rupees
         $testData = [
@@ -424,7 +432,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
     protected function checkEmptyRefundsMailQueue()
     {
-        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+        $date = Carbon::today(Timezone::IST)->format('d-m-Y');
 
         // Amounts are in rupees
         $testData = [

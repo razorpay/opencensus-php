@@ -197,16 +197,6 @@
     </style>
   </head>
   <body>
-    @if ($data['invoice'])
-    <div id="success" class="card @if($data['invoice']['status'] === 'paid') vis @endif">
-      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><path style="fill: #6DCA00" d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-1.959 17l-4.5-4.319 1.395-1.435 3.08 2.937 7.021-7.183 1.422 1.409-8.418 8.591z"/></svg>
-      <h3>Your Payment has been received</h3>
-      <div id='break'>
-        <div>Amount Paid: <span>₹ {{ $data['invoice']['amount']/100 }}</span></div>
-        <div>Invoice ID: <span>{{ $data['invoice']['id'] }}</span></div>
-      </div>
-    </div>
-    @endif
     @if (isset($data['error']))
       <div id="failure" class="card">
         {!! $error_icon !!}
@@ -338,7 +328,15 @@
           }
         })
       </script>
-
+    @elseif ($data['invoice'])
+      <div id="success" class="card @if($data['invoice']['status'] === 'paid') vis @endif">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><path style="fill: #6DCA00" d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-1.959 17l-4.5-4.319 1.395-1.435 3.08 2.937 7.021-7.183 1.422 1.409-8.418 8.591z"/></svg>
+        <h3>Your Payment has been received</h3>
+        <div id='break'>
+          <div>Amount Paid: <span>₹ {{ $data['invoice']['amount']/100 }}</span></div>
+          <div>Invoice ID: <span>{{ $data['invoice']['id'] }}</span></div>
+        </div>
+      </div>
     @endif
   </body>
 </html>

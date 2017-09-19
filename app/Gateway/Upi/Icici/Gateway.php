@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Upi\Icici;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use ErrorException;
 use phpseclib\Crypt\RSA;
 use Request;
@@ -17,7 +18,7 @@ use RZP\Gateway\Upi\Base;
 use RZP\Gateway\Upi\Base\Entity;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Gateway\Utility;
-use RZP\Trace\Trace;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Upi\Icici\ResponseCodeMap;
 
@@ -53,7 +54,6 @@ class Gateway extends Base\Gateway
         Fields::BANK_RRN                  => Entity::GATEWAY_PAYMENT_ID,
         Fields::ORIGINAL_BANK_RRN         => Entity::GATEWAY_PAYMENT_ID,
         Fields::MERCHANT_ID               => Entity::GATEWAY_MERCHANT_ID,
-        Fields::REFUND_ID                 => Entity::REFUND_ID,
     ];
 
     /**
@@ -321,7 +321,7 @@ class Gateway extends Base\Gateway
     {
         $payment = $input['payment'];
 
-        $collectByTimestamp = Carbon::now('Asia/Kolkata')->addMinutes(5)->format('d/m/Y h:i A');
+        $collectByTimestamp = Carbon::now(Timezone::IST)->addMinutes(5)->format('d/m/Y h:i A');
 
         $data = [
             Fields::AMOUNT           => $this->formatAmount($payment['amount']),
@@ -436,9 +436,9 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY,
             [
                 'raw_content' => $response->body,
-                'content' => $content,
-                'gateway' => 'upi_icici',
-                'payment_id' => $input['payment']['id'],
+                'content'     => $content,
+                'gateway'     => 'upi_icici',
+                'payment_id'  => $input['payment']['id'],
             ]);
 
         $verify->verifyResponse = $this->response;
@@ -450,7 +450,30 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getPaymentVerifyRequestArray(array $input): array
+    protected function sendRefundVerifyRequest(array $input)
+    {
+        $request = $this->getRefundVerifyRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->response = $response;
+
+        $content = $this->parseGatewayResponse($response->body);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
+            [
+                'raw_content' => $response->body,
+                'content'     => $content,
+                'gateway'     => 'upi_icici',
+                'refund_id'   => $input['refund']['id'],
+            ]);
+
+        return $content;
+    }
+
+
+    protected function getPaymentVerifyRequestArray(array $input)
     {
         $data = [
             'merchantId'        => $this->getMerchantId(),
@@ -459,13 +482,7 @@ class Gateway extends Base\Gateway
             'terminalId'        => '1234',
         ];
 
-        $content = $this->transformRequestArrayToContent($data);
-
-        $request = $this->getStandardRequestArray($content);
-
-        $request['headers'] = [
-            'Content-Type' => 'text/plain'
-        ];
+        $request = $this->getRequest($data);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
@@ -473,6 +490,47 @@ class Gateway extends Base\Gateway
                 'request' => $request,
                 'decrypted_content' => $data
             ]);
+
+        return $request;
+    }
+
+    protected function getRefundVerifyRequestArray(array $input)
+    {
+        $attempts = $input['refund']['attempts'] - 1;
+
+        if ($input['refund']['attempts'] === 1)
+        {
+            $attempts = '';
+        }
+
+        $data = [
+            'merchantId'        => $this->getMerchantId(),
+            'merchantTranId'    => $input['refund']['id'] . $attempts,
+            'subMerchantId'     => $this->getSubMerchantId($input),
+            'terminalId'        => '1234',
+        ];
+
+        $request = $this->getRequest($data);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
+            [
+                'request' => $request,
+                'decrypted_content' => $data
+            ]);
+
+        return $request;
+    }
+
+    protected function getRequest(array $data): array
+    {
+        $content = $this->transformRequestArrayToContent($data);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $request['headers'] = [
+            'Content-Type' => 'text/plain'
+        ];
 
         return $request;
     }
@@ -526,17 +584,27 @@ class Gateway extends Base\Gateway
 
     public function verifyRefund(array $input)
     {
-        $refundIds = [
-            '82NPrjC1TwVNb1'
-        ];
+        parent::verify($input);
 
-        if (in_array($input['refund']['id'], $refundIds, true) === true)
+        $content = $this->sendRefundVerifyRequest($input);
+
+        if ($content['status'] === Status::SUCCESS)
+        {
+            return true;
+        }
+
+        if ($content['status'] === Status::FAILURE)
         {
             return false;
         }
 
-        throw new Exception\LogicException(
-            'UPI ICICI verify refund is not implemented');
+         throw new Exception\LogicException(
+                'Shouldn\'t reach here',
+                null,
+                [
+                    'gateway_status' => $content['status'],
+                    'refund_id'      => $input['refund']['id'],
+                ]);
     }
 
     /**
@@ -677,10 +745,9 @@ class Gateway extends Base\Gateway
             Fields::SUBMERCHANT_ID                  => $this->getSubMerchantId($input),
             Fields::TERMINAL_ID                     => $this->getTerminalId($input),
             Fields::ORIGINAL_BANK_RRN_REQ           => $gatewayPayment->getGatewayPaymentId(),
-            Fields::MERCHANT_TRAN_ID                => $refund['id'],
+            Fields::MERCHANT_TRAN_ID                => $this->getRefundId($refund),
             Fields::ORIGINAL_MERCHANT_TRAN_ID       => $payment['id'],
             Fields::REFUND_AMOUNT                   => $this->formatAmount($refund['amount']),
-            Fields::PAYEE_VA                        => strtolower($payment['vpa']),
             Fields::NOTE                            => 'Razorpay Refund ' . $refund['id'],
             Fields::ONLINE_REFUND                   => 'Y',
         ];
@@ -698,6 +765,18 @@ class Gateway extends Base\Gateway
             ]);
 
         return $request;
+    }
+
+    /**
+     * This is done in order to fix duplicate
+     * merchant transaction id issue in case
+     * refund is retried multiple times
+     *
+     * @return string
+     */
+    protected function getRefundId(array $refund)
+    {
+        return $refund['id'] . ($refund['attempts'] ?: '');
     }
 
 

@@ -163,29 +163,8 @@ class Entity extends Base\PublicEntity
 
     /** End Appends */
 
-    /** Accessors */
-
-    /**
-     * TODO: Remove this once corresponding update queries is run post
-     *       partial payments pr deployment.
-     *
-     * Get amount paid attribute.
-     *
-     * @return int
-     */
-    public function getAmountPaidAttribute(int $amountPaid): int
-    {
-        if (($this->isPaid() === true) and ($amountPaid === 0))
-        {
-            return $this->getAmount();
-        }
-
-        return $amountPaid;
-    }
-
-    /** End Accessors */
-
     /** Setters And Getters */
+
     public function setStatus($status)
     {
         return $this->setAttribute(self::STATUS, $status);

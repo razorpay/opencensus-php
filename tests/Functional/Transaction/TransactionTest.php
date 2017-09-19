@@ -66,20 +66,6 @@ class TransactionTest extends TestCase
         $this->assertEquals($rev['amount'] + $adj['amount'], 0);
     }
 
-    public function testAddAdjustmentWithoutUpdatingEscrowBalance()
-    {
-        $this->setAdminForInternalAuth();
-
-        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
-
-        $adj = $this->startTest();
-
-        $this->ba->addAdminAuthHeaders(null, null);
-
-        $txn = $this->getLastEntity('transaction', true);
-        $this->assertTestResponse($txn, 'txnDataAfterAddingAdjWithNoEscrowUpdate');
-    }
-
     public function testTransactionAfterCapturingPayment()
     {
         $payment = $this->doAuthAndCapturePayment();
@@ -145,6 +131,37 @@ class TransactionTest extends TestCase
         $this->assertArraySelectiveEquals($testData, $txn);
 
         return $refund;
+    }
+
+    public function testCreateDisputeWithDeduct()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+
+        $dispute = $this->disputePayment($payment, 1);
+
+        $txn = $this->getLastTransaction(true);
+
+        $testData = $this->testData['txnDataAfterDisputingPayment'];
+        $testData['entity_id'] = $dispute['id'];
+
+        $this->assertArraySelectiveEquals($testData, $txn);
+
+        return $dispute;
+    }
+
+    public function testCreateDisputeWithoutDeduct()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+
+        $dispute = $this->disputePayment($payment);
+
+        $txn = $this->getLastTransaction(true);
+
+        $testData = $this->testData['txnDataAfterDisputingPaymentWithoutDeduct'];
+
+        $this->assertArraySelectiveEquals($testData, $txn);
+
+        return $dispute;
     }
 
     protected function startTest($testDataToReplace = array())

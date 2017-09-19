@@ -95,7 +95,7 @@ class Notifier extends Base\Core
 
         $scheduledAt = $this->invoice->getScheduledAt();
 
-        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+        $currentTime = Carbon::now()->getTimestamp();
 
         // If it's not scheduled for within 5 minutes, do not send
         // the notification. Ideally, scheduled_at would be the same

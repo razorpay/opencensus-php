@@ -21,6 +21,11 @@ class MerchantDetail extends Base
         return $merchantDetail;
     }
 
+    public function createSane(array $attributes = [])
+    {
+        return parent::create($attributes);
+    }
+
     public function createValidFields(array $attributes = array())
     {
         $merchantDetailArray = $this->createMerchantDetail();
@@ -33,6 +38,24 @@ class MerchantDetail extends Base
         $merchantDetailArray = $this->createMerchantDetail();
 
         unset($merchantDetailArray["contact_name"]);
+
+        return $this->create($merchantDetailArray);
+    }
+
+    public function createEventAccount()
+    {
+        $merchantDetailArray = [
+            "contact_name"                  => "test",
+            "contact_email"                 => "test.test3@razorpay.com",
+            "contact_mobile"                => "9123456789",
+            "business_type"                 => "1",
+            "business_name"                 => "Acme",
+            "business_registered_state"     => "state",
+            "business_registered_city"      => "city",
+            "business_operation_state"      => "state",
+            "business_operation_city"       => "city",
+            "transaction_volume"            => 3,
+        ];
 
         return $this->create($merchantDetailArray);
     }

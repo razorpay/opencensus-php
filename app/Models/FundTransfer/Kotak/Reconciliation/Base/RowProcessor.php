@@ -3,6 +3,7 @@
 namespace RZP\Models\FundTransfer\Kotak\Reconciliation\Base;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Illuminate\Support\Facades\App;
 use Mail;
 
@@ -107,11 +108,11 @@ class RowProcessor extends BaseCore
 
     protected function getReconciliationStatus()
     {
-        $recordDate = Carbon::createFromFormat('d-M-y', $this->parsedData['payment_date'], 'Asia/Kolkata');
+        $recordDate = Carbon::createFromFormat('d-M-y', $this->parsedData['payment_date'], Timezone::IST);
 
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
-        $tenPm = $recordDate->hour(22)->timestamp;
+        $eightFiftyPm = $recordDate->hour(20)->minute(50)->getTimestamp();
 
         $failureReason = null;
 
@@ -136,7 +137,7 @@ class RowProcessor extends BaseCore
 
                 // If current time is before 10 pm, dont mark the settlement as
                 // processed and update only the utr
-                if (($now < $tenPm) and ($this->env !== 'testing'))
+                if (($now < $eightFiftyPm) and ($this->env !== 'testing'))
                 {
                     $status = $this->reconEntity->getStatus();
                 }

@@ -121,12 +121,17 @@ class Server extends Base\Core
         //     'Unexpected referer value. Referer: ' . $referer);
     }
 
-    protected function getGatewayInstance()
+    protected function getGatewayInstance($bankingType = null)
     {
         $class = $this->getGatewayNamespace() . '\Gateway';
 
         $gateway = new $class;
         $gateway->setMode(Mode::TEST);
+
+        if (isset($bankingType) === true)
+        {
+            $gateway->setBankingType($bankingType);
+        }
 
         return $gateway;
     }
@@ -171,10 +176,18 @@ class Server extends Base\Core
     {
         $accountNumberLengths = Netbanking::getAccountNumberLengths();
 
-        if ((in_array($this->bank, $accountNumberLengths) === true) and
-            ($accountNumberLengths[$this->bank] !== $accountNumber))
+        if ((in_array($this->bank, array_keys($accountNumberLengths)) === true) and
+            ($accountNumberLengths[$this->bank] !== strlen($accountNumber)))
         {
-            throw new Exception\LogicException('WRONG_ACCOUNT_NUMBER_LENGTH');
+            throw new Exception\LogicException(
+                'WRONG_ACCOUNT_NUMBER_LENGTH',
+                null,
+                [
+                    'account_number'  => $accountNumber,
+                    'bank'            => $this->bank,
+                    'length'          => strlen($accountNumber),
+                    'expected_length' => $accountNumberLengths,
+                ]);
         }
     }
 
@@ -247,7 +260,7 @@ class Server extends Base\Core
         return $content;
     }
 
-    public function request(& $content)
+    public function request(& $content, $action = '')
     {
         return $content;
     }

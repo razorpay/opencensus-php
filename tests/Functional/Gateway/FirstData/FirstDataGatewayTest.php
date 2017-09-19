@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\FirstData;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Tests\Functional\TestCase;
@@ -45,6 +46,11 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals(true, $paymentEntity['recurring']);
         $this->assertEquals('FDRcrgTrmnl3DS', $paymentEntity['terminal_id']);
 
+        $token = $this->getLastEntity('token', true);
+        $this->assertEquals($paymentEntity['token_id'], $token['id']);
+        $this->assertEquals(true, $token['recurring']);
+        $this->assertEquals('FDRcrgTrmnl3DS', $token['terminal_id']);
+
         // Set payment for second recurring payment
         unset($payment['card']);
         $payment['token'] = $paymentEntity['token_id'];
@@ -61,6 +67,11 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals(true, $paymentEntity['recurring']);
         $this->assertEquals('FDRcrgTrmlN3DS', $paymentEntity['terminal_id']);
         $this->assertNotNull($paymentEntity['transaction_id']);
+
+        $token = $this->getLastEntity('token', true);
+        $this->assertEquals($paymentEntity['token_id'], $token['id']);
+        $this->assertEquals(true, $token['recurring']);
+        $this->assertEquals('FDRcrgTrmnl3DS', $token['terminal_id']);
 
         // Transaction created at auth step itself, as recurring payment is a purchase request
         $transaction = $this->getLastEntity('transaction', true);
@@ -83,6 +94,11 @@ class FirstDataGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertEquals('refunded', $payment['status']);
+
+        $token = $this->getLastEntity('token', true);
+        $this->assertEquals($paymentEntity['token_id'], $token['id']);
+        $this->assertEquals(true, $token['recurring']);
+        $this->assertEquals('FDRcrgTrmnl3DS', $token['terminal_id']);
 
         $gatewayPayment = $this->getLastEntity('first_data', true);
         $refund = $this->getLastEntity('refund', true);
@@ -123,7 +139,7 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals($refund['id'], 'rfnd_'.$firstData['refund_id']);
         $this->assertEquals('FAILED', $firstData['status']);
 
-        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
         $refundId = explode('_', $refund['id'], 2)[1];
@@ -163,7 +179,7 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals($refund['id'], 'rfnd_'.$firstData['refund_id']);
         $this->assertEquals('FAILED', $firstData['status']);
 
-        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
         $refundId = explode('_', $refund['id'], 2)[1];
@@ -176,7 +192,7 @@ class FirstDataGatewayTest extends TestCase
 
         $this->assertEquals($refund['amount'], $actualRefund['amount']);
         $this->assertEquals('failed', $actualRefund['status']);
-        $this->assertEquals(2, $actualRefund['attempts']);
+        $this->assertEquals(1, $actualRefund['attempts']);
         $this->assertEquals(false, $actualRefund['gateway_refunded']);
 
         $firstData = $this->getLastEntity('first_data', true);
@@ -203,7 +219,7 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals($refund['id'], 'rfnd_'.$firstData['refund_id']);
         $this->assertEquals('FAILED', $firstData['status']);
 
-        $time = Carbon::now('Asia/Kolkata')->addMinutes(35);
+        $time = Carbon::now(Timezone::IST)->addMinutes(35);
         Carbon::setTestNow($time);
 
         $refundId = explode('_', $refund['id'], 2)[1];

@@ -17,9 +17,25 @@ class IndexCreate extends Command
                             {entity    : Entity name (e.g. item|merchant) }
                             {index     : ES index name (e.g. beta_api_invoice_test) }
 
-                            {--pretend : Whether to run the command in pretend mode?}';
+                            {--pretend : Whether to run the command in pretend mode?}
+                            {--reindex : Whether to delete existing index?}';
 
     protected $description = 'Creates index with set mappings for the entity';
+
+    /**
+     * Just outputs the settings with which the index will get created.
+     * Dry run.
+     *
+     * @var boolean
+     */
+    protected $pretend;
+
+    /**
+     * Whether to drop and recreate index if it already exits.
+     *
+     * @var boolean
+     */
+    protected $reindex;
 
     protected $entity;
     protected $index;
@@ -38,7 +54,21 @@ class IndexCreate extends Command
             return;
         }
 
-        $result = $this->getEsClient()->indices()->create($params);
+        //
+        // If index already exists, just delete it and continue with the flow
+        // of creating it again.
+        //
+        $client = $this->getEsClient();
+
+        $indexParams = ['index' => $this->index];
+
+        if (($this->reindex === true) and
+            ($client->indices()->exists($indexParams) === true))
+        {
+            $client->indices()->delete($indexParams);
+        }
+
+        $result = $client->indices()->create($params);
 
         $this->info(json_encode($result, JSON_PRETTY_PRINT));
     }
@@ -46,6 +76,7 @@ class IndexCreate extends Command
     protected function setOptions()
     {
         $this->pretend = $this->option('pretend');
+        $this->reindex = $this->option('reindex');
         $this->index   = $this->argument('index');
         $this->entity  = $this->argument('entity');
     }

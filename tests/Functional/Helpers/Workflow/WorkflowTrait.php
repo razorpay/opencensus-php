@@ -66,16 +66,52 @@ trait WorkflowTrait
             'levels' => [
                 [
                     'level'   => 1,
-                    'op_type' => 'and',
+                    'op_type' => 'or',
                     'steps'   => [
                         [
                             'reviewer_count' => 1,
                             'role_id'        => Org::ADMIN_ROLE,
                         ],
+                        [
+                            'reviewer_count' => 1,
+                            'role_id'        => Org::CHECKER_ROLE,
+                        ]
+                    ],
+                ],
+                [
+                    'level'   => 2,
+                    'op_type' => 'and',
+                    'steps'   => [
+                        [
+                            'reviewer_count' => 1,
+                            'role_id'        => Org::MAKER_ROLE,
+                        ],
                     ],
                 ],
             ],
         ];
+    }
+
+    /**
+     * Workflow action approve neeeded for workflow execution.
+     *
+     * @param array  $workflowActionId
+     * @param string $token
+     * @return mixed
+     */
+    private function approveWorkflowAction($workflowActionId)
+    {
+        $this->ba->adminAuth('test', Org::DEFAULT_ADMIN_TOKEN, Org::RZP_ORG_SIGNED);
+
+        $request = [
+            'method'    => 'POST',
+            'url'       => '/w-actions/' . $workflowActionId . '/checkers',
+            'content'   => [
+                'approved'  => 1,
+            ],
+        ];
+
+        return $this->makeRequestAndGetContent($request);
     }
 }
 

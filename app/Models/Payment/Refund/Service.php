@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Refund;
 
 use Config;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
@@ -11,20 +12,20 @@ use RZP\Models\Base;
 use RZP\Constants;
 use RZP\Constants\Table;
 use RZP\Models\Payment;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Refund;
 use RZP\Exception;
 use RZP\Models\Transaction;
+use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
     /**
-     * We get the last 100 days refunds created of a gateway.
+     * We get the last 10 days refunds created of a gateway.
      * We run the cron for this once a day.
      */
-    const GATEWAY_REFUND_RECORDS_TIME_LIMIT = 8640000;
+    const GATEWAY_REFUND_RECORDS_TIME_LIMIT = 864000;
 
     const MAX_REFUND_RETRY_ATTEMPTS = 3;
 
@@ -46,7 +47,7 @@ class Service extends Base\Service
         return (new Payment\Service)->refund($paymentId, $input);
     }
 
-    public function getRefundsFile(array $input = array())
+    public function getRefundsFile(array $input = [])
     {
         list($from, $to) = $this->getTimestamps($input);
 
@@ -79,6 +80,11 @@ class Service extends Base\Service
                 unset($gateways[IFSC::UTIB]);
                 unset($gateways[IFSC::FDRL]);
                 unset($gateways[IFSC::RATN]);
+
+                // These banks refund files have been moved to gateway_file, so
+                // unsetting it here
+                unset($gateways[IFSC::HDFC]);
+                unset($gateways[IFSC::ICIC]);
                 break;
 
             case Payment\Method::WALLET:
@@ -109,7 +115,13 @@ class Service extends Base\Service
                 break;
 
             default:
-                throw new Exception\LogicException('Invalid method provided for generating refunds file.');
+                throw new Exception\LogicException(
+                    'Invalid method provided for generating refunds file.',
+                    null,
+                    [
+                        'input'     => $input,
+                        'method'    => $method,
+                    ]);
         }
 
         if ($gatewayCode === null)
@@ -196,17 +208,16 @@ class Service extends Base\Service
 
         $gateway = $terminal->getGateway();
 
-        $action = 'generateRefunds';
-
-        $file = $this->app['gateway']->call($gateway, $action, $input, $this->mode);
+        $file = $this->app['gateway']->call($gateway, Payment\Action::GENERATE_REFUNDS, $input, $this->mode);
 
         return ['file' => $file, 'count' => $count];
     }
 
     protected function getTimestamps($input)
     {
-        $from = Carbon::yesterday('Asia/Kolkata')->timestamp;
-        $to = Carbon::today('Asia/Kolkata')->timestamp - 1;
+        $from = Carbon::yesterday(Timezone::IST)->getTimestamp();
+        $to = Carbon::today(Timezone::IST)->getTimestamp() - 1;
+
         $frequency = 'daily';
 
         if (isset($input['frequency']))
@@ -218,28 +229,28 @@ class Service extends Base\Service
         {
             if (isset($input['on']))
             {
-                $dt = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata');
+                $dt = Carbon::createFromFormat('Y-m-d', $input['on'], Timezone::IST);
 
-                $from = $dt->startOfMonth()->timestamp;
-                $to   = $dt->endOfMonth()->addDay()->timestamp - 1;
+                $from = $dt->startOfMonth()->getTimestamp();
+                $to   = $dt->endOfMonth()->addDay()->getTimestamp() - 1;
             }
             else
             {
-                $dt = Carbon::yesterday('Asia/Kolkata');
+                $dt = Carbon::yesterday(Timezone::IST);
 
-                $from = $dt->startOfMonth()->timestamp;
-                $to   = $dt->endOfMonth()->addDay()->timestamp - 1;
+                $from = $dt->startOfMonth()->getTimestamp();
+                $to   = $dt->endOfMonth()->addDay()->getTimestamp() - 1;
             }
         }
         else
         {
             if (isset($input['on']))
             {
-                $from = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata')->setTime(0,0,0);
+                $from = Carbon::createFromFormat('Y-m-d', $input['on'], Timezone::IST)->setTime(0,0,0);
 
-                $fromTimeStamp = $from->timestamp;
+                $fromTimeStamp = $from->getTimestamp();
 
-                $to = $from->addDay()->timestamp - 1;
+                $to = $from->addDay()->getTimestamp() - 1;
 
                 $from = $fromTimeStamp;
             }
@@ -502,7 +513,14 @@ class Service extends Base\Service
 
                     if ($transaction === null)
                     {
-                        throw new Exception\LogicException('Transaction did not get created');
+                        throw new Exception\LogicException(
+                            'Transaction did not get created',
+                            null,
+                            [
+                                'refund_id'     => $refundWithoutTxn->getId(),
+                                'payment_id'    => $payment->getId(),
+                                'force'         => $forceRefundTransaction,
+                            ]);
                     }
 
                     //

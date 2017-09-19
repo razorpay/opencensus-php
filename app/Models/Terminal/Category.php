@@ -122,7 +122,7 @@ class Category
             ],
             Gateway::BILLDESK => [
                 self::DEFAULT => self::ECOMMERCE,
-                self::FOREX   => self::CORPORATE,
+                self::FOREX   => self::HOUSING,
             ],
         ],
         Method::CARD => [

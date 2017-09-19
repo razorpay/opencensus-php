@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Hdfc\Mock;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
@@ -80,7 +81,7 @@ class Server extends Base\Mock\Server
         return $input;
     }
 
-    public function gatewayTransaction()
+    public function gatewayTransaction($type = null)
     {
         $action = Hdfc\Utility::getFieldFromXML($this->input, 'action');
 
@@ -112,7 +113,20 @@ class Server extends Base\Mock\Server
 
             default:
                 throw new Exception\LogicException(
-                    'Hdfc\Mock: Action code not recognized. Action: ' . $this->data['action']);
+                    'Hdfc\Mock: Action code not recognized.',
+                    null,
+                    [
+                        'payment_id' => $this->data['trackid'],
+                        'action'     => $this->data['action'],
+                    ]);
+        }
+
+        switch ($type)
+        {
+            case 'auth_second_recurring':
+                $this->action = 'authorize';
+                $xml = $this->authSecondRecurringOnGateway();
+                break;
         }
 
         return $this->makeResponse($xml);
@@ -181,7 +195,12 @@ class Server extends Base\Mock\Server
 
         if ($gatewayTransaction === null)
         {
-            throw new Exception\LogicException($txnId . ' not found');
+            throw new Exception\LogicException(
+                'Transaction not found',
+                null,
+                [
+                    'transaction_id' => $txnId,
+                ]);
         }
 
         $res = array(
@@ -211,7 +230,14 @@ class Server extends Base\Mock\Server
 
     protected function authNotEnrolledOnGateway()
     {
-        $this->processInput('authNotEnrolled');
+        $type = $this->getRequestType(__FUNCTION__);
+
+        return $this->getXMLForRequest($type);
+    }
+
+    protected function getXMLForRequest($type = null)
+    {
+        $this->processInput($type);
 
         $cardNumber = $this->data['card'];
 
@@ -245,6 +271,18 @@ class Server extends Base\Mock\Server
         $xml = Hdfc\Utility::createXml($res);
 
         return $xml;
+    }
+
+    protected function authSecondRecurringOnGateway()
+    {
+        $type = $this->getRequestType(__FUNCTION__);
+
+        return $this->getXMLForRequest($type);
+    }
+
+    protected function getRequestType($function)
+    {
+        return explode('OnGateway', $function)[0];
     }
 
     protected function authOnGateway()
@@ -488,7 +526,7 @@ class Server extends Base\Mock\Server
 
     protected function getPostDateForToday()
     {
-        return (new Carbon('now', 'Asia/Kolkata'))->format('md');
+        return (new Carbon('now', Timezone::IST))->format('md');
     }
 
     protected function getNewPaymentId()
@@ -527,11 +565,6 @@ class Server extends Base\Mock\Server
 
     protected function handleSpecialCardNumber($cardNumber)
     {
-        if (in_array($cardNumber, $this->specialCardNumbers, true) === false)
-        {
-            throw new \LogicException('Card number given here is not special. Number: ' . $cardNumber);
-        }
-
         $error = array();
         $error['error_service_tag'] = null;
 
@@ -555,7 +588,7 @@ class Server extends Base\Mock\Server
                 break;
 
             default:
-                throw new \LogicException('Card number given here is not special. Number: ' . $cardNumber);
+                throw new \LogicException('Card number given here is not special');
         }
 
         $error['error_code_tag'] = $code;

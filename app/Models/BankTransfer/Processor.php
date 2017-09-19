@@ -3,7 +3,7 @@
 namespace RZP\Models\BankTransfer;
 
 use RZP\Models\Base;
-use RZP\Constants\Mode;
+use RZP\Constants\Mode as RzpMode;
 use RZP\Trace\TraceCode;
 use RZP\Models\BankAccount;
 use RZP\Models\Payment\Method;
@@ -17,7 +17,6 @@ use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 class Processor extends Base\Core
 {
     protected $virtualAccount;
-    protected $core;
     protected $provider;
     protected $merchant;
 
@@ -32,18 +31,19 @@ class Processor extends Base\Core
 
         $this->validator = new Validator;
 
-        $this->core = new Core;
-
         // These flows are initiated by the provider bank hitting
         // our APIs. Provider banks are currently authenticated by
         // registering them as apps, and using AppAuth.
         $this->provider = $this->app['basicauth']->getInternalApp();
     }
 
-    public function process(array $input)
+    /**
+     * @param Entity $bankTransfer
+     *
+     * @return Entity|null
+     */
+    public function process(Entity $bankTransfer)
     {
-        $bankTransfer = $this->core->create($input);
-
         $this->setUtrInTestMode($bankTransfer);
 
         $isTransferExpected = $this->isTransferExpected($bankTransfer);
@@ -59,17 +59,19 @@ class Processor extends Base\Core
         {
             if ($this->checkReservedAccount($bankTransfer) === true)
             {
-                return;
+                return null;
             }
 
             $this->preProcessUnexpectedBankTransfer($bankTransfer);
         }
         else
         {
+            //
             // The transfer is an expected one, i.e. it is made to a valid account
             // but the UTR is a duplicate, indicating that a payment is being processed
             // for a second time. In this case, we do not create anything but a
             // bank_transfer entity, marked as unexpected.
+            //
             $bankTransfer->setExpected(false);
 
             $this->repo->saveOrFail($bankTransfer);
@@ -81,8 +83,7 @@ class Processor extends Base\Core
 
         $this->trace->info(
                 TraceCode::BANK_TRANSFER_PROCESSING_SUCCESSFUL,
-                $bankTransfer->toArrayPublic()
-            );
+                $bankTransfer->toArray());
 
         return $bankTransfer;
     }
@@ -138,7 +139,7 @@ class Processor extends Base\Core
         //
         // UTR is not sent by dashboard in test mode, but is exposed to the merchant.
         // So we add a mock UTR here itself, and skip the uniqueness check.
-        if (($this->mode === Mode::TEST) and
+        if (($this->mode === RzpMode::TEST) and
             ($this->provider === VirtualAccount\Provider::DASHBOARD) and
             ($this->env !== 'testing'))
         {
@@ -165,7 +166,7 @@ class Processor extends Base\Core
             TraceCode::BANK_TRANSFER_PROCESS_DUPLICATE_UTR,
             [
                 'message'           => 'Duplicate UTR received',
-                'existing_transfer' => $duplicateBankTransfer->toArrayPublic(),
+                'existing_transfer' => $duplicateBankTransfer->toArray(),
                 'received_utr'      => $bankTransfer->getUtr(),
             ]
         );
@@ -188,7 +189,7 @@ class Processor extends Base\Core
                 TraceCode::BANK_TRANSFER_PROCESSING_FAILED,
                 [
                     'message'      => 'Invalid account number',
-                    'bankTransfer' => $bankTransfer->toArrayPublic(),
+                    'bankTransfer' => $bankTransfer->toArray(),
                 ]
             );
 
@@ -248,7 +249,7 @@ class Processor extends Base\Core
         {
             $this->trace->info(
                 TraceCode::BANK_TRANSFER_RESERVED_ACCOUNT,
-                $bankTransfer->toArrayPublic()
+                $bankTransfer->toArray()
             );
 
             return true;
@@ -330,8 +331,16 @@ class Processor extends Base\Core
 
         $label = substr(preg_replace('/[^a-zA-Z0-9 ]+/', '', $label), 0, 39);
 
+        $ifscCode = $bankTransfer->getPayerIfsc();
+
+        if ((strlen($ifscCode) !== BankAccount\Entity::IFSC_CODE_LENGTH) and
+            ($bankTransfer->getMode() === Mode::IMPS))
+        {
+            $ifscCode = null;
+        }
+
         return [
-            BankAccount\Entity::IFSC_CODE        => $bankTransfer->getPayerIfsc(),
+            BankAccount\Entity::IFSC_CODE        => $ifscCode,
             BankAccount\Entity::ACCOUNT_NUMBER   => $bankTransfer->getPayerAccount(),
             BankAccount\Entity::BENEFICIARY_NAME => $label,
         ];
@@ -342,7 +351,7 @@ class Processor extends Base\Core
         $paymentArray = self::DEFAULT_BANK_TRANSFER_ARRAY;
 
         $paymentArray[Payment::AMOUNT]      = $bankTransfer->getAmount();
-        $paymentArray[Payment::DESCRIPTION] = $bankTransfer->getDescription();
+        $paymentArray[Payment::DESCRIPTION] = $bankTransfer->getDescription() ?? "";
 
         if ($this->virtualAccount->hasCustomer() === true)
         {

@@ -16,15 +16,20 @@ class ExcelFormatter
      *
      * @return Excel excel object
      */
-    public static function createExcelObject($data, $name, $columnFormat = [], $sheetName = 'Sheet 1')
+    public static function createExcelObject(
+        $data,
+        $name,
+        $columnFormat = [],
+        $headers = true,
+        $sheetName = 'Sheet 1')
     {
         $excel = Excel::create(
             $name,
-            function ($excel) use ($data, $columnFormat, $sheetName)
+            function ($excel) use ($data, $columnFormat, $headers, $sheetName)
             {
                 $excel->sheet(
                     $sheetName,
-                    function ($sheet) use ($data, $columnFormat)
+                    function ($sheet) use ($data, $columnFormat, $headers)
                     {
                         // If a columnFormat variable is specified.
                         // Use it.
@@ -33,7 +38,7 @@ class ExcelFormatter
                             $sheet->setColumnFormat($columnFormat);
                         }
 
-                        $sheet->fromArray($data, null, 'A1', true, true);
+                        $sheet->fromArray($data, null, 'A1', true, $headers);
                     }
                 );
             }
@@ -55,9 +60,9 @@ class ExcelFormatter
      *
      * @return array containg full file path of excel file stored
      */
-    public static function writeToExcelFile($content, $name, $columnFormat, $extension, $path)
+    public static function writeToExcelFile($content, $name, $columnFormat, $headers, $extension, $path)
     {
-        $excel = self::createExcelObject($content, $name, $columnFormat);
+        $excel = self::createExcelObject($content, $name, $columnFormat, $headers);
 
         $fileMetadata = $excel->store($extension, $path, true);
 

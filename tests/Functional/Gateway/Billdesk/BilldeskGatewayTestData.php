@@ -29,9 +29,9 @@ return [
         'terminal_id'       => '1000BdeskTrmnl',
         'signed'            => false,
         'verified'          => null,
-        'fee'               => 1475,
-        'service_tax'       => 225,
-        'tax'               => 225,
+        'fee'               => 1476,
+        'service_tax'       => 226,
+        'tax'               => 226,
         'entity'            => 'payment',
     ],
 
@@ -62,11 +62,11 @@ return [
         'type'          => 'payment',
         'merchant_id'   => '10000000000000',
         'amount'        => 50000,
-        'fee'           => 1475,
+        'fee'           => 1476,
         'debit'         => 0,
-        'credit'        => 48525,
+        'credit'        => 48524,
         'currency'      => 'INR',
-        'balance'       => 1048525,
+        'balance'       => 1048524,
         'gateway_fee'   => 0,
         'api_fee'       => 0,
         'channel'       => 'kotak',
@@ -307,4 +307,34 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         ],
     ],
+    'testPaymentFailureBeforeRedirection' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_CANCELLED_AT_NETBANKING_PAYMENT_PAGE,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_AT_NETBANKING_PAYMENT_PAGE,
+        ],
+    ],
+    'testServerToServerFailureCallback' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE,
+        ],
+    ]
 ];

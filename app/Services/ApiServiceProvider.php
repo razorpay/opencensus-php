@@ -2,29 +2,31 @@
 
 namespace RZP\Services;
 
-use Illuminate\Support\ServiceProvider as BaseServiceProvider;
-use Illuminate\Database\Eloquent\Relations\Relation;
-use Http\Mock\Client as MockHttplug;
-use RZP\Models\Admin as Admin;
-use RZP\Constants as Constants;
-use RZP\Gateway\GatewayManager;
-use RZP\Models\Adjustment;
-use RZP\Models\Invoice;
-use RZP\Models\Merchant;
-use RZP\Models\Payment;
-use RZP\Models\Transfer;
-use RZP\Models\Customer;
-use RZP\Models\Reversal;
-use RZP\Models\Payment\Refund;
-use RZP\Models\Settlement;
-use RZP\Models\Payout;
-use RZP\Models\BankAccount;
-use RZP\Models\Promotion;
-use RZP\Models\Plan\Subscription\Addon;
-use RZP\Models\Plan\Subscription;
-use RZP\Models\Batch;
 use RZP;
 use Swift_Mailer;
+use Http\Mock\Client as MockHttplug;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\ServiceProvider as BaseServiceProvider;
+use RZP\Models\Batch;
+use RZP\Models\Payout;
+use RZP\Models\Dispute;
+use RZP\Models\Invoice;
+use RZP\Models\Payment;
+use RZP\Models\Customer;
+use RZP\Models\Merchant;
+use RZP\Models\Reversal;
+use RZP\Models\Transfer;
+use RZP\Models\Promotion;
+use RZP\Models\Adjustment;
+use RZP\Models\Settlement;
+use RZP\Models\BankAccount;
+use RZP\Models\Gateway\File;
+use RZP\Models\Admin as Admin;
+use RZP\Models\Payment\Refund;
+use RZP\Gateway\GatewayManager;
+use RZP\Models\Plan\Subscription;
+use RZP\Services\GatewayFileManager;
+use RZP\Models\Plan\Subscription\Addon;
 
 
 class ApiServiceProvider extends BaseServiceProvider
@@ -43,6 +45,8 @@ class ApiServiceProvider extends BaseServiceProvider
      */
     public function register()
     {
+        $this->registerTraceProcessors();
+
         $this->app->singleton('mailgun', function($app)
         {
             $mailgunMock = $app['config']->get('applications.mailgun.mock');
@@ -92,6 +96,11 @@ class ApiServiceProvider extends BaseServiceProvider
             return new Raven($app);
         });
 
+        $this->app->singleton('authservice', function($app)
+        {
+            return new AuthService($app);
+        });
+
         $this->app->singleton('es', function($app)
         {
             return new EsClient($app);
@@ -112,6 +121,23 @@ class ApiServiceProvider extends BaseServiceProvider
             return new EventTrackerClient($app);
         });
 
+        $this->app->singleton('eventManager', function($app)
+        {
+            $harvesterClientMock = $app['config']->get('applications.harvester.mock');
+
+            if ($harvesterClientMock === true)
+            {
+                return new Mock\HarvesterClient($app);
+            }
+
+            return new HarvesterClient($app);
+        });
+
+        $this->app->singleton('gateway_file', function($app)
+        {
+            return new GatewayFileManager($app);
+        });
+
         $this->registerApiMutex();
 
         $this->registerMaxMind();
@@ -119,8 +145,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerElfin();
 
         $this->registerExchange();
-
-        $this->registerValidatorResolver();
 
         $this->registerQueueableEntityResolver();
 
@@ -158,11 +182,13 @@ class ApiServiceProvider extends BaseServiceProvider
             'repo',
             'elfin',
             'segment',
+            'eventManager',
             'upi.client',
             'webhook.inferno',
             'exchange',
             'pigeon',
             'workflow',
+            'authservice',
             'sns',
         ];
     }
@@ -177,15 +203,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->app->singleton('Illuminate\Contracts\Queue\EntityResolver', function ()
         {
             return new \RZP\Base\QueueEntityResolver;
-        });
-    }
-
-    protected function registerValidatorResolver()
-    {
-        $this->app['validator']->resolver(function($translator, $data, $rules, $messages, $customAttributes)
-        {
-            return new \RZP\Models\Base\ExtendedValidations(
-                            $translator, $data, $rules, $messages, $customAttributes);
         });
     }
 
@@ -272,6 +289,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'merchant'        => Merchant\Entity::class,
             'merchant_detail' => Merchant\Detail\Entity::class,
             'batch'           => Batch\Entity::class,
+            'gateway_file'    => Gateway\File\Entity::class,
 
             // transaction
             'adjustment'      => Adjustment\Entity::class,
@@ -284,6 +302,8 @@ class ApiServiceProvider extends BaseServiceProvider
 
             'subscription'    => Subscription\Entity::class,
             'promotion'       => Promotion\Entity::class,
+
+            'dispute'         => Dispute\Entity::class,
         ]);
     }
 
@@ -352,5 +372,12 @@ class ApiServiceProvider extends BaseServiceProvider
         {
             return new MockHttplug;
         });
+    }
+
+    protected function registerTraceProcessors()
+    {
+        $apiProcessor = new RZP\Trace\ApiTraceProcessor($this->app);
+
+        $this->app['trace']->pushProcessor($apiProcessor);
     }
 }

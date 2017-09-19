@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Icici;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mail;
 use RZP\Constants\MailTags;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
@@ -45,7 +46,7 @@ class RefundFile extends Base\RefundFile
 
         $signedFileUrl = $creator->getSignedUrl(self::SIGNED_URL_DURATION)['url'];
 
-        $today = Carbon::now('Asia/Kolkata')->format('jS F Y');
+        $today = Carbon::now(Timezone::IST)->format('jS F Y');
 
         $fileData = [
             'file_path'  => $file['local_file_path'],
@@ -56,7 +57,7 @@ class RefundFile extends Base\RefundFile
             'date'       => $today
         ];
 
-        $this->sendRefundEmail($fileData, $input['email']);
+        $this->sendRefundEmail($fileData, (array) $input['email']);
 
         return $file['local_file_path'];
     }
@@ -65,10 +66,12 @@ class RefundFile extends Base\RefundFile
     {
         $totalAmount = 0;
 
+        $data = [];
+
         foreach ($input['data'] as $index => $row)
         {
             $date = Carbon::createFromTimestamp(
-                $row['payment']['created_at'], 'Asia/Kolkata')->format('jS F Y');
+                $row['payment']['created_at'], Timezone::IST)->format('jS F Y');
 
             $data[] = [
                 RefundFileFields::SERIAL_NO          => $index + 1,

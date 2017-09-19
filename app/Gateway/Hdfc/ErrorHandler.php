@@ -49,7 +49,11 @@ class ErrorHandler
         if (defined(ErrorCode::class.'::'.$code) === false)
         {
             throw new Exception\LogicException(
-                'Invalid Hdfc Error Code provided. Code: ' . $code);
+                'Invalid Hdfc Error Code provided.',
+                null,
+                [
+                    'code' => $code,
+                ]);
         }
     }
 

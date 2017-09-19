@@ -79,7 +79,12 @@ trait Callback
         if (in_array($gateway, Payment\Gateway::$s2sCallbackGateways, true) === false)
         {
             throw new Exception\LogicException(
-                'Invalid gateway provided: ' . $gateway);
+                'Invalid gateway provided',
+                null,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'gateway'       => $gateway
+                ]);
         }
 
         $this->mutex->acquireAndRelease(
@@ -128,9 +133,20 @@ trait Callback
 
     /**
      * This means the payment has already been processed but
-     * we are hitting callback again. This could be due to
-     * browser refresh by the customer or s2s callback notification being
-     * delivered by the gateway before browser hits the callback route etc.
+     * we are hitting callback again.
+     *
+     * This could be due to browser refresh by the customer or
+     * s2s callback notification being delivered by the gateway before
+     * browser hits the callback route etc.
+     *
+     * @TODO
+     * Another case that needs to be explicitly handled is the
+     * case of a payment authorizaion occurring due to
+     * a pending authorization corporate netbanking payment
+     * that was marked failed due to the pending status.
+     *
+     * Once a checker approval comes in callback will be fired
+     * which must be accepted and sent as success.
      */
     protected function processPaymentCallbackSecondTime($payment)
     {
@@ -214,7 +230,14 @@ trait Callback
                 // Reload in case it's processed by another thread.
                 $this->repo->reload($payment);
 
-                if ($payment->isCreated() === false)
+                $isCorporatePayment = $payment->terminal->isCorporate();
+
+                // In case of non - corporate payments, this case is fine.
+                // In case of corporate and payment already having been authorized
+                if ((($payment->isCreated() === false) and
+                    ($isCorporatePayment === false)) or
+                    (($isCorporatePayment === true) and
+                    ($payment->hasBeenAuthorized() === true)))
                 {
                     return $this->processPaymentCallbackSecondTime($payment);
                 }
@@ -241,12 +264,12 @@ trait Callback
             $this->validateCallbackInputIfApplicable($input);
 
             // TODO: Better name suggestions
-            $data = $this->callGatewayFunction('callbackOtpSubmit', $input);
+            $data = $this->callGatewayFunction(Payment\Action::CALLBACK_OTP_SUBMIT, $input);
 
             $this->postPaymentOtpCallbackProcessing($input, $data);
 
             // Send a request to topup if balance is insufficient
-            $this->callGatewayFunction('checkBalance', $input);
+            $this->callGatewayFunction(Payment\Action::CHECK_BALANCE, $input);
         }
         else
         {
@@ -324,9 +347,14 @@ trait Callback
         $this->lockForUpdateAndReload($this->payment);
 
         $payment = $this->payment;
+
         $status = $payment->getStatus();
 
-        if ($status !== Status::CREATED)
+        $isCorporatePayment = $payment->terminal->isCorporate();
+
+        // In case of corporate payments, process this.
+        if (($status !== Status::CREATED) and
+            ($isCorporatePayment === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED,
@@ -337,11 +365,13 @@ trait Callback
                 ]);
         }
 
-        $code = $e->getError()->getInternalErrorCode();
+        $internalErrorCode = $e->getError()->getInternalErrorCode();
 
         $this->setTwoFactorAuthAfterCallbackException($e);
 
-        if (Error\Error::hasAction($code) === false)
+        $this->logRiskFailureForGateway($this->payment, $internalErrorCode);
+
+        if (Error\Error::hasAction($internalErrorCode) === false)
         {
             $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
         }
@@ -350,7 +380,7 @@ trait Callback
             $this->setPaymentError($e, TraceCode::PAYMENT_AUTH_PENDING);
         }
 
-        switch ($code)
+        switch ($internalErrorCode)
         {
             case ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT:
                 $payment->incrementOtpAttempts();

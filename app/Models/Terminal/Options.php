@@ -16,6 +16,29 @@ class Options
 
     protected $failedTerminals = [];
 
+    // Filters to be skipped for merchants with rule_filter
+    // feature enabled
+    protected $featureSkippedFilters = [
+        'method',
+        'network',
+        'bank',
+    ];
+
+    // Rule group names  to be used for terminal filtering for all merchants
+    protected $globallyApplicableRuleGroups = [
+        'min_amount_filter',
+        'prepaid_iin_filter',
+        'billdesk_category_filter',
+        'billdesk_merchant_filter',
+        'pharma_filter',
+        'tpv_filter',
+        'category_filter',
+        'gateway_exclusion_filter',
+        'billdesk_education_filter',
+        'maestro_filter',
+        'currency_filter',
+    ];
+
     public function __construct()
     {
         $this->setChance();
@@ -49,6 +72,21 @@ class Options
         }
 
         $this->chance = $chance;
+    }
+
+    public function getFeatureSkippedFilters()
+    {
+        return $this->featureSkippedFilters;
+    }
+
+    public function setFeatureSkippedFilters(array $filters)
+    {
+        $this->featureSkippedFilters = $filters;
+    }
+
+    public function getGloballyApplicableRuleGroups()
+    {
+        return $this->globallyApplicableRuleGroups;
     }
 
     public function setFailedTerminals(array $exclude)

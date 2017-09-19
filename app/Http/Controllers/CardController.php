@@ -4,14 +4,13 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
-use RZP\Models\Card;
-use RZP\Models\Payment;
+use RZP\Constants\Entity as E;
 
 class CardController extends Controller
 {
     public function getCard($id)
     {
-        $data = (new Card\Service)->fetchById($id);
+        $data = $this->service()->fetchById($id);
 
         return ApiResponse::json($data);
     }
@@ -20,21 +19,21 @@ class CardController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Card\Service)->fetchMultiple($input);
+        $data = $this->service()->fetchMultiple($input);
 
         return ApiResponse::json($data);
     }
 
     public function getIin($id)
     {
-        $data = (new Card\IIN\Service)->fetchIin($id);
+        $data = $this->service(E::IIN)->fetchIin($id);
 
         return ApiResponse::json($data);
     }
 
     public function updateSavedCards()
     {
-        $data = (new Card\Service)->updateSavedCards();
+        $data = $this->service()->updateSavedCards();
 
         return ApiResponse::json($data);
     }
@@ -43,7 +42,7 @@ class CardController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Card\IIN\Service)->fetchMultiple($input);
+        $data = $this->service(E::IIN)->fetchMultiple($input);
 
         return ApiResponse::json($data);
     }
@@ -54,11 +53,11 @@ class CardController extends Controller
 
         if (isset($input['file']))
         {
-            $data = (new Card\IIN\Service)->importIin($input);
+            $data = $this->service(E::IIN)->importIin($input);
         }
         else
         {
-            $data = (new Card\IIN\Service)->addIin($input);
+            $data = $this->service(E::IIN)->addIin($input);
         }
 
         return ApiResponse::json($data);
@@ -86,11 +85,11 @@ class CardController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function rangeUploadIin(Card\IIN\Service $iinService)
+    public function rangeUploadIin()
     {
         $input = Request::all();
 
-        $data = $iinService->addIinRange($input);
+        $data = $this->service(E::IIN)->addIinRange($input);
 
         return ApiResponse::json($data);
     }
@@ -99,7 +98,7 @@ class CardController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Card\IIN\Service)->editIin($id, $input);
+        $data = $this->service(E::IIN)->editIin($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -107,7 +106,7 @@ class CardController extends Controller
     public function postIinGenerate()
     {
         $input = Request::all();
-        $fileName = (new Card\IIN\Service)->generateIinFile($input);
+        $fileName = $this->service(E::IIN)->generateIinFile($input);
 
         return ApiResponse::json($fileName);
     }

@@ -41,6 +41,7 @@ class Validator
         Orchestrator::AXIS               => "/^Axis Estatement [0-9]{2}-"
                                             . "(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
         Orchestrator::FIRST_DATA         => "/Statement for Merchant MID No. razorpay/",
+        Orchestrator::VIRTUAL_ACC_KOTAK  => "/^RAZOR_VA_REPORT$/",
     ];
 
     const GATEWAY_BODY_REGEX = [
@@ -53,7 +54,8 @@ class Validator
                                             . "(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/20[0-9]{2}/",
         Orchestrator::AXIS               => "/Please find attached the settlement file for today."
                                             . " You net amount settled is/",
-        Orchestrator::FIRST_DATA         => "/the statement of transactions for MID (.)*razorpay/"
+        Orchestrator::FIRST_DATA         => "/the statement of transactions for MID (.)*razorpay/",
+        Orchestrator::VIRTUAL_ACC_KOTAK  => "/Please find the report./",
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
@@ -62,6 +64,7 @@ class Validator
         Orchestrator::NETBANKING_FEDERAL => 1,
         Orchestrator::AXIS               => 1,
         Orchestrator::FIRST_DATA         => 1,
+        Orchestrator::VIRTUAL_ACC_KOTAK  => 1,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -167,6 +170,23 @@ class Validator
         $validAttachmentCount = $this->validateAttachmentCount(
             $emailDetails[Orchestrator::ATTACHMENT_COUNT],
             Orchestrator::NETBANKING_FEDERAL);
+
+        return ($validSubject and $validAttachmentCount and $validBody);
+    }
+
+    public function validateVirtualAccKotakEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+                            $emailDetails[Orchestrator::SUBJECT],
+                            Orchestrator::VIRTUAL_ACC_KOTAK);
+
+        $validBody = $this->validateEmailBody(
+                            $emailDetails[Orchestrator::BODY],
+                            Orchestrator::VIRTUAL_ACC_KOTAK);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[Orchestrator::ATTACHMENT_COUNT],
+            Orchestrator::VIRTUAL_ACC_KOTAK);
 
         return ($validSubject and $validAttachmentCount and $validBody);
     }

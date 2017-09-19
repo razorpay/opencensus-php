@@ -17,6 +17,7 @@ class RequestFields
     const CONFIRMATION             = 'CG';
     const DATE                     = 'DATE';
     const USER_TYPE                = 'UserType';
+    const ACCOUNT_NUMBER           = 'ACID';
 
     // verify fields
     const PAYMENT_TYPE             = 'STATFLG';

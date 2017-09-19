@@ -3,25 +3,24 @@
 namespace RZP\Models\Terminal;
 
 use App;
+use Cache;
 use RZP\Constants\Mode as ConstantMode;
+use RZP\Models\Admin\ConfigKey;
 use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Models\Gateway\Rule;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace;
 use RZP\Trace\TraceCode;
 
-class Selector
+class Selector extends Base\Core
 {
-    protected $mode;
-    protected $payment;
-    protected $terminalRepo;
-    protected $trace;
-    protected $merchant;
     protected $input;
 
     protected static $filters = [
         Filters\TransactionFilter::class,
-        Filters\MerchantFilter::class,
+        Filters\RuleFilter::class,
     ];
 
     /**
@@ -38,11 +37,11 @@ class Selector
         // Boost a gateway terminals based on load distribution of probabilities
         Sorters\TerminalLoadSorter::class,
 
-        // Boosts direct terminals over shared terminals
-        Sorters\ExclusivitySorter::class,
-
         // Sorting based on merchant category
         Sorters\MerchantSorter::class,
+
+        // Boosts direct terminals over shared terminals
+        Sorters\ExclusivitySorter::class,
 
         // Sorting based on older failed attempts
         Sorters\FailedTerminalsSorter::class,
@@ -51,91 +50,36 @@ class Selector
         Sorters\GatewayDowntimeSorter::class,
     ];
 
-    public function __construct(Payment\Entity $payment, $mode)
+    public function __construct(array $input, Terminal\Options $options)
     {
-        $app = App::getFacadeRoot();
+        parent::__construct();
 
-        $this->mode = $mode;
+        $this->input = $input;
 
-        $this->payment = $payment;
-
-        $this->terminalRepo = $app['repo']->terminal;
-
-        $this->trace = $app['trace'];
-
-        $this->merchant = $payment->merchant;
-
-        $this->input = [
-            'payment'  => $this->payment,
-            'merchant' => $this->merchant,
-            'mode'     => $this->mode,
-        ];
+        $this->options = $options;
     }
 
-    public function getTerminals()
+    public function select()
     {
-        // Fetch terminals for both the current merchant and the shared Merchant
-        $merchantTerminals = $this->terminalRepo->getTerminalsForMerchantAndSharedMerchant(
-            $this->merchant->getId());
+        $allTerminals = $this->getTerminals();
 
-        return $merchantTerminals;
-    }
+        $verbose = $this->isVerboseLogEnabled();
 
-    public function select(Options $options = null, $verbose = false)
-    {
-        $terminals = $this->getTerminals();
+        $this->traceTerminals($allTerminals, 'Terminals fetched from db', $verbose);
 
-        $this->traceTerminals($terminals, 'Terminals fetched from db', $verbose);
+        $applicableRules = (new Rule\Core)->fetchApplicableRulesForPayment($allTerminals, $this->input);
 
-        //
-        // Initially, the terminals are run through a filter class, which removes
-        // the terminals which do not match the filters. For further iterations, the
-        // filtered list of terminals is used to further filter upon using the other
-        // filter classes.
-        //
-        $filteredTerminals = $terminals->all();
+        $filteredTerminals = $this->filterTerminals($allTerminals, $applicableRules, $verbose);
 
-        foreach (self::$filters as $filter)
-        {
-            $filteredTerminals = (new $filter)->filter($filteredTerminals, $this->input, $verbose);
-            $this->traceTerminals($filteredTerminals, 'Terminals after ' . $filter, $verbose);
-        }
-
-        $this->traceTerminals($filteredTerminals, 'Terminals after filtration', true);
-
-        //
-        // Sorting is done on the final list of filtered terminals.
-        // The sorting is run for each of the sorting classes.
-        //
-        $sortedTerminals = $filteredTerminals;
-
-        // In case there are failed terminals, this comes in as an exclusion list from the
-        // payment. We want to now place the excluded terminals at the bottom of the sorted
-        // list thereby hoping a successful payment through the non failed terminals
-        $failedTerminals = $options->getFailedTerminals();
-
-        if ((count($failedTerminals) > 0))
-        {
-            $this->input['failed_terminals'] = $failedTerminals;
-        }
-
-        foreach (self::$sorters as $sorter)
-        {
-            $sortedTerminals = (new $sorter)->sort($sortedTerminals, $this->input, $verbose, $options);
-            $this->traceTerminals($sortedTerminals, 'Terminals after ' . $sorter, $verbose);
-        }
-
-        $this->traceTerminals($sortedTerminals, 'Terminals after sorting', true);
-
-        $terminal = null;
+        $sortedTerminals = $this->sortTerminals($filteredTerminals, $applicableRules, $verbose);
 
         if (empty($sortedTerminals) === true)
         {
-            if ($this->mode === ConstantMode::TEST)
+            if (($this->isTestMode() === true) or ($this->app->environment('testing') === true))
             {
                 // The current list of terminals which were retrieved earlier does
                 // not contain the sharp terminal and hence, making a call to DB.
-                $terminal = $this->terminalRepo->find(Shared::SHARP_RAZORPAY_TERMINAL);
+                $terminal = $this->repo->terminal->find(Shared::SHARP_RAZORPAY_TERMINAL);
 
                 $sortedTerminals = array($terminal);
             }
@@ -143,28 +87,80 @@ class Selector
             {
                 throw new Exception\RuntimeException(
                     'No terminal found.',
-                    ['payment' => $this->payment->toArrayAdmin()]);
+                    ['payment' => $this->input['payment']->toArrayAdmin()]);
             }
         }
 
-        $terminal = $sortedTerminals[0];
+        return $sortedTerminals;
+    }
 
-        $this->payment->associateTerminal($terminal);
+    protected function getTerminals()
+    {
+        // Fetch terminals for both the current merchant and the shared Merchant
+        $merchantTerminals = $this->repo
+                                  ->terminal
+                                  ->getTerminalsForMerchantAndSharedMerchant(
+                                        $this->input['merchant']->getId());
 
-        // hack to return multiple terminals if needed.
-        if ($options and $options->getMultiple() === true)
+        return $merchantTerminals->all();
+    }
+
+    protected function filterTerminals(array $terminals, Base\PublicCollection $rules, bool $verbose = false): array
+    {
+        //
+        // Initially, the terminals are run through a filter class, which removes
+        // the terminals which do not match the filters. For further iterations, the
+        // filtered list of terminals is used to further filter upon using the other
+        // filter classes.
+        //
+
+        $filteredTerminals = $terminals;
+
+        foreach (self::$filters as $filter)
         {
-            return $sortedTerminals;
+            $filterRules = $this->getRulesForFiltering($rules);
+
+            $filterObj = new $filter($this->input, $this->options, $filterRules);
+
+            $filteredTerminals = $filterObj->filter($filteredTerminals, $verbose);
+
+            $this->traceTerminals($filteredTerminals, 'Terminals after ' . $filter, $verbose);
         }
 
-        return $terminal;
+        $this->traceTerminals($filteredTerminals, 'Terminals after filtration', true);
+
+        return $filteredTerminals;
+    }
+
+    protected function sortTerminals(array $terminals, Base\PublicCollection $rules, bool $verbose = false): array
+    {
+        //
+        // Sorting is done on the final list of filtered terminals.
+        // The sorting is run for each of the sorting classes.
+        //
+        $sortedTerminals = $terminals;
+
+        foreach (self::$sorters as $sorter)
+        {
+            $sorterRules = $this->getRulesForSorting($rules);
+
+            $sorterObj = new $sorter($this->input, $this->options, $sorterRules);
+
+            $sortedTerminals = $sorterObj->sort($sortedTerminals, $verbose);
+
+            $this->traceTerminals($sortedTerminals, 'Terminals after ' . $sorter, $verbose);
+        }
+
+        $this->traceTerminals($sortedTerminals, 'Terminals after sorting', true);
+
+        return $sortedTerminals;
     }
 
     protected function traceTerminals($terminals, $msg, $verbose = false)
     {
         if (($verbose === true) and (empty($terminals) === false))
         {
-            $terminalData = array_pluck($terminals, 'id', 'gateway');
+            $terminalData = array_pluck($terminals, 'gateway', 'id');
 
             $traceData = ['count' => count($terminals), 'terminals' => $terminalData, 'msg' => $msg];
 
@@ -172,45 +168,52 @@ class Selector
         }
     }
 
-    /**
-     * Methods selects a list of terminals for payment. We are
-     * selecting a list here since, we want to iterate through
-     * a bunch of terminals, in case the terminal fails
-     *
-     * @param array $opts
-     * @return Entity
-     * @throws Exception\RuntimeException
-     */
-    public function selectTerminals($opts = [])
+    protected function getRulesForFiltering(Base\PublicCollection $rules): Base\PublicCollection
     {
-        $options = new Terminal\Options;
-
-        if ((isset($opts[Options::FAILED]) === true) and
-            (is_array($opts[Options::FAILED]) === true))
+        return $rules->filter(function ($rule)
         {
-            $options->setFailedTerminals($opts[Options::FAILED]);
+            return ($rule->isFilter() === true);
+        });
+    }
+
+    /**
+     * Verbosity of terminal selection logs are determined
+     * by a flag held in cache
+     * @return boolean verbosity flag
+     */
+    protected function isVerboseLogEnabled(): bool
+    {
+        try
+        {
+            $verbose = (bool) Cache::get(ConfigKey::TERMINAL_SELECTION_LOG_VERBOSE);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException($ex, Trace::ERROR, TraceCode::TERMINAL_CONFIG_FETCH_ERROR);
+
+            $verbose = false;
         }
 
-        // Disabling rotation in case of netbanking. This is with the
-        // understanding that the terminal that is selected is the only
-        // relevant terminal that should be used.
-        //
-        // Also removes failed terminals from exclusion list. This will
-        // ensure the terminal is not rotated below the original terminals
-        if ($this->payment->isNetbanking())
+        return $verbose;
+    }
+
+    protected function getRulesForSorting(Base\PublicCollection $rules): Base\PublicCollection
+    {
+        $sorterRules = $rules->filter(function ($rule)
         {
-            $options->setMultiple(false);
-            $options->setFailedTerminals([]);
+            return ($rule->isSorter() === true);
+        });
+
+        $merchantSpecificRules = $rules->filter(function ($rule)
+        {
+            return ($rule->getMerchantId() === $this->input['merchant']->getId());
+        });
+
+        if ($merchantSpecificRules->isNotEmpty() === true)
+        {
+            return $merchantSpecificRules;
         }
 
-        $terminalsSelected = $this->select($options);
-
-        if ($options->getMultiple() === false)
-        {
-            // make this into an array, since the caller expects an array
-            $terminalsSelected = array($terminalsSelected);
-        }
-
-        return $terminalsSelected;
+        return $sorterRules;
     }
 }

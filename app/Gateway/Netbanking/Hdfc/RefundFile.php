@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Hdfc;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mail;
 
 use RZP\Constants\MailTags;
@@ -47,7 +48,7 @@ class RefundFile extends Base\RefundFile
             'signed_url' => $signedFileUrl,
         ];
 
-        $this->sendRefundEmail($fileData, $input['email']);
+        $this->sendRefundEmail($fileData, (array) $input['email']);
 
         return $file['local_file_path'];
     }
@@ -66,7 +67,7 @@ class RefundFile extends Base\RefundFile
         foreach ($input['data'] as $row)
         {
             $date = Carbon::createFromTimestamp(
-                $row['payment']['authorized_at'], 'Asia/Kolkata')->format('d/m/Y');
+                $row['payment']['authorized_at'], Timezone::IST)->format('d/m/Y');
 
             $data[] = [
                 'Sr No'            => $i++,

@@ -5,8 +5,9 @@ namespace RZP\Gateway\Hdfc\Payment;
 use RZP\Exception;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
-use RZP\Trace\Trace;
+use RZP\Models\Currency\Currency;
 use RZP\Trace\TraceCode;
+use Razorpay\Trace\Logger as Trace;
 
 trait Authorize
 {
@@ -37,7 +38,12 @@ trait Authorize
                 return $this->getFieldsForFormSubmitForRupay();
 
             default:
-                throw new Exception\LogicException('Should not have reached here');
+                throw new Exception\LogicException(
+                    'Should not have reached here',
+                    null,
+                    [
+                        'enroll_status' => $enrollStatus,
+                    ]);
         }
     }
 
@@ -107,9 +113,9 @@ trait Authorize
 
     protected function verifyAuthResponse(array & $authResponse)
     {
-        $this->isAuthSuccess($authResponse);
-
         $this->traceAuthEnrolledResponse($authResponse);
+
+        $this->isAuthSuccess($authResponse);
 
         if (isset($authResponse['data']['trackid']) === true)
         {
@@ -239,6 +245,10 @@ trait Authorize
                 $errorCode = Hdfc\ErrorCode::RP00011;
                 break;
 
+            case '':
+                $errorCode = Hdfc\ErrorCode::RP00002;
+                break;
+
             default:
                 $errorCode = $result;
                 break;
@@ -252,6 +262,16 @@ trait Authorize
     }
 
     protected function createAuthNotEnrolledRequestFields()
+    {
+        $this->createAuthNotEnrolledRequestFieldsFromEnrollData();
+
+        $this->trace(
+            Trace::DEBUG,
+            TraceCode::GATEWAY_NOT_ENROLLED_REQUEST,
+            $this->authNotEnrolledRequest);
+    }
+
+    protected function createAuthNotEnrolledRequestFieldsFromEnrollData()
     {
         //
         // Only need to add zip and addr fields
@@ -267,11 +287,6 @@ trait Authorize
         $this->authNotEnrolledRequest['data'] = $data;
 
         unset($this->authNotEnrolledRequest['content']);
-
-        $this->trace(
-            Trace::DEBUG,
-            TraceCode::GATEWAY_NOT_ENROLLED_REQUEST,
-            $this->authNotEnrolledRequest);
     }
 
     protected function traceAuthNotEnrolledResponse()
@@ -297,20 +312,10 @@ trait Authorize
 
     protected function traceAuthEnrolledResponse($authResponse)
     {
-        if ($this->error)
-        {
-            $this->trace(
-                Trace::ERROR,
-                TraceCode::GATEWAY_ENROLLED_AUTH_ERROR,
-                $authResponse);
-        }
-        else
-        {
-            $this->trace(
-                Trace::INFO,
-                TraceCode::GATEWAY_ENROLLED_AUTH_RESPONSE,
-                $authResponse);
-        }
+        $this->trace(
+            Trace::INFO,
+            TraceCode::GATEWAY_ENROLLED_AUTH_RESPONSE,
+            $authResponse);
     }
 
     protected function persistAfterAuthNotEnrolled()
@@ -381,5 +386,117 @@ trait Authorize
         // Postdate that we get back from hdfc gateway as yet is weird
         // It's giving next day date on 5 pm on current day.
         ;
+    }
+
+    protected function createAuthRecurringRequestFields(array $input)
+    {
+        $payment = $input['payment'];
+
+        $card = $input['card'];
+
+        // set the iso numeric currency code
+        $currency = $payment['currency'];
+
+        $data = [
+            'trackid'      => $payment['id'],
+            'amt'          => $payment['amount']/100,
+            'udf1'         => 'test',
+            'udf2'         => $payment['email'],
+            'udf3'         => $payment['contact'],
+            'udf4'         => 'test',
+            'udf5'         => 'test',
+            'currencycode' => Currency::ISO_NUMERIC_CODES[$currency],
+            'action'       => Action::AUTHORIZE,
+        ];
+
+        // Collect udf fields
+        // Only visa/master are supported for recurring
+        $this->populateRiskUdfIfApplicable($data, $input);
+
+        $this->udfCheckAndMeetHdfcRequirements($data);
+
+        $this->udfRemoveHackCharacters($data);
+
+        // Collect fields related to the card
+        $this->mapKeys($card, $this->cardKeyMappings, $data);
+
+        $this->authSecondRecurringRequest['data'] = $data;
+
+        // Fields not required for authorizeRecurring.
+        unset($this->authSecondRecurringRequest['content']);
+
+        unset($this->authSecondRecurringRequest['data']['cvv2']);
+    }
+
+
+    protected function authorizeRecurring($input)
+    {
+        $this->createAuthRecurringRequestFields($input);
+
+        $this->trace(
+           Trace::DEBUG,
+           TraceCode::GATEWAY_RECURRING_AUTH_REQUEST,
+           $this->authSecondRecurringRequest);
+
+        $this->runRequestResponseFlow(
+            $this->authSecondRecurringRequest,
+            $this->authSecondRecurringResponse);
+
+        // Check for auth success.
+        if ($this->isAuthSuccess($this->authSecondRecurringResponse) === true)
+        {
+            $this->validateAuthRecurringResponse();
+        }
+
+        $this->traceAuthRecurringResponse();
+
+        $this->persistAfterAuthRecurring();
+
+        if ($this->error)
+        {
+            $this->throwException($this->authSecondRecurringResponse['error']);
+        }
+
+    }
+
+    protected function traceAuthRecurringResponse()
+    {
+        if ($this->error)
+        {
+            $this->trace(
+                Trace::ERROR,
+                TraceCode::GATEWAY_RECURRING_AUTH_ERROR,
+                $this->authSecondRecurringResponse);
+        }
+        else
+        {
+            $this->trace(
+                Trace::INFO,
+                TraceCode::GATEWAY_RECURRING_AUTH_RESPONSE,
+                $this->authSecondRecurringResponse);
+        }
+    }
+
+    protected function persistAfterAuthRecurring()
+    {
+        if ($this->error)
+        {
+            $this->repo->persistAfterAuthRecurringError(
+                $this->authSecondRecurringRequest['data'],
+                $this->authSecondRecurringResponse['error']);
+        }
+        else
+        {
+            $this->repo->persistAfterAuthRecurring(
+                $this->authSecondRecurringRequest['data'],
+                $this->authSecondRecurringResponse['data']);
+        }
+    }
+
+    protected function validateAuthRecurringResponse()
+    {
+        $data = $this->authSecondRecurringResponse['data'];
+
+        $this->validatePostDate($data['postdate']);
     }
 }

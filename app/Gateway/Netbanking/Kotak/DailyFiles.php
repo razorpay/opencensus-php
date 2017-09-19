@@ -98,9 +98,7 @@ class DailyFiles extends Base\DailyFiles
 
         $gateway = $terminal->getGateway();
 
-        $action = 'generateRefunds';
-
-        return $this->app['gateway']->call($gateway, $action, $input, $this->mode);
+        return $this->app['gateway']->call($gateway, Payment\Action::GENERATE_REFUNDS, $input, $this->mode);
     }
 
     protected function getClaimsDataForTpv($from, $to, $tpvEnabled = false)
@@ -147,9 +145,7 @@ class DailyFiles extends Base\DailyFiles
 
         $gateway = $claim->terminal->getGateway();
 
-        $action = 'generateClaims';
-
-        return $this->app['gateway']->call($gateway, $action, $input, $this->mode);
+        return $this->app['gateway']->call($gateway, Payment\Action::GENERATE_CLAIMS, $input, $this->mode);
     }
 
     protected function updateTimeStamps($from, $to)

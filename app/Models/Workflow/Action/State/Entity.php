@@ -73,33 +73,13 @@ class Entity extends Base\Entity
         $this->attributes[self::NAME] = $state;
     }
 
-    public function setName(string $state)
-    {
-        $this->setAttribute(self::NAME, $state);
-    }
+    // public function action()
+    // {
+    //     return $this->belongsTo('RZP\Models\Workflow\Action\Entity');
+    // }
 
-    public function getName() : string
-    {
-        return $this->getAttribute(self::NAME);
-    }
-
-    public function action()
-    {
-        return $this->belongsTo('RZP\Models\Workflow\Action\Entity');
-    }
-
-    public function admin()
-    {
-        return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
-    }
-
-    public function isClosedState()
-    {
-        if (in_array($this->getName(), self::CLOSED_STATES, true) === true)
-        {
-            return true;
-        }
-
-        return false;
-    }
+    // public function admin()
+    // {
+    //     return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
+    // }
 }

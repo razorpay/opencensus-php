@@ -3,6 +3,7 @@
 namespace RZP\Models\Report\Types;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Models\Base;
 use RZP\Base\RuntimeManager;
@@ -49,11 +50,11 @@ class BaseReport extends Base\Core
             $day = (int) $input['day'];
             $month = (int) $input['month'];
 
-            $date = Carbon::createFromDate($year, $month, $day, 'Asia/Kolkata')
+            $date = Carbon::createFromDate($year, $month, $day, Timezone::IST)
                           ->startOfDay();
 
-            $from = $date->timestamp;
-            $to = $date->addDay()->timestamp - 1;
+            $from = $date->getTimestamp();
+            $to = $date->addDay()->getTimestamp() - 1;
         }
         else if (isset($input['month']))
         {
@@ -62,13 +63,13 @@ class BaseReport extends Base\Core
             assertTrue($month > 0);
             assertTrue($month <= 12);
 
-            $from = Carbon::createFromDate($year, $month, 1, 'Asia/Kolkata')
+            $from = Carbon::createFromDate($year, $month, 1, Timezone::IST)
                           ->startOfDay()
-                          ->timestamp;
+                          ->getTimestamp();
 
-            $to = Carbon::createFromDate($year, $month, 1, 'Asia/Kolkata')
+            $to = Carbon::createFromDate($year, $month, 1, Timezone::IST)
                         ->endOfMonth()
-                        ->timestamp;
+                        ->getTimestamp();
         }
 
         return [$from, $to];
@@ -77,15 +78,12 @@ class BaseReport extends Base\Core
     /**
      * 1. increase system limits
      * 2. Sets timezone
-     *
-     * @param $input array
-     *        expected : 'day', 'month', 'year'
      */
     protected function setDefaults()
     {
         $this->increaseAllowedSystemLimits();
 
-        date_default_timezone_set('Asia/Kolkata');
+        date_default_timezone_set(Timezone::IST);
     }
 
     protected function increaseAllowedSystemLimits()

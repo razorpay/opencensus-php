@@ -36,6 +36,11 @@ class Core extends Base\Core
 
         $pricing = $pricing->generateId();
 
+        //setting Id as new Id because here everytime we will have a new workflow for create pricing plan.
+        $this->app['workflow']
+            ->setEntityAndId($pricing->getEntity(), $pricing->getId())
+            ->handle((new \stdClass), $pricing);
+
         $pricing->setAuditAction(Action::CREATE_MERCHANT_PRICING_PLAN);
 
         $plan = $this->repo->pricing->getPricingPlanByName($input[Entity::PLAN_NAME]);

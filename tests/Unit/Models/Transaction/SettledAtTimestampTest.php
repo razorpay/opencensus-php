@@ -3,6 +3,7 @@
 namespace RZP\Tests\Unit\Models\Transaction;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mockery;
 use RZP\Models\Transaction;
 use ReflectionClass;
@@ -133,7 +134,7 @@ class SettledAtTimestampTest extends TestCase
             {
                 foreach (['first','third','fifth'] as $ordinal)
                 {
-                    $capturedAt = Carbon::parse($ordinal.' saturday of october 2016','Asia/Kolkata');
+                    $capturedAt = Carbon::parse($ordinal.' saturday of october 2016',Timezone::IST);
 
                     $this->runTestWith($capturedAt, $addDays, $key, $value);
                 }
@@ -142,7 +143,7 @@ class SettledAtTimestampTest extends TestCase
             {
                 foreach (['second','fourth'] as $ordinal)
                 {
-                    $capturedAt = Carbon::parse($ordinal.' saturday of october 2016','Asia/Kolkata');
+                    $capturedAt = Carbon::parse($ordinal.' saturday of october 2016',Timezone::IST);
 
                     $this->runTestWith($capturedAt, $addDays, $key, $value);
                 }
@@ -166,7 +167,7 @@ class SettledAtTimestampTest extends TestCase
 
         $settledAt = $this->method->invokeArgs($this->core, $arguments);
 
-        $settledAt = Carbon::createFromTimestamp($settledAt, 'Asia/Kolkata');
+        $settledAt = Carbon::createFromTimestamp($settledAt, Timezone::IST);
 
         $diff = $settledAt->diffInDays($capturedAt);
 

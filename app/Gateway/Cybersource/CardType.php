@@ -34,7 +34,11 @@ class CardType
         // @codeCoverageIgnoreStart
         // Adding this as a defensive code, code should never reach here.
         throw new Exception\LogicException(
-            'Unsupported card network');
+            'Unsupported card network',
+            null,
+            [
+                'network' => $network,
+            ]);
         // @codeCoverageIgnoreEnd
     }
 }

@@ -5,69 +5,301 @@ namespace RZP\Models\Report\Types;
 use Carbon\Carbon;
 
 use RZP\Base\JitValidator;
-use RZP\Models\Transaction;
+use RZP\Constants\Timezone;
+use RZP\Exception;
+use RZP\Models\Merchant\Detail;
+use RZP\Models\Merchant\Invoice;
 use RZP\Models\Pricing\Feature;
 use RZP\Models\Pricing\FeeCalculator;
 use RZP\Models\Transaction\FeeBreakup\Name as FeeName;
+use RZP\Trace\TraceCode;
 
 class InvoiceReport extends BaseReport
 {
     // Corresponds to 15th November 2015 00:00
-    const SWACH_BHARAT_CUTOFF_TIMESTAMP = 1447525800;
-    const SWACH_BHARAT_CESS = 'Swachh Bharat Cess';
-    const SWACH_BHARAT_CESS_RATE = 0.005;
+    //const SWACH_BHARAT_CUTOFF_TIMESTAMP = 1447525800;
+    const SWACH_BHARAT_CESS         = 'Swachh Bharat Cess';
+    const SWACH_BHARAT_CESS_RATE    = 0.005;
 
     //Corresponds to 1st June, 2016 00:00
-    const KRISHI_KALYAN_CUTOFF_TIMESTAMP = 1464719400;
-    const KRISHI_KALYAN_CESS = 'Krishi Kalyan Cess';
-    const KRISHI_KALYAN_CESS_RATE = 0.005;
+    // const KRISHI_KALYAN_CUTOFF_TIMESTAMP = 1464719400;
+    const KRISHI_KALYAN_CESS        = 'Krishi Kalyan Cess';
+    const KRISHI_KALYAN_CESS_RATE   = 0.005;
 
-    const SERVICE_TAX  = 'Service Tax';
-    const IGST = 'IGST';
-    const CGST = 'CGST';
-    const SGST = 'SGST';
+    const SERVICE_TAX   = 'Service Tax';
+    const RAZORPAY_FEE  = 'razorpay_fee';
+    const TAXES         = 'taxes';
+    const TAX           = 'tax';
+    const TOTAL_FEE     = 'total_fee';
 
-    const RAZORPAY_FEE = 'razorpay_fee';
-    const TAXES = 'taxes';
-    const TAX   = 'tax';
-    const TOTAL_FEE = 'total_fee';
+    // Report headings
+    const GST_SAC_CODE  = 'GST.SAC Code';
+    const DESCRIPTION   = 'Description';
+    const AMOUNT        = 'Amount';
+    const AMOUNT_DUE    = 'Amount Due';
+    const SGST          = 'SGST @ 9%';
+    const CGST          = 'CGST @ 9%';
+    const IGST          = 'IGST @ 18%';
+    const TAX_TOTAL     = 'Tax Total';
+    const GRAND_TOTAL   = 'Grand Total';
 
-    /**
-     * This is the case where we calculate the sum of
-     * payments and calculate the swachh bharat cess
-     * manually
-     */
-    const SB_COMPLEX_CASE = [
-        'month'  => '11',
-        'year'   => '2015'
-    ];
+    const PAGES             = 'pages';
+    const SUMMARY           = 'Summary';
+    const SUMMARY_TITLE     = 'Invoice Summary';
+    const TAX_INVOICE       = 'Tax Invoice';
+    const TAX_DEBIT_NOTE    = 'Tax Debit Note';
+    const TAX_CREDIT_NOTE   = 'Tax Credit Note';
+    const ROWS              = 'rows';
+    const TOTAL_AMOUNT_DUE  = 'total_amount_due';
+    const TOTAL_AMOUNT_PAID = 'total_amount_paid';
+    const DOCUMENT_NO       = 'Document No.';
+    const DOCUMENT_DATE     = 'Document Date';
 
-    const KK_COMPLEX_CASE = [
-        'month'  => '6',
-        'year'   => '2016'
-    ];
-
-    protected $SBCessMonth;
-    protected $KKCessMonth;
+    protected $inputRules;
+    protected $month;
+    protected $year;
+    protected $invoiceNo;
+    protected $invoiceDate;
+    protected $gstin;
+    protected $taxComponents;
+    protected $reportData = [];
+    protected $debitNoteData = [];
+    protected $creditNoteData = [];
+    protected $invoiceReport = [];
+    protected $totalInvoiceAmountDue = 0;
+    protected $totalDebitNoteAmountDue = 0;
+    protected $totalCreditNoteAmountDue = 0;
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->SBCessMonth = Carbon::createFromDate(
-            self::SB_COMPLEX_CASE['year'],
-            self::SB_COMPLEX_CASE['month']);
-
-        $this->KKCessMonth = Carbon::createFromDate(
-            self::KK_COMPLEX_CASE['year'],
-            self::KK_COMPLEX_CASE['month']);
+        $this->inputRules = [
+            'year'      => 'required|digits:4',
+            'month'     => 'required|digits_between:1,2',
+            'format'    => 'sometimes|string',
+        ];
     }
 
-    public function getInvoiceV2($input)
+    public function getInvoiceReport($input)
+    {
+        $this->trace->info(TraceCode::MERCHANT_INVOICE_REPORT_REQUEST, $input);
+
+        (new JitValidator)->rules($this->inputRules)->input($input)->validate();
+
+        $this->month = $input['month'];
+
+        $this->year = $input['year'];
+
+        if ((isset($input['format']) === true) and
+            ($input['format'] === 'new'))
+        {
+            $this->getInvoiceNew($input);
+
+            $this->groupData();
+
+            return $this->invoiceReport;
+        }
+        else
+        {
+            return $this->getInvoiceV2($input);
+        }
+    }
+
+    protected function setInvoiceVariables()
+    {
+        $this->invoiceBreakup = $this->repo->merchant_invoice->fetchInvoiceReportData(
+                                    $this->merchant->getId(), $this->month, $this->year);
+
+        if ($this->invoiceBreakup->count() === 0)
+        {
+            throw new Exception\RuntimeException(
+                'Invoice not generated yet for merchant ' . $this->merchant->getId() .
+                ' for year ' . $this->year . ' and month ' . $this->month);
+        }
+
+        $this->invoiceNo = $this->invoiceBreakup[0]->getInvoiceNumber();
+
+        $this->invoiceDate = Carbon::createFromDate($this->year, $this->month, 1, Timezone::IST)
+                                    ->addMonth()
+                                    ->startOfMonth()
+                                    ->format('d/m/Y');
+
+        $this->gstin = $this->invoiceBreakup[0]->getGstin();
+
+        $this->taxComponents = $this->getTaxComponents($this->gstin);
+
+        $this->invoiceReport = [
+            self::SUMMARY       => [self::SUMMARY_TITLE => [self::ROWS => []]],
+            'invoice_number'    => $this->invoiceNo,
+            'invoice_date'      => $this->invoiceDate,
+            'gstin'             => $this->gstin,
+            self::PAGES         => [
+                self::TAX_INVOICE       => [],
+                self::TAX_CREDIT_NOTE   => [],
+                self::TAX_DEBIT_NOTE    => [],
+            ],
+        ];
+    }
+
+    protected function getInvoiceNew(array $input)
+    {
+        $this->setInvoiceVariables();
+
+        // Different fee component rows
+        foreach ($this->invoiceBreakup as $index => $entity)
+        {
+            $type = $entity->getType();
+
+            $tax = abs($entity->getTax());
+
+            $amount = abs($entity->getAmount());
+
+            // Current row
+            $row = $this->getNewRow();
+
+            $row[self::GST_SAC_CODE] = Invoice\Type::getGstSacCodeForType($type);
+
+            $row[self::DESCRIPTION] = $entity->getDescription();
+
+            $row[self::AMOUNT] = $amount;
+
+            $row[self::TAX_TOTAL] = $tax;
+
+            $row[self::GRAND_TOTAL] = $tax + $amount;
+
+            if (count($this->taxComponents) === 1)
+            {
+                $row[self::IGST] = $tax;
+            }
+            else
+            {
+                $taxComponentValue = (int) round($tax / 2);
+
+                $row[self::CGST] = $taxComponentValue;
+
+                $row[self::SGST] = $taxComponentValue;
+            }
+
+            if ($type === Invoice\Type::ADJUSTMENT)
+            {
+                if (($entity->getAmount() < 0) or ($entity->getTax() < 0))
+                {
+                    $this->debitNoteData[] = $row;
+                }
+                else
+                {
+                    $this->creditNoteData[] = $row;
+                }
+            }
+            else
+            {
+                $this->reportData[] = $row;
+            }
+        }
+    }
+
+    protected function groupDataForSummaryByPageType(
+        array $allRows, string $pageType, string $pageDescription, & $summaryAmount)
+    {
+        if (empty($allRows) === true)
+        {
+            return;
+        }
+
+        $finalRow = $this->getFinalRow($allRows);
+
+        $allRows[] = $finalRow;
+
+        $this->invoiceReport[self::PAGES][$pageType] = [
+            self::ROWS => $allRows,
+        ];
+
+        $amount = $finalRow[self::GRAND_TOTAL];
+
+        // Add row for summary page
+        $this->invoiceReport[self::SUMMARY][self::SUMMARY_TITLE][self::ROWS][] = [
+            self::DOCUMENT_NO       => $this->invoiceNo,
+            self::DOCUMENT_DATE     => $this->invoiceDate,
+            self::DESCRIPTION       => $pageDescription,
+            self::AMOUNT            => $amount,
+        ];
+
+        if ($pageType === self::TAX_CREDIT_NOTE)
+        {
+            $summaryAmount -= $amount;
+        }
+        else
+        {
+            $summaryAmount += $amount;
+        }
+    }
+
+    protected function groupData()
+    {
+        $summaryAmount = 0;
+
+        $this->groupDataForSummaryByPageType(
+            $this->reportData, self::TAX_INVOICE, 'Monthly Invoice', $summaryAmount);
+
+        $this->groupDataForSummaryByPageType(
+            $this->debitNoteData, self::TAX_DEBIT_NOTE, self::TAX_DEBIT_NOTE, $summaryAmount);
+
+        $this->groupDataForSummaryByPageType(
+            $this->creditNoteData, self::TAX_CREDIT_NOTE, self::TAX_CREDIT_NOTE, $summaryAmount);
+
+        // Add final row for the summary page
+        $this->invoiceReport[self::SUMMARY][self::SUMMARY_TITLE][self::ROWS][] = [
+            self::DOCUMENT_NO       => '',
+            self::DOCUMENT_DATE     => '',
+            self::DESCRIPTION       => 'Total',
+            self::AMOUNT            => $summaryAmount,
+        ];
+    }
+
+    protected function getNewRow(): array
+    {
+        return [
+            self::GST_SAC_CODE  => '',
+            self::DESCRIPTION   => '',
+            self::AMOUNT        => 0,
+            self::SGST          => 0,
+            self::CGST          => 0,
+            self::IGST          => 0,
+            self::TAX_TOTAL     => 0,
+            self::GRAND_TOTAL   => 0,
+        ];
+    }
+
+    protected function getFinalRow(array $rows): array
+    {
+        $finalRow = $this->getNewRow();
+
+        $finalRow[self::DESCRIPTION] = 'Total';
+
+        foreach ($rows as $row)
+        {
+            $finalRow[self::AMOUNT]         += $row[self::AMOUNT];
+            $finalRow[self::TAX_TOTAL]      += $row[self::TAX_TOTAL];
+            $finalRow[self::GRAND_TOTAL]    += $row[self::GRAND_TOTAL];
+            $finalRow[self::IGST]           += $row[self::IGST];
+            $finalRow[self::CGST]           += $row[self::CGST];
+            $finalRow[self::SGST]           += $row[self::SGST];
+        }
+
+        return $finalRow;
+    }
+
+    protected function getTaxComponents(string $gstin = null): array
+    {
+        $businessStateCode = Detail\Entity::getBusinessStateCodeFromGstin($gstin);
+
+        return FeeCalculator::getTaxComponentsFromStateCode($businessStateCode);
+    }
+
+    protected function getInvoiceV2(array $input): array
     {
         $merchantId = $this->merchant->getId();
-
-        (new JitValidator)->rules(self::$rules)->input($input)->validate();
 
         list($from, $to) = $this->getTimestamps($input);
 
@@ -85,7 +317,6 @@ class InvoiceReport extends BaseReport
             }
         }
 
-
         if (FeeCalculator::isGstApplicable($from) === true)
         {
             $taxInfo = $this->getGstTaxes($fees);
@@ -96,6 +327,7 @@ class InvoiceReport extends BaseReport
         }
 
         $totalTax = $taxInfo['total_tax'];
+
         $taxes = $taxInfo['taxes'];
 
         return [
@@ -144,136 +376,42 @@ class InvoiceReport extends BaseReport
         $cgst = intval($fees[FeeName::CGST]['sum'] ?? 0);
         $sgst = intval($fees[FeeName::SGST]['sum'] ?? 0);
 
+        $merchantBusinessStateCode = $this->merchant->getBusinessStateCode();
+
+        $intrastateGstApplicable = ($merchantBusinessStateCode === FeeCalculator::RZP_GST_STATE_CODE);
 
         // all 3 taxes might have been charged to merchant if merchant updated
         // their GSTN number later
-        $totalTax = $cgst + $sgst + $igst;
-
-        $taxes = [
-            self::IGST => $igst,
-            self::CGST => $cgst,
-            self::SGST => $sgst,
-        ];
-
-        return ['taxes' => $taxes, 'total_tax' => $totalTax];
-    }
-
-    public function getInvoice($input)
-    {
-        $merchantId = $this->merchant->getId();
-
-        (new JitValidator)->rules(self::$rules)->input($input)->validate();
-
-        list($from, $to) = $this->getTimestamps($input);
-
-        // If the invoice needs to be generated for November 2015 (SB Cess month), SB cess should not be
-        // applied for transactions between November 1st to November 15th. For transactions between
-        // November 15th to November 30th, SB cess should be applied.
-        // For any other month, SB cess should be either applied (from Nov 2015) or not (before Nov 2015).
-        if ($this->isComplexSBCessCase($input) === true)
+        if ($intrastateGstApplicable === true)
         {
-            // Gets the total fees and service tax of transactions of the merchants
-            // before 15th november and after 15th november.
-            $dataBefore15Nov = $this->repo->transaction->fetchDataForInvoice(
-                $merchantId,
-                $from,
-                self::SWACH_BHARAT_CUTOFF_TIMESTAMP);
+            $halfOfIgst = (int) round($igst / 2);
+            $cgst += $halfOfIgst;
+            $sgst += $igst - $halfOfIgst;
+            $igst = 0;
+        }
+        else if ($intrastateGstApplicable === false)
+        {
+            $igst += ($cgst + $sgst);
+            $cgst = 0;
+            $sgst = 0;
+        }
 
-            $dataAfter15Nov  = $this->repo->transaction->fetchDataForInvoice(
-                $merchantId,
-                self::SWACH_BHARAT_CUTOFF_TIMESTAMP,
-                $to);
+        if (($cgst > 0) or ($sgst > 0))
+        {
+            $totalTax = $cgst + $sgst;
 
-            // Now we calculate taxes on each individually.
-            // Since this block will be executed only if the input is November 2015,
-            // KK cess should NOT be calculated in this flow. (KK cess should be
-            // calculated for transactions from June 2016 only)
-            $this->addTaxComponents($dataBefore15Nov, false, false);
-            $this->addTaxComponents($dataAfter15Nov, true, false);
-
-            $data = $this->sumInvoiceData($dataBefore15Nov, $dataAfter15Nov);
+            $taxes = [
+                'CGST' => $cgst,
+                'SGST' => $sgst,
+            ];
         }
         else
         {
-            $data = $this->repo->transaction->fetchDataForInvoice($merchantId, $from, $to);
+            $totalTax = $igst;
 
-            $sbCessApplied = $this->isCessApplicable($input, $this->SBCessMonth);
-
-            $kkCessApplied = $this->isCessApplicable($input, $this->KKCessMonth);
-
-            $this->addTaxComponents($data, $sbCessApplied, $kkCessApplied);
+            $taxes = ['IGST' => $igst];
         }
 
-        return $data;
-    }
-
-    protected function sumInvoiceData($beforeSBCCutoff, $afterSBCCutoff)
-    {
-        return [
-            self::TOTAL_FEE => $beforeSBCCutoff[self::TOTAL_FEE] + $afterSBCCutoff[self::TOTAL_FEE],
-            self::RAZORPAY_FEE => $beforeSBCCutoff[self::RAZORPAY_FEE] + $afterSBCCutoff[self::RAZORPAY_FEE],
-            self::TAX => $beforeSBCCutoff[self::TAX] + $afterSBCCutoff[self::TAX],
-            self::TAXES => [
-                self::SERVICE_TAX   => $beforeSBCCutoff[self::TAXES][self::SERVICE_TAX] +
-                    $afterSBCCutoff[self::TAXES][self::SERVICE_TAX],
-                // The first half doesn't have the swach bharat cess
-                self::SWACH_BHARAT_CESS => $afterSBCCutoff[self::TAXES][self::SWACH_BHARAT_CESS]
-            ]
-        ];
-    }
-
-    protected function addTaxComponents(&$data, $sbCessApplied, $kkCessApplied)
-    {
-        $taxes = [];
-
-        $data[self::RAZORPAY_FEE] = $data[self::TOTAL_FEE] - $data[self::TAX];
-
-        // $data[self::TAX] is retrieved from the DB. It's the service tax amount, inclusive of
-        // the various cess amounts.
-        $totalTax = $data[self::TAX];
-
-        $swCess = $kkCess = 0;
-
-        // This is all in Paise
-        // so we can round to the nearest integer
-        if ($sbCessApplied === true)
-        {
-            $swCess = $taxes[self::SWACH_BHARAT_CESS] =
-                round($data[self::RAZORPAY_FEE] * self::SWACH_BHARAT_CESS_RATE);
-        }
-
-        if ($kkCessApplied === true)
-        {
-            $kkCess = $taxes[self::KRISHI_KALYAN_CESS] =
-                round($data[self::RAZORPAY_FEE] * self::KRISHI_KALYAN_CESS_RATE);
-        }
-
-        $taxes[self::SERVICE_TAX] = round($totalTax - $swCess - $kkCess);
-
-        $data[self::TAXES] = $taxes;
-    }
-
-    /**
-     * This only handles the easy cases of cess month
-     * @return boolean
-     */
-    protected function isCessApplicable($input, $cessMonth)
-    {
-        // This will revert to first of the month
-        $inputDate = Carbon::createFromDate($input['year'], $input['month']);
-
-        // input date is greater than or equal to SBCessMonth
-        return $inputDate->gte($cessMonth);
-    }
-
-    protected function isComplexSBCessCase($input)
-    {
-        // We are only comparing the year and month
-        $inputDate  = Carbon::createFromDate(
-            $input['year'],
-            $input['month']
-        );
-
-        return $inputDate->eq($this->SBCessMonth);
+        return ['taxes' => $taxes, 'total_tax' => $totalTax];
     }
 }

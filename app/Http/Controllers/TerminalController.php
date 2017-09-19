@@ -4,7 +4,6 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
-use RZP\Models\Terminal;
 
 class TerminalController extends Controller
 {
@@ -12,21 +11,21 @@ class TerminalController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Terminal\Service)->editTerminal($id, $input);
+        $data = $this->service()->editTerminal($id, $input);
 
         return ApiResponse::json($data);
     }
 
     public function restoreTerminal(string $id)
     {
-        $data = (new Terminal\Service)->restoreTerminal($id);
+        $data = $this->service()->restoreTerminal($id);
 
         return ApiResponse::json($data);
     }
 
     public function deleteTerminal(string $id)
     {
-        $data = (new Terminal\Service)->deleteTerminal2($id);
+        $data = $this->service()->deleteTerminal2($id);
 
         return ApiResponse::json($data);
     }
@@ -35,7 +34,7 @@ class TerminalController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Terminal\Service)->checkTerminalEncryptedValue($id, $input);
+        $data = $this->service()->checkTerminalEncryptedValue($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -44,21 +43,21 @@ class TerminalController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Terminal\Service)->toggleTerminal($id, $input);
+        $data = $this->service()->toggleTerminal($id, $input);
 
         return ApiResponse::json($data);
     }
 
     public function addMerchant(string $id, string $mid)
     {
-        $data = (new Terminal\Service)->addMerchantToTerminal($id, $mid);
+        $data = $this->service()->addMerchantToTerminal($id, $mid);
 
         return ApiResponse::json($data);
     }
 
     public function removeMerchant(string $id, string $mid)
     {
-        $data = (new Terminal\Service)->removeMerchantFromTerminal($id, $mid);
+        $data = $this->service()->removeMerchantFromTerminal($id, $mid);
 
         return ApiResponse::json($data);
     }
@@ -67,7 +66,7 @@ class TerminalController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Terminal\Service)->reassignMerchantForTerminal($id, $input);
+        $data = $this->service()->reassignMerchantForTerminal($id, $input);
 
         return ApiResponse::json($data);
     }

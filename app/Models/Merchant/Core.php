@@ -14,8 +14,10 @@ use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
+use RZP\Jobs\MerchantSync;
 use RZP\Models\BankAccount;
 use RZP\Models\Admin\Action;
+use RZP\Jobs\DispatchRouter;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Schedule\Task as ScheduleTask;
@@ -46,6 +48,8 @@ class Core extends Base\Core
 
         // Updating the existing customer info and setting activated to false
         $this->app['drip']->sendDripMerchantInfo($merchant, Merchant\Action::CREATED);
+
+        $this->app['eventManager']->trackEvents($merchant, Merchant\Action::CREATED, $merchant->toArrayEvent());
 
         return $merchant;
     }
@@ -353,7 +357,6 @@ class Core extends Base\Core
         return $merchant;
     }
 
-
     public function markGratisTransactionPostpaid(string $merchantId, int $from)
     {
         $merchant =  $this->repo->merchant->findOrFail($merchantId);
@@ -378,5 +381,57 @@ class Core extends Base\Core
                 );
             }
         }
+    }
+
+    public function validateFilterAttributesAndAddMerchantId($merchantId, $input)
+    {
+        $filters = $input[Entity::FILTERS];
+
+        $validator = new AnalyticsValidator();
+
+        foreach ($filters as $key => $filter)
+        {
+            array_push($input[Entity::FILTERS][$key], [Entity::KEY_MERCHANT_ID => $merchantId]);
+
+            foreach ($filter as $attributes)
+            {
+                $validator->validateAnalyticsInputFilter($attributes);
+            }
+        }
+    }
+
+    /**
+     * If a merchant user has a role as owner and has confirm_token set to null
+     * then the user will be considered as a confirmed owner.
+     *
+     * @param $merchant
+     * @return mixed
+     */
+    public function getMerchantConfirmedOwner(Merchant\Entity $merchant)
+    {
+        return $merchant->users()->where(Merchant\Detail\Entity::ROLE, '=', User\Role::OWNER)
+                                 ->whereNull(User\Entity::CONFIRM_TOKEN)
+                                 ->first();
+    }
+
+    /**
+     * Pushes MerchantSync job onto queue for given event with given payload.
+     *
+     * Events e.g. Group got edited/deleted and we need to handle the hierarchy
+     * updates in Es docs.
+     *
+     * This method is here at once place and will be called from few other places
+     * where merchant's es doc is getting affected
+     *
+     * @param string $event
+     * @param array  $payload
+     */
+    public function syncEventToEs(string $event, array $payload)
+    {
+        $job = new MerchantSync($this->mode, $event, $payload);
+
+        $job->delay(Repository::ES_JOB_DELAY);
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::ES_V2);
     }
 }

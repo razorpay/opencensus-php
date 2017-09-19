@@ -69,12 +69,15 @@ class BankTransferTest extends TestCase
         $accountNumber = $this->bankAccount['account_number'];
         $ifsc = $this->bankAccount['ifsc'];
 
-        $this->processBankTransfer($accountNumber, $ifsc);
+        $response = $this->processBankTransfer($accountNumber, $ifsc);
+
+        $utr = $response['transaction_id'];
 
         // Customer bank account created
         $bankAccount = $this->getLastEntity('bank_account', true);
         $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
+        $this->assertEquals('Name of account holder', $bankAccount['name']);
 
         $payment =  $this->getLastEntity('payment', true);
 
@@ -103,6 +106,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($refund['id'], $attempt['source']);
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
         $this->assertEquals($bankAccount['id'], 'ba_'.$attempt['bank_account_id']);
+        $this->assertStringEndsWith($utr, $attempt['narration']);
 
         $content = $this->initiatePayouts();
         $this->assertNotNull($content['kotak']['payout_text_file']);
@@ -110,6 +114,59 @@ class BankTransferTest extends TestCase
 
         $attempt = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertEquals('initiated', $attempt['status']);
+    }
+
+    public function testBankTransferImps()
+    {
+        $accountNumber = $this->bankAccount['account_number'];
+        $ifsc = $this->bankAccount['ifsc'];
+
+        $request = $this->testData[__FUNCTION__];
+
+        $request['content']['payee_account'] = $accountNumber;
+
+        $request['content']['payee_ifsc'] = $ifsc;
+
+        $this->ba->appAuth();
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $utr = $response['transaction_id'];
+
+        // Created bank transfer is an expected one
+        $bankTransfer =  $this->getLastEntity('bank_transfer', true);
+        $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
+        $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals('IMPS', $bankTransfer['mode']);
+        $this->assertEquals(true, $bankTransfer['expected']);
+        $this->assertNotNull($bankTransfer['payment_id']);
+
+        // Payment is automatically captured
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals($bankTransfer['payment_id'], $payment['id']);
+
+        // Customer bank account created
+        $bankAccount = $this->getLastEntity('bank_account', true);
+        // Null, because IFSC was not received for IMPS transaction
+        $this->assertNull($bankAccount['ifsc']);
+        $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
+
+        $payment =  $this->getLastEntity('payment', true);
+
+        $data = $this->testData['bankTransferImpsFailedRefund'];
+
+        // IMPS refunds are currently not permitted
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->refundPayment($payment['id'], 4000000);
+        });
+
+        // Payment is not refunded
+        $payment =  $this->getLastEntity('payment', true);
+        $this->assertEquals('bank_transfer', $payment['method']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(0, $payment['amount_refunded']);
     }
 
     public function testBankTransferProcessAndFetchDetails()
@@ -256,6 +313,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($refund['id'], $attempt['source']);
         $this->assertEquals('10000000000000', $attempt['merchant_id']);
         $this->assertEquals($bankAccount['id'], 'ba_'.$attempt['bank_account_id']);
+        $this->assertEquals('ACC DOESNT EXIST-'.$bankTransfer['utr'], $attempt['narration']);
     }
 
     public function testBankTransferProcessFailure()
@@ -265,10 +323,10 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferNotify()
     {
-        $this->testBankTransferProcess();
-
         $accountNumber = $this->bankAccount['account_number'];
         $ifsc = $this->bankAccount['ifsc'];
+
+        $this->processBankTransfer($accountNumber, $ifsc);
 
         // Created bank transfer is an expected one, but initially not marked as notified
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
@@ -294,10 +352,10 @@ class BankTransferTest extends TestCase
 
     public function testBankTransferNotifyAgain()
     {
-        $this->testBankTransferProcess();
-
         $accountNumber = $this->bankAccount['account_number'];
         $ifsc = $this->bankAccount['ifsc'];
+
+        $this->processBankTransfer($accountNumber, $ifsc);
 
         // Created bank transfer is an expected one, but initially not marked as notified
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);

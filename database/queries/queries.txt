@@ -2345,3 +2345,139 @@ ALTER TABLE gateway_rules
 ALTER TABLE subscriptions
     ADD COLUMN cancel_at INT(11) DEFAULT NULL AFTER end_at,
     ADD INDEX subscriptions_cancel_at_index (cancel_at);
+
+ALTER TABLE fund_transfer_attempts
+    ADD COLUMN narration VARCHAR(255) DEFAULT NULL AFTER utr;
+
+ALTER TABLE merchant_invoice
+    ADD COLUMN amount_due INT(11) NOT NULL DEFAULT 0 AFTER tax,
+    ADD UNIQUE INDEX `merchant_invoice_merchant_id_year_month_type_unique` (`merchant_id`, `year`, `month`, `type`),
+    DROP INDEX `merchant_invoice_merchant_id_year_month_index`;
+
+# Pre deployment of branch: invoices_callback
+
+ALTER TABLE invoices
+    ADD COLUMN callback_url TEXT AFTER group_taxes_discounts,
+    ADD COLUMN callback_method VARCHAR(16) DEFAULT NULL AFTER callback_url;
+
+ALTER TABLE merchants
+    ADD COLUMN risk_threshold TINYINT(2) UNSIGNED AFTER risk_rating;
+
+# Adds indexes on amount fields of orders and invoices table, Mostly useful
+# in stats query for now.
+ALTER TABLE orders
+    ADD INDEX orders_amount_index (amount),
+    ADD INDEX orders_amount_paid_index (amount_paid);
+
+ALTER TABLE invoices
+    ADD INDEX invoices_amount_index (amount);
+
+# Adds fss payment id and index
+ALTER TABLE hdfc
+    ADD COLUMN gateway_payment_id bigint(20) unsigned AFTER gateway_transaction_id,
+    ADD INDEX hdfc_gateway_payment_id_index (gateway_payment_id);
+
+# Add index on refund amount
+ALTER TABLE refunds
+    ADD INDEX refunds_amount_index (amount);
+
+ALTER TABLE refunds
+    ADD COLUMN receipt VARCHAR(255) DEFAULT NULL AFTER notes,
+    ADD UNIQUE INDEX refunds_merchant_id_receipt_unique (merchant_id, receipt);
+
+# Reversal Migration
+ALTER TABLE reversals
+    ADD COLUMN `entity_id` CHAR(14) AFTER `merchant_id`
+    ADD COLUMN `entity_type` VARCHAR(255) AFTER `entity_id`,;
+
+ALTER TABLE reversals
+    ADD INDEX reversals_entity_id_index (entity_id),
+    DROP FOREIGN KEY reversals_transfer_id_foreign,
+    DROP INDEX reversals_transfer_id_foreign,
+    DROP COLUMN transfer_id;
+
+UPDATE hdfc
+    SET gateway_payment_id = gateway_transaction_id
+    WHERE gateway_payment_id IS NULL AND created_at > 1502841600 AND action IN ('1', '4');
+
+UPDATE hdfc
+    SET gateway_payment_id = gateway_transaction_id
+    WHERE gateway_payment_id IS NULL AND created_at <= 1502841600 AND action IN ('1', '4');
+
+# Adding index on payments.updated_at, payments.captured_at
+# Useful for analytics queries
+ALTER TABLE payments
+    ADD INDEX payments_updated_at_index (updated_at),
+    ADD INDEX payments_captured_at_index (captured_at);
+
+# Query for adding sbibuddy column in merchant_banks table
+ALTER TABLE merchant_banks
+    ADD COLUMN sbibuddy TINYINT(1) NOT NULL DEFAULT 0 AFTER jiomoney;
+
+ALTER TABLE merchant_invoice
+    DROP INDEX `merchant_invoice_merchant_id_year_month_type_unique`,
+    ADD COLUMN description VARCHAR(255) DEFAULT NULL AFTER `type`;
+
+# pre deployment query for PR : 4655
+ALTER TABLE `merchant_banks`
+    ADD COLUMN `disabled_banks` TEXT NULL AFTER `banks`;
+
+ALTER TABLE merchant_invoice
+    MODIFY COLUMN invoice_number CHAR(16) NOT NULL;
+
+ALTER TABLE merchants
+    ADD COLUMN invoice_code CHAR(12) DEFAULT NULL AFTER category2;
+
+# Adding index on settlements.updated_at, refunds.updated_at, transactions.updated_at
+# Useful for Merchant analytics queries
+ALTER TABLE settlements
+    ADD INDEX settlements_updated_at_index (updated_at);
+
+ALTER TABLE refunds
+    ADD INDEX refunds_updated_at_index (updated_at);
+
+ALTER TABLE transactions
+    ADD INDEX transactions_updated_at_index (updated_at);
+
+# Adding recipient_settlement_id in transfers table
+ALTER TABLE transfers
+    ADD COLUMN recipient_settlement_id CHAR(14) AFTER transaction_id,
+    ADD CONSTRAINT transfers_recipient_settlement_id_foreign FOREIGN KEY(recipient_settlement_id)
+    REFERENCES settlements(id) ON DELETE RESTRICT;
+
+ALTER TABLE gateway_rules
+    MODIFY COLUMN gateway VARCHAR(50) DEFAULT NULL;
+
+ALTER TABLE offers
+    MODIFY COLUMN issuer VARCHAR(20);
+
+ALTER TABLE offers
+    MODIFY COLUMN payment_method VARCHAR(10) NULL;
+
+ALTER TABLE bank_transfers
+    MODIFY COLUMN payer_ifsc varchar(13) NOT NULL;
+
+ALTER TABLE bank_accounts
+    MODIFY COLUMN ifsc_code varchar(11) NULL;
+
+# Pre deployment of branch 'invoice_items_constraints'
+# Following 4 queries:
+
+# Adds line_items.type column with default null
+ALTER TABLE line_items
+    ADD COLUMN type VARCHAR(16) DEFAULT NULL after currency,
+    ADD INDEX line_items_type_index (type);
+
+# Populates line_items.type of existing rows
+UPDATE line_items l
+       JOIN items i
+            ON l.item_id = i.id AND l.type IS NULL
+SET    l.type = i.type;
+
+UPDATE line_items
+SET    type = 'invoice'
+WHERE  item_id IS NULL;
+
+# Makes line_items.type column not null and default to 'invoice'
+ALTER TABLE line_items
+    MODIFY COLUMN type VARCHAR(16) NOT NULL DEFAULT 'invoice';

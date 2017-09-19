@@ -7,7 +7,7 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
 use RZP\Models\Payment as PaymentModel;
 use RZP\Gateway\Hdfc\Payment;
-use RZP\Trace\Trace;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card;
 
@@ -252,11 +252,20 @@ trait Support
             $data['udf5'] = 'PaymentID';
         }
 
-        // However if it's Rupay, then udf5 need to be PaymentID
-        // even for RuPay
+        //
+        // For Rupay Cards, gateway_transaction_id and gateway_payment_id are always different
+        // unlike cases for other card types.
+        // Previously we didn't stored transaction Id,
+        // and we populated gateway_payment_id in gateway_transaction_id for older payments
+        // This need to be done till data is fixed for older payments
+        //
         if ($input['card']['network'] === 'RuPay')
         {
-            $data['udf5'] = 'PaymentID';
+            if ($data['transid'] === null)
+            {
+                $data['transid'] = $this->model->getGatewayPaymentId();
+                $data['udf5'] = 'PaymentID';
+            }
         }
     }
 

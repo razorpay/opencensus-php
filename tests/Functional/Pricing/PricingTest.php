@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use RZP\Models\Transaction;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -22,11 +23,15 @@ class PricingTest extends TestCase
 
     public function testCreatePricingPlan()
     {
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
         $this->startTest();
     }
 
     public function testCreatePricingPlanWithMinAndMaxFee()
     {
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
         $this->startTest();
     }
 
@@ -214,6 +219,8 @@ class PricingTest extends TestCase
 
         $testData['response']['content']['id'] = $content['id'];
 
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
         $this->startTest($testData);
     }
 
@@ -230,6 +237,8 @@ class PricingTest extends TestCase
 
     public function testMerchantGetPricingPlanNoPlanAssigned()
     {
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
         $content = $this->startTest();
 
         // No plan assigned, so it should be empty array
@@ -245,6 +254,8 @@ class PricingTest extends TestCase
             array(
                 'id' => '1FcXNxsHt5dOPI',
                 'pricing_plan_id' => '1ycviEdCgurrFI'));
+
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
 
         $this->startTest();
     }
@@ -333,7 +344,9 @@ class PricingTest extends TestCase
 
     public function testCreatePricingPlanWithInvalidMinAndMaxFee()
     {
-        $content = $this->startTest();
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
+        $this->startTest();
     }
 
     public function testDeleteUsedPricingPlanRule()
@@ -393,28 +406,27 @@ class PricingTest extends TestCase
         return $this->merchantAssignPricingPlan($id, '10000000000000');
     }
 
-    protected function createPricingPlan()
+    protected function createPricingPlan($pricingPlan = [])
     {
-        $pricingPlan = array(
-            'plan_name' => 'TestPlan1',
-            'payment_method' => 'card',
-            'payment_method_type'  => 'credit',
-            'payment_network' => 'DICL',
-            'payment_issuer' => 'HDFC',
-            'percent_rate' => 1000);
+        $defaultPricingPlan = [
+            'plan_name'           => 'TestPlan1',
+            'payment_method'      => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network'     => 'DICL',
+            'payment_issuer'      => 'HDFC',
+            'percent_rate'        => 1000,
+            'fixed_rate'          => 0,
+        ];
 
-        $request = array(
-            'method' => 'POST',
-            'url' => '/pricing',
-            'content' => $pricingPlan);
+        $pricingPlan = array_merge($defaultPricingPlan, $pricingPlan);
 
-        $content = $this->makeRequestAndGetContent($request);
+        $plan = $this->fixtures->create('pricing', $pricingPlan);
 
-        $this->assertArrayHasKey('rules', $content);
+        $plan = $plan->toArray();
 
-        $this->assertArraySelectiveEquals($pricingPlan, $content['rules'][0]);
+        $plan['id'] = $plan['plan_id'];
 
-        return $content;
+        return $plan;
     }
 
     protected function addPricingPlanRule($id)
@@ -444,52 +456,50 @@ class PricingTest extends TestCase
 
     protected function createPricingPlan2()
     {
-        $planData = array(
-            'plan_name' => 'TestPlan2',
-            'payment_method' => 'card',
+        $planData = [
+            'plan_name'           => 'TestPlan2',
+            'payment_method'      => 'card',
+            'plan_id'             => '1ycviEdCgurrFJ',
             'payment_method_type' => 'credit',
-            'payment_network' => 'DICL',
-            'payment_issuer' => 'SBIN',
-            'percent_rate' => '275',
-            );
+            'payment_network'     => 'DICL',
+            'payment_issuer'      => 'SBIN',
+            'percent_rate'        => '275',
+            'fixed_rate'          => 0,
+            ];
 
-        $pricingData =
-            array(
-                array(
-                    'payment_method' => 'card',
+        $pricingData = [
+                [
+                    'payment_method'      => 'card',
                     'payment_method_type' => 'credit',
-                    'payment_network' => 'DICL',
-                    'payment_issuer' => 'ICIC',
-                    'percent_rate' => 250,),
-                array(
-                    'payment_method' => 'card',
+                    'payment_network'     => 'DICL',
+                    'payment_issuer'      => 'ICIC',
+                    'percent_rate'        => 250,
+                ],
+                [
+                    'payment_method'      => 'card',
                     'payment_method_type' => 'debit',
-                    'payment_network' => 'MAES',
-                    'payment_issuer' => 'PUNB',
-                    'percent_rate' => 250,),
-                array(
-                    'payment_method' => 'card',
+                    'payment_network'     => 'MAES',
+                    'payment_issuer'      => 'PUNB',
+                    'percent_rate'        => 250,
+                ],
+                [
+                    'payment_method'      => 'card',
                     'payment_method_type' => 'credit',
-                    'payment_network' => 'MC',
-                    'payment_issuer' => 'AXIS',
-                    'fixed_rate' => 3000,)
-                );
+                    'payment_network'     => 'MC',
+                    'payment_issuer'      => 'AXIS',
+                    'fixed_rate'          => 3000,
+                ],
+            ];
 
-        $request = array(
-            'method' => 'POST',
-            'url' => '/pricing',
-            'content' => $planData);
+        $plan = $this->createPricingPlan($planData);
 
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertArrayHasKey('id', $content);
-        $pricingPlanId = $content['id'];
+        $pricingPlanId = $plan['id'];
 
         foreach ($pricingData as $data)
         {
             $request = array(
                 'method' => 'POST',
-                'url' => '/pricing/'.$pricingPlanId.'/rule',
+                'url' => '/pricing/' . $pricingPlanId . '/rule',
                 'content' => $data);
 
             $content = $this->makeRequestAndGetContent($request);
@@ -519,18 +529,9 @@ class PricingTest extends TestCase
             'amount_range_min' => 100,
             'amount_range_max' => 25000);
 
-        $request = array(
-            'method' => 'POST',
-            'url' => '/pricing',
-            'content' => $pricingPlan);
+        $plan = $this->createPricingPlan($pricingPlan);
 
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertArrayHasKey('rules', $content);
-
-        $this->assertArraySelectiveEquals($pricingPlan, $content['rules'][0]);
-
-        return $content;
+        return $plan;
     }
 
     public function testAddPricingPlanRuleWithFeature()

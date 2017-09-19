@@ -3,6 +3,8 @@
 namespace RZP\Models\Gateway\Downtime;
 
 use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Method;
 use RZP\Models\Gateway\Downtime\Webhook;
 
 class Service extends Base\Service
@@ -13,26 +15,40 @@ class Service extends Base\Service
     {
         $downtime = $this->core()->create($input);
 
-        return $downtime->toArrayPublic();
+        return $downtime->toArrayAdmin();
     }
 
     public function edit($id, array $input)
     {
         $downtime = $this->core()->edit($id, $input);
 
-        return $downtime->toArrayPublic();
+        return $downtime->toArrayAdmin();
     }
 
-    public function fetchMultiple(array $input)
+    public function getPublicGatewayDowntimeData(): array
     {
-        $absentGateways = $this->repo->gateway_downtime->fetch($input);
+        $downtimes = $this->core()->getPublicGatewayDowntimeData();
 
-        return $absentGateways->toArrayPublic();
+        return $downtimes->toArrayCheckout();
+    }
+
+    public function getDowntimeDataForMerchant(): array
+    {
+        // Currently we are only exposing netbanking downtimes over the public
+        // downtime fetch route. For other methods, support will be added after
+        // the relevant downtimes are being utilised on Razorpay checkout.
+        $downtimes = $this->core()->getPublicGatewayDowntimeData([
+            Method::NETBANKING,
+        ]);
+
+        return $downtimes->toArrayPublic();
     }
 
     public function processGatewayDowntimeWebhook(string $source, array $input)
     {
         $processor = new Webhook\Processor($source);
+
+        $this->trace->info(TraceCode::GATEWAY_DOWNTIME_WEBHOOK, $input);
 
         $processor->validate($input);
 

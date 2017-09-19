@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\Freecharge;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Payment;
 use RZP\Reconciliator\Base;
 use RZP\Trace\TraceCode;
@@ -92,9 +93,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             $gatewaySettledAt = Carbon::createFromFormat(
                                     self::SETTLEMENT_DATE_FORMAT,
                                     $row[self::COLUMN_SETTLED_AT],
-                                    'Asia/Kolkata');
+                                    Timezone::IST);
 
-            $gatewaySettledAt = $gatewaySettledAt->timestamp;
+            $gatewaySettledAt = $gatewaySettledAt->getTimestamp();
         }
         catch (\Exception $ex)
         {
@@ -118,10 +119,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         {
             $this->messenger->raiseReconAlert(
                 [
-                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
-                    'message'       => 'Payment amount mismatch',
-                    'row'           => $row,
-                    'gateway'       => get_called_class()
+                    'trace_code'      => TraceCode::RECON_INFO_ALERT,
+                    'message'         => 'Payment amount mismatch',
+                    'expected_amount' => $this->payment->getAmount(),
+                    'row'             => $row,
+                    'gateway'         => get_called_class()
                 ]);
 
             return false;

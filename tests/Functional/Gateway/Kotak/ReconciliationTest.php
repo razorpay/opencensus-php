@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Gateway\Kotak;
 
 use App;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Config;
 use Mail;
 use RZP\Constants\Mode;
@@ -91,7 +92,7 @@ class ReconciliationTest extends TestCase
     {
         Mail::fake();
         // Mocking time to 22:30 for settlements to get processed
-        Carbon::setTestNow(Carbon::create(2016, 11, 15, 23, 0, 0, 'Asia/Kolkata'));
+        Carbon::setTestNow(Carbon::create(2016, 11, 15, 23, 0, 0, Timezone::IST));
 
         // Create payments and refunds with timestamps two days back
         $prEntities = $this->createPaymentAndRefundEntities();
@@ -177,6 +178,9 @@ class ReconciliationTest extends TestCase
     public function testRetryRecon()
     {
         $settlement = $this->testReconciliationFailure();
+
+        $firstAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+
         $oldBatchFundTransferId = $settlement['batch_fund_transfer_id'];
 
         $content = $this->retryIntiateSettlements([$settlement['id']]);
@@ -199,7 +203,7 @@ class ReconciliationTest extends TestCase
         $content = $this->getEntities('file_store', [], true);
         $this->assertSame($content['count'], 4);
 
-        $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile);
+        $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile, false, $firstAttempt['id']);
 
         // Reconcile settlements
         $data = $this->reconcileSettlements($setlReconciliationFile);
@@ -234,7 +238,7 @@ class ReconciliationTest extends TestCase
             'content' => []
         ];
 
-        $this->ba->appAuthMode();
+        $this->ba->adminAuth();
 
         $this->runRequestResponseFlow($data, function() use ($request)
         {
@@ -295,7 +299,7 @@ class ReconciliationTest extends TestCase
         $txtFile1 = $this->createSettlementsAndSettlementFile(3);
 
         // Added so that a new file name is created for next settlement
-        $currentTime = Carbon::now('Asia/Kolkata');
+        $currentTime = Carbon::now(Timezone::IST);
         $currentTime->addSecond();
         Carbon::setTestNow($currentTime);
 

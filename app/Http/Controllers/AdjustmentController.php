@@ -4,13 +4,12 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
-use RZP\Models\Adjustment;
 
 class AdjustmentController extends Controller
 {
     public function getAdjustment($id)
     {
-        $data = (new Adjustment\Service)->getAdjustment($id);
+        $data = $this->service()->getAdjustment($id);
 
         return ApiResponse::json($data);
     }
@@ -19,7 +18,7 @@ class AdjustmentController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Adjustment\Service)->getAdjustments($input);
+        $data = $this->service()->getAdjustments($input);
 
         return ApiResponse::json($data);
     }
@@ -28,7 +27,16 @@ class AdjustmentController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Adjustment\Service)->addAdjustment($input);
+        $data = $this->service()->addAdjustment($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postFeesAdjustment()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->addFeesAdjustment($input);
 
         return ApiResponse::json($data);
     }
@@ -37,7 +45,7 @@ class AdjustmentController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Adjustment\Service)->postReverseAdjustments($input);
+        $data = $this->service()->postReverseAdjustments($input);
 
         return ApiResponse::json($data);
     }
@@ -46,7 +54,7 @@ class AdjustmentController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Adjustment\Service)->addMultipleAdjustment($input);
+        $data = $this->service()->addMultipleAdjustment($input);
 
         return ApiResponse::json($data);
     }

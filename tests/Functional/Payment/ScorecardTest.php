@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Payment;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use Mail;
 
 use RZP\Mail\Admin\Scorecard as ScorecardMail;
@@ -38,8 +39,8 @@ class ScorecardTest extends TestCase
     {
         $prEntities = array();
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp + 5;
-        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp + 10;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(1)->timestamp + 5;
+        $capturedAt = Carbon::today(Timezone::IST)->subDays(1)->timestamp + 10;
 
         $payments = $this->fixtures->times(5)->create('payment:captured',
                 ['captured_at' => $capturedAt,

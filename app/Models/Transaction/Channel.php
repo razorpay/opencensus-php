@@ -68,29 +68,18 @@ class Channel
                 break;
 
             default:
-                throw new LogicException('Invalid type: ' . $type);
+                throw new LogicException(
+                    'Invalid type',
+                    null,
+                    [
+                        'transaction_id'    => $txn->getId(),
+                        'type'              => $type,
+                    ]);
         }
 
         if ($channel === null)
         {
             $channel = Payment\Gateway::getChannel($gateway);
-        }
-
-        if ($gateway === Payment\Gateway::ATOM)
-        {
-            //
-            // Here we check for special atom terminal
-            // whether that has been used.
-            // If yes, then settlement channel in this case
-            // will be kotak instead of atom.
-            //
-
-            $terminal = $payment->terminal;
-
-            if (Shared::isSharedTerminal($terminal))
-            {
-                $channel = Channel::KOTAK;
-            }
         }
 
         return $channel;

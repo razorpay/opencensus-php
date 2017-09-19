@@ -8,10 +8,10 @@ use App;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 use RZP\Models\FileStore\Format;
+use Razorpay\Trace\Logger as Trace;
 
 class Orchestrator extends Base\Core
 {
@@ -54,6 +54,8 @@ class Orchestrator extends Base\Core
     const NETBANKING_FEDERAL  = 'NetbankingFederal';
     const NETBANKING_RBL      = 'NetbankingRbl';
     const NETBANKING_INDUSIND = 'NetbankingIndusind';
+    const NETBANKING_PNB      = 'NetbankingPnb';
+    const VIRTUAL_ACC_KOTAK   = 'VirtualAccKotak';
     const JIOMONEY            = 'Jiomoney';
     const EBS                 = 'Ebs';
     const FIRST_DATA          = 'FirstData';
@@ -61,7 +63,8 @@ class Orchestrator extends Base\Core
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
-     * The banks send their MIS files through this sender address
+     * The banks send their MIS files through this sender address.
+     * List email addresses in lower case. Addresses are case insensitive, our checks are not.
      */
     const GATEWAY_SENDER_MAPPING = [
         self::HDFC                => ['payoutreport@hdfcbank.com'],
@@ -70,7 +73,7 @@ class Orchestrator extends Base\Core
         self::PAYZAPP             => [],
         self::MOBIKWIK            => [],
         self::PAYTM               => [],
-        self::KOTAK               => ['BankAlerts@kotak.com'],
+        self::KOTAK               => ['bankalerts@kotak.com'],
         self::OLAMONEY            => ['olamoney-noreply@olacabs.com'],
         self::FREECHARGE          => ['noreply@freechargemail.in'],
         self::NETBANKING_AXIS     => ['it.rico@axisbank.com'],
@@ -78,9 +81,11 @@ class Orchestrator extends Base\Core
         self::NETBANKING_FEDERAL  => ['fednetrm@federalbank.co.in'],
         self::NETBANKING_RBL      => ['internetbanking@rblbank.com'],
         self::NETBANKING_INDUSIND => [],
+        self::NETBANKING_PNB      => [],
         self::JIOMONEY            => [],
         self::EBS                 => [],
         self::FIRST_DATA          => ['customer.care@icici.mailserv.in'],
+        self::VIRTUAL_ACC_KOTAK   => ['kmb.reports@kotak.com'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN               => ['prashanth.yv@razorpay.com'],
@@ -98,7 +103,8 @@ class Orchestrator extends Base\Core
         self::FIRST_DATA,
         self::NETBANKING_AXIS,
         self::NETBANKING_ICICI,
-        self::NETBANKING_FEDERAL
+        self::NETBANKING_FEDERAL,
+        self::VIRTUAL_ACC_KOTAK,
     ];
 
     /**
@@ -506,7 +512,7 @@ class Orchestrator extends Base\Core
         //
 
         $emailDetails = [
-            self::FROM           => $input['X-Original-Sender'] ?? $input['sender'],
+            self::FROM           => strtolower($input['X-Original-Sender'] ?? $input['sender']),
             self::SUBJECT        => $input['subject'],
             self::TO             => $input['recipient'],
             self::TIMESTAMP      => $input['timestamp'],
@@ -570,11 +576,16 @@ class Orchestrator extends Base\Core
         {
             $gateway = $this->emailDetails[self::SUBJECT];
 
-            assert(
-                in_array(
-                    $gateway,
-                    array_keys(self::GATEWAY_SENDER_MAPPING)),
-                '[Admin] Invalid/Unrecognized gateway sent in the subject line.');
+            if (in_array($gateway, array_keys(self::GATEWAY_SENDER_MAPPING)) === false)
+            {
+                throw new Exception\LogicException(
+                    '[Admin] Invalid/Unrecognized gateway sent in the subject line.',
+                    null,
+                    [
+                        'gateway'        => $gateway,
+                        'valid_gateways' => array_keys(self::GATEWAY_SENDER_MAPPING),
+                    ]);
+            }
         }
 
         $this->setGatewayReconciliatorObject($gateway);

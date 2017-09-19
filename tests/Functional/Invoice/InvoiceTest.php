@@ -2,16 +2,16 @@
 
 namespace RZP\Tests\Functional\Invoice;
 
-use Carbon\Carbon;
-use Mockery;
 use Mail;
+use Carbon\Carbon;
 
-use RZP\Mail\Invoice\Expired as InvoiceExpiredMail;
-use RZP\Mail\Invoice\Issued as InvoiceIssuedMail;
-use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
-use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
+use RZP\Mail\Invoice\Issued as InvoiceIssuedMail;
+use RZP\Mail\Invoice\Expired as InvoiceExpiredMail;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
+use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
 
 use RZP\Models\Base\UniqueIdEntity;
 
@@ -19,6 +19,8 @@ class InvoiceTest extends TestCase
 {
     use InvoiceTestTrait;
     use PaymentTrait;
+
+    const TEST_INV_ID = 'inv_1000000invoice';
 
     public function setUp()
     {
@@ -88,6 +90,36 @@ class InvoiceTest extends TestCase
 
             return true;
         });
+    }
+
+    public function testPayInvoiceWithCallbackUrl()
+    {
+        $order = $this->createOrder();
+
+        $invoice = $this->createIssuedInvoice([
+                        'callback_url'    => 'http://localhost/works',
+                        'callback_method' => 'get',
+                        ]);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = $invoice->getAmount();
+
+        $response = $this->doAuthPayment($payment);
+
+        $actualSignature = $response['razorpay_signature'];
+
+        $signatureData = [
+            'razorpay_invoice_id'      => $invoice->getPublicId(),
+            'razorpay_invoice_receipt' => $invoice->getReceipt(),
+            'razorpay_invoice_status'  => 'paid',
+            'razorpay_payment_id'      => $response['razorpay_payment_id'],
+        ];
+
+        $exceptedSignature = $this->getSignature($signatureData, 'TheKeySecretForTests');
+
+        $this->assertEquals($exceptedSignature, $actualSignature);
     }
 
     public function testCreateLinkWithSource()
@@ -188,7 +220,14 @@ class InvoiceTest extends TestCase
     {
         $this->fixtures->create('item', ['active' => 0]);
 
-        $response = $this->startTest();
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithItemOfTypeNonInvoice()
+    {
+        $this->fixtures->create('item', ['type' => 'plan']);
+
+        $this->startTest();
     }
 
     public function testCreateInvoiceWithNewCustomerAndAddress()
@@ -237,19 +276,6 @@ class InvoiceTest extends TestCase
         $this->assertNull($order);
     }
 
-    public function testCreateDraftInvoiceAndView()
-    {
-        $skipReason = 'View endpoint will now not throw exception.
-                      It will serve error page.
-                      Will remove this if required later.';
-
-        $this->markTestSkipped($skipReason);
-
-        $this->createDraftInvoice();
-
-        $this->startTest();
-    }
-
     /**
      * Creates invoice with few line items such that the total invoice amount
      * exceeds the allowed payment amount for merchant.
@@ -258,23 +284,6 @@ class InvoiceTest extends TestCase
      */
     public function testCreateDraftInvoiceWithLineItemsAndMaxAllowedAmount()
     {
-        $this->startTest();
-    }
-
-    public function testInvoiceViewWithExpiredInvoice()
-    {
-        $skipReason = 'View endpoint will now not throw exception.
-                      It will serve error page.
-                      Will remove this if required later.';
-
-        $this->markTestSkipped($skipReason);
-
-        $this->fixtures->create('invoice',
-            [
-                'status'   => 'expired',
-                'order_id' => null
-            ]);
-
         $this->startTest();
     }
 
@@ -750,8 +759,8 @@ class InvoiceTest extends TestCase
                ->method('delete')
                ->with(
                     [
-                        'index' => 'invoice_test',
-                        'type'  => 'invoice_test',
+                        'index' => 'testing_invoice_test',
+                        'type'  => 'testing_invoice_test',
                         'id'    => '1000000invoice',
                     ]);
 
@@ -1137,7 +1146,14 @@ class InvoiceTest extends TestCase
 
         $this->fixtures->create('line_item');
 
-        $this->startTest();
+        $response = $this->startTest();
+
+        //
+        // Asserts that the response doesn't contain 'payments' which should
+        // be asked for with 'expands' query parameter in GET requests.
+        //
+
+        $this->assertArrayNotHasKey('payments', $response);
     }
 
     public function testGetInvoiceByReceipt()
@@ -1151,6 +1167,13 @@ class InvoiceTest extends TestCase
                 'receipt'  => '00000000000001'
             ]);
 
+        $this->fixtures->create(
+                            'line_item',
+                            [
+                                'entity_id' => '1000001invoice',
+                                'item_id' => null,
+                            ]);
+
         $order = $this->fixtures->create('order');
 
         $this->createIssuedInvoice(
@@ -1159,6 +1182,14 @@ class InvoiceTest extends TestCase
                 'order_id' => $order->getId(),
                 'receipt'  => '00000000000002'
             ]);
+
+        $this->fixtures->create(
+                            'line_item',
+                            [
+                                'id' => '100002lineitem',
+                                'entity_id' => '1000002invoice',
+                                'item_id' => null,
+                            ]);
 
         $esMock = $this->createEsMock(['search']);
 
@@ -1191,12 +1222,44 @@ class InvoiceTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $testData['request']['content']['order_id'] = '100000000order';
+        $testData['request']['content']['order_id'] = 'order_100000000order';
         $testData['request']['content']['payment_id'] = $payment['id'];
 
         $testData['response']['content']['count'] = 1;
 
         $this->startTest($testData);
+    }
+
+    public function testGetInvoiceWithPayments()
+    {
+        $this->createOrder();
+
+        $invoice = $this->createIssuedInvoice();
+
+        $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['payment_id']);
+    }
+
+    public function testGetInvoiceWithPaymentsCard()
+    {
+        $this->createOrder();
+
+        $invoice = $this->createIssuedInvoice();
+
+        $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $this->assertNotEmpty($response['payments']['items'][0]['card_id']);
     }
 
     public function testGetMultipleInvoices()
@@ -1215,6 +1278,45 @@ class InvoiceTest extends TestCase
             'id' => '10000lineitem2',
             'entity_id' => $invoice2->getId(),
             'item_id' => $item2->getId()]);
+
+        $response = $this->startTest();
+
+        //
+        // Asserts that the response doesn't contain 'payments' which should
+        // be asked for with 'expands' query parameter in GET requests.
+        //
+
+        foreach ($response['items'] as $entity)
+        {
+            $this->assertArrayNotHasKey('payments', $entity);
+        }
+    }
+
+    public function testGetMultipleInvoicesWithPayments()
+    {
+        $this->createOrder();
+
+        $invoice1 = $this->createIssuedInvoice();
+
+        $this->createOrder(['id' => '10000000order2']);
+
+        $invoice2 = $this->createIssuedInvoice(['id' => '100000invoice2', 'order_id' => '10000000order2']);
+
+        $this->makePaymentForInvoiceAndAssert($invoice2->toArrayPublic());
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testGetMultipleInvoicesByTypes()
+    {
+        $this->ba->proxyAuth();
+
+        $this->createDraftInvoice();
+        $this->createDraftInvoice(['id' => '1000001invoice', 'type' => 'link']);
+        $this->createDraftInvoice(['id' => '1000002invoice', 'type' => 'ecod']);
+        $this->createDraftInvoice(['id' => '1000003invoice', 'type' => 'ecod']);
 
         $this->startTest();
     }
@@ -1446,7 +1548,7 @@ class InvoiceTest extends TestCase
         $this->createOrder();
         $this->fixtures->create('invoice');
 
-        $currentTime = Carbon::now('Asia/Kolkata');
+        $currentTime = Carbon::now(Timezone::IST);
         $currentTime->addDays(18);
         Carbon::setTestNow($currentTime);
 
@@ -1462,26 +1564,121 @@ class InvoiceTest extends TestCase
 
     public function testGetLinkView()
     {
-        $this->ba->publicAuth();
-
         $this->createOrder();
-        $this->fixtures->create('invoice', ['type' => 'link']);
 
-        $response = $this->call('GET', '/v1/t/inv_1000000invoice', ['key_id' => $this->ba->getKey()]);
+        $this->createIssuedInvoice(['type' => 'link']);
 
-        $this->assertResponseOk($response);
+        $this->callViewUrlAndMakeAssertions();
+    }
+
+    public function testGetLinkViewDraft()
+    {
+        $this->createDraftInvoice(['type' => 'link']);
+
+        $this->callViewUrlAndMakeAssertions(
+                self::TEST_INV_ID,
+                200,
+                'Payment Link with id inv_1000000invoice is not issued yet');
+    }
+
+    public function testGetLinkViewCancelled()
+    {
+        $this->createOrder();
+
+        $this->createDraftInvoice(['type' => 'link', 'status' => 'cancelled']);
+
+        $this->callViewUrlAndMakeAssertions(
+                self::TEST_INV_ID,
+                200,
+                'Payment Link with id inv_1000000invoice is cancelled');
+    }
+
+    public function testGetLinkViewExpired()
+    {
+        $this->createOrder();
+
+        $this->createIssuedInvoice(['type' => 'link', 'status' => 'expired']);
+
+        $this->callViewUrlAndMakeAssertions(
+                self::TEST_INV_ID,
+                200,
+                'Payment Link with id inv_1000000invoice is expired');
     }
 
     public function testGetInvoiceView()
     {
+        $this->createOrder();
+
+        $this->createIssuedInvoice();
+
+        $this->callViewUrlAndMakeAssertions();
+    }
+
+    public function testGetInvoiceViewDraft()
+    {
+        $this->createDraftInvoice();
+
+        $this->callViewUrlAndMakeAssertions(
+                self::TEST_INV_ID,
+                200,
+                'Invoice with id inv_1000000invoice is not issued yet');
+    }
+
+    public function testGetInvoiceViewCancelled()
+    {
+        $this->createOrder();
+
+        $this->createIssuedInvoice(['status' => 'cancelled']);
+
+        $this->callViewUrlAndMakeAssertions(
+                self::TEST_INV_ID,
+                200,
+                'Invoice with id inv_1000000invoice is cancelled');
+    }
+
+    public function testGetInvoiceViewExpired()
+    {
+        $this->createOrder();
+
+        $this->createDraftInvoice(['status' => 'expired']);
+
+        $this->callViewUrlAndMakeAssertions();
+
+    }
+
+    /**
+     * Calls GET invoice route and makes assertions for status code
+     * and errors if any.
+     *
+     * @param string $id
+     * @param int    $code
+     * @param string $errorMessage
+     *
+     */
+    protected function callViewUrlAndMakeAssertions(
+        string $id = self::TEST_INV_ID,
+        int $code = 200,
+        string $errorMessage = null)
+    {
         $this->ba->publicAuth();
 
-        $this->createOrder();
-        $this->fixtures->create('invoice');
+        $response = $this->call('GET', "/v1/t/$id", ['key_id' => $this->ba->getKey()]);
 
-        $response = $this->call('GET', '/v1/t/inv_1000000invoice', ['key_id' => $this->ba->getKey()]);
+        $response->assertStatus($code);
 
-        $this->assertResponseOk($response);
+        //
+        // If there is an error message expected, assert that else assert
+        // that view doesn't contain Error heading.
+        //
+
+        if (empty($errorMessage) === false)
+        {
+            $this->assertContains($errorMessage, $response->getContent());
+        }
+        else
+        {
+            $this->assertNotContains('<h2>Error</h2>', $response->getContent());
+        }
     }
 
     public function testPayExpiredInvoice()
@@ -1785,6 +1982,41 @@ class InvoiceTest extends TestCase
         $this->assertEquals('issued', $invoices[0]['status']);
         $this->assertEquals('draft', $invoices[1]['status']);
         $this->assertEquals('issued', $invoices[2]['status']);
+    }
+
+    // ------------------------------------------------------------
+    // Tests around invoice web hooks
+    // ------------------------------------------------------------
+
+    public function testInvoiceExpiredWebhook()
+    {
+        $this->createWebhook(['events' => ['invoice.expired' => '1']]);
+
+        // Creates expire-able invoice
+        $yesterday = Carbon::yesterday(Timezone::IST);
+        $now       = Carbon::now(Timezone::IST);
+        $issuedAt  = $yesterday->timestamp;
+        $expireBy  = $now->subSecond()->timestamp;
+
+        $this->createOrder();
+
+        $this->fixtures->create('invoice', ['issued_at' => $issuedAt, 'expire_by' => $expireBy]);
+
+        // Mocks inferno and sets event payload expectation
+        $expectedEvent = $this->testData['testInvoiceExpiredWebhookEventData'];
+
+        $this->mockInfernoFire(function ($actualWebhook) use ($expectedEvent)
+        {
+            $actualEvent = json_decode($actualWebhook['event'], true);
+
+            $this->assertArraySelectiveEquals($expectedEvent, $actualEvent);
+
+            return true;
+        });
+
+        $this->ba->appAuth();
+
+        $this->startTest();
     }
 
     // -------------------- Protected methods --------------------

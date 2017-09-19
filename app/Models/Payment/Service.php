@@ -5,6 +5,7 @@ namespace RZP\Models\Payment;
 use Mail;
 use Config;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Exception;
 use RZP\Error;
@@ -15,10 +16,10 @@ use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Models\Transaction;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Constants;
 use RZP\Constants\MailTags;
+use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\Verify\Verify;
 
 class Service extends Base\Service
@@ -199,11 +200,11 @@ class Service extends Base\Service
         }
 
         $data = [
-            'count' => $count,
-            'success' => $success,
-            'failure' => $failure,
+            'count'            => $count,
+            'success'          => $success,
+            'failure'          => $failure,
             'failure_payments' => $failurePayments,
-            'success_refunds' => $successRefunds,
+            'success_refunds'  => $successRefunds,
         ];
 
         $this->trace->info(
@@ -364,6 +365,11 @@ class Service extends Base\Service
     {
         $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
+        if ($payment->hasCard() === false)
+        {
+            throw new Exception\BadRequestException(Error\ErrorCode::BAD_REQUEST_NOT_CARD_PAYMENT);
+        }
+
         $card = $this->repo->card->fetchForPayment($payment);
 
         return $card->toArrayPublic();
@@ -397,9 +403,82 @@ class Service extends Base\Service
      */
     public function capture($id, $input)
     {
-        $payment = $this->getNewProcessor()->capture($id, $input);
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $payment = $this->getNewProcessor()->capture($payment, $input);
 
         return $payment->toArrayPublic();
+    }
+
+    /**
+     * Captures payments in bulk
+     *
+     * @param  array  $input
+     *
+     * @return array
+     */
+    public function captureInBulk(array $input)
+    {
+        $this->trace->info(
+            TraceCode::PAYMENT_CAPTURE_BULK_REQUEST,
+            $input
+        );
+
+        (new Payment\Validator)->validateInput('bulk_capture', $input);
+
+        $payments = $input['payment_ids'];
+
+        $success = $failure = 0;
+
+        $failurePayments = [];
+
+        foreach ($payments as $paymentId)
+        {
+            try
+            {
+                $payment = $this->repo->payment->findByPublicId($paymentId);
+
+                $merchant = $payment->merchant;
+
+                $captureInput = [
+                    Payment\Entity::AMOUNT   => $payment->getAmount(),
+                    Payment\Entity::CURRENCY => $payment->getCurrency()
+                ];
+
+                $payment = $this->getNewProcessor($merchant)
+                                ->capture($payment, $captureInput);
+
+                $success++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::INFO,
+                    TraceCode::PAYMENT_CAPTURE_BULK_FAILURE,
+                    [
+                        'payment_id' => $paymentId
+                    ]);
+
+                $failure++;
+
+                $failurePayments[] = $paymentId;
+            }
+        }
+
+        $data = [
+            'count'            => count($payments),
+            'success'          => $success,
+            'failure'          => $failure,
+            'failure_payments' => $failurePayments,
+        ];
+
+        $this->trace->info(
+            TraceCode::PAYMENT_CAPTURE_BULK_RESPONSE,
+            $data
+        );
+
+        return $data;
     }
 
     /**
@@ -540,9 +619,11 @@ class Service extends Base\Service
         return $payments->toArrayPublic();
     }
 
-    public function fetch($id)
+    public function fetch(string $id, array $input = []): array
     {
-        $payment = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getId());
+        $payment = $this->repo
+                        ->payment
+                        ->findByPublicIdAndMerchant($id, $this->merchant, $input);
 
         return $payment->toArrayPublic();
     }
@@ -564,7 +645,7 @@ class Service extends Base\Service
 
     public function addPaymentMetadata($id, $input)
     {
-        $payment = $this->core->retrieveByIdAndMerchantId($id, $this->merchant->getKey());
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
         $this->trace->info(TraceCode::PAYMENT_METADATA, $input);
 
@@ -675,18 +756,23 @@ class Service extends Base\Service
 
     public function refundOldAuthorizedPayments()
     {
-        // Since we are taking 12 am of today, we only need to subtract 4 days from today
+        //
+        // Since we are taking 12 am of today,
+        // we only need to subtract 4 days from today
         // to arrive at 5 days before.
+        //
         $seconds = Merchant\Entity::AUTO_REFUND_DELAY_DEFAULT;
 
-        $date = Carbon::today('Asia/Kolkata');
-        $ts = $date->subSeconds($seconds)->timestamp;
+        $date = Carbon::today(Timezone::IST);
+        $ts = $date->subSeconds($seconds)->getTimestamp();
 
-        $payments = $this->repo->payment->getAuthorizedPaymentsBeforeTimestamp($ts);
+        $payments = $this->repo->payment->getAuthorizedPaymentsBeforeTimestamp($ts, false);
 
+        //
         // We fetch all the authorized payments eligible for refund.
         // Payments are identified on the basis of merchant auto_refund_delay
-        // Maximum delay can be 5 days
+        // Maximum delay can be 10 days
+        //
         $payments2 = $this->repo->payment->getAuthorizedPaymentsWithAutoRefundDelay();
 
         $payments = $payments->merge($payments2);
@@ -723,7 +809,8 @@ class Service extends Base\Service
                 $this->trace->info(
                     TraceCode::PAYMENT_AUTO_REFUND,
                     [
-                        'payment_id' => $payment->getId(),
+                        'payment_id'        => $payment->getId(),
+                        'refund_id'         => $refund->getId(),
                         'auto_refund_delay' => $merchant->getAutoRefundDelay()
                     ]);
 
@@ -783,8 +870,8 @@ class Service extends Base\Service
 
     public function notifyAuthorizedPayments()
     {
-        $date = Carbon::yesterday('Asia/Kolkata');
-        $timestamp = $date->timestamp;
+        $date = Carbon::yesterday(Timezone::IST);
+        $timestamp = $date->getTimestamp();
 
         $payments = $this->repo->payment->getAuthorizedPaymentsBeforeTimestamp(
                             $timestamp);
@@ -881,8 +968,8 @@ class Service extends Base\Service
 
     public function deliverAutoCaptureEmail()
     {
-        $timeLowerLimit = Carbon::yesterday('Asia/Kolkata')->timestamp;
-        $timeUpperLimit = Carbon::today('Asia/Kolkata')->timestamp;
+        $timeLowerLimit = Carbon::yesterday(Timezone::IST)->getTimestamp();
+        $timeUpperLimit = Carbon::today(Timezone::IST)->getTimestamp();
 
         $payments = $this->repo->payment->getAutoCapturedPaymentsBetweenTimestamps(
                                                         $timeLowerLimit, $timeUpperLimit);
@@ -950,11 +1037,11 @@ class Service extends Base\Service
         ];
 
         // This is the start of the day 00:00, $day ago
-        $start = Carbon::today('Asia/Kolkata')->subDays($day);
-        $end   = Carbon::today('Asia/Kolkata')->subDays($day)->addDays(1);
+        $start = Carbon::today(Timezone::IST)->subDays($day);
+        $end   = Carbon::today(Timezone::IST)->subDays($day)->addDays(1);
 
-        $to = $end->timestamp;
-        $from = $start->timestamp;
+        $to = $end->getTimestamp();
+        $from = $start->getTimestamp();
 
         $result['from'] = (string) $start;
         $result['to']   = (string) $end;
@@ -1007,9 +1094,9 @@ class Service extends Base\Service
      * @param array $input
      * @return array
      */
-    public function updateOnHold(array $input) : array
+    public function updateOnHold(array $input): array
     {
-        $timestamp = Carbon::today('Asia/Kolkata')->timestamp;
+        $timestamp = Carbon::today(Timezone::IST)->getTimestamp();
 
         $paymentsToUpdate = $this->repo->payment->getPaymentsOnHoldBeforeTimestamp($timestamp);
 
@@ -1018,7 +1105,7 @@ class Service extends Base\Service
             [
                 'step'          => 'fetch_payments',
                 'ids_fetched'   => $paymentsToUpdate->getIds(),
-                'timestamp'     => Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format('d-m-Y H:i:s')
+                'timestamp'     => Carbon::createFromTimestamp($timestamp, Timezone::IST)->format('d-m-Y H:i:s')
             ]
         );
 
@@ -1101,7 +1188,13 @@ class Service extends Base\Service
         // Fail if no associated transfer. @todo - Remove this when payment hold is added\
         else
         {
-            throw new Exception\LogicException('Hold update attempted for payment with no transfer');
+            throw new Exception\LogicException(
+                'Hold update attempted for payment with no transfer',
+                null,
+                [
+                    'transaction_id'    => $txn->getId(),
+                    'payment_id'        => $payment->getId(),
+                ]);
         }
     }
 

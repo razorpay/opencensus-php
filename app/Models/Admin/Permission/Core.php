@@ -32,8 +32,9 @@ class Core extends Base\Core
 
             if (empty($input[Entity::WORKFLOW_ORGS]) === false)
             {
-                $this->enableWorkflowForOrgs(
-                    $permission, $input[Entity::WORKFLOW_ORGS]);
+                // enabling workflow orgs for permission.
+                $this->editWorkflowForOrgsPermission(
+                    $permission, $input[Entity::WORKFLOW_ORGS], true);
             }
         });
 
@@ -89,28 +90,28 @@ class Core extends Base\Core
         return $orgs;
     }
 
-    public function enableWorkflowForOrgs(Entity $permission, array $orgIds)
+    /**
+     * @param Entity $permission
+     * @param array $orgIds
+     * @param boolean $enabled true/false
+     * @return array
+     */
+    public function editWorkflowForOrgsPermission(Entity $permission, array $orgIds, bool $enabled)
     {
         $permId = $permission->getId();
 
         $this->repo->permission
                    ->toggleWorkflowOnPermissionForOrgs(
-                       $permId, $orgIds, true);
+                       $permId, $orgIds, $enabled);
 
         return ['success' => true];
     }
 
-    public function disableWorkflowForOrgs(Entity $permission, array $orgIds)
-    {
-        $permId = $permission->getId();
-
-        $this->repo->permission
-                   ->toggleWorkflowOnPermissionForOrgs(
-                       $permId, $orgIds, false);
-
-        return ['success' => true];
-    }
-
+    /**
+     * This function will sync all the orgd of the permission with input orgs.
+     * @param Entity $permission
+     * @param array $input
+     */
     protected function toggleAssignableOrgs(Entity $permission, array $input)
     {
         $assignedOrgs = $permission->orgs()->allRelatedIds()->toArray();
@@ -161,12 +162,12 @@ class Core extends Base\Core
 
         if (empty($newOrgs) === false)
         {
-            $this->enableWorkflowForOrgs($permission, $newOrgs);
+            $this->editWorkflowForOrgsPermission($permission, $newOrgs, true);
         }
 
         if (empty($disabledOrgs) === false)
         {
-            $this->disableWorkflowForOrgs($permission, $disabledOrgs);
+            $this->editWorkflowForOrgsPermission($permission, $disabledOrgs, false);
         }
     }
 }

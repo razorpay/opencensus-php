@@ -25,14 +25,14 @@ class TerminalLoadSorter extends Terminal\Sorter
      * @param array $input
      * @return array
      */
-    public function gatewaySorter($terminals, array $input, $options)
+    public function gatewaySorter($terminals)
     {
-        if ($options === null)
+        if ($this->rules->isEmpty() === true)
         {
             return $terminals;
         }
 
-        $merchant = $input['merchant'];
+        $merchant = $this->input['merchant'];
 
         try
         {
@@ -40,31 +40,20 @@ class TerminalLoadSorter extends Terminal\Sorter
             // sorting using rules
             $verbose = true;
 
-            $ruleCore = new Rule\Core;
-
-            $applicableRules = $ruleCore->fetchApplicableRulesForPayment($terminals, $input);
-
             if ($verbose === true)
             {
                 $this->trace->info(
-                    TraceCode::GATEWAY_RULES_POST_FILTER,
+                    TraceCode::GATEWAY_SORTER_RULES,
                     [
-                        'rules'          => $applicableRules->pluck(Rule\Entity::ID)->toArray(),
-                        'chance_percent' => $options->getChance(),
+                        'rules'          => $this->rules->pluck(Rule\Entity::ID)->toArray(),
+                        'chance_percent' => $this->options->getChance(),
                     ]);
             }
 
-            // If no rules are present for load sorting we return the terminals list as is
-            if ($applicableRules->isEmpty() === true)
-            {
-                return $terminals;
-            }
-
-            $chancePercent = $options->getChance();
+            $chancePercent = $this->options->getChance();
 
             $boostedTerminals = $this->getBoostedTerminals(
                                             $terminals,
-                                            $applicableRules,
                                             $chancePercent,
                                             $verbose);
 
@@ -102,13 +91,12 @@ class TerminalLoadSorter extends Terminal\Sorter
      */
     protected function getBoostedTerminals(
                             array $terminals,
-                            Base\PublicCollection $rules,
                             int $chancePercent,
                             bool $verbose = false)
     {
        $totalLoad = 0;
 
-       foreach ($rules as $rule)
+       foreach ($this->rules as $rule)
        {
             $totalLoad += $rule->getLoad();
 
@@ -116,7 +104,7 @@ class TerminalLoadSorter extends Terminal\Sorter
 
             foreach ($terminals as $terminal)
             {
-                if ($rule->matches($terminal) === true)
+                if ($rule->matches($terminal, $this->input['merchant']) === true)
                 {
                     $boostedTerminals[] = $terminal;
                 }

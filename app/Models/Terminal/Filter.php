@@ -4,15 +4,34 @@ namespace RZP\Models\Terminal;
 
 use Trace;
 use RZP\Exception;
+use RZP\Models\Feature\Constants as Feature;
+use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 
-class Filter
+class Filter extends Base\Core
 {
     /**
      * This should be overridden in the child class with the respective filter properties
      * @var array
      */
     protected $properties;
+
+    protected $input;
+
+    protected $rules;
+
+    protected $options;
+
+    public function __construct(array $input, Options $options, Base\PublicCollection $rules)
+    {
+        parent::__construct();
+
+        $this->input = $input;
+
+        $this->options = $options;
+
+        $this->rules = $rules;
+    }
 
     /**
      * Takes input as collection of terminals. Gets the list of all properties applicable to the
@@ -22,15 +41,19 @@ class Filter
      *
      * @param array $applicableTerminals       The list of terminals after removing the not-applicable
      *                                         terminals from the full list of terminals.
-     * @param array $input
      * @param bool  $verbose                   For tracing
      * @return array                           List of terminals after removing the not-applicable terminals
      *                                         from the received collection of terminals
      */
-    public function filter(array $applicableTerminals, array $input, $verbose = false)
+    public function filter(array $applicableTerminals, $verbose = false)
     {
         foreach ($this->properties as $filterProperty)
         {
+            if ($this->shouldSkipFilter($filterProperty) === true)
+            {
+                continue;
+            }
+
             $filterFunction = $this->getFilterFunctionForProperty($filterProperty);
 
             // From all possible current terminals
@@ -38,7 +61,7 @@ class Filter
             {
                 // If the terminal does not match for the given filter property,
                 // remove it from the applicable list of terminals.
-                if ($this->$filterFunction($terminal, $input, $applicableTerminals) !== true)
+                if ($this->$filterFunction($terminal, $applicableTerminals) !== true)
                 {
                     unset($applicableTerminals[$key]);
                 }
@@ -48,7 +71,7 @@ class Filter
                 $applicableTerminals,
                 'Terminals after applying ' . $filterFunction . ' property',
                 $verbose,
-                $input['merchant']->getId());
+                $this->input['merchant']->getId());
         }
 
         // array_values is being used to reindex the array after un-setting.
@@ -77,5 +100,18 @@ class Filter
 
             $trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
         }
+    }
+
+    protected function shouldSkipFilter(string $property): bool
+    {
+        $merchant = $this->input['merchant'];
+
+        $featureSkippedFilters = $this->options->getFeatureSkippedFilters();
+
+        $isFilterSkipped = in_array($property, $featureSkippedFilters, true);
+
+        $featureEnabled = $merchant->isFeatureEnabled(Feature::RULE_FILTER);
+
+        return (($isFilterSkipped === true) and ($featureEnabled === true));
     }
 }

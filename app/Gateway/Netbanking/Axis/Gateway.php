@@ -13,6 +13,7 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 class Gateway extends Base\Gateway
 {
@@ -69,7 +70,7 @@ class Gateway extends Base\Gateway
 
         $this->checkResponseStatus($attrs, $content);
 
-        $acquirerData = $this->getAcquirerData($gatewayEntity);
+        $acquirerData = $this->getAcquirerData($input, $gatewayEntity);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }
@@ -131,24 +132,19 @@ class Gateway extends Base\Gateway
         $verify->match = ($status === VerifyResult::STATUS_MATCH);
     }
 
-    protected function checkApiSuccess(Verify $verify)
-    {
-        $verify->apiSuccess = true;
-
-        $input = $verify->input;
-
-        if (($input['payment']['status'] === Payment\Status::FAILED) or
-            ($input['payment']['status'] === Payment\Status::CREATED))
-        {
-            $verify->apiSuccess = false;
-        }
-    }
-
     protected function checkGatewaySuccess(Verify $verify)
     {
         $response = $verify->verifyResponseContent;
 
         $verify->gatewaySuccess = false;
+
+        if (empty($response) === true)
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify,
+                Payment\Verify\Action::RETRY);
+        }
 
         if ((isset($response[ResponseFields::PAYMENT_STATUS]) === true) and
             ($response[ResponseFields::PAYMENT_STATUS] === Status::SUCCESS))
@@ -409,14 +405,21 @@ class Gateway extends Base\Gateway
         //
         if ($numSuccess > 1)
         {
-            throw new Exception\LogicException(
-                ErrorCode::SERVER_ERROR_MULTIPLE_SUCCESS_TRANSACTIONS_IN_VERIFY,
+            $data = [
+                'response_array' => $responseArray,
+                'payment_id'     => $this->input['payment']['id'],
+                'num_success'    => $numSuccess,
+                'gateway'        => $this->gateway,
+            ];
+
+            $this->trace->error(TraceCode::MULTIPLE_TABLES_IN_VERIFY_RESPONSE, ['response_data' => $data]);
+
+            throw new Exception\PaymentVerificationException(
+                $data,
                 null,
-                [
-                    'response_array' => $responseArray,
-                    'payment_id'     => $this->input['payment']['id'],
-                    'num_success'    => $numSuccess
-                ]);
+                VerifyAction::FINISH,
+                ErrorCode::SERVER_ERROR_MULTIPLE_SUCCESS_TRANSACTIONS_IN_VERIFY
+            );
         }
 
         return $tableToBeReturned;

@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Wallet\Jiomoney;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
@@ -142,6 +143,8 @@ class Gateway extends Base\Gateway
         $response = $this->sendGatewayRequest($request);
 
         $content = $this->parseGatewayResponse($response);
+
+        $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, $content);
 
         $this->verifySecureHash($content);
 
@@ -382,7 +385,7 @@ class Gateway extends Base\Gateway
     {
         $refundInfo = $this->generateRefundInfo($wallet);
 
-        $timestamp = Carbon::now('Asia/Kolkata')->format(self::DATE_FORMAT);
+        $timestamp = Carbon::now(Timezone::IST)->format(self::DATE_FORMAT);
 
         $content = [
             RequestFields::CLIENT_ID    => $this->getClientId(),
@@ -832,7 +835,8 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
             [
                 'request'  => $request,
-                'api_type' => ApiName::GETREQUESTSTATUS
+                'api_type' => ApiName::GETREQUESTSTATUS,
+                'refund_id' => $input['refund']['id'],
             ]);
 
         return $request;
@@ -894,10 +898,34 @@ class Gateway extends Base\Gateway
         }
 
         throw new Exception\LogicException(
-            'Unrecognized verify refund gateway response: ' . $content);
+            'Unrecognized verify refund gateway response',
+            null,
+            [
+                'payment_id' => $input['refund']['payment_id'],
+                'refund_id'  => $input['refund']['id'],
+                'content'    => $content,
+            ]);
     }
 
     protected function isSuccessFullyRefundedOnGateway(array $gatewayRefundData, array $input): bool
+    {
+        if (is_sequential_array($gatewayRefundData) === true)
+        {
+            foreach ($gatewayRefundData as $data)
+            {
+                if ($this->isSuccessFulRefund($data, $input) === true)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        return ($this->isSuccessFulRefund($gatewayRefundData, $input) === true);
+    }
+
+    protected function isSuccessfulRefund(array $gatewayRefundData, array $input): bool
     {
         return (($gatewayRefundData[ResponseFields::TXN_STATUS] === ResponseCode::SUCCESS) and
                 ($input['refund']['amount'] === intval($gatewayRefundData[ResponseFields::REFUND_AMOUNT])));
@@ -1020,7 +1048,7 @@ class Gateway extends Base\Gateway
     protected function getFormattedDateFromTimeStamp(
         $timestamp, $format = self::DATE_FORMAT)
     {
-        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format($format);
+        return Carbon::createFromTimestamp($timestamp, Timezone::IST)->format($format);
     }
 
     protected function getFormattedAmount($amount)
@@ -1053,7 +1081,7 @@ class Gateway extends Base\Gateway
 
     protected function getTimeSincePaymentCreation(array $input)
     {
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
+        $now = Carbon::now()->getTimestamp();
 
         return ($now - $input['payment']['created_at']);
     }

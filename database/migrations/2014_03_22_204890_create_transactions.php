@@ -145,6 +145,8 @@ class CreateTransactions extends Migration
 
             $table->index(Transaction::CREATED_AT);
 
+            $table->index(Transaction::UPDATED_AT);
+
             $table->foreign(Transaction::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)

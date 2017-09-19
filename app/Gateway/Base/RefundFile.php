@@ -4,6 +4,7 @@ namespace RZP\Gateway\Base;
 
 use Mail;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\FileStore;
@@ -56,7 +57,7 @@ class RefundFile extends Base\Core
 
     protected function getFileToWriteNameWithoutExt()
     {
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
 
         return static::$fileToWriteName . '_' . $this->mode . '_' . $time;
     }

@@ -96,19 +96,11 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT
     ];
 
-    // @TODO
-    // Dashboard expects ifsc_code and beneficiary_name in the response
-    // We'll send both these and the new fields (ifsc and name) for now
-    // The old fields can be removed after dashboard has been updated
-    //
-    // Tests to be updated: testAddCustomerBankAccount
     protected $public = [
         self::ID,
         self::ENTITY,
         self::IFSC,
-        self::IFSC_CODE,
         self::NAME,
-        self::BENEFICIARY_NAME,
         self::ACCOUNT_NUMBER,
     ];
 
@@ -261,7 +253,10 @@ class Entity extends Base\PublicEntity
 
     protected function setIfscCodeAttribute($code)
     {
-        $code = strtoupper($code);
+        if ($code !== null)
+        {
+            $code = strtoupper($code);
+        }
 
         $this->attributes[self::IFSC_CODE] = $code;
     }
@@ -278,9 +273,14 @@ class Entity extends Base\PublicEntity
 
     protected function getIfscCodeAttribute()
     {
-        $ifscCode = $this->attributes[self::IFSC_CODE];
+        $code = $this->attributes[self::IFSC_CODE];
 
-        return strtoupper($ifscCode);
+        if ($code !== null)
+        {
+            $code = strtoupper($code);
+        }
+
+        return $code;
     }
 
     protected function getIfscAttribute()
@@ -297,7 +297,6 @@ class Entity extends Base\PublicEntity
             $orig[self::CREATED_AT],
             $orig[self::UPDATED_AT],
             $orig[self::DELETED_AT],
-            $orig[self::BENEFICIARY_ADDRESS3],
             $orig[self::BENEFICIARY_ADDRESS4]);
 
         $copy = $baCopy->toArray();
@@ -307,7 +306,6 @@ class Entity extends Base\PublicEntity
             $copy[self::CREATED_AT],
             $copy[self::UPDATED_AT],
             $copy[self::DELETED_AT],
-            $copy[self::BENEFICIARY_ADDRESS3],
             $copy[self::BENEFICIARY_ADDRESS4]);
 
         return ($orig === $copy);

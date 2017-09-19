@@ -24,6 +24,8 @@ class MinAmount
                 Category::GOVT_EDUCATION => 200000,
                 Category::PVT_EDUCATION  => 200000,
                 Category::CORPORATE      => 200000,
+                Category::FOREX          => 200000,
+                Category::HOUSING        => 150000,
             ],
             self::TOP_SIX_BANKS => [
             ],
@@ -32,6 +34,8 @@ class MinAmount
                 Category::PVT_EDUCATION  => 200000,
                 Category::CORPORATE      => 200000,
                 Category::LENDING        => 150000,
+                Category::FOREX          => 150000,
+                Category::HOUSING        => 150000,
             ],
         ],
         Method::CARD => [
