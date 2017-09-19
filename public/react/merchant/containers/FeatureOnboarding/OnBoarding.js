@@ -162,7 +162,15 @@ export default class OnBoarding extends Component {
             </div>
           </div>
 
-          <div class={`banner-figure clearfix ${!isTestMode ? 'semi' : ''}`}>
+          {/* semi-view hides image on small screen.
+            Live mode will have semi view if form is not submitted
+          */}
+          <div
+            class={`banner-figure clearfix ${!isTestMode &&
+            !this.state.submitted
+              ? 'semi-view'
+              : ''}`}
+          >
             <img class="feature-image" src={currentForm.formImage} />
           </div>
         </main>

@@ -39,7 +39,7 @@ export default class MarketplaceContainer extends Component {
       })
       .catch(err => {
         this.props.showNotification({
-          type: 'danger',
+          type: 'error',
           message: err.errors,
         });
       });
