@@ -10,6 +10,7 @@ class Authorization
     protected $auth  = array();
     protected $type;
     protected $proxy = false;
+
     protected $key;
     protected $token;
     protected $secret;
@@ -17,12 +18,14 @@ class Authorization
     protected $orgId;
     protected $adminHeaders;
     protected $admin;
+    protected $appHeaders;
 
     protected $defaultKey               = 'rzp_test_TheTestAuthKey';
     protected $defaultSecret            = 'TheKeySecretForTests';
     protected $defaultDeviceToken       = 'authentication_token';
     protected $defaultToken             = Org::DEFAULT_TOKEN . Org::DEFAULT_TOKEN_PRINCIPAL;
     protected $defaultOrgId             = Org::RZP_ORG_SIGNED;
+
     protected $defaultDashboardHostname = 'dashboard.razorpay.dev';
     protected $defaultAccountId         = 'acc_10000000000001';
 
@@ -63,7 +66,7 @@ class Authorization
         ];
     }
 
-    public function appAuth($user = 'rzp_test', $pwd = '')
+    public function appAuth($user = 'rzp_test', $pwd = '', $hostName = null)
     {
         if ($pwd === '')
         {
@@ -74,6 +77,20 @@ class Authorization
         $this->basicAuth($user, $pwd);
 
         $this->type = 'app';
+
+        $this->addAppAuthHeaders($hostName);
+    }
+
+    public function addAppAuthHeaders($hostName)
+    {
+        if ($hostName === null)
+        {
+            $hostName = $this->defaultDashboardHostname;
+        }
+
+        $this->appHeaders = [
+            'X-Org-Hostname' => $hostName,
+        ];
     }
 
     public function appAuthLive($pwd = '')
@@ -188,7 +205,7 @@ class Authorization
         $this->basicAuth($key, $secret);
     }
 
-    public function adminAuth($mode = 'test', $token = null, $orgId = null)
+    public function adminAuth($mode = 'test', $token = null, $orgId = null, $hostName = null)
     {
         $appAuthCaller = 'appAuth' . studly_case($mode);
 
@@ -196,7 +213,7 @@ class Authorization
 
         $this->type = 'admin';
 
-        $this->addAdminAuthHeaders($orgId, $token);
+        $this->addAdminAuthHeaders($orgId, $token, $hostName);
     }
 
     public function dashboardAuth($mode = 'test')
@@ -245,7 +262,7 @@ class Authorization
     /**
      * Adds admin auth headers to a request
      */
-    public function addAdminAuthHeaders(string $orgId = null, string $adminToken = null)
+    public function addAdminAuthHeaders(string $orgId = null, string $adminToken = null, string $orgHostname = null)
     {
         if ($adminToken === null)
         {
@@ -257,13 +274,18 @@ class Authorization
             $orgId = $this->defaultOrgId;
         }
 
+        if ($orgHostname === null)
+        {
+            $orgHostname = $this->defaultDashboardHostname;
+        }
+
         $this->setToken($adminToken);
         $this->setOrganisation($orgId);
 
         $this->adminHeaders = [
             'X-Org-Id' => $orgId,
             'X-Admin-Token' => $adminToken,
-            'X-Org-Hostname' => $this->defaultDashboardHostname
+            'X-Org-Hostname' => $orgHostname,
         ];
     }
 
@@ -317,6 +339,11 @@ class Authorization
         }
 
         return $headers;
+    }
+
+    public function getAppHeaders()
+    {
+        return $this->appHeaders;
     }
 
     public function getAdminHeaders()
@@ -432,6 +459,11 @@ class Authorization
     public function getOrgId()
     {
         return $this->orgId;
+    }
+
+    public function isAppAuth()
+    {
+        return ($this->type === 'app');
     }
 
     public function isBearerAuth()

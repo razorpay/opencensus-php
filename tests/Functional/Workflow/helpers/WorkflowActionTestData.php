@@ -7,7 +7,7 @@ return [
     'testCreateWorkflowAction' => [
         'request' => [
             'method'  => 'PUT',
-            'url'     => '/orgs/%s/admins/%s',
+            'url'     => '/admin/%s',
             'content' => [
                 'name' => 'Test Name',
             ]
@@ -24,7 +24,7 @@ return [
     'testCreateWorkflowActionInprogress' => [
         'request' => [
             'method'  => 'PUT',
-            'url'     => '/orgs/%s/admins/%s',
+            'url'     => '/admin/%s',
             'content' => [
                 'name' => 'Test Name',
             ]
