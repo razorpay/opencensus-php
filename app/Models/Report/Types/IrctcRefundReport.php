@@ -109,7 +109,7 @@ class IrctcRefundReport extends BasicEntityReport
      */
     protected function generateFilename($timestamp) : string
     {
-        $version = 1;
+        $version = 'V1';
 
         $time = Carbon::now(Timezone::IST)->format('Ymd');
 
