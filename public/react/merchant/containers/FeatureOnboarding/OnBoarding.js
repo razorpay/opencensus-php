@@ -135,7 +135,11 @@ export default class OnBoarding extends Component {
 
     return (
       <div class="page-container">
-        <div class="onboarding-container clearfix">
+        <div
+          class={`onboarding-container clearfix ${isTestMode
+            ? 'halfForm'
+            : 'fullForm'}`}
+        >
           {/* Feature Description */}
           <main class="onboarding-overview col-md-7 col-xs-12">
             <h2>
@@ -167,11 +171,11 @@ export default class OnBoarding extends Component {
               </div>
             </div>
 
-            {/* semi-view hides image on small screen. Live mode will have semi view if form is not submitted */}
+            {/* halfForm hides image on small screen. Live mode will have 'halfForm' class if form is not submitted */}
             <div
               class={`banner-figure clearfix ${!isTestMode &&
               !this.state.submitted
-                ? 'semi-view'
+                ? 'halfForm'
                 : ''}`}
             >
               <img class="feature-image" src={currentForm.formImage} />

@@ -14,16 +14,31 @@
   max-width: 1024px;
   margin: 0 auto 60px;
   border-radius: 4px;
+
+  // Common for onboarding overview and form containers
+  .onboarding-overview, .onboarding-form {
+  //display: inline-block;
+    vertical-align: top;
+    padding: 36px;
+
+  }
 }
 
-// Common for onboarding overview and form containers
-.onboarding-overview, .onboarding-form {
-  background-color: #fff;
-  //display: inline-block;
-  vertical-align: top;
-  padding: 36px;
+.onboarding-container.fullForm {
   box-shadow: 0 0 8px 0 rgba(0,0,0,0.1);
+  background-color: #fff;
 }
+
+.onboarding-container.halfForm {
+  .onboarding-overview, .onboarding-form {
+    box-shadow: 0 0 8px 0 rgba(0,0,0,0.1);
+  }
+
+  .onboarding-form {
+    background-color: #fff;
+  }
+}
+
 
 // overview container
 .onboarding-overview {
@@ -111,7 +126,7 @@
   }
 
   @media (max-width: 991px) {
-    &.semi-view {
+    &.halfForm {
       display: none;
     }
   }
