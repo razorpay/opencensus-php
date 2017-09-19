@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Feature;
 
-use DB;
-
 use RZP\Constants\Mode;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\Repository as BaseRepository;
