@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Feature;
 
-use RZP\Constants\Mode;
-
 class Constants
 {
     const ENTITY_IDS               = 'entity_ids';

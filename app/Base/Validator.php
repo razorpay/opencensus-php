@@ -28,14 +28,14 @@ class Validator extends \Razorpay\Spine\Validation\Validator
         }
     }
 
-    protected function isTestMode()
+    protected function isTestMode(): bool
     {
         $app = App::getFacadeRoot();
 
         return ($app['rzp.mode'] === Mode::TEST);
     }
 
-    protected function isLiveMode()
+    protected function isLiveMode(): bool
     {
         $app = App::getFacadeRoot();
 
