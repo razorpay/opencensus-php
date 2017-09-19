@@ -2,11 +2,7 @@
 
 namespace RZP\Models\Feature;
 
-use DB;
-
 use RZP\Constants\Mode;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Models\Base\EsRepository;
 use RZP\Models\Base\Repository as BaseRepository;
 
@@ -43,7 +39,7 @@ class Repository extends BaseRepository
                     ->first();
     }
 
-    public function saveAndSyncIfApplicableOrFail(Entity $feature, bool $shouldSync)
+    public function saveAndSyncIfApplicableOrFail(Entity $feature, array $assignedFeatureNames, bool $shouldSync)
     {
         if ($shouldSync === true)
         {
@@ -51,6 +47,8 @@ class Repository extends BaseRepository
         }
         else
         {
+            $feature->getValidator()->validateFeatureIsNotAlreadyAssigned($assignedFeatureNames);
+
             $this->repo->saveOrFail($feature);
         }
     }
@@ -85,22 +83,12 @@ class Repository extends BaseRepository
 
             if ($testEntity === null)
             {
-                $testEntity = clone $entity;
-                $testEntity->setConnection(Mode::TEST);
-
-                $testEntity->saveOrFail();
-
-                $this->syncToEs($entity, EsRepository::CREATE, null, Mode::TEST);
+                $this->cloneAndSaveToModeOrFail($entity, Mode::TEST);
             }
 
             if ($liveEntity === null)
             {
-                $liveEntity = clone $entity;
-                $liveEntity->setConnection(Mode::LIVE);
-
-                $liveEntity->saveOrFail();
-
-                $this->syncToEs($entity, EsRepository::CREATE, null, Mode::LIVE);
+                $this->cloneAndSaveToModeOrFail($entity, Mode::LIVE);
             }
         });
     }
@@ -135,5 +123,15 @@ class Repository extends BaseRepository
                 $this->syncToEs($entity, EsRepository::DELETE, null, Mode::LIVE);
             }
         });
+    }
+
+    private function cloneAndSaveToModeOrFail(Entity $entity, string $mode)
+    {
+        $modeEntity = clone $entity;
+        $modeEntity->setConnection($mode);
+
+        $modeEntity->saveOrFail();
+
+        $this->syncToEs($modeEntity, EsRepository::CREATE, null, $mode);
     }
 }

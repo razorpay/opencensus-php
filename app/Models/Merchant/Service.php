@@ -29,6 +29,7 @@ use RZP\Models\Admin\Group;
 use RZP\Models\BankAccount;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Webhook;
+use Requests_Response as Response;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Merchant\SlackActions as SlackActions;
@@ -998,7 +999,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function addOrRemoveMerchantFeatures($input)
+    public function addOrRemoveMerchantFeatures(array $input)
     {
         $this->trace->info(
             TraceCode::MERCHANT_FEATURE_UPDATE,
@@ -1006,7 +1007,13 @@ class Service extends Base\Service
 
         $merchant = $this->merchant;
 
-        $shouldSync = boolval($input[Feature\Entity::SHOULD_SYNC] ?? false);
+        $shouldSync = (bool) ($input[Feature\Entity::SHOULD_SYNC] ?? false);
+
+        //
+        // Temporary: To ensure BC until dashboard code for this is deployed
+        // PR: https://github.com/razorpay/dashboard/pull/1592
+        //
+        $shouldSync = true;
 
         $merchant->validateInput('feature', $input);
 
@@ -1233,8 +1240,6 @@ class Service extends Base\Service
 
         $entityId = $merchant->getId();
 
-        $featureCore = new Feature\Core;
-
         foreach ($featureNames as $featureName)
         {
             $feature = $this->repo->feature->findByEntityIdAndNameOrFail(
@@ -1243,10 +1248,7 @@ class Service extends Base\Service
 
             if ($feature !== null)
             {
-                $featureCore->delete($feature, $shouldSync);
-
-                // We delete tag also along with feature.
-                $this->deleteTag($entityId, $feature->getName());
+                $this->repo->feature->deleteAndSyncIfApplicableOrFail($feature, $shouldSync);
             }
         }
     }
@@ -1362,4 +1364,12 @@ class Service extends Base\Service
 
         return $mailer;
     }
+
+    public function fetchAnalytics($input)
+    {
+        (new Core())->validateFilterAttributesAndAddMerchantId($this->merchant->getId(), $input);
+
+        return $this->app['eventManager']->query($input);
+    }
+
 }

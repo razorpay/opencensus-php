@@ -3,17 +3,26 @@
 namespace RZP\Models\Feature;
 
 use Config;
+
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicEntity;
 
 class Core extends Base\Core
 {
-    public function create($input, bool $shouldSync = false)
+    /**
+     * Create feature
+     *
+     * @param array $input
+     * @param bool  $shouldSync Should the entity be save on both test and live
+     *
+     * @return Entity
+     */
+    public function create(array $input, bool $shouldSync = false): Entity
     {
         $feature = (new Entity)->build($input);
 
-        $feature = $feature->generateId();
+        $feature->generateId();
 
         $existingFeatures = $this->repo->feature->findByEntityId($feature->getEntityId());
 
@@ -27,17 +36,24 @@ class Core extends Base\Core
                 Entity::SHOULD_SYNC       => $shouldSync
             ]);
 
-        $feature->getValidator()->validateFeatureIsNotAlreadyAssigned($assignedFeatureNames);
-
         $feature->getValidator()->validateEditingFeature($feature, $shouldSync);
 
-        $this->repo->feature->saveAndSyncIfApplicableOrFail($feature, $shouldSync);
+        $this->repo->feature->saveAndSyncIfApplicableOrFail(
+            $feature,
+            $assignedFeatureNames,
+            $shouldSync);
 
         $this->notifyOnSlack($feature);
 
         return $feature;
     }
 
+    /**
+     * Delete feature
+     *
+     * @param Entity $feature
+     * @param bool   $shouldSync
+     */
     public function delete(Entity $feature, bool $shouldSync = false)
     {
         $this->trace->info(
@@ -62,7 +78,13 @@ class Core extends Base\Core
         $this->notifyOnSlack($feature, true);
     }
 
-    public function notifyOnSlack($feature, $featureDeleted = false)
+    /**
+     * Send a slack notification on feature create/delete
+     *
+     * @param Entity $feature
+     * @param bool   $featureDeleted
+     */
+    protected function notifyOnSlack(Entity $feature, bool $featureDeleted = false)
     {
         $message = $feature->getDashboardEntityLinkForSlack($feature->getName());
 
@@ -79,11 +101,9 @@ class Core extends Base\Core
 
         $message .= $feature->getEntityId() . ' by ' . $user;
 
-        $data = [];
-
         $this->app['slack']->queue(
             $message,
-            $data,
+            [],
             [
                 'channel'  => Config::get('slack.channels.operations_log'),
                 'username' => 'Jordan Belfort',

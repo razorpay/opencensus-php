@@ -2,11 +2,12 @@
 
 namespace RZP\Tests\Unit\LineItem\Tax;
 
-use RZP\Tests\TestCase;
-use RZP\Models\LineItem;
-use RZP\Models\LineItem\Tax\Calculator;
 use RZP\Models\Tax;
 use RZP\Models\Base;
+use RZP\Tests\TestCase;
+use RZP\Models\Invoice;
+use RZP\Models\LineItem;
+use RZP\Models\LineItem\Tax\Calculator;
 
 /**
  * Unit tests for LineItem\Tax\Calculator.
@@ -27,10 +28,21 @@ class CalculatorTest extends TestCase
      */
     public function testTaxCalculationAgainstLineItemAndTaxes()
     {
+        $invoice = (new Invoice\Entity)->build();
+
         foreach ($this->testData as $i => $testData)
         {
-            $lineItem = (new LineItem\Entity)
-                            ->build($testData['line_item']['attributes']);
+            $lineItem = new LineItem\Entity;
+
+            //
+            // Association with a dummy invoice entity is needed
+            // as in Line item's validations this associated entity is used.
+            //
+            // In Core's flow the same is ensured.
+            //
+            $lineItem->entity()->associate($invoice);
+
+            $lineItem->build($testData['line_item']['attributes']);
 
             $taxes = new Base\PublicCollection;
 

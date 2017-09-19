@@ -134,7 +134,7 @@ class Gateway extends \RZP\Gateway\Base\Gateway
         return true;
     }
 
-    protected function getAcquirerData($gatewayPayment)
+    protected function getAcquirerData($input, $gatewayPayment)
     {
         return [
             'acquirer' => [

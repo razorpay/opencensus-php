@@ -14,9 +14,11 @@ class Service extends Base\Service
 
         $shouldSync = (bool) ($input[Entity::SHOULD_SYNC] ?? false);
 
-        $features = $featureParams->map(function ($item) use ($shouldSync)
+        $featureCore = new Core;
+
+        $features = $featureParams->map(function ($item) use ($featureCore, $shouldSync)
         {
-            return (new Core)->create($item, $shouldSync);
+            return $featureCore->create($item, $shouldSync);
         });
 
         return $features->toArray();
