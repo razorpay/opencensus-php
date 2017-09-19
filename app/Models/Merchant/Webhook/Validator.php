@@ -5,7 +5,6 @@ namespace RZP\Models\Merchant\Webhook;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Merchant;
-use Respect\Validation\Validator as v;
 
 class Validator extends Base\Validator
 {
@@ -91,7 +90,13 @@ class Validator extends Base\Validator
 
         $flags = FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE;
 
-        return v::ip($flags)->validate($ip);
+        return (bool) filter_var(
+            $ip,
+            FILTER_VALIDATE_IP,
+            [
+                'flags' => $flags,
+            ]
+        );
     }
 
     protected function validateUrl($input)
