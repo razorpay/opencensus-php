@@ -55,7 +55,6 @@ class Entity extends Base\Entity
 
     protected $casts = [
         self::AMOUNT    => 'int',
-        self::ECI       => 'string',
         self::ALGORITHM => 'int',
     ];
 
