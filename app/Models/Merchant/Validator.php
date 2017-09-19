@@ -142,9 +142,9 @@ class Validator extends Base\Validator
 
         $uneditableFeatures = Feature\Constants::$featuresUneditableOnLive;
 
-        // array_values is required as array_intersect returns an associative array with keys
-        // as the indexes if the element at index 0 in the first argument array is not present
-        // in the 2nd argument array.
+        // array_values is required as array_intersect returns an associative
+        // array with keys as the indexes if the element at index 0 in the
+        // first array is not present in the second array.
         $featuresNotAllowed = array_values(array_intersect($requestedFeatures, $uneditableFeatures));
 
         if (empty($featuresNotAllowed) === false)

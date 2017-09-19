@@ -67,19 +67,25 @@ class Validator extends Base\Validator
         }
    }
 
-   public function validateEditingFeature(Entity $feature, bool $shouldSync)
-   {
-       if ($shouldSync === true)
+    /**
+     * Throws an exception if a merchant tries to enable an uneditable
+     * feature for live mode
+     *
+     * @param string $featureName
+     * @param bool   $shouldSync
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateEditingFeature(string $featureName, bool $shouldSync)
+    {
+       $uneditableFeature = in_array($featureName, Constants::$featuresUneditableOnLive, true);
+
+       if (($shouldSync === true) and ($uneditableFeature === true))
        {
-           if (in_array($feature->getName(), Constants::$featuresUneditableOnLive, true) === true)
-           {
-               throw new Exception\BadRequestException(
-                   ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
-                   Entity::NAME,
-                   [
-                       $feature->getName()
-                   ]);
-           }
+           throw new Exception\BadRequestException(
+               ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
+               Entity::NAME,
+               [ $featureName ]);
        }
-   }
+    }
 }

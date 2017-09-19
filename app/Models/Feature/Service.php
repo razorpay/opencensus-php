@@ -16,8 +16,14 @@ class Service extends Base\Service
 
         $featureCore = new Core;
 
-        $features = $featureParams->map(function ($item) use ($featureCore, $shouldSync)
+        $featureValidator = new Validator;
+
+        $features = $featureParams->map(function ($item) use ($featureCore, $featureValidator, $shouldSync)
         {
+            $featureName = $item[Entity::NAME];
+
+            $featureValidator->validateEditingFeature($featureName, $shouldSync);
+
             return $featureCore->create($item, $shouldSync);
         });
 

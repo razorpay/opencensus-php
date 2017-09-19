@@ -28,15 +28,14 @@ class Core extends Base\Core
 
         $assignedFeatureNames = $existingFeatures->pluck(Entity::NAME)->toArray();
 
-        $this->trace->info(TraceCode::MERCHANT_FEATURE_EDIT_REQUEST,
+        $this->trace->info(
+            TraceCode::MERCHANT_FEATURE_EDIT_REQUEST,
             [
                 PublicEntity::MERCHANT_ID => $feature->getEntityId(),
                 Entity::OLD_FEATURES      => $assignedFeatureNames,
                 Entity::NEW_FEATURE       => $feature->getName(),
                 Entity::SHOULD_SYNC       => $shouldSync
             ]);
-
-        $feature->getValidator()->validateEditingFeature($feature, $shouldSync);
 
         $this->repo->feature->saveAndSyncIfApplicableOrFail(
             $feature,
