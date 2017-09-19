@@ -120,7 +120,8 @@ class Validator extends Base\Validator
 
     protected static $featureValidators = [
         'visible_features',
-        'feature_update_for_mode'
+        'feature_update_for_mode',
+        'uneditable_features',
     ];
 
     /**
@@ -142,37 +143,44 @@ class Validator extends Base\Validator
 
         $uneditableFeatures = Feature\Constants::$featuresUneditableOnLive;
 
+        //
         // array_values is required as array_intersect returns an associative
         // array with keys as the indexes if the element at index 0 in the
         // first array is not present in the second array.
+        //
         $featuresNotAllowed = array_values(array_intersect($requestedFeatures, $uneditableFeatures));
 
         if (empty($featuresNotAllowed) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE, $featuresNotAllowed);
+                ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
+                null,
+                ['features' => $featuresNotAllowed]);
         }
     }
 
     /**
      * Throws an exception if a merchant tries to enable an uneditable
-     * feature for live mode
+     * feature for live mode, via the should_sync flag
      *
-     * @param array $featureNames
-     * @param bool  $shouldSync
+     * @param array $input
      *
      * @throws Exception\BadRequestException
      */
-    public function validateEditingFeatures(array $featureNames, bool $shouldSync)
+    protected function validateUneditableFeatures(array $input)
     {
-        $uneditableFeatures = array_values(array_intersect($featureNames, Feature\Constants::$featuresUneditableOnLive));
+        $requestedFeatures = array_keys($input['features']);
 
-        if (($shouldSync === true) and (count($uneditableFeatures) === true))
+        $shouldSync = (bool) ($input[Feature\Entity::SHOULD_SYNC] ?? false);
+
+        $uneditableFeatures = array_values(array_intersect($requestedFeatures, Feature\Constants::$featuresUneditableOnLive));
+
+        if (($shouldSync === true) and (count($uneditableFeatures) > 0))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
                 Feature\Entity::NAMES,
-                ['features' => $uneditableFeatures]);
+                ['features' => $uneditableFeatures, 'should_sync' => $shouldSync]);
         }
     }
 
