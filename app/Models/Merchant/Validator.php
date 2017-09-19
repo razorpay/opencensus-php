@@ -84,9 +84,16 @@ class Validator extends Base\Validator
         Entity::ACTION                      => 'required|custom'
     ];
 
+    protected static $oauthMailRules = [
+        'client_id'    => 'required|alpha_num|size:14',
+        'user_id'      => 'required|alpha_num|size:14',
+        'merchant_id'  => 'required|alpha_num|size:14'
+    ];
+
     protected static $featureRules = [
-        'features'          => 'required|array',
-        'optout_reason'     => 'sometimes|string|max:200'
+        'features'                   => 'required|array',
+        'optout_reason'              => 'sometimes|string|max:200',
+        Feature\Entity::SHOULD_SYNC  => 'sometimes|boolean',
     ];
 
     protected static $addTagsRules = [

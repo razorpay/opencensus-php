@@ -25,12 +25,12 @@ return [
                 [
                     'name'              => 'dummy',
                     'entity_id'         => '10000000000000',
-                    'entity_type'       => "merchant"
+                    'entity_type'       => 'merchant'
                 ],
                 [
                     'name'              => 's2s',
                     'entity_id'         => '10000000000000',
-                    'entity_type'       => "merchant"
+                    'entity_type'       => 'merchant'
                 ]
             ],
         ],
@@ -81,17 +81,23 @@ return [
         ],
         'response' => [
             'content' => [
-                null
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
             ],
-            'status_code' => 200,
-        ]
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_ALREADY_ASSIGNED,
+        ],
     ],
 
     'testMultiAssignFeature' => [
         'request' => [
             'content' => [
                 'name'          => 'dummy',
-                'entity_ids'    => ["10000000000001", "10000000000002", "10000000000003"],
+                'entity_ids'    => ['10000000000001', '10000000000002', '10000000000003'],
                 'entity_type'   => 'merchant'
             ],
             'url' => '/features/assign',
@@ -107,17 +113,17 @@ return [
                 [
                     'name'          => 'dummy',
                     'entity_id'     => '10000000000001',
-                    'entity_type'   => "merchant"
+                    'entity_type'   => 'merchant'
                 ],
                 [
                     'name'          => 'dummy',
                     'entity_id'     => '10000000000002',
-                    'entity_type'   => "merchant"
+                    'entity_type'   => 'merchant'
                 ],
                 [
                     'name'          => 'dummy',
                     'entity_id'     => '10000000000003',
-                    'entity_type'   => "merchant"
+                    'entity_type'   => 'merchant'
                 ],
             ]
         ]
@@ -127,7 +133,7 @@ return [
         'request' => [
             'content' => [
                 'name'          => 'dummy',
-                'entity_ids'    => ["10000000000001", "10000000000002", "10000000000003"]
+                'entity_ids'    => ['10000000000001', '10000000000002', '10000000000003']
             ],
             'url' => '/features/remove',
             'method' => 'POST',
@@ -141,17 +147,17 @@ return [
                 [
                     'name'          => 'dummy',
                     'entity_id'     => '10000000000001',
-                    'entity_type'   => "merchant"
+                    'entity_type'   => 'merchant'
                 ],
                 [
                     'name'          => 'dummy',
                     'entity_id'     => '10000000000002',
-                    'entity_type'   => "merchant"
+                    'entity_type'   => 'merchant'
                 ],
                 [
                     'name'          => 'dummy',
                     'entity_id'     => '10000000000003',
-                    'entity_type'   => "merchant"
+                    'entity_type'   => 'merchant'
                 ],
             ]
         ]
@@ -169,34 +175,34 @@ return [
             ],
         ],
         'response' => [
-            "content" => [
-                "assigned_features" => [
+            'content' => [
+                'assigned_features' => [
                     [
-                        "name"              => "dummy",
-                        "entity_id"         => "10000000000000",
-                        "entity_type"       => "merchant"
+                        'name'              => 'dummy',
+                        'entity_id'         => '10000000000000',
+                        'entity_type'       => 'merchant'
                     ],
                     [
-                        "name"              => "s2s",
-                        "entity_id"         => "10000000000000",
-                        "entity_type"       => "merchant"
+                        'name'              => 's2s',
+                        'entity_id'         => '10000000000000',
+                        'entity_type'       => 'merchant'
                     ],
                 ],
-                "all_features" => [
-                    "dummy",
-                    "webhooks",
-                    "aggregator",
-                    "tokens",
-                    "s2swallet",
-                    "s2supi",
-                    "s2saeps",
-                    "setl_report",
-                    "noflashcheckout",
-                    "recurring",
-                    "s2s",
-                    "invoice",
-                    "nozeropricing",
-                    "reverse",
+                'all_features' => [
+                    'dummy',
+                    'webhooks',
+                    'aggregator',
+                    'tokens',
+                    's2swallet',
+                    's2supi',
+                    's2saeps',
+                    'setl_report',
+                    'noflashcheckout',
+                    'recurring',
+                    's2s',
+                    'invoice',
+                    'nozeropricing',
+                    'reverse',
                 ]
             ]
         ]
@@ -272,9 +278,9 @@ return [
         ],
         'response' => [
             'content' => [
-                "error" => [
-                    "code" => PublicErrorCode::BAD_REQUEST_ERROR,
-                    "description" => PublicErrorDescription::BAD_REQUEST_NO_RECORDS_FOUND
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_NO_RECORDS_FOUND
                 ]
             ],
             'status_code' => 400
@@ -283,5 +289,98 @@ return [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
         ]
-    ]
+    ],
+
+    'addFeature' => [
+        'request' => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+            'content' => [
+                'names'       => ['dummy'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name'          => 'dummy',
+                    'entity_id'     => '10000000000000',
+                    'entity_type'   => 'merchant'
+                ]
+            ]
+        ]
+    ],
+
+    'deleteFeature' => [
+        'request' => [
+            'url'       => "/features/10000000000000/dummy",
+            'method'    => 'delete',
+            'server' => [
+                'HTTP_X-Dashboard'                => 'true',
+                'HTTP_X-Dashboard-User-Email'     => 'user@rzp.dev',
+            ],
+            'content'   => [
+                'names'             => ['dummy'],
+                'entity_type'       => 'merchant',
+                'entity_id'         => '10000000000000'
+            ]
+        ],
+        'response' => [
+            'content' => [ ]
+        ]
+    ],
+
+    'verifyFeatureAbsence' => [
+        'request'  => [
+            'url'    => '/features/10000000000000',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ]
+    ],
+
+    'verifyFeaturePresence' => [
+        'request'  => [
+            'url'    => '/features/10000000000000',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'assigned_features' => [
+                    [
+                        'name'        => 'dummy',
+                        'entity_id'   => '10000000000000',
+                        'entity_type' => 'merchant'
+                    ]
+                ],
+                'all_features'      => [
+                    'dummy',
+                    'webhooks',
+                    'aggregator',
+                    'tokens',
+                    's2swallet',
+                    's2supi',
+                    's2saeps',
+                    'setl_report',
+                    'noflashcheckout',
+                    'recurring',
+                    's2s',
+                    'invoice',
+                    'nozeropricing',
+                    'reverse',
+                ]
+            ]
+        ]
+    ],
 ];

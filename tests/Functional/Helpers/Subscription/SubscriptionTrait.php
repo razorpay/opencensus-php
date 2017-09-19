@@ -143,7 +143,8 @@ trait SubscriptionTrait
                     'item' => [
                         'amount'   => 300,
                         'currency' => 'INR',
-                        'name'     => 'Sample Upfront Amount'
+                        'name'     => 'Sample Upfront Amount',
+                        'type'     => 'addon',
                     ]
                 ]
             ];

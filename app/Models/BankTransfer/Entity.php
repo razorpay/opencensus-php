@@ -206,6 +206,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
+    public function getMode()
+    {
+        return $this->getAttribute(self::MODE);
+    }
+
     public function getUtr()
     {
         return $this->getAttribute(self::UTR);
