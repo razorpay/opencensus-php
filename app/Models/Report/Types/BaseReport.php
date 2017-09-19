@@ -11,8 +11,8 @@ use RZP\Base\RuntimeManager;
 class BaseReport extends Base\Core
 {
     protected static $rules = [
-        'year'  => 'sometimes|digits:4',
-        'month' => 'sometimes|digits_between:1,2',
+        'year'  => 'required|digits:4',
+        'month' => 'required|digits_between:1,2',
         'day'   => 'sometimes|digits_between:1,2',
         'count' => 'sometimes|integer|min:1',
         'skip'  => 'sometimes|integer|min:0',
@@ -36,16 +36,9 @@ class BaseReport extends Base\Core
         }
     }
 
-    protected function getTimestamps(&$input): array
+    protected function getTimestamps($input): array
     {
-        if (isset($input['year']) == true)
-        {
-            $year = (int) $input['year'];
-        }
-        else
-        {
-            $year = (int) Carbon::now(Timezone::IST)->format('Y');
-        }
+        $year = (int) $input['year'];
 
         $from = $to = null;
 
@@ -78,18 +71,6 @@ class BaseReport extends Base\Core
                         ->endOfMonth()
                         ->getTimestamp();
         }
-        else
-        {
-            $month = (int) Carbon::now(Timezone::IST)->format('m');
-
-            $from = Carbon::yesterday(Timezone::IST)->timestamp;
-
-            $to = Carbon::tomorrow(Timezone::IST)->timestamp - 1;
-        }
-
-        $input['year'] = $year;
-
-        $input['month'] = $month;
 
         return [$from, $to];
     }

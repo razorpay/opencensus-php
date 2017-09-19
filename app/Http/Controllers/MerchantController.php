@@ -512,7 +512,7 @@ class MerchantController extends Controller
 
         unset($input['merchant_id']);
 
-        $data = $report->getReportUrl($input);
+        $data = $report->getReport($input);
 
         return ApiResponse::json($data);
     }

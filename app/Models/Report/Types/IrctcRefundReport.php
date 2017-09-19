@@ -8,6 +8,7 @@ use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Refund;
 use RZP\Models\FileStore;
+use RZP\Models\Feature;
 use RZP\Constants\Entity as E;
 
 class IrctcRefundReport extends BasicEntityReport
@@ -131,6 +132,54 @@ class IrctcRefundReport extends BasicEntityReport
         $fullpath = $this->createTxtFile($filename, $txt);
 
         return [$count, $fullpath];
+    }
+
+    public function generateReport(array $input)
+    {
+        $this->setDefaults();
+
+        $now = Carbon::now()->getTimestamp();
+
+        $filename = $this->generateFilename($now);
+
+        // We do not want all the aggregator merchant to download the complete report
+        // so its behind aggregator_report feature
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::AGGREGATOR_REPORT) === true)
+        {
+            $fullpath = $this->writeDataToCsvForAggregator($input, $filename);
+        }
+        else
+        {
+            $fullpath = $this->writeDataToCsv($input, $filename);
+        }
+
+        $s3File = $this->createFileAndSave($fullpath, $filename);
+
+        $this->unlinkFile($fullpath);
+    }
+
+    protected function getTimestamps($input): array
+    {
+        $from = Carbon::yesterday(Timezone::IST)->timestamp;
+
+        $to = Carbon::tomorrow(Timezone::IST)->timestamp - 1;
+
+        if (isset($input['from']) === true)
+        {
+            $from = $input['from'];
+        }
+
+        if (isset($input['to']) === true)
+        {
+            $to = $input['to'];
+        }
+
+        return [$from, $to];
+    }
+
+    protected function validateInput(array $input)
+    {
+        $this->checkAllowedEntity();
     }
 
     protected function createFileAndSave($filePath, $fileName)
