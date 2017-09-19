@@ -72,7 +72,7 @@ class MerchantController extends Controller
 
     public function getApihost()
     {
-        return AppResponse::jsonResponse([], $_ENV['API_URL']);
+        return AppResponse::jsonResponse([], config('api.url'));
     }
 
     public function getKeys($mode)

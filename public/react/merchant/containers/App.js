@@ -15,6 +15,7 @@ import IdleWarningDialog from 'merchant/components/IdleWarningDialog';
 import * as ModalActions from 'rzp/modules/modals';
 import * as NotificationActions from 'rzp/modules/notifications';
 import * as SessionActions from 'merchant/modules/session';
+import * as ConfigActions from 'merchant/modules/config';
 import { applyTheme } from 'rzp/themes';
 import User from 'merchant/models/User';
 import ShowWhen from 'merchant/components/ShowWhen';
@@ -25,6 +26,7 @@ import { fetchGST } from 'merchant/modules/profile';
 @connect(state => state.session, {
   ...ModalActions,
   ...SessionActions,
+  ...ConfigActions,
   ...NotificationActions,
   fetchGST,
 })
@@ -50,6 +52,7 @@ export default class App extends Component {
         }
 
         this.props.updateSession({ mode: currentMode });
+        this.props.fetchFeatures(this.props.user.current);
         this.redirectToRoute(role);
         setTimeout(() => {
           this.initSmooch(user);

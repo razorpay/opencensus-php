@@ -5,6 +5,7 @@ const CONFIG_FETCH = 'CONFIG_FETCH';
 const CONFIG_AND_FEATURES_FETCH = 'CONFIG_AND_FEATURES_FETCH';
 const MERCHANT_LOGO_UPLOADED = 'MERCHANT_LOGO_UPLOADED';
 const CONFIG_SAVE = 'CONFIG_SAVE';
+const FEATURES_FETCH = 'FEATURES_FETCH';
 const FEATURES_SAVE = 'FEATURES_SAVE';
 
 export const fetchConfigAjax = () => {
@@ -17,7 +18,7 @@ export const fetchConfigAjax = () => {
   });
 };
 
-export const fetchFeatures = currentUserId => {
+export const fetchFeaturesAjax = currentUserId => {
   let params = {
     route_name: 'merchant_get_features',
     url_params: {
@@ -39,13 +40,20 @@ export const fetchConfig = () => {
   };
 };
 
+export const fetchFeatures = currentUserId => {
+  return {
+    type: FEATURES_FETCH,
+    payload: fetchFeaturesAjax(currentUserId),
+  };
+};
+
 /*
  * Fetches merchant's config and features
  */
 export const fetchConfigAndFeatures = currentUserId => {
   return {
     type: CONFIG_AND_FEATURES_FETCH,
-    payload: Promise.all([fetchConfigAjax(), fetchFeatures(currentUserId)]),
+    payload: Promise.all([fetchConfigAjax(), fetchFeaturesAjax(currentUserId)]),
   };
 };
 
@@ -161,8 +169,9 @@ export default function(state = initialState, action) {
     case `${MERCHANT_LOGO_UPLOADED}::SUCCESS`:
       return set(state, 'config', normalizeConfig(action.payload.data));
 
+    case `${FEATURES_FETCH}::SUCCESS`:
     case `${FEATURES_SAVE}::SUCCESS`:
-      return set(state, 'features', action.payload.data);
+      return set(state, 'features', action.payload.data.features);
 
     default:
       return state;

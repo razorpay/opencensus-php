@@ -39,11 +39,13 @@ export default class FlashCheckout extends Component {
   }
 
   toggleFc = () => {
-    let fcEnabled = this.state.fcEnabled;
+    let fcEnabled  = this.state.fcEnabled;
+    let shouldSync = 1;
     var data = {
       features: {
         noflashcheckout: fcEnabled ? 1 : 0,
       },
+      should_sync: shouldSync
     };
 
     return this.props
