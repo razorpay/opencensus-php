@@ -15,7 +15,6 @@ export const saveOnboarding = (feature, fields, file, fileName) => {
 
   formData.append('route_name', 'feature_onboarding_create');
   formData.append('mode', 'live');
-  formData.append('mode', 'live');
   formData.append('url_params[{feature}]', feature);
 
   for (let key in fields) {
@@ -23,36 +22,6 @@ export const saveOnboarding = (feature, fields, file, fileName) => {
       formData.append(`body[${key}]`, fields[key]);
     }
   }
-
-  return {
-    type: FEATURE_ONBOARDING_SAVE,
-    payload: ajax({
-      url: '/user/generic',
-      method: 'POST',
-      data: formData,
-      appendModeInURL: false,
-      processData: false,
-      contentType: false,
-    }),
-  };
-
-  let body = {
-    route_name: 'feature_onboarding_create',
-    mode: 'live',
-    body: data,
-  };
-
-  return {
-    type: FEATURE_ONBOARDING_SAVE,
-    payload: ajax({
-      url: '/user/generic',
-      method: 'POST',
-      appendModeInURL: false,
-      data: body,
-      processData: false,
-      contentType: false,
-    }),
-  };
 };
 
 // Get responses

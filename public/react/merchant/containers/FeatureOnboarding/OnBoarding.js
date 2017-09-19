@@ -40,7 +40,7 @@ export default class OnBoarding extends Component {
     });
 
     this.props
-      .getOnboardingResponse(this.props.feature)
+      .getOnboardingResponse(this.props.formType)
       .then(response => {
         const submitted = response.data && !(response.data instanceof Array);
 
@@ -81,13 +81,13 @@ export default class OnBoarding extends Component {
       let file = null;
       let fileName = null;
 
-      if (this.state.uploadedFile && this.props.feature === 'marketplace') {
+      if (this.state.uploadedFile && this.props.formType === 'marketplace') {
         file = this.state.uploadedFile;
         fileName = 'vendor_agreement';
       }
 
       return this.props
-        .saveOnboarding(this.props.feature, props, file, fileName)
+        .saveOnboarding(this.props.formType, props, file, fileName)
         .then(() => {
           this.props.showNotification({
             type: 'success',

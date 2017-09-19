@@ -35,6 +35,7 @@ class SetApiHeaders {
 	 */
 	public function handle($request, Closure $next)
 	{
+        \Debugbar::disable();
         $domain = \Request::server('SERVER_NAME');
 
         ApiRequest::addHeader('X-Org-Hostname', $domain);
