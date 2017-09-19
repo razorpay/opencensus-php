@@ -125,6 +125,11 @@ class OAuth
         catch (\Exception $exception)
         {
             // TODO: Add an API <> OAuth Exception map
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::OAUTH_TOKEN_INVALID
+            );
 
             return ApiResponse::generateErrorResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_OAUTH_TOKEN_INVALID);
         }
