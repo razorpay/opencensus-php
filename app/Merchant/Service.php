@@ -999,7 +999,8 @@ class Service extends Base\Service
             ],
             'body' => [
                 'tags' => $tags
-            ]
+            ],
+            'mode'  => 'live'
         ];
 
         $genericService = new Generic\Service;

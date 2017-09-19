@@ -1015,14 +1015,15 @@ class Service extends Base\Service
             return array($error, null);
         }
 
-        $this->setApiCredentials();
+        $this->setApiCredentials(null, $input['mode']);
 
         try
         {
             $params = [
                         'names'       => $input['features'],
                         'entity_type' => $entityType,
-                        'entity_id'   => $entityId
+                        'entity_id'   => $entityId,
+                        'should_sync' => $input['should_sync']
                     ];
 
             $response = $this->api->feature->setFeatures($params);
