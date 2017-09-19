@@ -601,6 +601,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MAXMIND_RESPONSE                          = 'MAXMIND_RESPONSE';
 
+    const HARVESTER_REQUEST                         = 'HARVESTER_REQUEST';
+    const HARVESTER_RETRY                           = 'HARVESTER_RETRY';
+    const HARVESTER_FAILURE                         = 'HARVESTER_FAILURE';
+
     // ES related trace codes
     const ES_CAT_RESPONSE                           = 'ES_CAT_RESPONSE';
     const ES_MAPPING_RESPONSE                       = 'ES_MAPPING_RESPONSE';
