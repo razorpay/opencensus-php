@@ -62,23 +62,23 @@
       <tbody>
         <tr>
           <td>Payments Volume</td>
-          <td>{{merchant_analytics.payments_volume.value}}</td>
+          <td>{{merchant_analytics.payments_volume[0].value}}</td>
         </tr>
         <tr>
           <td>Total Payments</td>
-          <td>{{merchant_analytics.total_payments.value}}</td>
+          <td>{{merchant_analytics.total_payments[0].value}}</td>
         </tr>
         <tr>
           <td>Total Refunds</td>
-          <td>{{merchant_analytics.total_refunds.value}}</td>
+          <td>{{merchant_analytics.total_refunds[0].value}}</td>
         </tr>
         <tr>
           <td>Total Settlements</td>
-          <td>{{merchant_analytics.total_settlements.value}}</td>
+          <td>{{merchant_analytics.total_settlements[0].value}}</td>
         </tr>
         <tr>
           <td>Recent Balance</td>
-          <td>{{merchant_analytics.recent_balance.value}}</td>
+          <td>{{merchant_analytics.recent_balance[0].value}}</td>
         </tr>
       </tbody>
     </table>
@@ -116,7 +116,7 @@
         <tr ng-repeat="recent_payment in merchant_analytics.recent_payments">
           <td>{{recent_payment.id}}</td>
           <td>{{recent_payment.status}}</td>
-          <td>{{recent_payment.created_at}}</td>
+          <td>{{recent_payment.created_at*1000 | date:'medium'}}</td>
         </tr>
       </tbody>
     </table>
@@ -135,7 +135,7 @@
         <tr ng-repeat="recent_refund in merchant_analytics.recent_refunds">
           <td>{{recent_refund.id}}</td>
           <td>{{recent_refund.status}}</td>
-          <td>{{recent_refund.created_at}}</td>
+          <td>{{recent_refund.created_at*1000 | date:'medium'}}</td>
         </tr>
       </tbody>
     </table>
@@ -154,7 +154,7 @@
         <tr ng-repeat="recent_settlement in merchant_analytics.recent_settlements">
           <td>{{recent_settlement.id}}</td>
           <td>{{recent_settlement.status}}</td>
-          <td>{{recent_settlement.created_at}}</td>
+          <td>{{recent_settlement.created_at*1000 | date:'medium'}}</td>
         </tr>
       </tbody>
     </table>
@@ -173,7 +173,7 @@
         <tr ng-repeat="recent_transaction in merchant_analytics.recent_transactions">
           <td>{{recent_transaction.id}}</td>
           <td>{{recent_transaction.status}}</td>
-          <td>{{recent_transaction.created_at}}</td>
+          <td>{{recent_transaction.created_at*1000 | date:'medium'}}</td>
         </tr>
       </tbody>
     </table>
