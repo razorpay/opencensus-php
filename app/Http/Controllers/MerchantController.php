@@ -510,7 +510,7 @@ class MerchantController extends Controller
 
         $report->setMerchant($merchantId);
 
-        unset($merchantId);
+        unset($input['merchant_id']);
 
         $data = $report->getReportUrl($input);
 

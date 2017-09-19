@@ -36,9 +36,16 @@ class BaseReport extends Base\Core
         }
     }
 
-    protected function getTimestamps($input): array
+    protected function getTimestamps(&$input): array
     {
-        $year = (int) $input['year'];
+        if (isset($input['year']) == true)
+        {
+            $year = (int) $input['year'];
+        }
+        else
+        {
+            $year = (int) Carbon::now(Timezone::IST)->format('Y');
+        }
 
         $from = $to = null;
 
@@ -73,10 +80,16 @@ class BaseReport extends Base\Core
         }
         else
         {
+            $month = (int) Carbon::now(Timezone::IST)->format('m');
+
             $from = Carbon::yesterday(Timezone::IST)->timestamp;
 
             $to = Carbon::today(Timezone::IST)->timestamp - 1;
         }
+
+        $input['year'] = $year;
+
+        $input['month'] = $month;
 
         return [$from, $to];
     }

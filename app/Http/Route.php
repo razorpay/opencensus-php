@@ -312,7 +312,7 @@ final class Route
         'reports_monthly_invoice'                 => ['get',      'reports/invoice',                                'MerchantController@getInvoiceReport'                               ],
         'reports_public_entity'                   => ['get',      'reports/{entity}',                               'MerchantController@getPublicEntityReport'                          ],
         'reports_public_entity_file'              => ['get',      'reports/{entity}/file',                          'MerchantController@getPublicEntityReportUrl'                       ],
-        'reports_refund_irctc'                    => ['get',       'reports/refund/irctc',                          'MerchantController@getIrctcRefundReport'                           ],
+        'reports_refund_irctc'                    => ['get',      'reports/refund/irctc',                          'MerchantController@getIrctcRefundReport'                           ],
         'customer_create'                         => ['post',     'customers',                                      'CustomerController@createLocalCustomer'                            ],
         'customer_update'                         => ['put',      'customers/{id}',                                 'CustomerController@updateCustomer'                                 ],
         'customer_fetch_by_id'                    => ['get',      'customers/{id}',                                 'CustomerController@getCustomer'                                    ],

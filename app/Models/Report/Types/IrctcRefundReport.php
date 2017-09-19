@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\FileStore;
 use RZP\Constants\Entity as E;
 
 class IrctcRefundReport extends BasicEntityReport
@@ -111,10 +112,10 @@ class IrctcRefundReport extends BasicEntityReport
 
         $time = Carbon::now(Timezone::IST)->format('Ymd');
 
-        return 'deltarefund_WUATRZRPAY_' . $time . '_' .$version . '.txt';
+        return 'deltarefund_WUATRZRPAY_' . $time . '_' .$version;
     }
 
-    protected function writeDataToFileForMerchant(int $from,
+    protected function writeDataToCsvForMerchant(int $from,
                                                  int $to,
                                                  int $count,
                                                  int $skip,
@@ -126,20 +127,26 @@ class IrctcRefundReport extends BasicEntityReport
 
         $txt = $this->generateText($data, '|');
 
-        $creator = new FileStore\Creator;
-
-        $file = $creator->extension(FileStore\Format::TXT)
-                        ->content($txt)
-                        ->name('reports/' . $fileName)
-                        ->store(FileStore\Store::S3)
-                        ->type(FileStore\Type::REPORT)
-                        ->merchant($this->merchant)
-                        ->save();
-
-        $fullPath =  $file->getFileInstance();
-
+        $fullpath = $this->createTxtFile($filename, $txt);
 
         return [$count, $fullpath];
+    }
+
+    protected function createFileAndSave($filePath, $fileName)
+    {
+        $creator = new FileStore\Creator;
+
+        $s3File = $creator->localFilePath($filePath)
+                          ->extension(FileStore\Format::TXT)
+                          ->mime('text/plain')
+                          ->name('reports/' . $fileName)
+                          ->store(FileStore\Store::S3)
+                          ->type(FileStore\Type::REPORT)
+                          ->merchant($this->merchant)
+                          ->save()
+                          ->getFileInstance();
+
+        return $s3File;
     }
 
     protected function getFormattedAmount($amount)
