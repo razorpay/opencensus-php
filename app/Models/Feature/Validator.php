@@ -5,9 +5,9 @@ namespace RZP\Models\Feature;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant;
 use Illuminate\Http\Request;
+use RZP\Models\Base\PublicEntity;
 
 class Validator extends Base\Validator
 {

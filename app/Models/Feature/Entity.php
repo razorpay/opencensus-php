@@ -3,6 +3,8 @@
 namespace RZP\Models\Feature;
 
 use RZP\Models\Base;
+use RZP\Constants\Table;
+use RZP\Constants\Entity as E;
 
 class Entity extends Base\PublicEntity
 {
@@ -19,9 +21,9 @@ class Entity extends Base\PublicEntity
     const NEW_FEATURE  = 'new_feature';
     const FEATURE      = 'feature';
 
-    protected $table = \RZP\Constants\Table::FEATURE;
+    protected $table = Table::FEATURE;
 
-    protected $entity = 'feature';
+    protected $entity = E::FEATURE;
 
     // We are explicitly generating Id so that same Id gets stored in live and test db
     protected $generateIdOnCreate = false;
@@ -64,12 +66,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::ENTITY_TYPE);
     }
-
-    /**
-     * Creates a polymorphic relation with entities
-     * implementing a morphMany association on the
-     * 'entity' key
-     */
+    
     public function entity()
     {
         return $this->morphTo();

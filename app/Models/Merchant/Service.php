@@ -998,7 +998,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function addOrRemoveMerchantFeatures($input)
+    public function addOrRemoveMerchantFeatures(array $input)
     {
         $this->trace->info(
             TraceCode::MERCHANT_FEATURE_UPDATE,
@@ -1233,8 +1233,6 @@ class Service extends Base\Service
 
         $entityId = $merchant->getId();
 
-        $featureCore = new Feature\Core;
-
         foreach ($featureNames as $featureName)
         {
             $feature = $this->repo->feature->findByEntityIdAndNameOrFail(
@@ -1243,10 +1241,7 @@ class Service extends Base\Service
 
             if ($feature !== null)
             {
-                $featureCore->delete($feature, $shouldSync);
-
-                // We delete tag also along with feature.
-                $this->deleteTag($entityId, $feature->getName());
+                $this->repo->feature->deleteAndSyncIfApplicableOrFail($feature, $shouldSync);
             }
         }
     }
