@@ -2,17 +2,16 @@
 
 namespace RZP\Models\Gateway\File\Processor\Emi;
 
-use Carbon\Carbon;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
-use RZP\Constants\Timezone;
 
 class Axis extends Base
 {
-    const BANK_CODE = IFSC::UTIB;
-    const EXTENSION = FileStore\Format::CSV;
-    const FILE_TYPE = FileStore\Type::AXIS_EMI_FILE;
-    const FILE_NAME = 'Axis_Emi_File';
+    const BANK_CODE   = IFSC::UTIB;
+    const EXTENSION   = FileStore\Format::CSV;
+    const FILE_TYPE   = FileStore\Type::AXIS_EMI_FILE;
+    const FILE_NAME   = 'Axis_Emi_File';
+    const DATE_FORMAT = 'd-M-Y';
 
     protected function formatDataForFile()
     {
@@ -29,8 +28,8 @@ class Axis extends Base
             $formattedData[] = [
                 'Card Number'                  => $this->getCardNumber($emiPayment->card),
                 'Transaction Amount'           => $emiPayment->getAmount() / 100,
-                'Transaction Date'             => $this->formattedDateFromTimestamp($emiPayment->getCaptureTimestamp()),
-                'Settlement Date'              => $this->formattedDateFromTimestamp($txn->getSettledAt()),
+                'Transaction Date'             => $this->getFormattedDate($emiPayment->getCaptureTimestamp()),
+                'Settlement Date'              => $this->getFormattedDate($txn->getSettledAt()),
                 'Authorisation Id'             => $this->getAuthCode($emiPayment),
                 'Merchant Name'                => 'Razorpay Payments',
                 'MCC (Merchant Category Code)' => $merchant->getCategory(), // Non Mandatory,
@@ -41,10 +40,5 @@ class Axis extends Base
         }
 
         return $formattedData;
-    }
-
-    protected function formattedDateFromTimestamp($timestamp)
-    {
-        return Carbon::createFromTimestamp($timestamp, Timezone::IST)->format('d-M-Y');
     }
 }

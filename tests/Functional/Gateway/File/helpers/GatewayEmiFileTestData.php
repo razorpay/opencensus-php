@@ -134,5 +134,137 @@ return [
                 ]
             ]
         ]
+    ],
+
+    'testGenerateEmiFileForIndusInd' => [
+        'request' => [
+            'content' => [
+                'type'    => 'emi',
+                'targets' => ['indusind'],
+                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp()
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'file_sent',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'emifiles@razorpay.com',
+                        'type'                => 'emi',
+                        'target'              => 'indusind',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testGenerateEmiFileForKotak' => [
+        'request' => [
+            'content' => [
+                'type'    => 'emi',
+                'targets' => ['kotak'],
+                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp()
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'file_sent',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'emifiles@razorpay.com',
+                        'type'                => 'emi',
+                        'target'              => 'kotak',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testGenerateEmiFileForRbl' => [
+        'request' => [
+            'content' => [
+                'type'    => 'emi',
+                'targets' => ['rbl'],
+                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp()
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'file_sent',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'emifiles@razorpay.com',
+                        'type'                => 'emi',
+                        'target'              => 'rbl',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testGenerateEmiFileForScbl' => [
+        'request' => [
+            'content' => [
+                'type'    => 'emi',
+                'targets' => ['scbl'],
+                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp()
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'file_sent',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'emifiles@razorpay.com',
+                        'type'                => 'emi',
+                        'target'              => 'scbl',
+                        'entity'              => 'gateway_file',
+                        'admin'               => true
+                    ]
+                ]
+            ]
+        ]
     ]
 ];

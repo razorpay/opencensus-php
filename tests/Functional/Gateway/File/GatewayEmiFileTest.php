@@ -29,13 +29,13 @@ class GatewayEmiFileTest extends TestCase
         $this->emiPlan = $this->fixtures->create('emi_plan:default_emi_plans');
 
         $this->mockTokenex();
+
+        $this->fixtures->merchant->enableEmi();
     }
 
     public function testGenerateEmiFile()
     {
         Mail::fake();
-
-        $this->fixtures->merchant->enableEmi();
 
         $this->ba->publicAuth();
 
@@ -123,6 +123,142 @@ class GatewayEmiFileTest extends TestCase
         $this->assertNull($content[File\Entity::SENT_AT]);
         $this->assertNotNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+    }
+
+    public function testGenerateEmiFileForIndusInd()
+    {
+        Mail::fake();
+
+        $this->ba->publicAuth();
+
+        $this->makeEmiPaymentOnCard('4147720000000009', 9);
+
+        $this->ba->appAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFileContent = [
+            'type'        => 'indusind_emi_file',
+            'entity_type' => File\Entity::class,
+            'entity_id'   => $content['id'],
+            'extension'   => 'zip',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        Mail::assertSent(EmiMail\Password::class);
+        Mail::assertSent(EmiMail\File::class);
+    }
+
+    public function testGenerateEmiFileForKotak()
+    {
+        Mail::fake();
+
+        $this->ba->publicAuth();
+
+        $this->makeEmiPaymentOnCard('4280951000002433', 9, 1, 'capp_1000000custapp');
+
+        $this->ba->appAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFileContent = [
+            'type'        => 'kotak_emi_file',
+            'entity_type' => File\Entity::class,
+            'entity_id'   => $content['id'],
+            'extension'   => 'zip',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        Mail::assertSent(EmiMail\Password::class);
+        Mail::assertSent(EmiMail\File::class);
+    }
+
+    public function testGenerateEmiFileForRbl()
+    {
+        Mail::fake();
+
+        $this->ba->publicAuth();
+
+        $this->makeEmiPaymentOnCard('5243730000000008', 9);
+
+        $this->ba->appAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFileContent = [
+            'type'        => 'rbl_emi_file',
+            'entity_type' => File\Entity::class,
+            'entity_id'   => $content['id'],
+            'extension'   => 'zip',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        Mail::assertSent(EmiMail\Password::class);
+        Mail::assertSent(EmiMail\File::class);
+    }
+
+    public function testGenerateEmiFileForScbl()
+    {
+        Mail::fake();
+
+        $this->ba->publicAuth();
+
+        $this->makeEmiPaymentOnCard('4028740000000001', 9);
+
+        $this->ba->appAuth();
+
+        $content = $this->startTest();
+
+        $content = $content['items'][0];
+
+        $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
+        $this->assertNotNull(File\Entity::SENT_AT);
+        $this->assertNull($content[File\Entity::FAILED_AT]);
+        $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
+
+        $file = $this->getLastEntity('file_store', true);
+
+        $expectedFileContent = [
+            'type'        => 'scbl_emi_file',
+            'entity_type' => File\Entity::class,
+            'entity_id'   => $content['id'],
+            'extension'   => 'zip',
+        ];
+
+        $this->assertArraySelectiveEquals($expectedFileContent, $file);
+
+        Mail::assertSent(EmiMail\Password::class);
+        Mail::assertSent(EmiMail\File::class);
     }
 
     protected function makeEmiPaymentOnCard($card, $emiDuration,

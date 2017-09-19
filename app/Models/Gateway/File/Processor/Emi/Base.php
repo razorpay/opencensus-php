@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 use RZP\Mail\Emi as EmiMail;
 use RZP\Models\Gateway\File\Status;
 use Razorpay\Trace\Logger as Trace;
@@ -22,10 +23,11 @@ class Base extends BaseProcessor
     const FILE_METADATA = [];
     const COMPRESSION_REQUIRED = true;
     const EMI_FILE_PASSWORD_LENGTH = 7;
+    const EXTENSION = FileStore\Format::XLSX;
 
     public function fetchEntities(): PublicCollection
     {
-        $begin = $this->gatewayFile->getbegin();
+        $begin = $this->gatewayFile->getBegin();
         $end = $this->gatewayFile->getEnd();
 
         $emiPaymentsForBank = $this->repo
@@ -272,5 +274,11 @@ class Base extends BaseProcessor
     protected function getFileToWriteName()
     {
         return static::FILE_NAME;
+    }
+
+    protected function getFormattedDate($timestamp): string
+    {
+        return Carbon::createFromTimestamp($timestamp, Timezone::IST)
+                    ->format(static::DATE_FORMAT);
     }
 }
