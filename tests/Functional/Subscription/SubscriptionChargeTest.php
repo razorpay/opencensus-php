@@ -1194,7 +1194,7 @@ class SubscriptionChargeTest extends TestCase
     {
         $subscription = $this->createSubscription(true);
 
-        $item = $this->fixtures->create('item', ['id' => '2000000000item']);
+        $item = $this->fixtures->create('item:addon_type', ['id' => '2000000000item']);
         $this->fixtures->create(
             'addon',
             [
