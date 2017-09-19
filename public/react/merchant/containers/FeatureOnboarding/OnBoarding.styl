@@ -18,15 +18,71 @@
 .onboarding-overview {
   width: 55%;
   border-right: 1px solid #dee5e7;
+
+  h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    font-weight: 800;
+  }
+
+  p {
+    line-height: 24px;
+  }
+
+  .dot {
+    margin: 0 4px;
+    background-color: #bbc2c3;
+    width: 7px;
+    border-radius: 50%;
+    vertical-align: middle;
+    display: inline-block;
+    height: 7px;
+  }
 }
 
 .onboarding-form {
   width: 45%;
+
+  h3 {
+    margin-bottom: 20px;
+    font-size: 18px;
+    line-height: 26px;
+  }
+
+  p {
+    line-height: 24px;
+  }
 }
 
 
+.banner-figure {
+  position: relative;
+
+  &:before {
+    content: '';
+    width: 53%;
+    padding-top: 55%;
+    left: 0;
+    top: 0;
+    position: absolute;
+    border-radius: 3px;
+
+    z-index: 1;
+
+    background: #f8fafc;
+    border-left: 1px solid #dcf3ec;
+    color: #dcf3ec;
+
+    transform: rotateZ(45deg) skewX(-15deg) skewY(-16deg) translateX(23%) translateY(-18%) scale(0.96);
+    box-shadow: 1px 1px 0, 2px 2px 0, 3px 3px 0, 4px 4px 0, 5px 5px 0, 6px 6px 0, 7px 7px 0, 8px 8px 0;
+  }
+}
 .feature-image {
   display: block;
-  width: 85%;
+  position: relative;
+  width: 74%;
+  right: 43px;
+  top: -20px;
   margin: 0 auto;
+  z-index: 2;
 }

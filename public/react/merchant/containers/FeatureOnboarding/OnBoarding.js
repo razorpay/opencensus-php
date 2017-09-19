@@ -109,7 +109,6 @@ export default class OnBoarding extends Component {
 
     const currentForm = FORM_TYPE[formType];
     const WizardForm = currentForm.formComponent;
-    currentForm.links.docs += 'https://razorpay.com/docs/';
     this.requireImage(formType, currentForm);
 
     if (this.state.submitted) {
@@ -149,7 +148,9 @@ export default class OnBoarding extends Component {
             </a>
           </div>
 
-          <img class="feature-image" src={currentForm.formImage} />
+          <div class="banner-figure">
+            <img class="feature-image" src={currentForm.formImage} />
+          </div>
         </main>
 
         {/* Feature Form for live mode*/}
