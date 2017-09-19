@@ -11,8 +11,8 @@ use RZP\Base\RuntimeManager;
 class BaseReport extends Base\Core
 {
     protected static $rules = [
-        'year'  => 'required|digits:4',
-        'month' => 'required|digits_between:1,2',
+        'year'  => 'sometimes|digits:4',
+        'month' => 'sometimes|digits_between:1,2',
         'day'   => 'sometimes|digits_between:1,2',
         'count' => 'sometimes|integer|min:1',
         'skip'  => 'sometimes|integer|min:0',

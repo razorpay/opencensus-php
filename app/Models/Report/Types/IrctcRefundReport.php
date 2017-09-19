@@ -50,7 +50,7 @@ class IrctcRefundReport extends BasicEntityReport
                 self::MERCHANT_REFERENCE => $this->getReservationId($payment),
                 self::PAYMENT_DATE       => $this->getPaymentDate($payment),
                 self::PAYMENT_ID         => $payment->getPublicId(),
-                self::REFUND_AMOUNT      => ($refund->getAmount() / 100),
+                self::REFUND_AMOUNT      => $refund->getAmount(),
                 self::REFUND_STATUS      => '5', // 5 for success, 6 for failure
                 self::REFUND_REMARKS     => 'Refunded',
                 self::REFUND_DATE        => $this->getRefundedDate($refund),
@@ -81,16 +81,10 @@ class IrctcRefundReport extends BasicEntityReport
 
     protected function getPaymentDate(Payment\Entity $payment)
     {
-        $paymentDate = '';
+        $ts = $payment->getAuthorizedAt();
 
-        $order = $payment->order;
-
-        if ($order !== null)
-        {
-            $notes = $order->notes;
-
-            $paymentDate = (isset($notes->txn_date) === true) ? $notes->txn_date : '';
-        }
+        $paymentDate = Carbon::createFromTimestamp($ts, Timezone::IST)
+                             ->format('Ymd');
 
         return $paymentDate;
     }
@@ -99,7 +93,6 @@ class IrctcRefundReport extends BasicEntityReport
     {
         $ts = $refund->getCreatedAt();
 
-        // Format dd/mm/yyyy hh:mm,
         $refundDate = Carbon::createFromTimestamp($ts, Timezone::IST)
                              ->format('Ymd');
 
@@ -147,5 +140,10 @@ class IrctcRefundReport extends BasicEntityReport
 
 
         return [$count, $fullpath];
+    }
+
+    protected function getFormattedAmount($amount)
+    {
+        return number_format($amount / 100, 2, '.', '');
     }
 }

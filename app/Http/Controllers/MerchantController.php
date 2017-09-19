@@ -504,7 +504,13 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
+        $merchantId = $input['merchant_id'];
+
         $report = new Report\Types\IrctcRefundReport(E::REFUND);
+
+        $report->setMerchant($merchantId);
+
+        unset($merchantId);
 
         $data = $report->getReportUrl($input);
 
