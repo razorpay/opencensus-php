@@ -151,6 +151,31 @@ class CardTest extends TestCase
         $this->assertArrayNotHasKey('number', $card);
     }
 
+    public function testNoCvvFieldForMaestro()
+    {
+        $maestroNumber = '5021653933333338';
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = $maestroNumber;
+        unset($payment['card']['expiry_month']);
+        unset($payment['card']['expiry_year']);
+        unset($payment['card']['cvv']);
+
+        $payment = $this->doAuthAndGetPayment($payment);
+
+        $cardInfo = [
+            'iin' => substr($maestroNumber, 0, 6),
+            'last4' => substr($maestroNumber, -4),
+            'network' => 'Maestro',
+        ];
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertArraySelectiveEquals($cardInfo, $card);
+        $this->assertArrayNotHasKey('number', $card);
+    }
+
     public function testUpdateSavedCard()
     {
         // Create card with missing fields
