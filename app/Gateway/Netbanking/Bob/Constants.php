@@ -11,4 +11,9 @@ class Constants
 
     const VERIFY_PAIR_SEPARATOR = '|';
     const VERIFY_KEY_VALUE_SEPARATOR = '=';
+
+    const REFUND_DEBIT  = 'D';
+    const REFUND_CREDIT = 'C';
+
+    const REFUND_PARTICULARS_HEAD = 'Razorpay Refund';
 }

@@ -531,6 +531,7 @@ class Gateway
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB => Gateway::NETBANKING_AXIS,
         IFSC::FDRL => Gateway::NETBANKING_FEDERAL,
+        IFSC::BARB => Gateway::NETBANKING_BOB,
         IFSC::RATN => Gateway::NETBANKING_RBL,
         IFSC::INDB => Gateway::NETBANKING_INDUSIND,
         IFSC::PUNB => Gateway::NETBANKING_PNB,
