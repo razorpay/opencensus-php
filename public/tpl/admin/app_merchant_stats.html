@@ -1,0 +1,181 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">
+    Merchant Analytics Stats
+    <spinner class="inline"></spinner>
+  </h1>
+</div>
+<div class="wrapper-md" ng-controller="MerchantStatsCtrl" ng-init="fetchMerchantAnalyticsStats()">
+  <div class="panel panel-default">
+    <div class="text-center">
+      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+    </div>
+    <div class="row wrapper">
+      <div class="form-group m-l" style="display: inline-block;">
+        <label for="starts_at" class="control-label" style="display: inline-block; vertical-align: middle">
+          Start Date:
+        </label>
+        <div style="display: inline-block; vertical-align: middle;">
+          <!--Date picker-->
+          <div style="display: table-cell; vertical-align: middle">
+            <div class="input-group input-date col-lg-3" name="from_timestamp"
+              ng-click="date.open($event, 0)">
+              <input type="text" class="form-control" datepicker-popup="dd MMM yyyy"
+                ng-model="from_timestamp" is-open="date.opened.0"
+                datepicker-options="date.dateOptions" close-text="Close" />
+              <div class="input-group-addon"><i class="icon icon-calendar"></i></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!--End Date-->
+      <div class="form-group m-l" style="display: inline-block;">
+        <label for="ends_at" class="control-label" style="display: inline-block; vertical-align: middle">
+          End Date:
+        </label>
+        <div style="display: inline-block; vertical-align: middle;">
+          <!--Date picker-->
+          <div style="display: table-cell; vertical-align: middle">
+            <div class="input-group input-date col-lg-3" name="to_timestamp"
+              ng-click="date.open($event, 1)">
+              <input type="text" class="form-control" datepicker-popup="dd MMM yyyy"
+                ng-model="to_timestamp" is-open="date.opened.1"
+                datepicker-options="date.dateOptions" close-text="Close" />
+              <div class="input-group-addon"><i class="icon icon-calendar"></i></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <span class="m-l">
+        <button class="btn btn-primary" ng-click="fetchMerchantAnalyticsStats()">Fetch Stats</button>
+      </span>
+    </div>
+  </div>
+  <div class="table-responsive panel panel-default">
+    <div class="panel-heading">
+      <b>Payment Details</b>
+    </div>
+    <table class="table table-striped b-t b-light">
+      <thead>
+        <th>Property</th>
+        <th>Value</th>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Payments Volume</td>
+          <td>{{merchant_analytics.payments_volume.value}}</td>
+        </tr>
+        <tr>
+          <td>Total Payments</td>
+          <td>{{merchant_analytics.total_payments.value}}</td>
+        </tr>
+        <tr>
+          <td>Total Refunds</td>
+          <td>{{merchant_analytics.total_refunds.value}}</td>
+        </tr>
+        <tr>
+          <td>Total Settlements</td>
+          <td>{{merchant_analytics.total_settlements.value}}</td>
+        </tr>
+        <tr>
+          <td>Recent Balance</td>
+          <td>{{merchant_analytics.recent_balance.value}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="table-responsive panel panel-default">
+    <div class="panel-heading">
+      <b>Payment Method Bars</b>
+    </div>
+    <table class="table table-striped b-t b-light">
+      <thead>
+        <th>Method</th>
+        <th>Percent</th>
+        <th>Doc Count</th>
+      </thead>
+      <tbody>
+        <tr ng-repeat="payment_method_bar in merchant_analytics.payment_method_bars">
+          <td>{{payment_method_bar.method}}</td>
+          <td>{{payment_method_bar.percent}}</td>
+          <td>{{payment_method_bar.doc_count}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="table-responsive panel panel-default">
+    <div class="panel-heading">
+      <b>Recent Payments</b>
+    </div>
+    <table class="table table-striped b-t b-light">
+      <thead>
+        <th>Id</th>
+        <th>Status</th>
+        <th>Created At</th>
+      </thead>
+      <tbody>
+        <tr ng-repeat="recent_payment in merchant_analytics.recent_payments">
+          <td>{{recent_payment.id}}</td>
+          <td>{{recent_payment.status}}</td>
+          <td>{{recent_payment.created_at}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="table-responsive panel panel-default">
+    <div class="panel-heading">
+      <b>Recent Refunds</b>
+    </div>
+    <table class="table table-striped b-t b-light">
+      <thead>
+        <th>Id</th>
+        <th>Status</th>
+        <th>Created At</th>
+      </thead>
+      <tbody>
+        <tr ng-repeat="recent_refund in merchant_analytics.recent_refunds">
+          <td>{{recent_refund.id}}</td>
+          <td>{{recent_refund.status}}</td>
+          <td>{{recent_refund.created_at}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="table-responsive panel panel-default">
+    <div class="panel-heading">
+      <b>Recent Settlements</b>
+    </div>
+    <table class="table table-striped b-t b-light">
+      <thead>
+        <th>Id</th>
+        <th>Status</th>
+        <th>Created At</th>
+      </thead>
+      <tbody>
+        <tr ng-repeat="recent_settlement in merchant_analytics.recent_settlements">
+          <td>{{recent_settlement.id}}</td>
+          <td>{{recent_settlement.status}}</td>
+          <td>{{recent_settlement.created_at}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="table-responsive panel panel-default">
+    <div class="panel-heading">
+      <b>Recent Transactions</b>
+    </div>
+    <table class="table table-striped b-t b-light">
+      <thead>
+        <th>Id</th>
+        <th>Status</th>
+        <th>Created At</th>
+      </thead>
+      <tbody>
+        <tr ng-repeat="recent_transaction in merchant_analytics.recent_transactions">
+          <td>{{recent_transaction.id}}</td>
+          <td>{{recent_transaction.status}}</td>
+          <td>{{recent_transaction.created_at}}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

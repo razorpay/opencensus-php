@@ -4,7 +4,8 @@ import { PowerSelectMultiple } from 'react-power-select';
 export default class TaggedInput extends Component {
   handleOptionsChange = (value, select) => {
     if (value.length > 1 && value.charAt(value.length - 1) === ',') {
-      let data = this.props.input.value.slice();
+      let data = this.props.input.value || [];
+      data = data.slice();
       let result = value.slice(0, -1);
       if (this.props.validator(result)) {
         data.push(result);
