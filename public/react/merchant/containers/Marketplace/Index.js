@@ -5,7 +5,7 @@ import { Route, Switch, NavLink } from 'react-router-dom';
 import { updateFeatures } from 'merchant/modules/config';
 import { showNotification } from 'rzp/modules/notifications';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
-import FeatureOnboarding from 'merchant/containers/FeatureOnboarding';
+import FeatureOnboarding from 'merchant/containers/FeatureOnboarding/OnBoarding';
 
 import PaymentsList from 'merchant/containers/Marketplace/Payments/List';
 import TransfersList from 'merchant/containers/Marketplace/Transfers/List';
@@ -46,32 +46,18 @@ export default class MarketplaceContainer extends Component {
   };
 
   render() {
-    if (this.props.user.isMarketplaceEnabled === false) {
+    if (!this.props.user.isMarketplaceEnabled) {
+      const heading =
+        'Automate you payment transfers for Marketplace, Vendor, payouts, Regional splits, etc. and manage complete payment cycle with Razorpay Route.';
+
       return (
-        <tabbed-container>
-          <header>
-            <NavLink to="/route">Razorpay Route</NavLink>
-          </header>
-          <content>
-            {this.props.mode === 'test'
-              ? <div class="content-wrapper content-sm">
-                  <div class="col-md-8">
-                    Try out Razorpay Route in test mode.
-                  </div>
-                  <div class="col-md-4">
-                    <AsyncButton
-                      class="btn btn-default pull-right"
-                      text="Enable Razorpay Route"
-                      pendingText="Enabling..."
-                      onClick={this.enableFeature}
-                    />
-                  </div>
-                </div>
-              : <div class="content-wrapper content-sm">
-                  <FeatureOnboarding feature="marketplace" />
-                </div>}
-          </content>
-        </tabbed-container>
+        <FeatureOnboarding
+          heading="Razorpay Route"
+          description={heading}
+          formType="marketplace"
+          isTestMode={this.props.mode === 'test'}
+          enableFeatureInTestMode={this.enableFeature}
+        />
       );
     }
 
