@@ -15,6 +15,8 @@ import Fee from 'merchant/components/Fee';
 import NestedEntityDetailRow from 'merchant/components/NestedEntityDetailRow';
 import OtherDetail from 'merchant/components/OtherDetail';
 import TransferReversal from 'merchant/components/Marketplace/Transfers/TransferReversal';
+import SettlementSchedule from 'merchant/components/Marketplace/Transfers/SettlementSchedule';
+import FormItem from 'merchant/components/FormItem';
 
 export default ({
   transfer,
@@ -87,7 +89,7 @@ export default ({
                 />
 
                 <EntityDetailRow label="On Hold">
-                  <CheckIcon value={transfer.on_hold} />
+                  <SettlementSchedule transfer={transfer} />}
                 </EntityDetailRow>
 
                 <EntityDetailRow

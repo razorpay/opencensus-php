@@ -7,13 +7,11 @@ import { TypeAhead } from 'react-power-select';
 import { withRouter } from 'react-router-dom';
 
 import Alert from 'rzp/ui/Forms/Alert';
-import { isHoliday } from 'rzp/utils/bankHolidays';
 import DatePickerField from 'rzp/ui/Forms/DatePickerField';
 import InputField from 'rzp/ui/Forms/InputField';
 import InlineField from 'rzp/ui/Forms/InlineField';
 import InputGroupField from 'rzp/ui/Forms/InputField/InputGroupField';
 import { required } from 'rzp/utils/validators';
-import RadioButton from 'rzp/ui/Forms/RadioButton';
 import { showNotification } from 'rzp/modules/notifications';
 import { titleCase } from 'rzp/utils/rzp-utils';
 
@@ -21,6 +19,7 @@ import { fetchAccounts } from 'merchant/modules/marketplace/accounts';
 import FormItem from 'merchant/components/FormItem';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
 import { createTransfer } from 'merchant/modules/marketplace/transfer';
+import SettlementSchedule from 'merchant/components/Marketplace/Transfers/SettlementSchedule';
 
 let Label = ({ text, htmlFor, required }) => {
   var classes = typeof required !== 'undefined' ? 'label-required' : '';
@@ -288,67 +287,14 @@ export default class TransferNew extends Component {
               <FormItem
                 label={_ => <Label text="Settlement schedule" />}
                 field={_ =>
-                  <div>
-                    <Field
-                      component={RadioButton}
-                      name="onHold"
-                      htmlValue="on_hold_until"
-                      onChange={() => {
-                        console.log(this.props);
-                      }}
-                      label={_ =>
-                        <div>
-                          <span>Schedule settlement on</span>
-                        </div>}
-                    />
-                    <div className="transfers-onhold-datepicker">
-                      <Field
-                        component={DatePickerField}
-                        name="holdUntil"
-                        required
-                        disabled={
-                          this.props.onHold === null ||
-                          this.props.onHold === 'on_hold'
-                        }
-                        isDayBlocked={date => {
-                          const dateWithOffset = moment()
-                              .startOf('day')
-                              .add(3, 'days')
-                              .toDate(),
-                            currDate = date.clone().startOf('day').toDate();
-
-                          return (
-                            currDate < dateWithOffset ||
-                            isHoliday(date.toDate())
-                          );
-                        }}
-                      />
-                    </div>
-                    <Field
-                      component={RadioButton}
-                      name="onHold"
-                      htmlValue="on_hold"
-                      label={_ =>
-                        <div>
-                          <span>Put on hold</span>
-                          <div className="text-fade">
-                            The settlement will be on hold till specified
-                            otherwise.
-                          </div>
-                        </div>}
-                    />
-                  </div>}
+                  <SettlementSchedule
+                    onHold={this.props.onHold}
+                    holdUntil={this.props.holdUntil}
+                  />}
               />
 
               <Alert type="error" message={this.state.errors} />
               <div class="btn-toolbar text-center">
-                <AsyncButton
-                  type="submit"
-                  class="btn btn-primary btn-half"
-                  text="Create Transfer"
-                  pendingText="Creating..."
-                  onClick={handleSubmit(this.save)}
-                />
                 {typeof this.props.onClose === 'function' &&
                   <button
                     type="button"
@@ -367,6 +313,13 @@ export default class TransferNew extends Component {
                   >
                     Discard
                   </button>}
+                <AsyncButton
+                  type="submit"
+                  class="btn btn-primary btn-half"
+                  text="Create Transfer"
+                  pendingText="Creating..."
+                  onClick={handleSubmit(this.save)}
+                />
               </div>
             </form>
           </div>
