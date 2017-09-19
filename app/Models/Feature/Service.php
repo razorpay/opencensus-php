@@ -8,7 +8,7 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public function addFeatures($input)
+    public function addFeatures(array $input)
     {
         $featureParams = $this->buildFeatureParams($input);
 
