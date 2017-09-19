@@ -124,7 +124,6 @@ export default class Sidebar extends Component {
                     label="Subscriptions"
                     icon="icon icon-refresh text-warning"
                     notMyRole="sellerapp support"
-                    featureEnabled="subscriptions"
                     to={routes.subscriptions}
                     beta={true}
                   />
@@ -134,7 +133,6 @@ export default class Sidebar extends Component {
                     icon="icon icon-store text-primary"
                     to={routes.marketplace}
                     notMyRole="sellerapp support"
-                    featureEnabled="Marketplace"
                     beta={true}
                   />
 
@@ -143,7 +141,6 @@ export default class Sidebar extends Component {
                     icon="icon icon-account-balance text-success"
                     to="/virtualaccounts"
                     notMyRole="sellerapp support"
-                    featureEnabled="Virtual_Accounts"
                     beta={true}
                   />
 
@@ -263,7 +260,6 @@ export default class Sidebar extends Component {
                     label="Subscriptions"
                     icon="icon icon-refresh text-info"
                     notMyRole="sellerapp support"
-                    featureEnabled="subscriptions"
                     to={routes.subscriptions}
                     beta={true}
                   />
@@ -279,7 +275,6 @@ export default class Sidebar extends Component {
                     icon="icon icon-store text-success"
                     to={routes.marketplace}
                     notMyRole="sellerapp support"
-                    //                    featureEnabled="Marketplace"
                     beta={true}
                   />
                   <MainNavLink
@@ -287,7 +282,6 @@ export default class Sidebar extends Component {
                     icon="icon icon-account-balance text-primary"
                     to="/virtualaccounts"
                     notMyRole="sellerapp support"
-                    featureEnabled="Virtual_Accounts"
                     beta={true}
                   />
 
