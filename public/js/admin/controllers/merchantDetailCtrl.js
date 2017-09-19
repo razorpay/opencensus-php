@@ -1033,17 +1033,6 @@ app
         delete bankAccount.ifsc;
         delete bankAccount.name;
 
-        var merchantDetailsData = {
-          bank_branch_ifsc: bankAccount.ifsc_code,
-          bank_account_name: bankAccount.beneficiary_name,
-          bank_account_number: bankAccount.account_number,
-          bank_beneficiary_address1: bankAccount.beneficiary_address1,
-          bank_beneficiary_address2: bankAccount.beneficiary_address2,
-          bank_beneficiary_address3: bankAccount.beneficiary_address3,
-          bank_beneficiary_pin: bankAccount.beneficiary_pin,
-          bank_beneficiary_city: bankAccount.beneficiary_city,
-          bank_beneficiary_state: bankAccount.beneficiary_state,
-        };
         var data = {
           route_name: 'merchant_add_bank_account',
           url_params: {
