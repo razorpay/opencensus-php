@@ -9,9 +9,27 @@ use RZP\Base\Common;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
+use RZP\Constants\AdminFetch;
 
 class Service extends Base\Service
 {
+    public function getAllEntities($input)
+    {
+        $fields = AdminFetch::fields();
+        $entities = AdminFetch::entities();
+
+        // Fetching all entities and fill them with null
+        $allEntities = array_fill_keys(Entity::getAllEntities(), null);
+
+        $mergedEntities = array_merge($allEntities, $entities);
+
+        return [
+            'version'   => 1,
+            'fields'    => $fields,
+            'entities'  => $mergedEntities
+        ];
+    }
+
     public function fetchEntityById($entity, $id)
     {
         $entity = $this->fetchEntityByNameAndId($entity, $id);

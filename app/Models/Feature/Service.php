@@ -202,8 +202,8 @@ class Service extends Base\Service
 
         $question = Constants::VENDOR_AGREEMENT;
 
-        if ((isset($input[$featureName]))
-            and (isset($input[$featureName][$question])))
+        if ((isset($input[$featureName])) and
+            (isset($input[$featureName][$question])))
         {
             $file = $input[$featureName][$question];
 

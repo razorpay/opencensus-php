@@ -45,7 +45,6 @@ app/Gateway/Netbanking/Kotak/*                          giri@razorpay.com       
 app/Gateway/Netbanking/Rbl/*                            mayank.amencherla@razorpay.com                          ria.garg@razorpay.com                   vivek.kumar@razorpay.com
 app/Gateway/Netbanking/Pnb/*                            namrata.chaudhary@razorpay.com                          saurav.chowdhury@razorpay.com           vivek.kumar@razorpay.com
 app/Gateway/Upi/Icici/*                                 nemo@razorpay.com                                       vivek.kumar@razorpay.com
-app/Gateway/Upi/Idfc/*                                  nemo@razorpay.com                                       vivek.kumar@razorpay.com
 app/Gateway/Upi/Mindgate/*                              nemo@razorpay.com                                       vivek.kumar@razorpay.com
 app/Gateway/Upi/Npci/*                                  nemo@razorpay.com                                       vivek.kumar@razorpay.com
 app/Gateway/Wallet/Airtelmoney/*                        sreeram.boyapati@razorpay.com                           mayank.amencherla@razorpay.com          vivek.kumar@razorpay.com
@@ -188,7 +187,6 @@ tests/Functional/Gateway/Netbanking/Kotak/*             giri@razorpay.com       
 tests/Functional/Gateway/Netbanking/Pnb/*               namrata.chaudhary@razorpay.com                          saurav.chowdhury@razorpay.com           vivek.kumar@razorpay.com
 tests/Functional/Gateway/Netbanking/Rbl/*               mayank.amencherla@razorpay.com                          ria.garg@razorpay.com                   vivek.kumar@razorpay.com
 tests/Functional/Gateway/Upi/Icici/*                    nemo@razorpay.com                                       vivek.kumar@razorpay.com
-tests/Functional/Gateway/Upi/Idfc/*                     nemo@razorpay.com                                       vivek.kumar@razorpay.com
 tests/Functional/Gateway/Upi/Mindgate/*                 nemo@razorpay.com                                       vivek.kumar@razorpay.com
 tests/Functional/Gateway/Upi/Npci/*                     nemo@razorpay.com                                       vivek.kumar@razorpay.com
 tests/Functional/Gateway/Wallet/Airtelmoney/*           sreeram.boyapati@razorpay.com                           mayank.amencherla@razorpay.com          vivek.kumar@razorpay.com

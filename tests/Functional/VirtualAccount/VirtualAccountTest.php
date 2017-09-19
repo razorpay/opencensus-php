@@ -45,7 +45,7 @@ class VirtualAccountTest extends TestCase
 
         $vba = $this->getLastEntity('bank_account', true);
         // Handle is unsetso default root is used with default handle
-        $this->assertRegexp("/RAZORPAY[A-Z0-9]{10}$/", $vba['account_number']);
+        $this->assertRegexp("/RAZORPAY[A-Z0-9]{9}$/", $vba['account_number']);
 
         $data = $this->testData[__FUNCTION__];
 

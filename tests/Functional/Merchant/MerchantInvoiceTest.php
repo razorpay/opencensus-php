@@ -105,6 +105,39 @@ class MerchantInvoiceTest extends TestCase
         }
     }
 
+    public function testEditGstinFailure()
+    {
+        $md1 = $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id'   => '10000000000000',
+                'gstin'         => '29kjsngjk213900',
+            ]);
+
+        $invoiceNumber = '100820171111';
+
+        $this->fixtures->create('merchant_invoice',
+            [
+                Invoice\Entity::TYPE => Invoice\Type::CARD_LTE_2K,
+                Invoice\Entity::INVOICE_NUMBER => $invoiceNumber
+            ]);
+
+        $this->ba->adminAuth();
+
+        $request = [
+            'url'     => '/merchants/10000000000000/invoice/gstin',
+            'method'  => 'PUT',
+            'content' => ['invoice_number' => '1234'],
+        ];
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($request)
+        {
+            $this->makeRequestAndGetContent($request);
+        });
+    }
+
     public function testInvoiceEntityCreateForPrevMonth()
     {
         $this->createData();

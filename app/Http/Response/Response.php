@@ -96,6 +96,11 @@ class Response
         return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_ONLY_HTTPS_ALLOWED);
     }
 
+    public function oauthInvalidScope()
+    {
+        return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_OAUTH_SCOPE_INVALID);
+    }
+
     public function generateErrorResponse($error, $debug = false)
     {
         list($publicError, $httpStatusCode) = $this->getErrorResponseFields($error, $debug);

@@ -18,7 +18,7 @@ class Service extends Base\Service
         $this->core = new Core();
     }
 
-    public function fetch(string $id, array $input = []): array
+    public function fetch(string $id, array $input): array
     {
         $transfer =  $this->repo
                           ->transfer
