@@ -77,7 +77,7 @@ export default class EntityDetailList extends Component {
 
     return (
       <div class="entity-detail-list">
-        <div class="panel-heading">
+        <div class="list-heading">
           <span class="label--primary">
             {title}
           </span>
@@ -85,7 +85,7 @@ export default class EntityDetailList extends Component {
             {subTitle}
           </span>
         </div>
-        <div class="panel-content">
+        <div class="list-content">
           {error && <Alert type="error" message={error} />}
           {rowList}
         </div>

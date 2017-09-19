@@ -17,11 +17,12 @@
         <a ui-sref="app.merchants.activation({id: merchant.details.id})" dynamic-tooltip="view_activation_form" ng-show="admin.permissions.indexOf('view_activation_form') !== -1" class="list-group-item see-activation-form">
           See Activation Form Details
         </a>
-
         <a ui-sref="app.merchants.team({id: merchant.details.id})" dynamic-tooltip="view_activation_form" ng-show="admin.permissions.indexOf('view_activation_form') !== -1" class="list-group-item see-activation-form">
           See Team Details
         </a>
-
+        <a ui-sref="app.merchants.stats({id: merchant.details.id})" class="list-group-item">
+          See Merchant Analytics Stats
+        </a>
         <a href class="list-group-item lock-form" dynamic-tooltip="edit_merchant_lock_activation" ng-show="(merchant.details.locked==0) && (admin.permissions.indexOf('edit_merchant_lock_activation') !== -1)" ng-click="lockForm()">
           Lock Activation Form <i class="pull-right fa fa-lock"></i>
         </a>
@@ -260,14 +261,32 @@
               <div class="m-t list-group-item">
                 <table class="table table-striped b-light">
                   <thead>
-                    <th>Feature Name</th>
+                    <th>Test Mode Features</th>
                     <th class="text-right" ng-show="admin.permissions && admin.permissions.indexOf('delete_merchant_features') !== -1">Action</th>
                   </thead>
                   <tbody>
-                    <tr ng-repeat="feature in merchant.details.features">
+                    <tr ng-repeat="feature in merchant.details.features.test">
                       <td>{{feature.name}}</td>
-                      <td class="text-right" ng-show="admin.permissions && admin.permissions.indexOf('delete_merchant_features') !== -1"><a class="btn btn-danger btn-sm" ng-click="deleteFeature(feature.name)">Delete</a></td>
+                      <td class="text-right" ng-show="admin.permissions && admin.permissions.indexOf('delete_merchant_features') !== -1">
+                        <a class="btn btn-danger btn-sm" ng-click="deleteFeature(feature.name, 'test')">Delete</a>
+                      </td>
                     </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="m-t list-group-item">
+                <table class="table table-striped b-light">
+                  <thead>
+                  <th>Live Mode Features</th>
+                  <th class="text-right" ng-show="admin.permissions && admin.permissions.indexOf('delete_merchant_features') !== -1">Action</th>
+                  </thead>
+                  <tbody>
+                  <tr ng-repeat="feature in merchant.details.features.live">
+                    <td>{{feature.name}}</td>
+                    <td class="text-right" ng-show="admin.permissions && admin.permissions.indexOf('delete_merchant_features') !== -1">
+                      <a class="btn btn-danger btn-sm" ng-click="deleteFeature(feature.name, 'live')">Delete</a>
+                    </td>
+                  </tr>
                   </tbody>
                 </table>
               </div>
@@ -986,6 +1005,7 @@
              <option value="first_data">FirstData</option>
              <option value="kotak">Kotak</option>
              <option value="netbanking_hdfc">Netbanking HDFC</option>
+             <option value="netbanking_corp">Netbanking Corporation</option>
              <option value="netbanking_kotak">Netbanking KOTAK</option>
              <option value="netbanking_axis">Netbanking AXIS</option>
              <option value="netbanking_airtel">Netbanking AIRTEL</option>
@@ -1989,24 +2009,34 @@
   <div class="modal-body merchant-feature-modal">
     <form class="form-horizontal">
       <div class="form-group">
+        <label class="col-lg-4 control-label">Mode:</label>
+        <div class="col-lg-6" >
+          <select class="form-control m-b" ng-model="featuremode">
+            <option value="test" selected>Test</option>
+            <option value="live">Live</option>
+          </select>
+          <input type="checkbox" ng-model="shouldSync">&nbsp;Add to Test and Live
+        </div>
+      </div>
+      <div class="form-group">
         <label class="col-lg-4 control-label">Features:</label>
         <div class="col-lg-6">
           <select name="merchant-features"  class="form-control m-b" ng-model="selectedFeatures" multiple>
-            <option ng-repeat="feature in features" ng-value="feature">{{feature}}</option>
+            <option ng-repeat="feature in features[featuremode]" ng-value="feature">{{feature}}</option>
           </select>
         </div>
       </div>
       <div class="form-group">
         <label class="col-lg-4 control-label">Assigned Features:</label>
         <div class="col-lg-6">
-          <span class="form-control m-b">{{assigned_features}}</span>
+          <span class="form-control m-b">{{assigned_features[featuremode]}}</span>
         </div>
       </div>
     </form>
   </div>
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" ng-click="ok(selectedFeatures)">OK</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(selectedFeatures, featuremode, shouldSync)">OK</button>
   </div>
 </script>
 <script type="text/ng-template" id="openAutofillForms.html">

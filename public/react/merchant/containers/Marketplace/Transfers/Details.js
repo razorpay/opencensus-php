@@ -16,10 +16,20 @@ import * as ModalActions from 'rzp/modules/modals';
 export default class TransferDetailsContainer extends Component {
   state = {};
 
-  componentWillMount() {
+  fetchData(transferId) {
     this.props
-      .fetchTransfer(this.props.id)
-      .then(() => this.props.fetchReversals(this.props.id));
+      .fetchTransfer(transferId)
+      .then(() => this.props.fetchReversals(transferId));
+  }
+
+  componentWillMount() {
+    this.fetchData(this.props.id);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.props.id !== nextProps.id) {
+      this.fetchData(nextProps.id);
+    }
   }
 
   // Open modal for reversing transfer

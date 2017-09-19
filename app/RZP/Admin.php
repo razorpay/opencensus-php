@@ -36,13 +36,6 @@ class Admin extends Entity
         return $this->request('GET', $relativeUrl);
     }
 
-    public function logout($orgId)
-    {
-        $relativeUrl = "orgs/$orgId/admin/logout";
-
-        return $this->request('POST', $relativeUrl);
-    }
-
     public function makeReconciliateRequest($input, $mode = 'live')
     {
         // Makes a guzzle file request
@@ -185,41 +178,11 @@ class Admin extends Entity
         return $className.'/';
     }
 
-    public function passwordLogin($orgId, array $params)
-    {
-        $relativeUrl = "orgs/$orgId/admin/authenticate";
-
-        return $this->request('POST', $relativeUrl, $params);
-    }
-
-    public function oAuthLogin(array $params, $orgId)
-    {
-        // $relativeUrl = $this->getEntityUrl().'oauth_login';
-        $relativeUrl = "orgs/$orgId/admin/oauth_login";
-
-        return $this->request('POST', $relativeUrl, $params);
-    }
-
     public function getByEmail($orgId, $options)
     {
         // $relativeUrl = "orgs/$orgId/admins/get_by_attr";
         $relativeUrl = "admins/get-multiple-app-auth";
 
         return $this->request('GET', $relativeUrl, $options);
-    }
-
-    public function updateAdmin($orgId, $adminId, $params)
-    {
-        // $relativeUrl = "orgs/$orgId/admins/$adminId";
-        $relativeUrl = "orgs/$orgId/admin-app-auth/$adminId";
-
-        return $this->request('PUT', $relativeUrl, $params);
-    }
-
-    public function getAdminData($orgId, $body)
-    {
-        $relativeUrl = "orgs/$orgId/current_admin";
-
-        return $this->request('POST', $relativeUrl, $body);
     }
 }

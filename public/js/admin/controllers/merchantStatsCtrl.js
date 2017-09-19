@@ -4,7 +4,16 @@ app.controller('MerchantStatsCtrl', [
   '$http',
   'alertsFactory',
   'transformRequestAsFormPost',
-  function($scope, $http, alertsFactory, transformRequestAsFormPost) {
+  '$stateParams',
+  'dateFactory',
+  function(
+    $scope,
+    $http,
+    alertsFactory,
+    transformRequestAsFormPost,
+    $stateParams,
+    dateFactory
+  ) {
     $scope.alerts = alertsFactory.getHandler();
 
     $scope.data = [];
@@ -120,6 +129,160 @@ app.controller('MerchantStatsCtrl', [
           $scope.type
         );
       }
+    };
+
+    $scope.from_timestamp =
+      moment()
+        .subtract(7, 'days')
+        .unix() * 1000;
+    $scope.to_timestamp = moment().unix() * 1000;
+
+    $scope.fetchMerchantAnalyticsStats = function() {
+      $scope.date = dateFactory.getHandler($scope);
+      $scope.date.dateOptions['showWeeks'] = false;
+      $scope.date.dateOptions['maxDate'] = moment(); // Avoid selection of date after today
+      var merchantId = $stateParams.id;
+      var data = {
+        route_name: 'merchant_analytics',
+        body: {
+          filters: {
+            default: [
+              {
+                merchant_id: [merchantId],
+                created_at: {
+                  gte: $scope.from_timestamp / 1000,
+                  lte: $scope.to_timestamp / 1000,
+                },
+              },
+            ],
+            filter_success_trans: [
+              {
+                merchant_id: [merchantId],
+                created_at: {
+                  gte: $scope.from_timestamp / 1000,
+                  lte: $scope.to_timestamp / 1000,
+                },
+                status: ['captured', 'authorized'],
+              },
+            ],
+          },
+          aggregations: {
+            total_payments: {
+              agg_type: 'count',
+              details: {
+                index: 'payment',
+                column: 'base_amount',
+              },
+            },
+            total_settlements: {
+              agg_type: 'count',
+              details: {
+                index: 'settlement',
+                column: 'base_amount',
+              },
+            },
+            total_refunds: {
+              agg_type: 'count',
+              details: {
+                index: 'refund',
+                column: 'base_amount',
+              },
+            },
+            payments_volume: {
+              agg_type: 'sum',
+              details: {
+                index: 'payment',
+                column: 'base_amount',
+              },
+            },
+            recent_balance: {
+              agg_type: 'recent',
+              details: {
+                index: 'balance',
+                column: 'base_amount',
+              },
+            },
+            recent_payments: {
+              agg_type: 'recent',
+              details: {
+                index: 'payment',
+                column: 'base_amount',
+                result_fields: ['id', 'status', 'created_at'],
+              },
+            },
+            recent_refunds: {
+              agg_type: 'recent',
+              details: {
+                index: 'refund',
+                column: 'base_amount',
+                result_fields: ['id', 'status', 'created_at'],
+              },
+            },
+            recent_settlements: {
+              agg_type: 'recent',
+              details: {
+                index: 'settlement',
+                column: 'base_amount',
+                result_fields: ['id', 'status', 'created_at'],
+              },
+            },
+            recent_transactions: {
+              agg_type: 'recent',
+              details: {
+                index: 'transaction',
+                result_fields: ['created_at'],
+              },
+            },
+            payment_method_bars: {
+              agg_type: 'percent',
+              details: {
+                index: 'payments',
+                column: 'base_amount',
+                group_by: ['method'],
+              },
+            },
+            transaction_histogram: {
+              agg_type: 'sum',
+              details: {
+                index: 'transaction',
+                column: 'base_amount',
+                group_by: ['histogram_daily'],
+              },
+            },
+            successful_transaction: {
+              agg_type: 'count',
+              filter_key: 'filter_success_trans',
+              details: {
+                index: 'transaction',
+                column: 'base_amount',
+                group_by: ['histogram_weekly'],
+              },
+            },
+          },
+        },
+        merchant_id: merchantId,
+      };
+
+      var request = $http({
+        method: 'post',
+        url: '/admin/generic',
+        data: data,
+      });
+
+      request
+        .success(function(data) {
+          if (data.success) {
+            $scope.merchant_analytics = data.data;
+          } else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function(value, key) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        })
+        .error(function() {
+          $scope.alerts.addAlert('danger', null, true);
+        });
     };
   },
 ]);
