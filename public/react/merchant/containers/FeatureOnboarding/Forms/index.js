@@ -28,7 +28,7 @@ const FORM_TYPE = {
       docs: '',
       knowMore: '',
     },
-    formText: '',
+    formText: 'Some random text',
   },
 };
 

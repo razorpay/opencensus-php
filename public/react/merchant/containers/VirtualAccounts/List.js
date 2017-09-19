@@ -6,6 +6,8 @@ import DataTable from 'rzp/ui/Table/DataTable';
 import ListContainer from 'merchant/containers/ListContainer';
 import VirtualAccountsListFilter from 'merchant/components/VirtualAccounts/ListFilter';
 import CreateVirtualAccount from './CreateVirtualAccount';
+import { updateFeatures } from 'merchant/modules/config';
+import { showNotification } from 'rzp/modules/notifications';
 import { fetchConfig } from 'merchant/modules/config';
 import { openModal } from 'rzp/modules/modals';
 import { fetchVirtualAccounts as fetchAll } from 'merchant/modules/virtualaccounts';
@@ -17,13 +19,47 @@ import {
   createdAt,
 } from 'rzp/ui/item/pair';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
+import FeatureOnboarding from 'merchant/containers/FeatureOnboarding/OnBoarding';
 
-@connect(state => state.virtualaccounts, { fetchAll, fetchConfig, openModal })
+@connect(
+  state => {
+    return {
+      ...state.virtualaccounts,
+      user: state.session.user,
+      mode: state.session.mode,
+    };
+  },
+  { fetchAll, fetchConfig, openModal, updateFeatures, showNotification }
+)
 export default class VirtualAccountsListContainer extends ListContainer {
   componentWillMount() {
+    // TODO: Don't call below when feature is disbaled
     super.componentWillMount();
     this.props.fetchConfig();
   }
+
+  enableFeature = () => {
+    var data = {
+      features: {
+        virtual_accounts: 1,
+      },
+    };
+
+    return this.props
+      .updateFeatures(data, this.props.user.current)
+      .then(res => {
+        this.props.showNotification({
+          type: 'success',
+          message: 'Razorpay Smart Collect has been enabled!',
+        });
+      })
+      .catch(err => {
+        this.props.showNotification({
+          type: 'error',
+          message: err.errors,
+        });
+      });
+  };
 
   showCreateVAModal = () => {
     this.props.openModal({
@@ -35,6 +71,24 @@ export default class VirtualAccountsListContainer extends ListContainer {
   };
 
   render() {
+    // TODO: Link feature
+    let featureEnabled = false;
+
+    if (!featureEnabled) {
+      const heading =
+        'Collect payments via NEFT and IMPS with Razorpay Smart Collect';
+
+      return (
+        <FeatureOnboarding
+          heading="Razorpay Smart Collect"
+          description={heading}
+          formType="virtual_accounts"
+          isTestMode={this.props.mode === 'test'}
+          enableFeatureInTestMode={this.enableFeature}
+        />
+      );
+    }
+
     return (
       <tabbed-container>
         <header id="#va-header">

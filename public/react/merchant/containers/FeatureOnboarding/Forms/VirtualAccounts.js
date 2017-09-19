@@ -6,7 +6,7 @@ import { required } from 'rzp/utils/validators';
 export default () => {
   return (
     <div class="form-body">
-      <div>
+      <div class="form-group">
         <label for="use_case">Use Case</label>
         <Field
           name="use_case"
@@ -17,7 +17,7 @@ export default () => {
         />
       </div>
 
-      <div>
+      <div class="form-group">
         <label for="expected_monthly_revenue">Expected Monthly Revenue</label>
         <Field
           name="expected_monthly_revenue"

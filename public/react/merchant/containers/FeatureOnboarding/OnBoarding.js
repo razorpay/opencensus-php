@@ -74,8 +74,6 @@ export default class OnBoarding extends Component {
 
   // Form submit handler
   onSubmitClick = props => {
-    console.log('FEATURE FORM:...', props);
-
     const prom = new Promise(() => {
       let data = {};
       let file = null;

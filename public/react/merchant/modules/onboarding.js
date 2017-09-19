@@ -22,6 +22,18 @@ export const saveOnboarding = (feature, fields, file, fileName) => {
       formData.append(`body[${key}]`, fields[key]);
     }
   }
+
+  return {
+    type: FEATURE_ONBOARDING_SAVE,
+    payload: ajax({
+      url: '/user/generic',
+      method: 'POST',
+      data: formData,
+      appendModeInURL: false,
+      processData: false,
+      contentType: false,
+    }),
+  };
 };
 
 // Get responses
