@@ -666,6 +666,8 @@ class FeeCalculator
     {
         $totalTaxes = 0;
 
+        $totalPercentage = 0;
+
         $taxComponents = $this->taxComponents;
 
         // Check if GST needs to be levied
@@ -689,9 +691,11 @@ class FeeCalculator
             $taxValue = ($eligibleForGst === true) ? $taxValue: 0;
 
             $totalTaxes += $taxValue;
+
+            $totalPercentage += $percentage;
         }
 
-        $tax = $this->createFeeBreakup(FeeBreakupName::TAX, 1800, $totalTaxes);
+        $tax = $this->createFeeBreakup(FeeBreakupName::TAX, $totalPercentage, $totalTaxes);
 
         $this->feesSplit->push($tax);
 
