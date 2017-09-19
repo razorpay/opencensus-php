@@ -7,8 +7,10 @@ use Razorpay\OAuth\OAuthServer;
 use Razorpay\OAuth\Token\Entity as OAuthToken;
 
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Exception\LogicException;
 use RZP\Http\BasicAuth\BasicAuth;
+use Razorpay\Trace\Logger as Trace;
 use Illuminate\Support\Facades\App;
 
 class OAuth
@@ -26,6 +28,8 @@ class OAuth
 
     protected $router;
 
+    protected $trace;
+
     /**
      * @var string
      */
@@ -39,6 +43,7 @@ class OAuth
         $this->ba      = $app['basicauth'];
         $this->router  = $app['router'];
         $this->request = $app['request'];
+        $this->trace   = $app['trace'];
     }
 
     /**
@@ -154,6 +159,11 @@ class OAuth
         catch (\Exception $exception)
         {
             // TODO: Add an API <> OAuth Exception map
+            $this->trace->traceException(
+                $exception,
+                Trace::ERROR,
+                TraceCode::OAUTH_TOKEN_INVALID
+            );
 
             return ApiResponse::generateErrorResponse(ErrorCode::BAD_REQUEST_UNAUTHORIZED_OAUTH_TOKEN_INVALID);
         }
