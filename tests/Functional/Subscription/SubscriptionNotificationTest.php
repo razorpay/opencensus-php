@@ -42,6 +42,22 @@ class SubscriptionNotificationTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testSubscriptionMailNotSent()
+    {
+        Mail::fake();
+
+        $this->fixtures->merchant->edit(
+            '10000000000000',
+            [
+                'receipt_email_enabled'    => '0',
+                'transaction_report_email' => '',
+            ]);
+
+        $this->doAuthTxnForNewSubscription();
+
+        Mail::assertNotSent(SubscriptionMail\Authenticated::class);
+    }
+
     public function testSubscriptionAuthenticatedMailSentAuthAmount()
     {
         Mail::fake();

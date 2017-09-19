@@ -6,13 +6,14 @@ use RZP\Constants\MailTags;
 
 class Event
 {
-    const AUTHENTICATED = 'authenticated';
-    const CHARGED       = 'charged';
-    const PENDING       = 'pending';
-    const HALTED        = 'halted';
-    const CANCELLED     = 'cancelled';
-    const COMPLETED     = 'completed';
-    const CARD_CHANGED  = 'card_changed';
+    const AUTHENTICATED   = 'authenticated';
+    const CHARGED         = 'charged';
+    const PENDING         = 'pending';
+    const HALTED          = 'halted';
+    const CANCELLED       = 'cancelled';
+    const COMPLETED       = 'completed';
+    const CARD_CHANGED    = 'card_changed';
+    const INVOICE_CHARGED = 'invoice_charged';
 
     const CUSTOMER_EVENTS = [
         self::AUTHENTICATED,
@@ -22,6 +23,7 @@ class Event
         self::CANCELLED,
         self::COMPLETED,
         self::CARD_CHANGED,
+        self::INVOICE_CHARGED,
     ];
 
     const MERCHANT_EVENTS = [
@@ -32,16 +34,18 @@ class Event
         self::CANCELLED,
         self::COMPLETED,
         self::CARD_CHANGED,
+        self::INVOICE_CHARGED,
     ];
 
     const MAIL_TAG_MAP = [
-        self::AUTHENTICATED => MailTags::SUBSCRIPTION_AUTHENTICATED,
-        self::CHARGED       => MailTags::SUBSCRIPTION_CHARGED,
-        self::PENDING       => MailTags::SUBSCRIPTION_PENDING,
-        self::HALTED        => MailTags::SUBSCRIPTION_HALTED,
-        self::CANCELLED     => MailTags::SUBSCRIPTION_CANCELLED,
-        self::COMPLETED     => MailTags::SUBSCRIPTION_COMPLETED,
-        self::CARD_CHANGED  => MailTags::SUBSCRIPTION_CARD_CHANGED,
+        self::AUTHENTICATED   => MailTags::SUBSCRIPTION_AUTHENTICATED,
+        self::CHARGED         => MailTags::SUBSCRIPTION_CHARGED,
+        self::PENDING         => MailTags::SUBSCRIPTION_PENDING,
+        self::HALTED          => MailTags::SUBSCRIPTION_HALTED,
+        self::CANCELLED       => MailTags::SUBSCRIPTION_CANCELLED,
+        self::COMPLETED       => MailTags::SUBSCRIPTION_COMPLETED,
+        self::CARD_CHANGED    => MailTags::SUBSCRIPTION_CARD_CHANGED,
+        self::INVOICE_CHARGED => MailTags::SUBSCRIPTION_INVOICE_CHARGED,
     ];
 
     public static function isCustomerEvent(string $event)

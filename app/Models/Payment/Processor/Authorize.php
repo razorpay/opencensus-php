@@ -2231,21 +2231,52 @@ trait Authorize
     {
         $event = Subscription\Event::CHARGED;
 
-        // TODO Pass options to triggerSubscriptionNotification to treat charge mails differently
-        // - Normal charge
-        // - Card change
-
+        //
+        // If new status is completed, then that _might_ be the mail we have to send
+        //
         if ($subscription->getStatus() === Subscription\Status::COMPLETED)
         {
+            // If old status was halted, we would never have reached here. A manual charge on an older
+            // invoice can take a subscription from halted to active, but not from halted to completed.
+            //
+            // The only way there is for a subscription to go from halted to completed
+            // state is via the handleNoSubscriptionChargeAtInvoiceCreation flow.
+            //
             if ($oldStatus === Subscription\Status::HALTED)
             {
-                return;
+                throw new Exception\LogicException(
+                    'Subscription cannot be in halted state here',
+                    ErrorCode::BAD_REQUEST_SUBSCRIPTION_INVALID_STATUS,
+                    [
+                        'payment_id'        => $payment->getId(),
+                        'payment_status'    => $payment->getStatus(),
+                        'subscription_id'   => $subscription->getId(),
+                    ]);
             }
 
-            $event = Subscription\Event::COMPLETED;
+            //
+            // If old status was pending, actual movement was pending->active->completed
+            // In that case sending a completed mail is fine. Same for active.
+            //
+            // If subscription is already completed, there is not need to send another
+            // such notification. Sending a charge email would be more appropriate.
+            //
+            if ($oldStatus !== Subscription\Status::COMPLETED)
+            {
+                $event = Subscription\Event::COMPLETED;
+            }
 
             // TODO Pass options to triggerSubscriptionNotification to treat completed mails differently
             // - Active to completed (here)
+        }
+
+        //
+        // If the charge is on an older invoice, send a different mail
+        // altogether, one that is in invoice context, not subscription.
+        //
+        if ($subscription->isLatestInvoiceForSubscription($payment->invoice) === false)
+        {
+            $event = Subscription\Event::INVOICE_CHARGED;
         }
 
         (new Subscription\Core)->triggerSubscriptionNotification($subscription, $event, $payment);
@@ -2264,7 +2295,12 @@ trait Authorize
         //
         if ($subscription->isPending() === true)
         {
+            $oldStatus = $subscription->getStatus();
+
             $this->captureSubscriptionPayment($subscription, $payment);
+
+            // TODO Pass card change options here
+            $this->triggerAlreadyAuthenticatedSubscriptionNotification($subscription, $oldStatus, $payment);
 
             return;
         }

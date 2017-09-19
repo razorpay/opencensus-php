@@ -146,6 +146,10 @@ class Charge extends Base\Core
                 $this->handleAuthorizationOrCaptureFailure($subscription, $invoice, $payment, $captureFailure);
             }
 
+            // TODO Pass options to triggerSubscriptionNotification to treat completed mails differently
+            // - pending to completed (here)
+            (new Core)->triggerSubscriptionFailureNotification($subscription);
+
             return false;
         }
 
@@ -532,16 +536,12 @@ class Charge extends Base\Core
             $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
 
             $core->fireWebhookForStatusUpdate($subscription, Status::PENDING, $payment);
-
-            $core->triggerSubscriptionNotification($subscription, Event::PENDING, $payment);
         }
         else if ($updatedStatus === Status::HALTED)
         {
             $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
 
             $core->fireWebhookForStatusUpdate($subscription, Status::HALTED, $payment);
-
-            $core->triggerSubscriptionNotification($subscription, Event::HALTED, $payment);
         }
         else if ($updatedStatus === Status::COMPLETED)
         {
@@ -560,10 +560,6 @@ class Charge extends Base\Core
             $this->repo->saveOrFail($subscription);
 
             $core->fireWebhookForStatusUpdate($subscription, Status::COMPLETED, $payment);
-
-            // TODO Pass options to triggerSubscriptionNotification to treat completed mails differently
-            // - pending to completed (here)
-            $core->triggerSubscriptionNotification($subscription, Event::COMPLETED, $payment);
         }
         else
         {

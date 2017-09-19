@@ -234,13 +234,13 @@ class Core extends Base\Core
     /**
      * Get subscription data for the checkout preferences route
      *
-     * @param Subscription\Entity $subscription
+     * @param Entity $subscription
      * @param bool                $cardChange
      *
      * @return array
      */
     public function getFormattedSubscriptionData(
-        Subscription\Entity $subscription,
+        Entity $subscription,
         bool $cardChange): array
     {
         $authAmount = $this->getAuthTransactionAmount($subscription, $cardChange);
@@ -494,6 +494,8 @@ class Core extends Base\Core
                 (new Charge)->handleAuthorizationOrCaptureFailure($subscription, $invoice, $authorizedPayment, true);
             }
 
+            $this->triggerSubscriptionFailureNotification($subscription);
+
             return;
         }
 
@@ -506,6 +508,22 @@ class Core extends Base\Core
         // like in the retry flow itself!
         //
         (new Charge)->handleCaptureSuccess($subscription, $capturedPayment, $invoice);
+
+        $this->triggerSubscriptionNotification($subscription, Event::CHARGED);
+    }
+
+    public function triggerSubscriptionFailureNotification(Entity $subscription)
+    {
+        $status = $subscription->getStatus();
+
+        $event = constant(Event::class . '::' . strtoupper($status));
+
+        $this->triggerSubscriptionNotification($subscription, $event);
+    }
+
+    public function triggerSubscriptionAuthenticatedNotification(Entity $subscription)
+    {
+        $this->triggerSubscriptionNotification($subscription, Event::AUTHENTICATED);
     }
 
     public function cancel(Entity $subscription, array $input): Entity

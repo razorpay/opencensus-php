@@ -49,6 +49,7 @@ class MailTags
     const SUBSCRIPTION_CANCELLED           = 'subscription_cancelled';
     const SUBSCRIPTION_CARD_CHANGED        = 'subscription_card_changed';
     const SUBSCRIPTION_COMPLETED           = 'subscription_completed';
+    const SUBSCRIPTION_INVOICE_CHARGED     = 'subscription_invoice_charged';
 
     const DAILY_FILE                       = 'daily_file';
     const DAILY_REPORT                     = 'daily_report';
