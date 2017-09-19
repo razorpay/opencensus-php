@@ -4,7 +4,6 @@
   max-width: 1024px;
   margin: 0 auto 60px;
   border-radius: 4px;
-  box-shadow: 0 0 8px 0 rgba(0,0,0,0.1);
 }
 
 .onboarding-overview, .onboarding-form {
@@ -12,11 +11,13 @@
   //display: inline-block;
   vertical-align: top;
   padding: 36px;
+  box-shadow: 0 0 8px 0 rgba(0,0,0,0.1);
 }
 
 .onboarding-overview {
   //width: 55%;
   border-right: 1px solid #dee5e7;
+  background-color: #FAFAFA;
 
   h2 {
     margin-bottom: 20px;
@@ -29,17 +30,26 @@
   }
 
   .dot {
-    margin: 0 4px;
-    background-color: #bbc2c3;
-    width: 7px;
-    border-radius: 50%;
-    vertical-align: middle;
     display: inline-block;
-    height: 7px;
+    width: 6px;
+    height: 6px;
+    margin: 0 4px;
+    vertical-align: middle;
+    border-radius: 50%;
+    background-color: #bbc2c3;
   }
 
   .action-container {
     margin-top: 20px;
+
+    button {
+      margin-right: 20px;
+      margin-bottom: 10px;
+    }
+
+    a {
+      vertical-align: middle;
+    }
   }
 }
 
@@ -73,12 +83,18 @@
 
     z-index: 1;
 
-    background: #f8fafc;
+    background-color: #feffff;
     border-left: 1px solid #dcf3ec;
     color: #dcf3ec;
 
     transform: rotateZ(45deg) skewX(-15deg) skewY(-16deg) translateX(23%) translateY(-18%) scale(0.96);
     box-shadow: 1px 1px 0, 2px 2px 0, 3px 3px 0, 4px 4px 0, 5px 5px 0, 6px 6px 0, 7px 7px 0, 8px 8px 0;
+  }
+
+  @media (max-width: 992px) {
+    &.semi {
+      display: none;
+    }
   }
 }
 .feature-image {

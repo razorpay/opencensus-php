@@ -145,22 +145,24 @@ export default class OnBoarding extends Component {
             {isTestMode &&
               <AsyncButton
                 type="button"
-                class="btn btn-primary pull-left"
-                text="Enabling in Test Mode"
+                class="btn btn-primary"
+                text="Enable in Test Mode"
                 pendingText="Enabling..."
-                onClick={this.enableFeatureInTestMode}
+                onClick={enableFeatureInTestMode}
               />}
 
-            <a class="btn-link" href={currentForm.links.knowMore}>
-              Know more
-            </a>
-            <span class="dot" />
-            <a class="btn-link" href={currentForm.links.docs}>
-              View Docs
-            </a>
+            <div>
+              <a class="btn-link" href={currentForm.links.knowMore}>
+                Know more
+              </a>
+              <span class="dot" />
+              <a class="btn-link" href={currentForm.links.docs}>
+                View Docs
+              </a>
+            </div>
           </div>
 
-          <div class="banner-figure clearfix">
+          <div class={`banner-figure clearfix ${!isTestMode ? 'semi' : ''}`}>
             <img class="feature-image" src={currentForm.formImage} />
           </div>
         </main>
