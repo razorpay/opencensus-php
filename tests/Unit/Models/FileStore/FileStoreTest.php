@@ -56,6 +56,26 @@ class FileStoreTest extends TestCase
         $this->assertEquals($file->getFileInstance()->getMime(), 'application/pgp');
     }
 
+    function testEncryptionFailure()
+    {
+
+        $encryptionType = Handler::PGP_ENCRYPTION;
+
+        $extension = FileStore\Format::XLSX;
+        //Todo get this key added in the instances
+        $testEncryptionKey = 'somerandomkey';
+
+         $this->expectException('RZP\Exception\LogicException', 'PGP Encryption Failed');
+
+        $file = $this->creator->extension($extension)
+                     ->content($this->content)
+                     ->name($this->fileName)
+                     ->store($this->store)
+                     ->type($this->type)
+                     ->encrypt($encryptionType, ['secret' => $testEncryptionKey])
+                     ->save();
+    }
+
 
     function testInvalidType()
     {

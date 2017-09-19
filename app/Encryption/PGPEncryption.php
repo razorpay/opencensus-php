@@ -2,6 +2,8 @@
 
 namespace RZP\Encryption;
 
+use RZP\Exception;
+
 class PGPEncryption extends IEncryption
 {
     const SECRET    = 'secret';
