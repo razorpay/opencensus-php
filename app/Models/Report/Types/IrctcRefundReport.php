@@ -10,6 +10,7 @@ use RZP\Constants\Entity as E;
 
 class IrctcRefundReport extends BasicEntityReport
 {
+    const BATCH_LIMIT = 100000;
     // Maps the transaction source to the entities to be fetched for it
     protected $entityToRelationFetchMap = [
         E::REFUND => [
@@ -128,33 +129,23 @@ class IrctcRefundReport extends BasicEntityReport
                                                  string $merchantId,
                                                  bool $append = false): array
     {
-        $totalCount = 0;
+        list($data, $count) = $this->getReportDataForMerchant($from, $to, self::BATCH_LIMIT, $skip, $merchantId);
 
-        while ($count === self::BATCH_LIMIT)
-        {
-            list($data, $count) = $this->getReportDataForMerchant($from, $to, self::BATCH_LIMIT, $skip, $merchantId);
+        $txt = $this->generateText($data, '|');
 
-            $txt = $this->generateText($data, '|');
+        $creator = new FileStore\Creator;
 
-            $creator = new FileStore\Creator;
+        $file = $creator->extension(FileStore\Format::TXT)
+                        ->content($txt)
+                        ->name('reports/' . $fileName)
+                        ->store(FileStore\Store::S3)
+                        ->type(FileStore\Type::REPORT)
+                        ->merchant($this->merchant)
+                        ->save();
 
-            $file = $creator->extension(FileStore\Format::TXT)
-                            ->content($txt)
-                            ->name('reports/' . $fileName)
-                            ->store(FileStore\Store::S3)
-                            ->type(FileStore\Type::REPORT)
-                            ->merchant($this->merchant)
-                            ->save();
+        $fullPath =  $file->getFileInstance();
 
-            $fullPath =  $file->getFileInstance();
 
-            $skip += $count;
-
-            $totalCount += $count;
-
-            $append = true;
-        }
-
-        return [$totalCount, $fullpath];
+        return [$count, $fullpath];
     }
 }
