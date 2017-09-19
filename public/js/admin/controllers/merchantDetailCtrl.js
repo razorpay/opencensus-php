@@ -1034,39 +1034,6 @@ app
           });
       };
 
-      var updateMerchantBankDetails = function(data) {
-        var data = {
-          route_name: 'merchant_activation_update',
-          url_params: {
-            '{id}': $scope.merchant.id,
-          },
-          body: data,
-        };
-        var request = $http({
-          method: 'put',
-          url: '/admin/generic',
-          data: data,
-          transformRequest: transformRequestAsFormPost,
-        });
-        request
-          .success(function(data) {
-            if (data.success) {
-              $scope.alerts.addAlert(
-                'success',
-                'Merchant bank details changed successfully',
-                true
-              );
-            } else {
-              $scope.alerts.resetAlerts();
-              angular.forEach(data.errors, function(value) {
-                $scope.alerts.addAlert('danger', value);
-              });
-            }
-          })
-          .error(function() {
-            $scope.alerts.addAlert('danger', null, true);
-          });
-      };
       $scope.changeBankAccountDetails = function(bankAccount) {
         delete bankAccount.beneficiary_address4;
         delete bankAccount.beneficiary_code;
@@ -1080,17 +1047,6 @@ app
         delete bankAccount.ifsc;
         delete bankAccount.name;
 
-        var merchantDetailsData = {
-          bank_branch_ifsc: bankAccount.ifsc_code,
-          bank_account_name: bankAccount.beneficiary_name,
-          bank_account_number: bankAccount.account_number,
-          bank_beneficiary_address1: bankAccount.beneficiary_address1,
-          bank_beneficiary_address2: bankAccount.beneficiary_address2,
-          bank_beneficiary_address3: bankAccount.beneficiary_address3,
-          bank_beneficiary_pin: bankAccount.beneficiary_pin,
-          bank_beneficiary_city: bankAccount.beneficiary_city,
-          bank_beneficiary_state: bankAccount.beneficiary_state,
-        };
         var data = {
           route_name: 'merchant_add_bank_account',
           url_params: {
@@ -1107,8 +1063,13 @@ app
         request
           .success(function(data) {
             if (data.success) {
-              updateMerchantBankDetails(merchantDetailsData);
-              $scope.merchant.details.merchant_details = data.data;
+              if (utils.isWorkflow(data.data)) {
+                $state.go('app.workflows.actions.detail', {
+                  action_id: data.data.id,
+                });
+              } else {
+                $scope.merchant.details.merchant_details = data.data;
+              }
             } else {
               $scope.alerts.resetAlerts();
               angular.forEach(data.errors, function(value) {
