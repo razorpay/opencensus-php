@@ -10,7 +10,7 @@ class Entity extends Base\PublicEntity
     const ENTITY_ID   = 'entity_id';
     const ENTITY_TYPE = 'entity_type';
 
-    // Input attributes
+    // Input request keys, not part of actual entity
     const NAMES       = 'names';
     const SHOULD_SYNC = 'should_sync';
 

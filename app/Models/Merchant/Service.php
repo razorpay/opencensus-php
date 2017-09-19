@@ -1006,7 +1006,7 @@ class Service extends Base\Service
 
         $merchant = $this->merchant;
 
-        $shouldSync = boolval($input[Feature\Entity::SHOULD_SYNC] ?? false);
+        $shouldSync = (bool) ($input[Feature\Entity::SHOULD_SYNC] ?? false);
 
         $merchant->validateInput('feature', $input);
 
