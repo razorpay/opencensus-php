@@ -1069,6 +1069,11 @@ app
                 });
               } else {
                 $scope.merchant.details.merchant_details = data.data;
+                $scope.alerts.addAlert(
+                  'success',
+                  'Merchant bank details changed successfully',
+                  true
+                );
               }
             } else {
               $scope.alerts.resetAlerts();
