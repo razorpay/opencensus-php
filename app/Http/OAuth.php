@@ -127,7 +127,7 @@ class OAuth
             // TODO: Add an API <> OAuth Exception map
             $this->trace->traceException(
                 $exception,
-                Trace::ERROR,
+                Trace::INFO,
                 TraceCode::OAUTH_TOKEN_INVALID
             );
 
@@ -166,7 +166,7 @@ class OAuth
             // TODO: Add an API <> OAuth Exception map
             $this->trace->traceException(
                 $exception,
-                Trace::ERROR,
+                Trace::INFO,
                 TraceCode::OAUTH_TOKEN_INVALID
             );
 
