@@ -14,36 +14,35 @@ return [
         'org_delete'                        => 'orgs/{id}',
 
         // Roles
-        'role_get_multiple'                 => 'orgs/{orgId}/roles',
-        'role_get'                          => 'orgs/{orgId}/roles/{roleId}',
-        'role_create'                       => 'orgs/{orgId}/roles',
-        'role_delete'                       => 'orgs/{orgId}/roles/{roleId}',
-        'role_edit'                         => 'orgs/{orgId}/roles/{roleId}',
+        'role_get_multiple'                 => 'roles',
+        'role_get'                          => 'roles/{roleId}',
+        'role_create'                       => 'roles',
+        'role_delete'                       => 'roles/{roleId}',
+        'role_edit'                         => 'roles/{roleId}',
 
         // Groups
-        'group_get_multiple'                => 'orgs/{orgId}/groups',
-        'group_create'                      => 'orgs/{orgId}/groups',
-        'group_get'                         => 'orgs/{orgId}/groups/{groupId}',
-        'group_admins_create'               => 'orgs/{orgId}/groups/{groupId}/admins',
-        'group_delete'                      => 'orgs/{orgId}/groups/{groupId}',
-        'edit_group'                        => 'orgs/{orgId}/groups/{groupId}',
-        'group_get_allowed_groups'          => 'orgs/{orgId}/groups/{groupId}/allowed_groups',
+        'group_get_multiple'                => 'groups',
+        'group_create'                      => 'groups',
+        'group_get'                         => 'groups/{groupId}',
+        'group_delete'                      => 'groups/{groupId}',
+        'edit_group'                        => 'groups/{groupId}',
+        'group_get_allowed_groups'          => 'groups/{groupId}/allowed_groups',
 
         // Admins
-        'admin_get'                         => 'orgs/{orgId}/admins/{adminId}',
-        'admin_get_multiple'                => 'orgs/{orgId}/admins',
-        'admin_edit'                        => 'orgs/{orgId}/admins/{adminId}',
-        'admin_delete'                      => 'orgs/{orgId}/admins/{adminId}',
-        'admin_create'                      => 'orgs/{orgId}/admins',
-        'admin_get_app_auth'                => 'orgs/{orgId}/current_admin',
+        'admin_get'                         => 'admin/{adminId}/fetch',
+        'admin_get_multiple'                => 'admins',
+        'admin_edit'                        => 'admin/{adminId}',
+        'admin_delete'                      => 'admin/{adminId}',
+        'admin_create'                      => 'admins',
+        'admin_logout'                      => 'admin/logout',
 
         // AuditLog
-        'auditlog_search'                    => 'orgs/{orgId}/auditlog/search',
+        'auditlog_search'                   => 'auditlog/search',
 
         // Permissions
         'permission_get_by_type'            => 'permissions/get/{type}',
         'permission_get_roles'              => 'permissions/{id}/roles',
-        'permission_get_multiple'           => 'orgs/{orgId}/permissions',
+        'permission_get_multiple'           => 'permissions-multiple',
         'permission_create'                 => 'permissions',
         'permission_get'                    => 'permissions/{id}',
         'permission_edit'                   => 'permissions/{id}',
@@ -59,12 +58,12 @@ return [
         'org_fieldmap_delete'               => 'orgs/{orgId}/field-map/{id}',
         'org_fieldmap_get_by_entity'        => 'orgs/{orgId}/field-map/entity/{entity}',
 
-        'admin_lead_create'                 => 'orgs/{orgId}/admin-lead',
-        'admin_lead_get_multiple'           => 'orgs/{orgId}/admin-lead',
-        'admin_lead_put'                    => 'orgs/{orgId}/admin-lead/{id}',
+        'admin_lead_create'                 => 'admin-lead',
+        'admin_lead_get_multiple'           => 'admin-lead-multiple',
+        'admin_lead_put'                    => 'admin-lead/{id}',
 
         // Admin Change Password
-        'admin_change_password'             => 'orgs/admin/change_password',
+        'admin_change_password'             => 'admin/change_password',
 
         // Get Admin File
         'admin_get_file'                    => 'files/{fileId}/signed-url',
@@ -514,6 +513,9 @@ return [
             'routeName' => 'put_config'
         ],
 
+        // Merchant Analytics Stats
+        'merchant_analytics'                => 'merchant/analytics',
+
         // Refund Payment
         'payment_refund'                    => 'payments/{id}/refund',
         // Capture Payment
@@ -574,7 +576,7 @@ return [
         'merchant_tag_delete'               => 'merchants/{id}/tags/{tagName}',
 
         'admin_lead_verify'                 => 'admin-lead/verify/{token}',
-        'merchant_admin_lead_put'           => 'orgs/{orgId}/admin-lead-merchant/{id}',
+        'merchant_admin_lead_put'           => 'admin-lead-merchant/{id}',
 
         // Get Org details by hostname (for heimdall specifics)
         'org_get_by_hostname'               => 'orgs/hostname/{hostname}',
@@ -587,6 +589,11 @@ return [
 
         // Make test payment for Virtual Account
         'bank_transfer_process'             => 'ecollect/validate',
+
+        'admin_authentication'              => 'admin/authenticate',
+        'admin_oauth_authenticate'          => 'admin/oauth_login',
+        'admin_edit_app_auth'               => 'admin-app-auth/{id}',
+        'admin_get_app_auth'                => 'current_admin',
     ],
 
     // auth

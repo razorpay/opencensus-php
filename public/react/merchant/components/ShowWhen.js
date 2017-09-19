@@ -1,10 +1,22 @@
 import { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
+import { findBy } from 'rzp/utils/rzp-utils';
 
-@connect(state => state.session, null)
+@connect(state => {
+  return {
+    ...state.session,
+    features: state.config.features,
+  };
+}, null)
 export default class ShowWhen extends Component {
   render() {
-    let { notMyRole = '', myRole = '', children, featureEnabled } = this.props;
+    let {
+      notMyRole = '',
+      myRole = '',
+      children,
+      featureEnabled,
+      apiFeatureEnabled,
+    } = this.props;
 
     if (myRole && notMyRole) {
       throw new Error(
@@ -16,6 +28,7 @@ export default class ShowWhen extends Component {
     let notMyRoles = notMyRole.split(' ');
     let user = this.props.user;
     let tags = (user.isAuthenticated && user.tags) || [];
+    let features = (user.isAuthenticated && this.props.features) || [];
     tags = tags.map(tag => tag.toLowerCase());
     let userRole;
 
@@ -28,6 +41,18 @@ export default class ShowWhen extends Component {
       (notMyRole && notMyRoles.indexOf(userRole) !== -1)
     ) {
       return null;
+    }
+
+    if (apiFeatureEnabled) {
+      let feature = findBy(
+        features,
+        'feature',
+        apiFeatureEnabled.toLowerCase()
+      );
+
+      if (feature && !feature.value) {
+        return null;
+      }
     }
 
     if (featureEnabled) {

@@ -80,6 +80,7 @@ app.controller('EntitiesCtrl', [
       'mobikwik',
       'marketplace',
       'netbanking_hdfc',
+      'netbanking_corp',
       'netbanking_kotak',
       'netbanking_axis',
       'netbanking_icici',

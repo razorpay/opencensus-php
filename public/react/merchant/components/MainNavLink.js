@@ -14,6 +14,7 @@ export default class MainNavLink extends Component {
       myRole,
       notMyRole,
       featureEnabled,
+      apiFeatureEnabled,
       icon,
       label,
       beta = false,
@@ -26,6 +27,7 @@ export default class MainNavLink extends Component {
         notMyRole={notMyRole}
         myRole={myRole}
         featureEnabled={featureEnabled}
+        apiFeatureEnabled={apiFeatureEnabled}
       >
         <NavLink
           {...linkProps}

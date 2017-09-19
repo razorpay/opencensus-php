@@ -44,8 +44,7 @@ class NewApplicationForm extends Component {
   componentWillMount() {
     let id = this.props.match.params.id;
     if (!id) return;
-    // fetch from state (or api)
-    // this.setState({edit: true})
+    this.setState({ edit: true });
     var appDetails = this.props.applications.filter(app => app.id === id);
     if (appDetails.length) {
       const data = appDetails[0];
@@ -79,16 +78,25 @@ class NewApplicationForm extends Component {
 
   openPreviewPage = () => {
     // open in a popup
-    const popupUrl = `http://authorize.razorpay.dev:28095/authorize?response_type=code&client_id=${this
-      .state.details.clients.prod
-      .id}&redirect_uri=http://localhost&scope=read_only`;
+    var prefixPos = window.location.hostname.indexOf('-');
+    var prefix =
+      prefixPos !== -1
+        ? 'https://' + window.location.hostname.substr(0, prefixPos)
+        : 'http://';
+    var hostname = prefix + 'auth.razorpay.com';
+    const popupUrl =
+      hostname +
+      `/authorize?response_type=code&client_id=${this.state.details
+        .client_details.dev.id}&redirect_uri=${this.state.details
+        .website}&scope=read_only&state=current_state`;
+
     window.open(popupUrl, 'PopupPreview');
   };
 
   // save handler
   create = props => {
     return this.props
-      .createApplication(props)
+      .createApplication(props, 'logo')
       .then(application => {
         // this.setState({edit: true});
         this.initForm(application);
@@ -110,19 +118,20 @@ class NewApplicationForm extends Component {
     const payload = {
       name: props.name,
       website: props.website,
-      clients: [
+      client_details: [
         {
-          id: props.clients.dev.id,
-          redirect_url: props.clients.dev.redirect_url,
+          id: props.client_details.dev.id,
+          redirect_url: props.client_details.dev.redirect_url,
         },
         {
-          id: props.clients.prod.id,
-          redirect_url: props.clients.prod.redirect_url,
+          id: props.client_details.prod.id,
+          redirect_url: props.client_details.prod.redirect_url,
         },
       ],
+      file: props.file,
     };
     return this.props
-      .updateApplication(payload)
+      .updateApplication(this.state.details.id, payload, 'logo')
       .then(application => {
         this.props.showNotification({
           type: 'success',
@@ -148,6 +157,7 @@ class NewApplicationForm extends Component {
 
   render() {
     const { handleSubmit } = this.props;
+
     return (
       <div class="content-box new-application-form">
         <div class="content-header">
@@ -193,19 +203,26 @@ class NewApplicationForm extends Component {
 
             <div class="form-group">
               <div class="col-md-offset-2 upload-container col-md-1">
-                <div class="upload-inner">
+                <div class="upload-inner" style={{ padding: '0' }}>
                   <label htmlFor="logo-upload">
-                    <i class="fa fa-folder-open" />
-                    <span style={{ fontWeight: 'normal' }}>
-                      Upload App Icon
-                    </span>
+                    {this.state.details.logo_url === null ||
+                    typeof this.state.details.logo_url === 'undefined'
+                      ? <span style={{ fontWeight: 'normal' }}>
+                          <i class="fa fa-folder-open" />
+                          Upload App Icon
+                        </span>
+                      : <img
+                          class="media-object"
+                          style={{ width: '100%' }}
+                          src={this.state.details.logo_url}
+                        />}
                     <input
-                      name="app_logo"
+                      name="file"
                       id="logo-upload"
                       type="file"
                       class="hide"
                       onChange={e => {
-                        this.props.change('app_logo', e.target.files[0]);
+                        this.props.change('file', e.target.files[0]);
                       }}
                     />
                   </label>
@@ -229,7 +246,7 @@ class NewApplicationForm extends Component {
                   <label class="col-md-2 control-label">Client ID</label>
                   <div class="col-md-4">
                     <Field
-                      name="clients.dev.id"
+                      name="client_details.dev.id"
                       component={InputField}
                       disabled={true}
                       class="form-control copy-field"
@@ -239,7 +256,7 @@ class NewApplicationForm extends Component {
                   <label class="col-md-2 control-label">Client Secret</label>
                   <div class="col-md-4">
                     <Field
-                      name="clients.dev.secret"
+                      name="client_details.dev.secret"
                       disabled={true}
                       type={this.state.showDevSecret ? 'text' : 'password'}
                       component={InputField}
@@ -260,7 +277,7 @@ class NewApplicationForm extends Component {
                   <label class="col-md-2 control-label">Redirect URIs</label>
                   <div class="col-md-10">
                     <Field
-                      name="clients.dev.redirect_url"
+                      name="client_details.dev.redirect_url"
                       component={TaggedInput}
                       class="form-control tagged-input"
                       placeholder="http://test-app.com/"
@@ -284,7 +301,7 @@ class NewApplicationForm extends Component {
                   <label class="col-md-2 control-label">Client ID</label>
                   <div class="col-md-4">
                     <Field
-                      name="clients.prod.id"
+                      name="client_details.prod.id"
                       component={InputField}
                       disabled={true}
                       class="form-control copy-field"
@@ -294,7 +311,7 @@ class NewApplicationForm extends Component {
                   <label class="col-md-2 control-label">Client Secret</label>
                   <div class="col-md-4">
                     <Field
-                      name="clients.prod.secret"
+                      name="client_details.prod.secret"
                       disabled={true}
                       component={InputField}
                       type={this.state.showProdSecret ? 'text' : 'password'}
@@ -315,7 +332,7 @@ class NewApplicationForm extends Component {
                   <label class="col-md-2 control-label">Redirect URIs</label>
                   <div class="col-md-10">
                     <Field
-                      name="clients.prod.redirect_url"
+                      name="client_details.prod.redirect_url"
                       component={TaggedInput}
                       class="form-control tagged-input"
                       placeholder="http://test-app.com/"
@@ -344,12 +361,13 @@ class NewApplicationForm extends Component {
                     )}
                   />
 
-                  <AsyncButton
-                    type="button"
-                    class="btn btn-default pull-right"
-                    text="Preview OAuth Page"
-                    onClick={this.openPreviewPage}
-                  />
+                  {this.state.edit &&
+                    <AsyncButton
+                      type="button"
+                      class="btn btn-default pull-right"
+                      text="Preview OAuth Page"
+                      onClick={this.openPreviewPage}
+                    />}
                 </div>
               </div>
             </div>
