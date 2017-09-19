@@ -122,9 +122,9 @@ export default class OnBoarding extends Component {
       <div class="onboarding-container">
         {/* Feature Description */}
         <main class="onboarding-overview">
-          <h1>
+          <h2>
             {heading}
-          </h1>
+          </h2>
           <p>
             {description}
           </p>
@@ -155,7 +155,7 @@ export default class OnBoarding extends Component {
         {/* Feature Form for live mode*/}
         {!isTestMode &&
           <aside class="onboarding-form">
-            <h2>Get Started</h2>
+            <h3>Get Started</h3>
             <p>
               {currentForm.formText}
             </p>
