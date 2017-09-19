@@ -113,6 +113,14 @@ export default class OnBoarding extends Component {
       case 'marketplace':
         currentForm.formImage = require('styles/assets/route-landing.svg');
         break;
+
+      //      case 'virtual_accounts':
+      //        currentForm.formImage = require('styles/assets/virtualaccounts-landing.svg');
+      //        break;
+
+      case 'subscriptions':
+        currentForm.formImage = require('styles/assets/subscriptions-landing.svg');
+        break;
     }
   }
 
