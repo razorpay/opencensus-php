@@ -36,9 +36,10 @@ class Core extends Base\Core
                                Entity::SHOULD_SYNC       => $shouldSync
                            ]);
 
-        $feature->getValidator()->validateFeatureIsNotAlreadyAssigned($assignedFeatureNames);
-
-        $this->repo->feature->saveAndSyncIfApplicableOrFail($feature, $shouldSync);
+        $this->repo->feature->saveAndSyncIfApplicableOrFail(
+            $feature,
+            $assignedFeatureNames,
+            $shouldSync);
 
         $this->notifyOnSlack($feature);
 

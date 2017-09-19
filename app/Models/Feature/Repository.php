@@ -39,7 +39,7 @@ class Repository extends BaseRepository
                     ->first();
     }
 
-    public function saveAndSyncIfApplicableOrFail(Entity $feature, bool $shouldSync)
+    public function saveAndSyncIfApplicableOrFail(Entity $feature, array $assignedFeatureNames, bool $shouldSync)
     {
         if ($shouldSync === true)
         {
@@ -47,6 +47,8 @@ class Repository extends BaseRepository
         }
         else
         {
+            $feature->getValidator()->validateFeatureIsNotAlreadyAssigned($assignedFeatureNames);
+
             $this->repo->saveOrFail($feature);
         }
     }
