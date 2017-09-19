@@ -202,6 +202,33 @@ class Repository extends Base\Repository
     }
 
     /**
+     * @param Subscription\Entity $subscription
+     *
+     * @return Entity
+     */
+    public function fetchLatestInvoiceOfPendingSubscription(Subscription\Entity $subscription)
+    {
+        if ($subscription->isPending() === false)
+        {
+            // TODO: Throw an exception
+        }
+
+        $invoice = $this->newQuery()
+                        ->where(Entity::SUBSCRIPTION_ID, '=', $subscription->getId())
+                        ->where(Entity::STATUS, '=', Status::ISSUED)
+                        ->where(Entity::BILLING_START, '=', $subscription->getCurrentStart())
+                        ->where(Entity::BILLING_END, '=', $subscription->getCurrentEnd())
+                        ->where(function($query)
+                        {
+                            $query->where(Entity::SUBSCRIPTION_STATUS, '!=', Status::HALTED)
+                                  ->orWhereNull(Entity::SUBSCRIPTION_STATUS);
+                        })
+                        ->firstOrFail();
+
+        return $invoice;
+    }
+
+    /**
      * Returns counts of payment which are succeeding(i.e. either created,
      * authorized or captured) for given invoice.
      *

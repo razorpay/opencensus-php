@@ -372,7 +372,7 @@ class SubscriptionChargeTest extends TestCase
         // Carbon::setTestNow();
     }
 
-    public function testSubscriptionChangeCardOnAuthenticated()
+    public function testSubscriptionCardChangeOnAuthenticated()
     {
         $this->doAuthTxnForSubscriptionWithAddOn();
 

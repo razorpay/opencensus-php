@@ -11,6 +11,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Models\Plan\Subscription;
 use RZP\Exception\LogicException;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Jobs\Plan\ChargeSubscription;
@@ -230,16 +231,16 @@ class Core extends Base\Core
     /**
      * Get subscription data for the checkout preferences route
      *
-     * @param Merchant\Entity $merchant
-     * @param string          $subscriptionId
+     * @param Subscription\Entity $subscription
+     * @param bool                $cardChange
      *
      * @return array
      */
-    public function getFormattedSubscriptionData(Merchant\Entity $merchant, string $subscriptionId): array
+    public function getFormattedSubscriptionData(
+        Subscription\Entity $subscription,
+        bool $cardChange): array
     {
-        $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $merchant);
-
-        $authAmount = $this->getAuthTransactionAmount($subscription);
+        $authAmount = $this->getAuthTransactionAmount($subscription, $cardChange);
 
         return [
             'amount' => $authAmount,
@@ -259,11 +260,12 @@ class Core extends Base\Core
      *
      * @param Entity $subscription
      *
+     * @param bool   $cardChange
+     *
      * @return int
      * @throws BadRequestException
-     * @throws LogicException
      */
-    public function getAuthTransactionAmount(Entity $subscription): int
+    public function getAuthTransactionAmount(Entity $subscription, bool $cardChange = false): int
     {
         //
         // Currently, we allow a 2FA txn to be done only if
@@ -275,9 +277,9 @@ class Core extends Base\Core
         // card and the subscription is in active state.
         //
 
-        if ($subscription->isChangeCardStatus() === true)
+        if ($cardChange === true)
         {
-            $authAmount = $this->getAuthTransactionAmountForRetry();
+            $authAmount = $this->getAuthTransactionAmountForCardChange();
         }
         else if ($subscription->isCreated() === true)
         {
@@ -492,12 +494,14 @@ class Core extends Base\Core
             return;
         }
 
+        //
         // This is required here because we don't run handleCaptureSuccess in the normal capture flow.
         // TODO: We should add this in the normal capture flow after checking for some conditions
         // so that if a merchant manually captures an authorized payment from the dashboard, everything
         // would still work fine. This retry route allows the merchant to retry an invoice. But there's
         // nothing stopping him from trying capture the actual payment itself. We should update the subscription
         // like in the retry flow itself!
+        //
         (new Charge)->handleCaptureSuccess($subscription, $capturedPayment, $invoice);
     }
 
@@ -564,9 +568,18 @@ class Core extends Base\Core
         return $authAmount;
     }
 
-    protected function getAuthTransactionAmountForRetry(): int
+    protected function getAuthTransactionAmountForCardChange(Entity $subscription): int
     {
-        return Entity::DEFAULT_AUTH_AMOUNT;
+        if ($subscription->isPending() === true)
+        {
+            $invoice = $this->repo->invoice->fetchLatestInvoiceOfPendingSubscription($subscription);
+
+            return $invoice->getAmount();
+        }
+        else
+        {
+            return Entity::DEFAULT_AUTH_AMOUNT;
+        }
     }
 
     protected function constructRecurringPayload(

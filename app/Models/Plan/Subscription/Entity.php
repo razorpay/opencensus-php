@@ -18,6 +18,7 @@ use RZP\Models\Base\Traits\NotesTrait;
 /**
  * @property Task\Entity        $task
  * @property Merchant\Entity    $merchant
+ * @property Customer\Entity    $customer
  */
 class Entity extends Base\PublicEntity
 {
@@ -62,6 +63,19 @@ class Entity extends Base\PublicEntity
      * This key is used to search in subscriptions fetch multiple
      */
     const CUSTOMER_EMAIL = 'customer_email';
+
+    /**
+     * We throw exceptions in the following cases
+     * - In preferences, if the subscription has been authenticated and card_change = false in the input.
+     * - In preferences, if card_change = true in the input and it's not card change status.
+     * - While adding order_id in the payment input, if card_change = false and subscription not in created state
+     *   and order_id is not already present in the input.
+     * - While adding order_id, if card_change = true and subscription status is not card change status.
+     * - In authorize flow, if card_change = true and app_token is not sent.
+     * - In authorize flow, if card_change = true and it's not card change status.
+     * - When customer_id is added to input and card_change is true and app_token is not sent.
+     */
+    const SUBSCRIPTION_CARD_CHANGE = 'subscription_card_change';
 
     protected static $sign = 'sub';
 
@@ -386,9 +400,9 @@ class Entity extends Base\PublicEntity
         return ($this->wasImmediate() === true);
     }
 
-    public function isChangeCardStatus()
+    public function isCardChangeStatus()
     {
-        return (in_array($this->getStatus(), Status::$changeCardStatuses, true) === true);
+        return (in_array($this->getStatus(), Status::$cardChangeStatuses, true) === true);
     }
 
     public function isManualTestChargeableStatus()
@@ -425,6 +439,11 @@ class Entity extends Base\PublicEntity
         }
 
         return $isLatest;
+    }
+
+    public function isGlobal()
+    {
+        return $this->customer->hasGlobalCustomer();
     }
 
     public function followLocalFlow()
@@ -710,7 +729,6 @@ class Entity extends Base\PublicEntity
             $chargeAt = (int) $input[Entity::START_AT];
         }
 
-        // TODO: Test that this is working
         $this->setAttribute(self::CHARGE_AT, $chargeAt);
     }
 

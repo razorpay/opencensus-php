@@ -100,7 +100,7 @@ class SubscriptionCardsTest extends TestCase
         $this->assertTrue($response['options']['remember_customer']);
     }
 
-    public function testPreferencesChangeCardGlobalCustomer()
+    public function testPreferencesCardChangeGlobalCustomer()
     {
         $localCustomer = $this->fixtures->create('customer', ['global_customer_id' => '10000gcustomer']);
 
@@ -119,7 +119,7 @@ class SubscriptionCardsTest extends TestCase
         $this->assertEquals(2000, $response['subscription']['amount']);
     }
 
-    public function testPreferencesChangeCardGlobalCustomerNoAppToken()
+    public function testPreferencesCardChangeGlobalCustomerNoAppToken()
     {
         $localCustomer = $this->fixtures->create('customer', ['global_customer_id' => '10000gcustomer']);
 

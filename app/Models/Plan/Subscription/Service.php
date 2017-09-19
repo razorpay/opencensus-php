@@ -253,8 +253,7 @@ class Service extends Base\Service
                 ]);
         }
 
-        if (($invoice->isIssued() === false) or
-            ($invoice->getSubscriptionStatus() !== Invoice\Status::HALTED))
+        if ($invoice->isIssued() === false)
         {
             throw new BadRequestException(
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_INVOICE_CANNOT_BE_CHARGED,

@@ -1285,7 +1285,7 @@ return [
         ]
     ],
 
-    'testSubscriptionChangeCardOnAuthenticated' => [
+    'testSubscriptionCardChangeOnAuthenticated' => [
         'response' => [
             'content' => [
                 'error' => [
@@ -1297,7 +1297,7 @@ return [
         ],
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_SUBSCRIPTION_CHANGE_CARD_NOT_ALLOWED,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SUBSCRIPTION_CARD_CHANGE_NOT_ALLOWED,
         ],
     ],
 

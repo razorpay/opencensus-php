@@ -287,14 +287,14 @@ class PublicErrorDescription
     const BAD_REQUEST_SUBSCRIPTION_TOKEN_ALREADY_ASSOCIATED                     = 'The subscription already has a token associated with it';
     const BAD_REQUEST_SUBSCRIPTION_TOKEN_NOT_ASSOCIATED                         = 'Payment cannot be authorized since subscription does not have any token associated';
     const BAD_REQUEST_SUBSCRIPTION_TOTAL_COUNT_EXCEEDED                         = 'Subscription has already reached its total count of charges';
-    const BAD_REQUEST_SUBSCRIPTION_EXPIRED_OR_CANCELLED                         = 'The subscription has been expired or cancelled.';
+    const BAD_REQUEST_SUBSCRIPTION_IN_TERMINAL_STATE                            = 'The subscription is in a terminal state';
     const BAD_REQUEST_SUBSCRIPTION_NOT_IN_ACTIVE_OR_HALTED_STATE                = 'The subscription should be in either active or halted state to charge an on_hold invoice';
     const BAD_REQUEST_SUBSCRIPTION_NOT_IN_PENDING_STATE                         = 'The subscription is not in pending state, and cannot be retried.';
     const BAD_REQUEST_SUBSCRIPTION_NOT_CHARGEABLE_IN_LIVE_MODE                  = 'Subscriptions cannot be charged manually in live mode.';
     const BAD_REQUEST_SUBSCRIPTION_NOT_TEST_CHARGEABLE                          = 'The subscription is not test chargeable.';
     const BAD_REQUEST_SUBSCRIPTION_INVOICE_CANNOT_BE_CHARGED                    = 'This invoice of the subscription cannot be charged.';
     const BAD_REQUEST_SUBSCRIPTION_2FA_NOT_ALLOWED                              = 'Customer payment not allowed for the subscription at this stage.';
-    const BAD_REQUEST_SUBSCRIPTION_CHANGE_CARD_NOT_ALLOWED                      = 'Cannot change card for the subscription at this state';
+    const BAD_REQUEST_SUBSCRIPTION_CARD_CHANGE_NOT_ALLOWED                      = 'Cannot change card for the subscription at this state';
     const BAD_REQUEST_SUBSCRIPTION_CUSTOMER_NOT_FOUND                           = 'Could not find the customer for the subscription';
     const BAD_REQUEST_SUBSCRIPTION_CUSTOMER_ID_SENT_IN_INPUT                    = 'customer_id should not be sent in the input for subscription payment';
     const BAD_REQUEST_SUBSCRIPTION_SAVE_CARD_DISABLED                           = 'Subscription payment cannot be made with Flash Checkout disabled';
@@ -312,7 +312,7 @@ class PublicErrorDescription
     const BAD_REQUEST_BANK_ACCOUNT_ID_MISSING                                   = 'Sending bank account id is mandatory';
     const BAD_REQUEST_DUPLICATE_VPA                                             = 'Duplicate VPA address, try a different username.';
     const BAD_REQUEST_END_AT_AND_TOTAL_COUNT_SENT                               = 'Either end_at or total_count should be sent and not both.';
-    const BAD_REQUEST_INVALID_AUTH_TRANSACTION_AMOUNT                           = 'The amount does not match with the expected amount for the first transaction. It might have been tampered.';
+    const BAD_REQUEST_INVALID_TRANSACTION_AMOUNT                                = 'The amount does not match with the expected amount for the transaction. It might have been tampered.';
     const BAD_REQUEST_SUBSCRIPTION_CURRENT_TIME_PAST_START_TIME                 = 'Subscription\'s start time is past the current time. Cannot do an auth transaction now.';
 
     const BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD                                    = 'Payment declined because it didn\'t pass all risk checks';

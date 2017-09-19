@@ -152,11 +152,6 @@ class Charge extends Base\Core
         return true;
     }
 
-    /**
-     * @param Entity         $subscription
-     * @param Payment\Entity $capturedPayment
-     * @param Invoice\Entity $invoice
-     */
     public function handleCaptureSuccess(
         Entity $subscription,
         Payment\Entity $capturedPayment,
@@ -175,20 +170,46 @@ class Charge extends Base\Core
                 'task_details'         => $task->toArray(),
             ]);
 
+        if ($subscription->isLatestInvoiceForSubscription($invoice) === true)
+        {
+            $this->handleCaptureSuccessForLatestInvoice($subscription, $capturedPayment, $invoice, $task);
+        }
+        else
+        {
+            $this->handleCaptureSuccessForOlderInvoice($subscription, $capturedPayment, $invoice, $task);
+        }
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_AFTER_CAPTURE_UPDATE,
+            [
+                'subscription_details' => $subscription->toArray(),
+                'invoice_details' => $invoice->toArray(),
+                'task_details' => $task->toArray()
+            ]);
+    }
+
+    protected function handleCaptureSuccessForLatestInvoice(
+        Entity $subscription,
+        Payment\Entity $capturedPayment,
+        Invoice\Entity $invoice,
+        Task\Entity $task)
+    {
         $oldStatus = $subscription->getStatus();
 
         //
-        // If the subscription is in a terminal state,
-        // we can NOT change the status!
+        // If the capture is being done for latest invoice,
+        // The only statuses that it can be in are:
+        //  - authenticated
+        //  - active
+        //  - pending
         //
-        if ($subscription->isTerminalStatus() === false)
+
+        if (in_array($oldStatus, [Status::AUTHENTICATED, Status::ACTIVE, Status::PENDING], true) === false)
         {
-            //
-            // Not sending webhook here because the transaction might fail later
-            // in the flow. Will be sending it after the transaction is committed.
-            //
-            $subscription->setStatus(Status::ACTIVE);
+            // TODO: Throw an exception
         }
+
+        $subscription->setStatus(Status::ACTIVE);
 
         $this->trace->info(
             TraceCode::SUBSCRIPTION_STATUS_ACTIVE,
@@ -199,53 +220,16 @@ class Charge extends Base\Core
                 'payment_id'        => $capturedPayment->getId(),
             ]);
 
-        //
-        // We should update next_run_at only if the latest invoice is
-        // being charged, except in the case of halted.
-        //
-        // Irrespective of the subscription status, we should never update
-        // the next_run_at or ended_at if it's not the latest invoice that
-        // just got charged successfully.
-        //
-        // In case of halted, everything is an old invoice only. If a halted
-        // subscription is being charged, it just means that it's a manual charge
-        // attempt of an old invoice. If it's an old invoice, next_run_at
-        // shouldn't be changed. Old invoice is independent of the current
-        // cycle going on.
-        // The one difference here is, though we don't update any cycles, we always
-        // mark the subscription as activated. Since we now have a good card.
-        // In halted, there's no need to update next_run_at, as the regular
-        // charge cron has already updated it.
-        //
-        // In case the subscription is in pending state, irrespective of whether
-        // a manual charge is being made or automated charge is being made,
-        // we will always update the next_run_at and also set it as completed
-        // if this was the last charge of the subscription.
-        //
-        // Active and authenticated are pretty self-explanatory, in the sense
-        // that it's a normal charge. The first charge of the cycle succeeded
-        // and now we need to update next_run_at and mark completed as required.
-        //
-        // If the subscription is in completed, cancelled or expired state, it means
-        // that this is a manual charge attempt of an old invoice. Since it's a terminal
-        // state, the invoice must be old. If it's an old invoice, we should not update
-        // anything at all.
-        //
-        if ((($oldStatus === Status::AUTHENTICATED) or
-             ($oldStatus === Status::ACTIVE) or
-             ($oldStatus === Status::PENDING)) and
-            ($subscription->isLatestInvoiceForSubscription($invoice) === true))
-        {
-            $task->updateForSubscription($this->mode);
+        $task->updateForSubscription($this->mode);
 
-            //
-            // Even though we are updating it in the invoice now,
-            // we will be keeping the current billing cycle period
-            // in subscriptions also.
-            //
-            $this->setEndedAtIfApplicable($subscription);
-        }
+        //
+        // Even though we are updating it in the invoice now,
+        // we will be keeping the current billing cycle period
+        // in subscriptions also.
+        //
+        $this->setEndedAtIfApplicable($subscription);
 
+        // This is basically just for the pending state
         $subscription->resetErrorFields();
 
         $subscription->incrementPaidCount();
@@ -259,22 +243,193 @@ class Charge extends Base\Core
             $subscription->setActivatedAt($capturedPayment->getCaptureTimestamp());
         }
 
-        $this->saveAndFireWebhooksOnCaptureSuccess($subscription, $task, $invoice, $capturedPayment, $oldStatus);
+        $this->saveAndFireWebhooksOnCaptureSuccessForLatestInvoice(
+            $subscription, $invoice, $task, $capturedPayment, $oldStatus);
+    }
 
-        $this->trace->info(
-            TraceCode::SUBSCRIPTION_AFTER_CAPTURE_UPDATE,
-            [
-                'subscription_details' => $subscription->toArray(),
-                'invoice_details' => $invoice->toArray(),
-                'task_details' => $task->toArray()
-            ]);
+    protected function saveAndFireWebhooksOnCaptureSuccessForLatestInvoice(
+        Entity $subscription,
+        Invoice\Entity $invoice,
+        Task\Entity $task,
+        Payment\Entity $capturedPayment,
+        string $oldStatus)
+    {
+        $updatedStatus = $subscription->getStatus();
+
+        $core = new Core;
 
         //
-        // This must be sent after saving the invoice and subscription
-        // to ensure that we don't send an email when we were not able
-        // to charge the subscription.
+        // If the capture is being done for latest invoice,
+        // The only statuses that it can be in are:
+        //  - authenticated
+        //  - active
+        //  - pending
         //
-        // $this->sendInvoiceEmail($invoice);
+        // Hence, the possible flows are:
+        //  - authenticated -> active -> completed [fire charge, active and completed webhooks]
+        //  - active -> active -> completed [fire charge and completed webhooks]
+        //  - pending -> active -> completed [fire charge, active and completed webhooks]
+        //
+        //  - authenticated -> active [fire charge and active webhooks]
+        //  - active -> active [fire charge webhook]
+        //  - pending -> active [fire charge and active webhooks]
+        //
+
+        switch ($updatedStatus)
+        {
+            case Status::ACTIVE:
+                //
+                // If the latest status is active, we will definitely not be required to
+                // fire completed webhook. We only need to fire the active webhook.
+                //
+
+                $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
+
+                $core->eventSubscriptionCharged($subscription, $capturedPayment);
+
+                //
+                // If we are moving subscription from active to active, we don't have
+                // to fire the active webhook, since the merchant already knows
+                // that this is in active state.
+                //
+                if ($oldStatus !== Status::ACTIVE)
+                {
+                    $core->fireWebhookForStatusUpdate($subscription, Status::ACTIVE, $capturedPayment);
+                }
+
+                break;
+            case Status::COMPLETED:
+                //
+                // In all of these cases, the subscription would first move to active and THEN to completed.
+                // Hence, in these cases we have to fire both active and completed webhooks.
+                // But, in case of active -> active -> completed, we don't have to fire the active webhook
+                // and we can directly fire the completed webhook.
+                //
+                $currentEndedAt = $subscription->getEndedAt();
+
+                $subscription->setStatus(Status::ACTIVE);
+                $subscription->setEndedAt(null);
+
+                $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
+
+                $core->eventSubscriptionCharged($subscription, $capturedPayment);
+
+                if ($oldStatus !== Status::ACTIVE)
+                {
+                    $core->fireWebhookForStatusUpdate($subscription, Status::ACTIVE, $capturedPayment);
+                }
+
+                $subscription->setStatus(Status::COMPLETED);
+                $subscription->setEndedAt($currentEndedAt);
+
+                $this->repo->saveOrFail($subscription);
+
+                $core->fireWebhookForStatusUpdate($subscription, Status::COMPLETED);
+
+                break;
+            default:
+                // TODO: Throw an exception
+        }
+    }
+
+    protected function handleCaptureSuccessForOlderInvoice(
+        Entity $subscription,
+        Payment\Entity $capturedPayment,
+        Invoice\Entity $invoice,
+        Task\Entity $task)
+    {
+        $oldStatus = $subscription->getStatus();
+
+        //
+        // If the capture is being done for an older invoice,
+        // It can be in any of the following statuses:
+        //  - active
+        //  - pending
+        //  - halted
+        //  - cancelled
+        //  - completed
+        //
+
+        if (in_array(
+                $oldStatus,
+                [Status::ACTIVE, Status::PENDING, Status::HALTED, Status::CANCELLED, Status::COMPLETED],
+                true
+            ) === false)
+        {
+            // TODO: Throw an exception
+        }
+
+        if ($subscription->isHalted() === true)
+        {
+            //
+            // We don't reset error fields for pending state, because
+            // we don't want to mess with the retry cron.
+            //
+            $subscription->resetErrorFields();
+
+            //
+            // We change the status to active only if it's halted.
+            // Pending's status will change to active when the latest
+            // invoice is successfully paid.
+            //
+            $subscription->setStatus(Status::ACTIVE);
+        }
+
+        $subscription->incrementPaidCount();
+
+        $this->saveAndFireWebhooksOnCaptureSuccessForOlderInvoice(
+            $subscription, $invoice, $task, $capturedPayment, $oldStatus);
+    }
+
+    protected function saveAndFireWebhooksOnCaptureSuccessForOlderInvoice(
+        Entity $subscription,
+        Invoice\Entity $invoice,
+        Task\Entity $task,
+        Payment\Entity $capturedPayment,
+        string $oldStatus)
+    {
+        $core = new Core;
+
+        //
+        // If the capture is being done for latest invoice,
+        // The only statuses that it can be in are:
+        //  - active
+        //  - pending
+        //  - halted
+        //  - cancelled
+        //  - completed
+        //
+        // Hence, the possible flows are:
+        //  - active -> active [charge webhook]
+        //  - pending -> active [charge webhook] --- DOES NOT HAPPEN because it's older invoice flow
+        //  - pending -> pending [charge webhook]
+        //  - cancelled -> cancelled [charge webhook]
+        //  - completed -> completed [charge webhook]
+        //  - halted -> active [charge and active webhook]
+        //
+
+        switch ($oldStatus)
+        {
+            case Status::ACTIVE:
+            case Status::PENDING:
+            case Status::CANCELLED:
+            case Status::COMPLETED:
+                $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
+
+                $core->eventSubscriptionCharged($subscription, $capturedPayment);
+
+                break;
+            case Status::HALTED:
+                $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
+
+                $core->eventSubscriptionCharged($subscription, $capturedPayment);
+
+                $core->fireWebhookForStatusUpdate($subscription, Status::ACTIVE, $capturedPayment);
+
+                break;
+            default:
+                // TODO: Throw an exception
+        }
     }
 
     /**
@@ -351,45 +506,6 @@ class Charge extends Base\Core
         $this->saveAndFireWebhooksOnFailure($subscription, $invoice, $payment);
     }
 
-    /**
-     * Count the number of invoices generated for the subscription that were part of
-     * the plan (so exclude upfront amounts with future start_at). When this count
-     * is equal to the total count for the subscription, it is complete.
-     * We also mark charge_at to null at this stage.
-     *
-     * @param Entity $subscription
-     *
-     * @return bool Returns true if marked as completed. Else, false.
-     */
-    public function setEndedAtIfApplicable(Entity $subscription)
-    {
-        $planChargeInvoiceCount = $subscription->getPlanChargeInvoicesCount();
-
-        //
-        // Ideally, planChargeInvoiceCount would never be greater than the
-        // subscription's total_count. `>` is simply there.
-        //
-        if ($planChargeInvoiceCount >= $subscription->getTotalCount())
-        {
-            //
-            // If the last charge of the subscription is on 20th August,
-            // ideally, the end date would be 20th August only.. but,
-            // the subscription would go on until 20th October.
-            // Not sure whether to set the ended_at as 20th August
-            // or 20th October. For now, setting it as 20th August.
-            // Current period in subscriptions and invoices
-            // would be 20th August to 20th October.
-            //
-            $subscription->setEndedAt($subscription->getCurrentStart());
-
-            $subscription->setStatus(Status::COMPLETED);
-
-            return true;
-        }
-
-        return false;
-    }
-
     protected function saveAndFireWebhooksOnFailure(
         Entity $subscription,
         Invoice\Entity $invoice,
@@ -448,102 +564,43 @@ class Charge extends Base\Core
         }
     }
 
-    protected function saveAndFireWebhooksOnCaptureSuccess(
-        Entity $subscription,
-        Task\Entity $task,
-        Invoice\Entity $invoice,
-        Payment\Entity $capturedPayment,
-        string $oldStatus)
+    /**
+     * Count the number of invoices generated for the subscription that were part of
+     * the plan (so exclude upfront amounts with future start_at). When this count
+     * is equal to the total count for the subscription, it is complete.
+     * We also mark charge_at to null at this stage.
+     *
+     * @param Entity $subscription
+     *
+     * @return bool Returns true if marked as completed. Else, false.
+     */
+    public function setEndedAtIfApplicable(Entity $subscription)
     {
-        $updatedStatus = $subscription->getStatus();
-
-        $core = new Core;
+        $planChargeInvoiceCount = $subscription->getPlanChargeInvoicesCount();
 
         //
-        // Different cases:
-        //  - completed -> completed [fire charge webhook]
-        //  - authenticated -> active -> completed [fire charge, active and completed webhooks]
-        //  - active -> active -> completed [fire charge and completed webhooks]
-        //  - pending -> active -> completed [fire charge, active and completed webhooks]
+        // Ideally, planChargeInvoiceCount would never be greater than the
+        // subscription's total_count. `>` is simply there.
         //
-        //  - active -> active [fire charge webhook]
-        //  - pending -> active [fire charge and active webhooks]
-        //  - halted -> active [fire charge and active webhooks]
-        //  - authenticated -> active [fire charge and active webhooks]
-        //
-
-        switch ($updatedStatus)
+        if ($planChargeInvoiceCount >= $subscription->getTotalCount())
         {
-            case Status::COMPLETED:
-                //
-                // For a terminal state, we don't update the status.
-                // If the subscription is moving from completed -> completed, we don't have to fire the
-                // webhook, since the merchant already knows that the subscription is in completed state.
-                //
-                if ($oldStatus === Status::COMPLETED)
-                {
-                    $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
-
-                    $core->eventSubscriptionCharged($subscription, $capturedPayment);
-                }
-                //
-                // Only from either authenticated, active, pending, the subscription can move to completed.
-                // From halted, it can never move to completed.
-                // But, in all of these cases, the subscription would first move to active and THEN to completed.
-                // Hence, in these cases we have to fire both active and completed webhooks.
-                // But, in case of active -> active -> completed, we don't have to fire the active webhook
-                // and we can directly fire the completed webhook.
-                //
-                else if (in_array($oldStatus, [Status::AUTHENTICATED, Status::ACTIVE, Status::PENDING], true) === true)
-                {
-                    $currentEndedAt = $subscription->getEndedAt();
-
-                    $subscription->setStatus(Status::ACTIVE);
-                    $subscription->setEndedAt(null);
-
-                    $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
-
-                    $core->eventSubscriptionCharged($subscription, $capturedPayment);
-
-                    if ($oldStatus !== Status::ACTIVE)
-                    {
-                        $core->fireWebhookForStatusUpdate($subscription, Status::ACTIVE, $capturedPayment);
-                    }
-
-                    $subscription->setStatus(Status::COMPLETED);
-                    $subscription->setEndedAt($currentEndedAt);
-
-                    $this->repo->saveOrFail($subscription);
-
-                    $core->fireWebhookForStatusUpdate($subscription, Status::COMPLETED);
-                }
-
-                break;
             //
-            case Status::ACTIVE:
-                //
-                // If the latest status is active, we will definitely not be required to
-                // fire completed webhook. We only need to fire the active webhook.
-                //
+            // If the last charge of the subscription is on 20th August,
+            // ideally, the end date would be 20th August only.. but,
+            // the subscription would go on until 20th October.
+            // Not sure whether to set the ended_at as 20th August
+            // or 20th October. For now, setting it as 20th August.
+            // Current period in subscriptions and invoices
+            // would be 20th August to 20th October.
+            //
+            $subscription->setEndedAt($subscription->getCurrentStart());
 
-                $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
+            $subscription->setStatus(Status::COMPLETED);
 
-                $core->eventSubscriptionCharged($subscription, $capturedPayment);
-
-                //
-                // If we are moving subscription from active to active, we don't have
-                // to fire the active webhook, since the merchant already knows
-                // that this is in active state.
-                //
-                if ($oldStatus !== Status::ACTIVE)
-                {
-                    $core->fireWebhookForStatusUpdate($subscription, Status::ACTIVE, $capturedPayment);
-                }
-
-                break;
-            default:
-                // TODO: Throw an exception
+            return true;
         }
+
+        return false;
     }
 
     protected function saveSubscriptionAndInvoiceAndTask(

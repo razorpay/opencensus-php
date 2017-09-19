@@ -597,7 +597,7 @@ trait RepositoryFetch
      * @param Merchant\Entity $merchant
      * @param array           $params
      *
-     * @return PublicEntity
+     * @return mixed
      */
     public function findByIdAndMerchant(
         string $id,

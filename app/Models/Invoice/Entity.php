@@ -17,7 +17,9 @@ use RZP\Models\Plan\Subscription;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
 
-
+/**
+ * @property Subscription\Entity $subscription
+ */
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;

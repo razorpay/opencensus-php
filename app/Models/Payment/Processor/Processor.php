@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Processor;
 
 use App;
 use Carbon\Carbon;
+use RZP\Base\RepositoryManager;
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
 use RZP\Error\ErrorCode;
@@ -18,6 +19,7 @@ use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Processor\Notify;
 use RZP\Models\Payment\Status;
 use RZP\Models\Pricing;
@@ -92,6 +94,9 @@ class Processor
     protected $terminal;
     protected $selectedTerminals;
     protected $mode;
+    /**
+     * @var RepositoryManager
+     */
     protected $repo;
     protected $orderRepo;
     protected $paymentRepo;
@@ -816,11 +821,42 @@ class Processor
         // 1. It would already be present if it's automated charge.
         // 2. Change card flow is being done. Hence, no invoice and stuff.
         //
-        if ($subscription->isCreated() === false)
+        if ($subscription->isCreated() === true)
         {
-            return;
+            $this->addOrderIdToInputForCreatedSubscription($subscription, $input);
         }
+        else
+        {
+            $cardChange = boolval($input[Subscription\Entity::SUBSCRIPTION_CARD_CHANGE] ?? false);
 
+            if ($cardChange === true)
+            {
+                if ($subscription->isCardChangeStatus() === false)
+                {
+                    // TODO: Throw an exception
+                }
+
+                //
+                // We do this because we are going to attempt to charge the invoice
+                // directly along with card change.
+                //
+                if ($subscription->isPending() === true)
+                {
+                    $this->addOrderIdToInputForPendingSubscription($subscription, $input);
+                }
+            }
+            else
+            {
+                if (empty($input[Payment\Entity::ORDER_ID]) === true)
+                {
+                    // TODO: Throw an exception
+                }
+            }
+        }
+    }
+
+    protected function addOrderIdToInputForCreatedSubscription(Subscription\Entity $subscription, array & $input)
+    {
         //
         // Invoice would have been created if:
         // - First charge needs to be done as part of authentication with or without addons
@@ -828,33 +864,27 @@ class Processor
         //
         $subscriptionInvoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
 
-        if ($subscriptionInvoices->count() === 0)
+        $subscriptionInvoicesCount = $subscriptionInvoices->count();
+
+        if ($subscriptionInvoicesCount === 0)
         {
-            //
-            // Since the subscription is in created state at this point,
-            // the only addons that will be present will be of `upfront_amount`.
-            //
-            $addons = $this->repo->addon->getAllAddonsOfSubscription($subscription);
-
-            if ($addons->count() === 0)
-            {
-                return;
-            }
-            else
-            {
-                throw new Exception\LogicException(
-                    'There should have been one invoice created for a newly created subscription',
-                    ErrorCode::SERVER_ERROR_INCORRECT_NUMBER_OF_INVOICES_FOUND,
-                    [
-                        'invoices_count'    => $subscriptionInvoices->count(),
-                        'subscription_id'   => $subscriptionId,
-                        'payment_id'        => $payment->getId(),
-                        'addons_count'      => $addons->count(),
-                    ]);
-            }
+            return;
         }
+        else if ($subscriptionInvoicesCount === 1)
+        {
+            $subscriptionInvoice = $subscriptionInvoices->first();
 
-        $subscriptionInvoice = $subscriptionInvoices->first();
+            $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($subscriptionInvoice->getOrderId());
+        }
+        else
+        {
+            // TODO: Throw an exception
+        }
+    }
+
+    protected function addOrderIdToInputForPendingSubscription(Subscription\Entity $subscription, array & $input)
+    {
+        $subscriptionInvoice = $this->repo->invoice->fetchLatestInvoiceOfPendingSubscription($subscription);
 
         $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($subscriptionInvoice->getOrderId());
     }
