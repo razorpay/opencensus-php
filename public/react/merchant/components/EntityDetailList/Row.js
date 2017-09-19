@@ -103,9 +103,8 @@ export default props => {
               <i class="icon icon-info-circle" />{' '}
               {
                 <span>
-                  {authAttempts} ${authAttempts > 1
-                    ? 'charge attempts'
-                    : 'charge attempt'}{' '}
+                  {authAttempts}{' '}
+                  {authAttempts > 1 ? 'charge attempts' : 'charge attempt'}{' '}
                   failed.
                 </span>
               }

@@ -19,6 +19,7 @@ import { expandSlider, compactSlider } from 'rzp/modules/slider';
 
 import { openModal, closeModal } from 'rzp/modules/modals';
 import CancellationModal from './CancellationModal';
+import TestPaymentModal from './TestPaymentModal';
 import AddOnCreation from 'merchant/containers/AddOns/New';
 
 /*
@@ -35,6 +36,7 @@ import AddOnCreation from 'merchant/containers/AddOns/New';
 @connect(
   state => {
     return {
+      ...state.session,
       ...state.subscription,
       ...state.app,
     };
@@ -263,6 +265,27 @@ export default class SubscriptionDetailsContainer extends Component {
     });
   };
 
+  // Modal for Testing Button
+  onTestChargeAttempt = () => {
+    this.props.openModal({
+      component: (
+        <TestPaymentModal
+          subscriptionId={this.props.id}
+          postAction={() => {
+            // Make all fetch calls
+            this.fetchSubscriptionDetails(this.props.entity.id);
+            this.fetchInvoicesList(this.props.entity.id);
+
+            if (this.state.invoice && this.state.invoice.id) {
+              this.fetchInvoice(this.state.invoice.id);
+            }
+          }}
+        />
+      ),
+      size: 'small',
+    });
+  };
+
   // Check if next due invoice is valid for current subscription
   checkNextDueInvoiceValidity(subsStatus) {
     return (
@@ -427,6 +450,9 @@ export default class SubscriptionDetailsContainer extends Component {
           activeSecEntityId={activeSecEntityId}
           onCancelClick={this.cancelSubscription}
           onManualAttempt={this.onManualAttempt}
+          onTestChargeAttempt={
+            this.props.mode === 'test' && this.onTestChargeAttempt
+          }
         />
 
         {invoiceSecView}

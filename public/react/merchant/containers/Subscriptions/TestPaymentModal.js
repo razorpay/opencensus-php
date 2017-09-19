@@ -21,20 +21,20 @@ export default class TestPaymentModal extends Component {
 
   handleSubmit = isSuccess => {
     var testChargeMessages = [
-      'Subscription cancelled successfully',
-      'Subscription will be cancelled at the end of current billing cycle.',
+      'Charge is marked as FAILURE successfully',
+      'Charge is marked as SUCCESS successfully',
     ];
 
     this.setState({ isDisabled: true });
     return testChargeSubscription(this.props.subscriptionId, isSuccess)
       .then(() => {
         this.setState({ isDisabled: false });
-        console.log('CHARGED....', isSuccess);
 
         this.props.closeModal();
         this.props.showNotification({
           type: 'success',
           message: testChargeMessages[isSuccess],
+          closeTimeout: 6500,
         });
 
         this.props.postAction();
@@ -58,10 +58,10 @@ export default class TestPaymentModal extends Component {
             This is test payment. You can choose it to be success or failure.
           </div>
 
-          <div class="btn-toolbar">
+          <div class="btn-toolbar m-t">
             <AsyncButton
               type="submit"
-              class="btn btn-default"
+              class="btn btn-primary full-width m-t"
               text="Charge as Success"
               pendingText="Charging..."
               disabled={this.state.isDisabled}
@@ -70,7 +70,7 @@ export default class TestPaymentModal extends Component {
 
             <AsyncButton
               type="submit"
-              class="btn btn-primary"
+              class="btn btn-default full-width m-t"
               text="Charge as failure"
               pendingText="Charging..."
               disabled={this.state.isDisabled}
