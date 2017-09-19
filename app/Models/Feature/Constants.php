@@ -87,17 +87,21 @@ class Constants
         self::TPV                      => true,
     ];
 
-    // Keys used to define the question names
+    // Keys used in the feature onbaording workflow
+    const ONBOARDING = 'onboarding';
+    const FEATURES   = 'features';
+    const MERCHANT   = 'merchant';
+
+    // Keys used to define the question names in the onboarding process
     const BUSINESS_MODEL           = 'business_model';
     const EXPECTED_MONTHLY_REVENUE = 'expected_monthly_revenue';
-    const ONBOARDING               = 'onboarding';
     const SETTLING_TO              = 'settling_to';
     const VENDOR_AGREEMENT         = 'vendor_agreement';
     const SAMPLE_PLANS             = 'sample_plans';
     const USE_CASE                 = 'use_case';
     const WEBSITE_DETAILS          = 'website_details';
 
-    // Keys required to define each question referred by the above-mentioned constants
+    // Keys that will describe the above-mentioned quesions
     const ID                  = 'id';
     const QUESTION            = 'question';
     const DESCRIPTION         = 'description';
@@ -105,9 +109,6 @@ class Constants
     const AVAILABLE_RESPONSES = 'available_responses';
     const MANDATORY           = 'mandatory';
 
-    // Constants used in API request params and responses
-    const FEATURES = 'features';
-    const MERCHANT = 'merchant';
 
     /**
      * Features that are exposed to the merchant and can be
@@ -246,7 +247,7 @@ class Constants
      *
      * @return array
      */
-    public static function getFeatureQuestions(string $featureName)
+    public static function getFeatureQuestions(string $featureName): array
     {
         $response = [];
 
@@ -263,7 +264,7 @@ class Constants
         return $response;
     }
 
-    public static function getFeatureValue($featureName)
+    public static function getFeatureValue($featureName): array
     {
         return self::$featureValueMap[$featureName];
     }

@@ -3,11 +3,11 @@
 namespace RZP\Models\Feature;
 
 use RZP\Models\Base;
-use Razorpay\Trace\Logger as Trace;
-use RZP\Trace\TraceCode;
-use RZP\Models\Settings\Accessor;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
+use RZP\Models\Settings\Accessor;
+use Razorpay\Trace\Logger as Trace;
 
 class Service extends Base\Service
 {
@@ -145,7 +145,14 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function getOnboardingQuestions($input)
+    /**
+     * Returns all the questions required for onboarding features
+     *
+     * @param $input
+     *
+     * @return array
+     */
+    public function getOnboardingQuestions($input): array
     {
         $features = $input[Constants::FEATURES];
 
@@ -164,7 +171,15 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function createOnboardingResponses(array $input, string $feature)
+    /**
+     * Saves the merchant responses to the onboarding questions
+     *
+     * @param array  $input
+     * @param string $feature
+     *
+     * @return bool
+     */
+    public function createOnboardingResponses(array $input, string $feature): bool
     {
         $data[$feature] = $input;
 
@@ -191,7 +206,15 @@ class Service extends Base\Service
         return $saved;
     }
 
-    public function getOnboardingResponses($feature = null)
+    /**
+     * Returns the merchant responses to the onboarding questions of
+     * one/ all features
+     *
+     * @param null $feature
+     *
+     * @return \Razorpay\Spine\DataTypes\Dictionary|string
+     */
+    public function getOnboardingResponses(string $feature = null)
     {
         if ($feature === null)
         {
@@ -205,22 +228,29 @@ class Service extends Base\Service
         return $settings;
     }
 
+    /**
+     * Processes the file, primarily,
+     * $input['marketplace']['vendor_agreement'] right now.
+     * Need to make it generic enough for any other key
+     *
+     * @param $input
+     */
     protected function processFiles(& $input)
     {
-        $merchant = $this->merchant;
-
-        $merchantId = $merchant->getId();
-
         $featureName = Constants::MARKETPLACE;
 
         $question = Constants::VENDOR_AGREEMENT;
+
+        $merchant = $this->merchant;
+
+        $merchantId = $merchant->getId();
 
         if ((isset($input[$featureName])) and
             (isset($input[$featureName][$question])))
         {
             $file = $input[$featureName][$question];
 
-            $settingKey =  $featureName . "." . $question;
+            $settingKey = $featureName . "." . $question;
 
             $extension = $file->extension();
 
@@ -234,12 +264,24 @@ class Service extends Base\Service
         }
     }
 
+    /**
+     * Creates a file entity and uploads it to S3 bucket
+     *
+     * @param string          $extension
+     * @param                 $file
+     * @param string          $fileName
+     * @param string          $type
+     * @param Merchant\Entity $merchant
+     * @param string          $store
+     *
+     * @return array
+     */
     protected function createFile(string $extension,
-                                  $file,
-                                  string $fileName,
-                                  string $type,
-                                  Merchant\Entity $merchant,
-                                  string $store = FileStore\Store::S3)
+                                     $file,
+                                     string $fileName,
+                                     string $type,
+                                     Merchant\Entity $merchant,
+                                     string $store = FileStore\Store::S3)
     {
         $creator = new FileStore\Creator;
 
@@ -268,9 +310,9 @@ class Service extends Base\Service
         foreach ($featureNames as $featureName)
         {
             $featureParams->push([
-                Entity::ENTITY_TYPE     => $entityType,
-                Entity::ENTITY_ID       => $entityId,
-                Entity::NAME            => $featureName
+                Entity::ENTITY_TYPE => $entityType,
+                Entity::ENTITY_ID   => $entityId,
+                Entity::NAME        => $featureName
             ]);
         }
 

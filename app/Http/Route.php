@@ -605,7 +605,6 @@ final class Route
         'settings_fetch_defined'                  => ['get',      'settings/{module}/defined_keys',                 'SettingsController@getDefined'                                     ],
         'settings_fetch'                          => ['get',      'settings/{module}/{key?}',                       'SettingsController@get'                                            ],
         'settings_upsert'                         => ['post',     'settings/{module}',                              'SettingsController@upsert'                                         ],
-        'settings_delete'                         => ['delete',   'settings/{module}/{key}',                        'SettingsController@delete'                                         ],
 
         // OAuth routes
         'oauth_token_fetch_multiple'              => ['get',      'oauth/tokens',                                   'OAuthTokenController@getAll'                                       ],

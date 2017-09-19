@@ -18,19 +18,19 @@ class Validator extends Base\Validator
     );
 
     protected static $onboardingRules = array(
-        Constants::MARKETPLACE                                     => 'sometimes|array|max:3',
-        Constants::MARKETPLACE . "." . Constants::USE_CASE         => 'sometimes|string',
-        Constants::MARKETPLACE . "." . Constants::SETTLING_TO      => 'sometimes|string',
+        Constants::MARKETPLACE                                     => 'filled|array|max:3',
+        Constants::MARKETPLACE . "." . Constants::USE_CASE         => 'filled|string',
+        Constants::MARKETPLACE . "." . Constants::SETTLING_TO      => 'filled|string',
         Constants::MARKETPLACE . "." . Constants::VENDOR_AGREEMENT => 'sometimes|file',
 
-        Constants::SUBSCRIPTIONS                                    => 'sometimes|array|max:3',
-        Constants::SUBSCRIPTIONS . "." . Constants::BUSINESS_MODEL  => 'sometimes|string',
-        Constants::SUBSCRIPTIONS . "." . Constants::SAMPLE_PLANS    => 'sometimes|string',
-        Constants::SUBSCRIPTIONS . "." . Constants::WEBSITE_DETAILS => 'sometimes|string|max:50',
+        Constants::SUBSCRIPTIONS                                    => 'filled|array|max:3',
+        Constants::SUBSCRIPTIONS . "." . Constants::BUSINESS_MODEL  => 'filled|string',
+        Constants::SUBSCRIPTIONS . "." . Constants::SAMPLE_PLANS    => 'filled|string',
+        Constants::SUBSCRIPTIONS . "." . Constants::WEBSITE_DETAILS => 'filled|string|max:50',
 
-        Constants::VIRTUAL_ACCOUNTS                                             => 'sometimes|array|max:2',
-        Constants::VIRTUAL_ACCOUNTS . "." . Constants::USE_CASE                 => 'sometimes|string',
-        Constants::VIRTUAL_ACCOUNTS . "." . Constants::EXPECTED_MONTHLY_REVENUE => 'sometimes|string',
+        Constants::VIRTUAL_ACCOUNTS                                             => 'filled|array|max:2',
+        Constants::VIRTUAL_ACCOUNTS . "." . Constants::USE_CASE                 => 'filled|string',
+        Constants::VIRTUAL_ACCOUNTS . "." . Constants::EXPECTED_MONTHLY_REVENUE => 'filled|string',
     );
 
     protected function validateName($attribute, $value)
@@ -73,7 +73,7 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_ALREADY_ASSIGNED,
-                null,
+                Entity::FEATURE,
                 [
                     Entity::ID                => $feature->getId(),
                     Entity::NAME              => $feature->getName(),

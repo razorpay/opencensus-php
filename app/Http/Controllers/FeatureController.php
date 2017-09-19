@@ -69,7 +69,7 @@ class FeatureController extends Controller
     }
 
 
-    public function getOnboardingResponses($feature = null)
+    public function getOnboardingResponses(string $feature = null)
     {
         $response = $this->service()->getOnboardingResponses($feature);
 
