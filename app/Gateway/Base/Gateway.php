@@ -333,6 +333,22 @@ class Gateway
         }
     }
 
+    protected function getAcquirerData($input, $gatewayPayment)
+    {
+        $acquirer = [];
+
+        switch ($input['payment']['method'])
+        {
+            case Payment\Method::CARD:
+                $acquirer['acquirer'] = [
+                    Payment\Entity::REFERENCE2 => $gatewayPayment->getAuthCode(),
+                ];
+                break;
+        }
+
+        return $acquirer;
+    }
+
     protected function getCallbackResponseData(array $input, $response = [])
     {
         $response[Payment\Entity::TWO_FACTOR_AUTH] = Payment\TwoFactorAuth::PASSED;

@@ -910,6 +910,6 @@ class AdminTest extends TestCase
         $result = $this->startTest();
 
         $this->assertCount(7, $result['fields']);
-        $this->assertCount(117, $result['entities']);
+        $this->assertCount(118, $result['entities']);
     }
 }

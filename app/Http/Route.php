@@ -611,6 +611,7 @@ final class Route
         'oauth_application_delete'                => ['delete',   'oauth/applications/{id}',                        'OAuthApplicationController@delete'                                 ],
         'oauth_merchant_notify'                   => ['post',     'oauth/notify/{type}',                            'MerchantController@sendOAuthNotification'                          ],
         'oauth_application_update'                => ['post',     'oauth/applications/{id}',                        'OAuthApplicationController@update'                                 ],
+        'merchant_analytics'                      => ['post',     'merchant/analytics',                             'MerchantController@postAnalytics'                                  ],
     ];
 
     public static $public = [
@@ -1089,6 +1090,7 @@ final class Route
         'oauth_application_fetch',
         'oauth_application_delete',
         'oauth_application_update',
+        'merchant_analytics',
     ];
 
     // These will run on internal auth with the assurance
@@ -1300,6 +1302,7 @@ final class Route
         'settings_fetch_defined'           => Permission::VIEW_WALLET_CONFIG,
         'settings_upsert'                  => Permission::EDIT_WALLET_CONFIG,
         'settings_delete'                  => Permission::EDIT_WALLET_CONFIG,
+        'merchant_analytics'               => '*',
     ];
 
     public static $direct = [

@@ -101,6 +101,7 @@ final class FactoryData
             'iin'               => 411111,
             'length'            => '16',
             'issuer'            => 'hdfc',
+            'emi'               => false,
             'international'     => false,
             'vault_token'       => 'NDExMTExMTExMTExMTExMQ==',
             'vault'             => 'tokenex',
