@@ -118,6 +118,7 @@ add_cron "0 10 * * *"       "nodal_transfer_icici_fd"        POST "$BASE_URL/nod
 add_cron "0 */2 * * *"      "subscriptions_charge"           POST "$BASE_URL/subscriptions/charge/invoices"              ""                              $LIVE_AUTH
 add_cron "0 * * * *"        "subscriptions_auth_retry"       POST "$BASE_URL/subscriptions/retry"                        ""                              $LIVE_AUTH
 add_cron "*/10 * * * *"     "subscriptions_expire"           POST "$BASE_URL/subscriptions/expire"                       ""                              $LIVE_AUTH
+add_cron "*/10 * * * *"     "subscriptions_cancel"           POST "$BASE_URL/subscriptions/cancel/due"                   ""                              $LIVE_AUTH
 
 # DSP Blackrock
 add_cron "0 15 * * *"       "dsp_report_today"               GET  "$BASE_URL/reports/transaction/dsp"    "mail=1&email=dummy@dspblackrock.com&day=today"      $LIVE_AUTH

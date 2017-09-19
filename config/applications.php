@@ -137,7 +137,8 @@ return [
     // access to select routes of APIs.
     //
     'auth_service' => [
-        'secret' => env('APP_OAUTH_SECRET'),
+        'url'       => env('AUTH_SERVICE_URL'),
+        'secret'    => env('AUTH_SERVICE_SECRET'),
     ],
     'nodal' => [
         'mock' => env('NODAL_MOCK', false),
@@ -146,13 +147,5 @@ return [
             'password' => env('NODAL_PASSWORD'),
         ],
         'url' => env('NODAL_BASE_URL'),
-    ],
-    //
-    // Configuration(URL and basic authentication details) for api to make
-    // service calls to authentication service.
-    //
-    'api_auth_service' => [
-        'url'       => env('AUTH_SERVICE_URL'),
-        'secret'    => env('AUTH_SERVICE_SECRET'),
     ],
 ];
