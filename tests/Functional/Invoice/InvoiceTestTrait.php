@@ -93,14 +93,56 @@ trait InvoiceTestTrait
         return $expected;
     }
 
-    protected function mockInfernoFire(Closure $closure)
+    protected function createInfernoMock($withMethods = ['fire'])
     {
-        $inferno = Mockery::mock(Inferno::class, [])->makePartial();
+        $infernoMock = $this->getMockBuilder(Inferno::class)
+                            ->setMethods($withMethods)
+                            ->getMock();
 
-        $inferno->shouldReceive('fire')
-                ->once()
-                ->with(Mockery::type(Jobs\WebHook::class), Mockery::on($closure));
+        $this->app->instance('webhook.inferno', $infernoMock);
 
-        $this->app->instance('webhook.inferno', $inferno);
+        return $infernoMock;
+    }
+
+    /**
+     * Sets mocked inferno instance expectations for fire() method.
+     *
+     * @param [type] $infernoMock
+     * @param array  $testDataKeys
+     */
+    protected function setMockedInfernoExpectations($infernoMock, array $testDataKeys)
+    {
+        $times = 0;
+
+        // 1st argument of fire method is a job class of type Jobs\Webhook
+        $arg1Callback = function ($job)
+                        {
+                            return $job instanceof Jobs\WebHook;
+                        };
+
+        //
+        // Iterates over the test data keys and sets callback to assert the 2nd argument
+        // of every consecutive call of inferno's fire() method.
+        //
+        foreach ($testDataKeys as $testDataKey)
+        {
+            ++$times;
+
+            $arg2Callback = function ($actualWebhook) use ($testDataKey)
+                            {
+                                $expectedEvent = $this->testData[$testDataKey];
+                                $actualEvent   = json_decode($actualWebhook['event'], true);
+
+                                $this->assertArraySelectiveEquals($expectedEvent, $actualEvent);
+
+                                return true;
+                            };
+
+            $with[] = [$this->callback($arg1Callback), $this->callback($arg2Callback)];
+        }
+
+        $infernoMock->expects($this->exactly($times))
+                    ->method('fire')
+                    ->withConsecutive(...$with);
     }
 }
