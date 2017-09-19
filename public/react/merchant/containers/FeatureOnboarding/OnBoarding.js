@@ -156,7 +156,7 @@ export default class OnBoarding extends Component {
                   onClick={enableFeatureInTestMode}
                 />}
 
-              <div>
+              <div class="action-links">
                 <a class="btn-link" href={currentForm.links.knowMore}>
                   Know more
                 </a>
