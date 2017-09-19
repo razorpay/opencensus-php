@@ -1,11 +1,15 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 
+import LocalStorageService from 'rzp/utils/localStorage';
+
 import { reduxForm } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import { required } from 'rzp/utils/validators';
 
+import Spinner from 'rzp/ui/Spinner';
 import { showNotification } from 'rzp/modules/notifications';
+
 import {
   saveOnboarding,
   getOnboardingResponse,
@@ -109,6 +113,11 @@ export default class OnBoarding extends Component {
     }
   }
 
+  switchToTestMode = () => {
+    LocalStorageService.setItem('rzp_mode', 'test');
+    window.location.reload();
+  };
+
   render() {
     const {
       heading,
@@ -122,12 +131,6 @@ export default class OnBoarding extends Component {
     const currentForm = FORM_TYPE[formType];
     const WizardForm = currentForm.formComponent;
     this.requireImage(formType, currentForm);
-
-    if (this.state.submitted) {
-      console.log(
-        '....................Form submitted and is pending.................display on UI.......'
-      );
-    }
 
     return (
       <div class="page-container">
@@ -163,9 +166,7 @@ export default class OnBoarding extends Component {
               </div>
             </div>
 
-            {/* semi-view hides image on small screen.
-            Live mode will have semi view if form is not submitted
-          */}
+            {/* semi-view hides image on small screen. Live mode will have semi view if form is not submitted */}
             <div
               class={`banner-figure clearfix ${!isTestMode &&
               !this.state.submitted
@@ -183,15 +184,28 @@ export default class OnBoarding extends Component {
               <p>
                 {currentForm.formText}
               </p>
-              <WizardForm handleChange={this.handleChange} />
 
-              <AsyncButton
-                type="button"
-                class="btn btn-primary pull-left"
-                text="Apply Now"
-                pendingText="Applying..."
-                onClick={handleSubmit(this.onSubmitClick)}
-              />
+              {this.state.isLoading
+                ? <div class="page-spinner-container">
+                    <Spinner />
+                  </div>
+                : !this.state.submitted
+                  ? <div>
+                      <WizardForm handleChange={this.handleChange} />
+                      <AsyncButton
+                        type="button"
+                        class="btn btn-primary pull-left"
+                        text="Apply Now"
+                        pendingText="Applying..."
+                        onClick={handleSubmit(this.onSubmitClick)}
+                      />
+                    </div>
+                  : <div class="alert alert-info">
+                      Your form is submitted for enabling {heading}. Meanwhile,
+                      you can switch to{' '}
+                      <a onClick={this.switchToTestMode}>Test Mode</a> to try
+                      the product.
+                    </div>}
             </aside>}
         </div>
       </div>
