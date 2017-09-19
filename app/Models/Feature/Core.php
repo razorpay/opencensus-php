@@ -3,42 +3,64 @@
 namespace RZP\Models\Feature;
 
 use Config;
+
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Models\Merchant;
+use RZP\Models\Base\PublicEntity;
 
 class Core extends Base\Core
 {
-    public function create($input)
+    /**
+     * Create feature
+     *
+     * @param array $input
+     * @param bool  $shouldSync Should the entity be save on both test and live
+     *
+     * @return Entity
+     */
+    public function create(array $input, bool $shouldSync = false): Entity
     {
         $feature = (new Entity)->build($input);
 
-        $feature = $feature->generateId();
+        $feature->generateId();
 
         $existingFeatures = $this->repo->feature->findByEntityId($feature->getEntityId());
 
         $assignedFeatureNames = $existingFeatures->pluck(Entity::NAME)->toArray();
 
-        if (in_array($feature->getName(), $assignedFeatureNames, true) === false)
-        {
-            $this->trace->info(TraceCode::MERCHANT_FEATURE_EDIT,
-                array('merchant_id'  => $feature->getEntityId(),
-                      'old_features' => $assignedFeatureNames,
-                      'new_feature'  => $feature->getName()));
+        $this->trace->info(
+            TraceCode::MERCHANT_FEATURE_EDIT_REQUEST,
+            [
+                PublicEntity::MERCHANT_ID => $feature->getEntityId(),
+                Entity::OLD_FEATURES      => $assignedFeatureNames,
+                Entity::NEW_FEATURE       => $feature->getName(),
+                Entity::SHOULD_SYNC       => $shouldSync
+            ]);
 
-            $this->repo->saveOrFail($feature);
+        $this->repo->feature->saveAndSyncIfApplicableOrFail(
+            $feature,
+            $assignedFeatureNames,
+            $shouldSync);
 
-            $this->notifyOnSlack($feature);
+        $this->notifyOnSlack($feature);
 
-            return $feature;
-        }
-
-        return null;
+        return $feature;
     }
 
-    public function delete($entityId, $feature)
+    /**
+     * Delete feature
+     *
+     * @param Entity $feature
+     * @param bool   $shouldSync
+     */
+    public function delete(Entity $feature, bool $shouldSync = false)
     {
-        $this->trace->info(TraceCode::FEATURE_DELETE_REQUEST, $feature->toArrayPublic());
+        $this->trace->info(
+            TraceCode::FEATURE_DELETE_REQUEST,
+            [
+                Entity::FEATURE     => $feature->toArrayPublic(),
+                Entity::SHOULD_SYNC => $shouldSync
+            ]);
 
         // Workflow
         list($original, $dirty) = [
@@ -50,15 +72,18 @@ class Core extends Base\Core
              ->setEntity($feature->getEntity())
              ->handle($original, $dirty);
 
-        $this->repo->feature->delete($feature);
+        $this->repo->feature->deleteAndSyncIfApplicableOrFail($feature, $shouldSync);
 
-        (new Core)->notifyOnSlack($feature, true);
-
-        //we create tag also along with feature.
-        (new Merchant\Service)->deleteTag($entityId, $feature->getName());
+        $this->notifyOnSlack($feature, true);
     }
 
-    public function notifyOnSlack($feature, $featureDeleted = false)
+    /**
+     * Send a slack notification on feature create/delete
+     *
+     * @param Entity $feature
+     * @param bool   $featureDeleted
+     */
+    protected function notifyOnSlack(Entity $feature, bool $featureDeleted = false)
     {
         $message = $feature->getDashboardEntityLinkForSlack($feature->getName());
 
@@ -75,11 +100,9 @@ class Core extends Base\Core
 
         $message .= $feature->getEntityId() . ' by ' . $user;
 
-        $data = [];
-
         $this->app['slack']->queue(
             $message,
-            $data,
+            [],
             [
                 'channel'  => Config::get('slack.channels.operations_log'),
                 'username' => 'Jordan Belfort',

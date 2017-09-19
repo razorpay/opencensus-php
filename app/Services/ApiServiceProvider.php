@@ -96,6 +96,11 @@ class ApiServiceProvider extends BaseServiceProvider
             return new Raven($app);
         });
 
+        $this->app->singleton('authservice', function($app)
+        {
+            return new AuthService($app);
+        });
+
         $this->app->singleton('es', function($app)
         {
             return new EsClient($app);
@@ -118,6 +123,13 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->app->singleton('eventManager', function($app)
         {
+            $harvesterClientMock = $app['config']->get('applications.harvester.mock');
+
+            if ($harvesterClientMock === true)
+            {
+                return new Mock\HarvesterClient($app);
+            }
+
             return new HarvesterClient($app);
         });
 
@@ -176,6 +188,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'exchange',
             'pigeon',
             'workflow',
+            'authservice',
             'sns',
         ];
     }

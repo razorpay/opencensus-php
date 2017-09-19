@@ -135,7 +135,8 @@ trait SettlementTrait
         return $content;
     }
 
-    protected function generateSetlReconciliationFile($setlFile, $generateFailedReconciliations = false)
+    protected function generateSetlReconciliationFile(
+        $setlFile, $generateFailedReconciliations = false, $prevAttemptId = null)
     {
         $uploadedFile = $this->createUploadedFile($setlFile);
 
@@ -145,7 +146,8 @@ trait SettlementTrait
                 'file' => $uploadedFile,
             ],
             'content' => [
-                'failed_recons' => $generateFailedReconciliations
+                'failed_recons'     => $generateFailedReconciliations,
+                'prev_attempt_id'   => $prevAttemptId,
             ]
         ];
 

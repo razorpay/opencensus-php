@@ -76,8 +76,6 @@ class Service extends Base\Service
 
     public function getMultiplePermissions(string $orgId, array $input)
     {
-        Org\Entity::verifyIdAndStripSign($orgId);
-
         $type = $input['type'] ?? null;
 
         $perms = $this->repo->permission->fetchAllByOrg($orgId, $type);

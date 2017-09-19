@@ -2,13 +2,15 @@
 
 namespace RZP\Tests\Functional\Gateway\Wallet\Freecharge;
 
+use Carbon\Carbon;
+
+use RZP\Http\Route;
+use RZP\Gateway\Wallet;
+use RZP\Gateway\Wallet\Base\Otp;
+use RZP\Gateway\Wallet\Freecharge\ResponseFields;
+use RZP\Models\Payment\Refund;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
-use RZP\Gateway\Wallet;
-use RZP\Models\Payment\Refund;
-use RZP\Gateway\Wallet\Base\Otp;
-use Carbon\Carbon;
-use RZP\Http\Route;
 
 class FreechargeGatewayTest extends TestCase
 {
@@ -648,5 +650,36 @@ class FreechargeGatewayTest extends TestCase
         (new Refund\Repository)->saveOrFail($refund);
 
         return $refund;
+    }
+
+    public function testApplicationErrorOccurred()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            $data = [
+                ResponseFields::ERROR_MESSAGE => 'ApplicationErrorOccurred',
+                ResponseFields::ERROR_CODE => 'E018',
+            ];
+
+            $content = $data;
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            return $this->doAuthPayment($payment);
+        });
+
+        $this->clearMock();
+    }
+
+    protected function clearMock()
+    {
+        $this->mockServerContentFunction(function(&$input)
+        {
+        });
     }
 }
