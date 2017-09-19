@@ -416,12 +416,14 @@ class Merchant extends Base
 
     public function enableTPV($id = '10000000000000')
     {
-        return $this->editCategory2('securities', $id);
+        $this->addFeatures(['tpv'], $id);
+
+        return true;
     }
 
     public function disableTPV($id = '10000000000000')
     {
-        return $this->editCategory2('ecommerce', $id);
+        //
     }
 
     public function disableAllMethods($id = '10000000000000')

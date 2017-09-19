@@ -10,7 +10,9 @@ class Source
 
     public static function isSourceValid(string $source): bool
     {
-        return (defined(__CLASS__ . '::' . strtoupper($source)));
+        $key = __CLASS__ . '::' . strtoupper($source);
+
+        return ((defined($key) === true) and (constant($key) === $source));
     }
 
     public static function checkSource(string $source)

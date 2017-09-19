@@ -123,7 +123,9 @@ class Status
 
     public static function isStatusValid($status) : bool
     {
-        return (defined(__CLASS__ . '::' . strtoupper($status)));
+        $key = __CLASS__ . '::' . strtoupper($status);
+
+        return ((defined($key) === true) and (constant($key) === $status));
     }
 
     public static function validateStatus($status)

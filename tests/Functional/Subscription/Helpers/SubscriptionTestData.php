@@ -232,6 +232,125 @@ return [
         ],
     ],
 
+    'testCreateAddon' => [
+        'request' => [
+            'url'       => '/subscriptions/{subscriptionId}/addons',
+            'method'    => 'post',
+            'content'   => [
+                'quantity'  => 2,
+                'item'      => [
+                    'name'          => 'test addon',
+                    'amount'        => 1000,
+                    'currency'      => 'INR',
+                    'description'   => 'test addon desc'
+                ]
+            ]
+        ],
+        'response' => [
+            'content'   => [
+                'item'  => [
+                    'name'  => 'test addon',
+                    'type'  => 'addon',
+                ],
+                'invoice_id'    => null,
+            ]
+        ]
+    ],
+
+    'testFetchAddon' => [
+        'request' => [
+            'url'       => '/addons/{addonId}',
+            'method'    => 'get',
+            'content'   => [
+            ]
+        ],
+        'response'  => [
+            'content'   => [
+                'entity'        => 'addon',
+                'item'          => [
+                    'name'  => 'Some item name',
+                    'type'  => 'addon',
+                ],
+                'invoice_id'    => null,
+            ]
+        ]
+    ],
+
+    'testFetchMultipleAddons' => [
+        'request' => [
+            'url'       => '/addons/',
+            'method'    => 'get',
+            'content'   => [
+                'subscription_id' => '{subscriptionId}',
+            ]
+        ],
+        'response'  => [
+            'content'   => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity' => 'addon',
+                        'invoice_id' => null,
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testDeleteAddon' => [
+        'request'   => [
+            'url'       => '/addons/{addonId}',
+            'method'    => 'delete',
+        ],
+        'response'  => [
+            'content' => []
+        ]
+    ],
+
+    'testDeleteAddonAssociatedWithInvoice' => [
+        'request'   => [
+            'url'       => '/addons/{addonId}',
+            'method'    => 'delete'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Delete operation cannot be performed on the addon',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ADDON_DELETE_NOT_ALLOWED,
+        ],
+    ],
+
+    'testFetchDueAddons' => [
+        'request' => [
+            'url'       => '/subscriptions/{subscriptionId}/addons/due',
+            'method'    => 'get',
+        ],
+        'response'  => [
+            'content'   => [
+                'entity'    => 'collection',
+                'count'     => 1,
+                'items'     => [
+                    [
+                        'entity'        => 'addon',
+                        'invoice_id'    => null,
+                        'item'          => [
+                            'id'    => 'item_3000000000item',
+                            'type'  => 'addon',
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ],
+
     'createSubscriptionForAuthTxn' => [
         'request' => [
             'url' => '/subscriptions',

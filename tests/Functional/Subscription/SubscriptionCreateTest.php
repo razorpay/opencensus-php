@@ -91,6 +91,182 @@ class SubscriptionCreateTest extends TestCase
 
     // ------------------ END PLAN TESTS ------------------
 
+    // ------------------ ADDON TESTS ------------------
+
+    public function testCreateAddon()
+    {
+        $this->testCreateSubscriptionWithNoStartAt();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->ba->privateAuth();
+
+        $subscriptionId = $subscription['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = "/subscriptions/$subscriptionId/addons";
+
+        $response = $this->startTest();
+
+        $this->assertEquals($subscriptionId, $response['subscription_id']);
+    }
+
+    public function testFetchAddon()
+    {
+        $this->fixtures->create('item', ['id' => '2000000000item', 'type' => 'addon']);
+
+        $this->testCreateSubscriptionWithNoStartAt();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $addon = $this->fixtures->create(
+            'addon',
+            [
+                'item_id'           => '2000000000item',
+                'subscription_id'   => substr($subscription['id'], 4),
+                'invoice_id'        => null,
+            ]);
+
+        $this->ba->privateAuth();
+
+        $addonId = $addon->getPublicId();
+
+        $this->testData[__FUNCTION__]['request']['url'] = "/addons/$addonId";
+
+        $response = $this->startTest();
+
+        $this->assertEquals($subscription['id'], $response['subscription_id']);
+    }
+
+    public function testFetchMultipleAddons()
+    {
+        $this->fixtures->create('item', ['id' => '2000000000item']);
+
+        $this->testCreateSubscriptionWithNoStartAt();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $addon = $this->fixtures->create(
+            'addon',
+            [
+                'item_id'           => '2000000000item',
+                'subscription_id'   => substr($subscription['id'], 4),
+                'invoice_id'        => null,
+            ]);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['subscription_id'] = $subscription['id'];
+
+        $response = $this->startTest();
+
+        $this->assertEquals($subscription['id'], $response['items'][0]['subscription_id']);
+    }
+
+    public function testDeleteAddon()
+    {
+        $this->fixtures->create('item', ['id' => '2000000000item']);
+
+        $this->testCreateSubscriptionWithNoStartAt();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $addon = $this->fixtures->create(
+            'addon',
+            [
+                'item_id'           => '2000000000item',
+                'subscription_id'   => substr($subscription['id'], 4),
+                'invoice_id'        => null,
+            ]);
+
+        $this->ba->privateAuth();
+
+        $addonId = $addon->getPublicId();
+
+        $this->testData[__FUNCTION__]['request']['url'] = "/addons/$addonId";
+
+        $this->startTest();
+
+        $addon = $this->getLastEntity('addon', true);
+
+        $this->assertNull($addon);
+    }
+
+    public function testDeleteAddonAssociatedWithInvoice()
+    {
+        $this->fixtures->create('item', ['id' => '2000000000item']);
+
+        $this->fixtures->create('order', ['id' => '200000000order']);
+
+        $this->fixtures->create('invoice', ['id' => '2000000invoice', 'order_id' => '200000000order']);
+
+        $this->testCreateSubscriptionWithNoStartAt();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $addon = $this->fixtures->create(
+            'addon',
+            [
+                'item_id'           => '2000000000item',
+                'subscription_id'   => substr($subscription['id'], 4),
+                'invoice_id'        => '2000000invoice',
+            ]);
+
+        $this->ba->privateAuth();
+
+        $addonId = $addon->getPublicId();
+
+        $this->testData[__FUNCTION__]['request']['url'] = "/addons/$addonId";
+
+        $this->startTest();
+
+        $addon = $this->getLastEntity('addon', true);
+
+        $this->assertNotNull($addon);
+    }
+
+    public function testFetchDueAddons()
+    {
+        $this->fixtures->create('item', ['id' => '2000000000item', 'type' => 'addon']);
+
+        $this->fixtures->create('item', ['id' => '3000000000item', 'type' => 'addon']);
+
+        $this->fixtures->create('order', ['id' => '200000000order']);
+
+        $this->fixtures->create('invoice', ['id' => '2000000invoice', 'order_id' => '200000000order']);
+
+        $this->testCreateSubscriptionWithNoStartAt();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $addon = $this->fixtures->create(
+            'addon',
+            [
+                'item_id'           => '2000000000item',
+                'subscription_id'   => substr($subscription['id'], 4),
+                'invoice_id'        => '2000000invoice',
+            ]);
+
+        $addon2 = $this->fixtures->create(
+            'addon',
+            [
+                'item_id'           => '3000000000item',
+                'subscription_id'   => substr($subscription['id'], 4),
+                'invoice_id'        => null,
+            ]);
+
+        $subscriptionId = $subscription['id'];
+
+        $this->testData[__FUNCTION__]['request']['url'] = "/subscriptions/$subscriptionId/addons/due";
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertEquals($subscription['id'], $response['items'][0]['subscription_id']);
+    }
+
+    // ------------------ END ADDON TESTS ------------------
+
     public function testCreateSubscriptionWithoutCustomerId()
     {
         $this->fixtures->plan->create();
@@ -266,7 +442,7 @@ class SubscriptionCreateTest extends TestCase
 
     public function testCreateSubscriptionWithNoStartAtAndWithAddonItemId()
     {
-
+        // TODO: Fill this up
     }
 
     public function testCreateSubscriptionWithMultipleQuantityAddon()

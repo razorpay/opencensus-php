@@ -71,7 +71,7 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $this->saveCallbackResponse($content);
 
-        $acquirerData = $this->getAcquirerData($gatewayPayment);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }

@@ -22,10 +22,15 @@ class Receiver
 
     const ROOT_LENGTH               = 4;
     const HANDLE_LENGTH             = 4;
-    const DESCRIPTOR_LENGTH         = 10;
-    const ACCOUNT_NUMBER_LENGTH     = 18;
+    const DESCRIPTOR_LENGTH         = 9;
+    const ACCOUNT_NUMBER_LENGTH     = 17;
+
     // No 0s and Os
-    const ACCOUNT_NUMBER_CHAR_SPACE       = '123456789ABCDEFGHIJKLMNPQRSTUVWXYZ';
+    // No 1s and Is
+    // No 5s and Ss
+    // No 8s and Bs
+    // No 2s and Zs
+    const ACCOUNT_NUMBER_CHAR_SPACE       = '34679ACDEFGHJKLMNPQRTUVWXY';
     const MAX_ACCOUNT_GENERATION_ATTEMPTS = 10;
 
     protected $merchant;

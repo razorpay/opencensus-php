@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Exception\InvalidArgumentException;
+use RZP\Models\Workflow\Constants;
 
 class Service extends Base\Service
 {
@@ -42,19 +43,19 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input)
     {
-        $orgId = $this->admin->getOrgId();
-
         // $duty can be maker/checker/admin_checked
         // actions will be fetched based on duty and type
         // type can be all/closed/open etc
 
-        $duty = $input['duty'] ?? 'default';
-        $type = $input['type'] ?? 'all';
+        $duty = $input[Constants::DUTY] ?? 'default';
+        $type = $input[Constants::TYPE] ?? 'all';
 
         if (isset(self::ACTION_FUNCTION_MAPPING[$duty][$type]))
         {
             // Function name which needs to be called to return actions based on duty and maker.
             $actionFunctionName = self::ACTION_FUNCTION_MAPPING[$duty][$type];
+
+            unset($input[Constants::DUTY]);
 
             $actions = call_user_func_array([$this, $actionFunctionName], [$input]);
         }
@@ -67,11 +68,20 @@ class Service extends Base\Service
         return $actions->toArrayPublic();
     }
 
+    /**
+     * All the checked actions by the admin.
+     * @param $input
+     * @param int $skip
+     * @param int $count
+     * @return mixed
+     */
     public function getActionsCheckedByAdmin($input)
     {
-        $actions = $this->repo->workflow_action
-            ->getActionsCheckedByAdmin(
-                $this->admin->getId(), ['admin']);
+        $input[Constants::EXPAND] = ['admin'];
+
+        $input[Constants::ACTIONS_CHECKED] = true;
+
+        $actions = $this->repo->workflow_action->fetch($input);
 
         return $actions;
     }
@@ -176,10 +186,13 @@ class Service extends Base\Service
      */
     public function getActionsForChecker(array $input)
     {
-        $adminRoleIds = $this->admin->roles()->allRelatedIds()->toArray();
+        $input[Constants::EXPAND] = ['admin'];
 
-        $actions = $this->repo->workflow_action->findActionsForChecker(
-            $adminRoleIds, ['admin']);
+        $input[Constants::CHECKER_ACTIONS] = true;
+
+        $input[Entity::PERMISSION] = true;
+
+        $actions = $this->repo->workflow_action->fetch($input);
 
         return $actions;
     }
@@ -196,12 +209,13 @@ class Service extends Base\Service
         // Only superadmin can access maker.all and maker.open
         $this->app['basicauth']->validateSuperAdminAccess();
 
-        $orgId = $this->admin->getOrgId();
+        $input[Entity::ORG_ID] = $this->admin->getOrgId();
 
-        $type = $input['type'] ?? 'all';
+        $input[Constants::EXPAND] = ['admin'];
 
-        $actions = $this->repo->workflow_action->findByOrgId(
-            $orgId, ['admin'], $type);
+        $input[Entity::PERMISSION] = true;
+
+        $actions = $this->repo->workflow_action->fetch($input);
 
         return $actions;
     }
@@ -213,9 +227,13 @@ class Service extends Base\Service
      */
     public function getClosedActionsByMaker(array $input)
     {
-        $actions = $this->repo->workflow_action
-            ->getClosedActionsByAdmin(
-                $this->admin->getId(), ['admin']);
+        $input[Entity::PERMISSION] = true;
+
+        $input[Constants::EXPAND] = ['admin'];
+
+        $input[Constants::CLOSED_ACTIONS] = true;
+
+        $actions = $this->repo->workflow_action->fetch($input);
 
         return $actions;
     }
@@ -227,14 +245,15 @@ class Service extends Base\Service
      */
     public function getActionsByMaker(array $input)
     {
-        $relations = ['workflow', 'admin'];
+        $input[Entity::PERMISSION] = true;
 
-        $actions = $this->repo
-                        ->workflow_action
-                        ->findByAdminIdAndOrgIdWithRelations(
-                            $this->admin->getId(),
-                            $this->admin->getOrgId(),
-                            $relations);
+        $input[Constants::EXPAND] = ['workflow', 'admin'];
+
+        $input[Entity::ORG_ID] = $this->admin->getOrgId();
+
+        $input[Entity::ADMIN_ID] = $this->admin->getId();
+
+        $actions = $this->repo->workflow_action->fetch($input);
 
         return $actions;
     }

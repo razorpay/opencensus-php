@@ -34,6 +34,11 @@ class AdminAccess
 
     public function handle($request, Closure $next)
     {
+        $orgId = $this->getOrgIdForRoute($request);
+
+        //setting here so app auth also uses orgId.
+        $this->ba->setOrgId($orgId);
+
         if ($this->ba->isAdminAuth() === true)
         {
             $admin = $this->ba->getAdmin();
@@ -97,8 +102,9 @@ class AdminAccess
         }
 
         // Fetch public org Id from uri
-        $orgId = $this->getOrgIdForRoute($request);
+        $orgId = $this->ba->getOrgId();
 
+        // $admin->getPublicOrgId cannot be null here because admin has to be associated with org.
         if ($orgId !== $admin->getPublicOrgId())
         {
             throw new Exception\BadRequestException(
@@ -138,16 +144,10 @@ class AdminAccess
 
             if (!empty($orgHostname))
             {
-                $org = $this->repo->org->findOrFailByHostname($orgHostname);
+                $org = $this->ba->fetchOrgByHostname($orgHostname);
 
                 $orgId = $org->getPublicId();
             }
-        }
-
-        if ($orgId === null)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ORG_ID_REQUIRED);
         }
 
         return $orgId;

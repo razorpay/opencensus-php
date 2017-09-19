@@ -30,6 +30,7 @@ trait PaymentTrait
     use PaymentSharpTrait;
     use PaymentMobikwikTrait;
     use PaymentCybersourceTrait;
+    use PaymentHitachiTrait;
     use PaymentBladeTrait;
     use PaymentFirstDataTrait;
     use PaymentEbsTrait;
@@ -1305,6 +1306,18 @@ trait PaymentTrait
     {
         $server = $this->mockServer($gateway)
                        ->shouldReceive('content')
+                       ->andReturnUsing($closure)
+                       ->mock();
+
+        $this->setMockServer($server, $gateway);
+
+        return $server;
+    }
+
+    protected function mockServerRequestFunction($closure, $gateway = null)
+    {
+        $server = $this->mockServer($gateway)
+                       ->shouldReceive('request')
                        ->andReturnUsing($closure)
                        ->mock();
 

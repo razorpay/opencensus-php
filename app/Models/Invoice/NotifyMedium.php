@@ -9,6 +9,8 @@ class NotifyMedium
 
     public static function isMediumValid(string $medium): bool
     {
-        return (defined(__CLASS__ . '::' . strtoupper($medium)));
+        $key = __CLASS__ . '::' . strtoupper($medium);
+
+        return ((defined($key) === true) and (constant($key) === $medium));
     }
 }

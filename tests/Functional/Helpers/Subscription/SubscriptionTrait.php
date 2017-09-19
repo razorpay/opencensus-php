@@ -143,7 +143,8 @@ trait SubscriptionTrait
                     'item' => [
                         'amount'   => 300,
                         'currency' => 'INR',
-                        'name'     => 'Sample Upfront Amount'
+                        'name'     => 'Sample Upfront Amount',
+                        'type'     => 'addon',
                     ]
                 ]
             ];
@@ -159,11 +160,19 @@ trait SubscriptionTrait
         return $subscriptionResponse;
     }
 
-    protected function doAuthTxnForNewSubscription()
+    protected function doAuthTxnForNewSubscription(bool $startAt = true)
     {
-        $subscription = $this->createSubscription(true);
+        $subscription = $this->createSubscription($startAt);
 
-        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+        $authAmount = null;
+
+        if ($startAt === false)
+        {
+            $plan = $this->getLastEntity('plan', true);
+            $authAmount = $plan['item']['amount'];
+        }
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, $authAmount);
 
         $recurringPayment = $this->doAuthPayment($paymentRequest);
 

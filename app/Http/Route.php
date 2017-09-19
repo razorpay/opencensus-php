@@ -273,6 +273,7 @@ final class Route
         'mock_wallet_payment_with_paymentid'      => ['post',     'gateway/mock/wallet/{wallet}/{paymentId}',       'MockGatewayController@walletPayment'                               ],
         'mock_generate_reconciliation'            => ['post',     'gateway/mock/reconciliation/{bank}',             'MockGatewayController@generateNetbankingReconciliation'            ],
         'mock_upi_payment'                        => ['post',     'gateway/mock/upi/{bank}',                        'MockGatewayController@postUpiPayment'                              ],
+        'admin_fetch_all_entities'                => ['get',      'admin/entities/all',                             'AdminController@getEntities'                                       ],
         'admin_fetch_entity_multiple'             => ['get',      'admin/{type}',                                   'AdminController@getEntityMultiple'                                 ],
         'admin_fetch_terminal_by_id'              => ['get',      'admin/terminal/{id}',                            'AdminController@getTerminalById'                                   ],
         'admin_fetch_entity_by_id'                => ['get',      'admin/{type}/{id}',                              'AdminController@getEntityById'                                     ],
@@ -285,6 +286,7 @@ final class Route
         'gateway_payment_callback_post'           => ['post',     'callback/{gateway}',                             'GatewayController@callbackGateway'                                 ],
         'gateway_payment_callback_kotak'          => ['get',      'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotak'                                   ],
         'gateway_payment_callback_kotak_cancel'   => ['post',     'gateway/netbanking_kotak/callback',              'GatewayController@callbackKotakCancel'                             ],
+        'gateway_payment_callback_corporation'    => ['post',     'gateway/netbanking_corporation/callback',        'GatewayController@callbackCorporation'                             ],
         'reconciliate'                            => ['post',     'reconciliate',                                   'ReconciliatorController@postReconciliation'                        ],
         'dummy_return_callback'                   => ['post',     'return/callback',                                'PaymentController@postDummyReturnCallback'                         ],
         'dummy_critical_error'                    => ['get',      'trigger/error',                                  'AdminController@getTriggerError'                                   ],
@@ -394,7 +396,12 @@ final class Route
         'subscriptions_retry'                     => ['post',     'subscriptions/retry',                            'SubscriptionController@postRetrySubscriptions'                     ],
         'subscriptions_expire'                    => ['post',     'subscriptions/expire',                           'SubscriptionController@postExpireSubscriptions'                    ],
         'subscription_manual_retry'               => ['post',     'invoices/{invoice_id}/charge',                   'SubscriptionController@postChargeSubscriptionInvoiceManually'      ],
-        'subscription_cancel'                     => ['post',     'subscriptions/{subscription_id}/cancel',         'SubscriptionController@postCancelSubscription'                     ],
+        'subscription_cancel'                     => ['post',     'subscriptions/{subscriptionId}/cancel',          'SubscriptionController@postCancelSubscription'                     ],
+        'subscription_create_addon'               => ['post',     'subscriptions/{subscriptionId}/addons',          'SubscriptionController@postAddonForSubscription'                   ],
+        'subscription_fetch_due_addons'           => ['get',      'subscriptions/{subscriptionId}/addons/due',      'SubscriptionController@getDueAddonsForSubscription'                ],
+        'addon_fetch'                             => ['get',      'addons/{addonId}',                               'SubscriptionController@getAddon'                                   ],
+        'addon_fetch_multiple'                    => ['get',      'addons',                                         'SubscriptionController@getAddons'                                  ],
+        'addon_delete'                            => ['delete',   'addons/{addonId}',                               'SubscriptionController@deleteAddon'                                ],
         'billdesk_create_cancelled_refunds'       => ['post',     'refunds/billdesk/cancelled',                     'RefundController@postCreateBilldeskCancelledRefunds'               ],
         'feature_add'                             => ['post',     'features',                                       'FeatureController@addFeatures'                                     ],
         'feature_delete'                          => ['delete',   'features/{entityId}/{featureName}',              'FeatureController@deleteFeature'                                   ],
@@ -431,50 +438,50 @@ final class Route
         'org_fieldmap_get_by_entity'              => ['get',      'orgs/{orgId}/field-map/entity/{entity}',         'OrganizationController@getOrgFieldMapByEntity'                     ],
         'org_fieldmap_edit'                       => ['put',      'orgs/{orgId}/field-map/{id}',                    'OrganizationController@putOrgFieldMap'                             ],
         'org_fieldmap_delete'                     => ['delete',   'orgs/{orgId}/field-map/{id}',                    'OrganizationController@deleteOrgFieldMap'                          ],
-        'role_create'                             => ['post',     'orgs/{orgId}/roles',                             'OrganizationController@createRole'                                 ],
-        'role_get_multiple'                       => ['get',      'orgs/{orgId}/roles',                             'OrganizationController@getMultipleRoles'                           ],
-        'role_get'                                => ['get',      'orgs/{orgId}/roles/{id}',                        'OrganizationController@getRole'                                    ],
-        'role_edit'                               => ['put',      'orgs/{orgId}/roles/{id}',                        'OrganizationController@putRole'                                    ],
-        'role_delete'                             => ['delete',   'orgs/{orgId}/roles/{id}',                        'OrganizationController@deleteRole'                                 ],
-        'admin_create'                            => ['post',     'orgs/{orgId}/admins',                            'OrganizationController@createAdmin'                                ],
-        'admin_get_multiple'                      => ['get',      'orgs/{orgId}/admins',                            'OrganizationController@fetchAdminMultiple'                         ],
-        'admin_get_app_auth'                      => ['post',     'orgs/{orgId}/current_admin',                     'OrganizationController@getAdminByAppAuth'                          ],
-        'admin_get'                               => ['get',      'orgs/{orgId}/admins/{id}',                       'OrganizationController@getAdmin'                                   ],
-        'admin_edit'                              => ['put',      'orgs/{orgId}/admins/{id}',                       'OrganizationController@editAdmin'                                  ],
-        'admin_edit_app_auth'                     => ['put',      'orgs/{orgId}/admin-app-auth/{id}',               'OrganizationController@editAdmin'                                  ],
+        'role_create'                             => ['post',     'roles',                                          'OrganizationController@createRole'                                 ],
+        'role_get_multiple'                       => ['get',      'roles',                                          'OrganizationController@getMultipleRoles'                           ],
+        'role_get'                                => ['get',      'roles/{id}',                                     'OrganizationController@getRole'                                    ],
+        'role_edit'                               => ['put',      'roles/{id}',                                     'OrganizationController@putRole'                                    ],
+        'role_delete'                             => ['delete',   'roles/{id}',                                     'OrganizationController@deleteRole'                                 ],
+        'admin_create'                            => ['post',     'admins',                                         'OrganizationController@createAdmin'                                ],
+        'admin_get_multiple'                      => ['get',      'admins',                                         'OrganizationController@fetchAdminMultiple'                         ],
+        'admin_get_app_auth'                      => ['post',     'current_admin',                                  'OrganizationController@getAdminByAppAuth'                          ],
+        'admin_get'                               => ['get',      'admin/{id}/fetch',                               'OrganizationController@getAdmin'                                   ],
+        'admin_edit'                              => ['put',      'admin/{id}',                                     'OrganizationController@editAdmin'                                  ],
+        'admin_edit_app_auth'                     => ['put',      'admin-app-auth/{id}',                            'OrganizationController@editAdmin'                                  ],
         'admin_fetch_merchant_ids'                => ['get',      'orgs/{orgId}/admins/{id}/merchant_ids',          'OrganizationController@getMerchantIds'                             ],
         'admin_fetch_merchants'                   => ['get',      'orgs/{orgId}/admins/{id}/merchants',             'OrganizationController@getMerchants'                               ],
         'admin_fetch_merchant_ids_new'            => ['get',      'admins/merchant_ids',                            'OrganizationController@getMerchantIdsFromEs'                       ],
         'admin_fetch_merchants_new'               => ['get',      'admins/merchants',                               'OrganizationController@getMerchantsFromEs'                         ],
-        'admin_delete'                            => ['delete',   'orgs/{orgId}/admins/{id}',                       'OrganizationController@deleteAdmin'                                ],
-        'admin_lead_create'                       => ['post',     'orgs/{orgId}/admin-lead',                        'OrganizationController@postAdminLead'                              ],
-        'admin_lead_get_multiple'                 => ['get',      'orgs/{orgId}/admin-lead',                        'OrganizationController@getAdminLeadMultiple'                       ],
+        'admin_delete'                            => ['delete',   'admin/{id}',                                     'OrganizationController@deleteAdmin'                                ],
+        'admin_lead_create'                       => ['post',     'admin-lead',                                     'OrganizationController@postAdminLead'                              ],
+        'admin_lead_get_multiple'                 => ['get',      'admin-lead-multiple',                            'OrganizationController@getAdminLeadMultiple'                       ],
         'admin_lead_verify'                       => ['get',      'admin-lead/verify/{token}',                      'OrganizationController@verifyAdminLead'                            ],
-        'admin_lead_put'                          => ['put',      'orgs/{orgId}/admin-lead/{id}',                   'OrganizationController@putAdminLead'                               ],
-        'merchant_admin_lead_put'                 => ['put',      'orgs/{orgId}/admin-lead-merchant/{id}',          'OrganizationController@putAdminLead'                               ],
-        'admin_authentication'                    => ['post',     'orgs/{orgId}/admin/authenticate',                'OrganizationController@postAuthenticate'                           ],
-        'admin_oauth_authenticate'                => ['post',     'orgs/{orgId}/admin/oauth_login',                 'OrganizationController@oAuthLogin'                                 ],
-        'admin_forgot_password'                   => ['post',     'orgs/{orgId}/admin/forgot_password',             'OrganizationController@postForgotPassword'                         ],
-        'admin_reset_password'                    => ['post',     'orgs/{orgId}/admin/reset_password',              'OrganizationController@postResetPassword'                          ],
-        'admin_change_password'                   => ['post',     'orgs/admin/change_password',                     'OrganizationController@postChangePassword'                         ],
-        'group_create'                            => ['post',     'orgs/{orgId}/groups',                            'OrganizationController@createGroup'                                ],
-        'group_get_multiple'                      => ['get',      'orgs/{orgId}/groups',                            'OrganizationController@getGroupsMultiple'                          ],
-        'group_get_allowed_groups'                => ['get',      'orgs/{orgId}/groups/{id}/allowed_groups',        'OrganizationController@getAllowedGroups'                           ],
-        'group_get'                               => ['get',      'orgs/{orgId}/groups/{id}',                       'OrganizationController@getGroup'                                   ],
-        'group_edit'                              => ['put',      'orgs/{orgId}/groups/{id}',                       'OrganizationController@putGroup'                                   ],
-        'group_delete'                            => ['delete',   'orgs/{orgId}/groups/{id}',                       'OrganizationController@deleteGroup'                                ],
+        'admin_lead_put'                          => ['put',      'admin-lead/{id}',                                'OrganizationController@putAdminLead'                               ],
+        'merchant_admin_lead_put'                 => ['put',      'admin-lead-merchant/{id}',                       'OrganizationController@putAdminLead'                               ],
+        'admin_authentication'                    => ['post',     'admin/authenticate',                             'OrganizationController@postAuthenticate'                           ],
+        'admin_oauth_authenticate'                => ['post',     'admin/oauth_login',                              'OrganizationController@oAuthLogin'                                 ],
+        'admin_forgot_password'                   => ['post',     'admin/forgot_password',                          'OrganizationController@postForgotPassword'                         ],
+        'admin_reset_password'                    => ['post',     'admin/reset_password',                           'OrganizationController@postResetPassword'                          ],
+        'admin_change_password'                   => ['post',     'admin/change_password',                          'OrganizationController@postChangePassword'                         ],
+        'group_create'                            => ['post',     'groups',                                         'OrganizationController@createGroup'                                ],
+        'group_get_multiple'                      => ['get',      'groups',                                         'OrganizationController@getGroupsMultiple'                          ],
+        'group_get_allowed_groups'                => ['get',      'groups/{id}/allowed_groups',                     'OrganizationController@getAllowedGroups'                           ],
+        'group_get'                               => ['get',      'groups/{id}',                                    'OrganizationController@getGroup'                                   ],
+        'group_edit'                              => ['put',      'groups/{id}',                                    'OrganizationController@putGroup'                                   ],
+        'group_delete'                            => ['delete',   'groups/{id}',                                    'OrganizationController@deleteGroup'                                ],
         'admin_lock_old_accounts'                 => ['post',     'admins/lock_accounts',                           'OrganizationController@postLockBulkAccounts'                       ],
 
         // Permission can only be created by certain organizations.
         'permission_create'                       => ['post',     'permissions',                                    'OrganizationController@createPermission'                           ],
         'permission_get_by_type'                  => ['get',      'permissions/get/{type}',                         'OrganizationController@getPermissionsByType'                       ],
         'permission_get'                          => ['get',      'permissions/{id}',                               'OrganizationController@getPermission'                              ],
-        'permission_get_multiple'                 => ['get',      'orgs/{orgId}/permissions',                       'OrganizationController@getMultiplePermissions'                     ],
+        'permission_get_multiple'                 => ['get',      'permissions-multiple',                           'OrganizationController@getMultiplePermissions'                     ],
         'permission_delete'                       => ['delete',   'permissions/{id}',                               'OrganizationController@deletePermission'                           ],
         'permission_edit'                         => ['put',      'permissions/{id}',                               'OrganizationController@putPermission',                             ],
         'permission_get_roles'                    => ['get',      'permissions/{id}/roles',                         'OrganizationController@getRolesForPermission'                      ],
-        'auditlog_search'                         => ['get',      'orgs/{orgId}/auditlog/search',                   'OrganizationController@auditLogSearch'                             ],
-        'admin_logout'                            => ['post',     'orgs/{orgId}/admin/logout',                      'OrganizationController@logoutAdmin'                                ],
+        'auditlog_search'                         => ['get',      'auditlog/search',                                'OrganizationController@auditLogSearch'                             ],
+        'admin_logout'                            => ['post',     'admin/logout',                                   'OrganizationController@logoutAdmin'                                ],
 
         // Workflows API
         'workflow_create'                         => ['post',     'workflows',                                      'WorkflowController@createWorkflow'                                 ],
@@ -587,10 +594,30 @@ final class Route
         'risk_update'                             => ['patch',    'risk/{id}',                                      'RiskController@update'                                             ],
         'risk_fetch_multiple'                     => ['get',      'risk',                                           'RiskController@list'                                               ],
         'risk_get'                                => ['get',      'risk/{id}',                                      'RiskController@get'                                                ],
+
         // Dispute routes
         'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
+
         'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                          ],
         'merchant_payout'                         => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
+
+        // Settings routes
+        'settings_delete'                         => ['delete',   'settings/{module}/{key}',                        'SettingsController@delete'                                         ],
+        'settings_fetch_defined'                  => ['get',      'settings/{module}/defined_keys',                 'SettingsController@getDefined'                                     ],
+        'settings_fetch'                          => ['get',      'settings/{module}/{key?}',                       'SettingsController@get'                                            ],
+        'settings_upsert'                         => ['post',     'settings/{module}',                              'SettingsController@upsert'                                         ],
+
+        // OAuth routes
+        'oauth_token_fetch_multiple'              => ['get',      'oauth/tokens',                                   'OAuthTokenController@getAll'                                       ],
+        'oauth_token_fetch'                       => ['get',      'oauth/tokens/{id}',                              'OAuthTokenController@get'                                          ],
+        'oauth_token_revoke'                      => ['put',      'oauth/tokens/{id}/revoke',                       'OAuthTokenController@revoke'                                       ],
+        'oauth_application_create'                => ['post',     'oauth/applications',                             'OAuthApplicationController@create'                                 ],
+        'oauth_application_fetch_multiple'        => ['get',      'oauth/applications',                             'OAuthApplicationController@getMultiple'                            ],
+        'oauth_application_fetch'                 => ['get',      'oauth/applications/{id}',                        'OAuthApplicationController@get'                                    ],
+        'oauth_application_delete'                => ['delete',   'oauth/applications/{id}',                        'OAuthApplicationController@delete'                                 ],
+        'oauth_merchant_notify'                   => ['post',     'oauth/notify/{type}',                            'MerchantController@sendOAuthNotification'                          ],
+        'oauth_application_update'                => ['post',     'oauth/applications/{id}',                        'OAuthApplicationController@update'                                 ],
+        'merchant_analytics'                      => ['post',     'merchant/analytics',                             'MerchantController@postAnalytics'                                  ],
     ];
 
     public static $public = [
@@ -627,7 +654,6 @@ final class Route
         'mock_paytm_payment',
         'mock_mobikwik_payment',
         'mock_netbanking_payment',
-        'mock_billdesk_payment',
         'mock_ebs_payment',
         'mock_sharp_payment_post',
         'mock_sharp_payment_get',
@@ -748,6 +774,10 @@ final class Route
         'subscription_fetch',
         'subscription_fetch_multiple',
         'subscription_cancel',
+        'subscription_create_addon',
+        'addon_fetch',
+        'addon_fetch_multiple',
+        'addon_delete',
         'p2p_fetch_private',
         'vpa_fetch_private',
         'customer_collect_request_fetch_private',
@@ -783,6 +813,7 @@ final class Route
     ];
 
     public static $internal = [
+        'admin_fetch_all_entities',
         'admin_fetch_entity_multiple',
         'admin_fetch_terminal_by_id',
         'admin_fetch_entity_by_id',
@@ -991,9 +1022,14 @@ final class Route
         'risk_get',
         'merchant_create_invoice_entities',
         'merchant_payout',
+        'oauth_merchant_notify',
         'gateway_file_create',
         'gateway_file_retry',
         'gateway_file_acknowledge',
+        'settings_fetch_defined',
+        'settings_fetch',
+        'settings_upsert',
+        'settings_delete',
     ];
 
     public static $proxy = [
@@ -1038,6 +1074,7 @@ final class Route
         'invoice_remove_line_item',
         'subscription_manual_retry',
         'subscription_test_charge',
+        'subscription_fetch_due_addons',
         'merchant_get_features',
         'merchant_update_features',
         'merchant_gst_fetch',
@@ -1057,6 +1094,15 @@ final class Route
         'invitation_resend',
         'invitation_edit',
         'invitation_delete',
+        'oauth_token_fetch_multiple',
+        'oauth_token_fetch',
+        'oauth_token_revoke',
+        'oauth_application_create',
+        'oauth_application_fetch_multiple',
+        'oauth_application_fetch',
+        'oauth_application_delete',
+        'oauth_application_update',
+        'merchant_analytics',
     ];
 
     // These will run on internal auth with the assurance
@@ -1228,6 +1274,7 @@ final class Route
         'admin_fetch_terminal_by_id'       => '*',
         'merchants_update_hold_funds'      => Permission::EDIT_BULK_MERCHANT_HOLD_FUNDS,
         'schedule_fetch_multiple'          => Permission::SCHEDULE_FETCH_MULTIPLE,
+        'admin_fetch_all_entities'         => '*',
         'admin_fetch_entity_multiple'      => '*',
         'payment_authorize_refund'         => Permission::EDIT_AUTHORIZED_REFUND_PAYMENT,
         'payment_fetch_refunds'            => Permission::VIEW_REFUND_PAYMENTS,
@@ -1261,6 +1308,13 @@ final class Route
         'merchant_details_fetch'           => '*',
         'setl_retry'                       => Permission::RETRY_SETTLEMENT,
         'merchant_invoice_add_bulk'        => '*',
+        'payment_dispute_create'           => Permission::CREATE_DISPUTE,
+        'dispute_edit'                     => Permission::EDIT_DISPUTE,
+        'settings_fetch'                   => Permission::VIEW_WALLET_CONFIG,
+        'settings_fetch_defined'           => Permission::VIEW_WALLET_CONFIG,
+        'settings_upsert'                  => Permission::EDIT_WALLET_CONFIG,
+        'settings_delete'                  => Permission::EDIT_WALLET_CONFIG,
+        'merchant_analytics'               => '*',
     ];
 
     public static $direct = [
@@ -1283,6 +1337,7 @@ final class Route
         'gateway_payment_callback_post',
         'gateway_payment_callback_kotak',
         'gateway_payment_callback_kotak_cancel',
+        'gateway_payment_callback_corporation',
         'mailgun_webhook',
         'gateway_downtime_source_webhook',
         'checkout_onyx',
@@ -1290,6 +1345,7 @@ final class Route
         'mock_event_tracker',
         'upi_npci_request',
         'upi_zero_call',
+        'mock_billdesk_payment',
     ];
 
     public static $internalApps = [
@@ -1374,6 +1430,10 @@ final class Route
 
         'h2h' => [
             'setl_reconcile_h2h',
+        ],
+
+        'auth_service' => [
+            'oauth_merchant_notify',
         ],
     ];
 

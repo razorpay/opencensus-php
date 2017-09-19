@@ -55,7 +55,7 @@ class CybersourceGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertNotNull($payment['approval_code']);
+        $this->assertNotNull($payment['reference2']);
         $this->assertTestResponse($payment);
 
         $payment = $this->getLastEntity('cybersource', true);
