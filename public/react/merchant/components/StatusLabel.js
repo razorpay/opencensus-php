@@ -53,7 +53,7 @@ export const subscriptionStatusMap = {
   created: 'bg-light',
   authenticated: 'label-info',
   active: 'label-success',
-  pending: 'label-warning',
+  pending: 'label-pending',
   cancelled: 'label-danger',
   halted: 'label-danger',
   expired: 'label-danger',
