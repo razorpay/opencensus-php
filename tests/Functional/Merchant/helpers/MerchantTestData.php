@@ -2551,30 +2551,16 @@ return [
         ],
         'response' => [
             'content' => [
-                'features' => [
-                    [
-                        'feature'      => 'noflashcheckout',
-                        'value'        => false,
-                        'display_name' => 'No Flash Checkout'
-                    ],
-                    [
-                        'feature'      => 'marketplace',
-                        'value'        => false,
-                        'display_name' => 'Marketplace'
-                    ],
-                    [
-                        'feature'      => 'subscriptions',
-                        'value'        => true,
-                        'display_name' => 'Subscriptions'
-                    ],
-                    [
-                        'feature'      => 'virtual_accounts',
-                        'value'        => false,
-                        'display_name' => 'Virtual accounts'
-                    ],
-                ]
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE
+                ],
             ],
-            'status_code' => 200,
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
         ],
     ],
 
