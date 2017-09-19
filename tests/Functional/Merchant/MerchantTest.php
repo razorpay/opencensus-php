@@ -12,9 +12,9 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 use RZP\Mail\Merchant\Activation as ActivationMail;
 use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
 use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
-use RZP\Models\Merchant\Methods;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
@@ -1492,7 +1492,7 @@ class MerchantTest extends TestCase
     /**
      * This function tests updating of a merchant feature that can be updated on test but not live mode: marketplace
      */
-    public function testUpdateMerchantUnEditableFeaturesOnLive()
+    public function testAddMerchantUnEditableFeaturesOnLive()
     {
         $this->ba->proxyAuthLive();
 
@@ -1502,8 +1502,79 @@ class MerchantTest extends TestCase
     /**
      * This function tests updating of a merchant feature that can be updated on test but not live mode: marketplace
      */
-    public function testUpdateMerchantEditableFeaturesOnTest()
+    public function testAddMerchantEditableFeaturesOnTest()
     {
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of a merchant feature with should_sync parameter
+     */
+    public function testAddMerchantFeaturesWithSyncOnLive()
+    {
+        $this->ba->proxyAuthLive();
+
+        $this->startTest();
+
+        $this->verifyFeaturePresence(Mode::TEST);
+
+        $this->verifyFeaturePresence(Mode::LIVE);
+    }
+
+    /**
+     * This function tests updating of a merchant feature with should_sync parameter
+     */
+    public function testAddMerchantFeaturesWithSyncOnTest()
+    {
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+
+        $this->verifyFeaturePresence(Mode::TEST);
+
+        $this->verifyFeaturePresence(Mode::LIVE);
+    }
+
+    /**
+     * This function tests updating of a merchant feature that can
+     * be updated on test but not live mode: marketplace
+     */
+    public function testAddMerchantUneditableFeaturesWithSyncOnLive()
+    {
+        $this->ba->proxyAuthLive();
+
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of a merchant feature that can be updated on test but not live mode: marketplace
+     */
+    public function testAddMerchantEditableFeaturesWithSyncOnTest()
+    {
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of a merchant feature that can be updated on test but not live mode: marketplace
+     */
+    public function testDeleteMerchantUnEditableFeatureFromLive()
+    {
+        $this->ba->proxyAuthLive();
+
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of a merchant feature that can be updated on test but not live mode: marketplace
+     */
+    public function testDeleteMerchantEditableFeatureFromTest()
+    {
+        $features = $this->fixtures->merchant->addFeatures(['marketplace']);
+
         $this->ba->proxyAuthTest();
 
         $this->startTest();
@@ -1568,5 +1639,20 @@ class MerchantTest extends TestCase
                 'created_at'  => 1493805150,
                 'updated_at'  => 1493805150
             ]);
+    }
+
+    /**
+     * Performs a GET request based on the mode received and verifies the
+     * presence of the dummy feature
+     *
+     * @param string $mode
+     */
+    private function verifyFeaturePresence($mode)
+    {
+        $authMethod = 'appAuth' . studly_case($mode);
+
+        $this->ba->$authMethod();
+
+        $this->startTest();
     }
 }
