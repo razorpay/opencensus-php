@@ -4,8 +4,8 @@ namespace RZP\Models\LineItem;
 
 use RZP\Base;
 use RZP\Models\Item;
-use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
+use RZP\Exception\LogicException;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -58,51 +58,51 @@ class Validator extends Base\Validator
         $lineItem    = $this->entity;
         $morphEntity = $lineItem->entity;
 
-        if ($morphEntity instanceof Invoice\Entity === false)
+        $traceData = [
+            Entity::ID          => $lineItem->getId(),
+            Entity::TYPE        => $value,
+            Entity::ENTITY_ID   => $morphEntity->getId(),
+            Entity::ENTITY_TYPE => $morphEntity->getEntity(),
+        ];
+
+        if (method_exists($morphEntity, 'getAllowedLineItemTypes') === false)
         {
-            return;
+            throw new LogicException('Not implemented: getAllowedLineItemTypes', null, $traceData);
         }
 
         $allowed = $morphEntity->getAllowedLineItemTypes();
 
         if (in_array($value, $allowed, true) === false)
         {
-            $traceData = [
-                Entity::ENTITY    => $lineItem->getEntity(),
-                Entity::ID        => $lineItem->getId(),
-                Entity::TYPE      => $value,
-                Entity::ENTITY_ID => $morphEntity->getId(),
-            ];
-
-            throw new BadRequestException(ErrorCode::BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE, null, $traceData);
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_INCOMPATIBLE_ITEM_TYPE, Entity::TYPE, $traceData);
         }
     }
 
     public function validateCurrency($attribute, $value)
     {
-        $lineItem    = $this->entity;
-        $morphEntity = $lineItem->entity;
+        $lineItem        = $this->entity;
+        $morphEntity     = $lineItem->entity;
+        $morphEntityName = $morphEntity->getEntity();
 
-        if ($morphEntity instanceof Invoice\Entity === false)
+
+        $traceData = [
+            Entity::ID          => $lineItem->getId(),
+            Entity::CURRENCY    => $value,
+            Entity::ENTITY_ID   => $morphEntity->getId(),
+            Entity::ENTITY_TYPE => $morphEntityName,
+        ];
+
+        if (method_exists($morphEntity, 'getCurrency') === false)
         {
-            return;
+            throw new LogicException('Not implemented: getCurrency', null, $traceData);
         }
 
         $morphEntityCurrency = $morphEntity->getCurrency();
 
         if ($value !== $morphEntityCurrency)
         {
-            $entity = $morphEntity->getEntity();
-
-            $traceData = [
-                Entity::ENTITY    => $entity,
-                Entity::ID        => $lineItem->getId(),
-                Entity::TYPE      => $value,
-                Entity::ENTITY_ID => $morphEntity->getId(),
-            ];
-
             throw new BadRequestValidationFailureException(
-                "Currency of all items should be the same as of the $entity.",
+                "Currency of all items should be the same as of the $morphEntityName.",
                 Entity::CURRENCY,
                 $traceData);
         }

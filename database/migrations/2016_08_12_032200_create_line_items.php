@@ -51,14 +51,14 @@ class CreateLineItems extends Migration
 
             $table->char(Entity::CURRENCY, 3);
 
+            $table->char(Entity::TYPE, 16)
+                  ->default(Item\Type::INVOICE);
+
             $table->tinyInteger(Entity::TAX_INCLUSIVE)
                   ->default(0);
 
             $table->string(Entity::UNIT, 512)
                   ->nullable();
-
-            $table->char(Entity::TYPE, 16)
-                  ->default(Item\Type::INVOICE);
 
             $table->char(Entity::ENTITY_ID, Entity::ID_LENGTH);
 

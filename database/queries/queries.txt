@@ -2457,7 +2457,23 @@ ALTER TABLE bank_accounts
     MODIFY COLUMN ifsc_code varchar(11) NULL;
 
 # Pre deployment of branch 'invoice_items_constraints'
+# Following 4 queries:
 
+# Adds line_items.type column with default null
 ALTER TABLE line_items
-    ADD COLUMN type VARCHAR(16) DEFAULT 'invoice' AFTER currency,
+    ADD COLUMN type VARCHAR(16) DEFAULT NULL after currency,
     ADD INDEX line_items_type_index (type);
+
+# Populates line_items.type of existing rows
+UPDATE line_items l
+       JOIN items i
+            ON l.item_id = i.id AND l.type IS NULL
+SET    l.type = i.type;
+
+UPDATE line_items
+SET    type = 'invoice'
+WHERE  item_id IS NULL;
+
+# Makes line_items.type column not null and default to 'invoice'
+ALTER TABLE line_items
+    MODIFY COLUMN type VARCHAR(16) NOT NULL DEFAULT 'invoice';
