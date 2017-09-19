@@ -123,7 +123,7 @@ class Entity extends Base\PublicEntity
         self::PAID_COUNT,
         self::CUSTOMER_NOTIFY,
         self::CREATED_AT,
-        self::CANCEL_AT_CYCLE_END,
+        // self::CANCEL_AT_CYCLE_END,
     ];
 
     protected $casts = [

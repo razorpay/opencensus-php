@@ -448,13 +448,26 @@ class Core extends Base\Core
             $subscription->getId(),
             function () use ($subscription, $input)
             {
-                if (isset($input[Entity::CANCEL_AT_CYCLE_END]) === true)
+                if ((isset($input[Entity::CANCEL_AT_CYCLE_END]) === true) and
+                    ($input[Entity::CANCEL_AT_CYCLE_END] = true))
                 {
                     $cancelAtCycleEnd = $input[Entity::CANCEL_AT_CYCLE_END];
                     $this->setupCancelAtCycleEnd($subscription, $cancelAtCycleEnd);
                 }
                 else
                 {
+                    //
+                    // If we first received cancel_at_cycle_end and then we received
+                    // cancel immediately, then we reset everything that was set as
+                    // part of the earlier request. We override the earlier request
+                    // with the current request.
+                    //
+                    if ($subscription->getCancelAtCycleEnd() === true)
+                    {
+                        $subscription->setCancelAt(null);
+                        $subscription->setCancelledAt(null);
+                    }
+
                     $this->cancelImmediately($subscription);
                 }
 
@@ -474,58 +487,60 @@ class Core extends Base\Core
         // changed to false here, don't allow it.
         //
 
-        if ($cancelAtCycleEnd === false)
+
+        $currentCycleEnd = $subscription->getCurrentEnd();
+
+        //
+        // If the subscription is in created or authenticated state
+        // and a cancel at cycle end request is sent
+        //
+        if ($currentCycleEnd === null)
         {
-            $subscription->setCancelAt(null);
-            $subscription->setCancelledAt(null);
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_CYCLE_NOT_RUNNING,
+                null,
+                [
+                    'subscription_id'   => $subscription->getId(),
+                    'start_at'          => $subscription->getStartAt(),
+                    'charge_at'         => $subscription->getChargeAt(),
+                ]);
         }
-        else
+
+        //
+        // This would ideally never happen since the subscription would
+        // be in completed state if this condition has to be true. If it
+        // is in completed state, we fail the validation before itself.
+        //
+        if ($currentCycleEnd === $subscription->getEndAt())
         {
-            $currentCycleEnd = $subscription->getCurrentEnd();
-
-            if ($currentCycleEnd === null)
-            {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_SUBSCRIPTION_CYCLE_NOT_RUNNING,
-                    null,
-                    [
-                        'subscription_id'   => $subscription->getId(),
-                        'start_at'          => $subscription->getStartAt(),
-                        'charge_at'         => $subscription->getChargeAt(),
-                    ]);
-            }
-
-            if ($currentCycleEnd === $subscription->getEndAt())
-            {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_SUBSCRIPTION_LAST_CYCLE_CANNOT_CANCEL,
-                    null,
-                    [
-                        'subscription_id'   => $subscription->getId(),
-                        'start_at'          => $subscription->getStartAt(),
-                        'current_cycle_end' => $currentCycleEnd,
-                    ]);
-            }
-
-            $currentTime = Carbon::now()->getTimestamp();
-
-            if ($currentCycleEnd < $currentTime)
-            {
-                throw new LogicException(
-                    'Current cycle\'s cannot be lesser than the current time!',
-                    null,
-                    [
-                        'subscription_id'   => $subscription->getId(),
-                        'current_time'      => $currentTime,
-                        'current_cycle_end' => $currentCycleEnd,
-                        'charge_at'         => $subscription->getChargeAt(),
-                    ]);
-            }
-
-            $subscription->setCancelAt($currentCycleEnd);
-
-            $subscription->setCancelledAt($currentTime);
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_LAST_CYCLE_CANNOT_CANCEL,
+                null,
+                [
+                    'subscription_id'   => $subscription->getId(),
+                    'start_at'          => $subscription->getStartAt(),
+                    'current_cycle_end' => $currentCycleEnd,
+                ]);
         }
+
+        $currentTime = Carbon::now()->getTimestamp();
+
+        if ($currentCycleEnd < $currentTime)
+        {
+            throw new LogicException(
+                'Current cycle\'s cannot be lesser than the current time!',
+                null,
+                [
+                    'subscription_id'   => $subscription->getId(),
+                    'current_time'      => $currentTime,
+                    'current_cycle_end' => $currentCycleEnd,
+                    'charge_at'         => $subscription->getChargeAt(),
+                ]);
+        }
+
+        $subscription->setCancelAt($currentCycleEnd);
+
+        $subscription->setCancelledAt($currentTime);
 
         $this->repo->saveOrFail($subscription);
     }
@@ -543,6 +558,12 @@ class Core extends Base\Core
 
     protected function setFieldsOnCancel(Entity $subscription)
     {
+        //
+        // We cannot do this in cancel_at_cycle_end flow because
+        // if a subscription is in pending state and we receive cancel
+        // request, we cannot reset charge_at because we need its value
+        // to retry. We do attempt retries when cancel request is sent.
+        //
         $subscription->setChargeAt(null);
 
         $subscription->resetAuthAttempts();
