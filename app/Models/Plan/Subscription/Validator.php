@@ -5,6 +5,7 @@ namespace RZP\Models\Plan\Subscription;
 use Carbon\Carbon;
 
 use RZP\Base;
+use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -295,6 +296,18 @@ class Validator extends Base\Validator
                     'max_allowed'   => $maxAllowedTotalCount,
                     'input'         => $input,
                 ]);
+        }
+    }
+
+    protected function validateSubscriptionViewable()
+    {
+        $subscription = $this->entity;
+
+        $id = $subscription->getPublicId();
+
+        if ($subscription->hasBeenAuthenticated() === false)
+        {
+            throw new BadRequestValidationFailureException("Subscription with id $id is not authenticated yet");
         }
     }
 }

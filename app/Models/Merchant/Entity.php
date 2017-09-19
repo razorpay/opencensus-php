@@ -13,8 +13,12 @@ use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Invitation;
+use RZP\Models\Merchant\Detail;
 use RZP\Exception\LogicException;
 
+/**
+ * @property Detail\Entity $merchantDetail
+ */
 class Entity extends Base\PublicEntity
 {
     use Taggable;

@@ -6,11 +6,21 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
 use RZP\Models\Base;
-use RZP\Models\Customer;
 use RZP\Models\Plan;
-use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Invoice;
+use RZP\Models\Merchant;
+use RZP\Models\Customer;
+use RZP\Models\Customer\Token;
 use RZP\Models\Schedule\Anchor;
+use RZP\Models\Base\Traits\NotesTrait;
 
+/**
+ * @property Invoice\Entity $invoice
+ * @property Customer\Entity $customer
+ * @property Merchant\Entity $merchant
+ * @property Plan\Entity $plan
+ * @property Token\Entity $token
+ */
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
