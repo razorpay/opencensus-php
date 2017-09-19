@@ -34,6 +34,8 @@ class SubscriptionChargeTest extends TestCase
         $this->gateway = 'cybersource';
 
         $this->mockTokenex();
+
+        Carbon::setTestNow();
     }
 
     public function tearDown()
