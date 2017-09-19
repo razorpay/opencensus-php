@@ -150,7 +150,6 @@ class Entity
     const WALLET_MPESA           = 'wallet_mpesa';
 
     // Tax and Tax Groups
-
     const TAX                   = 'tax';
     const TAX_GROUP             = 'tax_group';
 

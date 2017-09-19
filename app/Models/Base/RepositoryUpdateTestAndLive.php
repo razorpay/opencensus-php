@@ -24,6 +24,7 @@ trait RepositoryUpdateTestAndLive
         }
 
         $this->validateInstanceIsOfCurrentEntity($entity);
+
         $this->validateIdGenerated($entity);
 
         $action = $entity->exists ? EsRepository::UPDATE : EsRepository::CREATE;
@@ -52,6 +53,7 @@ trait RepositoryUpdateTestAndLive
 
                 // Persist the entity in both live and test databases.
                 $liveEntity->saveOrFail($options);
+
                 $testEntity->saveOrFail($options);
 
                 $this->validateEntitiesMatch($liveEntity, $testEntity);
@@ -313,7 +315,7 @@ trait RepositoryUpdateTestAndLive
     *   `boolean`
     *   Example: `Schedule\Repository::shouldSync()`
     *
-    * @param PublicEntity $entity
+    * @param  PublicEntity   $entity
     * @return bool
     */
     protected function entityShouldSync($entity) : bool
