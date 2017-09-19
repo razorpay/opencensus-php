@@ -438,40 +438,39 @@ class SubscriptionAuthTransactionTest extends TestCase
         $invoice = $this->fixtures->create(
             'invoice',
             [
-                'sms_status' => null,
-                'email_status' => null,
+                'sms_status'      => null,
+                'email_status'    => null,
                 'subscription_id' => $subscription->getId(),
-                'order_id' => $order->getId(),
-                'amount' => $totalAmount,
-                'issued_at' => time(),
+                'order_id'        => $order->getId(),
+                'amount'          => $totalAmount,
+                'issued_at'       => time(),
             ]);
 
         // TODO: create an add on item with wrong type.
         // Test case should fail.
 
         $item = $this->fixtures->create(
-            'item',
+            'item:addon',
             [
-                'name' => 'Sample Upfront Amount',
+                'name'   => 'Sample Upfront Amount',
                 'amount' => $addonAmount,
-                'type' => 'addon',
             ]);
 
         $this->fixtures->create(
             'addon',
             [
                 'subscription_id' => $subscription->getId(),
-                'invoice_id' => $invoice->getId(),
-                'item_id' => $item->getId(),
+                'invoice_id'      => $invoice->getId(),
+                'item_id'         => $item->getId(),
             ]);
 
         $this->fixtures->create(
             'line_item',
             [
-                'name' => $item->getName(),
-                'amount' => $item->getAmount(),
+                'name'      => $item->getName(),
+                'amount'    => $item->getAmount(),
                 'entity_id' => $invoice->getId(),
-                'item_id' => $item->getId(),
+                'item_id'   => $item->getId(),
             ]);
 
         if ($first === true)
@@ -479,11 +478,11 @@ class SubscriptionAuthTransactionTest extends TestCase
             $this->fixtures->create(
                 'line_item',
                 [
-                    'id' => '200000lineitem',
-                    'name' => $plan->item->getName(),
-                    'amount' => $plan->item->getAmount(),
+                    'id'        => '200000lineitem',
+                    'name'      => $plan->item->getName(),
+                    'amount'    => $plan->item->getAmount(),
                     'entity_id' => $invoice->getId(),
-                    'item_id' => null,
+                    'item_id'   => null,
                 ]);
         }
     }
