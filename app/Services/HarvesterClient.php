@@ -104,13 +104,6 @@ class HarvesterClient extends AbstractEventClient
 
     protected function sendRequest(string $urlPath, $data, bool $retry = false, int $maxRetryTimes = 0)
     {
-        $this->trace->info(
-            TraceCode::HARVESTER_REQUEST,
-            [
-                'path'    => $urlPath,
-                'data'    => $data
-            ]);
-
         $request = [
             'url'           => $this->queryBaseUrl . $urlPath,
             'method'        => 'POST',
@@ -128,6 +121,14 @@ class HarvesterClient extends AbstractEventClient
         $request['headers'] = $headers;
 
         $request['options'] = $options;
+
+        $this->trace->info(
+            TraceCode::HARVESTER_REQUEST,
+            [
+                'path'    => $urlPath,
+                'data'    => $data,
+                'request' => $request
+            ]);
 
         $retryCount = 0;
 
@@ -152,7 +153,7 @@ class HarvesterClient extends AbstractEventClient
 
             $retryCount++;
 
-            if (($retry === false) or ($response != null and $response->status_code === 200))
+            if (($retry === false) or ($response !== null and $response->status_code === 200))
             {
                 break;
             }
@@ -165,7 +166,7 @@ class HarvesterClient extends AbstractEventClient
 
     protected function checkErrors($urlPath, $data, $response)
     {
-        if (($response != null) and ($response->status_code != 200))
+        if (($response !== null) and ($response->status_code !== 200))
         {
             $this->trace->error(
                 TraceCode::HARVESTER_FAILURE,
