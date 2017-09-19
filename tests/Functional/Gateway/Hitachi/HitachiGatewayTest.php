@@ -319,4 +319,34 @@ class HitachiGatewayTest extends TestCase
                 ]);
             });
     }
+
+    public function testMismatchVerify()
+    {
+        $this->mockAuthFormatError();
+
+        $data = $this->testData['testInvalidJson'];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function ()
+            {
+                $this->defaultAuthPayment([
+                    'card' => [
+                        'number'       => CardNumber::VALID_ENROLL_NUMBER,
+                        'expiry_month' => '02',
+                        'expiry_year'  => '21',
+                        'cvv'          => 123,
+                        'name'         => 'Test Card'
+                    ]
+                ]);
+            });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment) {
+            $this->verifyPayment($payment['id']);
+        });
+    }
 }

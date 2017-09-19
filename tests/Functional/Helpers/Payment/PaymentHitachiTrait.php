@@ -66,7 +66,10 @@ trait PaymentHitachiTrait
         $this->mockServerContentFunction(
             function(& $content, $action = null)
             {
-                $content = '{"pRespCode":"30","pRespDesc":"Format Error"}{"pRespCode":"30","pRespDesc":"Format Error"}';
+                if ($action === 'callback')
+                {
+                    $content = '{"pRespCode":"30","pRespDesc":"Format Error"}{"pRespCode":"30","pRespDesc":"Format Error"}';
+                }
             }
         );
     }
