@@ -84,7 +84,7 @@ class BaseReport extends Base\Core
 
             $from = Carbon::yesterday(Timezone::IST)->timestamp;
 
-            $to = Carbon::today(Timezone::IST)->timestamp - 1;
+            $to = Carbon::tomorrow(Timezone::IST)->timestamp - 1;
         }
 
         $input['year'] = $year;

@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Refund;
 use RZP\Models\FileStore;
 use RZP\Constants\Entity as E;
 
@@ -82,7 +83,7 @@ class IrctcRefundReport extends BasicEntityReport
 
     protected function getPaymentDate(Payment\Entity $payment)
     {
-        $ts = $payment->getAuthorizedAt();
+        $ts = $payment->getAuthorizeTimestamp();
 
         $paymentDate = Carbon::createFromTimestamp($ts, Timezone::IST)
                              ->format('Ymd');
@@ -90,7 +91,7 @@ class IrctcRefundReport extends BasicEntityReport
         return $paymentDate;
     }
 
-    protected function getRefundedDate(RefundEntity $refund)
+    protected function getRefundedDate(Refund\Entity $refund)
     {
         $ts = $refund->getCreatedAt();
 
