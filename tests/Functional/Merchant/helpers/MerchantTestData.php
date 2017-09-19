@@ -2348,7 +2348,7 @@ return [
         ],
     ],
 
-    'testUpdateMerchantUnEditableFeaturesOnLive' => [
+    'testAddMerchantUnEditableFeaturesOnLive' => [
         'request' => [
             'content' => [
                 'features' => [
@@ -2373,7 +2373,7 @@ return [
         ],
     ],
 
-    'testUpdateMerchantEditableFeaturesOnTest' => [
+    'testAddMerchantEditableFeaturesOnTest' => [
         'request' => [
             'content' => [
                 'features' => [
@@ -2398,6 +2398,236 @@ return [
                     [
                         'feature'      => 'marketplace',
                         'value'        => true,
+                        'display_name' => 'Marketplace'
+                    ],
+                    [
+                        'feature'      => 'subscriptions',
+                        'value'        => false,
+                        'display_name' => 'Subscriptions'
+                    ],
+                    [
+                        'feature'      => 'virtual_accounts',
+                        'value'        => false,
+                        'display_name' => 'Virtual accounts'
+                    ],
+                ]
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testAddMerchantFeaturesWithSyncOnTest' => [
+        'request' => [
+            'content' => [
+                'features'      => [
+                    'noflashcheckout' => '1',
+                ],
+                'should_sync'   => 1
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'features' => [
+                    [
+                        'feature'      => 'noflashcheckout',
+                        'value'        => true,
+                        'display_name' => 'No Flash Checkout'
+                    ],
+                    [
+                        'feature'      => 'marketplace',
+                        'value'        => false,
+                        'display_name' => 'Marketplace'
+                    ],
+                    [
+                        'feature'      => 'subscriptions',
+                        'value'        => false,
+                        'display_name' => 'Subscriptions'
+                    ],
+                    [
+                        'feature'      => 'virtual_accounts',
+                        'value'        => false,
+                        'display_name' => 'Virtual accounts'
+                    ],
+                ]
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testAddMerchantFeaturesWithSyncOnLive' => [
+        'request' => [
+            'content' => [
+                'features'      => [
+                    'noflashcheckout' => '1',
+                ],
+                'should_sync'   => 1
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'features' => [
+                    [
+                        'feature'      => 'noflashcheckout',
+                        'value'        => true,
+                        'display_name' => 'No Flash Checkout'
+                    ],
+                    [
+                        'feature'      => 'marketplace',
+                        'value'        => false,
+                        'display_name' => 'Marketplace'
+                    ],
+                    [
+                        'feature'      => 'subscriptions',
+                        'value'        => false,
+                        'display_name' => 'Subscriptions'
+                    ],
+                    [
+                        'feature'      => 'virtual_accounts',
+                        'value'        => false,
+                        'display_name' => 'Virtual accounts'
+                    ],
+                ]
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testAddMerchantUneditableFeaturesWithSyncOnLive' => [
+        'request' => [
+            'content' => [
+                'features'      => [
+                    'subscriptions' => '1',
+                ],
+                'should_sync'   => 1
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
+        ],
+    ],
+
+    'testAddMerchantEditableFeaturesWithSyncOnTest' => [
+        'request' => [
+            'content' => [
+                'features'      => [
+                    'subscriptions' => '1',
+                ],
+                'should_sync'   => 1
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'features' => [
+                    [
+                        'feature'      => 'noflashcheckout',
+                        'value'        => false,
+                        'display_name' => 'No Flash Checkout'
+                    ],
+                    [
+                        'feature'      => 'marketplace',
+                        'value'        => false,
+                        'display_name' => 'Marketplace'
+                    ],
+                    [
+                        'feature'      => 'subscriptions',
+                        'value'        => true,
+                        'display_name' => 'Subscriptions'
+                    ],
+                    [
+                        'feature'      => 'virtual_accounts',
+                        'value'        => false,
+                        'display_name' => 'Virtual accounts'
+                    ],
+                ]
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testDeleteMerchantUnEditableFeatureFromLive' => [
+        'request' => [
+            'content' => [
+                'features' => [
+                    'marketplace' => '0'
+                ]
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
+        ],
+    ],
+
+    'testDeleteMerchantEditableFeatureFromTest' => [
+        'request' => [
+            'content' => [
+                'features' => [
+                    'marketplace' => '0',
+                ]
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'features' => [
+                    [
+                        'feature'      => 'noflashcheckout',
+                        'value'        => false,
+                        'display_name' => 'No Flash Checkout'
+                    ],
+                    [
+                        'feature'      => 'marketplace',
+                        'value'        => false,
                         'display_name' => 'Marketplace'
                     ],
                     [
@@ -2637,5 +2867,43 @@ return [
             ],
             'status_code' => 200,
         ],
-    ]
+    ],
+
+    'verifyFeaturePresence' => [
+        'request'  => [
+            'url'    => '/features/10000000000000',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'assigned_features' => [
+                    [
+                        'name'        => 'noflashcheckout',
+                        'entity_id'   => '10000000000000',
+                        'entity_type' => 'merchant'
+                    ]
+                ],
+                'all_features'      => [
+                    'dummy',
+                    'webhooks',
+                    'aggregator',
+                    'tokens',
+                    's2swallet',
+                    's2supi',
+                    's2saeps',
+                    'setl_report',
+                    'noflashcheckout',
+                    'recurring',
+                    's2s',
+                    'invoice',
+                    'nozeropricing',
+                    'reverse',
+                ]
+            ]
+        ]
+    ],
 ];
