@@ -1,10 +1,9 @@
 import { Field } from 'redux-form';
 import InputField from 'rzp/ui/Forms/InputField';
 import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
-import FileUploadInputButton from 'rzp/ui/FileUpload/InputButton';
 import { required } from 'rzp/utils/validators';
 
-export default ({ handleChange }) => {
+export default () => {
   return (
     <div class="form-body">
       <div class="form-group">
@@ -29,7 +28,7 @@ export default ({ handleChange }) => {
           validate={[required()]}
         >
           <option value="Businesses" key="vendors">
-            Third-party businesses
+            Third party businesses
           </option>
           <option value="Own Accounts" key="own_accounts">
             Own bank accounts
@@ -38,19 +37,6 @@ export default ({ handleChange }) => {
             Individuals
           </option>
         </Field>
-      </div>
-
-      <div class="form-group">
-        <div class="row">
-          <div class="col-md-12">
-            <FileUploadInputButton
-              accept="image/jpeg,image/png,application/pdf,application/x-pdf"
-              uploadedFileName="marketplace.vendor_agreement"
-              maxSize="8000000"
-              onChange={handleChange}
-            />
-          </div>
-        </div>
       </div>
     </div>
   );
