@@ -362,7 +362,6 @@ class Gateway
         ],
         self::HITACHI => [
             Network::MC,
-            Network::VISA
         ],
         self::FIRST_DATA => [
             Network::MC,
