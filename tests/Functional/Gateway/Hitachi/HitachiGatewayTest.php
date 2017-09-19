@@ -54,6 +54,12 @@ class HitachiGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
         $this->assertNull($payment['transaction_id']);
+
+        $gatewayPayment = $this->getLastEntity('hitachi', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testHitachiAuthEntity'], $gatewayPayment);
+
         $this->assertEquals('100HitachiTmnl', $payment['terminal_id']);
 
         $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
@@ -66,10 +72,10 @@ class HitachiGatewayTest extends TestCase
 
         $this->assertTestResponse($payment);
 
-        $payment = $this->getLastEntity('hitachi', true);
+        $gatewayPayment = $this->getLastEntity('hitachi', true);
 
         $this->assertArraySelectiveEquals(
-            $this->testData['testHitachiCaptureEntity'], $payment);
+            $this->testData['testHitachiCaptureEntity'], $gatewayPayment);
     }
 
     public function testNotEnrolledCard()
@@ -90,6 +96,12 @@ class HitachiGatewayTest extends TestCase
         $this->assertNull($payment['transaction_id']);
         $this->assertEquals('100HitachiTmnl', $payment['terminal_id']);
 
+        $gatewayPayment = $this->getLastEntity('hitachi', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testHitachiAuthEntity'], $gatewayPayment);
+
+
         $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
 
         $txn = $this->getLastTransaction(true);
@@ -100,10 +112,10 @@ class HitachiGatewayTest extends TestCase
 
         $this->assertTestResponse($payment);
 
-        $payment = $this->getLastEntity('hitachi', true);
+        $gatewayPayment = $this->getLastEntity('hitachi', true);
 
         $this->assertArraySelectiveEquals(
-            $this->testData['testHitachiCaptureEntity'], $payment);
+            $this->testData['testHitachiCaptureEntity'], $gatewayPayment);
     }
 
     public function testPaymentVerify()
@@ -167,7 +179,7 @@ class HitachiGatewayTest extends TestCase
 
         $this->assertTestResponse($hitachi, 'testPaymentCaptureEntity');
 
-        $paymentId = explode('_' ,$capturedPayment['id'])[1];
+        $paymentId = explode('_', $capturedPayment['id'])[1];
 
         $this->assertEquals($paymentId, $hitachi[Hitachi\Entity::PAYMENT_ID]);
         $this->assertNotNull($hitachi[Hitachi\Entity::REQUEST_ID]);
@@ -224,6 +236,12 @@ class HitachiGatewayTest extends TestCase
         $refund = $this->getLastEntity('refund', true);
 
         $this->assertEquals('rfnd_' . $gatewayPayment['refund_id'], $refund['id']);
+
+        $gatewayPayment = $this->getLastEntity('hitachi', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testHitachiRefundEntity'], $gatewayPayment);
+
     }
 
     public function testPartialRefund()

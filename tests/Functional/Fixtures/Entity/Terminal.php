@@ -600,9 +600,7 @@ class Terminal extends Base
             'shared'                    => 1,
             'gateway_acquirer'          => 'rbl',
             'gateway_merchant_id'       => 'hitachi',
-            'gateway_terminal_id'       => 'hitachi',
             'gateway_terminal_password' => 'hitachi',
-            'gateway_access_code'       => '111111',
             'gateway_secure_secret'     => 'secret',
         ];
 

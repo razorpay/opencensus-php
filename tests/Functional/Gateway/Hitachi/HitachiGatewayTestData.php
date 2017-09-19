@@ -18,7 +18,6 @@ return [
         'balance'           => 1049000,
         'gateway_fee'       => 0,
         'api_fee'           => 0,
-//        'escrow_balance'    => 1048850,
         'channel'           => 'kotak',
         'settled'           => false,
         'settlement_id'     => null,
@@ -26,6 +25,31 @@ return [
         'entity'            => 'transaction',
         'admin'             => true,
     ],
+
+    'testHitachiAuthEntity' => [
+        'refund_id' => null,
+        'acquirer' => 'rbl',
+        'action' => 'authorize',
+        'received' =>  true,
+        'amount' => 50000,
+        'currency' => 'INR',
+        'pRespCode' => '00',
+        'pAuthStatus' => null,
+        'entity' => 'hitachi',
+        'admin' => true,
+    ],
+
+    'testHitachiRefundEntity' => [
+        'acquirer' => 'rbl',
+        'action' => 'refund',
+        'amount' => 50000,
+        'currency' => 'INR',
+        'pRespCode' => '00',
+        'pAuthStatus' => null,
+        'entity' => 'hitachi',
+        'admin' => true,
+    ],
+
     'testHitachiCaptureEntity' => [
         'refund_id' => null,
         'acquirer' => 'rbl',
@@ -34,7 +58,6 @@ return [
         'amount' => 50000,
         'currency' => 'INR',
         'pRespCode' => '00',
-        'pEnrolled' => null,
         'pAuthStatus' => null,
         'entity' => 'hitachi',
         'admin' => true,
@@ -99,7 +122,6 @@ return [
         'received'    => true,
         'amount'      => 50000,
         'currency'    => 'INR',
-        'pEnrolled'   => 'Y',
         'pAuthStatus' => 'Y',
         'pECI'        => '06',
         'pALGO'       => 2,
@@ -111,7 +133,6 @@ return [
         'received'    => true,
         'amount'      => 50000,
         'currency'    => 'INR',
-        'pEnrolled'   => 'N',
         'pXID'        => null,
         'pCAVV2'      => null,
         'pUCAF'       => null,
@@ -286,51 +307,6 @@ return [
         ],
     ],
 
-    'testSavedCardPayment' => [
-        'amount'              => 50000,
-        'method'              => 'card',
-        'status'              => 'authorized',
-        'amount_authorized'   => 50000,
-        'amount_refunded'     => 0,
-        'refund_status'       => null,
-        'currency'            => 'INR',
-        'internal_error_code' => null,
-        'global_customer_id'  => '10000gcustomer',
-        'app_token'           => '1000000custapp',
-        'global_token_id'     => '10000custgcard',
-        'email'               => 'a@b.com',
-        'contact'             => '+919918899029',
-        'transaction_id'      => null,
-        'auto_captured'       => false,
-        'captured_at'         => null,
-        'gateway'             => 'hitachi',
-        'terminal_id'         => '100HitachiTmnl',
-        'recurring'           => false,
-        'save'                => false,
-        'late_authorized'     => false,
-        'captured'            => false,
-        'entity'              => 'payment',
-        'admin'               => true
-    ],
-
-    'testCardAuthFailure' => [
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_PIN_INCORRECT,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'                 => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_PIN_INCORRECT,
-            'gateway_error_code'    => '55',
-            'gateway_error_desc'    => 'Incorrect PIN',
-        ],
-    ],
-
     'testVerifyFailedResponseContent' => [
         'status'  => 'status_match',
         'gateway' => 'hitachi',
@@ -342,61 +318,6 @@ return [
         ],
     ],
 
-    'testAuthFailedVerifyFailedPaymentEntity' => [
-        'amount'              => 50000,
-        'status'              => 'failed',
-        'error_code'          => 'BAD_REQUEST_ERROR',
-        'internal_error_code' => 'BAD_REQUEST_PAYMENT_PIN_INCORRECT',
-        'error_description'   => 'Incorrect Pin',
-        'verified'            => 1,
-    ],
-
-    'testEciValue07VisaPayment' => [
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'                 => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
-            'gateway_error_code'    => '07',
-            'gateway_error_desc'    => "pECI value shouldn't be 7 for Visa",
-        ],
-    ],
-
-    'testPaymentEciFailEntity' => [
-        'entity'      => 'hitachi',
-        'action'      => 'authorize',
-        'received'    => false,
-        'amount'      => 50000,
-        'currency'    => 'INR',
-        'pEnrolled'   => 'Y',
-        'pAuthStatus' => 'Y',
-        'pALGO'       => 2,
-    ],
-
-    'testEciValue07MasterCardPayment' => [
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'                 => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_CARD_HOLDER_AUTHENTICATION_FAILED,
-            'gateway_error_code'    => '00',
-            'gateway_error_desc'    => "pECI value shouldn't be 0 or 7 for MasterCard",
-        ],
-    ],
     'testInvalidJson' => [
         'response'  => [
             'content'     => [
