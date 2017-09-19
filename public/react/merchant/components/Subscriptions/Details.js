@@ -53,7 +53,15 @@ export default ({
   activeSecEntityId,
   onCancelClick,
   onManualAttempt,
+  onTestChargeAttempt,
 }) => {
+  let showTestChargeBtn =
+    !isLoading &&
+    onTestChargeAttempt &&
+    ['pending', 'active', 'halted', 'authenticated'].indexOf(
+      subscription.status
+    ) > -1;
+
   return (
     <div class="content-wrapper content-sm txn-details">
       {isLoading
@@ -117,11 +125,6 @@ export default ({
                 />
 
                 <EntityDetailRow
-                  label="Next Due on"
-                  value={() => <Time value={subscription.charge_at} />}
-                />
-
-                <EntityDetailRow
                   label="Status"
                   value={() =>
                     <div>
@@ -147,6 +150,38 @@ export default ({
                       format="DD MMM YYYY, hh:mm:ss a"
                     />}
                 />
+
+                {showTestChargeBtn
+                  ? <EntityDetailRow
+                      label="Next Due on"
+                      value={() =>
+                        <div class="pair-label custom-item">
+                          <Time value={subscription.charge_at} />
+                          <div class="group-items">
+                            <button
+                              class="btn btn-default"
+                              onClick={() =>
+                                onTestChargeAttempt(subscription.id)}
+                            >
+                              Charge this now
+                            </button>
+                            <div style={{ color: 'red' }}>
+                              This charge is for test mode integrations.
+                            </div>
+                            <a
+                              href="https://razorpay.com/docs/subscriptions/routes/#subscription"
+                              target="_blank"
+                            >
+                              View docs
+                            </a>{' '}
+                            to understand how it works.
+                          </div>
+                        </div>}
+                    />
+                  : <EntityDetailRow
+                      label="Next Due on"
+                      value={() => <Time value={subscription.charge_at} />}
+                    />}
 
                 <EntityDetailList
                   title="Invoices detail"
