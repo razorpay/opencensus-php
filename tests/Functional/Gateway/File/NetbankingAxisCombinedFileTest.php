@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Functional\Gateway\File;
+namespace RZP\Tests\Functional\Gateway\File;
 
 use Mail;
 use Carbon\Carbon;
@@ -38,6 +38,8 @@ class NetbankingAxisCombinedFileTest extends TestCase
         $this->ba->appAuth();
 
         $content = $this->startTest();
+
+        $content = $content['items'][0];
 
         $this->assertNotNull($content[File\Entity::FILE_GENERATED_AT]);
         $this->assertNotNull(File\Entity::SENT_AT);

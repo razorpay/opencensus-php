@@ -103,5 +103,71 @@ return [
                 ],
             ],
         ],
-    ]
+    ],
+
+    'testGenerateCombinedFileWithFileGenerationError' => [
+        'request' => [
+            'content' => [
+                'type'    => 'combined',
+                'targets'  => ['rbl'],
+                'begin'    => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'      => Carbon::tomorrow(Timezone::IST)->getTimestamp()
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'failed',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'refunds@razorpay.com',
+                        'type'                => 'combined',
+                        'target'              => 'rbl',
+                        'error_code'          => 'error_generating_file',
+                        'entity'              => 'gateway_file',
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGenerateCombinedFileWithMailSendError' => [
+        'request' => [
+            'content' => [
+                'type'    => 'combined',
+                'targets' => ['axis'],
+                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
+                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp()
+            ],
+            'url' => '/gateway/files',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'admin' => true,
+                'items' => [
+                    [
+                        'status'              => 'failed',
+                        'scheduled'           => true,
+                        'partially_processed' => false,
+                        'attempts'            => 1,
+                        'sender'              => 'refunds@razorpay.com',
+                        'type'                => 'combined',
+                        'target'              => 'axis',
+                        'error_code'          => 'error_sending_file',
+                        'entity'              => 'gateway_file',
+                    ]
+                ]
+            ]
+        ],
+    ],
 ];
