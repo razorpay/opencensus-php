@@ -211,7 +211,6 @@ class BasicAuth
 
     protected $adminOrgId = null;
 
-    //Org Id will be used only in appAuth.
     protected $orgId      = null;
 
     public function __construct($app)

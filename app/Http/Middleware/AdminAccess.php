@@ -102,7 +102,7 @@ class AdminAccess
         }
 
         // Fetch public org Id from uri
-        $orgId = $this->getOrgIdForRoute($request);
+        $orgId = $this->ba->getOrgId();
 
         // $admin->getPublicOrgId cannot be null here because admin has to be associated with org.
         if ($orgId !== $admin->getPublicOrgId())
