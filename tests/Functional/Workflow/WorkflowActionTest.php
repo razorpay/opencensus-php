@@ -49,7 +49,7 @@ class WorkflowActionTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, Org::RZP_ORG_SIGNED, Org::CHECKER_ADMIN_SIGNED);
+        $url = sprintf($url, Org::CHECKER_ADMIN_SIGNED);
 
         // Assign url
         $this->testData[__FUNCTION__]['request']['url'] = $url;
@@ -67,7 +67,7 @@ class WorkflowActionTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, Org::RZP_ORG_SIGNED, Org::CHECKER_ADMIN_SIGNED);
+        $url = sprintf($url, Org::CHECKER_ADMIN_SIGNED);
 
         // Assign url
         $this->testData[__FUNCTION__]['request']['url'] = $url;
