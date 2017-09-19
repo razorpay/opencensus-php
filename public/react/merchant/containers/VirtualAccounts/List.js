@@ -52,6 +52,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
           type: 'success',
           message: 'Razorpay Smart Collect has been enabled!',
         });
+        setTimeout(() => location.reload());
       })
       .catch(err => {
         this.props.showNotification({

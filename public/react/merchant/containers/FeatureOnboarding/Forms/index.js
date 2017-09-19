@@ -10,7 +10,7 @@ const FORM_TYPE = {
       knowMore: '',
     },
     formText:
-      'This is to help you get started with Razorpay Route. Here is how you can enable Razorpay Route on your dashboard.',
+      'This is to help you get started with Razorpay Route. Here is how you can enable Razorpay Route on test mode.',
   },
 
   subscriptions: {
@@ -19,7 +19,8 @@ const FORM_TYPE = {
       docs: '',
       knowMore: '',
     },
-    formText: '',
+    formText:
+      'This is to help you get started with Razorpay Subscriptions. Here is how you can enable Razorpay Subscriptions on test mode.',
   },
 
   virtual_accounts: {

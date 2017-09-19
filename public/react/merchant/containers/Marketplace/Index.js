@@ -36,6 +36,7 @@ export default class MarketplaceContainer extends Component {
           type: 'success',
           message: 'Razorpay Route has been enabled!',
         });
+        setTimeout(() => location.reload());
       })
       .catch(err => {
         this.props.showNotification({
