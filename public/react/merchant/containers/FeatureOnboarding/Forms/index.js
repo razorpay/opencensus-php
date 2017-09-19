@@ -9,7 +9,8 @@ const FORM_TYPE = {
       docs: '',
       knowMore: '',
     },
-    formText: '',
+    formText:
+      'This is to help you get started with Razorpay Route. Here is how you can activate Razorpay on your dashboard.',
   },
 
   subscriptions: {
