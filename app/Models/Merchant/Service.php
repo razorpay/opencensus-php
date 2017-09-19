@@ -1006,9 +1006,7 @@ class Service extends Base\Service
 
         $merchant = $this->merchant;
 
-        $shouldSyncKey = Feature\Entity::SHOULD_SYNC;
-
-        $shouldSync = boolval($input[$shouldSyncKey] ?? false);
+        $shouldSync = boolval($input[Feature\Entity::SHOULD_SYNC] ?? false);
 
         $merchant->validateInput('feature', $input);
 
@@ -1221,7 +1219,7 @@ class Service extends Base\Service
             $featureParams = [
                 Feature\Entity::ENTITY_ID    => $merchant->getId(),
                 Feature\Entity::ENTITY_TYPE  => 'merchant',
-                'names'                      => $featureNames,
+                Feature\Entity::NAMES        => $featureNames,
                 Feature\Entity::SHOULD_SYNC  => $shouldSync
             ];
 
@@ -1235,6 +1233,8 @@ class Service extends Base\Service
 
         $entityId = $merchant->getId();
 
+        $featureCore = new Feature\Core;
+
         foreach ($featureNames as $featureName)
         {
             $feature = $this->repo->feature->findByEntityIdAndNameOrFail(
@@ -1243,7 +1243,10 @@ class Service extends Base\Service
 
             if ($feature !== null)
             {
-                (new Feature\Core)->delete($entityId, $feature, $shouldSync);
+                $featureCore->delete($feature, $shouldSync);
+
+                // We delete tag also along with feature.
+                $this->deleteTag($entityId, $feature->getName());
             }
         }
     }

@@ -160,8 +160,6 @@ class DailyFiles extends Base\DailyFiles
 
         $gateway = $this->gateway;
 
-        $action = 'generateClaims';
-
-        return $this->app['gateway']->call($gateway, $action, $input, $this->mode);
+        return $this->app['gateway']->call($gateway, Payment\Action::GENERATE_CLAIMS, $input, $this->mode);
     }
 }

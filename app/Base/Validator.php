@@ -2,9 +2,10 @@
 
 namespace RZP\Base;
 
+use App;
+
 use RZP\Exception;
 use RZP\Constants\Mode;
-use App;
 
 class Validator extends \Razorpay\Spine\Validation\Validator
 {
@@ -30,12 +31,14 @@ class Validator extends \Razorpay\Spine\Validation\Validator
     protected function isTestMode()
     {
         $app = App::getFacadeRoot();
+
         return ($app['rzp.mode'] === Mode::TEST);
     }
 
     protected function isLiveMode()
     {
         $app = App::getFacadeRoot();
+
         return ($app['rzp.mode'] === Mode::LIVE);
     }
 }

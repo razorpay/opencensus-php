@@ -5,6 +5,7 @@ namespace RZP\Models\Feature;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant;
 use Illuminate\Http\Request;
 
@@ -36,5 +37,49 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Payment failed');
         }
+   }
+
+   /**
+    * Validates that the feature is not in already assigned list of merchant
+    * features.
+    *
+    * @param array $assignedFeatureNames
+    *
+    * @throws Exception\BadRequestException
+    */
+   public function validateFeatureIsNotAlreadyAssigned(array $assignedFeatureNames)
+   {
+        $feature = $this->entity;
+
+        $name = $feature->getName();
+
+        if (in_array($name, $assignedFeatureNames, true) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_ALREADY_ASSIGNED,
+                null,
+                [
+                    Entity::ID                => $feature->getId(),
+                    Entity::NAME              => $feature->getName(),
+                    Entity::OLD_FEATURES      => $assignedFeatureNames,
+                    PublicEntity::MERCHANT_ID => $feature->getMerchantId(),
+                ]);
+        }
+   }
+
+   public function validateEditingFeature(Entity $feature, bool $shouldSync)
+   {
+       if ($shouldSync === true)
+       {
+           if (in_array($feature->getName(), Constants::$featuresUneditableOnLive, true) === true)
+           {
+               throw new Exception\BadRequestException(
+                   ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
+                   Entity::NAME,
+                   [
+                       $feature->getName()
+                   ]);
+           }
+       }
    }
 }

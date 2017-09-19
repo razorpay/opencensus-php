@@ -164,12 +164,8 @@ class Repository extends Base\Repository
 
                 foreach ($methods as $method => $value)
                 {
-                    $queryValue = null;
-
-                    if ($value === 'true')
-                        $queryValue = '1';
-                    else if ($value === 'false')
-                        $queryValue = '0';
+                    // Filter can accept 'true'/'false' along with 0/1 & true/false
+                    $queryValue = filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
 
                     $join->where($method, '=', $queryValue);
                 }

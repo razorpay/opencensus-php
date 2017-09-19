@@ -11,7 +11,13 @@ class Entity extends Base\PublicEntity
     const ENTITY_TYPE = 'entity_type';
 
     // Input attributes
+    const NAMES       = 'names';
     const SHOULD_SYNC = 'should_sync';
+
+    // Keys used for tracing requests
+    const OLD_FEATURES = 'old_features';
+    const NEW_FEATURE  = 'new_feature';
+    const FEATURE      = 'feature';
 
     protected $table = \RZP\Constants\Table::FEATURE;
 
