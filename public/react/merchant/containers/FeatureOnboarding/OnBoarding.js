@@ -84,6 +84,10 @@ export default class OnBoarding extends Component {
         fileName = 'vendor_agreement';
       }
 
+      if (this.props.formType === 'subscriptions' && props.website_checkbox) {
+        delete props.website_checkbox;
+      }
+
       return this.props
         .saveOnboarding(this.props.formType, props, file, fileName)
         .then(() => {

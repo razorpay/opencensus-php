@@ -1,15 +1,16 @@
 import { Field } from 'redux-form';
 import InputField from 'rzp/ui/Forms/InputField';
 import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
+import CheckboxField from 'rzp/ui/Forms/CheckboxField';
 import { required } from 'rzp/utils/validators';
 
 export default () => {
   return (
     <div class="form-body">
       <div class="form-group">
-        <label for="use_case">Use Case</label>
+        <label for="business_model">Use Case and Business Model</label>
         <Field
-          name="use_case"
+          name="business_model"
           component={AutoResizeTextarea}
           rows="3"
           class="form-control"
@@ -18,25 +19,37 @@ export default () => {
       </div>
 
       <div class="form-group">
-        <label for="email_notify">Transfer for</label>
+        <label for="sample_plans">Subscription Plans</label>
         <Field
-          name="settling_to"
-          component={InputField}
-          tagName="select"
+          name="sample_plans"
+          component={AutoResizeTextarea}
+          rows="3"
           class="form-control"
-          placeholder="Transferring Payments to?"
+          placeholder="Define a few sample plans that you offer"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="website_checkbox" class="label-required">
+          Is your website live?
+        </label>
+        <div class="checkbox">
+          <label class="i-switch">
+            <Field name="website_checkbox" component={CheckboxField} />
+            <i />
+          </label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="website_details">Link to your plans page</label>
+        <Field
+          name="website_details"
+          component={InputField}
+          class="form-control"
+          placeholder="http://example.com/pricing"
           validate={[required()]}
-        >
-          <option value="Businesses" key="vendors">
-            Third party businesses
-          </option>
-          <option value="Own Accounts" key="own_accounts">
-            Own bank accounts
-          </option>
-          <option value="Individuals" key="individuals">
-            Individuals
-          </option>
-        </Field>
+        />
       </div>
     </div>
   );
