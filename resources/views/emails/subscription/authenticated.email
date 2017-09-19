@@ -24,7 +24,7 @@
                             <td class="center">
                               <h1>
                               <center>
-                                Subscription Charged
+                                Subscription Initialized
                               </center>
                               </h1>
                             </td>
@@ -102,13 +102,7 @@
                       <td class="wrapper last white">
                         <table class="six columns">
                           <tr>
-                            <td class="center darktext">
-                              <center>
-                                Payment Id: {{$payment['public_id']}}<br>
-                                Subscription Id: {{$subscription['public_id']}}
-                              </center>
-                              <hr class="small">
-                            </td>
+                                You have been successfully subscribed and a payment of {{$payment['amount']}} has been made. Your card details have been successfully stored for future payments.
                             <td class="expander"></td>
                           </tr>
                         </table>
@@ -173,8 +167,8 @@
               </td>
             </tr>
           </table>
-          @if ($payment)
-          @if ($invoice)
+          @endif ($payment)
+          @if ($options['immediate'])
           <!-- Billing Period -->
           <table class="row">
             <tr>

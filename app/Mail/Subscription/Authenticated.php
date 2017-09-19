@@ -22,7 +22,7 @@ class Authenticated extends Base
 
     protected function getResult()
     {
-        return 'Subscription initialized';
+        return 'Subscription Initialized';
     }
 
     protected function getMailTag()

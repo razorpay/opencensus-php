@@ -13,6 +13,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Invoice;
 use RZP\Models\Card;
 use RZP\Models\Customer;
+use RZP\Constants\Timezone;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Processor;
 use RZP\Mail\Subscription as SubscriptionMail;
@@ -105,6 +106,8 @@ class Notify extends Processor\Notify
     protected function notifyViaMail($event)
     {
         $mailableClass = $this->getMailableClass($event);
+
+        $this->setOptions($event);
 
         if (Event::isCustomerEvent($event) === true)
         {
@@ -278,7 +281,7 @@ class Notify extends Processor\Notify
                 Subscription\Entity::STATUS     => $this->subscription->getStatus(),
                 Subscription\Entity::PUBLIC_ID  => $this->subscription->getPublicId(),
                 Subscription\Entity::TYPE       => $this->subscription->getType(),
-                Subscription\Entity::CHARGE_AT  => $this->formatTime($this->subscription->getType()),
+                Subscription\Entity::CHARGE_AT  => $this->formatTime($this->subscription->getChargeAt()),
             ],
             'merchant'  => [
                 Merchant\Entity::BILLING_LABEL => $this->merchant->getBillingLabel(),
@@ -290,7 +293,6 @@ class Notify extends Processor\Notify
                 'email' => $this->subscription->customer->getEmail(),
                 'phone' => $this->subscription->customer->getContact()
             ],
-            'options' => $this->getOptions(),
         ];
 
         if ($this->payment !== null)
@@ -305,16 +307,6 @@ class Notify extends Processor\Notify
                 // note that payment method is unavailable to the merchant
                 Payment\Entity::METHOD    => $this->payment->getMethodWithDetail(),
             ];
-
-            if ($this->invoice !== null)
-            {
-                $data['invoice']  = [
-                    Invoice\Entity::ID            => $this->invoice->getId(),
-                    Invoice\Entity::PUBLIC_ID     => $this->invoice->getPublicId(),
-                    Invoice\Entity::BILLING_START => $this->formatTime($this->invoice->getBillingStart()),
-                    Invoice\Entity::BILLING_END   => $this->formatTime($this->invoice->getBillingEnd()),
-                ];
-            }
 
             if ($this->payment->hasCard() === true)
             {
@@ -339,19 +331,21 @@ class Notify extends Processor\Notify
         if ($this->invoice !== null)
         {
             $data['invoice']  = [
-                'id'              => $this->invoice->getId(),
-                'public_id'       => $this->invoice->getPublicId(),
-                'billing_start'   => $this->invoice->getBillingStart(),
-                'billing_end'     => $this->invoice->getBillingEnd(),
+                Invoice\Entity::ID            => $this->invoice->getId(),
+                Invoice\Entity::PUBLIC_ID     => $this->invoice->getPublicId(),
+                Invoice\Entity::BILLING_START => $this->formatTime($this->invoice->getBillingStart()),
+                Invoice\Entity::BILLING_END   => $this->formatTime($this->invoice->getBillingEnd()),
             ];
         }
 
         return $data;
     }
 
-    protected function getOptions()
+    protected function setOptions(string $event)
     {
-        return array_merge(Event::DEFAULT_OPTIONS, $this->options);
+        $defaultOptions = Event::DEFAULT_OPTIONS[$event];
+
+        $this->template['options'] = array_merge($defaultOptions, $this->options);
     }
 
     protected function formatTime($time)
@@ -361,7 +355,7 @@ class Notify extends Processor\Notify
             return;
         }
 
-        return Carbon::createFromTimestamp($time, "Asia/Kolkata")->format('j M Y');
+        return Carbon::createFromTimestamp($time, Timezone::IST)->format('j M Y');
     }
 
     protected function isTimestamp($key, $value)

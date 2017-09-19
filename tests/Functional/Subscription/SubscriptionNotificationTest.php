@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Subscription;
 
 use Mail;
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Mail\Subscription as SubscriptionMail;
 
@@ -55,7 +56,7 @@ class SubscriptionNotificationTest extends TestCase
 
         $this->doAuthTxnForNewSubscription();
 
-        Mail::assertNotSent(SubscriptionMail\Authenticated::class);
+        Mail::assertNothingSent();
     }
 
     public function testSubscriptionAuthenticatedMailSentAuthAmount()
@@ -85,6 +86,52 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertContains('12/2017', $data['card']['expiry']);
             $this->assertContains('VISA', $data['card']['network']);
             $this->assertContains('**** **** **** 3335', $data['card']['number']);
+
+            $this->assertEquals(false, $data['options']['immediate']);
+            $this->assertEquals(false, $data['options']['upfront']);
+
+            return true;
+        });
+    }
+
+    public function testSubscriptionAuthenticatedMailSentImmediateWithoutAddon()
+    {
+        Mail::fake();
+
+        $this->doAuthTxnForSubscriptionImmediateWithoutAddOn();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        Mail::assertSent(SubscriptionMail\Authenticated::class, function ($mail) use ($subscription)
+        {
+            $data = $mail->viewData;
+
+            $this->assertEquals('active', $data['subscription']['status']);
+            $this->assertEquals(1, $data['subscription']['type']);
+
+            $this->assertEquals('10000000000000', $data['merchant']['id']);
+
+            $this->assertEquals('test@razorpay.com', $data['customer']['email']);
+            $this->assertEquals('1234567890', $data['customer']['phone']);
+
+            // Plan amount
+            $this->assertEquals('₹ 20', $data['payment']['amount']);
+            $this->assertContains('Card', $data['payment']['method']);
+            $this->assertContains('XXXX-XXXX-XXXX-3335', $data['payment']['method']);
+
+            $currentStart = Carbon::createFromTimestamp($subscription['current_start'], Timezone::IST)->format('j M Y');
+            $currentEnd   = Carbon::createFromTimestamp($subscription['current_end'], Timezone::IST)->format('j M Y');
+
+            $this->assertEquals($currentStart, $data['invoice']['billing_start']);
+            $this->assertEquals($currentEnd, $data['invoice']['billing_end']);
+
+            $this->assertEquals('#C15482', $data['card']['color']);
+            $this->assertContains('12/2017', $data['card']['expiry']);
+            $this->assertContains('VISA', $data['card']['network']);
+            $this->assertContains('**** **** **** 3335', $data['card']['number']);
+
+            $this->assertEquals(true, $data['options']['immediate']);
+            $this->assertEquals(false, $data['options']['upfront']);
 
             return true;
         });
@@ -121,6 +168,52 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertContains('VISA', $data['card']['network']);
             $this->assertContains('**** **** **** 3335', $data['card']['number']);
 
+            $this->assertEquals(false, $data['options']['immediate']);
+            $this->assertEquals(true, $data['options']['upfront']);
+
+            return true;
+        });
+    }
+
+    public function testSubscriptionAuthenticatedMailSentImmediateWithAddon()
+    {
+        Mail::fake();
+
+        $this->doAuthTxnForSubscriptionImmediateWithAddOn();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        Mail::assertSent(SubscriptionMail\Authenticated::class, function ($mail) use ($subscription)
+        {
+            $data = $mail->viewData;
+
+            $this->assertEquals('active', $data['subscription']['status']);
+            $this->assertEquals(3, $data['subscription']['type']);
+
+            $this->assertEquals('10000000000000', $data['merchant']['id']);
+
+            $this->assertEquals('test@razorpay.com', $data['customer']['email']);
+            $this->assertEquals('1234567890', $data['customer']['phone']);
+
+            // Addon amount plus plan amount
+            $this->assertEquals('₹ 23', $data['payment']['amount']);
+            $this->assertContains('Card', $data['payment']['method']);
+            $this->assertContains('XXXX-XXXX-XXXX-3335', $data['payment']['method']);
+
+            $currentStart = Carbon::createFromTimestamp($subscription['current_start'], Timezone::IST)->format('j M Y');
+            $currentEnd   = Carbon::createFromTimestamp($subscription['current_end'], Timezone::IST)->format('j M Y');
+
+            $this->assertEquals($currentStart, $data['invoice']['billing_start']);
+            $this->assertEquals($currentEnd, $data['invoice']['billing_end']);
+
+            $this->assertEquals('#C15482', $data['card']['color']);
+            $this->assertContains('12/2017', $data['card']['expiry']);
+            $this->assertContains('VISA', $data['card']['network']);
+            $this->assertContains('**** **** **** 3335', $data['card']['number']);
+
+            $this->assertEquals(true, $data['options']['immediate']);
+            $this->assertEquals(true, $data['options']['upfront']);
+
             return true;
         });
     }
@@ -141,7 +234,6 @@ class SubscriptionNotificationTest extends TestCase
 
             $this->assertEquals('active', $data['subscription']['status']);
             $this->assertEquals(0, $data['subscription']['type']);
-            // $this->assertEquals(, $data['subscription']['charge_at']);
 
             $this->assertEquals('10000000000000', $data['merchant']['id']);
 
@@ -160,6 +252,168 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertContains('12/2017', $data['card']['expiry']);
             $this->assertContains('VISA', $data['card']['network']);
             $this->assertContains('**** **** **** 3335', $data['card']['number']);
+
+            $this->assertEquals(false, $data['options']['card_change']);
+
+            return true;
+        });
+    }
+
+    public function testSubscriptionChargedAndCardChangeMailSent()
+    {
+        $subscription = $this->failSubscriptionFirstCharge();
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+
+        Mail::fake();
+
+        $this->doAuthPayment($paymentRequest);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        Mail::assertSent(SubscriptionMail\Charged::class, function ($mail) use ($subscription)
+        {
+            $data = $mail->viewData;
+
+            $this->assertEquals('active', $data['subscription']['status']);
+            $this->assertEquals(0, $data['subscription']['type']);
+
+            $this->assertEquals('10000000000000', $data['merchant']['id']);
+
+            $this->assertEquals('test@razorpay.com', $data['customer']['email']);
+            $this->assertEquals('1234567890', $data['customer']['phone']);
+
+            // Plan amount
+            $this->assertEquals('₹ 20', $data['payment']['amount']);
+            $this->assertContains('Card', $data['payment']['method']);
+            $this->assertContains('XXXX-XXXX-XXXX-3335', $data['payment']['method']);
+
+            // Invoice created for the charge
+            $currentStart = Carbon::createFromTimestamp($subscription['current_start'], Timezone::IST)->format('j M Y');
+            $currentEnd   = Carbon::createFromTimestamp($subscription['current_end'], Timezone::IST)->format('j M Y');
+
+            $this->assertEquals($currentStart, $data['invoice']['billing_start']);
+            $this->assertEquals($currentEnd, $data['invoice']['billing_end']);
+
+            $this->assertEquals('#C15482', $data['card']['color']);
+            $this->assertContains('12/2017', $data['card']['expiry']);
+            $this->assertContains('VISA', $data['card']['network']);
+            $this->assertContains('**** **** **** 3335', $data['card']['number']);
+
+            $this->assertEquals(true, $data['options']['card_change']);
+
+            return true;
+        });
+    }
+
+    public function testSubscriptionCardChangeMailSent()
+    {
+        $this->doAuthTxnForNewSubscription();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+
+        Mail::fake();
+
+        $this->doAuthPayment($paymentRequest);
+
+        Mail::assertSent(SubscriptionMail\CardChanged::class, function ($mail)
+        {
+            $data = $mail->viewData;
+
+            $this->assertEquals('authenticated', $data['subscription']['status']);
+            $this->assertEquals(0, $data['subscription']['type']);
+
+            $this->assertEquals('10000000000000', $data['merchant']['id']);
+
+            $this->assertEquals('test@razorpay.com', $data['customer']['email']);
+            $this->assertEquals('1234567890', $data['customer']['phone']);
+
+            // Token amount
+            $this->assertEquals('₹ 5', $data['payment']['amount']);
+            $this->assertContains('Card', $data['payment']['method']);
+            $this->assertContains('XXXX-XXXX-XXXX-3335', $data['payment']['method']);
+
+            // No invoice generated for token card change
+            $this->assertArrayNotHasKey('invoice', $data);
+
+            $this->assertEquals('#C15482', $data['card']['color']);
+            $this->assertContains('12/2017', $data['card']['expiry']);
+            $this->assertContains('VISA', $data['card']['network']);
+            $this->assertContains('**** **** **** 3335', $data['card']['number']);
+
+            $this->assertEmpty($data['options']);
+
+            return true;
+        });
+    }
+
+    public function testSubscriptionCancelledMailSent()
+    {
+        $this->doAuthTxnForSubscriptionImmediateWithoutAddOn();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        Mail::fake();
+
+        $this->makeCancelRequest($subscription['id']);
+
+        Mail::assertSent(SubscriptionMail\Cancelled::class, function ($mail)
+        {
+            $data = $mail->viewData;
+
+            $this->assertEquals('cancelled', $data['subscription']['status']);
+            $this->assertEquals(1, $data['subscription']['type']);
+
+            $this->assertEquals('10000000000000', $data['merchant']['id']);
+
+            $this->assertEquals('test@razorpay.com', $data['customer']['email']);
+            $this->assertEquals('1234567890', $data['customer']['phone']);
+
+            $this->assertArrayNotHasKey('invoice', $data);
+            $this->assertArrayNotHasKey('payment', $data);
+
+            return true;
+        });
+    }
+
+    public function testSubscriptionInvoiceChargedMailSent()
+    {
+        $subscription = $this->failSubscriptionTillHalted();
+
+        $oldInvoice = $this->getLastEntity('invoice', true);
+
+        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
+        $this->assertEquals(1, $result['invoices_created']);
+        $this->assertInvoiceCount(2, $subscription['id']);
+
+        Mail::fake();
+
+        $this->chargeSubscriptionInvoiceManually($oldInvoice);
+
+        Mail::assertSent(SubscriptionMail\InvoiceCharged::class, function ($mail) use ($oldInvoice)
+        {
+            $data = $mail->viewData;
+
+            $this->assertEquals('active', $data['subscription']['status']);
+            $this->assertEquals(0, $data['subscription']['type']);
+
+            $this->assertEquals('10000000000000', $data['merchant']['id']);
+
+            $this->assertEquals('test@razorpay.com', $data['customer']['email']);
+            $this->assertEquals('1234567890', $data['customer']['phone']);
+
+            $this->assertEquals('₹ 20', $data['payment']['amount']);
+            $this->assertContains('Card', $data['payment']['method']);
+            $this->assertContains('XXXX-XXXX-XXXX-3335', $data['payment']['method']);
+
+            $billingStart = Carbon::createFromTimestamp($oldInvoice['billing_start'], Timezone::IST)->format('j M Y');
+            $billingEnd   = Carbon::createFromTimestamp($oldInvoice['billing_end'], Timezone::IST)->format('j M Y');
+
+            $this->assertEquals($billingStart, $data['invoice']['billing_start']);
+            $this->assertEquals($billingEnd, $data['invoice']['billing_end']);
 
             return true;
         });
@@ -183,12 +437,16 @@ class SubscriptionNotificationTest extends TestCase
 
             $this->assertEquals('pending', $data['subscription']['status']);
             $this->assertEquals(0, $data['subscription']['type']);
-            // $this->assertEquals(, $data['subscription']['charge_at']);
 
             $this->assertEquals('10000000000000', $data['merchant']['id']);
 
             $this->assertEquals('test@razorpay.com', $data['customer']['email']);
             $this->assertEquals('1234567890', $data['customer']['phone']);
+
+            $this->assertArrayNotHasKey('invoice', $data);
+            $this->assertArrayNotHasKey('payment', $data);
+
+            $this->assertEmpty($data['options']);
 
             return true;
         });
@@ -225,12 +483,178 @@ class SubscriptionNotificationTest extends TestCase
 
             $this->assertEquals('halted', $data['subscription']['status']);
             $this->assertEquals(0, $data['subscription']['type']);
-            // $this->assertEquals(, $data['subscription']['charge_at']);
 
             $this->assertEquals('10000000000000', $data['merchant']['id']);
 
             $this->assertEquals('test@razorpay.com', $data['customer']['email']);
             $this->assertEquals('1234567890', $data['customer']['phone']);
+
+            $this->assertArrayNotHasKey('invoice', $data);
+            $this->assertArrayNotHasKey('payment', $data);
+
+            $this->assertEmpty($data['options']);
+
+            return true;
+        });
+    }
+
+    public function testSubscriptionCompletedMailSent()
+    {
+        $this->doAuthTxnForNewSubscription();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        while ($subscription['paid_count'] < $subscription['total_count'] - 1)
+        {
+            $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
+            $subscription = $this->getLastEntity('subscription', true);
+        }
+
+        $this->assertEquals('active', $subscription['status']);
+
+        Mail::fake();
+
+        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        Mail::assertSent(SubscriptionMail\Completed::class, function ($mail) use ($subscription)
+        {
+            $data = $mail->viewData;
+
+            $this->assertEquals('completed', $data['subscription']['status']);
+            $this->assertEquals(0, $data['subscription']['type']);
+
+            $this->assertEquals('10000000000000', $data['merchant']['id']);
+
+            $this->assertEquals('test@razorpay.com', $data['customer']['email']);
+            $this->assertEquals('1234567890', $data['customer']['phone']);
+
+            // Plan amount
+            $this->assertEquals('₹ 20', $data['payment']['amount']);
+            $this->assertContains('Card', $data['payment']['method']);
+            $this->assertContains('XXXX-XXXX-XXXX-3335', $data['payment']['method']);
+
+            $currentStart = Carbon::createFromTimestamp($subscription['current_start'], Timezone::IST)->format('j M Y');
+            $currentEnd   = Carbon::createFromTimestamp($subscription['current_end'], Timezone::IST)->format('j M Y');
+
+            $this->assertEquals($currentStart, $data['invoice']['billing_start']);
+            $this->assertEquals($currentEnd, $data['invoice']['billing_end']);
+
+            $this->assertEquals(true, $data['options']['charge_success']);
+
+            return true;
+        });
+    }
+
+    public function testSubscriptionCompletedMailSentFromPending()
+    {
+        $this->doAuthTxnForNewSubscription();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        while ($subscription['paid_count'] < $subscription['total_count'] - 1)
+        {
+            $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
+            $subscription = $this->getLastEntity('subscription', true);
+        }
+
+        $this->assertEquals('active', $subscription['status']);
+
+        $this->failCharge();
+
+        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('pending', $subscription['status']);
+
+        $this->clearMock();
+
+        Mail::fake();
+
+        $this->retrySubscriptionsViaCron($subscription['charge_at']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        Mail::assertSent(SubscriptionMail\Completed::class, function ($mail) use ($subscription)
+        {
+            $data = $mail->viewData;
+
+            $this->assertEquals('completed', $data['subscription']['status']);
+            $this->assertEquals(0, $data['subscription']['type']);
+
+            $this->assertEquals('10000000000000', $data['merchant']['id']);
+
+            $this->assertEquals('test@razorpay.com', $data['customer']['email']);
+            $this->assertEquals('1234567890', $data['customer']['phone']);
+
+            // Plan amount
+            $this->assertEquals('₹ 20', $data['payment']['amount']);
+            $this->assertContains('Card', $data['payment']['method']);
+            $this->assertContains('XXXX-XXXX-XXXX-3335', $data['payment']['method']);
+
+            $currentStart = Carbon::createFromTimestamp($subscription['current_start'], Timezone::IST)->format('j M Y');
+            $currentEnd   = Carbon::createFromTimestamp($subscription['current_end'], Timezone::IST)->format('j M Y');
+
+            $this->assertEquals($currentStart, $data['invoice']['billing_start']);
+            $this->assertEquals($currentEnd, $data['invoice']['billing_end']);
+
+            $this->assertEquals(true, $data['options']['charge_success']);
+
+            return true;
+        });
+    }
+
+    public function testSubscriptionCompletedMailSentOnFailure()
+    {
+        $this->doAuthTxnForNewSubscription();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        while ($subscription['paid_count'] < $subscription['total_count'] - 1)
+        {
+            $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
+            $subscription = $this->getLastEntity('subscription', true);
+        }
+
+        $this->assertEquals('active', $subscription['status']);
+
+        $this->failCharge();
+
+        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        while($subscription['auth_attempts'] < 3)
+        {
+            $this->retrySubscriptionsViaCron($subscription['charge_at']);
+
+            $subscription = $this->getLastEntity('subscription', true);
+        }
+
+        Mail::fake();
+
+        $this->retrySubscriptionsViaCron($subscription['charge_at']);
+
+        Mail::assertSent(SubscriptionMail\Completed::class, function ($mail)
+        {
+            $data = $mail->viewData;
+
+            $this->assertEquals('completed', $data['subscription']['status']);
+            $this->assertEquals(0, $data['subscription']['type']);
+
+            $this->assertEquals('10000000000000', $data['merchant']['id']);
+
+            $this->assertEquals('test@razorpay.com', $data['customer']['email']);
+            $this->assertEquals('1234567890', $data['customer']['phone']);
+
+            $this->assertArrayNotHasKey('invoice', $data);
+            $this->assertArrayNotHasKey('payment', $data);
+
+            $this->assertEquals(false, $data['options']['charge_success']);
 
             return true;
         });

@@ -329,21 +329,4 @@ class SubscriptionCancelTest extends TestCase
 
         Carbon::setTestNow();
     }
-
-    protected function makeCancelRequest(string $subscriptionId, $futureCancellation = null)
-    {
-        $testData = $this->testData['testSubscriptionCancel'];
-
-        if ($futureCancellation !== null)
-        {
-            $testData = $this->testData['testSubscriptionCancelFuture'];
-            $testData['request']['content']['cancel_at_cycle_end'] = $futureCancellation;
-        }
-
-        $testData['request']['url'] = '/subscriptions/' . $subscriptionId . '/cancel';
-
-        $this->ba->privateAuth();
-
-        return $this->startTest($testData);
-    }
 }

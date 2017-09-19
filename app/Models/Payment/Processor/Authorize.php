@@ -2443,10 +2443,6 @@ trait Authorize
             (new Subscription\Charge)->handleCaptureSuccess($subscription, $payment, $invoice);
         }
 
-        // TODO Pass options to triggerSubscriptionNotification to treat authenticated mails differently
-        // - Upfront Amount
-        // - Immediate
-
         $options = [
             Subscription\Event::UPFRONT     => $subscription->hadUpfrontAmount(),
             Subscription\Event::IMMEDIATE   => $subscription->wasImmediate(),

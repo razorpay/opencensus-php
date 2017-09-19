@@ -20,7 +20,7 @@
 <td class="center" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; font-size: 14px; line-height: 19px; text-align: center; padding: 0px 0px 10px;">
                               <h1 style="font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; padding: 0; margin: 0; line-height: 1.3; word-break: normal; margin-top: 40px; color: #f2f2f2; font-size: 32px; text-align: center; font-weight: bold;">
                               <center style="width: 100%; min-width: 580px;">
-                                Subscription Charged
+                                Subscription Initialized
                               </center>
                               </h1>
                             </td>
@@ -78,13 +78,7 @@
                   <table class="container" style="border-spacing: 0; border-collapse: collapse; padding: 0; vertical-align: top; width: 580px; margin: 0 auto; text-align: inherit;"><tr style="padding: 0; vertical-align: top; text-align: left;">
 <td class="wrapper last white" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; text-align: left; font-size: 14px; line-height: 19px; background: #ffffff; background-color: #ffffff; padding: 10px 20px 0px 0px; position: relative; padding-right: 0px;">
                         <table class="six columns" style="border-spacing: 0; border-collapse: collapse; padding: 0; vertical-align: top; text-align: left; margin: 0 auto; width: 280px;"><tr style="padding: 0; vertical-align: top; text-align: left;">
-<td class="center darktext" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; font-size: 14px; line-height: 25px; color: #484B4C; text-align: center; padding: 0px 0px 10px;">
-                              <center style="width: 100%; min-width: 280px;">
-                                Payment Id: {{$payment['public_id']}}<br>
-                                Subscription Id: {{$subscription['public_id']}}
-                              </center>
-                              <hr class="small" style="background-color: #d9d9d9; border: none; height: 2px; color: #E5E5E5; width: 40%;">
-</td>
+                                You have been successfully subscribed and a payment of {{$payment['amount']}} has been made. Your card details have been successfully stored for future payments.
                             <td class="expander" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; text-align: left; font-size: 14px; line-height: 19px; visibility: hidden; width: 0px; padding: 0 !important;"></td>
                           </tr></table>
 </td>
@@ -132,8 +126,8 @@
                   </tr></table>
 </td>
             </tr></table>
-          @if ($payment)
-          @if ($invoice)
+          @endif ($payment)
+          @if ($options['immediate'])
           <!-- Billing Period -->
           <table class="row" style="border-spacing: 0; border-collapse: collapse; vertical-align: top; text-align: left; padding: 0px; width: 100%; position: relative; display: block;"><tr style="padding: 0; vertical-align: top; text-align: left;">
 <td class="wrapper white" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; text-align: left; font-size: 14px; line-height: 19px; background: #ffffff; background-color: #ffffff; padding: 10px 20px 0px 0px; position: relative;">

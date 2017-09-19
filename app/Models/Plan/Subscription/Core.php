@@ -518,11 +518,15 @@ class Core extends Base\Core
 
     public function triggerSubscriptionFailureNotification(Entity $subscription)
     {
+        $notifyOptions = [
+            Event::CHARGE_SUCCESS => false,
+        ];
+
         $status = $subscription->getStatus();
 
         $event = constant(Event::class . '::' . strtoupper($status));
 
-        $this->triggerSubscriptionNotification($subscription, $event);
+        $this->triggerSubscriptionNotification($subscription, $event, $notifyOptions);
     }
 
     public function triggerSubscriptionAuthenticatedNotification(Entity $subscription)

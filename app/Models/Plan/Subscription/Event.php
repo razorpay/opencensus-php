@@ -24,10 +24,21 @@ class Event
     const OLD_STATUS     = 'old_status';
 
     const DEFAULT_OPTIONS = [
-        self::CHARGE_SUCCESS => true,
-        self::CARD_CHANGE    => false,
-        self::IMMEDIATE      => false,
-        self::UPFRONT        => false,
+        self::AUTHENTICATED => [
+            self::IMMEDIATE      => false,
+            self::UPFRONT        => false,
+        ],
+        self::CHARGED => [
+            self::CARD_CHANGE    => false,
+        ],
+        self::COMPLETED => [
+            self::CHARGE_SUCCESS => true,
+        ],
+        self::PENDING => [],
+        self::HALTED => [],
+        self::CANCELLED => [],
+        self::CARD_CHANGED => [],
+        self::INVOICE_CHARGED => [],
     ];
 
     const CUSTOMER_EVENTS = [
