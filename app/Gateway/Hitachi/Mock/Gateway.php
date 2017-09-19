@@ -17,6 +17,8 @@ class Gateway extends Hitachi\Gateway
     {
         $response = $this->sendMockGatewayRequest($request);
 
-        return $this->jsonToArray($response->body);
+        $body = $response->body;
+
+        return $this->parseResponseBody($body);
     }
 }

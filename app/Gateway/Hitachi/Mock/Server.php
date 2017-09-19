@@ -24,9 +24,15 @@ class Server extends Base\Mock\Server
 
         $response = $this->getAuthorizeResponse($content);
 
-        $this->content($response, __FUNCTION__);
+        $json = json_encode($response);
 
-        return $this->makeJsonResponse($response);
+        $this->content($json, __FUNCTION__);
+
+        $response = $this->makeResponse($json);
+
+        $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+
+        return $response;
     }
 
     public function verify($input)

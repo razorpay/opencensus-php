@@ -48,6 +48,28 @@ class HitachiGatewayTest extends TestCase
                 'name'         => 'Test Card'
             ]
         ]);
+
+        $txn = $this->getEntities('transaction', [], true);
+        $this->assertEquals(0, $txn['count']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertNull($payment['transaction_id']);
+        $this->assertEquals('100HitachiTmnl', $payment['terminal_id']);
+
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+
+        $txn = $this->getLastTransaction(true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterCapture'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment);
+
+        $payment = $this->getLastEntity('hitachi', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testHitachiCaptureEntity'], $payment);
     }
 
     public function testNotEnrolledCard()
@@ -61,6 +83,27 @@ class HitachiGatewayTest extends TestCase
                 'name'         => 'Test Card'
             ]
         ]);
+        $txn = $this->getEntities('transaction', [], true);
+        $this->assertEquals(0, $txn['count']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $this->assertNull($payment['transaction_id']);
+        $this->assertEquals('100HitachiTmnl', $payment['terminal_id']);
+
+        $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
+
+        $txn = $this->getLastTransaction(true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterCapture'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertTestResponse($payment);
+
+        $payment = $this->getLastEntity('hitachi', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testHitachiCaptureEntity'], $payment);
     }
 
     public function testPaymentVerify()
@@ -157,11 +200,30 @@ class HitachiGatewayTest extends TestCase
     {
         $this->doAuthAndCapturePayment($this->payment);
 
+        $txn = $this->getLastTransaction(true);
+        $this->assertArraySelectiveEquals(
+            $this->testData['testTransactionAfterCapture'], $txn);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $payment = $this->getLastEntity('hitachi', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testHitachiCaptureEntity'], $payment);
+
         $payment = $this->getLastEntity('payment', true);
 
         $this->refundPayment($payment['id']);
 
-        $this->paymentRefundReverseTestHelper($payment);
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('refunded', $payment['status']);
+
+        $gatewayPayment = $this->getLastEntity('hitachi', true);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('rfnd_' . $gatewayPayment['refund_id'], $refund['id']);
     }
 
     public function testPartialRefund()
@@ -216,5 +278,27 @@ class HitachiGatewayTest extends TestCase
         $this->refundAuthorizedPayment($payment['id']);
 
         $this->refundReverseFailureTestHelper($payment);
+    }
+
+    public function testInvalidJson()
+    {
+        $this->mockAuthFormatError();
+
+        $data = $this->testData['testInvalidJson'];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function ()
+            {
+                $payment = $this->defaultAuthPayment([
+                    'card' => [
+                        'number'       => CardNumber::VALID_ENROLL_NUMBER,
+                        'expiry_month' => '02',
+                        'expiry_year'  => '21',
+                        'cvv'          => 123,
+                        'name'         => 'Test Card'
+                    ]
+                ]);
+            });
     }
 }

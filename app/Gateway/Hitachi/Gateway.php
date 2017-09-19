@@ -554,6 +554,11 @@ class Gateway extends Base\Gateway
 
         $body = $response->body;
 
+        return $this->parseResponseBody($body);
+    }
+
+    protected function parseResponseBody(string $body)
+    {
         // TODO: Ask hitachi to fix it.
         try
         {
