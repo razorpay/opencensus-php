@@ -264,7 +264,7 @@ class Constants
         return $response;
     }
 
-    public static function getFeatureValue($featureName): array
+    public static function getFeatureValue($featureName): bool
     {
         return self::$featureValueMap[$featureName];
     }
