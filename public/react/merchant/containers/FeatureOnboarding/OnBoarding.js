@@ -50,6 +50,18 @@ export default class OnBoarding extends Component {
       });
   }
 
+  componentDidMount() {
+    var img = document.querySelector('.feature-image');
+
+    if (img.complete) {
+      img.classList.add('fadein');
+    } else {
+      img.addEventListener('load', () => {
+        img.classList.add('fadein');
+      });
+    }
+  }
+
   // For file uploader
   handleChange = event => {
     this.setState({ uploadedFile: event.target.files[0] });
