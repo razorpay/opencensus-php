@@ -68,14 +68,17 @@ class Service extends Base\Service
     {
         $error = $data = null;
 
-        $this->setApiCredentials();
-
-        $org = $this->getOrgFromCache($domain);
-
         try
         {
             // This is password based login
-            $data = $this->api->admin->passwordLogin($org['id'], $input)->toArray();
+            $requestConfig = [
+                'route_name'   => 'admin_authentication',
+                'query_params' => $input,
+            ];
+
+            $genericService = new Generic\Service;
+
+            list($error, $data) = $genericService->call('POST', $requestConfig);
 
             Session::put(config('auth.guards.api.session_key'), $data);
         }
@@ -87,13 +90,19 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
-    public function oAuthLogin($input, $orgId)
+    public function oAuthLogin($input)
     {
         $error = $data = null;
 
-        $this->setApiCredentials();
+        // This is oAuth based login
+        $requestConfig = [
+            'route_name'   => 'admin_oauth_authenticate',
+            'query_params' => $input,
+        ];
 
-        $data = $this->api->admin->oAuthLogin($input, $orgId)->toArray();
+        $genericService = new Generic\Service;
+
+        list($error, $data) = $genericService->call('POST', $requestConfig);
 
         return $data;
     }
@@ -131,7 +140,17 @@ class Service extends Base\Service
 
             // 1. Save the data (oauth token and provider) to API
 
-            $updatedAdmin = $this->api->admin->updateAdmin($orgId, $admin['id'], $updateData);
+            $requestConfig = [
+                'route_name'   => 'admin_edit_app_auth',
+                'query_params' => $updateData,
+                'url_params'   => [
+                    '{id}'  => $admin['id'],
+                ],
+            ];
+
+            $genericService = new Generic\Service;
+
+            list($error, $updatedAdmin) = $genericService->call('PUT', $requestConfig);
 
             // 2. Login the user to dashboard. Have to make an API call
             // to login the user and get an admin_token
@@ -144,7 +163,7 @@ class Service extends Base\Service
 
             try
             {
-                $data = $this->oAuthLogin($oAuthLoginInput, $orgId);
+                $data = $this->oAuthLogin($oAuthLoginInput);
 
                 Session::put(config('auth.guards.api.session_key'), $data);
             }
@@ -1320,13 +1339,18 @@ class Service extends Base\Service
 
         try
         {
-            $orgId = $admin->org_id;
-
             $params = [
                 'token' => $admin->token
             ];
 
-            $data = $this->api->admin->getAdminData($orgId, $params)->toArray();
+            $requestConfig = [
+                'route_name'    => 'admin_get_app_auth',
+                'query_params'  => $params,
+            ];
+
+            $genericService = new Generic\Service;
+
+            list($error, $data) = $genericService->call('POST', $requestConfig);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
@@ -1396,13 +1420,15 @@ class Service extends Base\Service
 
         $this->setAdminCredentials();
 
-        $user = Auth::guard('api')->user();
-
-        $orgId = $user->org_id;
-
         try
         {
-            $data = $this->api->admin->logout($orgId);
+            $requestConfig = [
+                'route_name' => 'admin_logout',
+            ];
+
+            $genericService = new Generic\Service;
+
+            list($error, $data) = $genericService->call('POST', $requestConfig);
 
             // Dashboard logout
             Auth::guard('api')->logout();
