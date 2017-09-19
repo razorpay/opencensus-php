@@ -2,6 +2,12 @@
 
 namespace RZP\Tests\Functional\Invoice;
 
+use Closure;
+use Mockery;
+
+use RZP\Jobs;
+use RZP\Models\Merchant\Webhook\Inferno;
+
 trait InvoiceTestTrait
 {
     protected function createDraftInvoice(array $with = [])
@@ -85,5 +91,16 @@ trait InvoiceTestTrait
         $expected['body'][1] = array_merge($expected['body'][1], $with);
 
         return $expected;
+    }
+
+    protected function mockInfernoFire(Closure $closure)
+    {
+        $inferno = Mockery::mock(Inferno::class, [])->makePartial();
+
+        $inferno->shouldReceive('fire')
+                ->once()
+                ->with(Mockery::type(Jobs\WebHook::class), Mockery::on($closure));
+
+        $this->app->instance('webhook.inferno', $inferno);
     }
 }
