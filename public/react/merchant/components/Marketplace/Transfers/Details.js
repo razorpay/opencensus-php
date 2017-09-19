@@ -1,23 +1,134 @@
+import AsyncButton from 'react-async-button';
 import { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { reduxForm } from 'redux-form';
+import moment from 'moment';
 
 import Alert from 'rzp/ui/Forms/Alert';
 import Amount from 'rzp/ui/Amount';
 import ContentToggler from 'rzp/ui/Toggler/ContentToggler';
 import Definition from 'rzp/ui/Definition';
+import RadioButton from 'rzp/ui/Forms/RadioButton';
 import Spinner from 'rzp/ui/Spinner';
 import Time from 'rzp/ui/Time';
+import { SingleDatePicker } from 'react-dates';
+import { isHoliday } from 'rzp/utils/bankHolidays';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Fee from 'merchant/components/Fee';
 import TransferReversal from 'merchant/components/Marketplace/Transfers/TransferReversal';
 import SettlementSchedule from 'merchant/components/Marketplace/Transfers/SettlementSchedule';
 
-@reduxForm({
-  form: 'settlementSchedule',
-})
+let initialState = {
+  onHold: 'false',
+  holdUntil: null,
+  date: null,
+  focused: false,
+  dateError: null,
+  errors: null,
+  editView: false,
+};
+
 export default class TransferDetails extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = { ...initialState };
+
+    // Do not want to use arrow member functions as new
+    // function will be created for every instance
+    // #antipattern
+    this.onDateChange = this.onDateChange.bind(this);
+    this.onScheduleChange = this.onScheduleChange.bind(this);
+    this.onSubmit = this.onSubmit.bind(this);
+    this.onDismiss = this.onDismiss.bind(this);
+    this.onEdit = this.onEdit.bind(this);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    const transfer = nextProps.transfer;
+
+    initialState = {
+      ...initialState,
+      onHold: (transfer.on_hold
+        ? transfer.on_hold_until ? 'on_hold_until' : 'on_hold'
+        : false).toString(),
+      holdUntil: transfer.on_hold_until,
+      date: transfer.on_hold_until
+        ? moment((transfer.on_hold_until + 600) * 1000)
+        : null,
+    };
+
+    this.setState(initialState);
+  }
+
+  onDateChange(date) {
+    this.setState({
+      date,
+      holdUntil: ((date.toDate() - 60000) / 1000) | 0,
+    });
+  }
+
+  onEdit(e) {
+    e.preventDefault();
+    this.setState({ editView: true });
+  }
+
+  onScheduleChange(e) {
+    const value = e.target.value;
+
+    this.setState({
+      onHold: value,
+      ...(value !== 'on_hold_until' && {
+        date: null,
+        holdUntil: null,
+        dateError: null,
+      }),
+    });
+  }
+
+  onSubmit(e) {
+    e.preventDefault();
+
+    if (this.state.onHold === 'on_hold_until' && !this.state.holdUntil) {
+      return this.setState({ dateError: true });
+    }
+
+    if (typeof this.props.onTransferUpdate !== 'function') {
+      return;
+    }
+
+    let data = {};
+
+    if (this.state.onHold !== 'false') {
+      data.on_hold = 1;
+
+      if (this.state.onHold === 'on_hold_until') {
+        data.on_hold_until = this.state.holdUntil || null;
+      }
+    } else {
+      data.on_hold = 0;
+    }
+
+    return this.props
+      .onTransferUpdate(data)
+      .then(() => {
+        initialState = {
+          ...initialState,
+          ...this.state,
+          editView: false,
+        };
+        this.setState(initialState);
+      })
+      .catch(({ errors }) => {
+        this.setState({ errors });
+      });
+  }
+
+  onDismiss(e) {
+    e.preventDefault();
+    this.setState({ ...initialState });
+  }
+
   render() {
     const {
       transfer,
@@ -50,8 +161,6 @@ export default class TransferDetails extends Component {
 
               <div class="SliderPanel__Body">
                 <div class="panel-body">
-                  <Alert type={statusMsg.type} message={statusMsg.message} />
-
                   <EntityDetailRow label="Linked Account">
                     <Definition>
                       <span>
@@ -90,7 +199,150 @@ export default class TransferDetails extends Component {
                   />
 
                   <EntityDetailRow label="On Hold">
-                    <SettlementSchedule transfer={transfer} />
+                    {this.state.editView
+                      ? <form
+                          onSubmit={this.onSubmit}
+                          name="updatePaymentTransfer"
+                        >
+                          <div class="RadioButton">
+                            <label>
+                              <input
+                                type="radio"
+                                name="onHold"
+                                value="on_hold_until"
+                                checked={this.state.onHold === 'on_hold_until'}
+                                onChange={this.onScheduleChange}
+                              />
+                              <div>
+                                <div class="RadioButton__button" />
+                                <div class="RadioButton__label">
+                                  <div>
+                                    <span>Schedule settlement on</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </label>
+                          </div>
+                          <div className="transfers-onhold-datepicker">
+                            <SingleDatePicker
+                              id="holdUntil"
+                              name="holdUntil"
+                              numberOfMonths={1}
+                              disabled={this.state.onHold !== 'on_hold_until'}
+                              isDayBlocked={date => {
+                                const dateWithOffset = moment()
+                                    .startOf('day')
+                                    .add(3, 'days')
+                                    .toDate(),
+                                  currDate = date
+                                    .clone()
+                                    .startOf('day')
+                                    .toDate();
+
+                                return (
+                                  currDate < dateWithOffset ||
+                                  isHoliday(date.toDate())
+                                );
+                              }}
+                              date={this.state.date}
+                              onDateChange={this.onDateChange}
+                              focused={this.state.focused}
+                              onFocusChange={({ focused }) =>
+                                this.setState({ focused })}
+                            />
+                            {this.state.dateError &&
+                              <div className="text-small text-danger text-right">
+                                Please select a schedule date
+                              </div>}
+                          </div>
+                          <div class="RadioButton">
+                            <label>
+                              <input
+                                type="radio"
+                                name="onHold"
+                                value="on_hold"
+                                checked={this.state.onHold === 'on_hold'}
+                                onChange={this.onScheduleChange}
+                              />
+                              <div>
+                                <div class="RadioButton__button" />
+                                <div class="RadioButton__label">
+                                  <span>Put on hold</span>
+                                  <div class="text-fade">
+                                    The settlement will be on hold till
+                                    specified otherwise.
+                                  </div>
+                                </div>
+                              </div>
+                            </label>
+                          </div>
+                          <div class="RadioButton">
+                            <label>
+                              <input
+                                type="radio"
+                                name="onHold"
+                                value={'false'}
+                                checked={this.state.onHold === 'false'}
+                                onChange={this.onScheduleChange}
+                              />
+                              <div>
+                                <div class="RadioButton__button" />
+                                <div class="RadioButton__label">
+                                  <span>Settle Now</span>
+                                  <div class="text-fade">
+                                    This transfer will be settled in next
+                                    available settlement slot
+                                  </div>
+                                </div>
+                              </div>
+                            </label>
+                          </div>
+                          {this.state.errors &&
+                            <div>
+                              {this.state.errors.map((item, key) => {
+                                return (
+                                  <Alert
+                                    key={key}
+                                    type="error"
+                                    message={item}
+                                  />
+                                );
+                              })}
+                            </div>}
+                          <div class="btn-toolbar text-center">
+                            <button
+                              type="button"
+                              className="btn btn-default btn-half"
+                              onClick={this.onDismiss}
+                            >
+                              Discard
+                            </button>
+                            <AsyncButton
+                              type="submit"
+                              className="btn btn-primary btn-half"
+                              text="Save"
+                              pendingText="Saving..."
+                              onClick={this.onSubmit}
+                            />
+                          </div>
+                        </form>
+                      : <span>
+                          {this.state.onHold === 'false'
+                            ? <span className="text-success">Scheduled</span>
+                            : this.state.holdUntil
+                              ? <span className="text-warning">
+                                  Scheduled for&nbsp;
+                                  <Time
+                                    value={this.state.date.toDate() / 1000}
+                                    format="Do MMM YYYY"
+                                  />
+                                </span>
+                              : <span className="text-danger">On Hold</span>}
+                          <span>&nbsp;&nbsp;</span>
+                          <a href className="btn-link" onClick={this.onEdit}>
+                            {'change'}
+                          </a>
+                        </span>}
                   </EntityDetailRow>
 
                   <EntityDetailRow

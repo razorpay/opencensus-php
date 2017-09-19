@@ -5,6 +5,7 @@ import ReversalModal from './ReversalModal';
 import {
   fetchTransfer,
   fetchReversals,
+  updateTransfer,
 } from 'merchant/modules/marketplace/transfer';
 import * as ModalActions from 'rzp/modules/modals';
 
@@ -36,6 +37,10 @@ export default class TransferDetailsContainer extends Component {
     }
   }
 
+  onTransferUpdate = patch => {
+    return updateTransfer(this.props.entity.id, patch);
+  };
+
   // Open modal for reversing transfer
   openReversalModal = transfer => {
     this.props.openModal({
@@ -65,6 +70,7 @@ export default class TransferDetailsContainer extends Component {
         onClose={onClose}
         onReverse={onReverse}
         openReversalModal={this.openReversalModal}
+        onTransferUpdate={this.onTransferUpdate}
       />
     );
   }

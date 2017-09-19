@@ -31,6 +31,21 @@ export default class Transfer extends GenericEntity {
     });
   }
 
+  update(data) {
+    let params = { '{id}': this.id };
+
+    return this.makeGenericAjaxCall({
+      method: 'patch',
+      data: {
+        route_name: 'transfer_edit',
+        url_params: JSON.stringify(params),
+        body: {
+          ...data,
+        },
+      },
+    });
+  }
+
   fetchReversals() {
     let data = {};
 

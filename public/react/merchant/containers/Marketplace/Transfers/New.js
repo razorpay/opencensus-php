@@ -19,7 +19,8 @@ import { fetchAccounts } from 'merchant/modules/marketplace/accounts';
 import FormItem from 'merchant/components/FormItem';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
 import { createTransfer } from 'merchant/modules/marketplace/transfer';
-import SettlementSchedule from 'merchant/components/Marketplace/Transfers/SettlementSchedule';
+import { isHoliday } from 'rzp/utils/bankHolidays';
+import RadioButton from 'rzp/ui/Forms/RadioButton';
 
 let Label = ({ text, htmlFor, required }) => {
   var classes = typeof required !== 'undefined' ? 'label-required' : '';
@@ -55,9 +56,10 @@ const selector = formValueSelector('createPaymentTransfer');
 @reduxForm({
   form: 'createPaymentTransfer',
   initialValues: {
-    onHold: null,
+    onHold: 'false',
     notes: [],
     account_id: null,
+    holdUntil: null,
   },
 })
 @withRouter
@@ -78,6 +80,12 @@ export default class TransferNew extends Component {
 
     // Currently keeping count = 100
     this.props.fetchAccounts({ count: 100 });
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.onHold !== 'on_hold_until' && nextProps.holdUntil) {
+      this.props.change('holdUntil', null);
+    }
   }
 
   showTransferCreationError(errors) {
@@ -115,16 +123,17 @@ export default class TransferNew extends Component {
       }, {});
     }
 
-    const holdData = {
-      ...(onHold !== null &&
-        (onHold === 'on_hold'
-          ? { on_hold: 1 }
-          : {
-              on_hold: 1,
-              on_hold_until:
-                moment(holdUntil * 1000).startOf('day').toDate() / 1000 - 600,
-            })),
-    };
+    let holdData = {};
+
+    if (this.props.onHold !== 'false') {
+      holdData.on_hold = 1;
+
+      if (this.props.onHold === 'on_hold_until') {
+        holdData.on_hold_until = this.props.holdUntil || null;
+      }
+    } else {
+      holdData.on_hold = 0;
+    }
 
     return createTransfer({
       id: this.props.paymentId,
@@ -287,10 +296,66 @@ export default class TransferNew extends Component {
               <FormItem
                 label={_ => <Label text="Settlement schedule" />}
                 field={_ =>
-                  <SettlementSchedule
-                    onHold={this.props.onHold}
-                    holdUntil={this.props.holdUntil}
-                  />}
+                  <div>
+                    <Field
+                      component={RadioButton}
+                      name="onHold"
+                      htmlValue="on_hold_until"
+                      checked={this.props.onHold === 'on_hold_until'}
+                      label={_ =>
+                        <div>
+                          <span>Schedule settlement on</span>
+                        </div>}
+                    />
+                    <div className="transfers-onhold-datepicker">
+                      <Field
+                        component={DatePickerField}
+                        name="holdUntil"
+                        required
+                        disabled={this.props.onHold !== 'on_hold_until'}
+                        isDayBlocked={date => {
+                          const dateWithOffset = moment()
+                              .startOf('day')
+                              .add(3, 'days')
+                              .toDate(),
+                            currDate = date.clone().startOf('day').toDate();
+
+                          return (
+                            currDate < dateWithOffset ||
+                            isHoliday(date.toDate())
+                          );
+                        }}
+                      />
+                    </div>
+                    <Field
+                      component={RadioButton}
+                      name="onHold"
+                      htmlValue="on_hold"
+                      checked={this.props.onHold === 'on_hold'}
+                      label={_ =>
+                        <div>
+                          <span>Put on hold</span>
+                          <div className="text-fade">
+                            The settlement will be on hold till specified
+                            otherwise.
+                          </div>
+                        </div>}
+                    />
+                    <Field
+                      component={RadioButton}
+                      name="onHold"
+                      htmlValue="false"
+                      checked={this.props.onHold === 'false'}
+                      label={_ =>
+                        <div>
+                          <span>Settle Now</span>
+                          <div className="text-fade">
+                            This transfer will be settled in next available
+                            settlement slot.
+                          </div>
+                        </div>}
+                    />
+                  </div>}
               />
 
               <Alert type="error" message={this.state.errors} />

@@ -1013,8 +1013,8 @@ tr:hover .row-action.btn-group {
   width: 100%;
 }
 
-form[name="createPaymentTransfer"] {
-  div.pair-value div.RadioButton:first-child {
+form[name="createPaymentTransfer"], form[name="updatePaymentTransfer"] {
+  div.RadioButton:first-child {
     margin-top: 0;
   }
 
@@ -1031,3 +1031,10 @@ form[name="createPaymentTransfer"] {
     cursor: not-allowed;
   }
 }
+
+form[name="updatePaymentTransfer"] {
+  div.btn-toolbar {
+    padding-left: 0;
+  }
+}
+

@@ -5,6 +5,7 @@ import { makeEntityReducer } from 'rzp/modules/entity';
 const TRANSFER_FETCH = 'TRANSFER_FETCH';
 const TRANSFER_REVERSAL = 'TRANSFER_REVERSAL';
 const TRANSFER_FETCH_REVERSAL = 'TRANSFER_FETCH_REVERSAL';
+const UPDATE_TRANSFER = 'UPDATE_TRANSFER';
 
 export const fetchTransfer = id => {
   let transfer = new Transfer();
@@ -38,6 +39,12 @@ export const createTransfer = data => {
   const transfer = new Transfer(params);
 
   return transfer.save({ id, ...data });
+};
+
+export const updateTransfer = (id, data) => {
+  const transfer = new Transfer({ id });
+
+  return transfer.update(data);
 };
 
 let defaultInitialState = {

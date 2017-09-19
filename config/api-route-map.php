@@ -358,6 +358,11 @@ return [
             'routeName' => 'marketplace_read'
         ],
 
+        'transfer_edit'                     => [
+            'url'       => 'transfers/{id}',
+            'routeName' => 'marketplace_edit'
+        ],
+
         // Reversals
         'reversal_fetch_multiple'           => [
             'url'       => 'reversals',
