@@ -5,6 +5,7 @@ use Config;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity;
 use RZP\Models\FileStore;
+use RZP\Encryption\Handler;
 
 class FileStoreTest extends TestCase
 {
@@ -35,6 +36,26 @@ class FileStoreTest extends TestCase
                 ->type($this->type)
                 ->save();
     }
+
+    function testEncryption()
+    {
+        $encryptionType = Handler::PGP_ENCRYPTION;
+
+        $extension = FileStore\Format::XLSX;
+        //Todo get this key added in the instances
+        $testEncryptionKey = 'C45858B3041DA910EBFB51D16037D95C5D0C7902';
+
+        $file = $this->creator->extension($extension)
+                     ->content($this->content)
+                     ->name($this->fileName)
+                     ->store($this->store)
+                     ->type($this->type)
+                     ->encrypt($encryptionType, ['secret' => $testEncryptionKey])
+                     ->save();
+
+        $this->assertEquals($file->getFileInstance()->getMime(), 'application/pgp');
+    }
+
 
     function testInvalidType()
     {

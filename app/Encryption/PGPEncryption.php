@@ -49,6 +49,6 @@ class PGPEncryption extends IEncryption
 
     protected function validateParams(array $params)
     {
-        (new Validator)->validate('pgp_encryption', $params);
+        (new Validator)->validateInput('pgp_encryption', $params);
     }
 }

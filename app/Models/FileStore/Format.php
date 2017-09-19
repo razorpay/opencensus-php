@@ -41,7 +41,7 @@ class Format
         self::PDF   => ['application/pdf', 'application/x-pdf'],
         self::PNG   => ['image/png'],
         self::TXT   => ['text/plain'],
-        self::XLSX  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+        self::XLSX  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/pgp'],
         self::XLS   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel',
                         'application/vnd.ms-office'],
         self::ZIP   => ['application/zip'],
