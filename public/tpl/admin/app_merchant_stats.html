@@ -62,23 +62,23 @@
       <tbody>
         <tr>
           <td>Payments Volume</td>
-          <td>{{merchant_analytics.payments_volume[0].value}}</td>
+          <td>{{merchant_analytics.payments_volume[0].value/100 | rupee}}</td>
         </tr>
         <tr>
           <td>Total Payments</td>
-          <td>{{merchant_analytics.total_payments[0].value}}</td>
+          <td>{{merchant_analytics.total_payments[0].value | number:0}}</td>
         </tr>
         <tr>
           <td>Total Refunds</td>
-          <td>{{merchant_analytics.total_refunds[0].value}}</td>
+          <td>{{merchant_analytics.total_refunds[0].value | number:0}}</td>
         </tr>
         <tr>
           <td>Total Settlements</td>
-          <td>{{merchant_analytics.total_settlements[0].value}}</td>
+          <td>{{merchant_analytics.total_settlements[0].value | number:0}}</td>
         </tr>
         <tr>
           <td>Recent Balance</td>
-          <td>{{merchant_analytics.recent_balance[0].value}}</td>
+          <td>{{merchant_analytics.recent_balance[0].value/100 | rupee}}</td>
         </tr>
       </tbody>
     </table>
@@ -97,7 +97,7 @@
         <tr ng-repeat="payment_method_bar in merchant_analytics.payment_method_bars">
           <td>{{payment_method_bar.method}}</td>
           <td>{{payment_method_bar.percent}}</td>
-          <td>{{payment_method_bar.doc_count}}</td>
+          <td>{{payment_method_bar.doc_count | number:0}}</td>
         </tr>
       </tbody>
     </table>
