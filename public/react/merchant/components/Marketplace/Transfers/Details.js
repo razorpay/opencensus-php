@@ -16,7 +16,6 @@ import { isHoliday } from 'rzp/utils/bankHolidays';
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Fee from 'merchant/components/Fee';
 import TransferReversal from 'merchant/components/Marketplace/Transfers/TransferReversal';
-import SettlementSchedule from 'merchant/components/Marketplace/Transfers/SettlementSchedule';
 
 let initialState = {
   onHold: 'false',

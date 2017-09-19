@@ -147,12 +147,17 @@ export default class PaymentDetailsContainer extends Component {
       .catch(() => {});
   };
 
-  secClose = () => {
+  secClose = closeTransferDetails => {
     let { compactSlider, history, location } = this.props;
     findDOMNode(this.transfersView).classList.toggle('toggle-slider');
 
     compactSlider();
-    history.push(location.pathname.replace(/\/[^\/]+\/[^\/]+\/?$/, ''));
+    history.push(
+      location.pathname.replace(
+        !closeTransferDetails ? /\/[^\/]+\/[^\/]+\/?$/ : /\/[^\/]+\/?$/,
+        ''
+      )
+    );
   };
 
   onCreateTransfer = () => {
@@ -224,7 +229,7 @@ export default class PaymentDetailsContainer extends Component {
           {this.state.secView === 'transfer' &&
             <PaymentTransferDetails
               id={this.props.transfer_id}
-              onClose={this.secClose}
+              onClose={() => this.secClose(true)}
               ref={c => (this.transfersView = c)}
               onReverse={this.onTransferReverse}
               onRefund={this.onPaymentRefund}
