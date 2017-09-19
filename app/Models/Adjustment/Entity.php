@@ -17,7 +17,6 @@ class Entity extends Base\PublicEntity
     const DESCRIPTION       = 'description';
     const TRANSACTION_ID    = 'transaction_id';
     const SETTLEMENT_ID     = 'settlement_id';
-    const FEES              = 'fees';
 
     // For report
     const DISPUTE_ID        = 'dispute_id';

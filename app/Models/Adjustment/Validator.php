@@ -18,7 +18,6 @@ class Validator extends Base\Validator
     protected static $feeAdjustmentRules = [
         Entity::AMOUNT        => 'sometimes|integer',
         InvoiceEntity::TAX    => 'sometimes|integer',
-        Entity::FEES          => 'sometimes|integer',
         Entity::CURRENCY      => 'required|in:INR',
         Entity::DESCRIPTION   => 'required|min:10|max:255',
     ];

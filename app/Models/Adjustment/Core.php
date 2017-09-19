@@ -13,6 +13,8 @@ use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Merchant\Invoice as MerchantInvoice;
+use RZP\Exception\BadRequestValidationFailureException;
+use RZP\Models\Transfer;
 
 class Core extends Base\Core
 {
@@ -31,37 +33,42 @@ class Core extends Base\Core
 
         $tax =  $adjInput[MerchantInvoice\Entity::TAX] ?? 0;
 
-        $fees = $adjInput[Adjustment\Entity::FEES] ?? 0;
+        $fees = $adjInput[Transfer\Entity::FEES] ?? 0;
 
         $adjInput[Entity::AMOUNT] = $amount + $tax + $fees;
 
-        if (isset($adjInput[Entity::AMOUNT]) === true and
-            isset($adjInput[MerchantInvoice\Entity::TAX]) === false and
-            isset($adjInput[Adjustment\Entity::FEES]) === false)
+        if (isset($input[Entity::AMOUNT]) === true and
+            isset($input[MerchantInvoice\Entity::TAX]) === true and
+            isset($input[Transfer\Entity::FEES]) === true)
         {
-            $adj = $this->createAdjEntityAndSetWorkflow($adjInput, $merchant);
+            throw new Exception\BadRequestValidationFailureException('Either amount OR tax/fees should be passed');
+        }
 
+        unset($adjInput[Transfer\Entity::FEES]);
+
+        $adj = (new Adjustment\Entity)->build($adjInput);
+
+        $this->app['workflow']
+            ->setEntityAndId($adj->getEntity(), $merchant->getId())
+            ->handle((new \stdClass), $adj);
+
+        s($adjInput);
+
+        if (isset($input[Entity::AMOUNT]) === true)
+        {
             return $this->transaction([$this, 'createAdjInTransaction'], $adj, $merchant);
         }
-        elseif ((isset($adjInput[Entity::AMOUNT]) === false) and
-            (isset($adjInput[MerchantInvoice\Entity::TAX]) or isset($adjInput[Adjustment\Entity::FEES])) === true)
+        else
         {
-            $adj = $this->createAdjEntityAndSetWorkflow($adjInput, $merchant);
-
-            $adjustment = $this->repo->transaction(function () use ($adj, $merchant, $input) {
+            $adjustment = $this->repo->transaction(function () use ($adj, $merchant, $adjInput) {
                 $adjustment = $this->createAdjInTransaction($adj, $merchant);
 
-                (new Merchant\Invoice\Core)->createAdjustmentInvoiceEntity($adj, $input);
+                (new Merchant\Invoice\Core)->createAdjustmentInvoiceEntity($adj, $adjInput);
 
                 return $adjustment;
             });
             return $adjustment;
         }
-        else
-        {
-            throw new Exception\BadRequestValidationFailureException('Either amount OR tax/fees should be passed');
-        }
-
     }
 
     public function createDisputeAdjustment(array $input, Dispute\Entity $dispute): Entity

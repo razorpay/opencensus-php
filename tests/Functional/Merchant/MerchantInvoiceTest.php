@@ -234,6 +234,66 @@ class MerchantInvoiceTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testFeeAdjustment()
+    {
+        $md1 = $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id' => '10000000000000',
+                'gstin' => '29kjsngjk213922',
+            ]);
+
+        $adjustmentData =[
+            'merchant_id'   => '10000000000000',
+            'fees'          => -1300,
+            'currency'      => 'INR',
+            'description'   => 'Fee adjustment',
+        ];
+
+        $request = [
+            'method'    => 'POST',
+            'url'       => '/adjustments',
+            'content'   => $adjustmentData
+        ];
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
+
+        $this->setAdminForInternalAuth();
+
+        $this->ba->addAdminAuthHeaders('org_'.$this->org->id, $this->authToken);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->ba->addAdminAuthHeaders(null, null);
+
+        // Check adjustment entity
+        $data = $this->getLastEntity('adjustment', true);
+
+        s($data);
+
+        s($content);
+
+        $this->assertArraySelectiveEquals($content, $data);
+
+        // Check invoice entity
+        $merchantInvoice = $this->getLastEntity('merchant_invoice', true);
+
+        s($merchantInvoice);
+
+        $this->assertTestResponse($merchantInvoice);
+
+        $dateString = Carbon::createFromDate(
+            $merchantInvoice['year'],
+            $merchantInvoice['month'],
+            1,
+            Timezone::IST
+            )->format('my');
+
+         $this->assertEquals(substr($merchantInvoice[Invoice\Entity::INVOICE_NUMBER], -4), $dateString);
+    }
+
     public function testInvoiceEntityCreateForGivenMerchant()
     {
         $this->createData();
