@@ -152,7 +152,7 @@ export default class OnBoarding extends Component {
               />}
 
             <a class="btn-link" href={currentForm.links.knowMore}>
-              Know More
+              Know more
             </a>
             <span class="dot" />
             <a class="btn-link" href={currentForm.links.docs}>
@@ -160,7 +160,7 @@ export default class OnBoarding extends Component {
             </a>
           </div>
 
-          <div class="banner-figure">
+          <div class="banner-figure clearfix">
             <img class="feature-image" src={currentForm.formImage} />
           </div>
         </main>
