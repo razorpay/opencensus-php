@@ -58,6 +58,20 @@ app.controller('MerchantActivationCtrl', [
         });
     };
 
+    String.prototype.humanize = function() {
+      var word =  this.replace(/_/g,' ')
+                      .split(' ')
+                      .map(function(str,index) {
+                        if(index === 0) {
+                          return (str.charAt(0).toUpperCase() + str.slice(1));
+                        }
+                        return str;
+                      })
+                      .join(" ");
+
+      return word;
+    }
+
     function getData() {
       var request = $http.get(
         '/admin/merchant/' + $scope.merchant.id + '/details'
@@ -79,6 +93,13 @@ app.controller('MerchantActivationCtrl', [
             });
             angular.forEach(data.data.activation.files, function(value, key) {
               $scope.files[key] = value;
+            });
+            $scope['onboarding'] = {};
+            angular.forEach(data.data.onboarding, function(
+              value,
+              key
+            ) {
+              $scope['onboarding'][key.humanize()] = value;
             });
             $scope.merchant = data.data.merchant;
             $scope.locked = $scope.data['locked'];
