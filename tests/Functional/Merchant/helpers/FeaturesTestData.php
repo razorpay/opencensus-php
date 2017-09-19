@@ -316,6 +316,31 @@ return [
         ]
     ],
 
+    'addFeatureNonEditableByMerchantOnLive' => [
+        'request' => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+            'content' => [
+                'names'       => ['subscriptions'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name'          => 'subscriptions',
+                    'entity_id'     => '10000000000000',
+                    'entity_type'   => 'merchant'
+                ]
+            ]
+        ]
+    ],
+
     'deleteFeature' => [
         'request' => [
             'url'       => "/features/10000000000000/dummy",
