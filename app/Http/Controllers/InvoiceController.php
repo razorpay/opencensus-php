@@ -177,11 +177,6 @@ class InvoiceController extends Controller
             $view = 'invoice.uber';
         }
 
-        if (empty($data['subscription']) === false)
-        {
-            $view = 'invoice.subscription';
-        }
-
         //
         // This route gets called as part of callback_url during payment
         // creation when pop-up doesn't work. We send the request parameters

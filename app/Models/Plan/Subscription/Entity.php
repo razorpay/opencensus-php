@@ -339,6 +339,20 @@ class Entity extends Base\PublicEntity
         return ($hasGlobalCustomer === false);
     }
 
+    /**
+     * Returns the path component of Dashboard view url.
+     *
+     * For subscription (New): #/app/subscriptions/{public-id}
+     *
+     * @return string
+     */
+    public function getDashboardPath(): string
+    {
+        $path = '#/app/subscriptions/' . $this->getPublicId();
+
+        return $path;
+    }
+
     // --------------------- END GETTERS ---------------------
 
     // --------------------- ACCESSORS ---------------------

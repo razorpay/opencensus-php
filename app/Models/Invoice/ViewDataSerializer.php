@@ -10,14 +10,12 @@ use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
-use RZP\Models\Plan\Subscription;
 use RZP\Models\Merchant\Checkout;
 
 /**
  * This class is common source of invoice and related data to be sent
  * - to mail templates as payload
  * - to hosted page view
- *
  */
 class ViewDataSerializer extends Base\Core
 {
@@ -84,11 +82,6 @@ class ViewDataSerializer extends Base\Core
 
         $invoiceJsUrl = Config::get('app.cdn_v1_url') . '/invoice.js';
 
-        if ($this->invoice->isOfSubscription() === true)
-        {
-            $subscriptionData = $this->getFormattedSubscriptionDataForView();
-        }
-
         return [
             'environment'   => $this->app->environment(),
 
@@ -99,15 +92,7 @@ class ViewDataSerializer extends Base\Core
             'key_id'        => $keyId,
             'merchant'      => $merchantData,
             'invoice'       => $invoiceData,
-            'subscription'  => $subscriptionData ?? [],
         ];
-    }
-
-    protected function getFormattedSubscriptionDataForView(): array
-    {
-        $subscription = $this->invoice->subscription;
-
-        return [];
     }
 
     protected function getFormattedInvoiceDataForView(): array
