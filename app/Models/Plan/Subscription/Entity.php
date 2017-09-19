@@ -44,6 +44,7 @@ class Entity extends Base\PublicEntity
     const SCHEDULE_ID       = 'schedule_id';
     const CUSTOMER_NOTIFY   = 'customer_notify';
     const TYPE              = 'type';
+    const CANCEL_AT         = 'cancel_at';
 
     const FAILED_AT         = 'failed_at';
     const AUTHENTICATED_AT  = 'authenticated_at';
@@ -58,6 +59,11 @@ class Entity extends Base\PublicEntity
      * be 1000rs and if subscription is for 1yr, add-on amount can be 500rs.
      */
     const ADDONS = 'addons';
+
+    /**
+     * Input to signify cancel at cycle end and not immediately
+     */
+    const CANCEL_AT_CYCLE_END  = 'cancel_at_cycle_end';
 
     /**
      * This key is used to search in subscriptions fetch multiple
@@ -84,21 +90,21 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
-        self::NOTES             => [],
-        self::QUANTITY          => 1,
-        self::ENDED_AT          => null,
-        self::STATUS            => Status::CREATED,
-        self::PAID_COUNT        => 0,
-        self::AUTH_ATTEMPTS     => 0,
-        self::TYPE              => 0,
-        self::ERROR_STATUS      => null,
-        self::ACTIVATED_AT      => null,
-        self::FAILED_AT         => null,
-        self::CURRENT_START     => null,
-        self::CURRENT_END       => null,
-        self::TOKEN_ID          => null,
-        self::START_AT          => null,
-        self::END_AT            => null,
+        self::TYPE                  => 0,
+        self::NOTES                 => [],
+        self::QUANTITY              => 1,
+        self::ENDED_AT              => null,
+        self::STATUS                => Status::CREATED,
+        self::PAID_COUNT            => 0,
+        self::AUTH_ATTEMPTS         => 0,
+        self::ERROR_STATUS          => null,
+        self::ACTIVATED_AT          => null,
+        self::FAILED_AT             => null,
+        self::CURRENT_START         => null,
+        self::CURRENT_END           => null,
+        self::TOKEN_ID              => null,
+        self::START_AT              => null,
+        self::END_AT                => null,
     ];
 
     protected static $generators = [
@@ -143,18 +149,19 @@ class Entity extends Base\PublicEntity
         self::PAID_COUNT,
         self::CUSTOMER_NOTIFY,
         self::CREATED_AT,
+        // self::CANCEL_AT_CYCLE_END,
     ];
 
     protected $casts = [
-        self::START_AT          => 'int',
-        self::END_AT            => 'int',
-        self::QUANTITY          => 'int',
-        self::CURRENT_START     => 'int',
-        self::CURRENT_END       => 'int',
-        self::TOTAL_COUNT       => 'int',
-        self::PAID_COUNT        => 'int',
-        self::AUTH_ATTEMPTS     => 'int',
-        self::CUSTOMER_NOTIFY   => 'bool',
+        self::START_AT              => 'int',
+        self::END_AT                => 'int',
+        self::QUANTITY              => 'int',
+        self::CURRENT_START         => 'int',
+        self::CURRENT_END           => 'int',
+        self::TOTAL_COUNT           => 'int',
+        self::PAID_COUNT            => 'int',
+        self::AUTH_ATTEMPTS         => 'int',
+        self::CUSTOMER_NOTIFY       => 'bool',
     ];
 
     protected $publicSetters = [
@@ -174,6 +181,7 @@ class Entity extends Base\PublicEntity
         // This has to be via appends and not relations
         // because it's a hasMany relation.
         self::ADDONS,
+        self::CANCEL_AT_CYCLE_END,
     ];
 
     protected $dates = [
@@ -296,6 +304,11 @@ class Entity extends Base\PublicEntity
     public function getTokenId()
     {
         return $this->getAttribute(self::TOKEN_ID);
+    }
+
+    public function getCancelAtCycleEnd()
+    {
+        return $this->getAttribute(self::CANCEL_AT_CYCLE_END);
     }
 
     public function hasToken()
@@ -485,6 +498,11 @@ class Entity extends Base\PublicEntity
         return $addons;
     }
 
+    public function getCancelAtCycleEndAttribute()
+    {
+        return $this->isAttributeNotNull(self::CANCEL_AT);
+    }
+
     // --------------------- END ACCESSORS ---------------------
 
     // --------------------- SETTERS ---------------------
@@ -509,6 +527,16 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ENDED_AT, $endAt);
     }
 
+    public function setCancelledAt($cancelledAt)
+    {
+        $this->setAttribute(self::CANCELLED_AT, $cancelledAt);
+    }
+
+    public function setCancelAt($cancelAt)
+    {
+        $this->setAttribute(self::CANCEL_AT, $cancelAt);
+    }
+
     public function setStatus($status)
     {
         Status::validateStatus($status);
@@ -521,7 +549,20 @@ class Entity extends Base\PublicEntity
 
             $currentTime = Carbon::now()->getTimestamp();
 
-            $this->setAttribute($timestampKey, $currentTime);
+            $currentTimestamp = $this->getAttribute($timestampKey);
+
+            //
+            // In some cases like cancelled_at, the request to
+            // cancel the subscription is received at time T1, to
+            // cancel the subscription at time T2.
+            // We set the cancelled_at to T1, but the state is not changed
+            // to `cancelled`. We do not change the timestamp after we
+            // actually change the state to `cancelled` at time T2.
+            //
+            if (empty($currentTimestamp) === true)
+            {
+                $this->setAttribute($timestampKey, $currentTime);
+            }
         }
     }
 

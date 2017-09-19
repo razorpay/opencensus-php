@@ -1101,6 +1101,26 @@ return [
         ],
     ],
 
+    'testSubscriptionCancelFuture' => [
+        'request' => [
+            'method'    => 'post',
+            'content'   => [
+                'cancel_at_cycle_end'   => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'                => 'subscription',
+                'plan_id'               => 'plan_1000000000plan',
+                'customer_id'           => 'cust_100000customer',
+                'status'                => 'active',
+                'total_count'           => 6,
+                'paid_count'            => 1,
+                'ended_at'              => null,
+            ]
+        ]
+    ],
+
     'testSubscriptionCancelBasic' => [
         'request' => [
             'method' => 'post',
@@ -1435,4 +1455,36 @@ return [
             'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
         ],
     ],
+
+    'subscriptionWebhookDataForFutureCancel' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event'  => 'subscription.cancelled',
+            'contains' => [
+                'subscription',
+            ],
+            'payload' => [
+                'subscription' => [
+                    'entity' => [
+                        'entity'                => 'subscription',
+                        'plan_id'               => 'plan_1000000000plan',
+                        'customer_id'           => 'cust_100000customer',
+                        'status'                => 'cancelled',
+                        'current_start'         => 1516386600,
+                        'current_end'           => 1521484200,
+                        'ended_at'              => 1516386601,
+                        'quantity'              => 1,
+                        'notes'                 => [],
+                        'charge_at'             => null,
+                        'start_at'              => 1516386600,
+                        'end_at'                => 1542652200,
+                        'auth_attempts'         => 0,
+                        'total_count'           => 6,
+                        'paid_count'            => 1,
+                    ]
+                ]
+            ]
+        ]
+    ]
 ];

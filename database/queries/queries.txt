@@ -2342,6 +2342,10 @@ ALTER TABLE gateway_rules
     ADD INDEX gateway_rules_network_category_index (network_category),
     ADD INDEX gateway_rules_category2_index (category2);
 
+ALTER TABLE subscriptions
+    ADD COLUMN cancel_at INT(11) DEFAULT NULL AFTER end_at,
+    ADD INDEX subscriptions_cancel_at_index (cancel_at);
+
 ALTER TABLE fund_transfer_attempts
     ADD COLUMN narration VARCHAR(255) DEFAULT NULL AFTER utr;
 

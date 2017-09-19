@@ -58,6 +58,7 @@ class Repository extends Base\Repository
         $query = $this->getBaseSubscriptionsQuery()
                       ->whereIn(Entity::STATUS, Status::$cronChargeableStatuses)
                       ->whereNull(Entity::ENDED_AT)
+                      ->whereNull(Entity::CANCEL_AT)
                       ->where(function($query) use ($currentTime)
                       {
                           $query->where(Entity::AUTH_ATTEMPTS, '=', 0)
@@ -66,10 +67,12 @@ class Repository extends Base\Repository
                                     $query->where(Entity::AUTH_ATTEMPTS, '=', Charge::MAX_AUTH_ATTEMPTS)
                                           ->where(Entity::STATUS, '=', Status::HALTED);
                                 });
-
-                          $query->whereNull(Entity::CURRENT_END)
-                                ->orWhere(Entity::CURRENT_END, '<', $currentTime);
                       })
+                      ->where(function($query) use ($currentTime)
+                        {
+                            $query->whereNull(Entity::CURRENT_END)
+                                  ->orWhere(Entity::CURRENT_END, '<', $currentTime);
+                        })
                       ->limit(100);
 
         return $query->get();
@@ -77,6 +80,11 @@ class Repository extends Base\Repository
 
     public function getSubscriptionsToRetry()
     {
+        //
+        // This will also pick up all the subscriptions which are
+        // scheduled to be cancelled at cycle end.
+        //
+
         return $this->getBaseSubscriptionsQuery()
                     ->where(Entity::STATUS, '=', Status::PENDING)
                     ->whereNotNull(Entity::ERROR_STATUS)
@@ -94,6 +102,17 @@ class Repository extends Base\Repository
                     ->whereNotNull(Entity::START_AT)
                     ->where(Entity::START_AT, '<=', $currentTime)
                     ->where(Entity::STATUS, '=', Status::CREATED)
+                    ->get();
+    }
+
+    public function getSubscriptionsToCancel()
+    {
+        $currentTime = Carbon::now()->getTimestamp();
+
+        return $this->newQuery()
+                    ->whereNotNull(Entity::CANCEL_AT)
+                    ->where(Entity::CANCEL_AT, '<=', $currentTime)
+                    ->whereNotIn(Entity::STATUS, Status::$terminalStatuses)
                     ->get();
     }
 
