@@ -111,6 +111,16 @@ class HarvesterClient extends AbstractEventClient
             'content-type'  => 'application/json',
         ];
 
+        // The location of the trace is very critical here.
+        // Be careful moving this code. Don't trace headers containing signature
+        $this->trace->info(
+            TraceCode::HARVESTER_REQUEST,
+            [
+                'path'    => $urlPath,
+                'data'    => $data,
+                'request' => $request
+            ]);
+
         $headers = [
             'x-signature'   => $this->accessToken,
             'Accept'        => 'application/json'
@@ -121,14 +131,6 @@ class HarvesterClient extends AbstractEventClient
         $request['headers'] = $headers;
 
         $request['options'] = $options;
-
-        $this->trace->info(
-            TraceCode::HARVESTER_REQUEST,
-            [
-                'path'    => $urlPath,
-                'data'    => $data,
-                'request' => $request
-            ]);
 
         $retryCount = 0;
 
