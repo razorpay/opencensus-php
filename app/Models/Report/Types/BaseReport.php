@@ -71,6 +71,12 @@ class BaseReport extends Base\Core
                         ->endOfMonth()
                         ->getTimestamp();
         }
+        else
+        {
+            $from = Carbon::yesterday(Timezone::IST)->timestamp;
+
+            $to = Carbon::today(Timezone::IST)->timestamp - 1;
+        }
 
         return [$from, $to];
     }
