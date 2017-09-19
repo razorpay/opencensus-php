@@ -1021,7 +1021,6 @@ final class Route
         'settings_fetch',
         'settings_upsert',
         'settings_delete',
-        'reports_refund_irctc',
     ];
 
     public static $proxy = [
@@ -1093,6 +1092,7 @@ final class Route
         'oauth_application_delete',
         'oauth_application_update',
         'merchant_analytics',
+        'reports_refund_irctc',
     ];
 
     // These will run on internal auth with the assurance
@@ -1483,6 +1483,7 @@ final class Route
         'virtual_account_fetch'             => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_multiple'    => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_payments'    => [Feature::VIRTUAL_ACCOUNTS],
+        'reports_refund_irctc'              => [Feature::IRCTC_REPORT],
     ];
 
     /*

@@ -44,6 +44,7 @@ class Constants
     const FSS_RISK_UDF             = 'fss_risk_udf';
     const RULE_FILTER              = 'rule_filter';
     const TPV                      = 'tpv';
+    const IRCTC_REPORT             = 'irctc_report';
 
     // TODO: Use this instead of allFeatures once in final code change pr
     public static $featureValueMap = [
@@ -85,6 +86,7 @@ class Constants
         self::FSS_RISK_UDF             => true,
         self::RULE_FILTER              => true,
         self::TPV                      => true,
+        self::IRCTC_REPORT             => true,
     ];
 
     public static $visibleFeaturesMap = [
