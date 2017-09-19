@@ -55,20 +55,20 @@ export const revokeAccess = id => {
   };
 };
 
-export const createApplication = params => {
+export const createApplication = (params, fileName) => {
   let application = new Application();
 
   return {
     type: CREATE_APPLICATION,
-    payload: application.create(params),
+    payload: application.create(params, fileName),
   };
 };
-export const updateApplication = (id, params) => {
+export const updateApplication = (id, params, fileName) => {
   let application = new Application({ id });
 
   return {
     type: UPDATE_APPLICATION,
-    payload: application.update(params),
+    payload: application.update(params, fileName),
   };
 };
 
