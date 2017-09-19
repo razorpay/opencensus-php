@@ -76,5 +76,9 @@ class Constants
         Type::EMANDATE_DEBIT => [
             self::HDFC => ['hdfc.emandate@razorpay.com'],
         ],
+
+        Type::EMI => [
+            self::AXIS => ['axiscards.emi@razorpay.com'],
+        ]
     ];
 }
