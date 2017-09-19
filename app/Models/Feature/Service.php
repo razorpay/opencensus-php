@@ -8,7 +8,7 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public function addFeatures($input)
+    public function addFeatures(array $input)
     {
         $featureParams = $this->buildFeatureParams($input);
 
@@ -16,14 +16,8 @@ class Service extends Base\Service
 
         $featureCore = new Core;
 
-        $featureValidator = new Validator;
-
-        $features = $featureParams->map(function ($item) use ($featureCore, $featureValidator, $shouldSync)
+        $features = $featureParams->map(function ($item) use ($featureCore, $shouldSync)
         {
-            $featureName = $item[Entity::NAME];
-
-            $featureValidator->validateEditingFeature($featureName, $shouldSync);
-
             return $featureCore->create($item, $shouldSync);
         });
 

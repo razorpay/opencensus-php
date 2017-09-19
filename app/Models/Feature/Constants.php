@@ -87,6 +87,12 @@ class Constants
         self::TPV                      => true,
     ];
 
+    /**
+     * Features that are exposed to the merchant and can be
+     * enabled/disabled
+     *
+     * @var array
+     */
     public static $visibleFeaturesMap = [
         self::NOFLASHCHECKOUT  => [
             'feature'      => self::NOFLASHCHECKOUT,
@@ -106,9 +112,11 @@ class Constants
         ],
     ];
 
-    /*
-     * Visible features that can be enabled / disabled on test mode by the merchant directly,
-     * but require admin approval for live mode, has to be added here
+    /**
+     * Lists features that can be enabled/disabled on test mode by the merchant
+     * but not on live
+     *
+     * @var array
      */
     public static $featuresUneditableOnLive = [
         self::MARKETPLACE,

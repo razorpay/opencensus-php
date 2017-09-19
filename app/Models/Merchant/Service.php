@@ -1211,7 +1211,7 @@ class Service extends Base\Service
         return $featureNames;
     }
 
-    private function addFeatures($featureNames, bool $shouldSync = false)
+    private function addFeatures(array $featureNames, bool $shouldSync = false)
     {
         $merchant = $this->merchant;
 
@@ -1223,6 +1223,8 @@ class Service extends Base\Service
                 Feature\Entity::NAMES        => $featureNames,
                 Feature\Entity::SHOULD_SYNC  => $shouldSync
             ];
+
+            $merchant->getValidator()->validateEditingFeatures($featureNames, $shouldSync);
 
             (new Feature\Service)->addFeatures($featureParams);
         }

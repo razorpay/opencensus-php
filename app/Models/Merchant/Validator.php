@@ -127,7 +127,7 @@ class Validator extends Base\Validator
      * Throw an error, if any of the features that can be enabled or disabled only by
      * an admin in the LIVE mode, is being edited by the merchant.
      *
-     * @param $features
+     * @param array $input
      *
      * @throws Exception\BadRequestException
      */
@@ -151,6 +151,28 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE, $featuresNotAllowed);
+        }
+    }
+
+    /**
+     * Throws an exception if a merchant tries to enable an uneditable
+     * feature for live mode
+     *
+     * @param array $featureNames
+     * @param bool  $shouldSync
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function validateEditingFeatures(array $featureNames, bool $shouldSync)
+    {
+        $uneditableFeatures = array_values(array_intersect($featureNames, Feature\Constants::$featuresUneditableOnLive));
+
+        if (($shouldSync === true) and (count($uneditableFeatures) === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
+                Feature\Entity::NAMES,
+                ['features' => $uneditableFeatures]);
         }
     }
 
