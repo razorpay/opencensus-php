@@ -88,7 +88,9 @@ class Validator extends Base\Validator
                 $clientIpAddress = $_SERVER['REMOTE_ADDR'];
             }
 
-            $url = "https://www.google.com/recaptcha/api/siteverify?secret=".$_ENV['NOCAPTCHA_SECRET']."&response=".$captchaResponse."&remoteip=".$clientIpAddress;
+            $noCaptchaSecret = env('NOCAPTCHA_SECRET');
+
+            $url = "https://www.google.com/recaptcha/api/siteverify?secret=".$noCaptchaSecret."&response=".$captchaResponse."&remoteip=".$clientIpAddress;
 
             $response = \Requests::get($url);
 

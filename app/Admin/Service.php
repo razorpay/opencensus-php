@@ -896,7 +896,7 @@ class Service extends Base\Service
         $s3 = $this->getS3Client();
 
         $s3Obj = [
-            'Bucket'        => $_ENV['AWS_ACTIVATION_BUCKET'],
+            'Bucket'        => config('aws.activation_bucket'),
             'Key'           => $objectPath,
             'ContentType'   => "image/jpeg",
             'SourceFile'    => $filePath,
@@ -914,7 +914,7 @@ class Service extends Base\Service
     {
         $s3 = $this->getS3Client();
 
-        $bucket = env('AWS_ACTIVATION_BUCKET');
+        $bucket = config('aws.activation_bucket');
 
         $keys = (new MerchantDetails\Service)->getUrlKeys();
 
@@ -1369,7 +1369,7 @@ class Service extends Base\Service
         $keyName = "$orgId/{$type}_logo/$fileName";
 
         $s3Obj = [
-            'Bucket'        => $_ENV['AWS_ACTIVATION_BUCKET'],
+            'Bucket'        => config('aws.activation_bucket'),
             'Key'           => $keyName,
             'SourceFile'    => $filePath,
             'ContentType'   => 'image/png',
