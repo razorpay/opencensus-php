@@ -26,7 +26,7 @@ class Validator extends Base\Validator
     );
 
     protected static $recurringRules = [
-        Entity::NUMBER             => 'required|numeric|luhn|digits_between:12,19'
+        Entity::IIN                => 'required|numeric|digits:6'
     ];
 
     protected static $createValidators = array(

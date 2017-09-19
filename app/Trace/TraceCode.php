@@ -697,7 +697,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FEATURE_DELETE_REQUEST                        = 'FEATURE_DELETE_REQUEST';
     const FEATURE_MIGRATION_EXCEPTION                   = 'FEATURE_MIGRATION_EXCEPTION';
     const FEATURE_ASSIGNMENT_EXCEPTION                  = 'FEATURE_ASSIGNMENT_EXCEPTION';
-    const MERCHANT_FEATURE_EDIT                         = 'MERCHANT_FEATURE_EDIT';
+    const MERCHANT_FEATURE_EDIT_REQUEST                 = 'MERCHANT_FEATURE_EDIT_REQUEST';
     const MERCHANT_FEATURE_UPDATE                       = 'MERCHANT_FEATURE_UPDATE';
     const FEATURE_MULTI_ASSIGN_REQUEST                  = 'FEATURE_MULTI_ASSIGN_REQUEST';
     const FEATURE_MULTI_REMOVE_REQUEST                  = 'FEATURE_MULTI_REMOVE_REQUEST';
@@ -963,7 +963,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::FEATURE_DELETE_REQUEST                    => 'Feature delete request initiated',
         self::FEATURE_MIGRATION_EXCEPTION               => 'Exception while creating features for merchant',
         self::FEATURE_ASSIGNMENT_EXCEPTION              => 'Exception assigning feature to merchant',
-        self::MERCHANT_FEATURE_EDIT                     => 'Edit merchant features',
+        self::MERCHANT_FEATURE_EDIT_REQUEST             => 'Edit merchant features request initiated',
         self::MERCHANT_DETAIL_DOES_NOT_EXIST            => 'Merchant Detail does not exists',
         self::CREATE_MERCHANT_DETAIL                    => 'Creating Merchant Detail',
         self::PAYMENT_TRANSFER_VALIDATION_FAILED        => 'Transfer failed while validating transfer amount',

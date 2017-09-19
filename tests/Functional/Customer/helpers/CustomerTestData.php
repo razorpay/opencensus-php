@@ -25,6 +25,51 @@ return [
         ],
     ],
 
+    'testCreateCustomerWithValidNames' => [
+        'request' => [
+            'url'     => '/customers',
+            'method'  => 'post',
+            'content' => [
+                'name'    => 'testc',             // Replaced with different valid names in tests
+                'email'   => 'test@razorpay.com',
+                'contact' => '1234567899',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'  => 'customer',
+                'name'    => 'testc',
+                'email'   => 'test@razorpay.com',
+                'contact' => '1234567899',
+            ],
+        ],
+    ],
+
+    'testCreateCustomerWithInvalidNames' => [
+        'request' => [
+            'url'     => '/customers',
+            'method'  => 'post',
+            'content' => [
+                'name'    => 'testc',             // Replaced with different invalid names in tests
+                'email'   => 'test@razorpay.com',
+                'contact' => '1234567899',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The name format is invalid.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateCustomerEmailOnly' => [
         'request' => [
             'url' => '/customers',

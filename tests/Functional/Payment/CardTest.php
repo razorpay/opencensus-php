@@ -30,6 +30,8 @@ class CardTest extends TestCase
 
         $card = $this->startTest();
 
+        $this->assertEquals(true, isset($card['issuer']));
+
         $this->assertEquals($card['id'], $payment['card_id']);
     }
 
