@@ -355,13 +355,13 @@ class FeaturesTest extends TestCase
     /**
      * Add a feature to live and sync it to test
      * Delete the feature from the test database.
-     * Delete the feature from the test database and sync it to live
+     * Delete the feature from the live database and sync it to test
      * Get the features from the live as well as test
      * Verify - Deleting the feature from test with sync, should not
      * fail even if the feature does not exist on test. Feature should be
      * deleted from live
      */
-    public function testDeleteFeatureFromTestDeleteFeatureFromTestSyncedToLive()
+    public function testDeleteFeatureFromTestDeleteFeatureFromLiveSyncedToTest()
     {
         $this->addFeature(Mode::LIVE, true);
 
@@ -373,7 +373,7 @@ class FeaturesTest extends TestCase
 
         $this->verifyFeatureAbsence(Mode::TEST);
 
-        $this->deleteFeature(Mode::TEST, true);
+        $this->deleteFeature(Mode::LIVE, true);
 
         $this->verifyFeatureAbsence(Mode::LIVE);
     }
