@@ -510,7 +510,7 @@ class Core extends Base\Core
         (new Charge)->handleCaptureSuccess($subscription, $capturedPayment, $invoice);
 
         $notifyOptions = [
-            Event::PAYMENT     => $payment,
+            Event::PAYMENT => $capturedPayment,
         ];
 
         $this->triggerSubscriptionNotification($subscription, Event::CHARGED, $notifyOptions);
@@ -665,7 +665,7 @@ class Core extends Base\Core
         $this->triggerSubscriptionCancelledNotification($subscription, $options);
     }
 
-    protected function triggerSubscriptionCancelledNotification(Entity $subscription, string $oldStatus)
+    protected function triggerSubscriptionCancelledNotification(Entity $subscription, array $options)
     {
         $oldStatus = $options[Event::OLD_STATUS];
 

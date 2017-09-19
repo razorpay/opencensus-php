@@ -23,6 +23,13 @@ class Event
     const PAYMENT        = 'payment';
     const OLD_STATUS     = 'old_status';
 
+    const DEFAULT_OPTIONS = [
+        self::CHARGE_SUCCESS => true,
+        self::CARD_CHANGE    => false,
+        self::IMMEDIATE      => false,
+        self::UPFRONT        => false,
+    ];
+
     const CUSTOMER_EVENTS = [
         self::AUTHENTICATED,
         self::CHARGED,

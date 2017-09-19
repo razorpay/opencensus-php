@@ -27,6 +27,7 @@ class Notify extends Processor\Notify
     protected $invoice = null;
     protected $subscription = null;
     protected $slackEnabled = true;
+    protected $options = [];
 
     const TIMESTAMP_FIELDS = [
         Invoice\Entity::BILLING_START,
@@ -59,7 +60,11 @@ class Notify extends Processor\Notify
             {
                 $this->invoice = $this->payment->invoice;
             }
+
+            unset($options[Event::PAYMENT]);
         }
+
+        $this->options = $options;
 
         $this->refreshTemplate();
     }
@@ -285,6 +290,7 @@ class Notify extends Processor\Notify
                 'email' => $this->subscription->customer->getEmail(),
                 'phone' => $this->subscription->customer->getContact()
             ],
+            'options' => $this->getOptions(),
         ];
 
         if ($this->payment !== null)
@@ -341,6 +347,11 @@ class Notify extends Processor\Notify
         }
 
         return $data;
+    }
+
+    protected function getOptions()
+    {
+        return array_merge(Event::DEFAULT_OPTIONS, $this->options);
     }
 
     protected function formatTime($time)
