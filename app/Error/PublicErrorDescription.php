@@ -295,6 +295,7 @@ class PublicErrorDescription
     const BAD_REQUEST_SUBSCRIPTION_ANOTHER_OPERATION_IN_PROGRESS                = 'Request failed because another subscription operation is in progress';
     const BAD_REQUEST_SUBSCRIPTION_INVALID_STATUS                               = 'Invalid status passed in the query params';
     const BAD_REQUEST_SUBSCRIPTION_CYCLE_NOT_RUNNING                            = 'No subscription cycle running currently';
+    const BAD_REQUEST_SUBSCRIPTION_LAST_CYCLE_CANNOT_CANCEL                     = 'Subscription cannot be cancelled at cycle end since the last cycle is going on already.';
 
     const BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE                                = 'Invoice status cannot be retrieved now';
     const BAD_REQUEST_PAYMENT_NOT_AUTHORIZED                                    = 'Payment is not in authorized state';

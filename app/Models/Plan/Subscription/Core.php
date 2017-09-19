@@ -478,6 +478,7 @@ class Core extends Base\Core
         if ($cancelAtCycleEnd === false)
         {
             $subscription->setCancelAt(null);
+            $subscription->setCancelledAt(null);
         }
         else
         {
@@ -492,6 +493,18 @@ class Core extends Base\Core
                         'subscription_id'   => $subscription->getId(),
                         'start_at'          => $subscription->getStartAt(),
                         'charge_at'         => $subscription->getChargeAt(),
+                    ]);
+            }
+
+            if ($currentCycleEnd === $subscription->getEndAt())
+            {
+                throw new BadRequestException(
+                    ErrorCode::BAD_REQUEST_SUBSCRIPTION_LAST_CYCLE_CANNOT_CANCEL,
+                    null,
+                    [
+                        'subscription_id'   => $subscription->getId(),
+                        'start_at'          => $subscription->getStartAt(),
+                        'current_cycle_end' => $currentCycleEnd,
                     ]);
             }
 

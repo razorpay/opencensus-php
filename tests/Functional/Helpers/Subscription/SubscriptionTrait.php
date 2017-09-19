@@ -49,6 +49,21 @@ trait SubscriptionTrait
         return json_decode($response->getContent(), true);
     }
 
+    public function makeSubscriptionCancelDueRequest()
+    {
+        $request = [
+            'url'       => '/subscriptions/cancel/due',
+            'action'    => 'post',
+            'content'   => [],
+        ];
+
+        $this->ba->cronAuth();
+
+        $response = $this->sendRequest($request);
+
+        return json_decode($response->getContent(), true);
+    }
+
     public function makeSubscriptionInvoiceChargeManualRequest($invoiceId)
     {
         $request = [

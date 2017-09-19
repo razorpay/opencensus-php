@@ -41,7 +41,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $cancelRules = [
-        Entity::CANCEL_AT_CYCLE_END => 'sometimes|bool|filled',
+        Entity::CANCEL_AT_CYCLE_END => 'filled|bool',
     ];
 
     protected static $createValidators = [

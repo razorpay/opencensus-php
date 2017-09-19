@@ -96,7 +96,7 @@ class Repository extends Base\Repository
 
     public function getSubscriptionsToCancel()
     {
-        $currentTime = Carbon::now('Asia/Kolkata')->getTimestamp();
+        $currentTime = Carbon::now()->getTimestamp();
 
         return $this->newQuery()
                     ->whereNotNull(Entity::CANCEL_AT)
