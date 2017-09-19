@@ -504,7 +504,7 @@ return [
         ],
 
         // Addons
-        'subscription_create_addon'      => 'subscriptions/{subscription_id}/addon',
+        'subscription_create_addon'      => 'subscriptions/{subscription_id}/addons',
         'addon_fetch'                    => 'addons/{addon_id}',
         'addon_fetch_multiple'           => 'addons',
         'addons_fetch_due'               => 'subscriptions/{subscription_id}/addons/due',
