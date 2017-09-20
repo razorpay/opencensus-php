@@ -32,7 +32,8 @@ return [
     ],
 
     'emi' => [
-        'password'  => env('EMI_FILE_PASSWORD')
+        'password'            => env('EMI_FILE_PASSWORD'),
+        'yesb_encryption_key' => env('YESB_ENCRYPTION_KEY'),
     ],
 
     'slack' => [
