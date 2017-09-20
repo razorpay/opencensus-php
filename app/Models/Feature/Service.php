@@ -197,8 +197,8 @@ class Service extends Base\Service
             $this->processFiles($data);
 
             Accessor::for($this->merchant, Constants::ONBOARDING)
-                ->upsert($data)
-                ->save();
+                    ->upsert($data)
+                    ->save();
 
             $saved = true;
         }
