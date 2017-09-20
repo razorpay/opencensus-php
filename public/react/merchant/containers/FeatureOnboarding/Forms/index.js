@@ -6,30 +6,31 @@ const FORM_TYPE = {
   marketplace: {
     formComponent: RouteForm,
     links: {
-      docs: '',
-      knowMore: '',
+      docs: 'https://razorpay.com/docs/route',
+      knowMore: 'https://razorpay.com/route',
     },
     formText:
-      'This is to help you get started with Razorpay Route. Here is how you can enable Razorpay Route on test mode.',
+      "We'd require the following details to enable Razorpay Route on your account.",
   },
 
   subscriptions: {
     formComponent: SubscriptionsForm,
     links: {
-      docs: '',
-      knowMore: '',
+      docs: 'https://razorpay.com/docs/subscriptions',
+      knowMore: 'https://razorpay.com/subscriptions',
     },
     formText:
-      'This is to help you get started with Razorpay Subscriptions. Here is how you can enable Razorpay Subscriptions on test mode.',
+      "We'd require the following details to enable Razorpay Subscriptions on your account.",
   },
 
   virtual_accounts: {
     formComponent: VirtualAccountsForm,
     links: {
-      docs: '',
-      knowMore: '',
+      docs: 'https://razorpay.com/docs/smart-collect',
+      knowMore: 'https://razorpay.com/smartcollect',
     },
-    formText: 'Some random text',
+    formText:
+      "We'd require the following details to enable Razorpay Smart Collect on your account.",
   },
 };
 

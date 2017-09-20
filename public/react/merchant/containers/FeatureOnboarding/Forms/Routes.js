@@ -19,7 +19,7 @@ export default ({ handleChange }) => {
       </div>
 
       <div class="form-group">
-        <label for="email_notify">Transfer for</label>
+        <label for="email_notify">Transferring To</label>
         <Field
           name="settling_to"
           component={InputField}
@@ -41,16 +41,20 @@ export default ({ handleChange }) => {
       </div>
 
       <div class="form-group">
-        <div class="row">
-          <div class="col-md-12">
-            <FileUploadInputButton
-              accept="image/jpeg,image/png,application/pdf,application/x-pdf"
-              uploadedFileName="marketplace.vendor_agreement"
-              maxSize="8000000"
-              onChange={handleChange}
-            />
-          </div>
-        </div>
+        <label for="email_notify">Signed Vendor Agreement</label>
+        <FileUploadInputButton
+          accept="image/jpeg,image/png,application/pdf,application/x-pdf"
+          uploadedFileName="marketplace.vendor_agreement"
+          maxSize="8000000"
+          onChange={handleChange}
+        />
+        <small class="help-block">
+          <i class="icon icon-info-circle" />
+          <span>
+            As a sample, upload a signed agreement executed with your
+            3rd-parties or vendors
+          </span>
+        </small>
       </div>
     </div>
   );

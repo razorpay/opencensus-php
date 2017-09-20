@@ -24,9 +24,16 @@ export default () => {
           component={InputField}
           rows="2"
           class="form-control"
-          placeholder="Expected monthly revenue through virtual accounts"
+          placeholder="Expected monthly revenue"
           validate={[required()]}
         />
+        <small class="help-block">
+          <i class="icon icon-info-circle" />
+          <span>
+            Approximate monthly revenue you expect to receive via virtual
+            accounts on Razorpay Smart Collect
+          </span>
+        </small>
       </div>
     </div>
   );

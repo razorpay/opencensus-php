@@ -75,7 +75,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
     let featureEnabled = this.props.user.isVirtualAccountsEnabled;
     if (!featureEnabled) {
       const heading =
-        'Collect payments via NEFT and IMPS with Razorpay Smart Collect';
+        'A powerful system to easily collect payments via direct bank transfers (NEFT/RGTS). Automate the tedious reconciliation process, starting now.';
 
       return (
         <FeatureOnboarding

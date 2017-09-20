@@ -14,7 +14,7 @@ export default () => {
           component={AutoResizeTextarea}
           rows="3"
           class="form-control"
-          placeholder="Your use case for the product and business model"
+          placeholder="Your use case for Subscriptions and business model"
         />
       </div>
 

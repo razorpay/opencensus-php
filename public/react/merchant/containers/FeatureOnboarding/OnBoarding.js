@@ -171,11 +171,19 @@ export default class OnBoarding extends Component {
                 />}
 
               <div class="action-links">
-                <a class="btn-link" href={currentForm.links.knowMore}>
+                <a
+                  class="btn-link"
+                  target="_blank"
+                  href={currentForm.links.knowMore}
+                >
                   Know more
                 </a>
                 <span class="dot" />
-                <a class="btn-link" href={currentForm.links.docs}>
+                <a
+                  class="btn-link"
+                  target="_blank"
+                  href={currentForm.links.docs}
+                >
                   View Docs
                 </a>
               </div>
