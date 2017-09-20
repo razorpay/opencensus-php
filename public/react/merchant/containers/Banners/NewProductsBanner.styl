@@ -14,7 +14,7 @@
 
     @media (min-width: 992px) {
       height: 100vh;
-      max-height: 200px;
+      max-height: 210px;
       border-right: 1px solid #dee5e7;
 
       &:last-of-type {
@@ -29,14 +29,13 @@
         border-bottom: none;
       }
 
-      .symbol, .name, p {
+      .symbol, .name, p, .action-btn {
         text-align: center;
       }
     }
 
     &:hover {
       box-shadow: 0px 2px 12px rgba(0,0,0,0.12);
-      border: 1px solid #BAACEA;
       background-color: #FAFBFF;
     }
 
@@ -58,8 +57,13 @@
     }
 
     p {
-      opacity: 0.6;
+      opacity: 0.7;
       font-size: 16px;
+    }
+
+    .action-btn {
+      margin-top: 16px;
+      padding: 0;
     }
   }
 }

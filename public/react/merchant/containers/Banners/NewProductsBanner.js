@@ -17,6 +17,7 @@ const Card = ({ name, description, symbol, link }) => {
       <p class="m-t">
         {description}
       </p>
+      <div class="btn-link action-btn">Get Started ></div>
     </Link>
   );
 };
