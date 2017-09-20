@@ -39,20 +39,17 @@ export default class InvoiceDetail extends Component {
             </div>}
           <div style={{ position: 'relative' }}>
             <div class="label--primary" style={{ marginBottom: '4px' }}>
-              {addon.item.name}
+              {addon.name}
             </div>
             <div class="label--primary">
               <Amount
-                currency={addon.item.currency}
-                value={addon.quantity * addon.item.unit_amount}
+                currency={addon.currency}
+                value={addon.quantity * addon.unit_amount}
               />
             </div>
             <small class="label--secondary">
               {addon.quantity} x{'  '}
-              <Amount
-                currency={addon.item.currency}
-                value={addon.item.unit_amount}
-              />
+              <Amount currency={addon.currency} value={addon.unit_amount} />
               {'  '}
               per unit
             </small>
@@ -165,7 +162,7 @@ export default class InvoiceDetail extends Component {
                   <div>
                     <InvoiceStatusLabel status={invoice.status} />
                     {invoice.status === 'issued' &&
-                      ['active', 'pending', 'halted'].indexOf(
+                      ['active', 'pending', 'halted', 'completed'].indexOf(
                         subscription.status
                       ) > -1 &&
                       <AsyncButton
