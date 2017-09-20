@@ -10,6 +10,7 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Item;
 use RZP\Models\Invoice;
 use RZP\Models\Card;
 use RZP\Models\Customer;
@@ -282,6 +283,12 @@ class Notify extends Processor\Notify
                 Subscription\Entity::PUBLIC_ID  => $this->subscription->getPublicId(),
                 Subscription\Entity::TYPE       => $this->subscription->getType(),
                 Subscription\Entity::CHARGE_AT  => $this->formatTime($this->subscription->getChargeAt()),
+                Subscription\Entity::CANCEL_AT  => $this->formatTime($this->subscription->getCancelAt()),
+                Subscription\Entity::AUTH_ATTEMPTS => Charge::MAX_AUTH_ATTEMPTS - $this->subscription->getAuthAttempts(),
+            ],
+            'plan_item' => [
+                Item\Entity::NAME              => $this->subscription->plan->item->getName(),
+                Item\Entity::DESCRIPTION       => $this->subscription->plan->item->getDescription(),
             ],
             'merchant'  => [
                 Merchant\Entity::BILLING_LABEL => $this->merchant->getBillingLabel(),

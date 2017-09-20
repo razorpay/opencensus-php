@@ -59,6 +59,11 @@ class SubscriptionNotificationTest extends TestCase
         Mail::assertNothingSent();
     }
 
+    public function testSubscriptionAuthenticatedMailSentAuthAmountMail()
+    {
+        $this->doAuthTxnForSubscriptionWithAddOn();
+    }
+
     public function testSubscriptionAuthenticatedMailSentAuthAmount()
     {
         Mail::fake();

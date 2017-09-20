@@ -4,259 +4,110 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="viewport" content="width=device-width"/>
   </head>
-  <body class="body" style="background: #EBECEE;">
-    <table class="container" style="background: #EBECEE;">
-      <tr>
-        <td>
-          @include('emails.partials.header', ['message'=>$message])
-          <!-- Payment Successfull Header -->
-          <table class="row">
-            <tr>
-              <td class="center" align="center">
-                <center>
+  <body><table>
+  <!-- header -->
+  <thead>
+    <tr>
+      <td class="left"></td>
+      <td class="middle header">
+        <h4>Subscription Started at {{$merchant['billing_label']}}</h4>
+        <p>Subcription ID: {{$subscription['public_id']}}</p>
+      </td>
+      <td class="right"></td>
+    </tr>
+    <tr>
+      <td class="left"></td>
+      <td class="middle">
+        A final charge attempt towards your subscription has failed. Another charge will not be attempted for this billing cycle. To continue with this subscription, you must either <a href="#">use another card</a> or fix issues with the saved card and <a href="#">try again</a>.
+      </td>
+      <td class="right"></td>
+    </tr>
+    <tr>
+      <td class="left demarcated"></td>
+      <td class="middle demarcated">
+        <table>
+          <tr>
+            <td class="full-button"><a href="#">UPDATE CARD</a></td>
+            <td class="full-button"><a href="#">TRY AGAIN</a></td>
+          </tr>
+        </table>
+      </td>
+      <td class="right demarcated"></td>
+    </tr>
+  </thead>
 
-                  <table class="container">
-                    <tr>
-                      <td class="wrapper center last">
-                        <center>
-                        <table class="twelve columns bluebg" style="background:#39ACE5;">
-                          <tr>
-                            <td class="center">
-                              <h1>
-                              <center>
-                                Subscription Charged
-                              </center>
-                              </h1>
-                            </td>
-                            <td class="expander"></td>
-                          </tr>
-                        </table>
-                        </center>
-                      </td>
-                    </tr>
-                  </table>
-                </center>
-              </td>
-            </tr>
-          </table>
-          @include('emails.partials.header_image', ['image'=>'payment_green'], ['message'=>$message])
-          <!-- Merchant Name -->
-          <table class="row">
-            <tr>
-              <td class="center" align="center">
-                <center>
-                  <table class="container">
-                    <tr>
-                      <td class="wrapper last bluebg" style="background:#39ACE5;">
-                        <table class="six columns bluebg" style="background:#39ACE5;">
-                          <tr>
-                            <td class="center">
-                              <center>
-                                <h3 class="center">
-                                <a href="{{$merchant['website']}}" title="{{$merchant['billing_label']}} Website">{{$merchant['billing_label']}}</a>
-                                </h3>
-                              </center>
-                            </td>
-                            <td class="expander"></td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-                  </table>
-                </center>
-              </td>
-            </tr>
-          </table>
-          <!-- Customer Information -->
-          <table class="row">
-            <tr>
-              <td class="wrapper white">
-                <table class="eight columns">
-                  <tr>
-                    <td class="lighttext left-text-pad">
-                      <a class="email">{{$customer['email']}}</a>
-                    </td>
-                    <td class="expander"></td>
-                  </tr>
-                </table>
-              </td>
-              <td class="wrapper white last">
-                <table class="four columns">
-                  <tr>
-                    <td class="right-text-pad lighttext" style="text-align: right;">
-                      {{$customer['phone']}}
-                    </td>
-                    <td class="expander"></td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
-          <!-- Payment Id -->
-          <table class="row">
-            <tr>
-              <td class="center" align="center">
-                <center>
-                  <table class="container">
-                    <tr>
-                      <td class="wrapper last white">
-                        <table class="six columns">
-                          <tr>
-                            <td class="center darktext">
-                              <center>
-                                Payment Id: {{$payment['public_id']}}<br>
-                                Subscription Id: {{$subscription['public_id']}}
-                              </center>
-                              <hr class="small">
-                            </td>
-                            <td class="expander"></td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-                  </table>
-                </center>
-              </td>
-            </tr>
-          </table>
-          <!-- Payment Details -->
-          <table class="row">
-            <tr>
-              <td class="wrapper white">
-                <table class="four columns">
-                  <tr>
-                    <td class="darktext left-text-pad">
-                      Amount
-                    </td>
-                    <td class="expander"></td>
-                  </tr>
-                </table>
-              </td>
-              <td class="wrapper white offset-by-five last">
-                <table class="three columns">
-                  <tr>
-                    <td class="right-text-pad darktext" style="text-align: right;">
-                    {{$payment['amount'] ?? 4}}
-                    </td>
-                    <td class="expander"></td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
-          @if ($payment)
-          <!-- Payment Method -->
-          <table class="row">
-            <tr>
-              <td class="wrapper white">
-                <table class="four columns">
-                  <tr>
-                    <td class="darktext left-text-pad">
-                      Payment Method
-                    </td>
-                    <td class="expander"></td>
-                  </tr>
-                </table>
-              </td>
-              <td class="wrapper white last">
-                <table class="eight columns">
-                  <tr>
-                    <td class="right-text-pad darktext" style="text-align: right">
-                      {{$payment['method'][0]}}<br>
-                      <span class="subtext">
-                      {{$payment['method'][1]}}
-                      </span>
-                    </td>
-                    <td class="expander"></td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
-          @if ($payment)
-          @if ($invoice)
-          <!-- Billing Period -->
-          <table class="row">
-            <tr>
-              <td class="wrapper white">
-                <table class="four columns">
-                  <tr>
-                    <td class="darktext left-text-pad">
-                      Billing Period
-                    </td>
-                    <td class="expander"></td>
-                  </tr>
-                </table>
-              </td>
-              <td class="wrapper white last">
-                <table class="eight columns">
-                  <tr>
-                    <td class="right-text-pad darktext" style="text-align: right">
-                      {{$invoice['billing_start']}}<br>
-                      {{$invoice['billing_end']}}
-                    </td>
-                    <td class="expander"></td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
-          @endif
-          <!-- Next charge date -->
-          <table class="row">
-            <tr>
-              <td class="wrapper white">
-                <table class="four columns">
-                  <tr>
-                    <td class="darktext left-text-pad">
-                      Next Charge Date
-                    </td>
-                    <td class="expander"></td>
-                  </tr>
-                </table>
-              </td>
-              <td class="wrapper white offset-by-five last">
-                <table class="three columns">
-                  <tr>
-                    <td class="right-text-pad darktext" style="text-align: right;">
-                    {{$subscription['charge_at']}}
-                    </td>
-                    <td class="expander"></td>
-                  </tr>
-                </table>
-              </td>
-            </tr>
-          </table>
-          <!-- Contact Us -->
-          <table class="row">
-            <tr>
-              <td class="center" align="center">
-                <center>
-                  <table class="container">
-                    <tr>
-                      <td class="wrapper last white">
-                        <table class="twelve columns">
-                          <tr>
-                            <td class="center lighttext">
-                              <hr class="wide">
-                              <center>
-                                If this is correct, you don't need to take any further action.<br>
-                                Please <a title="Click to send us a mail" href="mailto:contact@razorpay.com">contact us</a> in case of any discrepancy.
-                              </center>
-                            </td>
-                            <td class="expander"></td>
-                          </tr>
-                        </table>
-                      </td>
-                    </tr>
-                  </table>
-                </center>
-              </td>
-            </tr>
-          </table>
-          @include('emails.partials.footer', ['message'=>$message])
-        </td>
-      </tr>
-    </table>
-  </body>
+  <!-- body -->
+
+  <tbody>
+    <tr>
+      <td class="left"></td>
+      <td class="middle"></td>
+      <td class="right"></td>
+    </tr>
+    <!-- Plan -->
+    <tr>
+      <td class="left"></td>
+      <td class="middle">
+        <h6>Subscription Plan</h6>
+        <p class="title">{{$plan_item['name']}}</p>
+        <p class="sub-title">{{$plan_item['description']}}</p>
+        <p class="sub-title">Next due on {{$subscription['charge_at']}}</p>
+      </td>
+      <td class="right"></td>
+    </tr>
+    <!-- Billing Period -->
+    <tr>
+      <td class="left"></td>
+      <td class="middle">
+        <h6>Billing Period</h6>
+        <p class="sub-title">Start: {{$invoice['billing_start']}}</p>
+        <p class="sub-title">End: {{$invoice['billing_end']}} </p>
+      </td>
+      <td class="right"></td>
+    </tr>
+    <!-- Card -->
+    <tr>
+      <td class="left"></td>
+      <td class="middle">
+        <h6>Payment Method</h6>
+        <p class="title">{{$card['network']}} Card {{$card['number']}}</p>
+        <p class="title"><a href="#">Update Card</a></p>
+      </td>
+      <td class="right"></td>
+    </tr>
+<!--     <tr>
+      <td class="left"></td>
+      <td class="middle">
+        <p class="title">Please find all details of the payment in the attached invoice</p>
+      </td>
+      <td class="right"></td>
+    </tr> -->
+    <tr class="b-demarcate">
+      <td class="left"></td>
+      <td class="middle">
+        <p class="sub-title">You may contact <a href="mailto:support@razorpay.com">Razorpay</a> for any query related to this subscription with the subscription ID as {{$subscription['public_id']}}</p>
+      </td>
+      <td class="right"></td>
+    </tr>
+  </tbody>
+
+  <tfoot>
+    <tr class="b-demarcate">
+      <td class="left"></td>
+      <td class="middle">
+        <p class="title"><strong>{{$merchant['billing_label']}}</strong></p>
+        <p class="sub-title">{{$merchant['website']}}</p>
+      </td>
+      <td class="right"></td>
+    </tr>
+    <tr>
+      <td class="left"></td>
+      <td class="middle">
+        <p class="title">Powered by <img src="http://site.pronav.in/assets/razorpay-logo.svg" alt="Razorpay" /></p>
+      </td>
+      <td class="right"></td>
+    </tr>
+  </tfoot>
+
+</table></body>
 </html>

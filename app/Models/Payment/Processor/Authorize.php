@@ -2444,15 +2444,28 @@ trait Authorize
             (new Subscription\Charge)->handleCaptureSuccess($subscription, $payment, $invoice);
         }
 
+        $this->triggerSubscriptionAuthenticatedNotification($subscription, $payment);
+
+        $this->autoRefundAuthTransactionIfApplicable($payment, $subscription);
+    }
+
+    protected function triggerSubscriptionAuthenticatedNotification(Subscription\Entity $subscription, Payment\Entity $payment)
+    {
+        $willBeRefunded = true;
+
+        if (($subscription->hadUpfrontAmount() === true) or
+            ($subscription->wasImmediate() === true))
+        {
+            $willBeRefunded = false;
+        }
+
         $options = [
-            Subscription\Event::UPFRONT     => $subscription->hadUpfrontAmount(),
+            Subscription\Event::AUTO_REFUND => $willBeRefunded,
             Subscription\Event::IMMEDIATE   => $subscription->wasImmediate(),
             Subscription\Event::PAYMENT     => $payment,
         ];
 
         (new Subscription\Core)->triggerSubscriptionNotification($subscription, Subscription\Event::AUTHENTICATED, $options);
-
-        $this->autoRefundAuthTransactionIfApplicable($payment, $subscription);
     }
 
     protected function updateSubscriptionDetails(

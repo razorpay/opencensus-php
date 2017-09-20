@@ -291,6 +291,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CANCELLED_AT);
     }
 
+    public function getCancelAt()
+    {
+        return $this->getAttribute(self::CANCEL_AT);
+    }
+
     public function getEndedAt()
     {
         return $this->getAttribute(self::ENDED_AT);

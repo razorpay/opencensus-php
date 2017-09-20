@@ -19,7 +19,7 @@ class Event
     const CHARGE_SUCCESS = 'charge_success';
     const CARD_CHANGE    = 'card_change';
     const IMMEDIATE      = 'immediate';
-    const UPFRONT        = 'upfront';
+    const AUTO_REFUND    = 'auto_refund';
     const PAYMENT        = 'payment';
     const OLD_STATUS     = 'old_status';
     const FUTURE_CANCEL  = 'future_cancel';
@@ -27,7 +27,7 @@ class Event
     const DEFAULT_OPTIONS = [
         self::AUTHENTICATED   => [
             self::IMMEDIATE      => false,
-            self::UPFRONT        => false,
+            self::AUTO_REFUND    => true,
         ],
         self::CHARGED         => [
             self::CARD_CHANGE    => false,
@@ -35,11 +35,11 @@ class Event
         self::COMPLETED       => [
             self::CHARGE_SUCCESS => true,
         ],
-        self::CARD_CHANGED    => [
-            self::OLD_STATUS     => null,
-        ],
         self::CANCELLED       => [
             self::FUTURE_CANCEL  => false,
+        ],
+        self::CARD_CHANGED    => [
+            self::OLD_STATUS     => null,
         ],
         self::PENDING         => [],
         self::HALTED          => [],

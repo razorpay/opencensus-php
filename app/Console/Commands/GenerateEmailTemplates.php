@@ -70,7 +70,6 @@ class GenerateEmailTemplates extends Command
             'emails/invoice/customer/notification',
             'emails/invoice/merchant/captured',
 
-
             'emails/oauth/app_authorization',
 
             'emails/subscription/charged',
