@@ -8,6 +8,7 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Constants;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Detail\ValidationFields;
 use RZP\Models\Merchant\Notify as NotifyTrait;
@@ -33,7 +34,9 @@ class Service extends Base\Service
 
         $signedUrls = [];
 
-        foreach (Entity::UPLOADED_FIELDS as $key)
+        $fileFields = $this->getFileFields($merchant);
+
+        foreach ($fileFields as $key)
         {
             if (isset($merchantDetails[$key]))
             {
@@ -41,7 +44,12 @@ class Service extends Base\Service
             }
         }
 
-        return $signedUrls;
+        return ['files' => $signedUrls];
+    }
+
+    private function getFileFields($merchant) : array
+    {
+        return ($merchant->isLinkedAccount() === true) ? Constants::UPLOAD_KEYS_ACCOUNT : Constants::UPLOAD_KEYS;
     }
 
     protected function getSignedUrl(string $fileStoreId, string $merchantId)
