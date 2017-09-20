@@ -22,22 +22,27 @@ class Event
     const UPFRONT        = 'upfront';
     const PAYMENT        = 'payment';
     const OLD_STATUS     = 'old_status';
+    const FUTURE_CANCEL  = 'future_cancel';
 
     const DEFAULT_OPTIONS = [
-        self::AUTHENTICATED => [
+        self::AUTHENTICATED   => [
             self::IMMEDIATE      => false,
             self::UPFRONT        => false,
         ],
-        self::CHARGED => [
+        self::CHARGED         => [
             self::CARD_CHANGE    => false,
         ],
-        self::COMPLETED => [
+        self::COMPLETED       => [
             self::CHARGE_SUCCESS => true,
         ],
-        self::PENDING => [],
-        self::HALTED => [],
-        self::CANCELLED => [],
-        self::CARD_CHANGED => [],
+        self::CARD_CHANGED    => [
+            self::OLD_STATUS     => null,
+        ],
+        self::CANCELLED       => [
+            self::FUTURE_CANCEL  => false,
+        ],
+        self::PENDING         => [],
+        self::HALTED          => [],
         self::INVOICE_CHARGED => [],
     ];
 

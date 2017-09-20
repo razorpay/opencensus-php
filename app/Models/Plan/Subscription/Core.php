@@ -564,6 +564,7 @@ class Core extends Base\Core
                     ($input[Entity::CANCEL_AT_CYCLE_END] = true))
                 {
                     $cancelAtCycleEnd = $input[Entity::CANCEL_AT_CYCLE_END];
+
                     $this->setupCancelAtCycleEnd($subscription, $cancelAtCycleEnd);
                 }
                 else
@@ -655,6 +656,13 @@ class Core extends Base\Core
         $subscription->setCancelledAt($currentTime);
 
         $this->repo->saveOrFail($subscription);
+
+        $options = [
+            Event::OLD_STATUS    => $oldStatus,
+            Event::FUTURE_CANCEL => true,
+        ];
+
+        $this->triggerSubscriptionCancelledNotification($subscription, $options);
     }
 
     public function cancelImmediately(Entity $subscription)

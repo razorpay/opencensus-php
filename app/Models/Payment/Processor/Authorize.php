@@ -2350,6 +2350,7 @@ trait Authorize
 
         $options = [
             Subscription\Event::PAYMENT     => $payment,
+            Subscription\Event::OLD_STATUS  => $oldStatus,
         ];
 
         $core->triggerSubscriptionNotification($subscription, Subscription\Event::CARD_CHANGED, $options);

@@ -351,7 +351,7 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertContains('VISA', $data['card']['network']);
             $this->assertContains('**** **** **** 3335', $data['card']['number']);
 
-            $this->assertEmpty($data['options']);
+            $this->assertEquals('halted', $data['options']['old_status']);
 
             return true;
         });
@@ -381,6 +381,8 @@ class SubscriptionNotificationTest extends TestCase
 
             $this->assertArrayNotHasKey('invoice', $data);
             $this->assertArrayNotHasKey('payment', $data);
+
+            $this->assertEquals(false, $data['options']['future_cancel']);
 
             return true;
         });
