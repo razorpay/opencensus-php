@@ -358,7 +358,8 @@ class Service extends Base\Service
         {
             $merchantDetail->setLinkedAccount(true);
 
-            if ($details['linked_account_kyc'] === 1)
+            if ((isset($details['linked_account_kyc']) === true) and
+                ($details['linked_account_kyc'] === 1))
             {
                 $merchantDetail->setLinkedAccountKYCRequired(true);
             }
