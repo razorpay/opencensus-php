@@ -3,6 +3,8 @@
 namespace RZP\Models\Plan\Subscription;
 
 use Config;
+use Carbon\Carbon;
+use RZP\Constants\Timezone;
 
 use RZP\Models\Base;
 use RZP\Models\Plan;
@@ -107,11 +109,14 @@ class ViewDataSerializer extends Base\Core
 
     protected function getSubscriptionData(): array
     {
+        $chargeAt = Carbon::createFromTimestamp($this->subscription->getChargeAt(), Timezone::IST)
+                                        ->format('d F Y');
+
         $subscriptionData = [
-            'id'    => $this->subscription->getPublicId(),
+            'id'        => $this->subscription->getPublicId(),
             'status'    => $this->subscription->getStatus(),
             'quantity'  => $this->subscription->getQuantity(),
-            'charge_at' => $this->subscription->getChargeAt(),
+            'charge_at' => $chargeAt,
         ];
 
         return $subscriptionData;
@@ -129,12 +134,15 @@ class ViewDataSerializer extends Base\Core
             $merchantBrandColor = self::DEFAULT_MERCHANT_BRAND_COLOR;
         }
 
+        $key = $this->merchant->keys->first()->toArrayPublic()['id'];
+
         $merchantData = [
             'brand_color'      => get_rgb_value($merchantBrandColor),
             'brand_text_color' => get_brand_text_color($merchantBrandColor),
             'image'            => $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
             'name'             => $this->merchant->getBillingLabel(),
             'id'               => $this->merchant->getId(),
+            'key'              => $key
         ];
 
         return $merchantData;
@@ -156,6 +164,7 @@ class ViewDataSerializer extends Base\Core
         $planData = [
             'period'    => $this->plan->getPeriod(),
             'interval'  => $this->plan->getInterval(),
+            'anchor'    => $this->subscription->schedule->getAnchor(),
             'item'      => $this->item->toArrayPublic()
         ];
 
@@ -164,10 +173,13 @@ class ViewDataSerializer extends Base\Core
 
     protected function getCardData(): array
     {
+        $expiresAt = Carbon::createFromTimestamp($this->card->getExpiryTimestamp(), Timezone::IST)
+                                        ->format('F Y');
+
         $cardData = [
             'bank'          => $this->card->getIssuer(),
             'last4'         => $this->card->getLast4(),
-            'expires_at'    => $this->card->getExpiryTimestamp(),
+            'expires_at'    => $expiresAt,
         ];
 
         return $cardData;
