@@ -1132,6 +1132,14 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testSendNotificationWithEmailModeByPrivateAuthRoute()
+    {
+        $this->createOrder();
+        $this->createIssuedInvoice();
+
+        $this->startTest();
+    }
+
     // ------------------------------------------------------------
     // Tests around get invoice
     // ------------------------------------------------------------
