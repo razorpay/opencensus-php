@@ -31,17 +31,6 @@ class Notify extends Processor\Notify
     protected $slackEnabled = true;
     protected $options = [];
 
-    const TIMESTAMP_FIELDS = [
-        Invoice\Entity::BILLING_START,
-        Invoice\Entity::BILLING_END,
-        Subscription\Entity::CHARGE_AT,
-    ];
-
-    /**
-     * Creates a new Notify instance
-     *
-     * @param Payment\Entity $payment The payment associated with the Notify
-     */
     function __construct(Subscription\Entity $subscription, array $options = [])
     {
         $this->app = App::getFacadeRoot();
@@ -73,18 +62,20 @@ class Notify extends Processor\Notify
 
     protected function notifyViaSlack($event)
     {
-        // We don't send out a notification on capture
         $slackMessages = [
-            Event::ACTIVATED => 'SUBSCRIPTION_ACTIVATED',
-            Event::CHARGED   => 'SUBSCRIPTION_CHARGED',
-            Event::PENDING   => 'SUBSCRIPTION_PENDING',
-            Event::HALTED    => 'SUBSCRIPTION_HALTED',
-            Event::CANCELLED => 'SUBSCRIPTION_CANCELLED',
+            Event::AUTHENTICATED   => 'SUBSCRIPTION_AUTHENTICATED',
+            Event::CHARGED         => 'SUBSCRIPTION_CHARGED',
+            Event::PENDING         => 'SUBSCRIPTION_PENDING',
+            Event::HALTED          => 'SUBSCRIPTION_HALTED',
+            Event::CANCELLED       => 'SUBSCRIPTION_CANCELLED',
+            Event::COMPLETED       => 'SUBSCRIPTION_COMPLETED',
+            Event::CARD_CHANGED    => 'SUBSCRIPTION_CARD_CHANGED',
+            Event::INVOICE_CHARGED => 'SUBSCRIPTION_INVOICE_CHARGED',
         ];
 
         $settings = [
-            'channel' => $this->getSlackChannel($event),
-            'color'   => $this->getSlackPostColor($event),
+            'channel' => $this->getSlackChannel(),
+            'color'   => $this->getSlackColor($event),
         ];
 
         // Send out Slack notifications for the event
@@ -136,21 +127,21 @@ class Notify extends Processor\Notify
      *
      * @return string
      */
-    protected function getSlackPostColor(string $event = null)
+    protected function getSlackColor(string $event)
     {
         switch ($event)
         {
-            case Event::ACTIVATED:
+            case Event::AUTHENTICATED:
             case Event::CHARGED:
+            case Event::CARD_CHANGED:
+            case Event::COMPLETED:
+            case Event::INVOICE_CHARGED:
                 return 'good';
             case Event::PENDING:
             case Event::CANCELLED:
                 return 'warning';
             case Event::HALTED:
                 return 'danger';
-            // Peter River color from flatuicolors.com
-            default:
-                return '#4AA3DF';
         }
     }
 
@@ -180,7 +171,7 @@ class Notify extends Processor\Notify
         try
         {
             // Send out notification for Slack
-            // $this->notifyViaSlack($event);
+            $this->notifyViaSlack($event);
 
             // Mails use the entire template
             // So there is no need to get separate data for each
@@ -214,14 +205,6 @@ class Notify extends Processor\Notify
 
     /**
      * Returns a flat array that is to be sent to Slack for a trigger event
-     * We don't need to send out the original payment details for a refund
-     * The array keys are flattened (concatenated using dots)
-     * Because slack doesn't support nested arrays
-     *
-     * So payment.amount = INR 500
-     *  & payment.currency = INR
-     *
-     * Would be some common examples
      *
      * @param  string $event Trigger event
      * @return array Flat array of data to be sent to Slack
@@ -243,9 +226,11 @@ class Notify extends Processor\Notify
 
         switch ($event)
         {
-            // Both cases are the same
-            case Event::ACTIVATED:
+            case Event::AUTHENTICATED:
             case Event::CHARGED:
+            case Event::CARD_CHANGED:
+            case Event::COMPLETED:
+            case Event::INVOICE_CHARGED:
                 $data['payment_id'] = $this->getPaymentLinkForSlack($paymentId);
                 break;
             case Event::PENDING:
@@ -367,12 +352,7 @@ class Notify extends Processor\Notify
 
     protected function isTimestamp($key, $value)
     {
-        if (in_array($key, self::TIMESTAMP_FIELDS, true) === true)
-        {
-            return true;
-        }
-
-        return parent::isTimestamp($key, $value);
+        return false;
     }
 
     /**
