@@ -356,7 +356,12 @@ class Service extends Base\Service
         //
         if (isset($details['parent_id']) === true)
         {
-            $merchantDetail->linked_account = true;
+            $merchantDetail->setLinkedAccount(true);
+
+            if ($details['linked_account_kyc'] === 1)
+            {
+                $merchantDetail->setLinkedAccountKYCRequired(true);
+            }
         }
 
         $activationDetails = $merchantDetail->getActivationFiles($id);
