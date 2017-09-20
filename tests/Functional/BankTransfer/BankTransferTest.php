@@ -157,16 +157,20 @@ class BankTransferTest extends TestCase
 
         $data = $this->testData['bankTransferImpsFailedRefund'];
 
-        // IMPS refunds are currently not permitted
-        $this->runRequestResponseFlow($data, function() use ($payment) {
-            $this->refundPayment($payment['id'], 4000000);
-        });
+        // IMPS refunds are permitted...
+        $this->refundPayment($payment['id'], 4000000);
 
-        // Payment is not refunded
+        // ...but they don't actually work
+        $refund =  $this->getLastEntity('refund', true);
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(4000000, $refund['amount']);
+
+        // Payment is refunded
         $payment =  $this->getLastEntity('payment', true);
         $this->assertEquals('bank_transfer', $payment['method']);
         $this->assertEquals('captured', $payment['status']);
-        $this->assertEquals(0, $payment['amount_refunded']);
+        $this->assertEquals(4000000, $payment['amount_refunded']);
     }
 
     public function testBankTransferProcessAndFetchDetails()
