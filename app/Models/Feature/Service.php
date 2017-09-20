@@ -185,6 +185,10 @@ class Service extends Base\Service
 
         $saved = false;
 
+        $this->trace->info(
+            TraceCode::FEATURE_ONBOARDING_RESPONSE_REQUEST,
+            [$input, $feature]);
+
         (new Validator)->validateInput(Constants::ONBOARDING, $data);
 
         try
@@ -216,13 +220,41 @@ class Service extends Base\Service
      */
     public function getOnboardingResponses(string $feature = null)
     {
+        $merchant = $this->merchant;
+
         if ($feature === null)
         {
-              $settings = Accessor::for($this->merchant, Constants::ONBOARDING)->all();
+              $settings = Accessor::for($merchant, Constants::ONBOARDING)
+                                  ->all();
+
+            if ((isset($settings[Constants::MARKETPLACE]) === true) and
+                (isset($settings[Constants::MARKETPLACE][Constants::VENDOR_AGREEMENT]) === true))
+            {
+                $fileId = $settings[Constants::MARKETPLACE][Constants::VENDOR_AGREEMENT];
+
+                $fileUrl = $this->getSignedUrl($fileId, $merchant->getId());
+
+                $marketplaceSettings = $settings->__get(Constants::MARKETPLACE);
+
+                $marketplaceSettings[Constants::VENDOR_AGREEMENT] = $fileUrl;
+
+                $settings->__set(Constants::MARKETPLACE, $marketplaceSettings);
+            }
         }
         else
         {
-            $settings = Accessor::for($this->merchant, Constants::ONBOARDING)->get($feature);
+            $settings = Accessor::for($merchant, Constants::ONBOARDING)
+                                ->get($feature);
+
+            if (($feature === Constants::MARKETPLACE) and
+                (isset($settings[Constants::VENDOR_AGREEMENT]) === true))
+            {
+                $fileId = $settings[Constants::VENDOR_AGREEMENT];
+
+                $fileUrl = $this->getSignedUrl($fileId, $merchant->getId());
+
+                $settings->__set(Constants::VENDOR_AGREEMENT, $fileUrl);
+            }
         }
 
         return $settings;
@@ -258,9 +290,7 @@ class Service extends Base\Service
 
             $file = $this->createFile($extension, $file, $fileName, $settingKey, $merchant);
 
-            $filePath = $file['local_file_path'];
-
-            $input[$featureName][$question] = $filePath;
+            $input[$featureName][$question] = FileStore\Entity::verifyIdAndSilentlyStripSign($file['id']);
         }
     }
 
@@ -317,6 +347,17 @@ class Service extends Base\Service
         }
 
         return $featureParams;
+    }
+
+    protected function getSignedUrl(string $fileStoreId, string $merchantId)
+    {
+        $accessor = new FileStore\Accessor;
+
+        $signedUrls = $accessor->id($fileStoreId)
+            ->merchantId($merchantId)
+            ->getSignedUrl();
+
+        return $signedUrls[$fileStoreId];
     }
 }
 

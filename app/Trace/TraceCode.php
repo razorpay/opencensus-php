@@ -851,6 +851,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTINGS_DELETE_REQUEST                       = 'SETTINGS_DELETE_REQUEST';
   
     // Feature Onboarding trace codes
+    const FEATURE_ONBOARDING_RESPONSE_REQUEST           = 'FEATURE_ONBOARDING_RESPONSE_REQUEST';
     const FEATURE_ONBOARDING_RESPONSE_CREATION_FAILED   = 'FEATURE_ONBOARDING_RESPONSE_CREATION_FAILED';
 
     protected static $messages = array(
