@@ -58,7 +58,7 @@ export default class User {
   }
 
   get isSubscriptionsEnabled() {
-    return this.isFeatureEnabled('virtual_accounts');
+    return this.isFeatureEnabled('subscriptions');
   }
 
   get isGSTDisabled() {
