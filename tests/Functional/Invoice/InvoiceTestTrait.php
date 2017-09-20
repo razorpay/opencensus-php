@@ -93,7 +93,7 @@ trait InvoiceTestTrait
         return $expected;
     }
 
-    protected function createInfernoMock($withMethods = ['fire'])
+    protected function createInfernoMock(array $withMethods = ['fire']): Inferno
     {
         $infernoMock = $this->getMockBuilder(Inferno::class)
                             ->setMethods($withMethods)
@@ -107,10 +107,10 @@ trait InvoiceTestTrait
     /**
      * Sets mocked inferno instance expectations for fire() method.
      *
-     * @param [type] $infernoMock
-     * @param array  $testDataKeys
+     * @param Inferno $infernoMock
+     * @param array   $testDataKeys
      */
-    protected function setMockedInfernoExpectations($infernoMock, array $testDataKeys)
+    protected function setMockedInfernoExpectations(Inferno $infernoMock, array $testDataKeys)
     {
         $times = 0;
 
@@ -126,7 +126,7 @@ trait InvoiceTestTrait
         //
         foreach ($testDataKeys as $testDataKey)
         {
-            ++$times;
+            $times = $times + 1;
 
             $arg2Callback = function ($actualWebhook) use ($testDataKey)
                             {

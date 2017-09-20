@@ -2057,7 +2057,7 @@ class InvoiceTest extends TestCase
         $payment = $this->doAuthAndGetPayment($payment, $expectedPaymentResponse);
     }
 
-    public function testInvoiceMultiplePartiallyPaidAndFinallyPaidWebhook()
+    public function testInvoiceMultiplePartiallyPaidWebhooks()
     {
         $this->fixtures->merchant->addFeatures(['invoice_partial_payments']);
 
@@ -2072,9 +2072,9 @@ class InvoiceTest extends TestCase
         $this->setMockedInfernoExpectations(
                 $infernoMock,
                 [
-                    'testInvoiceMultiplePartiallyPaidAndFinallyPaidWebhookEventData1', // 1st partial payment; fires invoice.partially_paid
-                    'testInvoiceMultiplePartiallyPaidAndFinallyPaidWebhookEventData2', // 2nd partial payment(for remaining due); fires order.paid
-                    'testInvoiceMultiplePartiallyPaidAndFinallyPaidWebhookEventData3', // 2nd partial payment(for remaining due); fires invoice.paid
+                    'testInvoiceMultiplePartiallyPaidWebhooksEventData1', // 1st partial payment; fires invoice.partially_paid
+                    'testInvoiceMultiplePartiallyPaidWebhooksEventData2', // 2nd partial payment(for remaining due); fires order.paid
+                    'testInvoiceMultiplePartiallyPaidWebhooksEventData3', // 2nd partial payment(for remaining due); fires invoice.paid
                 ]);
 
         // Makes two partial payments and asserts payment and web hook(^)
@@ -2105,7 +2105,7 @@ class InvoiceTest extends TestCase
         $payment = $this->doAuthAndGetPayment($payment, $expectedPaymentResponse);
     }
 
-    public function testInvoicePaidAndOrderPaidWebhook()
+    public function testInvoicePaidAndOrderPaidWebhooks()
     {
         $this->createWebhook(['events' => ['invoice.paid' => '1', 'order.paid' => '1']]);
 
@@ -2118,8 +2118,8 @@ class InvoiceTest extends TestCase
         $this->setMockedInfernoExpectations(
                 $infernoMock,
                 [
-                    'testInvoicePaidAndOrderPaidWebhookEventData1', // Asserts order.paid
-                    'testInvoicePaidAndOrderPaidWebhookEventData2', // Asserts invoice.paid
+                    'testInvoicePaidAndOrderPaidWebhooksEventData1', // Asserts order.paid
+                    'testInvoicePaidAndOrderPaidWebhooksEventData2', // Asserts invoice.paid
                 ]);
 
         // Makes a payment and asserts payment and web hooks (^)

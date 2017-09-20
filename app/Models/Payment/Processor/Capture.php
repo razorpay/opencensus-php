@@ -532,7 +532,7 @@ trait Capture
 
         if ($payment->hasOrder() === false)
         {
-            return;;
+            return;
         }
 
         $order = $payment->order;

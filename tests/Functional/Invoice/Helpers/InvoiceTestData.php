@@ -3247,7 +3247,7 @@ return [
         ],
     ],
 
-    'testInvoiceMultiplePartiallyPaidAndFinallyPaidWebhookEventData1' => [
+    'testInvoiceMultiplePartiallyPaidWebhooksEventData1' => [
         'entity'   => 'event',
         'event'    => 'invoice.partially_paid',
         'contains' => [
@@ -3297,7 +3297,7 @@ return [
         ],
     ],
 
-    'testInvoiceMultiplePartiallyPaidAndFinallyPaidWebhookEventData2' => [
+    'testInvoiceMultiplePartiallyPaidWebhooksEventData2' => [
         'entity'   => 'event',
         'event'    => 'order.paid',
         'contains' => [
@@ -3331,7 +3331,7 @@ return [
         ],
     ],
 
-    'testInvoiceMultiplePartiallyPaidAndFinallyPaidWebhookEventData3' => [
+    'testInvoiceMultiplePartiallyPaidWebhooksEventData3' => [
         'entity'   => 'event',
         'event'    => 'invoice.paid',
         'contains' => [
@@ -3381,7 +3381,7 @@ return [
         ],
     ],
 
-    'testInvoicePaidAndOrderPaidWebhookEventData1' => [
+    'testInvoicePaidAndOrderPaidWebhooksEventData1' => [
         'entity'   => 'event',
         'event'    => 'order.paid',
         'contains' => [
@@ -3415,7 +3415,7 @@ return [
         ],
     ],
 
-    'testInvoicePaidAndOrderPaidWebhookEventData2' => [
+    'testInvoicePaidAndOrderPaidWebhooksEventData2' => [
         'entity'   => 'event',
         'event'    => 'invoice.paid',
         'contains' => [
