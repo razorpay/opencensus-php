@@ -8,9 +8,11 @@ use RZP\Constants\Timezone;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
+use RZP\Models\Item;
 use RZP\Models\Order;
-use RZP\Models\Customer;
+use RZP\Models\Payment;
 use RZP\Models\Address;
+use RZP\Models\Customer;
 use RZP\Models\LineItem;
 use RZP\Models\FileStore;
 use RZP\Models\Plan\Subscription;
@@ -142,6 +144,17 @@ class Entity extends Base\PublicEntity
 
     const ORDER                    = 'order';
     const PAYMENTS                 = 'payments';
+
+    // ------------------------ Other constants ----------------------
+
+    const ALLOWED_LINE_ITEM_TYPES_INVOICE = [
+        Item\Type::INVOICE,
+    ];
+
+    const ALLOWED_LINE_ITEM_TYPES_SUBSCRIPTION_INVOICE = [
+        Item\Type::PLAN,
+        Item\Type::ADDON,
+    ];
 
     protected static $sign         = 'inv';
 
@@ -654,6 +667,18 @@ class Entity extends Base\PublicEntity
         return ($this->getAmount() === $this->getAmountPaid());
     }
 
+    public function getAllowedLineItemTypes()
+    {
+        if ($this->isOfSubscription() === true)
+        {
+            return self::ALLOWED_LINE_ITEM_TYPES_SUBSCRIPTION_INVOICE;
+        }
+        else
+        {
+            return self::ALLOWED_LINE_ITEM_TYPES_INVOICE;
+        }
+    }
+
     /**
      * Returns the path component of Dashboard view url.
      *
@@ -1135,7 +1160,8 @@ class Entity extends Base\PublicEntity
 
     public function payments()
     {
-        return $this->hasMany('RZP\Models\Payment\Entity');
+        return $this->hasMany(Payment\Entity::class)
+                    ->orderBy(Payment\Entity::CREATED_AT, 'desc');
     }
 
     public function files()

@@ -25,7 +25,7 @@ class ValidationTest extends TestCase
 
     public function testShortCardNumber()
     {
-        $this->setExpectedException('RZP\Exception\BadRequestValidationFailureException');
+        $this->expectException('RZP\Exception\BadRequestValidationFailureException');
 
         $this->input['number'] = '42';
         $this->card->build($this->input);

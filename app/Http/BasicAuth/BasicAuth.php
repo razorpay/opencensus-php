@@ -12,7 +12,6 @@ use RZP\Trace\TraceCode;
 use RZP\Http\Route;
 use RZP\Models\Key;
 use RZP\Models\Merchant;
-use RZP\Models\Base\PublicEntity;
 
 class BasicAuth
 {
@@ -64,6 +63,20 @@ class BasicAuth
      * @var \Illuminate\Foundation\Application
      */
     protected $app;
+
+    /**
+     * OAuth's registered client id.
+     *
+     * @var string
+     */
+    protected $oauthClientId;
+
+    /**
+     * OAuth's access token (public) id.
+     *
+     * @var string
+     */
+    protected $accessTokenId;
 
     /**
      * Key and secret sent by client for
@@ -163,14 +176,14 @@ class BasicAuth
 
     /**
      * Trace instance used for tracing
-     * @var Trace\Trace
+     * @var \Razorpay\Trace\Logger
      */
     protected $trace;
 
     /**
      * Api Route instance
      *
-     * @var RZP\Http\Route
+     * @var \RZP\Http\Route
      */
     protected $route;
 
@@ -186,11 +199,19 @@ class BasicAuth
      * rzp_mode_admin      = 3 + 1 + 4 + 1 + 5
      * rzp_mode_keyId      = 3 + 1 + 4 + 1 + 24
      * rzp_mode_merchantId = 3 + 1 + 4 + 1 + 14
+     *
+     * NOTE: key length 29 is used for OAuth public tokens,
+     * hence DO NOT add 29 as a valid length for basicAuth
+     *
      * @var array
      */
     protected static $validKeyLengths = [
         8, 14, 23, 33
     ];
+
+    protected $adminOrgId = null;
+
+    protected $orgId      = null;
 
     public function __construct($app)
     {
@@ -201,18 +222,18 @@ class BasicAuth
     {
         $app = $this->app;
 
-        $this->request = $app['request'];
+        $this->request            = $app['request'];
         $this->internalAppConfigs = $app['config']->get('applications');
-        $this->cloud = $app['config']->get('app.cloud');
-        $this->router = $app['router'];
-        $this->trace = $this->app['trace'];
-        $this->repo = $this->app['repo'];
-        $this->route = $this->app['api.route'];
-        $this->merchant = null;
-        $this->device = null;
-        $this->isAdmin = false;
-        $this->appAuth = false;
-        $this->proxy = false;
+        $this->cloud              = $app['config']->get('app.cloud');
+        $this->router             = $app['router'];
+        $this->trace              = $this->app['trace'];
+        $this->repo               = $this->app['repo'];
+        $this->route              = $this->app['api.route'];
+        $this->merchant           = null;
+        $this->device             = null;
+        $this->isAdmin            = false;
+        $this->appAuth            = false;
+        $this->proxy              = false;
     }
 
     public function setCredentials()
@@ -1007,7 +1028,22 @@ class BasicAuth
 
     public function getMerchantId()
     {
+        if ($this->getMerchant() === null)
+        {
+            return null;
+        }
+
         return $this->merchant->getKey();
+    }
+
+    public function getAccessTokenId()
+    {
+        return $this->accessTokenId;
+    }
+
+    public function getOAuthClientId()
+    {
+        return $this->oauthClientId;
     }
 
     public function getMerchantIdOfKey()
@@ -1062,6 +1098,29 @@ class BasicAuth
         $this->app['rzp.mode'] = $mode;
     }
 
+    /**
+     * Sets $merchant instance var value by given $merchantId.
+     * Called by OAuth flow. OAuth server response contains the same($merchantId).
+     *
+     * @param string $merchantId
+     */
+    public function setMerchantById(string $merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $this->merchant = $merchant;
+    }
+
+    public function setAccessTokenId(string $tokenId)
+    {
+        $this->accessTokenId = $tokenId;
+    }
+
+    public function setOAuthClientId(string $oauthClientId)
+    {
+        $this->oauthClientId = $oauthClientId;
+    }
+
     public function setMerchant($merchant)
     {
         $this->merchant = $merchant;
@@ -1075,6 +1134,11 @@ class BasicAuth
     protected function setAdminTrue()
     {
         $this->isAdmin = true;
+    }
+
+    public function setPublicKey(string $publicKey)
+    {
+        $this->creds['public_key'] = $publicKey;
     }
 
     protected function setProxyTrue()
@@ -1360,4 +1424,33 @@ class BasicAuth
                 $data);
         }
     }
+
+    public function setOrgId($orgId)
+    {
+        $this->orgId = $orgId;
+    }
+
+    public function getOrgId()
+    {
+        return $this->orgId;
+    }
+
+    public function fetchOrgByHostname($orgHostname)
+    {
+        if ($this->app->environment('testing') === false)
+        {
+            $mode = Mode::LIVE;
+        }
+        else
+        {
+            $mode = Mode::TEST;
+        }
+
+        // Org Hostname check should always be done in the
+        // live mode (since we don't sync it in heimdall)
+        $org = $this->repo->org->connection($mode)->findOrFailByHostname($orgHostname);
+
+        return $org;
+    }
+
 }

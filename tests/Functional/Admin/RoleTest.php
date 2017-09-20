@@ -25,17 +25,11 @@ class RoleTest extends TestCase
 
         $this->authToken = $this->getAuthTokenForOrg($this->org);
 
-        $this->ba->adminAuth('test', $this->authToken);
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
     }
 
     public function testCreateRole()
     {
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         return $this->startTest();
     }
 
@@ -45,13 +39,7 @@ class RoleTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['permissions'] = $permIds;
 
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $result = $this->startTest();
+        $this->startTest();
     }
 
     public function testEditRoleDeleteAllPermissions()
@@ -66,7 +54,7 @@ class RoleTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $role->getPublicId());
+        $url = sprintf($url, $role->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -95,7 +83,7 @@ class RoleTest extends TestCase
 
         $url = $request['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $role->getPublicId());
+        $url = sprintf($url, $role->getPublicId());
 
         $request['url'] = $url;
 
@@ -123,7 +111,7 @@ class RoleTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, 'org_' . Org::RZP_ORG, $role['id']);
+        $url = sprintf($url, $role['id']);
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -141,11 +129,11 @@ class RoleTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $role->getPublicId());
+        $url = sprintf($url, $role->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $result = $this->startTest();
+        $this->startTest();
     }
 
     public function testEditRole()
@@ -154,7 +142,7 @@ class RoleTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $role->getPublicId());
+        $url = sprintf($url, $role->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -169,7 +157,7 @@ class RoleTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $role->getPublicId());
+        $url = sprintf($url, $role->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -180,11 +168,9 @@ class RoleTest extends TestCase
     {
         $role = $this->getEntityById('role', Org::ADMIN_ROLE, true);
 
-        $orgId = 'org_' . Org::RZP_ORG;
-
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $orgId, $role['id']);
+        $url = sprintf($url, $role['id']);
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -195,12 +181,6 @@ class RoleTest extends TestCase
 
     public function testGetMultipleRoles()
     {
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         $result = $this->startTest();
 
         $this->assertEquals(1, $result['count']);
@@ -212,12 +192,6 @@ class RoleTest extends TestCase
         $role = $this->fixtures->create(
             'role',
             ['org_id' => $this->org->getId(), 'name' => $name]);
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->testData[__FUNCTION__]['request']['content']['name'] = $name;
 

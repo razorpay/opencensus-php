@@ -5,6 +5,7 @@ use Config;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity;
 use RZP\Models\FileStore;
+use RZP\Encryption\Type;
 
 class FileStoreTest extends TestCase
 {
@@ -26,7 +27,7 @@ class FileStoreTest extends TestCase
     {
         $store = 'invalid';
 
-        $this->setExpectedException('RZP\Exception\LogicException', 'Not a valid Store:');
+        $this->expectException('RZP\Exception\LogicException', 'Not a valid Store:');
 
         $this->creator->extension($this->extension)
                 ->content($this->content)
@@ -36,11 +37,57 @@ class FileStoreTest extends TestCase
                 ->save();
     }
 
+    function testEncryption()
+    {
+        $encryptionType = Type::PGP_ENCRYPTION;
+
+        $extension = FileStore\Format::XLSX;
+
+        $publicKey          = file_get_contents(__DIR__ . '/../../Encryption/pgp_public_test_key.asc');
+
+        $encryptionData = [
+            'public_key'  => $publicKey,
+        ];
+
+        $file = $this->creator->extension($extension)
+                     ->content($this->content)
+                     ->name($this->fileName)
+                     ->store($this->store)
+                     ->type($this->type)
+                     ->encrypt($encryptionType, $encryptionData)
+                     ->save();
+
+        $this->assertEquals($file->getFileInstance()->getMime(), 'application/pgp');
+    }
+
+    function testEncryptionFailure()
+    {
+        $encryptionType = Type::PGP_ENCRYPTION;
+
+        $extension = FileStore\Format::XLSX;
+
+        $publicKey          = 'somerandomkey';
+
+        $encryptionData = [
+            'public_key'  => $publicKey,
+        ];
+
+        $this->expectException('RZP\Exception\LogicException', 'PGP Encryption Failed');
+
+        $file = $this->creator->extension($extension)
+                     ->content($this->content)
+                     ->name($this->fileName)
+                     ->store($this->store)
+                     ->type($this->type)
+                     ->encrypt($encryptionType, $encryptionData)
+                     ->save();
+    }
+
     function testInvalidType()
     {
         $type = 'invalid';
 
-        $this->setExpectedException('RZP\Exception\LogicException', 'Not a valid Type:');
+        $this->expectException('RZP\Exception\LogicException', 'Not a valid Type:');
 
         $this->creator->extension($this->extension)
                 ->content($this->content)
@@ -54,7 +101,7 @@ class FileStoreTest extends TestCase
     {
         $extension = 'invalid';
 
-        $this->setExpectedException('RZP\Exception\BadRequestValidationFailureException', 'Invalid Extension');
+        $this->expectException('RZP\Exception\BadRequestValidationFailureException', 'Invalid Extension');
 
         $this->creator->extension($extension)
                 ->content($this->content)

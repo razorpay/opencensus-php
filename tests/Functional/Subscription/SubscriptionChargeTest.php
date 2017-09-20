@@ -34,6 +34,8 @@ class SubscriptionChargeTest extends TestCase
         $this->gateway = 'cybersource';
 
         $this->mockTokenex();
+
+        Carbon::setTestNow();
     }
 
     public function tearDown()
@@ -1081,6 +1083,151 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals(1, $result['total']);
 
         Carbon::setTestNow();
+    }
+
+    public function testSubscriptionChargeWithDueAddon()
+    {
+        $this->doAuthTxnForNewSubscription(false);
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('active', $subscription['status']);
+
+        $item = $this->fixtures->create('item:addon_type', ['id' => '2000000000item']);
+        $this->fixtures->create(
+            'addon',
+            [
+                'item_id'           => '2000000000item',
+                'subscription_id'   => substr($subscription['id'], 4),
+                'invoice_id'        => null,
+            ]);
+
+        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+        $this->assertEquals(1, $result['invoices_created']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $invoice = $this->getLastEntity('invoice', true);
+        $addon = $this->getLastEntity('addon', true);
+
+        $this->assertEquals(2, $subscription['paid_count']);
+        $this->assertEquals($item['amount']+2000, $invoice['amount_paid']);
+        $this->assertEquals($invoice['id'], $addon['invoice_id']);
+
+        // To ensure that the next charge doesn't take the already used addon
+
+        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+        $this->assertEquals(1, $result['invoices_created']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals(3, $subscription['paid_count']);
+        $this->assertEquals(2000, $invoice['amount_paid']);
+    }
+
+    public function testSubscriptionChargeWithDeletedAddon()
+    {
+        $this->doAuthTxnForNewSubscription(false);
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('active', $subscription['status']);
+
+        $item = $this->fixtures->create('item:addon_type', ['id' => '2000000000item']);
+        $this->fixtures->create(
+            'addon',
+            [
+                'item_id'           => '2000000000item',
+                'subscription_id'   => substr($subscription['id'], 4),
+                'invoice_id'        => null,
+                'deleted_at'        => 100000000,
+            ]);
+
+        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+        $this->assertEquals(1, $result['invoices_created']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $invoice = $this->getLastEntity('invoice', true);
+        $addon = $this->getLastEntity('addon', true);
+
+        $this->assertEquals(2, $subscription['paid_count']);
+
+        // no addon should have been applied
+        $this->assertEquals(2000, $invoice['amount_paid']);
+        $this->assertNull($addon['invoice_id']);
+    }
+
+    public function testAddonAfterSubscriptionCreateImmediate()
+    {
+        $subscription = $this->createSubscription(false);
+
+        $item = $this->fixtures->create('item:addon_type', ['id' => '2000000000item']);
+        $this->fixtures->create(
+            'addon',
+            [
+                'item_id'           => '2000000000item',
+                'subscription_id'   => substr($subscription['id'], 4),
+                'invoice_id'        => null,
+            ]);
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, 2000);
+
+        $recurringPayment = $this->doAuthPayment($paymentRequest);
+
+        $invoice = $this->getLastEntity('invoice', true);
+        $subscription = $this->getLastEntity('subscription', true);
+        $addon = $this->getLastEntity('addon', true);
+
+        $this->assertEquals(1, $subscription['paid_count']);
+        $this->assertEquals(2000, $invoice['amount_paid']);
+        $this->assertNull($addon['invoice_id']);
+
+        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+        $this->assertEquals(1, $result['invoices_created']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $invoice = $this->getLastEntity('invoice', true);
+        $addon = $this->getLastEntity('addon', true);
+
+        $this->assertEquals(2, $subscription['paid_count']);
+
+        $this->assertEquals(2, $subscription['paid_count']);
+        $this->assertEquals($item['amount']+2000, $invoice['amount_paid']);
+        $this->assertEquals($invoice['id'], $addon['invoice_id']);
+    }
+
+    public function testAddonAfterSubscriptionCreateFuture()
+    {
+        $subscription = $this->createSubscription(true);
+
+        $item = $this->fixtures->create('item:addon_type', ['id' => '2000000000item']);
+        $this->fixtures->create(
+            'addon',
+            [
+                'item_id'           => '2000000000item',
+                'subscription_id'   => substr($subscription['id'], 4),
+                'invoice_id'        => null,
+            ]);
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+
+        $recurringPayment = $this->doAuthPayment($paymentRequest);
+
+        $invoice = $this->getLastEntity('invoice', true);
+        $subscription = $this->getLastEntity('subscription', true);
+        $addon = $this->getLastEntity('addon', true);
+
+        $this->assertEquals('authenticated', $subscription['status']);
+        $this->assertEquals(0, $subscription['paid_count']);
+        $this->assertNull($invoice);
+        $this->assertNull($addon['invoice_id']);
+
+        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+        $this->assertEquals(1, $result['invoices_created']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $invoice = $this->getLastEntity('invoice', true);
+        $addon = $this->getLastEntity('addon', true);
+
+        $this->assertEquals(1, $subscription['paid_count']);
+        $this->assertEquals($item['amount']+2000, $invoice['amount_paid']);
+        $this->assertEquals($invoice['id'], $addon['invoice_id']);
     }
 
     public function testToArrayPublicConversion()

@@ -69,6 +69,12 @@ class Entity extends Base\PublicEntity
     // List of tags this entity is tagged as.
     const TAG_LIST                  = 'tag_list';
 
+    /**
+     * Constants for merchant analytics keys
+     */
+    const FILTERS                   = 'filters';
+    const KEY_MERCHANT_ID           = 'merchant_id';
+
     //
     // Configs
     //
@@ -100,6 +106,7 @@ class Entity extends Base\PublicEntity
     const METHODS                   = 'methods';
     const ORIGINAL_SIZE             = 'original';
     const ACTION                    = 'action';
+    const MEDIUM_SIZE               = 'medium';
     const MERCHANT_DETAIL           = 'merchant_detail';
     const GROUPS                    = 'groups';
     const ADMINS                    = 'admins';
@@ -1064,13 +1071,14 @@ class Entity extends Base\PublicEntity
      * we need to verify the bank account number of customer during payment
      * which is not required for a normal payment flow.
      *
+     * This now enforced via a feature flag, because certain merchants
+     * from mutual_funds do not require the
+     *
      * @return boolean
      */
     public function isTPVRequired()
     {
-        $category2 = $this->getCategory2();
-
-        return Terminal\Category::isMerchantCategoryTpv($category2);
+        return ($this->isFeatureEnabled(Feature\Constants::TPV) === true);
     }
 
     public function isTestAccount()
@@ -1180,6 +1188,7 @@ class Entity extends Base\PublicEntity
             self::ACTIVATED    => $this->getAttribute(self::ACTIVATED),
             self::ARCHIVED_AT  => $this->getAttribute(self::ARCHIVED_AT),
             self::SUSPENDED_AT => $this->getAttribute(self::SUSPENDED_AT),
+            self::LOGO_URL     => $this->getFullLogoUrlWithSize(self::MEDIUM_SIZE),
             self::CREATED_AT   => $this->getAttribute(self::CREATED_AT),
             self::UPDATED_AT   => $this->getAttribute(self::UPDATED_AT),
         ];

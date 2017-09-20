@@ -38,7 +38,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_ACTIVATED_KEY_CREATE_FAILED,
         ],
     ],
@@ -182,7 +182,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_KEY_EXPIRED,
         ],
     ],
@@ -204,7 +204,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_KEY_OF_DEMO_ACCOUNT,
         ],
     ],
@@ -259,7 +259,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -311,7 +311,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -374,7 +374,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -574,7 +574,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED,
         ],
     ],
@@ -595,7 +595,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND,
         ]
     ],
@@ -999,7 +999,7 @@ return [
                     [
                         'name'            => 'Test Offer',
                         'payment_method'  => 'wallet',
-                        'payment_network' => 'olamoney',
+                        'issuer'          => 'olamoney',
                         'display_text'    => 'Some display text',
                     ]
                 ]
@@ -1070,8 +1070,27 @@ return [
             ],
             [
                 'offer' => [
+                    'issuer'              => 'HDFC',
+                    'error_message'       => 'Payment method used is not eligible for offer. Please try with a different payment method.',
+                    'display_text'        => 'Some display text',
+                    'terms'               => 'Some terms',
+                ],
+                'response' => [
+                    'content' => [
+                        'offers' => [
+                            [
+                                'name'            => 'Test Offer',
+                                'issuer'          => 'HDFC',
+                                'display_text'    => 'Some display text',
+                            ]
+                        ]
+                    ]
+                ]
+            ],
+            [
+                'offer' => [
                     'payment_method'      => 'wallet',
-                    'payment_network'     => 'airtelmoney',
+                    'issuer'              => 'airtelmoney',
                     'error_message'       => 'Payment method used is not eligible for offer. Please try with a different payment method.',
                     'display_text'        => 'Some display text',
                     'terms'               => 'Some terms',
@@ -1088,26 +1107,10 @@ return [
                             [
                                 'name'            => 'Test Offer',
                                 'payment_method'  => 'wallet',
-                                'payment_network' => 'airtelmoney',
+                                'issuer'          => 'airtelmoney',
                                 'display_text'    => 'Some display text',
                             ]
                         ]
-                    ]
-                ]
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'methods' => [
-                    'entity' => 'methods',
-                    'card'   => true
-                ],
-                'offers' => [
-                    [
-                        'name'            => 'Test Offer',
-                        'payment_method'  => 'card',
-                        'payment_network' => 'VISA',
-                        'display_text'    => 'Some display text',
                     ]
                 ]
             ],
@@ -1124,11 +1127,592 @@ return [
                 'downtime' => [
                     'card' => [
                         [
-                            'issuer' => ['ALL'],
+                            'issuer'    => ['ALL'],
                             'scheduled' => true,
-                            'reason_code' => 'OTHER',
+                            'severity'  => 'low',
                             'card_type' => 'credit',
-                            'network' => ['VISA'],
+                            'network'   => ['VISA'],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetNetbankingDowntimeInfoForDirectNetbankingGateway' => [
+        'request' => [
+            'url' => '/methods/downtime',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer'    => 'HDFC'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetNetbankingDowntimeInfoWithSharedNetbankingGateway' => [
+        'request' => [
+            'url' => '/methods/downtime',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 30,
+                'items' => [
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'ALLA',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'BBKM',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'BKDN',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'COSB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'DCBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'DCBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'DEUT',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'DBSS',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'IDFB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'IBKL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'JSBP',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'KVBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'NKGS',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'PMCB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SBBJ',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SBHY',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SBIN',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SBMY',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'STBP',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SBTR',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SCBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SIBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SVCB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SYNB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'TMBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'TNSC',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'BARB_C',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'BARB_R',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'PUNB_C',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'LAVB_C',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetNetbankingDowntimeInfoWithBothSharedAndDirectGateway' => [
+        'request' => [
+            'url' => '/methods/downtime',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 31,
+                'items' => [
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer'    => 'HDFC'
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'ALLA',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'BBKM',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'BKDN',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'COSB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'DCBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'DCBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'DEUT',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'DBSS',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'IDFB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'IBKL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'JSBP',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'KVBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'NKGS',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'PMCB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SBBJ',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SBHY',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SBIN',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SBMY',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'STBP',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SBTR',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SCBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SIBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SVCB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'SYNB',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'TMBL',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'TNSC',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'BARB_C',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'BARB_R',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'PUNB_C',
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer' => 'LAVB_C',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetNetbankingDowntimeWithNoBanksExclusiveToGateway' => [
+        'request' => [
+            'url' => '/methods/downtime',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 0,
+                'items' => [],
+            ],
+        ],
+    ],
+
+    'testGetNetbankingDowntimeInfoWithIssuerExclusiveToGateway' => [
+        'request' => [
+            'url' => '/methods/downtime',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer'    => 'ALLA'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetNetbankingDowntimeInfoWithIssuerNA' => [
+        'request' => [
+            'url' => '/methods/downtime',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 0,
+                'items' => [
+                ],
+            ],
+        ],
+    ],
+
+    'testGetNetbankingDowntimeInfoWithGatewayAll' => [
+        'request' => [
+            'url' => '/methods/downtime',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'low',
+                        'instrument' => [
+                            'issuer'    => 'HDFC'
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetNetbankingDowntimeInfoWithMultipleDowntimes' => [
+        'request' => [
+            'url' => '/methods/downtime',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'count' => 2,
+                'items' => [
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'medium',
+                        'instrument' => [
+                            'issuer' => 'ALLA'
+                        ],
+                    ],
+                    [
+                        'method' => 'netbanking',
+                        'severity' => 'high',
+                        'instrument' => [
+                            'issuer' => 'HDFC'
                         ],
                     ],
                 ],
@@ -1157,11 +1741,11 @@ return [
                 'downtime' => [
                     'card' => [
                         [
-                            'issuer'      => ['ALL'],
-                            'scheduled'   => true,
-                            'reason_code' => 'OTHER',
-                            'card_type'   => 'credit',
-                            'network'     => ['DICL'],
+                            'issuer'    => ['ALL'],
+                            'scheduled' => true,
+                            'severity'  => 'low',
+                            'card_type' => 'credit',
+                            'network'   => ['DICL'],
                         ],
                     ],
                 ],
@@ -1179,11 +1763,11 @@ return [
                 'downtime' => [
                     'card' => [
                         [
-                            'issuer'      => ['ALL'],
-                            'scheduled'   => true,
-                            'reason_code' => 'OTHER',
-                            'card_type'   => 'credit',
-                            'network'     => ['DICL'],
+                            'issuer'    => ['ALL'],
+                            'scheduled' => true,
+                            'severity'  => 'low',
+                            'card_type' => 'credit',
+                            'network'   => ['DICL'],
                         ],
                     ],
                 ],
@@ -1201,9 +1785,9 @@ return [
                 'downtime' => [
                     'netbanking' => [
                         [
-                            'issuer'      => ['HDFC'],
-                            'scheduled'   => true,
-                            'reason_code' => 'OTHER',
+                            'issuer'    => ['HDFC'],
+                            'scheduled' => true,
+                            'severity'  => 'low',
                         ],
                     ],
                 ],
@@ -1254,7 +1838,7 @@ return [
                                 'LAVB_C'
                             ],
                             'scheduled'   => true,
-                            'reason_code' => 'OTHER',
+                            'severity'    => 'low',
                         ],
                     ],
                 ],
@@ -1272,9 +1856,9 @@ return [
                 'downtime' => [
                     'netbanking' => [
                         [
-                            'issuer'      => ['ALLA'],
-                            'scheduled'   => true,
-                            'reason_code' => 'OTHER',
+                            'issuer'    => ['ALLA'],
+                            'scheduled' => true,
+                            'severity'  => 'low',
                         ],
                     ],
                 ],
@@ -1292,9 +1876,9 @@ return [
                 'downtime' => [
                     'netbanking' => [
                         [
-                            'issuer'      => ['HDFC'],
-                            'scheduled'   => true,
-                            'reason_code' => 'OTHER',
+                            'issuer'    => ['HDFC'],
+                            'scheduled' => true,
+                            'severity'  => 'low',
                         ],
                     ],
                 ],
@@ -1312,9 +1896,9 @@ return [
                 'downtime' => [
                     'wallet' => [
                         [
-                            'issuer'      => ['olamoney'],
-                            'scheduled'   => true,
-                            'reason_code' => 'OTHER',
+                            'issuer'    => ['olamoney'],
+                            'scheduled' => true,
+                            'severity'  => 'low',
                         ],
                     ],
                 ],
@@ -1366,7 +1950,7 @@ return [
                                 'LAVBC'
                             ],
                             'scheduled'   => true,
-                            'reason_code' => 'OTHER',
+                            'severity'    => 'low',
                         ],
                     ],
                 ],
@@ -1595,7 +2179,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class' => RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
@@ -1611,7 +2195,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_LOGO_NOT_IMAGE,
         ],
     ],
@@ -1627,7 +2211,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL,
         ],
     ],
@@ -1643,7 +2227,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_LOGO_NOT_SQUARE,
         ],
     ],
@@ -1659,7 +2243,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_LOGO_TOO_BIG,
         ],
     ],
@@ -1685,9 +2269,24 @@ return [
             'content' => [
                 'features' => [
                     [
-                        'feature' => "noflashcheckout",
+                        'feature' => 'noflashcheckout',
                         'value' => false,
-                        'display_name' => "No Flash Checkout"
+                        'display_name' => 'No Flash Checkout'
+                    ],
+                    [
+                        'feature' => 'marketplace',
+                        'value' => false,
+                        'display_name' => 'Marketplace'
+                    ],
+                    [
+                        'feature' => 'subscriptions',
+                        'value' => false,
+                        'display_name' => 'Subscriptions'
+                    ],
+                    [
+                        'feature' => 'virtual_accounts',
+                        'value' => false,
+                        'display_name' => 'Virtual accounts'
                     ],
                 ]
             ],
@@ -1698,10 +2297,10 @@ return [
     'testUpdateMerchantFeatures' => [
         'request' => [
             'content' => [
-                "features" => [
-                    "noflashcheckout" => "1",
+                'features' => [
+                    'noflashcheckout' => '1',
                 ],
-                "optout_reason" => "some reason"
+                'optout_reason' => 'some reason'
             ],
             'url' => '/merchants/10000000000000/features',
             'method' => 'post',
@@ -1714,9 +2313,9 @@ return [
             'content' => [
                 'features' => [
                     [
-                        'feature' => "noflashcheckout",
+                        'feature' => 'noflashcheckout',
                         'value' => true,
-                        'display_name' => "No Flash Checkout"
+                        'display_name' => 'No Flash Checkout'
                     ]
                 ]
             ],
@@ -1727,8 +2326,8 @@ return [
     'testUpdateMerchantUnEditableFeatures' => [
         'request' => [
             'content' => [
-                "features" => [
-                    "dummy" => "1"
+                'features' => [
+                    'dummy' => '1'
                 ]
             ],
             'url' => '/merchants/10000000000000/features',
@@ -1744,8 +2343,279 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+        ],
+    ],
+
+    'testAddMerchantUnEditableFeaturesOnLive' => [
+        'request' => [
+            'content' => [
+                'features' => [
+                    'marketplace' => '1'
+                ]
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
+        ],
+    ],
+
+    'testAddMerchantEditableFeaturesOnTest' => [
+        'request' => [
+            'content' => [
+                'features' => [
+                    'marketplace' => '1',
+                ]
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'features' => [
+                    [
+                        'feature'      => 'noflashcheckout',
+                        'value'        => false,
+                        'display_name' => 'No Flash Checkout'
+                    ],
+                    [
+                        'feature'      => 'marketplace',
+                        'value'        => true,
+                        'display_name' => 'Marketplace'
+                    ],
+                    [
+                        'feature'      => 'subscriptions',
+                        'value'        => false,
+                        'display_name' => 'Subscriptions'
+                    ],
+                    [
+                        'feature'      => 'virtual_accounts',
+                        'value'        => false,
+                        'display_name' => 'Virtual accounts'
+                    ],
+                ]
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testAddMerchantFeaturesWithSyncOnTest' => [
+        'request' => [
+            'content' => [
+                'features'      => [
+                    'noflashcheckout' => '1',
+                ],
+                'should_sync'   => 1
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'features' => [
+                    [
+                        'feature'      => 'noflashcheckout',
+                        'value'        => true,
+                        'display_name' => 'No Flash Checkout'
+                    ],
+                    [
+                        'feature'      => 'marketplace',
+                        'value'        => false,
+                        'display_name' => 'Marketplace'
+                    ],
+                    [
+                        'feature'      => 'subscriptions',
+                        'value'        => false,
+                        'display_name' => 'Subscriptions'
+                    ],
+                    [
+                        'feature'      => 'virtual_accounts',
+                        'value'        => false,
+                        'display_name' => 'Virtual accounts'
+                    ],
+                ]
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testAddMerchantFeaturesWithSyncOnLive' => [
+        'request' => [
+            'content' => [
+                'features'      => [
+                    'noflashcheckout' => '1',
+                ],
+                'should_sync'   => 1
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'features' => [
+                    [
+                        'feature'      => 'noflashcheckout',
+                        'value'        => true,
+                        'display_name' => 'No Flash Checkout'
+                    ],
+                    [
+                        'feature'      => 'marketplace',
+                        'value'        => false,
+                        'display_name' => 'Marketplace'
+                    ],
+                    [
+                        'feature'      => 'subscriptions',
+                        'value'        => false,
+                        'display_name' => 'Subscriptions'
+                    ],
+                    [
+                        'feature'      => 'virtual_accounts',
+                        'value'        => false,
+                        'display_name' => 'Virtual accounts'
+                    ],
+                ]
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testAddMerchantUneditableFeaturesWithSyncOnLive' => [
+        'request' => [
+            'content' => [
+                'features'      => [
+                    'subscriptions' => '1',
+                ],
+                'should_sync'   => 1
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
+        ],
+    ],
+
+    'testAddMerchantEditableFeaturesWithSyncOnTest' => [
+        'request' => [
+            'content' => [
+                'features'      => [
+                    'subscriptions' => '1',
+                ],
+                'should_sync'   => 1
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
+        ],
+    ],
+
+    'testDeleteMerchantUnEditableFeatureFromLive' => [
+        'request' => [
+            'content' => [
+                'features' => [
+                    'marketplace' => '0'
+                ]
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
+        ],
+    ],
+
+    'testDeleteMerchantEditableFeatureFromTest' => [
+        'request' => [
+            'content' => [
+                'features' => [
+                    'marketplace' => '0',
+                ],
+                'should_sync'   => 1
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
         ],
     ],
 
@@ -1783,7 +2653,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_DOES_NOT_EXISTS,
         ],
     ],
@@ -1806,7 +2676,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ARCHIVED,
         ],
     ],
@@ -1845,7 +2715,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_ARCHIVED,
         ],
     ],
@@ -1886,7 +2756,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_SUSPENDED,
         ],
     ],
@@ -1927,7 +2797,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_SUSPENDED,
         ],
     ],
@@ -1950,7 +2820,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED,
         ],
     ],
@@ -1970,5 +2840,43 @@ return [
             ],
             'status_code' => 200,
         ],
-    ]
+    ],
+
+    'verifyFeaturePresence' => [
+        'request'  => [
+            'url'    => '/features/10000000000000',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'assigned_features' => [
+                    [
+                        'name'        => 'noflashcheckout',
+                        'entity_id'   => '10000000000000',
+                        'entity_type' => 'merchant'
+                    ]
+                ],
+                'all_features'      => [
+                    'dummy',
+                    'webhooks',
+                    'aggregator',
+                    'tokens',
+                    's2swallet',
+                    's2supi',
+                    's2saeps',
+                    'setl_report',
+                    'noflashcheckout',
+                    'recurring',
+                    's2s',
+                    'invoice',
+                    'nozeropricing',
+                    'reverse',
+                ]
+            ]
+        ]
+    ],
 ];

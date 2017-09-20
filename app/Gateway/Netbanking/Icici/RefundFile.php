@@ -57,7 +57,7 @@ class RefundFile extends Base\RefundFile
             'date'       => $today
         ];
 
-        $this->sendRefundEmail($fileData, $input['email']);
+        $this->sendRefundEmail($fileData, (array) $input['email']);
 
         return $file['local_file_path'];
     }

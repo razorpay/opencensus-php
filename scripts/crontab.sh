@@ -90,7 +90,6 @@ add_cron "0 2 * * *"       "prod_merchant_schdule_mig" POST "$BASE_URL/merchants
 # Refund
 add_cron "0 3 * * *"        "nb_refunds_prod"                POST "$BASE_URL/refunds/excel"                             "method=netbanking"              $LIVE_AUTH
 add_cron "1-59/10 * * * *"  "authorized_old_refund"          POST "$BASE_URL/payments/refund/authorized"                 ""                              $LIVE_AUTH
-add_cron "0 4 * * *"        "upi_refunds_prod"               POST "$BASE_URL/refunds/excel"                              "method=upi&bank=icici"         $LIVE_AUTH
 add_cron "6-51/15 * * * *"  "order_refund_multiple_aut"      POST "$BASE_URL/orders/payments/refund"                     ""                              $LIVE_AUTH
 add_cron "48 3-21/6 * * *"  "batch_processor_prod_live"      POST "$BASE_URL/batches/process"                            ""                              $LIVE_AUTH
 add_cron "48 3-21/6 * * *"  "batch_processor_prod_test"      POST "$BASE_URL/batches/process"                            ""                              $TEST_AUTH
@@ -100,6 +99,8 @@ add_cron "58 7,19 * * *"    "freecharge_create_refund_rec"   POST "$BASE_URL/ref
 # add_cron "9,39 * * * *"     "refund_gateway_refunded_txns"   POST "$BASE_URL/refunds/gateway_refunded/transaction"       ""                              $LIVE_AUTH
 add_cron "*/15 * * * *"     "refund_failed_retry"            POST "$BASE_URL/refunds/retry/failed"                       ""                              $LIVE_AUTH
 add_cron "*/15 * * * *"     "virtual_account_refund_excess"  POST "$BASE_URL/virtual_accounts/refund/excess"             ""                              $LIVE_AUTH
+
+add_cron "15 3 * * *"       "gateway_file_refunds_prod"      POST "$BASE_URL/gateway/files"              "type=refund&targets[]=hdfc&targets[]=icici"              $LIVE_AUTH
 
 # Invoice
 add_cron "*/10 * * * *"     "invoice_expire_bulk_test"       POST "$BASE_URL/invoices/expire"                            ""                              $TEST_AUTH
@@ -117,6 +118,7 @@ add_cron "0 10 * * *"       "nodal_transfer_icici_fd"        POST "$BASE_URL/nod
 add_cron "0 */2 * * *"      "subscriptions_charge"           POST "$BASE_URL/subscriptions/charge/invoices"              ""                              $LIVE_AUTH
 add_cron "0 * * * *"        "subscriptions_auth_retry"       POST "$BASE_URL/subscriptions/retry"                        ""                              $LIVE_AUTH
 add_cron "*/10 * * * *"     "subscriptions_expire"           POST "$BASE_URL/subscriptions/expire"                       ""                              $LIVE_AUTH
+add_cron "*/10 * * * *"     "subscriptions_cancel"           POST "$BASE_URL/subscriptions/cancel/due"                   ""                              $LIVE_AUTH
 
 # DSP Blackrock
 add_cron "0 15 * * *"       "dsp_report_today"               GET  "$BASE_URL/reports/transaction/dsp"    "mail=1&email=dummy@dspblackrock.com&day=today"      $LIVE_AUTH

@@ -68,7 +68,13 @@ class Reconciliate extends Base\Reconciliate
 
     public function getReconPassword($fileDetails)
     {
-        // TODO: Fix password
+        // in case of file name is axis account number, use yatra MID for unzip
+        if ($fileDetails[FileProcessor::FILE_NAME] === '917020041206002.zip')
+        {
+            return 'YAONPLRAZP';
+        }
+
+        // else by default use shared mid name
         return 'RAZORPAYADD';
     }
 

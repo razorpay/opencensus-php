@@ -132,7 +132,7 @@ class Entity extends Base\PublicEntity
 
     // -------------------------- Getters ----------------------------
 
-    public function getName()
+    public function getName(): string
     {
         return $this->getAttribute(self::NAME);
     }
@@ -142,17 +142,17 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DESCRIPTION);
     }
 
-    public function getAmount()
+    public function getAmount(): int
     {
         return $this->getAttribute(self::AMOUNT);
     }
 
-    public function getCurrency()
+    public function getCurrency(): string
     {
         return $this->getAttribute(self::CURRENCY);
     }
 
-    public function getType()
+    public function getType(): string
     {
         return $this->getAttribute(self::TYPE);
     }
@@ -177,15 +177,26 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TAX_GROUP_ID);
     }
 
-    public function isActive()
+    public function isActive(): bool
     {
         return ($this->getAttribute(self::ACTIVE) === true);
     }
 
-    public function isNotActive()
+    public function isNotActive(): bool
     {
         return ($this->isActive() === false);
     }
+
+    public function isOfType(string $type): bool
+    {
+        return ($this->getType() === $type);
+    }
+
+    public function isNotOfType(string $type): bool
+    {
+        return ($this->isOfType($type) === false);
+    }
+
 
     // -------------------------- End Getters ------------------------
 

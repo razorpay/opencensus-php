@@ -328,6 +328,22 @@ return [
         ],
     ],
 
+    'testPaymentWithFailedOfferCheckOnNullMethodOffer' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Custom error message',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testPaymentWithFailedOfferWithCustomErrorMessage' => [
         'response' => [
             'content' => [

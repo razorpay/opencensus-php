@@ -89,7 +89,23 @@ class Verify extends Base\Core
      * We need to block gateway from verify after certain error codes are returned,
      * The block will be lifted after duration mentioned here
      */
-    const GATEWAY_BLOCK_TIME = 900; // 15 minutes
+    const GATEWAY_BLOCK_TIME = 1800; // 30 minutes
+
+    /**
+     * Time interval after which timeout count will be reset
+     */
+    const GATEWAY_TIMEOUT_BUCKET_INTERVAL = 600; // 10 minutes
+
+    /**
+     * No of Timeout that should occur in GATEWAY_TIMEOUT_BUCKET_INTERVAL
+     * for gayeway to be blocked
+     */
+    const GATEWAY_TIMEOUT_THRESHOLD = 10;
+
+    /**
+     * Cache key prefix for storing gateway timeout values
+     */
+    const GATEWAY_TIMEOUT_CACHE_KEY_PREFIX = 'verify_timeout_block';
 
     /**
      * Cache key used to store gateway block info in hash map
@@ -236,12 +252,10 @@ class Verify extends Base\Core
 
         $maximumTime = self::MAXIMUM_TIME_MAP[$filter];
 
-        $timeBoundary = [
+        return [
             'min' => $minimumTime,
             'max' => $maximumTime
         ];
-
-        return $timeBoundary;
     }
 
     /**
@@ -252,7 +266,7 @@ class Verify extends Base\Core
      *
      * @return array boundary array for verify
      */
-    protected function getBoundaryForVerify(string $filter, array $bucketFilter = [], array $timeBoundary)
+    protected function getBoundaryForVerify(string $filter, array $bucketFilter = [], array $timeBoundary = [])
     {
         $boundary = [];
 
@@ -446,9 +460,7 @@ class Verify extends Base\Core
             'fetch_time'       => $times['fetch_time']
         ];
 
-        $processedResults = array_merge($processedResults, $result);
-
-        return $processedResults;
+        return array_merge($processedResults, $result);
     }
 
     /** Notify Processed Data in slack
@@ -494,7 +506,7 @@ class Verify extends Base\Core
         //
         try
         {
-            $response = $this->processor($merchant)->verify($payment);
+            $this->processor($merchant)->verify($payment);
 
             $this->updateVerifyBucket($payment, $filter, self::NEXT);
         }
@@ -507,7 +519,7 @@ class Verify extends Base\Core
             switch ($action)
             {
                 case Action::BLOCK:
-                    $this->blockGatewayAfterInvalidVerifyResponse($payment->getGateway());
+                    $this->blockGatewayForVerify($payment->getGateway());
 
                     break;
 
@@ -530,6 +542,8 @@ class Verify extends Base\Core
         }
         catch (Exception\GatewayTimeoutException $e)
         {
+            $this->checkForPreviousTimeoutAndBlockGatewayIfApplicable($payment);
+
             $this->updateVerifyBucket($payment, $filter, self::NEXT);
 
             $this->trace->info(
@@ -564,8 +578,32 @@ class Verify extends Base\Core
         return $result;
     }
 
-    protected function blockGatewayAfterInvalidVerifyResponse(string $gateway)
+    protected function checkForPreviousTimeoutAndBlockGatewayIfApplicable(Payment\Entity $payment)
     {
+        $currentTimestamp = Carbon::now()->getTimestamp();
+
+        $currentTimestampBucket = (int)($currentTimestamp / self::GATEWAY_TIMEOUT_BUCKET_INTERVAL);
+
+        $gateway = $payment->getGateway();
+
+        $key = self::GATEWAY_TIMEOUT_CACHE_KEY_PREFIX;
+
+        $key .= '_' . $gateway . '_' . $currentTimestampBucket;
+
+        $timedOutPaymentsCount = (int) $this->redis->incr($key);
+
+        if ($timedOutPaymentsCount >= self::GATEWAY_TIMEOUT_THRESHOLD)
+        {
+            $this->blockGatewayForVerify($gateway);
+        }
+    }
+
+    protected function blockGatewayForVerify(string $gateway)
+    {
+        $this->trace->info(
+            TraceCode::VERIFY_GATEWAY_BLOCK,
+            ['gateway' => $gateway]
+        );
         $this->redis->hSet(
             self::GATEWAY_BLOCK_CACHE_KEY,
             $gateway,
@@ -828,8 +866,6 @@ class Verify extends Base\Core
 
     protected function processor($merchant = null)
     {
-        $processor = new Payment\Processor\Processor($merchant);
-
-        return $processor;
+        return new Payment\Processor\Processor($merchant);
     }
 }

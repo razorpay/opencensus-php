@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Fixtures\Entity;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Artisan;
 
+use Config;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\Repository;
@@ -415,12 +416,14 @@ class Merchant extends Base
 
     public function enableTPV($id = '10000000000000')
     {
-        return $this->editCategory2('securities', $id);
+        $this->addFeatures(['tpv'], $id);
+
+        return true;
     }
 
     public function disableTPV($id = '10000000000000')
     {
-        return $this->editCategory2('ecommerce', $id);
+        //
     }
 
     public function disableAllMethods($id = '10000000000000')
@@ -663,12 +666,20 @@ class Merchant extends Base
         // - Create index by calling the artisan command
         // - Sync these merchants created just now via fixtures to ES.
         //
+        // Also only need to do this if es_mock is false, because the index_create
+        // and index commands expect ES service to be running.
+        //
 
-        Artisan::call('rzp:index_create', ['entity' => 'merchant', 'index' => 'testing_merchant_test', '--reindex' => true]);
-        Artisan::call('rzp:index_create', ['entity' => 'merchant', 'index' => 'testing_merchant_live', '--reindex' => true]);
+        $esMock = Config::get('database.es_mock');
 
-        Artisan::call('rzp:index', ['--mode' => 'test', '--entity' => 'merchant', '--index' => 'testing_merchant_test']);
-        Artisan::call('rzp:index', ['--mode' => 'live', '--entity' => 'merchant', '--index' => 'testing_merchant_live']);
+        if ($esMock === false)
+        {
+            Artisan::call('rzp:index_create', ['entity' => 'merchant', 'index' => 'testing_merchant_test', '--reindex' => true]);
+            Artisan::call('rzp:index_create', ['entity' => 'merchant', 'index' => 'testing_merchant_live', '--reindex' => true]);
+
+            Artisan::call('rzp:index', ['--mode' => 'test', '--entity' => 'merchant', '--index' => 'testing_merchant_test']);
+            Artisan::call('rzp:index', ['--mode' => 'live', '--entity' => 'merchant', '--index' => 'testing_merchant_live']);
+        }
 
         unset($merchants);
     }

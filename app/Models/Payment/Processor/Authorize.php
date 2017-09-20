@@ -450,7 +450,7 @@ trait Authorize
         {
             $data = array('payment' => $payment->toArray(), 'gateway' => $input);
 
-            $flag = $this->callGatewayFunction('forceAuthorizeFailed', $data);
+            $flag = $this->callGatewayFunction(Action::FORCE_AUTHORIZE_FAILED, $data);
 
             if ($flag === false)
             {
@@ -1046,7 +1046,7 @@ trait Authorize
                 $data['card'] = $this->repo->card->fetchForPayment($payment)->toArray();
             }
 
-            $flag = $this->callGatewayFunction('authorizeFailed', $data);
+            $flag = $this->callGatewayFunction(Action::AUTHORIZE_FAILED, $data);
 
             if ($flag === false)
             {
@@ -1887,8 +1887,22 @@ trait Authorize
 
             $token->incrementUsedCount();
 
+            //
+            // For subscriptions, we always create and set terminal in
+            // gateway token, irrespective of whether the token is already
+            // recurring or not.
+            // If an existing recurring token is used for another subscription,
+            // we create another gateway token, since these two subscriptions
+            // can have different terminals.
+            // In case of charge-at-will, we don't have any way to know whether
+            // it's a different subscription that is being done with an existing
+            // recurring token. We cannot use public_auth check since we can
+            // get the request from private_auth also.
+            //
             if (($payment->isCard() === true) and
-                ($payment->isRecurring() === true))
+                ($payment->isRecurring() === true) and
+                (($token->isRecurring() === false) or
+                 ($payment->hasSubscription() === true)))
             {
                 $token->setRecurring(true);
 

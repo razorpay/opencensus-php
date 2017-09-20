@@ -385,6 +385,23 @@ class Core extends Base\Core
         }
     }
 
+    public function validateFilterAttributesAndAddMerchantId($merchantId, $input)
+    {
+        $filters = $input[Entity::FILTERS];
+
+        $validator = new AnalyticsValidator();
+
+        foreach ($filters as $key => $filter)
+        {
+            array_push($input[Entity::FILTERS][$key], [Entity::KEY_MERCHANT_ID => $merchantId]);
+
+            foreach ($filter as $attributes)
+            {
+                $validator->validateAnalyticsInputFilter($attributes);
+            }
+        }
+    }
+
     /**
      * If a merchant user has a role as owner and has confirm_token set to null
      * then the user will be considered as a confirmed owner.

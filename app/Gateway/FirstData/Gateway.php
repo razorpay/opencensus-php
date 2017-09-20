@@ -124,19 +124,9 @@ class Gateway extends Base\Gateway
 
         $this->checkApprovalCode($gatewayPayment);
 
-        $acquirerData = $this->getAcquirerData($gatewayPayment);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
-    }
-
-    protected function getAcquirerData($gatewayPayment)
-    {
-        return [
-            'acquirer' => [
-                Payment\Entity::APPROVAL_CODE => $gatewayPayment->getAuthCode(),
-                Payment\Entity::REFERENCE1    => $gatewayPayment->getEndpointTransactionId()
-            ]
-        ];
     }
 
     protected function runCallbackVerify(array $input)
@@ -755,7 +745,7 @@ class Gateway extends Base\Gateway
 
             $authGatewayStatus = (string) $verifyAuthResponse->children('a1', true)->TransactionState;
 
-            $verify->gatewaySuccess = in_array($authGatewayStatus, [Status::AUTHORIZED, Status::CAPTURED], true);
+            $verify->gatewaySuccess = (in_array($authGatewayStatus, Status::SUCCESSFUL_AUTH_STATES, true) === true);
         }
 
         $verify->apiSuccess = $this->getVerifyApiStatus($gatewayPayment, $input['payment']);

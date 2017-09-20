@@ -13,6 +13,18 @@ class Status
     const WAITING_3DS = 'WAITING_3D_SECURE';
     const WAITING     = 'WAITING';
 
+    // Used for verify payment flow. The verify response usually contains
+    // either AUTHORIZED or CAPTURED to indicate a successful payment.
+    //
+    // However, for Rupay and Maestro cards (which use sale)
+    // this is changed to SETTLED after a few days.
+    //
+    const SUCCESSFUL_AUTH_STATES = [
+        self::AUTHORIZED,
+        self::CAPTURED,
+        self::SETTLED,
+    ];
+
     // Voided is not actually a valid state for a credit transaction
     // However, this is being used for verify refund flow, where, if
     // a payment has been reversed, we are actually checking the

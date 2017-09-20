@@ -123,6 +123,9 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testRefundExcelFile()
     {
+        // Will remove test in separate pr
+        $this->markTestSkipped();
+
         Mail::fake();
 
         // Generate 2 payments
