@@ -1,10 +1,13 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 import LocalStorageService from 'rzp/utils/localStorage';
 import ActivationStep from './ActivationStep';
 import KeyGenerationStep from './KeyGenerationStep';
 import PaymentsReceivedStep from './PaymentsReceivedStep';
 import OnboardingIllustrationPNG from 'styles/assets/onboarding-illustration.svg';
+import newProducts from 'merchant/containers/Banners/newProducts';
+import MediaCard from 'merchant/containers/Home/OnboardingCard/MediaCard';
 
 @connect(state => state.session)
 export default class OnboardingCard extends Component {
@@ -41,14 +44,40 @@ export default class OnboardingCard extends Component {
       return null;
     }
 
+    const productItemStyle = { width: `${100 / newProducts.length}%` };
+
     return (
       <div class={`media onboarding-card ${isFirstStep ? 'first-step' : ''}`}>
         <div class="media-left">
           <img class="media-object" src={OnboardingIllustrationPNG} />
         </div>
 
+        <div className="media-body">
+          <div className="media-heading">Explore Our Product Stack</div>
+          <p>
+            Presenting India’s first holistic converged payment solution for
+            you. Check our brand new products.
+          </p>
+          <div className="new-products-row">
+            {newProducts.map((product, key) =>
+              <div
+                key={key}
+                className={`product-item`}
+                style={productItemStyle}
+              >
+                <MediaCard title={product.name} symbol={product.symbol}>
+                  <div className="text-small m-b">
+                    {product.description}
+                  </div>
+                  <Link to={product.link}>Activate</Link>
+                </MediaCard>
+              </div>
+            )}
+          </div>
+        </div>
+
         {isFirstStep
-          ? <div class="media-body">
+          ? <div class="media-body hide">
               <div class="media-heading">
                 Welcome to Razorpay. Let's get started.
               </div>
@@ -73,7 +102,7 @@ export default class OnboardingCard extends Component {
                 <i class="icon icon-chevron-right" />
               </button>
             </div>
-          : <div class="media-body">
+          : <div class="media-body hide">
               {user.isActivated
                 ? <button class="close" onClick={this.closeOnboarding}>
                     <i class="icon icon-close" />

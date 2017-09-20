@@ -1,33 +1,9 @@
 import { Component } from 'react';
 import { Link } from 'react-router-dom';
 import Banner from 'rzp/ui/Banner';
+import newProducts from 'merchant/containers/Banners/newProducts';
 
 import './NewProductsBanner.styl';
-
-import routeSym from 'styles/assets/symbols/route.svg';
-import subscriptionsSym from 'styles/assets/symbols/subscriptions.svg';
-import smartCollectSym from 'styles/assets/symbols/smartcollect.svg';
-
-const newProducts = [
-  {
-    name: 'Razorpay Routes',
-    description: 'For Marketplace, Vendor payouts, Regional splits, etc.',
-    link: '/route/payments',
-    symbol: routeSym,
-  },
-  {
-    name: 'Razorpay Subscriptions',
-    description: 'Subscriptions plans with automated recurring transactions.',
-    link: '/subscriptions',
-    symbol: subscriptionsSym,
-  },
-  {
-    name: 'Razorpay Smart Collect',
-    description: 'Collect payments via direct bank transfers (NEFT/RGTS/IMPS).',
-    link: '/virtualaccounts',
-    symbol: smartCollectSym,
-  },
-];
 
 const Card = ({ name, description, symbol, link }) => {
   return (
