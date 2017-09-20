@@ -100,7 +100,6 @@ class Service extends Base\Service
 
             $eventAttributes['activation_progress'] = $activationProgress;
 
-            // TODO: Check
             $this->app['eventManager']
                  ->trackEvents($this->merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
 
@@ -332,7 +331,11 @@ class Service extends Base\Service
                 $validationFields = array_merge($validationFields, $kycValidationFields);
             }
 
-            $response['linked_account_kyc'] = (int) $parentMerchant->linkedAccountsRequireKyc();
+            //
+            // set key `need_kyc` for the client to determine where full KYC is needed
+            // for a linked accounts activation
+            //
+            $response['need_kyc'] = (int) $parentMerchant->linkedAccountsRequireKyc();
         }
 
         $totalFields = count($validationFields);
