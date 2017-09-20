@@ -43,14 +43,10 @@ class FileStoreTest extends TestCase
 
         $extension = FileStore\Format::XLSX;
 
-        $testEncryptionKey  = 'C45858B3041DA910EBFB51D16037D95C5D0C7902';
-        $publicKey          = file_get_contents(__DIR__ . '/pgp_public_test_key.asc');
-        $privateKey         = file_get_contents(__DIR__ . '/pgp_private_test_key.asc');
+        $publicKey          = file_get_contents(__DIR__ . '/../../Encryption/pgp_public_test_key.asc');
 
         $encryptionData = [
-            'secret'      => $testEncryptionKey,
             'public_key'  => $publicKey,
-            'private_key' => $privateKey,
         ];
 
         $file = $this->creator->extension($extension)
@@ -70,14 +66,10 @@ class FileStoreTest extends TestCase
 
         $extension = FileStore\Format::XLSX;
 
-        $testEncryptionKey  = 'somerandomkey';
-        $publicKey          = file_get_contents(__DIR__ . '/pgp_public_test_key.asc');
-        $privateKey         = file_get_contents(__DIR__ . '/pgp_private_test_key.asc');
+        $publicKey          = 'somerandomkey';
 
         $encryptionData = [
-            'secret'      => $testEncryptionKey,
             'public_key'  => $publicKey,
-            'private_key' => $privateKey,
         ];
 
         $this->expectException('RZP\Exception\LogicException', 'PGP Encryption Failed');

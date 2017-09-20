@@ -4,21 +4,19 @@ namespace RZP\Encryption;
 
 use RZP\Exception;
 
-class PGPEncryption extends IEncryption
+class PGPEncryption extends Encryption
 {
-    const SECRET      = 'secret';
     const PUBLIC_KEY  = 'public_key';
     const PRIVATE_KEY = 'private_key';
+    const PASSPHRASE  = 'passphrase';
 
-    protected $secret = null;
     protected $publicKey;
     protected $privateKey;
+    protected $passphrase = '';
 
     public function __construct(array $params)
     {
         parent::__construct($params);
-
-        $this->secret = $params[self::SECRET];
 
         if (isset($params[self::PUBLIC_KEY]) === true)
         {
@@ -29,15 +27,20 @@ class PGPEncryption extends IEncryption
         {
             $this->privateKey = $params[self::PRIVATE_KEY];
         }
+
+        if (isset($params[self::PASSPHRASE]) === true)
+        {
+            $this->passphrase = $params[self::PASSPHRASE];
+        }
     }
 
     public function encrypt(string $data) : string
     {
         $res = gnupg_init();
 
-        gnupg_import($res, $this->publicKey);
+        $imp = gnupg_import($res, $this->publicKey);
 
-        gnupg_addencryptkey($res, $this->secret);
+        gnupg_addencryptkey($res, $imp['fingerprint']);
 
         $enc = gnupg_encrypt($res, $data);
 
@@ -53,9 +56,9 @@ class PGPEncryption extends IEncryption
     {
         $res = gnupg_init();
 
-        gnupg_import($res, $this->privateKey);
+        $imp = gnupg_import($res, $this->privateKey);
 
-        gnupg_adddecryptkey($res, $this->secret);
+        gnupg_adddecryptkey($res, $imp['fingerprint'], $this->passphrase);
 
         $dec = gnupg_decrypt($res, $data);
 
