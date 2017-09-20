@@ -363,7 +363,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         catch (BadRequestException $ex)
         {
             $this->assertEquals(
-                'The subscription is in a terminal state.',
+                'The subscription is in a terminal state',
                 $ex->getMessage());
 
             return;
@@ -390,7 +390,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         }
         catch (BadRequestException $ex)
         {
-            $this->assertEquals('The subscription is in a terminal state.', $ex->getMessage());
+            $this->assertEquals('The subscription is in a terminal state', $ex->getMessage());
 
             return;
         }

@@ -521,8 +521,8 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('active', $subscription['status']);
         $this->assertNull($subscription['error_status']);
 
-        // Charge at updated by charging latest invoice
-        $expectedChargeAt = Carbon::createFromTimestamp($subscription['current_end'], Timezone::IST)
+        // Charge at not updated by charging last invoice, because subscription was halted
+        $expectedChargeAt = Carbon::createFromTimestamp($subscription['current_start'], Timezone::IST)
                                   ->addMonthsNoOverflow(2)
                                   ->startOfDay()
                                   ->getTimestamp();
@@ -743,8 +743,8 @@ class SubscriptionChargeTest extends TestCase
 
         $this->assertEquals($oldSubcription['current_start'], $subscription['current_start']);
         $this->assertEquals($oldSubcription['current_end'], $subscription['current_end']);
-        // Charge at updated by charging latest invoice
-        $this->assertEquals($oldSubcription['current_end'], $subscription['charge_at']);
+        // Charge at not updated by charging last invoice, because subscription was halted
+        $this->assertEquals($oldSubcription['charge_at'], $subscription['charge_at']);
     }
 
     public function testSubscriptionManualRetryFailure()
@@ -1482,7 +1482,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('authenticated', $subscription['status']);
 
         // subscription.activated event fired after first charge
-        $this->mockAndTestWebhookDataCustom('subscription.activated', 'subscriptionWebhookDataForFirstActivated');
+        // $this->mockAndTestWebhookDataCustom('subscription.activated', 'subscriptionWebhookDataForFirstActivated');
         $this->chargeSubscriptionsViaCron($subscription['charge_at'] + 10);
 
         $subscription = $this->getLastEntity('subscription', true);

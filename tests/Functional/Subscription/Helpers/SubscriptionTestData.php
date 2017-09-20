@@ -1370,8 +1370,6 @@ return [
                         'plan_id'           => 'plan_1000000000plan',
                         'customer_id'       => 'cust_100000customer',
                         'status'            => 'active',
-                        'current_start'     => null,
-                        'current_end'       => null,
                         'ended_at'          => null,
                         'quantity'          => 1,
                         'notes'             => [],
@@ -1383,6 +1381,8 @@ return [
                         // first activated. In first activated we fire
                         // webhook first and then make a charge, unlike
                         // other active fires.
+                        // 'current_start'     => null,
+                        // 'current_end'       => null,
                         // 'current_start' => NULL
                         // 'current_end' => NULL
                         // 'paid_count' => integer 0
