@@ -2,12 +2,14 @@
 
 namespace RZP\Models\Emi\Banks\Yesb;
 
+use Config;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Models\Card;
 use RZP\Models\FileStore;
 use RZP\Models\Payment;
 use RZP\Models\Emi\Banks\Base;
+use RZP\Encryption\PGPEncryption;
 
 class EmiFile extends Base\EmiFile
 {
@@ -132,6 +134,10 @@ class EmiFile extends Base\EmiFile
 
     protected function getEncryptionParams()
     {
-        return ['secret' => 'C45858B3041DA910EBFB51D16037D95C5D0C7902'];
+        $publicKey = Config::get('applications.emi.yesb_encryption_key');
+
+        $publicKey = trim(str_replace('\n', "\n", $publicKey));
+
+        return [PGPEncryption::PUBLIC_KEY => $publicKey];
     }
 }

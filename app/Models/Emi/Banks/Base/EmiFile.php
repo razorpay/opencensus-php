@@ -14,7 +14,7 @@ use RZP\Models\Card;
 use RZP\Models\Emi\Banks\Base\EmiMode;
 use RZP\Models\FileStore;
 use RZP\Trace\TraceCode;
-use RZP\Encryption\Handler;
+use RZP\Encryption\Type;
 
 class EmiFile extends Base\Core
 {
@@ -27,7 +27,7 @@ class EmiFile extends Base\Core
 
     protected $transferMode = EmiMode::MAIL;
 
-    protected $encryptionType = Handler::PGP_ENCRYPTION;
+    protected $encryptionType = Type::PGP_ENCRYPTION;
 
     const EMI_FILE_PASSWORD_LENGTH = 7;
 
