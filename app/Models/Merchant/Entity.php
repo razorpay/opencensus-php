@@ -190,6 +190,7 @@ class Entity extends Base\PublicEntity
         self::CATEGORY,
         self::CATEGORY2,
         self::INTERNATIONAL,
+        self::LINKED_ACCOUNT_KYC,
         self::FEE_BEARER,
         self::FEE_MODEL,
         self::BILLING_LABEL,
