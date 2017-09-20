@@ -40,7 +40,7 @@ export default class CreateAddOn extends Component {
       .then(response => {
         this.props.showNotification({
           type: 'success',
-          message: 'Add-on details successfully created',
+          message: 'Add-on included successfully',
         });
         this.props.onSave(response.data.id); // For highlighting the row
       })
@@ -57,7 +57,7 @@ export default class CreateAddOn extends Component {
     return (
       <div class="addon-create">
         <ModalHeader
-          title={addon && addon.id ? 'Edit Add-on' : 'Create Add-on'}
+          title={addon && addon.id ? 'Edit Add-on' : 'Include Add-on'}
           onCloseClick={this.props.closeModal}
         />
 
@@ -65,20 +65,6 @@ export default class CreateAddOn extends Component {
           <Alert type="error" message={this.state.errors} />
 
           <form onSubmit={handleSubmit(this.handleSubmit)}>
-            <div class="form-group">
-              <label class="colcontrol-label label-required">
-                Subscription Id
-              </label>
-              <Field
-                name="subscription_id"
-                placeholder="sub_8cR2a11NVALA1s"
-                component={InputField}
-                class="form-control"
-                autoFocus={true}
-                validate={required()}
-              />
-            </div>
-
             <div class="form-group">
               <label class="colcontrol-label label-required">Name</label>
               <Field
@@ -133,7 +119,7 @@ export default class CreateAddOn extends Component {
               <AsyncButton
                 type="submit"
                 class="btn btn-primary col-lg-12"
-                text="Create and Include"
+                text="Include"
                 disabled={invalid}
                 pendingText="Creating..."
                 onClick={handleSubmit(this.handleSubmit)}
