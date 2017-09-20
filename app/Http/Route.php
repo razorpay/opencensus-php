@@ -312,6 +312,7 @@ final class Route
         'reports_monthly_invoice'                 => ['get',      'reports/invoice',                                'MerchantController@getInvoiceReport'                               ],
         'reports_public_entity'                   => ['get',      'reports/{entity}',                               'MerchantController@getPublicEntityReport'                          ],
         'reports_public_entity_file'              => ['get',      'reports/{entity}/file',                          'MerchantController@getPublicEntityReportUrl'                       ],
+        'reports_refund_irctc'                    => ['get',      'reports/refund/irctc',                          'MerchantController@getIrctcRefundReport'                           ],
         'customer_create'                         => ['post',     'customers',                                      'CustomerController@createLocalCustomer'                            ],
         'customer_update'                         => ['put',      'customers/{id}',                                 'CustomerController@updateCustomer'                                 ],
         'customer_fetch_by_id'                    => ['get',      'customers/{id}',                                 'CustomerController@getCustomer'                                    ],
@@ -1103,6 +1104,7 @@ final class Route
         'oauth_application_delete',
         'oauth_application_update',
         'merchant_analytics',
+        'reports_refund_irctc',
     ];
 
     // These will run on internal auth with the assurance
@@ -1405,6 +1407,7 @@ final class Route
             'merchant_create_invoice_entities',
             'merchant_payout',
             'gateway_file_create',
+            'reports_refund_irctc',
         ],
 
         'kotak' => [
@@ -1493,6 +1496,7 @@ final class Route
         'virtual_account_fetch'             => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_multiple'    => [Feature::VIRTUAL_ACCOUNTS],
         'virtual_account_fetch_payments'    => [Feature::VIRTUAL_ACCOUNTS],
+        'reports_refund_irctc'              => [Feature::IRCTC_REPORT],
     ];
 
     /*

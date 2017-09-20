@@ -500,6 +500,17 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getIrctcRefundReport()
+    {
+        $input = Request::all();
+
+        $report = new Report\Types\IrctcRefundReport(E::REFUND);
+
+        $data = $report->getReport($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getInvoiceReport()
     {
         $input = Request::all();
