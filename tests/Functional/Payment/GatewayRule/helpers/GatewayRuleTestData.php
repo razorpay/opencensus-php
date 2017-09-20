@@ -99,7 +99,7 @@ return [
                 'content' => [
                     'error' => [
                         'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                        'description' => 'xyz is not a valid gateway',
+                        'description' => 'Gateway is invalid',
                     ],
                 ],
                 'status_code' => 400,
