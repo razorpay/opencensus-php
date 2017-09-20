@@ -287,11 +287,11 @@ export default class SubscriptionDetailsContainer extends Component {
   };
 
   // Check if next due invoice is valid for current subscription
-  checkNextDueInvoiceValidity(subsStatus) {
+  checkNextDueInvoiceValidity(subsStatus, subsType) {
     return (
-      ['authenticated', 'active', 'halted', 'created', 'pending'].indexOf(
-        subsStatus
-      ) > -1
+      ['authenticated', 'active', 'halted', 'pending'].indexOf(subsStatus) >
+        -1 ||
+      (subsStatus === 'created' && (subsType === 0 || subsType === 2))
     );
   }
 
@@ -354,7 +354,7 @@ export default class SubscriptionDetailsContainer extends Component {
 
     // Add 'next_due' invoice in the Invoices list
     if (!invoices.loading && !invoices.error) {
-      if (this.checkNextDueInvoiceValidity(entity.status)) {
+      if (this.checkNextDueInvoiceValidity(entity.status, entity.type)) {
         invoicesList = { ...invoices };
         invoicesList.items = [...invoices.items]; // To avoid multiple additions when render is called multiple times
 
@@ -380,7 +380,7 @@ export default class SubscriptionDetailsContainer extends Component {
         Object.keys(entity).length // Helps to simulate the loader for 'inv_upcoming' invoice
       ) {
         // inv_upcoming exists only for these subscriptions status only
-        if (this.checkNextDueInvoiceValidity(entity.status)) {
+        if (this.checkNextDueInvoiceValidity(entity.status, entity.type)) {
           // Charge at is not available in such type of subscriptions
           let chargeAt =
             entity.status === 'created' &&
@@ -403,13 +403,15 @@ export default class SubscriptionDetailsContainer extends Component {
       let addonsList = [];
       if (invoiceData) {
         if (invoiceData.status === 'next_due' && this.state.addons) {
-          addonsList = this.state.addons;
+          addonsList = this.state.addons.items;
         } else if (invoiceData.line_items) {
           addonsList = invoiceData.line_items.filter(
             item => item.type === 'addon'
           );
         }
       }
+
+      console.log('addonsLIST....', addonsList);
 
       // If request is for /inv_upcoming then invoiceData will exist only if it's validInvoice.
       // And in this case InvoiceDetails won't show loader but error message

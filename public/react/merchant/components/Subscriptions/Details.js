@@ -58,9 +58,11 @@ export default ({
   let showTestChargeBtn =
     !isLoading &&
     onTestChargeAttempt &&
-    ['pending', 'active', 'halted', 'authenticated'].indexOf(
+    (['authenticated', 'active', 'halted', 'pending'].indexOf(
       subscription.status
-    ) > -1;
+    ) > -1 ||
+      (subscription.status === 'created' &&
+        (subscription.type === 0 || subscription.type === 2)));
 
   return (
     <div class="content-wrapper content-sm txn-details">
