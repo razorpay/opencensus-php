@@ -45,11 +45,11 @@ class WorkflowActionTest extends TestCase
     public function testCreateWorkflowAction()
     {
         // Editing checker admin as maker.
-        $this->ba->adminAuth('test', Org::MAKER_TOKEN, Org::RZP_ORG_SIGNED);
+        $this->ba->adminAuth('test', Org::MAKER_ADMIN_TOKEN, Org::RZP_ORG_SIGNED);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, Org::RZP_ORG_SIGNED, Org::CHECKER_ADMIN_SIGNED);
+        $url = sprintf($url, Org::CHECKER_ADMIN_SIGNED);
 
         // Assign url
         $this->testData[__FUNCTION__]['request']['url'] = $url;
@@ -67,7 +67,7 @@ class WorkflowActionTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, Org::RZP_ORG_SIGNED, Org::CHECKER_ADMIN_SIGNED);
+        $url = sprintf($url, Org::CHECKER_ADMIN_SIGNED);
 
         // Assign url
         $this->testData[__FUNCTION__]['request']['url'] = $url;
@@ -172,7 +172,7 @@ class WorkflowActionTest extends TestCase
     {
         $defaultWorkflowActionId = 'w_action_' . WorkflowAction::DEFAULT_WORKFLOW_ACTION_ID;
 
-        $this->setDefaultActionIdInUrl(Org::DEFAULT_TOKEN);
+        $this->setDefaultActionIdInUrl(Org::DEFAULT_ADMIN_TOKEN);
 
         $this->testData[__FUNCTION__]['response']['content']['checkers'][0]['admin_id'] = Org::SUPER_ADMIN_SIGNED;
 
@@ -206,7 +206,7 @@ class WorkflowActionTest extends TestCase
         $this->startTest();
     }
 
-    private function setDefaultActionIdInUrl($adminToken = Org::MAKER_TOKEN)
+    private function setDefaultActionIdInUrl($adminToken = Org::MAKER_ADMIN_TOKEN)
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
 
@@ -251,7 +251,7 @@ class WorkflowActionTest extends TestCase
 
         $this->approveWorkflowAction($workflow['id']);
 
-        $this->ba->adminAuth('test', Org::MAKER_TOKEN, Org::RZP_ORG_SIGNED);
+        $this->ba->adminAuth('test', Org::MAKER_ADMIN_TOKEN, Org::RZP_ORG_SIGNED);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -284,7 +284,7 @@ class WorkflowActionTest extends TestCase
         sleep(1);
 
         // Try to close as a different user
-        $this->ba->adminAuth('test', Org::MAKER_TOKEN, Org::RZP_ORG_SIGNED);
+        $this->ba->adminAuth('test', Org::MAKER_ADMIN_TOKEN, Org::RZP_ORG_SIGNED);
 
         $url = sprintf($this->testData[__FUNCTION__]['request']['url'], $workflow['id']);
 

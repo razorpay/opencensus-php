@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Cybersource;
 
 use Cache;
-use Crypt;
 use Config;
 use SoapVar;
 use SoapFault;
@@ -28,6 +27,7 @@ use RZP\Gateway\Cybersource\Entity as E;
 
 class Gateway extends Base\Gateway
 {
+    use Base\CardCacheTrait;
     use Base\AuthorizeFailed;
 
     const CACHE_KEY = 'cybersource_%s_card_details';
@@ -158,7 +158,7 @@ class Gateway extends Base\Gateway
 
         $this->authorizeEnrolled($input, $response, $gatewayPayment);
 
-        $acquirerData = $this->getAcquirerData($gatewayPayment);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }
@@ -864,47 +864,6 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function persistCardDetailsTemporarily(array $input)
-    {
-        $cvv = $input['card']['cvv'];
-
-        $vaultToken = null;
-
-        if (empty($input['card']['vault_token']) === false)
-        {
-            $vaultToken = $input['card']['vault_token'];
-        }
-        else
-        {
-            $vaultToken = (new Card\Tokenex)->getVaultToken($input['card']['number']);
-        }
-
-        $key = $this->getCacheKey($input['payment']['id']);
-
-        $data = [
-            'cvv'         => Crypt::encrypt($cvv),
-            'vault_token' => $vaultToken
-        ];
-
-        Cache::store($this->secureCacheDriver)->put($key, $data, self::CACHE_TTL);
-    }
-
-    protected function setCardNumberAndCvv(&$input)
-    {
-        $data = $this->getCardDetailsFromCache($input);
-
-        $input['card']['number'] = (new Card\Tokenex)->getCardNumber($data['vault_token']);
-
-        $input['card']['cvv']    = Crypt::decrypt($data['cvv']);
-    }
-
-    protected function getCardDetailsFromCache($input)
-    {
-        $key = $this->getCacheKey($input['payment']['id']);
-
-        return Cache::store($this->secureCacheDriver)->get($key) ?: [];
-    }
-
     protected function getAttributeFromAuthEnrollResponse(array $input, array $response)
     {
         $payerAuthEnrollReply = $response[F::PA_ENROLL_REPLY];
@@ -1586,13 +1545,6 @@ class Gateway extends Base\Gateway
         return array_keys($array) === range(0, count($array) - 1);
     }
 
-    protected function getCacheKey($paymentId)
-    {
-        $key = sprintf(self::CACHE_KEY, $paymentId);
-
-        return $key;
-    }
-
     // Exception handling
 
     /**
@@ -1685,15 +1637,6 @@ class Gateway extends Base\Gateway
     protected function fixParesIfRequired(&$input)
     {
         $input['gateway']['PaRes'] = str_replace(["\n", "\r"], "", $input['gateway']['PaRes']);
-    }
-
-    protected function getAcquirerData($gatewayPayment)
-    {
-        return [
-            'acquirer' => [
-                Payment\Entity::APPROVAL_CODE => $gatewayPayment->getAuthCode()
-            ]
-        ];
     }
 
     /**

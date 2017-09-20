@@ -71,6 +71,9 @@ class MailTags
     const NOTIFY_ACTIVATION_SUBMISSION     = 'notify_activation_submission';
     const CONFIRM_ACTIVATION_SUBMISSION    = 'confirm_activation_submission';
 
+    // OAuth email tags
+    const OAUTH_APP_AUTHORIZED             = 'oauth_app_authorized';
+
     /**
      * Email tags that should respond to the mailgun failure webhook
      * @var array Email tags

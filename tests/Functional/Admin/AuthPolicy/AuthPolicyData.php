@@ -7,7 +7,7 @@ use RZP\Error\PublicErrorDescription;
 return [
     'testAdminLogin' => [
         'request' => [
-            'url' => '/orgs/org_100000razorpay/admin/authenticate',
+            'url' => '/admin/authenticate',
             'method' => 'post',
             'content' => [
                 'username' => 'superadmin@razorpay.com',
@@ -31,7 +31,7 @@ return [
 
     'testWeakPassword' => [
         'request' => [
-            'url' => '/orgs/%s/admins',
+            'url' => '/admins',
             'method' => 'post',
             'content' => [
                 'name'                  => 'testadmin',
@@ -67,7 +67,7 @@ return [
 
     'testShortPassword' => [
         'request' => [
-            'url' => '/orgs/%s/admins',
+            'url' => '/admins',
             'method' => 'post',
             'content' => [
                 'name'                  => 'testadmin',
@@ -103,7 +103,7 @@ return [
 
     'testLongPassword' => [
         'request' => [
-            'url' => '/orgs/%s/admins',
+            'url' => '/admins',
             'method' => 'post',
             'content' => [
                 'name'                  => 'testadmin',
@@ -139,7 +139,7 @@ return [
 
     'testMaxFailedLoginAttempts' => [
         'request' => [
-            'url' => '/orgs/%s/admin/authenticate',
+            'url' => '/admin/authenticate',
             'method' => 'post',
             'content' => [
                 'username'  => 'randomemail@rzp.com',
@@ -163,7 +163,7 @@ return [
 
     'testAdminLoginWhenLocked' => [
         'request' => [
-            'url' => '/orgs/%s/admin/authenticate',
+            'url' => '/admin/authenticate',
             'method' => 'post',
             'content' => [
                 'username'  => 'randomemail@rzp.com',
@@ -187,7 +187,7 @@ return [
 
     'testPasswordRetainPolicy' => [
         'request' => [
-            'url' => '/orgs/%s/admins/%s',
+            'url' => '/admin/%s',
             'method' => 'put',
             'content' => [
                 'password'              => '@#12$%^&dfgh',
@@ -211,7 +211,7 @@ return [
 
     'testPasswordRetainPolicyWithNewPassword' => [
         'request' => [
-            'url' => '/orgs/%s/admins/%s',
+            'url' => '/admin/%s',
             'method' => 'put',
             'content' => [
                 'password'              => '@#12$%^&dfghq',
@@ -226,7 +226,7 @@ return [
 
     'testPasswordChangedAtPolicy' => [
         'request' => [
-            'url' => '/orgs/org_100000razorpay/admin/authenticate',
+            'url' => '/admin/authenticate',
             'method' => 'post',
             'content' => [
                 'username' => 'randomemail2@rzp.com',

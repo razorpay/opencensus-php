@@ -81,6 +81,11 @@ class Service extends Base\Service
                 unset($gateways[IFSC::UTIB]);
                 unset($gateways[IFSC::FDRL]);
                 unset($gateways[IFSC::RATN]);
+
+                // These banks refund files have been moved to gateway_file, so
+                // unsetting it here
+                unset($gateways[IFSC::HDFC]);
+                unset($gateways[IFSC::ICIC]);
                 break;
 
             case Payment\Method::WALLET:
@@ -218,9 +223,7 @@ class Service extends Base\Service
 
         $gateway = $terminal->getGateway();
 
-        $action = 'generateRefunds';
-
-        $file = $this->app['gateway']->call($gateway, $action, $input, $this->mode);
+        $file = $this->app['gateway']->call($gateway, Payment\Action::GENERATE_REFUNDS, $input, $this->mode);
 
         return ['file' => $file, 'count' => $count];
     }

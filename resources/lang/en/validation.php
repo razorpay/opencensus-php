@@ -107,7 +107,10 @@ return array(
         ],
         'amount' => [
             'min' => 'Minimum transaction amount allowed is Re. 1'
-        ]
+        ],
+        'expand.*' => [
+            'in' => 'Value of each expand must be one of following types: :values',
+        ],
     ],
     /*
     |--------------------------------------------------------------------------

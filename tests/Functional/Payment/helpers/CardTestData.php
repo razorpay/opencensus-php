@@ -28,7 +28,7 @@ return [
             'url' => '/cards/recurring',
             'method' => 'get',
             'content' => [
-                'number' => '4111111111111111'
+                'iin' => '411111'
             ],
         ],
         'response' => [

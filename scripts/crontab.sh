@@ -100,6 +100,8 @@ add_cron "58 7,19 * * *"    "freecharge_create_refund_rec"   POST "$BASE_URL/ref
 add_cron "*/15 * * * *"     "refund_failed_retry"            POST "$BASE_URL/refunds/retry/failed"                       ""                              $LIVE_AUTH
 add_cron "*/15 * * * *"     "virtual_account_refund_excess"  POST "$BASE_URL/virtual_accounts/refund/excess"             ""                              $LIVE_AUTH
 
+add_cron "15 3 * * *"       "gateway_file_refunds_prod"      POST "$BASE_URL/gateway/files"              "type=refund&targets[]=hdfc&targets[]=icici"              $LIVE_AUTH
+
 # Invoice
 add_cron "*/10 * * * *"     "invoice_expire_bulk_test"       POST "$BASE_URL/invoices/expire"                            ""                              $TEST_AUTH
 add_cron "*/10 * * * *"     "invoice_expire_bulk_live"       POST "$BASE_URL/invoices/expire"                            ""                              $LIVE_AUTH
@@ -116,6 +118,7 @@ add_cron "0 10 * * *"       "nodal_transfer_icici_fd"        POST "$BASE_URL/nod
 add_cron "0 */2 * * *"      "subscriptions_charge"           POST "$BASE_URL/subscriptions/charge/invoices"              ""                              $LIVE_AUTH
 add_cron "0 * * * *"        "subscriptions_auth_retry"       POST "$BASE_URL/subscriptions/retry"                        ""                              $LIVE_AUTH
 add_cron "*/10 * * * *"     "subscriptions_expire"           POST "$BASE_URL/subscriptions/expire"                       ""                              $LIVE_AUTH
+add_cron "*/10 * * * *"     "subscriptions_cancel"           POST "$BASE_URL/subscriptions/cancel/due"                   ""                              $LIVE_AUTH
 
 # DSP Blackrock
 add_cron "0 15 * * *"       "dsp_report_today"               GET  "$BASE_URL/reports/transaction/dsp"    "mail=1&email=dummy@dspblackrock.com&day=today"      $LIVE_AUTH

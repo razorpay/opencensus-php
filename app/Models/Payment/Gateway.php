@@ -22,6 +22,7 @@ class Gateway
     const BILLDESK               = 'billdesk';
     const BLADE                  = 'blade';
     const CYBERSOURCE            = 'cybersource';
+    const HITACHI                = 'hitachi';
     const EBS                    = 'ebs';
     const FIRST_DATA             = 'first_data';
     const HDFC                   = 'hdfc';
@@ -40,7 +41,6 @@ class Gateway
     const SHARP                  = 'sharp';
     const UPI_MINDGATE           = 'upi_mindgate';
     const UPI_ICICI              = 'upi_icici';
-    const UPI_IDFC               = 'upi_idfc';
     const AEPS_ICICI             = 'aeps_icici';
 
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
@@ -178,6 +178,7 @@ class Gateway
         self::UPI_ICICI           => Settlement\Channel::KOTAK,
         self::AEPS_ICICI          => Settlement\Channel::KOTAK,
         self::CYBERSOURCE         => Settlement\Channel::KOTAK,
+        self::HITACHI             => Settlement\Channel::KOTAK,
     ];
 
     /**
@@ -197,6 +198,7 @@ class Gateway
             self::CYBERSOURCE,
             self::FIRST_DATA,
             self::BLADE,
+            self::HITACHI,
         ],
 
         Method::NETBANKING => [
@@ -238,7 +240,6 @@ class Gateway
         Method::UPI => [
             self::UPI_MINDGATE,
             self::UPI_ICICI,
-            self::UPI_IDFC,
         ],
 
         Method::AEPS => [
@@ -276,6 +277,7 @@ class Gateway
             self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY]
         ],
         self::WALLET_OPENWALLET     => [],
+        self::HITACHI               => [],
     ];
 
     /**
@@ -289,6 +291,7 @@ class Gateway
         self::AXIS_MIGS,
         self::AMEX,
         self::WALLET_OPENWALLET,
+        self::HITACHI,
     ];
 
 
@@ -302,7 +305,6 @@ class Gateway
     public static $asynchronous = [
         self::UPI_MINDGATE,
         self::UPI_ICICI,
-        self::UPI_IDFC,
         self::SHARP,
     ];
 
@@ -358,6 +360,9 @@ class Gateway
             Network::MC,
             Network::VISA
         ],
+        self::HITACHI => [
+            Network::MC,
+        ],
         self::FIRST_DATA => [
             Network::MC,
             Network::VISA,
@@ -383,7 +388,6 @@ class Gateway
     public static $upiToGatewayMap = [
         Upi::HDFC   => Gateway::UPI_MINDGATE,
         Upi::ICICI  => Gateway::UPI_ICICI,
-        Upi::IDFC   => Gateway::UPI_IDFC,
     ];
 
     public static $acquirerToCodeMap = [
@@ -427,7 +431,6 @@ class Gateway
         self::WALLET_SBIBUDDY,
         self::WALLET_MPESA,
         self::UPI_ICICI,
-        self::UPI_IDFC,
     ];
 
     public static $verifyDisabled = [

@@ -36,7 +36,9 @@ class FeatureController extends Controller
 
     public function deleteFeature(string $entityId, string $featureName)
     {
-        $data = $this->service()->deleteFeature($entityId, $featureName);
+        $input = Request::all();
+
+        $data = $this->service()->deleteFeature($entityId, $featureName, $input);
 
         return ApiResponse::json($data);
     }

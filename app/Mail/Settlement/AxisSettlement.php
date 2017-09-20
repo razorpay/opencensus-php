@@ -17,17 +17,9 @@ class AxisSettlement extends Base
 
     protected function addRecipients()
     {
-        $recipients = [
-            'paymandate.cms@axisbank.com',
-            'bhupendra.kambli@axisbank.com',
-            'ganesh.kotian@axisbank.com',
-            'lavania.peter@axisbank.com',
-            'prasad.shinde@axisbank.com',
-            'anushree.mahapadi@axisbank.com',
-            'sona.hindalekar@axisbank.com',
-            ];
+        $recipient = 'axis.nodal.transfers@razorpay.com';
 
-        $this->to($recipients);
+        $this->to($recipient);
 
         return $this;
     }
