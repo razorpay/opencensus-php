@@ -18,20 +18,11 @@ class PGPEncryption extends Encryption
     {
         parent::__construct($params);
 
-        if (isset($params[self::PUBLIC_KEY]) === true)
-        {
-            $this->publicKey = $params[self::PUBLIC_KEY];
-        }
+        $this->publicKey = $params[self::PUBLIC_KEY] ?? null;
 
-        if (isset($params[self::PRIVATE_KEY]) === true)
-        {
-            $this->privateKey = $params[self::PRIVATE_KEY];
-        }
+        $this->privateKey = $params[self::PRIVATE_KEY] ?? null;
 
-        if (isset($params[self::PASSPHRASE]) === true)
-        {
-            $this->passphrase = $params[self::PASSPHRASE];
-        }
+        $this->passphrase = $params[self::PASSPHRASE] ?? null;
     }
 
     public function encrypt(string $data) : string
