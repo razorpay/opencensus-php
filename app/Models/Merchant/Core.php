@@ -430,33 +430,16 @@ class Core extends Base\Core
 
         $merchant->getValidator()->validateInput($type, $input);
 
-/*        $attachments = $input['attachment'];
-
-        $filenames = [];
-
-        // Sort based upon the filename
-        // Refund file should be processed before settlement in case of irctc merchant
-        usort($attachments, function($attachment1, $attachment2) {
-            return strcmp($attachment1->getClientOriginalName(), $attachment2->getClientOriginalName());
-        });
-
-        foreach ($attachments as $attachment)
-        {
-            $filenames[] = $attachment->getClientOriginalName();
-        }
-
-        $merchant->getValidator()->validateAttachment($filenames);
-
-*/
         $batches  = [];
 
         foreach ($input as $key => $file)
         {
-            $batchType = $type . '_' . $key;
+            $batchType =  $type . '_' . $key;
 
             $params = [
-                Batch\Entity::FILE => $file,
-                Batch\Entity::TYPE => $batchType
+                Batch\Entity::MERCHANT_ID => $merchant->getId(),
+                Batch\Entity::FILE        => $file,
+                Batch\Entity::TYPE        => $batchType
             ];
 
             $batch = (new Batch\Core)->create($params);
@@ -464,7 +447,7 @@ class Core extends Base\Core
             $batches[$batchType] = $batch->getId();
         }
 
-        $class = studly_case($type) . 'Batch::class';
+        $class = 'RZP\\Jobs\\' . studly_case($type) . 'Batch';
 
         $job = new $class($this->mode, $batches);
 

@@ -105,8 +105,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $createBatchRules = [
-        'type'  => 'required|string|max:50|custom',
-        'data'  => 'required|array'
+        'type'        => 'required|string|max:50',
+        'data'        => 'required|array'
     ];
 
     protected static $irctcRules = [
