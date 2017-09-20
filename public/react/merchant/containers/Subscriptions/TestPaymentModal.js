@@ -62,7 +62,7 @@ export default class TestPaymentModal extends Component {
           <div class="btn-toolbar m-t">
             <AsyncButton
               type="submit"
-              class="btn btn-primary full-width m-t"
+              class="btn btn-success full-width m-t"
               text="Charge as Success"
               pendingText="Charging..."
               disabled={this.state.isDisabled}
@@ -71,7 +71,7 @@ export default class TestPaymentModal extends Component {
 
             <AsyncButton
               type="submit"
-              class="btn btn-default full-width m-t"
+              class="btn btn-danger full-width m-t"
               text="Charge as failure"
               pendingText="Charging..."
               disabled={this.state.isDisabled}
