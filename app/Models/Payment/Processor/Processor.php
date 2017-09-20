@@ -852,24 +852,6 @@ class Processor
                     $this->addOrderIdToInputForPendingSubscription($subscription, $input);
                 }
             }
-            else
-            {
-                //
-                // In case of automated charge or manual charge on invoice,
-                // order_id would/should always be present.
-                //
-                if (empty($input[Payment\Entity::ORDER_ID]) === true)
-                {
-                    throw new Exception\BadRequestException(
-                        ErrorCode::BAD_REQUEST_SUBSCRIPTION_PAYMENT_PARAMS_MISSING,
-                        null,
-                        [
-                            'subscription_id'       => $subscription->getId(),
-                            'subscription_status'   => $subscription->getStatus(),
-                            'order_id'              => $input[Payment\Entity::ORDER_ID]
-                        ]);
-                }
-            }
         }
     }
 

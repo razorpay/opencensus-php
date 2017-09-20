@@ -294,7 +294,7 @@ class PublicErrorDescription
     const BAD_REQUEST_SUBSCRIPTION_IN_TERMINAL_STATE                            = 'The subscription is in a terminal state';
     const BAD_REQUEST_SUBSCRIPTION_NOT_IN_ACTIVE_OR_HALTED_STATE                = 'The subscription should be in either active or halted state to charge an on_hold invoice';
     const BAD_REQUEST_SUBSCRIPTION_NOT_IN_PENDING_STATE                         = 'The subscription is not in pending state, and cannot be retried.';
-    const BAD_REQUEST_SUBSCRIPTION_NOT_CHARGEABLE_IN_LIVE_MODE                  = 'Subscriptions cannot be charged manually in live mode.';
+    const BAD_REQUEST_OPERATION_NOT_ALLOWED_IN_LIVE                             = 'This operation is not allowed in live mode.';
     const BAD_REQUEST_SUBSCRIPTION_NOT_TEST_CHARGEABLE                          = 'The subscription is not test chargeable.';
     const BAD_REQUEST_SUBSCRIPTION_INVOICE_CANNOT_BE_CHARGED                    = 'This invoice of the subscription cannot be charged.';
     const BAD_REQUEST_SUBSCRIPTION_2FA_NOT_ALLOWED                              = 'Customer payment not allowed for the subscription at this stage.';

@@ -1576,6 +1576,8 @@ class SubscriptionChargeTest extends TestCase
 
         $this->assertEquals(3, $subscription['paid_count']);
         $this->assertEquals(2000, $invoice['amount_paid']);
+
+        Carbon::setTestNow();
     }
 
     public function testSubscriptionChargeWithDeletedAddon()
@@ -1606,6 +1608,8 @@ class SubscriptionChargeTest extends TestCase
         // no addon should have been applied
         $this->assertEquals(2000, $invoice['amount_paid']);
         $this->assertNull($addon['invoice_id']);
+
+        Carbon::setTestNow();
     }
 
     public function testAddonAfterSubscriptionCreateImmediate()
@@ -1645,6 +1649,8 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals(2, $subscription['paid_count']);
         $this->assertEquals($item['amount']+2000, $invoice['amount_paid']);
         $this->assertEquals($invoice['id'], $addon['invoice_id']);
+
+        Carbon::setTestNow();
     }
 
     public function testAddonAfterSubscriptionCreateFuture()
@@ -1683,6 +1689,8 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals(1, $subscription['paid_count']);
         $this->assertEquals($item['amount']+2000, $invoice['amount_paid']);
         $this->assertEquals($invoice['id'], $addon['invoice_id']);
+
+        Carbon::setTestNow();
     }
 
     public function testSubscriptionChargeCompleted()
@@ -1713,8 +1721,6 @@ class SubscriptionChargeTest extends TestCase
 
         // $failedInvoice = $this->getLastEntity('invoice', true);
 
-        s("are you watching closely?");
-
         $this->chargeSubscriptionInvoiceManually($failedInvoice);
 
         $subscription = $this->getLastEntity('subscription', true);
@@ -1725,6 +1731,7 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals($oldSubscription['charge_at'], $subscription['charge_at']);
         $this->assertEquals($oldSubscription['paid_count']+1, $subscription['paid_count']);
 
+        Carbon::setTestNow();
     }
 
     public function testSubscriptionChargeCancelled()
@@ -1756,6 +1763,8 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals($oldSubscription['current_end'], $subscription['current_end']);
         $this->assertEquals($oldSubscription['charge_at'], $subscription['charge_at']);
         $this->assertEquals($oldSubscription['paid_count']+1, $subscription['paid_count']);
+
+        Carbon::setTestNow();
     }
 
     public function testToArrayPublicConversion()
@@ -1785,6 +1794,8 @@ class SubscriptionChargeTest extends TestCase
         $this->assertArrayHasKey('deleted_at', $entityArray['item']);
 
         $this->assertArrayNotHasKey('deleted_at', $publicArray['item']);
+
+        Carbon::setTestNow();
     }
 
     protected function failSubscriptionFirstCharge()

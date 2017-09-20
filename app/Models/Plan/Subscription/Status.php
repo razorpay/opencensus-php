@@ -121,17 +121,17 @@ class Status
     ];
 
     public static $latestInvoiceStatuses = [
-        Status::AUTHENTICATED,
-        Status::ACTIVE,
-        Status::PENDING
+        self::AUTHENTICATED,
+        self::ACTIVE,
+        self::PENDING
     ];
 
     public static $oldInvoiceStatuses = [
-        Status::ACTIVE,
-        Status::PENDING,
-        Status::HALTED,
-        Status::CANCELLED,
-        Status::COMPLETED
+        self::ACTIVE,
+        self::PENDING,
+        self::HALTED,
+        self::CANCELLED,
+        self::COMPLETED
     ];
 
     public static function isStatusValid($status) : bool

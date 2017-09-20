@@ -577,7 +577,8 @@ trait Authorize
                     ]);
             }
 
-            if (empty($input[Payment\Entity::APP_TOKEN]) === true)
+            if (($subscription->isGlobal() === true) and
+                (empty($input[Payment\Entity::APP_TOKEN]) === true))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_APP_TOKEN_ABSENT,
@@ -590,6 +591,8 @@ trait Authorize
         }
         else
         {
+            $subscriptionPublicTokenId = Token\Entity::getSignedId($subscription->getTokenId());
+
             //
             // For an authenticated subscription, if it's not a card change flow,
             // there should be no card details in the input.
@@ -598,14 +601,14 @@ trait Authorize
             //
             if ((empty($input[Payment\Entity::CARD]) === false) or
                 ((isset($input[Payment\Entity::TOKEN]) === true) and
-                 ($subscription->getTokenId() !== $input[Payment\Entity::TOKEN])))
+                 ($subscriptionPublicTokenId !== $input[Payment\Entity::TOKEN])))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_SUBSCRIPTION_ALREADY_AUTHENTICATED,
                     null,
                     [
                         'subscription_id'       => $subscription->getId(),
-                        'card_details'          => empty($input[Payment\Entity::CARD] === false),
+                        'card_details'          => (empty($input[Payment\Entity::CARD]) === false),
                         'subscription_token_id' => $subscription->getTokenId(),
                     ]);
             }
@@ -2356,24 +2359,21 @@ trait Authorize
 
             $invoice = $payment->invoice;
 
-            $this->repo->transaction(
-                function() use ($subscription, $payment, $invoice)
-                {
-                    //
-                    // These two lines are in a transaction since
-                    // `updateSubscriptionDetails` updates and saves schedule also.
-                    // `handleCaptureSuccess` will be saving subscription, invoice, task.
-                    //
+            //
+            // TODO: These two lines should be in a transaction since
+            // `updateSubscriptionDetails` updates and saves schedule also.
+            // `handleCaptureSuccess` will be saving subscription, invoice, task.
+            // But, we can't put them in a transaction because handleCaptureSuccess
+            // does lot of webhook related stuff and all webhooks need to be outside
+            // of transactions.
+            //
+            // If this is auth txn charge, it means that start_at was null. This,
+            // in turn, means that some fields were not filled when the subscription
+            // was created. We fill those fields here.
+            //
+            $this->updateSubscriptionDetails($subscription, $payment, $invoice);
 
-                    //
-                    // If this is auth txn charge, it means that start_at was null. This,
-                    // in turn, means that some fields were not filled when the subscription
-                    // was created. We fill those fields here.
-                    //
-                    $this->updateSubscriptionDetails($subscription, $payment, $invoice);
-
-                    (new Subscription\Charge)->handleCaptureSuccess($subscription, $payment, $invoice);
-                });
+            (new Subscription\Charge)->handleCaptureSuccess($subscription, $payment, $invoice);
         }
 
         $this->autoRefundAuthTransactionIfApplicable($payment, $subscription);

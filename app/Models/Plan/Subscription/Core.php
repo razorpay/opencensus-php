@@ -158,6 +158,17 @@ class Core extends Base\Core
                 'input'           => $input,
             ]);
 
+        if ($this->mode !== Constants\Mode::TEST)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_OPERATION_NOT_ALLOWED_IN_LIVE,
+                null,
+                [
+                    'operation'         => 'subscription_charge',
+                    'subscription_id'   => $subscription->getId(),
+                ]);
+        }
+
         $subscription->getValidator()->validateInput('manual_test_charge', $input);
 
         $input['queue'] = false;
@@ -315,13 +326,14 @@ class Core extends Base\Core
         // not just subscription webhooks.
         // An issue in API has been created for this.
         //
-        if ($this->repo->isTransactionActive())
+        if ($this->repo->isTransactionActive() === true)
         {
             throw new LogicException(
                 'Webhook fired inside a transaction',
                 ErrorCode::SERVER_ERROR_WEBHOOK_IN_TRANSACTION,
                 [
-
+                    'subscription_id'   => $subscription->getId(),
+                    'status'            => $status
                 ]);
         }
 
