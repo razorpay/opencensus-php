@@ -12,7 +12,7 @@ class PGPEncryption extends Encryption
 
     protected $publicKey;
     protected $privateKey;
-    protected $passphrase;
+    protected $passphrase = '';
 
     public function __construct(array $params)
     {

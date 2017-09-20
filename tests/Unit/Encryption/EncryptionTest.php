@@ -11,8 +11,6 @@ class EncryptionTest extends TestCase
     {
         $dataToEncrypt = 'somerandomdata';
 
-        $passphrase = 'ria123';
-
         $publicKey = file_get_contents(__DIR__ . '/pgp_public_test_key.asc');
 
         $privateKey = file_get_contents(__DIR__ . '/pgp_private_test_key.asc');
@@ -20,7 +18,6 @@ class EncryptionTest extends TestCase
         $encryptionData = [
             'public_key'  => $publicKey,
             'private_key' => $privateKey,
-            'passphrase'  => $passphrase,
         ];
 
         $pgpEncryption = new PGPEncryption($encryptionData);
