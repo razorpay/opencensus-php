@@ -195,39 +195,6 @@ class Service extends Base\Service
         return $presignupDetails;
     }
 
-    public function getActivationFiles($merchantId)
-    {
-        $this->setApiCredentials();
-
-        list($error, $files) = $this->api
-                                    ->merchantDetail
-                                    ->getActivationFilesByAdmin($merchantId);
-
-        if (empty($error) === false)
-        {
-            Trace::debug('MISC_TRACE_CODE', [
-                    'error'     => "Error occured while getting activation files from API",
-                    'exception' => $error,
-            ]);
-
-            return ['files' => []];
-        }
-
-        $fileUrls = [];
-
-        $uploadKeys = $this->getUploadDocumentKeys();
-
-        foreach ($uploadKeys as $key => $value)
-        {
-            if (isset($files[$key]) === true)
-            {
-                $fileUrls[$value] = $files[$key];
-            }
-        }
-
-        return ['files' => $fileUrls];
-    }
-
     public function getDetailsFromAPI($merchantId = null)
     {
         if ($merchantId === null)
