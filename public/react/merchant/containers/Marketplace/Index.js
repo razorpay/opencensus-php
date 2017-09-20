@@ -7,10 +7,11 @@ import { showNotification } from 'rzp/modules/notifications';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import FeatureOnboarding from 'merchant/containers/FeatureOnboarding/OnBoarding';
 
-import PaymentsList from 'merchant/containers/Marketplace/Payments/List';
-import TransfersList from 'merchant/containers/Marketplace/Transfers/List';
-import ReversalsList from 'merchant/containers/Marketplace/Reversals/List';
 import AccountsList from 'merchant/containers/Marketplace/Accounts/List';
+import ActivationBanner from 'merchant/components/ActivationBanner';
+import PaymentsList from 'merchant/containers/Marketplace/Payments/List';
+import ReversalsList from 'merchant/containers/Marketplace/Reversals/List';
+import TransfersList from 'merchant/containers/Marketplace/Transfers/List';
 
 @connect(
   state => {
@@ -64,23 +65,31 @@ export default class MarketplaceContainer extends Component {
     }
 
     return (
-      <tabbed-container>
-        <header id="marketplace-header">
-          <NavLink to="/route/payments">Payments</NavLink>
-          <NavLink to="/route/transfers">Transfers</NavLink>
-          <NavLink to="/route/reversals">Reversals</NavLink>
-          <NavLink to="/route/accounts">Accounts</NavLink>
-        </header>
-        <TestModeBanner />
-        <content>
-          <Switch>
-            <Route path="/route/payments" component={PaymentsList} />
-            <Route path="/route/transfers" component={TransfersList} />
-            <Route path="/route/reversals" component={ReversalsList} />
-            <Route path="/route/accounts" component={AccountsList} />
-          </Switch>
-        </content>
-      </tabbed-container>
+      <div>
+        {this.props.mode === 'test' &&
+          <ActivationBanner
+            productName="Razorpay Route"
+            symbol={require('styles/assets/symbols/route.svg')}
+            onActivate={null}
+          />}
+        <tabbed-container>
+          <header id="marketplace-header">
+            <NavLink to="/route/payments">Payments</NavLink>
+            <NavLink to="/route/transfers">Transfers</NavLink>
+            <NavLink to="/route/reversals">Reversals</NavLink>
+            <NavLink to="/route/accounts">Accounts</NavLink>
+          </header>
+          <TestModeBanner />
+          <content>
+            <Switch>
+              <Route path="/route/payments" component={PaymentsList} />
+              <Route path="/route/transfers" component={TransfersList} />
+              <Route path="/route/reversals" component={ReversalsList} />
+              <Route path="/route/accounts" component={AccountsList} />
+            </Switch>
+          </content>
+        </tabbed-container>
+      </div>
     );
   }
 }

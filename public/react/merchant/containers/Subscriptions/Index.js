@@ -8,6 +8,7 @@ import FeatureOnboarding from 'merchant/containers/FeatureOnboarding/OnBoarding'
 
 import SubscriptionsList from 'merchant/containers/Subscriptions/List';
 import PlansList from 'merchant/containers/Plans/List';
+import ActivationBanner from 'merchant/components/ActivationBanner';
 
 @connect(
   state => {
@@ -61,19 +62,27 @@ export default class SubscriptionsController extends Component {
     }
 
     return (
-      <tabbed-container>
-        <header id="subscriptions-header">
-          <NavLink to="/subscriptions">Subscriptions</NavLink>
-          <NavLink to="/plans">Plans</NavLink>
-        </header>
-        <TestModeBanner />
-        <content>
-          <Switch>
-            <Route path="/subscriptions" component={SubscriptionsList} />
-            <Route path="/plans" component={PlansList} />
-          </Switch>
-        </content>
-      </tabbed-container>
+      <div>
+        {this.props.mode === 'test' &&
+          <ActivationBanner
+            productName="Razorpay Subscriptions"
+            symbol={require('styles/assets/symbols/subscriptions.svg')}
+            onActivate={null}
+          />}
+        <tabbed-container>
+          <header id="subscriptions-header">
+            <NavLink to="/subscriptions">Subscriptions</NavLink>
+            <NavLink to="/plans">Plans</NavLink>
+          </header>
+          <TestModeBanner />
+          <content>
+            <Switch>
+              <Route path="/subscriptions" component={SubscriptionsList} />
+              <Route path="/plans" component={PlansList} />
+            </Switch>
+          </content>
+        </tabbed-container>
+      </div>
     );
   }
 }

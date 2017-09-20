@@ -20,6 +20,7 @@ import {
 } from 'rzp/ui/item/pair';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import FeatureOnboarding from 'merchant/containers/FeatureOnboarding/OnBoarding';
+import ActivationBanner from 'merchant/components/ActivationBanner';
 
 @connect(
   state => {
@@ -89,46 +90,57 @@ export default class VirtualAccountsListContainer extends ListContainer {
     }
 
     return (
-      <tabbed-container>
-        <header id="#va-header">
-          <NavLink to="/virtualaccounts">Virtual Accounts</NavLink>
+      <div>
+        {this.props.mode === 'test' &&
+          <ActivationBanner
+            productName="Razorpay Smart Collect"
+            symbol={require('styles/assets/symbols/smartcollect.svg')}
+            onActivate={null}
+          />}
+        <tabbed-container>
+          <header id="#va-header">
+            <NavLink to="/virtualaccounts">Virtual Accounts</NavLink>
 
-          <HeaderAction>
-            <div class="btn-toolbar">
-              <button class="btn btn-primary" onClick={this.showCreateVAModal}>
-                <i class="icon icon-plus" />
-                <span>Create Virtual Account</span>
-              </button>
+            <HeaderAction>
+              <div class="btn-toolbar">
+                <button
+                  class="btn btn-primary"
+                  onClick={this.showCreateVAModal}
+                >
+                  <i class="icon icon-plus" />
+                  <span>Create Virtual Account</span>
+                </button>
+              </div>
+            </HeaderAction>
+          </header>
+          <TestModeBanner />
+
+          <content>
+            <div class="content-wrapper">
+              <VirtualAccountsListFilter
+                form="virtualAccountsListFilter"
+                count={this.state.count}
+                onSubmit={this.search}
+              />
+
+              <DataTable
+                title="Virtual Accounts"
+                columns={[
+                  virtualAccountId,
+                  accountDescription,
+                  amountPaid,
+                  status,
+                  createdAt,
+                ]}
+                count={this.state.count}
+                skip={this.state.skip}
+                paginate={this.paginate}
+                {...this.props}
+              />
             </div>
-          </HeaderAction>
-        </header>
-        <TestModeBanner />
-
-        <content>
-          <div class="content-wrapper">
-            <VirtualAccountsListFilter
-              form="virtualAccountsListFilter"
-              count={this.state.count}
-              onSubmit={this.search}
-            />
-
-            <DataTable
-              title="Virtual Accounts"
-              columns={[
-                virtualAccountId,
-                accountDescription,
-                amountPaid,
-                status,
-                createdAt,
-              ]}
-              count={this.state.count}
-              skip={this.state.skip}
-              paginate={this.paginate}
-              {...this.props}
-            />
-          </div>
-        </content>
-      </tabbed-container>
+          </content>
+        </tabbed-container>
+      </div>
     );
   }
 }
