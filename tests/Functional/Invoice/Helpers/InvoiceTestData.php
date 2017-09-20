@@ -2264,6 +2264,19 @@ return [
         ],
     ],
 
+    'testSendNotificationWithEmailModeByPrivateAuthRoute' => [
+        'request' => [
+            'url'     => '/invoices/inv_1000000invoice/notify_by/email',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ],
+    ],
+
     // ------------------------------------------------------------
     // Get invoice
     // ------------------------------------------------------------
@@ -3182,6 +3195,274 @@ return [
             ],
         ],
         // 'created_at' => 1505201092,
+    ],
+
+    'testInvoicePartiallyPaidWebhookEventData' => [
+        'entity'   => 'event',
+        'event'    => 'invoice.partially_paid',
+        'contains' => [
+            'payment',
+            'order',
+            'invoice',
+        ],
+        'payload'  => [
+            'payment' => [
+                'entity' => [
+                    'entity'     => 'payment',
+                    'amount'     => 60000,
+                    'currency'   => 'INR',
+                    'status'     => 'captured',
+                    'order_id'   => 'order_100000000order',
+                    'invoice_id' => 'inv_1000000invoice',
+                    'captured'   => true,
+                ],
+            ],
+            'order' => [
+                'entity' => [
+                    'id'          => 'order_100000000order',
+                    'entity'      => 'order',
+                    'amount'      => 100000,
+                    'amount_paid' => 60000,
+                    'amount_due'  => 40000,
+                    'currency'    => 'INR',
+                    'status'      => 'attempted',
+                    'attempts'    => 1,
+                ],
+            ],
+            'invoice' => [
+                'entity' => [
+                    'id'              => 'inv_1000000invoice',
+                    'entity'          => 'invoice',
+                    'order_id'        => 'order_100000000order',
+                    'status'          => 'partially_paid',
+                    'partial_payment' => true,
+                    'gross_amount'    => null,
+                    'tax_amount'      => null,
+                    'amount'          => 100000,
+                    'amount_paid'     => 60000,
+                    'amount_due'      => 40000,
+                    'currency'        => 'INR',
+                ],
+            ],
+        ],
+    ],
+
+    'testInvoiceMultiplePartiallyPaidWebhooksEventData1' => [
+        'entity'   => 'event',
+        'event'    => 'invoice.partially_paid',
+        'contains' => [
+            'payment',
+            'order',
+            'invoice',
+        ],
+        'payload'  => [
+            'payment' => [
+                'entity' => [
+                    'entity'     => 'payment',
+                    'amount'     => 60000,
+                    'currency'   => 'INR',
+                    'status'     => 'captured',
+                    'order_id'   => 'order_100000000order',
+                    'invoice_id' => 'inv_1000000invoice',
+                    'captured'   => true,
+                ],
+            ],
+            'order' => [
+                'entity' => [
+                    'id'          => 'order_100000000order',
+                    'entity'      => 'order',
+                    'amount'      => 100000,
+                    'amount_paid' => 60000,
+                    'amount_due'  => 40000,
+                    'currency'    => 'INR',
+                    'status'      => 'attempted',
+                    'attempts'    => 1,
+                ],
+            ],
+            'invoice' => [
+                'entity' => [
+                    'id'              => 'inv_1000000invoice',
+                    'entity'          => 'invoice',
+                    'order_id'        => 'order_100000000order',
+                    'status'          => 'partially_paid',
+                    'partial_payment' => true,
+                    'gross_amount'    => null,
+                    'tax_amount'      => null,
+                    'amount'          => 100000,
+                    'amount_paid'     => 60000,
+                    'amount_due'      => 40000,
+                    'currency'        => 'INR',
+                ],
+            ],
+        ],
+    ],
+
+    'testInvoiceMultiplePartiallyPaidWebhooksEventData2' => [
+        'entity'   => 'event',
+        'event'    => 'order.paid',
+        'contains' => [
+            'payment',
+            'order',
+        ],
+        'payload'  => [
+            'payment' => [
+                'entity' => [
+                    'entity'     => 'payment',
+                    'amount'     => 40000,
+                    'currency'   => 'INR',
+                    'status'     => 'captured',
+                    'order_id'   => 'order_100000000order',
+                    'invoice_id' => 'inv_1000000invoice',
+                    'captured'   => true,
+                ],
+            ],
+            'order' => [
+                'entity' => [
+                    'id'          => 'order_100000000order',
+                    'entity'      => 'order',
+                    'amount'      => 100000,
+                    'amount_paid' => 100000,
+                    'amount_due'  => 0,
+                    'currency'    => 'INR',
+                    'status'      => 'paid',
+                    'attempts'    => 2,
+                ],
+            ],
+        ],
+    ],
+
+    'testInvoiceMultiplePartiallyPaidWebhooksEventData3' => [
+        'entity'   => 'event',
+        'event'    => 'invoice.paid',
+        'contains' => [
+            'payment',
+            'order',
+            'invoice',
+        ],
+        'payload'  => [
+            'payment' => [
+                'entity' => [
+                    'entity'     => 'payment',
+                    'amount'     => 40000,
+                    'currency'   => 'INR',
+                    'status'     => 'captured',
+                    'order_id'   => 'order_100000000order',
+                    'invoice_id' => 'inv_1000000invoice',
+                    'captured'   => true,
+                ],
+            ],
+            'order' => [
+                'entity' => [
+                    'id'          => 'order_100000000order',
+                    'entity'      => 'order',
+                    'amount'      => 100000,
+                    'amount_paid' => 100000,
+                    'amount_due'  => 0,
+                    'currency'    => 'INR',
+                    'status'      => 'paid',
+                    'attempts'    => 2,
+                ],
+            ],
+            'invoice' => [
+                'entity' => [
+                    'id'              => 'inv_1000000invoice',
+                    'entity'          => 'invoice',
+                    'order_id'        => 'order_100000000order',
+                    'status'          => 'paid',
+                    'partial_payment' => true,
+                    'gross_amount'    => null,
+                    'tax_amount'      => null,
+                    'amount'          => 100000,
+                    'amount_paid'     => 100000,
+                    'amount_due'      => 0,
+                    'currency'        => 'INR',
+                ],
+            ],
+        ],
+    ],
+
+    'testInvoicePaidAndOrderPaidWebhooksEventData1' => [
+        'entity'   => 'event',
+        'event'    => 'order.paid',
+        'contains' => [
+            'payment',
+            'order',
+        ],
+        'payload'  => [
+            'payment' => [
+                'entity' => [
+                    'entity'     => 'payment',
+                    'amount'     => 100000,
+                    'currency'   => 'INR',
+                    'status'     => 'captured',
+                    'order_id'   => 'order_100000000order',
+                    'invoice_id' => 'inv_1000000invoice',
+                    'captured'   => true,
+                ],
+            ],
+            'order' => [
+                'entity' => [
+                    'id'          => 'order_100000000order',
+                    'entity'      => 'order',
+                    'amount'      => 100000,
+                    'amount_paid' => 100000,
+                    'amount_due'  => 0,
+                    'currency'    => 'INR',
+                    'status'      => 'paid',
+                    'attempts'    => 1,
+                ],
+            ],
+        ],
+    ],
+
+    'testInvoicePaidAndOrderPaidWebhooksEventData2' => [
+        'entity'   => 'event',
+        'event'    => 'invoice.paid',
+        'contains' => [
+            'payment',
+            'order',
+            'invoice',
+        ],
+        'payload'  => [
+            'payment' => [
+                'entity' => [
+                    'entity'     => 'payment',
+                    'amount'     => 100000,
+                    'currency'   => 'INR',
+                    'status'     => 'captured',
+                    'order_id'   => 'order_100000000order',
+                    'invoice_id' => 'inv_1000000invoice',
+                    'captured'   => true,
+                ],
+            ],
+            'order' => [
+                'entity' => [
+                    'id'          => 'order_100000000order',
+                    'entity'      => 'order',
+                    'amount'      => 100000,
+                    'amount_paid' => 100000,
+                    'amount_due'  => 0,
+                    'currency'    => 'INR',
+                    'status'      => 'paid',
+                    'attempts'    => 1,
+                ],
+            ],
+            'invoice' => [
+                'entity' => [
+                    'id'              => 'inv_1000000invoice',
+                    'entity'          => 'invoice',
+                    'order_id'        => 'order_100000000order',
+                    'status'          => 'paid',
+                    'partial_payment' => false,
+                    'gross_amount'    => null,
+                    'tax_amount'      => null,
+                    'amount'          => 100000,
+                    'amount_paid'     => 100000,
+                    'amount_due'      => 0,
+                    'currency'        => 'INR',
+                ],
+            ],
+        ],
     ],
 
     // ----------------------------------------------------------------------

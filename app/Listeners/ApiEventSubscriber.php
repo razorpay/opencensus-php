@@ -60,6 +60,7 @@ class ApiEventSubscriber extends Base\Core
      * @var array
      */
     protected static $notWebhookOnlyEvents = [
+        WebhookEvent::INVOICE_PARTIALLY_PAID,
         WebhookEvent::INVOICE_PAID,
     ];
 
@@ -176,11 +177,23 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onInvoicePartiallyPaid($payment)
+    {
+        //
+        // It is safe to just call the other method which gets called with
+        // invoice.paid event. The web hook payload is same in both event (it's
+        // invoice, order, payment entities), just the event name differs.
+        //
+        $this->onInvoicePaid($payment);
+    }
+
     protected function onInvoicePaid($payment)
     {
         //
         // Other than firing web hook in this case, we also update invoice's copy
-        // of customer details if that is empty with payment's attributes.
+        // of customer details if that is empty, with payment's attributes.
+        //
+        // Refer $notWebhookOnlyEvents also.
         //
         (new Invoice\Core)->setCustomerDetailsFromPaymentIfAbsent($payment);
 
