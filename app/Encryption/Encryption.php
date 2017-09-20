@@ -2,7 +2,7 @@
 
 namespace RZP\Encryption;
 
-abstract class IEncryption
+abstract class Encryption
 {
     protected $params;
 
@@ -17,8 +17,5 @@ abstract class IEncryption
 
     abstract public function decrypt(string $data): string ;
 
-    protected function validateParams(array $params)
-    {
-        // Should be implemented in child class
-    }
+    abstract protected function validateParams(array $params);
 }
