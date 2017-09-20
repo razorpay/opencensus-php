@@ -622,7 +622,7 @@ final class Route
 
         // Feature onboarding routes
         'feature_onboarding_fetch_questions'      => ['get',      'feature/onboarding',                            'FeatureController@getOnboardingQuestions',                          ],
-        'feature_onboarding_create'               => ['post',     'feature/onboarding/{feature}',                  'FeatureController@postOnboardingResponses',                       ],
+        'feature_onboarding_create'               => ['post',     'feature/onboarding/{feature}',                  'FeatureController@postOnboardingResponses',                         ],
         'feature_onboarding_fetch_responses'      => ['get',      'feature/onboarding/{feature}/responses',        'FeatureController@getOnboardingResponses',                          ],
         'feature_onboarding_fetch_all_responses'  => ['get',      'feature/onboarding/responses',                  'FeatureController@getOnboardingResponses',                          ],
     ];
@@ -1195,7 +1195,6 @@ final class Route
         'merchant_get_terminals',
         'merchant_invoice_add_bulk',
         'setl_retry',
-        'feature_onboarding_fetch_all_responses',
     ];
 
     public static $routePermission = [
@@ -1326,7 +1325,6 @@ final class Route
         'settings_upsert'                        => Permission::EDIT_WALLET_CONFIG,
         'settings_delete'                        => Permission::EDIT_WALLET_CONFIG,
         'merchant_analytics'                     => '*',
-        'feature_onboarding_fetch_all_responses' => '*',
     ];
 
     public static $direct = [

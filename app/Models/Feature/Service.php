@@ -231,7 +231,7 @@ class Service extends Base\Service
             {
                 $fileId = $settings[Constants::MARKETPLACE][Constants::VENDOR_AGREEMENT];
 
-                $fileUrl = $this->getSignedUrl($fileId, $merchant->getId());
+                $fileUrl = $this->getSignedUrl($fileId);
 
                 $marketplaceSettings = $settings->__get(Constants::MARKETPLACE);
 
@@ -279,7 +279,7 @@ class Service extends Base\Service
 
             $file = $this->createFile($extension, $file, $fileName, $settingKey, $merchant);
 
-            $input[$featureName][$question] = FileStore\Entity::verifyIdAndSilentlyStripSign($file['id']);
+            $input[$featureName][$question] = FileStore\Entity::stripSignWithoutValidation($file['id']);
         }
     }
 
@@ -338,7 +338,7 @@ class Service extends Base\Service
         return $featureParams;
     }
 
-    protected function getSignedUrl(string $fileStoreId, string $merchantId)
+    protected function getSignedUrl(string $fileStoreId)
     {
         $accessor = new FileStore\Accessor;
 
