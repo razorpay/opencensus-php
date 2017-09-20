@@ -32,12 +32,11 @@ export default class TestPaymentModal extends Component {
 
         this.props.closeModal();
         this.props.showNotification({
-          type: 'success',
+          type: 'neutral',
           message: testChargeMessages[isSuccess],
           closeTimeout: 6500,
         });
 
-        console.log('THIS PROPS...', this.props);
         this.props.postAction();
       })
       .catch(({ errors }) => {
