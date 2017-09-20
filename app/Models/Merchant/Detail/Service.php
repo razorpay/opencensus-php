@@ -100,6 +100,7 @@ class Service extends Base\Service
 
             $eventAttributes['activation_progress'] = $activationProgress;
 
+            // TODO: Check
             $this->app['eventManager']
                  ->trackEvents($this->merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
 

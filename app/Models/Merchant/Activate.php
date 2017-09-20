@@ -23,12 +23,6 @@ class Activate extends Base\Core
     {
         $merchant->getValidator()->validateBeforeActivate();
 
-        if ($merchant->isArchived() === true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION);
-        }
-
         //
         // Ensure that all payment methods enabled for the merchant
         // has an associated pricing assigned

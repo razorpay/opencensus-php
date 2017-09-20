@@ -16,7 +16,6 @@ use RZP\Models\Invitation;
 use Conner\Tagging\Taggable;
 use RZP\Exception\LogicException;
 
-
 class Entity extends Base\PublicEntity
 {
     use Taggable;
