@@ -92,17 +92,19 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $wallet = $this->repo->fetchWalletByPaymentId($input['payment']['id']);
+        $paymentId = $input['payment']['id'];
+
+        $wallet = $this->repo->fetchWalletByPaymentId($paymentId);
 
         $request = $this->getRefundRequestArray($input, $wallet);
 
-        list($content, $response) = $this->sendRequest($request);
+        list($content, $response) = $this->sendRequest($request, $paymentId);
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
             [
                 'gateway'    => $this->gateway,
-                'payment_id' => $input['payment']['id'],
+                'payment_id' => $paymentId,
                 'refund_id'  => $input['refund']['id'],
                 'content'    => $content,
                 'response'   => $response
@@ -334,7 +336,7 @@ class Gateway extends Base\Gateway
     {
         $request = $this->getVerifyRequestArray($verify);
 
-        list($content, $response) = $this->sendRequest($request);
+        list($content, $response) = $this->sendRequest($request, $verify->input['payment'][Payment::ID]);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT,
@@ -371,6 +373,16 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
+            [
+                'gateway'    => $this->gateway,
+                'request'    => $request,
+                'content'    => $data,
+                'payment_id' => $payment[Payment::ID]
+            ]
+        );
+
         return $request;
     }
 
@@ -393,8 +405,11 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
-        // If the amount from verify does not match the amount in our payment entity
-        if ($this->formatAmount($input['payment'][Payment::AMOUNT]) !== $content[ResponseFields::AMOUNT])
+        // If the verify status is success, we need to check the amount from verify response
+        // And if the amount from verify does not match the amount in our payment entity,
+        // we should throw amount mismatch critical error
+        if (($verify->gatewaySuccess === true) and
+            ($this->formatAmount($input['payment'][Payment::AMOUNT]) !== $content[ResponseFields::AMOUNT]))
         {
             $verify->amountMismatch = true;
         }
@@ -520,15 +535,16 @@ class Gateway extends Base\Gateway
         return $this->terminal['gateway_merchant_id'];
     }
 
-    protected function sendRequest($request)
+    protected function sendRequest(array $request, string $paymentId)
     {
         $response = $this->sendGatewayRequest($request);
 
         $this->trace->info(
             TraceCode::GATEWAY_SUPPORT_RESPONSE,
             [
-                'content' => $response->body,
-                'gateway' => $this->gateway
+                'content'    => $response->body,
+                'gateway'    => $this->gateway,
+                'payment_id' => $paymentId
             ]);
 
         $responseContent = [];

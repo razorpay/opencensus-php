@@ -17,11 +17,11 @@ trait HeimdallTrait
     protected function deleteAdmin($orgId, $adminId, $token = null)
     {
         $request = [
-            'url'    => '/orgs/' . $orgId . '/admins/' . $adminId,
+            'url'    => '/admin/' . $adminId,
             'method' => 'DELETE'
         ];
 
-        $this->ba->adminAuth('test', $token);
+        $this->ba->adminAuth('test', $token, $orgId);
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -31,11 +31,11 @@ trait HeimdallTrait
     protected function getAdmin($orgId, $adminId, $token = null)
     {
         $request = [
-            'url'    => '/orgs/' . $orgId . '/admins/' . $adminId,
+            'url'    => '/admin/' . $adminId . '/fetch',
             'method' => 'GET'
         ];
 
-        $this->ba->adminAuth('test', $token);
+        $this->ba->adminAuth('test', $token, $orgId);
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -54,7 +54,7 @@ trait HeimdallTrait
         $content = array_merge($defaultContent, $content);
 
         $request = [
-            'url'     => '/orgs/' . $orgId . '/admins/' . $adminId,
+            'url'     => '/admin/' . $adminId,
             'method'  => 'PUT',
             'content' => $content,
         ];
@@ -97,10 +97,10 @@ trait HeimdallTrait
         return $bearerToken . $adminToken->getId();
     }
 
-    public function adminForgotPassword($orgId, $email)
+    public function adminForgotPassword($email)
     {
         $request = [
-            'url'     => '/orgs/' . $orgId . '/admin/forgot_password',
+            'url'     => '/admin/forgot_password',
             'method'  => 'POST',
             'content' => [
                 'email' => $email,
@@ -108,7 +108,7 @@ trait HeimdallTrait
             ],
         ];
 
-        $this->ba->appAuth();
+        $this->ba->appAuth('rzp_test', '', $this->hostName);
 
         $content = $this->makeRequestAndGetContent($request);
 

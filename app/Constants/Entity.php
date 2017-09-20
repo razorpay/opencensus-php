@@ -115,6 +115,7 @@ class Entity
     const BLADE                  = 'blade';
     const ATOM                   = 'atom';
     const HDFC                   = 'hdfc';
+    const HITACHI                = 'hitachi';
     const PAYTM                  = 'paytm';
     const SHARP                  = 'sharp';
     const WALLET                 = 'wallet';
@@ -129,7 +130,6 @@ class Entity
     const AEPS_ICICI             = 'aeps_icici';
     const UPI_MINDGATE           = 'upi_mindgate';
     const UPI_ICICI              = 'upi_icici';
-    const UPI_IDFC               = 'upi_idfc';
     const NETBANKING_AXIS        = 'netbanking_axis';
     const NETBANKING_HDFC        = 'netbanking_hdfc';
     const NETBANKING_CORPORATION = 'netbanking_corporation';
@@ -151,7 +151,6 @@ class Entity
     const WALLET_MPESA           = 'wallet_mpesa';
 
     // Tax and Tax Groups
-
     const TAX                   = 'tax';
     const TAX_GROUP             = 'tax_group';
 
@@ -214,13 +213,13 @@ class Entity
         self::ATOM                   => \RZP\Gateway\Atom::class,
         self::AMEX                   => \RZP\Gateway\Amex::class,
         self::HDFC                   => \RZP\Gateway\Hdfc::class,
+        self::HITACHI                => \RZP\Gateway\Hitachi::class,
         self::PAYTM                  => \RZP\Gateway\Paytm::class,
         self::SHARP                  => \RZP\Gateway\Sharp::class,
         self::WALLET                 => \RZP\Gateway\Wallet\Base::class,
         self::BILLDESK               => \RZP\Gateway\Billdesk::class,
         self::MOBIKWIK               => \RZP\Gateway\Mobikwik::class,
         self::UPI_NPCI               => \RZP\Gateway\Upi\Npci::class,
-        self::UPI_IDFC               => \RZP\Gateway\Upi\Idfc::class,
         self::UPI_MINDGATE           => \RZP\Gateway\Upi\Mindgate::class,
         self::UPI_ICICI              => \RZP\Gateway\Upi\Icici::class,
         self::AEPS                   => \RZP\Gateway\Aeps\Base::class,
@@ -285,7 +284,6 @@ class Entity
 
         self::UPI_MINDGATE          => \RZP\Gateway\Upi\Base::class,
         self::UPI_ICICI             => \RZP\Gateway\Upi\Base::class,
-        self::UPI_IDFC              => \RZP\Gateway\Upi\Base::class,
         self::UPI_NPCI              => \RZP\Gateway\Upi\Base::class,
 
         self::AEPS_ICICI            => \RZP\Gateway\Aeps\Base::class,
@@ -311,6 +309,11 @@ class Entity
         self::USER,
         self::SCHEDULE,
     ];
+
+    public static function getAllEntities()
+    {
+        return array_keys(self::$namespace);
+    }
 
     public static function getEntityNamespace(string $entity)
     {

@@ -89,7 +89,7 @@ class Verify extends Base\Core
      * We need to block gateway from verify after certain error codes are returned,
      * The block will be lifted after duration mentioned here
      */
-    const GATEWAY_BLOCK_TIME = 900; // 15 minutes
+    const GATEWAY_BLOCK_TIME = 1800; // 30 minutes
 
     /**
      * Time interval after which timeout count will be reset

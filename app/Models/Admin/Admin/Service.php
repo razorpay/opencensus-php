@@ -9,6 +9,7 @@ use Hash;
 use Mail;
 use Event;
 use Str;
+use Request;
 
 use RZP\Constants\HashAlgo;
 use RZP\Error;
@@ -33,9 +34,16 @@ class Service extends Base\Service
 
     const TOKEN = 'token';
 
-    public function authenticate(string $orgId, array $input)
+    public function __construct()
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
+        parent::__construct();
+
+        $this->adminOrgId = $this->app['basicauth']->getAdminOrgId();
+    }
+
+    public function authenticate(array $input)
+    {
+        $orgId = $this->app['basicauth']->getOrgId();
 
         return $this->login($orgId, $input);
     }
@@ -272,9 +280,9 @@ class Service extends Base\Service
         return $admin;
     }
 
-    public function createAdmin(string $orgId, array $input)
+    public function createAdmin(array $input)
     {
-        $org = $this->repo->org->findByPublicId($orgId);
+        $org = $this->repo->org->find($this->adminOrgId);
 
         if (empty($input[Entity::ROLES]) === false)
         {
@@ -305,16 +313,16 @@ class Service extends Base\Service
         Mail::queue($createAdminMail);
     }
 
-    public function getAdmin(string $orgId, string $adminId)
+    public function getAdmin(string $adminId)
     {
         // Fetch admin with relations
         $admin = $this->repo->admin->findByPublicIdAndOrgIdWithRelations(
-            $adminId, $orgId, [Entity::GROUPS, Entity::ROLES]);
+            $adminId, $this->adminOrgId, [Entity::GROUPS, Entity::ROLES]);
 
         return $admin->toArrayPublic();
     }
 
-    public function getAdminByAppAuth(string $orgId, array $input)
+    public function getAdminByAppAuth(array $input)
     {
         $token = $input['token'];
 
@@ -322,11 +330,12 @@ class Service extends Base\Service
 
         $adminId = $adminToken->getAdminId();
 
+        $orgId = $adminToken->admin->getOrgId();
+
         $admin = $this->repo->admin->findByIdAndOrgIdWithRelations(
             $adminId, $orgId, ['groups', 'roles', 'roles.permissions']);
 
         $roles = $admin->roles;
-        $permissions = [];
         $roleNames = [];
         $groupRules = [];
 
@@ -368,11 +377,11 @@ class Service extends Base\Service
         return $admin;
     }
 
-    public function deleteAdmin(string $orgId, string $adminId)
+    public function deleteAdmin(string $adminId)
     {
         $authAdmin = $this->app['basicauth']->getAdmin();
 
-        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
+        $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $this->adminOrgId);
 
         $admin->getValidator()->validateSelfEditForbidden($authAdmin, $admin);
 
@@ -381,11 +390,9 @@ class Service extends Base\Service
         return $this->core()->delete($admin);
     }
 
-    public function fetchMultiple(string $orgId, array $input)
+    public function fetchMultiple()
     {
-        $orgId = Org\Entity::verifyIdAndStripSign($orgId);
-
-        $admins = $this->repo->admin->fetchByOrgId($orgId, [Entity::GROUPS, Entity::ROLES]);
+        $admins = $this->repo->admin->fetchByOrgId($this->adminOrgId, [Entity::GROUPS, Entity::ROLES]);
 
         return $admins->toArrayPublic();
     }
@@ -408,8 +415,17 @@ class Service extends Base\Service
         return [];
     }
 
-    public function editAdmin(string $orgId, string $adminId, array $input)
+    public function editAdmin(string $adminId, array $input)
     {
+        if (empty($this->adminOrgId))
+        {
+            $orgId = $this->app['basicauth']->getOrgId();
+        }
+        else
+        {
+            $orgId = $this->adminOrgId;
+        }
+
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
 
         if (empty($input[Entity::ROLES]) === false)

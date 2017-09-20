@@ -79,13 +79,17 @@ class Gateway extends Base\Gateway
 
         $this->checkCallbackStatus($content);
 
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                                    $content[ResponseFields::PAYMENT_ID],
+                                    Payment\Action::AUTHORIZE);
+
         // If callback status was a success, we verify the payment immediately
-        $this->verifyCallback($input);
+        $this->verifyCallback($gatewayPayment, $input);
 
         // Saving callback response only if the above checks pass
-        $gatewayPayment = $this->saveCallbackResponse($content);
+        $gatewayPayment = $this->saveCallbackResponse($gatewayPayment, $content);
 
-        $acquirerData = $this->getAcquirerData($gatewayPayment);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }
@@ -103,11 +107,13 @@ class Gateway extends Base\Gateway
      * Verifying the payment after callback response is saved to
      * prevent user tampering with the data while making a payment.
      */
-    protected function verifyCallback(array $input)
+    protected function verifyCallback($gatewayPayment, array $input)
     {
         parent::verify($input);
 
         $verify = new Verify($this->gateway, $input);
+
+        $verify->payment = $gatewayPayment;
 
         $this->sendPaymentVerifyRequest($verify);
 
@@ -126,7 +132,7 @@ class Gateway extends Base\Gateway
 
     protected function sendPaymentVerifyRequest(Verify $verify)
     {
-        $content = $this->getVerifyRequestData($verify->input);
+        $content = $this->getVerifyRequestData($verify);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -196,14 +202,22 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getVerifyRequestData(array $input)
+    protected function getVerifyRequestData($verify)
     {
+        $input = $verify->input;
+        $gatewayEntity = $verify->payment;
+
         $data = [
             RequestFields::PAYEE_ID   => $this->getMerchantId(),
             RequestFields::PAYMENT_ID => $input['payment']['id'],
             RequestFields::ITEM_CODE  => strtoupper($input['payment']['id']),
             RequestFields::AMOUNT     => $input['payment']['amount'] / 100,
         ];
+
+        if ($gatewayEntity->isTpv() === true)
+        {
+            $data[RequestFields::PAYMENT_ID] = $input['payment']['id'] . '.' . $gatewayEntity->getAccountNumber();
+        }
 
         return $data;
     }
@@ -246,17 +260,13 @@ class Gateway extends Base\Gateway
         return $entityAttributes;
     }
 
-    protected function saveCallbackResponse(array $content)
+    protected function saveCallbackResponse($gatewayPayment, array $content)
     {
         $attributes = [
             Base\Entity::RECEIVED        => true,
             Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_PAYMENT_ID],
             Base\Entity::STATUS          => $content[ResponseFields::PAID],
         ];
-
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-                                    $content[ResponseFields::PAYMENT_ID],
-                                    Payment\Action::AUTHORIZE);
 
         $gatewayPayment->fill($attributes);
 
@@ -334,31 +344,25 @@ class Gateway extends Base\Gateway
 
     protected function parseVerifyResponse(string $body)
     {
-        // We get the number of rows in the verify response string
-        $numRows = substr_count($body, "\n");
+        // Separating out the rows of the string
+        $rows = explode("\n", $body);
 
-        // We use this to separate the rows of the response string
-        $body = str_replace("\n", "|", $body);
-
-        $values = explode("|", $body);
-
-        if ($numRows > 1)
+        // Removing the 0000's at the end of the string before proceeding
+        // The whitespaces don't contain the pip as a separator character
+        if (strpos($rows[count($rows) - 1], "|") === false)
         {
-            $values = $this->handleMultipleTablesVerifyResponse($values);
+            unset($rows[count($rows) - 1]);
         }
+
+        // We get the most relevant row in the response
+        $values = $this->getVerifyResponseArray($rows);
 
         //
         // Manually setting success to failed for verify response "||||"
-        // In the success case, eliminating the \n0000's to clean the data
         //
         if (empty($values[0]) === true)
         {
             $values[4] = Status::NO;
-        }
-        else
-        {
-            // Cleaning data
-            $values[4] = trim($values[4]);
         }
 
         $keys = $this->getVerifyResponseKeys();
@@ -376,21 +380,18 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * We slice the $values array into $numRows number of arrays of size 5.
-     * We then return the first successful sub-array or return any failed sub-array
-     * If there is more than 1 sub-array that is successful, we throw an error
+     * We go over each row in the table and count the number of success rows.
+     * If there's only one success row, we return it. Else we return the first row in the rows by default.
+     * If there's more than 1 success row, we throw an exception.
      *
-     * @param array $values
+     * @param array $rows
      * @return mixed
      * @throws Exception\PaymentVerificationException
      */
-    protected function handleMultipleTablesVerifyResponse(array $values)
+    protected function getVerifyResponseArray(array $rows)
     {
-        // Removing the 0000's at the end of the string before tracing
-        unset($values[sizeof($values) - 1]);
-
         $data = [
-            'response_array' => $values,
+            'response_array' => $rows,
             'payment_id'     => $this->input['payment']['id'],
             'gateway'        => $this->gateway,
         ];
@@ -400,31 +401,28 @@ class Gateway extends Base\Gateway
         //
         $this->trace->info(TraceCode::MULTIPLE_TABLES_IN_VERIFY_RESPONSE, ['response_data' => $data]);
 
-        $keys = $this->getVerifyResponseKeys();
-
-        $numKeys = count($keys);
-
-        $chunks = array_chunk($values, $numKeys);
-
         //
         // Initialize number of success chunks to 0 and
         // chunk to be returned to the first chunk
         //
         $numSuccess = 0;
-        $chunkToBeReturned = $chunks[0];
 
-        foreach ($chunks as $chunk)
+        $rowToBeReturned = $rows[0];
+
+        foreach ($rows as $row)
         {
             //
             // If we find a chunk with a success status,
             // we increment numSuccess and assign $chunk
             // to $chunkToBeReturned
             //
-            if ($chunk[4] === Status::SUCCESS)
+            $rowArray = explode('|', $row);
+
+            if ($rowArray[4] === Status::SUCCESS)
             {
                 $numSuccess++;
 
-                $chunkToBeReturned = $chunk;
+                $rowToBeReturned = $row;
             }
         }
 
@@ -446,7 +444,8 @@ class Gateway extends Base\Gateway
             );
         }
 
-        return $chunkToBeReturned;
+        // Returning the correct row in array form
+        return explode('|', $rowToBeReturned);
     }
 
     protected function getVerifyResponseKeys()

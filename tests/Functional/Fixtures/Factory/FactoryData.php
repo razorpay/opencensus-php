@@ -101,6 +101,7 @@ final class FactoryData
             'iin'               => 411111,
             'length'            => '16',
             'issuer'            => 'hdfc',
+            'emi'               => false,
             'international'     => false,
             'vault_token'       => 'NDExMTExMTExMTExMTExMQ==',
             'vault'             => 'tokenex',
@@ -584,7 +585,7 @@ final class FactoryData
             'merchant_id'       => '10000000000000',
             'item_id'           => '1000000000item',
             'invoice_id'        => '1000000invoice',
-            'subscription_id'   => '10subscription,'
+            'subscription_id'   => '10subscription',
         ]);
 
         $factory(\RZP\Models\Device\Entity::class, [
@@ -817,6 +818,12 @@ final class FactoryData
         $factory(\RZP\Models\Workflow\Action\Checker\Entity::class, [
             'id'                => $faker->uniqueid,
             'name'              => \RZP\Models\Workflow\Action\State\Entity::OPEN,
+        ]);
+
+        $factory(\RZP\Models\Gateway\File\Entity::class, [
+            'id'         => $faker->uniqueid,
+            'created_at' => $faker->timestamp,
+            'updated_at' => $faker->timestamp,
         ]);
     }
 }
