@@ -394,9 +394,9 @@ class Core extends Base\Core
         // have app_token here just like how we don't expect in
         // privilege (cron) auth.
         //
-        if (($ba->isPrivilegeAuth() === true) or
-            (($ba->isProxyAuth() === true) and
-             ($this->mode === Mode::TEST)))
+        if ((($ba->isProxyAuth() === true) and
+             ($this->mode === Mode::TEST)) or
+            ($ba->isPrivilegeAuth() === true))
         {
             return [$customer, null];
         }

@@ -710,14 +710,22 @@ class Core extends Base\Core
             Payment\Entity::DESCRIPTION     => 'Recurring Payment via Subscription',
         ];
 
-        // This is here for the test charge route.
+        $this->addTestChargeOptions($recurringPayload, $options);
+
+        return $recurringPayload;
+    }
+
+    protected function addTestChargeOptions(array & $recurringPayload, array $options)
+    {
         if (($this->mode === Constants\Mode::TEST) and
             (isset($options['success']) === true))
         {
             $recurringPayload['test_success'] = boolval($options['success']);
-            $recurringPayload['description'] = 'Failed Recurring Payment via Subscription';
-        }
 
-        return $recurringPayload;
+            if ($recurringPayload['test_success'] === false)
+            {
+                $recurringPayload['description'] = 'Failed Recurring Payment via Subscription';
+            }
+        }
     }
 }

@@ -1489,22 +1489,13 @@ trait Authorize
         if (($this->ba->isProxyOrPrivilegeAuth() === false) and
             ($customerApp === null))
         {
-            //
-            // In case of subscriptions we have a proxy auth route (test mode charge)
-            // which behaves like a charge cron route. Hence, we don't expect an app_token there.
-            // Adding a general check for test mode.
-            //
-            if ((($this->ba->isProxyAuth() === true) and
-                 ($this->mode === Mode::TEST)) === false)
-            {
-                throw new Exception\LogicException(
-                    'Not privilege auth and no app_token. Should not have reached here at all.',
-                    ErrorCode::SERVER_ERROR_APP_TOKEN_NOT_PRESENT,
-                    [
-                        'customer_id' => $customer->getId(),
-                        'payment_id' => $payment->getId(),
-                    ]);
-            }
+            throw new Exception\LogicException(
+                'Not privilege/proxy auth and no app_token. Should not have reached here at all.',
+                ErrorCode::SERVER_ERROR_APP_TOKEN_NOT_PRESENT,
+                [
+                    'customer_id' => $customer->getId(),
+                    'payment_id' => $payment->getId(),
+                ]);
         }
 
         $this->payment->app()->associate($customerApp);
