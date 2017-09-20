@@ -666,11 +666,11 @@ class Gateway
     {
         if (self::isValidGateway($gateway) === false)
         {
-            throw new Exception\LogicException(
-                'Unknown gateway',
-                null,
+            throw new Exception\BadRequestValidationFailureException(
+                'Gateway is invalid',
+                'gateway',
                 [
-                    'gateway' => $gateway,
+                    'gateway' => $gateway
                 ]);
         }
     }
