@@ -512,21 +512,19 @@ class FeaturesTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $url = "storage/files/" . Constants::ONBOARDING .  "/" . Constants::VENDOR_AGREEMENT . ".pdf";
+        //$url = "storage/files/" . Constants::ONBOARDING .  "/" . Constants::VENDOR_AGREEMENT . ".pdf";
 
-        $uploadedFile = $this->createUploadedFile($url);
+        //$uploadedFile = $this->createUploadedFile($url);
 
         $testData = $this->testData[__FUNCTION__];
 
         $request = $testData['request'];
 
-        $request['content'][Constants::MARKETPLACE][Constants::VENDOR_AGREEMENT] = $uploadedFile;
+        //$request['content'][Constants::VENDOR_AGREEMENT] = $uploadedFile;
 
         $response = $this->makeRequestAndGetContent($request);
 
         $this->assertTrue($response);
-
-        // Test getOnboardingResponses function
 
         $testData = $this->testData['getOnboardingResponses'];
 

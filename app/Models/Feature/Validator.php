@@ -19,18 +19,18 @@ class Validator extends Base\Validator
 
     protected static $onboardingRules = [
         Constants::MARKETPLACE                                     => 'filled|array|max:3',
-        Constants::MARKETPLACE . "." . Constants::USE_CASE         => 'required|string',
-        Constants::MARKETPLACE . "." . Constants::SETTLING_TO      => 'required|string',
-        Constants::MARKETPLACE . "." . Constants::VENDOR_AGREEMENT => 'required|file',
+        Constants::MARKETPLACE . "." . Constants::USE_CASE         => 'filled|string',
+        Constants::MARKETPLACE . "." . Constants::SETTLING_TO      => 'filled|string',
+        Constants::MARKETPLACE . "." . Constants::VENDOR_AGREEMENT => 'filled|file',
 
         Constants::SUBSCRIPTIONS                                    => 'filled|array|max:3',
-        Constants::SUBSCRIPTIONS . "." . Constants::BUSINESS_MODEL  => 'required|string',
-        Constants::SUBSCRIPTIONS . "." . Constants::SAMPLE_PLANS    => 'required|string',
+        Constants::SUBSCRIPTIONS . "." . Constants::BUSINESS_MODEL  => 'filled|string',
+        Constants::SUBSCRIPTIONS . "." . Constants::SAMPLE_PLANS    => 'filled|string',
         Constants::SUBSCRIPTIONS . "." . Constants::WEBSITE_DETAILS => 'filled|string|max:50',
 
         Constants::VIRTUAL_ACCOUNTS                                             => 'filled|array|max:2',
-        Constants::VIRTUAL_ACCOUNTS . "." . Constants::USE_CASE                 => 'required|string',
-        Constants::VIRTUAL_ACCOUNTS . "." . Constants::EXPECTED_MONTHLY_REVENUE => 'required|string',
+        Constants::VIRTUAL_ACCOUNTS . "." . Constants::USE_CASE                 => 'filled|string',
+        Constants::VIRTUAL_ACCOUNTS . "." . Constants::EXPECTED_MONTHLY_REVENUE => 'filled|string',
     ];
 
     protected function validateName($attribute, $value)
