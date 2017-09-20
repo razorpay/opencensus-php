@@ -128,16 +128,16 @@ class Biller extends Base\Core
     {
         if ($invoice->getSubscriptionStatus() !== Invoice\Status::HALTED)
         {
-            $this->trace->info(
-                TraceCode::SUBSCRIPTION_INVOICE_HALTED,
-                [
-                    'invoice_id'            => $invoice->getId(),
-                    'subscription_id'       => $subscription->getId(),
-                    'subscription_status'   => $subscription->getStatus(),
-                ]);
-
             return true;
         }
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_INVOICE_HALTED,
+            [
+                'invoice_id'            => $invoice->getId(),
+                'subscription_id'       => $subscription->getId(),
+                'subscription_status'   => $subscription->getStatus(),
+            ]);
 
         return false;
     }

@@ -2198,7 +2198,19 @@ trait Authorize
         //
         // We can remove this once we add recurring_type in the payment entity!
         //
-        if ($payment->getTwoFactorAuth() !== TwoFactorAuth::SKIPPED)
+        // if ($payment->getTwoFactorAuth() === TwoFactorAuth::SKIPPED)
+        // {
+        //     return false;
+        // }
+        // else
+        // {
+        //     return true;
+        // }
+
+        // NOTE: 2FA WILL NOT WORK FOR INTERNATIONAL. TRUST ME.
+
+        // TODO: Public auth check does not work!!!! Use redis or something here. FIX ASAP!
+        if ($this->ba->isPublicAuth() === true)
         {
             return true;
         }
