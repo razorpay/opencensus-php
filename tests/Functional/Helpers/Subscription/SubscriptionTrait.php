@@ -50,6 +50,21 @@ trait SubscriptionTrait
         return json_decode($response->getContent(), true);
     }
 
+    public function makeSubscriptionCancelDueRequest()
+    {
+        $request = [
+            'url'       => '/subscriptions/cancel/due',
+            'action'    => 'post',
+            'content'   => [],
+        ];
+
+        $this->ba->cronAuth();
+
+        $response = $this->sendRequest($request);
+
+        return json_decode($response->getContent(), true);
+    }
+
     public function makeSubscriptionInvoiceChargeManualRequest($invoiceId)
     {
         $request = [
@@ -160,11 +175,19 @@ trait SubscriptionTrait
         return $subscriptionResponse;
     }
 
-    protected function doAuthTxnForNewSubscription()
+    protected function doAuthTxnForNewSubscription(bool $startAt = true)
     {
-        $subscription = $this->createSubscription(true);
+        $subscription = $this->createSubscription($startAt);
 
-        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+        $authAmount = null;
+
+        if ($startAt === false)
+        {
+            $plan = $this->getLastEntity('plan', true);
+            $authAmount = $plan['item']['amount'];
+        }
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, $authAmount);
 
         $recurringPayment = $this->doAuthPayment($paymentRequest);
 

@@ -159,7 +159,7 @@ class Service extends Base\Service
     {
         $subscriptionsToRetry = $this->repo->subscription->getSubscriptionsToRetry();
 
-        $success = $failed = 0;
+        $success = 0;
         $failures = [];
 
         foreach ($subscriptionsToRetry as $subscription)
@@ -184,8 +184,6 @@ class Service extends Base\Service
             }
             catch (\Exception $ex)
             {
-                $failed++;
-
                 $failures[] = $subscription->getId();
 
                 $this->trace->traceException(
@@ -199,7 +197,7 @@ class Service extends Base\Service
         $summary = [
             'total'                 => $subscriptionsToRetry->count(),
             'queued'                => $success,
-            'failed'                => $failed,
+            'failed'                => count($failures),
             'failure_subscriptions' => $failures,
         ];
 
@@ -211,13 +209,57 @@ class Service extends Base\Service
         return $summary;
     }
 
-    public function cancelSubscription(string $subscriptionId)
+    public function cancelSubscription(string $subscriptionId, array $input = []): array
     {
         $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
 
-        $subscription = $this->core->cancel($subscription);
+        $subscription = $this->core->cancel($subscription, $input);
 
         return $subscription->toArrayPublic();
+    }
+
+    public function cancelDueSubscriptions()
+    {
+        $subscriptionsToCancel = $this->repo->subscription->getSubscriptionsToCancel();
+
+        $success = 0;
+        $failures = [];
+
+        foreach ($subscriptionsToCancel as $subscription)
+        {
+            try
+            {
+                $this->core->cancelImmediately($subscription);
+
+                $success++;
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::SUBSCRIPTION_CANCEL_FAILED,
+                    [
+                        'subscription_id' => $subscription->getId()
+                    ]);
+
+                $failures[] = $subscription->getId();
+            }
+        }
+
+        $summary = [
+            'total'                 => $subscriptionsToCancel->count(),
+            'queued'                => $success,
+            'failed'                => count($failures),
+            'failure_subscriptions' => $failures,
+        ];
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_CANCEL_DUE_SUMMARY,
+            $summary
+        );
+
+        return $summary;
     }
 
     public function chargeSubscriptionInvoiceManually(string $invoiceId)

@@ -1009,12 +1009,6 @@ class Service extends Base\Service
 
         $shouldSync = (bool) ($input[Feature\Entity::SHOULD_SYNC] ?? false);
 
-        //
-        // Temporary: To ensure BC until dashboard code for this is deployed
-        // PR: https://github.com/razorpay/dashboard/pull/1592
-        //
-        $shouldSync = true;
-
         $merchant->validateInput('feature', $input);
 
         $featuresToAdd = $this->getFeatureNamesToAdd($input['features']);
@@ -1172,8 +1166,12 @@ class Service extends Base\Service
     /**
      * Gets the feature names to be added. A feature needs to be added to merchant
      * only if the value in input is equal to the default value of the feature
+     *
+     * @param array $features
+     *
+     * @return array
      */
-    private function getFeatureNamesToAdd($features)
+    private function getFeatureNamesToAdd(array $features): array
     {
         $featureNames = [];
 
@@ -1196,8 +1194,12 @@ class Service extends Base\Service
     /**
      * Gets the feature names to be removed. A feature needs to be removed from a
      * merchant only if the value in input is opposite of the default value of the feature
+     *
+     * @param array $features
+     *
+     * @return array
      */
-    private function getFeatureNamesToRemove($features)
+    private function getFeatureNamesToRemove(array $features): array
     {
         $featureNames = [];
 
@@ -1217,7 +1219,7 @@ class Service extends Base\Service
         return $featureNames;
     }
 
-    private function addFeatures($featureNames, bool $shouldSync = false)
+    private function addFeatures(array $featureNames, bool $shouldSync = false)
     {
         $merchant = $this->merchant;
 

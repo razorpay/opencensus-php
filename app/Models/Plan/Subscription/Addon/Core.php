@@ -15,8 +15,8 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::ADDON_CREATE_REQUEST,
             [
-                'input'             => $input,
-                'subscription_id'   => $subscription->getId()
+                'input'                 => $input,
+                Entity::SUBSCRIPTION_ID => $subscription->getId()
             ]);
 
         $addon = (new Entity)->build($input);
@@ -28,7 +28,7 @@ class Core extends Base\Core
 
                 $item = (new Item\Core)->getOrCreateItemForType($input, $merchant, Item\Type::ADDON);
 
-                $this->createAddonAssociations($addon, $merchant, $item, $subscription);
+                $addon->setAssociations($merchant, $item, $subscription);
 
                 $this->repo->saveOrFail($addon);
             });
@@ -36,14 +36,16 @@ class Core extends Base\Core
         return $addon;
     }
 
-    protected function createAddonAssociations(
-        Entity $addon,
-        Merchant\Entity $merchant,
-        Item\Entity $item,
-        Subscription\Entity $subscription)
+    public function delete(Entity $addon)
     {
-        $addon->merchant()->associate($merchant);
-        $addon->item()->associate($item);
-        $addon->subscription()->associate($subscription);
+        $this->trace->info(
+            TraceCode::ADDON_DELETE_REQUEST,
+            [
+                Entity::ID => $addon->getId(),
+            ]);
+
+        $addon->getValidator()->validateDelete();
+
+        return $this->repo->addon->deleteOrFail($addon);
     }
 }
