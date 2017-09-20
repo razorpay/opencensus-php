@@ -38,7 +38,7 @@ const SettlementText = ({ data, transfer, onEdit }) => {
         {data.onHold === 'false'
           ? <span className="text-success">Scheduled</span>
           : data.holdUntil
-            ? <span className="text-warning">
+            ? <span className="text-warning transfer-scheduled-text">
                 Scheduled for&nbsp;
                 <Time value={data.date.toDate() / 1000} format="Do MMM YYYY" />
               </span>
