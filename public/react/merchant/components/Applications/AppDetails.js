@@ -27,7 +27,11 @@ export default function AppDetails(props) {
           <div class="app-icon-container">
             <img
               class="app-icon"
-              src={data.logo_url || 'img/default-app-logo.svg'}
+              src={
+                isConnected
+                  ? data.application.logo_url
+                  : data.logo_url || 'img/default-app-logo.svg'
+              }
               alt=""
             />
           </div>
