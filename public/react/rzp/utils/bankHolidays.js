@@ -42,6 +42,10 @@ const holidays = {
 };
 
 export const isHoliday = date => {
+  /*
+   * @param {Date} date
+   */
+
   if (!(date instanceof Date)) {
     return false;
   }
@@ -72,4 +76,23 @@ export const isHoliday = date => {
   }
 
   return reason;
+};
+
+export const nextWorkingDay = (date, offset = 1) => {
+  let curOffset = 0,
+    nextDate = date;
+
+  if (!(date instanceof Date)) {
+    return null;
+  }
+
+  while (curOffset <= offset) {
+    nextDate = new Date(nextDate.getTime() + 24 * 60 * 60 * 1000);
+
+    if (!isHoliday(nextDate)) {
+      curOffset += 1;
+    }
+  }
+
+  return nextDate;
 };

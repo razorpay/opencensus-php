@@ -11,7 +11,7 @@ import RadioButton from 'rzp/ui/Forms/RadioButton';
 import Spinner from 'rzp/ui/Spinner';
 import Time from 'rzp/ui/Time';
 import { SingleDatePicker } from 'react-dates';
-import { isHoliday } from 'rzp/utils/bankHolidays';
+import { nextWorkingDay, isHoliday } from 'rzp/utils/bankHolidays';
 
 import EntityDetailRow from 'merchant/components/EntityDetailRow';
 import Fee from 'merchant/components/Fee';
@@ -102,7 +102,7 @@ export default class TransferDetails extends Component {
       data.on_hold = 1;
 
       if (this.state.onHold === 'on_hold_until') {
-        data.on_hold_until = this.state.holdUntil || null;
+        data.on_hold_until = this.state.holdUntil;
       }
     } else {
       data.on_hold = 0;
@@ -137,6 +137,8 @@ export default class TransferDetails extends Component {
       reversals,
       onClose,
     } = this.props;
+
+    const nextWorkingDate = nextWorkingDay(moment().startOf('day').toDate(), 3);
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -197,7 +199,7 @@ export default class TransferDetails extends Component {
                       />}
                   />
 
-                  <EntityDetailRow label="On Hold">
+                  <EntityDetailRow label="Settlement">
                     {this.state.editView
                       ? <form
                           onSubmit={this.onSubmit}
@@ -229,18 +231,10 @@ export default class TransferDetails extends Component {
                               numberOfMonths={1}
                               disabled={this.state.onHold !== 'on_hold_until'}
                               isDayBlocked={date => {
-                                const dateWithOffset = moment()
-                                    .startOf('day')
-                                    .add(3, 'days')
-                                    .toDate(),
-                                  currDate = date
-                                    .clone()
-                                    .startOf('day')
-                                    .toDate();
+                                date = date.clone().startOf('day').toDate();
 
                                 return (
-                                  currDate < dateWithOffset ||
-                                  isHoliday(date.toDate())
+                                  date < nextWorkingDate || isHoliday(date)
                                 );
                               }}
                               date={this.state.date}
@@ -342,6 +336,11 @@ export default class TransferDetails extends Component {
                             {'change'}
                           </a>
                         </span>}
+                    {this.state.onHold === 'false' &&
+                      <div className="text-fade">
+                        Transfers scheduled to settle on bank holidays will get
+                        settled on the next working day.
+                      </div>}
                   </EntityDetailRow>
 
                   <EntityDetailRow

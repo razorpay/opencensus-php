@@ -19,7 +19,7 @@ import { fetchAccounts } from 'merchant/modules/marketplace/accounts';
 import FormItem from 'merchant/components/FormItem';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
 import { createTransfer } from 'merchant/modules/marketplace/transfer';
-import { isHoliday } from 'rzp/utils/bankHolidays';
+import { isHoliday, nextWorkingDay } from 'rzp/utils/bankHolidays';
 import RadioButton from 'rzp/ui/Forms/RadioButton';
 
 let Label = ({ text, htmlFor, required }) => {
@@ -129,7 +129,7 @@ export default class TransferNew extends Component {
       holdData.on_hold = 1;
 
       if (this.props.onHold === 'on_hold_until') {
-        holdData.on_hold_until = this.props.holdUntil || null;
+        holdData.on_hold_until = this.props.holdUntil;
       }
     } else {
       holdData.on_hold = 0;
@@ -195,6 +195,8 @@ export default class TransferNew extends Component {
 
   render() {
     const { handleSubmit, invalid, plan, accounts } = this.props;
+
+    const nextWorkingDate = nextWorkingDay(moment().startOf('day').toDate(), 3);
 
     return (
       <div class="content-wrapper content-sm txn-details">
@@ -314,16 +316,9 @@ export default class TransferNew extends Component {
                         required
                         disabled={this.props.onHold !== 'on_hold_until'}
                         isDayBlocked={date => {
-                          const dateWithOffset = moment()
-                              .startOf('day')
-                              .add(3, 'days')
-                              .toDate(),
-                            currDate = date.clone().startOf('day').toDate();
+                          date = date.clone().startOf('day').toDate();
 
-                          return (
-                            currDate < dateWithOffset ||
-                            isHoliday(date.toDate())
-                          );
+                          return date < nextWorkingDate || isHoliday(date);
                         }}
                       />
                     </div>
