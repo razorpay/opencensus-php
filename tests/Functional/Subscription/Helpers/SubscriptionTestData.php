@@ -317,7 +317,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Delete operation cannot be performed on the addon',
+                    'description' => 'Delete operation cannot be performed on the addon.',
                 ],
             ],
             'status_code' => 400,

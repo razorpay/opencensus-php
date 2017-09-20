@@ -521,7 +521,12 @@ trait Authorize
 
         $subscription = $payment->subscription;
 
-        if ($subscription->isTerminalStatus() === true)
+        //
+        // Allow manual charge of older invoices, even when subscription is in terminal state
+        // TODO: Rethink, won't work for S2S payments which are always in private auth
+        //
+        if (($subscription->isTerminalStatus() === true) and
+            ($this->app['basicauth']->isPrivateAuth() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_IN_TERMINAL_STATE,
@@ -572,7 +577,8 @@ trait Authorize
                     ]);
             }
 
-            if (empty($input[Payment\Entity::APP_TOKEN]) === true)
+            if (($subscription->isGlobal() === true) and
+                (empty($input[Payment\Entity::APP_TOKEN]) === true))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_APP_TOKEN_ABSENT,
@@ -585,14 +591,26 @@ trait Authorize
         }
         else
         {
+            $subscriptionPublicTokenId = Token\Entity::getSignedId($subscription->getTokenId());
+
             //
             // For an authenticated subscription, if it's not a card change flow,
-            // there should be no card or token details in the input.
+            // there should be no card details in the input.
+            // Token would be there in the input for recurring charge. But, it would
+            // be the same as the token associated with the subscription.
             //
             if ((empty($input[Payment\Entity::CARD]) === false) or
-                (empty($input[Payment\Entity::TOKEN]) === false))
+                ((isset($input[Payment\Entity::TOKEN]) === true) and
+                 ($subscriptionPublicTokenId !== $input[Payment\Entity::TOKEN])))
             {
-                // TODO: Throw an exception
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_SUBSCRIPTION_ALREADY_AUTHENTICATED,
+                    null,
+                    [
+                        'subscription_id'       => $subscription->getId(),
+                        'card_details'          => (empty($input[Payment\Entity::CARD]) === false),
+                        'subscription_token_id' => $subscription->getTokenId(),
+                    ]);
             }
         }
 
@@ -2077,7 +2095,11 @@ trait Authorize
             // after capture, we should not roll back the capture status and other
             // operations that we would have done as part of capture.
             //
-            // TODO: Add a comment explaining why it's not in capture flow and is outside of it.
+            // We have lot of logic around when to auto-capture and when not to.
+            // This is difficult to write in the current auto-capture function.
+            // Based on whether to auto-capture or not, we also do auto-refund.
+            // In the normal flow, we throw an exception if capture fails for
+            // any reason. But, here, we catch the exception.
             //
 
             if ($payment->hasSubscription() === false)
@@ -2429,11 +2451,12 @@ trait Authorize
             $invoice = $payment->invoice;
 
             //
-            // TODO: Below two lines should be in a transaction since
+            // TODO: These two lines should be in a transaction since
             // `updateSubscriptionDetails` updates and saves schedule also.
             // `handleCaptureSuccess` will be saving subscription, invoice, task.
-            //
-
+            // But, we can't put them in a transaction because handleCaptureSuccess
+            // does lot of webhook related stuff and all webhooks need to be outside
+            // of transactions.
             //
             // If this is auth txn charge, it means that start_at was null. This,
             // in turn, means that some fields were not filled when the subscription

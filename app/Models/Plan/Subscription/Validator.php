@@ -151,7 +151,7 @@ class Validator extends Base\Validator
         //
         $traceCode = '';
 
-        if ($subscription->isTerminalStatus() === true)
+        if (($subscription->isTerminalStatus() === true) and ($manual === false))
         {
             $traceCode = TraceCode::SUBSCRIPTION_NOT_IN_CHARGEABLE_STATE;
 
@@ -189,19 +189,6 @@ class Validator extends Base\Validator
     public function validateTestSubscriptionChargeable()
     {
         $subscription = $this->entity;
-
-        $app = App::getFacadeRoot();
-
-        if ($app['rzp.mode'] !== Mode::TEST)
-        {
-            throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_SUBSCRIPTION_NOT_CHARGEABLE_IN_LIVE_MODE,
-                null,
-                [
-                    'subscription_id' => $subscriptionId,
-                    'input'           => $input,
-                ]);
-        }
 
         if (($subscription->hasEnded() === true) or
             ($subscription->isManualTestChargeableStatus() === false))

@@ -155,13 +155,28 @@ class Checkout
         if (($cardChange === false) and
             ($subscription->hasBeenAuthenticated() === true))
         {
-            // TODO: Throw an exception
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_ALREADY_AUTHENTICATED,
+                null,
+                [
+                    self::SUBSCRIPTION_ID   => $input[self::SUBSCRIPTION_ID],
+                    'merchant_id'           => $merchant->getId(),
+                    'card_change'           => $cardChange
+                ]);
         }
 
         if (($cardChange === true) and
             ($subscription->isCardChangeStatus() === false))
         {
-            // TODO: Throw an exception
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_CARD_CHANGE_NOT_ALLOWED,
+                null,
+                [
+                    'subscription_id'       => $input[self::SUBSCRIPTION_ID],
+                    'subscription_status'   => $subscription->getStatus(),
+                    'merchant_id'           => $merchant->getId(),
+                    'card_change'           => $cardChange
+                ]);
         }
 
         $data['subscription'] = (new Subscription\Core)->getFormattedSubscriptionData($subscription, $cardChange);

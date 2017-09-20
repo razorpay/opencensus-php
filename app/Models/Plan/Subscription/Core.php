@@ -160,6 +160,17 @@ class Core extends Base\Core
                 'input'           => $input,
             ]);
 
+        if ($this->mode !== Constants\Mode::TEST)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_OPERATION_NOT_ALLOWED_IN_LIVE,
+                null,
+                [
+                    'operation'         => 'subscription_charge',
+                    'subscription_id'   => $subscription->getId(),
+                ]);
+        }
+
         $subscription->getValidator()->validateInput('manual_test_charge', $input);
 
         $input['queue'] = false;
@@ -315,11 +326,17 @@ class Core extends Base\Core
         // webhook passes through. Even in tests.
         // This is applicable for all webhooks and
         // not just subscription webhooks.
-        // CREATE AN ISSUE FOR THIS!
+        // An issue in API has been created for this.
         //
-        if ($this->repo->isTransactionActive())
+        if ($this->repo->isTransactionActive() === true)
         {
-            // TODO: Throw an exception
+            throw new LogicException(
+                'Webhook fired inside a transaction',
+                ErrorCode::SERVER_ERROR_WEBHOOK_IN_TRANSACTION,
+                [
+                    'subscription_id'   => $subscription->getId(),
+                    'status'            => $status
+                ]);
         }
 
         $event = Status::$webhookStatuses[$status];
@@ -544,7 +561,7 @@ class Core extends Base\Core
     public function cancel(Entity $subscription, array $input): Entity
     {
         $this->trace->info(
-            TraceCode::SUBSCRIPTION_CANCEL,
+            TraceCode::SUBSCRIPTION_CANCEL_REQUEST,
             [
                 'subscription_id'   => $subscription->getId(),
                 'input'             => $input,
@@ -556,7 +573,7 @@ class Core extends Base\Core
 
         $validator->validateInput(Validator::CANCEL, $input);
 
-        return $this->mutex->acquireAndRelease(
+        $subscription = $this->mutex->acquireAndRelease(
             $subscription->getId(),
             function () use ($subscription, $input)
             {
@@ -589,6 +606,15 @@ class Core extends Base\Core
             self::MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_SUBSCRIPTION_ANOTHER_OPERATION_IN_PROGRESS
         );
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_CANCELLED,
+            [
+                'subscription_id'   => $subscription->getId(),
+                'input'             => $input,
+            ]);
+
+        return $subscription;
     }
 
     protected function setupCancelAtCycleEnd(Entity $subscription, bool $cancelAtCycleEnd)

@@ -4,6 +4,7 @@ namespace RZP\Models\Plan\Subscription;
 
 use App;
 
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Base\RepositoryManager;
 use RZP\Exception\LogicException;
@@ -174,13 +175,13 @@ class Charge extends Base\Core
                 'task_details'         => $task->toArray(),
             ]);
 
-        if ($subscription->isLatestInvoiceForSubscription($invoice) === true)
+        if ($subscription->shouldUpdateWithInvoiceCharge($invoice) === true)
         {
-            $this->handleCaptureSuccessForLatestInvoice($subscription, $capturedPayment, $invoice, $task);
+            $this->handleCaptureSuccessAndUpdateSubscription($subscription, $capturedPayment, $invoice, $task);
         }
         else
         {
-            $this->handleCaptureSuccessForOlderInvoice($subscription, $capturedPayment, $invoice, $task);
+            $this->handleCaptureSuccessWithoutUpdatingSubscription($subscription, $capturedPayment, $invoice, $task);
         }
 
         $this->trace->info(
@@ -192,7 +193,7 @@ class Charge extends Base\Core
             ]);
     }
 
-    protected function handleCaptureSuccessForLatestInvoice(
+    protected function handleCaptureSuccessAndUpdateSubscription(
         Entity $subscription,
         Payment\Entity $capturedPayment,
         Invoice\Entity $invoice,
@@ -208,9 +209,17 @@ class Charge extends Base\Core
         //  - pending
         //
 
-        if (in_array($oldStatus, [Status::AUTHENTICATED, Status::ACTIVE, Status::PENDING], true) === false)
+        if (in_array($oldStatus, Status::$latestInvoiceStatuses, true) === false)
         {
-            // TODO: Throw an exception
+            throw new LogicException(
+                'Should have never reached here. Should have been caught much before in the flow',
+                ErrorCode::SERVER_ERROR_SUBSCRIPTION_INVOICE_BAD_STATUS,
+                [
+                    'subscription_id'       => $subscription->getId(),
+                    'subscription_status'   => $subscription->getStatus(),
+                    'captured_payment_id'   => $capturedPayment->getId(),
+                    'invoice_id'            => $invoice->getId(),
+                ]);
         }
 
         $subscription->setStatus(Status::ACTIVE);
@@ -332,11 +341,20 @@ class Charge extends Base\Core
 
                 break;
             default:
-                // TODO: Throw an exception
+                throw new LogicException(
+                    'Subscription moved to an unexpected status',
+                    ErrorCode::SERVER_ERROR_SUBSCRIPTION_WRONG_STATUS_UPDATE,
+                    [
+                        'subscription_id'   => $subscription->getId(),
+                        'old_status'        => $oldStatus,
+                        'new_status'        => $updatedStatus,
+                        'invoice_id'        => $invoice->getId(),
+                        'payment_id'        => $capturedPayment->getId(),
+                    ]);
         }
     }
 
-    protected function handleCaptureSuccessForOlderInvoice(
+    protected function handleCaptureSuccessWithoutUpdatingSubscription(
         Entity $subscription,
         Payment\Entity $capturedPayment,
         Invoice\Entity $invoice,
@@ -354,13 +372,17 @@ class Charge extends Base\Core
         //  - completed
         //
 
-        if (in_array(
-                $oldStatus,
-                [Status::ACTIVE, Status::PENDING, Status::HALTED, Status::CANCELLED, Status::COMPLETED],
-                true
-            ) === false)
+        if (in_array($oldStatus, Status::$oldInvoiceStatuses, true) === false)
         {
-            // TODO: Throw an exception
+            throw new LogicException(
+                'Should have never reached here. Should have been caught much before in the flow',
+                ErrorCode::SERVER_ERROR_SUBSCRIPTION_INVOICE_BAD_STATUS,
+                [
+                    'subscription_id'       => $subscription->getId(),
+                    'subscription_status'   => $subscription->getStatus(),
+                    'captured_payment_id'   => $capturedPayment->getId(),
+                    'invoice_id'            => $invoice->getId(),
+                ]);
         }
 
         if ($subscription->isHalted() === true)
@@ -432,7 +454,16 @@ class Charge extends Base\Core
 
                 break;
             default:
-                // TODO: Throw an exception
+                throw new LogicException(
+                    'Subscription moved to an unexpected status',
+                    ErrorCode::SERVER_ERROR_SUBSCRIPTION_WRONG_STATUS_UPDATED_FROM,
+                    [
+                        'subscription_id'   => $subscription->getId(),
+                        'old_status'        => $oldStatus,
+                        'new_status'        => $subscription->getStatus(),
+                        'invoice_id'        => $invoice->getId(),
+                        'payment_id'        => $capturedPayment->getId(),
+                    ]);
         }
     }
 
@@ -531,40 +562,47 @@ class Charge extends Base\Core
         // completed as required.
         //
 
-        if ($updatedStatus === Status::PENDING)
+        switch($updatedStatus)
         {
-            $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
+            case Status::PENDING:
+                $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
 
-            $core->fireWebhookForStatusUpdate($subscription, Status::PENDING, $payment);
-        }
-        else if ($updatedStatus === Status::HALTED)
-        {
-            $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
+                $core->fireWebhookForStatusUpdate($subscription, Status::PENDING, $payment);
 
-            $core->fireWebhookForStatusUpdate($subscription, Status::HALTED, $payment);
-        }
-        else if ($updatedStatus === Status::COMPLETED)
-        {
-            $currentEndedAt = $subscription->getEndedAt();
+                break;
+            case Status::HALTED:
+                $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
 
-            $subscription->setStatus(Status::HALTED);
-            $subscription->setEndedAt(null);
+                $core->fireWebhookForStatusUpdate($subscription, Status::HALTED, $payment);
 
-            $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
+                break;
+            case Status::COMPLETED:
+                $currentEndedAt = $subscription->getEndedAt();
 
-            $core->fireWebhookForStatusUpdate($subscription, Status::HALTED, $payment);
+                $subscription->setStatus(Status::HALTED);
+                $subscription->setEndedAt(null);
 
-            $subscription->setStatus(Status::COMPLETED);
-            $subscription->setEndedAt($currentEndedAt);
+                $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
 
-            $this->repo->saveOrFail($subscription);
+                $core->fireWebhookForStatusUpdate($subscription, Status::HALTED, $payment);
 
-            $core->fireWebhookForStatusUpdate($subscription, Status::COMPLETED, $payment);
-        }
-        else
-        {
-            // TODO: Throw an exception. At this stage, the subscription status
-            // should always be either pending, halted or completed only.
+                $subscription->setStatus(Status::COMPLETED);
+                $subscription->setEndedAt($currentEndedAt);
+
+                $this->repo->saveOrFail($subscription);
+
+                $core->fireWebhookForStatusUpdate($subscription, Status::COMPLETED, $payment);
+
+                break;
+            default:
+                throw new LogicException(
+                    'Subscription moved to an unexpected status',
+                    ErrorCode::SERVER_ERROR_SUBSCRIPTION_WRONG_STATUS_UPDATE,
+                    [
+                        'subscription_id'   => $subscription->getId(),
+                        'new_status'        => $updatedStatus,
+                        'invoice_id'        => $invoice->getId(),
+                    ]);
         }
     }
 

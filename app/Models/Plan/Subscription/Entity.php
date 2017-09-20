@@ -6,6 +6,8 @@ use App;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Models\Plan;
 use RZP\Models\Invoice;
@@ -265,7 +267,13 @@ class Entity extends Base\PublicEntity
 
         if ($invoiceCount > $this->getTotalCount())
         {
-            // TODO: Throw an exception
+            throw new LogicException(
+                'Invoice count more than subscription total count defined',
+                ErrorCode::SERVER_ERROR_SUBSCRIPTION_INVOICE_COUNT_MISMATCH_TOTAL_COUNT,
+                [
+                    'invoice_count'     => $invoiceCount,
+                    'subscription_id'   => $this->getId(),
+                ]);
         }
 
         return $invoiceCount;
@@ -439,6 +447,35 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * Subscription time fields are only to be updated under certain conditions
+     * - Latest invoice of a subscription is being charged
+     * -         AND
+     * - Subscription is not in terminal/halted state
+     *
+     * @param  Invoice\Entity $invoice [description]
+     * @return [type]                  [description]
+     */
+    public function shouldUpdateWithInvoiceCharge(Invoice\Entity $invoice)
+    {
+        $shouldUpdate = $this->isLatestInvoiceForSubscription($invoice);
+
+        //
+        // TODO: If the cycle is 1st jan to 1st feb and then 1st feb to 1st march. It moved to halted on 4th feb.
+        // Current cycle is still 1st feb to 1st march. latest invoice will also be 1st feb to 1st march.
+        // but in case of halted, no invoice is latest. all are old.
+        //
+        // Subscriptions in terminal state are not to be updated.
+        //
+        if (($this->isTerminalStatus() === true) or
+            ($this->getStatus() === Status::HALTED))
+        {
+            $shouldUpdate = false;
+        }
+
+        return $shouldUpdate;
+    }
+
+    /**
      * Checks if invoice is the latest one generated for the subscription.
      * This would be the case if the invoice billing period matches that
      * of the subscription, which is always current.
@@ -446,7 +483,7 @@ class Entity extends Base\PublicEntity
      * @param  Invoice\Entity $invoice
      * @return boolean
      */
-    public function isLatestInvoiceForSubscription(Invoice\Entity $invoice)
+    protected function isLatestInvoiceForSubscription(Invoice\Entity $invoice)
     {
         $isLatest = false;
 
@@ -454,13 +491,6 @@ class Entity extends Base\PublicEntity
             ($this->getCurrentEnd() === $invoice->getBillingEnd()))
         {
             $isLatest = true;
-        }
-
-        // If subscription is halted, all invoices are old invoices
-        // TODO Clean this up, function name is currently a lie
-        if ($this->getStatus() === Status::HALTED)
-        {
-            $isLatest = false;
         }
 
         return $isLatest;

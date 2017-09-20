@@ -394,6 +394,8 @@ class SubscriptionCardsTest extends TestCase
         $this->assertEquals($globalCust['id'], 'cust_' . $customer['global_customer_id']);
         $this->assertEquals($globalCust['email'], $customer['email']);
         $this->assertEquals($globalCust['contact'], $customer['contact']);
+
+        Carbon::setTestNow();
     }
 
     public function testPaymentFirst2FaGlobalNewCard()
@@ -425,6 +427,8 @@ class SubscriptionCardsTest extends TestCase
         $this->assertEquals($globalCust['id'], 'cust_' . $customer['global_customer_id']);
         $this->assertEquals($globalCust['email'], $customer['email']);
         $this->assertEquals($globalCust['contact'], $customer['contact']);
+
+        Carbon::setTestNow();
     }
 
     public function testPaymentSecond2FaGlobalSavedCard()
@@ -484,6 +488,8 @@ class SubscriptionCardsTest extends TestCase
         $this->assertEquals($customer['id'], $subscription['customer_id']);
         $this->assertEquals(1, $subscription2['paid_count']);
         $this->assertEquals('active', $subscription2['status']);
+
+        Carbon::setTestNow();
     }
 
     public function testPaymentSecond2FaGlobalNewCard()
@@ -545,6 +551,8 @@ class SubscriptionCardsTest extends TestCase
         $this->assertEquals('active', $subscription2['status']);
 
         $this->assertEquals($customer2['id'], 'cust_' . $customer['global_customer_id']);
+
+        Carbon::setTestNow();
     }
 
     public function testPaymentChargeGlobalSavedCard()

@@ -106,19 +106,32 @@ class Status
         self::PENDING,
     ];
 
-    // TODO: Pending can probably be added here as well. Implication is that
-    // the merchant can charge an invoice for a subscription that is currently
-    // failing, and doesn't have to wait till the next run of the retry cron.
     public static $invoiceManualChargeableStatuses = [
         self::ACTIVE,
         self::PENDING,
         self::HALTED,
+        self::COMPLETED,
+        self::CANCELLED
     ];
 
     public static $terminalStatuses = [
         self::EXPIRED,
         self::CANCELLED,
         self::COMPLETED,
+    ];
+
+    public static $latestInvoiceStatuses = [
+        self::AUTHENTICATED,
+        self::ACTIVE,
+        self::PENDING
+    ];
+
+    public static $oldInvoiceStatuses = [
+        self::ACTIVE,
+        self::PENDING,
+        self::HALTED,
+        self::CANCELLED,
+        self::COMPLETED
     ];
 
     public static function isStatusValid($status) : bool

@@ -172,20 +172,9 @@ class SubscriptionCancelTest extends TestCase
 
         Carbon::setTestNow();
 
-        try
-        {
-            $this->chargeSubscriptionInvoiceManually($invoice);
-        }
-        catch (BadRequestException $ex)
-        {
-            $this->assertEquals('BAD_REQUEST_SUBSCRIPTION_NOT_IN_ACTIVE_OR_HALTED_STATE', $ex->getCode());
+        $this->chargeSubscriptionInvoiceManually($invoice);
 
-            Carbon::setTestNow();
-
-            return;
-        }
-
-        $this->assertTrue(false);
+        $this->assertEquals('paid', $invoice['status']);
 
         Carbon::setTestNow();
     }
