@@ -192,7 +192,7 @@ export default ({
                     subscription.total_count &&
                     `${subscription.paid_count} of ${subscription.total_count} invoices charged`
                   }
-                  moreAfterlimit={2}
+                  moreAfterlimit={3}
                   error={invoices.error}
                   items={invoices.items}
                   activeSecEntityId={activeSecEntityId}
