@@ -280,7 +280,7 @@ class Core extends Base\Core
 
         if ($cardChange === true)
         {
-            $authAmount = $this->getAuthTransactionAmountForCardChange();
+            $authAmount = $this->getAuthTransactionAmountForCardChange($subscription);
         }
         else if ($subscription->isCreated() === true)
         {

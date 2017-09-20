@@ -113,6 +113,8 @@ class Status
         self::ACTIVE,
         self::PENDING,
         self::HALTED,
+        self::COMPLETED,
+        self::CANCELLED
     ];
 
     public static $terminalStatuses = [

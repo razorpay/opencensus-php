@@ -451,8 +451,14 @@ class Entity extends Base\PublicEntity
             $isLatest = true;
         }
 
+        //
         // If subscription is halted, all invoices are old invoices
-        // TODO Clean this up, function name is currently a lie
+        // TODO: Clean this up, function name is currently a lie
+        //
+        // TODO: If the cycle is 1st jan to 1st feb and then 1st feb to 1st march. It moved to halted on 4th feb.
+        // Current cycle is still 1st feb to 1st march. latest invoice will also be 1st feb to 1st march.
+        // but in case of halted, no invoice is latest. all are old.
+        //
         if ($this->getStatus() === Status::HALTED)
         {
             $isLatest = false;
