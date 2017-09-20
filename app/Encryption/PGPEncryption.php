@@ -19,11 +19,23 @@ class PGPEncryption extends IEncryption
         parent::__construct($params);
 
         $this->secret = $params[self::SECRET];
+
+        if (isset($params[self::PUBLIC_KEY]) === true)
+        {
+            $this->publicKey = $params[self::PUBLIC_KEY];
+        }
+
+        if (isset($params[self::PRIVATE_KEY]) === true)
+        {
+            $this->privateKey = $params[self::PRIVATE_KEY];
+        }
     }
 
     public function encrypt(string $data) : string
     {
-        $res = $this->initializeGnupg();
+        $res = gnupg_init();
+
+        gnupg_import($res, $this->publicKey);
 
         gnupg_addencryptkey($res, $this->secret);
 
@@ -39,7 +51,9 @@ class PGPEncryption extends IEncryption
 
     public function decrypt(string $data) : string
     {
-        $res = $this->initializeGnupg();
+        $res = gnupg_init();
+
+        gnupg_import($res, $this->privateKey);
 
         gnupg_adddecryptkey($res, $this->secret);
 
@@ -51,17 +65,6 @@ class PGPEncryption extends IEncryption
         }
 
         return $dec;
-    }
-
-    protected function initializeGnupg()
-    {
-        $res = gnupg_init();
-
-        gnupg_import($res, $this->publicKey);
-
-        gnupg_import($res, $this->privateKey);
-
-        return $res;
     }
 
     protected function validateParams(array $params)
