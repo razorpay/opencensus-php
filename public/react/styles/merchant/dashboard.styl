@@ -219,7 +219,27 @@
 
 // Onboarding Card
 
-.onboarding-card.media {
+.has-on-boarding {
+  
+  .onboarding-card.media.new-features {
+    > .media-left {
+      display: none;
+    }
+
+    > .media-body {
+      max-width: 100%;
+      width: 100%;
+      padding: 12px;
+    }
+
+    div.new-products-row {
+
+      height: 140px;
+    }
+  }
+}
+
+.onboarding-card.media { 
   background-color: #fff;
   margin-bottom: 20px;
   box-shadow: 0 0 8px 0 rgba(0,0,0,0.16);
