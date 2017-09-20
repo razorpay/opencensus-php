@@ -219,23 +219,13 @@
 
 // Onboarding Card
 
-.has-on-boarding {
-  
-  .onboarding-card.media.new-features {
-    > .media-left {
-      display: none;
-    }
-
-    > .media-body {
-      max-width: 100%;
-      width: 100%;
-      padding: 12px;
-    }
-
-    div.new-products-row {
-
-      height: 140px;
-    }
+.media.onboarding-card.new-features {
+  > .media-body {
+    max-width: 100%;
+    padding: 24px;
+  }
+  div.new-products-row {
+    height: 140px;
   }
 }
 
@@ -582,14 +572,7 @@ div.data-table.has-panel {
   }
 }
 
-@media (max-width: 1192px) {
-  div.new-products-row {
-
-    height: 170px !important;
-  }
-}
-
-@media (max-width: 1150px) {
+@media (max-width: 996px) {
   div.new-products-row {
     height: auto !important;
 

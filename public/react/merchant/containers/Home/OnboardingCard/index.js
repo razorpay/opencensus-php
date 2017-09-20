@@ -27,7 +27,13 @@ const NewProducts = () => {
               <div className="text-small m-b">
                 {product.description}
               </div>
-              <Link to={product.link}>Activate</Link>
+              <div className="links">
+                <Link to={product.link}>Get Started</Link>
+                <span className="text-fade">&nbsp;•&nbsp;</span>
+                <a href={product.help} target="_blank">
+                  Learn More
+                </a>
+              </div>
             </MediaCard>
           </div>
         )}
@@ -138,7 +144,7 @@ export default class OnboardingCard extends Component {
       }
     }
     return (
-      <div className={`${FirstStep ? 'has-on-boarding' : ''}`}>
+      <div>
         {FirstStep &&
           <div
             class={`media onboarding-card ${isFirstStep ? 'first-step' : ''}`}
@@ -150,9 +156,6 @@ export default class OnboardingCard extends Component {
           </div>}
         {isOldUser &&
           <div class={`media onboarding-card new-features`}>
-            <div class="media-left">
-              <img class="media-object" src={OnboardingIllustrationPNG} />
-            </div>
             <NewProducts />
           </div>}
       </div>
