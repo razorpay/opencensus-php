@@ -213,6 +213,6 @@ class EmiFile extends Base\Core
     //Should be implemented in child class
     protected function getEncryptionParams()
     {
-
+        return [];
     }
 }
