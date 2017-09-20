@@ -59,27 +59,29 @@ app.controller('MerchantActivationCtrl', [
     };
 
     function getData() {
-      var request = $http.get(
-        '/admin/merchant/' + $scope.merchant.id + '/details'
-      );
+      var data = {
+        route_name: 'merchant_details_fetch',
+        account_id: $scope.merchant.id,
+        merchant_id: $scope.merchant.id,
+      };
+      var request = $http.get('/admin/generic', {
+        params: data,
+      });
       request
         .success(function(data) {
           if (data.success) {
-            angular.forEach(data.data.merchant.steps_finished, function(
+            angular.forEach(data.data.merchant_details.steps_finished, function(
               value,
               key
             ) {
               $scope.check[value] = true;
             });
-            angular.forEach(data.data.merchant.merchant_details, function(
-              value,
-              key
-            ) {
+            angular.forEach(data.data.merchant_details, function(value, key) {
               $scope.data[key] = value;
             });
-            angular.forEach(data.data.activation.files, function(value, key) {
-              $scope.files[key] = value;
-            });
+            // angular.forEach(data.data.activation.files, function(value, key) {
+            //   $scope.files[key] = value;
+            // });
             $scope.merchant = data.data.merchant;
             $scope.locked = $scope.data['locked'];
           } else {
