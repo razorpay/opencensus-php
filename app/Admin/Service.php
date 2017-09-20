@@ -363,7 +363,7 @@ class Service extends Base\Service
 
         $data = [
             'activation' => $activationDetails,
-            'merchant'   => $details
+            'merchant'   => $details,
         ];
 
         return [[], $data];
