@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Customer;
 
+use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Address;
@@ -384,10 +385,19 @@ class Core extends Base\Core
 
         $ba = $this->app['basicauth'];
 
-        if ($ba->isPrivilegeAuth() === true)
+        //
+        // In case of internal auth/ crons,
+        // there will not be any app_token.
+        // Also, in case of subscriptions, we have a charge route (in test mode)
+        // (which is generally used by our crons)
+        // which is hit from the dashboard. We do not expect to
+        // have app_token here just like how we don't expect in
+        // privilege (cron) auth.
+        //
+        if (($ba->isPrivilegeAuth() === true) or
+            (($ba->isProxyAuth() === true) and
+             ($this->mode === Mode::TEST)))
         {
-            // In case of internal auth/ crons,
-            // there will not be any app_token.
             return [$customer, null];
         }
 
