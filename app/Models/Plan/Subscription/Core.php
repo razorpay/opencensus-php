@@ -651,6 +651,8 @@ class Core extends Base\Core
                 ]);
         }
 
+        $oldStatus = $subscription->getStatus();
+
         $subscription->setCancelAt($currentCycleEnd);
 
         $subscription->setCancelledAt($currentTime);

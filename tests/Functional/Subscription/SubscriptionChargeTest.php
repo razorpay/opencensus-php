@@ -657,7 +657,7 @@ class SubscriptionChargeTest extends TestCase
     public function testSubscriptionFailChargeAndChargeInvoiceManually()
     {
         // Skipped, till manual charge of invoices for pending subscriptions is allowed.
-        $this->markTestSkipped('Cannot manually charge invoice for pending subscription.');
+        // $this->markTestSkipped('Cannot manually charge invoice for pending subscription.');
 
         $subscription = $this->failSubscriptionFirstCharge();
         $oldSubcription = $subscription;

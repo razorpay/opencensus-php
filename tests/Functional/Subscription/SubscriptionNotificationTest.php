@@ -59,11 +59,6 @@ class SubscriptionNotificationTest extends TestCase
         Mail::assertNothingSent();
     }
 
-    public function testSubscriptionAuthenticatedMailSentAuthAmountMail()
-    {
-        $this->doAuthTxnForSubscriptionWithAddOn();
-    }
-
     public function testSubscriptionAuthenticatedMailSentAuthAmount()
     {
         Mail::fake();
@@ -76,6 +71,10 @@ class SubscriptionNotificationTest extends TestCase
 
             $this->assertEquals('authenticated', $data['subscription']['status']);
             $this->assertEquals(0, $data['subscription']['type']);
+            $this->assertEquals('20 Jan 2018', $data['subscription']['charge_at']);
+
+            $this->assertEquals('test plan', $data['plan_item']['name']);
+            $this->assertEquals('Some item description', $data['plan_item']['description']);
 
             $this->assertEquals('10000000000000', $data['merchant']['id']);
 
@@ -86,6 +85,7 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertEquals('₹ 5', $data['payment']['amount']);
             $this->assertContains('Card', $data['payment']['method']);
             $this->assertContains('XXXX-XXXX-XXXX-3335', $data['payment']['method']);
+            $this->assertNull($data['payment']['captured_at']);
 
             $this->assertEquals('#C15482', $data['card']['color']);
             $this->assertContains('12/2017', $data['card']['expiry']);
@@ -93,7 +93,7 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertContains('**** **** **** 3335', $data['card']['number']);
 
             $this->assertEquals(false, $data['options']['immediate']);
-            $this->assertEquals(false, $data['options']['upfront']);
+            $this->assertEquals(true, $data['options']['auto_refund']);
 
             return true;
         });
@@ -114,6 +114,9 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertEquals('active', $data['subscription']['status']);
             $this->assertEquals(1, $data['subscription']['type']);
 
+            $this->assertEquals('test plan', $data['plan_item']['name']);
+            $this->assertEquals('Some item description', $data['plan_item']['description']);
+
             $this->assertEquals('10000000000000', $data['merchant']['id']);
 
             $this->assertEquals('test@razorpay.com', $data['customer']['email']);
@@ -123,6 +126,7 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertEquals('₹ 20', $data['payment']['amount']);
             $this->assertContains('Card', $data['payment']['method']);
             $this->assertContains('XXXX-XXXX-XXXX-3335', $data['payment']['method']);
+            $this->assertNotNull($data['payment']['captured_at']);
 
             $currentStart = Carbon::createFromTimestamp($subscription['current_start'], Timezone::IST)->format('j M Y');
             $currentEnd   = Carbon::createFromTimestamp($subscription['current_end'], Timezone::IST)->format('j M Y');
@@ -136,7 +140,7 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertContains('**** **** **** 3335', $data['card']['number']);
 
             $this->assertEquals(true, $data['options']['immediate']);
-            $this->assertEquals(false, $data['options']['upfront']);
+            $this->assertEquals(false, $data['options']['auto_refund']);
 
             return true;
         });
@@ -174,7 +178,7 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertContains('**** **** **** 3335', $data['card']['number']);
 
             $this->assertEquals(false, $data['options']['immediate']);
-            $this->assertEquals(true, $data['options']['upfront']);
+            $this->assertEquals(false, $data['options']['auto_refund']);
 
             return true;
         });
@@ -217,7 +221,7 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertContains('**** **** **** 3335', $data['card']['number']);
 
             $this->assertEquals(true, $data['options']['immediate']);
-            $this->assertEquals(true, $data['options']['upfront']);
+            $this->assertEquals(false, $data['options']['auto_refund']);
 
             return true;
         });
