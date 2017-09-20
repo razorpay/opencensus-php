@@ -186,6 +186,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_EDIT                                 = 'TERMINAL_EDIT';
     const TERMINAL_ENABLE                               = 'TERMINAL_ENABLE';
     const TERMINAL_DISABLE                              = 'TERMINAL_DISABLE';
+    const TERMINAL_AUTO_DISABLE                         = 'TERMINAL_AUTO_DISABLE';
     const TERMINAL_FAIL_SORT                            = 'TERMINAL_FAIL_SORT';
     const TERMINAL_BOOST_INVALID                        = 'TERMINAL_BOOST_INVALID';
     const TERMINAL_USED_BEFORE                          = 'TERMINAL_USED_BEFORE';
