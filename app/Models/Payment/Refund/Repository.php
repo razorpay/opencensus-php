@@ -463,14 +463,22 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchByMerchantBetweenTimestamps(string $merchantId, int $from, int $to)
+    public function fetchByMerchantBetweenTimestamps(string $merchantId, int $from, int $to, $receipt = null)
     {
-        return $this->newQuery()
-                    ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
-                    ->where(Refund\Entity::CREATED_AT, '>=', $from)
-                    ->where(Refund\Entity::CREATED_AT, '<=', $to)
-                    ->whereNull(Refund\Entity::RECEIPT)
-                    ->get();
+        $query = $this->newQuery()
+                      ->where(Refund\Entity::MERCHANT_ID, '=', $merchantId)
+                      ->where(Refund\Entity::CREATED_AT, '>=', $from)
+                      ->where(Refund\Entity::CREATED_AT, '<=', $to);
 
+        if (empty($receipt) === true)
+        {
+            $query->whereNull(Refund\Entity::RECEIPT);
+        }
+        else
+        {
+            $query->where(Refund\Entity::RECEIPT, '=', $receipt);
+        }
+
+        return $$query->get();
     }
 }
