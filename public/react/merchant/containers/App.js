@@ -71,7 +71,7 @@ export default class App extends Component {
         let user = new User(response[0]);
         user.features = setFeatures(data.data.features);
 
-        this.props.updateSession({ user });
+        this.props.updateSession({ user, mode: currentMode });
 
         let $splash = document.getElementById('splash');
         $splash.parentElement.removeChild($splash);
