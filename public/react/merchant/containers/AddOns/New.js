@@ -28,6 +28,7 @@ export default class CreateAddOn extends Component {
       addon,
       subscription_id: subscriptionId,
       item: { currency: 'INR' },
+      quantity: 1,
     };
 
     this.props.initialize(initProps);
@@ -118,7 +119,7 @@ export default class CreateAddOn extends Component {
                   float: 'right',
                 }}
               >
-                <label class="control-label label-required">No. of Units</label>
+                <label class="control-label label-required">Quantity</label>
                 <Field
                   name="quantity"
                   component={InputField}
