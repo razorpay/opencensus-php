@@ -12,7 +12,7 @@ const newProducts = [
   {
     name: 'Razorpay Routes',
     description: 'For Marketplace, Vendor payouts, Regional splits, etc.',
-    link: '/route',
+    link: '/route/payments',
     symbol: routeSym,
   },
   {
