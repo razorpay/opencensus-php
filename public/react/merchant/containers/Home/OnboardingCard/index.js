@@ -28,7 +28,7 @@ const NewProducts = () => {
                 {product.description}
               </div>
               <div className="links">
-                <Link to={product.link}>Get Started</Link>
+                <Link to={product.link}>Try Now</Link>
                 <span className="text-fade">&nbsp;•&nbsp;</span>
                 <a href={product.help} target="_blank">
                   Learn More
