@@ -11,13 +11,13 @@ use RZP\Models\Base\PublicEntity;
 
 class Validator extends Base\Validator
 {
-    protected static $createRules = array(
+    protected static $createRules = [
         Entity::ENTITY_ID   => 'required|string|max:20',
         Entity::ENTITY_TYPE => 'required|string|max:255',
         Entity::NAME        => 'required|string|max:25|custom'
-    );
+    ];
 
-    protected static $onboardingRules = array(
+    protected static $onboardingRules = [
         Constants::MARKETPLACE                                     => 'filled|array|max:3',
         Constants::MARKETPLACE . "." . Constants::USE_CASE         => 'filled|string',
         Constants::MARKETPLACE . "." . Constants::SETTLING_TO      => 'filled|string',
@@ -31,7 +31,7 @@ class Validator extends Base\Validator
         Constants::VIRTUAL_ACCOUNTS                                             => 'filled|array|max:2',
         Constants::VIRTUAL_ACCOUNTS . "." . Constants::USE_CASE                 => 'filled|string',
         Constants::VIRTUAL_ACCOUNTS . "." . Constants::EXPECTED_MONTHLY_REVENUE => 'filled|string',
-    );
+    ];
 
     protected function validateName($attribute, $value)
     {

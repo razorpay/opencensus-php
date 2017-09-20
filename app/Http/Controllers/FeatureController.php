@@ -59,11 +59,11 @@ class FeatureController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function createOnboardingResponses(string $feature)
+    public function postOnboardingResponses(string $feature)
     {
         $input = Request::all();
 
-        $response = $this->service()->createOnboardingResponses($input, $feature);
+        $response = $this->service()->postOnboardingResponses($input, $feature);
 
         return ApiResponse::json($response);
     }

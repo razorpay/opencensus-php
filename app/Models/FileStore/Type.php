@@ -5,7 +5,6 @@ namespace RZP\Models\FileStore;
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Feature\Constants as FeatureConstants;
-use RZP\Models\Pricing\Feature;
 
 class Type
 {

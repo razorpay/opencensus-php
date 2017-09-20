@@ -153,7 +153,8 @@ class Constants
      */
 
     /**
-     * Stores the details for each question irrespective of the feature that it belongs to
+     * Stores the details for each question irrespective of the feature that it belongs to.
+     * TODO: These constants can be moved into separate constants file for questions
      */
     public static $questionMap = [
         self::USE_CASE => [

@@ -508,7 +508,7 @@ class FeaturesTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateOnboardingResponses()
+    public function testpostOnboardingResponses()
     {
         $this->ba->proxyAuth();
 

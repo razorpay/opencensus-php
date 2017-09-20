@@ -621,8 +621,8 @@ final class Route
         'merchant_analytics'                      => ['post',     'merchant/analytics',                             'MerchantController@postAnalytics'                                  ],
 
         // Feature onboarding routes
-        'feature_onboarding_fetch_default'        => ['get',      'feature/onboarding',                            'FeatureController@getOnboardingQuestions',                          ],
-        'feature_onboarding_create'               => ['post',     'feature/onboarding/{feature}',                  'FeatureController@createOnboardingResponses',                       ],
+        'feature_onboarding_fetch_questions'      => ['get',      'feature/onboarding',                            'FeatureController@getOnboardingQuestions',                          ],
+        'feature_onboarding_create'               => ['post',     'feature/onboarding/{feature}',                  'FeatureController@postOnboardingResponses',                       ],
         'feature_onboarding_fetch_responses'      => ['get',      'feature/onboarding/{feature}/responses',        'FeatureController@getOnboardingResponses',                          ],
         'feature_onboarding_fetch_all_responses'  => ['get',      'feature/onboarding/responses',                  'FeatureController@getOnboardingResponses',                          ],
     ];
@@ -1110,7 +1110,7 @@ final class Route
         'oauth_application_delete',
         'oauth_application_update',
         'merchant_analytics',
-        'feature_onboarding_fetch_default',
+        'feature_onboarding_fetch_questions',
         'feature_onboarding_create',
         'feature_onboarding_fetch_responses',
     ];

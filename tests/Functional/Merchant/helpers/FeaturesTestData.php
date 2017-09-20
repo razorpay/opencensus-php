@@ -470,7 +470,7 @@ return [
     ],
 
     // Files will be added and verified from the main test function
-    'testCreateOnboardingResponses' => [
+    'testpostOnboardingResponses' => [
         'request' => [
             'content' => [
                 Constants::USE_CASE    => 'Some default use case',

@@ -179,7 +179,7 @@ class Service extends Base\Service
      *
      * @return bool
      */
-    public function createOnboardingResponses(array $input, string $feature): bool
+    public function postOnboardingResponses(array $input, string $feature): bool
     {
         $data[$feature] = $input;
 
@@ -224,11 +224,10 @@ class Service extends Base\Service
 
         if ($feature === null)
         {
-              $settings = Accessor::for($merchant, Constants::ONBOARDING)
-                                  ->all();
+            $settings = Accessor::for ($merchant, Constants::ONBOARDING)
+                                ->all();
 
-            if ((isset($settings[Constants::MARKETPLACE]) === true) and
-                (isset($settings[Constants::MARKETPLACE][Constants::VENDOR_AGREEMENT]) === true))
+            if (isset($settings[Constants::MARKETPLACE][Constants::VENDOR_AGREEMENT]) === true)
             {
                 $fileId = $settings[Constants::MARKETPLACE][Constants::VENDOR_AGREEMENT];
 
@@ -240,21 +239,11 @@ class Service extends Base\Service
 
                 $settings->__set(Constants::MARKETPLACE, $marketplaceSettings);
             }
-        }
-        else
+        } else
         {
-            $settings = Accessor::for($merchant, Constants::ONBOARDING)
+            $settings = Accessor::for ($merchant, Constants::ONBOARDING)
                                 ->get($feature);
-
-            if (($feature === Constants::MARKETPLACE) and
-                (isset($settings[Constants::VENDOR_AGREEMENT]) === true))
-            {
-                $fileId = $settings[Constants::VENDOR_AGREEMENT];
-
-                $fileUrl = $this->getSignedUrl($fileId, $merchant->getId());
-
-                $settings->__set(Constants::VENDOR_AGREEMENT, $fileUrl);
-            }
+            // signedUrl is not required for this route
         }
 
         return $settings;
@@ -277,8 +266,8 @@ class Service extends Base\Service
 
         $merchantId = $merchant->getId();
 
-        if ((isset($input[$featureName])) and
-            (isset($input[$featureName][$question])))
+        if ((isset($input[$featureName]) === true) and
+            (isset($input[$featureName][$question]) === true))
         {
             $file = $input[$featureName][$question];
 
@@ -353,9 +342,7 @@ class Service extends Base\Service
     {
         $accessor = new FileStore\Accessor;
 
-        $signedUrls = $accessor->id($fileStoreId)
-            ->merchantId($merchantId)
-            ->getSignedUrl();
+        $signedUrls = $accessor->id($fileStoreId)->getSignedUrl();
 
         return $signedUrls[$fileStoreId];
     }
