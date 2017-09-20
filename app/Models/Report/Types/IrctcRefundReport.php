@@ -40,7 +40,6 @@ class IrctcRefundReport extends BasicEntityReport
                         ->fetchByMerchantBetweenTimestamps($merchantId, $from, $to);
     }
 
-
     protected function fetchFormattedDataForReport($entities): array
     {
         $data = [];
@@ -65,7 +64,6 @@ class IrctcRefundReport extends BasicEntityReport
     }
 
 
-
     protected function getReservationId(Payment\Entity $payment)
     {
         $reservationId = '';
@@ -76,7 +74,7 @@ class IrctcRefundReport extends BasicEntityReport
         {
             $notes = $order->notes;
 
-            $reservationId = (isset($notes->reservation_id) === true) ? $notes->reservation_id : '';
+            $reservationId = $notes->reservation_id ?? '';
         }
 
         return $reservationId;
