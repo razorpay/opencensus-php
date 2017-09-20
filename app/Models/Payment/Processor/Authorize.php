@@ -455,7 +455,7 @@ trait Authorize
         {
             $data = array('payment' => $payment->toArray(), 'gateway' => $input);
 
-            $flag = $this->callGatewayFunction('forceAuthorizeFailed', $data);
+            $flag = $this->callGatewayFunction(Action::FORCE_AUTHORIZE_FAILED, $data);
 
             if ($flag === false)
             {
@@ -1174,7 +1174,7 @@ trait Authorize
                 $data['card'] = $this->repo->card->fetchForPayment($payment)->toArray();
             }
 
-            $flag = $this->callGatewayFunction('authorizeFailed', $data);
+            $flag = $this->callGatewayFunction(Action::AUTHORIZE_FAILED, $data);
 
             if ($flag === false)
             {

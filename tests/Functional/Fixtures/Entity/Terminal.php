@@ -30,6 +30,7 @@ class Terminal extends Base
         $this->createSharedCybersourceHdfcTerminal();
         $this->createSharedCybersourceHdfcRecurringTerminals();
         $this->createSharedCybersourceAxisTerminal();
+        $this->createSharedHitachiTerminal();
         $this->createSharedFirstDataTerminal();
         $this->createSharedEbsTerminal();
         $this->createSharedBladeTerminal();
@@ -586,6 +587,26 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedHitachiTerminal(array $attributes = [])
+    {
+        $terminalId = \RZP\Models\Terminal\Shared::HITACHI_TERMINAL;
+
+        $attributes = [
+            'id'                        => $terminalId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'hitachi',
+            'card'                      => 1,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_acquirer'          => 'rbl',
+            'gateway_merchant_id'       => 'hitachi',
+            'gateway_terminal_password' => 'hitachi',
+            'gateway_secure_secret'     => 'secret',
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createSharedEbsTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::EBS_RAZORPAY_TERMINAL;
@@ -954,6 +975,7 @@ class Terminal extends Base
         $attributes = [
             'id'                => Shared::NETBANKING_ICICI_TPV_TERMINAL,
             'network_category'  => 'securities',
+            'tpv'               => 1,
         ];
 
         return $this->createSharedNetbankingIciciTerminal($attributes);
@@ -999,6 +1021,7 @@ class Terminal extends Base
         $attributes = [
             'id'                => Shared::NETBANKING_AXIS_TPV_TERMINAL,
             'network_category'  => 'securities',
+            'tpv'               => 1,
         ];
 
         return $this->createSharedNetbankingAxisTerminal($attributes);
@@ -1027,7 +1050,8 @@ class Terminal extends Base
     {
         $attributes = [
             'id'               => Shared::NETBANKING_INDUSIND_TPV_TERMINAL,
-            'network_category' => 'securities'
+            'network_category' => 'securities',
+            'tpv'              => 1,
         ];
 
         return $this->createSharedNetbankingIndusindTerminal($attributes);
@@ -1059,6 +1083,7 @@ class Terminal extends Base
             'gateway'                   => 'netbanking_federal',
             'gateway_merchant_id'       => 'netbanking_federal_merchant_id',
             'netbanking'                => 1,
+            'tpv'                       => 2,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -1070,7 +1095,8 @@ class Terminal extends Base
     {
         $attributes = [
             'id'               => Shared::NETBANKING_FEDERAL_TPV_TERMINAL,
-            'network_category' => 'securities'
+            'network_category' => 'securities',
+            'tpv'              => 1,
         ];
 
         return $this->createSharedNetbankingFederalTerminal($attributes);
@@ -1099,7 +1125,8 @@ class Terminal extends Base
     {
         $attributes = [
             'id'               => Shared::NETBANKING_RBL_TPV_TERMINAL,
-            'network_category' => 'securities'
+            'network_category' => 'securities',
+            'tpv'              => 1,
         ];
 
         return $this->createSharedNetbankingRblTerminal($attributes);

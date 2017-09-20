@@ -211,7 +211,7 @@ class Gateway extends Base\Gateway
 
         $this->checkCallbackStatus($attrs, $callbackData);
 
-        $acquirerData = $this->getAcquirerData($gatewayPayment);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         if ($this->hasRecurringData($gatewayPayment) === true)
         {
@@ -696,7 +696,7 @@ class Gateway extends Base\Gateway
     {
         if ($this->isCorporateBanking() === true)
         {
-            return  [
+            return [
                 Status::Y,
                 ResponseFields::PAYMENTID,
             ];

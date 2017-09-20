@@ -19,6 +19,7 @@ class Event
     const PAYMENT_CAPTURED          = 'payment.captured';
     const ORDER_PAID                = 'order.paid';
     const INVOICE_PAID              = 'invoice.paid';
+    const INVOICE_EXPIRED           = 'invoice.expired';
     const VPA_EDITED                = 'vpa.edited';
     const P2P_CREATED               = 'p2p.created';
     const P2P_REJECTED              = 'p2p.rejected';
@@ -48,6 +49,7 @@ class Event
         self::SUBSCRIPTION_CANCELLED,
         self::SUBSCRIPTION_COMPLETED,
         // self::SUBSCRIPTION_EXPIRED,
+        self::INVOICE_EXPIRED,
     ];
 
     protected static $bitMap = [
@@ -66,6 +68,7 @@ class Event
         self::SUBSCRIPTION_CANCELLED    => 0x13,
         self::SUBSCRIPTION_COMPLETED    => 0x14,
         // self::SUBSCRIPTION_EXPIRED      => 0x15,
+        self::INVOICE_EXPIRED           => 0x16,
     ];
 
     /**
@@ -90,6 +93,7 @@ class Event
         self::SUBSCRIPTION_CANCELLED,
         self::SUBSCRIPTION_COMPLETED,
         // self::SUBSCRIPTION_EXPIRED,
+        self::INVOICE_EXPIRED,
     ];
 
     protected static $bitPosition = [
@@ -108,7 +112,8 @@ class Event
         self::SUBSCRIPTION_CHARGED      => 13,
         self::SUBSCRIPTION_CANCELLED    => 14,
         self::SUBSCRIPTION_COMPLETED    => 15,
-        // self::SUBSCRIPTION_EXPIRED      => 15,
+        // self::SUBSCRIPTION_EXPIRED      => 16,
+        self::INVOICE_EXPIRED           => 17,
     ];
 
     /**
@@ -133,6 +138,7 @@ class Event
         self::SUBSCRIPTION_CANCELLED,
         self::SUBSCRIPTION_COMPLETED,
         // self::SUBSCRIPTION_EXPIRED,
+        self::INVOICE_EXPIRED,
     ];
 
     /**
@@ -154,6 +160,7 @@ class Event
         self::SUBSCRIPTION_CANCELLED    => Entity::SUBSCRIPTION,
         self::SUBSCRIPTION_COMPLETED    => Entity::SUBSCRIPTION,
         // self::SUBSCRIPTION_EXPIRED      => Entity::SUBSCRIPTION,
+        self::INVOICE_EXPIRED           => Entity::INVOICE,
     ];
 
     public static $eventsToFeatureMap = [

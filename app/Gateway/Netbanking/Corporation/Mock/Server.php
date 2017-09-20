@@ -38,6 +38,16 @@ class Server extends Base\Mock\Server
         return $this->makePostResponse($request);
     }
 
+    // In the callback method, we do a verification call.
+    // Because of this, the sendGatewayRequest() internally redirects the call to
+    // the callback() method of mock server(since $this->action is callback during
+    // this verify call). So, once it reaches here, we redirect the call to the
+    // verify() method passing the input.
+    public function callback($input)
+    {
+        return $this->verify($input);
+    }
+
     public function verify($input)
     {
         $data = $this->getVerifyResponseData($input);

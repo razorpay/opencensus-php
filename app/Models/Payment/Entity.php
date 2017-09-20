@@ -241,6 +241,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
         self::METHOD,
         self::AMOUNT_REFUNDED,
+        self::AMOUNT_TRANSFERRED,
         self::REFUND_STATUS,
         self::CAPTURED,
         self::DESCRIPTION,
@@ -288,6 +289,7 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::TOKEN_ID,
         self::SUBSCRIPTION_ID,
+        self::AMOUNT_TRANSFERRED,
         self::ACQUIRER_DATA,
         self::RECURRING_TYPE,
     ];
@@ -1709,7 +1711,7 @@ class Entity extends Base\PublicEntity
 
     public function getPublicOrderId()
     {
-        if ($this->hasOrder())
+        if ($this->hasOrder() === true)
         {
             return Order\Entity::getSignedId($this->getApiOrderId());
         }
@@ -1763,6 +1765,21 @@ class Entity extends Base\PublicEntity
         else
         {
             unset($array[self::SUBSCRIPTION_ID]);
+        }
+    }
+
+    public function setPublicAmountTransferredAttribute(array & $attributes)
+    {
+        //
+        // The `amount_transferred` attributes is only needed for
+        // for dashboard and should be hidden in private API
+        // requests
+        //
+        $app = \App::getFacadeRoot();
+
+        if ($app['basicauth']->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($attributes[self::AMOUNT_TRANSFERRED]);
         }
     }
 

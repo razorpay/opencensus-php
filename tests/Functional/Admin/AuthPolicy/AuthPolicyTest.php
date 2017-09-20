@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Admin\AuthPolicy;
 
 use Hash;
 use Carbon\Carbon;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -23,9 +24,16 @@ class AuthPolicyTest extends TestCase
 
         $this->org = $this->createOrg();
 
+        $this->hostName = 'testing.testing.com';
+
+        $this->orgHostName = $this->fixtures->create('org_hostname', [
+            'org_id'        => $this->org->getId(),
+            'hostname'      => $this->hostName,
+        ]);
+
         $this->authToken = $this->getAuthTokenForOrg($this->org);
 
-        $this->ba->adminAuth('test', $this->authToken);
+        $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
 
         $this->adminRepo = (new Admin\Repository);
     }
@@ -41,7 +49,7 @@ class AuthPolicyTest extends TestCase
 
     public function testAdminLoginWhenLocked()
     {
-        $this->ba->appAuth();
+        $this->ba->appAuth('rzp_test', '', $this->hostName);
 
         $admin = $this->fixtures->create('admin', [
             'email' => 'randomemail@rzp.com',
@@ -65,52 +73,28 @@ class AuthPolicyTest extends TestCase
 
     public function testWeakPassword()
     {
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         $this->startTest();
     }
 
     public function testShortPassword()
     {
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         $this->startTest();
     }
 
     public function testLongPassword()
     {
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         $this->startTest();
     }
 
     public function testMaxFailedLoginAttempts()
     {
-        $this->ba->appAuth();
+        $this->ba->appAuth('rzp_test', '', $this->hostName);
 
         $admin = $this->fixtures->create('admin', [
             'email' => 'randomemail@rzp.com',
             'org_id' => $this->org->getId(),
             'failed_attempts' => 10
         ]);
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
 
@@ -154,7 +138,7 @@ class AuthPolicyTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $admin->getPublicId());
+        $url = sprintf($url, $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -198,7 +182,7 @@ class AuthPolicyTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $admin->getPublicId());
+        $url = sprintf($url, $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -223,7 +207,7 @@ class AuthPolicyTest extends TestCase
 
         $admin = $this->fixtures->create('admin', [
             'email'               => 'randomemail2@rzp.com',
-            'org_id'              => '100000razorpay',
+            'org_id'              => Org::RZP_ORG,
             'password_changed_at' => $passwordChangedAt
         ]);
 

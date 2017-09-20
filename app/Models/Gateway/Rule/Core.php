@@ -2,13 +2,14 @@
 
 namespace RZP\Models\Gateway\Rule;
 
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Account;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Account;
+use RZP\Models\Currency\Currency;
 
 class Core extends Base\Core
 {
@@ -143,12 +144,14 @@ class Core extends Base\Core
 
         $merchant = $input['merchant'];
 
+        $currency = ($payment->getConvertCurrency() === true) ? Currency::INR : $payment->getCurrency();
+
         $params = [
             Entity::MERCHANT_ID   => [$merchant->getId(), Account::SHARED_ACCOUNT],
             Entity::METHOD        => $payment->getMethod(),
             Entity::INTERNATIONAL => false,
             Entity::CATEGORY2     => $merchant->getCategory2(),
-            Entity::CURRENCY      => $payment->getCurrency(),
+            Entity::CURRENCY      => $currency,
             // Here min_amount and max_amount are both set to payment_amount
             // as the final query will be min_amount <= payment_amount <= max_amount
             Entity::MIN_AMOUNT    => $payment->getAmount(),

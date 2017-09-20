@@ -113,7 +113,7 @@ class Entity extends Base\Entity
 
     public function isTpv()
     {
-        $accountNumber = $this->getAttribute(self::ACCOUNT_NUMBER);
+        $accountNumber = $this->getAccountNumber();
 
         if (is_null($accountNumber) === true)
         {
@@ -121,6 +121,11 @@ class Entity extends Base\Entity
         }
 
         return true;
+    }
+
+    public function getAccountNumber()
+    {
+        return $this->getAttribute(self::ACCOUNT_NUMBER);
     }
 
     public function getBankPaymentId()

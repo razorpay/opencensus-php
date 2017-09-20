@@ -116,7 +116,9 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED);
         }
 
-        return $this->getCallbackResponseData($input);
+        // Blade callback response field is being used by Hitachi
+        // These fields are already set in gatewayPayment entity
+        return $gatewayPayment->toArray();
     }
 
     protected function getVeresAttributesToSave(array $response, array $input)

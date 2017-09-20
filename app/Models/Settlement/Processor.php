@@ -197,9 +197,6 @@ class Processor extends Base\Core
             $txtFileDetails = $txtFileEntity->get();
             $excelFileDetails = $excelFileEntity->get();
 
-            $returnData['settlement_text_file'] = $txtFileDetails;
-            $returnData['settlement_excel_file'] = $excelFileDetails;
-
             $txtUrl = $txtFileEntity->getUrl();
             $excelUrl = $excelFileEntity->getUrl();
 
@@ -218,6 +215,8 @@ class Processor extends Base\Core
             $slackData = $returnData;
 
             $this->successNotification($slackData, $settlements, TraceCode::SETTLEMENT_INITIATED);
+            $returnData['settlement_text_file'] = $txtFileDetails;
+            $returnData['settlement_excel_file'] = $excelFileDetails;
         }
         else
         {
