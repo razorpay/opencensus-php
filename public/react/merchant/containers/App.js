@@ -17,8 +17,8 @@ import * as NotificationActions from 'rzp/modules/notifications';
 import * as SessionActions from 'merchant/modules/session';
 import * as ConfigActions from 'merchant/modules/config';
 import { applyTheme } from 'rzp/themes';
-import User from 'merchant/models/User';
-import ShowWhen from 'merchant/components/ShowWhen';
+import User, { setFeatures } from 'merchant/models/User';
+import { fetchFeaturesAjax } from 'merchant/modules/config';
 import AddGST from 'merchant/containers/Profile/AddGST';
 import { fetchGST } from 'merchant/modules/profile';
 
@@ -56,6 +56,8 @@ export default class App extends Component {
         setTimeout(() => {
           this.initSmooch(user);
         });
+
+        return data;
       }),
       this.fetchOrg().then(({ data }) => {
         let orgCode = (this.orgCode = data.custom_code);
@@ -63,10 +65,13 @@ export default class App extends Component {
           applyTheme(orgCode);
         }
       }),
-    ]).then(() => {
+    ]).then(response => {
       // Fetch features before displaying other views
-      this.props.fetchFeatures(this.props.user.current).then(data => {
-        this.props.user.setFeatures(data.data.features || []);
+      fetchFeaturesAjax(response[0].current).then(data => {
+        let user = new User(response[0]);
+        user.features = setFeatures(data.data.features);
+
+        this.props.updateSession({ user });
 
         let $splash = document.getElementById('splash');
         $splash.parentElement.removeChild($splash);

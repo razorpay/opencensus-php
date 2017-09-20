@@ -5,7 +5,6 @@ const CONFIG_FETCH = 'CONFIG_FETCH';
 const CONFIG_AND_FEATURES_FETCH = 'CONFIG_AND_FEATURES_FETCH';
 const MERCHANT_LOGO_UPLOADED = 'MERCHANT_LOGO_UPLOADED';
 const CONFIG_SAVE = 'CONFIG_SAVE';
-const FEATURES_FETCH = 'FEATURES_FETCH';
 const FEATURES_SAVE = 'FEATURES_SAVE';
 
 export const fetchConfigAjax = () => {
@@ -37,13 +36,6 @@ export const fetchConfig = () => {
   return {
     type: CONFIG_FETCH,
     payload: fetchConfigAjax(),
-  };
-};
-
-export const fetchFeatures = currentUserId => {
-  return {
-    type: FEATURES_FETCH,
-    payload: fetchFeaturesAjax(currentUserId),
   };
 };
 
@@ -130,7 +122,10 @@ const normalizeConfig = config => {
    */
   let logoUrl = config.logo_url;
   if (logoUrl !== null && !/^http/.test(logoUrl)) {
-    logoUrl = `https://cdn.razorpay.com${logoUrl.replace(/\.([^\.]+$)/, '_medium.$1')}`;
+    logoUrl = `https://cdn.razorpay.com${logoUrl.replace(
+      /\.([^\.]+$)/,
+      '_medium.$1'
+    )}`;
   }
   config.logo_url = logoUrl;
 
@@ -169,7 +164,6 @@ export default function(state = initialState, action) {
     case `${MERCHANT_LOGO_UPLOADED}::SUCCESS`:
       return set(state, 'config', normalizeConfig(action.payload.data));
 
-    case `${FEATURES_FETCH}::SUCCESS`:
     case `${FEATURES_SAVE}::SUCCESS`:
       return set(state, 'features', action.payload.data.features);
 
