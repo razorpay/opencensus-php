@@ -621,7 +621,14 @@ final class Route
         'oauth_application_delete'                => ['delete',   'oauth/applications/{id}',                        'OAuthApplicationController@delete'                                 ],
         'oauth_merchant_notify'                   => ['post',     'oauth/notify/{type}',                            'MerchantController@sendOAuthNotification'                          ],
         'oauth_application_update'                => ['post',     'oauth/applications/{id}',                        'OAuthApplicationController@update'                                 ],
+
         'merchant_analytics'                      => ['post',     'merchant/analytics',                             'MerchantController@postAnalytics'                                  ],
+
+        // Feature onboarding routes
+        'feature_onboarding_fetch_questions'      => ['get',      'feature/onboarding',                            'FeatureController@getOnboardingQuestions',                          ],
+        'feature_onboarding_create'               => ['post',     'feature/onboarding/{feature}',                  'FeatureController@postOnboardingResponses',                         ],
+        'feature_onboarding_fetch_responses'      => ['get',      'feature/onboarding/{feature}/responses',        'FeatureController@getOnboardingResponses',                          ],
+        'feature_onboarding_fetch_all_responses'  => ['get',      'feature/onboarding/responses',                  'FeatureController@getOnboardingResponses',                          ],
     ];
 
     public static $public = [
@@ -1109,6 +1116,10 @@ final class Route
         'oauth_application_update',
         'merchant_analytics',
         'reports_refund_irctc',
+        'feature_onboarding_fetch_questions',
+        'feature_onboarding_create',
+        'feature_onboarding_fetch_responses',
+        'feature_onboarding_fetch_all_responses',
     ];
 
     // These will run on internal auth with the assurance

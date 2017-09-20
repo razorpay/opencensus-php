@@ -852,6 +852,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Trace code for \Models\Settings
     const SETTINGS_UPSERT_REQUEST                       = 'SETTINGS_UPSERT_REQUEST';
     const SETTINGS_DELETE_REQUEST                       = 'SETTINGS_DELETE_REQUEST';
+  
+    // Feature Onboarding trace codes
+    const FEATURE_ONBOARDING_RESPONSE_REQUEST           = 'FEATURE_ONBOARDING_RESPONSE_REQUEST';
+    const FEATURE_ONBOARDING_RESPONSE_CREATION_FAILED   = 'FEATURE_ONBOARDING_RESPONSE_CREATION_FAILED';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
