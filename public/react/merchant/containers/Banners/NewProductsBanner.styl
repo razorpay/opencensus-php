@@ -7,12 +7,32 @@
   }
   .card {
     display: inline-block;
-    width: 33.333%;
     padding: 20px;
-    border-right: 1px solid #dee5e7;
     color: #22527b;
     transition: 0.5s all ease;
     cursor: pointer;
+
+    @media (min-width: 992px) {
+      height: 100vh;
+      max-height: 200px;
+      border-right: 1px solid #dee5e7;
+
+      &:last-of-type {
+        border-right: none;
+      }
+    }
+
+    @media (max-width: 991px) {
+      border-bottom: 1px solid #dee5e7;
+
+      &:last-of-type {
+        border-bottom: none;
+      }
+
+      .symbol, .name, p {
+        text-align: center;
+      }
+    }
 
     &:hover {
       box-shadow: 0px 2px 12px rgba(0,0,0,0.12);
@@ -22,14 +42,12 @@
       background-color: #f1f1f1;
     }
 
-
-    &:last-of-type {
-      border-right: none;
-    }
-
     .symbol {
-      width: 40px;
-      display: inline-block;
+      display: block;
+
+      img {
+        width: 40px;
+      }
     }
 
     .name {

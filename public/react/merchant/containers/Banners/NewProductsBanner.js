@@ -31,7 +31,7 @@ const newProducts = [
 
 const Card = ({ name, description, symbol, link }) => {
   return (
-    <Link class="card" to={link}>
+    <Link class="card col-md-4 col-xs-12" to={link}>
       <span class="symbol">
         <img src={symbol} />
       </span>
