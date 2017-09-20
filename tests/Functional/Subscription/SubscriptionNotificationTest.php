@@ -667,4 +667,29 @@ class SubscriptionNotificationTest extends TestCase
             return true;
         });
     }
+
+    public function testSubscriptionCompletedMailNotSentFromHalted()
+    {
+        $this->failSubscriptionTillHalted();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        foreach(range(1, $subscription['total_count']-2) as $i)
+        {
+            $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
+            $subscription = $this->getLastEntity('subscription', true);
+            $this->assertEquals('halted', $subscription['status']);
+        }
+
+        Mail::fake();
+
+        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->assertEquals('completed', $subscription['status']);
+
+        Mail::assertNotSent(SubscriptionMail\Completed::class);
+    }
 }
