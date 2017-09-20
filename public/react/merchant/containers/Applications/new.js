@@ -82,7 +82,7 @@ class NewApplicationForm extends Component {
     var prefix =
       prefixPos !== -1
         ? 'https://' + window.location.hostname.substr(0, prefixPos)
-        : 'http://';
+        : 'https://';
     var hostname = prefix + 'auth.razorpay.com';
     const popupUrl =
       hostname +
