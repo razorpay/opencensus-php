@@ -54,6 +54,11 @@ class ViewDataSerializer extends Base\Core
      */
     protected $card;
 
+    /**
+     * @var Item\Entity
+     */
+    protected $item;
+
     public function __construct(Entity $subscription)
     {
         parent::__construct();
@@ -63,6 +68,7 @@ class ViewDataSerializer extends Base\Core
         $this->customer     = $subscription->customer;
         $this->plan         = $subscription->plan;
         $this->card         = $subscription->token->card;
+        $this->item         = $subscription->plan->item;
     }
 
     /**
@@ -150,6 +156,7 @@ class ViewDataSerializer extends Base\Core
         $planData = [
             'period'    => $this->plan->getPeriod(),
             'interval'  => $this->plan->getInterval(),
+            'item'      => $this->item->toArrayPublic()
         ];
 
         return $planData;

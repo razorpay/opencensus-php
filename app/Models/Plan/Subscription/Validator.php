@@ -299,7 +299,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateSubscriptionViewable()
+    public function validateSubscriptionViewable()
     {
         $subscription = $this->entity;
 

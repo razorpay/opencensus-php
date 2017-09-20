@@ -6,6 +6,7 @@ use Request;
 use ApiResponse;
 use RZP\Constants\Entity as E;
 use RZP\Exception\BaseException;
+use View;
 
 class SubscriptionController extends Controller
 {
