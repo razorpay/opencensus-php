@@ -5,7 +5,7 @@ use Config;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity;
 use RZP\Models\FileStore;
-use RZP\Encryption\Handler;
+use RZP\Encryption\Type;
 
 class FileStoreTest extends TestCase
 {
@@ -39,18 +39,26 @@ class FileStoreTest extends TestCase
 
     function testEncryption()
     {
-        $encryptionType = Handler::PGP_ENCRYPTION;
+        $encryptionType = Type::PGP_ENCRYPTION;
 
         $extension = FileStore\Format::XLSX;
-        //Todo get this key added in the instances
-        $testEncryptionKey = 'C45858B3041DA910EBFB51D16037D95C5D0C7902';
+
+        $testEncryptionKey  = 'C45858B3041DA910EBFB51D16037D95C5D0C7902';
+        $publicKey          = file_get_contents(__DIR__ . '/pgp_public_test_key.asc');
+        $privateKey         = file_get_contents(__DIR__ . '/pgp_private_test_key.asc');
+
+        $encryptionData = [
+            'secret'      => $testEncryptionKey,
+            'public_key'  => $publicKey,
+            'private_key' => $privateKey,
+        ];
 
         $file = $this->creator->extension($extension)
                      ->content($this->content)
                      ->name($this->fileName)
                      ->store($this->store)
                      ->type($this->type)
-                     ->encrypt($encryptionType, ['secret' => $testEncryptionKey])
+                     ->encrypt($encryptionType, $encryptionData)
                      ->save();
 
         $this->assertEquals($file->getFileInstance()->getMime(), 'application/pgp');
@@ -58,24 +66,30 @@ class FileStoreTest extends TestCase
 
     function testEncryptionFailure()
     {
-
-        $encryptionType = Handler::PGP_ENCRYPTION;
+        $encryptionType = Type::PGP_ENCRYPTION;
 
         $extension = FileStore\Format::XLSX;
-        //Todo get this key added in the instances
-        $testEncryptionKey = 'somerandomkey';
 
-         $this->expectException('RZP\Exception\LogicException', 'PGP Encryption Failed');
+        $testEncryptionKey  = 'somerandomkey';
+        $publicKey          = file_get_contents(__DIR__ . '/pgp_public_test_key.asc');
+        $privateKey         = file_get_contents(__DIR__ . '/pgp_private_test_key.asc');
+
+        $encryptionData = [
+            'secret'      => $testEncryptionKey,
+            'public_key'  => $publicKey,
+            'private_key' => $privateKey,
+        ];
+
+        $this->expectException('RZP\Exception\LogicException', 'PGP Encryption Failed');
 
         $file = $this->creator->extension($extension)
                      ->content($this->content)
                      ->name($this->fileName)
                      ->store($this->store)
                      ->type($this->type)
-                     ->encrypt($encryptionType, ['secret' => $testEncryptionKey])
+                     ->encrypt($encryptionType, $encryptionData)
                      ->save();
     }
-
 
     function testInvalidType()
     {

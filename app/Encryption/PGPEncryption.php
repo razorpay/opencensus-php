@@ -6,9 +6,13 @@ use RZP\Exception;
 
 class PGPEncryption extends IEncryption
 {
-    const SECRET    = 'secret';
+    const SECRET      = 'secret';
+    const PUBLIC_KEY  = 'public_key';
+    const PRIVATE_KEY = 'private_key';
 
     protected $secret = null;
+    protected $publicKey;
+    protected $privateKey;
 
     public function __construct(array $params)
     {
@@ -19,7 +23,7 @@ class PGPEncryption extends IEncryption
 
     public function encrypt(string $data) : string
     {
-        $res = gnupg_init();
+        $res = $this->initializeGnupg();
 
         gnupg_addencryptkey($res, $this->secret);
 
@@ -35,7 +39,7 @@ class PGPEncryption extends IEncryption
 
     public function decrypt(string $data) : string
     {
-        $res = gnupg_init();
+        $res = $this->initializeGnupg();
 
         gnupg_adddecryptkey($res, $this->secret);
 
@@ -47,6 +51,17 @@ class PGPEncryption extends IEncryption
         }
 
         return $dec;
+    }
+
+    protected function initializeGnupg()
+    {
+        $res = gnupg_init();
+
+        gnupg_import($res, $this->publicKey);
+
+        gnupg_import($res, $this->privateKey);
+
+        return $res;
     }
 
     protected function validateParams(array $params)

@@ -6,8 +6,6 @@ use RZP\Exception;
 
 class Handler
 {
-    const PGP_ENCRYPTION = 'pgp_encryption';
-
     protected $params;
 
     protected $cipher;
@@ -33,11 +31,11 @@ class Handler
         return $this->cipher->encrypt($data);
     }
 
-    protected function getCipher($type)
+    protected function getCipher(string $type)
     {
         switch ($type)
         {
-            case self::PGP_ENCRYPTION :
+            case Type::PGP_ENCRYPTION :
                  return new PGPEncryption($this->params);
 
             default:
