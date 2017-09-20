@@ -135,9 +135,6 @@
 .feature-image {
   display: block;
   position: absolute;
-  width: 74%;
-  left: 21px;
-  top: -20px;
   margin: 0 auto;
   z-index: 2;
 
@@ -146,5 +143,25 @@
 
   &.fadein {
     opacity: 1;
+  }
+
+
+// Based on formType
+  &.marketplace {
+    width: 74%;
+    left: 21px;
+    top: -20px;
+  }
+
+  &.subscriptions {
+    width: 74%;
+    left: 54px;
+    top: 17px;
+  }
+
+  &.virtual_accounts {
+    width: 50%;
+    left: 129px;
+    top: -14px;
   }
 }

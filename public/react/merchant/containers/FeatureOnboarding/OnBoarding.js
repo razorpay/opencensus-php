@@ -108,18 +108,19 @@ export default class OnBoarding extends Component {
     return prom;
   };
 
+  // For optimization: to download only the required image
   requireImage(formType, currentForm) {
     switch (formType) {
       case 'marketplace':
-        currentForm.formImage = require('styles/assets/route-landing.svg');
+        currentForm.formImage = require('styles/assets/landing/route.svg');
         break;
 
-      //      case 'virtual_accounts':
-      //        currentForm.formImage = require('styles/assets/virtualaccounts-landing.svg');
-      //        break;
+      case 'virtual_accounts':
+        currentForm.formImage = require('styles/assets/landing/smartcollect.svg');
+        break;
 
       case 'subscriptions':
-        currentForm.formImage = require('styles/assets/subscriptions-landing.svg');
+        currentForm.formImage = require('styles/assets/landing/subscriptions.svg');
         break;
     }
   }
@@ -196,7 +197,10 @@ export default class OnBoarding extends Component {
                 ? 'halfForm'
                 : ''}`}
             >
-              <img class="feature-image" src={currentForm.formImage} />
+              <img
+                class={`feature-image ${formType}`}
+                src={currentForm.formImage}
+              />
             </div>
           </main>
 
