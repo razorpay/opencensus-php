@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { destroy } from 'redux-form';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import WizardItem from './WizardItem';
+import NewProductsBanner from 'merchant/containers/Banners/NewProductsBanner';
 
 @connect(state => state.activation, { destroy })
 export default class ActivationWizard extends Component {
@@ -102,6 +103,8 @@ export default class ActivationWizard extends Component {
 
     return (
       <div>
+        {data.submitted && <NewProductsBanner />}
+
         {info}
 
         <Tabs
