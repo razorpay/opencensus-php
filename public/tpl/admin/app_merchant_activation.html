@@ -617,10 +617,14 @@
           <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step7=true" >Next</button>
         </div>
         <fieldset>
+          <div class="form-group" ng-if="Object.keys(onboarding).length == 0">
+            <h5 class="col-sm-3 control-label"></h5>
+            <h5 class="col-sm-9">No feature requests were made.</h5>
+          </div>
           <div ng-repeat="(feature_name, question_map) in onboarding">
             <div class="form-group">
               <h5 class="col-sm-3 control-label"><strong>{{feature_name}}</strong></h5>
-              <h5 class="col-sm-9 control-label"></h5>
+              <h5 class="col-sm-9"></h5>
             </div>
             <div class="form-group" ng-repeat="(question_name, response) in question_map">
               <label for="{{question_name}}" class="col-sm-3 control-label">{{question_name.humanize()}}</label>

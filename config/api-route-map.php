@@ -112,9 +112,6 @@ return [
 
         // Update GSTIN for given invoice
         'merchant_invoice_update_gstin'     => 'merchants/{id}/invoice/gstin',
-
-        // Feature onboarding responses
-        'get_feature_onboarding_responses'  => 'feature/onboarding/responses',
     ],
 
     // auth
@@ -497,6 +494,9 @@ return [
             'url'       => 'plans/{id}',
             'routeName' => 'subscriptions_write'
         ],
+
+        // Feature onboarding responses
+        'feature_onboarding_fetch_all_responses' => 'feature/onboarding/responses',
     ],
 
     // auth
