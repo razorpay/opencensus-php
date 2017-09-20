@@ -381,9 +381,7 @@ class SubscriptionChargeTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
-        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
-
-        $paymentRequest['subscription_card_change'] = true;
+        $paymentRequest = $this->getSubscriptionCardChangeRequest($subscription);
 
         $data = $this->testData[__FUNCTION__];
 
@@ -1019,13 +1017,6 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals($subscription['current_end'], $invoice['billing_end']);
 
         $this->assertInvoiceCount(1, $subscription['id']);
-    }
-
-    protected function mockSession($appToken = 'capp_1000000custapp')
-    {
-        $data = [ 'test_app_token' => $appToken ];
-
-        $this->session($data);
     }
 
     public function testSubscriptionHaltedAuthFailure()

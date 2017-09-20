@@ -35,6 +35,28 @@ trait SubscriptionTrait
         return $paymentRequest;
     }
 
+    public function getSubscriptionCardChangeRequest($subscription)
+    {
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+
+        $paymentRequest['subscription_card_change'] = true;
+
+        // If subscription is pending, preferences route will ask checkout to make a payment
+        // corresponding to the amount of the latest invoice. Just mocked here via plan.
+        //
+        // TODO This function won't work if you're trying to change card on a subscription
+        // that went to pending state on the very first charge, which was immediate+addon.
+        // Because here we're only using plan amount and not other addons.
+        if ($subscription['status'] === 'pending')
+        {
+            $plan = $this->getLastEntity('plan', true);
+
+            $paymentRequest['amount'] = $plan['item']['amount'];
+        }
+
+        return $paymentRequest;
+    }
+
     public function makeSubscriptionChargeCronRequest()
     {
         $request = [
@@ -535,5 +557,12 @@ trait SubscriptionTrait
         $this->ba->privateAuth();
 
         return $this->startTest($testData);
+    }
+
+    protected function mockSession($appToken = 'capp_1000000custapp')
+    {
+        $data = [ 'test_app_token' => $appToken ];
+
+        $this->session($data);
     }
 }

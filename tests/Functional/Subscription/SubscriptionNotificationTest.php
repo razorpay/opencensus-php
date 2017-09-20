@@ -263,11 +263,15 @@ class SubscriptionNotificationTest extends TestCase
     {
         $subscription = $this->failSubscriptionFirstCharge();
 
-        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+        $paymentRequest = $this->getSubscriptionCardChangeRequest($subscription);
 
         Mail::fake();
 
+        $this->mockSession();
+
         $this->doAuthPayment($paymentRequest);
+
+        $this->flushSession();
 
         $subscription = $this->getLastEntity('subscription', true);
 
@@ -308,21 +312,25 @@ class SubscriptionNotificationTest extends TestCase
 
     public function testSubscriptionCardChangeMailSent()
     {
-        $this->doAuthTxnForNewSubscription();
+        $subscription = $this->failSubscriptionTillHalted();
 
-        $subscription = $this->getLastEntity('subscription', true);
-
-        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+        $paymentRequest = $this->getSubscriptionCardChangeRequest($subscription);
 
         Mail::fake();
 
+        $this->mockSession();
+
         $this->doAuthPayment($paymentRequest);
+
+        $this->flushSession();
+
+        $subscription = $this->getLastEntity('subscription', true);
 
         Mail::assertSent(SubscriptionMail\CardChanged::class, function ($mail)
         {
             $data = $mail->viewData;
 
-            $this->assertEquals('authenticated', $data['subscription']['status']);
+            $this->assertEquals('active', $data['subscription']['status']);
             $this->assertEquals(0, $data['subscription']['type']);
 
             $this->assertEquals('10000000000000', $data['merchant']['id']);

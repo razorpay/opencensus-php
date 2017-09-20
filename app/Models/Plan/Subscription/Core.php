@@ -282,7 +282,7 @@ class Core extends Base\Core
 
         if ($cardChange === true)
         {
-            $authAmount = $this->getAuthTransactionAmountForCardChange();
+            $authAmount = $this->getAuthTransactionAmountForCardChange($subscription);
         }
         else if ($subscription->isCreated() === true)
         {
@@ -518,9 +518,16 @@ class Core extends Base\Core
 
     public function triggerSubscriptionFailureNotification(Entity $subscription)
     {
-        $notifyOptions = [
-            Event::CHARGE_SUCCESS => false,
-        ];
+        $notifyOptions = [];
+
+        //
+        // Completed notification has options, it can be
+        // triggered by charge success as well as failure.
+        //
+        if ($subscription->getStatus() === Status::COMPLETED)
+        {
+            $notifyOptions[Event::CHARGE_SUCCESS] = false;
+        }
 
         $status = $subscription->getStatus();
 
