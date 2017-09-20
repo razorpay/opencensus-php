@@ -125,7 +125,7 @@ export default class Sidebar extends Component {
                     icon="icon icon-refresh text-warning"
                     notMyRole="sellerapp support"
                     to={routes.subscriptions}
-                    beta={true}
+                    isNew={true}
                   />
 
                   <MainNavLink
@@ -133,7 +133,7 @@ export default class Sidebar extends Component {
                     icon="icon icon-store text-primary"
                     to={routes.marketplace}
                     notMyRole="sellerapp support"
-                    beta={true}
+                    isNew={true}
                   />
 
                   <MainNavLink
@@ -141,7 +141,7 @@ export default class Sidebar extends Component {
                     icon="icon icon-account-balance text-success"
                     to="/virtualaccounts"
                     notMyRole="sellerapp support"
-                    beta={true}
+                    isNew={true}
                   />
 
                   <MainNavLink
@@ -163,7 +163,6 @@ export default class Sidebar extends Component {
                     icon="fa fa-users text-info"
                     to="/team"
                     myRole="owner"
-                    beta={true}
                   />
 
                   <MainNavLink
@@ -249,7 +248,6 @@ export default class Sidebar extends Component {
                     to={routes.invoices}
                     featureEnabled="Invoice"
                     notMyRole="sellerapp"
-                    beta={true}
                   />
                   <MainNavLink
                     label="Payment Links"
@@ -261,7 +259,7 @@ export default class Sidebar extends Component {
                     icon="icon icon-refresh text-info"
                     notMyRole="sellerapp support"
                     to={routes.subscriptions}
-                    beta={true}
+                    isNew={true}
                   />
                   <MainNavLink
                     label="Customers"
@@ -275,14 +273,14 @@ export default class Sidebar extends Component {
                     icon="icon icon-store text-success"
                     to={routes.marketplace}
                     notMyRole="sellerapp support"
-                    beta={true}
+                    isNew={true}
                   />
                   <MainNavLink
                     label="Smart Collect"
                     icon="icon icon-account-balance text-primary"
                     to="/virtualaccounts"
                     notMyRole="sellerapp support"
-                    beta={true}
+                    isNew={true}
                   />
 
                   <div class="divider" />
@@ -298,7 +296,6 @@ export default class Sidebar extends Component {
                     icon="icon icon-city text-info"
                     to="/team"
                     myRole="owner"
-                    beta={true}
                   />
                   <MainNavLink
                     label="My Account"
