@@ -629,7 +629,7 @@ trait FileHandlerTrait
         return static::$fileToWriteName.'_'.$mode.'_'.$time;
     }
 
-    protected function parseTextFile($file)
+    protected function parseTextFile($file, string $delimiter = '~')
     {
         $rows = $this->getFileLines($file);
 
@@ -643,17 +643,17 @@ trait FileHandlerTrait
                 continue;
             }
 
-            $data[] = $this->parseTextRow($row, $ix);
+            $data[] = $this->parseTextRow($row, $ix, $delimiter);
         }
 
         return $data;
     }
 
-    protected function parseTextRow($row, $ix)
+    protected function parseTextRow($row, $ix, $delimiter)
     {
         $headings = $this->getHeadings();
 
-        $values = explode('~', $row);
+        $values = explode($delimiter, $row);
 
         if (count($headings) !== count($values))
         {

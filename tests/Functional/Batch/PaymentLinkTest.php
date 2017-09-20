@@ -50,6 +50,11 @@ class PaymentLinkTest extends TestCase
 
         $response = $this->startTest();
 
+        // Gets last entity (Post queue processing) and asserts attributes
+        $entities = $this->getLastEntity('batch', true);
+        $this->assertEquals(2, $entities['success_count']);
+        $this->assertEquals(1, $entities['failure_count']);
+
         // Processing should have happened immediately in tests as
         // queue are sync basically.
 

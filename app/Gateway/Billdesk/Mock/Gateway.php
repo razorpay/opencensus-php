@@ -16,41 +16,7 @@ class Gateway extends Billdesk\Gateway
         return $this->authorizeMock($input);
     }
 
-    protected function sendGatewayRequestForBilldeskAuthorize($request, $error=false)
-    {
-        $response = new Requests_Response();
-
-        $txt = $this->getHtmlText($request, $error);
-
-        $response->body = $txt;
-        $response->status_code = 200;
-        $response->success = true;
-
-        return $response;
-    }
-
-    protected function getHtmlText($request, $error)
-    {
-        if ($error === true)
-        {
-            $txt = '<HTML><HEAD><TITLE>Error</TITLE></HEAD><BODY>An error occurred while processing your request.<p>Reference 123456</BODY></HTML>' . PHP_EOL;
-
-            return $txt;
-        }
-
-        $txt = '<form action="' . $request['url'] . '" method="' . $request['method'] . '">' . PHP_EOL;
-
-        foreach ($request['content'] as $key => $value)
-        {
-            $txt .= "<input type='text' name='$key' value='$value'>" . PHP_EOL;
-        }
-
-        $txt .= '</form>';
-
-        return $txt;
-    }
-
-    protected function getContentAfterChecksumVerification($responseBody)
+    protected function getContentAfterChecksumVerification($responseBody, $action = null)
     {
         /**
          *  Check if Bank is Andhra Bank, if yes make the response invalid
@@ -61,11 +27,13 @@ class Gateway extends Billdesk\Gateway
         {
             $responseBody = $this->getInvalidVerifyData();
         }
-        return parent::getContentAfterChecksumVerification($responseBody);
+
+        return parent::getContentAfterChecksumVerification($responseBody, $action);
     }
 
     protected function getInvalidVerifyData()
     {
+        // @codingStandardsIgnoreLine
         return '<HTML><HEAD><TITLE>Error</TITLE></HEAD><BODY>An error occurred while processing your request.<p>Reference&#32;&#35;97&#46;44367c68&#46;1482720567&#46;ec59760</BODY></HTML>';
     }
 }

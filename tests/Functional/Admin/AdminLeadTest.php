@@ -55,12 +55,6 @@ class AdminLeadTest extends TestCase
             'admin_lead',
             $fields, $this->authToken);
 
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         $this->startTest();
 
         Mail::assertSent(MerchantInvitationMail::class, function ($mail)
@@ -91,13 +85,7 @@ class AdminLeadTest extends TestCase
             $this->org->getPublicId(), 'admin_lead',
             $fields, $this->authToken);
 
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
         $this->testData[__FUNCTION__]['request']['content']['contact_email'] = $adminEmail;
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
     }
@@ -125,11 +113,11 @@ class AdminLeadTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $orgId, $adminLead['id']);
+        $url = sprintf($url, $adminLead['id']);
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $this->ba->adminAuth('test', $this->authToken);
+        $this->ba->adminAuth('test', $this->authToken, $orgId);
 
         $result = $this->startTest();
 

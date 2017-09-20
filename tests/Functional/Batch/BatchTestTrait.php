@@ -29,7 +29,7 @@ trait BatchTestTrait
 
         return new UploadedFile(
                         $url,
-                        'file',
+                        'file.xlsx',
                         $mime,
                         filesize($url),
                         null,

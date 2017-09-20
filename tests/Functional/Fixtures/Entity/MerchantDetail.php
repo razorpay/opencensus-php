@@ -21,6 +21,11 @@ class MerchantDetail extends Base
         return $merchantDetail;
     }
 
+    public function createSane(array $attributes = [])
+    {
+        return parent::create($attributes);
+    }
+
     public function createValidFields(array $attributes = array())
     {
         $merchantDetailArray = $this->createMerchantDetail();

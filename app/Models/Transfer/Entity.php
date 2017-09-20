@@ -2,45 +2,56 @@
 
 namespace RZP\Models\Transfer;
 
+use Carbon\Carbon;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Reversal;
 use RZP\Models\Settlement;
+use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Merchant\Entity as Merchant;
 
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
 
-    const ID                        = 'id';
-    const MERCHANT_ID               = 'merchant_id';
-    const TO_ID                     = 'to_id';
-    const TO_TYPE                   = 'to_type';
-    const SOURCE_ID                 = 'source_id';
-    const SOURCE_TYPE               = 'source_type';
-    const AMOUNT                    = 'amount';
-    const CURRENCY                  = 'currency';
-    const REVERSAL_STATUS           = 'reversal_status';
-    const AMOUNT_REVERSED           = 'amount_reversed';
-    const NOTES                     = 'notes';
-    const FEES                      = 'fees';
-    const SERVICE_TAX               = 'service_tax';
-    const TAX                       = 'tax';
-    const ON_HOLD                   = 'on_hold';
-    const ON_HOLD_UNTIL             = 'on_hold_until';
-    const TRANSACTION_ID            = 'transaction_id';
-    const RECIPIENT_SETTLEMENT_ID   = 'recipient_settlement_id';
-    const RECIPIENT_SETTLEMENT      = 'recipient_settlement';
+    const ID                      = 'id';
+    const MERCHANT_ID             = 'merchant_id';
+    const TO_ID                   = 'to_id';
+    const TO_TYPE                 = 'to_type';
+    const SOURCE_ID               = 'source_id';
+    const SOURCE_TYPE             = 'source_type';
+    const AMOUNT                  = 'amount';
+    const CURRENCY                = 'currency';
+    const REVERSAL_STATUS         = 'reversal_status';
+    const AMOUNT_REVERSED         = 'amount_reversed';
+    const NOTES                   = 'notes';
+    const FEES                    = 'fees';
+    const SERVICE_TAX             = 'service_tax';
+    const TAX                     = 'tax';
+    const ON_HOLD                 = 'on_hold';
+    const ON_HOLD_UNTIL           = 'on_hold_until';
+    const TRANSACTION_ID          = 'transaction_id';
+    const RECIPIENT_SETTLEMENT_ID = 'recipient_settlement_id';
 
     // Report fields
-    const SETTLEMENT_DATE           = 'settlement_date';
-    const SETTLEMENT_UTR            = 'settlement_utr';
+    const SETTLEMENT_INITIATED_ON = 'settlement_initiated_on';
+    const SETTLEMENT_UTR          = 'settlement_utr';
+    const SETTLEMENT_STATUS       = 'settlement_status';
 
-    // Public Attribute keys for SOURCE_ID and TO_ID
-    const SOURCE                = 'source';
-    const RECIPIENT             = 'recipient';
+    // Public attribute keys for SOURCE_ID and TO_ID
+    const SOURCE    = 'source';
+    const RECIPIENT = 'recipient';
+
+    // Expanded relation keys
+    const TO                   = 'to';
+    const RECIPIENT_SETTLEMENT = 'recipient_settlement';
+
+    // Append attributes
+    const RECIPIENT_DETAILS = 'recipient_details';
 
     protected static $sign = 'trf';
 
@@ -64,6 +75,7 @@ class Entity extends Base\PublicEntity
         self::SOURCE_ID,
         self::SOURCE,
         self::RECIPIENT,
+        self::RECIPIENT_DETAILS,
         self::MERCHANT_ID,
         self::AMOUNT,
         self::CURRENCY,
@@ -85,6 +97,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::SOURCE,
         self::RECIPIENT,
+        self::RECIPIENT_DETAILS,
         self::AMOUNT,
         self::CURRENCY,
         self::AMOUNT_REVERSED,
@@ -103,19 +116,24 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::SOURCE,
         self::RECIPIENT,
+        self::RECIPIENT_DETAILS,
         self::RECIPIENT_SETTLEMENT_ID,
         self::TRANSACTION_ID,
         self::ENTITY,
     ];
 
+    protected $appends = [
+        self::RECIPIENT_DETAILS,
+    ];
+
     protected $casts = [
-        self::AMOUNT                 => 'int',
-        self::AMOUNT_REVERSED        => 'int',
-        self::FEES                   => 'int',
-        self::SERVICE_TAX            => 'int',
-        self::TAX                    => 'int',
-        self::ON_HOLD                => 'bool',
-        self::ON_HOLD_UNTIL          => 'int',
+        self::AMOUNT          => 'int',
+        self::AMOUNT_REVERSED => 'int',
+        self::FEES            => 'int',
+        self::SERVICE_TAX     => 'int',
+        self::TAX             => 'int',
+        self::ON_HOLD         => 'bool',
+        self::ON_HOLD_UNTIL   => 'int',
     ];
 
     protected $amounts = [
@@ -127,11 +145,11 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::AMOUNT_REVERSED           => 0,
-        self::NOTES                     => [],
-        self::ON_HOLD                   => 0,
-        self::ON_HOLD_UNTIL             => null,
-        self::RECIPIENT_SETTLEMENT_ID   => null
+        self::AMOUNT_REVERSED         => 0,
+        self::NOTES                   => [],
+        self::ON_HOLD                 => 0,
+        self::ON_HOLD_UNTIL           => null,
+        self::RECIPIENT_SETTLEMENT_ID => null
     ];
 
     protected $dates = [
@@ -339,14 +357,53 @@ class Entity extends Base\PublicEntity
                 'Transfer reversal amount should be less than or equal to amount not refunded yet',
                 'amount_reversed',
                 [
-                    'amount'                => $amount,
-                    'amount_unreversed'     => $amountUnreversed,
+                    'amount'            => $amount,
+                    'amount_unreversed' => $amountUnreversed,
                 ]);
         }
 
         $amountReversed = $this->getAmountReversed() + $amount;
 
         $this->setAttribute(self::AMOUNT_REVERSED, $amountReversed);
+    }
+
+    /**
+     * Add the `recipient_details` attribute via $appends
+     *
+     * @return array|null
+     */
+    public function getRecipientDetailsAttribute()
+    {
+        if ($this->getToType() !== E::MERCHANT)
+        {
+            return null;
+        }
+
+        $account = $this->to;
+
+        $accountAttributes = [
+            Merchant::NAME,
+            Merchant::EMAIL,
+        ];
+
+        $details = $account->setVisible($accountAttributes)->toArray();
+
+        return $details;
+    }
+
+    public function setPublicRecipientDetailsAttribute(array & $attributes)
+    {
+        //
+        // The `recipient_details` attributes is only needed for
+        // for dashboard and should be hidden in private API
+        // requests
+        //
+        $app = \App::getFacadeRoot();
+
+        if ($app['basicauth']->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($attributes[self::RECIPIENT_DETAILS]);
+        }
     }
 
     public function setPublicTransactionIdAttribute(array & $attributes)
@@ -402,16 +459,20 @@ class Entity extends Base\PublicEntity
     {
         $data = parent::toArrayReport();
 
-        $settlementId   = null;
-        $settlementDate = null;
-        $utr            = null;
+        $settlementId          = null;
+        $settlementInitiatedOn = null;
+        $utr                   = null;
+        $settlementStatus      = null;
 
-        if (isset($data[self::RECIPIENT_SETTLEMENT]))
+        if (isset($data[self::RECIPIENT_SETTLEMENT]) === true)
         {
-            $recipientSettlement        = $data[self::RECIPIENT_SETTLEMENT];
-            $settlementId               = $recipientSettlement[Settlement\Entity::ID];
-            $settlementDate             = $recipientSettlement[Settlement\Entity::SETTLED_ON];
-            $utr                        = $recipientSettlement[Settlement\Entity::UTR];
+            $recipientSettlement   = $data[self::RECIPIENT_SETTLEMENT];
+            $settlementId          = $recipientSettlement[Settlement\Entity::ID];
+            $settlementCreatedAt   = $recipientSettlement[Settlement\Entity::CREATED_AT];
+            $settlementInitiatedOn = Carbon::createFromTimestamp($settlementCreatedAt, Timezone::IST)->format('d/m/y');
+            $utr                   = $recipientSettlement[Settlement\Entity::UTR];
+            $settlementStatus      = $recipientSettlement[Settlement\Entity::STATUS];
+
             unset($data[self::RECIPIENT_SETTLEMENT]);
         }
 
@@ -421,10 +482,11 @@ class Entity extends Base\PublicEntity
         unset($data[self::RECIPIENT_SETTLEMENT_ID]);
         unset($data[self::TAX]);
 
-        $data[self::ON_HOLD]                 = $this->getOnHold();
+        $data[self::ON_HOLD]                 = $this->getOnHold() ? "true" : "false";
         $data[self::RECIPIENT_SETTLEMENT_ID] = $settlementId;
-        $data[self::SETTLEMENT_DATE]         = $settlementDate;
+        $data[self::SETTLEMENT_INITIATED_ON] = $settlementInitiatedOn;
         $data[self::SETTLEMENT_UTR]          = $utr;
+        $data[self::SETTLEMENT_STATUS]       = $settlementStatus;
         $data[self::TAX]                     = $tax;
 
         return $data;

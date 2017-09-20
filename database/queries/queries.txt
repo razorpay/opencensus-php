@@ -2342,6 +2342,10 @@ ALTER TABLE gateway_rules
     ADD INDEX gateway_rules_network_category_index (network_category),
     ADD INDEX gateway_rules_category2_index (category2);
 
+ALTER TABLE subscriptions
+    ADD COLUMN cancel_at INT(11) DEFAULT NULL AFTER end_at,
+    ADD INDEX subscriptions_cancel_at_index (cancel_at);
+
 ALTER TABLE fund_transfer_attempts
     ADD COLUMN narration VARCHAR(255) DEFAULT NULL AFTER utr;
 
@@ -2441,6 +2445,44 @@ ALTER TABLE transfers
     ADD CONSTRAINT transfers_recipient_settlement_id_foreign FOREIGN KEY(recipient_settlement_id)
     REFERENCES settlements(id) ON DELETE RESTRICT;
 
+ALTER TABLE gateway_rules
+    MODIFY COLUMN gateway VARCHAR(50) DEFAULT NULL;
+
+ALTER TABLE offers
+    MODIFY COLUMN issuer VARCHAR(20);
+
+ALTER TABLE offers
+    MODIFY COLUMN payment_method VARCHAR(10) NULL;
+
+ALTER TABLE bank_transfers
+    MODIFY COLUMN payer_ifsc varchar(13) NOT NULL;
+
+ALTER TABLE bank_accounts
+    MODIFY COLUMN ifsc_code varchar(11) NULL;
+
+# Pre deployment of branch 'invoice_items_constraints'
+# Following 4 queries:
+
+# Adds line_items.type column with default null
+ALTER TABLE line_items
+    ADD COLUMN type VARCHAR(16) DEFAULT NULL after currency,
+    ADD INDEX line_items_type_index (type);
+
+# Populates line_items.type of existing rows
+UPDATE line_items l
+       JOIN items i
+            ON l.item_id = i.id AND l.type IS NULL
+SET    l.type = i.type;
+
+UPDATE line_items
+SET    type = 'invoice'
+WHERE  item_id IS NULL;
+
+# Makes line_items.type column not null and default to 'invoice'
+ALTER TABLE line_items
+    MODIFY COLUMN type VARCHAR(16) NOT NULL DEFAULT 'invoice';
+
 # Marketplace auto-activate
 ALTER TABLE merchants
     ADD COLUMN linked_account_kyc TINYINT(1) NOT NULL DEFAULT 0 AFTER fee_model;
+

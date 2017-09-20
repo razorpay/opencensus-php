@@ -24,7 +24,7 @@ trait PaymentNetbankingTrait
             ;
         }
 
-        if ($gateway === 'netbanking_kotak')
+        if ($gateway === 'netbanking_kotak' or $gateway === 'netbanking_corporation')
         {
             $response = $this->sendRequest($data);
             $this->assertEquals($response->getStatusCode(), '302');

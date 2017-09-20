@@ -2,8 +2,15 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Artisan;
+
+use Config;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Merchant\Repository;
+use RZP\Models\Merchant\EsRepository;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 use RZP\Models\Merchant\Methods\Entity as MerchantMethodEntity;
 
 class Merchant extends Base
@@ -13,6 +20,8 @@ class Merchant extends Base
         $this->fixtures->create('merchant:nodal_account');
         $this->fixtures->create('merchant:atom_account');
         $this->fixtures->create('merchant:api_fee_account');
+
+        $this->setUpHiemdallHierarcyForRazorpayOrg();
     }
 
     public function createDefaultTestMerchant()
@@ -143,6 +152,33 @@ class Merchant extends Base
         $merchantId = $merchant->getId();
 
         $balance = $this->fixtures->create('balance', ['id' => $merchantId]);
+
+        return $merchant;
+    }
+
+    /**
+     * Creates merchant and merchant details entity with given attributes.
+     *
+     * @param string $orgId
+     * @param string $id
+     * @param array  $attributes
+     * @param array  $detailsAttributes
+     *
+     * @return MerchantEntity
+     */
+    public function createMerchantWithDetails(
+        string $orgId,
+        string $id,
+        array $attributes = [],
+        array $detailsAttributes = []): MerchantEntity
+    {
+        $attributes = array_merge(['id' => $id, 'org_id' => $orgId], $attributes);
+
+        $detailsAttributes = array_merge(['merchant_id' => $id], $detailsAttributes);
+
+        $merchant = $this->fixtures->create('merchant', $attributes);
+
+        $this->fixtures->create('merchant_detail:sane', $detailsAttributes);
 
         return $merchant;
     }
@@ -380,12 +416,14 @@ class Merchant extends Base
 
     public function enableTPV($id = '10000000000000')
     {
-        return $this->editCategory2('securities', $id);
+        $this->addFeatures(['tpv'], $id);
+
+        return true;
     }
 
     public function disableTPV($id = '10000000000000')
     {
-        return $this->editCategory2('ecommerce', $id);
+        //
     }
 
     public function disableAllMethods($id = '10000000000000')
@@ -408,5 +446,241 @@ class Merchant extends Base
     public function setHandle($handle, $id = '10000000000000')
     {
         return $this->edit($id, ['handle' => $handle]);
+    }
+
+    /**
+     * Setups up a hierarchy of groups, admins and merchants under the
+     * test razorpay's organization. This can be very useful in many tests.
+     *
+     * Ref: https://gist.github.com/jitendra-1217/0d8f74c1bf3683aad112fa7e97dc527c
+     *
+     */
+    public function setUpHiemdallHierarcyForRazorpayOrg()
+    {
+        $this->createGroups();
+        $this->createAdmins();
+        $this->createMerchantsAndSyncToEs();
+    }
+
+    private function createGroups()
+    {
+        $groups = [];
+
+        foreach (range(11, 39) as $i)
+        {
+            $attributes = [
+                'id'     => "100000000000{$i}",
+                'org_id' => Org::RZP_ORG,
+            ];
+
+            $groups[$i] = $this->fixtures->create('group', $attributes);
+        }
+
+        //
+        // Assigns parents to many of the groups to create hierarchy as depicted
+        // in diagram link above.
+        //
+        // - Groups 11 - 27 are used in fetch tests.
+        // - Groups 28 - 39 are used in edit tests.
+        //
+
+        $groups[27]->parents()->sync(['10000000000026']);
+        $groups[26]->parents()->sync(['10000000000020', '10000000000021']);
+        $groups[25]->parents()->sync(['10000000000020']);
+        $groups[24]->parents()->sync(['10000000000019']);
+        $groups[23]->parents()->sync(['10000000000018']);
+        $groups[22]->parents()->sync(['10000000000018']);
+        $groups[21]->parents()->sync(['10000000000015']);
+        $groups[20]->parents()->sync(['10000000000014', '10000000000015']);
+        $groups[19]->parents()->sync(['10000000000013']);
+        $groups[18]->parents()->sync(['10000000000012']);
+        $groups[17]->parents()->sync(['10000000000012']);
+        $groups[16]->parents()->sync(['10000000000011']);
+        $groups[15]->parents()->sync(['10000000000011']);
+        $groups[14]->parents()->sync(['10000000000011']);
+
+        $groups[39]->parents()->sync(['10000000000037']);
+        $groups[38]->parents()->sync(['10000000000034']);
+        $groups[37]->parents()->sync(['10000000000033']);
+        $groups[36]->parents()->sync(['10000000000033']);
+        $groups[35]->parents()->sync(['10000000000030', '10000000000031', '10000000000032']);
+        $groups[34]->parents()->sync(['10000000000030']);
+        $groups[33]->parents()->sync(['10000000000029']);
+        $groups[32]->parents()->sync(['10000000000028']);
+        $groups[31]->parents()->sync(['10000000000028']);
+        $groups[30]->parents()->sync(['10000000000028']);
+
+        unset($groups);
+    }
+
+    private function createAdmins()
+    {
+        $admins = [];
+
+        foreach (range(11, 20) as $i)
+        {
+            $attributes = [
+                'id'     => "100000000000{$i}",
+                'org_id' => Org::RZP_ORG,
+            ];
+
+            $admins[$i] = $this->fixtures->create('admin', $attributes);
+
+            $now       = Carbon::now();
+            $createdAt = $now->timestamp;
+            $expiresAt = $now->addDay()->timestamp;
+
+            $attributes = [
+                'admin_id'   => "100000000000{$i}",
+                'token'      => "100000000000{$i}",
+                'created_at' => $createdAt,
+                'expires_at' => $expiresAt,
+            ];
+
+            $this->fixtures->create('admin_token', $attributes);
+        }
+
+        //
+        // Assign groups to admins. And admins if has access to G1, G2 that
+        // basically means he has access to all merchants under that group
+        // hierarchy.
+        //
+        // Admins from ids suffix 16 to 20 aren't assigned to any groups and these
+        // will mostly be used in edit tests.
+        //
+
+        $admins[11]->groups()->sync(['10000000000011', '10000000000012', '10000000000013']);
+        $admins[12]->groups()->sync(['10000000000018']);
+        $admins[13]->groups()->sync(['10000000000020', '10000000000024']);
+        $admins[14]->groups()->sync(['10000000000014', '10000000000015']);
+        $admins[15]->groups()->sync(['10000000000026']);
+
+        unset($admins);
+    }
+
+    private function createMerchantsAndSyncToEs()
+    {
+        //
+        // - Creates a total of 10 merchants with different set of attributes
+        //   so that it serves well for all the test cases.
+        // - Also, assigns admins and groups to the created merchants.
+        //
+
+        //
+        // - Merchants 11 - 15 are used in fetch tests
+        // - Merchants 16 - 18 are used in edit tests
+        //
+
+        $now       = Carbon::now()->timestamp;
+        $merchants = [];
+
+        $merchants[11] = $this->createMerchantWithDetails(
+                                    Org::RZP_ORG,
+                                    '10000000000011',
+                                    [
+                                        'name'          => 'jitendra ojha',
+                                        'activated'     => 1,
+                                        'live'          => 1,
+                                        'activated_at'  => $now,
+                                        'email'         => 'email.ojha@test.com',
+                                        'website'       => 'www.ojha.test',
+                                        'billing_label' => 'Ojha Label',
+                                    ]);
+
+        $merchants[11]->groups()->sync(['10000000000027']);
+
+        $merchants[12] = $this->createMerchantWithDetails(
+                                    Org::RZP_ORG,
+                                    '10000000000012',
+                                    [
+                                        'name'          => 'jitendra selva',
+                                        'activated'     => 1,
+                                        'live'          => 1,
+                                        'activated_at'  => $now,
+                                        'email'         => 'email.selva@test.com',
+                                        'website'       => 'www.selva.test',
+                                        'billing_label' => 'Selva Label',
+                                    ]);
+
+        $merchants[12]->groups()->sync(['10000000000021']);
+        $merchants[12]->admins()->sync(['10000000000012']);
+
+        $merchants[13] = $this->createMerchantWithDetails(
+                                    Org::RZP_ORG,
+                                    '10000000000013',
+                                    [
+                                        'name'        => 'jitendra amit',
+                                        'archived_at' => $now,
+                                    ]);
+
+        $merchants[13]->groups()->sync(['10000000000024']);
+
+        $merchants[14] = $this->createMerchantWithDetails(
+                                    Org::RZP_ORG,
+                                    '10000000000014',
+                                    [
+                                        'name'         => 'prashanth yv',
+                                        'parent_id'    => '10000000000012',
+                                        'activated'    => 1,
+                                        'live'         => 1,
+                                        'activated_at' => $now,
+                                    ]);
+
+        $merchants[14]->groups()->sync(['10000000000021']);
+
+        $merchants[15] = $this->createMerchantWithDetails(
+                                    Org::RZP_ORG,
+                                    '10000000000015',
+                                    [
+                                        'name'         => 'shashank kumar',
+                                        'parent_id'    => '10000000000013',
+                                        'activated'    => 1,
+                                        'live'         => 1,
+                                        'activated_at' => $now,
+                                    ]);
+
+        $merchants[15]->groups()->sync(['10000000000024']);
+
+        $merchants[16] = $this->createMerchantWithDetails(
+                                    Org::RZP_ORG,
+                                    '10000000000016',
+                                    [
+                                        'pricing_plan_id' => '1hDYlICobzOCYt',
+                                    ]);
+
+        $merchants[16]->retag(['First', 'Second']);
+
+        $merchants[17] = $this->createMerchantWithDetails(Org::RZP_ORG, '10000000000017');
+
+        $merchants[17]->groups()->sync(['10000000000038']);
+
+        $merchants[18] = $this->createMerchantWithDetails(Org::RZP_ORG, '10000000000018');
+
+        $merchants[18]->groups()->sync(['10000000000035', '10000000000036']);
+
+        $merchants[19] = $this->createMerchantWithDetails(Org::RZP_ORG, '10000000000019');
+
+        $merchants[19]->groups()->sync(['10000000000032']);
+
+        //
+        // - Create index by calling the artisan command
+        // - Sync these merchants created just now via fixtures to ES.
+        //
+        // Also only need to do this if es_mock is false, because the index_create
+        // and index commands expect ES service to be running.
+        //
+
+        $esMock = Config::get('database.es_mock');
+
+        if ($esMock === false)
+        {
+            Artisan::call('rzp:index_create', ['entity' => 'merchant', 'index' => 'testing_merchant_test', '--reindex' => true]);
+            Artisan::call('rzp:index_create', ['entity' => 'merchant', 'index' => 'testing_merchant_live', '--reindex' => true]);
+
+            Artisan::call('rzp:index', ['--mode' => 'test', '--entity' => 'merchant', '--index' => 'testing_merchant_test']);
+            Artisan::call('rzp:index', ['--mode' => 'live', '--entity' => 'merchant', '--index' => 'testing_merchant_live']);
+        }
+
+        unset($merchants);
     }
 }

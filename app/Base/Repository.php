@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\App;
 
 use RZP\Models;
 use RZP\Exception;
-use RZP\Constants;
 use RZP\Jobs\EsSync;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Jobs\DispatchRouter;
 use RZP\Constants\Entity as E;
@@ -169,11 +169,11 @@ class Repository extends \Razorpay\Spine\Repository
 
         $dirty = $entity->getDirty();
 
-        $esAction = $entity->exists ? EsRepository::UPDATE : EsRepository::CREATE;
+        $action = $entity->exists ? EsRepository::UPDATE : EsRepository::CREATE;
 
         $entity->saveOrFail($options);
 
-        $this->syncToEs($entity, $esAction, $dirty);
+        $this->syncToEs($entity, $action, $dirty);
     }
 
     public function deleteOrFail($entity)
@@ -192,6 +192,8 @@ class Repository extends \Razorpay\Spine\Repository
     public function sync($entity, $relation, $ids = [], bool $detaching = true)
     {
         $entity->$relation()->sync($ids, $detaching);
+
+        $this->syncToEs($entity, EsRepository::UPDATE);
 
         return $this;
     }
@@ -425,13 +427,10 @@ class Repository extends \Razorpay\Spine\Repository
         }
     }
 
-    /**
-     * Gets $esRepo
-     *
-     * @return EsRepository|null
-     */
-    public function getEsRepo()
+    public function setAndGetEsRepoIfExist()
     {
+        $this->setEsRepoIfExist();
+
         return $this->esRepo;
     }
 
@@ -546,24 +545,32 @@ class Repository extends \Razorpay\Spine\Repository
      * Syncs model changes to es.
      * Upserts in case of addition/updates and deletes es document otherwise.
      *
+     * - $dirty: If dirty is not null then this will be used to check
+     *           if es sync is required.
+     *
+     * - $mode:  If mode is passed then this will be used, else rzp.mode
+     *           will be used.
+     *
      * @param Models\Base\PublicEntity $entity
      * @param string                   $action
      * @param array                    $dirty
+     * @param string                   $mode
      */
-    protected function syncToEs(
+    public function syncToEs(
         Models\Base\PublicEntity $entity,
         string $action,
-        array $dirty = [])
+        array $dirty = null,
+        string $mode = null)
     {
         $this->setEsRepoIfExist();
 
-        if (($this->esRepo === null) or
-            ($this->isEsSyncNeeded($action, $dirty) === false))
+        if (($this->esRepo === null) or ($this->isEsSyncNeeded($action, $dirty) === false))
         {
             return;
         }
 
-        $mode = $this->app['rzp.mode'];
+        // If $mode is provided use that else default to set rzp.mode
+        $mode = $mode ?: $this->app['rzp.mode'];
 
         $tracePayload = [
             'action'    => $action,
@@ -595,6 +602,15 @@ class Repository extends \Razorpay\Spine\Repository
         }
     }
 
+    public function syncToEsLiveAndTest(
+        Models\Base\PublicEntity $entity,
+        string $action,
+        array $dirty = null)
+    {
+        $this->syncToEs($entity, $action, $dirty, Mode::LIVE);
+        $this->syncToEs($entity, $action, $dirty, Mode::TEST);
+    }
+
     /**
      * Checks if es sync after a model operation is needed or not.
      *
@@ -603,7 +619,7 @@ class Repository extends \Razorpay\Spine\Repository
      *
      * @return bool
      */
-    public function isEsSyncNeeded(string $action, array $dirty): bool
+    public function isEsSyncNeeded(string $action, array $dirty = null): bool
     {
         $esFields = $this->esRepo->getIndexedFields();
 
@@ -620,7 +636,8 @@ class Repository extends \Razorpay\Spine\Repository
             return false;
         }
 
-        if ($action === EsRepository::DELETE)
+        // If $dirty is null, i.e. we don't have to do dirty check.
+        if ($dirty === null)
         {
             return true;
         }
@@ -634,11 +651,16 @@ class Repository extends \Razorpay\Spine\Repository
             return false;
         }
 
+        // If it's update action and there is something dirtied, just sync.
         if ($action === EsRepository::UPDATE)
         {
             return true;
         }
 
+        //
+        // Otherwise if it's insert action then need to check if there is at least
+        // one value in $dirty that IS set(not null values, e.g null, [], {} etc.).
+        //
         $shouldSync = false;
 
         foreach ($esFields as $esField)

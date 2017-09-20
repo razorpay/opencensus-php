@@ -13,6 +13,7 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 class Gateway extends Base\Gateway
 {
@@ -69,7 +70,7 @@ class Gateway extends Base\Gateway
 
         $this->checkResponseStatus($attrs, $content);
 
-        $acquirerData = $this->getAcquirerData($gatewayEntity);
+        $acquirerData = $this->getAcquirerData($input, $gatewayEntity);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }
@@ -404,14 +405,21 @@ class Gateway extends Base\Gateway
         //
         if ($numSuccess > 1)
         {
-            throw new Exception\LogicException(
-                ErrorCode::SERVER_ERROR_MULTIPLE_SUCCESS_TRANSACTIONS_IN_VERIFY,
+            $data = [
+                'response_array' => $responseArray,
+                'payment_id'     => $this->input['payment']['id'],
+                'num_success'    => $numSuccess,
+                'gateway'        => $this->gateway,
+            ];
+
+            $this->trace->error(TraceCode::MULTIPLE_TABLES_IN_VERIFY_RESPONSE, ['response_data' => $data]);
+
+            throw new Exception\PaymentVerificationException(
+                $data,
                 null,
-                [
-                    'response_array' => $responseArray,
-                    'payment_id'     => $this->input['payment']['id'],
-                    'num_success'    => $numSuccess
-                ]);
+                VerifyAction::FINISH,
+                ErrorCode::SERVER_ERROR_MULTIPLE_SUCCESS_TRANSACTIONS_IN_VERIFY
+            );
         }
 
         return $tableToBeReturned;

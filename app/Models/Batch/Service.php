@@ -36,6 +36,22 @@ class Service extends Base\Service
         return $batch->toArrayPublic();
     }
 
+    /**
+     * Ref: Batch/Core::retryBatchOutputFile
+     *
+     * @param string $id
+     *
+     * @return array
+     */
+    public function retryBatchOutputFile(string $id): array
+    {
+        $batch = $this->repo->batch->findByPublicId($id);
+
+        $batch = (new Core)->retryBatchOutputFile($batch);
+
+        return $batch->toArrayPublic();
+    }
+
     public function downloadBatch(string $id): array
     {
         $batch = $this->repo->batch->findByPublicIdAndMerchant($id, $this->merchant);

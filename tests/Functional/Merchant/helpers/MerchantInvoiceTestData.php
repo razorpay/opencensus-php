@@ -1,5 +1,9 @@
 <?php
 
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
+
 return [
 
     'testInvoiceEntityCreateForPrevMonth' => [
@@ -61,6 +65,22 @@ return [
             'amount'    => 1000,
             'tax'       => 0,
             'gstin'     => '29kjsngjk213922',
+        ],
+    ],
+
+    'testEditGstinFailure' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invalid Invoice Number.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_MERCHANT_INVOICE_NUMBER,
         ],
     ],
 ];

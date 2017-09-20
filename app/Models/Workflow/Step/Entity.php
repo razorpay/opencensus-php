@@ -96,9 +96,4 @@ class Entity extends Base\Entity
     {
         return $this->getAttribute(self::REVIEWER_COUNT);
     }
-
-    public function getRoleId()
-    {
-        return $this->getAttribute(self::ROLE_ID);
-    }
 }

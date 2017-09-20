@@ -4,15 +4,22 @@ namespace RZP\Models\Admin\Group;
 
 use RZP\Models\Admin\Org;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
+use RZP\Jobs\MerchantSync;
 use RZP\Models\Admin\Action;
 
 class Service extends Base\Service
 {
-    public function createGroup(string $orgId, array $input)
+    public function __construct()
     {
-        Org\Entity::verifyIdAndStripSign($orgId);
+        parent::__construct();
 
-        $org = $this->repo->org->findOrFailPublic($orgId);
+        $this->adminOrgId = $this->app['basicauth']->getAdminOrgId();
+    }
+
+    public function createGroup(array $input)
+    {
+        $org = $this->repo->org->findOrFailPublic($this->adminOrgId);
 
         $group = $this->repo->transactionOnLiveAndTest(function() use ($org, $input)
         {
@@ -22,7 +29,7 @@ class Service extends Base\Service
         return $group->toArrayPublic();
     }
 
-    public function getGroup(string $orgId, string $groupId)
+    public function getGroup(string $groupId)
     {
         $relations = [
             'admins', 'merchants', 'subGroups',
@@ -30,14 +37,14 @@ class Service extends Base\Service
         ];
 
         $group = $this->repo->group->findByPublicIdAndOrgIdWithRelations(
-            $groupId, $orgId, $relations);
+            $groupId, $this->adminOrgId, $relations);
 
         return $group->toArrayPublic();
     }
 
-    public function editGroup(string $orgId, string $groupId, array $input)
+    public function editGroup(string $groupId, array $input)
     {
-        $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
+        $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $this->adminOrgId);
 
         $group = $this->repo->transactionOnLiveAndTest(function() use ($group, $input)
         {
@@ -47,20 +54,24 @@ class Service extends Base\Service
         return $group->toArrayPublic();
     }
 
-    public function deleteGroup(string $orgId, string $groupId)
+    public function deleteGroup(string $groupId)
     {
-        $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
+        $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $this->adminOrgId);
 
         $group->setAuditAction(Action::DELETE_GROUP);
 
         $this->repo->deleteOrFail($group);
 
+        $payload = [Entity::ID => $group->getId()];
+
+        (new Merchant\Core)->syncEventToEs(MerchantSync::GROUP_DELETE, $payload);
+
         return $group->toArrayDeleted();
     }
 
-    public function fetchMultiple(string $orgId, array $input = [])
+    public function fetchMultiple()
     {
-        $groups = $this->repo->group->fetchByOrgId($orgId);
+        $groups = $this->repo->group->fetchByOrgId($this->adminOrgId);
 
         return $groups->toArrayPublic();
     }
@@ -77,16 +88,16 @@ class Service extends Base\Service
      * - Its **direct** parent-linked chain.
      * - Its **siblings** and its **own** child hierarchy.
      */
-    public function fetchEligibleParents(string $orgId, string $groupId, array $input)
+    public function fetchEligibleParents(string $groupId, array $input)
     {
-        $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
+        $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $this->adminOrgId);
 
         // Get all groups of the current organization
-        $allGroups = $this->repo->group->fetchByOrgId($orgId);
+        $allGroups = $this->repo->group->fetchByOrgId($this->adminOrgId);
 
         $allGroups = $allGroups->toArray();
 
-        $filteredGroups = $this->filterEligibleParents($orgId, $group, $allGroups);
+        $filteredGroups = $this->filterEligibleParents($this->adminOrgId, $group, $allGroups);
 
         return $filteredGroups;
     }

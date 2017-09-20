@@ -29,7 +29,8 @@ class CreateOffers extends Migration
             $table->string(Offer::NAME, Offer::NAME_LENGTH)
                   ->nullable();
 
-            $table->string(Offer::PAYMENT_METHOD, Offer::PAYMENT_METHOD_LENGTH);
+            $table->string(Offer::PAYMENT_METHOD, Offer::PAYMENT_METHOD_LENGTH)
+                 ->nullable();
 
             $table->string(Offer::PAYMENT_METHOD_TYPE, Offer::PAYMENT_METHOD_TYPE_LENTH)
                   ->nullable();

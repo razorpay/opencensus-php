@@ -47,7 +47,7 @@ class Repository extends Base\Repository
         Entity::SUBSCRIPTION_ID   => 'sometimes|string|min:14|max:18',
         EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
         EsRepository::SEARCH_HITS => 'sometimes|boolean',
-        self::EXPAND . '.*'       => 'string|in:payments,',
+        self::EXPAND . '.*'       => 'string|in:payments,payments.card',
     ];
 
     protected $appFetchParamRules = [
@@ -291,6 +291,16 @@ class Repository extends Base\Repository
         }
 
         return $query->get();
+    }
+
+    public function findByBatchIdAndReceipts(
+        string $batchId,
+        array $receipts = []): Base\PublicCollection
+    {
+        return $this->newQuery()
+                    ->where(Entity::BATCH_ID, $batchId)
+                    ->whereIn(Entity::RECEIPT, $receipts)
+                    ->get();
     }
 
     public function getNonDraftInvoiceCountByBatchId(string $batchId): int

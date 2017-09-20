@@ -22,8 +22,6 @@ class Entity extends Base\Entity
     const DESCRIPTION      = 'description';
     const ORG_ID           = 'org_id';
 
-    const DELETED_AT       = 'deleted_at';
-
     const PARENTS          = 'parents';
     const SUB_GROUPS       = 'sub_groups';
 

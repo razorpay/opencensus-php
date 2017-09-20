@@ -260,7 +260,7 @@ class Server extends Base\Core
         return $content;
     }
 
-    public function request(& $content)
+    public function request(& $content, $action = '')
     {
         return $content;
     }

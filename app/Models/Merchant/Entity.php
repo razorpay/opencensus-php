@@ -55,11 +55,27 @@ class Entity extends Base\PublicEntity
     const CONVERT_CURRENCY          = 'convert_currency';
     const ARCHIVED_AT               = 'archived_at';
     const SUSPENDED_AT              = 'suspended_at';
-    const GROUPS                    = 'groups';
-    const ADMINS                    = 'admins';
 
     // Coupon Related Data for display only
     const COUPON_CODE               = 'coupon_code';
+
+    //
+    // Followings are derived data indexed in ES and goes to
+    // admin dashboard as it is.
+    //
+
+    // Whether the entity is marketplace entity or not
+    const IS_MARKETPLACE            = 'is_marketplace';
+    // Referrer for the entity is name of first admin.
+    const REFERRER                  = 'referrer';
+    // List of tags this entity is tagged as.
+    const TAG_LIST                  = 'tag_list';
+
+    /**
+     * Constants for merchant analytics keys
+     */
+    const FILTERS                   = 'filters';
+    const KEY_MERCHANT_ID           = 'merchant_id';
 
     //
     // Configs
@@ -73,11 +89,30 @@ class Entity extends Base\PublicEntity
     const MAX_AUTO_REFUND_DELAY = 864000;
 
     /**
+     * A query parameter to filter results based on
+     * account status which can be one of suspended,
+     * archived, activated, pending or dead.
+     */
+    const ACCOUNT_STATUS            = 'account_status';
+
+    /**
+     * A query parameters to get only merchants who
+     * are sub accounts(if value is 1) or sub accounts
+     * of specific merchant (if value is an id).
+     */
+    const SUB_ACCOUNTS              = 'sub_accounts';
+
+    /**
      * Refers to methods relation and not a property;
      */
     const METHODS                   = 'methods';
     const ORIGINAL_SIZE             = 'original';
     const ACTION                    = 'action';
+    const MEDIUM_SIZE               = 'medium';
+    const MERCHANT_DETAIL           = 'merchant_detail';
+    const GROUPS                    = 'groups';
+    const ADMINS                    = 'admins';
+    const FEATURES                  = 'features';
 
     const ROLE                      = 'role';
     const PIVOT                     = 'pivot';
@@ -1045,13 +1080,14 @@ class Entity extends Base\PublicEntity
      * we need to verify the bank account number of customer during payment
      * which is not required for a normal payment flow.
      *
+     * This now enforced via a feature flag, because certain merchants
+     * from mutual_funds do not require the
+     *
      * @return boolean
      */
     public function isTPVRequired()
     {
-        $category2 = $this->getCategory2();
-
-        return Terminal\Category::isMerchantCategoryTpv($category2);
+        return ($this->isFeatureEnabled(Feature\Constants::TPV) === true);
     }
 
     public function isTestAccount()
@@ -1161,6 +1197,7 @@ class Entity extends Base\PublicEntity
             self::ACTIVATED    => $this->getAttribute(self::ACTIVATED),
             self::ARCHIVED_AT  => $this->getAttribute(self::ARCHIVED_AT),
             self::SUSPENDED_AT => $this->getAttribute(self::SUSPENDED_AT),
+            self::LOGO_URL     => $this->getFullLogoUrlWithSize(self::MEDIUM_SIZE),
             self::CREATED_AT   => $this->getAttribute(self::CREATED_AT),
             self::UPDATED_AT   => $this->getAttribute(self::UPDATED_AT),
         ];

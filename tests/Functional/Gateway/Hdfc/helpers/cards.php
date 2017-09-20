@@ -6,6 +6,16 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Payment\TwoFactorAuth;
 
+//
+// Hdfc debit cards
+//
+// 4012001037141112
+// 4005559876540
+// 4012001037167778
+// 4012001037490014
+// 4012001037141112
+//
+
 return [
     'testCardTimeout' => [
         'request' => [

@@ -43,6 +43,8 @@ class Constants
     const EMI_MERCHANT_SUBVENTION  = 'emi_merchant_subvention';
     const FSS_RISK_UDF             = 'fss_risk_udf';
     const RULE_FILTER              = 'rule_filter';
+    const TPV                      = 'tpv';
+    const IRCTC_REPORT             = 'irctc_report';
 
     // TODO: Use this instead of allFeatures once in final code change pr
     public static $featureValueMap = [
@@ -83,13 +85,45 @@ class Constants
         self::EMI_MERCHANT_SUBVENTION  => true,
         self::FSS_RISK_UDF             => true,
         self::RULE_FILTER              => true,
+        self::TPV                      => true,
+        self::IRCTC_REPORT             => true,
     ];
 
+    /**
+     * Features that are exposed to the merchant and can be
+     * enabled/disabled
+     *
+     * @var array
+     */
     public static $visibleFeaturesMap = [
-        'noflashcheckout' => [
+        self::NOFLASHCHECKOUT  => [
             'feature'      => self::NOFLASHCHECKOUT,
             'display_name' => 'No Flash Checkout'
-        ]
+        ],
+        self::MARKETPLACE      => [
+            'feature'      => self::MARKETPLACE,
+            'display_name' => 'Marketplace'
+        ],
+        self::SUBSCRIPTIONS    => [
+            'feature'      => self::SUBSCRIPTIONS,
+            'display_name' => 'Subscriptions'
+        ],
+        self::VIRTUAL_ACCOUNTS => [
+            'feature'      => self::VIRTUAL_ACCOUNTS,
+            'display_name' => 'Virtual accounts'
+        ],
+    ];
+
+    /**
+     * Lists features that can be enabled/disabled on test mode by the merchant
+     * but not on live
+     *
+     * @var array
+     */
+    public static $featuresUneditableOnLive = [
+        self::MARKETPLACE,
+        self::SUBSCRIPTIONS,
+        self::VIRTUAL_ACCOUNTS
     ];
 
     public static function getFeatureValue($featureName)

@@ -67,9 +67,9 @@ class Gateway extends Base\Gateway
      * @param mapped         boolean                 If the attrs are mapped to gateway codes
      */
     protected function updateGatewayPaymentEntity(
-        $gatewayPayment,
-        $attributes,
-        $mapped = true)
+        Base\Entity $gatewayPayment,
+        array $attributes,
+        bool $mapped = true)
     {
         if ($mapped === true)
         {

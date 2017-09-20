@@ -847,6 +847,7 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
+                'type'                  => 1,
                 )
             );
 
@@ -862,6 +863,7 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
+                'type'                  => 1,
                 )
             );
 
@@ -908,6 +910,7 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
+                'type'                  => 1,
                 )
             );
 
@@ -954,6 +957,7 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
+                'type'                  => 1,
                 )
             );
 
@@ -1013,6 +1017,7 @@ class DatabaseSeeder extends Seeder
                 'recurring'             => 1,
                 'created_at'            => time(),
                 'updated_at'            => time(),
+                'type'                  => 1,
                 )
             );
 
@@ -1056,8 +1061,10 @@ class DatabaseSeeder extends Seeder
 
         $this->createAmexTerminals();
         $this->createCybersourceTerminals();
+        $this->createHitachiGatewayTerminals();
         $this->createBilldeskGatewayTerminals();
         $this->createNetbankingHdfcTerminals();
+        $this->createNetbankingCorporationTerminals();
         $this->createMobikwikTerminals();
         $this->createPayzappTerminals();
         $this->createPayumoneyTerminals();
@@ -1079,6 +1086,37 @@ class DatabaseSeeder extends Seeder
         $this->createVodafoneMpesaTerminal();
         $this->createNetbankingRblTerminal();
         $this->createEbsTerminal();
+    }
+
+    protected function createNetbankingCorporationTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                        => '22nP3sEf2tQco1',
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::NETBANKING_CORPORATION,
+                'card'                      => '0',
+                'netbanking'                => '1',
+                'gateway_merchant_id'       => 'test_merchant_netbanking_corporation',
+                'gateway_secure_secret'     => Crypt::encrypt('test_account_netbanking_corp_secret'),
+                'created_at'                => time(),
+                'updated_at'                => time(),
+            ]
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_CORPORATION_TERMINAL,
+                'merchant_id'           => Account::DEMO_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_CORPORATION,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'demo_merchant_netbanking_corporation',
+                'gateway_secure_secret' => Crypt::encrypt('test_account_netbanking_corp_secret'),
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
     }
 
     protected function createNetbankingHdfcTerminals()
@@ -1144,6 +1182,23 @@ class DatabaseSeeder extends Seeder
             'recurring'                 => 1,
             'created_at'                => time(),
             'updated_at'                => time(),
+        ]);
+    }
+
+    protected function createHitachiGatewayTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert([
+            'id'                        => Terminal\Shared::HITACHI_TERMINAL,
+            'merchant_id'               => Account::TEST_ACCOUNT,
+            'gateway'                   => Gateway::HITACHI,
+            'gateway_acquirer'          => 'rbl',
+            'card'                      => 1,
+            'gateway_merchant_id'       => 'test_merchant_hitachi',
+            'gateway_secure_secret'     => Crypt::encrypt('test_hitachi_secure_secret'),
+            'gateway_terminal_password' => Crypt::encrypt('test_hitachi_secure_secret2'),
+            'recurring'                 => 1,
+            'created_at'                => time(),
+            'updated_at'                => time()
         ]);
     }
 

@@ -12,6 +12,15 @@ class AdminController extends Controller
 {
     protected $service = Admin\Service::class;
 
+    public function getEntities()
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Service)->getAllEntities($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getEntityMultiple($type)
     {
         $input = Request::all();

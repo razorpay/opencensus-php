@@ -58,4 +58,9 @@ class Method
     {
         return in_array($method, self::$asynchronous, true);
     }
+
+    public static function getMethodsNamesMap()
+    {
+        return self::$methods;
+    }
 }

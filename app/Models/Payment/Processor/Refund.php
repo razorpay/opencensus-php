@@ -266,6 +266,12 @@ trait Refund
         //     }
         // }
 
+        // Certain kinds of bank_transfers cannot be refunded
+        if ($payment->isBankTransfer() === true)
+        {
+            (new BankTransfer\Validator)->validateRefundIsAllowed($payment);
+        }
+
         return $this->refund($payment, $input);
     }
 
@@ -782,9 +788,6 @@ trait Refund
             return Payment\Refund\Status::PROCESSED;
         }
 
-        $this->refund->incrementAttempts();
-        $this->repo->saveOrFail($this->refund);
-
         // true  if refunded
         // false if not refunded
         $refundedOnGateway = $this->verifyRefund($refund);
@@ -804,6 +807,8 @@ trait Refund
         }
 
         $this->refund->setGatewayRefunded($refundedOnGateway);
+
+        $this->refund->incrementAttempts();
 
         $this->repo->saveOrFail($this->refund);
 
@@ -968,6 +973,12 @@ trait Refund
     protected function refundCapturedPayment($payment, array $input = [], Batch\Entity $batch = null)
     {
         $this->validatePaymentForRefund($payment);
+
+        // Certain kinds of bank_transfers cannot be refunded
+        if ($payment->isBankTransfer() === true)
+        {
+            (new BankTransfer\Validator)->validateRefundIsAllowed($payment);
+        }
 
         // Captured payments of transfer cannot be refunded via direct API requests
         if ($payment->isTransfer() === true)
