@@ -93,7 +93,7 @@ export default class TransferDetails extends Component {
   onDateChange(date) {
     this.setState({
       date,
-      holdUntil: ((date.toDate() - 60000) / 1000) | 0,
+      holdUntil: ((date.startOf('day').toDate() - 600000) / 1000) | 0,
     });
   }
 

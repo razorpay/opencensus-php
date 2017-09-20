@@ -129,7 +129,9 @@ export default class TransferNew extends Component {
       holdData.on_hold = 1;
 
       if (this.props.onHold === 'on_hold_until') {
-        holdData.on_hold_until = this.props.holdUntil;
+        holdData.on_hold_until =
+          moment(this.props.holdUntil * 1000).startOf('day').toDate() / 1000;
+        holdData.on_hold_until = holdData.on_hold_until - 600;
       }
     } else {
       holdData.on_hold = 0;
