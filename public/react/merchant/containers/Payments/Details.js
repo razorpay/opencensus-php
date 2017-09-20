@@ -219,7 +219,7 @@ export default class PaymentDetailsContainer extends Component {
           {this.state.secView === 'new_transfer' &&
             <PaymentTransferNew
               paymentId={payment && payment.id}
-              onClose={this.secClose}
+              onClose={() => this.secClose(null)}
               onCreate={this.onCreateTransfer}
               ref={c => (this.transfersView = c)}
             />}

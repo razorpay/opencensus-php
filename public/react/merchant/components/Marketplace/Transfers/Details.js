@@ -27,6 +27,36 @@ let initialState = {
   editView: false,
 };
 
+const SettlementText = ({ data, transfer, onEdit }) => {
+  if (transfer.recipient_settlement && transfer.recipient_settlement.utr) {
+    return <span>Settled</span>;
+  }
+
+  return (
+    <div>
+      <div>
+        {data.onHold === 'false'
+          ? <span className="text-success">Scheduled</span>
+          : data.holdUntil
+            ? <span className="text-warning">
+                Scheduled for&nbsp;
+                <Time value={data.date.toDate() / 1000} format="Do MMM YYYY" />
+              </span>
+            : <span className="text-danger">On Hold</span>}
+        <span>&nbsp;&nbsp;</span>
+        <a href className="btn-link" onClick={onEdit}>
+          change
+        </a>
+      </div>
+      {data.onHold === 'false' &&
+        <div className="text-fade">
+          Transfers scheduled to settle on bank holidays will get settled on the
+          next working day.
+        </div>}
+    </div>
+  );
+};
+
 export default class TransferDetails extends Component {
   constructor(props) {
     super(props);
@@ -205,6 +235,9 @@ export default class TransferDetails extends Component {
                           onSubmit={this.onSubmit}
                           name="updatePaymentTransfer"
                         >
+                          <p>
+                            <b>Change settlement schedule</b>
+                          </p>
                           <div class="RadioButton">
                             <label>
                               <input
@@ -319,28 +352,11 @@ export default class TransferDetails extends Component {
                             />
                           </div>
                         </form>
-                      : <span>
-                          {this.state.onHold === 'false'
-                            ? <span className="text-success">Scheduled</span>
-                            : this.state.holdUntil
-                              ? <span className="text-warning">
-                                  Scheduled for&nbsp;
-                                  <Time
-                                    value={this.state.date.toDate() / 1000}
-                                    format="Do MMM YYYY"
-                                  />
-                                </span>
-                              : <span className="text-danger">On Hold</span>}
-                          <span>&nbsp;&nbsp;</span>
-                          <a href className="btn-link" onClick={this.onEdit}>
-                            {'change'}
-                          </a>
-                        </span>}
-                    {this.state.onHold === 'false' &&
-                      <div className="text-fade">
-                        Transfers scheduled to settle on bank holidays will get
-                        settled on the next working day.
-                      </div>}
+                      : <SettlementText
+                          data={this.state}
+                          transfer={transfer}
+                          onEdit={this.onEdit}
+                        />}
                   </EntityDetailRow>
 
                   <EntityDetailRow
