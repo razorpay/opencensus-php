@@ -813,4 +813,13 @@ class MerchantController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function createBatches($id)
+    {
+        $input = Request::all();
+
+        $response = (new Merchant\Service)->createBatches($id, $input);
+
+        return ApiResponse::json($response);
+    }
 }

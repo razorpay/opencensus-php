@@ -37,6 +37,18 @@ class Header
     const SHORT_URL           = 'Payment Link Short URL';
 
     /**
+     * Irctc Headers
+     */
+    const MERCHANT_REFERENCE = 'merchant_reference';
+    const REFUND_TYPE        = 'refund_type';
+    const REFUND_AMOUNT      = 'refund_amount';
+    const CANCELLATION_DATE  = 'cancellation_date';
+    const PAYMENT_AMOUNT     = 'payment_amount';
+    const CANCELLATION_ID    = 'cancellation_id';
+    const PAYMENT_DATE       = 'payment_date';
+    const REFUND_DATE        = 'refund_date';
+
+    /**
      * Input and output file headers per type.
      */
     const PER_TYPE = [
@@ -84,6 +96,53 @@ class Header
                 self::STATUS,
                 self::PAYMENT_LINK_ID,
                 self::SHORT_URL,
+                self::ERROR_CODE,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::IRCTC_REFUND => [
+
+            self::INPUT => [
+                self::MERCHANT_REFERENCE,
+                self::REFUND_TYPE,
+                self::REFUND_AMOUNT,
+                self::PAYMENT_ID,
+                self::CANCELLATION_DATE,
+                self::PAYMENT_AMOUNT,
+                self::CANCELLATION_ID,
+            ],
+
+            self::OUTPUT => [
+                self::MERCHANT_REFERENCE,
+                self::REFUND_TYPE,
+                self::REFUND_AMOUNT,
+                self::PAYMENT_ID,
+                self::STATUS,
+                self::REFUND_DATE,
+                self::REFUND_ID,
+                self::CANCELLATION_DATE,
+                self::PAYMENT_AMOUNT,
+                self::CANCELLATION_ID,
+                self::ERROR_DESCRIPTION,
+            ],
+        ],
+
+        Type::IRCTC_SETTLEMENT => [
+
+            self::INPUT => [
+                self::PAYMENT_ID,
+                self::PAYMENT_AMOUNT,
+                self::PAYMENT_DATE,
+                self::MERCHANT_REFERENCE,
+            ],
+
+            self::OUTPUT => [
+                self::PAYMENT_ID,
+                self::PAYMENT_AMOUNT,
+                self::PAYMENT_DATE,
+                self::MERCHANT_REFERENCE,
+                self::STATUS,
                 self::ERROR_CODE,
                 self::ERROR_DESCRIPTION,
             ],
