@@ -28,8 +28,6 @@ class TransferTest extends TestCase
 
         $account = $this->fixtures->create('merchant:marketplace_account');
 
-        $this->linkedAccount = $account;
-
         $this->linkedAccountId = $account['id'];
     }
 
