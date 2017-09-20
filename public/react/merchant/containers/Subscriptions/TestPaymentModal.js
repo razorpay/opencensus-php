@@ -21,8 +21,8 @@ export default class TestPaymentModal extends Component {
 
   handleSubmit = isSuccess => {
     var testChargeMessages = [
-      'Charge is marked as FAILURE successfully',
-      'Charge is marked as SUCCESS successfully',
+      'Charge marked as FAILURE',
+      'Charge marked as SUCCESS',
     ];
 
     this.setState({ isDisabled: true });
