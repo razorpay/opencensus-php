@@ -1112,6 +1112,7 @@ final class Route
         'merchant_analytics',
         'feature_onboarding_fetch_questions',
         'feature_onboarding_create',
+        'feature_onboarding_fetch_responses',
         'feature_onboarding_fetch_all_responses',
     ];
 
