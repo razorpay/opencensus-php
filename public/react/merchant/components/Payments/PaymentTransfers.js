@@ -21,8 +21,6 @@ import { transferId, amount, createdAt } from 'rzp/ui/item/pair';
  * apis, the component will render as per the design
  */
 
-console.log(transferId);
-
 const createdAtWithStyle = { columnClass: 'text-right', ...createdAt };
 
 const NumTransfers = ({ transfers, titleCase = false }) => {
