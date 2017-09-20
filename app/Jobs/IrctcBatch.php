@@ -19,7 +19,7 @@ class IrctcBatch extends Job implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    // Define retry attempts and max tries varialb
+     const MAX_ALLOWED_ATTEMPTS = 1;
 
     /**
      * Batches array.
@@ -86,9 +86,5 @@ class IrctcBatch extends Job implements ShouldQueue
                     'data' => $this->batches
                 ]);
         }
-        // finally
-        // {
-        //     $this->delete();
-        // }
     }
 }

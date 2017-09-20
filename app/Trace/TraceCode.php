@@ -1001,6 +1001,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
         self::GRATIS_TO_POSTPAID_INPUT                  => 'Mark gratis transactions as postpaid request',
         self::GRATIS_TO_POSTPAID_FAILED                 => 'Transaction conversion from gratis to postpaid failed',
+        self::GRATIS_TO_POSTPAID_RESPONSE               => 'Gratis to postpaid response',
     );
 
     /**

@@ -264,7 +264,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateMerchantForMarkvetplaceTransfer($account, $mode)
+    public function validateMerchantForMarketplaceTransfer($account, $mode)
     {
         if (($account === null) or
             ($account->isLinkedAccount() === false) or
@@ -282,41 +282,6 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_TRANSFER_ACCOUNT_NOT_ACTIVATED
             );
-        }
-    }
-
-    public function validateAttachment(array $filenames)
-    {
-        $merchant = $this->entity->getName();
-
-        $fileDetailsValidator = 'validate' . studly_case($merchant) . 'FileDetails';
-
-        $this->$fileDetailsValidator($filenames);
-    }
-
-    /**
-     * 1. Validate only 2 files are present
-     * 2. Validate only `refund_` and `settlement_` files are present
-     *
-     * @param array $filenames
-     * @throws Exception\BadRequestValidationFailureException
-     */
-    protected function validateIrctcFileDetails(array $filenames)
-    {
-        $files = array_filter(
-            $filenames,
-            function($name)
-            {
-                return ((strpos($name, 'refund_') === 0) or
-                    (strpos($name, 'settlement_') === 0));
-            },
-            ARRAY_FILTER_USE_BOTH
-        );
-
-        if (count($files) < 1 or count($files) > 2)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Either settlement file or refund file should to be sent');
         }
     }
 

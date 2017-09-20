@@ -35,16 +35,6 @@ class IrctcRefund extends Base
 
         $input = $this->getRefundParams($entry);
 
-        $input = [
-            Refund\Entity::RECEIPT => $entry[Batch\Header::CANCELLATION_ID] . '_' . $entry[Batch\Header::MERCHANT_REFERENCE],
-            Refund\Entity::NOTES   => [
-                'reservation_id'    => $entry[Batch\Header::MERCHANT_REFERENCE],
-                'cancellation_id'   => $entry[Batch\Header::CANCELLATION_ID],
-                'cancellation_date' => $entry[Batch\Header::CANCELLATION_DATE],
-                'refund_type'       => $entry[Batch\Header::REFUND_TYPE],
-            ],
-        ];
-
         return $paymentProcessor->createRefundFromMerchantFile($payment, $input, $this->batch);
     }
 
