@@ -2,11 +2,13 @@
 
 namespace RZP\Models\BankTransfer;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Payout;
+use RZP\Error\ErrorCode;
 use RZP\Models\BankAccount;
-use RZP\Models\Transaction\Channel;
 use RZP\Models\Currency\Currency;
+use RZP\Models\Transaction\Channel;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 
@@ -16,9 +18,11 @@ class Refund extends Base\Core
 
     const MAX_NARRATION_LENGTH = 39;
 
-    public function process(array $input, Merchant $merchant)
+    public function process(array $input)
     {
         $bankTransfer = $this->getBankTransfer($input['payment']);
+
+        $bankTransfer->getValidator()->validateRefundIsAllowed();
 
         $this->createRefundAttemptEntity($input, $bankTransfer);
     }

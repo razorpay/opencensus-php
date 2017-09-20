@@ -3,12 +3,13 @@
 namespace RZP\Models\Merchant;
 
 use RZP\Base;
+use RZP\Exception;
+use RZP\Models\Feature;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
-use RZP\Exception;
 use RZP\Error\ErrorCode;
-use RZP\Models\Feature;
+use RZP\Reconciliator\FileProcessor;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 
 class Validator extends Base\Validator
@@ -108,6 +109,16 @@ class Validator extends Base\Validator
     protected static $updateBankAccountRules = [
         'bank_account'   => 'required|array',
         'merchant_ids'   => 'required|array'
+    ];
+
+    protected static $createBatchRules = [
+        'type'        => 'required|string|max:50',
+        'data'        => 'required|array'
+    ];
+
+    protected static $irctcRules = [
+        'refund'     => 'sometimes|filled|file|mimes:txt|max:1024',
+        'settlement' => 'sometimes|filled|file|mimes:txt|max:1024',
     ];
 
     protected static $editConfigValidators = [

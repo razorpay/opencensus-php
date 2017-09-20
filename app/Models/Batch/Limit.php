@@ -8,8 +8,10 @@ use RZP\Exception\BadRequestException;
 class Limit
 {
     const PER_TYPE = [
-        Type::REFUND       => 1000,
-        Type::PAYMENT_LINK => 5000,
+        Type::REFUND           => 1000,
+        Type::PAYMENT_LINK     => 5000,
+        Type::IRCTC_REFUND     => 100000,
+        Type::IRCTC_SETTLEMENT => 100000,
     ];
 
     /**
