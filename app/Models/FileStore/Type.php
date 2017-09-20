@@ -4,7 +4,7 @@ namespace RZP\Models\FileStore;
 
 use RZP\Constants;
 use RZP\Exception;
-use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
+use RZP\Models\Feature\Constants as FeatureConstants;
 
 class Type
 {
@@ -78,6 +78,10 @@ class Type
     const ACTIVATION_BUCKET_CONFIG              = 'activation_bucket_config';
     const H2H_BUCKET_CONFIG                     = 'h2h_bucket_config';
 
+    // File contants required for merchant feature onboarding
+    const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
+    const MARKETPLACE_VENDOR_AGREEMENT      = FeatureConstants::MARKETPLACE . "." . FeatureConstants::VENDOR_AGREEMENT;
+
     /**
      * Map of types allowed for each entity.
      */
@@ -136,6 +140,10 @@ class Type
         Constants\Entity::BATCH_FUND_TRANSFER => [
             self::FUND_TRANSFER_DEFAULT,
             self::FUND_TRANSFER_H2H,
+        ],
+
+        Constants\Entity::FEATURE => [
+            self::MARKETPLACE_VENDOR_AGREEMENT
         ],
     ];
 

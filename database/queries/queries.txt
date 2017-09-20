@@ -2482,7 +2482,9 @@ WHERE  item_id IS NULL;
 ALTER TABLE line_items
     MODIFY COLUMN type VARCHAR(16) NOT NULL DEFAULT 'invoice';
 
+ALTER TABLE batches
+    MODIFY COLUMN `type` CHAR(25);
+
 # Marketplace auto-activate
 ALTER TABLE merchants
     ADD COLUMN linked_account_kyc TINYINT(1) NOT NULL DEFAULT 0 AFTER fee_model;
-

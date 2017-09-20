@@ -429,6 +429,8 @@ class Base extends BaseModel\Core
     {
         $this->trace->info(TraceCode::BATCH_UPLOADING_FILE, $this->batch->toArray());
 
+        $clientExtension = $file->getClientOriginalExtension();
+
         //
         // PHP's upload file get's deleted automatically once request terminates.
         // Moving this file to batch save location where UFH downloads the same
