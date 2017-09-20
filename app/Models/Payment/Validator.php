@@ -60,6 +60,7 @@ class Validator extends Base\Validator
         'user_agent'              => 'sometimes|string',
         '_'                       => 'sometimes|array',
         'test_success'            => 'sometimes|boolean',
+        'subscription_card_change'=> 'sometimes|boolean',
     ];
 
     protected static $editRules = [

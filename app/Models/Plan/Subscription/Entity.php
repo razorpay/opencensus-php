@@ -451,6 +451,13 @@ class Entity extends Base\PublicEntity
             $isLatest = true;
         }
 
+        // If subscription is halted, all invoices are old invoices
+        // TODO Clean this up, function name is currently a lie
+        if ($this->getStatus() === Status::HALTED)
+        {
+            $isLatest = false;
+        }
+
         return $isLatest;
     }
 
