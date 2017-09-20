@@ -231,7 +231,7 @@ class Service extends Base\Service
             {
                 $fileId = $settings[Constants::MARKETPLACE][Constants::VENDOR_AGREEMENT];
 
-                $fileUrl = $this->getSignedUrl($fileId);
+                $fileUrl = $this->getSignedUrl($fileId, $merchant->getId());
 
                 $marketplaceSettings = $settings->__get(Constants::MARKETPLACE);
 
@@ -239,7 +239,8 @@ class Service extends Base\Service
 
                 $settings->__set(Constants::MARKETPLACE, $marketplaceSettings);
             }
-        } else
+        }
+        else
         {
             $settings = Accessor::for ($merchant, Constants::ONBOARDING)
                                 ->get($feature);
@@ -338,11 +339,11 @@ class Service extends Base\Service
         return $featureParams;
     }
 
-    protected function getSignedUrl(string $fileStoreId)
+    protected function getSignedUrl(string $fileStoreId, string $merchantId)
     {
         $accessor = new FileStore\Accessor;
 
-        $signedUrls = $accessor->id($fileStoreId)->getSignedUrl();
+        $signedUrls = $accessor->id($fileStoreId)->merchantId($merchantId)->getSignedUrl();
 
         return $signedUrls[$fileStoreId];
     }
