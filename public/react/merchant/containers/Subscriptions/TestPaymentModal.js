@@ -37,6 +37,7 @@ export default class TestPaymentModal extends Component {
           closeTimeout: 6500,
         });
 
+        console.log('THIS PROPS...', this.props);
         this.props.postAction();
       })
       .catch(({ errors }) => {

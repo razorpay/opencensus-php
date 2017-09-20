@@ -18,16 +18,6 @@ export default props => {
     onManualAttempt,
     isUpfront,
   } = props;
-  console.log(
-    'ITEM...',
-    loading,
-    subscriptionStatus,
-    item.issued_at,
-    item.currency,
-    item.amount / 100,
-    item.status,
-    index
-  );
 
   let retryingText;
 

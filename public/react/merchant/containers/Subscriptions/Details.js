@@ -265,21 +265,24 @@ export default class SubscriptionDetailsContainer extends Component {
     });
   };
 
+  // Refetch the details after success of test charge attempt
+  postTestChargeAttempt = () => {
+    // Make all fetch calls
+    this.fetchSubscriptionDetails(this.props.entity.id);
+    this.fetchInvoicesList(this.props.entity.id);
+
+    if (this.state.invoice && this.state.invoice.id) {
+      this.fetchInvoice(this.state.invoice.id);
+    }
+  };
+
   // Modal for Testing Button
   onTestChargeAttempt = () => {
     this.props.openModal({
       component: (
         <TestPaymentModal
           subscriptionId={this.props.id}
-          postAction={() => {
-            // Make all fetch calls
-            this.fetchSubscriptionDetails(this.props.entity.id);
-            this.fetchInvoicesList(this.props.entity.id);
-
-            if (this.state.invoice && this.state.invoice.id) {
-              this.fetchInvoice(this.state.invoice.id);
-            }
-          }}
+          postAction={this.postTestChargeAttempt}
         />
       ),
       size: 'small',
@@ -410,8 +413,6 @@ export default class SubscriptionDetailsContainer extends Component {
           );
         }
       }
-
-      console.log('addonsLIST....', addonsList);
 
       // If request is for /inv_upcoming then invoiceData will exist only if it's validInvoice.
       // And in this case InvoiceDetails won't show loader but error message
