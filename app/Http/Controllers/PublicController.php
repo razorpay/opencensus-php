@@ -92,7 +92,7 @@ class PublicController extends Controller
     {
         $params = Request::all();
 
-        $this->validateHostedPostParams($params);
+        $this->validateHostedParams($params);
 
         $options     = json_encode($params['checkout'], JSON_FORCE_OBJECT);
         $checkout    = $this->getCheckoutCommon();
@@ -110,7 +110,7 @@ class PublicController extends Controller
         return View::make('public.hosted', $data);
     }
 
-    protected function validateHostedPostParams($params)
+    protected function validateHostedParams($params)
     {
         $rules = [
             'url'                   => 'required|array',
