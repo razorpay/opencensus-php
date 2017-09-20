@@ -40,7 +40,9 @@ export default class ActivationWizard extends Component {
   };
 
   componentWillMount() {
-    this.state.linkedAccountKyc = this.props.data['linked_account_kyc'] || 0;
+    this.setState({
+      linkedAccountKyc: this.props.data['linked_account_kyc'] || 0,
+    });
 
     if (this.props.accountId) {
       this.activationForms = this.activationForms.filter(
