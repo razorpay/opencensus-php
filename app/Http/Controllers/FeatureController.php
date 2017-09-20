@@ -68,7 +68,6 @@ class FeatureController extends Controller
         return ApiResponse::json($response);
     }
 
-
     public function getOnboardingResponses(string $feature = null)
     {
         $response = $this->service()->getOnboardingResponses($feature);

@@ -8,6 +8,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Models\Settings\Accessor;
 use Razorpay\Trace\Logger as Trace;
+use Razorpay\Spine\DataTypes\Dictionary;
 
 class Service extends Base\Service
 {
@@ -148,11 +149,11 @@ class Service extends Base\Service
     /**
      * Returns all the questions required for onboarding features
      *
-     * @param $input
+     * @param  array $input
      *
      * @return array
      */
-    public function getOnboardingQuestions($input): array
+    public function getOnboardingQuestions(array $input): array
     {
         $features = $input[Constants::FEATURES];
 
@@ -214,37 +215,32 @@ class Service extends Base\Service
      * Returns the merchant responses to the onboarding questions of
      * one/ all features
      *
-     * @param null $feature
+     * @param string|null $feature
      *
-     * @return \Razorpay\Spine\DataTypes\Dictionary|string
+     * @return Dictionary|string
      */
     public function getOnboardingResponses(string $feature = null)
     {
-        $merchant = $this->merchant;
+        $settings = Accessor::for($this->merchant, Constants::ONBOARDING);
 
-        if ($feature === null)
+        $settings = ($feature === null) ? $settings->all() : $settings->get($feature);
+
+        $settings = $this->addFileUrlInResponseIfApplicable($settings);
+
+        return $settings;
+    }
+
+    protected function addFileUrlInResponseIfApplicable($settings)
+    {
+        if (isset($settings[Constants::MARKETPLACE][Constants::VENDOR_AGREEMENT]) === true)
         {
-            $settings = Accessor::for ($merchant, Constants::ONBOARDING)
-                                ->all();
+            $settings = $settings->toArray();
 
-            if (isset($settings[Constants::MARKETPLACE][Constants::VENDOR_AGREEMENT]) === true)
-            {
-                $fileId = $settings[Constants::MARKETPLACE][Constants::VENDOR_AGREEMENT];
+            $fileId = $settings[Constants::MARKETPLACE][Constants::VENDOR_AGREEMENT];
 
-                $fileUrl = $this->getSignedUrl($fileId, $merchant->getId());
+            $fileUrl = $this->getSignedUrl($fileId, $this->merchant->getId());
 
-                $marketplaceSettings = $settings->__get(Constants::MARKETPLACE);
-
-                $marketplaceSettings[Constants::VENDOR_AGREEMENT] = $fileUrl;
-
-                $settings->__set(Constants::MARKETPLACE, $marketplaceSettings);
-            }
-        }
-        else
-        {
-            $settings = Accessor::for ($merchant, Constants::ONBOARDING)
-                                ->get($feature);
-            // signedUrl is not required for this route
+            $settings[Constants::MARKETPLACE][Constants::VENDOR_AGREEMENT] = $fileUrl;
         }
 
         return $settings;

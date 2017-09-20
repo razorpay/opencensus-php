@@ -193,7 +193,7 @@ final class Route
         'webhook_fetch_multiple'                  => ['get',      'webhooks',                                       'MerchantController@getWebhooks'                                    ],
         'merchant_gst_fetch'                      => ['get',      'merchant/gst',                                   'MerchantController@getGSTDetails'                                  ],
         'merchant_gst_edit'                       => ['patch',    'merchant/gst',                                   'MerchantController@editGSTDetails'                                 ],
-        'merchant_activation_details'             => ['get',      'merchant/activation',                            'MerchantController@getActivationDetails'                           ],
+        'merchant_activation_details'             => ['get',      'merchant/activation',                            'MerchantController@getActivationDetails]'                           ],
         'merchant_activation_save'                => ['post',     'merchant/activation',                            'MerchantController@postSaveActivationDetails'                      ],
         'merchant_activation_upload_file'         => ['post',     'merchant/activation/upload',                     'MerchantController@postUploadActivationFile'                       ],
         'merchant_activation_files'               => ['get',      'merchant/activation/{id}/files',                 'MerchantController@getActivationFiles'                             ],
