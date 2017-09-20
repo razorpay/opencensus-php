@@ -521,7 +521,12 @@ trait Authorize
 
         $subscription = $payment->subscription;
 
-        if ($subscription->isTerminalStatus() === true)
+        //
+        // Allow manual charge of older invoices, even when subscription is in terminal state
+        // TODO: Rethink, won't work for S2S payments which are always in private auth
+        //
+        if (($subscription->isTerminalStatus() === true) and
+            ($this->app['basicauth']->isPrivateAuth() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SUBSCRIPTION_IN_TERMINAL_STATE,

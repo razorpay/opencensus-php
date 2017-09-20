@@ -170,13 +170,13 @@ class Charge extends Base\Core
                 'task_details'         => $task->toArray(),
             ]);
 
-        if ($subscription->isLatestInvoiceForSubscription($invoice) === true)
+        if ($subscription->shouldUpdateWithInvoiceCharge($invoice) === true)
         {
-            $this->handleCaptureSuccessForLatestInvoice($subscription, $capturedPayment, $invoice, $task);
+            $this->handleCaptureSuccessAndUpdateSubscription($subscription, $capturedPayment, $invoice, $task);
         }
         else
         {
-            $this->handleCaptureSuccessForOlderInvoice($subscription, $capturedPayment, $invoice, $task);
+            $this->handleCaptureSuccessWithoutUpdatingSubscription($subscription, $capturedPayment, $invoice, $task);
         }
 
         $this->trace->info(
@@ -188,7 +188,7 @@ class Charge extends Base\Core
             ]);
     }
 
-    protected function handleCaptureSuccessForLatestInvoice(
+    protected function handleCaptureSuccessAndUpdateSubscription(
         Entity $subscription,
         Payment\Entity $capturedPayment,
         Invoice\Entity $invoice,
@@ -332,7 +332,7 @@ class Charge extends Base\Core
         }
     }
 
-    protected function handleCaptureSuccessForOlderInvoice(
+    protected function handleCaptureSuccessWithoutUpdatingSubscription(
         Entity $subscription,
         Payment\Entity $capturedPayment,
         Invoice\Entity $invoice,

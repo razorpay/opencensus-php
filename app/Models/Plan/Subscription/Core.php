@@ -509,7 +509,7 @@ class Core extends Base\Core
     public function cancel(Entity $subscription, array $input): Entity
     {
         $this->trace->info(
-            TraceCode::SUBSCRIPTION_CANCEL,
+            TraceCode::SUBSCRIPTION_CANCEL_REQUEST,
             [
                 'subscription_id'   => $subscription->getId(),
                 'input'             => $input,
@@ -521,7 +521,7 @@ class Core extends Base\Core
 
         $validator->validateInput(Validator::CANCEL, $input);
 
-        return $this->mutex->acquireAndRelease(
+        $subscription = $this->mutex->acquireAndRelease(
             $subscription->getId(),
             function () use ($subscription, $input)
             {
@@ -553,6 +553,15 @@ class Core extends Base\Core
             self::MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_SUBSCRIPTION_ANOTHER_OPERATION_IN_PROGRESS
         );
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_CANCELLED,
+            [
+                'subscription_id'   => $subscription->getId(),
+                'input'             => $input,
+            ]);
+
+        return $subscription;
     }
 
     protected function setupCancelAtCycleEnd(Entity $subscription, bool $cancelAtCycleEnd)

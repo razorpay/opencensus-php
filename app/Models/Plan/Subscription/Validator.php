@@ -151,7 +151,7 @@ class Validator extends Base\Validator
         //
         $traceCode = '';
 
-        if ($subscription->isTerminalStatus() === true)
+        if (($subscription->isTerminalStatus() === true) and ($manual === false))
         {
             $traceCode = TraceCode::SUBSCRIPTION_NOT_IN_CHARGEABLE_STATE;
 
