@@ -103,7 +103,7 @@ export default class ActivationWizard extends Component {
 
     return (
       <div>
-        {data.submitted && <NewProductsBanner />}
+        {!!data.submitted && <NewProductsBanner />}
 
         {info}
 
