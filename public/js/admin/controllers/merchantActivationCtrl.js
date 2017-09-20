@@ -141,6 +141,5 @@ app.controller('MerchantActivationCtrl', [
           $scope.alerts.addAlert('danger');
         });
     }
-
   },
 ]);
