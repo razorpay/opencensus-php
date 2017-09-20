@@ -61,7 +61,11 @@ export default class WizardItem extends Component {
 
   componentWillMount() {
     if (this.props.accountId) {
-      this.finalStep = 4;
+      if (this.props.linkedAcountKyc === 1) {
+        this.finalStep = 3;
+      } else {
+        this.finalStep = 4;
+      }
     }
   }
 
