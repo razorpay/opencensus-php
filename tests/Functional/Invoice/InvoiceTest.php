@@ -220,7 +220,14 @@ class InvoiceTest extends TestCase
     {
         $this->fixtures->create('item', ['active' => 0]);
 
-        $response = $this->startTest();
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithItemOfTypeNonInvoice()
+    {
+        $this->fixtures->create('item', ['type' => 'plan']);
+
+        $this->startTest();
     }
 
     public function testCreateInvoiceWithNewCustomerAndAddress()
@@ -1125,6 +1132,14 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testSendNotificationWithEmailModeByPrivateAuthRoute()
+    {
+        $this->createOrder();
+        $this->createIssuedInvoice();
+
+        $this->startTest();
+    }
+
     // ------------------------------------------------------------
     // Tests around get invoice
     // ------------------------------------------------------------
@@ -1236,6 +1251,23 @@ class InvoiceTest extends TestCase
         $response = $this->startTest();
 
         $this->assertNotEmpty($response['payment_id']);
+    }
+
+    public function testGetInvoiceWithPaymentsCard()
+    {
+        $this->createOrder();
+
+        $invoice = $this->createIssuedInvoice();
+
+        $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $this->assertNotEmpty($response['payments']['items'][0]['card_id']);
     }
 
     public function testGetMultipleInvoices()

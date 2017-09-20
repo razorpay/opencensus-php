@@ -69,6 +69,12 @@ class Entity extends Base\PublicEntity
     // List of tags this entity is tagged as.
     const TAG_LIST                  = 'tag_list';
 
+    /**
+     * Constants for merchant analytics keys
+     */
+    const FILTERS                   = 'filters';
+    const KEY_MERCHANT_ID           = 'merchant_id';
+
     //
     // Configs
     //

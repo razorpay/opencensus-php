@@ -21,6 +21,11 @@ class Validator extends Base\Validator
 
     const SECONDS_IN_ONE_YEAR = 31536000;
 
+    /**
+     * Used for getting the operation cancel to run the cancel rules.
+     */
+    const CANCEL = 'cancel';
+
     protected static $createRules = [
         Entity::CUSTOMER_ID     => 'sometimes|string|size:19|public_id|nullable',
         Entity::PLAN_ID         => 'required|string|size:19|public_id',
@@ -33,6 +38,10 @@ class Validator extends Base\Validator
         // default. Hence, making it compulsory for the merchant to send this as 0 now.
         Entity::CUSTOMER_NOTIFY => 'required|in:0',
         Entity::ADDONS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_ADDONS,
+    ];
+
+    protected static $cancelRules = [
+        Entity::CANCEL_AT_CYCLE_END => 'filled|bool',
     ];
 
     protected static $createValidators = [

@@ -80,6 +80,16 @@ class Core extends Base\Core
     {
         $detail = $this->formatBankAccountForMerchantDetail($input);
 
+        $newBankAccount = $this->buildBankAccount($input, $merchant, $this->mode);
+
+        $newBankAccount->associateMerchant($merchant);
+
+        $newBankAccount->generateBeneficiaryCode();
+
+        $this->app['workflow']
+             ->setEntityAndId($oldBankAccount->getEntity(), $oldBankAccount->getId())
+             ->handle($oldBankAccount, $newBankAccount);
+
         return $this->repo->transaction(
             function() use ($merchant, $oldBankAccount, $input, $detail)
             {

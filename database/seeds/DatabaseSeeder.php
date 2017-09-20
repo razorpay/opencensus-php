@@ -1034,6 +1034,7 @@ class DatabaseSeeder extends Seeder
 
         $this->createAmexTerminals();
         $this->createCybersourceTerminals();
+        $this->createHitachiGatewayTerminals();
         $this->createBilldeskGatewayTerminals();
         $this->createNetbankingBobTerminals();
         $this->createNetbankingHdfcTerminals();
@@ -1184,6 +1185,23 @@ class DatabaseSeeder extends Seeder
             'recurring'                 => 1,
             'created_at'                => time(),
             'updated_at'                => time(),
+        ]);
+    }
+
+    protected function createHitachiGatewayTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert([
+            'id'                        => Terminal\Shared::HITACHI_TERMINAL,
+            'merchant_id'               => Account::TEST_ACCOUNT,
+            'gateway'                   => Gateway::HITACHI,
+            'gateway_acquirer'          => 'rbl',
+            'card'                      => 1,
+            'gateway_merchant_id'       => 'test_merchant_hitachi',
+            'gateway_secure_secret'     => Crypt::encrypt('test_hitachi_secure_secret'),
+            'gateway_terminal_password' => Crypt::encrypt('test_hitachi_secure_secret2'),
+            'recurring'                 => 1,
+            'created_at'                => time(),
+            'updated_at'                => time()
         ]);
     }
 

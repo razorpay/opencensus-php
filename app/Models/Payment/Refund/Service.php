@@ -81,6 +81,11 @@ class Service extends Base\Service
                 unset($gateways[IFSC::FDRL]);
                 unset($gateways[IFSC::BARB]);
                 unset($gateways[IFSC::RATN]);
+
+                // These banks refund files have been moved to gateway_file, so
+                // unsetting it here
+                unset($gateways[IFSC::HDFC]);
+                unset($gateways[IFSC::ICIC]);
                 break;
 
             case Payment\Method::WALLET:

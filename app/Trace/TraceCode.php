@@ -258,11 +258,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_SENT        = 'SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_SENT';
     const PLAN_CREATE_REQUEST                           = 'PLAN_CREATE_REQUEST';
     const ADDON_CREATE_REQUEST                          = 'ADDON_CREATE_REQUEST';
+    const ADDON_DELETE_REQUEST                          = 'ADDON_DELETE_REQUEST';
     const RUN_CREATE_REQUEST                            = 'RUN_CREATE_REQUEST';
     const EXPIRE_INVOICE                                = 'EXPIRE_INVOICE';
     const INVOICE_SEND_SUBSCRIPTION_NOTIFICATION        = 'INVOICE_SEND_SUBSCRIPTION_NOTIFICATION';
     const SUBSCRIPTION_CANCEL                           = 'SUBSCRIPTION_CANCEL';
     const SUBSCRIPTION_NOT_IN_CHARGEABLE_STATE          = 'SUBSCRIPTION_NOT_IN_CHARGEABLE_STATE';
+    const SUBSCRIPTION_CANCEL_DUE_SUMMARY               = 'SUBSCRIPTION_CANCEL_DUE_SUMMARY';
+    const SUBSCRIPTION_CANCEL_FAILED                    = 'SUBSCRIPTION_CANCEL_FAILED';
 
     const MAILER_JOB_RECEIVED                           = 'MAILER_JOB_RECEIVED';
     const MAILER_JOB_ERROR                              = 'MAILER_JOB_ERROR';
@@ -601,6 +604,10 @@ class TraceCode extends \Razorpay\Trace\TraceCode
 
     const MAXMIND_RESPONSE                          = 'MAXMIND_RESPONSE';
 
+    const HARVESTER_REQUEST                         = 'HARVESTER_REQUEST';
+    const HARVESTER_RETRY                           = 'HARVESTER_RETRY';
+    const HARVESTER_FAILURE                         = 'HARVESTER_FAILURE';
+
     // ES related trace codes
     const ES_CAT_RESPONSE                           = 'ES_CAT_RESPONSE';
     const ES_MAPPING_RESPONSE                       = 'ES_MAPPING_RESPONSE';
@@ -697,7 +704,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const FEATURE_DELETE_REQUEST                        = 'FEATURE_DELETE_REQUEST';
     const FEATURE_MIGRATION_EXCEPTION                   = 'FEATURE_MIGRATION_EXCEPTION';
     const FEATURE_ASSIGNMENT_EXCEPTION                  = 'FEATURE_ASSIGNMENT_EXCEPTION';
-    const MERCHANT_FEATURE_EDIT                         = 'MERCHANT_FEATURE_EDIT';
+    const MERCHANT_FEATURE_EDIT_REQUEST                 = 'MERCHANT_FEATURE_EDIT_REQUEST';
     const MERCHANT_FEATURE_UPDATE                       = 'MERCHANT_FEATURE_UPDATE';
     const FEATURE_MULTI_ASSIGN_REQUEST                  = 'FEATURE_MULTI_ASSIGN_REQUEST';
     const FEATURE_MULTI_REMOVE_REQUEST                  = 'FEATURE_MULTI_REMOVE_REQUEST';
@@ -827,6 +834,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Trace code for OAuth and Authentication service
     const AUTH_SERVICE_REQUEST                          = 'AUTH_SERVICE_REQUEST';
     const SEND_OAUTH_MAIL_REQUEST                       = 'SEND_OAUTH_MAIL_REQUEST';
+    const OAUTH_TOKEN_INVALID                           = 'OAUTH_TOKEN_INVALID';
 
     const SERVER_ERROR_MISSING_HANDLER                  = 'SERVER_ERROR_MISSING_HANDLER';
     const GATEWAY_FILE_CREATE_REQUEST                   = 'GATEWAY_FILE_CREATE_REQUEST';
@@ -963,7 +971,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
         self::FEATURE_DELETE_REQUEST                    => 'Feature delete request initiated',
         self::FEATURE_MIGRATION_EXCEPTION               => 'Exception while creating features for merchant',
         self::FEATURE_ASSIGNMENT_EXCEPTION              => 'Exception assigning feature to merchant',
-        self::MERCHANT_FEATURE_EDIT                     => 'Edit merchant features',
+        self::MERCHANT_FEATURE_EDIT_REQUEST             => 'Edit merchant features request initiated',
         self::MERCHANT_DETAIL_DOES_NOT_EXIST            => 'Merchant Detail does not exists',
         self::CREATE_MERCHANT_DETAIL                    => 'Creating Merchant Detail',
         self::PAYMENT_TRANSFER_VALIDATION_FAILED        => 'Transfer failed while validating transfer amount',
