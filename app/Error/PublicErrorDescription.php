@@ -308,7 +308,8 @@ class PublicErrorDescription
     const BAD_REQUEST_SUBSCRIPTION_SCHEDULED_FAILURE                            = 'Subscription charge underwent an expected failure.';
     const BAD_REQUEST_SUBSCRIPTION_CYCLE_NOT_RUNNING                            = 'Subscription cannot be cancelled since no billing cycle is going on';
     const BAD_REQUEST_SUBSCRIPTION_LAST_CYCLE_CANNOT_CANCEL                     = 'Subscription cannot be cancelled at cycle end since the last cycle is going on already.';
-    const BAD_REQUEST_ADDON_DELETE_NOT_ALLOWED                                  = 'Delete operation cannot be performed on the addon';
+    const BAD_REQUEST_ADDON_DELETE_NOT_ALLOWED                                  = 'Delete operation cannot be performed on the addon.';
+    const BAD_REQUEST_SUBSCRIPTION_PAYMENT_PARAMS_MISSING                       = 'One or more parameters missing for creating the subscription payment.';
 
     const BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE                                = 'Invoice status cannot be retrieved now';
     const BAD_REQUEST_PAYMENT_NOT_AUTHORIZED                                    = 'Payment is not in authorized state';
@@ -322,6 +323,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_TRANSACTION_AMOUNT                                = 'The amount does not match with the expected amount for the transaction. It might have been tampered.';
     const BAD_REQUEST_SUBSCRIPTION_CURRENT_TIME_PAST_START_TIME                 = 'Subscription\'s start time is past the current time. Cannot do an auth transaction now.';
 
+    const BAD_REQUEST_SUBSCRIPTION_ALREADY_AUTHENTICATED                        = 'The subscription has already been authenticated.';
     const BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD                                    = 'Payment declined because it didn\'t pass all risk checks';
     const BAD_REQUEST_CARD_AVS_FAILED                                           = 'Payment processing failed because address validation failed';
     const BAD_REQUEST_CARD_STOLEN_OR_LOST                                       = 'Payment failed because stolen or lost card is used';

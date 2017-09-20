@@ -6,6 +6,8 @@ use App;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Models\Plan;
 use RZP\Models\Invoice;
@@ -265,7 +267,13 @@ class Entity extends Base\PublicEntity
 
         if ($invoiceCount > $this->getTotalCount())
         {
-            // TODO: Throw an exception
+            throw new LogicException(
+                'Invoice count more than subscription total count defined',
+                ErrorCode::SERVER_ERROR_SUBSCRIPTION_INVOICE_COUNT_MISMATCH_TOTAL_COUNT,
+                [
+                    'invoice_count'     => $invoiceCount,
+                    'subscription_id'   => $this->getId(),
+                ]);
         }
 
         return $invoiceCount;

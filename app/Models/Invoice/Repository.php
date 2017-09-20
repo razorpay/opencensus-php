@@ -205,12 +205,18 @@ class Repository extends Base\Repository
      * @param Subscription\Entity $subscription
      *
      * @return Entity
+     * @throws Exception\LogicException
      */
     public function fetchLatestInvoiceOfPendingSubscription(Subscription\Entity $subscription)
     {
         if ($subscription->isPending() === false)
         {
-            // TODO: Throw an exception
+            throw new Exception\LogicException(
+                'This should have been called only for a pending subscription',
+                ErrorCode::SERVER_ERROR_SUBSCRIPTION_NOT_PENDING,
+                [
+                    'subscription_id'   => $subscription->getId(),
+                ]);
         }
 
         $invoice = $this->newQuery()

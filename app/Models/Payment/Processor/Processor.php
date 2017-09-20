@@ -803,7 +803,7 @@ class Processor
      * @param array          $input
      * @param Payment\Entity $payment
      *
-     * @throws Exception\LogicException
+     * @throws Exception\BadRequestException
      */
     protected function addOrderIdToInputForSubscriptionIfApplicable(array & $input, Payment\Entity $payment)
     {
@@ -834,7 +834,13 @@ class Processor
             {
                 if ($subscription->isCardChangeStatus() === false)
                 {
-                    // TODO: Throw an exception
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_SUBSCRIPTION_CARD_CHANGE_NOT_ALLOWED,
+                        null,
+                        [
+                            'subscription_id'       => $subscription->getId(),
+                            'subscription_status'   => $subscription->getStatus(),
+                        ]);
                 }
 
                 //
@@ -848,9 +854,20 @@ class Processor
             }
             else
             {
+                //
+                // In case of automated charge or manual charge on invoice,
+                // order_id would/should always be present.
+                //
                 if (empty($input[Payment\Entity::ORDER_ID]) === true)
                 {
-                    // TODO: Throw an exception
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_SUBSCRIPTION_PAYMENT_PARAMS_MISSING,
+                        null,
+                        [
+                            'subscription_id'       => $subscription->getId(),
+                            'subscription_status'   => $subscription->getStatus(),
+                            'order_id'              => $input[Payment\Entity::ORDER_ID]
+                        ]);
                 }
             }
         }
@@ -879,7 +896,14 @@ class Processor
         }
         else
         {
-            // TODO: Throw an exception
+            throw new Exception\LogicException(
+                'We should not have more than 1 issued invoice at this stage!',
+                ErrorCode::SERVER_ERROR_TOO_MANY_SUBSCRIPTION_INVOICES_FOUND,
+                [
+                    'count'             => $subscriptionInvoicesCount,
+                    'subscription_id'   => $subscription->getId(),
+                    'invoices'          => $subscriptionInvoices->toArrayPublic()
+                ]);
         }
     }
 

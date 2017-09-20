@@ -313,11 +313,16 @@ class Core extends Base\Core
         // webhook passes through. Even in tests.
         // This is applicable for all webhooks and
         // not just subscription webhooks.
-        // CREATE AN ISSUE FOR THIS!
+        // An issue in API has been created for this.
         //
         if ($this->repo->isTransactionActive())
         {
-            // TODO: Throw an exception
+            throw new LogicException(
+                'Webhook fired inside a transaction',
+                ErrorCode::SERVER_ERROR_WEBHOOK_IN_TRANSACTION,
+                [
+
+                ]);
         }
 
         $event = Status::$webhookStatuses[$status];
