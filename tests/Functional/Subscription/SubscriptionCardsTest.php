@@ -227,6 +227,7 @@ class SubscriptionCardsTest extends TestCase
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, null, 'token_100000custcard');
         $this->fixtures->base->editEntity('card', '100000000lcard', ["type" => 'credit']);
+        $paymentRequest['subscription_card_change'] = 1;
 
         $response2 = $this->doAuthPayment($paymentRequest);
 
@@ -277,6 +278,7 @@ class SubscriptionCardsTest extends TestCase
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
         $paymentRequest['card']['number'] = '4000000000000002';
+        $paymentRequest['subscription_card_change'] = 1;
 
         $response2 = $this->doAuthPayment($paymentRequest);
 
@@ -452,6 +454,7 @@ class SubscriptionCardsTest extends TestCase
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, null, 'token_10000custgcard');
         unset($paymentRequest['card']);
         $paymentRequest['card'] = ['cvv' => 111];
+        $paymentRequest['subscription_card_change'] = 1;
 
         $this->mockSession();
 
@@ -514,6 +517,7 @@ class SubscriptionCardsTest extends TestCase
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
         $paymentRequest['card']['number'] = '4000000000000002';
+        $paymentRequest['subscription_card_change'] = 1;
 
         $this->mockSession();
 
@@ -706,6 +710,8 @@ class SubscriptionCardsTest extends TestCase
         $paymentRequest['save'] = 1;
         $paymentRequest['token'] = 'token_' . $gatewayToken2['token_id'];
 
+        $paymentRequest['subscription_card_change'] = 1;
+
         $response = $this->doAuthPayment($paymentRequest);
 
         // --- the third 2FA should go through successfully.
@@ -822,6 +828,7 @@ class SubscriptionCardsTest extends TestCase
         $paymentRequest = $this->getDefaultPaymentArray();
         $paymentRequest['save'] = 1;
         $paymentRequest['token'] = 'token_' . $gatewayToken2['token_id'];
+        $paymentRequest['subscription_card_change'] = 1;
 
         $response = $this->doAuthPayment($paymentRequest);
 
