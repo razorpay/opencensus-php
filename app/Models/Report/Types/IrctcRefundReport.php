@@ -160,7 +160,7 @@ class IrctcRefundReport extends BasicEntityReport
     {
         $from = Carbon::yesterday(Timezone::IST)->timestamp;
 
-        $to = Carbon::tomorrow(Timezone::IST)->timestamp - 1;
+        $to = Carbon::today(Timezone::IST)->timestamp - 1;
 
         if (isset($input['from']) === true)
         {

@@ -479,6 +479,6 @@ class Repository extends Base\Repository
             $query->where(Refund\Entity::RECEIPT, '=', $receipt);
         }
 
-        return $$query->get();
+        return $query->get();
     }
 }
