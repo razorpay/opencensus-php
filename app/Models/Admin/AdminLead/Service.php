@@ -18,8 +18,6 @@ class Service extends Base\Service
 
         $admin = $this->app['basicauth']->getAdmin();
 
-        Org\Entity::verifyIdAndStripSign($orgId);
-
         $entity = (new Entity)->getEntityName();
 
         (new Validator)->validateOrgSpecificInput(

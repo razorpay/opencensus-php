@@ -7,7 +7,7 @@ use RZP\Error\PublicErrorDescription;
 return [
     'testCreateRole' => [
         'request' => [
-            'url' => '/orgs/%s/roles',
+            'url' => '/roles',
             'method' => 'post',
             'content' => [
                 'name' => 'manager',
@@ -25,7 +25,7 @@ return [
     ],
     'testGetRole' => [
         'request' => [
-            'url' => '/orgs/%s/roles/%s',
+            'url' => '/roles/%s',
             'method' => 'get',
         ],
         'response' => [
@@ -38,7 +38,7 @@ return [
 
     'testCreateRoleWithPermissions' => [
         'request' => [
-            'url' => '/orgs/%s/roles',
+            'url' => '/roles',
             'method' => 'post',
             'content' => [
                 'name' => 'manager',
@@ -56,7 +56,7 @@ return [
 
     'testEditRoleDeleteAllPermissions' => [
         'request' => [
-            'url' => '/orgs/%s/roles/%s',
+            'url' => '/roles/%s',
             'method' => 'put',
             'content' => [
                 'permissions' => [],
@@ -70,7 +70,7 @@ return [
 
     'testEditRoleEditPermissions' => [
         'request' => [
-            'url' => '/orgs/%s/roles/%s',
+            'url' => '/roles/%s',
             'method' => 'put',
             'content' => [],
         ],
@@ -82,7 +82,7 @@ return [
 
     'testDeleteRole' => [
         'request' => [
-            'url' => '/orgs/%s/roles/%s',
+            'url' => '/roles/%s',
             'method' => 'delete',
             'content' => [
             ],
@@ -97,7 +97,7 @@ return [
 
     'testEditRole' => [
         'request' => [
-            'url' => '/orgs/%s/roles/%s',
+            'url' => '/roles/%s',
             'method' => 'put',
             'content' => [
                 'name' => 'test Admin LOL',
@@ -113,7 +113,7 @@ return [
 
     'testGetMultipleRoles' => [
         'request' => [
-            'url' => '/orgs/%s/roles',
+            'url' => '/roles',
             'method' => 'get',
         ],
         'response' => [
@@ -125,7 +125,7 @@ return [
 
     'testDuplicateRole' => [
         'request' => [
-            'url' => '/orgs/%s/roles',
+            'url' => '/roles',
             'method' => 'post',
             'content' => [
                 'description' => 'Manager of roles',
@@ -148,7 +148,7 @@ return [
 
     'testEditSuperAdminRole' => [
         'request' => [
-            'url' => '/orgs/%s/roles/%s',
+            'url' => '/roles/%s',
             'method' => 'put',
             'content' => [
                 'description' => 'Super Admin Role edited',
@@ -171,7 +171,7 @@ return [
 
     'testEditSuperAdminRoleByRazorpay' => [
         'request' => [
-            'url' => '/orgs/%s/roles/%s',
+            'url' => '/roles/%s',
             'method' => 'put',
             'content' => [
                 'name' => 'test edit super admin',

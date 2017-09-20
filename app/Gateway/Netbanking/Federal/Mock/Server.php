@@ -45,8 +45,6 @@ class Server extends Base\Mock\Server
 
         $response = $this->getVerifyResponseData($input);
 
-        $this->content($response, 'verify');
-
         return $this->makeResponse($response);
     }
 
@@ -82,7 +80,11 @@ class Server extends Base\Mock\Server
             'S',
         ];
 
-        return $this->getStringFromContent($content, '|');
+        $response = $this->getStringFromContent($content, '|');
+
+        $this->content($response, 'verify');
+
+        return $response . "\n\u0000\u0000\u0000\u0000\u0000";
     }
 
     protected function getStringFromContent($content, $glue = '')

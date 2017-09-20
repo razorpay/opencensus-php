@@ -8,7 +8,7 @@ return [
 
     'testCreateGroup' => [
         'request' => [
-            'url' => '/orgs/%s/groups',
+            'url' => '/groups',
             'method' => 'post',
             'content' => [
                 'name' => 'Group1',
@@ -26,7 +26,7 @@ return [
 
     'testDeleteGroup' => [
         'request' => [
-            'url' => '/orgs/%s/groups/%s',
+            'url' => '/groups/%s',
             'method' => 'delete',
             'content' => [
             ],
@@ -41,7 +41,7 @@ return [
 
     'testEditGroup' => [
         'request' => [
-            'url' => '/orgs/%s/groups/%s',
+            'url' => '/groups/%s',
             'method' => 'put',
             'content' => [
                 'name' => 'new name',
@@ -59,7 +59,7 @@ return [
 
     'testGetMultipleGroups' => [
         'request' => [
-            'url' => '/orgs/%s/groups',
+            'url' => '/groups',
             'method' => 'get',
         ],
         'response' => [
@@ -73,7 +73,7 @@ return [
 
     'testDuplicateGroup' => [
         'request' => [
-            'url' => '/orgs/%s/groups',
+            'url' => '/groups',
             'method' => 'post',
             'content' => [
                 'description' => 'Some description',
@@ -93,28 +93,9 @@ return [
         ],
     ],
 
-    'testGroupOrgMismatchOnGet' => [
-        'request' => [
-            'url' => '/orgs/%s/groups/%s',
-            'method' => 'get'
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED,
-        ],
-    ],
-
     'testParentGroupAssignment' => [
         'request' => [
-            'url' => '/orgs/%s/groups/%s',
+            'url' => '/groups/%s',
             'method' => 'put',
             'content' => [],
         ],
@@ -126,7 +107,7 @@ return [
 
     'testParentGroupDelete' => [
         'request' => [
-            'url' => '/orgs/%s/groups/%s',
+            'url' => '/groups/%s',
             'method' => 'put',
             'content' => [],
         ],
@@ -138,7 +119,7 @@ return [
 
     'testAncestorsNotAllowedAsParents' => [
         'request' => [
-            'url' => '/orgs/%s/groups/%s/allowed_groups',
+            'url' => '/groups/%s/allowed_groups',
             'method' => 'get',
         ],
         'response' => [
@@ -149,7 +130,7 @@ return [
 
     'testDescendantsNotAllowedAsParents' => [
         'request' => [
-            'url' => '/orgs/%s/groups/%s/allowed_groups',
+            'url' => '/groups/%s/allowed_groups',
             'method' => 'get',
         ],
         'response' => [
@@ -160,7 +141,7 @@ return [
 
     'testSiblingsNotAllowedAsParents' => [
         'request' => [
-            'url' => '/orgs/%s/groups/%s/allowed_groups',
+            'url' => '/groups/%s/allowed_groups',
             'method' => 'get',
         ],
         'response' => [
@@ -171,7 +152,7 @@ return [
 
     'testUnconnectedGroupsAsEligibleParentsForEachOther' => [
         'request' => [
-            'url' => '/orgs/%s/groups/%s/allowed_groups',
+            'url' => '/groups/%s/allowed_groups',
             'method' => 'get',
         ],
         'response' => [
@@ -179,4 +160,14 @@ return [
             'status_code' => 200,
         ],
     ],
+    'testGetGroup' => [
+        'request' => [
+            'url' => '/groups/%s',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
+        ],
+    ]
 ];
