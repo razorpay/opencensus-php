@@ -309,28 +309,6 @@ class Response
         return (in_array($route, $jsonpRoutes));
     }
 
-    /**
-     * @deprecated
-     *
-     * Since android 2.* has been unsupported,
-     * we are removing this hack from the json
-     * response.
-     * */
-    protected function setContentTypeHtmlForSpecificRoutes($route, $response)
-    {
-        $routes = ['payment_create'];
-
-        if (in_array($route, $routes))
-        {
-            //
-            // The content-type is set to text/html instead of json
-            // because on android 2.* json content is not being read on form
-            // post for cards with no 3d-secure.
-            //
-            $response->headers->set(Header::CONTENT_TYPE, 'text/html; charset=UTF-8');
-        }
-    }
-
     protected function setAccessControlAllowOriginStarOnSpecificRoutes($route, $response)
     {
         $routes = [
