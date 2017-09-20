@@ -112,6 +112,9 @@ return [
 
         // Update GSTIN for given invoice
         'merchant_invoice_update_gstin'     => 'merchants/{id}/invoice/gstin',
+
+        // Feature onboarding responses
+        'get_feature_onboarding_responses'  => 'feature/onboarding/responses',
     ],
 
     // auth

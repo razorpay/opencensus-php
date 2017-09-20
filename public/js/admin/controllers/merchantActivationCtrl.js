@@ -23,6 +23,8 @@ app.controller('MerchantActivationCtrl', [
     $scope.panVerified = false;
     getData();
 
+    getOnboardingResponses();
+
     $scope.verifyPAN = function(signatories, pan_name, pan_number) {
       for (var i in signatories) {
         var person = signatories[i];
@@ -72,6 +74,40 @@ app.controller('MerchantActivationCtrl', [
       return word;
     }
 
+    function getOnboardingResponses() {
+      var data = {
+        route_name: 'get_feature_onboarding_responses',
+        url_params: {
+          '{id}': $scope.merchant.id,
+        },
+      };
+      var request = $http({
+        method: 'get',
+        url: '/admin/generic',
+        params: data,
+      });
+      request
+        .success(function(data) {
+          if (data.success) {
+            $scope['onboarding'] = {};
+            angular.forEach(data.data, function(
+              value,
+              key
+            ) {
+              $scope['onboarding'][key.humanize()] = value;
+            });
+          } else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function(value) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        })
+        .error(function() {
+          $scope.alerts.addAlert('danger', null, true);
+        });
+    }
+
     function getData() {
       var request = $http.get(
         '/admin/merchant/' + $scope.merchant.id + '/details'
@@ -94,13 +130,6 @@ app.controller('MerchantActivationCtrl', [
             angular.forEach(data.data.activation.files, function(value, key) {
               $scope.files[key] = value;
             });
-            $scope['onboarding'] = {};
-            angular.forEach(data.data.onboarding, function(
-              value,
-              key
-            ) {
-              $scope['onboarding'][key.humanize()] = value;
-            });
             $scope.merchant = data.data.merchant;
             $scope.locked = $scope.data['locked'];
           } else {
@@ -111,5 +140,6 @@ app.controller('MerchantActivationCtrl', [
           $scope.alerts.addAlert('danger');
         });
     }
+
   },
 ]);

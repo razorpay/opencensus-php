@@ -94,24 +94,6 @@ class MerchantDetail extends Entity
         return [ $error, $response ];
     }
 
-    public function getFeatureOnboardingResponses($merchantId)
-    {
-        $error = $response = null;
-
-        try
-        {
-            $relativeUrl = "feature/onboarding/responses";
-
-            $response = $this->request('GET', $relativeUrl)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = [ $e->getMessage() ];
-        }
-
-        return [ $error, $response ];
-    }
-
     protected function getApiCredentials($mode, $merchantId)
     {
         $id = 'rzp_' . $mode . '_' . $merchantId;

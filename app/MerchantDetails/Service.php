@@ -228,30 +228,6 @@ class Service extends Base\Service
         return ['files' => $fileUrls];
     }
 
-    public function getFeatureOnboardingResponses($merchantId)
-    {
-        $this->setApiCredentials($merchantId);
-
-        list($error, $response) = $this->api
-                                       ->merchantDetail
-                                       ->getFeatureOnboardingResponses($merchantId);
-
-        if (empty($error) === false)
-        {
-            Trace::debug('MISC_TRACE_CODE', [
-                'error'     => "Error occured while getting feature onboarding responses from API",
-                'exception' => $error,
-            ]);
-        }
-
-        if ((empty($error) === false) or (empty($response) === true))
-        {
-            return new \Stdclass;
-        }
-
-        return $response;
-    }
-
     public function getDetailsFromAPI($merchantId = null)
     {
         if ($merchantId === null)
