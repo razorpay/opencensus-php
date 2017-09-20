@@ -22,6 +22,7 @@ app.controller('MerchantActivationCtrl', [
 
     $scope.panVerified = false;
     getData();
+    getFileData();
 
     $scope.verifyPAN = function(signatories, pan_name, pan_number) {
       for (var i in signatories) {
@@ -57,7 +58,35 @@ app.controller('MerchantActivationCtrl', [
           $scope.alerts.addAlert('danger', 'Company Info could not be fetched');
         });
     };
-
+    function getFileData() {
+      var data = {
+        route_name: 'merchant_activation_files',
+        url_params: {
+          '{id}': $scope.merchant.id,
+        },
+        account_id: $scope.merchant.id,
+      };
+      var request = $http.get('/admin/generic', {
+        params: data,
+      });
+      request
+        .success(function(data) {
+          if (data.success) {
+            angular.forEach(data.data.files, function(value, key) {
+              $scope.files[key] = value;
+            });
+            console.log($scope.files);
+          } else {
+            $scope.alerts.resetAlerts(true);
+            angular.forEach(data.errors, function(value) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        })
+        .error(function() {
+          $scope.alerts.addAlert('danger');
+        });
+    }
     function getData() {
       var data = {
         route_name: 'merchant_details_fetch',
@@ -79,13 +108,15 @@ app.controller('MerchantActivationCtrl', [
             angular.forEach(data.data.merchant_details, function(value, key) {
               $scope.data[key] = value;
             });
-            // angular.forEach(data.data.activation.files, function(value, key) {
-            //   $scope.files[key] = value;
-            // });
-            $scope.merchant = data.data.merchant;
+            $scope.merchant = data.data;
+            $scope.merchant.submitted = $scope.data['submitted'];
+            $scope.merchant.locked = $scope.data['locked'];
             $scope.locked = $scope.data['locked'];
           } else {
-            $scope.alerts.addAlert('danger');
+            $scope.alerts.resetAlerts(true);
+            angular.forEach(data.errors, function(value) {
+              $scope.alerts.addAlert('danger', value);
+            });
           }
         })
         .error(function() {
