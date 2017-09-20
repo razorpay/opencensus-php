@@ -1,0 +1,45 @@
+.NewProductsBanner {
+  user-select: none;
+
+  .rzp-banner {
+    background-color: #fff;
+    padding: 0;
+  }
+  .card {
+    display: inline-block;
+    width: 33.333%;
+    padding: 20px;
+    border-right: 1px solid #dee5e7;
+    color: #22527b;
+    transition: 0.5s all ease;
+    cursor: pointer;
+
+    &:hover {
+      box-shadow: 0px 2px 12px rgba(0,0,0,0.12);
+    }
+
+    &:active {
+      background-color: #f1f1f1;
+    }
+
+
+    &:last-of-type {
+      border-right: none;
+    }
+
+    .symbol {
+      width: 40px;
+      display: inline-block;
+    }
+
+    .name {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    p {
+      opacity: 0.6;
+      font-size: 16px;
+    }
+  }
+}
