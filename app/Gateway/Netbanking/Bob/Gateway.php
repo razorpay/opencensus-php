@@ -56,6 +56,11 @@ class Gateway extends Base\Gateway
 
         $content = $content + [NetbankingEntity::RECEIVED => true];
 
+        if (array_key_exists(ResponseFields::BANK_REF_NUMBER, $content) === true)
+        {
+            $content[ResponseFields::BANK_REF_NUMBER] = trim($content[ResponseFields::BANK_REF_NUMBER]);
+        }
+
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
             $input['payment']['id'],
             Action::AUTHORIZE
