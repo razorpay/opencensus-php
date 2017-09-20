@@ -13,8 +13,9 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Models\Gateway\File\ProcessorFactory;
 use RZP\Mail\Gateway\DailyFile as DailyFileMail;
+use RZP\Models\Gateway\File\Processor\Base as BaseProcessor;
 
-trait GenerateCombinedFile
+class Base extends BaseProcessor
 {
     public function fetchEntities(): PublicCollection
     {

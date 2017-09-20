@@ -7,14 +7,12 @@ use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-use RZP\Models\Gateway\File\Processor;
 use RZP\Gateway\Netbanking\Federal\Constants;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 use RZP\Gateway\Netbanking\Indusind\RefundFileFields;
 
-class Federal extends Processor\Base
+class Federal extends Base
 {
-    use GenerateRefundFile;
     use FileHandler;
 
     const FILE_NAME              = 'FBK_REFUND';

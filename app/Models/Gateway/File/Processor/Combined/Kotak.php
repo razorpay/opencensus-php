@@ -5,12 +5,9 @@ namespace RZP\Models\Gateway\File\Processor\Combined;
 use Carbon\Carbon;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-use RZP\Models\Gateway\File\Processor;
 
-class Kotak extends Processor\Base
+class Kotak extends Base
 {
-    use GenerateCombinedFile;
-
     protected function formatDataForMail()
     {
         $amount = [

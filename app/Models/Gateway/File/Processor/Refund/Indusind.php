@@ -7,13 +7,11 @@ use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-use RZP\Models\Gateway\File\Processor;
-use RZP\Gateway\Netbanking\Indusind\RefundFileFields;
 use RZP\Models\Gateway\File\Processor\FileHandler;
+use RZP\Gateway\Netbanking\Indusind\RefundFileFields;
 
-class Indusind extends Processor\Base
+class Indusind extends Base
 {
-    use GenerateRefundFile;
     use FileHandler;
 
     const FILE_NAME              = 'PGReconRAZORPAY';

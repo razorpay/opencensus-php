@@ -3,17 +3,14 @@
 namespace RZP\Models\Gateway\File\Processor\Claim;
 
 use Carbon\Carbon;
-use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-use RZP\Models\Gateway\File\Processor;
 use RZP\Gateway\Netbanking\Axis\Constants;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
-class Axis extends Processor\Base
+class Axis extends Base
 {
-    use GenerateClaimFile;
     use FileHandler;
 
     const FILE_NAME     = 'IConnect_Claim_RAZORPAY';

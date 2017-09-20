@@ -4,6 +4,7 @@ namespace RZP\Models\Gateway\File\Processor;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\FileStore;
 use RZP\Models\Base\Core;
 use RZP\Models\Gateway\File;
 use RZP\Models\Gateway\File\Status;
@@ -122,6 +123,21 @@ abstract class Base extends Core
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_GATEWAY_FILE_NON_RETRIABLE);
         }
+    }
+
+    protected function isFileGenerated(): bool
+    {
+        if ($this->gatewayFile->isFileGenerated() === true)
+        {
+            $file = $this->gatewayFile
+                               ->files()
+                               ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
+                               ->first();
+
+            return $file !== null;
+        }
+
+        return false;
     }
 
     abstract protected function canRetry(): bool;

@@ -14,8 +14,9 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Gateway\File\Constants;
 use RZP\Exception\GatewayFileException;
+use RZP\Models\Gateway\File\Processor\Base as BaseProcessor;
 
-trait GenerateClaimFile
+class Base extends BaseProcessor
 {
     public function fetchEntities(): PublicCollection
     {
@@ -134,7 +135,7 @@ trait GenerateClaimFile
     public function createFile()
     {
         // Don't process further if file is already generated
-        if ($this->isClaimFileGenerated() === true)
+        if ($this->isFileGenerated() === true)
         {
             return;
         }
@@ -196,20 +197,5 @@ trait GenerateClaimFile
         }
 
         return true;
-    }
-
-    protected function isClaimFileGenerated(): bool
-    {
-        if ($this->gatewayFile->isFileGenerated() === true)
-        {
-            $claimsFile = $this->gatewayFile
-                               ->files()
-                               ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
-                               ->first();
-
-            return $claimsFile !== null;
-        }
-
-        return false;
     }
 }

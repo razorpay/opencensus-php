@@ -3,19 +3,16 @@
 namespace RZP\Models\Gateway\File\Processor\Claim;
 
 use Carbon\Carbon;
-use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-use RZP\Models\Gateway\File\Processor;
 use RZP\Gateway\Netbanking\Base\Entity;
 use RZP\Gateway\Netbanking\Rbl\Constants;
 use RZP\Gateway\Netbanking\Rbl\ClaimFields;
 use RZP\Models\Gateway\File\Processor\FileHandler;
 
-class Rbl extends Processor\Base
+class Rbl extends Base
 {
-    use GenerateClaimFile;
     use FileHandler;
 
     const FILE_NAME = 'Rbl_Netbanking_Claims';

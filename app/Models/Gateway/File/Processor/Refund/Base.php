@@ -16,7 +16,7 @@ use RZP\Exception\GatewayFileException;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Models\Gateway\File\Processor\Base as BaseProcessor;
 
-trait GenerateRefundFile
+class Base extends BaseProcessor
 {
     public function fetchEntities(): PublicCollection
     {
@@ -107,7 +107,7 @@ trait GenerateRefundFile
     public function createFile()
     {
         // Don't process further if file is already generated
-        if ($this->isRefundFileGenerated() === true)
+        if ($this->isFileGenerated() === true)
         {
             return;
         }
@@ -218,21 +218,6 @@ trait GenerateRefundFile
         }
 
         return true;
-    }
-
-    protected function isRefundFileGenerated(): bool
-    {
-        if ($this->gatewayFile->isFileGenerated() === true)
-        {
-            $refundFile = $this->gatewayFile
-                               ->files()
-                               ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
-                               ->first();
-
-            return $refundFile !== null;
-        }
-
-        return false;
     }
 
     protected function getFileToWriteNameWithoutExt()
