@@ -8,12 +8,13 @@ use Mail;
 use phpseclib\Crypt;
 
 use RZP\Exception;
-use RZP\Mail\Settlement as SettlementMail;
 use RZP\Models\Base;
 use RZP\Models\FileStore;
 use RZP\Constants\MailTags;
+use RZP\Models\FundTransfer\NodalBase;
+use RZP\Mail\Settlement as SettlementMail;
 
-class NodalAccount extends Base\Core
+class NodalAccount extends NodalBase\NodalBase
 {
     // used in icici AES encrypter tool
     const ENCRYPTION_KEY = "1836204826394167";
@@ -66,10 +67,10 @@ class NodalAccount extends Base\Core
 
     protected function getPlainText($amount)
     {
-        $mode = ($amount >= 200000) ? "R" : "N";
+        $this->mode = $this->getTransferMode($amount);
 
         $values = [
-            $mode,
+            $this->mode,
             "Razorpay Software Pvt Ltd",
             "7911547334",
             "KKBK0000958",

@@ -9,9 +9,10 @@ use PHPExcel_Shared_Date;
 use RZP\Models\Base;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+use RZP\Models\FundTransfer\NodalBase;
 use RZP\Mail\Settlement\AxisSettlement;
 
-class NodalAccount extends Base\Core
+class NodalAccount extends NodalBase\NodalBase
 {
     const SIGNED_URL_DURATION = '1440';
 
@@ -96,8 +97,7 @@ class NodalAccount extends Base\Core
 
     protected function getRows(string $amount): array
     {
-        // Deciding on based of amount to choose mode as R or N
-        $mode = ($amount >= 200000) ? 'R' : 'N';
+        $this->mode = $this->getTransferMode($amount);
 
         $formattedAmount = (float) sprintf('%0.2f', $amount);
 
@@ -115,7 +115,7 @@ class NodalAccount extends Base\Core
         $excelDate = PHPExcel_Shared_Date::PHPToExcel(strtotime($this->date));
 
         $transactionValues = [
-            $mode,
+            $this->mode,
             'RZRNAXISCARD',
             $excelDate,
             $formattedAmount,
