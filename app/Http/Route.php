@@ -968,7 +968,6 @@ final class Route
         'admin_forgot_password',
         'admin_reset_password',
         'merchant_activation_update',
-        'merchant_activation_files',
         'admin_edit_app_auth',
         'currency_update_rates',
         'currency_fetch_rates',
@@ -1187,6 +1186,7 @@ final class Route
         'merchant_get_terminals',
         'merchant_invoice_add_bulk',
         'setl_retry',
+        'merchant_activation_files',
     ];
 
     public static $routePermission = [
@@ -1317,6 +1317,7 @@ final class Route
         'settings_upsert'                  => Permission::EDIT_WALLET_CONFIG,
         'settings_delete'                  => Permission::EDIT_WALLET_CONFIG,
         'merchant_analytics'               => '*',
+        'merchant_activation_files'        => '*',
     ];
 
     public static $direct = [

@@ -36,11 +36,11 @@ class Service extends Base\Service
 
         $fileFields = $this->getFileFields($merchant);
 
-        foreach ($fileFields as $key)
+        foreach ($fileFields as $key => $value)
         {
             if (isset($merchantDetails[$key]))
             {
-                $signedUrls[$key] = $this->getSignedUrl($merchantDetails[$key], $id);
+                $signedUrls[$value] = $this->getSignedUrl($merchantDetails[$key], $id);
             }
         }
 
