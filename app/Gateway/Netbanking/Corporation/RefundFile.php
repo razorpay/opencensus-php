@@ -18,11 +18,8 @@ class RefundFile extends Base\RefundFile
     protected static $fileToWriteName = 'CORPORATION_Netbanking_Refunds';
 
     // TODO: Remove the below data and use env to store them
-    const DEBIT_ACCOUNT             = '12313123123132123';
-    const POOLING_ACCOUNT_BR_CODE   = '1234';
-    const CUSTOMER_ACCOUNT_BR_CODE  = '4321';
-    const SELF_ACCOUNT_NUMBER       = '234567';
-    const OTHERS_ACCOUNT_NUMBER     = '987654';
+    const POOLING_ACCOUNT_BR_CODE = '1234';
+    const POOLING_ACCOUNT_NUMBER  = '234567';
 
     const FIXED_VALUE = '824603';
 
@@ -81,7 +78,7 @@ class RefundFile extends Base\RefundFile
                 '00000000120000',
                 Constants::REFUND_FILE_ACCOUNT_TYPE_1,
                 Constants::REFUND_FILE_ACCOUNT_SUB_TYPE,
-                self::SELF_ACCOUNT_NUMBER,
+                self::POOLING_ACCOUNT_NUMBER,
                 true
             )
         );
@@ -120,9 +117,7 @@ class RefundFile extends Base\RefundFile
         $firstLine = false
     )
     {
-        $date = Carbon::createFromTimestamp(
-                $date, Timezone::IST
-            )
+        $date = Carbon::createFromTimestamp($date, Timezone::IST)
             ->format('Ymd');
 
         $data = [
@@ -145,12 +140,10 @@ class RefundFile extends Base\RefundFile
     {
         $lastString = self::FIXED_VALUE_REAR;
 
-        if($firstLine === true)
+        if ($firstLine === true)
         {
-            $date = Carbon::createFromTimestamp(
-                $date
-            )
-            ->format('d.m.Y');
+            $date = Carbon::createFromTimestamp($date)
+                ->format('d.m.Y');
 
             $lastString = ' Dt: ' . $date;
         }
