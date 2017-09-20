@@ -624,8 +624,13 @@
             </div>
             <div class="form-group" ng-repeat="(question_name, response) in question_map">
               <label for="{{question_name}}" class="col-sm-3 control-label">{{question_name.humanize()}}</label>
-              <div class="col-sm-8">
+              <div class="col-sm-8" ng-hide="question_name === 'vendor_agreement'">
                 <span class="help-block">{{response}}</span>
+              </div>
+              <div class="col-sm-8" ng-show="question_name === 'vendor_agreement'">
+                <a href="{{response}}" target="_blank">
+                  {{response}}
+                </a>
               </div>
             </div>
           </div>
