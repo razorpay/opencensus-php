@@ -516,7 +516,7 @@ return [
         'addon_fetch'                    => 'addons/{addon_id}',
         'addon_fetch_multiple'           => 'addons',
         'addons_fetch_due'               => 'subscriptions/{subscription_id}/addons/due',
-        'addon_delete'                   => 'addons/{addon_id}'
+        'addon_delete'                   => 'addons/{addon_id}',
 
         // Feature onboarding responses
         'feature_onboarding_fetch_all_responses' => 'feature/onboarding/responses',
