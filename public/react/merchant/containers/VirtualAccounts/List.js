@@ -117,6 +117,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
         {this.props.mode === 'test' &&
           <ActivationBanner
             productName="Razorpay Smart Collect"
+            feature="virtual_accounts"
             symbol={require('styles/assets/symbols/smartcollect.svg')}
             onActivate={this.openActivationModal}
           />}

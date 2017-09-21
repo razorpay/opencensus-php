@@ -236,7 +236,7 @@ export default class OnBoarding extends Component {
                       you can switch to{' '}
                       <a onClick={this.switchToTestMode}>Test Mode</a> to try
                       the product.
-                      {this.props.user.isActivated
+                      {!this.props.user.isActivated
                         ? <div class="m-t">
                             <b> Please note </b> that this is activation form
                             for {heading}. Your request will be processed after

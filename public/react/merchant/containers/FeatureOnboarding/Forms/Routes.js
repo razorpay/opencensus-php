@@ -1,6 +1,5 @@
 import { Field } from 'redux-form';
 import InputField from 'rzp/ui/Forms/InputField';
-import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
 import FileUploadInputButton from 'rzp/ui/FileUpload/InputButton';
 import { required } from 'rzp/utils/validators';
 
@@ -17,6 +16,7 @@ export default ({ handleChange }) => {
           rows="3"
           class="form-control"
           placeholder="Your use case for the product and business model"
+          validate={[required()]}
         />
       </div>
 
@@ -53,7 +53,6 @@ export default ({ handleChange }) => {
           uploadedFileName=""
           maxSize="8000000"
           onChange={handleChange}
-          validate={[required()]}
         />
         <small class="help-block">
           <i class="icon icon-info-outline" style={{ marginRight: '4px' }} />

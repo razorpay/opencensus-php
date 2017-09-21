@@ -3,6 +3,7 @@ import { filterBy } from 'rzp/utils/rzp-utils';
 
 import { fetchFeaturesAjax } from 'merchant/modules/config';
 
+// TODO: Rename fn. name
 export function setFeatures(features) {
   let enabledFeatures = filterBy(features, 'value', true);
 

@@ -17,7 +17,7 @@ export const fetchConfigAjax = () => {
   });
 };
 
-export const fetchFeaturesAjax = currentUserId => {
+export const fetchFeaturesAjax = (currentUserId, mode) => {
   let params = {
     route_name: 'merchant_get_features',
     url_params: {
@@ -25,11 +25,17 @@ export const fetchFeaturesAjax = currentUserId => {
     },
   };
 
-  return ajax({
+  const ajaxQuery = {
     url: '/user/generic',
     data: params,
     appendModeInQueryParam: true,
-  });
+  };
+
+  if (mode) {
+    ajaxQuery.data.mode = mode;
+  }
+
+  return ajax(ajaxQuery);
 };
 
 export const fetchConfig = () => {

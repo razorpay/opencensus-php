@@ -1,4 +1,3 @@
-import AsyncButton from 'react-async-button';
 import { connect } from 'react-redux';
 import React, { Component } from 'react';
 import { Route, Switch, NavLink } from 'react-router-dom';
@@ -88,6 +87,7 @@ export default class MarketplaceContainer extends Component {
         {this.props.mode === 'test' &&
           <ActivationBanner
             productName="Razorpay Route"
+            feature="marketplace"
             symbol={require('styles/assets/symbols/route.svg')}
             onActivate={this.openActivationModal}
           />}

@@ -86,6 +86,7 @@ export default class SubscriptionsController extends Component {
         {this.props.mode === 'test' &&
           <ActivationBanner
             productName="Razorpay Subscriptions"
+            feature="subscriptions"
             symbol={require('styles/assets/symbols/subscriptions.svg')}
             onActivate={this.openActivationModal}
           />}
