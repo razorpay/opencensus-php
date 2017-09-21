@@ -73,6 +73,11 @@ class Entity extends Base\PublicEntity
     const CUSTOMER_EMAIL = 'customer_email';
 
     /**
+     * Used in mails for card update links
+     */
+    const HOSTED_URL = 'hosted_url';
+
+    /**
      * We throw exceptions in the following cases
      * - In preferences, if the subscription has been authenticated and card_change = false in the input.
      * - In preferences, if card_change = true in the input and it's not card change status.

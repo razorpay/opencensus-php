@@ -263,13 +263,14 @@ class Notify extends Processor\Notify
     {
         $data = [
             'subscription' => [
-                Subscription\Entity::ID         => $this->subscription->getId(),
-                Subscription\Entity::STATUS     => $this->subscription->getStatus(),
-                Subscription\Entity::PUBLIC_ID  => $this->subscription->getPublicId(),
-                Subscription\Entity::TYPE       => $this->subscription->getType(),
-                Subscription\Entity::CHARGE_AT  => $this->formatTime($this->subscription->getChargeAt()),
-                Subscription\Entity::CANCEL_AT  => $this->formatTime($this->subscription->getCancelAt()),
+                Subscription\Entity::ID            => $this->subscription->getId(),
+                Subscription\Entity::STATUS        => $this->subscription->getStatus(),
+                Subscription\Entity::PUBLIC_ID     => $this->subscription->getPublicId(),
+                Subscription\Entity::TYPE          => $this->subscription->getType(),
+                Subscription\Entity::CHARGE_AT     => $this->formatTime($this->subscription->getChargeAt()),
+                Subscription\Entity::CANCEL_AT     => $this->formatTime($this->subscription->getCancelAt()),
                 Subscription\Entity::AUTH_ATTEMPTS => Charge::MAX_AUTH_ATTEMPTS - $this->subscription->getAuthAttempts(),
+                Subscription\Entity::HOSTED_URL    => $this->getRetryUrl(),
             ],
             'plan_item' => [
                 Item\Entity::NAME              => $this->subscription->plan->item->getName(),
@@ -288,6 +289,20 @@ class Notify extends Processor\Notify
             ],
         ];
 
+        if ($this->subscription->token->card !== null)
+        {
+            $card = $this->subscription->token->card;
+
+            $expiryMonth = str_pad($card->getExpiryMonth(), 2, "0", STR_PAD_LEFT);
+
+            $data['card'] = [
+                'number'    => '**** **** **** ' . $card->getLast4(),
+                'expiry'    => $expiryMonth . '/' . $card->getExpiryYear(),
+                'network'   => $card->getNetworkCode(),
+                'color'     => $card->getNetworkColorCode(),
+            ];
+        }
+
         if ($this->payment !== null)
         {
             $data['payment']  = [
@@ -300,20 +315,6 @@ class Notify extends Processor\Notify
                 // note that payment method is unavailable to the merchant
                 Payment\Entity::METHOD    => $this->payment->getMethodWithDetail(),
             ];
-
-            if ($this->payment->hasCard() === true)
-            {
-                $card = $this->payment->card;
-
-                $expiryMonth = str_pad($card->getExpiryMonth(), 2, "0", STR_PAD_LEFT);
-
-                $data['card'] = [
-                    'number'    => '**** **** **** ' . $card->getLast4(),
-                    'expiry'    => $expiryMonth . '/' . $card->getExpiryYear(),
-                    'network'   => $card->getNetworkCode(),
-                    'color'     => $card->getNetworkColorCode(),
-                ];
-            }
 
             if ($this->payment->isFailed() === true)
             {
@@ -332,6 +333,22 @@ class Notify extends Processor\Notify
         }
 
         return $data;
+    }
+
+    protected function getRetryUrl()
+    {
+        $baseUrl = $this->app['config']->get('app.url') . '/v1';
+
+        $mode = 't';
+
+        if ($this->mode === Mode::LIVE)
+        {
+            $mode = 'l';
+        }
+
+        $url = $baseUrl . '/' . $mode . '/subscriptions/' . $this->subscription->getPublicId();
+
+        return $url;
     }
 
     protected function setOptions(string $event)

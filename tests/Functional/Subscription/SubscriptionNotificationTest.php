@@ -59,19 +59,6 @@ class SubscriptionNotificationTest extends TestCase
         Mail::assertNothingSent();
     }
 
-    public function testThisMail()
-    {
-        $this->doAuthTxnForNewSubscription();
-$subscription = $this->getLastEntity('subscription', true);
-while ($subscription['paid_count'] < $subscription['total_count'] - 1)
-{
-$result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
-$subscription = $this->getLastEntity('subscription', true);
-}
-$this->assertEquals('active', $subscription['status']);
-$result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
-    }
-
     public function testSubscriptionAuthenticatedMailSentAuthAmount()
     {
         Mail::fake();

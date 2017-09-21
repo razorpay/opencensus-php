@@ -61,9 +61,9 @@
     <tr>
       <td class="left"></td>
       <td class="middle">
-        <h6>Billing Period</h6>
-        <p class="sub-title">Start: {{$invoice['billing_start']}}</p>
-        <p class="sub-title">End: {{$invoice['billing_end']}} </p>
+        <h6>Bill Date</h6>
+        <p class="title">{{$invoice['billing_start']}}</p>
+        <!-- <p class="sub-title">End: {{$invoice['billing_end']}} </p> -->
       </td>
       <td class="right"></td>
     </tr>
@@ -73,7 +73,7 @@
       <td class="middle">
         <h6>Payment Method</h6>
         <p class="title">{{$card['network']}} Card {{$card['number']}}</p>
-        <p class="title"><a href="#">Update Card</a></p>
+        <p class="title"><a href="{{$subscription['hosted_url']}}">Update Card</a></p>
       </td>
       <td class="right"></td>
     </tr>

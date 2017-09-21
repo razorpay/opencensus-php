@@ -62,9 +62,9 @@
     <tr>
       <td class="left"></td>
       <td class="middle">
-        <h6>Billing Period</h6>
-        <p class="sub-title">Start: {{$invoice['billing_start']}}</p>
-        <p class="sub-title">End: {{$invoice['billing_end']}} </p>
+        <h6>Bill Date</h6>
+        <p class="title">{{$invoice['billing_start']}}</p>
+        <!-- <p class="sub-title">End: {{$invoice['billing_end']}} </p> -->
       </td>
       <td class="right"></td>
     </tr>

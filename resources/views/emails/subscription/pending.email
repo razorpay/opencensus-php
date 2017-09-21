@@ -18,7 +18,7 @@
     <tr>
       <td class="left"></td>
       <td class="middle">
-        A charge attempt towards your subscription has failed. You have {{$subscription['auth_attempts']}} attempt(s) remaining. Another charge will be attempted on {{$subscription['charge_at']}}. You may choose to <a href="#">use another card</a> or fix issues with the saved card and <a href="#">try again</a>.
+        A charge attempt towards your subscription has failed. You have {{$subscription['auth_attempts']}} attempt(s) remaining. Another charge will be attempted on {{$subscription['charge_at']}}. You may choose to <a href="{{$subscription['hosted_url']}}">update your card</a>.
       </td>
       <td class="right"></td>
     </tr>
@@ -27,8 +27,7 @@
       <td class="middle demarcated">
         <table>
           <tr>
-            <td class="full-button"><a href="#">UPDATE CARD</a></td>
-            <td class="full-button"><a href="#">TRY AGAIN</a></td>
+            <td class="full-button"><a href="{{$subscription['hosted_url']}}">UPDATE CARD</a></td>
           </tr>
         </table>
       </td>
@@ -55,23 +54,13 @@
       </td>
       <td class="right"></td>
     </tr>
-    <!-- Billing Period -->
-    <tr>
-      <td class="left"></td>
-      <td class="middle">
-        <h6>Billing Period</h6>
-        <p class="sub-title">Start: {{$invoice['billing_start']}}</p>
-        <p class="sub-title">End: {{$invoice['billing_end']}} </p>
-      </td>
-      <td class="right"></td>
-    </tr>
     <!-- Card -->
     <tr>
       <td class="left"></td>
       <td class="middle">
         <h6>Payment Method</h6>
         <p class="title">{{$card['network']}} Card {{$card['number']}}</p>
-        <p class="title"><a href="#">Update Card</a></p>
+        <p class="title"><a href="{{$subscription['hosted_url']}}">Update Card</a></p>
       </td>
       <td class="right"></td>
     </tr>
