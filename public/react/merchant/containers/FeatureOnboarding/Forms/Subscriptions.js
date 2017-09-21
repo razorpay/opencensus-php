@@ -8,7 +8,9 @@ export default () => {
   return (
     <div class="form-body">
       <div class="form-group">
-        <label for="business_model">Use Case and Business Model</label>
+        <label for="business_model" class="label-required">
+          Use Case and Business Model
+        </label>
         <Field
           name="business_model"
           component={AutoResizeTextarea}
@@ -19,7 +21,9 @@ export default () => {
       </div>
 
       <div class="form-group">
-        <label for="sample_plans">Subscription Plans</label>
+        <label for="sample_plans" class="label-required">
+          Subscription Plans
+        </label>
         <Field
           name="sample_plans"
           component={AutoResizeTextarea}
@@ -30,7 +34,11 @@ export default () => {
       </div>
 
       <div class="form-group">
-        <label for="website_checkbox" class="label-required">
+        <label
+          for="website_checkbox"
+          class="label-required"
+          class="label-required"
+        >
           Is your website live?
         </label>
         <div class="checkbox">

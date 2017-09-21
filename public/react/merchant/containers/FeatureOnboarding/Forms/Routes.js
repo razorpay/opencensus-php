@@ -8,7 +8,9 @@ export default ({ handleChange }) => {
   return (
     <div class="form-body">
       <div class="form-group">
-        <label for="use_case">Use Case</label>
+        <label for="use_case" class="label-required">
+          Use Case
+        </label>
         <Field
           name="use_case"
           component={AutoResizeTextarea}
@@ -19,7 +21,9 @@ export default ({ handleChange }) => {
       </div>
 
       <div class="form-group">
-        <label for="email_notify">Transferring To</label>
+        <label for="email_notify" class="label-required">
+          Transferring To
+        </label>
         <Field
           name="settling_to"
           component={InputField}
@@ -41,7 +45,9 @@ export default ({ handleChange }) => {
       </div>
 
       <div class="form-group">
-        <label for="email_notify">Signed Vendor Agreement</label>
+        <label for="email_notify" class="label-required">
+          Signed Vendor Agreement
+        </label>
         <FileUploadInputButton
           accept="image/jpeg,image/png,application/pdf,application/x-pdf"
           uploadedFileName="marketplace.vendor_agreement"
@@ -49,7 +55,7 @@ export default ({ handleChange }) => {
           onChange={handleChange}
         />
         <small class="help-block">
-          <i class="icon icon-info-circle" />
+          <i class="icon icon-info-outline" style={{ marginRight: '4px' }} />
           <span>
             As a sample, upload a signed agreement executed with your
             3rd-parties or vendors

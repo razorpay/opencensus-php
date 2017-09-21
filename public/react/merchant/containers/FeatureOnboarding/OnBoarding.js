@@ -222,6 +222,7 @@ export default class OnBoarding extends Component {
                       <AsyncButton
                         type="button"
                         class="btn btn-primary pull-left"
+                        style={{ marginTop: '20px' }}
                         text="Apply Now"
                         pendingText="Applying..."
                         onClick={handleSubmit(this.onSubmitClick)}

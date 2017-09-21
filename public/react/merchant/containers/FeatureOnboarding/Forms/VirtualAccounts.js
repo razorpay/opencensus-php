@@ -7,7 +7,9 @@ export default () => {
   return (
     <div class="form-body">
       <div class="form-group">
-        <label for="use_case">Use Case</label>
+        <label for="use_case" class="label-required">
+          Use Case
+        </label>
         <Field
           name="use_case"
           component={AutoResizeTextarea}
@@ -18,7 +20,9 @@ export default () => {
       </div>
 
       <div class="form-group">
-        <label for="expected_monthly_revenue">Expected Monthly Revenue</label>
+        <label for="expected_monthly_revenue" class="label-required">
+          Expected Monthly Revenue
+        </label>
         <Field
           name="expected_monthly_revenue"
           component={InputField}
@@ -28,7 +32,7 @@ export default () => {
           validate={[required()]}
         />
         <small class="help-block">
-          <i class="icon icon-info-circle" />
+          <i class="icon icon-info-outline" style={{ marginRight: '4px' }} />
           <span>
             Approximate monthly revenue you expect to receive via virtual
             accounts on Razorpay Smart Collect
