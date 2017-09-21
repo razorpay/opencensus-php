@@ -774,6 +774,11 @@ class Entity extends Base\PublicEntity
     {
         $this->metadata[$key] = $value;
     }
+    
+    public function isEmandate()
+    {
+        return ($this->getRecurringType() !== null);
+    }
 
     public function setMetadata($input)
     {
