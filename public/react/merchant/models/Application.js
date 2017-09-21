@@ -23,7 +23,9 @@ export default class Application extends GenericEntity {
     data.route_name = this.connectedListRouteName;
     return this.makeGenericAjaxCall({ data }).then(response => {
       response.data.items = response.data.items.map(item => {
-        item.logo_url = this.formatLogoUrl(item.logo_url);
+        item.application.logo_url = this.formatLogoUrl(
+          item.application.logo_url
+        );
         return new Application(item);
       });
       return response;

@@ -51,6 +51,10 @@ body {
   }
 }
 
+.no-padding {
+  padding: 0;
+}
+
 .font-thin {
   font-weight: 300;
 }
@@ -143,6 +147,7 @@ body {
     .badge {
       margin-top: 13px;
       font-size: 9px;
+      letter-spacing: 0.7px;
     }
 
     .icon, .fa {
@@ -260,6 +265,14 @@ body {
   background-color: #fff;
 }
 
+// For showing any message if data and loader not present on dual view
+.no-data-message {
+  position: relative;
+  width: 100%;
+  text-align: center;
+  top: 200px;
+}
+
 .main-content .multi-content {
   font-size: 0;
   max-width: 1200px;
@@ -281,7 +294,7 @@ body {
     }
   }
 
-  /*
+  // Empty content exists only for standalone views
   .empty-content {
     position: relative;
   }
@@ -292,7 +305,6 @@ body {
     top: 200px;
     content: 'Click on an invoice to view its details here.'
   }
-  */
 
   .content-sm {
     position: relative;
@@ -303,11 +315,9 @@ body {
     @media (max-width: 1000px) {
       width: 100%
     }
-    /*
     &:only-of-type:before {
       left: 100%;
     }
-    */
   }
 }
 
@@ -380,6 +390,44 @@ body.ReactModal__Body--open {
 .SingleDatePicker__picker,
 .DateRangePicker__picker {
   top: 45px;
+}
+
+.transfers-onhold-datepicker {
+
+  .SingleDatePicker {
+
+    .DateInput--with-caret:before, .DateInput--with-caret:after {
+      border: 10px solid transparent;
+      z-index: 3;
+    }
+
+    .DateInput--with-caret:before {
+      top: -12px;
+      border-top-color: rgba(0, 0, 0, 0.1);
+      border-bottom: 0;
+    }
+
+    .DateInput--with-caret:after {
+      top: -13px;
+      border-top-color: #fff;
+      border-bottom: 0;
+    }
+  }
+
+  .SingleDatePicker__picker {
+    top: auto;
+    bottom: 46px;
+    z-index: 2;
+  }
+}
+.SingleDatePicker__picker.SingleDatePicker__picker--open-up {
+  top: auto;
+  bottom: 58px;
+  z-index: 2;
+}
+
+.DateInput--open-up.DateInput--with-caret::after {
+  z-index: 3;
 }
 
 .DateInput__input {
@@ -526,7 +574,7 @@ tr:hover .row-action.btn-group {
   padding: 8px;
   margin-bottom: -1px;
   position: relative;
-  clearfix() 
+  clearfix()
 
   .pair-label, .pair-value, .pair-separator {
     vertical-align: top;
@@ -537,6 +585,19 @@ tr:hover .row-action.btn-group {
     width: 39%;
     color: #8991AE;
     padding: 0; // to override col- padding
+  }
+
+  .custom-item {
+    width: 100%;
+
+    .group-items {
+      line-height: 20px;
+      font-size: 12px;
+
+      button, div {
+        margin-top: 8px;
+      }
+    }
   }
 
   /*
@@ -852,15 +913,6 @@ tr:hover .row-action.btn-group {
     .btn {
       padding: 8px 12px;
     }
-
-    >.btn-half {
-      width: 48%;
-      margin-left: 0;
-    }
-
-    > .btn-half + .btn {
-      margin-left: 4%;
-    }
   }
 
   /* banner has bottom margin by default */
@@ -880,6 +932,17 @@ tr:hover .row-action.btn-group {
     .LoaderDots > span {
       font-size: inherit;
     }
+  }
+}
+
+.btn-toolbar {
+  > .btn-half {
+    width: 48%;
+    margin-left: 0;
+  }
+
+  > .btn-half + .btn {
+    margin-left: 4%;
   }
 }
 
@@ -969,4 +1032,43 @@ tr:hover .row-action.btn-group {
     color: #58666E;
     font-size: 70%;
   }
+}
+
+.full-width {
+  width: 100%;
+  margin-top: 16px;
+}
+
+.transfers-onhold-datepicker div.DateInput {
+  width: 100%;
+}
+
+form[name="createPaymentTransfer"], form[name="updatePaymentTransfer"] {
+  div.RadioButton:first-child {
+    margin-top: 0;
+  }
+
+  div.RadioButton .RadioButton__button {
+    cursor: pointer;
+  }
+
+  .CalendarMonth__caption {
+    margin-bottom: 10px;
+  }
+
+  .CalendarDay--blocked-calendar {
+    background-color: rgba(0,0,0,0.05);
+    cursor: not-allowed;
+  }
+}
+
+form[name="updatePaymentTransfer"] {
+  div.btn-toolbar {
+    padding-left: 0;
+  }
+}
+
+span.transfer-scheduled-text.text-warning,
+span.transfer-scheduled-text.text-warning span.label--primary {
+  color: #F5A623;
 }

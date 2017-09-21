@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { destroy } from 'redux-form';
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import WizardItem from './WizardItem';
+import NewProductsBanner from 'merchant/containers/Banners/NewProductsBanner';
 
 @connect(state => state.activation, { destroy })
 export default class ActivationWizard extends Component {
@@ -36,14 +37,22 @@ export default class ActivationWizard extends Component {
 
   state = {
     selectedTabIndex: 0,
+    linkedAccountKyc: 0,
   };
 
   componentWillMount() {
+    this.setState({
+      linkedAccountKyc: this.props.data['need_kyc'] || 0,
+    });
+
     if (this.props.accountId) {
       this.activationForms = this.activationForms.filter(
         activationForm =>
           activationForm.name !== 'activationContactDetails' &&
-          activationForm.name !== 'activationWebsiteDetails'
+          activationForm.name !== 'activationWebsiteDetails' &&
+          (this.state.linkedAccountKyc === 0
+            ? activationForm.name !== 'activationDocumentUpload'
+            : true)
       );
     }
   }
@@ -90,7 +99,9 @@ export default class ActivationWizard extends Component {
     if (data.submitted) {
       info = data.activated
         ? <div class="alert alert-info text-center">
-            Your account is already activated
+            {accountId
+              ? 'The account has been activated'
+              : 'Your account is already activated'}
           </div>
         : <div class="alert alert-info">
             Your activation form is submitted and is under review. The process
@@ -100,8 +111,14 @@ export default class ActivationWizard extends Component {
           </div>;
     }
 
+    let banner;
+    if (!!data.submitted && !accountId) {
+      banner = <NewProductsBanner />;
+    }
+
     return (
       <div>
+        {banner}
         {info}
 
         <Tabs
@@ -129,6 +146,7 @@ export default class ActivationWizard extends Component {
                 pageTitle={form.pageTitle || form.title}
                 gotoTab={this.gotoTab}
                 accountId={accountId}
+                linkedAccountKyc={this.state.linkedAccountKyc}
               />
             </TabPanel>
           )}

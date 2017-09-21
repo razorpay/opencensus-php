@@ -46,7 +46,14 @@ export default class BusinessDetailsForm extends Component {
   };
 
   render() {
-    let { handleSubmit, save, saveAndNext, goBack, accountId } = this.props;
+    let {
+      handleSubmit,
+      save,
+      saveAndNext,
+      goBack,
+      accountId,
+      linkedAccountKyc,
+    } = this.props;
     let locked = this.props.data.locked;
 
     return (
@@ -60,10 +67,11 @@ export default class BusinessDetailsForm extends Component {
               {!accountId &&
                 this.props.business_type === '2' &&
                 <div class="alert alert-warning">
-                  We may not be able to support individuals as of now. Get in touch with
-                  {' '}
-                  <a href="mailto:support@razorpay.com">support@razorpay.com</a>
-                  {' '}
+                  We may not be able to support individuals as of now. Get in
+                  touch with{' '}
+                  <a href="mailto:support@razorpay.com">
+                    support@razorpay.com
+                  </a>{' '}
                   for more details
                 </div>}
 
@@ -124,7 +132,8 @@ export default class BusinessDetailsForm extends Component {
                     <small class="help-block">
                       <i class="icon icon-info-circle" />
                       <span>
-                        This is the brand name that the customers are familiar with.
+                        This is the brand name that the customers are familiar
+                        with.
                       </span>
                     </small>
                   </div>
@@ -146,7 +155,8 @@ export default class BusinessDetailsForm extends Component {
                     <small class="help-block">
                       <i class="icon icon-info-circle" />
                       <span>
-                        Please note that applications for international transactions take longer time to process.
+                        Please note that applications for international
+                        transactions take longer time to process.
                       </span>
                     </small>
                   </div>
@@ -190,7 +200,8 @@ export default class BusinessDetailsForm extends Component {
                     <small class="help-block">
                       <i class="icon icon-info-circle" />
                       <span>
-                        Please give a brief explanation of your business model and future plans (Essential for startups)
+                        Please give a brief explanation of your business model
+                        and future plans (Essential for startups)
                       </span>
                     </small>
                   </div>
@@ -279,7 +290,8 @@ export default class BusinessDetailsForm extends Component {
                         <small class="help-block">
                           <i class="icon icon-info-circle" />
                           <span>
-                            Physical Verification might be performed at your operational address.
+                            Physical Verification might be performed at your
+                            operational address.
                           </span>
                         </small>
                       </div>
@@ -410,23 +422,25 @@ export default class BusinessDetailsForm extends Component {
                 </div>
               </div>}
 
-          <div class="form-group">
-            <label class="col-md-3 control-label">Company PAN</label>
-            <div class="col-md-9">
-              <Field
-                name="company_pan"
-                component="input"
-                class="form-control"
-                placeholder="Company PAN"
-              />
-              {accountId
-                ? null
-                : <small class="help-block">
-                    <i class="icon icon-info-circle" />
-                    <span>Mandatory for Companies</span>
-                  </small>}
-            </div>
-          </div>
+          {accountId && !linkedAccountKyc
+            ? null
+            : <div class="form-group">
+                <label class="col-md-3 control-label">Company PAN</label>
+                <div class="col-md-9">
+                  <Field
+                    name="company_pan"
+                    component="input"
+                    class="form-control"
+                    placeholder="Company PAN"
+                  />
+                  {accountId
+                    ? null
+                    : <small class="help-block">
+                        <i class="icon icon-info-circle" />
+                        <span>Mandatory for Companies</span>
+                      </small>}
+                </div>
+              </div>}
 
           {accountId
             ? null
@@ -484,22 +498,24 @@ export default class BusinessDetailsForm extends Component {
                 </div>
               </div>}
 
-          <div class="form-group">
-            <label class="col-md-3 control-label label-required">
-              {accountId
-                ? 'Promoter/Individual PAN'
-                : 'PAN of any 1 authorised signatory/promoter/director'}
-            </label>
-            <div class="col-md-9">
-              <Field
-                name="promoter_pan"
-                component={InputField}
-                class="form-control"
-                placeholder="PAN Number of Promoter"
-                validate={[required()]}
-              />
-            </div>
-          </div>
+          {accountId && !linkedAccountKyc
+            ? null
+            : <div class="form-group">
+                <label class="col-md-3 control-label label-required">
+                  {accountId
+                    ? 'Promoter/Individual PAN'
+                    : 'PAN of any 1 authorised signatory/promoter/director'}
+                </label>
+                <div class="col-md-9">
+                  <Field
+                    name="promoter_pan"
+                    component={InputField}
+                    class="form-control"
+                    placeholder="PAN Number of Promoter"
+                    validate={[required()]}
+                  />
+                </div>
+              </div>}
 
           {accountId
             ? null

@@ -102,7 +102,7 @@ class RawApiRequest
 
         $merchantId = $this->resolveMerchantId($input, $adminToken);
 
-        if (isset($merchantId)) {
+        if (isset($merchantId) === true) {
             /**
              * Setting X-Razorpay-Account header in case of market place routes.
              * The handling of this header is already taken care in api
@@ -293,7 +293,7 @@ class RawApiRequest
 
     /**
      * Fires the request to the API
-     * @return Array standard response
+     * @return array standard response
      */
     public function send()
     {
@@ -307,7 +307,9 @@ class RawApiRequest
 
             $method = $this->input['method'];
 
-            $response = $this->client->$method($this->path, $this->params)->json();
+            $response = $this->client
+                             ->$method($this->path, $this->params)
+                             ->json();
 
             return [null, $response];
         }

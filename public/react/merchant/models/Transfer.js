@@ -4,6 +4,18 @@ export default class Transfer extends GenericEntity {
   listRouteName = 'transfer_fetch_multiple';
   detailsRouteName = 'transfer_fetch';
 
+  resourceFields = [
+    'account',
+    'amount',
+    'currency',
+    'on_hold',
+    'on_hold_until',
+  ];
+
+  getRouteName() {
+    return 'payment_transfer';
+  }
+
   reverse(data) {
     let params = { '{id}': this.id };
 
@@ -11,6 +23,21 @@ export default class Transfer extends GenericEntity {
       method: 'post',
       data: {
         route_name: 'transfer_reversal',
+        url_params: JSON.stringify(params),
+        body: {
+          ...data,
+        },
+      },
+    });
+  }
+
+  update(data) {
+    let params = { '{id}': this.id };
+
+    return this.makeGenericAjaxCall({
+      method: 'patch',
+      data: {
+        route_name: 'transfer_edit',
         url_params: JSON.stringify(params),
         body: {
           ...data,

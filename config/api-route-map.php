@@ -149,7 +149,10 @@ return [
             'url'       => 'payments/{id}/refund',
             'routeName' => 'post_refund'
         ],
-
+        'payment_transfer'                  => [
+            'url'       => 'payments/{id}/transfers',
+            'routeName' => 'post_transfer'
+        ],
         // Orders
         'order_fetch'                       => [
             'url'       => 'orders',
@@ -357,6 +360,11 @@ return [
             'routeName' => 'marketplace_read'
         ],
 
+        'transfer_edit'                     => [
+            'url'       => 'transfers/{id}',
+            'routeName' => 'marketplace_edit'
+        ],
+
         // Reversals
         'reversal_fetch_multiple'           => [
             'url'       => 'reversals',
@@ -474,6 +482,14 @@ return [
             'url'       => 'subscriptions/{id}/cancel',
             'routeName' => 'subscriptions_write'
         ],
+        'subscription_manual_retry' => [
+            'url'       => 'invoices/{invoice_id}/charge',
+            'routeName' => 'subscriptions_write'
+        ],
+        'subscription_test_charge' => [
+            'url'       => 'subscriptions/{id}/charge',
+            'routeName' => 'subscriptions_write'
+        ],
 
         // Plans
         'plan_fetch_multiple'    => [
@@ -495,6 +511,26 @@ return [
         'plan_delete'            => [
             'url'       => 'plans/{id}',
             'routeName' => 'subscriptions_write'
+        ],
+
+        // Addons
+        'subscription_create_addon'      => 'subscriptions/{subscription_id}/addons',
+        'addon_fetch'                    => 'addons/{addon_id}',
+        'addon_fetch_multiple'           => 'addons',
+        'addons_fetch_due'               => 'subscriptions/{subscription_id}/addons/due',
+        'addon_delete'                   => 'addons/{addon_id}',
+
+        // Feature onboarding responses
+        'feature_onboarding_fetch_all_responses' => 'feature/onboarding/responses',
+
+        // Onboarding
+        'feature_onboarding_create' => [
+            'url'       => 'feature/onboarding/{feature}',
+            'routeName' => 'feature_onboarding_create'
+        ],
+        'feature_onboarding_fetch_responses' => [
+            'url'       => 'feature/onboarding/{feature}/responses',
+            'routeName' => 'feature_onboarding_fetch_responses'
         ],
     ],
 

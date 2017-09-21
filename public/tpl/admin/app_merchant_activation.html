@@ -85,7 +85,7 @@
       </fieldset>
       </form>
     </tab>
-    <tab active="steps.step2" select="steps.percent=20">
+    <tab active="steps.step2" select="steps.percent=17">
       <tab-heading ng-class="{'text-success': check.2 === true, 'text-danger':check.2 === false}">
         <i class="fa" ng-class="{'fa-check': check.2 === true, 'fa-times':check.2 === false}"></i>
         Business Details
@@ -310,7 +310,7 @@
       </fieldset>
       </form>
     </tab>
-    <tab active="steps.step3" select="steps.percent=40">
+    <tab active="steps.step3" select="steps.percent=34">
       <tab-heading ng-class="{'text-success': check.3 === true, 'text-danger':check.3 === false}">
         <i class="fa" ng-class="{'fa-check': check.3 === true, 'fa-times':check.3 === false}"></i>
         Website Details
@@ -376,7 +376,7 @@
       </fieldset>
       </form>
     </tab>
-    <tab active="steps.step4" select="steps.percent=60">
+    <tab active="steps.step4" select="steps.percent=51">
       <tab-heading ng-class="{'text-success': check.4 === true, 'text-danger':check.4 === false}">
         <i class="fa" ng-class="{'fa-check': check.4 === true, 'fa-times':check.4 === false}"></i>
         Bank Account Details
@@ -502,7 +502,7 @@
       </fieldset>
       </form>
     </tab>
-    <tab active="steps.step5" select="steps.percent=80">
+    <tab active="steps.step5" select="steps.percent=67">
       <tab-heading ng-class="{'text-success': check.5 === true, 'text-danger':check.5 === false}">
         <i class="fa" ng-class="{'fa-check': check.5 === true, 'fa-times':check.5 === false}"></i>
         Documents Upload
@@ -605,15 +605,51 @@
       </fieldset>
       </form>
     </tab>
-    <tab active="steps.step6" select="steps.percent=100">
+    <tab active="steps.step6" select="steps.percent=83">
       <tab-heading ng-class="{'text-success': check.6 === true, 'text-danger':check.6 === false}">
         <i class="fa" ng-class="{'fa-check': check.6 === true, 'fa-times':check.6 === false}"></i>
+        Product Onboarding
+      </tab-heading>
+      <h4>Product Onboarding</h4>
+      <form name="step6" class="form-validation form-horizontal" novalidate>
+        <div class="prev-next">
+          <button type="submit" class="btn btn-prev btn-default btn-rounded" ng-click="steps.step5=true">Prev</button>
+          <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step7=true" >Next</button>
+        </div>
+        <fieldset>
+          <div class="form-group" ng-if="Object.keys(onboarding).length == 0">
+            <h5 class="col-sm-3 control-label"></h5>
+            <h5 class="col-sm-9">No feature requests were made.</h5>
+          </div>
+          <div ng-repeat="(feature_name, question_map) in onboarding">
+            <div class="form-group">
+              <h5 class="col-sm-3 control-label"><strong>{{feature_name}}</strong></h5>
+              <h5 class="col-sm-9"></h5>
+            </div>
+            <div class="form-group" ng-repeat="(question_name, response) in question_map">
+              <label for="{{question_name}}" class="col-sm-3 control-label">{{question_name.humanize()}}</label>
+              <div class="col-sm-8" ng-hide="question_name === 'vendor_agreement'">
+                <span class="help-block">{{response}}</span>
+              </div>
+              <div class="col-sm-8" ng-show="question_name === 'vendor_agreement'">
+                <a href="{{response}}" target="_blank">
+                  {{response}}
+                </a>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+      </form>
+    </tab>
+    <tab active="steps.step7" select="steps.percent=100">
+      <tab-heading ng-class="{'text-success': check.7 === true, 'text-danger':check.7 === false}">
+        <i class="fa" ng-class="{'fa-check': check.7 === true, 'fa-times':check.7 === false}"></i>
         Submit Form
       </tab-heading>
       <h4>Submit For Activation</h4>
       <form name="step6" class="form-validation form-horizontal" novalidate>
         <div class="prev-next">
-          <button type="submit" class="btn btn-prev btn-default btn-rounded" ng-click="steps.step5=true">Prev</button>
+          <button type="submit" class="btn btn-prev btn-default btn-rounded" ng-click="steps.step6=true">Prev</button>
           <button type="submit" class="pull-right btn btn-next btn-default btn-rounded disabled">Next</button>
         </div>
       </form>

@@ -32,7 +32,10 @@ const amountValidation = (value, allValues, props) => {
       value >
       (props.transfer.amount - props.transfer.amount_reversed) / 100
     ) {
-      return `Amount can't be greater than the transfer amount(${(props.transfer.amount - props.transfer.amount_reversed) / 100}).`;
+      return `Amount can't be greater than the transfer amount(${(props.transfer
+        .amount -
+        props.transfer.amount_reversed) /
+        100}).`;
     }
   }
 };
@@ -119,6 +122,10 @@ export default class ReversalModal extends Component {
               this.props.fetchTransfer(transfer.id);
               this.props.fetchReversals(transfer.id);
               this.props.closeModal();
+
+              if (typeof this.props.onReverse === 'function') {
+                this.props.onReverse();
+              }
             })
             .catch(({ errors }) => {
               errors &&
@@ -189,22 +196,20 @@ export default class ReversalModal extends Component {
 
             <div class="form-group">
               <div class="col-sm-8 col-sm-offset-4">
-                The transfer amount will be
-                {' '}
+                The transfer amount will be{' '}
                 <b>
                   {this.props.partial &&
-                    (transfer.amount - transfer.amount_reversed) / 100 !==
-                      Number(this.props.reversable_amount)
+                  (transfer.amount - transfer.amount_reversed) / 100 !==
+                    Number(this.props.reversable_amount)
                     ? 'partially '
                     : 'completely '}
                   reversed{' '}
-                </b>if the reversal amount set to
-                {' '}
+                </b>if the reversal amount set to{' '}
                 <b>
                   {(this.props.partial
                     ? this.props.reversable_amount
-                    : (transfer.amount - transfer.amount_reversed) / 100) || 0}
-                  {' '}
+                    : (transfer.amount - transfer.amount_reversed) / 100) ||
+                    0}{' '}
                   INR
                 </b>
               </div>
@@ -224,7 +229,6 @@ export default class ReversalModal extends Component {
                 <i />
               </div>
             </div>
-
           </div>
 
           <div class="modal-footer">

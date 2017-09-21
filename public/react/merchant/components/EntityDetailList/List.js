@@ -2,6 +2,7 @@ import { Component } from 'react';
 import Alert from 'rzp/ui/Forms/Alert';
 import EntityRow from 'merchant/components/EntityDetailList/Row';
 
+//TODO: Make this component generalized as per requirement later. Currently only used for subscriptions details view(invoice list)
 /*
  // Usage: Check slider/details view of payments, plans, etc.
  // Constraint: 1. Pass props 'progressLoader' to <Table> only when progress loaders is shown instead of <Spinner>.
@@ -15,7 +16,17 @@ export default class EntityDetailList extends Component {
   }
 
   getRowList() {
-    const { loading, items, goToLink, activeSecEntityId } = this.props;
+    const {
+      loading,
+      items,
+      goToLink,
+      activeSecEntityId,
+      onManualAttempt,
+      subscriptionType,
+      subscriptionchargeAt,
+      subscriptionStatus,
+      mode,
+    } = this.props;
     let list = [];
 
     let limit = this.state.curLimit; // Show curLimit number of loaders. Also, default curLimit rows unless items.length is lesser
@@ -23,10 +34,45 @@ export default class EntityDetailList extends Component {
       limit = items.length < this.state.curLimit ? items.length : limit;
     }
 
+    let isChargeAttemptFailed = false;
     for (let index = 0; index < limit; index++) {
       let item = {};
       if (items.length) {
-        item = items[index];
+        item = items[index]; // 0th is latest item
+      }
+
+      let isFirstInvoiceUpfront = false;
+      let isFirstInvoiceRecurring = true;
+
+      if (subscriptionType === 2) {
+        // Start date : future, Invoice: Upfront
+        isFirstInvoiceUpfront = true;
+        isFirstInvoiceRecurring = false;
+      } else if (subscriptionType === 3) {
+        // Start date : immediate, Invoice: Upfront
+        isFirstInvoiceUpfront = true;
+      }
+
+      // If 1st invoice is not recurring, newer invoices will have 1 lesser index than otherwise
+      let recurringInvoiceIndex;
+      if (isFirstInvoiceRecurring) {
+        recurringInvoiceIndex = items.length ? items.length - index : index;
+      } else {
+        recurringInvoiceIndex = items.length ? items.length - index - 1 : index;
+      }
+
+      // Check if 1st(last in array) invoice is upfront invoice
+      let isUpfrontInvoice =
+        index === items.length - 1 ? isFirstInvoiceUpfront : false; // Set true for 1st invoice if it's upfront
+
+      // Check for the latest invoice with status 'issued' and if any attempts failed
+      // (To set authAttempts only for latest invoice for now)
+      if (
+        item.status === 'issued' &&
+        this.props.authAttempts > 0 &&
+        !isChargeAttemptFailed
+      ) {
+        isChargeAttemptFailed = true;
       }
 
       list.push(
@@ -34,9 +80,15 @@ export default class EntityDetailList extends Component {
           key={index}
           goToLink={goToLink}
           activeSecEntityId={activeSecEntityId}
-          index={items.length ? items.length - index : index}
+          index={recurringInvoiceIndex}
           item={item}
           loading={loading}
+          isUpfront={isUpfrontInvoice}
+          authAttempts={isChargeAttemptFailed ? this.props.authAttempts : null}
+          subscriptionchargeAt={subscriptionchargeAt}
+          onManualAttempt={onManualAttempt}
+          subscriptionStatus={subscriptionStatus}
+          mode={mode}
         />
       );
     }
@@ -57,7 +109,7 @@ export default class EntityDetailList extends Component {
     ) {
       showBtn = (
         <button
-          class="primary-link"
+          class="show-btn primary-link"
           style={{ display: 'block', margin: '0 auto' }}
           onClick={() =>
             this.setState({
@@ -81,7 +133,7 @@ export default class EntityDetailList extends Component {
           <span class="label--primary">
             {title}
           </span>
-          <span class="label--secondary" style={{ float: 'right' }}>
+          <span class="label--secondary">
             {subTitle}
           </span>
         </div>

@@ -87,10 +87,10 @@ class Service extends Base\Service
 
         if ($isLinkedAccount === true)
         {
-            if (in_array(Entity::MARKETPLACE, $currentMerchantTags) === false)
-            {
-                return [[self::ACCOUNT_CREATION_NOT_ALLOWED], null];
-            }
+            //if (in_array(Entity::MARKETPLACE, $currentMerchantTags) === false)
+            //{
+            //    return [[self::ACCOUNT_CREATION_NOT_ALLOWED], null];
+            //}
         }
         else
         {
@@ -125,7 +125,7 @@ class Service extends Base\Service
 
             try
             {
-                $this->createSubMerchantOnApi($merchant, $currentMerchant);
+                $this->createSubMerchantOnApi($merchant, $currentMerchant, $isLinkedAccount);
             }
             catch(ApiError $e)
             {
@@ -232,7 +232,7 @@ class Service extends Base\Service
         }
     }
 
-    protected function createSubMerchantOnApi(Entity $merchant, Entity $aggregator)
+    protected function createSubMerchantOnApi(Entity $merchant, Entity $aggregator, $isLinkedAccount)
     {
         $data = [
             'name'  =>  $merchant->name,
@@ -246,7 +246,15 @@ class Service extends Base\Service
             $data['email'] = $merchant->email;
         }
 
-        $this->setApiCredentials($aggregator->id);
+        if ($isLinkedAccount)
+        {
+            $this->setApiCredentials($aggregator->id, 'test');
+        }
+        else
+        {
+            $this->setApiCredentials($aggregator->id);
+        }
+
 
         $response = $this->api
                          ->merchant
