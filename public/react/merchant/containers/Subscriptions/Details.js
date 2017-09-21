@@ -225,8 +225,10 @@ export default class SubscriptionDetailsContainer extends Component {
     return {
       id: 'inv_upcoming',
       status: 'next_due',
-      issued_at: chargeAt,
       currency: 'INR',
+      billing_start: chargeAt,
+      date: chargeAt,
+      issued_at: chargeAt,
       amount: planAmount + totalAddOnsAmount,
     };
   }
@@ -426,6 +428,7 @@ export default class SubscriptionDetailsContainer extends Component {
       // And in this case InvoiceDetails won't show loader but error message
       invoiceSecView = (
         <InvoiceDetail
+          mode={this.props.mode}
           curInvoiceIndex={this.state.curInvoiceIndex}
           nextChargeAt={entity.charge_at}
           invoice={invoiceData}
@@ -451,6 +454,7 @@ export default class SubscriptionDetailsContainer extends Component {
     return (
       <div class="multi-content">
         <SubscriptionDetails
+          mode={this.props.mode}
           subscription={entity}
           plan={plan}
           customer={customer}

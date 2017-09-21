@@ -85,6 +85,7 @@ export default class InvoiceDetail extends Component {
 
   render() {
     let {
+      mode,
       invoice,
       isValidInvoice,
       isLoading,
@@ -167,10 +168,12 @@ export default class InvoiceDetail extends Component {
                 />
 
                 <EntityDetailRow
-                  label="Created at"
+                  label={`${mode === 'test' ? 'Bill Date' : 'Created at'}`}
                   value={() =>
                     <Time
-                      value={invoice.date}
+                      value={
+                        mode === 'test' ? invoice.billing_start : invoice.date
+                      }
                       format="DD MMM YYYY, hh:mm:ss a"
                     />}
                 />

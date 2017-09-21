@@ -43,6 +43,7 @@ const getDescription = (interval, period) => {
 };
 
 export default ({
+  mode,
   subscription,
   plan,
   customer,
@@ -188,6 +189,7 @@ export default ({
                     />}
 
                 <EntityDetailList
+                  mode={mode}
                   title="Invoices detail"
                   goToLink={goToLink}
                   subTitle={

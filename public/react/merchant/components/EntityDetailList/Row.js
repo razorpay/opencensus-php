@@ -17,6 +17,7 @@ export default props => {
     subscriptionchargeAt,
     onManualAttempt,
     isUpfront,
+    mode,
   } = props;
 
   let retryingText;
@@ -52,7 +53,12 @@ export default props => {
               ? <PlaceholderLoader style={{ width: '70%' }} />
               : item.issued_at
                 ? <span class="label--primary">
-                    <Time value={item.issued_at} format="MMM DD, YYYY" />
+                    <Time
+                      value={`${mode === 'test'
+                        ? item.billing_start
+                        : item.issued_at}`}
+                      format="MMM DD, YYYY"
+                    />
                     {timeDiff > 0 &&
                       <span>
                         {' '}(due in {Math.ceil(timeDiff / (3600 * 24))} days)
