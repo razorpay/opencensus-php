@@ -29,6 +29,8 @@ class Biller extends Base\Core
      *                              - manual: Leaves auth_attempts, pending status unchanged
      *                              - queue: Charges in queue, rather than in sync
      *                              - success: For test charge, allows testing failures
+     *
+     * @return bool
      */
     public function createInvoiceAndCharge(Entity $subscription, array $options = [])
     {
@@ -48,7 +50,7 @@ class Biller extends Base\Core
 
         if ($this->shouldCharge($subscription, $invoice) === true)
         {
-            (new Core)->charge($subscription, $invoice, $options);
+            return (new Core)->charge($subscription, $invoice, $options);
         }
         else
         {
@@ -57,7 +59,7 @@ class Biller extends Base\Core
             // to be updated, so that the flow continues as it
             // is even if the subscription is in halted state.
             //
-            $this->handleNoSubscriptionChargeAtInvoiceCreation($subscription, $invoice);
+            return $this->handleNoSubscriptionChargeAtInvoiceCreation($subscription, $invoice);
         }
     }
 

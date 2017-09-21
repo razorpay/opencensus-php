@@ -156,9 +156,26 @@ class Charge extends Base\Core
     public function handleCaptureSuccess(
         Entity $subscription,
         Payment\Entity $capturedPayment,
-        Invoice\Entity $invoice)
+        Invoice\Entity $invoice,
+        $newSubscriptionAuthTxnCharge = false)
     {
         $task = $subscription->task;
+
+        //
+        // All this natak is being done just so that we can keep
+        // schedule anchor update and other entities update inside
+        // a transaction and also ensure that the webhooks being fired
+        // are not inside a transaction.
+        //
+        if ($newSubscriptionAuthTxnCharge === true)
+        {
+            //
+            // If this is auth txn charge, it means that start_at was null. This,
+            // in turn, means that some fields were not filled when the subscription
+            // was created. We fill those fields here.
+            //
+            $this->updateSubscriptionDetails($subscription, $capturedPayment, $invoice);
+        }
 
         //
         // Cannot move this to a variable because the instance values change later.
@@ -292,7 +309,7 @@ class Charge extends Base\Core
                 // fire completed webhook. We only need to fire the active webhook.
                 //
 
-                $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
+                $this->saveSubscriptionAndInvoiceAndTaskAndSchedule($subscription, $task, $invoice);
 
                 $core->eventSubscriptionCharged($subscription, $capturedPayment);
 
@@ -319,7 +336,7 @@ class Charge extends Base\Core
                 $subscription->setStatus(Status::ACTIVE);
                 $subscription->setEndedAt(null);
 
-                $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
+                $this->saveSubscriptionAndInvoiceAndTaskAndSchedule($subscription, $task, $invoice);
 
                 $core->eventSubscriptionCharged($subscription, $capturedPayment);
 
@@ -436,13 +453,13 @@ class Charge extends Base\Core
             case Status::PENDING:
             case Status::CANCELLED:
             case Status::COMPLETED:
-                $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
+                $this->saveSubscriptionAndInvoiceAndTaskAndSchedule($subscription, $task, $invoice);
 
                 $core->eventSubscriptionCharged($subscription, $capturedPayment);
 
                 break;
             case Status::HALTED:
-                $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
+                $this->saveSubscriptionAndInvoiceAndTaskAndSchedule($subscription, $task, $invoice);
 
                 $core->eventSubscriptionCharged($subscription, $capturedPayment);
 
@@ -561,13 +578,13 @@ class Charge extends Base\Core
         switch($updatedStatus)
         {
             case Status::PENDING:
-                $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
+                $this->saveSubscriptionAndInvoiceAndTaskAndSchedule($subscription, $task, $invoice);
 
                 $core->fireWebhookForStatusUpdate($subscription, Status::PENDING, $payment);
 
                 break;
             case Status::HALTED:
-                $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
+                $this->saveSubscriptionAndInvoiceAndTaskAndSchedule($subscription, $task, $invoice);
 
                 $core->fireWebhookForStatusUpdate($subscription, Status::HALTED, $payment);
 
@@ -578,7 +595,7 @@ class Charge extends Base\Core
                 $subscription->setStatus(Status::HALTED);
                 $subscription->setEndedAt(null);
 
-                $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
+                $this->saveSubscriptionAndInvoiceAndTaskAndSchedule($subscription, $task, $invoice);
 
                 $core->fireWebhookForStatusUpdate($subscription, Status::HALTED, $payment);
 
@@ -609,8 +626,6 @@ class Charge extends Base\Core
      * We also mark charge_at to null at this stage.
      *
      * @param Entity $subscription
-     *
-     * @return bool Returns true if marked as completed. Else, false.
      */
     public function setEndedAtIfApplicable(Entity $subscription)
     {
@@ -634,14 +649,10 @@ class Charge extends Base\Core
             $subscription->setEndedAt($subscription->getCurrentStart());
 
             $subscription->setStatus(Status::COMPLETED);
-
-            return true;
         }
-
-        return false;
     }
 
-    protected function saveSubscriptionAndInvoiceAndTask(
+    protected function saveSubscriptionAndInvoiceAndTaskAndSchedule(
         Entity $subscription,
         Task\Entity $task,
         Invoice\Entity $invoice)
@@ -651,8 +662,53 @@ class Charge extends Base\Core
             {
                 $this->repo->saveOrFail($task);
                 $this->repo->saveOrFail($invoice);
+                // This is being done for updateSubscriptionDetails
+                $this->repo->saveOrFail($subscription->schedule);
                 $this->repo->saveOrFail($subscription);
             });
+    }
+
+    protected function updateSubscriptionDetails(
+        Entity $subscription,
+        Payment\Entity $payment,
+        Invoice\Entity $invoice)
+    {
+        $plan = $subscription->plan;
+
+        $subscription->setStartAt($payment->getCreatedAt());
+
+        //
+        // We don't have to update the next_run_at here
+        // because `handleCaptureSuccess` will take care of that.
+        // When the task was first created, the start_at of subscription
+        // would have been null, which means that the next_run_at
+        // would have got set to the midnight of subscription creation
+        // date (default).
+        // It will not get picked up by the cron also because of the
+        // subscription status being in created state.
+        // Now, since we set `anchor` here, the next_run_at of the task
+        // will automatically get set to the correct next_run
+        // according to the anchor.
+        //
+
+        if ($subscription->isAuthenticated() === false)
+        {
+            throw new LogicException(
+                'Subscription is not in authenticated state. This function should not have been called',
+                null,
+                [
+                    'subscription_id' => $subscription->getId(),
+                    'status' => $subscription->getStatus(),
+                ]);
+        }
+
+        $anchor = $subscription->getAnchorForSchedule();
+
+        $subscription->schedule->setAnchor($anchor);
+
+        (new Biller)->updateSubscriptionAndInvoiceBillingPeriod($subscription, $invoice);
+
+        (new Creator)->fillEndAtAndTotalCount($subscription, $plan);
     }
 
     protected function authorizePayment(Entity $subscription, array $recurringPayload)
