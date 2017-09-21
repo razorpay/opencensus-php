@@ -39,17 +39,20 @@ export default class InvoiceDetail extends Component {
             </div>}
           <div style={{ position: 'relative' }}>
             <div class="label--primary" style={{ marginBottom: '4px' }}>
-              {addon.name}
+              {addon.item.name}
             </div>
             <div class="label--primary">
               <Amount
-                currency={addon.currency}
-                value={addon.quantity * addon.unit_amount}
+                currency={addon.item.currency}
+                value={addon.quantity * addon.item.unit_amount}
               />
             </div>
             <small class="label--secondary">
               {addon.quantity} x{'  '}
-              <Amount currency={addon.currency} value={addon.unit_amount} />
+              <Amount
+                currency={addon.item.currency}
+                value={addon.item.unit_amount}
+              />
               {'  '}
               per unit
             </small>

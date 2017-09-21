@@ -406,11 +406,18 @@ export default class SubscriptionDetailsContainer extends Component {
       let addonsList = [];
       if (invoiceData) {
         if (invoiceData.status === 'next_due' && this.state.addons) {
-          addonsList = this.state.addons.items;
+          addonsList = this.state.addons;
         } else if (invoiceData.line_items) {
-          addonsList = invoiceData.line_items.filter(
-            item => item.type === 'addon'
-          );
+          invoiceData.line_items.forEach(item => {
+            if (item.type === 'addon') {
+              addonsList.push({
+                quantity: item.quantity,
+                item: {
+                  ...item,
+                },
+              });
+            }
+          });
         }
       }
 
