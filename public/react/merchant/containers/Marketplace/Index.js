@@ -1,17 +1,23 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
 import AsyncButton from 'react-async-button';
+import { connect } from 'react-redux';
+import React, { Component } from 'react';
 import { Route, Switch, NavLink } from 'react-router-dom';
-import { updateFeatures } from 'merchant/modules/config';
+
+import * as ModalActions from 'rzp/modules/modals';
 import { showNotification } from 'rzp/modules/notifications';
-import TestModeBanner from 'merchant/containers/TestModeBanner';
-import FeatureOnboarding from 'merchant/containers/FeatureOnboarding/OnBoarding';
 
 import AccountsList from 'merchant/containers/Marketplace/Accounts/List';
 import ActivationBanner from 'merchant/components/ActivationBanner';
+import FeatureOnboarding from 'merchant/containers/FeatureOnboarding/OnBoarding';
+import FeatureOnboardingModal from 'merchant/containers/FeatureOnboarding/OnBoardingModal';
 import PaymentsList from 'merchant/containers/Marketplace/Payments/List';
 import ReversalsList from 'merchant/containers/Marketplace/Reversals/List';
+import TestModeBanner from 'merchant/containers/TestModeBanner';
 import TransfersList from 'merchant/containers/Marketplace/Transfers/List';
+import { updateFeatures } from 'merchant/modules/config';
+
+const heading =
+  'Automate your payment transfers for Marketplaces, Vendor, payouts, Regional splits, etc. and manage the complete payment cycle with Razorpay Route.';
 
 @connect(
   state => {
@@ -20,7 +26,7 @@ import TransfersList from 'merchant/containers/Marketplace/Transfers/List';
       mode: state.session.mode,
     };
   },
-  { updateFeatures, showNotification }
+  { updateFeatures, showNotification, ...ModalActions }
 )
 export default class MarketplaceContainer extends Component {
   enableFeature = () => {
@@ -47,12 +53,25 @@ export default class MarketplaceContainer extends Component {
       });
   };
 
+  openActivationModal = () => {
+    this.props.openModal({
+      component: (
+        <FeatureOnboardingModal
+          onClose={this.props.closeModal}
+          heading="Razorpay Route"
+          description={heading}
+          formType="marketplace"
+          isTestMode={false}
+        />
+      ),
+      size: 'large',
+    });
+  };
+
   render() {
     let featureEnabled = this.props.user.isMarketplaceEnabled;
-    if (!featureEnabled) {
-      const heading =
-        'Automate your payment transfers for Marketplaces, Vendor, payouts, Regional splits, etc. and manage the complete payment cycle with Razorpay Route.';
 
+    if (!featureEnabled) {
       return (
         <FeatureOnboarding
           heading="Razorpay Route"
@@ -70,7 +89,7 @@ export default class MarketplaceContainer extends Component {
           <ActivationBanner
             productName="Razorpay Route"
             symbol={require('styles/assets/symbols/route.svg')}
-            onActivate={null}
+            onActivate={this.openActivationModal}
           />}
         <tabbed-container>
           <header id="marketplace-header">

@@ -9,7 +9,7 @@ import CreateVirtualAccount from './CreateVirtualAccount';
 import { updateFeatures } from 'merchant/modules/config';
 import { showNotification } from 'rzp/modules/notifications';
 import { fetchConfig } from 'merchant/modules/config';
-import { openModal } from 'rzp/modules/modals';
+import { openModal, closeModal } from 'rzp/modules/modals';
 import { fetchVirtualAccounts as fetchAll } from 'merchant/modules/virtualaccounts';
 import {
   virtualAccountId,
@@ -19,8 +19,12 @@ import {
   createdAt,
 } from 'rzp/ui/item/pair';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
-import FeatureOnboarding from 'merchant/containers/FeatureOnboarding/OnBoarding';
 import ActivationBanner from 'merchant/components/ActivationBanner';
+import FeatureOnboarding from 'merchant/containers/FeatureOnboarding/OnBoarding';
+import FeatureOnboardingModal from 'merchant/containers/FeatureOnboarding/OnBoardingModal';
+
+const heading =
+  'A powerful system to easily collect payments via direct bank transfers (NEFT/RGTS). Automate the tedious reconciliation process, starting now.';
 
 @connect(
   state => {
@@ -30,7 +34,14 @@ import ActivationBanner from 'merchant/components/ActivationBanner';
       mode: state.session.mode,
     };
   },
-  { fetchAll, fetchConfig, openModal, updateFeatures, showNotification }
+  {
+    fetchAll,
+    fetchConfig,
+    openModal,
+    closeModal,
+    updateFeatures,
+    showNotification,
+  }
 )
 export default class VirtualAccountsListContainer extends ListContainer {
   componentWillMount() {
@@ -72,12 +83,24 @@ export default class VirtualAccountsListContainer extends ListContainer {
     });
   };
 
+  openActivationModal = () => {
+    this.props.openModal({
+      component: (
+        <FeatureOnboardingModal
+          onClose={this.props.closeModal}
+          heading="Razorpay Smart Collect"
+          description={heading}
+          formType="virtual_accounts"
+          isTestMode={false}
+        />
+      ),
+      size: 'large',
+    });
+  };
+
   render() {
     let featureEnabled = this.props.user.isVirtualAccountsEnabled;
     if (!featureEnabled) {
-      const heading =
-        'A powerful system to easily collect payments via direct bank transfers (NEFT/RGTS). Automate the tedious reconciliation process, starting now.';
-
       return (
         <FeatureOnboarding
           heading="Razorpay Smart Collect"
@@ -95,7 +118,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
           <ActivationBanner
             productName="Razorpay Smart Collect"
             symbol={require('styles/assets/symbols/smartcollect.svg')}
-            onActivate={null}
+            onActivate={this.openActivationModal}
           />}
         <tabbed-container>
           <header id="#va-header">

@@ -5,10 +5,15 @@ import { updateFeatures } from 'merchant/modules/config';
 import { showNotification } from 'rzp/modules/notifications';
 import TestModeBanner from 'merchant/containers/TestModeBanner';
 import FeatureOnboarding from 'merchant/containers/FeatureOnboarding/OnBoarding';
+import FeatureOnboardingModal from 'merchant/containers/FeatureOnboarding/OnBoardingModal';
+import * as ModalActions from 'rzp/modules/modals';
 
 import SubscriptionsList from 'merchant/containers/Subscriptions/List';
 import PlansList from 'merchant/containers/Plans/List';
 import ActivationBanner from 'merchant/components/ActivationBanner';
+
+const heading =
+  'Collect recurring payments from your customers easily with Razorpay Subscription APIs for all possible recurring billing models. Generate more revenue by capturing more subscriptions annually.';
 
 @connect(
   state => {
@@ -17,7 +22,7 @@ import ActivationBanner from 'merchant/components/ActivationBanner';
       mode: state.session.mode,
     };
   },
-  { updateFeatures, showNotification }
+  { updateFeatures, showNotification, ...ModalActions }
 )
 export default class SubscriptionsController extends Component {
   enableFeature = () => {
@@ -44,12 +49,27 @@ export default class SubscriptionsController extends Component {
       });
   };
 
+  openActivationModal = () => {
+    this.props.openModal({
+      component: (
+        <div className="subscriptions-onboarding-modal">
+          <FeatureOnboardingModal
+            onClose={this.props.closeModal}
+            heading="Razorpay Subscriptions"
+            description={heading}
+            formType="subscriptions"
+            isTestMode={false}
+          />
+        </div>
+      ),
+      size: 'large',
+    });
+  };
+
   render() {
     let featureEnabled = this.props.user.isSubscriptionsEnabled;
-    if (!featureEnabled) {
-      const heading =
-        'Collect recurring payments from your customers easily with Razorpay Subscription APIs for all possible recurring billing models. Generate more revenue by capturing more subscriptions annually.';
 
+    if (!featureEnabled) {
       return (
         <FeatureOnboarding
           heading="Razorpay Subscriptions"
@@ -67,7 +87,7 @@ export default class SubscriptionsController extends Component {
           <ActivationBanner
             productName="Razorpay Subscriptions"
             symbol={require('styles/assets/symbols/subscriptions.svg')}
-            onActivate={null}
+            onActivate={this.openActivationModal}
           />}
         <tabbed-container>
           <header id="subscriptions-header">
