@@ -282,6 +282,7 @@ export default class SubscriptionDetailsContainer extends Component {
       component: (
         <TestPaymentModal
           subscriptionId={this.props.id}
+          subscriptionStatus={this.props.entity.status}
           postAction={this.postTestChargeAttempt}
         />
       ),

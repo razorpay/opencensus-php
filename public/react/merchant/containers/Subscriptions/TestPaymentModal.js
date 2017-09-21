@@ -19,10 +19,11 @@ export default class TestPaymentModal extends Component {
     isDisabled: false,
   };
 
-  handleSubmit = isSuccess => {
+  handleSubmit = (isSuccess = 0) => {
     var testChargeMessages = [
       'Charge marked as FAILURE',
       'Charge marked as SUCCESS',
+      'Upcoming invoice is issued',
     ];
 
     this.setState({ isDisabled: true });
@@ -33,7 +34,10 @@ export default class TestPaymentModal extends Component {
         this.props.closeModal();
         this.props.showNotification({
           type: 'neutral',
-          message: testChargeMessages[isSuccess],
+          message:
+            this.props.subscriptionStatus === 'halted'
+              ? testChargeMessages[2]
+              : testChargeMessages[isSuccess],
           closeTimeout: 6500,
         });
 
@@ -47,36 +51,64 @@ export default class TestPaymentModal extends Component {
   };
 
   render() {
+    let title;
+    let description;
+    let button;
+
+    if (this.props.subscriptionStatus === 'halted') {
+      title = 'Issue upcoming invoice';
+      description = 'The upcoming invoice will be issued in test mode.';
+      button = (
+        <div class="btn-toolbar m-t">
+          <AsyncButton
+            type="submit"
+            class="btn btn-primary full-width m-t"
+            text="Issue upcoming invoice"
+            pendingText="Issuing..."
+            disabled={this.state.isDisabled}
+            onClick={() => this.handleSubmit()}
+          />
+        </div>
+      );
+    } else {
+      title = 'Charge Now';
+      description =
+        'This is test payment. You can choose it to be success or failure.';
+      button = (
+        <div class="btn-toolbar m-t">
+          <AsyncButton
+            type="submit"
+            class="btn btn-success full-width m-t"
+            text="Charge as Success"
+            pendingText="Charging..."
+            disabled={this.state.isDisabled}
+            onClick={() => this.handleSubmit(1)}
+          />
+
+          <AsyncButton
+            type="submit"
+            class="btn btn-danger full-width m-t"
+            text="Charge as failure"
+            pendingText="Charging..."
+            disabled={this.state.isDisabled}
+            onClick={() => this.handleSubmit(0)}
+          />
+        </div>
+      );
+    }
+
     return (
       <div>
-        <ModalHeader title="Charge Now" onCloseClick={this.props.closeModal} />
+        <ModalHeader title={title} onCloseClick={this.props.closeModal} />
 
         <div class="modal-body">
           <Alert type="error" message={this.state.errors} />
 
           <div class="text-muted">
-            This is test payment. You can choose it to be success or failure.
+            {description}
           </div>
 
-          <div class="btn-toolbar m-t">
-            <AsyncButton
-              type="submit"
-              class="btn btn-success full-width m-t"
-              text="Charge as Success"
-              pendingText="Charging..."
-              disabled={this.state.isDisabled}
-              onClick={() => this.handleSubmit(1)}
-            />
-
-            <AsyncButton
-              type="submit"
-              class="btn btn-danger full-width m-t"
-              text="Charge as failure"
-              pendingText="Charging..."
-              disabled={this.state.isDisabled}
-              onClick={() => this.handleSubmit(0)}
-            />
-          </div>
+          {button}
         </div>
       </div>
     );

@@ -165,7 +165,9 @@ export default ({
                               onClick={() =>
                                 onTestChargeAttempt(subscription.id)}
                             >
-                              Charge this now
+                              {subscription.status === 'halted'
+                                ? 'Issue upcoming invoice'
+                                : 'Charge this now'}
                             </button>
                             <div style={{ color: 'red' }}>
                               This charge is for test mode integrations.
