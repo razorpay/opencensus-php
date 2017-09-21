@@ -92,7 +92,7 @@ export default props => {
                       </Definition>
                     </EntityDetailRow>}
 
-                  <ShowWhen featureEnabled="Marketplace">
+                  <ShowWhen apiFeatureEnabled="Marketplace">
                     <EntityDetailRow label="Transfer">
                       <PaymentTransfers
                         payment={payment}

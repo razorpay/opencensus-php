@@ -215,7 +215,7 @@ export default class PaymentDetailsContainer extends Component {
           openRefundModal={this.openRefundModal}
         />
 
-        <ShowWhen featureEnabled="Marketplace">
+        <ShowWhen apiFeatureEnabled="Marketplace">
           {this.state.secView === 'new_transfer' &&
             <PaymentTransferNew
               paymentId={payment && payment.id}
@@ -225,7 +225,7 @@ export default class PaymentDetailsContainer extends Component {
             />}
         </ShowWhen>
 
-        <ShowWhen featureEnabled="Marketplace">
+        <ShowWhen apiFeatureEnabled="Marketplace">
           {this.state.secView === 'transfer' &&
             <PaymentTransferDetails
               id={this.props.transfer_id}
