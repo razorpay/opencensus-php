@@ -117,7 +117,7 @@ export default props => {
               ) {
                 <AsyncButton
                   class="btn-link no-padding"
-                  text=" Attempt Charge?"
+                  text=" Attempt Charge"
                   pendingText="Attempting..."
                   onClick={() => onManualAttempt(item.id)}
                 />;

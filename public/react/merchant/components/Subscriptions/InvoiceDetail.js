@@ -161,25 +161,11 @@ export default class InvoiceDetail extends Component {
                           </NavLink>
                   }
                 />
-                <EntityDetailRow label="Invoice Status">
-                  <div>
-                    <InvoiceStatusLabel status={invoice.status} />
-                    {invoice.status === 'issued' &&
-                      [
-                        'active',
-                        'pending',
-                        'halted',
-                        'completed',
-                        'cancelled',
-                      ].indexOf(subscription.status) > -1 &&
-                      <AsyncButton
-                        class="btn-link no-padding"
-                        text=" Attempt Charge?"
-                        pendingText="Attempting..."
-                        onClick={() => onManualAttempt(invoice.id)}
-                      />}
-                  </div>
-                </EntityDetailRow>
+                <EntityDetailRow
+                  label="Invoice Status"
+                  value={() => <InvoiceStatusLabel status={invoice.status} />}
+                />
+
                 <EntityDetailRow
                   label="Created at"
                   value={() =>
@@ -202,10 +188,27 @@ export default class InvoiceDetail extends Component {
                           ? 'Next Charge at'
                           : 'Charge at'}`}
                         value={() =>
-                          <Time
-                            value={nextChargeAt}
-                            format="DD MMM YYYY, hh:mm:ss a"
-                          />}
+                          <div>
+                            <Time
+                              value={nextChargeAt}
+                              format="DD MMM YYYY, hh:mm:ss a"
+                            />
+
+                            {invoice.status === 'issued' &&
+                              [
+                                'active',
+                                'pending',
+                                'halted',
+                                'completed',
+                                'cancelled',
+                              ].indexOf(subscription.status) > -1 &&
+                              <AsyncButton
+                                class="btn btn-default m-t"
+                                text=" Attempt Charge"
+                                pendingText="Attempting..."
+                                onClick={() => onManualAttempt(invoice.id)}
+                              />}
+                          </div>}
                       />;
                     }
                   }
