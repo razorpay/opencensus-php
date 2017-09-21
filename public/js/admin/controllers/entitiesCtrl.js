@@ -190,6 +190,13 @@ app.controller('EntitiesCtrl', [
       batch: {
         merchant_id: ['Merchant Id'],
         status: ['all', 'created', 'processing', 'processed'],
+        type: [
+          'all',
+          'payment_link',
+          'refund',
+          'irctc_refund',
+          'irctc_settlement',
+        ],
       },
       batch_fund_transfer: {
         type: ['all', 'settlement', 'payout'],
@@ -319,6 +326,7 @@ app.controller('EntitiesCtrl', [
         type: ['all', 'credit', 'debit', 'unknown'],
       },
       invoice: {
+        batch_id: ['Batch Id'],
         payment_id: ['Payment Id'],
         receipt: ['Receipt'],
         user_id: ['User Id'],
@@ -335,6 +343,7 @@ app.controller('EntitiesCtrl', [
         merchant_id: ['Merchant Id'],
         order_id: ['Order Id'],
         notes: ['Notes'],
+        subscription_id: ['Subscription Id'],
         customer_name: ['Customer Name'],
         customer_email: ['Customer Email'],
         customer_contact: ['Customer Contact'],
@@ -443,6 +452,7 @@ app.controller('EntitiesCtrl', [
         refund_status: ['all', 'null', 'partial', 'full'],
         save: booleanList,
         status: statusList,
+        subscription_id: ['Subscription Id'],
         terminal_id: ['Terminal ID'],
         token_id: ['Token Id'],
         transfer_id: ['Transfer Id'],
