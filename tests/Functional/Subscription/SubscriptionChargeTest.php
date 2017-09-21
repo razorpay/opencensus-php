@@ -595,6 +595,7 @@ class SubscriptionChargeTest extends TestCase
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
 
+        $paymentRequest['subscription_card_change'] = 1;
         $this->doAuthPayment($paymentRequest);
 
         $subscription = $this->getLastEntity('subscription', true);
@@ -617,6 +618,8 @@ class SubscriptionChargeTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($paymentRequest) {
+            $paymentRequest['subscription_card_change'] = 1;
+
             $this->doAuthPayment($paymentRequest);
         });
 
@@ -1107,6 +1110,8 @@ class SubscriptionChargeTest extends TestCase
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
 
+        $paymentRequest['subscription_card_change'] = 1;
+
         $recurringPayment = $this->doAuthPayment($paymentRequest);
 
         // Payment is made and refunded
@@ -1193,6 +1198,8 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('halted', $subscription['status']);
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+
+        $paymentRequest['subscription_card_change'] = 1;
 
         $this->clearMock();
 
@@ -1370,6 +1377,7 @@ class SubscriptionChargeTest extends TestCase
         // subscription.halted event fired after successful re-auth
         $this->mockAndTestWebhookData('subscription.activated');
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+        $paymentRequest['subscription_card_change'] = 1;
         $recurringPayment = $this->doAuthPayment($paymentRequest);
 
         // Auth successful, subscription marked as active again

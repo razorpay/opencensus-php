@@ -170,9 +170,7 @@ class SubscriptionCancelTest extends TestCase
 
         $this->makeCancelRequest($subscription['id']);
 
-        Carbon::setTestNow();
-
-        $this->chargeSubscriptionInvoiceManually($invoice);
+        $invoice = $this->chargeSubscriptionInvoiceManually($invoice);
 
         $this->assertEquals('paid', $invoice['status']);
 

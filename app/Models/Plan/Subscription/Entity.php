@@ -483,7 +483,7 @@ class Entity extends Base\PublicEntity
      * @param  Invoice\Entity $invoice
      * @return boolean
      */
-    protected function isLatestInvoiceForSubscription(Invoice\Entity $invoice)
+    public function isLatestInvoiceForSubscription(Invoice\Entity $invoice)
     {
         $isLatest = false;
 

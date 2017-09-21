@@ -36,6 +36,8 @@ class SubscriptionCardsTest extends TestCase
         $this->gateway = 'cybersource';
 
         $this->mockTokenex();
+
+        Carbon::setTestNow();
     }
 
     // ----------------------- Preferences Start ----------------------------
@@ -227,6 +229,7 @@ class SubscriptionCardsTest extends TestCase
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, null, 'token_100000custcard');
         $this->fixtures->base->editEntity('card', '100000000lcard', ["type" => 'credit']);
+        $paymentRequest['subscription_card_change'] = 1;
 
         $response2 = $this->doAuthPayment($paymentRequest);
 
@@ -277,6 +280,7 @@ class SubscriptionCardsTest extends TestCase
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
         $paymentRequest['card']['number'] = '4000000000000002';
+        $paymentRequest['subscription_card_change'] = 1;
 
         $response2 = $this->doAuthPayment($paymentRequest);
 
@@ -452,6 +456,7 @@ class SubscriptionCardsTest extends TestCase
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, null, 'token_10000custgcard');
         unset($paymentRequest['card']);
         $paymentRequest['card'] = ['cvv' => 111];
+        $paymentRequest['subscription_card_change'] = 1;
 
         $this->mockSession();
 
@@ -514,6 +519,7 @@ class SubscriptionCardsTest extends TestCase
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
         $paymentRequest['card']['number'] = '4000000000000002';
+        $paymentRequest['subscription_card_change'] = 1;
 
         $this->mockSession();
 
@@ -684,6 +690,8 @@ class SubscriptionCardsTest extends TestCase
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
         $paymentRequest['card']['number'] = '4111111111111111';
 
+        $paymentRequest['subscription_card_change'] = 1;
+
         $response = $this->doAuthPayment($paymentRequest);
 
         $subscription2 = $this->getLastEntity('subscription', true);
@@ -705,6 +713,8 @@ class SubscriptionCardsTest extends TestCase
         $paymentRequest = $this->getDefaultPaymentArray();
         $paymentRequest['save'] = 1;
         $paymentRequest['token'] = 'token_' . $gatewayToken2['token_id'];
+
+        $paymentRequest['subscription_card_change'] = 1;
 
         $response = $this->doAuthPayment($paymentRequest);
 
@@ -778,6 +788,8 @@ class SubscriptionCardsTest extends TestCase
     {
         // --- 1st 2FA with local token
 
+        Carbon::setTestNow();
+
         $subscription = $this->createSubscription(
             false, [], ['customer_id' => 'cust_100000customer'], false, false, false);
 
@@ -799,8 +811,8 @@ class SubscriptionCardsTest extends TestCase
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, null, 'token_100001custcard');
 
-        $this->fixtures->base->editEntity('card', '100000001lcard', ["type" => 'credit']);
-
+        $this->fixtures->base->editEntity('card', '100000001lcard', ['type' => 'credit']);
+        $paymentRequest['subscription_card_change'] = 1;
         $response = $this->doAuthPayment($paymentRequest);
 
         $subscription2 = $this->getLastEntity('subscription', true);
@@ -822,6 +834,7 @@ class SubscriptionCardsTest extends TestCase
         $paymentRequest = $this->getDefaultPaymentArray();
         $paymentRequest['save'] = 1;
         $paymentRequest['token'] = 'token_' . $gatewayToken2['token_id'];
+        $paymentRequest['subscription_card_change'] = 1;
 
         $response = $this->doAuthPayment($paymentRequest);
 
@@ -837,7 +850,10 @@ class SubscriptionCardsTest extends TestCase
 
         // Doing this so that a different terminal is picked for this 2FA.
         $this->fixtures->terminal->disableTerminal();
+
+        $paymentRequest['subscription_card_change'] = 1;
         $this->doAuthPayment($paymentRequest);
+
         $this->fixtures->terminal->enableTerminal();
 
         $payment = $this->getLastEntity('payment', true);

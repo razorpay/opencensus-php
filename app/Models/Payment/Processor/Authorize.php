@@ -2276,9 +2276,9 @@ trait Authorize
                     'Subscription cannot be in halted state here',
                     ErrorCode::BAD_REQUEST_SUBSCRIPTION_INVALID_STATUS,
                     [
-                        'payment_id'        => $payment->getId(),
-                        'payment_status'    => $payment->getStatus(),
-                        'subscription_id'   => $subscription->getId(),
+                        'subscription_id'       => $subscription->getId(),
+                        'subscription_status'   => $subscription->getStatus(),
+                        'old_status'            => $oldStatus
                     ]);
             }
 
@@ -2450,21 +2450,7 @@ trait Authorize
 
             $invoice = $payment->invoice;
 
-            //
-            // TODO: These two lines should be in a transaction since
-            // `updateSubscriptionDetails` updates and saves schedule also.
-            // `handleCaptureSuccess` will be saving subscription, invoice, task.
-            // But, we can't put them in a transaction because handleCaptureSuccess
-            // does lot of webhook related stuff and all webhooks need to be outside
-            // of transactions.
-            //
-            // If this is auth txn charge, it means that start_at was null. This,
-            // in turn, means that some fields were not filled when the subscription
-            // was created. We fill those fields here.
-            //
-            $this->updateSubscriptionDetails($subscription, $payment, $invoice);
-
-            (new Subscription\Charge)->handleCaptureSuccess($subscription, $payment, $invoice);
+            (new Subscription\Charge)->handleCaptureSuccess($subscription, $payment, $invoice, true);
         }
 
         $this->triggerSubscriptionAuthenticatedNotification($subscription, $payment);
@@ -2489,24 +2475,6 @@ trait Authorize
         ];
 
         (new Subscription\Core)->triggerSubscriptionNotification($subscription, Subscription\Event::AUTHENTICATED, $options);
-    }
-
-    protected function updateSubscriptionDetails(
-        Subscription\Entity $subscription,
-        Payment\Entity $payment,
-        Invoice\Entity $invoice)
-    {
-        $plan = $subscription->plan;
-
-        $subscription->setStartAt($payment->getCreatedAt());
-
-        $subscriptionCore = new Subscription\Core;
-
-        $subscriptionCore->fillScheduleDetailsForNewSubscription($subscription);
-
-        (new Subscription\Biller)->updateSubscriptionAndInvoiceBillingPeriod($subscription, $invoice);
-
-        (new Subscription\Creator)->fillEndAtAndTotalCount($subscription, $plan);
     }
 
     protected function autoRefundAuthTransactionIfApplicable(Payment\Entity $payment, Subscription\Entity $subscription)

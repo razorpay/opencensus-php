@@ -308,17 +308,32 @@ class Service extends Base\Service
 
         if ($capture === true)
         {
-            $this->core->retryCapture($subscription, $invoice, $options);
+            $success = $this->core->retryCapture($subscription, $invoice, $options);
         }
         else
         {
-            $this->core->charge($subscription, $invoice, $options);
+            $success = $this->core->charge($subscription, $invoice, $options);
         }
 
+        if ($success === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_INVOICE_CHARGE_FAILED,
+                null,
+                [
+                    'invoice_id'        => $invoiceId,
+                    'subscription_id'   => $subscription->getId(),
+                    'capture'           => $capture,
+                    'options'           => $options
+                ]);
+        }
+
+        //
         // Subscription is charged by passing a payload of reference ids
         // to a helper class (Charge). We use a payload, because for cron
         // charges, we queue the job. We don't for manual though, so
         // reloading at this stage ensures that updated values are returned.
+        //
         $this->repo->reload($invoice);
 
         return $invoice->toArrayPublic();

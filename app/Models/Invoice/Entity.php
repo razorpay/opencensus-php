@@ -344,6 +344,7 @@ class Entity extends Base\PublicEntity
         self::BILLING_END,
         self::TYPE,
         self::GROUP_TAXES_DISCOUNTS,
+        self::SUBSCRIPTION_STATUS,
         self::USER_ID,
         self::CREATED_AT,
     ];
@@ -364,6 +365,10 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::ORDER_ID,
         self::SUBSCRIPTION_ID,
+        // Later, we will come up with a proper structure to show
+        // fields based on proper auth structure.
+        // TODO: Remove this when the above is implemented
+        self::SUBSCRIPTION_STATUS,
     ];
 
     protected $casts = [
@@ -1039,6 +1044,18 @@ class Entity extends Base\PublicEntity
         else
         {
             unset($array[self::USER_ID]);
+        }
+    }
+
+    public function setPublicSubscriptionStatusAttribute(array & $array)
+    {
+        $app = App::getFacadeRoot();
+
+        $basicAuth = $app['basicauth'];
+
+        if ($basicAuth->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($array[self::SUBSCRIPTION_STATUS]);
         }
     }
 

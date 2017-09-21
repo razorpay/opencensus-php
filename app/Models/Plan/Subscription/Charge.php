@@ -13,6 +13,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
+use RZP\Models\Schedule;
 use RZP\Models\Schedule\Task;
 
 class Charge extends Base\Core
@@ -160,9 +161,30 @@ class Charge extends Base\Core
     public function handleCaptureSuccess(
         Entity $subscription,
         Payment\Entity $capturedPayment,
-        Invoice\Entity $invoice)
+        Invoice\Entity $invoice,
+        $newSubscriptionAuthTxnCharge = false)
     {
         $task = $subscription->task;
+
+        //
+        // All this natak is being done just so that we can keep
+        // schedule anchor update and other entities update inside
+        // a transaction and also ensure that the webhooks being fired
+        // are not inside a transaction.
+        //
+        if ($newSubscriptionAuthTxnCharge === true)
+        {
+            $schedule = $subscription->schedule;
+
+            //
+            // If this is auth txn charge, it means that start_at was null. This,
+            // in turn, means that some fields were not filled when the subscription
+            // was created. We fill those fields here.
+            //
+            $this->updateSubscriptionDetails($subscription, $capturedPayment, $invoice, $schedule);
+
+            $this->repo->saveOrFail($schedule);
+        }
 
         //
         // Cannot move this to a variable because the instance values change later.
@@ -613,8 +635,6 @@ class Charge extends Base\Core
      * We also mark charge_at to null at this stage.
      *
      * @param Entity $subscription
-     *
-     * @return bool Returns true if marked as completed. Else, false.
      */
     public function setEndedAtIfApplicable(Entity $subscription)
     {
@@ -638,11 +658,7 @@ class Charge extends Base\Core
             $subscription->setEndedAt($subscription->getCurrentStart());
 
             $subscription->setStatus(Status::COMPLETED);
-
-            return true;
         }
-
-        return false;
     }
 
     protected function saveSubscriptionAndInvoiceAndTask(
@@ -657,6 +673,50 @@ class Charge extends Base\Core
                 $this->repo->saveOrFail($invoice);
                 $this->repo->saveOrFail($subscription);
             });
+    }
+
+    protected function updateSubscriptionDetails(
+        Entity $subscription,
+        Payment\Entity $payment,
+        Invoice\Entity $invoice,
+        Schedule\Entity $schedule)
+    {
+        $plan = $subscription->plan;
+
+        $subscription->setStartAt($payment->getCreatedAt());
+
+        //
+        // We don't have to update the next_run_at here
+        // because `handleCaptureSuccess` will take care of that.
+        // When the task was first created, the start_at of subscription
+        // would have been null, which means that the next_run_at
+        // would have got set to the midnight of subscription creation
+        // date (default).
+        // It will not get picked up by the cron also because of the
+        // subscription status being in created state.
+        // Now, since we set `anchor` here, the next_run_at of the task
+        // will automatically get set to the correct next_run
+        // according to the anchor.
+        //
+
+        if ($subscription->isAuthenticated() === false)
+        {
+            throw new LogicException(
+                'Subscription is not in authenticated state. This function should not have been called',
+                null,
+                [
+                    'subscription_id' => $subscription->getId(),
+                    'status' => $subscription->getStatus(),
+                ]);
+        }
+
+        $anchor = $subscription->getAnchorForSchedule();
+
+        $schedule->setAnchor($anchor);
+
+        (new Biller)->updateSubscriptionAndInvoiceBillingPeriod($subscription, $invoice);
+
+        (new Creator)->fillEndAtAndTotalCount($subscription, $plan);
     }
 
     protected function authorizePayment(Entity $subscription, array $recurringPayload)

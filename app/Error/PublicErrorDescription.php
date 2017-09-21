@@ -310,6 +310,7 @@ class PublicErrorDescription
     const BAD_REQUEST_SUBSCRIPTION_LAST_CYCLE_CANNOT_CANCEL                     = 'Subscription cannot be cancelled at cycle end since the last cycle is going on already.';
     const BAD_REQUEST_ADDON_DELETE_NOT_ALLOWED                                  = 'Delete operation cannot be performed on the addon.';
     const BAD_REQUEST_SUBSCRIPTION_PAYMENT_PARAMS_MISSING                       = 'One or more parameters missing for creating the subscription payment.';
+    const BAD_REQUEST_INVOICE_CHARGE_FAILED                                     = 'Manual attempt of payment on this subscription invoice has failed';
 
     const BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE                                = 'Invoice status cannot be retrieved now';
     const BAD_REQUEST_PAYMENT_NOT_AUTHORIZED                                    = 'Payment is not in authorized state';
