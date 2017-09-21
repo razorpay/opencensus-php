@@ -174,7 +174,7 @@ export default class InvoiceDetail extends Component {
                       ].indexOf(subscription.status) > -1 &&
                       <AsyncButton
                         class="btn-link no-padding"
-                        text=" Manually Charge?"
+                        text=" Attempt Charge?"
                         pendingText="Attempting..."
                         onClick={() => onManualAttempt(invoice.id)}
                       />}
