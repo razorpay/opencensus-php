@@ -277,7 +277,7 @@ export default class Sidebar extends Component {
                   />
                   <MainNavLink
                     label="Smart Collect"
-                    icon="icon icon-account-balance text-primary"
+                    icon="icon icon-account-balance text-danger"
                     to="/virtualaccounts"
                     notMyRole="sellerapp support"
                     isNew={true}
