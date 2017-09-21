@@ -727,6 +727,7 @@ class SubscriptionCardsTest extends TestCase
             $subscription, null, 'token_' . $gatewayToken1['token_id']);
         unset($paymentRequest['card']);
         $paymentRequest['card'] = ['cvv' => 111];
+        $paymentRequest['subscription_card_change'] = 1;
 
         // Doing this so that a different terminal is picked for this 2FA.
         $this->fixtures->terminal->disableTerminal();

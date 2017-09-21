@@ -6,6 +6,8 @@ use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Mockery;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Item;
 use RZP\Models\Plan\Subscription\Addon;
 use RZP\Tests\Functional\TestCase;
@@ -786,7 +788,14 @@ class SubscriptionChargeTest extends TestCase
 
         $this->failCharge();
 
-        $result = $this->chargeSubscriptionInvoiceManually($invoice);
+        try
+        {
+            $this->chargeSubscriptionInvoiceManually($invoice);
+        }
+        catch (BadRequestException $ex)
+        {
+            $this->assertEquals(ErrorCode::BAD_REQUEST_INVOICE_CHARGE_FAILED, $ex->getCode());
+        }
 
         $subscription = $this->getLastEntity('subscription', true);
         $invoice = $this->getLastEntity('invoice', true);
