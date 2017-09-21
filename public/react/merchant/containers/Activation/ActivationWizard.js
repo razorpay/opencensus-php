@@ -99,7 +99,9 @@ export default class ActivationWizard extends Component {
     if (data.submitted) {
       info = data.activated
         ? <div class="alert alert-info text-center">
-            Your account is already activated
+            {accountId
+              ? 'The account has been activated'
+              : 'Your account is already activated'}
           </div>
         : <div class="alert alert-info">
             Your activation form is submitted and is under review. The process
@@ -109,10 +111,14 @@ export default class ActivationWizard extends Component {
           </div>;
     }
 
+    let banner;
+    if (!!data.submitted && !accountId) {
+      banner = <NewProductsBanner />;
+    }
+
     return (
       <div>
-        {!!data.submitted && <NewProductsBanner />}
-
+        {banner}
         {info}
 
         <Tabs
