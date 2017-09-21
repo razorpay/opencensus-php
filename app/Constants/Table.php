@@ -113,6 +113,7 @@ class Table
     const PAYTM                 = 'paytm';
     const WALLET                = 'wallet';
     const BILLDESK              = 'billdesk';
+    const HITACHI               = 'hitachi';
     const MOBIKWIK              = 'mobikwik';
     const NETBANKING            = 'netbanking';
     const FIRST_DATA            = 'first_data';

@@ -15,6 +15,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Terminal\Shared;
+use RZP\Models\Feature;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
@@ -22,11 +23,10 @@ class TransactionFilter extends Terminal\Filter
     protected $properties = [
         'method',
         'network',
-        'currency',
-        'international',
         'bank',
         'recurring',
         'subscription',
+        'tpv'
     ];
 
     public function methodFilter($terminal)
@@ -80,39 +80,6 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return true;
-    }
-
-    public function currencyFilter($terminal)
-    {
-        $payment = $this->input['payment'];
-
-        $paymentCurrency = $payment->getCurrency();
-
-        if ($payment->getConvertCurrency() === true)
-        {
-            $paymentCurrency = Currency::INR;
-        }
-
-        $terminalCurrency = $terminal->getCurrency();
-
-        return ($paymentCurrency === $terminalCurrency);
-    }
-
-    public function internationalFilter($terminal)
-    {
-        if ($this->input['payment']->isMethodCardOrEmi() === false)
-        {
-            return true;
-        }
-
-        $isPaymentInternational = $this->input['payment']->isInternational();
-
-        if ($isPaymentInternational === true)
-        {
-            return $terminal->isInternational();
-        }
-
-        return $terminal->isDomestic();
     }
 
     public function bankFilter($terminal)
@@ -299,5 +266,15 @@ class TransactionFilter extends Terminal\Filter
         $subvention = $this->input['payment']->emiPlan->getSubvention();
 
         return $terminal->isValidEmiTerminal($gateway, $emiDuration, $subvention);
+    }
+
+    public function tpvFilter($terminal)
+    {
+        if ($this->input['merchant']->isFeatureEnabled(Feature\Constants::TPV))
+        {
+            return ($terminal->isTpvAllowed() === true);
+        }
+
+        return ($terminal->isNonTpvAllowed() === true);
     }
 }

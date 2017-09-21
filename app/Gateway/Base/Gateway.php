@@ -2,6 +2,9 @@
 
 namespace RZP\Gateway\Base;
 
+use Crypt;
+use Cache;
+use RZP\Models\Card;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -35,11 +38,19 @@ class Gateway
     const OTP_ATTEMPTS_LIMIT = 3;
 
     /**
+     * Number of minutes that the cache key will be stored
+     * @var integer
+     */
+    const CACHE_TTL = 15;
+
+    /**
      * In gateway responses one particular field contains
      * hash or checksum. This variable will contain that field
      * name.
      */
     const CHECKSUM_ATTRIBUTE = '';
+
+    const CACHE_KEY = 'base_%s_card_details';
 
     /**
      * The application instance.
@@ -330,6 +341,22 @@ class Gateway
         }
     }
 
+    protected function getAcquirerData($input, $gatewayPayment)
+    {
+        $acquirer = [];
+
+        switch ($input['payment']['method'])
+        {
+            case Payment\Method::CARD:
+                $acquirer['acquirer'] = [
+                    Payment\Entity::REFERENCE2 => $gatewayPayment->getAuthCode(),
+                ];
+                break;
+        }
+
+        return $acquirer;
+    }
+
     protected function getCallbackResponseData(array $input, $response = [])
     {
         $response[Payment\Entity::TWO_FACTOR_AUTH] = Payment\TwoFactorAuth::PASSED;
@@ -556,6 +583,18 @@ class Gateway
             throw new Exception\PaymentVerificationException(
                 $verify->getDataToTrace(),
                 $verify);
+        }
+
+        if (($verify->amountMismatch === true) and
+            ($verify->throwExceptionOnMismatch))
+        {
+            throw new Exception\RuntimeException(
+                'Payment amount verification failed.',
+                [
+                    'payment_id' => $this->input['payment']['id'],
+                    'gateway'    => $this->gateway
+                ]
+            );
         }
 
         return $verify->getDataToTrace();

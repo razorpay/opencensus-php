@@ -40,6 +40,8 @@ build:
           code: >
               export DB_TEST_HOST="$MYSQL_PORT_3306_TCP_ADDR"
               export DB_TEST_PORT="$MYSQL_PORT_3306_TCP_PORT"
+              export DB_AUTH_HOST="$MYSQL_PORT_3306_TCP_ADDR"
+              export DB_AUTH_PORT="$MYSQL_PORT_3306_TCP_PORT"
       - script:
           name: Export wercker Redis env var to API environment variables
           code: >

@@ -110,6 +110,10 @@ class Handler extends ExceptionHandler
                 $response = ApiResponse::json($workflowActionData);
 
                 break;
+
+            case $e instanceof \Razorpay\OAuth\Exception\BaseException:
+                $response = $this->oauthRecoverableErrorResponse($this->isDebug(), $e);
+                break;
         }
 
         if ($response !== null)
@@ -118,6 +122,19 @@ class Handler extends ExceptionHandler
         }
 
         return $this->genericExceptionHandler($e);
+    }
+
+    public function oauthRecoverableErrorResponse(bool $debug, \Exception $exception = null)
+    {
+        $this->traceException($exception, Trace::WARNING, TraceCode::RECOVERABLE_EXCEPTION);
+
+        $this->ifTestingThenRethrowException($exception);
+
+        $httpStatusCode = $exception->getHttpStatusCode();
+
+        $data = $debug ? $exception->toDebugArray() : $exception->toPublicArray();
+
+        return response()->json($data, $httpStatusCode);
     }
 
     public function traceException(
@@ -219,6 +236,11 @@ class Handler extends ExceptionHandler
         }
 
         $data = $this->getDataArrayPropertyFromException($exception, $extraData);
+
+        if ($exception instanceof \Razorpay\OAuth\Exception\BaseException === true)
+        {
+            unset($data['token']);
+        }
 
         /**
          * @note getTraceAsString logs function arguments, contrary to the older comment here

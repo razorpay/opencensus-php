@@ -72,7 +72,7 @@ class Gateway extends Base\Gateway
 
         $this->checkCallbackStatus($content);
 
-        $acquirerData = $this->getAcquirerData($gatewayEntity);
+        $acquirerData = $this->getAcquirerData($input, $gatewayEntity);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }

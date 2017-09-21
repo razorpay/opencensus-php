@@ -118,14 +118,6 @@ class PermissionTest extends TestCase
     {
         $this->ba->adminAuth();
 
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $orgId = 'org_' . Org::RZP_ORG;
-
-        $url = sprintf($url, $orgId);
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         $result = $this->startTest();
 
         $this->assertEquals($this->getTotalPermissionCount(), $result['count']);
@@ -208,12 +200,6 @@ class PermissionTest extends TestCase
     public function testGetMultipleWorkflowPermForRazorpayOrg()
     {
         $this->ba->adminAuth('test', null, Org::RZP_ORG_SIGNED);
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, Org::RZP_ORG_SIGNED);
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $rzpOrg = (new OrgRepo)->findOrFailPublic(Org::RZP_ORG);
 

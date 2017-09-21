@@ -266,6 +266,12 @@ trait Refund
         //     }
         // }
 
+        // Certain kinds of bank_transfers cannot be refunded
+        if ($payment->isBankTransfer() === true)
+        {
+            (new BankTransfer\Validator)->validateRefundIsAllowed($payment);
+        }
+
         return $this->refund($payment, $input);
     }
 
@@ -967,6 +973,12 @@ trait Refund
     protected function refundCapturedPayment($payment, array $input = [], Batch\Entity $batch = null)
     {
         $this->validatePaymentForRefund($payment);
+
+        // Certain kinds of bank_transfers cannot be refunded
+        if ($payment->isBankTransfer() === true)
+        {
+            (new BankTransfer\Validator)->validateRefundIsAllowed($payment);
+        }
 
         // Captured payments of transfer cannot be refunded via direct API requests
         if (($payment->isTransfer() === true) or 

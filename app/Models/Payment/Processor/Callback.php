@@ -267,12 +267,12 @@ trait Callback
             $this->validateCallbackInputIfApplicable($input);
 
             // TODO: Better name suggestions
-            $data = $this->callGatewayFunction('callbackOtpSubmit', $input);
+            $data = $this->callGatewayFunction(Payment\Action::CALLBACK_OTP_SUBMIT, $input);
 
             $this->postPaymentOtpCallbackProcessing($input, $data);
 
             // Send a request to topup if balance is insufficient
-            $this->callGatewayFunction('checkBalance', $input);
+            $this->callGatewayFunction(Payment\Action::CHECK_BALANCE, $input);
         }
         else
         {

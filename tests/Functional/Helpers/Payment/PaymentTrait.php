@@ -30,6 +30,7 @@ trait PaymentTrait
     use PaymentSharpTrait;
     use PaymentMobikwikTrait;
     use PaymentCybersourceTrait;
+    use PaymentHitachiTrait;
     use PaymentBladeTrait;
     use PaymentFirstDataTrait;
     use PaymentEbsTrait;

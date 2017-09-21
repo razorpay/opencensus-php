@@ -19,8 +19,6 @@ class Database
         $this->db = $app['db'];
 
         $this->config = $app['config'];
-
-        // $this->artisan = $app['artisan'];
     }
 
     public function tearDown()
@@ -32,12 +30,14 @@ class Database
         {
             $this->db->connection('live')->rollBack();
             $this->db->connection('test')->rollBack();
+            $this->db->connection('auth')->rollBack();
 
             $this->dbTransactionInProgress = false;
         }
 
         $this->db->disconnect('live');
         $this->db->disconnect('test');
+        $this->db->disconnect('auth');
     }
 
     public function setUp()
@@ -107,6 +107,7 @@ class Database
         //
         $this->db->connection('test')->beginTransaction();
         $this->db->connection('live')->beginTransaction();
+        $this->db->connection('auth')->beginTransaction();
 
         $this->dbTransactionInProgress = true;
 
@@ -118,10 +119,19 @@ class Database
      */
     public function migrate()
     {
-        // $this->artisan->call('migrate', array('--database' => 'live'));
-        // $this->artisan->call('migrate', array('--database' => 'test'));
-        \Artisan::call('migrate', array('--database' => 'live'));
-        \Artisan::call('migrate', array('--database' => 'test'));
+        \Artisan::call('migrate', ['--database' => 'live']);
+        \Artisan::call('migrate', ['--database' => 'test']);
+
+        //
+        // Creating the auth database here, mainly for wercker.
+        // There isn't a straightforward way of creating multiple
+        // database on the wercker MySQL service
+        //
+        $authDb = env('DB_AUTH_DATABASE', 'auth_test');
+
+        $this->db->statement('CREATE DATABASE IF NOT EXISTS ' . $authDb);
+
+        \Artisan::call('migrate', ['--database' => 'auth', '--path' => '/vendor/razorpay/oauth/database/migrations']);
     }
 
     protected function truncateTestingDatabaseIfRequired()
@@ -142,6 +152,11 @@ class Database
         $this->config->set('database.default', 'test');
 
         $this->truncateAllTables();
+
+        $this->config->set('database.default', 'auth');
+
+        $this->truncateAllTables();
+
     }
 
     protected function truncateAllTables()

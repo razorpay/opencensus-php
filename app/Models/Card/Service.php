@@ -36,7 +36,7 @@ class Service extends Base\Service
     {
         (new Card\Validator)->validateInput('recurring', $input);
 
-        $iin = substr($input['number'], 0, 6);
+        $iin = $input['iin'];
 
         $iinEntity = $this->repo->iin->find($iin);
 

@@ -35,7 +35,7 @@ class Validator extends Base\Validator
         Entity::TYPE                        => 'sometimes|array',
         Entity::MODE                        => 'sometimes|in:1,2,3',
         Entity::INTERNATIONAL               => 'sometimes|boolean',
-        Entity::TPV                         => 'sometimes_if:netbanking,1|boolean',
+        Entity::TPV                         => 'sometimes_if:netbanking,1|in:0,1,2',
         Entity::CORPORATE                   => 'sometimes_if:netbanking,1|boolean',
         Entity::EMI_SUBVENTION              => 'sometimes|in:customer,merchant',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
@@ -164,7 +164,7 @@ class Validator extends Base\Validator
 
     protected static $billdeskEditTerminalRules = [
         Entity::GATEWAY                    => 'sometimes|in:billdesk',
-        Entity::TPV                        => 'sometimes|boolean|in:0,1',
+        Entity::TPV                        => 'sometimes|in:0,1,2',
         Entity::NETWORK_CATEGORY           => 'sometimes|string|max:30',
     ];
 
