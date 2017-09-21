@@ -83,8 +83,11 @@ export default ({ payment, transfers, onCreateTransfer }) => {
   if (amountTransferred === 0) {
     return (
       <div>
-        <p>No transfers created yet</p>
-        <CreateTransferBtn onClick={onCreateTransfer} />
+        <p>
+          No transfers created{`${payment.status === 'captured' ? ' yet' : ''}`}
+        </p>
+        {payment.status === 'captured' &&
+          <CreateTransferBtn onClick={onCreateTransfer} />}
       </div>
     );
   }
