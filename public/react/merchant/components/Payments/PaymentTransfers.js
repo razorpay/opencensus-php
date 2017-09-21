@@ -101,7 +101,8 @@ export default ({ payment, transfers, onCreateTransfer }) => {
           </span>
         </Definition>
       </div>
-      {payment.amount !== amountTransferred &&
+      {payment.status !== 'failed' &&
+        payment.amount !== amountTransferred &&
         <div className="m-b">
           <CreateTransferBtn
             text="Create another transfer"
