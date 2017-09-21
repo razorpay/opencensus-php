@@ -75,7 +75,7 @@ class Validator extends Base\Validator
         Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array',
         Entity::LOGO_URL                    => 'sometimes|max:2000',
         Entity::AUTO_CAPTURE_LATE_AUTH      => 'sometimes|boolean',
-        Entity::HANDLE                      => 'sometimes|nullable|size:4|custom|unique:merchants,handle,null',
+        Entity::HANDLE                      => 'sometimes|nullable|min:3|max:4|custom|unique:merchants,handle,null',
         MerchantDetail::GSTIN               => 'sometimes|nullable|string|size:15',
         MerchantDetail::P_GSTIN             => 'sometimes|nullable|string',
     ];

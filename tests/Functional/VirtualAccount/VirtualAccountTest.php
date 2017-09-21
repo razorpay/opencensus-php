@@ -62,6 +62,32 @@ class VirtualAccountTest extends TestCase
         $this->assertEquals("RZRPHANDDESC1234", $vba['account_number']);
     }
 
+    public function testCreateVirtualAccountDescriptorLengths()
+    {
+        $this->fixtures->merchant->setHandle('hand');
+
+        $this->createVirtualAccount(['descriptor' => '9chardesc']);
+
+        $vba = $this->getLastEntity('bank_account', true);
+        $this->assertEquals("RZRPHAND9CHARDESC", $vba['account_number']);
+
+        // Only upto nine chars allows in descriptor
+        $data = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($data, function() {
+            $this->createVirtualAccount(['descriptor' => '10chardesc']);
+        });
+
+        // Shortening handle to 3 characters
+        $this->fixtures->merchant->setHandle('han');
+
+        // Now 10 characters are allows
+        $this->createVirtualAccount(['descriptor' => '10chardesc']);
+
+        $vba = $this->getLastEntity('bank_account', true);
+        // Handle is set so standard root is used with given handle
+        $this->assertEquals("RZRPHAN10CHARDESC", $vba['account_number']);
+    }
+
     public function testCreateVirtualAccountWithIdenticalDescriptor()
     {
         $this->fixtures->merchant->setHandle('hand');
