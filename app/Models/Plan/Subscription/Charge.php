@@ -13,6 +13,7 @@ use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
+use RZP\Models\Schedule;
 use RZP\Models\Schedule\Task;
 
 class Charge extends Base\Core
@@ -169,12 +170,16 @@ class Charge extends Base\Core
         //
         if ($newSubscriptionAuthTxnCharge === true)
         {
+            $schedule = $subscription->schedule;
+
             //
             // If this is auth txn charge, it means that start_at was null. This,
             // in turn, means that some fields were not filled when the subscription
             // was created. We fill those fields here.
             //
-            $this->updateSubscriptionDetails($subscription, $capturedPayment, $invoice);
+            $this->updateSubscriptionDetails($subscription, $capturedPayment, $invoice, $schedule);
+
+            $this->repo->saveOrFail($schedule);
         }
 
         //
@@ -309,7 +314,7 @@ class Charge extends Base\Core
                 // fire completed webhook. We only need to fire the active webhook.
                 //
 
-                $this->saveSubscriptionAndInvoiceAndTaskAndSchedule($subscription, $task, $invoice);
+                $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
 
                 $core->eventSubscriptionCharged($subscription, $capturedPayment);
 
@@ -336,7 +341,7 @@ class Charge extends Base\Core
                 $subscription->setStatus(Status::ACTIVE);
                 $subscription->setEndedAt(null);
 
-                $this->saveSubscriptionAndInvoiceAndTaskAndSchedule($subscription, $task, $invoice);
+                $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
 
                 $core->eventSubscriptionCharged($subscription, $capturedPayment);
 
@@ -453,13 +458,13 @@ class Charge extends Base\Core
             case Status::PENDING:
             case Status::CANCELLED:
             case Status::COMPLETED:
-                $this->saveSubscriptionAndInvoiceAndTaskAndSchedule($subscription, $task, $invoice);
+                $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
 
                 $core->eventSubscriptionCharged($subscription, $capturedPayment);
 
                 break;
             case Status::HALTED:
-                $this->saveSubscriptionAndInvoiceAndTaskAndSchedule($subscription, $task, $invoice);
+                $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
 
                 $core->eventSubscriptionCharged($subscription, $capturedPayment);
 
@@ -578,13 +583,13 @@ class Charge extends Base\Core
         switch($updatedStatus)
         {
             case Status::PENDING:
-                $this->saveSubscriptionAndInvoiceAndTaskAndSchedule($subscription, $task, $invoice);
+                $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
 
                 $core->fireWebhookForStatusUpdate($subscription, Status::PENDING, $payment);
 
                 break;
             case Status::HALTED:
-                $this->saveSubscriptionAndInvoiceAndTaskAndSchedule($subscription, $task, $invoice);
+                $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
 
                 $core->fireWebhookForStatusUpdate($subscription, Status::HALTED, $payment);
 
@@ -595,7 +600,7 @@ class Charge extends Base\Core
                 $subscription->setStatus(Status::HALTED);
                 $subscription->setEndedAt(null);
 
-                $this->saveSubscriptionAndInvoiceAndTaskAndSchedule($subscription, $task, $invoice);
+                $this->saveSubscriptionAndInvoiceAndTask($subscription, $task, $invoice);
 
                 $core->fireWebhookForStatusUpdate($subscription, Status::HALTED, $payment);
 
@@ -652,7 +657,7 @@ class Charge extends Base\Core
         }
     }
 
-    protected function saveSubscriptionAndInvoiceAndTaskAndSchedule(
+    protected function saveSubscriptionAndInvoiceAndTask(
         Entity $subscription,
         Task\Entity $task,
         Invoice\Entity $invoice)
@@ -662,8 +667,6 @@ class Charge extends Base\Core
             {
                 $this->repo->saveOrFail($task);
                 $this->repo->saveOrFail($invoice);
-                // This is being done for updateSubscriptionDetails
-                $this->repo->saveOrFail($subscription->schedule);
                 $this->repo->saveOrFail($subscription);
             });
     }
@@ -671,7 +674,8 @@ class Charge extends Base\Core
     protected function updateSubscriptionDetails(
         Entity $subscription,
         Payment\Entity $payment,
-        Invoice\Entity $invoice)
+        Invoice\Entity $invoice,
+        Schedule\Entity $schedule)
     {
         $plan = $subscription->plan;
 
@@ -704,7 +708,7 @@ class Charge extends Base\Core
 
         $anchor = $subscription->getAnchorForSchedule();
 
-        $subscription->schedule->setAnchor($anchor);
+        $schedule->setAnchor($anchor);
 
         (new Biller)->updateSubscriptionAndInvoiceBillingPeriod($subscription, $invoice);
 
