@@ -74,7 +74,7 @@ export default class OnboardingCard extends Component {
     let { isFirstStep, showOnboarding } = this.state;
 
     let FirstStep = null;
-    const isOldUser = !LocalStorageService.getItem('ngStorage-new_user_signup');
+    const isOldUser = !JSON.parse(LocalStorageService.getItem('ngStorage-new_user_signup'));
 
     if (showOnboarding && !user.isOldUIEnabled) {
       if (isFirstStep) {
