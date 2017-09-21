@@ -165,9 +165,13 @@ export default class InvoiceDetail extends Component {
                   <div>
                     <InvoiceStatusLabel status={invoice.status} />
                     {invoice.status === 'issued' &&
-                      ['active', 'pending', 'halted', 'completed'].indexOf(
-                        subscription.status
-                      ) > -1 &&
+                      [
+                        'active',
+                        'pending',
+                        'halted',
+                        'completed',
+                        'cancelled',
+                      ].indexOf(subscription.status) > -1 &&
                       <AsyncButton
                         class="btn-link no-padding"
                         text=" Manually Charge?"

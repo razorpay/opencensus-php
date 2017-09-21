@@ -107,9 +107,13 @@ export default props => {
             do {
               if (
                 item.status === 'issued' &&
-                ['active', 'pending', 'halted', 'completed'].indexOf(
-                  subscriptionStatus
-                ) > -1
+                [
+                  'active',
+                  'pending',
+                  'halted',
+                  'completed',
+                  'cancelled',
+                ].indexOf(subscriptionStatus) > -1
               ) {
                 <AsyncButton
                   class="btn-link no-padding"
