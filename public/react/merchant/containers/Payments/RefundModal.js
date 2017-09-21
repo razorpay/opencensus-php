@@ -81,7 +81,7 @@ export default class RefundModal extends Component {
   componentWillMount() {
     let payment = this.props.payment;
 
-    if (this.props.user.tags.indexOf('Marketplace') !== -1) {
+    if (this.props.user.isMarketplaceEnabled) {
       this.props.fetchTransfers(payment);
     }
 

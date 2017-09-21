@@ -17,8 +17,8 @@ import * as NotificationActions from 'rzp/modules/notifications';
 import * as SessionActions from 'merchant/modules/session';
 import * as ConfigActions from 'merchant/modules/config';
 import { applyTheme } from 'rzp/themes';
-import User from 'merchant/models/User';
-import ShowWhen from 'merchant/components/ShowWhen';
+import User, { setFeatures } from 'merchant/models/User';
+import { fetchFeaturesAjax } from 'merchant/modules/config';
 import AddGST from 'merchant/containers/Profile/AddGST';
 import { fetchGST } from 'merchant/modules/profile';
 
@@ -52,11 +52,12 @@ export default class App extends Component {
         }
 
         this.props.updateSession({ mode: currentMode });
-        this.props.fetchFeatures(this.props.user.current);
         this.redirectToRoute(role);
         setTimeout(() => {
           this.initSmooch(user);
         });
+
+        return data;
       }),
       this.fetchOrg().then(({ data }) => {
         let orgCode = (this.orgCode = data.custom_code);
@@ -64,11 +65,19 @@ export default class App extends Component {
           applyTheme(orgCode);
         }
       }),
-    ]).then(() => {
-      let $splash = document.getElementById('splash');
-      $splash.parentElement.removeChild($splash);
+    ]).then(response => {
+      // Fetch features before displaying other views
+      fetchFeaturesAjax(response[0].current).then(data => {
+        let user = new User(response[0]);
+        user.features = setFeatures(data.data.features);
 
-      this.setState({ isLoading: false });
+        this.props.updateSession({ user, mode: currentMode });
+
+        let $splash = document.getElementById('splash');
+        $splash.parentElement.removeChild($splash);
+
+        this.setState({ isLoading: false });
+      });
     });
   }
 

@@ -1332,6 +1332,14 @@
           <input type="text" class="form-control m-b" name="max_payment_amount" ng-model="merchant.max_payment_amount" />
         </div>
       </div>
+
+      <div class="form-group">
+        <label for="linked_account_kyc" class="col-lg-2 control-label">Marketplace Linked Account KYC</label>
+        <div class="col-lg-10">
+          <input type="checkbox" id="linked_account_kyc" ng-true-value="1" ng-false-value="0" ng-model="merchant.linked_account_kyc">
+        </div>
+      </div>
+
       <div class="form-group">
         <label for="category2" class="col-lg-2 control-label">Category 2:</label>
         <div class="col-lg-10" >

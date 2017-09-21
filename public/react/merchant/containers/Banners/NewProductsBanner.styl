@@ -1,0 +1,69 @@
+.NewProductsBanner {
+  user-select: none;
+
+  .rzp-banner {
+    background-color: #fff;
+    padding: 0;
+  }
+  .card {
+    display: inline-block;
+    padding: 20px;
+    color: #22527b;
+    transition: 0.5s all ease;
+    cursor: pointer;
+
+    @media (min-width: 992px) {
+      height: 100vh;
+      max-height: 210px;
+      border-right: 1px solid #dee5e7;
+
+      &:last-of-type {
+        border-right: none;
+      }
+    }
+
+    @media (max-width: 991px) {
+      border-bottom: 1px solid #dee5e7;
+
+      &:last-of-type {
+        border-bottom: none;
+      }
+
+      .symbol, .name, p, .action-btn {
+        text-align: center;
+      }
+    }
+
+    &:hover {
+      box-shadow: 0px 2px 12px rgba(0,0,0,0.12);
+      background-color: #FAFBFF;
+    }
+
+    &:active {
+      background-color: #f1f1f1;
+    }
+
+    .symbol {
+      display: block;
+
+      img {
+        width: 40px;
+      }
+    }
+
+    .name {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    p {
+      opacity: 0.7;
+      font-size: 16px;
+    }
+
+    .action-btn {
+      margin-top: 16px;
+      padding: 0;
+    }
+  }
+}
