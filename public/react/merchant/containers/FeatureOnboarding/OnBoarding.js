@@ -145,7 +145,7 @@ export default class OnBoarding extends Component {
     this.requireImage(formType, currentForm);
 
     return (
-      <div class="page-container">
+      <div class="onboarding-page-container">
         <div
           class={`onboarding-container clearfix ${isTestMode
             ? 'halfForm'
