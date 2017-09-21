@@ -1,7 +1,5 @@
 @include('partials/head')
 
-<link rel='shortcut icon' href='/img/logo.png'>
-
 @if ($isConfirmed and $isPreSignupComplete)
   <% for (var css in htmlWebpackPlugin.files.css) { %>
     <link href="{{$cdnDashboardUrl}}<%= htmlWebpackPlugin.files.css[css] %>" rel="stylesheet">
