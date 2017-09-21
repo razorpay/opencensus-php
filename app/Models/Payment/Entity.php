@@ -781,6 +781,11 @@ class Entity extends Base\PublicEntity
     {
         return ($this->getRecurringType() !== null);
     }
+    
+    public function getRecurringType()
+    {
+        return $this->getAttribute(self::RECURRING_TYPE);
+    }
 
     public function setMetadata($input)
     {
