@@ -164,12 +164,6 @@ class SubscriptionController extends Controller
 
         $view = 'subscription.index';
 
-        //
-        // This route gets called as part of callback_url during payment
-        // creation when pop-up doesn't work. We send the request parameters
-        // to blade and there JS code handles invoice.callback_url.
-        //
-
         $data['request_params'] = Request::all();
 
         return View::make($view)

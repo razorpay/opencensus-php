@@ -12,6 +12,7 @@ use RZP\Models\Card;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\Merchant\Checkout;
+use RZP\Trace\TraceCode;
 
 /**
  * This class is common source of subscription and related data to be sent
@@ -56,11 +57,6 @@ class ViewDataSerializer extends Base\Core
      */
     protected $card;
 
-    /**
-     * @var Item\Entity
-     */
-    protected $item;
-
     public function __construct(Entity $subscription)
     {
         parent::__construct();
@@ -70,7 +66,6 @@ class ViewDataSerializer extends Base\Core
         $this->customer     = $subscription->customer;
         $this->plan         = $subscription->plan;
         $this->card         = $subscription->token->card;
-        $this->item         = $subscription->plan->item;
     }
 
     /**
@@ -86,7 +81,6 @@ class ViewDataSerializer extends Base\Core
         $customerData = $this->getCustomerData();
         $planData = $this->getPlanData();
         $cardData = $this->getCardData();
-        $invoiceData = $this->getInvoiceData();
 
         $keyId = $this->repo
                       ->key
@@ -94,7 +88,7 @@ class ViewDataSerializer extends Base\Core
                       ->first()
                       ->getPublicKey($this->mode);
 
-        return [
+        $data = [
             'environment'   => $this->app->environment(),
             'mode'          => $this->mode,
             'key_id'        => $keyId,
@@ -103,8 +97,11 @@ class ViewDataSerializer extends Base\Core
             'subscription'  => $subscriptionData,
             'plan'          => $planData,
             'card'          => $cardData,
-            'invoice'       => $invoiceData,
         ];
+
+        $this->trace->info(TraceCode::SUBSCRIPTION_VIEW_DATA_SERIALIZER_RESPONSE, $data);
+
+        return $data;
     }
 
     protected function getSubscriptionData(): array
@@ -117,6 +114,7 @@ class ViewDataSerializer extends Base\Core
             'status'    => $this->subscription->getStatus(),
             'quantity'  => $this->subscription->getQuantity(),
             'charge_at' => $chargeAt,
+            'addons'    => $this->repo->addon->getUnusedAddonsForSubscription($this->subscription),
         ];
 
         return $subscriptionData;
@@ -134,15 +132,12 @@ class ViewDataSerializer extends Base\Core
             $merchantBrandColor = self::DEFAULT_MERCHANT_BRAND_COLOR;
         }
 
-        $key = $this->merchant->keys->first()->toArrayPublic()['id'];
-
         $merchantData = [
             'brand_color'      => get_rgb_value($merchantBrandColor),
             'brand_text_color' => get_brand_text_color($merchantBrandColor),
             'image'            => $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
             'name'             => $this->merchant->getBillingLabel(),
             'id'               => $this->merchant->getId(),
-            'key'              => $key
         ];
 
         return $merchantData;
@@ -165,7 +160,7 @@ class ViewDataSerializer extends Base\Core
             'period'    => $this->plan->getPeriod(),
             'interval'  => $this->plan->getInterval(),
             'anchor'    => $this->subscription->schedule->getAnchor(),
-            'item'      => $this->item->toArrayPublic()
+            'item'      => $this->plan->item->toArrayPublic()
         ];
 
         return $planData;
@@ -183,14 +178,5 @@ class ViewDataSerializer extends Base\Core
         ];
 
         return $cardData;
-    }
-
-    protected function getInvoiceData(): array
-    {
-        $invoiceData = [
-
-        ];
-
-        return $invoiceData;
     }
 }

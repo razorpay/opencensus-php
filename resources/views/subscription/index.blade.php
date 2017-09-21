@@ -29,17 +29,18 @@
                 .replace('.00', '')
             );
         };
-        window.o.due_on = '18 October 2017';
-        window.o.addons = [];
+        window.o.due_on = o.subscription.charge_at;
+        window.o.addons = o.subscription.addons;
     </script>
 </body>
 </html>
-<script src='https://cdn.razorpay.com/static/hosted/subscription.js'></script>
+{{--<script src='https://cdn.razorpay.com/static/hosted/subscription.js'></script>--}}
+<script src='http://xps.pronav.in:3000/subscription.js'></script>
 <script>
 var $ = document.querySelector.bind(document);
 
 var options = {
-    "key": {!! json_encode($data['merchant']['key']) !!},
+    "key": {!! json_encode($data['key_id']) !!},
     "amount": window.o.total,
     "image": {!! json_encode($data['merchant']['image']) !!},
     "subscription_id": {!! json_encode($data['subscription']['id']) !!},
@@ -52,17 +53,15 @@ var options = {
         $('.modal').style.display = 'block';
 
         $('.modal').innerHTML = "Payment Successful";
+        setTimeout(function() {
+          location.reload();
+        }, 1000)
       }
     },
+    callback_url: location.href,
     "prefill": {
         "name": {!! json_encode($data['customer']['name']) !!},
         "email": {!! json_encode($data['customer']['email']) !!}
-    },
-    "notes": {
-        "address": "Hello World"
-    },
-    "theme": {
-        "color": "#F37254"
     }
 };
 
