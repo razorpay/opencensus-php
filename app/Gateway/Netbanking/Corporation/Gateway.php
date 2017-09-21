@@ -99,11 +99,6 @@ class Gateway extends Base\Gateway
             RequestFields::FUND_TRANSFER        => Constants::FUND_TRANSFER,
         ];
 
-        if ($input['merchant']->isTPVRequired())
-        {
-            $data[RequestFields::ACCOUNT_NUMBER] = $input['order']['account_number'];
-        }
-
         return $data;
     }
 
@@ -208,9 +203,8 @@ class Gateway extends Base\Gateway
             $attributes[Base\Entity::STATUS] = $content[ResponseFields::VERIFY_RESULT];
         }
 
-        if (isset($content[ResponseFields::VERIFY_BANK_REF_NUMBER]) === true and
-            empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true
-        )
+        if ((isset($content[ResponseFields::VERIFY_BANK_REF_NUMBER]) === true) and
+            (empty($gatewayPayment[Base\Entity::BANK_PAYMENT_ID]) === true))
         {
             $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::VERIFY_BANK_REF_NUMBER];
         }
@@ -260,9 +254,6 @@ class Gateway extends Base\Gateway
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED);
         }
-
-        // Setting this back to a callback request once the verification in callback is done
-        parent::callback($input);
     }
 
     protected function parseVerifyResponse($content)
@@ -288,12 +279,7 @@ class Gateway extends Base\Gateway
             RequestFields::VERIFY_DATA          => $encryptedString
         ];
 
-        // If this is getting called from the callback request,
-        // for fetching the verify URL correctly, we need to set the
-        // current action as verify.
-        parent::verify($this->input);
-
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray($content, 'post', Action::VERIFY);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
@@ -315,8 +301,7 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
 
         if ((isset($content[ResponseFields::VERIFY_RESULT]) === true) and
-            $content[ResponseFields::VERIFY_RESULT] === ResponseCodeMap::RESULT_SUCCESS
-        )
+            ($content[ResponseFields::VERIFY_RESULT] === ResponseCodeMap::RESULT_SUCCESS))
         {
             $verify->gatewaySuccess = true;
         }

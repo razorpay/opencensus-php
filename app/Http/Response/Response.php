@@ -131,7 +131,7 @@ class Response
         return [$data, $httpStatusCode];
     }
 
-    public function generateResponse($data = array(), $status = 200)
+    public function generateResponse($data = [], $status = 200)
     {
         $app = $this->app;
 
@@ -146,14 +146,14 @@ class Response
             {
                 $data = $this->flattenArrayForPost($data);
 
-                $callbackArray = array(
+                $callbackArray = [
                     'type' => 'return',
                     'request' => [
                         'url' => $app[$key],
                         'method' => 'post',
                         'content' => $data,
                     ],
-                );
+                ];
 
                 $view = \View::make('gateway.callbackReturnUrl')
                             ->with('data', $callbackArray)->render();
@@ -177,13 +177,12 @@ class Response
         return $this->json($data, $status);
     }
 
-    public function json($data = array(), $status = 200)
+    public function json($data = [], $status = 200)
     {
         $response = \Response::json();
 
         $route = $this->getCurrentRouteName();
 
-        $this->setContentTypeHtmlForSpecificRoutes($route, $response);
         $this->setAccessControlAllowOriginStarOnSpecificRoutes($route, $response);
 
         if ($this->isResponseJsonp($route))
@@ -266,64 +265,48 @@ class Response
 
     protected function isMerchantCallbackRoute($route)
     {
-        $callbackRoutes = array(
+        $callbackRoutes = [
             'payment_create',
             'payment_create_checkout',
             'payment_callback_with_key_post',
             'payment_callback_with_key_get',
             'payment_redirect_callback'
-        );
+        ];
 
         return (in_array($route, $callbackRoutes));
     }
 
     protected function isCallbackRoute($route)
     {
-        $callbackRoutes = array(
+        $callbackRoutes = [
             'payment_create_checkout',
             'payment_callback_with_key_post',
             'payment_callback_with_key_get',
             'payment_redirect_callback'
-        );
+        ];
 
         return (in_array($route, $callbackRoutes));
     }
 
     protected function isCheckoutRoute($route)
     {
-        $checkoutRoute = array(
-            'checkout');
+        $checkoutRoute = ['checkout'];
 
         return (in_array($route, $checkoutRoute));
     }
 
     protected function isJsonpRoute($route)
     {
-        $jsonpRoutes = array(
+        $jsonpRoutes = [
             'merchant_checkout_preferences',
             'merchant_methods',
             'merchant_public_get_banks',
             'payment_cancel',
             'payment_create_jsonp',
             'payment_get_status'
-        );
+        ];
 
         return (in_array($route, $jsonpRoutes));
-    }
-
-    protected function setContentTypeHtmlForSpecificRoutes($route, $response)
-    {
-        $routes = array('payment_create');
-
-        if (in_array($route, $routes))
-        {
-            //
-            // The content-type is set to text/html instead of json
-            // because on android 2.* json content is not being read on form
-            // post for cards with no 3d-secure.
-            //
-            $response->headers->set(Header::CONTENT_TYPE, 'text/html; charset=UTF-8');
-        }
     }
 
     protected function setAccessControlAllowOriginStarOnSpecificRoutes($route, $response)
@@ -361,7 +344,7 @@ class Response
 
     protected function mustNotSetSameOriginHeaders($route)
     {
-        $routes = array('checkout');
+        $routes = ['checkout'];
 
         return (in_array($route, $routes));
     }

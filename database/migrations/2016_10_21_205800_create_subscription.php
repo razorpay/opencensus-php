@@ -58,6 +58,9 @@ class CreateSubscription extends Migration
 
             $table->text(Entity::NOTES);
 
+            $table->integer(Entity::CANCEL_AT)
+                  ->nullable();
+
             $table->integer(Entity::CURRENT_START)
                   ->nullable();
             $table->integer(Entity::CURRENT_END)
@@ -87,6 +90,7 @@ class CreateSubscription extends Migration
             $table->integer(Entity::CREATED_AT);
             $table->integer(Entity::UPDATED_AT);
 
+            $table->index(Entity::CANCEL_AT);
             $table->index(Entity::START_AT);
             $table->index(Entity::END_AT);
             $table->index(Entity::CHARGE_AT);

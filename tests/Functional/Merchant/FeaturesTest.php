@@ -2,10 +2,12 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Illuminate\Http\UploadedFile;
+
 use RZP\Constants\Mode;
-use RZP\Models\Feature\Constants as FeatureConstants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Models\Feature\Constants;
 
 class FeaturesTest extends TestCase
 {
@@ -71,9 +73,9 @@ class FeaturesTest extends TestCase
 
     public function testMultiAssignFeature()
     {
-        $merch1 = $this->fixtures->create('merchant', ['id' => '10000000000001']);
-        $merch2 = $this->fixtures->create('merchant', ['id' => '10000000000002']);
-        $merch3 = $this->fixtures->create('merchant', ['id' => '10000000000003']);
+        $this->fixtures->create('merchant', ['id' => '10000000000001']);
+        $this->fixtures->create('merchant', ['id' => '10000000000002']);
+        $this->fixtures->create('merchant', ['id' => '10000000000003']);
 
         $this->startTest();
     }
@@ -497,5 +499,54 @@ class FeaturesTest extends TestCase
         $this->ba->$authMethod();
 
         $this->startTest();
+    }
+
+    public function testGetOnboardingQuestions()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testpostOnboardingResponses()
+    {
+        $this->ba->proxyAuth();
+
+        //$url = "storage/files/" . Constants::ONBOARDING .  "/" . Constants::VENDOR_AGREEMENT . ".pdf";
+
+        //$uploadedFile = $this->createUploadedFile($url);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $request = $testData['request'];
+
+        //$request['content'][Constants::VENDOR_AGREEMENT] = $uploadedFile;
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertTrue($response);
+
+        $testData = $this->testData['getOnboardingResponses'];
+
+        $request = $testData['request'];
+
+        $expectedResponse = $testData['response']['content'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+    }
+
+    protected function createUploadedFile(string $url): UploadedFile
+    {
+        $mime = 'application/pdf';
+
+        return new UploadedFile(
+            $url,
+            'file',
+            $mime,
+            filesize($url),
+            null,
+            true);
     }
 }

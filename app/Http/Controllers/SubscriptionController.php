@@ -137,7 +137,9 @@ class SubscriptionController extends Controller
 
     public function postCancelSubscription(string $subscriptionId)
     {
-        $subscription = $this->service()->cancelSubscription($subscriptionId);
+        $input = Request::all();
+
+        $subscription = $this->service()->cancelSubscription($subscriptionId, $input);
 
         return ApiResponse::json($subscription);
     }
@@ -172,5 +174,12 @@ class SubscriptionController extends Controller
 
         return View::make($view)
             ->with('data', $data);
+    }
+
+    public function postCancelDueSubscriptions()
+    {
+        $summary = $this->service()->cancelDueSubscriptions();
+
+        return ApiResponse::json($summary);
     }
 }
