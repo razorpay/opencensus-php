@@ -2484,3 +2484,7 @@ ALTER TABLE line_items
 
 ALTER TABLE batches
     MODIFY COLUMN `type` CHAR(25);
+
+# Marketplace auto-activate
+ALTER TABLE merchants
+    ADD COLUMN linked_account_kyc TINYINT(1) NOT NULL DEFAULT 0 AFTER fee_model;

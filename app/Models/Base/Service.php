@@ -3,6 +3,8 @@
 namespace RZP\Models\Base;
 
 use App;
+
+use RZP\Base;
 use RZP\Models\Merchant;
 
 class Service

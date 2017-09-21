@@ -6,10 +6,8 @@ use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Feature;
 use RZP\Constants\Mode;
-use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
-use RZP\Reconciliator\FileProcessor;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 
 class Validator extends Base\Validator
@@ -307,9 +305,23 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateBeforeActivate(Merchant\Entity $merchant)
+    public function validateBeforeActivate()
     {
-        // Dont validate these attributes for Marketplace accounts
+        $merchant = $this->entity;
+
+        if ($merchant->isActivated() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
+        }
+
+        if ($merchant->isArchived() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION);
+        }
+
+        // Don't validate these rest of the attributes for Marketplace accounts
         if ($merchant->isLinkedAccount() === true)
         {
             return;

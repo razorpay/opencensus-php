@@ -4,37 +4,24 @@ namespace RZP\Models\Merchant;
 
 use Mail;
 
-use RZP\Constants\MailTags;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Mail\Merchant\Activation as ActivationMail;
-use RZP\Models\Admin\Org;
 use RZP\Models\Base;
 use RZP\Models\Card;
-use RZP\Models\Key;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Webhook;
+use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
-use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Mail\Merchant\Activation as ActivationMail;
+
 
 class Activate extends Base\Core
 {
-    public function activate($merchant)
+    public function activate(Entity $merchant)
     {
-        if ($merchant->isActivated())
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
-        }
-
-        if ($merchant->isArchived() === true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION);
-        }
+        $merchant->getValidator()->validateBeforeActivate();
 
         //
         // Ensure that all payment methods enabled for the merchant
@@ -57,8 +44,6 @@ class Activate extends Base\Core
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NO_BANK_ACCOUNT_FOUND);
         }
-
-        (new Merchant\Validator)->validateBeforeActivate($merchant);
 
         $oldMerchant = clone $merchant;
 
@@ -122,10 +107,36 @@ class Activate extends Base\Core
     }
 
     /**
+     * Handles the logic for auto-activation of accounts
+     *
+     * @param Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    public function autoActivate(Entity $merchant)
+    {
+        $merchant->getValidator()->validateBeforeActivate($merchant);
+
+        $merchant->activate();
+
+        // Create the live mode balance entity for the merchant
+        (new Merchant\Core)->createBalance($merchant, Mode::LIVE);
+
+        $this->repo->saveOrFail($merchant);
+
+        $this->trace->info(
+            TraceCode::MERCHANT_LINKED_ACCOUNT_ACTIVATED,
+            [
+                'type'        => 'auto_activate',
+                'merchant_id' => $merchant->getId()
+            ]);
+    }
+
+    /**
      * Sends activation email to the merchant, cc's notifications
      * Includes pricing details in the email (properly formatted)
      *
-     * @param  Entity $merchant merchant entity
+     * @param  Entity $merchant
      * @return null
      */
     public function sendActivationEmail($merchant)
