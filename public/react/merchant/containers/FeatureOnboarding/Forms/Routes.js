@@ -13,7 +13,7 @@ export default ({ handleChange }) => {
         </label>
         <Field
           name="use_case"
-          component={AutoResizeTextarea}
+          component="textarea"
           rows="3"
           class="form-control"
           placeholder="Your use case for the product and business model"
@@ -50,9 +50,10 @@ export default ({ handleChange }) => {
         </label>
         <FileUploadInputButton
           accept="image/jpeg,image/png,application/pdf,application/x-pdf"
-          uploadedFileName="marketplace.vendor_agreement"
+          uploadedFileName=""
           maxSize="8000000"
           onChange={handleChange}
+          validate={[required()]}
         />
         <small class="help-block">
           <i class="icon icon-info-outline" style={{ marginRight: '4px' }} />

@@ -17,6 +17,7 @@ export default () => {
           rows="3"
           class="form-control"
           placeholder="Your use case for Subscriptions and business model"
+          validate={[required()]}
         />
       </div>
 
@@ -30,6 +31,7 @@ export default () => {
           rows="3"
           class="form-control"
           placeholder="Define a few sample plans that you offer"
+          validate={[required()]}
         />
       </div>
 
@@ -56,7 +58,6 @@ export default () => {
           component={InputField}
           class="form-control"
           placeholder="http://example.com/pricing"
-          validate={[required()]}
         />
       </div>
     </div>

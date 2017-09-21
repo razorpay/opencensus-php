@@ -29,7 +29,9 @@ const NewProducts = () => {
               </div>
               <div className="links">
                 <Link to={product.link}>Try Now</Link>
-                <span className="text-fade">&nbsp;•&nbsp;</span>
+                <span className="text-fade" style={{ padding: '0 4px' }}>
+                  &nbsp;•&nbsp;
+                </span>
                 <a href={product.help} target="_blank">
                   Learn More
                 </a>
@@ -74,7 +76,9 @@ export default class OnboardingCard extends Component {
     let { isFirstStep, showOnboarding } = this.state;
 
     let FirstStep = null;
-    const isOldUser = !JSON.parse(LocalStorageService.getItem('ngStorage-new_user_signup'));
+    const isOldUser = !JSON.parse(
+      LocalStorageService.getItem('ngStorage-new_user_signup')
+    );
 
     if (showOnboarding && !user.isOldUIEnabled) {
       if (isFirstStep) {

@@ -1,6 +1,5 @@
 import { Field } from 'redux-form';
 import InputField from 'rzp/ui/Forms/InputField';
-import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea';
 import { required } from 'rzp/utils/validators';
 
 export default () => {
@@ -12,10 +11,11 @@ export default () => {
         </label>
         <Field
           name="use_case"
-          component={AutoResizeTextarea}
+          component="textarea"
           rows="3"
           class="form-control"
           placeholder="Your use case for virtual accounts"
+          validate={[required()]}
         />
       </div>
 

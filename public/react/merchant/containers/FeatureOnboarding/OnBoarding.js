@@ -1,5 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
+import { Link } from 'react-router-dom';
 
 import LocalStorageService from 'rzp/utils/localStorage';
 
@@ -19,7 +20,7 @@ import FORM_TYPE from './Forms';
 
 import './OnBoarding.styl';
 
-@connect(null, {
+@connect(state => state.session, {
   saveOnboarding,
   getOnboardingResponse,
   showNotification,
@@ -93,7 +94,7 @@ export default class OnBoarding extends Component {
         .then(() => {
           this.props.showNotification({
             type: 'success',
-            message: 'Successful',
+            message: 'Your request has been submitted',
           });
           this.setState({ submitted: true });
         })
@@ -132,10 +133,11 @@ export default class OnBoarding extends Component {
 
   render() {
     const {
+      handleSubmit,
+      invalid,
       heading,
       description,
       formType,
-      handleSubmit,
       enableFeatureInTestMode,
       isTestMode,
     } = this.props;
@@ -166,7 +168,7 @@ export default class OnBoarding extends Component {
                 <AsyncButton
                   type="button"
                   class="btn btn-primary"
-                  text="Enable in Test Mode"
+                  text="Get Started"
                   pendingText="Enabling..."
                   onClick={enableFeatureInTestMode}
                 />}
@@ -226,6 +228,7 @@ export default class OnBoarding extends Component {
                         text="Apply Now"
                         pendingText="Applying..."
                         onClick={handleSubmit(this.onSubmitClick)}
+                        disabled={invalid}
                       />
                     </div>
                   : <div class="alert alert-info">
@@ -233,6 +236,19 @@ export default class OnBoarding extends Component {
                       you can switch to{' '}
                       <a onClick={this.switchToTestMode}>Test Mode</a> to try
                       the product.
+                      {this.props.user.isActivated
+                        ? <div class="m-t">
+                            <b> Please note </b> that this is activation form
+                            for {heading}. Your request will be processed after
+                            you submit the{' '}
+                            <Link to="/activation">
+                              primary activation form
+                            </Link>.
+                          </div>
+                        : <div class="m-t">
+                            <b> Please note </b> that your request will be
+                            processed in 1 working day.
+                          </div>}
                     </div>}
             </aside>}
         </div>

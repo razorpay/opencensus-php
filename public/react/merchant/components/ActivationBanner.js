@@ -16,7 +16,7 @@ export default ({ productName, symbol, onActivate }) => {
           </div>
           <div>
             To activate {productName} in live mode, you can request for
-            activation and we will get back to you in 24 hours.
+            activation and we will get back to you in 1 working day.
           </div>
         </div>
         <button className="btn btn-default" onClick={onActivate}>
