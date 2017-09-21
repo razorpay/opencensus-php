@@ -13,7 +13,10 @@ import TransferDetails from 'merchant/containers/Marketplace/Transfers/Details';
 import PlanNew from 'merchant/containers/Plans/New';
 
 const entityMap = {
+  '/payments/:id(pay_.+)/:entity_name(transfers)/new': PaymentsDetails,
+  '/payments/:id(pay_.+)/:transfer_id(trf_.+)': PaymentsDetails,
   '/payments/:id': PaymentsDetails,
+
   '/refunds/:id(rfnd_.+)': RefundDetails,
   '/orders/:id': OrderDetails,
   '/settlements/:id': SettlementDetails,
@@ -24,9 +27,10 @@ const entityMap = {
   '/virtualaccounts/:id': VirtualAccountDetails,
   '/plans/new': PlanNew,
   '/plans/:id': PlanDetails,
+
   '/subscriptions/:id(sub_.+)/:invoice_id(inv_.+)': SubscriptionDetails,
   '/subscriptions/:id(sub_.+)': SubscriptionDetails,
-  '/subscriptions/:id': SubscriptionDetails,
+
   '/route/transfers/:id': TransferDetails,
 };
 

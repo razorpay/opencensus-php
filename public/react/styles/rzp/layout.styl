@@ -383,6 +383,44 @@ body.ReactModal__Body--open {
   top: 45px;
 }
 
+.transfers-onhold-datepicker {
+
+  .SingleDatePicker {
+
+    .DateInput--with-caret:before, .DateInput--with-caret:after {
+      border: 10px solid transparent;
+      z-index: 3;
+    }
+
+    .DateInput--with-caret:before {
+      top: -12px;
+      border-top-color: rgba(0, 0, 0, 0.1);
+      border-bottom: 0;
+    }
+
+    .DateInput--with-caret:after {
+      top: -13px;
+      border-top-color: #fff;
+      border-bottom: 0;
+    }
+  }
+
+  .SingleDatePicker__picker {
+    top: auto;
+    bottom: 46px;
+    z-index: 2;
+  }
+}
+.SingleDatePicker__picker.SingleDatePicker__picker--open-up {
+  top: auto;
+  bottom: 58px;
+  z-index: 2;
+}
+
+.DateInput--open-up.DateInput--with-caret::after {
+  z-index: 3;
+}
+
 .DateInput__input {
   cursor: pointer;
 }
@@ -970,4 +1008,38 @@ tr:hover .row-action.btn-group {
     color: #58666E;
     font-size: 70%;
   }
+}
+
+.transfers-onhold-datepicker div.DateInput {
+  width: 100%;
+}
+
+form[name="createPaymentTransfer"], form[name="updatePaymentTransfer"] {
+  div.RadioButton:first-child {
+    margin-top: 0;
+  }
+
+  div.RadioButton .RadioButton__button {
+    cursor: pointer;
+  }
+
+  .CalendarMonth__caption {
+    margin-bottom: 10px;
+  }
+
+  .CalendarDay--blocked-calendar {
+    background-color: rgba(0,0,0,0.05);
+    cursor: not-allowed;
+  }
+}
+
+form[name="updatePaymentTransfer"] {
+  div.btn-toolbar {
+    padding-left: 0;
+  }
+}
+
+span.transfer-scheduled-text.text-warning,
+span.transfer-scheduled-text.text-warning span.label--primary {
+  color: #F5A623;  
 }

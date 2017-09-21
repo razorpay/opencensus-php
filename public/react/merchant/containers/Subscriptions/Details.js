@@ -145,7 +145,7 @@ export default class SubscriptionDetailsContainer extends Component {
     this.props.history.push(`/subscriptions/${this.props.entity.id}/${itemId}`);
 
     if (this.invoiceView && findDOMNode(this.invoiceView)) {
-      findDOMNode(this.invoiceView).classList.toggle('toggle-slider');
+      findDOMNode(this.invoiceView).classList.add('toggle-slider');
     }
   };
 
@@ -219,21 +219,6 @@ export default class SubscriptionDetailsContainer extends Component {
       </div>
     );
   }
-
-  secClose = () => {
-    let { compactSlider, history, location } = this.props;
-    compactSlider();
-    history.push(location.pathname.replace(/\/[^\/]+\/?$/, ''));
-  };
-}
-
-function makeErrorStatus(message) {
-  return (
-    message && {
-      type: 'error',
-      message: invoiceErrors,
-    }
-  );
 }
 
 function makeErrorStatus(message) {

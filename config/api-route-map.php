@@ -147,7 +147,10 @@ return [
             'url'       => 'payments/{id}/refund',
             'routeName' => 'post_refund'
         ],
-
+        'payment_transfer'                  => [
+            'url'       => 'payments/{id}/transfers',
+            'routeName' => 'post_transfer'
+        ],
         // Orders
         'order_fetch'                       => [
             'url'       => 'orders',
@@ -353,6 +356,11 @@ return [
         'transfer_reversal'           => [
             'url'       => 'transfers/{id}/reversals',
             'routeName' => 'marketplace_read'
+        ],
+
+        'transfer_edit'                     => [
+            'url'       => 'transfers/{id}',
+            'routeName' => 'marketplace_edit'
         ],
 
         // Reversals
