@@ -260,7 +260,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Method reads disbaled_banks from database and
+     * Method reads disabled_banks from database and
      * subtract them from all enabled banks
      * @param $methods
      * @return array

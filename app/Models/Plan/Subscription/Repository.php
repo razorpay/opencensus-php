@@ -9,6 +9,7 @@ use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
+use RZP\Models\Base\Collection;
 use RZP\Models\Schedule\Task;
 use RZP\Models\Customer;
 
@@ -42,29 +43,39 @@ class Repository extends Base\Repository
         Entity::TOKEN_ID,
     ];
 
+    /**
+     * Subscriptions which need to be picked up by the charge
+     * cron. This includes active subscriptions, and also halted
+     * subscriptions since we still create invoices for these
+     * subscriptions, without charging them.
+     *
+     * @return Collection Subscriptions
+     */
     public function getSubscriptionsToCharge()
     {
-        //
-        // If there are any subscriptions which are scheduled to be cancelled
-        // at cycle end, this will not get those.
-        // TODO: Think about race conditions and handle those!
-        //
+        $currentTime = Carbon::now()->getTimestamp();
 
-        return $this->getBaseSubscriptionsQuery()
-                    ->whereIn(Entity::STATUS, Status::$cronChargeableStatuses)
-                    ->whereNull(Entity::ENDED_AT)
-                    ->whereNull(Entity::CANCEL_AT)
-                    ->where(function($query)
-                    {
-                        $query->where(Entity::AUTH_ATTEMPTS, '=', 0)
-                            ->orWhere(function($query)
-                            {
-                                $query->where(Entity::AUTH_ATTEMPTS, '=', Charge::MAX_AUTH_ATTEMPTS)
-                                      ->where(Entity::STATUS, '=', Status::HALTED);
-                            });
-                    })
-                    ->limit(100)
-                    ->get();
+        $query = $this->getBaseSubscriptionsQuery()
+                      ->whereIn(Entity::STATUS, Status::$cronChargeableStatuses)
+                      ->whereNull(Entity::ENDED_AT)
+                      ->whereNull(Entity::CANCEL_AT)
+                      ->where(function($query) use ($currentTime)
+                      {
+                          $query->where(Entity::AUTH_ATTEMPTS, '=', 0)
+                                ->orWhere(function($query)
+                                {
+                                    $query->where(Entity::AUTH_ATTEMPTS, '=', Charge::MAX_AUTH_ATTEMPTS)
+                                          ->where(Entity::STATUS, '=', Status::HALTED);
+                                });
+                      })
+                      ->where(function($query) use ($currentTime)
+                        {
+                            $query->whereNull(Entity::CURRENT_END)
+                                  ->orWhere(Entity::CURRENT_END, '<', $currentTime);
+                        })
+                      ->limit(100);
+
+        return $query->get();
     }
 
     public function getSubscriptionsToRetry()
@@ -101,7 +112,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->whereNotNull(Entity::CANCEL_AT)
                     ->where(Entity::CANCEL_AT, '<=', $currentTime)
-                    ->whereNotIn(Entity::STATUS, Status::$nonCancellableStatuses)
+                    ->whereNotIn(Entity::STATUS, Status::$terminalStatuses)
                     ->get();
     }
 
@@ -120,11 +131,6 @@ class Repository extends Base\Repository
                     ->select($subscriptionAttrs)
                     ->join(Table::SCHEDULE_TASK, $subscriptionIdAttr, '=', $taskEntityIdAttr)
                     ->where($taskNextRunAttr, '<', $currentTime)
-                    ->where(function($query) use ($currentTime)
-                        {
-                            $query->whereNull(Entity::CURRENT_END)
-                                  ->orWhere(Entity::CURRENT_END, '<', $currentTime);
-                        })
                     ->with(['plan', 'merchant']);
     }
 
