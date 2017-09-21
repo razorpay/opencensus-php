@@ -3,7 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use Config;
-use Conner\Tagging\Taggable;
+
 use RZP\Models\User;
 use RZP\Models\Base;
 use RZP\Models\Emi;
@@ -13,6 +13,7 @@ use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Invitation;
+use Conner\Tagging\Taggable;
 use RZP\Exception\LogicException;
 
 class Entity extends Base\PublicEntity
@@ -41,6 +42,7 @@ class Entity extends Base\PublicEntity
     const SCOPE                     = 'scope';
     const FEE_BEARER                = 'fee_bearer';
     const FEE_MODEL                 = 'fee_model';
+    const LINKED_ACCOUNT_KYC        = 'linked_account_kyc';
     const BRAND_COLOR               = 'brand_color';
     const HANDLE                    = 'handle';
     const RISK_RATING               = 'risk_rating';
@@ -188,6 +190,7 @@ class Entity extends Base\PublicEntity
         self::CATEGORY,
         self::CATEGORY2,
         self::INTERNATIONAL,
+        self::LINKED_ACCOUNT_KYC,
         self::FEE_BEARER,
         self::FEE_MODEL,
         self::BILLING_LABEL,
@@ -329,15 +332,22 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LIVE);
     }
 
-    // Is the merchant a linked-account under Marketplace
-    public function isLinkedAccount()
+    /**
+     * Is the merchant a linked-account under Marketplace?
+     */
+    public function isLinkedAccount(): bool
     {
         return $this->isAttributeNotNull(self::PARENT_ID);
     }
 
-    public function isMarketplace()
+    public function isMarketplace(): bool
     {
         return $this->isFeatureEnabled(Feature\Constants::MARKETPLACE);
+    }
+
+    public function linkedAccountsRequireKyc(): bool
+    {
+        return $this->getAttribute(self::LINKED_ACCOUNT_KYC);
     }
 
     public function isEducationCategory()

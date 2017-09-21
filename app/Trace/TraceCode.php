@@ -540,6 +540,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_NOTIFY_HOLIDAY                   = 'MERCHANT_NOTIFY_HOLIDAY';
     const MERCHANT_NEWSLETTER_MAILING_LIST_CREATED  = 'MERCHANT_NEWSLETTER_MAILING_LIST_CREATED';
     const MERCHANT_ACCOUNT_ACTIVATED                = 'MERCHANT_ACCOUNT_ACTIVATED';
+    const MERCHANT_LINKED_ACCOUNT_ACTIVATED         = 'MERCHANT_LINKED_ACCOUNT_ACTIVATED';
     const MERCHANT_TERMINALS                        = 'MERCHANT_TERMINALS';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
     const MERCHANT_ORG_NOT_GIVEN                    = 'MERCHANT_ORG_NOT_GIVEN';
@@ -847,12 +848,19 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_FILE_ERROR_GENERATING_FILE            = 'GATEWAY_FILE_ERROR_GENERATING_FILE';
     const GATEWAY_FILE_ERROR_SENDING_FILE               = 'GATEWAY_FILE_ERROR_SENDING_FILE';
     const GATEWAY_FILE_ACKNOWLEDGE_REQUEST              = 'GATEWAY_FILE_ACKNOWLEDGE_REQUEST';
+    const GATEWAY_FILE_JOB_RECEIVED                     = 'GATEWAY_FILE_JOB_RECEIVED';
+    const GATEWAY_FILE_JOB_HANDLED                      = 'GATEWAY_FILE_JOB_HANDLED';
+    const GATEWAY_FILE_JOB_ERROR                        = 'GATEWAY_FILE_JOB_ERROR';
 
     const VERIFY_ENROLLMENT_RESPONSE                    = 'VERIFY_ENROLLMENT_RESPONSE';
 
     // Trace code for \Models\Settings
     const SETTINGS_UPSERT_REQUEST                       = 'SETTINGS_UPSERT_REQUEST';
     const SETTINGS_DELETE_REQUEST                       = 'SETTINGS_DELETE_REQUEST';
+  
+    // Feature Onboarding trace codes
+    const FEATURE_ONBOARDING_RESPONSE_REQUEST           = 'FEATURE_ONBOARDING_RESPONSE_REQUEST';
+    const FEATURE_ONBOARDING_RESPONSE_CREATION_FAILED   = 'FEATURE_ONBOARDING_RESPONSE_CREATION_FAILED';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

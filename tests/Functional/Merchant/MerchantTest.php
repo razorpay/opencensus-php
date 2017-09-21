@@ -2,26 +2,26 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use DB;
 use Mail;
+use Carbon\Carbon;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
-use RZP\Mail\Merchant\Activation as ActivationMail;
-use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
-use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 use RZP\Constants\Mode;
 use RZP\Models\Merchant;
+use RZP\Constants\Timezone;
 use RZP\Models\Transaction;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
+use RZP\Mail\Merchant\Activation as ActivationMail;
+use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Mail\Merchant\AccountChange as BankAccountChangeMail;
+use RZP\Mail\Banking\BeneficiaryFile as BeneficiaryFileMail;
 
 class MerchantTest extends TestCase
 {

@@ -41,7 +41,8 @@ class Repository extends Base\Repository
         Entity::EMAIL              => 'sometimes',
         Entity::STATUS             => 'sometimes|string',
         Entity::NOTES              => 'sometimes|string|max:500',
-        Entity::INVOICE_ID         => 'sometimes|string|max:18',
+        Entity::INVOICE_ID         => 'sometimes|string|min:14|max:18',
+        Entity::SUBSCRIPTION_ID    => 'sometimes|string|min:14|max:18',
     ];
 
     // These are admin allowed params to search on.
@@ -75,6 +76,7 @@ class Repository extends Base\Repository
     protected $signedIds = [
         Entity::ORDER_ID,
         Entity::INVOICE_ID,
+        Entity::SUBSCRIPTION_ID,
     ];
 
     public function getRecentMerchantPaymentsForCheckoutId($checkoutId)

@@ -29,6 +29,7 @@ class Repository extends Base\Repository
     ];
 
     protected $entityFetchParamRules = [
+        Entity::TYPE              => 'sometimes|string|custom',
         Entity::PAYMENT_ID        => 'sometimes|string|min:14|max:18',
         Entity::RECEIPT           => 'sometimes|string|min:1|max:40',
         Entity::CUSTOMER_ID       => 'sometimes|string|min:14|max:19',
@@ -38,7 +39,6 @@ class Repository extends Base\Repository
         Entity::BATCH_ID          => 'sometimes|string|min:14|max:20',
         Entity::USER_ID           => 'sometimes|alpha_num',
         Entity::STATUS            => 'sometimes|string',
-        Entity::TYPE              => 'sometimes|string|custom',
         Entity::TYPES             => 'sometimes|array|min:1|max:2|custom',
         Entity::CUSTOMER_NAME     => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:255',
         Entity::CUSTOMER_CONTACT  => 'sometimes|contact_syntax',

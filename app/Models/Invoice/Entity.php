@@ -204,6 +204,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION              => null,
         self::NOTES                    => [],
         self::COMMENT                  => null,
+        self::TERMS                    => null,
         self::SHORT_URL                => null,
         self::VIEW_LESS                => 1,
         self::TYPE                     => Type::INVOICE,
