@@ -22,7 +22,7 @@ class CardChanged extends Base
 
     protected function getResult()
     {
-        return 'Subscription Card changed';
+        return 'Subscription Card Updated';
     }
 
     protected function getMailTag()

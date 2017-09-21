@@ -10,7 +10,7 @@
     <tr>
       <td class="left"></td>
       <td class="middle header">
-        <h4>Subscription Started at {{$merchant['billing_label']}}</h4>
+        <h4>Subscription Card Updated at {{$merchant['billing_label']}}</h4>
         <p>Subcription ID: {{$subscription['public_id']}}</p>
       </td>
       <td class="right"></td>

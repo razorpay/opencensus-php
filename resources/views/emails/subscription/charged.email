@@ -10,7 +10,7 @@
     <tr>
       <td class="left"></td>
       <td class="middle header">
-        <h4>Subscription Started at {{$merchant['billing_label']}}</h4>
+        <h4>Subscription Charged at {{$merchant['billing_label']}}</h4>
         <p>Subcription ID: {{$subscription['public_id']}}</p>
       </td>
       <td class="right"></td>
@@ -19,7 +19,7 @@
       <td class="left demarcated"></td>
       <td class="middle demarcated">
         A payment of <strong>{{$payment['amount']}}</strong> has been made towards your subscription.
-@if($options['card_change'] === true)
+@if($options['card_changed'] === true)
  Your saved card for this subscription has also been updated and securely stored for future payments.
 @endif
       </td>

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
 use RZP\Models\Tax;
+use RZP\Models\Currency;
 
 class Entity extends Base\PublicEntity
 {
@@ -145,6 +146,21 @@ class Entity extends Base\PublicEntity
     public function getAmount(): int
     {
         return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getFormattedAmount(): string
+    {
+        $currency = $this->getCurrency();
+
+        $currencySymbol = Currency\Currency::SYMBOL[$currency];
+
+        $denominationFactor = Currency\Currency::DENOMINATION_FACTOR[$currency];
+
+        $amount = $this->getAmount() / $denominationFactor;
+
+        $amount = sprintf($amount == intval($amount) ? '%d' : '%.2f', $amount);
+
+        return $currencySymbol . ' ' . $amount;
     }
 
     public function getCurrency(): string

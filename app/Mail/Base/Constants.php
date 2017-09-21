@@ -26,7 +26,7 @@ class Constants
         self::REFUNDS       => 'refunds@razorpay.com',
         self::SETTLEMENTS   => 'settlements@razorpay.com',
         self::INVOICES      => 'invoices@razorpay.com',
-        self::SUBSCRIPTIONS => 'subscriptions@razorpay',
+        self::SUBSCRIPTIONS => 'subscriptions@razorpay.com',
         self::NOTIFICATIONS => 'notifications@razorpay.com',
         self::REPORTS       => 'reports@razorpay.com',
         self::CARE          => 'care@razorpay.com',

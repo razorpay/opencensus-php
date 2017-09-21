@@ -274,6 +274,7 @@ class Notify extends Processor\Notify
             'plan_item' => [
                 Item\Entity::NAME              => $this->subscription->plan->item->getName(),
                 Item\Entity::DESCRIPTION       => $this->subscription->plan->item->getDescription(),
+                Item\Entity::AMOUNT            => $this->subscription->plan->item->getFormattedAmount(),
             ],
             'merchant'  => [
                 Merchant\Entity::BILLING_LABEL => $this->merchant->getBillingLabel(),

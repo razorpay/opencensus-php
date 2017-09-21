@@ -43,6 +43,7 @@
         <h6>Subscription Plan</h6>
         <p class="title">{{$plan_item['name']}}</p>
         <p class="sub-title">{{$plan_item['description']}}</p>
+        <p class="sub-title">Amount: {{$plan_item['amount']}}</p>
         <p class="sub-title">Next due on {{$subscription['charge_at']}}</p>
       </td>
       <td class="right"></td>

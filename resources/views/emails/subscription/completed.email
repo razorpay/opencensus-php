@@ -10,7 +10,7 @@
     <tr>
       <td class="left"></td>
       <td class="middle header">
-        <h4>Subscription Started at {{$merchant['billing_label']}}</h4>
+        <h4>Subscription Completed at {{$merchant['billing_label']}}</h4>
         <p>Subcription ID: {{$subscription['public_id']}}</p>
       </td>
       <td class="right"></td>
@@ -18,7 +18,7 @@
       <tr>
       <td class="left demarcated"></td>
       <td class="middle demarcated">
-      @if($options['card_change'] === true)
+      @if($options['charge_success'] === true)
         A final payment of <strong>{{$payment['amount']}}</strong> has been made towards your subscription.
       @else
         A final attempt for a payment of <strong>{{$payment['amount']}}</strong> was made towards your subscription. However, this attempt <strong>failed</strong>.
