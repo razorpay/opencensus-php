@@ -187,7 +187,7 @@ class Core extends Base\Core
         // we might need to do a similar thing when we start with
         // global charge at will recurring.
         //
-        if (($this->app['basicauth']->isPrivilegeAuth() === true) and
+        if (($this->app['basicauth']->isProxyOrPrivilegeAuth() === true) and
             (isset($input['cvv']) === false))
         {
             return;

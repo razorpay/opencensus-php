@@ -114,7 +114,12 @@ class Validator extends Base\Validator
             ($orderAmountDue !== $paymentAmount))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH);
+                ErrorCode::BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH,
+                'amount',
+                [
+                    'order_amount'   => $orderAmountDue,
+                    'payment_amount' => $paymentAmount,
+                ]);
         }
 
         if (($partialPaymentAllowed === true) and
