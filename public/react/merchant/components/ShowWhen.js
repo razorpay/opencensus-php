@@ -28,7 +28,7 @@ export default class ShowWhen extends Component {
     let notMyRoles = notMyRole.split(' ');
     let user = this.props.user;
     let tags = (user.isAuthenticated && user.tags) || [];
-    let features = (user.isAuthenticated && this.props.features) || [];
+    let features = (user.isAuthenticated && user.features) || [];
     tags = tags.map(tag => tag.toLowerCase());
     let userRole;
 
@@ -50,7 +50,7 @@ export default class ShowWhen extends Component {
         apiFeatureEnabled.toLowerCase()
       );
 
-      if (feature && !feature.value) {
+      if (!feature || !feature.value) {
         return null;
       }
     }
