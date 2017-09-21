@@ -78,4 +78,7 @@ return [
 
     'virtual_accounts_read'     => ['owner', 'manager', 'admin'],
     'virtual_accounts_write'    => ['owner', 'manager', 'admin'],
+
+    'subscriptions_read'        => ['owner', 'manager', 'admin'],
+    'subscriptions_write'       => ['owner', 'manager', 'admin'],
 ];

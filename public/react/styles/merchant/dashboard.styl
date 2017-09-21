@@ -9,6 +9,12 @@
   }
 }
 
+.clearfix:after {
+  display: table;
+  content: '';
+  clear: both;
+}
+
 .webkit-sec {
   -webkit-text-security: disc;
 }
@@ -524,6 +530,11 @@
     display: table;
     width: 100%;
     margin-bottom: 4px;
+
+    // Style for 3rd row
+    &:nth-of-type(3) {
+      font-size: 13px;
+    }
   }
 
   .row-element {
@@ -588,7 +599,7 @@ div.data-table.has-panel {
   margin: 16px 0;
   border-bottom: 1px solid #C6CFD9;
 
-  button {
+  .show-btn {
     padding: 12px;
     cursor: pointer;
 

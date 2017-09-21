@@ -1,3 +1,4 @@
+import ajax from 'merchant/utils/ajax';
 import { set } from 'rzp/utils/immutable';
 import Subscription from 'merchant/models/Subscription';
 import {
@@ -31,6 +32,7 @@ export const fetchSubscription = id => {
 
 export const fetchInvoices = subs_id => {
   let subscription = new Subscription();
+  subs_id = subs_id.replace(/\/$/, '');
 
   return {
     type: SUBSCRIPTION_INVOICES_FETCH,
@@ -56,13 +58,47 @@ export const deleteSubscription = params => {
   };
 };
 
-export const cancelSubscription = id => {
+export const cancelSubscription = ({ id, cancel_at_cycle_end }) => {
   const subscription = new Subscription({ id });
 
   return {
     type: SUBSCRIPTION_CANCEL,
-    payload: subscription.cancel(),
+    payload: subscription.cancel(cancel_at_cycle_end),
   };
+};
+
+export const testChargeSubscription = (subscriptionId, success) => {
+  return ajax({
+    method: 'post',
+    url: 'user/generic',
+    appendModeInURL: false,
+    appendModeInQueryParam: true,
+    data: {
+      route_name: 'subscription_test_charge',
+      body: {
+        success,
+      },
+      url_params: JSON.stringify({
+        '{id}': subscriptionId,
+      }),
+    },
+  });
+};
+
+// Manual Attempt for pending invoice payment
+export const paymentManualAttempt = invoiceId => {
+  return ajax({
+    method: 'post',
+    url: 'user/generic',
+    appendModeInURL: false,
+    appendModeInQueryParam: true,
+    data: {
+      route_name: 'subscription_manual_retry',
+      url_params: JSON.stringify({
+        '{invoice_id}': invoiceId,
+      }),
+    },
+  });
 };
 
 // List Reducer

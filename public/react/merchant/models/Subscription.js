@@ -11,13 +11,14 @@ export default class Subscription extends GenericEntity {
     return this.isNew ? 'subscription_create' : 'subscription_update';
   }
 
-  cancel() {
+  cancel(cancelAtCycleEnd) {
     return this.makeGenericAjaxCall({
       method: 'post',
       data: {
         route_name: 'subscription_cancel',
         url_params: JSON.stringify({
           '{id}': this.id,
+          '{cancel_at_cycle_end}': cancelAtCycleEnd,
         }),
       },
     }).then(response => {

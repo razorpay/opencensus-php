@@ -39,11 +39,12 @@ export default class GenericEntity extends Entity {
     });
   }
 
-  fetch(id, data = {}) {
+  fetch(id, data = {}, queryParams = {}) {
     const Klass = this.constructor;
     data.url_params = JSON.stringify({
       '{id}': id,
     });
+    data.query_params = JSON.stringify(queryParams);
     data.route_name = this.detailsRouteName;
     return this.makeGenericAjaxCall({ data }).then(response => {
       return new Klass(response.data).deserialize();

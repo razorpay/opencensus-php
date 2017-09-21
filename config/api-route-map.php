@@ -480,6 +480,14 @@ return [
             'url'       => 'subscriptions/{id}/cancel',
             'routeName' => 'subscriptions_write'
         ],
+        'subscription_manual_retry' => [
+            'url'       => 'invoices/{invoice_id}/charge',
+            'routeName' => 'subscriptions_write'
+        ],
+        'subscription_test_charge' => [
+            'url'       => 'subscriptions/{id}/charge',
+            'routeName' => 'subscriptions_write'
+        ],
 
         // Plans
         'plan_fetch_multiple'    => [
@@ -502,6 +510,13 @@ return [
             'url'       => 'plans/{id}',
             'routeName' => 'subscriptions_write'
         ],
+
+        // Addons
+        'subscription_create_addon'      => 'subscriptions/{subscription_id}/addons',
+        'addon_fetch'                    => 'addons/{addon_id}',
+        'addon_fetch_multiple'           => 'addons',
+        'addons_fetch_due'               => 'subscriptions/{subscription_id}/addons/due',
+        'addon_delete'                   => 'addons/{addon_id}',
 
         // Feature onboarding responses
         'feature_onboarding_fetch_all_responses' => 'feature/onboarding/responses',

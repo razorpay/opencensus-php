@@ -12,7 +12,7 @@ const INVOICES_ROUTES_REGEX = /^\/(invoices|items)/;
 const INVOICES_ROUTES_OLD_REGEX = /^\/(invoices|items|customers)/;
 const MARKETPLACE_ROUTES_REGEX = /^\/route\/(payments|transfers|reversals|accounts)/;
 const PAYMENTLINKS_ROUTES_REGEX = /^\/paymentlinks(\/batchuploads.*)?/;
-const SUBSCRIPTIONS_ROUTES_REGEX = /^\/(subscriptions|plans)/;
+const SUBSCRIPTIONS_ROUTES_REGEX = /^\/(subscriptions|plans|addons)/;
 
 @withRouter
 export default class Sidebar extends Component {
@@ -277,7 +277,7 @@ export default class Sidebar extends Component {
                   />
                   <MainNavLink
                     label="Smart Collect"
-                    icon="icon icon-account-balance text-primary"
+                    icon="icon icon-account-balance text-danger"
                     to="/virtualaccounts"
                     notMyRole="sellerapp support"
                     isNew={true}

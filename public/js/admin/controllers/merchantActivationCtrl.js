@@ -61,18 +61,18 @@ app.controller('MerchantActivationCtrl', [
     };
 
     String.prototype.humanize = function() {
-      var word =  this.replace(/_/g,' ')
-                      .split(' ')
-                      .map(function(str,index) {
-                        if(index === 0) {
-                          return (str.charAt(0).toUpperCase() + str.slice(1));
-                        }
-                        return str;
-                      })
-                      .join(" ");
+      var word = this.replace(/_/g, ' ')
+        .split(' ')
+        .map(function(str, index) {
+          if (index === 0) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+          }
+          return str;
+        })
+        .join(' ');
 
       return word;
-    }
+    };
 
     function getOnboardingResponses() {
       var data = {
@@ -91,10 +91,7 @@ app.controller('MerchantActivationCtrl', [
         .success(function(data) {
           if (data.success) {
             $scope['onboarding'] = {};
-            angular.forEach(data.data, function(
-              value,
-              key
-            ) {
+            angular.forEach(data.data, function(value, key) {
               $scope['onboarding'][key.humanize()] = value;
             });
           } else {

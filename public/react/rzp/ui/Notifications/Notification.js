@@ -4,6 +4,7 @@ const NOTIFICATION_TYPES = {
   success: 'Notification--success',
   error: 'Notification--error',
   info: 'Notification--info',
+  neutral: 'Notification--neutral',
 };
 
 class Notification extends Component {
@@ -64,10 +65,14 @@ class Notification extends Component {
         {typeof message === 'function'
           ? message()
           : Array.isArray(message)
-              ? <ul class="list-unstyled">
-                  {message.map((msg, idx) => <li key={idx}>{msg}</li>)}
-                </ul>
-              : message}
+            ? <ul class="list-unstyled">
+                {message.map((msg, idx) =>
+                  <li key={idx}>
+                    {msg}
+                  </li>
+                )}
+              </ul>
+            : message}
         {showClose && <i class="icon icon-close" onClick={this.close} />}
       </div>
     );
