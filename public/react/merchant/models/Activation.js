@@ -70,8 +70,19 @@ const activationStepMap = {
   ],
 };
 
-// Used for marketplace accounts
+// Used for marketplace linked accounts
 const accountStepMap = {
+  1: ['business_type', 'business_name'],
+  2: [
+    'bank_branch_ifsc',
+    'bank_account_number',
+    'bank_account_type',
+    'bank_account_name',
+  ],
+};
+
+// Used for marketplace linked accounts that require KYC
+const accountStepMapWithKYC = {
   1: ['business_type', 'business_name', 'company_pan', 'promoter_pan'],
   2: [
     'bank_branch_ifsc',
@@ -140,15 +151,23 @@ export default class Activation extends Entity {
     data.activated = data.activated ? 1 : 0;
     data.files = getFileDetails(data);
 
-    let stepMap = this.accountId ? accountStepMap : activationStepMap;
+    let linkedAccountKyc = data.need_kyc || 0;
+    let stepMap = {};
+    if (this.accountId) {
+      stepMap = linkedAccountKyc ? accountStepMapWithKYC : accountStepMap;
+    } else {
+      stepMap = activationStepMap;
+    }
+
     let steps = Object.keys(stepMap).map(step => +step);
     if (data.can_submit) {
       data.steps_finished = steps;
     } else {
-      let requiredFields = typeof data.verification !== 'undefined' &&
+      let requiredFields =
+        typeof data.verification !== 'undefined' &&
         typeof data.verification.required_fields !== 'undefined'
-        ? data.verification.required_fields
-        : [];
+          ? data.verification.required_fields
+          : [];
 
       let unfinishedSteps = requiredFields.reduce((prev, curr) => {
         let step = steps.find(step => stepMap[step].indexOf(curr) > -1);

@@ -147,7 +147,10 @@ return [
             'url'       => 'payments/{id}/refund',
             'routeName' => 'post_refund'
         ],
-
+        'payment_transfer'                  => [
+            'url'       => 'payments/{id}/transfers',
+            'routeName' => 'post_transfer'
+        ],
         // Orders
         'order_fetch'                       => [
             'url'       => 'orders',
@@ -355,6 +358,11 @@ return [
             'routeName' => 'marketplace_read'
         ],
 
+        'transfer_edit'                     => [
+            'url'       => 'transfers/{id}',
+            'routeName' => 'marketplace_edit'
+        ],
+
         // Reversals
         'reversal_fetch_multiple'           => [
             'url'       => 'reversals',
@@ -509,6 +517,19 @@ return [
         'addon_fetch_multiple'           => 'addons',
         'addons_fetch_due'               => 'subscriptions/{subscription_id}/addons/due',
         'addon_delete'                   => 'addons/{addon_id}'
+
+        // Feature onboarding responses
+        'feature_onboarding_fetch_all_responses' => 'feature/onboarding/responses',
+
+        // Onboarding
+        'feature_onboarding_create' => [
+            'url'       => 'feature/onboarding/{feature}',
+            'routeName' => 'feature_onboarding_create'
+        ],
+        'feature_onboarding_fetch_responses' => [
+            'url'       => 'feature/onboarding/{feature}/responses',
+            'routeName' => 'feature_onboarding_fetch_responses'
+        ],
     ],
 
     // auth

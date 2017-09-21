@@ -81,7 +81,7 @@ export default class RefundModal extends Component {
   componentWillMount() {
     let payment = this.props.payment;
 
-    if (this.props.user.tags.indexOf('Marketplace') !== -1) {
+    if (this.props.user.isMarketplaceEnabled) {
       this.props.fetchTransfers(payment);
     }
 
@@ -141,9 +141,11 @@ export default class RefundModal extends Component {
                 message: 'Payment refunded',
                 closeTimeout: 5000,
               });
-              this.props.fetchPayment(payment.id).then(payment => {
-                this.props.fetchRefunds(payment);
-              });
+
+              if (typeof this.props.onRefund === 'function') {
+                this.props.onRefund();
+              }
+
               this.props.closeModal();
             })
             .catch(({ errors }) => {

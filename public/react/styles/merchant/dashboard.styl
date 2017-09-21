@@ -96,7 +96,7 @@
   padding-top: 8px;
   margin: 0px auto;
 
-  // This is only needed for desktop
+// This is only needed for desktop
   @media(min-width: 992px) {
     &:before {
       content: '';
@@ -151,31 +151,9 @@
       line-height: 36px;
     }
 
-    .custom-icon {
-      position: absolute;
-      z-index: 1;
-      color: #e0e0e0;
-      pointer-events: none;
-    }
-    .custom-select .custom-icon {
-      top: 8px;
-      left: 8px;
-      font-size: 20px;
-    }
     .custom-date .custom-icon {
-      top: 10px;
+      top: 12px;
       right: 10px;
-    }
-
-    .typeAheadSkin {
-      position: absolute;
-      z-index: 2;
-      background-color: rgb(255, 255, 255);
-      top: 10px;
-      width: 87%;
-      margin-left: 30px;
-      pointer-events none;
-      font-size: 12px;
     }
 
     .PowerSelect__TriggerInput {
@@ -193,7 +171,7 @@
     .form-element {
       margin-bottom 16px;
 
-      //<select> has default radius which can't be changed using CSS. So, set parent as .form-control and don't add .form-control to <select>
+    //<select> has default radius which can't be changed using CSS. So, set parent as .form-control and don't add .form-control to <select>
       .fix-select {
         background: transparent;
         border: none;
@@ -223,9 +201,49 @@
   }
 }
 
+.custom-icon {
+  position: absolute;
+  z-index: 1;
+  color: #e0e0e0;
+  pointer-events: none;
+}
+
+.typeAheadSkin {
+  position: absolute;
+  z-index: 2;
+  background-color: rgb(255, 255, 255);
+  top: 10px;
+  width: 87%;
+  margin-left: 30px;
+  pointer-events none;
+  font-size: 12px;
+}
+
+
+.transfers-powerselect + .typeAheadSkin {
+  margin-left: 10px;
+}
+
+.custom-select .custom-icon {
+  top: 11px;
+  left: 8px;
+  font-size: 20px;
+}
+
+
 // Onboarding Card
 
-.onboarding-card.media {
+.media.onboarding-card.new-features {
+  > .media-body {
+    max-width: 100%;
+    padding: 24px;
+  }
+  div.new-products-row {
+    height: 140px;
+  }
+}
+
+.onboarding-card.media { 
   background-color: #fff;
   margin-bottom: 20px;
   box-shadow: 0 0 8px 0 rgba(0,0,0,0.16);
@@ -287,6 +305,43 @@
     }
   }
 
+  div.new-products-row {
+
+    height: 160px;
+
+    div.product-item {
+      height: 100%;
+      padding-left: 10px;
+      display: inline-block;
+     
+      &:first-child {
+        padding-left: 0;
+      }
+    }
+
+    div.media {
+
+      height: 100%;
+      color: #58666e;
+      border-radius: 2px;
+      background-color: #FAFAFA;
+      padding: 14px;
+      border: 1px solid #D8E1E3;
+      vertical-align: top;
+
+      &:hover {
+        border: 1px solid #BAACEA;
+        background-color: #FAFBFF;
+      }
+
+      img.media-object {
+
+        width: 31px;
+        height: 31px;
+      }
+    }
+  } 
+
   .media-heading {
     font-size: 15px;
     font-weight: bold;
@@ -300,6 +355,11 @@
     background-color: #FAFAFA;
     padding: 14px;
     border: 1px solid #D8E1E3;
+
+    &:hover {
+      border: 1px solid #BAACEA;
+      background-color: #FAFBFF;
+    }
 
     a {
       text-decoration: underline;
@@ -394,6 +454,25 @@
   border-radius: 2px;
 }
 
+.transfers-powerselect {
+  input {
+    padding: 0 12px;
+  }
+}
+.transfers-powerselect__Menu {
+  .PowerSelect__Option {
+    border-bottom: 1px solid #eaeff0;
+    padding: 8px 0;
+    border-bottom: 1px solid #eaeff0;
+    line-height: 28px;
+  }
+
+  .heading {
+    color: #8991ae;
+    padding: 12px 12px 8px;
+  }
+}
+
 .custom-powerselect {
   border: 1px solid #cfdadd;
   border-radius: 3px;
@@ -421,7 +500,7 @@
   padding: 8px;
   border-bottom: 1px solid #ebecee;
 
-  // To highlight selected row
+// To highlight selected row
   &.active {
     background-color: rgba(255,255,215,0.75);
   }
@@ -478,8 +557,18 @@
     border-top: 1px solid #dfe0e2;
     padding: 12px;
 
+    &:before {
+      display: table;
+      content: " ";
+    }
+
+    &:after {
+      clear: both;
+    }
+
     .label--secondary {
       line-height: 21px;
+      float: right;
     }
   }
 }
@@ -528,5 +617,48 @@ div.data-table.has-panel {
   table {
     margin-bottom: 0;
     border-bottom: none;
+  }
+}
+
+@media (max-width: 996px) {
+  div.new-products-row {
+    height: auto !important;
+
+    div.product-item {
+      width: 100% !important;
+      height: auto !important;
+      margin-bottom: 10px;
+      padding: 0 !important;
+    }
+  }
+}
+
+div.feature-activation-banner {
+  padding: 20px 20px 0 20px;
+
+  div.media {
+    background-color: #fff;
+    border: 1px solid #e2e8ea;
+    padding: 15px;
+
+    div.media-body {
+      div.media-heading {
+        font-weight: bold;
+        font-size: 15px;
+      }
+    }
+
+    div.media-left {
+      padding-right: 15px;
+
+      img.media-object {
+        height: 100px;
+        width: auto;
+      }
+
+      @media (max-width $screen-sm-min) {
+        display: none;
+      }
+    }
   }
 }

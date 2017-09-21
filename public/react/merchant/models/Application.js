@@ -22,9 +22,12 @@ export default class Application extends GenericEntity {
 
     data.route_name = this.connectedListRouteName;
     return this.makeGenericAjaxCall({ data }).then(response => {
-      response.data.items = response.data.items.map(
-        item => new Application(item)
-      );
+      response.data.items = response.data.items.map(item => {
+        item.application.logo_url = this.formatLogoUrl(
+          item.application.logo_url
+        );
+        return new Application(item);
+      });
       return response;
     });
   }
@@ -33,6 +36,17 @@ export default class Application extends GenericEntity {
     return super.fetch(params).then(data => {
       data.logo_url = this.formatLogoUrl(data.logo_url);
       return { id: this.id, ...data };
+    });
+  }
+
+  fetchAll(params = {}) {
+    return super.fetchAll(params).then(response => {
+      response.data.items = response.data.items.map(item => {
+        item.logo_url = this.formatLogoUrl(item.logo_url);
+        return new Application(item);
+      });
+
+      return response;
     });
   }
 

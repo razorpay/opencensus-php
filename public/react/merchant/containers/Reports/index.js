@@ -174,7 +174,7 @@ export default class ReportsContainer extends Component {
       });
     }
 
-    if (user.tags.indexOf('Marketplace') !== -1) {
+    if (user.isMarketplaceEnabled) {
       this.entityOptions.push({
         value: 'transfer',
         id: 'transfer',

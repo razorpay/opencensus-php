@@ -133,7 +133,7 @@ export default class EntityDetailList extends Component {
           <span class="label--primary">
             {title}
           </span>
-          <span class="label--secondary" style={{ float: 'right' }}>
+          <span class="label--secondary">
             {subTitle}
           </span>
         </div>
