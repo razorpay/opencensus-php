@@ -37,14 +37,22 @@ export default class ActivationWizard extends Component {
 
   state = {
     selectedTabIndex: 0,
+    linkedAccountKyc: 0,
   };
 
   componentWillMount() {
+    this.setState({
+      linkedAccountKyc: this.props.data['need_kyc'] || 0,
+    });
+
     if (this.props.accountId) {
       this.activationForms = this.activationForms.filter(
         activationForm =>
           activationForm.name !== 'activationContactDetails' &&
-          activationForm.name !== 'activationWebsiteDetails'
+          activationForm.name !== 'activationWebsiteDetails' &&
+          (this.state.linkedAccountKyc === 0
+            ? activationForm.name !== 'activationDocumentUpload'
+            : true)
       );
     }
   }
@@ -132,6 +140,7 @@ export default class ActivationWizard extends Component {
                 pageTitle={form.pageTitle || form.title}
                 gotoTab={this.gotoTab}
                 accountId={accountId}
+                linkedAccountKyc={this.state.linkedAccountKyc}
               />
             </TabPanel>
           )}

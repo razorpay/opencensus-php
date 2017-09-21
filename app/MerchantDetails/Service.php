@@ -75,13 +75,16 @@ class Service extends Base\Service
     const STEP_MAP_ACCOUNT = [
             'business_type'               => 1,
             'business_name'               => 1,
-            'company_pan'                 => 1,
-            'promoter_pan'                => 1,
 
             'bank_branch_ifsc'            => 2,
             'bank_account_number'         => 2,
             'bank_account_type'           => 2,
             'bank_account_name'           => 2,
+    ];
+
+    const STEP_MAP_ACCOUNT_WITH_KYC = [
+            'company_pan'                 => 1,
+            'promoter_pan'                => 1,
 
             'address_proof_url'           => 3,
             'promoter_pan_url'            => 3,
@@ -119,6 +122,16 @@ class Service extends Base\Service
         'website_pricing'
     ];
 
+    /**
+     * @var bool
+     */
+    protected $linkedAccount;
+
+    /**
+     * @var bool
+     */
+    protected $linkedAccountKYCRequired;
+
     public function __construct()
     {
         $user = Auth::user();
@@ -130,7 +143,9 @@ class Service extends Base\Service
             $this->user = $user;
         }
 
-        $this->linked_account = false;
+        $this->linkedAccount = false;
+
+        $this->linkedAccountRequiresKYC = false;
     }
 
     public function fetchDetails($merchantId = null)
@@ -387,9 +402,24 @@ class Service extends Base\Service
         return $fileResponse;
     }
 
-    protected function isLinkedAccount() : bool
+    protected function isLinkedAccount(): bool
     {
-        return $this->linked_account;
+        return $this->linkedAccount;
+    }
+
+    protected function isLinkedAccountKYCRequired(): bool
+    {
+        return $this->linkedAccountKYCRequired;
+    }
+
+    public function setLinkedAccount(bool $linkedAccount)
+    {
+        $this->linkedAccount = $linkedAccount;
+    }
+
+    public function setLinkedAccountKYCRequired(bool $kycRequired)
+    {
+        $this->linkedAccountKYCRequired = $kycRequired;
     }
 
     public function getUrlKeys()
