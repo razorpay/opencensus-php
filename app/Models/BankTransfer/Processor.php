@@ -119,7 +119,7 @@ class Processor extends Base\Core
     {
         $paymentProcessor = new PaymentProcessor($this->merchant);
 
-        $this->repo->transaction(function() use (
+        $payment = $this->repo->transaction(function() use (
             $bankTransfer,
             $paymentProcessor)
         {
@@ -143,11 +143,13 @@ class Processor extends Base\Core
 
             $this->updateVirtualAccount($bankTransfer);
 
-            if ($bankTransfer->isExpected() === true)
-            {
-                $paymentProcessor->autoCapturePayment($payment);
-            }
+            return $payment;
         });
+
+        if ($bankTransfer->isExpected() === true)
+        {
+            $paymentProcessor->autoCapturePayment($payment);
+        }
     }
 
     /**

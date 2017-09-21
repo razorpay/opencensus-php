@@ -853,3 +853,6 @@ WHERE
     payments.gateway = "first_data" AND
     (payments.reference2 is NULL OR payments.reference2 = "00") AND
     payments.status != 'failed';
+
+UPDATE merchant_banks
+    SET bank_transfer=1;
