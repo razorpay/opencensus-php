@@ -505,6 +505,16 @@ return [
 
         // Feature onboarding responses
         'feature_onboarding_fetch_all_responses' => 'feature/onboarding/responses',
+
+        // Onboarding
+        'feature_onboarding_create' => [
+            'url'       => 'feature/onboarding/{feature}',
+            'routeName' => 'feature_onboarding_create'
+        ],
+        'feature_onboarding_fetch_responses' => [
+            'url'       => 'feature/onboarding/{feature}/responses',
+            'routeName' => 'feature_onboarding_fetch_responses'
+        ],
     ],
 
     // auth

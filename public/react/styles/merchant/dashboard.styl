@@ -227,7 +227,17 @@
 
 // Onboarding Card
 
-.onboarding-card.media {
+.media.onboarding-card.new-features {
+  > .media-body {
+    max-width: 100%;
+    padding: 24px;
+  }
+  div.new-products-row {
+    height: 140px;
+  }
+}
+
+.onboarding-card.media { 
   background-color: #fff;
   margin-bottom: 20px;
   box-shadow: 0 0 8px 0 rgba(0,0,0,0.16);
@@ -289,6 +299,43 @@
     }
   }
 
+  div.new-products-row {
+
+    height: 160px;
+
+    div.product-item {
+      height: 100%;
+      padding-left: 10px;
+      display: inline-block;
+     
+      &:first-child {
+        padding-left: 0;
+      }
+    }
+
+    div.media {
+
+      height: 100%;
+      color: #58666e;
+      border-radius: 2px;
+      background-color: #FAFAFA;
+      padding: 14px;
+      border: 1px solid #D8E1E3;
+      vertical-align: top;
+
+      &:hover {
+        border: 1px solid #BAACEA;
+        background-color: #FAFBFF;
+      }
+
+      img.media-object {
+
+        width: 31px;
+        height: 31px;
+      }
+    }
+  } 
+
   .media-heading {
     font-size: 15px;
     font-weight: bold;
@@ -302,6 +349,11 @@
     background-color: #FAFAFA;
     padding: 14px;
     border: 1px solid #D8E1E3;
+
+    &:hover {
+      border: 1px solid #BAACEA;
+      background-color: #FAFBFF;
+    }
 
     a {
       text-decoration: underline;
@@ -554,5 +606,48 @@ div.data-table.has-panel {
   table {
     margin-bottom: 0;
     border-bottom: none;
+  }
+}
+
+@media (max-width: 996px) {
+  div.new-products-row {
+    height: auto !important;
+
+    div.product-item {
+      width: 100% !important;
+      height: auto !important;
+      margin-bottom: 10px;
+      padding: 0 !important;
+    }
+  }
+}
+
+div.feature-activation-banner {
+  padding: 20px 20px 0 20px;
+
+  div.media {
+    background-color: #fff;
+    border: 1px solid #e2e8ea;
+    padding: 15px;
+
+    div.media-body {
+      div.media-heading {
+        font-weight: bold;
+        font-size: 15px;
+      }
+    }
+
+    div.media-left {
+      padding-right: 15px;
+
+      img.media-object {
+        height: 100px;
+        width: auto;
+      }
+
+      @media (max-width $screen-sm-min) {
+        display: none;
+      }
+    }
   }
 }

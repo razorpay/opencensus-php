@@ -17,10 +17,21 @@ export default class MainNavLink extends Component {
       apiFeatureEnabled,
       icon,
       label,
-      beta = false,
+      isNew,
+      isBeta = false,
       baseLocation,
       ...linkProps
     } = this.props;
+
+    let tag;
+
+    if (isBeta) {
+      tag = (
+        <span class="badge bg-primary-fuse pull-right hidden-xs">beta</span>
+      );
+    } else if (isNew) {
+      tag = <span class="badge bg-success pull-right hidden-xs">new</span>;
+    }
 
     return (
       <ShowWhen
@@ -37,11 +48,7 @@ export default class MainNavLink extends Component {
         >
           <i class={icon} />
           {label}
-          {beta
-            ? <span class="badge bg-primary-fuse pull-right hidden-xs">
-                beta
-              </span>
-            : null}
+          {tag}
         </NavLink>
       </ShowWhen>
     );
