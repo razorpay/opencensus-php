@@ -47,14 +47,14 @@ export default ({ payment, card = {} }) => {
           </span>}
       </Definition>
     );
-  } else if (paymentMethod === 'card') {
+  } else if (paymentMethod === 'card' || paymentMethod === 'emi') {
     if (Object.keys(card) === 0 || card.loading) {
       return <PlaceholderLoader />;
     }
 
     const cardTitle = (
         <span>
-          {cardDetails.emi ? 'EMI on ' : ''}
+          {paymentMethod === 'emi' ? 'EMI on ' : ''}
           {cardDetails.international ? 'International ' : 'Domestic '}
           {cardDetails.type !== 'unknown' && titleCase(cardDetails.type + ' ')}
           Card

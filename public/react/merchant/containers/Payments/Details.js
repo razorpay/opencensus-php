@@ -44,7 +44,7 @@ export default class PaymentDetailsContainer extends Component {
         this.props.fetchRefunds(payment);
       }
 
-      if (payment.method === 'card') {
+      if (payment.method === 'card' || payment.method === 'emi') {
         this.props.fetchCardDetails(payment);
       }
 
