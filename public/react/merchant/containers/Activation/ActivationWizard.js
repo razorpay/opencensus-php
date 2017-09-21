@@ -41,7 +41,7 @@ export default class ActivationWizard extends Component {
 
   componentWillMount() {
     this.setState({
-      linkedAccountKyc: this.props.data['linked_account_kyc'] || 0,
+      linkedAccountKyc: this.props.data['need_kyc'] || 0,
     });
 
     if (this.props.accountId) {

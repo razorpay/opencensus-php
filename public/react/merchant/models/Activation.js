@@ -151,7 +151,7 @@ export default class Activation extends Entity {
     data.activated = data.activated ? 1 : 0;
     data.files = getFileDetails(data);
 
-    let linkedAccountKyc = data.linked_account_kyc || 0;
+    let linkedAccountKyc = data.need_kyc || 0;
     let stepMap = {};
     if (this.accountId) {
       stepMap = linkedAccountKyc ? accountStepMapWithKYC : accountStepMap;
