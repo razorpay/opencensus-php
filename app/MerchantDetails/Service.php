@@ -18,18 +18,6 @@ use Illuminate\Support\Facades\App as App;
 
 class Service extends Base\Service
 {
-    const UPLOAD_KEYS = [
-        'business_proof_url'   => 'business_proof',
-        'business_pan_url'     => 'business_pan_proof',
-        'address_proof_url'    => 'address_proof',
-        'promoter_address_url' => 'promoter_address_proof',
-    ];
-
-    const UPLOAD_KEYS_ACCOUNT = [
-        'address_proof_url'    => 'address_proof',
-        'promoter_pan_url'     => 'promoter_pan_proof',
-    ];
-
     const PRE_SIGNUP_FIELDS = [
         'business_type',
         'transaction_volume',
@@ -50,16 +38,6 @@ class Service extends Base\Service
         'website_pricing'
     ];
 
-    /**
-     * @var bool
-     */
-    protected $linkedAccount;
-
-    /**
-     * @var bool
-     */
-    protected $linkedAccountKYCRequired;
-
     public function __construct()
     {
         $user = Auth::user();
@@ -70,10 +48,6 @@ class Service extends Base\Service
 
             $this->user = $user;
         }
-
-        $this->linkedAccount = false;
-
-        $this->linkedAccountRequiresKYC = false;
     }
 
     public function fetchDetails($merchantId = null)
@@ -194,26 +168,6 @@ class Service extends Base\Service
         return array_filter(array_intersect_key(
             $merchantDetails, array_flip(self::WEBSITE_URLS)
         ));
-    }
-
-    protected function isLinkedAccount(): bool
-    {
-        return $this->linkedAccount;
-    }
-
-    protected function isLinkedAccountKYCRequired(): bool
-    {
-        return $this->linkedAccountKYCRequired;
-    }
-
-    public function setLinkedAccount(bool $linkedAccount)
-    {
-        $this->linkedAccount = $linkedAccount;
-    }
-
-    public function setLinkedAccountKYCRequired(bool $kycRequired)
-    {
-        $this->linkedAccountKYCRequired = $kycRequired;
     }
 
     public function getUrlKeys()
