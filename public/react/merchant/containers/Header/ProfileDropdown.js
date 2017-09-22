@@ -1,7 +1,6 @@
 import { Component } from 'react';
 import { connect } from 'react-redux';
 import Dropdown, { DropdownTrigger, DropdownContent } from 'rzp/ui/Dropdown';
-import NewUIOnboardingDialog from 'merchant/components/NewUIOnboardingDialog';
 import CustomClipboard from 'rzp/ui/Clipboard/Custom';
 import { openModal, closeModal } from 'rzp/modules/modals';
 import { logout, showOrHideTour } from 'merchant/modules/session';
