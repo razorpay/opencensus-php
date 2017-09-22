@@ -266,6 +266,7 @@ export default class Sidebar extends Component {
                     icon="icon icon-people text-warning"
                     to="/customers"
                     featureEnabled="Invoice"
+                    apiFeatureEnabled={['subscriptions', 'virtual_accounts']}
                     notMyRole="sellerapp"
                   />
                   <MainNavLink
