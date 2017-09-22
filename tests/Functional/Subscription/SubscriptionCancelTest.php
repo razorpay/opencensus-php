@@ -170,22 +170,9 @@ class SubscriptionCancelTest extends TestCase
 
         $this->makeCancelRequest($subscription['id']);
 
-        Carbon::setTestNow();
+        $invoice = $this->chargeSubscriptionInvoiceManually($invoice);
 
-        try
-        {
-            $this->chargeSubscriptionInvoiceManually($invoice);
-        }
-        catch (BadRequestException $ex)
-        {
-            $this->assertEquals('BAD_REQUEST_SUBSCRIPTION_NOT_IN_ACTIVE_OR_HALTED_STATE', $ex->getCode());
-
-            Carbon::setTestNow();
-
-            return;
-        }
-
-        $this->assertTrue(false);
+        $this->assertEquals('paid', $invoice['status']);
 
         Carbon::setTestNow();
     }
@@ -328,22 +315,5 @@ class SubscriptionCancelTest extends TestCase
         $this->assertEquals('active', $subscription['status']);
 
         Carbon::setTestNow();
-    }
-
-    protected function makeCancelRequest(string $subscriptionId, $futureCancellation = null)
-    {
-        $testData = $this->testData['testSubscriptionCancel'];
-
-        if ($futureCancellation !== null)
-        {
-            $testData = $this->testData['testSubscriptionCancelFuture'];
-            $testData['request']['content']['cancel_at_cycle_end'] = $futureCancellation;
-        }
-
-        $testData['request']['url'] = '/subscriptions/' . $subscriptionId . '/cancel';
-
-        $this->ba->privateAuth();
-
-        return $this->startTest($testData);
     }
 }

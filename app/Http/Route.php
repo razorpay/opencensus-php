@@ -20,7 +20,8 @@ final class Route
         'checkout'                                => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
         'checkout_public'                         => ['get',      'checkout/public',                                'MerchantController@getCheckoutPublic'                              ],
         'checkout_onyx'                           => ['post',     'checkout/onyx',                                  'PublicController@postCallbackUrlWithParams'                        ],
-        'checkout_hosted'                         => ['post',     'checkout/hosted',                                'PublicController@postCheckoutHosted'                               ],
+        'checkout_hosted'                         => ['post',     'checkout/hosted',                                'PublicController@renderCheckoutHosted'                             ],
+        'checkout_hosted_get'                     => ['get',      'checkout/hosted',                                'PublicController@renderCheckoutHosted'                             ],
         'merchant_methods'                        => ['get',      'methods',                                        'MerchantController@getPaymentMethods'                              ],
         'merchant_methods_downtime'               => ['get',      'methods/downtime',                               'MerchantController@getPublicGatewayDowntimeData'                   ],
         'merchant_checkout_preferences'           => ['get',      'preferences',                                    'MerchantController@getCheckoutPreferences'                         ],
@@ -199,6 +200,7 @@ final class Route
         'merchant_activation_upload_file_admin'   => ['post',     'merchant/activation/{id}/files',                 'MerchantController@postUploadActivationFileAdmin'                  ],
         'merchant_activation_update'              => ['put',      'merchant/activation/{id}/update',                'MerchantController@putEditMerchantDetailsAfterLock'                ],
         'merchant_activation_migrate'             => ['post',     'merchant/activation/migrate',                    'MerchantController@postMerchantDetailMigrate'                      ],
+        'merchant_batches'                        => ['post',     'merchant/{id}/batches',                          'MerchantController@createBatches'                                  ],
         'pricing_create_plan'                     => ['post',     'pricing',                                        'PricingController@postCreatePricingPlan'                           ],
         'pricing_upload_plan'                     => ['post',     'pricing/upload',                                 'PricingController@postUploadPricingPlan'                           ],
         'pricing_get_plans'                       => ['get',      'pricing',                                        'PricingController@getPricingPlans'                                 ],
@@ -345,6 +347,7 @@ final class Route
         'invoice_remove_line_item'                => ['delete',   'invoices/{id}/line_items/{lineItemId}',          'InvoiceController@removeLineItem'                                  ],
         'invoice_send_notifications'              => ['post',     'invoices/notify',                                'InvoiceController@sendNotifications'                               ],
         'invoice_send_notification'               => ['post',     'invoices/{id}/notify/{medium}',                  'InvoiceController@sendNotification'                                ],
+        'invoice_send_notification_private'       => ['post',     'invoices/{id}/notify_by/{medium}',               'InvoiceController@sendNotification'                                ],
         'invoice_notification_update'             => ['put',      'invoices/{medium}',                              'InvoiceController@updateInvoiceNotificationStatus'                 ],
         'invoice_get_status'                      => ['get',      'invoices/{id}/status',                           'InvoiceController@getInvoiceStatus'                                ],
         'invoice_view_live'                       => ['get',      'l/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
@@ -393,6 +396,7 @@ final class Route
         'subscription_fetch'                      => ['get',      'subscriptions/{id}',                             'SubscriptionController@getSubscription'                            ],
         'subscription_fetch_multiple'             => ['get',      'subscriptions',                                  'SubscriptionController@getSubscriptions'                           ],
         'subscriptions_charge_invoices'           => ['post',     'subscriptions/charge/invoices',                  'SubscriptionController@postCreateAndChargeSubscriptionInvoices'    ],
+        'subscription_test_charge'                => ['post',     'subscriptions/{id}/charge',                      'SubscriptionController@postTestChargeSubscription'                 ],
         'subscriptions_retry'                     => ['post',     'subscriptions/retry',                            'SubscriptionController@postRetrySubscriptions'                     ],
         'subscriptions_expire'                    => ['post',     'subscriptions/expire',                           'SubscriptionController@postExpireSubscriptions'                    ],
         'subscription_manual_retry'               => ['post',     'invoices/{invoice_id}/charge',                   'SubscriptionController@postChargeSubscriptionInvoiceManually'      ],
@@ -618,7 +622,14 @@ final class Route
         'oauth_application_delete'                => ['delete',   'oauth/applications/{id}',                        'OAuthApplicationController@delete'                                 ],
         'oauth_merchant_notify'                   => ['post',     'oauth/notify/{type}',                            'MerchantController@sendOAuthNotification'                          ],
         'oauth_application_update'                => ['post',     'oauth/applications/{id}',                        'OAuthApplicationController@update'                                 ],
+
         'merchant_analytics'                      => ['post',     'merchant/analytics',                             'MerchantController@postAnalytics'                                  ],
+
+        // Feature onboarding routes
+        'feature_onboarding_fetch_questions'      => ['get',      'feature/onboarding',                            'FeatureController@getOnboardingQuestions',                          ],
+        'feature_onboarding_create'               => ['post',     'feature/onboarding/{feature}',                  'FeatureController@postOnboardingResponses',                         ],
+        'feature_onboarding_fetch_responses'      => ['get',      'feature/onboarding/{feature}/responses',        'FeatureController@getOnboardingResponses',                          ],
+        'feature_onboarding_fetch_all_responses'  => ['get',      'feature/onboarding/responses',                  'FeatureController@getOnboardingResponses',                          ],
     ];
 
     public static $public = [
@@ -759,6 +770,7 @@ final class Route
         'invoice_issue',
         'invoice_cancel',
         'invoice_delete',
+        'invoice_send_notification_private',
         'item_create',
         'item_fetch',
         'item_fetch_multiple',
@@ -1074,6 +1086,7 @@ final class Route
         'invoice_remove_line_item_bulk',
         'invoice_remove_line_item',
         'subscription_manual_retry',
+        'subscription_test_charge',
         'subscription_fetch_due_addons',
         'merchant_get_features',
         'merchant_update_features',
@@ -1104,6 +1117,10 @@ final class Route
         'oauth_application_update',
         'merchant_analytics',
         'reports_refund_irctc',
+        'feature_onboarding_fetch_questions',
+        'feature_onboarding_create',
+        'feature_onboarding_fetch_responses',
+        'feature_onboarding_fetch_all_responses',
     ];
 
     // These will run on internal auth with the assurance
@@ -1187,6 +1204,7 @@ final class Route
         'merchant_invoice_add_bulk',
         'setl_retry',
         'merchant_activation_files',
+        'merchant_batches',
     ];
 
     public static $routePermission = [
@@ -1309,6 +1327,7 @@ final class Route
         'merchant_invoice_update_gstin'    => Permission::EDIT_MERCHANT_INVOICE_GSTIN,
         'merchant_details_fetch'           => '*',
         'setl_retry'                       => Permission::RETRY_SETTLEMENT,
+        'merchant_batches'                 => Permission::MERCHANT_BATCH_UPLOAD,
         'merchant_invoice_add_bulk'        => '*',
         'payment_dispute_create'           => Permission::CREATE_DISPUTE,
         'dispute_edit'                     => Permission::EDIT_DISPUTE,
@@ -1345,6 +1364,7 @@ final class Route
         'gateway_downtime_source_webhook',
         'checkout_onyx',
         'checkout_hosted',
+        'checkout_hosted_get',
         'mock_event_tracker',
         'upi_npci_request',
         'upi_zero_call',

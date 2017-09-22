@@ -317,7 +317,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Delete operation cannot be performed on the addon',
+                    'description' => 'Delete operation cannot be performed on the addon.',
                 ],
             ],
             'status_code' => 400,
@@ -1162,8 +1162,8 @@ return [
                         'plan_id'           => 'plan_1000000000plan',
                         'customer_id'       => 'cust_100000customer',
                         'status'            => 'pending',
-                        'current_start'     => 1516386600,
-                        'current_end'       => 1521484200,
+                        'current_start'     => 1521484200,
+                        'current_end'       => 1526754600,
                         'ended_at'          => null,
                         'quantity'          => 1,
                         'notes'             => [],
@@ -1196,8 +1196,8 @@ return [
                         'plan_id'           => 'plan_1000000000plan',
                         'customer_id'       => 'cust_100000customer',
                         'status'            => 'pending',
-                        'current_start'     => 1516386600,
-                        'current_end'       => 1521484200,
+                        'current_start'     => 1521484200,
+                        'current_end'       => 1526754600,
                         'ended_at'          => null,
                         'quantity'          => 1,
                         'notes'             => [],
@@ -1370,8 +1370,6 @@ return [
                         'plan_id'           => 'plan_1000000000plan',
                         'customer_id'       => 'cust_100000customer',
                         'status'            => 'active',
-                        'current_start'     => null,
-                        'current_end'       => null,
                         'ended_at'          => null,
                         'quantity'          => 1,
                         'notes'             => [],
@@ -1383,6 +1381,8 @@ return [
                         // first activated. In first activated we fire
                         // webhook first and then make a charge, unlike
                         // other active fires.
+                        // 'current_start'     => null,
+                        // 'current_end'       => null,
                         // 'current_start' => NULL
                         // 'current_end' => NULL
                         // 'paid_count' => integer 0
@@ -1422,6 +1422,38 @@ return [
                 ]
             ]
         ]
+    ],
+
+    'testSubscriptionCardChangeOnAuthenticated' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Cannot change card for the subscription at this state',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SUBSCRIPTION_CARD_CHANGE_NOT_ALLOWED,
+        ],
+    ],
+
+    'testSubscriptionHaltedCardChangeFail' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'The server encountered an error. The incident has been reported to admins.',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\RuntimeException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
+        ],
     ],
 
     'subscriptionWebhookDataForFutureCancel' => [

@@ -47,14 +47,14 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'IFSC is of invalid length',
-                $attribute,
-                $payerIfsc);
+                Entity::PAYER_IFSC,
+                $input[Entity::PAYER_IFSC]);
         }
     }
 
-    public function validateRefundIsAllowed(Payment\Entity $payment)
+    public function validateRefundIsAllowed()
     {
-        $bankTransfer = (new Repository)->findByPaymentId($payment->getId());
+        $bankTransfer = $this->entity;
 
         // Refunds currently not permitted for IMPS payments
         if ($bankTransfer->getMode() === Mode::IMPS)

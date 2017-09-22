@@ -56,6 +56,10 @@ class CreateSubscription extends Migration
 
             $table->tinyInteger(Entity::CUSTOMER_NOTIFY);
 
+            $table->tinyInteger(Entity::TYPE)
+                  ->unsigned()
+                  ->default(0);
+
             $table->text(Entity::NOTES);
 
             $table->integer(Entity::CANCEL_AT)

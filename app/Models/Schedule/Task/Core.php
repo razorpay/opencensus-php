@@ -38,7 +38,7 @@ class Core extends Base\Core
      * @param Base\Entity     $entity
      * @param                 $input
      *
-     * @return $this
+     * @return Entity
      * @throws \Exception
      */
     public function createOrUpdate(Merchant\Entity $merchant, Base\Entity $entity, $input)
