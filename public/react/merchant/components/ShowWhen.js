@@ -5,7 +5,6 @@ import { findBy } from 'rzp/utils/rzp-utils';
 @connect(state => {
   return {
     ...state.session,
-    features: state.config.features,
   };
 }, null)
 export default class ShowWhen extends Component {
@@ -50,7 +49,8 @@ export default class ShowWhen extends Component {
         apiFeatureEnabled.toLowerCase()
       );
 
-      if (!feature || !feature.value) {
+      // Feature doesn't exist OR feature has value false. Latter shouldn't happen but just for fallback
+      if (!feature || (feature && !feature.value)) {
         return null;
       }
     }
