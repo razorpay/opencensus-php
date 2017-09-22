@@ -8,14 +8,12 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
-use RZP\Models\Merchant;
 use RZP\Models\Merchant\Constants;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Detail\ValidationFields;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Action as Action;
-use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 
 class Service extends Base\Service
