@@ -42,7 +42,7 @@ class Core extends Base\Core
             $assignedFeatureNames,
             $shouldSync);
 
-        $this->notifyOnSlack($feature);
+        $this->notifyFeatureUpdateOnSlack($feature);
 
         return $feature;
     }
@@ -74,7 +74,7 @@ class Core extends Base\Core
 
         $this->repo->feature->deleteAndSyncIfApplicableOrFail($feature, $shouldSync);
 
-        $this->notifyOnSlack($feature, true);
+        $this->notifyFeatureUpdateOnSlack($feature, true);
     }
 
     /**
@@ -83,7 +83,7 @@ class Core extends Base\Core
      * @param Entity $feature
      * @param bool   $featureDeleted
      */
-    protected function notifyOnSlack(Entity $feature, bool $featureDeleted = false)
+    protected function notifyFeatureUpdateOnSlack(Entity $feature, bool $featureDeleted = false)
     {
         $message = $feature->getDashboardEntityLinkForSlack($feature->getName());
 
@@ -105,6 +105,28 @@ class Core extends Base\Core
             [],
             [
                 'channel'  => Config::get('slack.channels.operations_log'),
+                'username' => 'Jordan Belfort',
+                'icon'     => ':boom:'
+            ]
+        );
+    }
+
+    /**
+     * Notifies slack about the new onboarding responses submitted
+     *
+     * @param string $featureName
+     */
+    public function notifyOnboardingResponseCreationOnSlack(string $featureName)
+    {
+        $message = $this->merchant->getDashboardEntityLinkForSlack();
+
+        $message .= ' has submitted responses for activating ' . $featureName ;
+
+        $this->app['slack']->queue(
+            $message,
+            [],
+            [
+                'channel'  => Config::get('slack.channels.activations_prod_log'),
                 'username' => 'Jordan Belfort',
                 'icon'     => ':boom:'
             ]
