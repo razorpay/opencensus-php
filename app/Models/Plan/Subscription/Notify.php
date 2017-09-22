@@ -105,7 +105,7 @@ class Notify extends Processor\Notify
         {
             $mailable = new $mailableClass($this->template);
 
-            if ($this->isCustomerMailEnabledForMerchant($mailable) === true)
+            if ($this->isCustomerMailEnabledForMerchant() === true)
             {
                 Mail::queue($mailable);
             }
@@ -115,7 +115,7 @@ class Notify extends Processor\Notify
         {
             $mailable = new $mailableClass($this->template, true);
 
-            if ($this->isMerchantMailEnabled($mailable) === true)
+            if ($this->isMerchantMailEnabledForMerchant() === true)
             {
                 Mail::queue($mailable);
             }
@@ -263,9 +263,8 @@ class Notify extends Processor\Notify
     {
         $data = [
             'subscription' => [
-                Subscription\Entity::ID            => $this->subscription->getId(),
+                Subscription\Entity::ID            => $this->subscription->getPublicId(),
                 Subscription\Entity::STATUS        => $this->subscription->getStatus(),
-                Subscription\Entity::PUBLIC_ID     => $this->subscription->getPublicId(),
                 Subscription\Entity::TYPE          => $this->subscription->getType(),
                 Subscription\Entity::CHARGE_AT     => $this->formatTime($this->subscription->getChargeAt()),
                 Subscription\Entity::CANCEL_AT     => $this->formatTime($this->subscription->getCancelAt()),
@@ -370,15 +369,16 @@ class Notify extends Processor\Notify
 
     protected function isTimestamp($key, $value)
     {
-        return false;
+        if (substr($key, -3) !== '_at')
+        {
+            return false;
+        }
+
+        return ((is_numeric($value)) and
+            ($value <= PHP_INT_MAX) and
+            ($value >= -PHP_INT_MAX));
     }
 
-    /**
-     * Decides if we send a mail to customer for a payment event
-     *
-     *
-     * @return bool
-     */
     protected function isCustomerMailEnabledForMerchant()
     {
         // If the merchant has disabled customer emails
@@ -388,7 +388,14 @@ class Notify extends Processor\Notify
             return false;
         }
 
-        return $this->isEnabled();
+        return true;
+    }
+
+    protected function isMerchantMailEnabledForMerchant()
+    {
+        $merchantTransactionReportEmail = $this->merchant->getTransactionReportEmail();
+
+        return (empty($merchantTransactionReportEmail) === false);
     }
 
     protected function getMailableClass(string $event)

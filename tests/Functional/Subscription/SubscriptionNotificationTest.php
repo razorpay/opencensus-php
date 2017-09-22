@@ -72,6 +72,7 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertEquals('authenticated', $data['subscription']['status']);
             $this->assertEquals(0, $data['subscription']['type']);
             $this->assertEquals('20 Jan 2018', $data['subscription']['charge_at']);
+            $this->assertNotNull(0, $data['subscription']['id']);
             $this->assertStringStartsWith(
                 'https://api.razorpay.com/v1/t/subscriptions',
                 $data['subscription']['hosted_url']);
@@ -116,6 +117,10 @@ class SubscriptionNotificationTest extends TestCase
 
             $this->assertEquals('active', $data['subscription']['status']);
             $this->assertEquals(1, $data['subscription']['type']);
+            $this->assertNotNull(0, $data['subscription']['id']);
+            $this->assertStringStartsWith(
+                'https://api.razorpay.com/v1/t/subscriptions',
+                $data['subscription']['hosted_url']);
 
             $this->assertEquals('test plan', $data['plan_item']['name']);
             $this->assertEquals('Some item description', $data['plan_item']['description']);
@@ -161,6 +166,10 @@ class SubscriptionNotificationTest extends TestCase
 
             $this->assertEquals('authenticated', $data['subscription']['status']);
             $this->assertEquals(2, $data['subscription']['type']);
+            $this->assertNotNull(0, $data['subscription']['id']);
+            $this->assertStringStartsWith(
+                'https://api.razorpay.com/v1/t/subscriptions',
+                $data['subscription']['hosted_url']);
 
             $this->assertEquals('10000000000000', $data['merchant']['id']);
 
@@ -201,6 +210,10 @@ class SubscriptionNotificationTest extends TestCase
 
             $this->assertEquals('active', $data['subscription']['status']);
             $this->assertEquals(3, $data['subscription']['type']);
+            $this->assertNotNull(0, $data['subscription']['id']);
+            $this->assertStringStartsWith(
+                'https://api.razorpay.com/v1/t/subscriptions',
+                $data['subscription']['hosted_url']);
 
             $this->assertEquals('10000000000000', $data['merchant']['id']);
 
@@ -246,6 +259,10 @@ class SubscriptionNotificationTest extends TestCase
 
             $this->assertEquals('active', $data['subscription']['status']);
             $this->assertEquals(0, $data['subscription']['type']);
+            $this->assertNotNull(0, $data['subscription']['id']);
+            $this->assertStringStartsWith(
+                'https://api.razorpay.com/v1/t/subscriptions',
+                $data['subscription']['hosted_url']);
 
             $this->assertEquals('10000000000000', $data['merchant']['id']);
 
@@ -293,6 +310,10 @@ class SubscriptionNotificationTest extends TestCase
 
             $this->assertEquals('active', $data['subscription']['status']);
             $this->assertEquals(0, $data['subscription']['type']);
+            $this->assertNotNull(0, $data['subscription']['id']);
+            $this->assertStringStartsWith(
+                'https://api.razorpay.com/v1/t/subscriptions',
+                $data['subscription']['hosted_url']);
 
             $this->assertEquals('10000000000000', $data['merchant']['id']);
 
@@ -344,6 +365,10 @@ class SubscriptionNotificationTest extends TestCase
 
             $this->assertEquals('active', $data['subscription']['status']);
             $this->assertEquals(0, $data['subscription']['type']);
+            $this->assertNotNull(0, $data['subscription']['id']);
+            $this->assertStringStartsWith(
+                'https://api.razorpay.com/v1/t/subscriptions',
+                $data['subscription']['hosted_url']);
 
             $this->assertEquals('10000000000000', $data['merchant']['id']);
 
@@ -385,6 +410,10 @@ class SubscriptionNotificationTest extends TestCase
 
             $this->assertEquals('cancelled', $data['subscription']['status']);
             $this->assertEquals(1, $data['subscription']['type']);
+            $this->assertNotNull(0, $data['subscription']['id']);
+            $this->assertStringStartsWith(
+                'https://api.razorpay.com/v1/t/subscriptions',
+                $data['subscription']['hosted_url']);
 
             $this->assertEquals('10000000000000', $data['merchant']['id']);
 
@@ -421,6 +450,10 @@ class SubscriptionNotificationTest extends TestCase
 
             $this->assertEquals('active', $data['subscription']['status']);
             $this->assertEquals(0, $data['subscription']['type']);
+            $this->assertNotNull(0, $data['subscription']['id']);
+            $this->assertStringStartsWith(
+                'https://api.razorpay.com/v1/t/subscriptions',
+                $data['subscription']['hosted_url']);
 
             $this->assertEquals('10000000000000', $data['merchant']['id']);
 
@@ -459,6 +492,10 @@ class SubscriptionNotificationTest extends TestCase
 
             $this->assertEquals('pending', $data['subscription']['status']);
             $this->assertEquals(0, $data['subscription']['type']);
+            $this->assertNotNull(0, $data['subscription']['id']);
+            $this->assertStringStartsWith(
+                'https://api.razorpay.com/v1/t/subscriptions',
+                $data['subscription']['hosted_url']);
 
             $this->assertEquals('10000000000000', $data['merchant']['id']);
 
@@ -505,6 +542,10 @@ class SubscriptionNotificationTest extends TestCase
 
             $this->assertEquals('halted', $data['subscription']['status']);
             $this->assertEquals(0, $data['subscription']['type']);
+            $this->assertNotNull(0, $data['subscription']['id']);
+            $this->assertStringStartsWith(
+                'https://api.razorpay.com/v1/t/subscriptions',
+                $data['subscription']['hosted_url']);
 
             $this->assertEquals('10000000000000', $data['merchant']['id']);
 
@@ -547,6 +588,10 @@ class SubscriptionNotificationTest extends TestCase
 
             $this->assertEquals('completed', $data['subscription']['status']);
             $this->assertEquals(0, $data['subscription']['type']);
+            $this->assertNotNull(0, $data['subscription']['id']);
+            $this->assertStringStartsWith(
+                'https://api.razorpay.com/v1/t/subscriptions',
+                $data['subscription']['hosted_url']);
 
             $this->assertEquals('10000000000000', $data['merchant']['id']);
 
@@ -606,6 +651,10 @@ class SubscriptionNotificationTest extends TestCase
 
             $this->assertEquals('completed', $data['subscription']['status']);
             $this->assertEquals(0, $data['subscription']['type']);
+            $this->assertNotNull(0, $data['subscription']['id']);
+            $this->assertStringStartsWith(
+                'https://api.razorpay.com/v1/t/subscriptions',
+                $data['subscription']['hosted_url']);
 
             $this->assertEquals('10000000000000', $data['merchant']['id']);
 
@@ -667,6 +716,10 @@ class SubscriptionNotificationTest extends TestCase
 
             $this->assertEquals('completed', $data['subscription']['status']);
             $this->assertEquals(0, $data['subscription']['type']);
+            $this->assertNotNull(0, $data['subscription']['id']);
+            $this->assertStringStartsWith(
+                'https://api.razorpay.com/v1/t/subscriptions',
+                $data['subscription']['hosted_url']);
 
             $this->assertEquals('10000000000000', $data['merchant']['id']);
 

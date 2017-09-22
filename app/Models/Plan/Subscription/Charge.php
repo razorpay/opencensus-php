@@ -148,8 +148,6 @@ class Charge extends Base\Core
                 $this->handleAuthorizationOrCaptureFailure($subscription, $invoice, $payment, $captureFailure);
             }
 
-            // TODO Pass options to triggerSubscriptionNotification to treat completed mails differently
-            // - pending to completed (here)
             (new Core)->triggerSubscriptionFailureNotification($subscription);
 
             return false;

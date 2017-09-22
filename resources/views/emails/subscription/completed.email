@@ -11,7 +11,7 @@
       <td class="left"></td>
       <td class="middle header">
         <h4>Subscription Completed at {{$merchant['billing_label']}}</h4>
-        <p>Subcription ID: {{$subscription['public_id']}}</p>
+        <p>Subcription ID: {{$subscription['id']}}</p>
       </td>
       <td class="right"></td>
     </tr>
@@ -54,7 +54,7 @@
       <td class="middle">
         <h6>Payment Details</h6>
         <p class="title"><strong>{{$payment['amount']}}</strong></p>
-        <p class="sub-title">Payment ID: {{$payment['public_id']}}</p>
+        <p class="sub-title">Payment ID: {{$payment['id']}}</p>
         <p class="sub-title">Paid on {{$payment['captured_at']}}</p>
       </td>
       <td class="right"></td>
@@ -87,7 +87,7 @@
     <tr class="b-demarcate">
       <td class="left"></td>
       <td class="middle">
-        <p class="sub-title">You may contact <a href="mailto:support@razorpay.com">Razorpay</a> for any query related to this subscription with the subscription ID as {{$subscription['public_id']}}</p>
+        <p class="sub-title">You may contact <a href="mailto:support@razorpay.com">Razorpay</a> for any query related to this subscription with the subscription ID as {{$subscription['id']}}</p>
       </td>
       <td class="right"></td>
     </tr>
