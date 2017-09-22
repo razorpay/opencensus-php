@@ -71,7 +71,7 @@ class FirstDataGatewayTest extends TestCase
         $token = $this->getLastEntity('token', true);
         $this->assertEquals($paymentEntity['token_id'], $token['id']);
         $this->assertEquals(true, $token['recurring']);
-        $this->assertEquals('FDRcrgTrmlN3DS', $token['terminal_id']); // TODO: Should this remain the same or not? Changing for now
+        $this->assertEquals('FDRcrgTrmnl3DS', $token['terminal_id']);
 
         // Transaction created at auth step itself, as recurring payment is a purchase request
         $transaction = $this->getLastEntity('transaction', true);
@@ -98,7 +98,7 @@ class FirstDataGatewayTest extends TestCase
         $token = $this->getLastEntity('token', true);
         $this->assertEquals($paymentEntity['token_id'], $token['id']);
         $this->assertEquals(true, $token['recurring']);
-        $this->assertEquals('FDRcrgTrmlN3DS', $token['terminal_id']); // TODO: Should this remain the same or not? Changing for now
+        $this->assertEquals('FDRcrgTrmnl3DS', $token['terminal_id']);
 
         $gatewayPayment = $this->getLastEntity('first_data', true);
         $refund = $this->getLastEntity('refund', true);

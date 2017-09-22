@@ -14,6 +14,8 @@ use RZP\Gateway\Netbanking\Icici\ResponseFields;
 
 class Server extends Base\Mock\Server
 {
+    const BANK_PAYMENT_ID = 9999999999;
+
     public function authorize($input)
     {
         parent::authorize($input);
@@ -49,7 +51,7 @@ class Server extends Base\Mock\Server
             ResponseFields::CURRENCY        => $input[RequestFields::CURRENCY_CODE],
             ResponseFields::SI_REFERENCE_ID => $input[RequestFields::SI_REFERENCE_NUMBER],
             ResponseFields::PAYMENT_DATE    => $input[RequestFields::SI_DEBIT_PAYMENT_DATE],
-            ResponseFields::BANK_PAYMENT_ID => 9999999999,
+            ResponseFields::BANK_PAYMENT_ID => self::BANK_PAYMENT_ID,
             ResponseFields::PAID            => Confirmation::YES,
             ResponseFields::STATUS          => Status::SI_SUCCESS
         ];

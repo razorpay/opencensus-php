@@ -813,7 +813,7 @@ trait Authorize
         //
         if ($payment->isCard() === true)
         {
-            $this->validateRecurringCard($payment);
+            $this->validateRecurringForCard($payment);
         }
         else if ($payment->isNetbanking() === true)
         {
@@ -945,7 +945,7 @@ trait Authorize
         }
     }
 
-    protected function validateRecurringCard(Payment\Entity $payment)
+    protected function validateRecurringForCard(Payment\Entity $payment)
     {
         if ($payment->card->isRecurringSupported() === false)
         {
@@ -1417,23 +1417,21 @@ trait Authorize
 
         $payment->setInternational();
 
-        $this->processEMandatePayments($payment);
+        $this->processEmandatePayments($payment);
     }
 
-    protected function processEMandatePayments(Payment\Entity $payment)
+    protected function processEmandatePayments(Payment\Entity $payment)
     {
         $token = $payment->getGlobalOrLocalTokenEntity();
 
-        if ($this->isEmandatePayment($token, $payment) === false)
+        if ($this->isEmandatePayment($token, $payment) === true)
         {
-            return;
+            // True => debit, False => registration
+            // TODO: Add support for when we allow recurring tokens for first payments
+            $type = ($token->isRecurring() === true) ? Payment\RecurringType::DEBIT : Payment\RecurringType::REGISTRATION;
+
+            $payment->valildateAndSetRecurringType($type);
         }
-
-        // True => debit, False => registration
-        // TODO: Add support for when we allow recurring tokens for first payments
-        $type = ($token->isRecurring() === true) ? Payment\RecurringType::DEBIT : Payment\RecurringType::REGISTRATION;
-
-        $payment->valildateAndSetRecurringType($type);
     }
 
     protected function isEmandatePayment(Token\Entity $token = null, Payment\Entity $payment)
@@ -2194,14 +2192,19 @@ trait Authorize
                 $this->updateTokenRecurringDetails($token, $data);
             }
 
-            $this->createAndSetTerminalInGatewayToken($payment, $token);
+            //
+            // For First Data second recurring payments we do not update the token's terminal
+            //
+            $shouldTokenTerminalNotBeSet = (($payment->terminal->getGateway() === Payment\Gateway::FIRST_DATA) and
+                                            (empty($token->getTerminalId()) === false));
 
-            //
-            // This is being done simply. Can be removed.
-            // Shouldn't be required now since we are using
-            // gateway_token for terminal.
-            //
-            $token->terminal()->associate($payment->terminal);
+            if ($shouldTokenTerminalNotBeSet === false)
+            {
+                // TODO: Refactor this later
+                $token->terminal()->associate($payment->terminal);
+            }
+
+            $this->createAndSetTerminalInGatewayToken($payment, $token);
         }
 
         $this->repo->saveOrFail($token);
