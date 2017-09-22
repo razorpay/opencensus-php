@@ -594,10 +594,7 @@ class Gateway extends Base\Gateway
 
     protected function getAcquirerBin(array $input)
     {
-        if ($this->mode === Mode::TEST)
-        {
-            return $this->config['test_acq_bin'];
-        }
+        $certName = '';
 
         switch ($input['card']['network_code'])
         {
@@ -608,24 +605,48 @@ class Gateway extends Base\Gateway
             case Card\Network::VISA:
                 $certName = $this->config['live_visa_acq_bin'];
                 break;
+
+            default:
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID);
+
         }
+
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_acq_bin'];
+        }
+
+        return $certName;
     }
 
     protected function getMerchantId(array $input)
     {
-        if ($this->mode === Mode::TEST)
-        {
-            return $this->config['test_merchant_id'];;
-        }
+        $merchantId = '';
 
         switch ($input['card']['network_code'])
         {
             case Card\Network::MC:
-                return $this->config['live_mastercard_merchant_id'];
+                $merchantId = $this->config['live_mastercard_merchant_id'];
+
+                break;
 
             case Card\Network::VISA:
-                return $this->config['live_visa_merchant_id'];
+                $merchantId = $this->config['live_visa_merchant_id'];
+
+                break;
+
+            default:
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID);
         }
+
+        if ($this->mode === Mode::TEST)
+        {
+            $merchantId = $this->config['test_merchant_id'];;
+        }
+
+        return $merchantId;
     }
 
     /**
