@@ -425,6 +425,21 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * Compares international property of rue with terminal.
+     * If international is true then terminal should have international enabled
+     * If international is false then terminal should have card enabled
+     *
+     * @param  Terminal\Entity $terminal Terminal to check against
+     * @return bool                      Comparison result
+     */
+    protected function compareInternational(Terminal\Entity $terminal): bool
+    {
+        return ($this->isInternational() === true) ?
+                $terminal->isInternational() :
+                $terminal->isDomestic();
+    }
+
+    /**
      * Checks if a terminal is shared / direct against against what the rule
      * specifies. The cases for the same are listed below
      * - Shared terminal, with a submerchant assigned as given merchant

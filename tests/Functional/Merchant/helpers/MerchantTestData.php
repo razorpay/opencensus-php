@@ -213,6 +213,7 @@ return [
         'request' => [
             'content' => [
                 'international' => '1',
+                'linked_account_kyc' => '1',
                 'website' => 'http://abc.com',
                 'category' => '1111',
                 'transaction_report_email'  => [
@@ -232,6 +233,7 @@ return [
                 'id' => '1X4hRFHFx4UiXt',
                 'entity' => 'merchant',
                 'international' => true,
+                'linked_account_kyc' => true,
                 'category' => 1111,
                 'website' => 'http://abc.com',
                 'transaction_report_email'  => [

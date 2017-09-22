@@ -23,6 +23,10 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Plan\Subscription;
 use Razorpay\Spine\DataTypes\Dictionary;
 
+/**
+ * @property Subscription\Entity    $subscription
+ * @property Invoice\Entity         $invoice
+ */
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;

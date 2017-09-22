@@ -96,7 +96,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->assertEquals('paid', $invoice['status']);
         $this->assertEquals($subscription['id'], $invoice['subscription_id']);
         $this->assertEquals($order['id'], $invoice['order_id']);
-        $this->assertEquals($payment['created_at'], $invoice['billing_start']);
+        $this->assertEquals($subscription['current_start'], $invoice['billing_start']);
         $this->assertEquals($subscription['current_end'], $invoice['billing_end']);
 
         $this->assertEquals('paid', $order['status']);
@@ -311,7 +311,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         catch (BadRequestException $ex)
         {
             $this->assertEquals('The amount does not match with the expected amount for the '.
-                'first transaction. It might have been tampered.', $ex->getMessage());
+                'transaction. It might have been tampered.', $ex->getMessage());
 
             return;
         }
@@ -363,7 +363,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         catch (BadRequestException $ex)
         {
             $this->assertEquals(
-                'The subscription has been expired or cancelled.',
+                'The subscription is in a terminal state',
                 $ex->getMessage());
 
             return;
@@ -390,7 +390,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         }
         catch (BadRequestException $ex)
         {
-            $this->assertEquals('The subscription has been expired or cancelled.', $ex->getMessage());
+            $this->assertEquals('The subscription is in a terminal state', $ex->getMessage());
 
             return;
         }

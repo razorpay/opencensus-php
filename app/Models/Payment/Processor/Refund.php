@@ -55,6 +55,11 @@ trait Refund
         $this->createRefundOnApiSeparately($payment, $refundId, $refundAmount);
     }
 
+    public function createRefundFromMerchantFile(Payment\Entity $payment, array $input, Batch\Entity $batch = null)
+    {
+        return $this->refund($payment, $input, $batch);
+    }
+
     public function createRefundOnApiForCancelledBilldeskRefund(
         Payment\Entity $payment,
         string $refundId,
@@ -265,12 +270,6 @@ trait Refund
         //             'The authorized payment is not older than: ' . $days . ' days');
         //     }
         // }
-
-        // Certain kinds of bank_transfers cannot be refunded
-        if ($payment->isBankTransfer() === true)
-        {
-            (new BankTransfer\Validator)->validateRefundIsAllowed($payment);
-        }
 
         return $this->refund($payment, $input);
     }
@@ -974,12 +973,6 @@ trait Refund
     {
         $this->validatePaymentForRefund($payment);
 
-        // Certain kinds of bank_transfers cannot be refunded
-        if ($payment->isBankTransfer() === true)
-        {
-            (new BankTransfer\Validator)->validateRefundIsAllowed($payment);
-        }
-
         // Captured payments of transfer cannot be refunded via direct API requests
         if (($payment->isTransfer() === true) or 
             ($payment->isEmandate() === true))
@@ -1125,7 +1118,7 @@ trait Refund
 
         try
         {
-            (new BankTransfer\Core)->refund($data, $this->merchant);
+            (new BankTransfer\Core)->refund($data);
 
             $this->refund->setStatus(Payment\Refund\Status::CREATED);
 

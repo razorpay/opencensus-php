@@ -2,8 +2,10 @@
 
 namespace RZP\Jobs;
 
-use RZP\Exception\BadRequestException;
+use RZP\Trace\TraceCode;
 use RZP\Models\Gateway\File;
+use Razorpay\Trace\Logger as Trace;
+use RZP\Exception\BadRequestException;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
@@ -33,6 +35,10 @@ class GatewayFile extends Job implements ShouldQueue
 
         try
         {
+            $this->trace->debug(TraceCode::GATEWAY_FILE_JOB_RECEIVED, [
+                File\Entity::ID => $this->gatewayFileId
+            ]);
+
             $gatewayFile = $this->repoManager
                                 ->gateway_file
                                 ->findOrFailPublic($this->gatewayFileId);
@@ -42,6 +48,10 @@ class GatewayFile extends Job implements ShouldQueue
             $gatewayFileCore->process($gatewayFile);
 
             $this->retryFailedProcessing($gatewayFile);
+
+            $this->trace->debug(TraceCode::GATEWAY_FILE_JOB_HANDLED, [
+                File\Entity::ID => $this->gatewayFileId
+            ]);
         }
         catch (\Throwable $e)
         {
@@ -78,6 +88,8 @@ class GatewayFile extends Job implements ShouldQueue
      */
     protected function handleException(\Throwable $e)
     {
+        $this->trace->traceException($e, Trace::ERROR, TraceCode::GATEWAY_FILE_JOB_ERROR);
+
         if (($this->attempts() >= self::MAX_ALLOWED_ATTEMPTS) or
             ($e instanceof BadRequestException))
         {

@@ -2458,6 +2458,9 @@ ALTER TABLE netbanking
 ALTER TABLE payments
     ADD COLUMN recurring_type VARCHAR(255) DEFAULT NULL AFTER updated_at;
 
+ALTER TABLE subscriptions
+    ADD COLUMN type TINYINT(1) UNSIGNED DEFAULT 0 AFTER customer_notify;
+
 ALTER TABLE gateway_rules
     MODIFY COLUMN gateway VARCHAR(50) DEFAULT NULL;
 
@@ -2494,3 +2497,10 @@ WHERE  item_id IS NULL;
 # Makes line_items.type column not null and default to 'invoice'
 ALTER TABLE line_items
     MODIFY COLUMN type VARCHAR(16) NOT NULL DEFAULT 'invoice';
+
+ALTER TABLE batches
+    MODIFY COLUMN `type` CHAR(25);
+
+# Marketplace auto-activate
+ALTER TABLE merchants
+    ADD COLUMN linked_account_kyc TINYINT(1) NOT NULL DEFAULT 0 AFTER fee_model;

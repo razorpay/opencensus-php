@@ -430,6 +430,33 @@ class DatabaseSeeder extends Seeder
                     )
                 );
 
+            DB::table(Table::SCHEDULE)->insert(
+                [
+                    'id'          => '30000000000000',
+                    'name'        => 'Basic T+3',
+                    'merchant_id' => '100000Razorpay',
+                    'period'      => 'daily',
+                    'interval'    => 1,
+                    'hour'        => 10,
+                    'delay'       => 3,
+                    'created_at'  => $currentTime,
+                    'updated_at'  => $currentTime,
+                ]
+            );
+
+            DB::table(Table::SCHEDULE_TASK)->insert(
+                [
+                    'merchant_id' => '10000000000000',
+                    'entity_id'   => '10000000000000',
+                    'entity_type' => 'merchant',
+                    'type'        => 'settlement',
+                    'schedule_id' => '30000000000000',
+                    'next_run_at' => $currentTime + 259200,
+                    'created_at'  => $currentTime,
+                    'updated_at'  => $currentTime,
+                ]
+            );
+
             if ($name === Mode::TEST)
             {
                 $this->createTestTerminals();

@@ -516,6 +516,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::NETBANKING, $netbanking);
     }
 
+    public function setUpi(bool $upi)
+    {
+        $this->setAttribute(self::UPI, $upi);
+    }
+
     public function setEmi($emi)
     {
         assertTrue($this->isCardEnabled(), "Cannot enable emi without Card method");

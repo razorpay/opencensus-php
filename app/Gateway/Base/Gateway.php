@@ -983,6 +983,16 @@ class Gateway
         }
     }
 
+    protected function failIfRequired(array $input)
+    {
+        if ((isset($input['test_success']) === true) and
+            ($input['test_success'] === false))
+        {
+            throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_SUBSCRIPTION_SCHEDULED_FAILURE);
+        }
+    }
+
     protected function jsonToArray($json)
     {
         $decodeJson = json_decode($json, true);
