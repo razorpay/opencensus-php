@@ -15,7 +15,6 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Lib\Formatters\Xml;
-use RZP\Models\Card\Network;
 use RZP\Models\Currency\Currency;
 
 class Gateway extends Base\Gateway
@@ -102,7 +101,7 @@ class Gateway extends Base\Gateway
 
         $eci = $gatewayPayment->getEci();
 
-        $network = strtoupper($this->input['card']['network']);
+        $network = strtoupper($input['card']['network']);
 
         $this->validateEci($eci, $network);
 
@@ -438,7 +437,7 @@ class Gateway extends Base\Gateway
 
     public function getClientCertificateName()
     {
-        switch ($this->input['card']['network'])
+        switch ($this->input['card']['network_code'])
         {
             case Card\Network::MC:
                 $certName = $this->config['live_mastercard_certificate'];
@@ -454,7 +453,7 @@ class Gateway extends Base\Gateway
 
     public function getClientSslKeyName()
     {
-        switch ($this->input['card']['network'])
+        switch ($this->input['card']['network_code'])
         {
             case Card\Network::MC:
                 $certName = $this->config['live_mastercard_pem'];
@@ -600,9 +599,7 @@ class Gateway extends Base\Gateway
             return $this->config['test_acq_bin'];
         }
 
-        $networkCode = $input['card']['network_code'];
-
-        switch ($networkCode)
+        switch ($input['card']['network_code'])
         {
             case Card\Network::MC:
                 $certName = $this->config['live_mastercard_acq_bin'];
@@ -621,9 +618,7 @@ class Gateway extends Base\Gateway
             return $this->config['test_merchant_id'];;
         }
 
-        $networkCode = $input['card']['network_code'];
-
-        switch ($networkCode)
+        switch ($input['card']['network_code'])
         {
             case Card\Network::MC:
                 return $this->config['live_mastercard_merchant_id'];
