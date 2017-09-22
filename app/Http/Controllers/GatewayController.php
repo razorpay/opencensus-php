@@ -107,6 +107,12 @@ class GatewayController extends Controller
             case 'wallet_olamoney':
                 break;
 
+            //Special case because gateway is upi_mindgate
+            case 'upi_hdfc':
+                $data = $this->processServerCallback($input, Payment\Gateway::UPI_MINDGATE);
+
+                break;
+
             // Special case because we need the raw request body
             case 'upi_icici':
                 $input = Request::getContent();
