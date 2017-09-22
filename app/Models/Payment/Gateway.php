@@ -628,7 +628,7 @@ class Gateway
      *
      * @return bool
      */
-    public static function isRecurringSupportedOnBank(string $bank)
+    public static function isRecurringSupportedOnBank(string $bank) : bool
     {
         $gateway = self::$netbankingToGatewayMap[$bank];
 

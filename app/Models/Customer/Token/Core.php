@@ -121,7 +121,7 @@ class Core extends Base\Core
         //
         // We are creating an array of all the items that do not pass the truth test
         // that the token is recurring and netbanking - as we do not want to show
-        // recurring = netbanking tokens to the merchant via preferences
+        // recurring netbanking tokens to the merchant via preferences
         //
 
         if (Base\PublicCollection::isPublicCollection($tokens) === true)

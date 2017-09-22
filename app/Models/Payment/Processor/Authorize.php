@@ -770,7 +770,7 @@ trait Authorize
         }
         else if ($payment->isNetbanking() === true)
         {
-            $this->validateRecurringNetbanking($payment, $token, $input);
+            $this->validateRecurringForNetbanking($payment, $token, $input);
         }
 
         //
@@ -907,8 +907,13 @@ trait Authorize
         }
     }
 
-    protected function validateRecurringNetbanking(Payment\Entity $payment, Token\Entity $token = null, array $input)
+    protected function validateRecurringForNetbanking(Payment\Entity $payment, Token\Entity $token = null, array $input)
     {
+        if ($token === null)
+        {
+            return;
+        }
+
         $bank = $payment->getBank();
 
         // TODO: Handle first recurring / second recurring based on token and route
@@ -925,11 +930,6 @@ trait Authorize
 
         // We ensure that the e_mandate feature has been enabled for the merchant
         $this->verifyFeatureForMerchant($payment->merchant, Feature\Constants::E_MANDATE);
-
-        if ($token === null)
-        {
-            return;
-        }
 
         //
         // This is broken still. We should not be accepting any token
@@ -955,18 +955,16 @@ trait Authorize
 
     protected function validateTokenRecurringStatus(Token\Entity $token, Payment\Entity $payment)
     {
-        if ($payment->isSecondRecurring())
+        if (($payment->isSecondRecurring()) === true and
+            ($token->getRecurringStatus() !== Token\RecurringStatus::CONFIRMED))
         {
-            if ($token->getRecurringStatus() !== Token\RecurringStatus::CONFIRMED)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_NB_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING,
-                    Payment\Entity::BANK,
-                        [
-                             'payment' => $payment->toArray(),
-                             'token'   => $token->toArray(),
-                        ]);
-            }
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_NB_UNCONFIRMED_TOKEN_PASSED_IN_SECOND_RECURRING,
+                Payment\Entity::BANK,
+                    [
+                         'payment' => $payment->toArray(),
+                         'token'   => $token->toArray(),
+                    ]);
         }
     }
 
@@ -1370,13 +1368,27 @@ trait Authorize
 
         $payment->setInternational();
 
-        $this->handleEMandatePayments($payment);
+        $this->processEMandatePayments($payment);
     }
 
-    protected function handleEMandatePayments(Payment\Entity $payment)
+    protected function processEMandatePayments(Payment\Entity $payment)
     {
         $token = $payment->getGlobalOrLocalTokenEntity();
 
+        if ($this->isEmandatePayment($token, $payment) === false)
+        {
+            return;
+        }
+
+        // True => debit, False => registration
+        // TODO: Add support for when we allow recurring tokens for first payments
+        $type = ($token->isRecurring() === true) ? Payment\RecurringType::DEBIT : Payment\RecurringType::REGISTRATION;
+
+        $payment->valildateAndSetRecurringType($type);
+    }
+
+    protected function isEmandatePayment(Token\Entity $token = null, Payment\Entity $payment)
+    {
         //
         // It's not an e-mandate payment if
         // - Token not set
@@ -1387,14 +1399,10 @@ trait Authorize
             ($payment->isNetbanking() === false) or
             ($payment->isRecurring() === false))
         {
-            return;
+            return false;
         }
 
-        // True => debit, False => registration
-        // TODO: Add support for when we allow recurring tokens for first payments
-        $type = ($token->isRecurring() === true) ? Payment\RecurringType::DEBIT : Payment\RecurringType::REGISTRATION;
-
-        $payment->setRecurringType($type);
+        return true;
     }
 
     protected function associateLocalCustomerToSubscription(
@@ -1654,7 +1662,6 @@ trait Authorize
         }
         else if ($payment->isNetbanking())
         {
-            // TODO: Check if this is really required here.
             $payment->setBank($token->getBank());
 
             $payment->localToken()->associate($token);
@@ -1838,6 +1845,7 @@ trait Authorize
         else if ($payment->isMethod(Payment\Method::NETBANKING))
         {
             $saveMethodInput[Token\Entity::BANK] = $payment->getBank();
+
             // TODO: We need to get this from user input - hard coding for now
             $saveMethodInput[Token\Entity::MAX_AMOUNT] = Token\Entity::DEFAULT_MAX_AMOUNT;
         }
@@ -2146,9 +2154,7 @@ trait Authorize
             //
             // The idea is that for netbanking payments, we first check if the
             // recurring status is set, and if it is, we ensure that it is confirmed
-            // before updating recurring to true. Or else we throw a LogicException
-            // if token's recurring status is not set. In the generic case that doesn't
-            // come under either of the above cases, we don't update recurring to false.
+            // before updating recurring to true. Or else we log a critical level trace.
             //
             if ((empty($data[Token\Entity::RECURRING_STATUS]) === false) and
                 ($data[Token\Entity::RECURRING_STATUS] === Token\RecurringStatus::CONFIRMED))
@@ -2183,14 +2189,12 @@ trait Authorize
 
         $this->updateRecurringStatus($token, $gatewayData);
 
-        if ($token->getRecurringStatus() === null)
+        if ($token->getRecurringStatus() !== null)
         {
-            return;
+            $this->updateRecurringFailureReason($token, $gatewayData);
+
+            $this->updateGatewayTokenForRecurring($token, $gatewayData);
         }
-
-        $this->updateRecurringFailureReason($token, $gatewayData);
-
-        $this->updateGatewayTokenForRecurring($token, $gatewayData);
     }
 
     protected function updateGatewayTokenForRecurring(Token\Entity $token, array $gatewayData)
@@ -2202,7 +2206,7 @@ trait Authorize
             //
             // Not all netbanking recurring have a gateway token.
             // However, if a second recurring payment is attempted without a gateway token,
-            // we throw an exception to handle the case appropriately.
+            // we throw an exception or handle the case appropriately in the child gateway class.
             //
             if (empty($gatewayData[Token\Entity::GATEWAY_TOKEN]) === false)
             {
@@ -2277,7 +2281,7 @@ trait Authorize
             // The recurring status should always be set for token update.
             //
             $this->trace->critical(
-                TraceCode::GATEWAY_RECURRING_STATUS_ALREADY_SET,
+                TraceCode::GATEWAY_RECURRING_STATUS_NOT_SET,
                 [
                     'token'        => $token->toArray(),
                     'gateway_data' => $gatewayData

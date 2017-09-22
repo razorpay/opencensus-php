@@ -34,8 +34,19 @@ class Status
     const Y           = 'Y';
     const N           = 'N';
 
+    /**
+     * Indicates that the SI registration was successful
+     */
     const SI_SUCCESS            = 'Success';
+
+    /**
+     * Indicates that the SI registration was a failure
+     */
     const SI_FAILED             = 'Failed';
+
+    /**
+     * This happens when verify indicates that no such payment was scheduled
+     */
     const PAYMENT_NOT_SCHEDULED = 'NoSuchPaymentScheduled';
 
     const SI_FAILED_STATUSES    = [self::SI_FAILED, self::PAYMENT_NOT_SCHEDULED];
@@ -51,23 +62,13 @@ class Status
      * @param string $status
      * @return string
      */
-    public static function getSiMessage(string $status)
+    public static function getSiMessage(string $status) : string
     {
-        if ($status === self::Y)
-        {
-            return 'Success';
-        }
-
-        return 'Failure';
+        return ($status === self::Y) ? 'Success' : 'Failure';
     }
 
-    public static function isSiStatusFailure(string $status)
+    public static function isSiStatusFailure(string $status) : bool
     {
-        if (in_array($status, self::SI_FAILED_STATUSES, true) === true)
-        {
-            return true;
-        }
-
-        return false;
+        return (in_array($status, self::SI_FAILED_STATUSES, true) === true);
     }
 }

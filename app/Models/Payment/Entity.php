@@ -224,10 +224,10 @@ class Entity extends Base\PublicEntity
         self::LATE_AUTHORIZED,
         self::SUBSCRIPTION_ID,
         self::CONVERT_CURRENCY,
+        self::RECURRING_TYPE,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DISPUTED,
-        self::RECURRING_TYPE,
     ];
 
     protected $public = [
@@ -347,7 +347,6 @@ class Entity extends Base\PublicEntity
         self::TERMINAL_ID          => null,
         self::TRANSFER_ID          => null,
         self::DISPUTED             => false,
-        self::RECURRING_TYPE       => null,
     ];
 
     protected $amounts = [
@@ -639,7 +638,7 @@ class Entity extends Base\PublicEntity
      *
      * @param $type
      */
-    public function setRecurringType($type)
+    public function valildateAndSetRecurringType($type)
     {
         RecurringType::validateRecurringType($type);
 

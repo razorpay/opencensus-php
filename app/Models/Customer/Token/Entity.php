@@ -34,7 +34,9 @@ class Entity extends Base\PublicEntity
     const UPDATED_AT                = 'updated_at';
     const DELETED_AT                = 'deleted_at';
 
-    // Default Max Amount
+    /**
+     * We use this to set the max amount of the token entity. By default, we have chosen 10000000
+     */
     const DEFAULT_MAX_AMOUNT    = 10000000;
 
     protected static $sign      = 'token';
@@ -71,12 +73,12 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TOKEN2,
         self::RECURRING,
         self::RECURRING_DETAILS,
+        self::MAX_AMOUNT,
         self::USED_COUNT,
         self::USED_AT,
         self::EXPIRED_AT,
         self::CREATED_AT,
         self::UPDATED_AT,
-        self::MAX_AMOUNT,
     ];
 
     protected $public = [
@@ -102,9 +104,6 @@ class Entity extends Base\PublicEntity
         self::USED_AT                   => null,
         self::USED_COUNT                => 0,
         self::EXPIRED_AT                => null,
-        self::RECURRING_STATUS          => null,
-        self::RECURRING_FAILURE_REASON  => null,
-        self::MAX_AMOUNT                => null,
     ];
 
     protected $publicSetters = [

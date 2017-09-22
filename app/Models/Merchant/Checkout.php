@@ -317,12 +317,12 @@ class Checkout
 
                 if ($response['saved'] === true)
                 {
-                    if (isset($response['email']))
+                    if (isset($response['email']) === true)
                     {
                         $data['customer']['email'] = $response['email'];
                     }
 
-                    if (isset($response['tokens']))
+                    if (isset($response['tokens']) === true)
                     {
                         $tokens = $response['tokens'];
 

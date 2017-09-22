@@ -5,7 +5,6 @@ namespace RZP\Gateway\Netbanking\Icici;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Mail;
-use RZP\Constants\MailTags;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
 use RZP\Gateway\Base;
 use RZP\Models\FileStore;

@@ -199,7 +199,7 @@ class Core extends Base\Core
             $response['device_token'] = $appToken->getDeviceToken();
         }
 
-        if ((empty($tokens) === false) and ($tokens->count() > 0))
+        if ($tokens->isNotEmpty() === true)
         {
             //
             // Currently, we do not expose netbanking recurring tokens to the

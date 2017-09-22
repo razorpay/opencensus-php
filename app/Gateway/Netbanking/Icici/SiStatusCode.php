@@ -21,7 +21,7 @@ class SiStatusCode
                                         'OR \n' .
                                         'Please click OK to initiate one-time net banking transaction';
 
-    const STATUS_TO_INTERNAL_ERROR_CODE_MAP = [
+    const STATUS_CODE_TO_INTERNAL_ERROR_CODE_MAP = [
         self::MERCHANT_NOT_ENABLED_FOR_SI => ErrorCode::GATEWAY_ERROR_MERCHANT_NOT_ENABLED_FOR_STANDING_INSTRUCTION,
         self::MERCHANT_IP_NOT_WHITELISTED => ErrorCode::GATEWAY_ERROR_MERCHANT_IP_NOT_WHITELISTED,
         self::PREMATURE_SI_EXECUTION      => ErrorCode::GATEWAY_ERROR_PREMATURE_SI_EXECUTION,
@@ -32,6 +32,6 @@ class SiStatusCode
 
     public static function getInternalErrorCode(string $status)
     {
-        return self::STATUS_TO_INTERNAL_ERROR_CODE_MAP[$status] ?? ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
+        return self::STATUS_CODE_TO_INTERNAL_ERROR_CODE_MAP[$status] ?? ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
     }
 }
