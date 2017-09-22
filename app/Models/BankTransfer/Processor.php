@@ -324,7 +324,7 @@ class Processor extends Base\Core
     {
         $label = $bankTransfer->getPayerName();
 
-        if ($label === null)
+        if (empty($label) === true)
         {
             $label = $bankTransfer->merchant->getBillingLabel();
         }
