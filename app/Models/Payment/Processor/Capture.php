@@ -23,10 +23,10 @@ trait Capture
     /**
      * Captures a previous auth payment
      *
-     * @param  string  $id  Id of payment to be captured
-     * @param  array $input
+     * @param Payment\Entity $payment to be captured
+     * @param  array         $input
      *
-     * @return Payment\Entity   Payment\Entity object
+     * @return Payment\Entity Payment\Entity object
      */
     public function capture(Payment\Entity $payment, array $input = array())
     {

@@ -12,15 +12,13 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Item;
 use RZP\Models\Invoice;
-use RZP\Models\Card;
-use RZP\Models\Customer;
 use RZP\Constants\Timezone;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Processor;
-use RZP\Mail\Subscription as SubscriptionMail;
 
 class Notify extends Processor\Notify
 {
+    protected $app;
     protected $payment;
     protected $merchant;
     protected $mode;

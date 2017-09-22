@@ -457,8 +457,8 @@ class Entity extends Base\PublicEntity
      * -         AND
      * - Subscription is not in terminal/halted state
      *
-     * @param  Invoice\Entity $invoice [description]
-     * @return [type]                  [description]
+     * @param  Invoice\Entity $invoice Invoice being charged
+     * @return boolean                 Flag to indicate that subscriptions fields are to be updated
      */
     public function shouldUpdateWithInvoiceCharge(Invoice\Entity $invoice)
     {

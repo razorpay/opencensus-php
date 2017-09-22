@@ -83,7 +83,7 @@ class Core extends Base\Core
                 null,
                 [
                     'subscription_id' => $subscription->getId(),
-                    'invoice_id' => $invoice->getId(),
+                    'invoice_id'      => $invoice->getId(),
                 ]);
         }
     }
