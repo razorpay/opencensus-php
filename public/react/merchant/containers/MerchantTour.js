@@ -24,7 +24,7 @@ export default class MerchantTour extends Component {
       !JSON.parse(LocalStorageService.getItem('tour_shown')) && // users who already seen the tour
       !LocalStorageService.getItem('ngStorage-new_user_signup') // newly signing up users must have this defined
     ) {
-      this.display(); // Showing to only old users with old design
+      this.display(); // Showing to only old users with new design
     }
   }
 
@@ -35,24 +35,20 @@ export default class MerchantTour extends Component {
   }
 
   display = () => {
-    let isOldUIEnabled = this.props.user.isOldUIEnabled;
-
-    if (!isOldUIEnabled) {
-      window.setTimeout(() => {
-        this.props.openModal({
-          size: 'small',
-          component: (
-            <NewUIOnboardingDialog
-              onShowChanges={this.showTour}
-              onCancelClick={() => {
-                this.showTour();
-                this.setToLastInTour();
-              }}
-            />
-          ),
-        });
-      }, 1500);
-    }
+    window.setTimeout(() => {
+      this.props.openModal({
+        size: 'small',
+        component: (
+          <NewUIOnboardingDialog
+            onShowChanges={this.showTour}
+            onCancelClick={() => {
+              this.showTour();
+              this.setToLastInTour();
+            }}
+          />
+        ),
+      });
+    }, 1500);
   };
 
   showTour = () => {

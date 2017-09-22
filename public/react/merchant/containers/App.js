@@ -112,12 +112,11 @@ export default class App extends Component {
 
   redirectToRoute(role) {
     let pathname = this.props.history.location.pathname;
-    let isOldUIEnabled = this.props.user.isOldUIEnabled;
 
     if (pathname === '/' || pathname === '/dashboard') {
       switch (role) {
         case 'sellerapp':
-          let url = isOldUIEnabled ? '/invoices' : '/paymentlinks';
+          let url = '/paymentlinks';
           return this.props.history.replace(url);
         case 'support':
           return this.props.history.replace('/payments');
@@ -146,7 +145,6 @@ export default class App extends Component {
               activated: data.activated,
               locked: data.locked,
               submitted: data.submitted,
-              isOldUIEnabled: data.isOldUIEnabled,
               role: role,
               userEmail: data.user.email,
               dashboardLink:

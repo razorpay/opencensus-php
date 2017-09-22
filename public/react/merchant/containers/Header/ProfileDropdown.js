@@ -93,19 +93,18 @@ export default class ProfileDropdown extends Component {
               </div>
             </div>
 
-            {!user.isOldUIEnabled
-              ? <div
-                  class="media media-action"
-                  onClick={() => this.props.showOrHideTour(true)}
-                >
-                  <div class="media-left">
-                    <div class="media-object">
-                      <i class="icon icon-tour" />
-                    </div>
-                  </div>
-                  <div class="media-body">Show Recent UI Changes</div>
+            <div
+              class="media media-action"
+              onClick={() => this.props.showOrHideTour(true)}
+            >
+              <div class="media-left">
+                <div class="media-object">
+                  <i class="icon icon-tour" />
                 </div>
-              : null}
+              </div>
+              <div class="media-body">Show Recent UI Changes</div>
+            </div>
+
             <div class="media media-action" onClick={this.submitFeedback}>
               <div class="media-left">
                 <div class="media-object">
