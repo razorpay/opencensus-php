@@ -15,6 +15,7 @@ use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use Lib\Formatters\Xml;
+use RZP\Models\Card\Network;
 use RZP\Models\Currency\Currency;
 
 class Gateway extends Base\Gateway
@@ -599,7 +600,9 @@ class Gateway extends Base\Gateway
             return $this->config['test_acq_bin'];
         }
 
-        switch ($input['card']['network'])
+        $networkCode = $input['card']['network_code'];
+
+        switch ($networkCode)
         {
             case Card\Network::MC:
                 $certName = $this->config['live_mastercard_acq_bin'];
@@ -618,7 +621,9 @@ class Gateway extends Base\Gateway
             return $this->config['test_merchant_id'];;
         }
 
-        switch ($input['card']['network'])
+        $networkCode = $input['card']['network_code'];
+
+        switch ($networkCode)
         {
             case Card\Network::MC:
                 return $this->config['live_mastercard_merchant_id'];
@@ -711,8 +716,8 @@ class Gateway extends Base\Gateway
 
         $request['headers'] = [
             'Content-Type' => 'application/xml; charset=utf-8',
-            'Accept' => $this->app['request']->header('Accept'),
-            'User-Agent' => $this->app['request']->header('User-Agent')
+            'Accept'       => $this->app['request']->header('Accept'),
+            'User-Agent'   => $this->app['request']->header('User-Agent')
         ];
 
         $request['options']['timeout'] = 10;
