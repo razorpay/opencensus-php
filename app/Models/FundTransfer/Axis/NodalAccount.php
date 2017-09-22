@@ -7,15 +7,22 @@ use Carbon\Carbon;
 use PHPExcel_Shared_Date;
 
 use RZP\Models\Base;
+use RZP\Encryption\Type;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+
 use RZP\Models\FundTransfer\Base as NodalBase;
+use RZP\Encryption\AESEncryption;
 use RZP\Mail\Settlement\AxisSettlement;
 use RZP\Models\FundTransfer\Mode;
 
 class NodalAccount extends NodalBase\NodalAccount
 {
     const SIGNED_URL_DURATION = '1440';
+
+    // To be changed
+    const IV = 'aai_wee';
+    const SECRET = 'kissi_ko_pata_nhi_chalega';
 
     const HEADINGS = [
         'Record Identifier',
@@ -76,6 +83,9 @@ class NodalAccount extends NodalBase\NodalAccount
                         ->metadata($metadata)
                         ->headers(false)
                         ->columnFormat(['C3' => 'dd/mm/yy', 'E3' => 'dd/mm/yy', 'F3' => 'dd/mm/yy'])
+                        ->encrypt(Type::AES_ENCRYPTION, [
+                            AESEncryption::IV     => self::IV,
+                            AESEncryption::SECRET => self::SECRET])
                         ->save();
 
         $fileInstance = $file->get();

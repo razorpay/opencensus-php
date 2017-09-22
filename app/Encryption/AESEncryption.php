@@ -3,8 +3,8 @@
 namespace RZP\Encryption;
 
 use RZP\Exception;
+use RZP\Gateway\Base;
 use phpseclib\Crypt\AES;
-use RZP\Gateway\Wallet\Sbibuddy\AESCrypto;
 
 class AESEncryption extends Encryption
 {
@@ -24,7 +24,7 @@ class AESEncryption extends Encryption
 
         $this->iv = $params[self::IV] ?? null;
 
-        $this->encryptor = new AESCrypto(AES::MODE_CBC, $this->secret, $this->iv);
+        $this->encryptor = new Base\AESCrypto(AES::MODE_CBC, $this->secret, $this->iv);
     }
 
     public function encrypt(string $data): string
