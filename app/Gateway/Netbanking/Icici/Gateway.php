@@ -47,7 +47,7 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
-        if ($this->isDebitStep($input) === true)
+        if ($this->isSecondRecurringPaymentRequest($input) === true)
         {
             //
             // Debit steps are handled in the method below
@@ -81,7 +81,9 @@ class Gateway extends Base\Gateway
                 ]);
         }
 
-        $entity = [RequestFields::AMOUNT => $input['payment'][Payment\Entity::AMOUNT] / 100];
+        $entity = [
+            RequestFields::AMOUNT => $input['payment'][Payment\Entity::AMOUNT] / 100
+        ];
 
         $gatewayPayment = $this->createGatewayPaymentEntity($entity);
 
@@ -508,11 +510,6 @@ class Gateway extends Base\Gateway
                 ($tokenRecurring === false));
     }
 
-    protected function isDebitStep(array $input)
-    {
-        return parent::isSecondRecurringPaymentRequest($input);
-    }
-
     protected function getBaseAuthorizeRequestData(array $input)
     {
         $callbackUrl = '%22' . $input['callbackUrl'] . '%22';
@@ -532,7 +529,7 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * For recurring payments, we use tokenId for ITC, otherwise we use strtoupper(paymentId).
+     * For recurring payments, we use tokenId for ITC, otherwise we use paymentId in upper case.
      * For all payments, we use paymentId as the PRN parameter - as a unique identifier
      *
      * @param array $input

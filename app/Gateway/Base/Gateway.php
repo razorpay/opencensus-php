@@ -719,9 +719,14 @@ class Gateway
         return $this->input['terminal']['gateway_secure_secret'];
     }
 
-    protected function isTestMode()
+    protected function isTestMode() : bool
     {
         return ($this->mode === Mode::TEST);
+    }
+
+    protected function isLiveMode() : bool
+    {
+        return ($this->mode === Mode::LIVE);
     }
 
     protected function getNewGatewayPaymentEntity()

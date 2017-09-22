@@ -261,7 +261,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECURRING, $recurring);
     }
 
-    public function setRecurringStatus($recurringStatus)
+    public function validateAndSetRecurringStatus($recurringStatus)
     {
         RecurringStatus::validateRecurringStatus($recurringStatus);
 

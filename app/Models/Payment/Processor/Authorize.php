@@ -2286,7 +2286,7 @@ trait Authorize
             return;
         }
 
-        $token->setRecurringStatus($recurringStatus);
+        $token->validateAndSetRecurringStatus($recurringStatus);
     }
 
     protected function createAndSetTerminalInGatewayToken(Payment\Entity $payment, Token\Entity $token)
