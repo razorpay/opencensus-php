@@ -2,6 +2,7 @@
 <html style="height:100%;width:100%;">
 <head>
 <title>Processing, Please Wait...</title>
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="{{$data['theme']['color']}}">
 <script>
