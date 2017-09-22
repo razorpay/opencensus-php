@@ -21,21 +21,21 @@ class Validator extends Base\Validator
     ];
 
     protected static $authDecryptedRules = [
-        RequestFields::AMOUNT              => 'required',
+        RequestFields::AMOUNT              => 'required|numeric',
         RequestFields::CONFIRMATION        => 'required|in:Y,N',
-        RequestFields::CURRENCY_CODE       => 'required',
-        RequestFields::PAYMENT_ID          => 'required',
-        RequestFields::ITEM_CODE           => 'required',
-        RequestFields::RETURN_URL          => 'required',
-        RequestFields::ACCOUNT_NO          => 'sometimes',
-        RequestFields::SI                  => 'sometimes',
-        RequestFields::SI_PAYMENT_DATE     => 'sometimes',
-        RequestFields::SI_PAYMENT_TYPE     => 'sometimes',
-        RequestFields::SI_PAYMENT_FREQ     => 'sometimes',
-        RequestFields::SI_NUM_INSTALLMENTS => 'sometimes',
-        RequestFields::SI_AUTO_PAY_AMOUNT  => 'sometimes',
-        RequestFields::SI_END_DATE         => 'sometimes',
-        RequestFields::SI_REFERENCE_NUMBER => 'sometimes',
+        RequestFields::CURRENCY_CODE       => 'required|string',
+        RequestFields::PAYMENT_ID          => 'required|string|size:14',
+        RequestFields::ITEM_CODE           => 'required|string|size:14',
+        RequestFields::RETURN_URL          => 'required|string',
+        RequestFields::ACCOUNT_NO          => 'sometimes|string|numeric',
+        RequestFields::SI                  => 'sometimes|in:Y',
+        RequestFields::SI_PAYMENT_DATE     => 'sometimes|date_format:Y-m-d',
+        RequestFields::SI_PAYMENT_TYPE     => 'sometimes|string|in:R',
+        RequestFields::SI_PAYMENT_FREQ     => 'sometimes|numeric|in:20',
+        RequestFields::SI_NUM_INSTALLMENTS => 'sometimes|nullable',
+        RequestFields::SI_AUTO_PAY_AMOUNT  => 'sometimes|numeric',
+        RequestFields::SI_END_DATE         => 'sometimes|date_format:Y-m-d',
+        RequestFields::SI_REFERENCE_NUMBER => 'sometimes|string',
     ];
 
     protected static $verifyRules = [
