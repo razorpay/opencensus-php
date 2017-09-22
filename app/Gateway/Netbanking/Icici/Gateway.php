@@ -4,7 +4,6 @@ namespace RZP\Gateway\Netbanking\Icici;
 
 use Carbon\Carbon;
 use RZP\Exception;
-use RZP\Constants;
 use RZP\Models\Payment;
 use phpseclib\Crypt\AES;
 use RZP\Error\ErrorCode;
@@ -51,7 +50,7 @@ class Gateway extends Base\Gateway
         if ($this->isDebitStep($input) === true)
         {
             //
-            // We return nothing here, to avoid 2 step flow
+            // Debit steps are handled in the method below
             //
             return $this->authorizeSecondRecurring($input);
         }
@@ -132,7 +131,7 @@ class Gateway extends Base\Gateway
                 ]);
         }
 
-        $attrs = $this->getCallbackAttributes($responseArray);
+        $attrs = $this->getResponseAttributes($responseArray);
 
         $gatewayPayment->fill($attrs);
 
@@ -203,7 +202,7 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
 
-        $attrs = $this->getCallbackAttributes($callbackData);
+        $attrs = $this->getResponseAttributes($callbackData);
 
         $gatewayPayment->fill($attrs);
 
@@ -451,12 +450,12 @@ class Gateway extends Base\Gateway
      * @param array $input
      * @return array
      */
-    protected function getEMandateRequestData(array $input)
+    protected function getEMandateRequestData(array $input) : array
     {
         $date = Carbon::now(Timezone::IST)->format('Y-m-d');
 
         $endDate = Carbon::now(Timezone::IST)
-                         ->addYears(Base\Recurring::MAX_END_YEARS)
+                         ->addYears(Base\Entity::MAX_RECURRING_END_YEARS)
                          ->format('Y-m-d');
 
         $data = [
@@ -483,7 +482,7 @@ class Gateway extends Base\Gateway
      * @param array $input
      * @return bool
      */
-    protected function isEMandateRegistrationRequired(array $input)
+    protected function isEMandateRegistrationRequired(array $input) : bool
     {
         $paymentRecurring = $input['payment']['recurring'];
         $terminalRecurring = $input['terminal']->is3DSRecurring();
@@ -609,7 +608,7 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getCallbackAttributes(array $content)
+    protected function getResponseAttributes(array $content)
     {
         //
         // BID won't be sent back when the payment has not been scheduled in SI flow
@@ -754,7 +753,7 @@ class Gateway extends Base\Gateway
 
     public function getSpid()
     {
-        if ($this->mode === Constants\Mode::TEST)
+        if ($this->isTestMode() === true)
         {
             return $this->getTestMerchantId();
         }
@@ -764,7 +763,7 @@ class Gateway extends Base\Gateway
 
     public function getPid()
     {
-        if ($this->mode === Constants\Mode::TEST)
+        if ($this->isTestMode() === true)
         {
             if ($this->isCorporateBanking() === true)
             {

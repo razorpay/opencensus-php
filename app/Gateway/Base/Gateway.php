@@ -719,6 +719,11 @@ class Gateway
         return $this->input['terminal']['gateway_secure_secret'];
     }
 
+    protected function isTestMode()
+    {
+        return ($this->mode === Mode::TEST);
+    }
+
     protected function getNewGatewayPaymentEntity()
     {
         $class = $this->getGatewayNamespace() . '\Entity';

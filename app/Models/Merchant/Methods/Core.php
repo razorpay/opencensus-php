@@ -148,15 +148,16 @@ class Core extends Base\Core
             if ((empty($input['recurring']) === false) and
                 ((bool) $input['recurring'] === true))
             {
-                // By default we set netbanking banks to an empty array, we also set wallet to empty array
+                // Setting the defaults of a recurring payment. Ideally, we want to send only card and select netbanking banks
                 $data['netbanking'] = [];
                 $data['wallet'] = [];
+                $data['amex'] = false;
+                $data['upi'] = false;
 
                 // We set card to false if recurring is not enabled
                 if ($merchant->isFeatureEnabled(Constants::RECURRING) === false)
                 {
                     $data['card'] = false;
-                    $data['upi'] = false;
                 }
 
                 // If both recurring and e mandate are enabled,
