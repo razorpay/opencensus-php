@@ -7,21 +7,21 @@ use RZP\Reconciliator\Base;
 class Reconciliate extends Base\Reconciliate
 {
     const HEADERS = [
-        'txn_date',
+        'date',
         'txn_ref_no',
-        'e_coll_ac_no',
+        'payee_account',
         'dealer_name',
-        'master_ac_no',
+        'master_account',
         'amount',
-        'bene_cust_acname',
-        'send_cust_acname',
-        'send_cust_ac_no',
-        'remitt_info',
-        'snd_brn_ifsc',
+        'payee_name',
+        'payer_name',
+        'payer_account',
+        'remitter_info',
+        'payer_ifsc',
         'customer_code',
         'ref2',
-        'ref3',
-        'credit_time',
+        'mode',
+        'time',
     ];
 
     /**
