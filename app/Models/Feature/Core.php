@@ -3,10 +3,13 @@
 namespace RZP\Models\Feature;
 
 use Config;
+use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class Core extends Base\Core
 {
@@ -118,9 +121,61 @@ class Core extends Base\Core
      */
     public function notifyOnboardingResponseCreationOnSlack(string $featureName)
     {
-        $message = $this->merchant->getDashboardEntityLinkForSlack();
+        $newLineChar = "\n";
 
-        $message .= ' has submitted responses for activating ' . $featureName ;
+        $merchant = $this->merchant;
+
+        $message = $merchant->getDashboardEntityLinkForSlack();
+
+        $message .= ' has submitted responses for activating ' . $featureName . ' ' .$newLineChar;
+
+        if (((int)$merchant->isActivated()) === 1)
+        {
+            $activatedAtEpoch = $merchant->getAttribute(MerchantEntity::ACTIVATED_AT);
+
+            $activatedAtInIST = Carbon::createFromTimestamp($activatedAtEpoch, Timezone::IST);
+            $activationDate   = $activatedAtInIST->format('d/m/y');
+            $activationTime   = $activatedAtInIST->format('h:i:s');
+
+            $message .= 'The merchant\'s account has been activated ' .
+                ' on ' . $activationDate .
+                ' at ' . $activationTime .
+                ' ' . $newLineChar;
+        }
+        else
+        {
+            $message .= 'The merchant\'s account has not been activated. ' .
+                $newLineChar . $merchant->isActivated();
+        }
+
+        if (((int) $merchant->isLive()) === 1)
+        {
+            $message .= 'The account is live ' . $newLineChar;
+        }
+        else
+        {
+            $message .= 'The account is not live ' . $newLineChar;
+        }
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        if ($merchantDetails !== null)
+        {
+            $submittedAtEpoch = $merchantDetails->getSubmittedAt();
+
+            if ($submittedAtEpoch !== null)
+            {
+                $submittedAtEpoch = $merchant->getAttribute(MerchantEntity::ACTIVATED_AT);
+
+                $submittedAtInIST = Carbon::createFromTimestamp($submittedAtEpoch, Timezone::IST);
+                $submissionDate   = $submittedAtInIST->format('d/m/y');
+                $submissionTime   = $submittedAtInIST->format('h:i:s');
+
+                $message .= 'The details were submitted' .
+                    ' on ' . $submissionDate .
+                    ' at ' . $submissionTime;
+            }
+        }
 
         $this->app['slack']->queue(
             $message,

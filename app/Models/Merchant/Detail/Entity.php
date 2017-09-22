@@ -301,6 +301,11 @@ class Entity extends Base\PublicEntity
         return substr($gstin, 0, 2);
     }
 
+    public function getSubmittedAt()
+    {
+        return $this->getAttribute(self::SUBMITTED_AT);
+    }
+
     public function setContactEmail($email)
     {
         $this->setAttribute(self::CONTACT_EMAIL, $email);
