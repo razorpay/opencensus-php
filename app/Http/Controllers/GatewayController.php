@@ -97,7 +97,6 @@ class GatewayController extends Controller
         switch ($gateway)
         {
             // Standard Cases
-            case 'upi_hdfc':
             case 'wallet_freecharge':
             case 'billdesk':
                 $data = $this->processServerCallback($input, $gateway);
@@ -105,6 +104,12 @@ class GatewayController extends Controller
 
             // Only logs the response
             case 'wallet_olamoney':
+                break;
+
+            //Special case because gateway is upi_mindgate
+            case 'upi_hdfc':
+                $data = $this->processServerCallback($input, Payment\Gateway::UPI_MINDGATE);
+
                 break;
 
             // Special case because we need the raw request body
