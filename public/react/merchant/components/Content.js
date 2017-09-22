@@ -288,13 +288,13 @@ export default class Content extends Component {
                 <Route path="/virtualaccounts" component={VirtualAccounts} />
 
                 <Route path="/reports" component={Reports} />
-                <Route path="/team" component={TeamManagement} />
 
                 <Route path="/profile" component={MyAccount} />
                 <Route path="/activation" component={MyAccount} />
                 <Route path="/addfunds" component={MyAccount} />
                 <Route path="/credits" component={MyAccount} />
                 <Route path="/referrals" component={MyAccount} />
+                <Route path="/team" component={MyAccount} />
 
                 <Route path="/config" component={Settings} />
                 <Route path="/keys" component={Settings} />

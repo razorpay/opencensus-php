@@ -255,17 +255,17 @@ export default class Sidebar extends Component {
                     to={routes.paymentlinks}
                   />
                   <MainNavLink
-                    label="Subscriptions"
-                    icon="icon icon-refresh text-info"
-                    notMyRole="sellerapp support"
-                    to={routes.subscriptions}
-                    isNew={true}
-                  />
-                  <MainNavLink
                     label="Route"
                     icon="icon icon-store text-success"
                     to={routes.marketplace}
                     notMyRole="sellerapp support"
+                    isNew={true}
+                  />
+                  <MainNavLink
+                    label="Subscriptions"
+                    icon="icon icon-refresh text-info"
+                    notMyRole="sellerapp support"
+                    to={routes.subscriptions}
                     isNew={true}
                   />
                   <MainNavLink
@@ -292,12 +292,6 @@ export default class Sidebar extends Component {
                     icon="icon icon-books text-danger"
                     to="/reports"
                     notMyRole="sellerapp support"
-                  />
-                  <MainNavLink
-                    label="Manage Team"
-                    icon="icon icon-city text-info"
-                    to="/team"
-                    myRole="owner"
                   />
                   <MainNavLink
                     label="My Account"

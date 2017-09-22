@@ -7,6 +7,7 @@ import Activation from 'merchant/containers/Activation';
 import AddFunds from 'merchant/containers/AddFunds';
 import Credits from 'merchant/containers/Credits/List';
 import Referrals from 'merchant/containers/Referrals/List';
+import TeamManagement from 'merchant/containers/Team';
 
 export default class MyAccount extends Component {
   render() {
@@ -29,6 +30,10 @@ export default class MyAccount extends Component {
           <ShowWhen notMyRole="sellerapp support" featureEnabled="Referral">
             <NavLink to="/referrals">Referrals</NavLink>
           </ShowWhen>
+
+          <ShowWhen myRole="owner">
+            <NavLink to="/team">Manage Team</NavLink>
+          </ShowWhen>
         </header>
         <content>
           <Route path="/profile" component={Profile} />
@@ -36,6 +41,7 @@ export default class MyAccount extends Component {
           <Route path="/credits" component={Credits} />
           <Route path="/addfunds" component={AddFunds} />
           <Route path="/referrals" component={Referrals} />
+          <Route path="/team" component={TeamManagement} />
         </content>
       </tabbed-container>
     );
