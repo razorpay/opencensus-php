@@ -77,10 +77,7 @@ app.controller('MerchantActivationCtrl', [
     function getOnboardingResponses() {
       var data = {
         route_name: 'feature_onboarding_fetch_all_responses',
-
-        url_params: {
-          '{id}': $scope.merchant.id,
-        },
+        merchant_id: $scope.merchant.id,
       };
       var request = $http({
         method: 'get',
