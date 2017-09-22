@@ -19,6 +19,15 @@ use RZP\Mail\Merchant\Activation as ActivationMail;
 
 class Activate extends Base\Core
 {
+    const MAIL_EXCLUDED_METHODS = [
+        // Don't include marketplace transfer method (for now)
+        Payment\Method::TRANSFER,
+
+        // Don't include bank transfer (VA) method (for now)
+        // TODO: Will add once we've figured out how to display max fees correctly
+        Payment\Method::BANK_TRANSFER
+    ];
+
     public function activate(Entity $merchant)
     {
         $merchant->getValidator()->validateBeforeActivate();
@@ -360,8 +369,8 @@ class Activate extends Base\Core
                 continue;
             }
 
-            // Don't include marketplace transfer method (for now)
-            if ($rule[Pricing\Entity::PAYMENT_METHOD] === Payment\Method::TRANSFER)
+            // Not mentioning some methods in the activation mails
+            if (in_array($rule[Pricing\Entity::PAYMENT_METHOD], self::MAIL_EXCLUDED_METHODS, true) === true)
             {
                 continue;
             }
@@ -373,9 +382,9 @@ class Activate extends Base\Core
                 continue;
             }
 
-            // Don't add emi rule if merchant emi not active
-            if (($merchantMethods->isEmiEnabled() === false) and
-                 ($rule[Pricing\Entity::PAYMENT_METHOD] === Methods\Entity::EMI))
+            $methodCheck = 'is' . studly_case($rule[Pricing\Entity::PAYMENT_METHOD]) . 'Enabled';
+
+            if ($merchantMethods->$methodCheck() === false)
             {
                 continue;
             }

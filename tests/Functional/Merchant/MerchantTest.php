@@ -432,6 +432,11 @@ class MerchantTest extends TestCase
             $this->assertNotNull($mailData['rules']['amountRangeRules']);
             $this->assertNotNull($mailData['rules']['otherRules']);
 
+            // A pricing rule without a valid display pricing would
+            // appear in the mail as one with empty string as display.
+            $this->assertArrayNotHasKey('', $mailData['rules']['otherRules']);
+            $this->assertArrayNotHasKey('', $mailData['rules']['amountRangeRules']);
+
             return true;
         });
 
