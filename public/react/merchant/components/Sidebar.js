@@ -262,13 +262,6 @@ export default class Sidebar extends Component {
                     isNew={true}
                   />
                   <MainNavLink
-                    label="Customers"
-                    icon="icon icon-people text-warning"
-                    to="/customers"
-                    featureEnabled="Invoice"
-                    notMyRole="sellerapp"
-                  />
-                  <MainNavLink
                     label="Route"
                     icon="icon icon-store text-success"
                     to={routes.marketplace}
@@ -281,6 +274,15 @@ export default class Sidebar extends Component {
                     to="/virtualaccounts"
                     notMyRole="sellerapp support"
                     isNew={true}
+                  />
+
+                  <MainNavLink
+                    label="Customers"
+                    icon="icon icon-people text-warning"
+                    to="/customers"
+                    featureEnabled="Invoice"
+                    apiFeatureEnabled={['subscriptions', 'virtual_accounts']}
+                    notMyRole="sellerapp"
                   />
 
                   <div class="divider" />
