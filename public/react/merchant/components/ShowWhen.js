@@ -31,6 +31,8 @@ export default class ShowWhen extends Component {
     tags = tags.map(tag => tag.toLowerCase());
     let userRole;
 
+    let isContentVisible = true;
+
     if (user.isAuthenticated) {
       userRole = user.userRole;
     }
@@ -39,33 +41,35 @@ export default class ShowWhen extends Component {
       (myRole && myRoles.indexOf(userRole) === -1) ||
       (notMyRole && notMyRoles.indexOf(userRole) !== -1)
     ) {
-      return null;
+      isContentVisible = false;
     }
 
     if (apiFeatureEnabled) {
-      let feature = findBy(
-        features,
-        'feature',
-        apiFeatureEnabled.toLowerCase()
-      );
-
-      // Feature doesn't exist OR feature has value false. Latter shouldn't happen but just for fallback
-      if (!feature || (feature && !feature.value)) {
-        return null;
+      if (apiFeatureEnabled instanceof Array) {
+        // Array elements will be matched to tags as per `OR` and not `AND`
+        if (
+          !apiFeatureEnabled.some(r => {
+            return user.isFeatureEnabled(r);
+          })
+        ) {
+          isContentVisible = false;
+        }
+      } else if (!user.isFeatureEnabled(apiFeatureEnabled)) {
+        isContentVisible = false;
       }
     }
 
-    if (featureEnabled) {
+    if (!isContentVisible && featureEnabled) {
       if (featureEnabled instanceof Array) {
         // Array elements will be matched to tags as per `OR` and not `AND`
         if (!featureEnabled.some(r => tags.includes(r.toLowerCase()))) {
-          return null;
+          isContentVisible = false;
         }
       } else if (tags.indexOf(featureEnabled.toLowerCase()) === -1) {
-        return null;
+        isContentVisible = false;
       }
     }
 
-    return children;
+    return isContentVisible ? children : null;
   }
 }
