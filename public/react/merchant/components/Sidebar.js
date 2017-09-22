@@ -294,12 +294,6 @@ export default class Sidebar extends Component {
                     notMyRole="sellerapp support"
                   />
                   <MainNavLink
-                    label="Manage Team"
-                    icon="icon icon-city text-info"
-                    to="/team"
-                    myRole="owner"
-                  />
-                  <MainNavLink
                     label="My Account"
                     id="myaccount-nav"
                     icon="icon icon-account text-primary"
