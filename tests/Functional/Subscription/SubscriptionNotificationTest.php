@@ -72,6 +72,9 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertEquals('authenticated', $data['subscription']['status']);
             $this->assertEquals(0, $data['subscription']['type']);
             $this->assertEquals('20 Jan 2018', $data['subscription']['charge_at']);
+            $this->assertStringStartsWith(
+                'https://api.razorpay.com/v1/t/subscriptions',
+                $data['subscription']['hosted_url']);
 
             $this->assertEquals('test plan', $data['plan_item']['name']);
             $this->assertEquals('Some item description', $data['plan_item']['description']);
