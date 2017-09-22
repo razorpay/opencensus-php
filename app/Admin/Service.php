@@ -375,7 +375,6 @@ class Service extends Base\Service
         $response = [
             'archived_at'         => $merchant['archived_at'],
             'suspended_at'        => $merchant['suspended_at'],
-            'steps_finished'      => $merchantDetail['steps_finished'],
             'locked'              => $merchantDetail['locked'],
             'submitted'           => $merchantDetail['submitted'],
             'submitted_at'        => $merchantDetail['submitted_at'],
