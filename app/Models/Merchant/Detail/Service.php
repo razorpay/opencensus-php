@@ -66,7 +66,7 @@ class Service extends Base\Service
 
         $merchantDetails->edit($input);
 
-        return $this->repo->transaction(function() use ($input, $merchantDetails)
+        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails)
         {
             $this->repo->saveOrFail($merchantDetails);
 
