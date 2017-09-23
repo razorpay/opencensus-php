@@ -33,7 +33,13 @@ class Notify
     const HIGH_RISK_RATING     = 4;
     const MAX_HIGH_RISK_RATING = 5;
 
+    /**
+     * @var Payment\Entity
+     */
     protected $payment;
+    /**
+     * @var Payment\Refund\Entity
+     */
     protected $refund;
     protected $merchant;
     protected $mode;
@@ -69,8 +75,6 @@ class Notify
 
     /**
      * Regenerates the entire template
-     *
-     * @return null
      */
     protected function refreshTemplate()
     {
@@ -91,10 +95,9 @@ class Notify
     /**
      * Sends out mails for a particular event trigger
      *
-     * @param  string $event
-     * @return null
+     * @param string $event
      */
-    protected function notifyViaMail($event)
+    protected function notifyViaMail(string $event)
     {
         $mailableClass = $this->getMailableClass($event);
 
@@ -232,9 +235,8 @@ class Notify
      * This is the primary public method for this class
      *
      * @param  string $event Trigger notifications for this event
-     * @return null
      */
-    public function trigger($event)
+    public function trigger(string $event)
     {
         /**
          * This is wrapped in a try-catch block as this is not
@@ -369,7 +371,7 @@ class Notify
             $data['orderId'] = $orderId;
         }
 
-        // This is for both pyaments and refund
+        // This is for both payments and refund
         if (isset($data['timestamp']))
         {
             unset($data['timestamp']);
@@ -519,13 +521,13 @@ class Notify
      */
     protected function flatten(array $array, $prefix = '')
     {
-        $result = array();
+        $result = [];
 
         foreach ($array as $key => $value)
         {
             if (is_array($value))
             {
-                $result = $result + $this->flatten($value, $prefix . $key . '.');
+                $result += $this->flatten($value, $prefix . $key . '.');
             }
             else
             {
@@ -539,7 +541,7 @@ class Notify
     /**
      * Decides if we send a mail to customer for a payment event
      *
-     * @param PaymentMail\Base|Mailable $mailable Mailable object being sent
+     * @param PaymentMail\Base $mailable Mailable object being sent
      *
      * @return bool
      */
@@ -579,9 +581,11 @@ class Notify
      */
     protected function isEnabled()
     {
+        //
         // We only send notifications if Mode is not TEST
         // or if the env=dev or env=testing
         // so env=dev or env=testing overrides TEST mode
+        //
         if ($this->app->environment('dev', 'testing'))
         {
             return true;
@@ -602,7 +606,8 @@ class Notify
      */
     protected function isSlackEnabled()
     {
-        return ($this->isEnabled() and $this->slackEnabled);
+        return (($this->isEnabled() === true) and
+                ($this->slackEnabled === true));
     }
 
     protected function getMailableClass(string $event)

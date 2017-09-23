@@ -20,9 +20,9 @@ class Charged extends Base
         return $this;
     }
 
-    protected function getResult()
+    protected function getAction()
     {
-        return 'Subscription charged successfully';
+        return 'Subscription Charged Successfully';
     }
 
     protected function getMailTag()

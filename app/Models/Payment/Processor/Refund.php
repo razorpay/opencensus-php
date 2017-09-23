@@ -1036,19 +1036,18 @@ trait Refund
      * - EMails (to both customer and merchant)
      *
      * @param  Payment\Entity $payment Payment Entity
-     *
-     * @return null
      */
     protected function sendRefundNotification(Payment\Entity $payment)
     {
         //
         // Analytics is on dashboard side for now
         //
-        $this->notifyDashboard('refund', $this->refund);
 
         $notifier = new Notify($payment);
         $notifier->addRefund($this->refund);
         $notifier->trigger(Payment\Event::REFUNDED);
+
+        $this->notifyDashboard('refund', $this->refund);
     }
 
     protected function createRefundOnApiSeparately(

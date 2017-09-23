@@ -500,8 +500,6 @@ trait Capture
      * Fires multiple events after payment is captured:
      * - api.order.paid
      * - api.invoice.paid
-     *
-     * @return null
      */
     protected function triggerPaymentCapturedEvents()
     {
@@ -514,8 +512,6 @@ trait Capture
 
     /**
      * Triggers notifications after payment is captured.
-     *
-     * @return null
      */
     protected function notifyPaymentCaptured()
     {

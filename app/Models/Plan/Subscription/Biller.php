@@ -52,7 +52,7 @@ class Biller extends Base\Core
 
         if ($this->shouldCharge($subscription, $invoice) === true)
         {
-            return (new Core)->charge($subscription, $invoice, $options);
+            return $core->charge($subscription, $invoice, $options);
         }
         else
         {

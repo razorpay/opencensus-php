@@ -148,21 +148,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
-    public function getFormattedAmount(): string
-    {
-        $currency = $this->getCurrency();
-
-        $currencySymbol = Currency\Currency::SYMBOL[$currency];
-
-        $denominationFactor = Currency\Currency::DENOMINATION_FACTOR[$currency];
-
-        $amount = $this->getAmount() / $denominationFactor;
-
-        $amount = sprintf($amount == intval($amount) ? '%d' : '%.2f', $amount);
-
-        return $currencySymbol . ' ' . $amount;
-    }
-
     public function getCurrency(): string
     {
         return $this->getAttribute(self::CURRENCY);

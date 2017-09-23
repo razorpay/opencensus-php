@@ -19,16 +19,34 @@ use RZP\Models\Payment\Processor;
 class Notify extends Processor\Notify
 {
     protected $app;
+    /**
+     * @var Payment\Entity
+     */
     protected $payment;
+    /**
+     * @var Merchant\Entity
+     */
     protected $merchant;
+    /**
+     * @var string
+     */
     protected $mode;
     protected $trace;
     protected $template;
+    /**
+     * @var null|Invoice\Entity
+     */
     protected $invoice = null;
+    /**
+     * @var null|Entity
+     */
     protected $subscription = null;
+    /**
+     * @var array
+     */
     protected $options = [];
 
-    function __construct(Subscription\Entity $subscription, array $options = [])
+    public function __construct(Subscription\Entity $subscription, array $options = [])
     {
         $this->app = App::getFacadeRoot();
 
@@ -57,6 +75,42 @@ class Notify extends Processor\Notify
         $this->refreshTemplate();
     }
 
+    /**
+     * This is the primary public method for this class
+     *
+     * @param  string $event Trigger notifications for this event
+     */
+    public function trigger(string $event)
+    {
+        /**
+         * This is wrapped in a try-catch block as this is not
+         * critical path for the payment operation
+         * We should continue running even if this raises critical error.
+         */
+        try
+        {
+            // Send out notification for Slack
+            $this->notifyViaSlack($event);
+
+            // Mails use the entire template
+            // So there is no need to get separate data for each
+            $this->notifyViaMail($event);
+        }
+        catch (\Exception $e)
+        {
+            // Shouldn't fail for any reason
+            $this->trace->error(
+                TraceCode::SUBSCRIPTION_NOTIFY_FAILED,
+                [
+                    'subscription_id' => $this->subscription->getPublicId(),
+                    'message'         => 'Subscription Notify raised an exception'
+                ]
+            );
+
+            $this->trace->traceException($e);
+        }
+    }
+
     protected function notifyViaSlack($event)
     {
         $slackMessages = [
@@ -75,10 +129,12 @@ class Notify extends Processor\Notify
             'color'   => $this->getSlackColor($event),
         ];
 
+        //
         // Send out Slack notifications for the event
         // You can control slack posts via SLACK_ENABLE
+        //
         if ((array_key_exists($event, $slackMessages)) and
-            ($this->isSlackEnabled()))
+            ($this->isSlackEnabled() === true))
         {
             $slackData = $this->getSlackData($event);
 
@@ -89,10 +145,9 @@ class Notify extends Processor\Notify
     /**
      * Sends out mails for a particular event trigger
      *
-     * @param  string $event
-     * @return null
+     * @param string $event
      */
-    protected function notifyViaMail($event)
+    protected function notifyViaMail(string $event)
     {
         $mailableClass = $this->getMailableClass($event);
 
@@ -121,6 +176,8 @@ class Notify extends Processor\Notify
 
     /**
      * Returns color to use for slack posts
+     *
+     * @param string $event
      *
      * @return string
      */
@@ -153,49 +210,13 @@ class Notify extends Processor\Notify
     }
 
     /**
-     * This is the primary public method for this class
-     *
-     * @param  string $event Trigger notifications for this event
-     * @return null
-     */
-    public function trigger($event)
-    {
-        /**
-         * This is wrapped in a try-catch block as this is not
-         * critical path for the payment operation
-         * We should continue running even if this raises critical error.
-         */
-        try
-        {
-            // Send out notification for Slack
-            $this->notifyViaSlack($event);
-
-            // Mails use the entire template
-            // So there is no need to get separate data for each
-            $this->notifyViaMail($event);
-        }
-        catch (\Exception $e)
-        {
-            // Shouldn't fail for any reason
-            $this->trace->error(
-                TraceCode::SUBSCRIPTION_NOTIFY_FAILED,
-                [
-                    'subscription_id' => $this->subscription->getPublicId(),
-                    'message'         => 'Subscription Notify raised an exception'
-                ]
-            );
-
-            $this->trace->traceException($e);
-        }
-    }
-
-    /**
      * Returns slack formatted version of a subscription id
      *
-     * @param  string $id Subscription Id
+     * @param string $id
+     *
      * @return string
      */
-    protected function getSubscriptionLinkForSlack($id)
+    protected function getSubscriptionLinkForSlack(string $id)
     {
         return "<https://dashboard.razorpay.com/admin#/app/entity/live/subscription/$id|sub_$id>";
     }
@@ -289,7 +310,7 @@ class Notify extends Processor\Notify
         {
             $card = $this->subscription->token->card;
 
-            $expiryMonth = str_pad($card->getExpiryMonth(), 2, "0", STR_PAD_LEFT);
+            $expiryMonth = str_pad($card->getExpiryMonth(), 2, '0', STR_PAD_LEFT);
 
             $data['card'] = [
                 'number'    => '**** **** **** ' . $card->getLast4(),
@@ -305,11 +326,8 @@ class Notify extends Processor\Notify
                 Payment\Entity::ID              => $this->payment->getId(),
                 Payment\Entity::PUBLIC_ID       => $this->payment->getPublicId(),
                 Payment\Entity::AMOUNT          => $this->payment->getFormattedAmount(),
-                // Payment\Entity::TIMESTAMP       => $this->payment->getUpdatedAt(),
                 Payment\Entity::CAPTURED_AT     => $this->formatTime($this->payment->getAttribute('captured_at')),
-
-                // note that payment method is unavailable to the merchant
-                Payment\Entity::METHOD    => $this->payment->getMethodWithDetail(),
+                Payment\Entity::METHOD          => $this->payment->getMethodWithDetail(),
             ];
 
             if ($this->payment->isFailed() === true)
@@ -358,10 +376,10 @@ class Notify extends Processor\Notify
     {
         if ($time === null)
         {
-            return;
+            return null;
         }
 
-        return Carbon::createFromTimestamp($time, Timezone::IST)->format('j M Y');
+        return Carbon::createFromTimestamp($time, Timezone::IST)->format('j M Y H:i:s');
     }
 
     protected function isTimestamp($key, $value)
@@ -391,16 +409,18 @@ class Notify extends Processor\Notify
         return true;
     }
 
+    /**
+     * Decides if we send a mail to customer for a payment event
+     *
+     * @return bool
+     */
     protected function isCustomerMailEnabledForMerchant()
     {
-        // If the merchant has disabled customer emails
-        // And this was a customer receipt email don't send a mail
+        //
+        // If the merchant has disabled customer emails and
+        // this was a customer receipt email don't send a mail
+        //
         if ($this->merchant->isReceiptEmailsEnabled() === false)
-        {
-            return false;
-        }
-
-        if ($this->template['customer']['email'] === null)
         {
             return false;
         }

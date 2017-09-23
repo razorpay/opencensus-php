@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Models\Plan;
+use RZP\Models\Item;
 use RZP\Models\Invoice;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
@@ -21,6 +22,8 @@ use RZP\Models\Base\Traits\NotesTrait;
  * @property Task\Entity        $task
  * @property Merchant\Entity    $merchant
  * @property Customer\Entity    $customer
+ * @property Plan\Entity        $plan
+ * @property Item\Entity        $item
  */
 class Entity extends Base\PublicEntity
 {

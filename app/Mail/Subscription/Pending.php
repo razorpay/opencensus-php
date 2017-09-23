@@ -20,9 +20,9 @@ class Pending extends Base
         return $this;
     }
 
-    protected function getResult()
+    protected function getAction()
     {
-        return 'Subscription charge failed';
+        return 'Subscription Charge Failed';
     }
 
     protected function getMailTag()

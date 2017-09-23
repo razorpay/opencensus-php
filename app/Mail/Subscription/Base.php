@@ -22,11 +22,11 @@ class Base extends Payment\Base
 
     protected function addSubject()
     {
-        $result = $this->getResult();
+        $action = $this->getAction();
 
         $label = $this->data['merchant']['billing_label'];
 
-        $subject = "$result for $label";
+        $subject = "$action for $label";
 
         if ($this->isMerchantEmail === true)
         {

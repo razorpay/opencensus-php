@@ -20,7 +20,7 @@ class InvoiceCharged extends Base
         return $this;
     }
 
-    protected function getResult()
+    protected function getAction()
     {
         return 'Subscription Invoice Charged';
     }

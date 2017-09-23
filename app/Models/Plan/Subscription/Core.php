@@ -526,11 +526,6 @@ class Core extends Base\Core
         $this->triggerSubscriptionNotification($subscription, $event, $notifyOptions);
     }
 
-    public function triggerSubscriptionAuthenticatedNotification(Entity $subscription)
-    {
-        $this->triggerSubscriptionNotification($subscription, Event::AUTHENTICATED);
-    }
-
     public function cancel(Entity $subscription, array $input): Entity
     {
         $this->trace->info(
@@ -800,6 +795,14 @@ class Core extends Base\Core
         array $options = [])
     {
         assert ($this->repo->isTransactionActive() === false);
+
+        //
+        // No point triggering a notification if we don't even have an email
+        //
+        if ($subscription->customer->getEmail() === null)
+        {
+            return;
+        }
 
         $notifier = new Notify($subscription, $options);
 

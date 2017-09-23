@@ -20,9 +20,9 @@ class Cancelled extends Base
         return $this;
     }
 
-    protected function getResult()
+    protected function getAction()
     {
-        return 'Subscription cancelled';
+        return 'Subscription Cancelled';
     }
 
     protected function getMailTag()

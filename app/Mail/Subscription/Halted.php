@@ -20,9 +20,9 @@ class Halted extends Base
         return $this;
     }
 
-    protected function getResult()
+    protected function getAction()
     {
-        return 'Subscription halted';
+        return 'Subscription Halted';
     }
 
     protected function getMailTag()
