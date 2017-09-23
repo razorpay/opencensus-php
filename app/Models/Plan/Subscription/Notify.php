@@ -26,7 +26,6 @@ class Notify extends Processor\Notify
     protected $template;
     protected $invoice = null;
     protected $subscription = null;
-    protected $slackEnabled = true;
     protected $options = [];
 
     function __construct(Subscription\Entity $subscription, array $options = [])
@@ -377,11 +376,31 @@ class Notify extends Processor\Notify
             ($value >= -PHP_INT_MAX));
     }
 
+    /**
+     * Whether to send slack notifications
+     *
+     * @return boolean
+     */
+    protected function isSlackEnabled()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     protected function isCustomerMailEnabledForMerchant()
     {
         // If the merchant has disabled customer emails
         // And this was a customer receipt email don't send a mail
         if ($this->merchant->isReceiptEmailsEnabled() === false)
+        {
+            return false;
+        }
+
+        if ($this->template['customer']['email'] === null)
         {
             return false;
         }

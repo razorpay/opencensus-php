@@ -1046,17 +1046,6 @@ trait Refund
         //
         $this->notifyDashboard('refund', $this->refund);
 
-        //
-        // If a payment has a subscription id, but no invoice id this means it is an token charge
-        // to authenticate the subscription, or to change the card associated with that subscription.
-        // Either way, this payment gets auto-refunded instantly, and the authenticate/card_change
-        // mail will already tell the customer that the payment is refunded.
-        if (($payment->hasSubscription() === true) and
-            ($payment->hasInvoice() === false))
-        {
-            return;
-        }
-
         $notifier = new Notify($payment);
         $notifier->addRefund($this->refund);
         $notifier->trigger(Payment\Event::REFUNDED);
