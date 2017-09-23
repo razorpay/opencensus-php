@@ -81,8 +81,7 @@ class Service extends Base\Service
 
     protected function validateProvider()
     {
-        if ((Provider::validateMode($this->provider, $this->mode) === false) or
-            (Provider::validateIp($this->provider, $this->ip) === false))
+        if (Provider::validateIp($this->provider, $this->ip) === false)
         {
             $this->trace->error(
                 TraceCode::BANK_TRANSFER_PROVIDER_VALIDATION_FAILED,
