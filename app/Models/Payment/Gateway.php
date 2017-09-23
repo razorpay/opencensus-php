@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Payment;
 
-use RZP\Constants\Mode;
+use RZP\Models\Customer\Token;
 use RZP\Exception;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Card\Network;
@@ -588,6 +588,18 @@ class Gateway
     public static $subscriptionOverOneYearGateways = [
         Gateway::AXIS_MIGS
     ];
+
+    public static $shouldNotSetNon3DSTerminalsInTokenGateways = [
+        Gateway::FIRST_DATA,
+    ];
+
+    public static function shouldSetTokenTerminal(Token\Entity $token, Entity $payment)
+    {
+        $shouldNotSetTokenTerminal = ((in_array($payment->getGateway(), self::$shouldNotSetNon3DSTerminalsInTokenGateways, true) === true) and
+                                      (empty($token->getTerminalId()) === false));
+
+        return $shouldNotSetTokenTerminal === false;
+    }
 
     public static function getAcquirerName(string $acquirer)
     {

@@ -2195,10 +2195,7 @@ trait Authorize
             //
             // For First Data second recurring payments we do not update the token's terminal
             //
-            $shouldTokenTerminalNotBeSet = (($payment->terminal->getGateway() === Payment\Gateway::FIRST_DATA) and
-                                            (empty($token->getTerminalId()) === false));
-
-            if ($shouldTokenTerminalNotBeSet === false)
+            if (Payment\Gateway::shouldSetTokenTerminal($token, $payment) === true)
             {
                 // TODO: Refactor this later
                 $token->terminal()->associate($payment->terminal);
