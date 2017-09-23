@@ -754,10 +754,9 @@ class Service extends Base\Service
         }
 
         $requestConfig = [
-            'route_name' => 'merchant_details_fetch',
-            'query_params' => [
-              'account_id'  => $id,
-            ],
+            'route_name'    => 'merchant_details_fetch',
+            'account_id'    => $id,
+            'merchant_id'   => $id,
         ];
 
         $genericService = new Generic\Service;
