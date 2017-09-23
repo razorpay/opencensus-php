@@ -4,6 +4,7 @@ namespace RZP\Models\Customer\Token;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\ServerErrorException;
 
 class RecurringStatus
 {
@@ -31,7 +32,7 @@ class RecurringStatus
     {
         if (self::isRecurringStatusValid($recurringStatus) === false)
         {
-            throw new BadRequestException(
+            throw new ServerErrorException(
                 ErrorCode::SERVER_ERROR_TOKEN_INVALID_RECURRING_STATUS,
                 Entity::RECURRING_STATUS,
                 [
