@@ -2445,6 +2445,9 @@ ALTER TABLE transfers
     ADD CONSTRAINT transfers_recipient_settlement_id_foreign FOREIGN KEY(recipient_settlement_id)
     REFERENCES settlements(id) ON DELETE RESTRICT;
 
+ALTER TABLE subscriptions
+    ADD COLUMN type TINYINT(1) UNSIGNED DEFAULT 0 AFTER customer_notify;
+
 ALTER TABLE gateway_rules
     MODIFY COLUMN gateway VARCHAR(50) DEFAULT NULL;
 
@@ -2484,3 +2487,7 @@ ALTER TABLE line_items
 
 ALTER TABLE batches
     MODIFY COLUMN `type` CHAR(25);
+
+# Marketplace auto-activate
+ALTER TABLE merchants
+    ADD COLUMN linked_account_kyc TINYINT(1) NOT NULL DEFAULT 0 AFTER fee_model;

@@ -3,15 +3,14 @@
 namespace RZP\Models\Merchant\Detail;
 
 use Carbon\Carbon;
-use Throwable;
+
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
-use RZP\Models\Merchant;
-use RZP\Models\Merchant\Detail;
-use RZP\Models\Merchant\Detail\ValidationFields;
-use RZP\Models\Merchant\Notify as NotifyTrait;
+use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Action as Action;
+use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 
 class Service extends Base\Service
@@ -35,7 +34,7 @@ class Service extends Base\Service
 
         foreach (Entity::UPLOADED_FIELDS as $key)
         {
-            if (isset($merchantDetails[$key]))
+            if (isset($merchantDetails[$key]) === true)
             {
                 $signedUrls[$key] = $this->getSignedUrl($merchantDetails[$key], $id);
             }
@@ -67,38 +66,45 @@ class Service extends Base\Service
 
         $merchantDetails->edit($input);
 
-        $this->repo->saveOrFail($merchantDetails);
-
-        $response = $this->createResponse($merchantDetails);
-
-        $eventAttributes = $this->merchant->toArrayEvent();
-
-        if ($this->canSubmit($input, $response) === true)
+        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails)
         {
-            $this->markSubmitted($merchantDetails);
+            $this->repo->saveOrFail($merchantDetails);
 
-            $this->app['eventManager']->trackEvents($this->merchant, Merchant\Action::SUBMITTED, $eventAttributes);
-        }
+            $response = $this->createResponse($merchantDetails);
 
-        $response = $this->createResponse($merchantDetails);
+            $eventAttributes = $this->merchant->toArrayEvent();
 
-        $activationProgress = $response['verification']['activation_progress'];
+            if ($this->canSubmit($input, $response) === true)
+            {
+                $this->markSubmitted($merchantDetails);
 
-        $merchantDetails->setActivationProgress($activationProgress);
+                $this->app['eventManager']->trackEvents($this->merchant, Merchant\Action::SUBMITTED, $eventAttributes);
+            }
 
-        $this->repo->saveOrFail($merchantDetails);
+            $response = $this->createResponse($merchantDetails);
 
-        if ($this->canSubmit($input, $response) === true)
-        {
-            (new Detail\Core)->fireActivationTrigger($merchantDetails);
-        }
+            $autoActivated = $this->autoActivateMerchantIfApplicable($merchantDetails);
 
-        $eventAttributes['activation_progress'] = $activationProgress;
+            $activationProgress = $response['verification']['activation_progress'];
 
-        $this->app['eventManager']
-             ->trackEvents($this->merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
+            $merchantDetails->setActivationProgress($activationProgress);
 
-        return $response;
+            $this->repo->saveOrFail($merchantDetails);
+
+            if ($this->canSubmit($input, $response) === true)
+            {
+                (new Core)->fireActivationTrigger($merchantDetails);
+            }
+
+            $response['auto_activated'] = $autoActivated;
+
+            $eventAttributes['activation_progress'] = $activationProgress;
+
+            $this->app['eventManager']
+                 ->trackEvents($this->merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
+
+            return $response;
+        });
     }
 
     public function uploadActivationFileAdmin(string $merchantId, array $input)
@@ -116,10 +122,14 @@ class Service extends Base\Service
 
     /**
      * Upload the file passed in $input for $merchant
-     * @param  Merchant\Entity      $merchant     Merchant Entity
-     * @param  array   $input       Input with the file
-     * @param  boolean $validateLock If true, blocks edits if the form is locked. Can be set to false
-     *                               to bypass locked forms
+     *
+     * @param  Merchant\Entity $merchant          Merchant Entity
+     * @param  array           $input
+     *                                            Input with the file
+     * @param  boolean         $validateLock      If true, blocks edits if the form is locked. Can be set to false
+     *                                            to bypass locked forms
+     *
+     * @return array
      */
     public function uploadActivationFile(Merchant\Entity $merchant, array $input, bool $validateLock = true)
     {
@@ -219,7 +229,7 @@ class Service extends Base\Service
 
     public function createMerchantDetails(Merchant\Entity $merchant, array $input = [])
     {
-        $merchantDetail = (new Detail\Entity)->build($input);
+        $merchantDetail = (new Entity)->build($input);
 
         $merchantDetail->setContactEmail($merchant->getEmail());
 
@@ -250,8 +260,8 @@ class Service extends Base\Service
     protected function canSubmit($input, $response)
     {
         return (($response['can_submit'] === true) and
-                (isset($input[Detail\Entity::SUBMIT]) === true) and
-                ($input[Detail\Entity::SUBMIT] === '1'));
+                (isset($input[Entity::SUBMIT]) === true) and
+                ($input[Entity::SUBMIT] === '1'));
     }
 
     protected function markSubmitted($merchantDetails)
@@ -268,7 +278,7 @@ class Service extends Base\Service
         $this->repo->saveOrFail($merchantDetails);
     }
 
-    protected function createFile(Detail\Entity $merchantDetail,
+    protected function createFile(Entity $merchantDetail,
                                     string $extension,
                                     $file,
                                     string $fileName,
@@ -291,7 +301,7 @@ class Service extends Base\Service
         return $file;
     }
 
-    protected function createResponse(Detail\Entity $merchantDetails)
+    protected function createResponse(Entity $merchantDetails)
     {
         $merchantDetailsArr = $merchantDetails->toArray();
 
@@ -301,9 +311,31 @@ class Service extends Base\Service
 
         $validationFields = ValidationFields::DASHBOARD_FIELDS;
 
-        if ($merchantDetails->merchant->isLinkedAccount() === true)
+        $merchant = $merchantDetails->merchant;
+
+        if ($merchant->isLinkedAccount() === true)
         {
             $validationFields = ValidationFields::MARKETPLACE_ACCOUNT_FIELDS;
+
+            $parentMerchant = $merchant->parent;
+
+            //
+            // If the linked account's parent was flagged by admins,
+            // linked accounts need to add additional KYC details and
+            // documents before allowing the merchant to submit the form
+            //
+            if ($parentMerchant->linkedAccountsRequireKyc() === true)
+            {
+                $kycValidationFields = ValidationFields::MARKETPLACE_ACCOUNT_KYC_FIELDS;
+
+                $validationFields = array_merge($validationFields, $kycValidationFields);
+            }
+
+            //
+            // set key `need_kyc` for the client to determine where full KYC is needed
+            // for a linked accounts activation
+            //
+            $response['need_kyc'] = (int) $parentMerchant->linkedAccountsRequireKyc();
         }
 
         $totalFields = count($validationFields);
@@ -311,9 +343,9 @@ class Service extends Base\Service
         foreach ($validationFields as $key)
         {
             if ((array_key_exists($key, $merchantDetailsArr) === false) or
-               (is_null($merchantDetailsArr[$key]) === true) or
+                (is_null($merchantDetailsArr[$key]) === true) or
                 ((is_bool($merchantDetailsArr[$key]) !== true) and
-                    (empty($merchantDetailsArr[$key]) === true)))
+                 (empty($merchantDetailsArr[$key]) === true)))
             {
                 $requiredFields[] = $key;
             }
@@ -342,7 +374,7 @@ class Service extends Base\Service
             $response['can_submit'] = true;
         }
 
-        $response['activated'] = (int) $merchantDetails->merchant->isActivated();
+        $response['activated'] = (int) $merchant->isActivated();
 
         return $response;
     }
@@ -397,6 +429,36 @@ class Service extends Base\Service
         $this->calculateFinishedSteps($merchantDetails);
 
         return $merchantDetails;
+    }
+
+    /**
+     * Checks and auto activates the merchant if possible, after form submission
+     *
+     * @param Entity $merchantDetails
+     *
+     * @return bool
+     */
+    protected function autoActivateMerchantIfApplicable(Entity $merchantDetails): bool
+    {
+        //
+        // Auto-activation is attempted if the following conditions are met
+        //
+        if (($merchantDetails->isSubmitted() === true) and
+            ($this->merchant->isLinkedAccount() === true))
+        {
+            $bankCore = (new BankAccount\Core);
+
+            // Build the input array for the merchant's bank account creation
+            $bankData = $bankCore->buildBankAccountArrayFromMerchantDetail($merchantDetails, true);
+
+            $bankCore->createOrChangeBankAccount($bankData, $this->merchant);
+
+            (new Merchant\Activate)->autoActivate($this->merchant);
+
+            return true;
+        }
+
+        return false;
     }
 
     private function calculateFinishedSteps(array & $merchantDetails)

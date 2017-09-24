@@ -207,6 +207,14 @@ class Gateway extends Base\Gateway
 
         $queryString = urldecode(http_build_query($data));
 
+        //This is done because we need to pass BID key even if it is null
+        //in case we don't receive a callback
+        if (($this->action === Action::VERIFY) and
+            (empty($data[RequestFields::BANK_REFERENCE_ID]) === true))
+        {
+            $queryString  = $queryString . '&' . RequestFields::BANK_REFERENCE_ID . '=';
+        }
+
         return $this->encryptString($queryString);
     }
 

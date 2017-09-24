@@ -2,13 +2,15 @@
 
 namespace RZP\Models\Plan\Subscription;
 
+use App;
 use Carbon\Carbon;
 
 use RZP\Base;
+use RZP\Exception;
 use RZP\Exception\BadRequestValidationFailureException;
+
 use RZP\Models\Invoice;
 use RZP\Error\ErrorCode;
-use RZP\Exception;
 use RZP\Trace\TraceCode;
 use RZP\Models\Plan\Cycle;
 
@@ -48,6 +50,15 @@ class Validator extends Base\Validator
     protected static $createValidators = [
         Entity::TOTAL_COUNT,
         Entity::END_AT,
+    ];
+
+    protected static $manualTestChargeRules = [
+        // Enforcing this because it makes things easier in constructRecurringPayload
+        // of Subscription\Core. There, when deciding whether or not to send the
+        // test_success flag, we can just use the fact that test_success is set in
+        // the input. If we have a default value, it will need to be handled so as
+        // to NOT send that default value in the usual charge cron payloads.
+        'success' => 'required|boolean',
     ];
 
     public function validateEndAtAfterGenerating()
@@ -117,7 +128,7 @@ class Validator extends Base\Validator
 
         $currentStatus = $subscription->getStatus();
 
-        if (in_array($currentStatus, Status::$nonCancellableStatuses, true) === true)
+        if ($subscription->isTerminalStatus() === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Subscription is not cancellable in ' . $currentStatus . ' status.',
@@ -140,7 +151,7 @@ class Validator extends Base\Validator
         //
         $traceCode = '';
 
-        if (in_array($subscription->getStatus(), Status::$nonChargeableStatuses, true) === true)
+        if (($subscription->isTerminalStatus() === true) and ($manual === false))
         {
             $traceCode = TraceCode::SUBSCRIPTION_NOT_IN_CHARGEABLE_STATE;
 
@@ -173,6 +184,23 @@ class Validator extends Base\Validator
         }
 
         return [$valid, $traceCode];
+    }
+
+    public function validateTestSubscriptionChargeable()
+    {
+        $subscription = $this->entity;
+
+        if (($subscription->hasEnded() === true) or
+            ($subscription->isManualTestChargeableStatus() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_NOT_TEST_CHARGEABLE,
+                'status',
+                [
+                    'subscription_id'       => $subscription->getId(),
+                    'subscription_status'   => $subscription->getStatus(),
+                ]);
+        }
     }
 
     protected function validateEndAtWithStartAt(int $startAt, int $endAt)

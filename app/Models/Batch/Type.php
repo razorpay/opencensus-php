@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Batch;
 
+use RZP\Exception;
+
 class Type
 {
     const REFUND           = 'refund';
@@ -29,7 +31,17 @@ class Type
 
     public static function exists(string $type)
     {
-        return defined(get_class() . '::' . strtoupper($type));
+        $key = __CLASS__ . '::' . strtoupper($type);
+
+        return ((defined($key) === true) and (constant($key) === $type));
+    }
+
+    public static function validateType(string $type)
+    {
+        if (self::exists($type) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException('Not a valid type: ' . $type);
+        }
     }
 
     public static function isQueueGroup(string $type): bool
