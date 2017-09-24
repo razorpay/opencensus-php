@@ -6,6 +6,9 @@ use RZP\Constants\MailTags;
 
 class Event
 {
+    //
+    // ======== Events ========
+    //
     const AUTHENTICATED   = 'authenticated';
     const CHARGED         = 'charged';
     const PENDING         = 'pending';
@@ -15,7 +18,10 @@ class Event
     const CARD_CHANGED    = 'card_changed';
     const INVOICE_CHARGED = 'invoice_charged';
 
-    // Event options
+    //
+    // ======== Event options ========
+    //
+
     const CHARGE_SUCCESS = 'charge_success';
     const CARD_CHANGE    = 'card_change';
     const IMMEDIATE      = 'immediate';

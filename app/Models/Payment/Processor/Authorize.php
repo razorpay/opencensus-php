@@ -2197,7 +2197,7 @@ trait Authorize
             Subscription\Event::OLD_STATUS  => $oldStatus,
         ];
 
-        $this->triggerAlreadyAuthenticatedSubscriptionNotification($subscription, $options);
+        (new Subscription/Core)->triggerAlreadyAuthenticatedSubscriptionNotification($subscription, $options);
     }
 
     /**
@@ -2251,69 +2251,6 @@ trait Authorize
         }
     }
 
-    protected function triggerAlreadyAuthenticatedSubscriptionNotification(
-        Subscription\Entity $subscription,
-        array $options)
-    {
-        $event = Subscription\Event::CHARGED;
-
-        $oldStatus = $options[Subscription\Event::OLD_STATUS];
-
-        //
-        // If new status is completed, then that _might_ be the mail we have to send
-        //
-        if ($subscription->getStatus() === Subscription\Status::COMPLETED)
-        {
-            // If old status was halted, we would never have reached here. A manual charge on an older
-            // invoice can take a subscription from halted to active, but not from halted to completed.
-            //
-            // The only way there is for a subscription to go from halted to completed
-            // state is via the handleNoSubscriptionChargeAtInvoiceCreation flow.
-            //
-            if ($oldStatus === Subscription\Status::HALTED)
-            {
-                throw new Exception\LogicException(
-                    'Subscription cannot be in halted state here',
-                    ErrorCode::BAD_REQUEST_SUBSCRIPTION_INVALID_STATUS,
-                    [
-                        'subscription_id'       => $subscription->getId(),
-                        'subscription_status'   => $subscription->getStatus(),
-                        'old_status'            => $oldStatus
-                    ]);
-            }
-
-            //
-            // If old status was pending, actual movement was pending->active->completed
-            // In that case sending a completed mail is fine. Same for active.
-            //
-            // If subscription is already completed, there is not need to send another
-            // such notification. Sending a charge email would be more appropriate.
-            //
-            if ($oldStatus !== Subscription\Status::COMPLETED)
-            {
-                $event = Subscription\Event::COMPLETED;
-
-                //
-                // Completed mails can come via a charge failure as well
-                //
-                $options[Subscription\Event::CHARGE_SUCCESS] = true;
-            }
-        }
-
-        $payment = $options[Subscription\Event::PAYMENT];
-
-        //
-        // If the charge is on an older invoice, send a different mail
-        // altogether, one that is in invoice context, not subscription.
-        //
-        if ($subscription->isLatestInvoiceForSubscription($payment->invoice) === false)
-        {
-            $event = Subscription\Event::INVOICE_CHARGED;
-        }
-
-        (new Subscription\Core)->triggerSubscriptionNotification($subscription, $event, $options);
-    }
-
     protected function processCardChangeForSubscription(
         Subscription\Entity $subscription,
         Payment\Entity $payment)
@@ -2337,7 +2274,7 @@ trait Authorize
                 Subscription\Event::OLD_STATUS  => $oldStatus,
             ];
 
-            $this->triggerAlreadyAuthenticatedSubscriptionNotification($subscription, $options);
+            (new Subscription\Core)->triggerAlreadyAuthenticatedSubscriptionNotification($subscription, $options);
 
             return;
         }
@@ -2453,28 +2390,9 @@ trait Authorize
             (new Subscription\Charge)->handleCaptureSuccess($subscription, $payment, $invoice, true);
         }
 
-        $this->triggerSubscriptionAuthenticatedNotification($subscription, $payment);
-
         $this->autoRefundAuthTransactionIfApplicable($payment, $subscription);
-    }
 
-    protected function triggerSubscriptionAuthenticatedNotification(Subscription\Entity $subscription, Payment\Entity $payment)
-    {
-        $willBeRefunded = true;
-
-        if (($subscription->hadUpfrontAmount() === true) or
-            ($subscription->wasImmediate() === true))
-        {
-            $willBeRefunded = false;
-        }
-
-        $options = [
-            Subscription\Event::AUTO_REFUND => $willBeRefunded,
-            Subscription\Event::IMMEDIATE   => $subscription->wasImmediate(),
-            Subscription\Event::PAYMENT     => $payment,
-        ];
-
-        (new Subscription\Core)->triggerSubscriptionNotification($subscription, Subscription\Event::AUTHENTICATED, $options);
+        (new Subscription\Core)->triggerSubscriptionAuthenticatedNotification($payment, $subscription);
     }
 
     protected function autoRefundAuthTransactionIfApplicable(Payment\Entity $payment, Subscription\Entity $subscription)

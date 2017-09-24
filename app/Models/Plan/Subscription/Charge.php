@@ -299,13 +299,13 @@ class Charge extends Base\Core
         //  - pending
         //
         // Hence, the possible flows are:
-        //  - authenticated -> active -> completed [fire charge, active and completed webhooks]
-        //  - active -> active -> completed [fire charge and completed webhooks]
-        //  - pending -> active -> completed [fire charge, active and completed webhooks]
+        //  - authenticated     -> active -> completed  [fire charge, active and completed webhooks]
+        //  - active            -> active -> completed  [fire charge and completed webhooks]
+        //  - pending           -> active -> completed  [fire charge, active and completed webhooks]
         //
-        //  - authenticated -> active [fire charge and active webhooks]
-        //  - active -> active [fire charge webhook]
-        //  - pending -> active [fire charge and active webhooks]
+        //  - authenticated     -> active               [fire charge and active webhooks]
+        //  - active            -> active               [fire charge webhook]
+        //  - pending           -> active               [fire charge and active webhooks]
         //
 
         switch ($updatedStatus)
@@ -437,7 +437,7 @@ class Charge extends Base\Core
         $core = new Core;
 
         //
-        // If the capture is being done for latest invoice,
+        // If the capture is being done for older invoice,
         // The only statuses that it can be in are:
         //  - active
         //  - pending
@@ -446,12 +446,12 @@ class Charge extends Base\Core
         //  - completed
         //
         // Hence, the possible flows are:
-        //  - active -> active [charge webhook]
-        //  - pending -> active [charge webhook] --- DOES NOT HAPPEN because it's older invoice flow
-        //  - pending -> pending [charge webhook]
-        //  - cancelled -> cancelled [charge webhook]
-        //  - completed -> completed [charge webhook]
-        //  - halted -> active [charge and active webhook]
+        //  - active    -> active       [charge webhook]
+        //  - pending   -> active       [charge webhook] --- DOES NOT HAPPEN because it's older invoice flow
+        //  - pending   -> pending      [charge webhook]
+        //  - cancelled -> cancelled    [charge webhook]
+        //  - completed -> completed    [charge webhook]
+        //  - halted    -> active       [charge and active webhook]
         //
 
         switch ($oldStatus)
@@ -580,6 +580,23 @@ class Charge extends Base\Core
         // or pending to pending or pending to halted. If it moves to pending, we would not
         // mark it as completed. Only if it moves to halted, we would mark the subscription as
         // completed as required.
+        //
+
+        //
+        // This function would be called only for latest invoice,
+        // since this is not called for manual attempts.
+        // If the charge was being attempted for latest invoice,
+        // The only statuses that it can be in are:
+        //  - authenticated
+        //  - active
+        //  - pending
+        //
+        // Hence, the possible flows are:
+        //  - authenticated -> pending              [fire charge and pending webhook]
+        //  - active        -> pending              [fire charge and pending webhook]
+        //  - pending       -> pending              [fire charge and pending webhook]
+        //  - pending       -> halted               [fire charge and halted webhook]
+        //  - pending       -> halted  -> completed [fire charge, halted and completed webhook]
         //
 
         switch($updatedStatus)
