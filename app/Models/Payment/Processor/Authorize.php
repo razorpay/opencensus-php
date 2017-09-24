@@ -1002,7 +1002,7 @@ trait Authorize
 
     protected function validateTokenRecurringStatus(Token\Entity $token, Payment\Entity $payment)
     {
-        if (($payment->isSecondRecurring()) === true and
+        if (($payment->isSecondRecurring() === true) and
             ($token->getRecurringStatus() !== Token\RecurringStatus::CONFIRMED))
         {
             throw new Exception\BadRequestException(

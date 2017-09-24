@@ -35,7 +35,8 @@ class Entity extends Base\PublicEntity
     const DELETED_AT                = 'deleted_at';
 
     /**
-     * We use this to set the max amount of the token entity. By default, we have chosen 10000000
+     * We use this to set the max amount of the token entity.
+     * By default, we have chosen 10000000 paise
      */
     const DEFAULT_MAX_AMOUNT    = 10000000;
 
@@ -55,7 +56,8 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TOKEN2,
         self::RECURRING,
         self::EXPIRED_AT,
-        self::MAX_AMOUNT
+        // TODO: uncomment when we start accepting token as input
+        // self::MAX_AMOUNT
     ];
 
     protected $visible = [
@@ -73,6 +75,8 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TOKEN2,
         self::RECURRING,
         self::RECURRING_DETAILS,
+        self::RECURRING_FAILURE_REASON,
+        self::RECURRING_STATUS,
         self::MAX_AMOUNT,
         self::USED_COUNT,
         self::USED_AT,
@@ -101,6 +105,9 @@ class Entity extends Base\PublicEntity
         self::CARD_ID                   => null,
         self::GATEWAY_TOKEN2            => null,
         self::RECURRING                 => false,
+        self::RECURRING_FAILURE_REASON  => null,
+        self::RECURRING_STATUS          => null,
+        self::MAX_AMOUNT                => null,
         self::USED_AT                   => null,
         self::USED_COUNT                => 0,
         self::EXPIRED_AT                => null,

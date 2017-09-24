@@ -98,9 +98,9 @@ class Core extends Base\Core
         return $methods;
     }
 
-    public function getFormattedMethods(Merchant\Entity $merchant, array $input = [])
+    public function getFormattedMethods(Merchant\Entity $merchant)
     {
-        $data = array(
+        $data = [
             'entity'        => 'methods',
             'card'          => true,
             'amex'          => false,
@@ -108,65 +108,40 @@ class Core extends Base\Core
             'wallet'        => [],
             'emi'           => false,
             'upi'           => false,
-        );
+        ];
 
         $methods = $this->getMethods($merchant);
 
-        if ($methods !== null)
+        $data['card'] = $methods->isCardEnabled();
+        $data['amex'] = $methods->isAmexEnabled();
+        $netbankingEnabled = $methods->isNetbankingEnabled();
+
+        if ($netbankingEnabled === true)
         {
-            $data['card'] = $methods->isCardEnabled();
-            $data['amex'] = $methods->isAmexEnabled();
-            $netbankingEnabled = $methods->isNetbankingEnabled();
-            if ($netbankingEnabled === true)
-            {
-                $banks = $methods->getSupportedBanks();
+            $banks = $methods->getSupportedBanks();
 
-                $allSupportedBanks = Netbanking::removeDefaultDisableBanks($banks);
+            $allSupportedBanks = Netbanking::removeDefaultDisableBanks($banks);
 
-                $data['netbanking'] = $this->getBankNames($allSupportedBanks);
-            }
-            $data['wallet'] = $methods->getEnabledWallets();
-            $data['upi'] = $methods->isUpiEnabled();
-            $emi = $methods->isEmiEnabled();
+            $data['netbanking'] = $this->getBankNames($allSupportedBanks);
+        }
 
-            if ($emi === true)
-            {
-                $data['emi'] = $emi;
+        $data['wallet'] = $methods->getEnabledWallets();
+        $data['upi'] = $methods->isUpiEnabled();
+        $emi = $methods->isEmiEnabled();
 
-                $data['emi_subvention'] = $merchant->getEmiSubvention();
+        if ($emi === true)
+        {
+            $data['emi'] = $emi;
 
-                $data['emi_plans'] = (new Emi\Service)->all();
-            }
+            $data['emi_subvention'] = $merchant->getEmiSubvention();
 
-            //
-            // If the payment is a recurring payment, we have to ensure that the recurring feature
-            // is enabled for the merchant, and only allow netbanking recurring methods if e mandate is
-            // enabled for the merchant. Also, we must send upi and card = false if recurring is not enabled
-            //
-            if ((empty($input['recurring']) === false) and
-                ((bool) $input['recurring'] === true))
-            {
-                // Setting the defaults of a recurring payment. Ideally, we want to send only card and select netbanking banks
-                $data['netbanking'] = [];
-                $data['wallet'] = [];
-                $data['amex'] = false;
-                $data['upi'] = false;
+            $data['emi_plans'] = (new Emi\Service)->all();
+        }
 
-                // We set card to false if recurring is not enabled
-                if ($merchant->isFeatureEnabled(Constants::RECURRING) === false)
-                {
-                    $data['card'] = false;
-                }
-
-                // If both recurring and e mandate are enabled,
-                // we send the e mandate netbanking banks for recurring payments
-                if (($merchant->isFeatureEnabled(Constants::RECURRING) === true) and
-                    ($merchant->isFeatureEnabled(Constants::E_MANDATE) === true))
-                {
-                    $banks = Payment\Gateway::$eMandateBanks;
-                    $data['netbanking'] = $this->getBankNames($banks);
-                }
-            }
+        if ($merchant->isFeatureEnabled(Constants::E_MANDATE) === true)
+        {
+            $eMandateBanks = Payment\Gateway::$eMandateBanks;
+            $data['emandate_banks'] = $this->getBankNames($eMandateBanks);
         }
 
         return $data;
