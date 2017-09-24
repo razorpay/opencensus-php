@@ -5,6 +5,7 @@ namespace RZP\Gateway\Netbanking\Axis;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Action;
@@ -13,21 +14,37 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Netbanking\Axis\Emandate;
 use RZP\Models\Payment\Verify\Action as VerifyAction;
+use RZP\Gateway\Netbanking\Axis\Emandate\EmandateTrait;
 
 class Gateway extends Base\Gateway
 {
+    use EmandateTrait;
     use AuthorizeFailed;
 
     protected $gateway = 'netbanking_axis';
 
     protected $bank = 'axis';
 
+    protected $bankingType = self::RETAIL;
+
+    protected $sortRequestContent = false;
+
     protected $map = [
-        RequestFields::AMOUNT             => 'amount',
-        RequestFields::MERCHANT_REFERENCE => 'payment_id',
-        RequestFields::ITEM_CODE          => 'reference1'
+        RequestFields::AMOUNT                   => 'amount',
+        RequestFields::MERCHANT_REFERENCE       => 'payment_id',
+        RequestFields::ITEM_CODE                => 'reference1',
+        Emandate\RequestFields::REQUEST_ID      => 'payment_id',
+        Emandate\RequestFields::CUSTOMER_REF_NO => 'si_token'
     ];
+
+    public function setGatewayParams($input, $mode, $terminal)
+    {
+        parent::setGatewayParams($input, $mode, $terminal);
+
+        $this->setBankingTypeAndDomainType($terminal);
+    }
 
     public function authorize(array $input)
     {
@@ -53,6 +70,12 @@ class Gateway extends Base\Gateway
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK,
                            ['gateway_response' => $input['gateway'],
                             'payment_id'       => $input['payment']['id']]);
+
+        // TODO: First / Second Recurring ???
+        if ($input['terminal']->isRecurring())
+        {
+            return $this->handleEmandateCallback($input);
+        }
 
         $content = $this->getDataFromResponse($input['gateway']);
 
@@ -206,6 +229,12 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentRequestData(array $input)
     {
+        // TODO: First / Second recurring?
+        if ($input['terminal']->isRecurring())
+        {
+            return $this->getRecurringPaymentData($input);
+        }
+
         $encryptedString = $this->getAuthorizeEncryptedString($input);
 
         return [
@@ -246,6 +275,12 @@ class Gateway extends Base\Gateway
 
     protected function getEntityAttributes(array $input)
     {
+        // TODO: First / Second recurring??
+        if ($input['terminal']->isRecurring())
+        {
+            return $this->getEmandateEntityAttributes($input);
+        }
+
         return [
             RequestFields::MERCHANT_REFERENCE => $input['payment']['id'],
             RequestFields::ITEM_CODE          => $this->getMerchantId(),
@@ -430,24 +465,68 @@ class Gateway extends Base\Gateway
         return Status::getAuthSuccessStatus();
     }
 
+    protected function setBankingTypeAndDomainType($terminal)
+    {
+        if ((isset($terminal) === true) and
+            ($terminal->isRecurring() === true))
+        {
+            $this->setBankingType(self::EMANDATE);
+        }
+
+         $this->setDomainType();
+    }
+
+    protected function setDomainType()
+    {
+        $this->domainType = $this->getBankingType();
+    }
+
     /*
      *  Overriding parent class's method
      */
     protected function getUrlDomain()
     {
-        $this->domainType = $this->action;
+        $urlClass = $this->getGatewayNamespace() . '\Url';
 
-        return parent::getUrlDomain();
+        $domainType = $this->domainType ?? $this->mode;
+
+        if ($domainType !== self::EMANDATE)
+        {
+            $domainType .= '_' . $this->action;
+        }
+
+        $domainConstantName = strtoupper($domainType).'_DOMAIN';
+
+        return constant($urlClass . '::' .$domainConstantName);
+    }
+
+    protected function getRelativeUrl($type)
+    {
+        $ns = $this->getGatewayNamespace();
+
+        $domainType = strtoupper($this->domainType);
+
+        return constant($ns.'\Url::'.$type.'_'.$domainType);
     }
 
     public function getMerchantId()
     {
         if ($this->mode === Mode::TEST)
         {
+            if ($this->input['terminal']->isRecurring())
+            {
+                return $this->config['test_merchant_id_rec'];
+            }
+
             return $this->getTestMerchantId();
         }
         else
         {
+            if ($this->input['terminal']->isRecurring())
+            {
+                return $this->config['live_merchant_id_rec'];
+            }
+
             return $this->getLiveMerchantId();
         }
     }

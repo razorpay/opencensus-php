@@ -6,6 +6,7 @@ use RZP\Gateway\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Netbanking\Axis\Status;
+use RZP\Gateway\Netbanking\Axis\Emandate;
 use RZP\Gateway\Netbanking\Axis\AESCrypto;
 use RZP\Gateway\Netbanking\Axis\Constants;
 use RZP\Gateway\Netbanking\Axis\RequestFields;
@@ -16,6 +17,11 @@ class Server extends Base\Mock\Server
     public function authorize($input)
     {
         parent::authorize($input);
+
+        if (isset($input[Emandate\RequestFields::CUSTOMER_REF_NO]) === true)
+        {
+            return $this->handleEmandateFlow($input);
+        }
 
         $this->validateAuthorizeInput($input);
 
@@ -31,6 +37,18 @@ class Server extends Base\Mock\Server
         return $callbackUrl;
     }
 
+    protected function handleEmandateFlow(array $input)
+    {
+        $this->validateActionInput($input, 'emandateauth');
+
+        $response = $this->createEmandateResponse($input);
+
+        $callbackUrl = $input[Emandate\RequestFields::RETURN_URL] . '?' .
+                            http_build_query($response);
+
+        return $callbackUrl;
+    }
+
     protected function setTestData($decryptedData)
     {
         if ($decryptedData['AMT'] === '300')
@@ -39,6 +57,31 @@ class Server extends Base\Mock\Server
         }
 
         return $decryptedData;
+    }
+
+    // TODO: Move to the trait???
+    protected function createEmandateResponse(array $input)
+    {
+        $data = [
+            Emandate\ResponseFields::VERSION         => $input[Emandate\RequestFields::VERSION],
+            Emandate\ResponseFields::CORP_ID         => $input[Emandate\RequestFields::CORP_ID],
+            Emandate\ResponseFields::TYPE            => $input[Emandate\RequestFields::TYPE],
+            Emandate\ResponseFields::CUSTOMER_REF_NO => $input[Emandate\RequestFields::CUSTOMER_REF_NO],
+            Emandate\ResponseFields::CURRENCY        => $input[Emandate\RequestFields::CURRENCY],
+            Emandate\ResponseFields::AMOUNT          => $input[Emandate\RequestFields::AMOUNT],
+            Emandate\ResponseFields::BANK_REF_NO     => 9999999999,
+            Emandate\ResponseFields::STATUS_CODE     => 'Y',
+            Emandate\ResponseFields::REMARKS         => 'Random remarks',
+            Emandate\ResponseFields::TRANS_REF_NO    => $input[Emandate\RequestFields::REQUEST_ID],
+            Emandate\ResponseFields::TRANS_EXEC_TIME => 1,
+            Emandate\ResponseFields::PAYMENT_MODE    => 'netbanking', // check
+            Emandate\ResponseFields::CHECKSUM        => $input[Emandate\RequestFields::CHECKSUM]
+        ];
+
+        // for test cases
+        $this->content($response, 'emandateauth');
+
+        return $data;
     }
 
     public function verify($input)

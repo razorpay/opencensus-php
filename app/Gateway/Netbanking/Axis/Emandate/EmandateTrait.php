@@ -41,7 +41,7 @@ trait EmandateTrait
         return [
             'acquirer' => [
                 Payment\Entity::REFERENCE1  => $gatewayPayment->getBankPaymentId(),
-                Token\Entity::GATEWAY_TOKEN => $gatewayPayment->getSiRefId()
+                Token\Entity::GATEWAY_TOKEN => $gatewayPayment->getSIToken()
             ]
         ];
     }
