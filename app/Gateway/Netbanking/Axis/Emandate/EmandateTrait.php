@@ -1,57 +1,105 @@
 <?php
 
+/*
+| This trait adds E Mandate functionality to the Axis Gateway
+*/
+
 namespace RZP\Gateway\Netbanking\Axis\Emandate;
 
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Base\Action;
 use RZP\Models\Customer\Token;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
+use RZP\Gateway\Netbanking\Axis\Status;
+use RZP\Exception\GatewayErrorException;
 use RZP\Gateway\Netbanking\Axis\Constants;
+use RZP\Gateway\Netbanking\Base as Netbanking;
 
 trait EmandateTrait
 {
-    public function handleEmandateCallback(array $input)
+    public function handleEmandateCallback(array $input) : array
     {
         $content = $input['gateway'];
 
         $this->assertPaymentId($input['payment']['id'],
             $content[ResponseFields::TRANS_REF_NO]);
 
+        $this->validateCallbackChecksum($content);
+
         $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
-        $attrs = $this->getEmandateCallbackAttributes($content);
+        $attributes = $this->getEmandateCallbackAttributes($content);
 
-        $gatewayEntity->fill($attrs);
+        $gatewayEntity->fill($attributes);
 
         $this->repo->saveOrFail($gatewayEntity);
 
-        $this->checkResponseStatus($attrs, $content);
+        // We check the status of the payment, and not the SI registration here
+        $this->checkResponseStatus($attributes, $content, Status::SUCCESS);
 
         $acquirerData = $this->getEmandateAcquirerData($gatewayEntity);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
-    protected function getEmandateAcquirerData(Base\Entity $gatewayPayment)
+    protected function getEmandateAcquirerData(Base\Entity $gatewayPayment) : array
     {
         $siStatus = $gatewayPayment->getSIStatus();
 
-        $recurringStatus = ($siStatus === 'Y') ? Token\RecurringStatus::CONFIRMED : Token\RecurringStatus::REJECTED;
+        $recurringStatus = ($siStatus === Status::SUCCESS) ? Token\RecurringStatus::CONFIRMED : Token\RecurringStatus::REJECTED;
 
         $recurringFailureReason = $gatewayPayment->getSIMessage();
 
         return [
             'acquirer' => [
-                Payment\Entity::REFERENCE1             => $gatewayPayment->getBankPaymentId(),
+                Payment\Entity::REFERENCE1         => $gatewayPayment->getBankPaymentId(),
             ],
             Token\Entity::GATEWAY_TOKEN            => $gatewayPayment->getSIToken(),
             Token\Entity::RECURRING_STATUS         => $recurringStatus,
             Token\Entity::RECURRING_FAILURE_REASON => $recurringFailureReason,
         ];
+    }
+
+    protected function handleEmandateFlow(array $input) : string
+    {
+        $this->validateActionInput($input, 'emandateauth');
+
+        $response = $this->createEmandateResponse($input);
+
+        $callbackUrl = $input[RequestFields::RETURN_URL] . '?' . http_build_query($response);
+
+        return $callbackUrl;
+    }
+
+    protected function createEmandateResponse(array $input) : array
+    {
+        $data = [
+            ResponseFields::VERSION         => $input[RequestFields::VERSION],
+            ResponseFields::CORP_ID         => $input[RequestFields::CORP_ID],
+            ResponseFields::TYPE            => $input[RequestFields::TYPE],
+            ResponseFields::CUSTOMER_REF_NO => $input[RequestFields::CUSTOMER_REF_NO],
+            ResponseFields::CURRENCY        => $input[RequestFields::CURRENCY],
+            ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT],
+            // TODO: Docs say this is not needed, but docs checksum says it is needed
+            ResponseFields::REQUEST_ID      => $input[RequestFields::REQUEST_ID],
+            ResponseFields::BANK_REF_NO     => 9999999999,
+            ResponseFields::STATUS_CODE     => Status::SUCCESS,
+            ResponseFields::REMARKS         => 'Random remarks',
+            ResponseFields::TRANS_REF_NO    => $input[RequestFields::REQUEST_ID], // TODO: Confirm this
+            ResponseFields::TRANS_EXEC_TIME => 1,
+            ResponseFields::PAYMENT_MODE    => 'netbanking', // TODO: check
+            ResponseFields::CHECKSUM        => $input[RequestFields::CHECKSUM]
+        ];
+
+        // for test cases
+        $this->content($response, 'emandateauth');
+
+        return $data;
     }
 
     /**
@@ -61,7 +109,7 @@ trait EmandateTrait
      * @param array $input
      * @return array
      */
-    protected function getRecurringPaymentData(array $input)
+    protected function getRecurringPaymentData(array $input) : array
     {
         $data = [
             RequestFields::VERSION         => 'Random Version',
@@ -81,7 +129,7 @@ trait EmandateTrait
         return $data;
     }
 
-    protected function getEmandateEntityAttributes(array $input)
+    protected function getEmandateEntityAttributes(array $input) : array
     {
         return [
             RequestFields::AMOUNT          => $input['payment']['amount'] / 100,
@@ -90,26 +138,57 @@ trait EmandateTrait
         ];
     }
 
-    protected function getEmandateCallbackAttributes(array $content)
+    protected function getEmandateCallbackAttributes(array $content) : array
     {
         return [
-            'received'        => true,
-            'status'          => $content[ResponseFields::STATUS_CODE],
-            'bank_payment_id' => $content[ResponseFields::BANK_REF_NO],
+            Netbanking\Entity::RECEIVED        => true,
+            Netbanking\Entity::STATUS          => $content[ResponseFields::STATUS_CODE],
+            Netbanking\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_REF_NO],
 
             // SI registration specific callback attributes
-            'si_token'        => $content[ResponseFields::CUSTOMER_REF_NO], // TODO: Confirm this
-            'si_status'       => $content[ResponseFields::STATUS_CODE],
-            'si_message'      => $content[ResponseFields::REMARKS],
+            Netbanking\Entity::SI_TOKEN        => $content[ResponseFields::CUSTOMER_REF_NO], // TODO: Confirm this
+            Netbanking\Entity::SI_STATUS       => $content[ResponseFields::STATUS_CODE],
+            Netbanking\Entity::SI_MSG          => $content[ResponseFields::REMARKS],
         ];
     }
 
-    protected function getHashOfString($str)
+    protected function getHashOfString($str) : string
     {
         return hash(HashAlgo::SHA256, $str);
     }
 
-    protected function getChecksum(array $data)
+    /**
+     * This method validates that any callback checksum matches that of the
+     * expected value based on the algorithm that the bank have shared with us
+     *
+     * @param array $content
+     * @throws GatewayErrorException
+     */
+    protected function validateCallbackChecksum(array $content)
+    {
+        $actualChecksum = $this->getChecksum($content);
+
+        if ($actualChecksum !== $content[ResponseFields::CHECKSUM])
+        {
+            throw new GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_CHECKSUM_MATCH_FAILED,
+                null,
+                null,
+                [
+                    'content'    => $content,
+                    'payment_id' => $this->input['payment']['id'],
+                    'action'     => $this->action,
+                ]);
+        }
+    }
+
+    /**
+     * Calculates the checksum attribute for authorize and verify calls
+     *
+     * @param array $data
+     * @return mixed
+     */
+    protected function getChecksum(array $data) : string
     {
         $arrayToBeHashed = [
             $data[RequestFields::CORP_ID],
@@ -119,6 +198,9 @@ trait EmandateTrait
             $this->getRecSecret(),
         ];
 
+        //
+        // Amount is not part of the hash for verify
+        //
         if ($this->action === Action::VERIFY)
         {
             unset($arrayToBeHashed[3]);
@@ -127,29 +209,17 @@ trait EmandateTrait
         return $this->generateHash($arrayToBeHashed);
     }
 
-    protected function getRecSecret($encryption = false)
+    protected function getRecSecret(bool $encryption = false) : string
     {
         if ($encryption === true)
         {
-            if ($this->mode === Mode::TEST)
-            {
-                return $this->config['test_hash_secret_encrec'];
-            }
-            else
-            {
-                return $this->config['live_hash_secret_encrec'];
-            }
+            $key = ($this->mode === Mode::TEST) ? 'test_hash_secret_encrec' : 'live_hash_secret_encrec';
         }
         else
         {
-            if ($this->mode === Mode::TEST)
-            {
-                return $this->config['test_hash_secret_rec'];
-            }
-            else
-            {
-                return $this->config['live_hash_secret_rec'];
-            }
+            $key = ($this->mode === Mode::TEST) ? 'test_hash_secret_rec' : 'live_hash_secret_rec';
         }
+
+        return $this->config[$key];
     }
 }

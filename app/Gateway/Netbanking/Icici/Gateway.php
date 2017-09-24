@@ -658,8 +658,8 @@ class Gateway extends Base\Gateway
 
     protected function checkCallbackStatus(array $attrs, array $content)
     {
-        if ((isset($attrs[ResponseFields::STATUS_LC]) === false) or
-            ($attrs[ResponseFields::STATUS_LC] !== Confirmation::YES))
+        if ((isset($attributes[ResponseFields::STATUS_LC]) === false) or
+            ($attributes[ResponseFields::STATUS_LC] !== Confirmation::YES))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,

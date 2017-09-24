@@ -32,11 +32,12 @@ class Gateway extends Base\Gateway
     protected $sortRequestContent = false;
 
     protected $map = [
-        RequestFields::AMOUNT                   => 'amount',
-        RequestFields::MERCHANT_REFERENCE       => 'payment_id',
-        RequestFields::ITEM_CODE                => 'reference1',
-        Emandate\RequestFields::REQUEST_ID      => 'payment_id',
-        Emandate\RequestFields::CUSTOMER_REF_NO => 'si_token'
+        RequestFields::AMOUNT                   => Base\Entity::AMOUNT,
+        RequestFields::MERCHANT_REFERENCE       => Base\Entity::PAYMENT_ID,
+        RequestFields::ITEM_CODE                => Base\Entity::REFERENCE1,
+
+        // E Mandate specific fields
+        Emandate\RequestFields::CUSTOMER_REF_NO => Base\Entity::SI_TOKEN
     ];
 
     public function setGatewayParams($input, $mode, $terminal)
@@ -338,11 +339,18 @@ class Gateway extends Base\Gateway
         }
     }
 
-
-    protected function checkResponseStatus(array $attrs, array $content)
+    /**
+     * The default success status is Y, but this method accepts the any possible success value to ensure usability
+     *
+     * @param array $attributes
+     * @param array $content
+     * @param string $status
+     * @throws Exception\GatewayErrorException
+     */
+    protected function checkResponseStatus(array $attributes, array $content, string $status = Status::YES)
     {
-        if ((isset($attrs['status']) === false) or
-            ($attrs['status'] !== Status::YES))
+        if ((isset($attributes[Base\Entity::STATUS]) === false) or
+            ($attributes[Base\Entity::STATUS] !== $status))
         {
             $this->trace->error(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
@@ -356,9 +364,9 @@ class Gateway extends Base\Gateway
     protected function getCallbackAttributes(array $content)
     {
         return [
-            'received'        => true,
-            'status'          => $content[ResponseFields::STATUS],
-            'bank_payment_id' => $content[ResponseFields::BANK_REFERENCE_ID],
+            Base\Entity::RECEIVED        => true,
+            Base\Entity::STATUS          => $content[ResponseFields::STATUS],
+            Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_REFERENCE_ID],
         ];
     }
 

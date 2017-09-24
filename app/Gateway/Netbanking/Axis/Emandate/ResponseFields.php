@@ -9,6 +9,7 @@ class ResponseFields
     const TYPE            = 'TYP';
     const CUSTOMER_REF_NO = 'CRN';
     const CURRENCY        = 'CNY';
+    const REQUEST_ID      = 'RID';
     const AMOUNT          = 'AMT';
     const BANK_REF_NO     = 'BRN';
     const STATUS_CODE     = 'STC';
