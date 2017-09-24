@@ -450,11 +450,13 @@ class Gateway
         Gateway::FIRST_DATA,
         Gateway::AXIS_MIGS,
         Gateway::HDFC,
-        Gateway::NETBANKING_ICICI
+        Gateway::NETBANKING_ICICI,
+        Gateway::NETBANKING_AXIS,
     ];
 
     public static $eMandateBanks = [
-        IFSC::ICIC
+        IFSC::ICIC,
+        IFSC::UTIB
     ];
 
     /**
