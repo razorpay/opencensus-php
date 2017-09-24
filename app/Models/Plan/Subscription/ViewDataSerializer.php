@@ -25,14 +25,6 @@ class ViewDataSerializer extends Base\Core
     const DEFAULT_MERCHANT_BRAND_COLOR = '#6A5DD1';
 
     /**
-    item:
-            name
-            description
-            amount
-            addons
-     */
-
-    /**
      * @var Entity
      */
     protected $subscription;
@@ -110,11 +102,12 @@ class ViewDataSerializer extends Base\Core
                                         ->format('d F Y');
 
         $subscriptionData = [
-            'id'        => $this->subscription->getPublicId(),
-            'status'    => $this->subscription->getStatus(),
-            'quantity'  => $this->subscription->getQuantity(),
-            'charge_at' => $chargeAt,
-            'addons'    => $this->repo->addon->getUnusedAddonsForSubscription($this->subscription),
+            'id'                    => $this->subscription->getPublicId(),
+            'status'                => $this->subscription->getStatus(),
+            'quantity'              => $this->subscription->getQuantity(),
+            'charge_at'             => $chargeAt,
+            'card_change_amount'    => (new Core)->getAuthTransactionAmountForCardChange($this->subscription),
+            'addons'                => $this->repo->addon->getUnusedAddonsForSubscription($this->subscription),
         ];
 
         return $subscriptionData;

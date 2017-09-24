@@ -34,14 +34,14 @@
     </script>
 </body>
 </html>
-{{--<script src='https://cdn.razorpay.com/static/hosted/subscription.js'></script>--}}
-<script src='http://xps.pronav.in:3000/subscription.js'></script>
+<script src='https://cdn.razorpay.com/static/hosted/subscription.js'></script>
+{{--<script src='http://xps.pronav.in:3000/subscription.js'></script>--}}
 <script>
 var $ = document.querySelector.bind(document);
 
 var options = {
     "key": {!! json_encode($data['key_id']) !!},
-    "amount": window.o.total,
+    "amount": {!! json_encode($data['subscription']['card_change_amount']) !!},
     "image": {!! json_encode($data['merchant']['image']) !!},
     "subscription_id": {!! json_encode($data['subscription']['id']) !!},
     "handler": function (response) {
