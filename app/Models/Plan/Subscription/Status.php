@@ -138,7 +138,6 @@ class Status
         self::PENDING,
         self::HALTED,
         self::COMPLETED,
-        self::CANCELLED,
     ];
 
     public static function isStatusValid($status) : bool
