@@ -14,7 +14,6 @@ use RZP\Models\Payment;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Schedule;
-use RZP\Models\Plan\Subscription;
 use RZP\Listeners\ApiEventSubscriber;
 use RZP\Jobs\Plan\ChargeSubscription;
 use RZP\Exception\LogicException;
@@ -603,7 +602,7 @@ class Core extends Base\Core
 
     public function triggerSubscriptionAuthenticatedNotification(
         Payment\Entity $payment,
-        Subscription\Entity $subscription)
+        Entity $subscription)
     {
         $willBeRefunded = true;
 
@@ -614,21 +613,21 @@ class Core extends Base\Core
         }
 
         $options = [
-            Subscription\Event::AUTO_REFUND => $willBeRefunded,
-            Subscription\Event::IMMEDIATE   => $subscription->wasImmediate(),
-            Subscription\Event::PAYMENT     => $payment,
+            Event::AUTO_REFUND => $willBeRefunded,
+            Event::IMMEDIATE   => $subscription->wasImmediate(),
+            Event::PAYMENT     => $payment,
         ];
 
         $this->triggerSubscriptionNotification(
-            $subscription, Subscription\Event::AUTHENTICATED, $options);
+            $subscription, Event::AUTHENTICATED, $options);
     }
 
     public function triggerSubscriptionAlreadyAuthenticatedNotification(
-        Subscription\Entity $subscription,
+        Entity $subscription,
         string $oldStatus,
         array $options)
     {
-        $event = Subscription\Event::CHARGED;
+        $event = Event::CHARGED;
 
         //
         // If new status is completed, then that _might_ be the mail we have to send
@@ -642,7 +641,7 @@ class Core extends Base\Core
             // The only way there is for a subscription to go from halted to completed
             // state is via the handleNoSubscriptionChargeAtInvoiceCreation flow.
             //
-            if ($oldStatus === Subscription\Status::HALTED)
+            if ($oldStatus === Status::HALTED)
             {
                 throw new LogicException(
                     'Subscription cannot be in halted state here',
@@ -661,26 +660,33 @@ class Core extends Base\Core
             // If subscription is already completed, there is not need to send another
             // such notification. Sending a charge email would be more appropriate.
             //
-            if ($oldStatus !== Subscription\Status::COMPLETED)
+            if ($oldStatus !== Status::COMPLETED)
             {
-                $event = Subscription\Event::COMPLETED;
+                $event = Event::COMPLETED;
 
                 //
                 // Completed mails can come via a charge failure as well
                 //
-                $options[Subscription\Event::CHARGE_SUCCESS] = true;
+                $options[Event::CHARGE_SUCCESS] = true;
             }
         }
 
-        $payment = $options[Subscription\Event::PAYMENT];
+        $payment = $options[Event::PAYMENT];
 
         //
-        // If the charge is on an older invoice, send a different mail
-        // altogether, one that is in invoice context, not subscription.
+        // If the charge is on an older invoice, mention this in the mail
         //
         if ($subscription->isLatestInvoiceForSubscription($payment->invoice) === false)
         {
-            $options[Subscription\Event::PAST_INVOICE] = true;
+            $options[Event::PAST_INVOICE] = true;
+        }
+
+        //
+        // Mention that the subscription has been reactivated.
+        //
+        if ($oldStatus !== Status::ACTIVE)
+        {
+            $options[Event::REACTIVATED] = true;
         }
 
         $this->triggerSubscriptionNotification($subscription, $event, $options);

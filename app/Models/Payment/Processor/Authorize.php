@@ -2273,6 +2273,7 @@ trait Authorize
             $options = [
                 Subscription\Event::PAYMENT         => $payment,
                 Subscription\Event::INVOICE_CHARGED => true,
+                Subscription\Event::REACTIVATED     => true,
             ];
 
             $core->triggerSubscriptionNotification($subscription, Subscription\Event::CARD_CHANGED, $options);
@@ -2284,6 +2285,11 @@ trait Authorize
         // We need this to fire a webhook later.
         //
         $activated = false;
+
+        $notifyOptions = [
+            Subscription\Event::PAYMENT         => $payment,
+            Subscription\Event::INVOICE_CHARGED => false,
+        ];
 
         $oldStatus = $subscription->getStatus();
 
@@ -2300,18 +2306,15 @@ trait Authorize
             $subscription->resetErrorFields();
 
             $activated = true;
+
+            $notifyOptions[Subscription\Event::REACTIVATED] = true;
         }
 
         $this->refundAuthorizedPayment($payment);
 
         $this->repo->saveOrFail($subscription);
 
-        $options = [
-            Subscription\Event::PAYMENT         => $payment,
-            Subscription\Event::INVOICE_CHARGED => false,
-        ];
-
-        $core->triggerSubscriptionNotification($subscription, Subscription\Event::CARD_CHANGED, $options);
+        $core->triggerSubscriptionNotification($subscription, Subscription\Event::CARD_CHANGED, $notifyOptions);
 
         if ($activated === true)
         {

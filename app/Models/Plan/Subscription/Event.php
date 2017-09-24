@@ -28,6 +28,7 @@ class Event
     const FUTURE_CANCEL   = 'future_cancel';
     const PAST_INVOICE    = 'past_invoice';
     const INVOICE_CHARGED = 'invoice_charged';
+    const REACTIVATED     = 'reactivated';
 
     const DEFAULT_OPTIONS = [
         self::AUTHENTICATED   => [
@@ -36,6 +37,7 @@ class Event
         ],
         self::CHARGED         => [
             self::PAST_INVOICE   => false,
+            self::REACTIVATED    => false,
         ],
         self::COMPLETED       => [
             self::CHARGE_SUCCESS => true,
@@ -45,6 +47,7 @@ class Event
         ],
         self::CARD_CHANGED    => [
             self::INVOICE_CHARGED => false,
+            self::REACTIVATED     => false,
         ],
         self::PENDING         => [],
         self::HALTED          => [],

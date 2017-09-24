@@ -23,6 +23,9 @@
  , due from an older biller cycle.
 @endif
 .
+@if($options['reactivated'] === true)
+ The subscription has been reactivated.
+@endif
       </td>
       <td class="right demarcated"></td>
     </tr>

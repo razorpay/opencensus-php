@@ -303,6 +303,7 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertContains('**** **** **** 3335', $data['card']['number']);
 
             $this->assertEquals(false, $data['options']['past_invoice']);
+            $this->assertEquals(false, $data['options']['reactivated']);
 
             return true;
         });
@@ -358,6 +359,7 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertContains('**** **** **** 3335', $data['card']['number']);
 
             $this->assertEquals(true, $data['options']['invoice_charged']);
+            $this->assertEquals(true, $data['options']['reactivated']);
 
             return true;
         });
@@ -409,6 +411,7 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertContains('**** **** **** 3335', $data['card']['number']);
 
             $this->assertEquals(false, $data['options']['invoice_charged']);
+            $this->assertEquals(true, $data['options']['reactivated']);
 
             return true;
         });
@@ -491,6 +494,7 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertEquals($billingEnd, $data['invoice']['billing_end']);
 
             $this->assertEquals(true, $data['options']['past_invoice']);
+            $this->assertEquals(true, $data['options']['reactivated']);
 
             return true;
         });

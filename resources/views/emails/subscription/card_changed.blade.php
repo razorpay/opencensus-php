@@ -23,6 +23,9 @@
 $else
  The payment of <strong>{{$payment['amount']}}</strong> has also been refunded.
 @endif
+@if($options['reactivated'] === true)
+ The subscription has been reactivated.
+@endif
       </td>
       <td class="right demarcated" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px; width: 10%; background: #2b5e9b; color: #fff; border-bottom: 1px solid #2b5e9b;"></td>
     </tr>
