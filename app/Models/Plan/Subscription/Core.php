@@ -476,8 +476,6 @@ class Core extends Base\Core
             if ($manual === false)
             {
                 (new Charge)->handleAuthorizationOrCaptureFailure($subscription, $invoice, $authorizedPayment, true);
-
-                $this->triggerSubscriptionFailureNotification($subscription);
             }
 
             $captured = false;
@@ -506,6 +504,15 @@ class Core extends Base\Core
         return $captured;
     }
 
+    /**
+     * This function would handle emails for all failures.
+     * The status would become either pending, halted or completed.
+     * It calls the different events based on the statuses.
+     *
+     * @param Entity $subscription
+     *
+     * @throws LogicException
+     */
     public function triggerSubscriptionFailureNotification(Entity $subscription)
     {
         if (in_array($subscription->getStatus(), Status::$failingStatuses, true) === false)
@@ -525,7 +532,7 @@ class Core extends Base\Core
         // Completed notification has options, it can be
         // triggered by charge success as well as failure.
         //
-        if ($subscription->getStatus() === Status::COMPLETED)
+        if ($subscription->isCompleted() === true)
         {
             $notifyOptions[Event::CHARGE_SUCCESS] = false;
         }
@@ -626,8 +633,9 @@ class Core extends Base\Core
         //
         // If new status is completed, then that _might_ be the mail we have to send
         //
-        if ($subscription->getStatus() === Subscription\Status::COMPLETED)
+        if ($subscription->isCompleted() === true)
         {
+            //
             // If old status was halted, we would never have reached here. A manual charge on an older
             // invoice can take a subscription from halted to active, but not from halted to completed.
             //

@@ -2193,13 +2193,13 @@ trait Authorize
         $this->captureSubscriptionPayment($subscription, $payment);
 
         $options = [
-            Subscription\Event::PAYMENT     => $payment,
+            Subscription\Event::PAYMENT => $payment,
         ];
 
         (new Subscription\Core)->triggerSubscriptionAlreadyAuthenticatedNotification(
-            $subscription,
-            $oldStatus,
-            $options);
+                                                                            $subscription,
+                                                                            $oldStatus,
+                                                                            $options);
     }
 
     /**
@@ -2268,8 +2268,6 @@ trait Authorize
         //
         if ($subscription->isPending() === true)
         {
-            $oldStatus = $subscription->getStatus();
-
             $this->captureSubscriptionPayment($subscription, $payment);
 
             $options = [

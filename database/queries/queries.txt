@@ -2484,3 +2484,6 @@ WHERE  item_id IS NULL;
 # Makes line_items.type column not null and default to 'invoice'
 ALTER TABLE line_items
     MODIFY COLUMN type VARCHAR(16) NOT NULL DEFAULT 'invoice';
+
+ALTER TABLE subscriptions
+   MODIFY COLUMN customer_notify TINYINT(1) UNSIGNED DEFAULT 1;

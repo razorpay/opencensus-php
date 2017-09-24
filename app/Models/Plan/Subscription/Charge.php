@@ -146,8 +146,6 @@ class Charge extends Base\Core
                 }
 
                 $this->handleAuthorizationOrCaptureFailure($subscription, $invoice, $payment, $captureFailure);
-
-                (new Core)->triggerSubscriptionFailureNotification($subscription);
             }
 
             return false;
@@ -181,6 +179,8 @@ class Charge extends Base\Core
             //
             $this->updateSubscriptionDetails($subscription, $capturedPayment, $invoice, $schedule);
 
+            // TODO: This needs to go inside a transaction in `saveSubscriptionAndInvoiceAndTask`.
+            // For some reason, it doesn't get updated there correctly. Figure it out and fix.
             $this->repo->saveOrFail($schedule);
         }
 
@@ -641,6 +641,8 @@ class Charge extends Base\Core
                         'invoice_id'        => $invoice->getId(),
                     ]);
         }
+
+        $core->triggerSubscriptionFailureNotification($subscription);
     }
 
     /**
