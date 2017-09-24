@@ -54,7 +54,7 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Axis\EMandate;
         //
         // Second auth payment for the recurring product
         //
-        $this->doAuthPayment($payment);
+        $this->doS2SRecurringPayment($payment);
 
         $this->assertEMandateEntities(false);
     }
@@ -65,13 +65,13 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Axis\EMandate;
 
         $this->assertEquals('9999999999', $netbanking['bank_payment_id']);
         $this->assertNotNull($netbanking['bank_payment_id']);
-        $this->assertNotNull($netbanking['si_ref_id']);
+        $this->assertNotNull($netbanking['si_token']);
 
         $token = $this->getLastEntity('token', true);
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals('pay_' . $netbanking['payment_id'], $payment['id']);
         $this->assertEquals($payment['token_id'], $token['id']);
-        $this->assertEquals($netbanking['si_ref_id'], $token['gateway_token']);
+        $this->assertEquals($netbanking['si_token'], $token['gateway_token']);
     }
  }

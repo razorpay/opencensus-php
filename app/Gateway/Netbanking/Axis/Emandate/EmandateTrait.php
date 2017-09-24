@@ -38,14 +38,29 @@ trait EmandateTrait
 
     protected function getEmandateAcquirerData(Base\Entity $gatewayPayment)
     {
+        $siStatus = $gatewayPayment->getSIStatus();
+
+        $recurringStatus = ($siStatus === 'Y') ? Token\RecurringStatus::CONFIRMED : Token\RecurringStatus::REJECTED;
+
+        $recurringFailureReason = $gatewayPayment->getSIMessage();
+
         return [
             'acquirer' => [
-                Payment\Entity::REFERENCE1  => $gatewayPayment->getBankPaymentId(),
-                Token\Entity::GATEWAY_TOKEN => $gatewayPayment->getSIToken()
-            ]
+                Payment\Entity::REFERENCE1             => $gatewayPayment->getBankPaymentId(),
+            ],
+            Token\Entity::GATEWAY_TOKEN            => $gatewayPayment->getSIToken(),
+            Token\Entity::RECURRING_STATUS         => $recurringStatus,
+            Token\Entity::RECURRING_FAILURE_REASON => $recurringFailureReason,
         ];
     }
 
+    /**
+     * This method creates the recurring payment request data
+     * We pass the token ID as customer reference number
+     *
+     * @param array $input
+     * @return array
+     */
     protected function getRecurringPaymentData(array $input)
     {
         $data = [
@@ -81,6 +96,11 @@ trait EmandateTrait
             'received'        => true,
             'status'          => $content[ResponseFields::STATUS_CODE],
             'bank_payment_id' => $content[ResponseFields::BANK_REF_NO],
+
+            // SI registration specific callback attributes
+            'si_token'        => $content[ResponseFields::CUSTOMER_REF_NO], // TODO: Confirm this
+            'si_status'       => $content[ResponseFields::STATUS_CODE],
+            'si_message'      => $content[ResponseFields::REMARKS],
         ];
     }
 

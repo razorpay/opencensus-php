@@ -72,9 +72,9 @@ class Server extends Base\Mock\Server
             Emandate\ResponseFields::BANK_REF_NO     => 9999999999,
             Emandate\ResponseFields::STATUS_CODE     => 'Y',
             Emandate\ResponseFields::REMARKS         => 'Random remarks',
-            Emandate\ResponseFields::TRANS_REF_NO    => $input[Emandate\RequestFields::REQUEST_ID],
+            Emandate\ResponseFields::TRANS_REF_NO    => $input[Emandate\RequestFields::REQUEST_ID], // TODO: Confirm this
             Emandate\ResponseFields::TRANS_EXEC_TIME => 1,
-            Emandate\ResponseFields::PAYMENT_MODE    => 'netbanking', // check
+            Emandate\ResponseFields::PAYMENT_MODE    => 'netbanking', // TODO: check
             Emandate\ResponseFields::CHECKSUM        => $input[Emandate\RequestFields::CHECKSUM]
         ];
 
