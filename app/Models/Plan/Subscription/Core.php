@@ -476,9 +476,9 @@ class Core extends Base\Core
             if ($manual === false)
             {
                 (new Charge)->handleAuthorizationOrCaptureFailure($subscription, $invoice, $authorizedPayment, true);
-            }
 
-            $this->triggerSubscriptionFailureNotification($subscription);
+                $this->triggerSubscriptionFailureNotification($subscription);
+            }
 
             $captured = false;
         }
@@ -508,6 +508,17 @@ class Core extends Base\Core
 
     public function triggerSubscriptionFailureNotification(Entity $subscription)
     {
+        if (in_array($subscription->getStatus(), Status::$failingStatuses, true) === false)
+        {
+            throw new LogicException(
+                'Should have never reached here. Should only be called for a subscription fail status',
+                ErrorCode::SERVER_ERROR_SUBSCRIPTION_INVOICE_BAD_STATUS,
+                [
+                    'subscription_id'       => $subscription->getId(),
+                    'subscription_status'   => $subscription->getStatus(),
+                ]);
+        }
+
         $notifyOptions = [];
 
         //
@@ -605,13 +616,12 @@ class Core extends Base\Core
             $subscription, Subscription\Event::AUTHENTICATED, $options);
     }
 
-    public function triggerAlreadyAuthenticatedSubscriptionNotification(
+    public function triggerSubscriptionAlreadyAuthenticatedNotification(
         Subscription\Entity $subscription,
+        string $oldStatus,
         array $options)
     {
         $event = Subscription\Event::CHARGED;
-
-        $oldStatus = $options[Subscription\Event::OLD_STATUS];
 
         //
         // If new status is completed, then that _might_ be the mail we have to send
@@ -662,7 +672,7 @@ class Core extends Base\Core
         //
         if ($subscription->isLatestInvoiceForSubscription($payment->invoice) === false)
         {
-            $event = Subscription\Event::INVOICE_CHARGED;
+            $options[Subscription\Event::PAST_INVOICE] = true;
         }
 
         $this->triggerSubscriptionNotification($subscription, $event, $options);
@@ -674,14 +684,6 @@ class Core extends Base\Core
         array $options = [])
     {
         assert ($this->repo->isTransactionActive() === false);
-
-        //
-        // No point triggering a notification if we don't even have an email
-        //
-        if ($subscription->customer->getEmail() === null)
-        {
-            return;
-        }
 
         $notifier = new Notify($subscription, $options);
 
@@ -756,11 +758,10 @@ class Core extends Base\Core
         $this->repo->saveOrFail($subscription);
 
         $options = [
-            Event::OLD_STATUS    => $oldStatus,
             Event::FUTURE_CANCEL => true,
         ];
 
-        $this->triggerSubscriptionCancelledNotification($subscription, $options);
+        $this->triggerSubscriptionCancelledNotification($subscription, $oldStatus, $options);
     }
 
     public function cancelImmediately(Entity $subscription)
@@ -775,17 +776,14 @@ class Core extends Base\Core
 
         $this->fireWebhookForStatusUpdate($subscription, Status::CANCELLED);
 
-        $options = [
-            Event::OLD_STATUS  => $oldStatus,
-        ];
-
-        $this->triggerSubscriptionCancelledNotification($subscription, $options);
+        $this->triggerSubscriptionCancelledNotification($subscription, $oldStatus);
     }
 
-    protected function triggerSubscriptionCancelledNotification(Entity $subscription, array $options)
+    protected function triggerSubscriptionCancelledNotification(
+        Entity $subscription,
+        string $oldStatus,
+        array $options = [])
     {
-        $oldStatus = $options[Event::OLD_STATUS];
-
         if (($oldStatus !== Status::HALTED) and
             ($oldStatus !== Status::CREATED))
         {

@@ -17,10 +17,11 @@
 <tr style="padding: 0; vertical-align: top; text-align: left;">
 <td class="left demarcated" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px; width: 10%; background: #2b5e9b; color: #fff; border-bottom: 1px solid #2b5e9b;"></td>
       <td class="middle demarcated" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; text-align: left; font-size: 14px; line-height: 19px; width: 80%; border-bottom: 1px solid #eaeaea; padding: 20px;">
-        A payment of <strong>{{$payment['amount']}}</strong> has been made towards your subscription.
-@if($options['card_changed'] === true)
- Your saved card for this subscription has also been updated and securely stored for future payments.
+        A payment of <strong>{{$payment['amount']}}</strong> has been made towards your subscription
+@if($options['past_invoice'] === true)
+ , due from an older biller cycle.
 @endif
+.
       </td>
       <td class="right demarcated" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px; width: 10%; background: #2b5e9b; color: #fff; border-bottom: 1px solid #2b5e9b;"></td>
     </tr>

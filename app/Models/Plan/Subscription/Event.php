@@ -16,19 +16,18 @@ class Event
     const CANCELLED       = 'cancelled';
     const COMPLETED       = 'completed';
     const CARD_CHANGED    = 'card_changed';
-    const INVOICE_CHARGED = 'invoice_charged';
 
     //
     // ======== Event options ========
     //
 
-    const CHARGE_SUCCESS = 'charge_success';
-    const CARD_CHANGE    = 'card_change';
-    const IMMEDIATE      = 'immediate';
-    const AUTO_REFUND    = 'auto_refund';
-    const PAYMENT        = 'payment';
-    const OLD_STATUS     = 'old_status';
-    const FUTURE_CANCEL  = 'future_cancel';
+    const CHARGE_SUCCESS  = 'charge_success';
+    const IMMEDIATE       = 'immediate';
+    const AUTO_REFUND     = 'auto_refund';
+    const PAYMENT         = 'payment';
+    const FUTURE_CANCEL   = 'future_cancel';
+    const PAST_INVOICE    = 'past_invoice';
+    const INVOICE_CHARGED = 'invoice_charged';
 
     const DEFAULT_OPTIONS = [
         self::AUTHENTICATED   => [
@@ -36,7 +35,7 @@ class Event
             self::AUTO_REFUND    => true,
         ],
         self::CHARGED         => [
-            self::CARD_CHANGE    => false,
+            self::PAST_INVOICE   => false,
         ],
         self::COMPLETED       => [
             self::CHARGE_SUCCESS => true,
@@ -45,11 +44,10 @@ class Event
             self::FUTURE_CANCEL  => false,
         ],
         self::CARD_CHANGED    => [
-            self::OLD_STATUS     => null,
+            self::INVOICE_CHARGED => false,
         ],
         self::PENDING         => [],
         self::HALTED          => [],
-        self::INVOICE_CHARGED => [],
     ];
 
     const CUSTOMER_EVENTS = [
@@ -60,7 +58,6 @@ class Event
         self::CANCELLED,
         self::COMPLETED,
         self::CARD_CHANGED,
-        self::INVOICE_CHARGED,
     ];
 
     const MERCHANT_EVENTS = [
@@ -71,7 +68,6 @@ class Event
         self::CANCELLED,
         self::COMPLETED,
         self::CARD_CHANGED,
-        self::INVOICE_CHARGED,
     ];
 
     const MAIL_TAG_MAP = [
@@ -82,7 +78,6 @@ class Event
         self::CANCELLED       => MailTags::SUBSCRIPTION_CANCELLED,
         self::COMPLETED       => MailTags::SUBSCRIPTION_COMPLETED,
         self::CARD_CHANGED    => MailTags::SUBSCRIPTION_CARD_CHANGED,
-        self::INVOICE_CHARGED => MailTags::SUBSCRIPTION_INVOICE_CHARGED,
     ];
 
     public static function isCustomerEvent(string $event)

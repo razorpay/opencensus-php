@@ -2194,10 +2194,12 @@ trait Authorize
 
         $options = [
             Subscription\Event::PAYMENT     => $payment,
-            Subscription\Event::OLD_STATUS  => $oldStatus,
         ];
 
-        (new Subscription/Core)->triggerAlreadyAuthenticatedSubscriptionNotification($subscription, $options);
+        (new Subscription\Core)->triggerSubscriptionAlreadyAuthenticatedNotification(
+            $subscription,
+            $oldStatus,
+            $options);
     }
 
     /**
@@ -2257,6 +2259,8 @@ trait Authorize
     {
         $this->updateSubscriptionToken($subscription, $payment);
 
+        $core = (new Subscription\Core);
+
         //
         // We would have charged the last invoice also.
         // This becomes more or less the same as normal retry success.
@@ -2269,12 +2273,11 @@ trait Authorize
             $this->captureSubscriptionPayment($subscription, $payment);
 
             $options = [
-                Subscription\Event::CARD_CHANGE => true,
-                Subscription\Event::PAYMENT     => $payment,
-                Subscription\Event::OLD_STATUS  => $oldStatus,
+                Subscription\Event::PAYMENT         => $payment,
+                Subscription\Event::INVOICE_CHARGED => true,
             ];
 
-            (new Subscription\Core)->triggerAlreadyAuthenticatedSubscriptionNotification($subscription, $options);
+            $core->triggerSubscriptionNotification($subscription, Subscription\Event::CARD_CHANGED, $options);
 
             return;
         }
@@ -2305,11 +2308,9 @@ trait Authorize
 
         $this->repo->saveOrFail($subscription);
 
-        $core = (new Subscription\Core);
-
         $options = [
-            Subscription\Event::PAYMENT     => $payment,
-            Subscription\Event::OLD_STATUS  => $oldStatus,
+            Subscription\Event::PAYMENT         => $payment,
+            Subscription\Event::INVOICE_CHARGED => false,
         ];
 
         $core->triggerSubscriptionNotification($subscription, Subscription\Event::CARD_CHANGED, $options);

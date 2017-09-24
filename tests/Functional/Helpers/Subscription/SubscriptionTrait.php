@@ -138,7 +138,8 @@ trait SubscriptionTrait
         $subscriptionAttributes = [],
         $addons = false,
         $emptyResponseContent = false,
-        $createCustomer = true)
+        $createCustomer = true,
+        $customerNotify = true)
     {
         $this->fixtures->create('customer');
 
@@ -165,6 +166,11 @@ trait SubscriptionTrait
         {
             $requestContent['request']['content']['customer_id'] = null;
             unset($requestContent['response']['content']['customer_id']);
+        }
+
+        if ($customerNotify === false)
+        {
+            $requestContent['request']['content']['customer_notify'] = 0;
         }
 
         if (empty($subscriptionAttributes) === false)

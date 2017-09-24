@@ -43,7 +43,7 @@ class SubscriptionNotificationTest extends TestCase
         Carbon::setTestNow();
     }
 
-    public function testSubscriptionMailNotSent()
+    public function testSubscriptionMailNotSentForReceiptMailsDisabled()
     {
         Mail::fake();
 
@@ -57,6 +57,26 @@ class SubscriptionNotificationTest extends TestCase
         $this->doAuthTxnForNewSubscription();
 
         Mail::assertNothingSent();
+    }
+
+    public function testSubscriptionMailNotSentForCustomerNotifyFalse()
+    {
+        // Default params, but customer_notify is set to false
+        $subscription = $this->createSubscription(true, [], [], false, false, true, false);
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+
+        Mail::fake();
+
+        $this->doAuthPayment($paymentRequest);
+
+        Mail::assertSent(SubscriptionMail\Authenticated::class, function ($mail)
+        {
+            // Only merchant email has been sent
+            $this->assertEquals(true, $mail->isMerchantEmail());
+
+            return true;
+        });
     }
 
     public function testSubscriptionAuthenticatedMailSentAuthAmount()
@@ -282,7 +302,7 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertContains('VISA', $data['card']['network']);
             $this->assertContains('**** **** **** 3335', $data['card']['number']);
 
-            $this->assertEquals(false, $data['options']['card_change']);
+            $this->assertEquals(false, $data['options']['past_invoice']);
 
             return true;
         });
@@ -304,7 +324,7 @@ class SubscriptionNotificationTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
-        Mail::assertSent(SubscriptionMail\Charged::class, function ($mail) use ($subscription)
+        Mail::assertSent(SubscriptionMail\CardChanged::class, function ($mail) use ($subscription)
         {
             $data = $mail->viewData;
 
@@ -337,7 +357,7 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertContains('VISA', $data['card']['network']);
             $this->assertContains('**** **** **** 3335', $data['card']['number']);
 
-            $this->assertEquals(true, $data['options']['card_change']);
+            $this->assertEquals(true, $data['options']['invoice_charged']);
 
             return true;
         });
@@ -388,7 +408,7 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertContains('VISA', $data['card']['network']);
             $this->assertContains('**** **** **** 3335', $data['card']['number']);
 
-            $this->assertEquals('halted', $data['options']['old_status']);
+            $this->assertEquals(false, $data['options']['invoice_charged']);
 
             return true;
         });
@@ -444,7 +464,7 @@ class SubscriptionNotificationTest extends TestCase
 
         $this->chargeSubscriptionInvoiceManually($oldInvoice);
 
-        Mail::assertSent(SubscriptionMail\InvoiceCharged::class, function ($mail) use ($oldInvoice)
+        Mail::assertSent(SubscriptionMail\Charged::class, function ($mail) use ($oldInvoice)
         {
             $data = $mail->viewData;
 
@@ -469,6 +489,8 @@ class SubscriptionNotificationTest extends TestCase
 
             $this->assertEquals($billingStart, $data['invoice']['billing_start']);
             $this->assertEquals($billingEnd, $data['invoice']['billing_end']);
+
+            $this->assertEquals(true, $data['options']['past_invoice']);
 
             return true;
         });

@@ -134,6 +134,13 @@ class Status
         self::COMPLETED
     ];
 
+    public static $failingStatuses = [
+        self::PENDING,
+        self::HALTED,
+        self::COMPLETED,
+        self::CANCELLED,
+    ];
+
     public static function isStatusValid($status) : bool
     {
         $key = __CLASS__ . '::' . strtoupper($status);

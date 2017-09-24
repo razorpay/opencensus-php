@@ -18,7 +18,12 @@
       <tr>
       <td class="left demarcated"></td>
       <td class="middle demarcated">
-        Payment method for your subscription has been successfully updated. The payment of <strong>{{$payment['amount']}}</strong> has also been refunded.
+        Payment method for your subscription has been successfully updated and securely stored for future payments.
+@if($options['invoice_charged'] === true)
+ A payment of <strong>{{$payment['amount']}}</strong> has been made towards your subscription.
+$else
+ The payment of <strong>{{$payment['amount']}}</strong> has also been refunded.
+@endif
       </td>
       <td class="right demarcated"></td>
     </tr>
@@ -43,6 +48,18 @@
       </td>
       <td class="right"></td>
     </tr>
+    <!-- Billing Period -->
+    @if($options['invoice_charged'] === true)
+    <tr>
+      <td class="left"></td>
+      <td class="middle">
+        <h6>Bill Date</h6>
+        <p class="title">{{$invoice['billing_start']}}</p>
+        <!-- <p class="sub-title">End: {{$invoice['billing_end']}} </p> -->
+      </td>
+      <td class="right"></td>
+    </tr>
+    @endif
     <!-- Card -->
     <tr>
       <td class="left"></td>

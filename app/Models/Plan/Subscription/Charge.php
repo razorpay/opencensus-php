@@ -146,9 +146,9 @@ class Charge extends Base\Core
                 }
 
                 $this->handleAuthorizationOrCaptureFailure($subscription, $invoice, $payment, $captureFailure);
-            }
 
-            (new Core)->triggerSubscriptionFailureNotification($subscription);
+                (new Core)->triggerSubscriptionFailureNotification($subscription);
+            }
 
             return false;
         }

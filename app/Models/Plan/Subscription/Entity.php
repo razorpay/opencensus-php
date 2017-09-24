@@ -115,6 +115,7 @@ class Entity extends Base\PublicEntity
         self::TOKEN_ID              => null,
         self::START_AT              => null,
         self::END_AT                => null,
+        self::CUSTOMER_NOTIFY       => true,
     ];
 
     protected static $generators = [
@@ -315,6 +316,11 @@ class Entity extends Base\PublicEntity
     public function getEndedAt()
     {
         return $this->getAttribute(self::ENDED_AT);
+    }
+
+    public function getCustomerNotify()
+    {
+        return $this->getAttribute(self::CUSTOMER_NOTIFY);
     }
 
     public function getAuthAttempts()

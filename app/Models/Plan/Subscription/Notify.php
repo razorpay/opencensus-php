@@ -157,7 +157,8 @@ class Notify extends Processor\Notify
         {
             $mailable = new $mailableClass($this->template);
 
-            if ($this->isCustomerMailEnabledForMerchant() === true)
+            if (($this->isCustomerMailEnabledForMerchant() === true) and
+                ($this->isCustomerMailAvailable() === true))
             {
                 Mail::queue($mailable);
             }
@@ -172,6 +173,19 @@ class Notify extends Processor\Notify
                 Mail::queue($mailable);
             }
         }
+    }
+
+    protected function isCustomerMailAvailable()
+    {
+        //
+        // No point triggering a notification if we don't even have an email
+        //
+        if ($this->template['customer']['email'] === null)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -308,45 +322,60 @@ class Notify extends Processor\Notify
 
         if ($this->subscription->token->card !== null)
         {
-            $card = $this->subscription->token->card;
-
-            $expiryMonth = str_pad($card->getExpiryMonth(), 2, '0', STR_PAD_LEFT);
-
-            $data['card'] = [
-                'number'    => '**** **** **** ' . $card->getLast4(),
-                'expiry'    => $expiryMonth . '/' . $card->getExpiryYear(),
-                'network'   => $card->getNetworkCode(),
-                'color'     => $card->getNetworkColorCode(),
-            ];
+            $this->setCardData($data);
         }
 
         if ($this->payment !== null)
         {
-            $data['payment']  = [
-                Payment\Entity::ID              => $this->payment->getId(),
-                Payment\Entity::PUBLIC_ID       => $this->payment->getPublicId(),
-                Payment\Entity::AMOUNT          => $this->payment->getFormattedAmount(),
-                Payment\Entity::CAPTURED_AT     => $this->formatTime($this->payment->getAttribute('captured_at')),
-                Payment\Entity::METHOD          => $this->payment->getMethodWithDetail(),
-            ];
-
-            if ($this->payment->isFailed() === true)
-            {
-                $data['payment']['error_description'] = $this->payment->getErrorDescription();
-            }
+            $this->setPaymentData($data);
         }
 
         if ($this->invoice !== null)
         {
-            $data['invoice']  = [
-                Invoice\Entity::ID            => $this->invoice->getId(),
-                Invoice\Entity::PUBLIC_ID     => $this->invoice->getPublicId(),
-                Invoice\Entity::BILLING_START => $this->formatTime($this->invoice->getBillingStart()),
-                Invoice\Entity::BILLING_END   => $this->formatTime($this->invoice->getBillingEnd()),
-            ];
+            $this->setInvoiceData($data);
         }
 
         return $data;
+    }
+
+    protected function setCardData(array & $data)
+    {
+        $card = $this->subscription->token->card;
+
+        $expiryMonth = str_pad($card->getExpiryMonth(), 2, '0', STR_PAD_LEFT);
+
+        $data['card'] = [
+            'number'    => '**** **** **** ' . $card->getLast4(),
+            'expiry'    => $expiryMonth . '/' . $card->getExpiryYear(),
+            'network'   => $card->getNetworkCode(),
+            'color'     => $card->getNetworkColorCode(),
+        ];
+    }
+
+    protected function setInvoiceData(array & $data)
+    {
+        $data['invoice']  = [
+            Invoice\Entity::ID            => $this->invoice->getId(),
+            Invoice\Entity::PUBLIC_ID     => $this->invoice->getPublicId(),
+            Invoice\Entity::BILLING_START => $this->formatTime($this->invoice->getBillingStart()),
+            Invoice\Entity::BILLING_END   => $this->formatTime($this->invoice->getBillingEnd()),
+        ];
+    }
+
+    protected function setPaymentData(array & $data)
+    {
+        $data['payment']  = [
+            Payment\Entity::ID              => $this->payment->getId(),
+            Payment\Entity::PUBLIC_ID       => $this->payment->getPublicId(),
+            Payment\Entity::AMOUNT          => $this->payment->getFormattedAmount(),
+            Payment\Entity::CAPTURED_AT     => $this->formatTime($this->payment->getAttribute('captured_at')),
+            Payment\Entity::METHOD          => $this->payment->getMethodWithDetail(),
+        ];
+
+        if ($this->payment->isFailed() === true)
+        {
+            $data['payment']['error_description'] = $this->payment->getErrorDescription();
+        }
     }
 
     protected function getRetryUrl()
@@ -421,6 +450,11 @@ class Notify extends Processor\Notify
         // this was a customer receipt email don't send a mail
         //
         if ($this->merchant->isReceiptEmailsEnabled() === false)
+        {
+            return false;
+        }
+
+        if ($this->subscription->getCustomerNotify() === false)
         {
             return false;
         }
