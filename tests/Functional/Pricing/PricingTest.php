@@ -32,26 +32,36 @@ class PricingTest extends TestCase
 
     public function testBulkPricingPlan()
     {
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
         $this->startTest();
     }
 
     public function testEmptyBulkPricingPlan()
     {
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
         $this->startTest();
     }
 
     public function testDuplicateBulkPricingPlan()
     {
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
         $this->startTest();
     }
 
     public function testCreatePricingPlanWithMinAndMaxFee()
     {
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
         $this->startTest();
     }
 
     public function testCreatePricingPlanWithInvalidMinAndMaxFee()
     {
+        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
+
         $this->startTest();
     }
 
