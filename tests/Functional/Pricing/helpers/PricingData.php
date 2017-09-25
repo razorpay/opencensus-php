@@ -5,126 +5,7 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
-    'testCreatePricingPlan' => [
-        'request' => [
-            'content' => [
-                'plan_name' => 'TestPlan1',
-                'payment_method' => 'card',
-                'payment_method_type'  => 'credit',
-                'payment_network' => 'DICL',
-                'payment_issuer' => 'HDFC',
-                'percent_rate' => 1000,
-                'international' => 0,
-                'amount_range_active' => '0',
-                'amount_range_min' => null,
-                'amount_range_max' => null,
-            ],
-            'url' => '/pricing',
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'name' => 'TestPlan1',
-                'entity' => 'pricing',
-                'count' => 1,
-                'rules' => [
-                    [
-                        'plan_name' => 'TestPlan1',
-                        'payment_method' => 'card',
-                        'payment_method_type'  => 'credit',
-                        'payment_network' => 'DICL',
-                        'payment_issuer' => 'HDFC',
-                        'percent_rate' => 1000,
-                        'international' => false,
-                        'amount_range_active' => false,
-                        'amount_range_min' => null,
-                        'amount_range_max' => null,
-                        //Defaults to 0
-                        'min_fee'         => 0,
-                        'max_fee'         => null,
-                    ],
-                ],
-            ],
-        ],
-    ],
-    'testCreatePricingPlanWithMinAndMaxFee' => [
-        'request' => [
-            'content' => [
-                'plan_name' => 'TestPlan1',
-                'payment_method' => 'card',
-                'payment_method_type'  => 'credit',
-                'payment_network' => 'DICL',
-                'payment_issuer' => 'HDFC',
-                'percent_rate' => 1000,
-                'international' => 0,
-                'amount_range_active' => '0',
-                'amount_range_min' => null,
-                'amount_range_max' => null,
-                'min_fee'   => null,
-                'max_fee'   => null,
-            ],
-            'url' => '/pricing',
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'name' => 'TestPlan1',
-                'entity' => 'pricing',
-                'count' => 1,
-                'rules' => [
-                    [
-                        'plan_name' => 'TestPlan1',
-                        'payment_method' => 'card',
-                        'payment_method_type'  => 'credit',
-                        'payment_network' => 'DICL',
-                        'payment_issuer' => 'HDFC',
-                        'percent_rate' => 1000,
-                        'international' => false,
-                        'amount_range_active' => false,
-                        'amount_range_min' => null,
-                        'amount_range_max' => null,
-                        //Defaults to 0
-                        'min_fee'         => 0,
-                        'max_fee'         => null,
-                    ],
-                ],
-            ],
-        ],
-    ],
 
-    'testCreatePricingPlanWithInvalidMinAndMaxFee' => [
-        'request' => [
-            'content' => [
-                'plan_name' => 'TestPlan1',
-                'payment_method' => 'card',
-                'payment_method_type'  => 'credit',
-                'payment_network' => 'DICL',
-                'payment_issuer' => 'HDFC',
-                'percent_rate' => 1000,
-                'international' => 0,
-                'amount_range_active' => '0',
-                'amount_range_min' => null,
-                'amount_range_max' => null,
-                'min_fee'   => 10000,
-                'max_fee'   => 10,
-            ],
-            'url' => '/pricing',
-            'method' => 'POST'
-        ],
-         'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Min fee chargeable for a rule needs to be greater than Max fee',
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
-        ],
-    ],
     'testBulkPricingPlan' => [
         'request' => [
             'content' => [
@@ -154,7 +35,7 @@ return [
                         ]
                 ],
             ],
-            'url' => '/pricing',
+            'url' => '/pricing/bulk',
             'method' => 'POST'
         ],
         'response' => [
@@ -200,7 +81,7 @@ return [
                 'plan_name' => 'TestUploadPlan2',
                 'rules'     => [],
             ],
-            'url' => '/pricing',
+            'url' => '/pricing/bulk',
             'method' => 'POST'
         ],
         'response' => [
@@ -215,6 +96,134 @@ return [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_BULK_CREATE,
         ]
+    ],
+    'testDuplicateBulkPricingPlan' => [
+        'request' => [
+            'content' => [
+                'plan_name' => 'TestUploadPlan2',
+                'rules'     => [
+                    [
+                        'payment_method' => 'card',
+                        'percent_rate' => 1000,
+                        'payment_method_type'  => 'credit',
+                        'payment_network' => 'DICL',
+                        'payment_issuer' => 'HDFC',
+                        'international' => '0',
+                        'amount_range_active' => '0',
+                        'amount_range_min' => null,
+                        'amount_range_max' => null,
+                    ],
+                    [
+                        'payment_method' => 'card',
+                        'percent_rate' => 1000,
+                        'payment_method_type'  => 'credit',
+                        'payment_network' => 'DICL',
+                        'payment_issuer' => 'HDFC',
+                        'international' => '0',
+                        'amount_range_active' => '0',
+                        'amount_range_min' => null,
+                        'amount_range_max' => null,
+                    ],
+                ],
+            ],
+            'url' => '/pricing/bulk',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => ErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
+        ]
+    ],
+    'testCreatePricingPlanWithMinAndMaxFee' => [
+        'request' => [
+            'content' => [
+                'plan_name' => 'TestPlan1',
+                'rules'     => [
+                        [
+                            'payment_method' => 'card',
+                            'payment_method_type'  => 'credit',
+                            'payment_network' => 'DICL',
+                            'payment_issuer' => 'HDFC',
+                            'percent_rate' => 1000,
+                            'international' => '0',
+                            'amount_range_active' => '0',
+                            'amount_range_min' => null,
+                            'amount_range_max' => null,
+                            'min_fee'   => null,
+                            'max_fee'   => null,
+                        ],
+                ],
+            ],
+            'url' => '/pricing/bulk',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'name' => 'TestPlan1',
+                'entity' => 'pricing',
+                'count' => 1,
+                'rules' => [
+                    [
+                        'payment_method' => 'card',
+                        'payment_method_type'  => 'credit',
+                        'payment_network' => 'DICL',
+                        'payment_issuer' => 'HDFC',
+                        'percent_rate' => 1000,
+                        'international' => false,
+                        'amount_range_active' => false,
+                        'amount_range_min' => null,
+                        'amount_range_max' => null,
+                        //Defaults to 0
+                        'min_fee'         => 0,
+                        'max_fee'         => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+    'testCreatePricingPlanWithInvalidMinAndMaxFee' => [
+        'request' => [
+            'content' => [
+                'plan_name' => 'TestPlan1',
+                'rules'     => [
+                    [
+                        'payment_method' => 'card',
+                        'payment_method_type'  => 'credit',
+                        'payment_network' => 'DICL',
+                        'payment_issuer' => 'HDFC',
+                        'percent_rate' => 1000,
+                        'amount_range_active' => false,
+                        'amount_range_min' => null,
+                        'amount_range_max' => null,
+                        'min_fee'   => 10000,
+                        'max_fee'   => 10,
+                    ],
+                ],
+            ],
+            'url' => '/pricing/bulk/',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Min fee chargeable for a rule needs to be greater than Max fee',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
     ],
     'testAddPricingPlanRule' => [
         'request' => [

@@ -21,20 +21,6 @@ class PricingTest extends TestCase
         $this->ba->appAuth();
     }
 
-    public function testCreatePricingPlan()
-    {
-        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
-
-        $this->startTest();
-    }
-
-    public function testCreatePricingPlanWithMinAndMaxFee()
-    {
-        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
-
-        $this->startTest();
-    }
-
     public function testAddPricingPlanRule()
     {
         $content = $this->createPricingPlan();
@@ -46,17 +32,29 @@ class PricingTest extends TestCase
 
     public function testBulkPricingPlan()
     {
-        $testData['request']['url'] = '/pricing/bulk';
-
-        $this->startTest($testData);
+        $this->startTest();
     }
 
     public function testEmptyBulkPricingPlan()
     {
-        $testData['request']['url'] = '/pricing/bulk';
-
-        $this->startTest($testData);
+        $this->startTest();
     }
+
+    public function testDuplicateBulkPricingPlan()
+    {
+        $this->startTest();
+    }
+
+    public function testCreatePricingPlanWithMinAndMaxFee()
+    {
+        $this->startTest();
+    }
+
+    public function testCreatePricingPlanWithInvalidMinAndMaxFee()
+    {
+        $this->startTest();
+    }
+
 
     public function testAddPricingPlanNBRule()
     {
@@ -347,13 +345,6 @@ class PricingTest extends TestCase
     public function testDeletePricingPlanRuleForce()
     {
         $content = $this->startTest();
-    }
-
-    public function testCreatePricingPlanWithInvalidMinAndMaxFee()
-    {
-        $this->ba->adminAuth('test', null, 'org_' . Org::RZP_ORG);
-
-        $this->startTest();
     }
 
     public function testDeleteUsedPricingPlanRule()
