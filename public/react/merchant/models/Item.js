@@ -14,7 +14,7 @@ export default class Item extends GenericEntity {
 
   // This will be replaced with the ES autocomplete api
   fetchForAutocomplete(data = {}) {
-    return ajax('/test/items/autocomplete', { data }).then(response => {
+    return ajax('/items/autocomplete', { data }).then(response => {
       response.data.items = response.data.items.map(item =>
         new Item(item).deserialize()
       );
