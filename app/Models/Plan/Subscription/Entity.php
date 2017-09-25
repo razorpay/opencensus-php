@@ -185,7 +185,6 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         // self::TOKEN_ID,
         self::PLAN_ID,
-        self::CHARGE_AT,
         // Later, we will come up with a proper structure to show
         // fields based on proper auth structure.
         // TODO: Remove this when the above is implemented
@@ -234,6 +233,26 @@ class Entity extends Base\PublicEntity
     public function getChargeAt()
     {
         return $this->getAttribute(self::CHARGE_AT);
+    }
+
+    public function getChargeAtAttribute()
+    {
+        $chargeAt = null;
+
+        //
+        // If start_at is null, it means that subscription is still in
+        // created state and is of type `immediate`. If the type is immediate,
+        // charge_at should be null, since we don't know when to charge.
+        // But, task sets a default value to `next_run_at` via modifier.
+        //
+        if (($this->isCancelled() === false) and
+            ($this->isCompleted() === false) and
+            ($this->getStartAt() !== null))
+        {
+            $chargeAt = $this->task->getNextRunAt();
+        }
+
+        return $chargeAt;
     }
 
     public function getStartAt()
@@ -800,26 +819,6 @@ class Entity extends Base\PublicEntity
         $customerId = $this->getAttribute(self::CUSTOMER_ID);
 
         $array[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
-    }
-
-    public function setPublicChargeAtAttribute(array & $array)
-    {
-        $chargeAt = null;
-
-        //
-        // If start_at is null, it means that subscription is still in
-        // created state and is of type `immediate`. If the type is immediate,
-        // charge_at should be null, since we don't know when to charge.
-        // But, task sets a default value to `next_run_at` via modifier.
-        //
-        if (($this->isCancelled() === false) and
-            ($this->isCompleted() === false) and
-            ($this->getStartAt() !== null))
-        {
-            $chargeAt = $this->task->getNextRunAt();
-        }
-
-        $array[self::CHARGE_AT] = $chargeAt;
     }
 
     // public function setPublicTokenIdAttribute(array & $array)

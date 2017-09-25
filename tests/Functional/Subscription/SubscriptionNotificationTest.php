@@ -91,7 +91,7 @@ class SubscriptionNotificationTest extends TestCase
 
             $this->assertEquals('authenticated', $data['subscription']['status']);
             $this->assertEquals(0, $data['subscription']['type']);
-            $this->assertEquals('20 Jan 2018 00:00:00', $data['subscription']['charge_at']);
+            $this->assertEquals('20 Jan 2018', $data['subscription']['charge_at']);
             $this->assertNotNull(0, $data['subscription']['id']);
             $this->assertStringStartsWith(
                 'https://api.razorpay.com/v1/t/subscriptions',
@@ -156,8 +156,8 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertContains('XXXX-XXXX-XXXX-3335', $data['payment']['method']);
             $this->assertNotNull($data['payment']['captured_at']);
 
-            $currentStart = Carbon::createFromTimestamp($subscription['current_start'], Timezone::IST)->format('j M Y H:i:s');
-            $currentEnd   = Carbon::createFromTimestamp($subscription['current_end'], Timezone::IST)->format('j M Y H:i:s');
+            $currentStart = Carbon::createFromTimestamp($subscription['current_start'], Timezone::IST)->format('j M Y');
+            $currentEnd   = Carbon::createFromTimestamp($subscription['current_end'], Timezone::IST)->format('j M Y');
 
             $this->assertEquals($currentStart, $data['invoice']['billing_start']);
             $this->assertEquals($currentEnd, $data['invoice']['billing_end']);
@@ -186,6 +186,7 @@ class SubscriptionNotificationTest extends TestCase
 
             $this->assertEquals('authenticated', $data['subscription']['status']);
             $this->assertEquals(2, $data['subscription']['type']);
+            $this->assertEquals('20 Jan 2018', $data['subscription']['charge_at']);
             $this->assertNotNull(0, $data['subscription']['id']);
             $this->assertStringStartsWith(
                 'https://api.razorpay.com/v1/t/subscriptions',
@@ -245,8 +246,8 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertContains('Card', $data['payment']['method']);
             $this->assertContains('XXXX-XXXX-XXXX-3335', $data['payment']['method']);
 
-            $currentStart = Carbon::createFromTimestamp($subscription['current_start'], Timezone::IST)->format('j M Y H:i:s');
-            $currentEnd   = Carbon::createFromTimestamp($subscription['current_end'], Timezone::IST)->format('j M Y H:i:s');
+            $currentStart = Carbon::createFromTimestamp($subscription['current_start'], Timezone::IST)->format('j M Y');
+            $currentEnd   = Carbon::createFromTimestamp($subscription['current_end'], Timezone::IST)->format('j M Y');
 
             $this->assertEquals($currentStart, $data['invoice']['billing_start']);
             $this->assertEquals($currentEnd, $data['invoice']['billing_end']);
@@ -279,6 +280,7 @@ class SubscriptionNotificationTest extends TestCase
 
             $this->assertEquals('active', $data['subscription']['status']);
             $this->assertEquals(0, $data['subscription']['type']);
+            $this->assertEquals('20 Mar 2018',$data['subscription']['charge_at']);
             $this->assertNotNull(0, $data['subscription']['id']);
             $this->assertStringStartsWith(
                 'https://api.razorpay.com/v1/t/subscriptions',
@@ -332,6 +334,7 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertEquals('active', $data['subscription']['status']);
             $this->assertEquals(0, $data['subscription']['type']);
             $this->assertNotNull(0, $data['subscription']['id']);
+            $this->assertEquals('20 Mar 2018',$data['subscription']['charge_at']);
             $this->assertStringStartsWith(
                 'https://api.razorpay.com/v1/t/subscriptions',
                 $data['subscription']['hosted_url']);
@@ -347,8 +350,8 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertContains('XXXX-XXXX-XXXX-3335', $data['payment']['method']);
 
             // Invoice created for the charge
-            $currentStart = Carbon::createFromTimestamp($subscription['current_start'], Timezone::IST)->format('j M Y H:i:s');
-            $currentEnd   = Carbon::createFromTimestamp($subscription['current_end'], Timezone::IST)->format('j M Y H:i:s');
+            $currentStart = Carbon::createFromTimestamp($subscription['current_start'], Timezone::IST)->format('j M Y');
+            $currentEnd   = Carbon::createFromTimestamp($subscription['current_end'], Timezone::IST)->format('j M Y');
 
             $this->assertEquals($currentStart, $data['invoice']['billing_start']);
             $this->assertEquals($currentEnd, $data['invoice']['billing_end']);
@@ -487,8 +490,8 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertContains('Card', $data['payment']['method']);
             $this->assertContains('XXXX-XXXX-XXXX-3335', $data['payment']['method']);
 
-            $billingStart = Carbon::createFromTimestamp($oldInvoice['billing_start'], Timezone::IST)->format('j M Y H:i:s');
-            $billingEnd   = Carbon::createFromTimestamp($oldInvoice['billing_end'], Timezone::IST)->format('j M Y H:i:s');
+            $billingStart = Carbon::createFromTimestamp($oldInvoice['billing_start'], Timezone::IST)->format('j M Y');
+            $billingEnd   = Carbon::createFromTimestamp($oldInvoice['billing_end'], Timezone::IST)->format('j M Y');
 
             $this->assertEquals($billingStart, $data['invoice']['billing_start']);
             $this->assertEquals($billingEnd, $data['invoice']['billing_end']);
@@ -614,6 +617,7 @@ class SubscriptionNotificationTest extends TestCase
 
             $this->assertEquals('completed', $data['subscription']['status']);
             $this->assertEquals(0, $data['subscription']['type']);
+            $this->assertNull($data['subscription']['charge_at']);
             $this->assertNotNull(0, $data['subscription']['id']);
             $this->assertStringStartsWith(
                 'https://api.razorpay.com/v1/t/subscriptions',
@@ -629,8 +633,8 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertContains('Card', $data['payment']['method']);
             $this->assertContains('XXXX-XXXX-XXXX-3335', $data['payment']['method']);
 
-            $currentStart = Carbon::createFromTimestamp($subscription['current_start'], Timezone::IST)->format('j M Y H:i:s');
-            $currentEnd   = Carbon::createFromTimestamp($subscription['current_end'], Timezone::IST)->format('j M Y H:i:s');
+            $currentStart = Carbon::createFromTimestamp($subscription['current_start'], Timezone::IST)->format('j M Y');
+            $currentEnd   = Carbon::createFromTimestamp($subscription['current_end'], Timezone::IST)->format('j M Y');
 
             $this->assertEquals($currentStart, $data['invoice']['billing_start']);
             $this->assertEquals($currentEnd, $data['invoice']['billing_end']);
@@ -678,6 +682,7 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertEquals('completed', $data['subscription']['status']);
             $this->assertEquals(0, $data['subscription']['type']);
             $this->assertNotNull(0, $data['subscription']['id']);
+            $this->assertNull($data['subscription']['charge_at']);
             $this->assertStringStartsWith(
                 'https://api.razorpay.com/v1/t/subscriptions',
                 $data['subscription']['hosted_url']);
@@ -692,8 +697,8 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertContains('Card', $data['payment']['method']);
             $this->assertContains('XXXX-XXXX-XXXX-3335', $data['payment']['method']);
 
-            $currentStart = Carbon::createFromTimestamp($subscription['current_start'], Timezone::IST)->format('j M Y H:i:s');
-            $currentEnd   = Carbon::createFromTimestamp($subscription['current_end'], Timezone::IST)->format('j M Y H:i:s');
+            $currentStart = Carbon::createFromTimestamp($subscription['current_start'], Timezone::IST)->format('j M Y');
+            $currentEnd   = Carbon::createFromTimestamp($subscription['current_end'], Timezone::IST)->format('j M Y');
 
             $this->assertEquals($currentStart, $data['invoice']['billing_start']);
             $this->assertEquals($currentEnd, $data['invoice']['billing_end']);

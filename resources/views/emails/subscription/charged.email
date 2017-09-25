@@ -20,7 +20,7 @@
       <td class="middle demarcated">
         A payment of <strong>{{$payment['amount']}}</strong> has been made towards your subscription
 @if($options['past_invoice'] === true)
- , due from an older biller cycle.
+, due from an older biller cycle.
 @endif
 .
 @if($options['reactivated'] === true)

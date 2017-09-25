@@ -364,11 +364,13 @@ class Notify extends Processor\Notify
 
     protected function setPaymentData(array & $data)
     {
+        $capturedAt = $this->formatTime($this->payment->getAttribute('captured_at'), 'j M Y H:i:s');
+
         $data['payment']  = [
             Payment\Entity::ID              => $this->payment->getId(),
             Payment\Entity::PUBLIC_ID       => $this->payment->getPublicId(),
             Payment\Entity::AMOUNT          => $this->payment->getFormattedAmount(),
-            Payment\Entity::CAPTURED_AT     => $this->formatTime($this->payment->getAttribute('captured_at')),
+            Payment\Entity::CAPTURED_AT     => $capturedAt,
             Payment\Entity::METHOD          => $this->payment->getMethodWithDetail(),
         ];
 
@@ -401,14 +403,14 @@ class Notify extends Processor\Notify
         $this->template['options'] = array_merge($defaultOptions, $this->options);
     }
 
-    protected function formatTime($time)
+    protected function formatTime($time, $format = 'j M Y')
     {
         if ($time === null)
         {
             return null;
         }
 
-        return Carbon::createFromTimestamp($time, Timezone::IST)->format('j M Y H:i:s');
+        return Carbon::createFromTimestamp($time, Timezone::IST)->format($format);
     }
 
     protected function isTimestamp($key, $value)

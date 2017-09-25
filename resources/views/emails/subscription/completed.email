@@ -23,7 +23,7 @@
       @else
         A final charge attempt towards your subscription has <strong>failed</strong>.
       @endif
-      The subscription is now completed, and there will be more more charge attempts made on your saved card.
+      The subscription is now completed, and there will be no more charge attempts made on your saved card.
       </td>
       <td class="right demarcated"></td>
     </tr>

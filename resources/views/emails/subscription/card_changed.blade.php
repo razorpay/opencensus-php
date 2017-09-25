@@ -20,7 +20,7 @@
         Payment method for your subscription has been successfully updated and securely stored for future payments.
 @if($options['invoice_charged'] === true)
  A payment of <strong>{{$payment['amount']}}</strong> has been made towards your subscription.
-$else
+@else
  The payment of <strong>{{$payment['amount']}}</strong> has also been refunded.
 @endif
 @if($options['reactivated'] === true)
