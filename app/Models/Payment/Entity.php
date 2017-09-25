@@ -109,7 +109,7 @@ class Entity extends Base\PublicEntity
     // Query params
     const TRANSFERRED           = 'transferred';
 
-    // Tells us whether this payment is a registration or debit e mandate payment
+    // Tells us whether this payment is a initial or renew recurring type
     const RECURRING_TYPE        = 'recurring_type';
 
     // constants and defaults
@@ -228,10 +228,10 @@ class Entity extends Base\PublicEntity
         self::LATE_AUTHORIZED,
         self::SUBSCRIPTION_ID,
         self::CONVERT_CURRENCY,
-        self::RECURRING_TYPE,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DISPUTED,
+        self::RECURRING_TYPE,
     ];
 
     protected $public = [
@@ -267,7 +267,6 @@ class Entity extends Base\PublicEntity
         // self::SUBSCRIPTION_ID,
         self::CREATED_AT,
         self::TAX,
-        self::RECURRING_TYPE,
     ];
 
     /**
@@ -638,7 +637,7 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * E Mandate Type is null by default, and will be set to debit or registration based on use case
+     * Recurring Type is null by default, and will be set to initial or auto based on use case
      *
      * @param $type
      */
@@ -649,14 +648,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECURRING_TYPE, $type);
     }
 
-    public function isDebitRecurringType()
+    public function isRecurringTypeAuto()
     {
-        return ($this->getAttribute(self::RECURRING_TYPE) === RecurringType::DEBIT);
+        return ($this->getAttribute(self::RECURRING_TYPE) === RecurringType::AUTO);
     }
 
-    public function isRegistrationRecurringType()
+    public function isRecurringTypeInitial()
     {
-        return ($this->getAttribute(self::RECURRING_TYPE) === RecurringType::REGISTRATION);
+        return ($this->getAttribute(self::RECURRING_TYPE) === RecurringType::INITIAL);
     }
 
     public function setSigned($signed = true)

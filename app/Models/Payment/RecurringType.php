@@ -4,11 +4,12 @@ namespace RZP\Models\Payment;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\InvalidArgumentException;
 
 class RecurringType
 {
-    const REGISTRATION      = 'registration';
-    const DEBIT             = 'debit';
+    const INITIAL     = 'initial';
+    const AUTO        = 'auto';
 
     public static function isRecurringTypeValid($type)
     {
@@ -19,10 +20,10 @@ class RecurringType
     {
         if (self::isRecurringTypeValid($type) === false)
         {
-            throw new BadRequestException(
-                ErrorCode::SERVER_ERROR_PAYMENT_INVALID_RECURRING_TYPE,
-                Entity::RECURRING_TYPE,
+            throw new InvalidArgumentException(
+                null,
                 [
+                    'field'          => Entity::RECURRING_TYPE,
                     'recurring_type' => $type
                 ]);
         }

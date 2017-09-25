@@ -1428,7 +1428,7 @@ trait Authorize
         {
             // True => debit, False => registration
             // TODO: Add support for when we allow recurring tokens for first payments
-            $type = ($token->isRecurring() === true) ? Payment\RecurringType::DEBIT : Payment\RecurringType::REGISTRATION;
+            $type = ($token->isRecurring() === true) ? Payment\RecurringType::AUTO : Payment\RecurringType::INITIAL;
 
             $payment->valildateAndSetRecurringType($type);
         }
@@ -2156,6 +2156,20 @@ trait Authorize
 
         if ($payment->isRecurring() === true)
         {
+
+            //
+            // For subscriptions, we always create and set terminal in
+            // gateway token, irrespective of whether the token is already
+            // recurring or not.
+            // If an existing recurring token is used for another subscription,
+            // we create another gateway token, since these two subscriptions
+            // can have different terminals.
+            // In case of charge-at-will, we don't have any way to know whether
+            // it's a different subscription that is being done with an existing
+            // recurring token. We cannot use public_auth check since we can
+            // get the request from private_auth also.
+            //
+
             //
             // This is just in case. Payment recurring is anyway only
             // allowed on cards and netbanking.
@@ -2195,7 +2209,7 @@ trait Authorize
             //
             // For First Data second recurring payments we do not update the token's terminal
             //
-            if (Payment\Gateway::shouldSetTokenTerminal($token, $payment) === true)
+            if ($this->shouldSetTokenTerminal($token, $payment) === true)
             {
                 // TODO: Refactor this later
                 $token->terminal()->associate($payment->terminal);
@@ -2205,6 +2219,17 @@ trait Authorize
         }
 
         $this->repo->saveOrFail($token);
+    }
+
+    public static function shouldSetTokenTerminal(Token\Entity $token, Payment\Entity $payment)
+    {
+        $gateway = $payment->getGateway();
+
+        $gatewayInArray = in_array($gateway, Payment\Gateway::$shouldNotSetNon3DSTerminalsInTokenGateways, true);
+
+        $shouldNotSetTokenTerminal = ((($gatewayInArray) === true) and (empty($token->getTerminalId()) === false));
+
+        return $shouldNotSetTokenTerminal === false;
     }
 
     protected function shouldSetTokenRecurring(Payment\Entity $payment, array $data)

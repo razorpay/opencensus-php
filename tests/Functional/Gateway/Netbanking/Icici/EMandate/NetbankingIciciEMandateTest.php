@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use RZP\Constants\Entity;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Gateway;
-use RZP\Models\Payment\RecurringType;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Customer\Token\Entity as Token;
@@ -521,7 +520,6 @@ class NetbankingIciciEMandateTest extends TestCase
             $this->assertEquals('9999999999', $netbanking[Netbanking::BANK_PAYMENT_ID]);
             $this->assertEquals('Y', $netbanking[Netbanking::SI_STATUS]);
             $this->assertEquals('SUC', $netbanking[Netbanking::SI_MSG]);
-            $this->assertEquals(RecurringType::REGISTRATION, $payment[Payment::RECURRING_TYPE]);
 
             $usedCount = 1;
         }
@@ -532,7 +530,6 @@ class NetbankingIciciEMandateTest extends TestCase
 
             $this->assertEquals(null, $netbanking[Netbanking::SI_STATUS]);
             $this->assertEquals(null, $netbanking[Netbanking::SI_MSG]);
-            $this->assertEquals(RecurringType::DEBIT, $payment[Payment::RECURRING_TYPE]);
         }
 
         // Assert Token Entity

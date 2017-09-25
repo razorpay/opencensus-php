@@ -404,7 +404,7 @@ class Gateway extends Base\Gateway
         }
 
         // We check that the recurring type of the payment is registration and not debit
-        if ($verify->input['payment']['recurring_type'] === Payment\RecurringType::REGISTRATION)
+        if ($verify->input['payment']['recurring_type'] === Payment\RecurringType::INITIAL)
         {
             $requestData[RequestFields::SI] = Status::Y;
             $requestData[RequestFields::SI_AUTO_PAY_AMOUNT] = $verify->input['token']->getMaxAmount() / 100;
@@ -468,7 +468,7 @@ class Gateway extends Base\Gateway
             RequestFields::SI_PAYMENT_FREQ     => Frequency::AS_AND_WHEN,
             // Num installments = empty when charge at will
             RequestFields::SI_NUM_INSTALLMENTS => '',
-            RequestFields::SI_AUTO_PAY_AMOUNT  => (int) $input['token']->getMaxAmount() / 100,
+            RequestFields::SI_AUTO_PAY_AMOUNT  => $input['token']->getMaxAmount() / 100,
             RequestFields::SI_END_DATE         => $endDate,
         ];
 

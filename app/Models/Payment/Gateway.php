@@ -593,14 +593,6 @@ class Gateway
         Gateway::FIRST_DATA,
     ];
 
-    public static function shouldSetTokenTerminal(Token\Entity $token, Entity $payment)
-    {
-        $shouldNotSetTokenTerminal = ((in_array($payment->getGateway(), self::$shouldNotSetNon3DSTerminalsInTokenGateways, true) === true) and
-                                      (empty($token->getTerminalId()) === false));
-
-        return $shouldNotSetTokenTerminal === false;
-    }
-
     public static function getAcquirerName(string $acquirer)
     {
         $code = self::$acquirerToCodeMap[$acquirer];
