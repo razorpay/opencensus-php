@@ -42,7 +42,7 @@ export default class ProductActivationBanner extends Component {
   }
 
   render() {
-    const { productName, symbol, onActivate } = this.props;
+    const { productName, symbol, onActivate, productDocs } = this.props;
 
     if (!this.state.showProductActivationBanner) {
       return null;
@@ -57,7 +57,10 @@ export default class ProductActivationBanner extends Component {
           <div className="m-b">
             <div>
               You are currently in test mode. To integrate in test mode, you can
-              go through the documentation.
+              go through the{' '}
+              <a class="btn-link" target="_blank" href={productDocs}>
+                documentation
+              </a>.
             </div>
             <div>
               To activate {productName} in live mode, you can request for
