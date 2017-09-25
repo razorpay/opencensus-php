@@ -500,6 +500,17 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getIrctcRefundReport()
+    {
+        $input = Request::all();
+
+        $report = new Report\Types\IrctcRefundReport(E::REFUND);
+
+        $data = $report->getReport($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getInvoiceReport()
     {
         $input = Request::all();
@@ -801,5 +812,14 @@ class MerchantController extends Controller
         $data = $this->service(Entity::GATEWAY_DOWNTIME)->getDowntimeDataForMerchant();
 
         return ApiResponse::json($data);
+    }
+
+    public function createBatches($id)
+    {
+        $input = Request::all();
+
+        $response = (new Merchant\Service)->createBatches($id, $input);
+
+        return ApiResponse::json($response);
     }
 }

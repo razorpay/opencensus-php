@@ -50,4 +50,29 @@ class FeatureController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getOnboardingQuestions()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getOnboardingQuestions($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postOnboardingResponses(string $feature)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->postOnboardingResponses($input, $feature);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getOnboardingResponses(string $feature = null)
+    {
+        $response = $this->service()->getOnboardingResponses($feature);
+
+        return ApiResponse::json($response);
+    }
+
 }

@@ -171,7 +171,6 @@ class InvoiceController extends Controller
             '7SVOQZGZuwHr4I', // Amit. M's
         ];
 
-
         if ((empty($data['merchant']) === false) and
             (in_array($data['merchant']['id'], $idsForUberFlow, true) === true))
         {

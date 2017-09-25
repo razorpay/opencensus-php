@@ -93,7 +93,7 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         // Uncomment later when required
-        // self::ITEM_ID,
+        self::ITEM_ID,
         // self::REF_ID,
         // self::REF_TYPE,
         self::NAME,

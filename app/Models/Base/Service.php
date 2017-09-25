@@ -3,8 +3,9 @@
 namespace RZP\Models\Base;
 
 use App;
-use RZP\Base\RepositoryManager;
+use RZP\Base;
 use RZP\Models\Merchant;
+use RZP\Base\RepositoryManager;
 
 class Service
 {

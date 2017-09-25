@@ -9,13 +9,13 @@ use RZP\Constants\Timezone;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\LineItem;
+use RZP\Models\Merchant;
 use RZP\Models\Merchant\Checkout;
 
 /**
  * This class is common source of invoice and related data to be sent
  * - to mail templates as payload
  * - to hosted page view
- *
  */
 class ViewDataSerializer extends Base\Core
 {
@@ -46,7 +46,13 @@ class ViewDataSerializer extends Base\Core
         Entity::AMOUNT_PAID
     ];
 
+    /**
+     * @var Entity
+     */
     protected $invoice;
+    /**
+     * @var Merchant\Entity
+     */
     protected $merchant;
 
     public function __construct(Entity $invoice)
