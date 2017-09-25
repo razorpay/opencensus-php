@@ -322,6 +322,19 @@ class Processor extends Base\Core
 
     protected function getBankAccountInput(Entity $bankTransfer)
     {
+        $label = $this->getLabel($bankTransfer);
+
+        $ifsc = $this->getPayerIfsc($bankTransfer);
+
+        return [
+            BankAccount\Entity::IFSC_CODE        => $ifsc,
+            BankAccount\Entity::ACCOUNT_NUMBER   => $bankTransfer->getPayerAccount(),
+            BankAccount\Entity::BENEFICIARY_NAME => $label,
+        ];
+    }
+
+    protected function getLabel(Entity $bankTransfer)
+    {
         $label = $bankTransfer->getPayerName();
 
         if (empty($label) === true)
@@ -329,21 +342,22 @@ class Processor extends Base\Core
             $label = $bankTransfer->merchant->getBillingLabel();
         }
 
-        $label = substr(preg_replace('/[^a-zA-Z0-9 ]+/', '', $label), 0, 39);
+        return substr(preg_replace('/[^a-zA-Z0-9 ]+/', '', $label), 0, 39);
+    }
 
-        $ifscCode = $bankTransfer->getPayerIfsc();
+    protected function getPayerIfsc(Entity $bankTransfer)
+    {
+        $ifsc = $bankTransfer->getPayerIfsc();
 
-        if ((strlen($ifscCode) !== BankAccount\Entity::IFSC_CODE_LENGTH) and
+        if ((strlen($ifsc) !== BankAccount\Entity::IFSC_CODE_LENGTH) and
             ($bankTransfer->getMode() === Mode::IMPS))
         {
-            $ifscCode = null;
+            $bankCode = substr($ifsc, 0, 3);
+
+            $ifsc = BankCodes::getIfscForBankCode($bankCode);
         }
 
-        return [
-            BankAccount\Entity::IFSC_CODE        => $ifscCode,
-            BankAccount\Entity::ACCOUNT_NUMBER   => $bankTransfer->getPayerAccount(),
-            BankAccount\Entity::BENEFICIARY_NAME => $label,
-        ];
+        return $ifsc;
     }
 
     protected function bankTransferPaymentArray(Entity $bankTransfer): array

@@ -149,22 +149,27 @@ class BankTransferTest extends TestCase
 
         // Customer bank account created
         $bankAccount = $this->getLastEntity('bank_account', true);
-        // Null, because IFSC was not received for IMPS transaction
-        $this->assertNull($bankAccount['ifsc']);
+        // Set to mapped IFSC code for HDFC Bank code
+        $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
 
         $payment =  $this->getLastEntity('payment', true);
 
         $data = $this->testData['bankTransferImpsFailedRefund'];
 
-        // IMPS refunds are permitted...
+        // IMPS refunds are permitted
         $this->refundPayment($payment['id'], 4000000);
-
-        // ...but they don't actually work
         $refund =  $this->getLastEntity('refund', true);
         $this->assertEquals($payment['id'], $refund['payment_id']);
-        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals('created', $refund['status']);
         $this->assertEquals(4000000, $refund['amount']);
+
+        $attempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertEquals('created', $attempt['status']);
+        $this->assertEquals($refund['id'], $attempt['source']);
+        $this->assertEquals('10000000000000', $attempt['merchant_id']);
+        $this->assertEquals($bankAccount['id'], 'ba_'.$attempt['bank_account_id']);
+        $this->assertStringEndsWith($utr, $attempt['narration']);
 
         // Payment is refunded
         $payment =  $this->getLastEntity('payment', true);
