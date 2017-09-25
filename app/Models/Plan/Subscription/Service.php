@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Plan\Subscription;
 
+use RZP\Constants;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\LogicException;
@@ -337,6 +338,31 @@ class Service extends Base\Service
         $this->repo->reload($invoice);
 
         return $invoice->toArrayPublic();
+    }
+
+    public function getSubscriptionViewData(string $subscriptionId): array
+    {
+        $routeName = $this->app['api.route']->getCurrentRouteName();
+
+        if (($routeName === 'subscription_view_test') or
+            ($routeName === 'subscription_view_test_post'))
+        {
+            $mode = Constants\Mode::TEST;
+        }
+        else
+        {
+            $mode = Constants\Mode::LIVE;
+        }
+
+        \Database\DefaultConnection::set($mode);
+
+        $this->app['basicauth']->setMode($mode);
+
+        $subscription = $this->repo->subscription->findByPublicId($subscriptionId);
+
+        $subscription->getValidator()->validateSubscriptionViewable();
+
+        return (new ViewDataSerializer($subscription))->get();
     }
 
     /**

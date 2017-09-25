@@ -277,6 +277,20 @@ class Core extends Base\Core
         return $authAmount;
     }
 
+    public function getAuthTransactionAmountForCardChange(Entity $subscription): int
+    {
+        if ($subscription->isPending() === true)
+        {
+            $invoice = $this->repo->invoice->fetchLatestInvoiceOfPendingSubscription($subscription);
+
+            return $invoice->getAmount();
+        }
+        else
+        {
+            return Entity::DEFAULT_AUTH_AMOUNT;
+        }
+    }
+
     public function fireWebhookForStatusUpdate(Entity $subscription, string $status, Payment\Entity $payment = null)
     {
         if (array_key_exists($status, Status::$webhookStatuses) === false)
@@ -663,20 +677,6 @@ class Core extends Base\Core
         }
 
         return $authAmount;
-    }
-
-    protected function getAuthTransactionAmountForCardChange(Entity $subscription): int
-    {
-        if ($subscription->isPending() === true)
-        {
-            $invoice = $this->repo->invoice->fetchLatestInvoiceOfPendingSubscription($subscription);
-
-            return $invoice->getAmount();
-        }
-        else
-        {
-            return Entity::DEFAULT_AUTH_AMOUNT;
-        }
     }
 
     protected function constructRecurringPayload(

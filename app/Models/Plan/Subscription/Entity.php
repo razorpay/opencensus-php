@@ -8,19 +8,24 @@ use RZP\Constants\Timezone;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
+
 use RZP\Models\Base;
 use RZP\Models\Plan;
 use RZP\Models\Invoice;
-use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Models\Customer;
 use RZP\Models\Schedule\Task;
+use RZP\Models\Customer\Token;
 use RZP\Models\Schedule\Anchor;
 use RZP\Models\Base\Traits\NotesTrait;
 
 /**
- * @property Task\Entity        $task
- * @property Merchant\Entity    $merchant
+ * @property Invoice\Entity     $invoice
  * @property Customer\Entity    $customer
+ * @property Merchant\Entity    $merchant
+ * @property Plan\Entity        $plan
+ * @property Token\Entity       $token
+ * @property Task\Entity        $task
  */
 class Entity extends Base\PublicEntity
 {
@@ -517,6 +522,20 @@ class Entity extends Base\PublicEntity
         $hasGlobalCustomer = $localCustomer->hasGlobalCustomer();
 
         return ($hasGlobalCustomer === false);
+    }
+
+    /**
+     * Returns the path component of Dashboard view url.
+     *
+     * For subscription (New): #/app/subscriptions/{public-id}
+     *
+     * @return string
+     */
+    public function getDashboardPath(): string
+    {
+        $path = '#/app/subscriptions/' . $this->getPublicId();
+
+        return $path;
     }
 
     // --------------------- END GETTERS ---------------------
