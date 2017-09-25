@@ -12,17 +12,6 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public function createPricingPlan($input)
-    {
-        $plan = (new Pricing\Core)->createPricingPlan($input);
-
-        $this->trace->info(
-            TraceCode::PRICING_PLAN_CREATE_SUCCESS,
-            $plan->toArrayPublic());
-
-        return $plan->toArrayPublic();
-    }
-
     public function createBulkPricingPlan($input)
     {
         (new Pricing\Core())->createBulkPricing($input);
