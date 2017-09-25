@@ -14,7 +14,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $aesEncryptionRules = [
+        AESEncryption::MODE        => 'required|integer',
         AESEncryption::IV          => 'sometimes|string',
-        AESEncryption::SECRET      => 'sometimes|string',
+        AESEncryption::SECRET      => 'required|string',
     ];
 }

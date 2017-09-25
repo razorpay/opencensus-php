@@ -4,15 +4,16 @@ namespace RZP\Encryption;
 
 use RZP\Exception;
 use RZP\Gateway\Base;
-use phpseclib\Crypt\AES;
 
 class AESEncryption extends Encryption
 {
     const SECRET = 'secret';
     const IV = 'iv';
+    const MODE = 'mode';
 
     protected $secret;
     protected $iv;
+    protected $mode;
 
     protected $encryptor;
 
@@ -20,11 +21,9 @@ class AESEncryption extends Encryption
     {
         parent::__construct($params);
 
-        $this->secret = $params[self::SECRET] ?? null;
+        $this->iv = $params[self::IV] ?? '';
 
-        $this->iv = $params[self::IV] ?? null;
-
-        $this->encryptor = new Base\AESCrypto(AES::MODE_CBC, $this->secret, $this->iv);
+        $this->encryptor = new Base\AESCrypto($params[self::MODE], $params[self::SECRET], $this->iv);
     }
 
     public function encrypt(string $data): string

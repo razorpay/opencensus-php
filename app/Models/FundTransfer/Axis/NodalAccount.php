@@ -13,6 +13,7 @@ use RZP\Constants\Timezone;
 
 use RZP\Models\FundTransfer\Base as NodalBase;
 use RZP\Encryption\AESEncryption;
+use phpseclib\Crypt\AES;
 use RZP\Mail\Settlement\AxisSettlement;
 use RZP\Models\FundTransfer\Mode;
 
@@ -84,8 +85,9 @@ class NodalAccount extends NodalBase\NodalAccount
                         ->headers(false)
                         ->columnFormat(['C3' => 'dd/mm/yy', 'E3' => 'dd/mm/yy', 'F3' => 'dd/mm/yy'])
                         ->encrypt(Type::AES_ENCRYPTION, [
+                            AESEncryption::MODE   => AES::MODE_CBC,
                             AESEncryption::IV     => self::IV,
-                            AESEncryption::SECRET => self::SECRET])
+                            AESEncryption::SECRET => self::SECRET,])
                         ->save();
 
         $fileInstance = $file->get();

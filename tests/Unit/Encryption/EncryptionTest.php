@@ -36,7 +36,8 @@ class EncryptionTest extends TestCase
 
         // to be changed
         $encryptionData = [
-            'iv'  => 'aai_wee',
+            'mode'   => 2,
+            'iv'     => 'aai_wee',
             'secret' => 'kissi_ko_pata_nhi_chalega',
         ];
 

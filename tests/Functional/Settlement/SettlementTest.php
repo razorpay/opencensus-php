@@ -660,7 +660,7 @@ class SettlementTest extends TestCase
 
     public function testNodalTransferWithAmount()
     {
-        //Mail::fake();
+        Mail::fake();
 
         $this->ba->appAuth();
 
@@ -676,7 +676,7 @@ class SettlementTest extends TestCase
 
         $this->assertNotEquals(null, $content['file']);
 
-        //Mail::assertSent(AxisSettlementMail::class);
+        Mail::assertSent(AxisSettlementMail::class);
     }
 
     public function testSettlementWithAccountTransfer()
