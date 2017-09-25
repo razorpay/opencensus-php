@@ -48,6 +48,7 @@ app
           live: 0,
         },
       };
+      $scope.showMerchantBatchUpload = false;
 
       admin.identity().then(function(adminData) {
         if (adminData.permissions.indexOf('view_all_group') !== -1) {
@@ -2139,6 +2140,12 @@ app
               $scope.merchant.details.features[mode] = getFeatureNames(
                 data.data.assigned_features
               );
+
+              Object.keys(data.data.assigned_features).forEach(function(key) {
+                if (data.data.assigned_features[key].name === 'irctc_report') {
+                  $scope.showMerchantBatchUpload = true;
+                }
+              });
             } else {
               $scope.alerts.resetAlerts(true);
               angular.forEach(data.errors, function(value) {

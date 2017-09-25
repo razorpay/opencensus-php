@@ -147,7 +147,7 @@
         <a href class="list-group-item" id="btn-featureMerchant" ng-click="openFeatureMerchant()" dynamic-tooltip="edit_merchant_features" ng-show="admin.permissions.indexOf('edit_merchant_features') !== -1">
           Feature Merchant <i class="pull-right fa fa-tag"></i>
         </a>
-        <a href class="list-group-item" ng-click="openMerchantBatchUpload()" dynamic-tooltip="merchant_batch_upload" ng-show="admin.permissions.indexOf('merchant_batch_upload') !== -1">
+        <a href class="list-group-item" ng-click="openMerchantBatchUpload()" dynamic-tooltip="merchant_batch_upload" ng-show="showMerchantBatchUpload && admin.permissions.indexOf('merchant_batch_upload') !== -1">
           Merchant Batch Upload <i class="pull-right fa fa-upload"></i>
         </a>
         <a href class="list-group-item" ng-click="openUploadScreenshot()" dynamic-tooltip="edit_merchant_screenshot" ng-show="admin.permissions.indexOf('edit_merchant_screenshot') !== -1">
