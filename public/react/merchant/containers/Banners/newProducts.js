@@ -4,7 +4,7 @@ import smartCollectSym from 'styles/assets/symbols/smartcollect.svg';
 
 export default [
   {
-    name: 'Razorpay Routes',
+    name: 'Razorpay Route',
     description: 'For Marketplace, Vendor payouts, Regional splits, etc.',
     link: '/route/payments',
     symbol: routeSym,
