@@ -5,7 +5,6 @@ import { findBy } from 'rzp/utils/rzp-utils';
 @connect(state => {
   return {
     ...state.session,
-    features: state.config.features,
   };
 }, null)
 export default class ShowWhen extends Component {
@@ -28,9 +27,11 @@ export default class ShowWhen extends Component {
     let notMyRoles = notMyRole.split(' ');
     let user = this.props.user;
     let tags = (user.isAuthenticated && user.tags) || [];
-    let features = (user.isAuthenticated && this.props.features) || [];
+    let features = (user.isAuthenticated && user.features) || [];
     tags = tags.map(tag => tag.toLowerCase());
     let userRole;
+
+    let isContentVisible = true;
 
     if (user.isAuthenticated) {
       userRole = user.userRole;
@@ -40,32 +41,35 @@ export default class ShowWhen extends Component {
       (myRole && myRoles.indexOf(userRole) === -1) ||
       (notMyRole && notMyRoles.indexOf(userRole) !== -1)
     ) {
-      return null;
+      isContentVisible = false;
     }
 
     if (apiFeatureEnabled) {
-      let feature = findBy(
-        features,
-        'feature',
-        apiFeatureEnabled.toLowerCase()
-      );
-
-      if (feature && !feature.value) {
-        return null;
+      if (apiFeatureEnabled instanceof Array) {
+        // Array elements will be matched to tags as per `OR` and not `AND`
+        if (
+          !apiFeatureEnabled.some(r => {
+            return user.isFeatureEnabled(r);
+          })
+        ) {
+          isContentVisible = false;
+        }
+      } else if (!user.isFeatureEnabled(apiFeatureEnabled)) {
+        isContentVisible = false;
       }
     }
 
-    if (featureEnabled) {
+    if (!isContentVisible && featureEnabled) {
       if (featureEnabled instanceof Array) {
         // Array elements will be matched to tags as per `OR` and not `AND`
         if (!featureEnabled.some(r => tags.includes(r.toLowerCase()))) {
-          return null;
+          isContentVisible = false;
         }
       } else if (tags.indexOf(featureEnabled.toLowerCase()) === -1) {
-        return null;
+        isContentVisible = false;
       }
     }
 
-    return children;
+    return isContentVisible ? children : null;
   }
 }

@@ -81,14 +81,14 @@ class NewApplicationForm extends Component {
     var prefixPos = window.location.hostname.indexOf('-');
     var prefix =
       prefixPos !== -1
-        ? 'https://' + window.location.hostname.substr(0, prefixPos)
+        ? 'https://' + window.location.hostname.substr(0, prefixPos + 1)
         : 'https://';
     var hostname = prefix + 'auth.razorpay.com';
     const popupUrl =
       hostname +
       `/authorize?response_type=code&client_id=${this.state.details
-        .client_details.dev.id}&redirect_uri=${this.state.details
-        .website}&scope=read_only&state=current_state`;
+        .client_details.dev
+        .id}&redirect_uri=http://localhost&scope=read_only&state=current_state`;
 
     window.open(popupUrl, 'PopupPreview');
   };

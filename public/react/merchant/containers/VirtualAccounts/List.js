@@ -24,7 +24,7 @@ import FeatureOnboarding from 'merchant/containers/FeatureOnboarding/OnBoarding'
 import FeatureOnboardingModal from 'merchant/containers/FeatureOnboarding/OnBoardingModal';
 
 const heading =
-  'A powerful system to easily collect payments via direct bank transfers (NEFT/RGTS). Automate the tedious reconciliation process, starting now.';
+  'A powerful system to easily collect payments via direct bank transfers (NEFT/RTGS). Automate the tedious reconciliation process, starting now.';
 
 @connect(
   state => {
@@ -117,6 +117,7 @@ export default class VirtualAccountsListContainer extends ListContainer {
         {this.props.mode === 'test' &&
           <ActivationBanner
             productName="Razorpay Smart Collect"
+            productDocs="https://razorpay.com/docs/smart-collect"
             feature="virtual_accounts"
             symbol={require('styles/assets/symbols/smartcollect.svg')}
             onActivate={this.openActivationModal}
