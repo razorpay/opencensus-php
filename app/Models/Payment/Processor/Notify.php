@@ -33,8 +33,15 @@ class Notify
     const HIGH_RISK_RATING     = 4;
     const MAX_HIGH_RISK_RATING = 5;
 
+    /**
+     * @var Payment\Entity
+     */
     protected $payment;
+    /**
+     * @var Payment\Refund\Entity
+     */
     protected $refund;
+    protected $merchant;
     protected $mode;
     protected $trace;
     protected $template;
@@ -52,6 +59,8 @@ class Notify
 
         $this->payment = $payment;
 
+        $this->merchant = $this->payment->merchant;
+
         if ($this->payment->hasInvoice())
         {
             $this->invoice = $this->payment->invoice;
@@ -66,8 +75,6 @@ class Notify
 
     /**
      * Regenerates the entire template
-     *
-     * @return null
      */
     protected function refreshTemplate()
     {
@@ -88,10 +95,9 @@ class Notify
     /**
      * Sends out mails for a particular event trigger
      *
-     * @param  string $event
-     * @return null
+     * @param string $event
      */
-    protected function notifyViaMail($event)
+    protected function notifyViaMail(string $event)
     {
         $mailableClass = $this->getMailableClass($event);
 
@@ -229,9 +235,8 @@ class Notify
      * This is the primary public method for this class
      *
      * @param  string $event Trigger notifications for this event
-     * @return null
      */
-    public function trigger($event)
+    public function trigger(string $event)
     {
         /**
          * This is wrapped in a try-catch block as this is not
@@ -281,7 +286,7 @@ class Notify
         $website = $this->template['merchant']['website'];
         $text    = $this->template['merchant']['billing_label'];
 
-        $dashboardLink = $this->payment->merchant->getDashboardEntityLink();
+        $dashboardLink = $this->merchant->getDashboardEntityLink();
         $merchantId = $this->template['merchant']['id'];
 
         // If we don't have billing label or website, just send to dashboard
@@ -366,7 +371,7 @@ class Notify
             $data['orderId'] = $orderId;
         }
 
-        // This is for both pyaments and refund
+        // This is for both payments and refund
         if (isset($data['timestamp']))
         {
             unset($data['timestamp']);
@@ -400,11 +405,11 @@ class Notify
                 'phone' => $this->payment->getContact()
             ],
             'merchant'  => [
-                'billing_label' => $this->payment->merchant->getBillingLabel(),
-                'website'       => $this->payment->merchant->getWebsite(),
+                'billing_label' => $this->merchant->getBillingLabel(),
+                'website'       => $this->merchant->getWebsite(),
                 // This is the reporting email address for the merchant
-                'email'         => $this->payment->merchant->getTransactionReportEmail(),
-                'id'            => $this->payment->merchant->getId(),
+                'email'         => $this->merchant->getTransactionReportEmail(),
+                'id'            => $this->merchant->getId(),
             ],
             'payment'   => [
                 'id'              => $this->payment->getId(),
@@ -418,7 +423,7 @@ class Notify
                 // note that payment method is unavailable to the merchant
                 'method'    => $this->payment->getMethodWithDetail(),
                 'orderId'   => $this->payment->getOrderId(),
-                'risk'      => $this->payment->merchant->getRiskRating()
+                'risk'      => $this->merchant->getRiskRating()
             ],
         ];
 
@@ -516,13 +521,13 @@ class Notify
      */
     protected function flatten(array $array, $prefix = '')
     {
-        $result = array();
+        $result = [];
 
         foreach ($array as $key => $value)
         {
             if (is_array($value))
             {
-                $result = $result + $this->flatten($value, $prefix . $key . '.');
+                $result += $this->flatten($value, $prefix . $key . '.');
             }
             else
             {
@@ -536,7 +541,7 @@ class Notify
     /**
      * Decides if we send a mail to customer for a payment event
      *
-     * @param PaymentMail\Base|Mailable $mailable Mailable object being sent
+     * @param PaymentMail\Base $mailable Mailable object being sent
      *
      * @return bool
      */
@@ -551,7 +556,7 @@ class Notify
 
         // If the merchant has disabled customer emails
         // And this was a customer receipt email don't send a mail
-        if (($this->payment->merchant->isReceiptEmailsEnabled() === false) and
+        if (($this->merchant->isReceiptEmailsEnabled() === false) and
             ($mailable->isCustomerReceiptEmail() === true))
         {
             return false;
@@ -562,7 +567,7 @@ class Notify
 
     protected function isMerchantMailEnabled(PaymentMail\Base $mailable)
     {
-        $merchantTransactionReportEmail = $this->payment->merchant->getTransactionReportEmail();
+        $merchantTransactionReportEmail = $this->merchant->getTransactionReportEmail();
 
         return (($this->isEnabled() === true) and
                 (empty($merchantTransactionReportEmail) === false));
@@ -576,9 +581,11 @@ class Notify
      */
     protected function isEnabled()
     {
+        //
         // We only send notifications if Mode is not TEST
         // or if the env=dev or env=testing
         // so env=dev or env=testing overrides TEST mode
+        //
         if ($this->app->environment('dev', 'testing'))
         {
             return true;
@@ -599,7 +606,8 @@ class Notify
      */
     protected function isSlackEnabled()
     {
-        return ($this->isEnabled() and $this->slackEnabled);
+        return (($this->isEnabled() === true) and
+                ($this->slackEnabled === true));
     }
 
     protected function getMailableClass(string $event)

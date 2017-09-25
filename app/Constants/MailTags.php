@@ -42,6 +42,15 @@ class MailTags
     const INVOICE                          = 'invoice';
     const ECOD                             = 'ecod';
 
+    const SUBSCRIPTION_AUTHENTICATED       = 'subscription_authenticated';
+    const SUBSCRIPTION_CHARGED             = 'subscription_charged';
+    const SUBSCRIPTION_PENDING             = 'subscription_pending';
+    const SUBSCRIPTION_HALTED              = 'subscription_halted';
+    const SUBSCRIPTION_CANCELLED           = 'subscription_cancelled';
+    const SUBSCRIPTION_CARD_CHANGED        = 'subscription_card_changed';
+    const SUBSCRIPTION_COMPLETED           = 'subscription_completed';
+    const SUBSCRIPTION_INVOICE_CHARGED     = 'subscription_invoice_charged';
+
     const DAILY_FILE                       = 'daily_file';
     const DAILY_REPORT                     = 'daily_report';
     const AUTH_REMINDER                    = 'auth_reminder';

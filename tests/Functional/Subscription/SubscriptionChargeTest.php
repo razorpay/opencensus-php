@@ -209,6 +209,7 @@ class SubscriptionChargeTest extends TestCase
         $oldSubcription = $subscription;
 
         $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
         // Invoice got created
         $this->assertEquals(1, $result['invoices_created']);
 
@@ -382,9 +383,7 @@ class SubscriptionChargeTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
-        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
-
-        $paymentRequest['subscription_card_change'] = true;
+        $paymentRequest = $this->getSubscriptionCardChangeRequest($subscription);
 
         $data = $this->testData[__FUNCTION__];
 
@@ -663,7 +662,7 @@ class SubscriptionChargeTest extends TestCase
     public function testSubscriptionFailChargeAndChargeInvoiceManually()
     {
         // Skipped, till manual charge of invoices for pending subscriptions is allowed.
-        $this->markTestSkipped('Cannot manually charge invoice for pending subscription.');
+        // $this->markTestSkipped('Cannot manually charge invoice for pending subscription.');
 
         $subscription = $this->failSubscriptionFirstCharge();
         $oldSubcription = $subscription;
@@ -761,6 +760,7 @@ class SubscriptionChargeTest extends TestCase
         $this->failCharge();
 
         $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
         $this->assertEquals(1, $result['invoices_created']);
 
         $subscription = $this->getLastEntity('subscription', true);
@@ -1029,13 +1029,6 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals($subscription['current_end'], $invoice['billing_end']);
 
         $this->assertInvoiceCount(1, $subscription['id']);
-    }
-
-    protected function mockSession($appToken = 'capp_1000000custapp')
-    {
-        $data = [ 'test_app_token' => $appToken ];
-
-        $this->session($data);
     }
 
     public function testSubscriptionHaltedAuthFailure()
@@ -1499,7 +1492,8 @@ class SubscriptionChargeTest extends TestCase
         $this->assertEquals('authenticated', $subscription['status']);
 
         // subscription.activated event fired after first charge
-        // $this->mockAndTestWebhookDataCustom('subscription.activated', 'subscriptionWebhookDataForFirstActivated');
+        $this->mockAndTestWebhookDataCustom('subscription.activated', 'subscriptionWebhookDataForFirstActivated');
+
         $this->chargeSubscriptionsViaCron($subscription['charge_at'] + 10);
 
         $subscription = $this->getLastEntity('subscription', true);

@@ -329,8 +329,8 @@ class Entity extends Base\PublicEntity
         $month = $this->getExpiryMonth();
 
         return Carbon::createFromDate($year, $month, 1, Timezone::IST)
-                        ->endOfMonth()
-                        ->getTimestamp();
+                     ->endOfMonth()
+                     ->getTimestamp();
     }
 
     public function getTypeElseDefault()

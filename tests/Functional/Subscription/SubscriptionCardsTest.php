@@ -957,13 +957,6 @@ class SubscriptionCardsTest extends TestCase
         return $response;
     }
 
-    protected function mockSession($appToken = 'capp_1000000custapp')
-    {
-        $data = [ 'test_app_token' => $appToken ];
-
-        $this->session($data);
-    }
-
     protected function resetSession()
     {
         $this->flushSession();

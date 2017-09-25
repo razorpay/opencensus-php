@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Item;
-use RZP\Models\Plan\Subscription\Addon;
 
 class Entity extends Base\PublicEntity
 {
