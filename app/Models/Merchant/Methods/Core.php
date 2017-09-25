@@ -201,7 +201,7 @@ class Core extends Base\Core
             //
             $methods->setNetbanking(false);
             $methods->setCreditCard(false);
-            $methods->setCreditCard(false);
+            $methods->setDebitCard(false);
             $methods->setUpi(false);
         }
 
