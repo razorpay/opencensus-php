@@ -144,6 +144,7 @@ app.controller('EntitiesCtrl', [
     // This list is alphabetically sorted, take care to maintain that
     $scope.availableFilters = {
       addon: {
+        deleted: booleanList,
         invoice_id: ['Invoice Id'],
         merchant_id: ['Merchant Id'],
         subscription_id: ['Subscription Id'],
@@ -354,6 +355,7 @@ app.controller('EntitiesCtrl', [
         customer_contact: ['Customer Contact'],
       },
       item: {
+        active: booleanList,
         type: ['Type'],
         merchant_id: ['Merchant Id'],
       },
@@ -524,6 +526,7 @@ app.controller('EntitiesCtrl', [
         customer_id: ['Customer Id'],
         error_status: ['Error Status'],
         merchant_id: ['Merchant Id'],
+        notes: ['Notes'],
         plan_id: ['Plan Id'],
         schedule_id: ['Schedule Id'],
         status: [
