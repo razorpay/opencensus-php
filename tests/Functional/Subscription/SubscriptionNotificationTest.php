@@ -107,14 +107,12 @@ class SubscriptionNotificationTest extends TestCase
 
             // Token charge
             $this->assertEquals('₹ 5', $data['payment']['amount']);
-            $this->assertContains('Card', $data['payment']['method']);
-            $this->assertContains('XXXX-XXXX-XXXX-3335', $data['payment']['method']);
             $this->assertNull($data['payment']['captured_at']);
 
             $this->assertEquals('#C15482', $data['card']['color']);
-            $this->assertContains('12/2017', $data['card']['expiry']);
-            $this->assertContains('VISA', $data['card']['network']);
-            $this->assertContains('**** **** **** 3335', $data['card']['number']);
+            $this->assertEquals('12/2017', $data['card']['expiry']);
+            $this->assertEquals('VISA', $data['card']['network']);
+            $this->assertEquals('**** **** **** 3335', $data['card']['number']);
 
             $this->assertEquals(false, $data['options']['immediate']);
             $this->assertEquals(true, $data['options']['auto_refund']);
@@ -152,9 +150,8 @@ class SubscriptionNotificationTest extends TestCase
 
             // Plan amount
             $this->assertEquals('₹ 20', $data['payment']['amount']);
-            $this->assertContains('Card', $data['payment']['method']);
-            $this->assertContains('XXXX-XXXX-XXXX-3335', $data['payment']['method']);
-            $this->assertNotNull($data['payment']['captured_at']);
+            // Assert that time format is 'j M Y H:i:s' and not just 'j M Y'
+            $this->assertGreaterThan(12, strlen($data['payment']['captured_at']));
 
             $currentStart = Carbon::createFromTimestamp($subscription['current_start'], Timezone::IST)->format('j M Y');
             $currentEnd   = Carbon::createFromTimestamp($subscription['current_end'], Timezone::IST)->format('j M Y');
@@ -163,9 +160,9 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertEquals($currentEnd, $data['invoice']['billing_end']);
 
             $this->assertEquals('#C15482', $data['card']['color']);
-            $this->assertContains('12/2017', $data['card']['expiry']);
-            $this->assertContains('VISA', $data['card']['network']);
-            $this->assertContains('**** **** **** 3335', $data['card']['number']);
+            $this->assertEquals('12/2017', $data['card']['expiry']);
+            $this->assertEquals('VISA', $data['card']['network']);
+            $this->assertEquals('**** **** **** 3335', $data['card']['number']);
 
             $this->assertEquals(true, $data['options']['immediate']);
             $this->assertEquals(false, $data['options']['auto_refund']);
@@ -199,16 +196,16 @@ class SubscriptionNotificationTest extends TestCase
 
             // Addon amount
             $this->assertEquals('₹ 3', $data['payment']['amount']);
-            $this->assertContains('Card', $data['payment']['method']);
-            $this->assertContains('XXXX-XXXX-XXXX-3335', $data['payment']['method']);
+            // Assert that time format is 'j M Y H:i:s' and not just 'j M Y'
+            $this->assertGreaterThan(12, strlen($data['payment']['captured_at']));
 
             $this->assertNull($data['invoice']['billing_start']);
             $this->assertNull($data['invoice']['billing_end']);
 
             $this->assertEquals('#C15482', $data['card']['color']);
-            $this->assertContains('12/2017', $data['card']['expiry']);
-            $this->assertContains('VISA', $data['card']['network']);
-            $this->assertContains('**** **** **** 3335', $data['card']['number']);
+            $this->assertEquals('12/2017', $data['card']['expiry']);
+            $this->assertEquals('VISA', $data['card']['network']);
+            $this->assertEquals('**** **** **** 3335', $data['card']['number']);
 
             $this->assertEquals(false, $data['options']['immediate']);
             $this->assertEquals(false, $data['options']['auto_refund']);
@@ -243,8 +240,8 @@ class SubscriptionNotificationTest extends TestCase
 
             // Addon amount plus plan amount
             $this->assertEquals('₹ 23', $data['payment']['amount']);
-            $this->assertContains('Card', $data['payment']['method']);
-            $this->assertContains('XXXX-XXXX-XXXX-3335', $data['payment']['method']);
+            // Assert that time format is 'j M Y H:i:s' and not just 'j M Y'
+            $this->assertGreaterThan(12, strlen($data['payment']['captured_at']));
 
             $currentStart = Carbon::createFromTimestamp($subscription['current_start'], Timezone::IST)->format('j M Y');
             $currentEnd   = Carbon::createFromTimestamp($subscription['current_end'], Timezone::IST)->format('j M Y');
@@ -253,9 +250,9 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertEquals($currentEnd, $data['invoice']['billing_end']);
 
             $this->assertEquals('#C15482', $data['card']['color']);
-            $this->assertContains('12/2017', $data['card']['expiry']);
-            $this->assertContains('VISA', $data['card']['network']);
-            $this->assertContains('**** **** **** 3335', $data['card']['number']);
+            $this->assertEquals('12/2017', $data['card']['expiry']);
+            $this->assertEquals('VISA', $data['card']['network']);
+            $this->assertEquals('**** **** **** 3335', $data['card']['number']);
 
             $this->assertEquals(true, $data['options']['immediate']);
             $this->assertEquals(false, $data['options']['auto_refund']);
@@ -293,16 +290,16 @@ class SubscriptionNotificationTest extends TestCase
 
             // Plan amount
             $this->assertEquals('₹ 20', $data['payment']['amount']);
-            $this->assertContains('Card', $data['payment']['method']);
-            $this->assertContains('XXXX-XXXX-XXXX-3335', $data['payment']['method']);
+            // Assert that time format is 'j M Y H:i:s' and not just 'j M Y'
+            $this->assertGreaterThan(12, strlen($data['payment']['captured_at']));
 
             $this->assertNotNull($data['invoice']['billing_start']);
             $this->assertNotNull($data['invoice']['billing_end']);
 
             $this->assertEquals('#C15482', $data['card']['color']);
-            $this->assertContains('12/2017', $data['card']['expiry']);
-            $this->assertContains('VISA', $data['card']['network']);
-            $this->assertContains('**** **** **** 3335', $data['card']['number']);
+            $this->assertEquals('12/2017', $data['card']['expiry']);
+            $this->assertEquals('VISA', $data['card']['network']);
+            $this->assertEquals('**** **** **** 3335', $data['card']['number']);
 
             $this->assertEquals(false, $data['options']['past_invoice']);
             $this->assertEquals(false, $data['options']['reactivated']);
@@ -346,8 +343,8 @@ class SubscriptionNotificationTest extends TestCase
 
             // Plan amount
             $this->assertEquals('₹ 20', $data['payment']['amount']);
-            $this->assertContains('Card', $data['payment']['method']);
-            $this->assertContains('XXXX-XXXX-XXXX-3335', $data['payment']['method']);
+            // Assert that time format is 'j M Y H:i:s' and not just 'j M Y'
+            $this->assertGreaterThan(12, strlen($data['payment']['captured_at']));
 
             // Invoice created for the charge
             $currentStart = Carbon::createFromTimestamp($subscription['current_start'], Timezone::IST)->format('j M Y');
@@ -357,9 +354,9 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertEquals($currentEnd, $data['invoice']['billing_end']);
 
             $this->assertEquals('#C15482', $data['card']['color']);
-            $this->assertContains('12/2017', $data['card']['expiry']);
-            $this->assertContains('VISA', $data['card']['network']);
-            $this->assertContains('**** **** **** 3335', $data['card']['number']);
+            $this->assertEquals('12/2017', $data['card']['expiry']);
+            $this->assertEquals('VISA', $data['card']['network']);
+            $this->assertEquals('**** **** **** 3335', $data['card']['number']);
 
             $this->assertEquals(true, $data['options']['invoice_charged']);
             $this->assertEquals(true, $data['options']['reactivated']);
@@ -402,16 +399,16 @@ class SubscriptionNotificationTest extends TestCase
 
             // Token amount
             $this->assertEquals('₹ 5', $data['payment']['amount']);
-            $this->assertContains('Card', $data['payment']['method']);
-            $this->assertContains('XXXX-XXXX-XXXX-3335', $data['payment']['method']);
+            // Assert that time format is 'j M Y H:i:s' and not just 'j M Y'
+            $this->assertNull($data['payment']['captured_at']);
 
             // No invoice generated for token card change
             $this->assertArrayNotHasKey('invoice', $data);
 
             $this->assertEquals('#C15482', $data['card']['color']);
-            $this->assertContains('12/2017', $data['card']['expiry']);
-            $this->assertContains('VISA', $data['card']['network']);
-            $this->assertContains('**** **** **** 3335', $data['card']['number']);
+            $this->assertEquals('12/2017', $data['card']['expiry']);
+            $this->assertEquals('VISA', $data['card']['network']);
+            $this->assertEquals('**** **** **** 3335', $data['card']['number']);
 
             $this->assertEquals(false, $data['options']['invoice_charged']);
             $this->assertEquals(true, $data['options']['reactivated']);
@@ -487,8 +484,8 @@ class SubscriptionNotificationTest extends TestCase
             $this->assertEquals('1234567890', $data['customer']['phone']);
 
             $this->assertEquals('₹ 20', $data['payment']['amount']);
-            $this->assertContains('Card', $data['payment']['method']);
-            $this->assertContains('XXXX-XXXX-XXXX-3335', $data['payment']['method']);
+            // Assert that time format is 'j M Y H:i:s' and not just 'j M Y'
+            $this->assertGreaterThan(12, strlen($data['payment']['captured_at']));
 
             $billingStart = Carbon::createFromTimestamp($oldInvoice['billing_start'], Timezone::IST)->format('j M Y');
             $billingEnd   = Carbon::createFromTimestamp($oldInvoice['billing_end'], Timezone::IST)->format('j M Y');
@@ -630,8 +627,8 @@ class SubscriptionNotificationTest extends TestCase
 
             // Plan amount
             $this->assertEquals('₹ 20', $data['payment']['amount']);
-            $this->assertContains('Card', $data['payment']['method']);
-            $this->assertContains('XXXX-XXXX-XXXX-3335', $data['payment']['method']);
+            // Assert that time format is 'j M Y H:i:s' and not just 'j M Y'
+            $this->assertGreaterThan(12, strlen($data['payment']['captured_at']));
 
             $currentStart = Carbon::createFromTimestamp($subscription['current_start'], Timezone::IST)->format('j M Y');
             $currentEnd   = Carbon::createFromTimestamp($subscription['current_end'], Timezone::IST)->format('j M Y');
@@ -694,8 +691,8 @@ class SubscriptionNotificationTest extends TestCase
 
             // Plan amount
             $this->assertEquals('₹ 20', $data['payment']['amount']);
-            $this->assertContains('Card', $data['payment']['method']);
-            $this->assertContains('XXXX-XXXX-XXXX-3335', $data['payment']['method']);
+            // Assert that time format is 'j M Y H:i:s' and not just 'j M Y'
+            $this->assertGreaterThan(12, strlen($data['payment']['captured_at']));
 
             $currentStart = Carbon::createFromTimestamp($subscription['current_start'], Timezone::IST)->format('j M Y');
             $currentEnd   = Carbon::createFromTimestamp($subscription['current_end'], Timezone::IST)->format('j M Y');

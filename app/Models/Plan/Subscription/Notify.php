@@ -371,7 +371,6 @@ class Notify extends Processor\Notify
             Payment\Entity::PUBLIC_ID       => $this->payment->getPublicId(),
             Payment\Entity::AMOUNT          => $this->payment->getFormattedAmount(),
             Payment\Entity::CAPTURED_AT     => $capturedAt,
-            Payment\Entity::METHOD          => $this->payment->getMethodWithDetail(),
         ];
 
         if ($this->payment->isFailed() === true)
