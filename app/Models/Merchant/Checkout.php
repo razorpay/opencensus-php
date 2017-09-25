@@ -64,7 +64,7 @@ class Checkout
 
         $data = $this->getMerchantPreferencesData($merchant, $mode);
 
-        $data['methods'] = (new Methods\Core)->getFormattedMethods($merchant, $input);
+        $data['methods'] = (new Methods\Core)->getFormattedMethods($merchant);
 
         $this->checkAndFillSavedTokens($input, $merchant, $data);
 
@@ -237,6 +237,7 @@ class Checkout
             $savedTokens = $tokenCore->fetchTokensByCustomer($customer);
 
             //
+            // TODO: Remove this later when we start handling the below case.
             // Currently, we do not expose any recurring NB tokens to the customer.
             // We do not handle the flow where a customer can use an existing token
             // to subscribe to another product.
@@ -370,6 +371,7 @@ class Checkout
                     {
                         $tokens = $response['tokens'];
 
+                        // TODO: Needs to be fixed later when we allow first recurring on old recurring nb token.
                         $tokensWithoutNB = (new Customer\Token\Core)->removeNetbankingRecurringTokens($tokens);
 
                         $data['customer']['tokens'] = $tokensWithoutNB;

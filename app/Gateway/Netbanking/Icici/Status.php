@@ -62,12 +62,12 @@ class Status
      * @param string $status
      * @return string
      */
-    public static function getSiMessage(string $status) : string
+    public static function getSiMessage(string $status): string
     {
         return ($status === self::Y) ? 'Success' : 'Failure';
     }
 
-    public static function isSiStatusFailure(string $status) : bool
+    public static function isSiStatusFailure(string $status): bool
     {
         return (in_array($status, self::SI_FAILED_STATUSES, true) === true);
     }
