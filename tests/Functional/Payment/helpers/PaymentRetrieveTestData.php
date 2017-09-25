@@ -241,7 +241,7 @@ return [
 
     'testSearchEsForNotesOnAdminAuthExpectedSearchParams' => [
         'index' => 'testing_payment_test',
-        'type'  => 'testing_payment_test',
+        // 'type'  => 'testing_payment_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,
@@ -305,7 +305,7 @@ return [
 
     'testSearchEsForNotesExpectedSearchParams' => [
         'index' => 'testing_payment_test',
-        'type'  => 'testing_payment_test',
+        // 'type'  => 'testing_payment_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,

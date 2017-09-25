@@ -73,8 +73,6 @@ class EsClient
     {
         $res = $this->client->cat()->indices($params);
 
-        $this->trace->debug(TraceCode::ES_CAT_RESPONSE, [$res]);
-
         return [$res];
     }
 
@@ -83,11 +81,19 @@ class EsClient
         return $this->client->explain($params);
     }
 
+    public function getTask(array $params)
+    {
+        return $this->client->tasks()->get($params);
+    }
+
+    public function getAliases(array $params)
+    {
+        return $this->client->indices()->getAliases($params);
+    }
+
     public function getMapping(array $params)
     {
         $mapping = $this->client->indices()->getMapping($params);
-
-        $this->trace->debug(TraceCode::ES_MAPPING_RESPONSE, $mapping);
 
         return $mapping;
     }
@@ -95,8 +101,6 @@ class EsClient
     public function getSettings(array $params)
     {
         $settings = $this->client->indices()->getSettings();
-
-        $this->trace->debug(TraceCode::ES_SETTINGS_RESPONSE, $settings);
 
         return $settings;
     }
@@ -155,6 +159,11 @@ class EsClient
         $this->refreshIndicesIfApplicable();
 
         return $response;
+    }
+
+    public function postAliases(array $params)
+    {
+        return $this->client->indices()->updateAliases($params);
     }
 
     public function search(array $params)
@@ -238,7 +247,7 @@ class EsClient
         return $this->client->get($params);
     }
 
-    public function multiGet($params)
+    public function mget($params)
     {
         return $this->client->mget($params);
     }

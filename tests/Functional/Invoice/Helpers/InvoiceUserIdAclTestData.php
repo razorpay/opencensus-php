@@ -362,7 +362,7 @@ return [
 
     'testListInvoiceWithUserIdHeaderEsExpectedSearchParams' => [
         'index' => 'testing_invoice_test',
-        'type'  => 'testing_invoice_test',
+        // 'type'  => 'testing_invoice_test',
         'body'  => [
             '_source' => false,
             'from'    => 0,

@@ -223,7 +223,15 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         return [
             'index' => $this->indexName,
-            'type'  => $this->indexName,
+            //
+            // TODO:
+            // - Can't use following with alias as index name. Type name doesn't
+            //   need to be a variable of env/app.
+            //
+            // Also given that all our indices have only one type, following is
+            // not really needed.
+            //
+            // 'type'  => $this->indexName,
             'body'  => [
                 '_source' => $source,
                 'from'    => $from,
