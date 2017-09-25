@@ -209,4 +209,8 @@ class Validator extends Base\Validator
 
     }
 
+    protected function validateLinkedAccountEntries(array & $entries, array $params, Merchant\Entity $merchant)
+    {
+
+    }
 }

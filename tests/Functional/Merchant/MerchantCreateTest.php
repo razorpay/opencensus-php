@@ -3,15 +3,19 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Mail;
+use Queue;
 
-use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\Batch\Header;
+use RZP\Jobs\Batch as BatchJob;
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\Batch\BatchTestTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Mail\Merchant\CreateSubMerchant as CreateSubMerchantMail;
 
 class MerchantCreateTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use BatchTestTrait;
 
     public function setUp()
     {
@@ -242,6 +246,19 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals($schedule['delay'], 2);
     }
 
+    public function testCreateLinkedAccountBatch()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $entries = $this->getLinkedAccountBatchFileEntries();
+
+        $this->createAndPutExcelFileInRequest($entries, __FUNCTION__);
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+    }
+
     protected function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
@@ -250,5 +267,44 @@ class MerchantCreateTest extends TestCase
         $testData = $this->testData[$name];
 
         return $this->runRequestResponseFlow($testData);
+    }
+
+    protected function getLinkedAccountBatchFileEntries(): array
+    {
+        return [
+            [
+                Header::BUSINESS_NAME       => 'test 1',
+                Header::BANK_ACCOUNT_NUMBER => '111000',
+                Header::BANK_BRANCH_IFSC    => 'SBIN0007105',
+                Header::BANK_ACCOUNT_TYPE   => 'Current',
+                Header::BANK_ACCOUNT_NAME   => 'Test Bank Account 1',
+                Header::REFERENCE_ID        => 'REF001',
+
+            ],
+            [
+                Header::BUSINESS_NAME       => 'test 2',
+                Header::BANK_ACCOUNT_NUMBER => '111000',
+                Header::BANK_BRANCH_IFSC    => 'SBIN0007105',
+                Header::BANK_ACCOUNT_TYPE   => 'Current',
+                Header::BANK_ACCOUNT_NAME   => 'Test Bank Account 2',
+                Header::REFERENCE_ID        => 'REF002',
+            ],
+            [
+                Header::BUSINESS_NAME       => 'test 3',
+                Header::BANK_ACCOUNT_NUMBER => '111000',
+                Header::BANK_BRANCH_IFSC    => 'SBIN0007105',
+                Header::BANK_ACCOUNT_TYPE   => 'Current',
+                Header::BANK_ACCOUNT_NAME   => 'Test Bank Account 3',
+                Header::REFERENCE_ID        => 'REF003',
+            ],
+            [
+                Header::BUSINESS_NAME       => 'test 4',
+                Header::BANK_ACCOUNT_NUMBER => '111000',
+                Header::BANK_BRANCH_IFSC    => 'SBIN0007105',
+                Header::BANK_ACCOUNT_TYPE   => 'Current',
+                Header::BANK_ACCOUNT_NAME   => 'Test Bank Account 4',
+                Header::REFERENCE_ID        => 'REF003',
+            ],
+        ];
     }
 }
