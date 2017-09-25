@@ -36,6 +36,8 @@ class Biller extends Base\Core
     {
         $data = $this->createInvoiceBeforeCharge($subscription);
 
+        $core = (new Core);
+
         if ($data['activated'] === true)
         {
             //
@@ -43,14 +45,14 @@ class Biller extends Base\Core
             // in sync. Otherwise charge webhook might go before
             // this since our queue doesn't maintain order.
             //
-            (new Core)->fireWebhookForStatusUpdate($subscription, Status::ACTIVE);
+            $core->fireWebhookForStatusUpdate($subscription, Status::ACTIVE);
         }
 
         $invoice = $data['invoice'];
 
         if ($this->shouldCharge($subscription, $invoice) === true)
         {
-            return (new Core)->charge($subscription, $invoice, $options);
+            return $core->charge($subscription, $invoice, $options);
         }
         else
         {
@@ -246,6 +248,14 @@ class Biller extends Base\Core
         $task->updateForSubscription($this->mode);
 
         $charge->setEndedAtIfApplicable($subscription);
+
+        //
+        // We do not trigger a subscription notification here. Once a subscription is in halted state,
+        // the continued generation of invoices (that remain in unattempted, issued state) is just us
+        // doing our duty and keeping the subscription going. The merchant may in fact have stopped
+        // delivering services long ago, unbeknownst to us. For this reason, we neither inform the
+        // customer that an invoice has been created, nor that the subscription is completed.
+        //
 
         $this->repo->transaction(
             function() use ($subscription, $invoice)

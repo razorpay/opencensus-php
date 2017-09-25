@@ -2,22 +2,23 @@
 
 namespace RZP\Models\Plan\Subscription;
 
-use RZP\Constants;
 use Carbon\Carbon;
+
+use RZP\Constants;
 use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
-use RZP\Exception\LogicException;
-use RZP\Listeners\ApiEventSubscriber;
+use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Plan;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
-use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Schedule;
-use RZP\Models\Plan\Subscription;
+use RZP\Listeners\ApiEventSubscriber;
 use RZP\Jobs\Plan\ChargeSubscription;
+use RZP\Exception\LogicException;
+use RZP\Exception\BadRequestException;
+
 use Illuminate\Foundation\Bus\DispatchesJobs;
 
 class Core extends Base\Core
@@ -81,7 +82,7 @@ class Core extends Base\Core
                 null,
                 [
                     'subscription_id' => $subscription->getId(),
-                    'invoice_id' => $invoice->getId(),
+                    'invoice_id'      => $invoice->getId(),
                 ]);
         }
     }
@@ -208,13 +209,13 @@ class Core extends Base\Core
     /**
      * Get subscription data for the checkout preferences route
      *
-     * @param Subscription\Entity $subscription
+     * @param Entity $subscription
      * @param bool                $cardChange
      *
      * @return array
      */
     public function getFormattedSubscriptionData(
-        Subscription\Entity $subscription,
+        Entity $subscription,
         bool $cardChange): array
     {
         $authAmount = $this->getAuthTransactionAmount($subscription, $cardChange);
@@ -501,12 +502,59 @@ class Core extends Base\Core
         // nothing stopping him from trying capture the actual payment itself. We should update the subscription
         // like in the retry flow itself!
         //
+
         if ($captured === true)
         {
             (new Charge)->handleCaptureSuccess($subscription, $capturedPayment, $invoice);
         }
 
+        $notifyOptions = [
+            Event::PAYMENT => $capturedPayment,
+        ];
+
+        $this->triggerSubscriptionNotification($subscription, Event::CHARGED, $notifyOptions);
+
         return $captured;
+    }
+
+    /**
+     * This function would handle emails for all failures.
+     * The status would become either pending, halted or completed.
+     * It calls the different events based on the statuses.
+     *
+     * @param Entity $subscription
+     *
+     * @throws LogicException
+     */
+    public function triggerSubscriptionFailureNotification(Entity $subscription)
+    {
+        if (in_array($subscription->getStatus(), Status::$failingStatuses, true) === false)
+        {
+            throw new LogicException(
+                'Should have never reached here. Should only be called for a subscription fail status',
+                ErrorCode::SERVER_ERROR_SUBSCRIPTION_INVOICE_BAD_STATUS,
+                [
+                    'subscription_id'       => $subscription->getId(),
+                    'subscription_status'   => $subscription->getStatus(),
+                ]);
+        }
+
+        $notifyOptions = [];
+
+        //
+        // Completed notification has options, it can be
+        // triggered by charge success as well as failure.
+        //
+        if ($subscription->isCompleted() === true)
+        {
+            $notifyOptions[Event::CHARGE_SUCCESS] = false;
+        }
+
+        $status = $subscription->getStatus();
+
+        $event = constant(Event::class . '::' . strtoupper($status));
+
+        $this->triggerSubscriptionNotification($subscription, $event, $notifyOptions);
     }
 
     public function cancel(Entity $subscription, array $input): Entity
@@ -531,8 +579,7 @@ class Core extends Base\Core
                 if ((isset($input[Entity::CANCEL_AT_CYCLE_END]) === true) and
                     ($input[Entity::CANCEL_AT_CYCLE_END] = true))
                 {
-                    $cancelAtCycleEnd = $input[Entity::CANCEL_AT_CYCLE_END];
-                    $this->setupCancelAtCycleEnd($subscription, $cancelAtCycleEnd);
+                    $this->setupCancelAtCycleEnd($subscription);
                 }
                 else
                 {
@@ -567,7 +614,111 @@ class Core extends Base\Core
         return $subscription;
     }
 
-    protected function setupCancelAtCycleEnd(Entity $subscription, bool $cancelAtCycleEnd)
+    public function triggerSubscriptionAuthenticatedNotification(
+        Payment\Entity $payment,
+        Entity $subscription)
+    {
+        $willBeRefunded = true;
+
+        if (($subscription->hadUpfrontAmount() === true) or
+            ($subscription->wasImmediate() === true))
+        {
+            $willBeRefunded = false;
+        }
+
+        $options = [
+            Event::AUTO_REFUND => $willBeRefunded,
+            Event::IMMEDIATE   => $subscription->wasImmediate(),
+            Event::PAYMENT     => $payment,
+        ];
+
+        $this->triggerSubscriptionNotification(
+            $subscription, Event::AUTHENTICATED, $options);
+    }
+
+    public function triggerSubscriptionAlreadyAuthenticatedNotification(
+        Entity $subscription,
+        string $oldStatus,
+        array $options)
+    {
+        $event = Event::CHARGED;
+
+        //
+        // If new status is completed, then that _might_ be the mail we have to send
+        //
+        if ($subscription->isCompleted() === true)
+        {
+            //
+            // If old status was halted, we would never have reached here. A manual charge on an older
+            // invoice can take a subscription from halted to active, but not from halted to completed.
+            //
+            // The only way there is for a subscription to go from halted to completed
+            // state is via the handleNoSubscriptionChargeAtInvoiceCreation flow.
+            //
+            if ($oldStatus === Status::HALTED)
+            {
+                throw new LogicException(
+                    'Subscription cannot be in halted state here',
+                    ErrorCode::BAD_REQUEST_SUBSCRIPTION_INVALID_STATUS,
+                    [
+                        'subscription_id'       => $subscription->getId(),
+                        'subscription_status'   => $subscription->getStatus(),
+                        'old_status'            => $oldStatus
+                    ]);
+            }
+
+            //
+            // If old status was pending, actual movement was pending->active->completed
+            // In that case sending a completed mail is fine. Same for active.
+            //
+            // If subscription is already completed, there is not need to send another
+            // such notification. Sending a charge email would be more appropriate.
+            //
+            if ($oldStatus !== Status::COMPLETED)
+            {
+                $event = Event::COMPLETED;
+
+                //
+                // Completed mails can come via a charge failure as well
+                //
+                $options[Event::CHARGE_SUCCESS] = true;
+            }
+        }
+
+        $payment = $options[Event::PAYMENT];
+
+        //
+        // If the charge is on an older invoice, mention this in the mail
+        //
+        if ($subscription->isLatestInvoiceForSubscription($payment->invoice) === false)
+        {
+            $options[Event::PAST_INVOICE] = true;
+        }
+
+        //
+        // Mention that the subscription has been reactivated.
+        //
+        if ($oldStatus !== Status::ACTIVE)
+        {
+            $options[Event::REACTIVATED] = true;
+        }
+
+        $this->triggerSubscriptionNotification($subscription, $event, $options);
+    }
+
+    public function triggerSubscriptionNotification(
+        Entity $subscription,
+        string $event,
+        array $options = [])
+    {
+        assert ($this->repo->isTransactionActive() === false);
+
+        $notifier = new Notify($subscription, $options);
+
+        $notifier->trigger($event);
+    }
+
+    protected function setupCancelAtCycleEnd(Entity $subscription)
     {
         //
         // TODO: Handle race conditions here.
@@ -575,7 +726,6 @@ class Core extends Base\Core
         // the cron to cancel it and the status is
         // changed to false here, don't allow it.
         //
-
 
         $currentCycleEnd = $subscription->getCurrentEnd();
 
@@ -627,15 +777,25 @@ class Core extends Base\Core
                 ]);
         }
 
+        $oldStatus = $subscription->getStatus();
+
         $subscription->setCancelAt($currentCycleEnd);
 
         $subscription->setCancelledAt($currentTime);
 
         $this->repo->saveOrFail($subscription);
+
+        $options = [
+            Event::FUTURE_CANCEL => true,
+        ];
+
+        $this->triggerSubscriptionCancelledNotification($subscription, $oldStatus, $options);
     }
 
     public function cancelImmediately(Entity $subscription)
     {
+        $oldStatus = $subscription->getStatus();
+
         $subscription->setStatus(Status::CANCELLED);
 
         $this->setFieldsOnCancel($subscription);
@@ -643,6 +803,22 @@ class Core extends Base\Core
         $this->repo->saveOrFail($subscription);
 
         $this->fireWebhookForStatusUpdate($subscription, Status::CANCELLED);
+
+        $this->triggerSubscriptionCancelledNotification($subscription, $oldStatus);
+    }
+
+    protected function triggerSubscriptionCancelledNotification(
+        Entity $subscription,
+        string $oldStatus,
+        array $options = [])
+    {
+        if (($oldStatus !== Status::HALTED) and
+            ($oldStatus !== Status::CREATED))
+        {
+            // TODO: Add a subscription setting flag to send cancel emails
+
+            $this->triggerSubscriptionNotification($subscription, Event::CANCELLED, $options);
+        }
     }
 
     protected function setFieldsOnCancel(Entity $subscription)

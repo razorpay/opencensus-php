@@ -260,6 +260,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_SENT        = 'SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_SENT';
     const SUBSCRIPTION_TEST_CHARGE_REQUEST              = 'SUBSCRIPTION_TEST_CHARGE_REQUEST';
     const SUBSCRIPTION_CREATE_REQUEST                   = 'SUBSCRIPTION_CREATE_REQUEST';
+    const SUBSCRIPTION_NOTIFY_FAILED                    = 'SUBSCRIPTION_NOTIFY_FAILED';
     const PLAN_CREATE_REQUEST                           = 'PLAN_CREATE_REQUEST';
     const ADDON_CREATE_REQUEST                          = 'ADDON_CREATE_REQUEST';
     const ADDON_DELETE_REQUEST                          = 'ADDON_DELETE_REQUEST';
