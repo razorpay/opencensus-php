@@ -50,6 +50,21 @@ trait SubscriptionTrait
         return json_decode($response->getContent(), true);
     }
 
+    public function makeSubscriptionCancelDueRequest()
+    {
+        $request = [
+            'url'       => '/subscriptions/cancel/due',
+            'action'    => 'post',
+            'content'   => [],
+        ];
+
+        $this->ba->cronAuth();
+
+        $response = $this->sendRequest($request);
+
+        return json_decode($response->getContent(), true);
+    }
+
     public function makeSubscriptionInvoiceChargeManualRequest($invoiceId)
     {
         $request = [
@@ -143,7 +158,8 @@ trait SubscriptionTrait
                     'item' => [
                         'amount'   => 300,
                         'currency' => 'INR',
-                        'name'     => 'Sample Upfront Amount'
+                        'name'     => 'Sample Upfront Amount',
+                        'type'     => 'addon',
                     ]
                 ]
             ];
@@ -159,11 +175,19 @@ trait SubscriptionTrait
         return $subscriptionResponse;
     }
 
-    protected function doAuthTxnForNewSubscription()
+    protected function doAuthTxnForNewSubscription(bool $startAt = true)
     {
-        $subscription = $this->createSubscription(true);
+        $subscription = $this->createSubscription($startAt);
 
-        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+        $authAmount = null;
+
+        if ($startAt === false)
+        {
+            $plan = $this->getLastEntity('plan', true);
+            $authAmount = $plan['item']['amount'];
+        }
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, $authAmount);
 
         $recurringPayment = $this->doAuthPayment($paymentRequest);
 
@@ -302,6 +326,13 @@ trait SubscriptionTrait
         });
     }
 
+    protected function assertInvoiceCount($count, $subscriptionId)
+    {
+        $invoices = $this->getEntities('invoice', ['subscription_id' => $subscriptionId], true);
+
+        $this->assertEquals($count, $invoices['count']);
+    }
+
     protected function chargeSubscriptionsViaCron($timestamp = null)
     {
         if ($timestamp !== null)
@@ -314,6 +345,37 @@ trait SubscriptionTrait
         return $this->makeSubscriptionChargeCronRequest();
     }
 
+    protected function retrySubscriptionsViaCron($timestamp = null)
+    {
+        if ($timestamp !== null)
+        {
+            $chargeAt = Carbon::createFromTimestamp($timestamp, Timezone::IST)
+                                ->addDay(1)
+                                ->addMinute(1);
+
+            Carbon::setTestNow($chargeAt);
+        }
+
+        return $this->makeSubscriptionRetryCronRequest();
+    }
+
+    protected function chargeSubscriptionManuallyTestMode($subscriptionId, $success)
+    {
+        $request = [
+            'url'     => "/subscriptions/$subscriptionId/charge",
+            'action'  => 'post',
+            'content' => [
+                'success' => $success ? 1 : 0,
+            ],
+        ];
+
+        $this->ba->proxyAuth();
+
+        $response = $this->sendRequest($request);
+
+        return json_decode($response->getContent(), true);
+    }
+
     protected function chargeSubscriptionInvoiceManually($invoice)
     {
         return $this->makeSubscriptionInvoiceChargeManualRequest($invoice['id']);
@@ -324,5 +386,22 @@ trait SubscriptionTrait
         $response = $this->fixtures->create('customer');
 
         $response = $this->fixtures->plan->create($planAttributes);
+    }
+
+    protected function makeCancelRequest(string $subscriptionId, $futureCancellation = null)
+    {
+        $testData = $this->testData['testSubscriptionCancel'];
+
+        if ($futureCancellation !== null)
+        {
+            $testData = $this->testData['testSubscriptionCancelFuture'];
+            $testData['request']['content']['cancel_at_cycle_end'] = $futureCancellation;
+        }
+
+        $testData['request']['url'] = '/subscriptions/' . $subscriptionId . '/cancel';
+
+        $this->ba->privateAuth();
+
+        return $this->startTest($testData);
     }
 }

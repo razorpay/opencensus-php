@@ -53,8 +53,6 @@ class Server extends Base\Mock\Server
 
         $content = $this->prepareVerifyResponse($data, $input[RequestFields::MERCHANT_ID]);
 
-        $this->content($content, 'verify');
-
         $content = http_build_query($content);
 
         return $this->makeResponse($content);
@@ -93,6 +91,8 @@ class Server extends Base\Mock\Server
     protected function prepareVerifyResponse($input, $merchantId)
     {
         $content = $this->getVerifyResponseContent($input[RequestFields::ORDER_ID]);
+
+        $this->content($content, 'verify');
 
         $encryptedData = $this->getGatewayInstance()->getEncryptedStringFromData($content);
 

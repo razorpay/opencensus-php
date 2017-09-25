@@ -67,7 +67,7 @@ trait FraudDetector
         }
         catch (\MaxMind\Exception\IpAddressNotFoundException $e)
         {
-            $this->trace->traceException($e);
+            $this->trace->traceException($e, Trace::INFO);
         }
 
         return $response;

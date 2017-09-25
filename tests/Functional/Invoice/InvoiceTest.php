@@ -2,17 +2,16 @@
 
 namespace RZP\Tests\Functional\Invoice;
 
-use Carbon\Carbon;
-use RZP\Constants\Timezone;
-use Mockery;
 use Mail;
+use Carbon\Carbon;
 
-use RZP\Mail\Invoice\Expired as InvoiceExpiredMail;
-use RZP\Mail\Invoice\Issued as InvoiceIssuedMail;
-use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
-use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Constants\Timezone;
 use RZP\Tests\Functional\TestCase;
+use RZP\Mail\Invoice\Issued as InvoiceIssuedMail;
+use RZP\Mail\Invoice\Expired as InvoiceExpiredMail;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Mail\Invoice\Payment\Captured as InvoiceCapturedMail;
+use RZP\Mail\Invoice\Payment\Authorized as InvoiceAuthorizedMail;
 
 use RZP\Models\Base\UniqueIdEntity;
 
@@ -221,7 +220,14 @@ class InvoiceTest extends TestCase
     {
         $this->fixtures->create('item', ['active' => 0]);
 
-        $response = $this->startTest();
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithItemOfTypeNonInvoice()
+    {
+        $this->fixtures->create('item', ['type' => 'plan']);
+
+        $this->startTest();
     }
 
     public function testCreateInvoiceWithNewCustomerAndAddress()
@@ -1126,6 +1132,14 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testSendNotificationWithEmailModeByPrivateAuthRoute()
+    {
+        $this->createOrder();
+        $this->createIssuedInvoice();
+
+        $this->startTest();
+    }
+
     // ------------------------------------------------------------
     // Tests around get invoice
     // ------------------------------------------------------------
@@ -1237,6 +1251,23 @@ class InvoiceTest extends TestCase
         $response = $this->startTest();
 
         $this->assertNotEmpty($response['payment_id']);
+    }
+
+    public function testGetInvoiceWithPaymentsCard()
+    {
+        $this->createOrder();
+
+        $invoice = $this->createIssuedInvoice();
+
+        $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
+
+        $this->ba->proxyAuth();
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['payment_id']);
+
+        $this->assertNotEmpty($response['payments']['items'][0]['card_id']);
     }
 
     public function testGetMultipleInvoices()
@@ -1959,6 +1990,151 @@ class InvoiceTest extends TestCase
         $this->assertEquals('issued', $invoices[0]['status']);
         $this->assertEquals('draft', $invoices[1]['status']);
         $this->assertEquals('issued', $invoices[2]['status']);
+    }
+
+    // ------------------------------------------------------------
+    // Tests around invoice web hooks
+    // ------------------------------------------------------------
+
+    public function testInvoiceExpiredWebhook()
+    {
+        $this->createWebhook(['events' => ['invoice.expired' => '1']]);
+
+        // Creates expire-able invoice
+        $yesterday = Carbon::yesterday(Timezone::IST);
+        $now       = Carbon::now(Timezone::IST);
+        $issuedAt  = $yesterday->timestamp;
+        $expireBy  = $now->subSecond()->timestamp;
+
+        $this->createOrder();
+
+        $this->fixtures->create('invoice', ['issued_at' => $issuedAt, 'expire_by' => $expireBy]);
+
+        // Mocks inferno and sets event payload expectation
+        $infernoMock = $this->createInfernoMock();
+
+        $this->setMockedInfernoExpectations(
+                $infernoMock,
+                [
+                    'testInvoiceExpiredWebhookEventData',
+                ]);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testInvoicePartiallyPaidWebhook()
+    {
+        $this->fixtures->merchant->addFeatures(['invoice_partial_payments']);
+
+        $this->createWebhook(['events' => ['invoice.partially_paid' => '1']]);
+
+        $order   = $this->createOrder(['partial_payment' => '1']);
+        $invoice = $this->createIssuedInvoice(['partial_payment' => '1']);
+
+        // Mocks inferno and sets event payload expectation
+        $infernoMock = $this->createInfernoMock();
+
+        $this->setMockedInfernoExpectations(
+                $infernoMock,
+                [
+                    'testInvoicePartiallyPaidWebhookEventData',
+                ]);
+
+        // Makes a partial payment and asserts payment and web hook (^)
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = 60000;
+
+        $expectedPaymentResponse = [
+            'status'     => 'captured',
+            'order_id'   => $order->getPublicId(),
+            'invoice_id' => $invoice->getPublicId(),
+        ];
+
+        $payment = $this->doAuthAndGetPayment($payment, $expectedPaymentResponse);
+    }
+
+    public function testInvoiceMultiplePartiallyPaidWebhooks()
+    {
+        $this->fixtures->merchant->addFeatures(['invoice_partial_payments']);
+
+        $this->createWebhook(['events' => ['invoice.partially_paid' => '1', 'invoice.paid' => '1', 'order.paid' => '1']]);
+
+        $order   = $this->createOrder(['partial_payment' => '1']);
+        $invoice = $this->createIssuedInvoice(['partial_payment' => '1']);
+
+        // Mocks inferno and sets event payload expectation
+        $infernoMock = $this->createInfernoMock();
+
+        $this->setMockedInfernoExpectations(
+                $infernoMock,
+                [
+                    'testInvoiceMultiplePartiallyPaidWebhooksEventData1', // 1st partial payment; fires invoice.partially_paid
+                    'testInvoiceMultiplePartiallyPaidWebhooksEventData2', // 2nd partial payment(for remaining due); fires order.paid
+                    'testInvoiceMultiplePartiallyPaidWebhooksEventData3', // 2nd partial payment(for remaining due); fires invoice.paid
+                ]);
+
+        // Makes two partial payments and asserts payment and web hook(^)
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = 60000;
+
+        $expectedPaymentResponse = [
+            'status'     => 'captured',
+            'order_id'   => $order->getPublicId(),
+            'invoice_id' => $invoice->getPublicId(),
+        ];
+
+        $payment = $this->doAuthAndGetPayment($payment, $expectedPaymentResponse);
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = 40000;
+
+        $expectedPaymentResponse = [
+            'status'     => 'captured',
+            'order_id'   => $order->getPublicId(),
+            'invoice_id' => $invoice->getPublicId(),
+        ];
+
+        $payment = $this->doAuthAndGetPayment($payment, $expectedPaymentResponse);
+    }
+
+    public function testInvoicePaidAndOrderPaidWebhooks()
+    {
+        $this->createWebhook(['events' => ['invoice.paid' => '1', 'order.paid' => '1']]);
+
+        $order   = $this->createOrder();
+        $invoice = $this->createIssuedInvoice();
+
+        // Mocks inferno and sets event payload expectation
+        $infernoMock = $this->createInfernoMock();
+
+        $this->setMockedInfernoExpectations(
+                $infernoMock,
+                [
+                    'testInvoicePaidAndOrderPaidWebhooksEventData1', // Asserts order.paid
+                    'testInvoicePaidAndOrderPaidWebhooksEventData2', // Asserts invoice.paid
+                ]);
+
+        // Makes a payment and asserts payment and web hooks (^)
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount']   = 100000;
+
+        $expectedPaymentResponse = [
+            'status'     => 'captured',
+            'order_id'   => $order->getPublicId(),
+            'invoice_id' => $invoice->getPublicId(),
+        ];
+
+        $payment = $this->doAuthAndGetPayment($payment, $expectedPaymentResponse);
     }
 
     // -------------------- Protected methods --------------------

@@ -36,7 +36,9 @@ class FeatureController extends Controller
 
     public function deleteFeature(string $entityId, string $featureName)
     {
-        $data = $this->service()->deleteFeature($entityId, $featureName);
+        $input = Request::all();
+
+        $data = $this->service()->deleteFeature($entityId, $featureName, $input);
 
         return ApiResponse::json($data);
     }
@@ -46,6 +48,31 @@ class FeatureController extends Controller
         $data = $this->service()->getFeatures($entityId);
 
         return ApiResponse::json($data);
+    }
+
+    public function getOnboardingQuestions()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->getOnboardingQuestions($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postOnboardingResponses(string $feature)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->postOnboardingResponses($input, $feature);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getOnboardingResponses(string $feature = null)
+    {
+        $response = $this->service()->getOnboardingResponses($feature);
+
+        return ApiResponse::json($response);
     }
 
 }

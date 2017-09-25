@@ -101,7 +101,7 @@ class Gateway extends Base\Gateway
 
         $eci = $gatewayPayment->getEci();
 
-        $network = strtoupper($this->input['card']['network']);
+        $network = strtoupper($input['card']['network']);
 
         $this->validateEci($eci, $network);
 
@@ -116,7 +116,9 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED);
         }
 
-        return $this->getCallbackResponseData($input);
+        // Blade callback response field is being used by Hitachi
+        // These fields are already set in gatewayPayment entity
+        return $gatewayPayment->toArray();
     }
 
     protected function getVeresAttributesToSave(array $response, array $input)
@@ -435,7 +437,7 @@ class Gateway extends Base\Gateway
 
     public function getClientCertificateName()
     {
-        switch ($this->input['card']['network'])
+        switch ($this->input['card']['network_code'])
         {
             case Card\Network::MC:
                 $certName = $this->config['live_mastercard_certificate'];
@@ -451,7 +453,7 @@ class Gateway extends Base\Gateway
 
     public function getClientSslKeyName()
     {
-        switch ($this->input['card']['network'])
+        switch ($this->input['card']['network_code'])
         {
             case Card\Network::MC:
                 $certName = $this->config['live_mastercard_pem'];
@@ -592,12 +594,9 @@ class Gateway extends Base\Gateway
 
     protected function getAcquirerBin(array $input)
     {
-        if ($this->mode === Mode::TEST)
-        {
-            return $this->config['test_acq_bin'];
-        }
+        $certName = '';
 
-        switch ($input['card']['network'])
+        switch ($input['card']['network_code'])
         {
             case Card\Network::MC:
                 $certName = $this->config['live_mastercard_acq_bin'];
@@ -606,24 +605,48 @@ class Gateway extends Base\Gateway
             case Card\Network::VISA:
                 $certName = $this->config['live_visa_acq_bin'];
                 break;
+
+            default:
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID);
+
         }
+
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_acq_bin'];
+        }
+
+        return $certName;
     }
 
     protected function getMerchantId(array $input)
     {
-        if ($this->mode === Mode::TEST)
-        {
-            return $this->config['test_merchant_id'];;
-        }
+        $merchantId = '';
 
-        switch ($input['card']['network'])
+        switch ($input['card']['network_code'])
         {
             case Card\Network::MC:
-                return $this->config['live_mastercard_merchant_id'];
+                $merchantId = $this->config['live_mastercard_merchant_id'];
+
+                break;
 
             case Card\Network::VISA:
-                return $this->config['live_visa_merchant_id'];
+                $merchantId = $this->config['live_visa_merchant_id'];
+
+                break;
+
+            default:
+                throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_TYPE_INVALID);
         }
+
+        if ($this->mode === Mode::TEST)
+        {
+            $merchantId = $this->config['test_merchant_id'];;
+        }
+
+        return $merchantId;
     }
 
     /**
@@ -709,8 +732,8 @@ class Gateway extends Base\Gateway
 
         $request['headers'] = [
             'Content-Type' => 'application/xml; charset=utf-8',
-            'Accept' => $this->app['request']->header('Accept'),
-            'User-Agent' => $this->app['request']->header('User-Agent')
+            'Accept'       => $this->app['request']->header('Accept'),
+            'User-Agent'   => $this->app['request']->header('User-Agent')
         ];
 
         $request['options']['timeout'] = 10;

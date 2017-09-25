@@ -10,7 +10,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::AMOUNT        => 'required|integer',
         Entity::CURRENCY      => 'required|in:INR',
-        Entity::DESCRIPTION   => 'required|min:10',
+        Entity::DESCRIPTION   => 'required|min:10|max:255',
         Entity::SETTLEMENT_ID => 'sometimes|size:14',
     ];
 
@@ -18,6 +18,6 @@ class Validator extends Base\Validator
         Entity::AMOUNT        => 'sometimes|integer',
         InvoiceEntity::TAX    => 'sometimes|integer',
         Entity::CURRENCY      => 'required|in:INR',
-        Entity::DESCRIPTION   => 'required|min:10',
+        Entity::DESCRIPTION   => 'required|min:10|max:255',
     ];
 }

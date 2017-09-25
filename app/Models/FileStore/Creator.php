@@ -4,6 +4,7 @@ namespace RZP\Models\FileStore;
 
 use Config;
 use RZP\Exception;
+use RZP\Encryption;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
@@ -96,6 +97,20 @@ class Creator extends Base\Core
      * @var boolean Compress flag
      */
     protected $shouldCompress = false;
+
+     /**
+     * Flag to signify if file has to be encrypted
+     *
+     * @var boolean Encrypt flag
+     */
+    protected $shouldEncrypt = false;
+
+     /**
+     * Encryption Handler Instance
+     *
+     * @var Encryption Handler
+     */
+    protected $encryptionHandler;
 
     /**
      * Format in which file has to be Compress
@@ -237,6 +252,22 @@ class Creator extends Base\Core
         $this->compressionFormat = $format;
 
         $this->setCompressionCommand();
+
+        return $this;
+    }
+
+    /** Encrypts contents of file
+     *
+     * @param string $type  type of encryption
+     * @param string $secret secret for encryption
+     *
+     * @return Creator object
+     */
+    public function encrypt(string $type, array $params)
+    {
+        $this->shouldEncrypt = true;
+
+        $this->encryptionHandler = new Encryption\Handler($type, $params);
 
         return $this;
     }
@@ -632,12 +663,24 @@ class Creator extends Base\Core
                 throw new Exception\LogicException('Not A Valid Extension');
         }
 
+        if ($this->shouldEncrypt === true)
+        {
+            $this->encryptFile();
+        }
+
         if ($this->shouldCompress === true)
         {
             $this->compressFile();
         }
 
         $this->updateFilePermission();
+    }
+
+    protected function encryptFile()
+    {
+        $fileToBeEncrypted = $this->getFullFilePath();
+
+        $this->encryptionHandler->encryptFile($fileToBeEncrypted);
     }
 
     /*

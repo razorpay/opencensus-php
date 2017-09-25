@@ -57,6 +57,8 @@ class SubscriptionCancelTest extends TestCase
         $subscription = $this->getLastEntity('subscription', true);
 
         $this->assertNotNull($subscription['ended_at']);
+
+        Carbon::setTestNow();
     }
 
     public function testSubscriptionChargeAfterCancel()
@@ -168,30 +170,150 @@ class SubscriptionCancelTest extends TestCase
 
         $this->makeCancelRequest($subscription['id']);
 
+        $invoice = $this->chargeSubscriptionInvoiceManually($invoice);
+
+        $this->assertEquals('paid', $invoice['status']);
+
         Carbon::setTestNow();
+    }
+
+    public function testFutureCancellation()
+    {
+        $this->doAuthTxnForNewSubscription();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, 'Asia/Kolkata');
+
+        Carbon::setTestNow($chargeAt);
+
+        $this->makeSubscriptionChargeCronRequest();
+
+        $this->makeCancelRequest($subscription['id'], '1');
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->assertEquals($subscription['cancel_at'], $subscription['current_end']);
+        $this->assertNotEquals($subscription['cancel_at'], $subscription['cancelled_at']);
+
+        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+
+        // Charge cron should not pick this up
+        $this->assertEquals(0, $result['invoices_created']);
+
+        $cancelAt = Carbon::createFromTimestamp($subscription['cancel_at'] + 10, 'Asia/Kolkata');
+
+        Carbon::setTestNow($cancelAt);
+
+        $this->createWebhook(
+            [
+                'events' => ['subscription.cancelled' => '1']
+            ]);
+
+        $this->mockAndTestWebhookDataCustom('subscription.cancelled', 'subscriptionWebhookDataForCancel');
+
+        $result = $this->makeSubscriptionCancelDueRequest();
+
+        // Charge cron should not pick this up
+        $this->assertEquals(1, $result['queued']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->assertEquals('cancelled', $subscription['status']);
+
+        Carbon::setTestNow();
+    }
+
+    public function testFutureCancellationLastCycle()
+    {
+        $this->doAuthTxnForNewSubscription();
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        foreach (range(1,5) as $i)
+        {
+            $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'], 'Asia/Kolkata')
+                              ->addDay(1)
+                              ->addMinute(1);
+
+            Carbon::setTestNow($chargeAt);
+
+            $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+            $this->assertEquals(1, $result['invoices_created']);
+
+            $subscription = $this->getLastEntity('subscription', true);
+        }
+
+        $invoices = $this->getEntities('invoice', [], true);
+        $this->assertEquals(5, $invoices['count']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->assertEquals('active', $subscription['status']);
+        $this->assertEquals(5, $subscription['paid_count']);
+
+        $invoice = $this->getLastEntity('invoice', true);
+        $this->assertEquals('paid', $invoice['status']);
 
         try
         {
-            $this->chargeSubscriptionInvoiceManually($invoice);
+            $this->makeCancelRequest($subscription['id'], '1');
         }
         catch (BadRequestException $ex)
         {
-            $this->assertEquals('BAD_REQUEST_SUBSCRIPTION_NOT_IN_ACTIVE_OR_HALTED_STATE', $ex->getCode());
+            $this->assertEquals('BAD_REQUEST_SUBSCRIPTION_LAST_CYCLE_CANNOT_CANCEL', $ex->getCode());
+
+            Carbon::setTestNow();
 
             return;
         }
 
         $this->assertTrue(false);
+
+        Carbon::setTestNow();
     }
 
-    protected function makeCancelRequest(string $subscriptionId)
+    public function testCancelFutureCancellation()
     {
-        $testData = $this->testData['testSubscriptionCancel'];
+        $this->markTestSkipped("not doing this now. will figure out a way to do this later");
 
-        $testData['request']['url'] = '/subscriptions/' . $subscriptionId . '/cancel';
+        $this->doAuthTxnForNewSubscription();
 
-        $this->ba->privateAuth();
+        $subscription = $this->getLastEntity('subscription', true);
 
-        return $this->startTest($testData);
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, 'Asia/Kolkata');
+
+        Carbon::setTestNow($chargeAt);
+
+        $this->makeSubscriptionChargeCronRequest();
+
+        $this->makeCancelRequest($subscription['id'], '1');
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->assertEquals($subscription['cancel_at'], $subscription['current_end']);
+        $this->assertNotEquals($subscription['cancel_at'], $subscription['cancelled_at']);
+
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, 'Asia/Kolkata');
+
+        $cancelAt = Carbon::createFromTimestamp($subscription['cancel_at'] - 3600, 'Asia/Kolkata');
+
+        Carbon::setTestNow($cancelAt);
+
+        $this->makeCancelRequest($subscription['id'], '0');
+
+        Carbon::setTestNow($chargeAt);
+
+        $result = $this->makeSubscriptionChargeCronRequest();
+        $this->assertEquals(1, $result['invoices_created']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->assertEquals(2, $subscription['paid_count']);
+        $this->assertNull($subscription['cancel_at']);
+        $this->assertNull($subscription['cancelled_at']);
+        $this->assertEquals('active', $subscription['status']);
+
+        Carbon::setTestNow();
     }
 }

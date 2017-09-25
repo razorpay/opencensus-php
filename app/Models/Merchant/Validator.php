@@ -3,12 +3,11 @@
 namespace RZP\Models\Merchant;
 
 use RZP\Base;
-use RZP\Constants\Mode;
-use RZP\Models\Merchant;
-use RZP\Models\Terminal;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Models\Feature;
+use RZP\Constants\Mode;
+use RZP\Models\Terminal;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 
 class Validator extends Base\Validator
@@ -42,6 +41,7 @@ class Validator extends Base\Validator
         Entity::BILLING_LABEL               => 'sometimes|max:255',
         Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array',
         Entity::RECEIPT_EMAIL_ENABLED       => 'sometimes|boolean',
+        Entity::LINKED_ACCOUNT_KYC          => 'sometimes|boolean',
         Entity::SETTLEMENT_SCHEDULE         => 'sometimes|integer|min:1|max:30',
         Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
         Entity::RISK_RATING                 => 'sometimes|min:0|max:5',
@@ -75,7 +75,7 @@ class Validator extends Base\Validator
         Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array',
         Entity::LOGO_URL                    => 'sometimes|max:2000',
         Entity::AUTO_CAPTURE_LATE_AUTH      => 'sometimes|boolean',
-        Entity::HANDLE                      => 'sometimes|nullable|size:4|custom|unique:merchants,handle,null',
+        Entity::HANDLE                      => 'sometimes|nullable|min:3|max:4|custom|unique:merchants,handle,null',
         MerchantDetail::GSTIN               => 'sometimes|nullable|string|size:15',
         MerchantDetail::P_GSTIN             => 'sometimes|nullable|string',
     ];
@@ -84,9 +84,16 @@ class Validator extends Base\Validator
         Entity::ACTION                      => 'required|custom'
     ];
 
+    protected static $oauthMailRules = [
+        'client_id'    => 'required|alpha_num|size:14',
+        'user_id'      => 'required|alpha_num|size:14',
+        'merchant_id'  => 'required|alpha_num|size:14'
+    ];
+
     protected static $featureRules = [
-        'features'          => 'required|array',
-        'optout_reason'     => 'sometimes|string|max:200'
+        'features'                   => 'required|array',
+        'optout_reason'              => 'sometimes|string|max:200',
+        Feature\Entity::SHOULD_SYNC  => 'sometimes|boolean',
     ];
 
     protected static $addTagsRules = [
@@ -103,6 +110,16 @@ class Validator extends Base\Validator
         'merchant_ids'   => 'required|array'
     ];
 
+    protected static $createBatchRules = [
+        'type'        => 'required|string|max:50',
+        'data'        => 'required|array'
+    ];
+
+    protected static $irctcRules = [
+        'refund'     => 'sometimes|filled|file|mimes:txt|max:1024',
+        'settlement' => 'sometimes|filled|file|mimes:txt|max:1024',
+    ];
+
     protected static $editConfigValidators = [
         'csv_email',
     ];
@@ -113,7 +130,69 @@ class Validator extends Base\Validator
 
     protected static $featureValidators = [
         'visible_features',
+        'feature_update_for_mode',
+        'uneditable_features',
     ];
+
+    /**
+     * Throw an error, if any of the features that can be enabled or disabled only by
+     * an admin in the LIVE mode, is being edited by the merchant.
+     *
+     * @param array $input
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function validateFeatureUpdateForMode(array $input)
+    {
+        if ($this->isTestMode() === true)
+        {
+            return;
+        }
+
+        $requestedFeatures = array_keys($input['features']);
+
+        $uneditableFeatures = Feature\Constants::$featuresUneditableOnLive;
+
+        //
+        // array_values is required as array_intersect returns an associative
+        // array with keys as the indexes if the element at index 0 in the
+        // first array is not present in the second array.
+        //
+        $featuresNotAllowed = array_values(array_intersect($requestedFeatures, $uneditableFeatures));
+
+        if (empty($featuresNotAllowed) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
+                null,
+                ['features' => $featuresNotAllowed]);
+        }
+    }
+
+    /**
+     * Throws an exception if a merchant tries to enable an uneditable
+     * feature for live mode, via the should_sync flag
+     *
+     * @param array $input
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function validateUneditableFeatures(array $input)
+    {
+        $requestedFeatures = array_keys($input['features']);
+
+        $shouldSync = (bool) ($input[Feature\Entity::SHOULD_SYNC] ?? false);
+
+        $uneditableFeatures = array_values(array_intersect($requestedFeatures, Feature\Constants::$featuresUneditableOnLive));
+
+        if (($shouldSync === true) and (count($uneditableFeatures) > 0))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
+                Feature\Entity::NAMES,
+                ['features' => $uneditableFeatures, 'should_sync' => $shouldSync]);
+        }
+    }
 
     protected function validateHandle($attribute, $handle)
     {
@@ -130,8 +209,8 @@ class Validator extends Base\Validator
     public function validateLogo($imageDetails)
     {
         $fileSize = $imageDetails['size'];
-        $width = $imageDetails['width'];
-        $height = $imageDetails['height'];
+        $width    = $imageDetails['width'];
+        $height   = $imageDetails['height'];
 
         // File size should not be more than 1M.
         if ($fileSize > self::MAXIMAGESIZE)
@@ -227,9 +306,23 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateBeforeActivate(Merchant\Entity $merchant)
+    public function validateBeforeActivate()
     {
-        // Dont validate these attributes for Marketplace accounts
+        $merchant = $this->entity;
+
+        if ($merchant->isActivated() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED);
+        }
+
+        if ($merchant->isArchived() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_UNARCHIVE_BEFORE_ACTIVATION);
+        }
+
+        // Don't validate these rest of the attributes for Marketplace accounts
         if ($merchant->isLinkedAccount() === true)
         {
             return;

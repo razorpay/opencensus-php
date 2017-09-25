@@ -13,7 +13,8 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::FILE                 => 'required|file|mimes:xlsx,application/zip,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/octet-stream,txt|max:1024',
-        Entity::TYPE                 => 'required|string|max:14|custom',
+        Entity::TYPE                 => 'required|string|max:25|custom',
+        Entity::MERCHANT_ID          => 'sometimes|string',
 
         //
         // Type:payment_link specific input parameters
@@ -197,4 +198,15 @@ class Validator extends Base\Validator
                 ]);
         }
     }
+
+    protected function validateIrctcRefundEntries(array & $entries, array $params, Merchant\Entity $merchant)
+    {
+
+    }
+
+    protected function validateIrctcSettlementEntries(array & $entries, array $params, Merchant\Entity $merchant)
+    {
+
+    }
+
 }

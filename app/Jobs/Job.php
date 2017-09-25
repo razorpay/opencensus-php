@@ -90,7 +90,7 @@ class Job
 
         if ($this->mode !== null)
         {
-            $app['rzp.mode'] = $this->mode;
+            $app['basicauth']->setMode($this->mode);
 
             \Database\DefaultConnection::set($this->mode);
         }

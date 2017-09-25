@@ -232,6 +232,125 @@ return [
         ],
     ],
 
+    'testCreateAddon' => [
+        'request' => [
+            'url'       => '/subscriptions/{subscriptionId}/addons',
+            'method'    => 'post',
+            'content'   => [
+                'quantity'  => 2,
+                'item'      => [
+                    'name'          => 'test addon',
+                    'amount'        => 1000,
+                    'currency'      => 'INR',
+                    'description'   => 'test addon desc'
+                ]
+            ]
+        ],
+        'response' => [
+            'content'   => [
+                'item'  => [
+                    'name'  => 'test addon',
+                    'type'  => 'addon',
+                ],
+                'invoice_id'    => null,
+            ]
+        ]
+    ],
+
+    'testFetchAddon' => [
+        'request' => [
+            'url'       => '/addons/{addonId}',
+            'method'    => 'get',
+            'content'   => [
+            ]
+        ],
+        'response'  => [
+            'content'   => [
+                'entity'        => 'addon',
+                'item'          => [
+                    'name'  => 'Some item name',
+                    'type'  => 'addon',
+                ],
+                'invoice_id'    => null,
+            ]
+        ]
+    ],
+
+    'testFetchMultipleAddons' => [
+        'request' => [
+            'url'       => '/addons/',
+            'method'    => 'get',
+            'content'   => [
+                'subscription_id' => '{subscriptionId}',
+            ]
+        ],
+        'response'  => [
+            'content'   => [
+                'entity' => 'collection',
+                'count' => 1,
+                'items' => [
+                    [
+                        'entity' => 'addon',
+                        'invoice_id' => null,
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testDeleteAddon' => [
+        'request'   => [
+            'url'       => '/addons/{addonId}',
+            'method'    => 'delete',
+        ],
+        'response'  => [
+            'content' => []
+        ]
+    ],
+
+    'testDeleteAddonAssociatedWithInvoice' => [
+        'request'   => [
+            'url'       => '/addons/{addonId}',
+            'method'    => 'delete'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Delete operation cannot be performed on the addon.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ADDON_DELETE_NOT_ALLOWED,
+        ],
+    ],
+
+    'testFetchDueAddons' => [
+        'request' => [
+            'url'       => '/subscriptions/{subscriptionId}/addons/due',
+            'method'    => 'get',
+        ],
+        'response'  => [
+            'content'   => [
+                'entity'    => 'collection',
+                'count'     => 1,
+                'items'     => [
+                    [
+                        'entity'        => 'addon',
+                        'invoice_id'    => null,
+                        'item'          => [
+                            'id'    => 'item_3000000000item',
+                            'type'  => 'addon',
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ],
+
     'createSubscriptionForAuthTxn' => [
         'request' => [
             'url' => '/subscriptions',
@@ -982,6 +1101,26 @@ return [
         ],
     ],
 
+    'testSubscriptionCancelFuture' => [
+        'request' => [
+            'method'    => 'post',
+            'content'   => [
+                'cancel_at_cycle_end'   => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'                => 'subscription',
+                'plan_id'               => 'plan_1000000000plan',
+                'customer_id'           => 'cust_100000customer',
+                'status'                => 'active',
+                'total_count'           => 6,
+                'paid_count'            => 1,
+                'ended_at'              => null,
+            ]
+        ]
+    ],
+
     'testSubscriptionCancelBasic' => [
         'request' => [
             'method' => 'post',
@@ -1023,8 +1162,8 @@ return [
                         'plan_id'           => 'plan_1000000000plan',
                         'customer_id'       => 'cust_100000customer',
                         'status'            => 'pending',
-                        'current_start'     => 1516386600,
-                        'current_end'       => 1521484200,
+                        'current_start'     => 1521484200,
+                        'current_end'       => 1526754600,
                         'ended_at'          => null,
                         'quantity'          => 1,
                         'notes'             => [],
@@ -1057,8 +1196,8 @@ return [
                         'plan_id'           => 'plan_1000000000plan',
                         'customer_id'       => 'cust_100000customer',
                         'status'            => 'pending',
-                        'current_start'     => 1516386600,
-                        'current_end'       => 1521484200,
+                        'current_start'     => 1521484200,
+                        'current_end'       => 1526754600,
                         'ended_at'          => null,
                         'quantity'          => 1,
                         'notes'             => [],
@@ -1231,8 +1370,6 @@ return [
                         'plan_id'           => 'plan_1000000000plan',
                         'customer_id'       => 'cust_100000customer',
                         'status'            => 'active',
-                        'current_start'     => null,
-                        'current_end'       => null,
                         'ended_at'          => null,
                         'quantity'          => 1,
                         'notes'             => [],
@@ -1244,6 +1381,8 @@ return [
                         // first activated. In first activated we fire
                         // webhook first and then make a charge, unlike
                         // other active fires.
+                        // 'current_start'     => null,
+                        // 'current_end'       => null,
                         // 'current_start' => NULL
                         // 'current_end' => NULL
                         // 'paid_count' => integer 0
@@ -1279,6 +1418,70 @@ return [
                         'auth_attempts' => 0,
                         'total_count'   => 6,
                         'paid_count'    => 1,
+                    ]
+                ]
+            ]
+        ]
+    ],
+
+    'testSubscriptionCardChangeOnAuthenticated' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Cannot change card for the subscription at this state',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_SUBSCRIPTION_CARD_CHANGE_NOT_ALLOWED,
+        ],
+    ],
+
+    'testSubscriptionHaltedCardChangeFail' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::SERVER_ERROR,
+                    'description' => 'The server encountered an error. The incident has been reported to admins.',
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\RuntimeException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
+        ],
+    ],
+
+    'subscriptionWebhookDataForFutureCancel' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event'  => 'subscription.cancelled',
+            'contains' => [
+                'subscription',
+            ],
+            'payload' => [
+                'subscription' => [
+                    'entity' => [
+                        'entity'                => 'subscription',
+                        'plan_id'               => 'plan_1000000000plan',
+                        'customer_id'           => 'cust_100000customer',
+                        'status'                => 'cancelled',
+                        'current_start'         => 1516386600,
+                        'current_end'           => 1521484200,
+                        'ended_at'              => 1516386601,
+                        'quantity'              => 1,
+                        'notes'                 => [],
+                        'charge_at'             => null,
+                        'start_at'              => 1516386600,
+                        'end_at'                => 1542652200,
+                        'auth_attempts'         => 0,
+                        'total_count'           => 6,
+                        'paid_count'            => 1,
                     ]
                 ]
             ]

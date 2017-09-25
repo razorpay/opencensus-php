@@ -3,15 +3,18 @@
 namespace RZP\Models\Merchant\Detail;
 
 use RZP\Base;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use Razorpay\IFSC\IFSC;
-use RZP\Models\Merchant\Detail;
-use RZP\Models\Merchant\Detail\FileType as FileType;
+use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
     const INVALID_IFSC_CODE_MESSAGE = 'Invalid IFSC Code';
+
+    // https://razorpay.zendesk.com/agent/tickets/94340
+    const IFSC_WHITELIST = [
+        'SBIN0040704'
+    ];
 
     protected static $createRules = [
         Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
@@ -159,6 +162,11 @@ class Validator extends Base\Validator
 
     public function validateBankBranchIfsc($attribute, $value)
     {
+        if (in_array($value, self::IFSC_WHITELIST, true) === true)
+        {
+            return;
+        }
+
         if (IFSC::validate($value) === false)
         {
             throw new Exception\BadRequestValidationFailureException(self::INVALID_IFSC_CODE_MESSAGE);
@@ -199,6 +207,14 @@ class Validator extends Base\Validator
     public function validateFileType($file)
     {
         $extension = strtolower($file->getClientOriginalExtension());
+
+        /**
+         * Guess extension from mime type if getClientOriginalExtension does not exist
+         */
+        if (empty($extension) === true)
+        {
+            $extension = strtolower($file->guessExtension());
+        }
 
         $mime = $file->getMimeType();
 

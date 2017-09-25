@@ -530,14 +530,31 @@ trait Capture
     {
         $payment = $this->payment;
 
-        if ($payment->getApiOrderId() !== null)
+        if ($payment->hasOrder() === false)
         {
-            $eventPayload = [
-                ApiEventSubscriber::MAIN => $payment
-            ];
-
-            $this->app['events']->fire('api.order.paid', $eventPayload);
+            return;
         }
+
+        $order = $payment->order;
+
+        //
+        // Order's status when is partially_paid continues to stay in attempted state.
+        // Once fully paid it's amount_paid=amount and status=paid. Also partial payment
+        // feature is not directly exposed on order for now(until we decide on the inter-
+        // -mediate status).
+        //
+        // Finally, we don't want to fire order.paid if an order is not yet fully paid.
+        //
+        if ($order->isPaid() === false)
+        {
+            return;
+        }
+
+        $eventPayload = [
+            ApiEventSubscriber::MAIN => $payment
+        ];
+
+        $this->app['events']->fire('api.order.paid', $eventPayload);
     }
 
     protected function eventInvoicePaid()
@@ -549,11 +566,19 @@ trait Capture
             return;
         }
 
+        //
+        // Using order's invoice as that gets updated in the capture flow
+        // else if to use payment's invoice relation, will need to reload that.
+        //
+        $invoice = $payment->order->invoice;
+
+        $event = ($invoice->isPaid() === true) ? 'api.invoice.paid' : 'api.invoice.partially_paid';
+
         $eventPayload = [
             ApiEventSubscriber::MAIN => $payment
         ];
 
-        $this->app['events']->fire('api.invoice.paid', $eventPayload);
+        $this->app['events']->fire($event, $eventPayload);
     }
 
     protected function eventPaymentCaptured()

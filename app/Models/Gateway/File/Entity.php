@@ -42,6 +42,7 @@ class Entity extends Base\PublicEntity
         self::BEGIN,
         self::END,
         self::SCHEDULED,
+        self::PARTIALLY_PROCESSED,
     ];
 
     protected $visible = [
@@ -68,9 +69,19 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
+        self::ATTEMPTS            => 'int',
         self::RECIPIENTS          => 'array',
         self::SCHEDULED           => 'boolean',
         self::PARTIALLY_PROCESSED => 'boolean'
+    ];
+
+    protected $dates = [
+        self::CREATED_AT,
+        self::UPDATED_AT,
+        self::SENT_AT,
+        self::FAILED_AT,
+        self::ACKNOWLEDGED_AT,
+        self::FILE_GENERATED_AT,
     ];
 
     protected $defaults = [
@@ -166,9 +177,9 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::FILE_GENERATED);
     }
 
-    public function isMailSent(): bool
+    public function isFileSent(): bool
     {
-        return ($this->getStatus() === Status::MAIL_SENT);
+        return ($this->getStatus() === Status::FILE_SENT);
     }
 
     public function isFailed(): bool
@@ -215,7 +226,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FILE_GENERATED_AT, $generatedAt);
     }
 
-    public function setMailSentAt(int $mailSentAt)
+    public function setFileSentAt(int $mailSentAt)
     {
         $this->setAttribute(self::SENT_AT, $mailSentAt);
     }

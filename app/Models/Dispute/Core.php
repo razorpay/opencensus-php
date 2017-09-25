@@ -3,6 +3,7 @@
 namespace RZP\Models\Dispute;
 
 use Carbon\Carbon;
+use RZP\Models\Admin\Action;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Reversal;
@@ -36,15 +37,21 @@ class Core extends Base\Core
 
         $this->setRelationsAndDerivedAttributes($dispute, $payment, $reason);
 
+        // entity id is required to create associated transaction
+        $dispute->generateId();
+
+        $this->app['workflow']
+            ->setEntityAndId($dispute->getEntity(), $dispute->getId())
+            ->handle((new \stdClass), $dispute);
+
+        $dispute->setAuditAction(Action::CREATE_DISPUTE);
+
         $payment->setDisputed(true);
 
         $dispute = $this->repo->transaction(function() use ($dispute)
         {
             if ($dispute->getDeductAtOnset() === true)
             {
-                // entity id is required to create associated transaction
-                $dispute->generateId();
-
                 $this->deductDisputedAmount($dispute);
             }
 
@@ -74,6 +81,8 @@ class Core extends Base\Core
         );
 
         $dispute->edit($input);
+
+        $dispute->setAuditAction(Action::EDIT_DISPUTE);
 
         return $this->repo->transaction(function() use ($dispute)
         {

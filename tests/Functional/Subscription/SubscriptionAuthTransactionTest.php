@@ -96,7 +96,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->assertEquals('paid', $invoice['status']);
         $this->assertEquals($subscription['id'], $invoice['subscription_id']);
         $this->assertEquals($order['id'], $invoice['order_id']);
-        $this->assertEquals($payment['created_at'], $invoice['billing_start']);
+        $this->assertEquals($subscription['current_start'], $invoice['billing_start']);
         $this->assertEquals($subscription['current_end'], $invoice['billing_end']);
 
         $this->assertEquals('paid', $order['status']);
@@ -311,7 +311,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         catch (BadRequestException $ex)
         {
             $this->assertEquals('The amount does not match with the expected amount for the '.
-                'first transaction. It might have been tampered.', $ex->getMessage());
+                'transaction. It might have been tampered.', $ex->getMessage());
 
             return;
         }
@@ -363,7 +363,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         catch (BadRequestException $ex)
         {
             $this->assertEquals(
-                'The subscription has been expired or cancelled.',
+                'The subscription is in a terminal state',
                 $ex->getMessage());
 
             return;
@@ -390,7 +390,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         }
         catch (BadRequestException $ex)
         {
-            $this->assertEquals('The subscription has been expired or cancelled.', $ex->getMessage());
+            $this->assertEquals('The subscription is in a terminal state', $ex->getMessage());
 
             return;
         }
@@ -438,40 +438,39 @@ class SubscriptionAuthTransactionTest extends TestCase
         $invoice = $this->fixtures->create(
             'invoice',
             [
-                'sms_status' => null,
-                'email_status' => null,
+                'sms_status'      => null,
+                'email_status'    => null,
                 'subscription_id' => $subscription->getId(),
-                'order_id' => $order->getId(),
-                'amount' => $totalAmount,
-                'issued_at' => time(),
+                'order_id'        => $order->getId(),
+                'amount'          => $totalAmount,
+                'issued_at'       => time(),
             ]);
 
         // TODO: create an add on item with wrong type.
         // Test case should fail.
 
         $item = $this->fixtures->create(
-            'item',
+            'item:addon',
             [
-                'name' => 'Sample Upfront Amount',
+                'name'   => 'Sample Upfront Amount',
                 'amount' => $addonAmount,
-                'type' => 'addon',
             ]);
 
         $this->fixtures->create(
             'addon',
             [
                 'subscription_id' => $subscription->getId(),
-                'invoice_id' => $invoice->getId(),
-                'item_id' => $item->getId(),
+                'invoice_id'      => $invoice->getId(),
+                'item_id'         => $item->getId(),
             ]);
 
         $this->fixtures->create(
             'line_item',
             [
-                'name' => $item->getName(),
-                'amount' => $item->getAmount(),
+                'name'      => $item->getName(),
+                'amount'    => $item->getAmount(),
                 'entity_id' => $invoice->getId(),
-                'item_id' => $item->getId(),
+                'item_id'   => $item->getId(),
             ]);
 
         if ($first === true)
@@ -479,11 +478,11 @@ class SubscriptionAuthTransactionTest extends TestCase
             $this->fixtures->create(
                 'line_item',
                 [
-                    'id' => '200000lineitem',
-                    'name' => $plan->item->getName(),
-                    'amount' => $plan->item->getAmount(),
+                    'id'        => '200000lineitem',
+                    'name'      => $plan->item->getName(),
+                    'amount'    => $plan->item->getAmount(),
                     'entity_id' => $invoice->getId(),
-                    'item_id' => null,
+                    'item_id'   => null,
                 ]);
         }
     }

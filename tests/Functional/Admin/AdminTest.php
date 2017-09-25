@@ -36,6 +36,13 @@ class AdminTest extends TestCase
 
         $this->orgId = $this->org->getId();
 
+        $this->hostName = 'testing.testing.com';
+
+        $this->orgHostName = $this->fixtures->create('org_hostname', [
+            'org_id'        => $this->orgId,
+            'hostname'      => $this->hostName,
+        ]);
+
         $this->authToken = $this->getAuthTokenForOrg($this->org);
 
         $this->ba->adminAuth('test', $this->authToken, $this->org->getPublicId());
@@ -46,12 +53,6 @@ class AdminTest extends TestCase
     public function testCreateAdmin()
     {
         Mail::fake();
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $superAdminRole = Role\Entity::getSignedId(Org::ADMIN_ROLE);
 
@@ -84,27 +85,15 @@ class AdminTest extends TestCase
 
     public function testCreateAdminWithWrongEmailDomain()
     {
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         $this->startTest();
     }
 
     public function testCreateAdminWithExistingEmail()
     {
-        $admin = $this->fixtures->create('admin', [
+        $this->fixtures->create('admin', [
             Admin\Entity::ORG_ID  => $this->orgId,
             Admin\Entity::EMAIL   => 'xyz@rzp.com',
         ]);
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
     }
@@ -112,12 +101,6 @@ class AdminTest extends TestCase
     public function testCreateAdminWithExistingEmailOfDeletedAdmin()
     {
         $admin = $this->testDeleteAdmin();
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->testData[__FUNCTION__]['request']['content']['email'] = $admin->getEmail();
 
@@ -133,7 +116,7 @@ class AdminTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $admin->getPublicId());
+        $url = sprintf($url, $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -158,7 +141,7 @@ class AdminTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $admin->getPublicId());
+        $url = sprintf($url, $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -192,7 +175,7 @@ class AdminTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $admin->getPublicId());
+        $url = sprintf($url, $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -216,7 +199,7 @@ class AdminTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $admin->getPublicId());
+        $url = sprintf($url, $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -239,7 +222,7 @@ class AdminTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $admin->getPublicOrgId(), $admin->getPublicId());
+        $url = sprintf($url, $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -254,7 +237,7 @@ class AdminTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $admin->getPublicOrgId(), $admin->getPublicId());
+        $url = sprintf($url, $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -265,12 +248,6 @@ class AdminTest extends TestCase
     {
         $admin = $this->fixtures->times(3)->create(
             'admin', ['org_id' => $this->orgId]);
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $result = $this->startTest();
     }
@@ -285,15 +262,10 @@ class AdminTest extends TestCase
         $admin->roles()->sync([Org::ADMIN_ROLE]);
 
         $adminToken = $this->fixtures->create('admin_token', [
-            'token' => 'secondToken',
-            'admin_id' => $admin->getId(),
+            'id'        => 'AdminToken1234',
+            'token'     => Hash::make('secondToken'),
+            'admin_id'  => $admin->getId(),
         ]);
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->ba->appAuth();
 
@@ -340,19 +312,17 @@ class AdminTest extends TestCase
         $token = $this->fixtures->create('admin_token', [
             'admin_id'   => $admin->getId(),
             'created_at' => $now->timestamp,
+            'token'      => Hash::make('ThisIsATokenForTest'),
             'expires_at' => $now->addYear(1)->timestamp,
         ]);
 
-        $token = $token->getValidToken();
+        // Token Generation is bearer + principal (Id).
+        $token = 'ThisIsATokenForTest' . $token->getId();
 
         // Replace auth with this route
         $this->ba->adminAuth('test', $token);
 
-        $this->testData[__FUNCTION__]['request']['url'] =
-            '/orgs/' .
-            $this->org->getPublicId() .
-            '/admins/' .
-            $admin->getPublicId();
+        $this->testData[__FUNCTION__]['request']['url'] = '/admin/' . $admin->getPublicId();
 
         $this->startTest();
     }
@@ -369,17 +339,19 @@ class AdminTest extends TestCase
         $token = $this->fixtures->create('admin_token', [
             'admin_id'   => $admin->getId(),
             'created_at' => $now->timestamp,
+            'token'      => Hash::make('ThisIsATokenForTest'),
             'expires_at' => $now->addYear(1)->timestamp,
         ]);
 
-        $token = $token->getValidToken();
+        // Token Generation is bearer + principal (Id).
+        $token = 'ThisIsATokenForTest' . $token->getId();
 
         // Replace auth with this route
         $this->ba->adminAuth('test', $token);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->orgId, $admin->getPublicId());
+        $url = sprintf($url, $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -435,12 +407,6 @@ class AdminTest extends TestCase
 
     public function testLoginUserDoesNotExist()
     {
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         $this->ba->appAuth();
 
         $this->startTest();
@@ -455,12 +421,6 @@ class AdminTest extends TestCase
             'oauth_provider_id'  => 'test oauth provider id',
         ]);
 
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         $this->ba->appAuth();
 
         $this->startTest();
@@ -474,12 +434,6 @@ class AdminTest extends TestCase
             'oauth_access_token' => 'test oauth token 2',
             'oauth_provider_id'  => 'test oauth provider id',
         ]);
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->ba->appAuth();
 
@@ -498,7 +452,7 @@ class AdminTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $org->getPublicId(), $admin->getPublicId());
+        $url = sprintf($url, $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -534,13 +488,7 @@ class AdminTest extends TestCase
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
 
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $this->ba->appAuth();
+        $this->ba->appAuth('rzp_test', '', $this->hostName);
 
         $this->startTest();
 
@@ -558,34 +506,22 @@ class AdminTest extends TestCase
 
     public function testForgotPasswordInvalidUser()
     {
-        $admin = $this->fixtures->create(
+        $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->ba->appAuth();
 
-        $result = $this->startTest();
+        $this->startTest();
     }
 
     public function testForgotPasswordResetUrlBlank()
     {
-        $admin = $this->fixtures->create(
+        $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->ba->appAuth();
 
-        $result = $this->startTest();
+        $this->startTest();
     }
 
     public function testPasswordResetSuccess()
@@ -593,23 +529,17 @@ class AdminTest extends TestCase
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
 
-        $this->adminForgotPassword($this->org->getPublicId(), $admin->getEmail());
+        $this->adminForgotPassword($admin->getEmail());
 
         $key = sprintf(Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId, $admin->getId());
 
         $token = Cache::get($key);
 
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         $this->testData[__FUNCTION__]['request']['content']['token'] = $token;
 
         $newPassword = $this->testData[__FUNCTION__]['request']['content']['password'];
 
-        $this->ba->appAuth();
+        $this->ba->appAuth('rzp_test', '', $this->hostName);
 
         $this->startTest();
 
@@ -632,23 +562,17 @@ class AdminTest extends TestCase
             'locked' => true
         ]);
 
-        $this->adminForgotPassword($this->org->getPublicId(), $admin->getEmail());
+        $this->adminForgotPassword($admin->getEmail());
 
         $key = sprintf(Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId, $admin->getId());
 
         $token = Cache::get($key);
 
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         $this->testData[__FUNCTION__]['request']['content']['token'] = $token;
 
         $newPassword = $this->testData[__FUNCTION__]['request']['content']['password'];
 
-        $this->ba->appAuth();
+        $this->ba->appAuth('rzp_test', '', $this->hostName);
 
         $this->startTest();
 
@@ -675,15 +599,9 @@ class AdminTest extends TestCase
             'locked' => 1
         ]);
 
-        $this->adminForgotPassword($this->org->getPublicId(), $admin->getEmail());
+        $this->adminForgotPassword($admin->getEmail());
 
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $this->ba->appAuth();
+        $this->ba->appAuth('rzp_test', '', $this->hostName);
 
         $this->startTest();
 
@@ -701,15 +619,9 @@ class AdminTest extends TestCase
             'email' => 'abc@razorpay.com',
         ]);
 
-        $this->adminForgotPassword($this->org->getPublicId(), $admin->getEmail());
+        $this->adminForgotPassword($admin->getEmail());
 
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $this->ba->appAuth();
+        $this->ba->appAuth('rzp_test', '', $this->hostName);
 
         $this->startTest();
 
@@ -723,7 +635,7 @@ class AdminTest extends TestCase
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
 
-        $this->adminForgotPassword($this->org->getPublicId(), $admin->getEmail());
+        $this->adminForgotPassword($admin->getEmail());
 
         $key = sprintf(
             Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId,
@@ -731,15 +643,9 @@ class AdminTest extends TestCase
 
         $token = Cache::get($key);
 
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         $this->testData[__FUNCTION__]['request']['content']['token'] = $token;
 
-        $this->ba->appAuth();
+        $this->ba->appAuth('rzp_test', '', $this->hostName);
 
         $this->startTest();
 
@@ -756,7 +662,7 @@ class AdminTest extends TestCase
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
 
-        $this->adminForgotPassword($this->org->getPublicId(), $admin->getEmail());
+        $this->adminForgotPassword($admin->getEmail());
 
         $key = sprintf(
             Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY,
@@ -764,15 +670,9 @@ class AdminTest extends TestCase
 
         $token = Cache::get($key);
 
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         $this->testData[__FUNCTION__]['request']['content']['token'] = $token;
 
-        $this->ba->appAuth();
+        $this->ba->appAuth('rzp_test', '', $this->hostName);
 
         $this->startTest();
 
@@ -786,7 +686,7 @@ class AdminTest extends TestCase
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
 
-        $this->adminForgotPassword($this->org->getPublicId(), $admin->getEmail());
+        $this->adminForgotPassword($admin->getEmail());
 
         $key = sprintf(
             Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY,
@@ -800,15 +700,9 @@ class AdminTest extends TestCase
 
         $this->repo->saveOrFail($admin);
 
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         $this->testData[__FUNCTION__]['request']['content']['token'] = $token;
 
-        $this->ba->appAuth();
+        $this->ba->appAuth('rzp_test', '', $this->hostName);
 
         $this->startTest();
 
@@ -824,13 +718,7 @@ class AdminTest extends TestCase
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $org->getId(), 'email' => 'abc@razorpay.com']);
 
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
-        $this->ba->appAuth();
+        $this->ba->appAuth('rzp_test', '', $this->hostName);
 
         $this->startTest();
 
@@ -857,23 +745,27 @@ class AdminTest extends TestCase
         $admin->roles()->sync([Org::ADMIN_ROLE]);
 
         // Create some admin tokens
-        $adminTokens = $this->fixtures->times(3)->create(
+        $adminTokens[] = $this->fixtures->create(
             'admin_token',
             [
                 'admin_id'   => $admin->getId(),
                 'created_at' => $now->timestamp,
+                'token'      => Hash::make('ThisIsATokenForTest'),
+                'expires_at' => $now->addYear(1)->timestamp,
+            ]);
+
+        $adminTokens[] = $this->fixtures->create(
+            'admin_token',
+            [
+                'admin_id'   => $admin->getId(),
+                'created_at' => $now->timestamp,
+                'token'      => Hash::make('ThisIsASecondAdminToken'),
                 'expires_at' => $now->addYear(1)->timestamp,
             ]);
 
         $adminToken = $adminTokens[0];
 
-        $token = $adminToken->getValidToken();
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, 'org_' . Org::RZP_ORG);
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
+        $token = 'ThisIsATokenForTest' . $adminToken->getId();
 
         // Replace auth with this route
         $this->ba->adminAuth('test', $token);
@@ -887,17 +779,17 @@ class AdminTest extends TestCase
         // Check if the associated token is deleted on logout
         $allTokens = $this->getEntities('admin_token', [], true);
 
-        $remainingTokens = [];
+        $remainingTokenIds = [];
 
         foreach ($allTokens['items'] as $t)
         {
             if ($t['admin_id'] === $adminPublicId)
             {
-                $remainingTokens[] = $t['token'];
+                $remainingTokenIds[] = $t['id'];
             }
         }
 
-        $this->assertArrayNotHasKey($token, $remainingTokens);
+        $this->assertArrayNotHaskey($adminToken->getId(), $remainingTokenIds);
     }
 
     public function testGetAdminByEmailOnAppAuth()
@@ -915,7 +807,7 @@ class AdminTest extends TestCase
 
     public function testEditAdminOnAppAuth()
     {
-        $this->ba->appAuth();
+        $this->ba->appAuth('rzp_test', '', $this->hostName);
 
         $admin = $this->fixtures->create('admin', [
             Admin\Entity::ORG_ID => $this->orgId,
@@ -930,7 +822,7 @@ class AdminTest extends TestCase
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId(), $admin->getPublicId());
+        $url = sprintf($url, $admin->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -942,8 +834,6 @@ class AdminTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['content']['groups'] = (array) $group;
 
-        $this->ba->appAuth();
-
         $result = $this->startTest();
 
         $this->assertEquals($result['roles'][0]['id'], $managerRole);
@@ -953,12 +843,6 @@ class AdminTest extends TestCase
 
     public function testCreateAdminWithoutPassword()
     {
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $this->org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
-
         $this->startTest();
     }
 
@@ -974,13 +858,7 @@ class AdminTest extends TestCase
 
         $authToken = $this->getAuthTokenForOrg($org);
 
-        $this->ba->adminAuth('test', $authToken);
-
-        $url = $this->testData[__FUNCTION__]['request']['url'];
-
-        $url = sprintf($url, $org->getPublicId());
-
-        $this->testData[__FUNCTION__]['request']['url'] = $url;
+        $this->ba->adminAuth('test', $authToken, $org->getPublicId());
 
         $this->startTest();
     }
@@ -1025,5 +903,13 @@ class AdminTest extends TestCase
         ];
 
         $this->makeRequestAndGetContent($request);
+    }
+
+    public function testAdminAllEntitiesApi()
+    {
+        $result = $this->startTest();
+
+        $this->assertCount(7, $result['fields']);
+        $this->assertCount(118, $result['entities']);
     }
 }

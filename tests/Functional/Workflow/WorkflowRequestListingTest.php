@@ -36,7 +36,7 @@ class WorkflowRequestListingTest extends TestCase
      */
     public function testWorkflowCheckerRequests()
     {
-        $this->ba->adminAuth('test', Org::CHECKER_TOKEN, 'org_' . Org::RZP_ORG);
+        $this->ba->adminAuth('test', Org::CHECKER_ADMIN_TOKEN, 'org_' . Org::RZP_ORG);
 
         $this->startTest();
     }
@@ -47,7 +47,7 @@ class WorkflowRequestListingTest extends TestCase
 
         $this->startTest();
 
-        $this->ba->adminAuth('test', Org::CHECKER_TOKEN, 'org_' . Org::RZP_ORG);
+        $this->ba->adminAuth('test', Org::CHECKER_ADMIN_TOKEN, 'org_' . Org::RZP_ORG);
 
         $this->testData[__FUNCTION__]['response']['content'] = [
             "entity" => "collection",

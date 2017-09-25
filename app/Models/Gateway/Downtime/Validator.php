@@ -117,7 +117,15 @@ class Validator extends Base\Validator
             return;
         }
 
-        Gateway::validateGateway($gateway);
+        if (Gateway::isValidGateway($gateway) === false)
+        {
+            throw new Exception\LogicException(
+                'Invalid gateway',
+                null,
+                [
+                    'gateway' => $gateway,
+                ]);
+        }
     }
 
     public function validateReasonCode(string $attribute, string $reasonCode)

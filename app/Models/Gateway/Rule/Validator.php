@@ -66,11 +66,7 @@ class Validator extends Base\Validator
 
     protected function validateGateway(string $attribute, string $gateway)
     {
-        if (Gateway::isValidGateway($gateway) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                        $gateway . ' is not a valid gateway');
-        }
+        Gateway::validateGateway($gateway);
     }
 
     protected function validateGatewayAcquirer(array $input)

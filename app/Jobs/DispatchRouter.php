@@ -25,6 +25,7 @@ class DispatchRouter extends Base\Core
     const INVOICE           = 'invoice';
     const BATCH             = 'batch';
     const CAPTURE           = 'capture';
+    const GATEWAY_FILE      = 'gateway_file';
     const MERCHANT_INVOICE  = 'merchant_invoice';
 
     protected $mock;

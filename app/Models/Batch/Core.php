@@ -18,6 +18,11 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::BATCH_CREATE_REQUEST, $input);
 
+        if (isset($input['merchant_id']) === true)
+        {
+            $this->merchant = $this->repo->merchant->findOrFailPublic($input['merchant_id']);
+        }
+
         $batch = (new Entity)->build($input);
 
         $batch->merchant()->associate($this->merchant);

@@ -9,8 +9,8 @@ use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
-use RZP\Models\Gateway\File\Status;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\Gateway\File\Status;
 use RZP\Models\Base\PublicCollection;
 use RZP\Exception\GatewayFileException;
 use RZP\Mail\Gateway\RefundFile\Base as RefundFileMail;
@@ -124,7 +124,7 @@ trait GenerateRefundFile
             $this->trace->traceException(
                             $e,
                             Trace::INFO,
-                            TraceCode::GATEWAY_FILE_FILE_GEN_ERROR,
+                            TraceCode::GATEWAY_FILE_ERROR_GENERATING_FILE,
                             [
                                 'id' => $this->gatewayFile->getId()
                             ]);
@@ -134,7 +134,7 @@ trait GenerateRefundFile
         }
     }
 
-    public function sendMail()
+    public function sendFile()
     {
         try
         {
@@ -144,24 +144,24 @@ trait GenerateRefundFile
 
             $refundFileMail = new RefundFileMail($mailData, static::GATEWAY, $recipients);
 
-            Mail::send($refundFileMail);
+            Mail::queue($refundFileMail);
 
-            $this->gatewayFile->setMailSentAt(time());
+            $this->gatewayFile->setFileSentAt(time());
 
-            $this->gatewayFile->setStatus(Status::MAIL_SENT);
+            $this->gatewayFile->setStatus(Status::FILE_SENT);
         }
         catch (\Throwable $e)
         {
             $this->trace->traceException(
                             $e,
                             Trace::INFO,
-                            TraceCode::GATEWAY_FILE_MAIL_SEND_ERROR,
+                            TraceCode::GATEWAY_FILE_ERROR_SENDING_FILE,
                             [
                                 'id' => $this->gatewayFile->getId()
                             ]);
 
             throw new GatewayFileException(
-                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_MAIL);
+                ErrorCode::SERVER_ERROR_GATEWAY_FILE_ERROR_SENDING_FILE);
         }
     }
 
@@ -209,5 +209,12 @@ trait GenerateRefundFile
         }
 
         return false;
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now(Timezone::IST)->format('d-m-Y');
+
+        return static::FILE_NAME . '_' . $this->mode . '_' . $time;
     }
 }
