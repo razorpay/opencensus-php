@@ -339,42 +339,6 @@ class Service extends Base\Service
         return $fileResponse;
     }
 
-    public function fetchMerchantAndActivationDetails($id)
-    {
-        if ($id === null)
-        {
-            return [['id' => 'Merchant id cannot be null'], []];
-        }
-
-        $details = $this->fetchMerchantDetails($id);
-
-        $merchantDetail = new MerchantDetails\Service;
-
-        //
-        // If parent_id is set, it is a marketplace linked account
-        // and we set the context for it
-        //
-        if (isset($details['parent_id']) === true)
-        {
-            $merchantDetail->setLinkedAccount(true);
-
-            if ((isset($details['linked_account_kyc']) === true) and
-                ($details['linked_account_kyc'] === 1))
-            {
-                $merchantDetail->setLinkedAccountKYCRequired(true);
-            }
-        }
-
-        $activationDetails = $merchantDetail->getActivationFiles($id);
-
-        $data = [
-            'activation' => $activationDetails,
-            'merchant'   => $details,
-        ];
-
-        return [[], $data];
-    }
-
     public function fetchMerchantDetails($id)
     {
         $response = [];
@@ -411,7 +375,6 @@ class Service extends Base\Service
         $response = [
             'archived_at'         => $merchant['archived_at'],
             'suspended_at'        => $merchant['suspended_at'],
-            'steps_finished'      => $merchantDetail['steps_finished'],
             'locked'              => $merchantDetail['locked'],
             'submitted'           => $merchantDetail['submitted'],
             'submitted_at'        => $merchantDetail['submitted_at'],
@@ -790,7 +753,22 @@ class Service extends Base\Service
             return [['id' => 'Merchant id cannot be null'], []];
         }
 
-        list(, $data) = $this->fetchMerchantAndActivationDetails($id);
+        $requestConfig = [
+            'route_name'    => 'merchant_details_fetch',
+            'account_id'    => $id,
+            'merchant_id'   => $id,
+        ];
+
+        $genericService = new Generic\Service;
+
+        list($error, $response) = $genericService->call('GET', $requestConfig);
+
+        if (empty($error) === false)
+        {
+            return [$error, []];
+        }
+
+        $data['merchant'] = $response;
 
         $file = Hdfc\HdfcTidExcel::generateExcel($data);
 

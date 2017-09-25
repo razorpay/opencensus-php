@@ -76,24 +76,6 @@ class MerchantDetail extends Entity
         return [ $error, $response ];
     }
 
-    public function getActivationFilesByAdmin($merchantId)
-    {
-        $error = $response = null;
-
-        try
-        {
-            $relativeUrl = "merchant/activation/$merchantId/files";
-
-            $response = $this->request('GET', $relativeUrl)->toArray();
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = [ $e->getMessage() ];
-        }
-
-        return [ $error, $response ];
-    }
-
     protected function getApiCredentials($mode, $merchantId)
     {
         $id = 'rzp_' . $mode . '_' . $merchantId;
