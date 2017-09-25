@@ -98,13 +98,19 @@ class ViewDataSerializer extends Base\Core
 
     protected function getSubscriptionData(): array
     {
-        $chargeAt = Carbon::createFromTimestamp($this->subscription->getChargeAt(), Timezone::IST)
-                                        ->format('d F Y');
+        //
+        // We do this because charge_at is set as public setter attribute.
+        // TODO: We should fix that!
+        //
+        $subscriptionArray = $this->subscription->toArrayPublic();
+
+        $chargeAt = Carbon::createFromTimestamp($subscriptionArray[Entity::CHARGE_AT], Timezone::IST)
+                          ->format('d F Y');
 
         $subscriptionData = [
-            'id'                    => $this->subscription->getPublicId(),
-            'status'                => $this->subscription->getStatus(),
-            'quantity'              => $this->subscription->getQuantity(),
+            'id'                    => $subscriptionArray[Entity::ID],
+            'status'                => $subscriptionArray[Entity::STATUS],
+            'quantity'              => $subscriptionArray[Entity::QUANTITY],
             'charge_at'             => $chargeAt,
             'card_change_amount'    => (new Core)->getAuthTransactionAmountForCardChange($this->subscription),
             'addons'                => $this->repo->addon->getUnusedAddonsForSubscription($this->subscription),

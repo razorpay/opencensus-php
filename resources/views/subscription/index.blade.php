@@ -35,15 +35,14 @@
 </body>
 </html>
 <script src='https://cdn.razorpay.com/static/hosted/subscription.js'></script>
-{{--<script src='http://xps.pronav.in:3000/subscription.js'></script>--}}
 <script>
 var $ = document.querySelector.bind(document);
 
 var options = {
     "key": {!! json_encode($data['key_id']) !!},
-    "amount": {!! json_encode($data['subscription']['card_change_amount']) !!},
     "image": {!! json_encode($data['merchant']['image']) !!},
     "subscription_id": {!! json_encode($data['subscription']['id']) !!},
+    "subscription_card_change": 1,
     "handler": function (response) {
       // success
       if (typeof response.error_code === 'undefined') {
