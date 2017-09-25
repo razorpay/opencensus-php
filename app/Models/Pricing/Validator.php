@@ -281,7 +281,7 @@ class Validator extends Base\Validator
     /**
      * Check whether this new rule already exists
      */
-    public function matchPaymentRules($plan)
+    public function validateRuleIsUnique($plan)
     {
         $rules = $plan->toArray();
 
@@ -372,7 +372,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateNonZeroInputSizeInBulkCreate($input)
+    public function validatePlanInputHasRules($input)
     {
         if (count($input['rules']) === 0)
         {
