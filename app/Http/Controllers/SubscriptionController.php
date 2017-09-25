@@ -5,6 +5,8 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 use RZP\Constants\Entity as E;
+use RZP\Exception\BaseException;
+use View;
 
 class SubscriptionController extends Controller
 {
@@ -149,6 +151,32 @@ class SubscriptionController extends Controller
         $subscription = $this->service()->cancelSubscription($subscriptionId, $input);
 
         return ApiResponse::json($subscription);
+    }
+
+    public function getSubscriptionView(string $subscriptionId)
+    {
+        $error = Request::get('error');
+
+        try
+        {
+            $data = $this->service()->getSubscriptionViewData($subscriptionId);
+        }
+        catch (BaseException $e)
+        {
+            $data = $e->getError()->toPublicArray();
+        }
+
+        if (empty($error) === false)
+        {
+            $data['error'] = $error;
+        }
+
+        $view = 'subscription.index';
+
+        $data['request_params'] = Request::all();
+
+        return View::make($view)
+            ->with('data', $data);
     }
 
     public function postCancelDueSubscriptions()

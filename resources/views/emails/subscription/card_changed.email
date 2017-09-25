@@ -1,0 +1,111 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width"/>
+  </head>
+  <body><table>
+  <!-- header -->
+  <thead>
+    <tr>
+      <td class="left"></td>
+      <td class="middle header">
+        <h4>Subscription Card Updated at {{$merchant['billing_label']}}</h4>
+        <p>Subcription ID: {{$subscription['id']}}</p>
+      </td>
+      <td class="right"></td>
+    </tr>
+      <tr>
+      <td class="left demarcated"></td>
+      <td class="middle demarcated">
+        Payment method for your subscription has been successfully updated and securely stored for future payments.
+@if($options['invoice_charged'] === true)
+ A payment of <strong>{{$payment['amount']}}</strong> has been made towards your subscription.
+$else
+ The payment of <strong>{{$payment['amount']}}</strong> has also been refunded.
+@endif
+@if($options['reactivated'] === true)
+ The subscription has been reactivated.
+@endif
+      </td>
+      <td class="right demarcated"></td>
+    </tr>
+  </thead>
+
+  <!-- body -->
+
+  <tbody>
+    <tr>
+      <td class="left"></td>
+      <td class="middle"></td>
+      <td class="right"></td>
+    </tr>
+    <!-- Plan -->
+    <tr>
+      <td class="left"></td>
+      <td class="middle">
+        <h6>Subscription Plan</h6>
+        <p class="title">{{$plan_item['name']}}</p>
+        <p class="sub-title">{{$plan_item['description']}}</p>
+        <p class="sub-title">Next due on {{$subscription['charge_at']}}</p>
+      </td>
+      <td class="right"></td>
+    </tr>
+    <!-- Billing Period -->
+    @if($options['invoice_charged'] === true)
+    <tr>
+      <td class="left"></td>
+      <td class="middle">
+        <h6>Bill Date</h6>
+        <p class="title">{{$invoice['billing_start']}}</p>
+        <!-- <p class="sub-title">End: {{$invoice['billing_end']}} </p> -->
+      </td>
+      <td class="right"></td>
+    </tr>
+    @endif
+    <!-- Card -->
+    <tr>
+      <td class="left"></td>
+      <td class="middle">
+        <h6>Payment Method</h6>
+        <p class="title">{{$card['network']}} Card {{$card['number']}}</p>
+        <p class="title"><a href="{{$subscription['hosted_url']}}">Update Card</a></p>
+      </td>
+      <td class="right"></td>
+    </tr>
+<!--     <tr>
+      <td class="left"></td>
+      <td class="middle">
+        <p class="title">Please find all details of the payment in the attached invoice</p>
+      </td>
+      <td class="right"></td>
+    </tr> -->
+    <tr class="b-demarcate">
+      <td class="left"></td>
+      <td class="middle">
+        <p class="sub-title">You may contact <a href="mailto:support@razorpay.com">Razorpay</a> for any query related to this subscription with the subscription ID as {{$subscription['id']}}</p>
+      </td>
+      <td class="right"></td>
+    </tr>
+  </tbody>
+
+  <tfoot>
+    <tr class="b-demarcate">
+      <td class="left"></td>
+      <td class="middle">
+        <p class="title"><strong>{{$merchant['billing_label']}}</strong></p>
+        <p class="sub-title">{{$merchant['website']}}</p>
+      </td>
+      <td class="right"></td>
+    </tr>
+    <tr>
+      <td class="left"></td>
+      <td class="middle">
+        <p class="title">Powered by <img src="https://cdn.razorpay.com/logo.svg" alt="Razorpay" /></p>
+      </td>
+      <td class="right"></td>
+    </tr>
+  </tfoot>
+
+</table></body>
+</html>

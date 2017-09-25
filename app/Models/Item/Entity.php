@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
 use RZP\Models\Tax;
+use RZP\Models\Currency;
 
 class Entity extends Base\PublicEntity
 {
