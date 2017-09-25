@@ -89,6 +89,17 @@ trait PaymentFirstDataTrait
         });
     }
 
+    protected function getOveriddenApprovalCode($code)
+    {
+        $this->mockServerContentFunction(function (& $content) use ($code)
+        {
+            if (is_array($content))
+            {
+                $content['approval_code'] = $code;
+            }
+        });
+    }
+
     protected function getErrorInInquiry()
     {
         $this->mockServerContentFunction(function (& $content)

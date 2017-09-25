@@ -514,7 +514,7 @@ class Gateway extends Base\Gateway
         {
             $attributes[Entity::STATUS]    = Status::AUTHORIZED;
 
-            $attributes[Entity::AUTH_CODE] = $callbackBody[ConnectResponseFields::PROCESSOR_RESPONSE_CODE];
+            $attributes[Entity::AUTH_CODE] = $this->getAuthCodeFromCallback($callbackBody);
 
             $attributes[Entity::TDATE]     = $callbackBody[ConnectResponseFields::TDATE];
         }
@@ -1479,5 +1479,21 @@ class Gateway extends Base\Gateway
         // have a merchantId2 value of their own.
 
         return ($this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2] === null);
+    }
+
+    protected function getAuthCodeFromCallback($callbackBody)
+    {
+        $authCode = null;
+
+        $approvalCodeArray = explode(':', $callbackBody[ConnectResponseFields::APPROVAL_CODE]);
+
+        // Only when call had succeed, we get authCode in approvalCode
+        if (($approvalCodeArray[0] === 'Y') and
+            (isset($approvalCodeArray[1]) === true))
+        {
+            $authCode = $approvalCodeArray[1];
+        }
+
+        return $authCode;
     }
 }

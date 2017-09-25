@@ -589,4 +589,17 @@ class FirstDataGatewayTest extends TestCase
 
         $this->assertEquals(strtoupper($paymentId), $firstData['caps_payment_id']);
     }
+
+    public function testAuthCodeMappingFromApprovalCode()
+    {
+        $sampleAuthCode = '543210';
+
+        $this->getOveriddenApprovalCode("Y:$sampleAuthCode:PPX: 233123");
+
+        $this->doAuthPayment($this->payment);
+
+        $gatewayPayment = $this->getLastEntity('first_data', true);
+
+        $this->assertSame($sampleAuthCode, $gatewayPayment['auth_code']);
+    }
 }
