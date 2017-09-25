@@ -510,6 +510,15 @@ class Processor extends Base\Core
             $bankCode = substr($ifsc, 0, 3);
 
             $ifsc = BankCodes::getIfscForBankCode($bankCode);
+
+            if ($ifsc === null)
+            {
+                $this->trace->warning(
+                    TraceCode::BANK_TRANSFER_IFSC_CODE_MISSING,
+                    [
+                        'imps_ifsc' => $bankTransfer->getPayerIfsc(),
+                    ]);
+            }
         }
 
         return $ifsc;

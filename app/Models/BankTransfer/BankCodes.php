@@ -18,6 +18,7 @@ class BankCodes
     const SCB = 'SCB';
     const SYB = 'SYB';
     const SBI = 'SBI';
+    const YBL = 'YBL';
 
     //
     // In order to faciliate a refund, we need a valid IFSC belonging
@@ -33,6 +34,7 @@ class BankCodes
     const IFSC_SCBL = 'SCBL0036001';
     const IFSC_SYNB = 'SYNB0000005';
     const IFSC_SBIN = 'SBIN0010411';
+    const IFSC_YESB = 'YESB0000001';
 
     const CODE_TO_IFSC_MAPPING = [
         self::AXB => self::IFSC_UTIB,
@@ -45,6 +47,7 @@ class BankCodes
         self::SCB => self::IFSC_SCBL,
         self::SYB => self::IFSC_SYNB,
         self::SBI => self::IFSC_SBIN,
+        self::YBL => self::IFSC_YESB,
     ];
 
     public static function getIfscForBankCode(string $bankCode)
