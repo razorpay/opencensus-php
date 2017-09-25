@@ -6,7 +6,6 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use Razorpay\Trace\Logger as Trace;
 use RZP\Models\VirtualAccount\Provider;
 
 class Service extends Base\Service
@@ -17,6 +16,10 @@ class Service extends Base\Service
     protected $mutex;
     protected $core;
 
+    /**
+     * Service constructor. Sets provider from app auth, and
+     * sets request IP for use in validation of providers.
+     */
     public function __construct()
     {
         parent::__construct();
@@ -30,6 +33,14 @@ class Service extends Base\Service
         $this->ip = $this->app['request']->ip();
     }
 
+    /**
+     * Entry point for Kotak or other providers. Response contains
+     * UTR because it was requested, no idea how it's useful.
+     *
+     * @param array $input
+     *
+     * @return array
+     */
     public function process(array $input): array
     {
         $this->trace->info(
@@ -48,6 +59,14 @@ class Service extends Base\Service
         ];
     }
 
+    /**
+     * Kotak has a second route that it hits to notify us of a bank transfer payment.
+     * It was useful when these APIs were being planned, but serves no real purpose now.
+     *
+     * @param array $input
+     *
+     * @return array
+     */
     public function notify(array $input): array
     {
         $this->trace->info(
@@ -66,6 +85,14 @@ class Service extends Base\Service
         ];
     }
 
+    /**
+     * This is used by the payment_bank_transfer_fetch route. Bank transfer
+     * public entity contains payer bank account info for use by the merchant.
+     *
+     * @param string $paymentId
+     *
+     * @return array
+     */
     public function fetchBankTransferForPayment(string $paymentId)
     {
         $payment = $this->repo
@@ -79,6 +106,11 @@ class Service extends Base\Service
         return $bankTransfer->toArrayPublic();
     }
 
+    /**
+     * An IP check is performed to ensure requests are coming from whitelisted IPs.
+     *
+     * @throws Exception\BadRequestException
+     */
     protected function validateProvider()
     {
         if (Provider::validateIp($this->provider, $this->ip) === false)
