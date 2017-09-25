@@ -127,23 +127,18 @@ class Core extends Base\Core
     {
         $merchant = $this->merchant;
 
-        $isLive = (int) $merchant->isLive();
+        $isLive = ($merchant->isLive() === true) ? "true" : "false";
 
-        $isActivated = (int) $merchant->isActivated();
-
-        $activatedAtEpoch = $merchant->getAttribute(MerchantEntity::ACTIVATED_AT);
-        $activatedAtInIST = ($activatedAtEpoch !== null) ? (Carbon::createFromTimestamp($activatedAtEpoch, Timezone::IST)) : null;
-        $activatedAt      = ($activatedAtInIST !== null) ? ($activatedAtInIST->format('d/m/y h:i:s')) : 'N/A';
+        $isActivated = ($merchant->isActivated() === true) ? "true" : "false";
 
         $merchantDetails = $merchant->merchantDetail;
 
-        $submitted = ($merchantDetails !== null) ? ((int) $merchantDetails->isSubmitted()) : 0;
+        $submitted = (($merchantDetails !== null) and ($merchantDetails->isSubmitted() === true)) ? "true"  : "false";
 
         $data = [
             'id'                         => $merchant->getId(),
             'activated'                  => $isActivated,
-            'activated_at'               => $activatedAt,
-            'merchant_details_submitted' => $submitted,
+            'activation_form_submitted'  => $submitted,
             'live'                       => $isLive,
             'product'                    => $productName
         ];
