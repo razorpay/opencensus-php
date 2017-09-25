@@ -16,6 +16,12 @@ class FailureCodeMap
         ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD => [
             Entity::SOURCE     => Source::BANK,
             Entity::REASON     => RiskCode::PAYMENT_FAILED_DUE_TO_BLOCKED_CARD,
+            Entity::FRAUD_TYPE => Type::SUSPECTED,
+        ],
+
+        ErrorCode::BAD_REQUEST_CARD_STOLEN_OR_LOST => [
+            Entity::SOURCE     => Source::BANK,
+            Entity::REASON     => RiskCode::PAYMENT_FAILED_DUE_TO_STOLEN_CARD,
             Entity::FRAUD_TYPE => Type::CONFIRMED,
         ],
     ];
