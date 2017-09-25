@@ -21,7 +21,7 @@
       @if($options['charge_success'] === true)
         A final payment of <strong>{{$payment['amount']}}</strong> has been made towards your subscription.
       @else
-        A final attempt for a payment of <strong>{{$payment['amount']}}</strong> was made towards your subscription. However, this attempt <strong>failed</strong>.
+        A final charge attempt towards your subscription has <strong>failed</strong>.
       @endif
       The subscription is now completed, and there will be more more charge attempts made on your saved card.
       </td>
@@ -49,6 +49,7 @@
       <td class="right"></td>
     </tr>
     <!-- Payment -->
+    @if($options['charge_success'] === true)
     <tr>
       <td class="left"></td>
       <td class="middle">
@@ -68,6 +69,7 @@
       </td>
       <td class="right"></td>
     </tr>
+    @endif
     <!-- Card -->
     <tr>
       <td class="left"></td>

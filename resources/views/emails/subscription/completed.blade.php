@@ -20,7 +20,7 @@
       @if($options['charge_success'] === true)
         A final payment of <strong>{{$payment['amount']}}</strong> has been made towards your subscription.
       @else
-        A final attempt for a payment of <strong>{{$payment['amount']}}</strong> was made towards your subscription. However, this attempt <strong>failed</strong>.
+        A final charge attempt towards your subscription has <strong>failed</strong>.
       @endif
       The subscription is now completed, and there will be more more charge attempts made on your saved card.
       </td>
@@ -43,7 +43,9 @@
       </td>
       <td class="right" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px; width: 10%; background: #fafafa;"></td>
     </tr>
-<!-- Payment --><tr style="padding: 0; vertical-align: top; text-align: left;">
+<!-- Payment -->
+    @if($options['charge_success'] === true)
+    <tr style="padding: 0; vertical-align: top; text-align: left;">
 <td class="left" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px; width: 10%; background: #fafafa;"></td>
       <td class="middle" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; text-align: left; font-size: 14px; line-height: 19px; width: 80%; padding: 10px 20px; border-left: 1px solid #eaeaea; border-right: 1px solid #eaeaea;">
         <h6 style="color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; padding: 0; margin: 0; text-align: left; line-height: 1.3; word-break: normal; text-transform: uppercase; font-size: 14px; font-weight: bold; margin-bottom: 10px;">Payment Details</h6>
@@ -62,7 +64,9 @@
       </td>
       <td class="right" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px; width: 10%; background: #fafafa;"></td>
     </tr>
-<!-- Card --><tr style="padding: 0; vertical-align: top; text-align: left;">
+    @endif
+    <!-- Card -->
+    <tr style="padding: 0; vertical-align: top; text-align: left;">
 <td class="left" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; line-height: 19px; width: 10%; background: #fafafa;"></td>
       <td class="middle" style="word-break: break-word; -webkit-hyphens: auto; -moz-hyphens: auto; hyphens: auto; border-collapse: collapse !important; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; margin: 0; text-align: left; font-size: 14px; line-height: 19px; width: 80%; padding: 10px 20px; border-left: 1px solid #eaeaea; border-right: 1px solid #eaeaea;">
         <h6 style="color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; padding: 0; margin: 0; text-align: left; line-height: 1.3; word-break: normal; text-transform: uppercase; font-size: 14px; font-weight: bold; margin-bottom: 10px;">Payment Method</h6>
