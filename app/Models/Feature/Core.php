@@ -9,10 +9,14 @@ use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicEntity;
+use RZP\Models\Merchant\SlackActions;
+use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class Core extends Base\Core
 {
+    use NotifyTrait;
+
     /**
      * Create feature
      *
@@ -117,74 +121,33 @@ class Core extends Base\Core
     /**
      * Notifies slack about the new onboarding responses submitted
      *
-     * @param string $featureName
+     * @param string $productName
      */
-    public function notifyOnboardingResponseCreationOnSlack(string $featureName)
+    public function notifyOnboardingResponseCreationOnSlack(string $productName)
     {
-        $newLineChar = "\n";
-
         $merchant = $this->merchant;
 
-        $message = $merchant->getDashboardEntityLinkForSlack();
+        $isLive = (int) $merchant->isLive();
 
-        $message .= ' has submitted responses for activating ' . $featureName . ' ' .$newLineChar;
+        $isActivated = (int) $merchant->isActivated();
 
-        if (((int)$merchant->isActivated()) === 1)
-        {
-            $activatedAtEpoch = $merchant->getAttribute(MerchantEntity::ACTIVATED_AT);
-
-            $activatedAtInIST = Carbon::createFromTimestamp($activatedAtEpoch, Timezone::IST);
-            $activationDate   = $activatedAtInIST->format('d/m/y');
-            $activationTime   = $activatedAtInIST->format('h:i:s');
-
-            $message .= 'The merchant\'s account has been activated ' .
-                ' on ' . $activationDate .
-                ' at ' . $activationTime .
-                ' ' . $newLineChar;
-        }
-        else
-        {
-            $message .= 'The merchant\'s account has not been activated. ' .
-                $newLineChar . $merchant->isActivated();
-        }
-
-        if (((int) $merchant->isLive()) === 1)
-        {
-            $message .= 'The account is live ' . $newLineChar;
-        }
-        else
-        {
-            $message .= 'The account is not live ' . $newLineChar;
-        }
+        $activatedAtEpoch = $merchant->getAttribute(MerchantEntity::ACTIVATED_AT);
+        $activatedAtInIST = ($activatedAtEpoch !== null) ? (Carbon::createFromTimestamp($activatedAtEpoch, Timezone::IST)) : null;
+        $activatedAt      = ($activatedAtInIST !== null) ? ($activatedAtInIST->format('d/m/y h:i:s')) : 'N/A';
 
         $merchantDetails = $merchant->merchantDetail;
 
-        if ($merchantDetails !== null)
-        {
-            $submittedAtEpoch = $merchantDetails->getSubmittedAt();
+        $submitted = ($merchantDetails !== null) ? ((int) $merchantDetails->isSubmitted()) : 0;
 
-            if ($submittedAtEpoch !== null)
-            {
-                $submittedAtEpoch = $merchant->getAttribute(MerchantEntity::ACTIVATED_AT);
+        $data = [
+            'id'                         => $merchant->getId(),
+            'activated'                  => $isActivated,
+            'activated_at'               => $activatedAt,
+            'merchant_details_submitted' => $submitted,
+            'live'                       => $isLive,
+            'product'                    => $productName
+        ];
 
-                $submittedAtInIST = Carbon::createFromTimestamp($submittedAtEpoch, Timezone::IST);
-                $submissionDate   = $submittedAtInIST->format('d/m/y');
-                $submissionTime   = $submittedAtInIST->format('h:i:s');
-
-                $message .= 'The details were submitted' .
-                    ' on ' . $submissionDate .
-                    ' at ' . $submissionTime;
-            }
-        }
-
-        $this->app['slack']->queue(
-            $message,
-            [],
-            [
-                'channel'  => Config::get('slack.channels.activations_prod_log'),
-                'username' => 'Jordan Belfort',
-                'icon'     => ':boom:'
-            ]
-        );
+        $this->logActionToSlack($this->merchant, SlackActions::PRODUCT_ACTIVATION, $data);
     }
 }
