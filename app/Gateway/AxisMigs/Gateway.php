@@ -972,7 +972,7 @@ class Gateway extends Base\Gateway
             // then we need to block the transaction on the international card.
             //
 
-            $acquirerData = $this->getAcquirerData($gatewayPayment);
+            $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
             $authStatus = ThreeDSecureStatus::getThreeDSstatus($threeDSstatus);
 
@@ -1005,16 +1005,6 @@ class Gateway extends Base\Gateway
         }
 
         $this->throwException($apiErrorCode, $txnResponseCode, $message, $threeDSstatus);
-    }
-
-    protected function getAcquirerData($gatewayPayment)
-    {
-        return [
-            'acquirer' => [
-                Payment\Entity::APPROVAL_CODE => $gatewayPayment->getAuthCode(),
-                Payment\Entity::REFERENCE1    => $gatewayPayment->getReceiptNo()
-            ]
-        ];
     }
 
     protected function getCallbackResponseData(array $input, $response = [])

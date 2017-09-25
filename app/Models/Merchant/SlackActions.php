@@ -5,33 +5,34 @@ namespace RZP\Models\Merchant;
 class SlackActions
 {
     // descriptions/messages
-    const FUNDS_HELD             = 'Funds put on hold';
-    const FUNDS_RELEASED         = 'Funds Released';
-    const RISK_RATING_CHANGED    = 'Risk Rating Changed';
-    const EMAIL_EDITED           = 'Email Edited';
-    const BANK_DETAILS_EDITED    = 'Bank Details Edited';
-    const BANK_LIST_EDITED       = 'Bank List Edited';
-    const ADJUSTMENT_ADDED       = 'Adjustment Added';
-    const FORM_LOCKED            = 'Form Locked';
-    const FORM_UNLOCKED          = 'Form Unlocked';
-    const PRICING_PLAN_SET       = 'Pricing Plan Set';
-    const ACTIVATED              = 'Activated';
-    const HDFC_EXCEL             = 'HDFC Excel generated';
-    const LIVE_ENABLED           = 'Live transactions enabled';
-    const LIVE_DISABLED          = 'Live transactions disabled';
-    const ARCHIVED               = 'Archived';
-    const UNARCHIVED             = 'Unarchived';
-    const SUSPENDED              = 'Suspended';
-    const UNSUSPENDED            = 'Unsuspended';
-    const FREE_CREDITS_EDIT      = 'Free Credits Edited';
-    const TAGGED                 = 'Tagged';
-    const CONFIRMED              = 'Confirmed';
-    const ADMIN_EDIT             = 'Admin Edited';
-    const EMAIL_DISABLED         = 'Receipt email disabled';
-    const EMAIL_ENABLED          = 'Receipt email enabled';
-    const INTERNATIONAL_ENABLED  = 'Merchant international enabled';
-    const INTERNATIONAL_DISABLED = 'Merchant international disabled';
-    const ACTIVATION_SUBMITTED   = 'New activation form submitted';
+    const FUNDS_HELD                   = 'Funds put on hold';
+    const FUNDS_RELEASED               = 'Funds Released';
+    const RISK_RATING_CHANGED          = 'Risk Rating Changed';
+    const EMAIL_EDITED                 = 'Email Edited';
+    const BANK_DETAILS_EDITED          = 'Bank Details Edited';
+    const BANK_LIST_EDITED             = 'Bank List Edited';
+    const ADJUSTMENT_ADDED             = 'Adjustment Added';
+    const FORM_LOCKED                  = 'Form Locked';
+    const FORM_UNLOCKED                = 'Form Unlocked';
+    const PRICING_PLAN_SET             = 'Pricing Plan Set';
+    const ACTIVATED                    = 'Activated';
+    const HDFC_EXCEL                   = 'HDFC Excel generated';
+    const LIVE_ENABLED                 = 'Live transactions enabled';
+    const LIVE_DISABLED                = 'Live transactions disabled';
+    const ARCHIVED                     = 'Archived';
+    const UNARCHIVED                   = 'Unarchived';
+    const SUSPENDED                    = 'Suspended';
+    const UNSUSPENDED                  = 'Unsuspended';
+    const FREE_CREDITS_EDIT            = 'Free Credits Edited';
+    const TAGGED                       = 'Tagged';
+    const CONFIRMED                    = 'Confirmed';
+    const ADMIN_EDIT                   = 'Admin Edited';
+    const EMAIL_DISABLED               = 'Receipt email disabled';
+    const EMAIL_ENABLED                = 'Receipt email enabled';
+    const INTERNATIONAL_ENABLED        = 'Merchant international enabled';
+    const INTERNATIONAL_DISABLED       = 'Merchant international disabled';
+    const ACTIVATION_SUBMITTED         = 'New activation form submitted';
+    const PRODUCT_ACTIVATION_SUBMITTED = 'New product activation request submitted';
 
     // code
     const ARCHIVE                = 'archive';
@@ -53,6 +54,7 @@ class SlackActions
     const ENABLE_INTERNATIONAL   = 'enable_international';
     const DISABLE_INTERNATIONAL  = 'disable_international';
     const SUBMIT_ACTIVATION      = 'submit_activation';
+    const PRODUCT_ACTIVATION     = 'product_activation';
 
     public static $actionMsgMap = [
         self::ARCHIVE                => self::ARCHIVED,
@@ -74,5 +76,6 @@ class SlackActions
         self::ENABLE_INTERNATIONAL   => self::INTERNATIONAL_ENABLED,
         self::DISABLE_INTERNATIONAL  => self::INTERNATIONAL_DISABLED,
         self::SUBMIT_ACTIVATION      => self::ACTIVATION_SUBMITTED,
+        self::PRODUCT_ACTIVATION     => self::PRODUCT_ACTIVATION_SUBMITTED
     ];
 }

@@ -74,9 +74,9 @@ class Core extends Base\Core
         return $valid;
     }
 
-    public function refund(array $data, Merchant\Entity $merchant)
+    public function refund(array $data)
     {
-        return (new Refund)->process($data, $merchant);
+        return (new Refund)->process($data);
     }
 
     public function notify(array $input)

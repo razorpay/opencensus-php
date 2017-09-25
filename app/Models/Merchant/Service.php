@@ -29,6 +29,7 @@ use RZP\Models\Admin\Group;
 use RZP\Models\BankAccount;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Webhook;
+use Requests_Response as Response;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Merchant\SlackActions as SlackActions;
@@ -998,7 +999,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function addOrRemoveMerchantFeatures($input)
+    public function addOrRemoveMerchantFeatures(array $input)
     {
         $this->trace->info(
             TraceCode::MERCHANT_FEATURE_UPDATE,
@@ -1006,15 +1007,17 @@ class Service extends Base\Service
 
         $merchant = $this->merchant;
 
+        $shouldSync = (bool) ($input[Feature\Entity::SHOULD_SYNC] ?? false);
+
         $merchant->validateInput('feature', $input);
 
         $featuresToAdd = $this->getFeatureNamesToAdd($input['features']);
 
         $featuresToRemove = $this->getFeatureNamesToRemove($input['features']);
 
-        $this->addFeatures($featuresToAdd);
+        $this->addFeatures($featuresToAdd, $shouldSync);
 
-        $this->removeFeatures($featuresToRemove);
+        $this->removeFeatures($featuresToRemove, $shouldSync);
 
         $data = (new Feature\Service)->getFeaturesForEntity($merchant);
 
@@ -1141,6 +1144,15 @@ class Service extends Base\Service
         return $users;
     }
 
+    public function createBatches(string $merchantId, array $input): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $batches = (new Merchant\Core)->createBatches($merchant, $input);
+
+        return $batches;
+    }
+
     /**
      * Return all submerchants of the master merchant (for aggregator model only)
      *
@@ -1163,8 +1175,12 @@ class Service extends Base\Service
     /**
      * Gets the feature names to be added. A feature needs to be added to merchant
      * only if the value in input is equal to the default value of the feature
+     *
+     * @param array $features
+     *
+     * @return array
      */
-    private function getFeatureNamesToAdd($features)
+    private function getFeatureNamesToAdd(array $features): array
     {
         $featureNames = [];
 
@@ -1187,8 +1203,12 @@ class Service extends Base\Service
     /**
      * Gets the feature names to be removed. A feature needs to be removed from a
      * merchant only if the value in input is opposite of the default value of the feature
+     *
+     * @param array $features
+     *
+     * @return array
      */
-    private function getFeatureNamesToRemove($features)
+    private function getFeatureNamesToRemove(array $features): array
     {
         $featureNames = [];
 
@@ -1208,35 +1228,38 @@ class Service extends Base\Service
         return $featureNames;
     }
 
-    private function addFeatures($featureNames)
+    private function addFeatures(array $featureNames, bool $shouldSync = false)
     {
         $merchant = $this->merchant;
 
         if (count($featureNames) > 0)
         {
             $featureParams = [
-                Feature\Entity::ENTITY_ID => $merchant->getId(),
-                Feature\Entity::ENTITY_TYPE => 'merchant',
-                'names' => $featureNames
+                Feature\Entity::ENTITY_ID    => $merchant->getId(),
+                Feature\Entity::ENTITY_TYPE  => 'merchant',
+                Feature\Entity::NAMES        => $featureNames,
+                Feature\Entity::SHOULD_SYNC  => $shouldSync
             ];
 
             (new Feature\Service)->addFeatures($featureParams);
         }
     }
 
-    private function removeFeatures($featureNames)
+    private function removeFeatures($featureNames, bool $shouldSync = false)
     {
         $merchant = $this->merchant;
+
+        $entityId = $merchant->getId();
 
         foreach ($featureNames as $featureName)
         {
             $feature = $this->repo->feature->findByEntityIdAndNameOrFail(
-                $merchant->getId(),
+                $entityId,
                 $featureName);
 
             if ($feature !== null)
             {
-                $this->repo->feature->delete($feature);
+                $this->repo->feature->deleteAndSyncIfApplicableOrFail($feature, $shouldSync);
             }
         }
     }
@@ -1352,4 +1375,12 @@ class Service extends Base\Service
 
         return $mailer;
     }
+
+    public function fetchAnalytics($input)
+    {
+        (new Core())->validateFilterAttributesAndAddMerchantId($this->merchant->getId(), $input);
+
+        return $this->app['eventManager']->query($input);
+    }
+
 }

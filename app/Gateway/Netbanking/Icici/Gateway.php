@@ -78,7 +78,7 @@ class Gateway extends Base\Gateway
 
         $this->checkCallbackStatus($attrs, $content);
 
-        $acquirerData = $this->getAcquirerData($gatewayPayment);
+        $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
     }
@@ -399,7 +399,7 @@ class Gateway extends Base\Gateway
     {
         if ($this->isCorporateBanking() === true)
         {
-            return  [
+            return [
                 Status::Y,
                 ResponseFields::PAYMENTID,
             ];
@@ -540,6 +540,6 @@ class Gateway extends Base\Gateway
 
     protected function getUrlType()
     {
-        return $this->getBankingType() . '_QUERY' ;
+        return $this->getBankingType() . '_QUERY';
     }
 }

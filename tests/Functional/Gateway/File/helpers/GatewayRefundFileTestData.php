@@ -44,8 +44,6 @@ return [
             'content' => [
                 'type'    => 'refund',
                 'targets' => ['hdfc'],
-                'begin'   => Carbon::today(Timezone::IST)->getTimestamp(),
-                'end'     => Carbon::tomorrow(Timezone::IST)->getTimestamp()
             ],
             'url' => '/gateway/files',
             'method' => 'POST'

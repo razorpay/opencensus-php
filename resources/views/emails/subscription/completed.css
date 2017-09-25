@@ -1,0 +1,95 @@
+table {
+	width: 100%;
+}
+
+thead .left, thead .right {
+	width: 10%;
+	background: #2b5e9b;
+	color: #fff;
+}
+
+tbody .left, tbody .right,
+tfoot .left, tfoot .right {
+	width: 10%;
+	background: #fafafa;
+}
+
+.middle {
+	width: 80%;
+	padding: 10px 20px;
+}
+
+thead .middle.header {
+	background: #2b5e9b;
+	color: #fff;
+	text-align: center;
+	padding: 20px 50px;
+}
+
+thead .middle.header h4,
+thead .middle.header p {
+	color: #fff;
+	text-align: center;
+}
+thead .middle.header p {
+	color: #bccde0;
+}
+
+thead .middle.demarcated {
+	border-bottom: 1px solid #eaeaea;
+	padding: 20px;
+}
+
+thead .left.demarcated,
+thead .right.demarcated {
+	border-bottom: 1px solid #2b5e9b;
+}
+
+tbody h6 {
+	text-transform: uppercase;
+	font-size: 14px;
+	font-weight: bold;
+	margin-bottom: 10px;
+}
+tbody .title {
+
+}
+tbody .sub-title {
+	font-size: 12px;
+	color: #696969;
+}
+tbody .middle {
+	border-left: 1px solid #eaeaea;
+	border-right: 1px solid #eaeaea;
+}
+tbody .b-demarcate .middle {
+	border-bottom: 1px solid #eaeaea;
+}
+
+tfoot .middle {
+	background: #fafafa;
+	padding: 30px 20px 20px;
+}
+tfoot .title,
+tfoot .sub-title {
+	text-align: center;
+}
+tfoot .title {
+	font-size: 13px;
+	color: #8b8b8b;
+}
+tfoot .sub-title {
+	font-size: 12px;
+	color: #989898;
+}
+
+tfoot .b-demarcate .middle {
+	border-bottom: 1px solid #d6d6d6;
+}
+
+tfoot img {
+	width: 100px;
+	display: inline-block;
+	float: none;
+	vertical-align: bottom;
+}

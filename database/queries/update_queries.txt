@@ -706,3 +706,85 @@ UPDATE refunds
 WHERE id='8U7K6IOgt3PVPP';
 
 UPDATE `terminals` SET `network_category`='logistics' WHERE `id`='8MsSwOzxxWnjkv';
+
+UPDATE payments
+    SET reference2 = approval_code
+WHERE approval_code is NOT NULL AND
+    method = 'card' AND
+    authorized_at IS NOT NULL;
+
+UPDATE payments
+    JOIN hdfc ON hdfc.payment_id = payments.id
+    SET payments.reference2 = hdfc.auth
+WHERE hdfc.action = 4 AND
+    hdfc.status = "authorized" AND
+    hdfc.auth IS NOT NULL AND
+    payments.gateway = "hdfc" AND
+    payments.reference2 is NULL;
+
+UPDATE payments
+    JOIN first_data ON first_data.payment_id = payments.id
+    SET payments.reference2 = first_data.auth_code
+WHERE first_data.action = "capture" AND
+    first_data.status = "CAPTURED" AND
+    first_data.transaction_result = "APPROVED" AND
+    first_data.auth_code IS NOT NULL AND
+    payments.gateway = "first_data" AND
+    (payments.reference2 is NULL OR payments.reference2 = "00");
+
+UPDATE payments
+    JOIN axis ON axis.payment_id = payments.id
+    SET payments.reference2 = axis.vpc_AuthorizeId
+WHERE axis.action = "authorize" AND
+    axis.vpc_TxnResponseCode = "0" AND
+    axis.received = 1 AND
+    axis.vpc_AuthorizeId IS NOT NULL AND
+    payments.gateway = "axis_migs" AND
+    payments.reference2 is NULL;
+
+UPDATE payments
+    JOIN cybersource ON cybersource.payment_id = payments.id
+    SET payments.reference2 = cybersource.authorizationCode
+WHERE cybersource.action = "authorize" AND
+    cybersource.status = "authorized" AND
+    cybersource.received = 1 AND
+    cybersource.authorizationCode IS NOT NULL AND
+    payments.gateway = "cybersource" AND
+    payments.reference2 is NULL;
+
+UPDATE payments
+    SET reference1 = null
+WHERE method = "card";
+
+
+# Data fix, ref: https://github.com/razorpay/api/pull/5116
+UPDATE invoices SET type = 'invoice' WHERE id = '8XFQF7kIzFceBI';
+
+UPDATE payments
+    SET reference2 = approval_code
+WHERE merchant_id = "87qTXzFTBLFN7i" AND
+    approval_code is NOT NULL AND
+    method = 'card' AND
+    authorized_at IS NOT NULL;
+
+UPDATE payments
+    JOIN first_data ON first_data.payment_id = payments.id
+    SET payments.reference2 = first_data.auth_code
+WHERE payments.merchant_id = "87qTXzFTBLFN7i" AND
+    first_data.action = "capture" AND
+    first_data.status = "CAPTURED" AND
+    first_data.transaction_result = "APPROVED" AND
+    first_data.auth_code IS NOT NULL AND
+    payments.gateway = "first_data" AND
+    (payments.reference2 is NULL OR payments.reference2 = "00");
+
+UPDATE payments
+    JOIN axis ON axis.payment_id = payments.id
+    SET payments.reference2 = axis.vpc_AuthorizeId
+WHERE payments.merchant_id = "87qTXzFTBLFN7i" AND
+    axis.action = "authorize" AND
+    axis.vpc_TxnResponseCode = "0" AND
+    axis.received = 1 AND
+    axis.vpc_AuthorizeId IS NOT NULL AND
+    payments.gateway = "axis_migs" AND
+    payments.reference2 is NULL;

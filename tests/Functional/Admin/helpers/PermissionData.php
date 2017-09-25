@@ -19,7 +19,7 @@ return [
 
     'testGetMultipleForRazorpayOrg' => [
         'request' => [
-            'url' => '/orgs/%s/permissions',
+            'url' => '/permissions-multiple',
             'method' => 'get',
             'content' => [
             ]
@@ -135,7 +135,7 @@ return [
     ],
     'testGetMultipleWorkflowPermForRazorpayOrg' => [
         'request'   => [
-            'url'       => '/orgs/%s/permissions?type=workflow',
+            'url'       => '/permissions-multiple?type=workflow',
             'method'    => 'GET',
         ],
         'response'  => [

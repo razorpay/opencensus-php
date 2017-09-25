@@ -333,6 +333,22 @@ class Gateway
         }
     }
 
+    protected function getAcquirerData($input, $gatewayPayment)
+    {
+        $acquirer = [];
+
+        switch ($input['payment']['method'])
+        {
+            case Payment\Method::CARD:
+                $acquirer['acquirer'] = [
+                    Payment\Entity::REFERENCE2 => $gatewayPayment->getAuthCode(),
+                ];
+                break;
+        }
+
+        return $acquirer;
+    }
+
     protected function getCallbackResponseData(array $input, $response = [])
     {
         $response[Payment\Entity::TWO_FACTOR_AUTH] = Payment\TwoFactorAuth::PASSED;
@@ -946,6 +962,16 @@ class Gateway
                 'Failed to convert xml to array',
                 ['xml' => $xml],
                 $e);
+        }
+    }
+
+    protected function failIfRequired(array $input)
+    {
+        if ((isset($input['test_success']) === true) and
+            ($input['test_success'] === false))
+        {
+            throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_SUBSCRIPTION_SCHEDULED_FAILURE);
         }
     }
 

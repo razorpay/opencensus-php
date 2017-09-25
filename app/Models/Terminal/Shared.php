@@ -39,6 +39,7 @@ class Shared
     const SHARP_RAZORPAY_TERMINAL           = '1000SharpTrmnl';
     const CYBERSOURCE_HDFC_TERMINAL         = '1000CybrsTrmnl';
     const CYBERSOURCE_AXIS_TERMINAL         = '1000CybAxTrmnl';
+    const HITACHI_TERMINAL                  = '100HitachiTmnl';
     const FIRST_DATA_RAZORPAY_TERMINAL      = '1000FrstDataTl';
     const UPI_MINDGATE_RAZORPAY_TERMINAL    = '100UPIMindgate';
     const UPI_ICICI_RAZORPAY_TERMINAL       = '100UPIICICITml';
@@ -75,6 +76,7 @@ class Shared
         self::SHARP_RAZORPAY_TERMINAL,
         self::CYBERSOURCE_HDFC_TERMINAL,
         self::CYBERSOURCE_AXIS_TERMINAL,
+        self::HITACHI_TERMINAL,
         self::FIRST_DATA_RAZORPAY_TERMINAL,
         self::UPI_MINDGATE_RAZORPAY_TERMINAL,
         self::UPI_ICICI_RAZORPAY_TERMINAL,
@@ -98,6 +100,7 @@ class Shared
         self::EBS_RAZORPAY_TERMINAL             => Gateway::EBS,
         self::CYBERSOURCE_HDFC_TERMINAL         => Gateway::CYBERSOURCE,
         self::HDFC_RAZORPAY_TERMINAL            => Gateway::HDFC,
+        self::HITACHI_TERMINAL                  => Gateway::HITACHI,
         self::MOBIKWIK_RAZORPAY_TERMINAL        => Gateway::MOBIKWIK,
         self::NETBANKING_HDFC_TERMINAL          => Gateway::NETBANKING_HDFC,
         self::NETBANKING_CORPORATION_TERMINAL   => Gateway::NETBANKING_CORPORATION,

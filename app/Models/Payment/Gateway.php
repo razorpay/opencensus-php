@@ -22,6 +22,7 @@ class Gateway
     const BILLDESK               = 'billdesk';
     const BLADE                  = 'blade';
     const CYBERSOURCE            = 'cybersource';
+    const HITACHI                = 'hitachi';
     const EBS                    = 'ebs';
     const FIRST_DATA             = 'first_data';
     const HDFC                   = 'hdfc';
@@ -177,6 +178,7 @@ class Gateway
         self::UPI_ICICI           => Settlement\Channel::KOTAK,
         self::AEPS_ICICI          => Settlement\Channel::KOTAK,
         self::CYBERSOURCE         => Settlement\Channel::KOTAK,
+        self::HITACHI             => Settlement\Channel::KOTAK,
     ];
 
     /**
@@ -196,6 +198,7 @@ class Gateway
             self::CYBERSOURCE,
             self::FIRST_DATA,
             self::BLADE,
+            self::HITACHI,
         ],
 
         Method::NETBANKING => [
@@ -274,6 +277,7 @@ class Gateway
             self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY]
         ],
         self::WALLET_OPENWALLET     => [],
+        self::HITACHI               => [],
     ];
 
     /**
@@ -287,6 +291,7 @@ class Gateway
         self::AXIS_MIGS,
         self::AMEX,
         self::WALLET_OPENWALLET,
+        self::HITACHI,
     ];
 
 
@@ -354,6 +359,9 @@ class Gateway
         self::CYBERSOURCE => [
             Network::MC,
             Network::VISA
+        ],
+        self::HITACHI => [
+            Network::MC,
         ],
         self::FIRST_DATA => [
             Network::MC,
@@ -554,6 +562,7 @@ class Gateway
         IFSC::RATN,
         IFSC::SCBL,
         IFSC::UTIB,
+        IFSC::YESB,
     ];
 
     public static $emiBanksUsingCardTerminals = [
@@ -563,6 +572,7 @@ class Gateway
         IFSC::UTIB,
         IFSC::SCBL,
         IFSC::ICIC,
+        IFSC::YESB,
     ];
 
     public static $emiBankToGatewayMap = [
@@ -656,11 +666,11 @@ class Gateway
     {
         if (self::isValidGateway($gateway) === false)
         {
-            throw new Exception\LogicException(
-                'Unknown gateway',
-                null,
+            throw new Exception\BadRequestValidationFailureException(
+                'Gateway is invalid',
+                'gateway',
                 [
-                    'gateway' => $gateway,
+                    'gateway' => $gateway
                 ]);
         }
     }

@@ -229,6 +229,18 @@ class TransferTest extends TestCase
         });
     }
 
+    public function testPatchTransferOnHoldUntilOnHoldTrue()
+    {
+        $transfer = $this->createTransfer('account');
+
+        $body['on_hold'] = '1';
+
+        $patch = $this->patchTransfer('account', $transfer['id'], $body);
+
+        $this->assertEquals(true, $patch['on_hold']);
+        $this->assertEquals(null, $patch['on_hold_until']);
+    }
+
     public function testRetrieveTransfer()
     {
         $transfer = $this->createTransfer('account');
