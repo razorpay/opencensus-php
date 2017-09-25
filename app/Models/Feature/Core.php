@@ -3,15 +3,12 @@
 namespace RZP\Models\Feature;
 
 use Config;
-use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Constants\Timezone;
 use RZP\Models\Base\PublicEntity;
 use RZP\Models\Merchant\SlackActions;
 use RZP\Models\Merchant\Notify as NotifyTrait;
-use RZP\Models\Merchant\Entity as MerchantEntity;
 
 class Core extends Base\Core
 {
