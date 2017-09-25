@@ -369,7 +369,7 @@ export default class SubscriptionDetailsContainer extends Component {
           (entity.type === 0 || entity.type === 2)
             ? entity.charge_at
             : null,
-          plan.item ? plan.item.amount : 0,
+          plan.item ? plan.item.amount * entity.quantity : 0,
           this.state.addons
         );
 
@@ -396,7 +396,7 @@ export default class SubscriptionDetailsContainer extends Component {
 
           invoiceData = this.getUpcomingInvoiceDetails(
             chargeAt,
-            plan.item.amount,
+            plan.item.amount * entity.quantity,
             this.state.addons
           );
         } else {
