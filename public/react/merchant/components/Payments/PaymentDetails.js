@@ -168,9 +168,9 @@ export default props => {
                   <EntityDetailRow label="Notes">
                     {Object.keys(payment.notes).length
                       ? Object.keys(payment.notes).map((key, index) =>
-                          <Definition key={index}>
+                          <Definition key={index} customClass="notes">
                             {key}
-                            {String(payment.notes[key])}
+                            {String(payment.notes[key] || '--')}
                           </Definition>
                         )
                       : '--'}
