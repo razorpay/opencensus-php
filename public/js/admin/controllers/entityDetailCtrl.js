@@ -678,6 +678,11 @@ app
         id: current.id,
         gateway: current.gateway,
       };
+
+      angular.forEach(current.type, function(type) {
+        $scope.terminal['type[' + type + ']'] = '1';
+      });
+
       $scope.ok = function(terminal) {
         $modalInstance.close(terminal);
       };
