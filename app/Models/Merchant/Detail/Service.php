@@ -12,7 +12,6 @@ use RZP\Models\Merchant\Constants;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Merchant\Detail\ValidationFields;
 use RZP\Models\Merchant\Notify as NotifyTrait;
-use RZP\Models\BankAccount;
 use RZP\Models\Merchant\Action as Action;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 
@@ -22,16 +21,16 @@ class Service extends Base\Service
 
     public function fetchMerchantDetails()
     {
-        $merchantDetails = $this->getMerchantDetails($this->merchant);
+        $merchantDetails = (new Core)->getMerchantDetails($this->merchant);
 
-        return $this->createResponse($merchantDetails);
+        return (new Core)->createResponse($merchantDetails);
     }
 
     public function fetchActivationFiles(string $id)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $merchantDetails = $this->getMerchantDetails($merchant);
+        $merchantDetails = (new Core)->getMerchantDetails($merchant);
 
         $signedUrls = [];
 
@@ -48,73 +47,9 @@ class Service extends Base\Service
         return ['files' => $signedUrls];
     }
 
-    private function getFileFields($merchant) : array
-    {
-        return ($merchant->isLinkedAccount() === true) ? Constants::UPLOAD_KEYS_ACCOUNT : Constants::UPLOAD_KEYS;
-    }
-
-    protected function getSignedUrl(string $fileStoreId, string $merchantId)
-    {
-        $accessor = new FileStore\Accessor;
-
-        $signedUrls = $accessor->id($fileStoreId)
-                               ->merchantId($merchantId)
-                               ->getSignedUrl();
-
-        return $signedUrls[$fileStoreId];
-    }
-
     public function saveMerchantDetails(array $input)
     {
-        $this->trace->info(
-                TraceCode::MERCHANT_SAVE_ACTIVATION_DETAILS,
-                ['input' => $input]);
-
-        $merchantDetails = $this->getMerchantDetails($this->merchant, $input);
-
-        $merchantDetails->getValidator()->validateIsNotLocked();
-
-        $merchantDetails->edit($input);
-
-        return $this->repo->transactionOnLiveAndTest(function() use ($input, $merchantDetails)
-        {
-            $this->repo->saveOrFail($merchantDetails);
-
-            $response = $this->createResponse($merchantDetails);
-
-            $eventAttributes = $this->merchant->toArrayEvent();
-
-            if ($this->canSubmit($input, $response) === true)
-            {
-                $this->markSubmitted($merchantDetails);
-
-                $this->app['eventManager']->trackEvents($this->merchant, Merchant\Action::SUBMITTED, $eventAttributes);
-            }
-
-            $response = $this->createResponse($merchantDetails);
-
-            $autoActivated = $this->autoActivateMerchantIfApplicable($merchantDetails);
-
-            $activationProgress = $response['verification']['activation_progress'];
-
-            $merchantDetails->setActivationProgress($activationProgress);
-
-            $this->repo->saveOrFail($merchantDetails);
-
-            if ($this->canSubmit($input, $response) === true)
-            {
-                (new Core)->fireActivationTrigger($merchantDetails);
-            }
-
-            $response['auto_activated'] = $autoActivated;
-
-            $eventAttributes['activation_progress'] = $activationProgress;
-
-            $this->app['eventManager']
-                 ->trackEvents($this->merchant, Merchant\Action::ACTIVATION_PROGRESS, $eventAttributes);
-
-            return $response;
-        });
+        return (new Core)->saveMerchantDetails($input, $this->merchant);
     }
 
     public function uploadActivationFileAdmin(string $merchantId, array $input)
@@ -143,7 +78,9 @@ class Service extends Base\Service
      */
     public function uploadActivationFile(Merchant\Entity $merchant, array $input, bool $validateLock = true)
     {
-        $merchantDetails = $this->getMerchantDetails($merchant, $input);
+        $core = new Core;
+
+        $merchantDetails = $core->getMerchantDetails($merchant, $input);
 
         if ($validateLock === true)
         {
@@ -173,7 +110,7 @@ class Service extends Base\Service
 
         $merchantDetails->fill($params);
 
-        $response = $this->createResponse($merchantDetails);
+        $response = $core->createResponse($merchantDetails);
 
         $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
 
@@ -207,7 +144,7 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $merchantDetails = $this->getMerchantDetails($merchant);
+        $merchantDetails = (new Core)->getMerchantDetails($merchant);
 
         $merchantDetails->edit($input);
 
@@ -218,74 +155,7 @@ class Service extends Base\Service
             $this->logActionToSlack($merchant, $slackAction);
         }
 
-        return $this->createResponse($merchantDetails);
-    }
-
-    protected function getMerchantDetails(Merchant\Entity $merchant, array $input = [])
-    {
-        $merchantDetails = $merchant->merchantDetail;
-
-        if ($merchantDetails === null)
-        {
-            $this->trace->info(
-                TraceCode::MERCHANT_DETAIL_DOES_NOT_EXIST,
-                [ 'merchant_id'    => $merchant->getId() ]);
-
-            $merchantDetails = $this->createMerchantDetails($merchant, $input);
-        }
-
-        return $merchantDetails;
-    }
-
-    public function createMerchantDetails(Merchant\Entity $merchant, array $input = [])
-    {
-        $merchantDetail = (new Entity)->build($input);
-
-        $merchantDetail->setContactEmail($merchant->getEmail());
-
-        $merchantDetail->merchant()->associate($merchant);
-
-        try
-        {
-            $this->repo->saveOrFail($merchantDetail);
-
-            $this->trace->info(
-                TraceCode::CREATE_MERCHANT_DETAIL,
-                [ 'merchant_id'   => $merchant->getId()]);
-        }
-        catch (\Throwable $e)
-        {
-            $this->trace->traceException(
-                $e,
-                null,
-                TraceCode::CREATE_MERCHANT_DETAIL_FAILED,
-                [
-                    Entity::MERCHANT_ID => $merchant->getId(),
-                ]);
-        }
-
-        return $merchantDetail;
-    }
-
-    protected function canSubmit($input, $response)
-    {
-        return (($response['can_submit'] === true) and
-                (isset($input[Entity::SUBMIT]) === true) and
-                ($input[Entity::SUBMIT] === '1'));
-    }
-
-    protected function markSubmitted($merchantDetails)
-    {
-        $submittedAt = Carbon::now()->getTimestamp();
-
-        $input = [
-            Entity::SUBMITTED     => 1,
-            Entity::SUBMITTED_AT  => $submittedAt
-        ];
-
-        $merchantDetails->fill($input);
-
-        $this->repo->saveOrFail($merchantDetails);
+        return (new Core)->createResponse($merchantDetails);
     }
 
     protected function createFile(Entity $merchantDetail,
@@ -311,82 +181,20 @@ class Service extends Base\Service
         return $file;
     }
 
-    protected function createResponse(Entity $merchantDetails)
+    private function getFileFields(Merchant\Entity $merchant) : array
     {
-        $merchantDetailsArr = $merchantDetails->toArray();
+        return ($merchant->isLinkedAccount() === true) ? Constants::UPLOAD_KEYS_ACCOUNT : Constants::UPLOAD_KEYS;
+    }
 
-        $response = $merchantDetails->toArrayPublic();
+    protected function getSignedUrl(string $fileStoreId, string $merchantId)
+    {
+        $accessor = new FileStore\Accessor;
 
-        $requiredFields = [];
+        $signedUrls = $accessor->id($fileStoreId)
+                               ->merchantId($merchantId)
+                               ->getSignedUrl();
 
-        $validationFields = ValidationFields::DASHBOARD_FIELDS;
-
-        $merchant = $merchantDetails->merchant;
-
-        if ($merchant->isLinkedAccount() === true)
-        {
-            $validationFields = ValidationFields::MARKETPLACE_ACCOUNT_FIELDS;
-
-            $parentMerchant = $merchant->parent;
-
-            //
-            // If the linked account's parent was flagged by admins,
-            // linked accounts need to add additional KYC details and
-            // documents before allowing the merchant to submit the form
-            //
-            if ($parentMerchant->linkedAccountsRequireKyc() === true)
-            {
-                $kycValidationFields = ValidationFields::MARKETPLACE_ACCOUNT_KYC_FIELDS;
-
-                $validationFields = array_merge($validationFields, $kycValidationFields);
-            }
-
-            //
-            // set key `need_kyc` for the client to determine where full KYC is needed
-            // for a linked accounts activation
-            //
-            $response['need_kyc'] = (int) $parentMerchant->linkedAccountsRequireKyc();
-        }
-
-        $totalFields = count($validationFields);
-
-        foreach ($validationFields as $key)
-        {
-            if ((array_key_exists($key, $merchantDetailsArr) === false) or
-                (is_null($merchantDetailsArr[$key]) === true) or
-                ((is_bool($merchantDetailsArr[$key]) !== true) and
-                 (empty($merchantDetailsArr[$key]) === true)))
-            {
-                $requiredFields[] = $key;
-            }
-        }
-
-        if (count($requiredFields) > 0)
-        {
-            $remainingFields = count($requiredFields);
-
-            $response['verification'] = [
-                'status'              => 'disabled',
-                'disabled_reason'     => 'required_fields',
-                'required_fields'     => $requiredFields,
-                'activation_progress' => 100 - intval($remainingFields * 100 / $totalFields),
-            ];
-
-            $response['can_submit'] = false;
-        }
-        else
-        {
-            $response['verification'] = [
-                'status'              => 'pending',
-                'activation_progress' => 100,
-            ];
-
-            $response['can_submit'] = true;
-        }
-
-        $response['activated'] = (int) $merchant->isActivated();
-
-        return $response;
+        return $signedUrls[$fileStoreId];
     }
 
     private function getFieldsToStepMap() : array
@@ -439,36 +247,6 @@ class Service extends Base\Service
         $this->calculateFinishedSteps($merchantDetails);
 
         return $merchantDetails;
-    }
-
-    /**
-     * Checks and auto activates the merchant if possible, after form submission
-     *
-     * @param Entity $merchantDetails
-     *
-     * @return bool
-     */
-    protected function autoActivateMerchantIfApplicable(Entity $merchantDetails): bool
-    {
-        //
-        // Auto-activation is attempted if the following conditions are met
-        //
-        if (($merchantDetails->isSubmitted() === true) and
-            ($this->merchant->isLinkedAccount() === true))
-        {
-            $bankCore = (new BankAccount\Core);
-
-            // Build the input array for the merchant's bank account creation
-            $bankData = $bankCore->buildBankAccountArrayFromMerchantDetail($merchantDetails, true);
-
-            $bankCore->createOrChangeBankAccount($bankData, $this->merchant);
-
-            (new Merchant\Activate)->autoActivate($this->merchant);
-
-            return true;
-        }
-
-        return false;
     }
 
     private function calculateFinishedSteps(array & $merchantDetails)

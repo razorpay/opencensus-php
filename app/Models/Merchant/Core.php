@@ -114,7 +114,7 @@ class Core extends Base\Core
 
         (new Methods\Core)->setDefaultMethods($merchant);
 
-        (new Detail\Service)->createMerchantDetails($merchant);
+        (new Detail\Core)->createMerchantDetails($merchant);
 
         (new ScheduleTask\Core)->createDefaultSettlementSchedule($merchant);
     }
