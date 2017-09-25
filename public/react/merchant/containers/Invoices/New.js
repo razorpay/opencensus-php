@@ -148,7 +148,7 @@ export default class InvoicesNewContainer extends Component {
 
     promises = [
       this.props.fetchCustomersForAutocomplete(),
-      this.props.fetchItemsForAutocomplete(),
+      this.props.fetchItemsForAutocomplete({ type: 'invoice' }),
       ...promises,
     ];
 
