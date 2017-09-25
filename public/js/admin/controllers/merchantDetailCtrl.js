@@ -1543,11 +1543,11 @@ app
         );
         fd.append('body[type]', 'irctc');
         if (files.hasOwnProperty('refund') === true) {
-          fd.append('file[refund]', files.refund);
+          fd.append('file[data][refund]', files.refund);
           fileUploaded = true;
         }
         if (files.hasOwnProperty('settlement') === true) {
-          fd.append('file[settlement]', files.settlement);
+          fd.append('file[data][settlement]', files.settlement);
           fileUploaded = true;
         }
 

@@ -245,7 +245,7 @@ class RawApiRequest
         return $body;
     }
 
-    protected function prepareBodyFromFileInput($fileFieldName, $file)
+    protected function getFileBodyFromFileInput($fileFieldName, $file)
     {
         if ($file instanceof \SplFileInfo)
         {
@@ -264,8 +264,10 @@ class RawApiRequest
             // This is as per guzzle 5, will need to get changed for 6
             $postFile = new PostFile($fileFieldName, fopen($file, 'r'), $fileName);
 
-            $this->params['body'][$fileFieldName] = $postFile;
+            return $postFile;
         }
+
+        return null;
     }
 
     /**
@@ -281,14 +283,13 @@ class RawApiRequest
             // Incase the input contains an array of files
             if (is_array($this->input['file']) === true)
             {
-                $this->params['body'] = $this->parseBody();
-
                 $files = $this->input['file'];
 
-                foreach ($files as $fileFieldName => $file)
-                {
-                    $this->prepareBodyFromFileInput($fileFieldName, $file);
-                }
+                $fileBody = [];
+
+                $this->parseFiles($files, $fileBody);
+
+                $this->params['body'] = array_merge($this->parseBody(), $fileBody);
             }
             else
             {
@@ -300,7 +301,12 @@ class RawApiRequest
                 // This contains the field name to be used for the file field
                 $fileFieldName = $this->input['file_name'];
 
-                $this->prepareBodyFromFileInput($fileFieldName, $file);
+                $postFile = $this->getFileBodyFromFileInput($fileFieldName, $file);
+
+                if (isset($postFile))
+                {
+                    $this->params['body'][$fileFieldName] = $postFile;
+                }
             }
         }
         // We just pass the body as it is
@@ -311,6 +317,24 @@ class RawApiRequest
             $this->params['body'] = $this->input['body'] ?? Input::get('body', '');
 
             $this->setContentType();
+        }
+    }
+
+    protected function parseFiles($files, & $fileBody)
+    {
+        foreach ($files as $key => $val)
+        {
+            if ($val instanceof \SplFileInfo)
+            {
+                $fileBody[$key] = $this->getFileBodyFromFileInput($key, $val);
+            }
+
+            if (is_array($val))
+            {
+                $fileBody[$key] = [];
+
+                $this->parseFiles($val, $fileBody[$key]);
+            }
         }
     }
 
