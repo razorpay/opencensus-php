@@ -169,24 +169,22 @@ export default class SubscriptionDetailsContainer extends Component {
   fetchSubscriptionDetails(id) {
     let { entity, fetchItem, fetchPlan, fetchCustomer } = this.props;
 
-    if (!entity || id !== entity.id) {
-      this.setState({ isLoading: true });
+    this.setState({ isLoading: true });
 
-      fetchItem(id)
-        .then(subscription => {
-          return Promise.all([
-            fetchPlan(subscription.plan_id),
-            fetchCustomer(subscription.customer_id),
-            this.fetchAddOns(subscription.id),
-          ]).then(response => {
-            this.setState({ isLoading: false });
-            this.fetchInvoicesList(id);
-          });
-        })
-        .catch(({ errors }) => {
-          this.setState({ errors, isLoading: false });
+    fetchItem(id)
+      .then(subscription => {
+        return Promise.all([
+          fetchPlan(subscription.plan_id),
+          fetchCustomer(subscription.customer_id),
+          this.fetchAddOns(subscription.id),
+        ]).then(response => {
+          this.setState({ isLoading: false });
+          this.fetchInvoicesList(id);
         });
-    }
+      })
+      .catch(({ errors }) => {
+        this.setState({ errors, isLoading: false });
+      });
   }
 
   goToLink = (itemId, index) => {
