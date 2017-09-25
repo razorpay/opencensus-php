@@ -10,6 +10,9 @@ class CustomerErrorDescription
 
     const BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED                     = '3dsecure or OTP authentication failed';
     const BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD                              = 'Payment declined';
+    const BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD                                    = 'Payment declined';
+    const BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD              = 'Payment declined';
+    const BAD_REQUEST_CARD_STOLEN_OR_LOST                                       = 'Payment declined';
     const BAD_REQUEST_PAYMENT_CARD_INVALID_CVV                                  = 'The CVV provided is incorrect';
     const BAD_REQUEST_PAYMENT_CONTACT_INCORRECT_FORMAT                          = 'Contact number can only contain digits and + symbol';
     const BAD_REQUEST_PAYMENT_CONTACT_INVALID_COUNTRY_CODE                      = 'Country code provided in contact is invalid';
@@ -40,7 +43,6 @@ class CustomerErrorDescription
     const BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                          = 'Payment failed. Please contact site admin';
 
     const BAD_REQUEST_PAYMENT_DECLINED_BY_CLICKING_CANCEL                       = 'Payment cancelled due to clicking the cancel button on 3dSecure page';
-    const BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD                                    = 'Payment declined';
 
     const BAD_REQUEST_SUBSCRIPTION_CUSTOMER_ID_SENT_IN_INPUT                    = 'Payment failed';
     const BAD_REQUEST_SUBSCRIPTION_SAVE_CARD_DISABLED                           = 'Payment failed';
