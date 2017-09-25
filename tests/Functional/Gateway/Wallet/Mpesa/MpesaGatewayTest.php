@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Gateway\Wallet\Mpesa;
 
 use SoapFault;
+use ErrorException;
 use RZP\Tests\Functional\TestCase;
 use RZP\Gateway\Wallet\Mpesa\Action;
 use RZP\Gateway\Wallet\Mpesa\SoapAction;
@@ -315,6 +316,32 @@ class MpesaGatewayTest extends TestCase
             {
                 $this->verifyPayment($payment['id']);
             });
+    }
+
+    public function testSoapSslError()
+    {
+        $this->testAuthPayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->mockSoapSslError();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
+    }
+
+    protected function mockSoapSslError()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            throw new ErrorException('SoapClient::__doRequest(): SSL: Connection reset by peer');
+        });
     }
 
     protected function mockSoapFault($timeout = false)
