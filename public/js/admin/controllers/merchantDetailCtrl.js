@@ -1531,20 +1531,59 @@ app
           }
         });
       };
+      $scope.merchantUploadBatchFiles = function(files) {
+        var fileUploaded = false;
+        var fd = new FormData();
+        fd.append('route_name', 'merchant_batches');
+        fd.append(
+          'url_params',
+          JSON.stringify({
+            '{id}': $scope.merchant.id,
+          })
+        );
+        fd.append('body[type]', 'irctc');
+        if (files.hasOwnProperty('refund') === true) {
+          fd.append('file[refund]', files.refund);
+          fileUploaded = true;
+        }
+        if (files.hasOwnProperty('settlement') === true) {
+          fd.append('file[settlement]', files.settlement);
+          fileUploaded = true;
+        }
+
+        if (fileUploaded === false) {
+          $scope.alerts.addAlert('danger', 'Please upload atleast one file');
+          return false;
+        }
+
+        var request = $http({
+          method: 'post',
+          url: '/admin/generic',
+          headers: {
+            'Content-Type': undefined,
+          },
+          data: fd,
+          transformRequest: angular.identity,
+        });
+        request.success(function(data) {
+          if (data.success) {
+            $scope.alerts.addAlert('success', 'Uploaded Successfully', true);
+          } else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function(value) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        });
+      };
       $scope.openMerchantBatchUpload = function() {
-        var currentId = $scope.merchant.id;
-        $modal.open({
+        var modalInstance = $modal.open({
           templateUrl: 'merchantBatchUploadContent.html',
           controller: 'merchantBatchUploadCtrl',
-          resolve: {
-            current: function() {
-              return currentId;
-            },
-            transformRequestAsFormPost: function() {
-              return transformRequestAsFormPost;
-            },
-          },
         });
+        modalInstance.result.then(function(files) {
+          $scope.merchantUploadBatchFiles(files);
+        }, $.noop);
       };
       $scope.openUploadScreenshot = function() {
         var currentId = $scope.merchant.id;
@@ -2789,74 +2828,14 @@ app
   .controller('merchantBatchUploadCtrl', [
     '$scope',
     '$modalInstance',
-    '$upload',
-    'current',
-    'alertsFactory',
-    '$http',
-    'transformRequestAsFormPost',
-    function(
-      $scope,
-      $modalInstance,
-      $upload,
-      current,
-      alertsFactory,
-      $http,
-      transformRequestAsFormPost
-    ) {
+    function($scope, $modalInstance) {
       $scope.files = {};
-      $scope.merchantId = current;
-      $scope.alerts = alertsFactory.getHandler();
       $scope.onFileSelect = function($files, fileName) {
         var file = $files[0];
         $scope.files[fileName] = file;
       };
       $scope.ok = function() {
-        var fileUploaded = false;
-
-        var fd = new FormData();
-        fd.append('route_name', 'merchant_batches');
-        fd.append(
-          'url_params',
-          JSON.stringify({
-            '{id}': $scope.merchantId,
-          })
-        );
-        if ($scope.files.hasOwnProperty('refund') === true) {
-          fd.append('file[refund]', $scope.files.refund);
-          fileUploaded = true;
-        }
-        if ($scope.files.hasOwnProperty('settlement') === true) {
-          fd.append('file[settlement]', $scope.files.settlement);
-          fileUploaded = true;
-        }
-
-        if (fileUploaded === false) {
-          $scope.alerts.addAlert('danger', 'Please upload atleast one file');
-          return false;
-        }
-        $scope.alerts.addAlert('info', 'Uploading...', true);
-
-        var request = $http({
-          method: 'post',
-          url: '/admin/generic',
-          headers: {
-            'Content-Type': undefined,
-          },
-          data: fd,
-          transformRequest: angular.identity,
-        });
-        request.success(function(data) {
-          if (data.success) {
-            $scope.alerts.addAlert('success', 'Uploaded Successfully', true);
-          } else {
-            $scope.alerts.resetAlerts();
-            angular.forEach(data.errors, function(value) {
-              $scope.alerts.addAlert('danger', value);
-            });
-          }
-        });
-
-        $modalInstance.close();
+        $modalInstance.close($scope.files);
       };
       $scope.cancel = function() {
         $modalInstance.dismiss('cancel');

@@ -222,7 +222,7 @@ class RawApiRequest
      */
     protected function parseBody()
     {
-        $inputBody = Input::get('body', '');
+        $inputBody = $this->input['body'] ?? Input::get('body', '');
 
         if (is_array($inputBody)) {
             return $inputBody;
