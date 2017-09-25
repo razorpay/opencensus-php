@@ -34,6 +34,7 @@ class Type
      */
     public static $queueGroup = [
         self::PAYMENT_LINK,
+        self::LINKED_ACCOUNT,
     ];
 
     public static function exists(string $type)

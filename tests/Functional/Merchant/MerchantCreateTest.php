@@ -257,6 +257,11 @@ class MerchantCreateTest extends TestCase
         $this->ba->proxyAuth();
 
         $response = $this->startTest();
+
+        // Gets last entity (Post queue processing) and asserts attributes
+        $entities = $this->getLastEntity('batch', true);
+        $this->assertEquals(4, $entities['success_count']);
+        $this->assertEquals(0, $entities['failure_count']);
     }
 
     protected function startTest($testDataToReplace = [])
