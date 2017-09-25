@@ -236,8 +236,7 @@ class Validator extends Base\Validator
     public function createPlanValidate($input)
     {
         // If no plan name, then set it to null
-        $planInput[Entity::PLAN_NAME] =
-            (isset($input[Entity::PLAN_NAME])) ? $input[Entity::PLAN_NAME] : null;
+        $planInput[Entity::PLAN_NAME] = $input[Entity::PLAN_NAME] ?? null;
 
         $this->validateInput('createPlan', $planInput);
 
