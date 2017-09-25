@@ -353,6 +353,10 @@ app.controller('EntitiesCtrl', [
         customer_email: ['Customer Email'],
         customer_contact: ['Customer Contact'],
       },
+      item: {
+        type: ['Type'],
+        merchant_id: ['Merchant Id'],
+      },
       key: {
         merchant_id: ['Merchant Id'],
       },
