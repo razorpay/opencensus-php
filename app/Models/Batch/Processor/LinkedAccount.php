@@ -17,9 +17,16 @@ class LinkedAccount extends Base
 
         $detailInput = Helper::getAccountDetailInput($entry);
 
-        (new MerchantDetail\Service)->saveMerchantDetails($detailInput);
+        $response = (new MerchantDetail\Core)->saveMerchantDetails($detailInput, $account);
 
         // Append account ID to output fields
+        $entry[Header::STATUS]     = $response['auto_activated'];
         $entry[Header::ACCOUNT_ID] = Merchant\AccountEntity::getSignedId($account->getId());
+    }
+
+    protected function sendProcessedMail()
+    {
+        // Don't send an email
+        return;
     }
 }
