@@ -245,23 +245,10 @@ class RawApiRequest
         return $body;
     }
 
-    /**
-     * Sets the body and content type of the request as
-     * per the guzzle input format
-     * @return null
-     */
-    protected function prepareRequest()
+    protected function prepareBodyFromFileInput($fileFieldName, $file)
     {
-        // If we need to add the file to the body
-        if ($this->input['file'] instanceof \SplFileInfo)
+        if ($file instanceof \SplFileInfo)
         {
-            $file = $this->input['file'];
-
-            $this->params['body'] = $this->parseBody();
-
-            // Now that we have added all POST params, we add the file itself
-            // This contains the field name to be used for the file field
-            $fileFieldName = $this->input['file_name'];
             // This contains the original file name with extension
             $fileName = $file->getClientOriginalName();
 
@@ -279,12 +266,48 @@ class RawApiRequest
 
             $this->params['body'][$fileFieldName] = $postFile;
         }
+    }
+
+    /**
+     * Sets the body and content type of the request as
+     * per the guzzle input format
+     * @return null
+     */
+    protected function prepareRequest()
+    {
+        // If we need to add the file to the body
+        if (is_array($this->input['file']) === true or $this->input['file'] instanceof \SplFileInfo)
+        {
+            // Incase the input contains an array of files
+            if (is_array($this->input['file']) === true)
+            {
+                $this->params['body'] = $this->parseBody();
+
+                $files = $this->input['file'];
+
+                foreach ($files as $fileFieldName => $file)
+                {
+                    $this->prepareBodyFromFileInput($fileFieldName, $file);
+                }
+            }
+            else
+            {
+                $file = $this->input['file'];
+
+                $this->params['body'] = $this->parseBody();
+
+                // Now that we have added all POST params, we add the file itself
+                // This contains the field name to be used for the file field
+                $fileFieldName = $this->input['file_name'];
+
+                $this->prepareBodyFromFileInput($fileFieldName, $file);
+            }
+        }
         // We just pass the body as it is
         else
         {
             // Setting the body before the content type is important.
             // Why? Check setContentType function
-
             $this->params['body'] = $this->input['body'] ?? Input::get('body', '');
 
             $this->setContentType();

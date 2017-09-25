@@ -1540,6 +1540,9 @@ app
             current: function() {
               return currentId;
             },
+            transformRequestAsFormPost: function() {
+              return transformRequestAsFormPost;
+            },
           },
         });
       };
@@ -2790,47 +2793,69 @@ app
     'current',
     'alertsFactory',
     '$http',
-    function($scope, $modalInstance, $upload, current, alertsFactory, $http) {
+    'transformRequestAsFormPost',
+    function(
+      $scope,
+      $modalInstance,
+      $upload,
+      current,
+      alertsFactory,
+      $http,
+      transformRequestAsFormPost
+    ) {
+      $scope.files = {};
       $scope.merchantId = current;
       $scope.alerts = alertsFactory.getHandler();
       $scope.onFileSelect = function($files, fileName) {
         var file = $files[0];
-        $scope.alerts.addAlert('info', 'Uploading...', true);
-
-        var data = {
-          route_name: 'merchant_batches',
-          url_params: {
-            '{id}': $scope.merchantId,
-          },
-          file_name: fileName,
-        };
-
-        var request = $upload.upload({
-          url: '/admin/generic',
-          method: 'post',
-          data: data,
-          file: file,
-        });
-        request
-          .success(function(data) {
-            if (data.success) {
-              $scope.alerts.addAlert(
-                'success',
-                'File Uploaded Successfully',
-                true
-              );
-            } else {
-              $scope.alerts.resetAlerts();
-              angular.forEach(data.errors, function(value) {
-                $scope.alerts.addAlert('danger', value);
-              });
-            }
-          })
-          .error(function() {
-            $scope.alerts.addAlert('danger', 'File upload failed.', true);
-          });
+        $scope.files[fileName] = file;
       };
       $scope.ok = function() {
+        var fileUploaded = false;
+
+        var fd = new FormData();
+        fd.append('route_name', 'merchant_batches');
+        fd.append(
+          'url_params',
+          JSON.stringify({
+            '{id}': $scope.merchantId,
+          })
+        );
+        if ($scope.files.hasOwnProperty('refund') === true) {
+          fd.append('file[refund]', $scope.files.refund);
+          fileUploaded = true;
+        }
+        if ($scope.files.hasOwnProperty('settlement') === true) {
+          fd.append('file[settlement]', $scope.files.settlement);
+          fileUploaded = true;
+        }
+
+        if (fileUploaded === false) {
+          $scope.alerts.addAlert('danger', 'Please upload atleast one file');
+          return false;
+        }
+        $scope.alerts.addAlert('info', 'Uploading...', true);
+
+        var request = $http({
+          method: 'post',
+          url: '/admin/generic',
+          headers: {
+            'Content-Type': undefined,
+          },
+          data: fd,
+          transformRequest: angular.identity,
+        });
+        request.success(function(data) {
+          if (data.success) {
+            $scope.alerts.addAlert('success', 'Uploaded Successfully', true);
+          } else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function(value) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        });
+
         $modalInstance.close();
       };
       $scope.cancel = function() {
