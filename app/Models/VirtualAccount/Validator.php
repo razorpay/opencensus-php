@@ -2,6 +2,8 @@
 
 namespace RZP\Models\VirtualAccount;
 
+use App;
+
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -10,7 +12,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::NAME            => 'sometimes|filled|string|max:40',
-        Entity::DESCRIPTOR      => 'sometimes|nullable|alpha_num|max:10',
+        Entity::DESCRIPTOR      => 'sometimes|nullable|alpha_num|custom',
         Entity::AMOUNT_EXPECTED => 'sometimes|filled|integer|min:0',
         Entity::DESCRIPTION     => 'sometimes|nullable|string|max:2048',
         Entity::CUSTOMER_ID     => 'sometimes|filled|public_id|size:19',
@@ -28,6 +30,29 @@ class Validator extends Base\Validator
     protected static $createValidators = [
         Entity::RECEIVER_TYPES
     ];
+
+    protected function validateDescriptor($attribute, $descriptor)
+    {
+        $app = App::getFacadeRoot();
+
+        $merchant = $app['basicauth']->getMerchant();
+
+        $descriptorLength = strlen($descriptor);
+
+        $handleLength = strlen($merchant->getHandle());
+
+        $rootLength = Receiver::ROOT_LENGTH;
+
+        if (($descriptorLength + $handleLength + $rootLength) > Receiver::ACCOUNT_NUMBER_LENGTH)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_VIRTUAL_ACCOUNT_INVALID_DESCRIPTOR_LENGTH,
+                'descriptor',
+                [
+                    'descriptor' => $descriptor,
+                ]);
+        }
+    }
 
     protected function validateReceiverTypes(array $input)
     {

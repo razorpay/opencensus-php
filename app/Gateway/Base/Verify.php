@@ -6,6 +6,9 @@ class Verify
 {
     public $input;
 
+    /**
+     * @var Entity
+     */
     public $payment;
 
     /**
@@ -30,6 +33,10 @@ class Verify
     public $gatewaySuccess = null;
 
     public $throwExceptionOnMismatch = true;
+
+    public $amountMismatch = false;
+
+    public $match;
 
     public function __construct($gateway, array $input)
     {
@@ -71,6 +78,7 @@ class Verify
             'status'                    => $this->status,
             'gateway'                   => $this->gateway,
             'verifyResponseContent'     => $this->verifyResponseContent,
+            'amountMismatch'            => $this->amountMismatch,
             'apiSuccess'                => $this->apiSuccess,
             'verifyRequest'             => $this->verifyRequest,
             'gatewaySuccess'            => $this->gatewaySuccess,

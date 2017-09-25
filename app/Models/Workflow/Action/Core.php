@@ -10,7 +10,7 @@ use RZP\Models\Workflow\Step;
 use RZP\Models\Workflow\Action\State;
 use RZP\Models\Workflow\Action\Differ;
 use RZP\Models\Workflow\Action\Checker;
-use RZP\Models\Base\PublicEntity;
+use RZP\Constants\Mode;
 
 use RZP\Models\Admin\Org;
 use RZP\Models\Workflow;
@@ -511,6 +511,20 @@ class Core extends Base\Core
         {
             $state = State\Entity::FAILED;
         }
+
+        // The connection is being reset in here because after executing the App::call
+        // If the connection is still set to test then this will fail cause workflow exists only in live mode.
+        if ($this->app->environment('testing') === false)
+        {
+            $mode = Mode::LIVE;
+        }
+        else
+        {
+            $mode = Mode::TEST;
+        }
+
+        // Resetting connection so that workflow updates will not fail for test modes.
+        \Database\DefaultConnection::set($mode);
 
         $adminId = $this->app['basicauth']->getAdmin()->getId();
 

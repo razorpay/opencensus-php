@@ -7,8 +7,12 @@ use Mail;
 use Config;
 use Carbon\Carbon;
 
+use Razorpay\OAuth\Token as OAuthToken;
+use Razorpay\OAuth\Client as OAuthClient;
+
 use RZP\Exception;
 use RZP\Models\Key;
+use RZP\Models\User;
 use RZP\Models\Base;
 use RZP\Models\Offer;
 use RZP\Models\Coupon;
@@ -25,6 +29,7 @@ use RZP\Models\Admin\Group;
 use RZP\Models\BankAccount;
 use RZP\Base\RuntimeManager;
 use RZP\Models\Merchant\Webhook;
+use Requests_Response as Response;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Schedule\Task as ScheduleTask;
 use RZP\Models\Merchant\SlackActions as SlackActions;
@@ -35,6 +40,7 @@ class Service extends Base\Service
     use Notify;
 
     const COUPON_RESPONSE = 'apply_coupon';
+    const OAUTH_MAIL      = 'oauth_mail';
 
     /**
      * Creates a merchant and saves in database
@@ -993,7 +999,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function addOrRemoveMerchantFeatures($input)
+    public function addOrRemoveMerchantFeatures(array $input)
     {
         $this->trace->info(
             TraceCode::MERCHANT_FEATURE_UPDATE,
@@ -1001,15 +1007,17 @@ class Service extends Base\Service
 
         $merchant = $this->merchant;
 
+        $shouldSync = (bool) ($input[Feature\Entity::SHOULD_SYNC] ?? false);
+
         $merchant->validateInput('feature', $input);
 
         $featuresToAdd = $this->getFeatureNamesToAdd($input['features']);
 
         $featuresToRemove = $this->getFeatureNamesToRemove($input['features']);
 
-        $this->addFeatures($featuresToAdd);
+        $this->addFeatures($featuresToAdd, $shouldSync);
 
-        $this->removeFeatures($featuresToRemove);
+        $this->removeFeatures($featuresToRemove, $shouldSync);
 
         $data = (new Feature\Service)->getFeaturesForEntity($merchant);
 
@@ -1136,6 +1144,15 @@ class Service extends Base\Service
         return $users;
     }
 
+    public function createBatches(string $merchantId, array $input): array
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $batches = (new Merchant\Core)->createBatches($merchant, $input);
+
+        return $batches;
+    }
+
     /**
      * Return all submerchants of the master merchant (for aggregator model only)
      *
@@ -1158,8 +1175,12 @@ class Service extends Base\Service
     /**
      * Gets the feature names to be added. A feature needs to be added to merchant
      * only if the value in input is equal to the default value of the feature
+     *
+     * @param array $features
+     *
+     * @return array
      */
-    private function getFeatureNamesToAdd($features)
+    private function getFeatureNamesToAdd(array $features): array
     {
         $featureNames = [];
 
@@ -1182,8 +1203,12 @@ class Service extends Base\Service
     /**
      * Gets the feature names to be removed. A feature needs to be removed from a
      * merchant only if the value in input is opposite of the default value of the feature
+     *
+     * @param array $features
+     *
+     * @return array
      */
-    private function getFeatureNamesToRemove($features)
+    private function getFeatureNamesToRemove(array $features): array
     {
         $featureNames = [];
 
@@ -1203,35 +1228,38 @@ class Service extends Base\Service
         return $featureNames;
     }
 
-    private function addFeatures($featureNames)
+    private function addFeatures(array $featureNames, bool $shouldSync = false)
     {
         $merchant = $this->merchant;
 
         if (count($featureNames) > 0)
         {
             $featureParams = [
-                Feature\Entity::ENTITY_ID => $merchant->getId(),
-                Feature\Entity::ENTITY_TYPE => 'merchant',
-                'names' => $featureNames
+                Feature\Entity::ENTITY_ID    => $merchant->getId(),
+                Feature\Entity::ENTITY_TYPE  => 'merchant',
+                Feature\Entity::NAMES        => $featureNames,
+                Feature\Entity::SHOULD_SYNC  => $shouldSync
             ];
 
             (new Feature\Service)->addFeatures($featureParams);
         }
     }
 
-    private function removeFeatures($featureNames)
+    private function removeFeatures($featureNames, bool $shouldSync = false)
     {
         $merchant = $this->merchant;
+
+        $entityId = $merchant->getId();
 
         foreach ($featureNames as $featureName)
         {
             $feature = $this->repo->feature->findByEntityIdAndNameOrFail(
-                $merchant->getId(),
+                $entityId,
                 $featureName);
 
             if ($feature !== null)
             {
-                $this->repo->feature->delete($feature);
+                $this->repo->feature->deleteAndSyncIfApplicableOrFail($feature, $shouldSync);
             }
         }
     }
@@ -1264,7 +1292,6 @@ class Service extends Base\Service
 
         return $data;
     }
-
     /**
      * Will provide if merchant is confirmed or not.
      *
@@ -1288,4 +1315,72 @@ class Service extends Base\Service
             return !empty($owner);
         }
     }
+
+    /**
+     * Sends a mail to the merchant when an action is taken
+     * on oauth access to his account
+     *
+     * @param array  $input
+     * @param string $type
+     *
+     * @return array
+     * @throws Exception\BadRequestException
+     */
+    public function sendOAuthMail(array $input, string $type): array
+    {
+        $this->trace->info(TraceCode::SEND_OAUTH_MAIL_REQUEST, ['type' => $type, 'input' => $input]);
+
+        (new Merchant\Validator)->validateInput(self::OAUTH_MAIL, $input);
+
+        $merchant = $this->repo->merchant->findOrFail($input[Entity::MERCHANT_ID]);
+        $user     = $this->repo->user->findOrFail($input[User\Entity::USER_ID]);
+        $client   = (new OAuthClient\Repository)->findOrFail($input[OAuthToken\Entity::CLIENT_ID]);
+
+        $mailer = $this->getOAuthMailerClassByType($type);
+
+        $data = [
+            'merchant'    => $merchant->toArrayPublic(),
+            'user'        => $user->toArrayPublic(),
+            'application' => $client->application->toArrayPublic(),
+        ];
+
+        Mail::queue((new $mailer($data)));
+
+        return ['success' => true];
+    }
+
+    /**
+     * Returns OAuth mailer class name by event type. Also validates that
+     * the same exists. If not throws a bad request exception.
+     *
+     * @param string $type
+     *
+     * @return string
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function getOAuthMailerClassByType(string $type): string
+    {
+        $mailer = 'RZP\\Mail\\OAuth\\' . studly_case($type);
+
+        if (class_exists($mailer) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_OAUTH_MAIL_TYPE,
+                null,
+                [
+                    'type' => $type,
+                ]);
+        }
+
+        return $mailer;
+    }
+
+    public function fetchAnalytics($input)
+    {
+        (new Core())->validateFilterAttributesAndAddMerchantId($this->merchant->getId(), $input);
+
+        return $this->app['eventManager']->query($input);
+    }
+
 }

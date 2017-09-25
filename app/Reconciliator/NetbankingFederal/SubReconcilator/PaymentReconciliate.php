@@ -25,6 +25,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     {
         if (empty($row[self::COLUMN_PAYMENT_REF_NO]) === false)
         {
+            if (strpos($row[self::COLUMN_PAYMENT_REF_NO], '.') !== false)
+            {
+                return explode('.', $row[self::COLUMN_PAYMENT_REF_NO])[0];
+            }
+
             return $row[self::COLUMN_PAYMENT_REF_NO];
         }
 

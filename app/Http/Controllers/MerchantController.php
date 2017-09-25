@@ -500,6 +500,17 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getIrctcRefundReport()
+    {
+        $input = Request::all();
+
+        $report = new Report\Types\IrctcRefundReport(E::REFUND);
+
+        $data = $report->getReport($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getInvoiceReport()
     {
         $input = Request::all();
@@ -763,9 +774,35 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function postAnalytics()
+    {
+        $input = Request::all();
+
+        $response = $this->service()->fetchAnalytics($input);
+
+        return ApiResponse::json($response);
+    }
+
     public function getMerchantDetails()
     {
         $response = $this->service()->getMerchantDetails();
+
+        return ApiResponse::json($response);
+    }
+
+    /**
+     * Sends OAuth notification mails. This route is called by auth service.
+     *
+     * @param string $type - Type of event, e.g. app_authorized (When merchant
+     *                       authorizes an application we send the merchant a mail)
+     *
+     * @return ApiResponse
+     */
+    public function sendOAuthNotification(string $type)
+    {
+        $input = Request::all();
+
+        $response = (new Merchant\Service)->sendOAuthMail($input, $type);
 
         return ApiResponse::json($response);
     }
@@ -775,5 +812,14 @@ class MerchantController extends Controller
         $data = $this->service(Entity::GATEWAY_DOWNTIME)->getDowntimeDataForMerchant();
 
         return ApiResponse::json($data);
+    }
+
+    public function createBatches($id)
+    {
+        $input = Request::all();
+
+        $response = (new Merchant\Service)->createBatches($id, $input);
+
+        return ApiResponse::json($response);
     }
 }

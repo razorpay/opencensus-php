@@ -55,6 +55,11 @@ trait Refund
         $this->createRefundOnApiSeparately($payment, $refundId, $refundAmount);
     }
 
+    public function createRefundFromMerchantFile(Payment\Entity $payment, array $input, Batch\Entity $batch = null)
+    {
+        return $this->refund($payment, $input, $batch);
+    }
+
     public function createRefundOnApiForCancelledBilldeskRefund(
         Payment\Entity $payment,
         string $refundId,
@@ -1112,7 +1117,7 @@ trait Refund
 
         try
         {
-            (new BankTransfer\Core)->refund($data, $this->merchant);
+            (new BankTransfer\Core)->refund($data);
 
             $this->refund->setStatus(Payment\Refund\Status::CREATED);
 

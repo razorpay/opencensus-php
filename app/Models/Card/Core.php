@@ -48,7 +48,13 @@ class Core extends Base\Core
 
     public function createAndReturnWithSensitiveData(array $input, Merchant\Entity $merchant): array
     {
+        //
+        // We are running modifiers outside the build() because
+        // modifiers only change the input under the scope of build.
+        // As `$input` is not passed by reference to build().
+        //
         Card\Entity::modifyNumber($input);
+        Card\Entity::modifyMaestro($input);
 
         $card = null;
 
@@ -77,11 +83,11 @@ class Core extends Base\Core
     public function createDuplicateCard($input, $merchant)
     {
         $createInput = array(
-            Entity::NUMBER          =>  $input[Entity::NUMBER],
-            Entity::EXPIRY_MONTH    =>  $input[Entity::EXPIRY_MONTH],
-            Entity::EXPIRY_YEAR     =>  $input[Entity::EXPIRY_YEAR],
-            Entity::CVV             =>  $input[Entity::CVV],
-            Entity::NAME            =>  $input[Entity::NAME],
+            Entity::NUMBER          => $input[Entity::NUMBER],
+            Entity::EXPIRY_MONTH    => $input[Entity::EXPIRY_MONTH],
+            Entity::EXPIRY_YEAR     => $input[Entity::EXPIRY_YEAR],
+            Entity::CVV             => $input[Entity::CVV],
+            Entity::NAME            => $input[Entity::NAME],
         );
 
         $card = $this->create($createInput, $merchant);
@@ -181,7 +187,7 @@ class Core extends Base\Core
         // we might need to do a similar thing when we start with
         // global charge at will recurring.
         //
-        if (($this->app['basicauth']->isPrivilegeAuth() === true) and
+        if (($this->app['basicauth']->isProxyOrPrivilegeAuth() === true) and
             (isset($input['cvv']) === false))
         {
             return;

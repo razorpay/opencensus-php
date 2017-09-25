@@ -43,6 +43,8 @@ class Constants
     const EMI_MERCHANT_SUBVENTION  = 'emi_merchant_subvention';
     const FSS_RISK_UDF             = 'fss_risk_udf';
     const RULE_FILTER              = 'rule_filter';
+    const TPV                      = 'tpv';
+    const IRCTC_REPORT             = 'irctc_report';
 
     // TODO: Use this instead of allFeatures once in final code change pr
     public static $featureValueMap = [
@@ -83,16 +85,189 @@ class Constants
         self::EMI_MERCHANT_SUBVENTION  => true,
         self::FSS_RISK_UDF             => true,
         self::RULE_FILTER              => true,
+        self::TPV                      => true,
+        self::IRCTC_REPORT             => true,
     ];
 
+    // Keys used in the feature onbaording workflow
+    const ONBOARDING = 'onboarding';
+    const FEATURES   = 'features';
+    const MERCHANT   = 'merchant';
+
+    // Keys used to define the question names in the onboarding process
+    const BUSINESS_MODEL           = 'business_model';
+    const EXPECTED_MONTHLY_REVENUE = 'expected_monthly_revenue';
+    const SETTLING_TO              = 'settling_to';
+    const VENDOR_AGREEMENT         = 'vendor_agreement';
+    const SAMPLE_PLANS             = 'sample_plans';
+    const USE_CASE                 = 'use_case';
+    const WEBSITE_DETAILS          = 'website_details';
+
+    // Keys that will describe the above-mentioned quesions
+    const ID                  = 'id';
+    const QUESTION            = 'question';
+    const DESCRIPTION         = 'description';
+    const RESPONSE_TYPE       = 'response_type';
+    const AVAILABLE_RESPONSES = 'available_responses';
+    const MANDATORY           = 'mandatory';
+
+
+    /**
+     * Features that are exposed to the merchant and can be
+     * enabled/disabled
+     *
+     * @var array
+     */
     public static $visibleFeaturesMap = [
-        'noflashcheckout' => [
+        self::NOFLASHCHECKOUT  => [
             'feature'      => self::NOFLASHCHECKOUT,
             'display_name' => 'No Flash Checkout'
+        ],
+        self::MARKETPLACE      => [
+            'feature'      => self::MARKETPLACE,
+            'display_name' => 'Marketplace'
+        ],
+        self::SUBSCRIPTIONS    => [
+            'feature'      => self::SUBSCRIPTIONS,
+            'display_name' => 'Subscriptions'
+        ],
+        self::VIRTUAL_ACCOUNTS => [
+            'feature'      => self::VIRTUAL_ACCOUNTS,
+            'display_name' => 'Virtual accounts'
+        ],
+    ];
+
+    /**
+     * Lists features that can be enabled/disabled on test mode by the merchant
+     * but not on live
+     *
+     * @var array
+     */
+    public static $featuresUneditableOnLive = [
+        self::MARKETPLACE,
+        self::SUBSCRIPTIONS,
+        self::VIRTUAL_ACCOUNTS
+    ];
+
+    /**
+     * Note: If the RESPONSE_TYPE is file, then,
+     * a corresponding entry should be made in the class 'Models/Filestore/Type'
+     */
+
+    /**
+     * Stores the details for each question irrespective of the feature that it belongs to.
+     * TODO: These constants can be moved into separate constants file for questions
+     */
+    public static $questionMap = [
+        self::USE_CASE => [
+            self::QUESTION            => 'What is your use case?',
+            self::DESCRIPTION         => '',
+            self::RESPONSE_TYPE       => 'textarea',
+            self::AVAILABLE_RESPONSES => [],
+            self::MANDATORY           => true
+        ],
+
+        self::SETTLING_TO => [
+            self::QUESTION            => 'Who are you settling to?',
+            self::DESCRIPTION         => '',
+            self::RESPONSE_TYPE       => 'radio',
+            self::AVAILABLE_RESPONSES => [
+                'Third party businesses',
+                'Own bank accounts',
+                'Individuals'
+            ],
+            self::MANDATORY           => true
+        ],
+
+        self::VENDOR_AGREEMENT => [
+            self::QUESTION            => 'Please upload a copy of a signed agreement with the third party',
+            self::DESCRIPTION         => '',
+            self::RESPONSE_TYPE       => 'file',
+            self::AVAILABLE_RESPONSES => [],
+            self::MANDATORY           => false
+        ],
+
+        self::BUSINESS_MODEL => [
+            self::QUESTION            => 'What is your business model and requirement?',
+            self::DESCRIPTION         => '',
+            self::RESPONSE_TYPE       => 'textarea',
+            self::AVAILABLE_RESPONSES => [],
+            self::MANDATORY           => true
+        ],
+
+        self::SAMPLE_PLANS => [
+            self::QUESTION            => 'Sample plans',
+            self::DESCRIPTION         => '',
+            self::RESPONSE_TYPE       => 'textarea',
+            self::AVAILABLE_RESPONSES => [],
+            self::MANDATORY           => true
+        ],
+
+        self::WEBSITE_DETAILS => [
+            self::QUESTION            => 'Is website live? If yes, link to the page with more details',
+            self::DESCRIPTION         => '',
+            self::RESPONSE_TYPE       => 'text',
+            self::AVAILABLE_RESPONSES => [],
+            self::MANDATORY           => true
+        ],
+
+        self::EXPECTED_MONTHLY_REVENUE => [
+            self::QUESTION            => 'Expected monthly revenue using this feature?',
+            self::DESCRIPTION         => '',
+            self::RESPONSE_TYPE       => 'number',
+            self::AVAILABLE_RESPONSES => [],
+            self::MANDATORY           => true
         ]
     ];
 
-    public static function getFeatureValue($featureName)
+    /**
+     * Stores the mapping of the features to their corresponding questions
+     */
+    public static $featureQuestionsMap = [
+        self::MARKETPLACE => [
+            self::USE_CASE,
+            self::SETTLING_TO,
+            self::VENDOR_AGREEMENT
+        ],
+
+        self::SUBSCRIPTIONS => [
+            self::BUSINESS_MODEL,
+            self::SAMPLE_PLANS,
+            self::WEBSITE_DETAILS
+        ],
+
+        self::VIRTUAL_ACCOUNTS => [
+            self::USE_CASE,
+            self::EXPECTED_MONTHLY_REVENUE
+        ]
+    ];
+
+    /**
+     * Returns a nested structure of the questions for the feature param passed along
+     * with all the details for each question
+     *
+     * @param string $featureName
+     *
+     * @return array
+     */
+    public static function getFeatureQuestions(string $featureName): array
+    {
+        $response = [];
+
+        if (key_exists($featureName, self::$featureQuestionsMap))
+        {
+            $questions = self::$featureQuestionsMap[$featureName];
+
+            foreach ($questions as $question)
+            {
+                $response[$question] = self::$questionMap[$question];
+            }
+        }
+
+        return $response;
+    }
+
+    public static function getFeatureValue($featureName): bool
     {
         return self::$featureValueMap[$featureName];
     }

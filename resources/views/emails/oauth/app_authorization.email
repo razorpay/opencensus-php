@@ -1,0 +1,79 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width"/>
+  </head>
+  <body class="body" style="background: #EBECEE;">
+    <table class="container" style="background: #EBECEE;">
+      <tr>
+        <td>
+          @include('emails.partials.header', ['message'=>$message])
+          <!-- Header Subtext -->
+          <table class="row">
+            <tr>
+              <td class="center" align="center">
+                <center>
+                  <table class="container">
+                    <tr>
+                      <td class="wrapper last bluebg" style="background:#39ACE5;">
+                        <table class="three columns">
+                          <tr>
+                            <td>
+                              <table class="tiny-button">
+                                <tr>
+                                  <td>
+                                    <a href="https://dashboard.razorpay.com">Go to Dashboard</a>
+                                  </td>
+                                </tr>
+                              </table>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </center>
+              </td>
+            </tr>
+          </table>
+          <!-- Main text -->
+          <table class="row">
+            <tr>
+              <td class="center" align="center">
+                <center>
+                  <table class="container">
+                    <tr>
+                      <td class="wrapper last white">
+                        <table class="twelve columns">
+                          <tr>
+                            <td class="darktext left-text-pad right-text-pad">
+<p>Hi {{{$user['name']}}},</p>
+
+<p>You have agreed to provide {{{$application['name']}}} access to your account
+
+<a title="Merchant Website" href="{{$merchant['website']}}">{{{$merchant['billing_label']}}}.</a>
+
+In case you did not request this or would like to revoke the access, please visit your dashboard.
+
+<p>
+Regards,<br>
+Team Razorpay
+</p>
+                            </td>
+                            <td class="expander"></td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                </center>
+              </td>
+            </tr>
+          </table>
+          @include('emails.partials.footer', ['message'=>$message])
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

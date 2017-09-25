@@ -31,18 +31,17 @@ class Core extends Base\Core
     protected $pdfGenerator;
     protected $slack;
     protected $slackTechLogsChannel;
+    protected $eventService;
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->lineItemCore = new LineItem\Core;
-
-        $this->pdfGenerator = null;
-
-        $this->slack = $this->app['slack'];
-
+        $this->lineItemCore         = new LineItem\Core;
+        $this->pdfGenerator         = null;
+        $this->slack                = $this->app['slack'];
         $this->slackTechLogsChannel = Config::get('slack.channels.tech_logs');
+        $this->eventService         = $this->app['events'];
     }
 
     public function setPdfGenerator(Entity $invoice)
@@ -445,7 +444,10 @@ class Core extends Base\Core
                         InvoiceJob::EXPIRED,
                         $invoice->getId());
 
+        // Sends expiration mails to customer asynchronously
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::INVOICE);
+
+        $this->eventService->fire('api.invoice.expired', [$invoice]);
     }
 
     public function fetchStatus(Entity $invoice): array
