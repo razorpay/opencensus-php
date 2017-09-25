@@ -2,18 +2,24 @@
 
 namespace RZP\Models\Batch\Processor;
 
+use RZP\Models\Merchant;
+use RZP\Models\Batch\Header;
+use RZP\Models\Merchant\Detail as MerchantDetail;
+use RZP\Models\Batch\Helpers\LinkedAccount as Helper;
+
 class LinkedAccount extends Base
 {
-    protected function processEntries(array & $entries)
+    protected function processEntry(array & $entry)
     {
-        // Get input - account name
+        $input = Helper::getCreateAccountInput($entry);
 
-        // Create merchant
+        $account = (new Merchant\Core)->createSubMerchant($input, $this->merchant);
 
-        // Get Merchant Details input
+        $detailInput = Helper::getAccountDetailInput($entry);
 
-        // Submit
+        (new MerchantDetail\Service)->saveMerchantDetails($detailInput);
 
-        // Append merchant ID to response report
+        // Append account ID to output fields
+        $entry[Header::ACCOUNT_ID] = Merchant\AccountEntity::getSignedId($account->getId());
     }
 }
