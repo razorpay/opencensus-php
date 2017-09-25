@@ -9,6 +9,10 @@ use RZP\Constants\Timezone;
 
 class NodalBase extends Base\Core
 {
+    const RTGS = 'RTGS';
+    const IMPS = 'IMPS';
+    const NEFT = 'NEFT';
+
     protected $mode = null;
 
     public function __construct()
@@ -18,7 +22,7 @@ class NodalBase extends Base\Core
 
     protected function getTransferMode($amount)
     {
-        return Carbon::now(Timezone::IST)->hour < 16 ? (($amount >= 200000) ? 'R' : 'N') : 'N';
+        return Carbon::now(Timezone::IST)->hour < 16 ? (($amount >= 200000) ? self::RTGS : self::NEFT) : self::NEFT;
     }
 
 }

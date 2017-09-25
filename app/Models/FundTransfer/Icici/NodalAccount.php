@@ -35,6 +35,12 @@ class NodalAccount extends NodalBase\NodalBase
         "Dummy2",
     ];
 
+    const MODE_MAPPING = [
+        self::NEFT    => 'N',
+        self::RTGS    => 'R',
+        self::IMPS    => 'I',
+    ];
+
     protected $date = null;
 
     protected $data = null;
@@ -67,7 +73,7 @@ class NodalAccount extends NodalBase\NodalBase
 
     protected function getPlainText($amount)
     {
-        $this->mode = $this->getTransferMode($amount);
+        $this->mode = self::MODE_MAPPING[$this->getTransferMode($amount)];
 
         $values = [
             $this->mode,

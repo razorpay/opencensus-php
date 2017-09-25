@@ -21,8 +21,9 @@ use RZP\Constants\MailTags;
 use RZP\Constants\Entity;
 use RZP\Constants\Mode;
 use RZP\Models\Transaction;
+use RZP\Models\FundTransfer\NodalBase;
 
-class NodalAccount
+class NodalAccount extends NodalBase\NodalBase
 {
     use FileHandlerTrait;
 
@@ -41,6 +42,8 @@ class NodalAccount
 
     public function __construct()
     {
+        parent::__construct();
+
         // Date format is DD/MM/YYYY in human representation
         $this->date = Carbon::today(Timezone::IST)->format('d/m/Y');
 

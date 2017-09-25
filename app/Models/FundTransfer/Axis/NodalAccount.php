@@ -25,6 +25,12 @@ class NodalAccount extends NodalBase\NodalBase
         'Cr Date',
     ];
 
+    const MODE_MAPPING = [
+        self::NEFT    => 'N',
+        self::RTGS    => 'R',
+        self::IMPS    => 'I',
+    ];
+
     protected $date = null;
 
     protected $data = null;
@@ -97,7 +103,7 @@ class NodalAccount extends NodalBase\NodalBase
 
     protected function getRows(string $amount): array
     {
-        $this->mode = $this->getTransferMode($amount);
+        $this->mode = self::MODE_MAPPING[$this->getTransferMode($amount)];
 
         $formattedAmount = (float) sprintf('%0.2f', $amount);
 
