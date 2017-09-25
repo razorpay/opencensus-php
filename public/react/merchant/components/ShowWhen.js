@@ -46,6 +46,7 @@ export default class ShowWhen extends Component {
     }
 
     /*
+     * (Greater the no., higher the priority)
      * Show content when
      * - both feature or apiFeature does not exist (0)
      * - feature or apiFeature exists and is enabled for merchabt (1)
