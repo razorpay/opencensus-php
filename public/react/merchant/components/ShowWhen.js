@@ -31,7 +31,8 @@ export default class ShowWhen extends Component {
     tags = tags.map(tag => tag.toLowerCase());
     let userRole;
 
-    let isContentVisible = true;
+    // If nothing passed then default to be shown to every user
+    let isContentVisible = !apiFeatureEnabled && !featureEnabled ? true : null;
 
     if (user.isAuthenticated) {
       userRole = user.userRole;
@@ -41,21 +42,21 @@ export default class ShowWhen extends Component {
       (myRole && myRoles.indexOf(userRole) === -1) ||
       (notMyRole && notMyRoles.indexOf(userRole) !== -1)
     ) {
-      isContentVisible = false;
+      return null;
     }
 
-    if (apiFeatureEnabled) {
+    if (!isContentVisible && apiFeatureEnabled) {
       if (apiFeatureEnabled instanceof Array) {
         // Array elements will be matched to tags as per `OR` and not `AND`
         if (
-          !apiFeatureEnabled.some(r => {
+          apiFeatureEnabled.some(r => {
             return user.isFeatureEnabled(r);
           })
         ) {
-          isContentVisible = false;
+          isContentVisible = true;
         }
-      } else if (!user.isFeatureEnabled(apiFeatureEnabled)) {
-        isContentVisible = false;
+      } else if (user.isFeatureEnabled(apiFeatureEnabled)) {
+        isContentVisible = true;
       }
     }
 
@@ -63,10 +64,10 @@ export default class ShowWhen extends Component {
       if (featureEnabled instanceof Array) {
         // Array elements will be matched to tags as per `OR` and not `AND`
         if (!featureEnabled.some(r => tags.includes(r.toLowerCase()))) {
-          isContentVisible = false;
+          isContentVisible = true;
         }
-      } else if (tags.indexOf(featureEnabled.toLowerCase()) === -1) {
-        isContentVisible = false;
+      } else if (tags.indexOf(featureEnabled.toLowerCase()) > -1) {
+        isContentVisible = true;
       }
     }
 
