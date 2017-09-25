@@ -287,9 +287,7 @@ class RawApiRequest
 
                 $fileBody = [];
 
-                $this->parseFiles($files, $fileBody);
-
-                $this->params['body'] = array_merge($this->parseBody(), $fileBody);
+                $this->params['body'] = array_merge($this->parseBody(), $this->parseFiles($files, $fileBody));
             }
             else
             {
@@ -320,22 +318,50 @@ class RawApiRequest
         }
     }
 
-    protected function parseFiles($files, & $fileBody)
+    protected function parseFiles($files)
     {
-        foreach ($files as $key => $val)
+        $fileBody = [];
+
+        $flattenedFiles = $this->arrayFlatten($files);
+
+        foreach ($flattenedFiles as $key => $val)
         {
             if ($val instanceof \SplFileInfo)
             {
                 $fileBody[$key] = $this->getFileBodyFromFileInput($key, $val);
             }
+        }
 
-            if (is_array($val))
+        return $fileBody;
+    }
+
+    protected function arrayFlatten(array &$messages, array $subnode = null, $path = null)
+    {
+        if (null === $subnode)
+        {
+            $subnode = &$messages;
+        }
+
+        foreach ($subnode as $key => $value)
+        {
+            if (is_array($value))
             {
-                $fileBody[$key] = [];
+                $nodePath = $path ? $path.'['.$key.']' : $key;
 
-                $this->parseFiles($val, $fileBody[$key]);
+                $this->arrayFlatten($messages, $value, $nodePath);
+
+                if (null === $path)
+                {
+                    unset($messages[$key]);
+                }
+            }
+            elseif (null !== $path)
+            {
+                $messages[$path.'['.$key.']'] = $value;
             }
         }
+
+        return $messages;
     }
 
     /**
