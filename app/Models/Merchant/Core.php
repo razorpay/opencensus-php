@@ -191,13 +191,6 @@ class Core extends Base\Core
                 [Entity::GROUPS, Entity::ADMINS]);
         }
 
-        $this->trace->info(
-            TraceCode::MERCHANT_EDIT,
-            [
-                'merchant_id' => $merchant->getId(),
-                'input'       => $input,
-            ]);
-
         return $merchant;
     }
 
