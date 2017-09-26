@@ -169,24 +169,22 @@ export default class SubscriptionDetailsContainer extends Component {
   fetchSubscriptionDetails(id) {
     let { entity, fetchItem, fetchPlan, fetchCustomer } = this.props;
 
-    if (!entity || id !== entity.id) {
-      this.setState({ isLoading: true });
+    this.setState({ isLoading: true });
 
-      fetchItem(id)
-        .then(subscription => {
-          return Promise.all([
-            fetchPlan(subscription.plan_id),
-            fetchCustomer(subscription.customer_id),
-            this.fetchAddOns(subscription.id),
-          ]).then(response => {
-            this.setState({ isLoading: false });
-            this.fetchInvoicesList(id);
-          });
-        })
-        .catch(({ errors }) => {
-          this.setState({ errors, isLoading: false });
+    fetchItem(id)
+      .then(subscription => {
+        return Promise.all([
+          fetchPlan(subscription.plan_id),
+          fetchCustomer(subscription.customer_id),
+          this.fetchAddOns(subscription.id),
+        ]).then(response => {
+          this.setState({ isLoading: false });
+          this.fetchInvoicesList(id);
         });
-    }
+      })
+      .catch(({ errors }) => {
+        this.setState({ errors, isLoading: false });
+      });
   }
 
   goToLink = (itemId, index) => {
@@ -369,7 +367,7 @@ export default class SubscriptionDetailsContainer extends Component {
           (entity.type === 0 || entity.type === 2)
             ? entity.charge_at
             : null,
-          plan.item ? plan.item.amount : 0,
+          plan.item ? plan.item.amount * entity.quantity : 0,
           this.state.addons
         );
 
@@ -396,7 +394,7 @@ export default class SubscriptionDetailsContainer extends Component {
 
           invoiceData = this.getUpcomingInvoiceDetails(
             chargeAt,
-            plan.item.amount,
+            plan.item.amount * entity.quantity,
             this.state.addons
           );
         } else {

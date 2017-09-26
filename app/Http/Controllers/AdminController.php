@@ -283,13 +283,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error);
     }
 
-    public function getMerchantDetails($id)
-    {
-        list($error, $data) = (new Admin\Service)->fetchMerchantAndActivationDetails($id);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function postEditMerchant($id)
     {
         $input = Input::all();
