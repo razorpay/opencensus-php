@@ -385,3 +385,11 @@ if (! function_exists('camel_case_array'))
                     $arr);
     }
 }
+
+if (! function_exists('encode_currency'))
+{
+    function encode_currency(string $str)
+    {
+        return str_replace('₹', '&#8377;', $str);
+    }
+}

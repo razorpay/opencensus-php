@@ -203,6 +203,7 @@ body{
 </head>
 <body onload="document.form1.submit()">
   <div id='bg'></div>
+  <div style="display:inline-block;vertical-align:middle;height:100%"></div>
   <div id='cntnt'>
     <div id="hdr">
       @if (isset($data['image']))
@@ -218,14 +219,14 @@ body{
       @if (isset($data['amount']))
         <div id="amt">
           <div style="font-size:12px;color:#757575;line-height:15px;margin-bottom:5px;text-align:right">PAYING</div>
-          <div style="font-size:20px;line-height:24px;">{{$data['amount']}}</div>
+          <div style="font-size:20px;line-height:24px;">{{ encode_currency($data['amount']) }}</div>
         </div>
       @endif
     </div>
     <div id="ldr"></div>
     <div id="txt">
       <div style="display:inline-block;vertical-align:middle;white-space:normal;">
-        <h2 id='title'>Loading Bank page…</h2>
+        <h2 id='title'>Loading Bank page&#x2026;</h2>
         <p id='msg'>Please wait while we redirect you to your Bank page</p>
       </div>
       <div style="display:inline-block;vertical-align:middle;height:100%"></div>
@@ -235,7 +236,6 @@ body{
       <div style="display:inline-block;vertical-align:middle;height:100%"></div>
     </div>
   </div>
-  <div style="display:inline-block;vertical-align:middle;height:100%"></div>
   <form id="form1" name="form1" action="{{$data['request']['url']}}" method="post" onsubmit="return true;">
   @foreach ($data['request']['content'] as $key => $value)
     <input type="hidden" name="{{$key}}" value="{{$value}}">
