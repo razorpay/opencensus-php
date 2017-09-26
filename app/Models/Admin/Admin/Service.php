@@ -65,7 +65,8 @@ class Service extends Base\Service
         try
         {
             $authPolicy = new AuthPolicy\Service;
-            $authPolicy->validateLogin($admin, $input['password']);
+
+            $authPolicy->validateBeforeLogin($admin);
         }
         catch (Exception\RecoverableException $ex)
         {
@@ -76,7 +77,7 @@ class Service extends Base\Service
         {
             $data = $this->generateLoginToken($admin);
 
-            $authPolicy->validateLogin($admin, $input['password'], 'after');
+            $authPolicy->validateAfterLogin($admin);
 
             $this->fireAdminAction($admin, Action::LOGIN);
 

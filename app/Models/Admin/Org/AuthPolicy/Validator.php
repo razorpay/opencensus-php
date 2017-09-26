@@ -3,6 +3,7 @@
 namespace RZP\Models\Admin\Org\AuthPolicy;
 
 use RZP\Base;
+use RZP\Models\Admin\Admin;
 
 class Validator extends Base\Validator
 {
@@ -17,23 +18,34 @@ class Validator extends Base\Validator
         Entity::PASSWORD_EXPIRY                 => 'required|numeric|min:30',
     ];
 
-    public function setPolicy(Entity $policy)
-    {
-        $this->policy = $policy;
+    protected $passwordCreatePolicyRules = [
+        Entity::MIN_LENGTH,
+        Entity::MAX_LENGTH,
+        Entity::MAX_PASSWORD_RETAIN,
+        Entity::STRONG_PASSWORD
+    ];
 
-        return $this;
-    }
+    protected $beforeLoginPolicyRules = [
+        Entity::MAX_FAILED_ATTEMPTS,
+    ];
 
-    public function validate($admin, $password, $op = 'create')
+    protected $afterLoginPolicyRules = [
+        Entity::PASSWORD_EXPIRY
+    ];
+
+    public function validate(Admin\Entity $admin, array $data, string $op)
     {
-        foreach ($this->policy->rules($op) as $rule)
+        $prop = $op . 'PolicyRules';
+
+        $attributes = $this->entity->toArray();
+
+        foreach ($this->{$prop} as $rule)
         {
-            $response = $rule->validate($admin, $password);
+            $class = 'RZP\Models\Admin\Org\AuthPolicy\Rules\\' . studly_case($rule) . 'Rule';
 
-            if ($response !== null)
-            {
-                return $response;
-            }
+            $classOb = new $class($attributes[$rule]);
+
+            $classOb->validate($admin, $data);
         }
     }
 }

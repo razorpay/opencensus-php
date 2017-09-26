@@ -15,7 +15,7 @@ class MaxFailedAttemptsRule extends Base
         $this->maxFailedAttempts = $maxFailedAttempts;
     }
 
-    public function validate($admin, $password)
+    public function validate($admin, array $data)
     {
         if ($admin->isLocked() === true)
         {
