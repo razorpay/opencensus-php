@@ -22,7 +22,7 @@ export default props => {
 
   let retryingText;
 
-  // To b shown only for latest issued invoice. As per authAttempts condition calc in parent componen
+  // To be shown only for latest issued invoice. As per authAttempts condition calc in parent componen
   if (item.status === 'issued' && authAttempts) {
     if (subscriptionStatus === 'halted') {
       retryingText = 'Not retrying automatically. ';
@@ -34,17 +34,32 @@ export default props => {
     }
   }
 
+  // Calculate time Diff to show 'due in' text
   let timeDiff;
   // issued_at in next_due invoice is charge_at of subscription. Check FE creation of next_due invoice. (Not api related)
   if (item.status === 'next_due' && item.issued_at) {
     timeDiff = item.issued_at - Math.round(new Date().getTime() / 1000);
   }
 
+  // Check if row is clickable
+  let isRowClickable = goToLink && !loading && activeSecEntityId !== item.id;
+  let classNames = ['entity-detail-row'];
+
+  if (item.id && activeSecEntityId === item.id) {
+    classNames.push('active');
+  }
+  if (isRowClickable) {
+    classNames.push('clickable');
+  }
+
   return (
     <div
-      class={`entity-detail-row ${item.id && activeSecEntityId === item.id
-        ? 'active'
-        : ''}`}
+      class={classNames.join(' ')}
+      onClick={() => {
+        if (isRowClickable) {
+          goToLink(item.id, index);
+        }
+      }}
     >
       <div class="row-item content">
         <div class="detail-row">
@@ -135,7 +150,7 @@ export default props => {
 
       {
         do {
-          if (goToLink && !loading && activeSecEntityId !== item.id) {
+          if (isRowClickable) {
             <span
               class="row-item icon icon-chevron-right"
               onClick={() => goToLink(item.id, index)}
