@@ -7,10 +7,9 @@ use Config;
 
 use RZP\Models\Base;
 use RZP\Constants\Mode;
-use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicEntity;
-use RZP\Mail\Merchant\FeatureUpdate;
+use RZP\Mail\Merchant\FeatureEnabled;
 use RZP\Models\Merchant\SlackActions;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 
@@ -51,6 +50,10 @@ class Core extends Base\Core
             $shouldSync);
 
         $this->notifyFeatureUpdateOnSlack($feature);
+
+        $merchantId = $input['entity_id'];
+
+        $this->notifyMerchantIfApplicable($merchantId, $feature, $shouldSync);
 
         return $feature;
     }
@@ -147,68 +150,44 @@ class Core extends Base\Core
         $this->logActionToSlack($this->merchant, SlackActions::PRODUCT_ACTIVATION, $data);
     }
 
-    public function notifyMerchantIfApplicable(Merchant\Entity $merchant, $features, $shouldSync)
+    public function notifyMerchantIfApplicable(string $merchantId, Entity $feature, bool $shouldSync)
     {
         $isLiveMode = $this->isLiveMode();
 
-        if (($shouldSync === true) or ($isLiveMode === true))
+        if (($feature->isNotifyFeature() === true) and
+            (($shouldSync === true) or ($isLiveMode === true)))
         {
-            $notifyFeatures = $this->generateFeaturesDataToNotifyMerchant($features);
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-            if (empty($notifyFeatures) === true)
-            {
-                $this->trace->info(
-                    TraceCode::FEATURE_UPDATED_MERCHANT_NOT_NOTIFIED,
-                    [
-                        PublicEntity::MERCHANT_ID => $merchant->getId(),
-                        Entity::SHOULD_SYNC       => $shouldSync,
-                        Mode::LIVE                => $isLiveMode,
-                        Entity::NEW_FEATURE       => $features,
-                    ]);
-            }
-            else
-            {
-                $data['contact_email'] = $merchant->getEmail();
+            $data['feature'] = studly_case($feature->getName());
 
-                $data['contact_name'] = $merchant->getName();
+            $data['contact_email'] = $merchant->getEmail();
 
-                $data['features'] = $notifyFeatures;
+            $data['contact_name'] = $merchant->getName();
 
-                $featureUpdateEmail = new FeatureUpdate($data);
-
-                Mail::queue($featureUpdateEmail);
-            }
-        }
-        else
-        {
             $this->trace->info(
-                TraceCode::FEATURE_UPDATED_MERCHANT_NOT_NOTIFIED,
+                TraceCode::FEATURE_ENABLED_MERCHANT_NOTIFIED,
                 [
-                    PublicEntity::MERCHANT_ID => $merchant->getId(),
+                    PublicEntity::MERCHANT_ID => $merchantId,
                     Entity::SHOULD_SYNC       => $shouldSync,
                     Mode::LIVE                => $isLiveMode,
-                    Entity::NEW_FEATURE       => $features,
+                    Entity::NEW_FEATURE       => $feature,
+                ]);
+
+            $featureUpdateEmail = new FeatureEnabled($data);
+
+            Mail::queue($featureUpdateEmail);
+        } else
+        {
+            $this->trace->info(
+                TraceCode::FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED,
+                [
+                    PublicEntity::MERCHANT_ID => $merchantId,
+                    Entity::SHOULD_SYNC       => $shouldSync,
+                    Mode::LIVE                => $isLiveMode,
+                    Entity::NEW_FEATURE       => $feature,
                 ]);
         }
-    }
-
-    public function generateFeaturesDataToNotifyMerchant($features): array
-    {
-        $emailFeatures = [];
-
-        $visibleFeatures = Constants::$visibleFeaturesMap;
-
-        foreach ($features as $feature)
-        {
-            $name = $feature['name'];
-
-            if (Entity::isNotifyFeature($name) === true)
-            {
-                $emailFeatures[] = $visibleFeatures[$name]['display_name'];
-            }
-        }
-
-        return $emailFeatures;
     }
 
 }

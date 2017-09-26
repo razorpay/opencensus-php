@@ -8,7 +8,7 @@ use Illuminate\Http\UploadedFile;
 use RZP\Constants\Mode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Mail\Merchant\FeatureUpdate as FeatureUpdateEmail;
+use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
 
 class FeaturesTest extends TestCase
 {
@@ -557,7 +557,7 @@ class FeaturesTest extends TestCase
 
         $this->addNotifyFeatures(Mode::LIVE, false);
 
-        Mail::assertSent(FeatureUpdateEmail::class);
+        Mail::assertSent(FeatureEnabledEmail::class);
     }
 
     public function testAddNonNotifyFeatures()
@@ -566,7 +566,7 @@ class FeaturesTest extends TestCase
 
         $this->addFeature(Mode::LIVE, true);
 
-        Mail::assertNotSent(FeatureUpdateEmail::class);
+        Mail::assertNotSent(FeatureEnabledEmail::class);
     }
 
     public function testFeatureEnabledEmailNotificationOnTest()
@@ -575,7 +575,7 @@ class FeaturesTest extends TestCase
 
         $this->addNotifyFeatures(Mode::TEST, false);
 
-        Mail::assertNotSent(FeatureUpdateEmail::class);
+        Mail::assertNotSent(FeatureEnabledEmail::class);
     }
 
     public function testFeatureEnabledEmailNotificationOnTestWithSync()
@@ -584,7 +584,7 @@ class FeaturesTest extends TestCase
 
         $this->addNotifyFeatures(Mode::TEST, true);
 
-        Mail::assertSent(FeatureUpdateEmail::class);
+        Mail::assertSent(FeatureEnabledEmail::class);
     }
 
     protected function addNotifyFeatures(string $mode, bool $shouldSync)

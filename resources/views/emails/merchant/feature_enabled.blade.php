@@ -38,18 +38,10 @@
                                                     <p style="color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; margin-bottom: 10px; line-height: 25px;">Hi {{{$contact_name}}},</p>
 
                                                     <p style="color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; margin-bottom: 10px; line-height: 25px;">
-                                                        The following features have been enabled on your account for live mode -
-                                                        <ul>
-                                                            <?php
-                                                            foreach ($features as $feature)
-                                                            {
-                                                                echo '<li>' . $feature . '</li>';
-                                                            }
-                                                            ?>
-                                                        </ul>
-
+                                                        The feature '<?php echo $feature ?>' has been enabled on your account for live mode.
+                                                    </p>
+                                                    <p  style="color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; margin-bottom: 10px; line-height: 25px;">
                                                         In case you did not request this or would like to revoke the access, please visit your dashboard.
-
                                                     </p>
                                                     <p style="color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; padding: 0; margin: 0; text-align: left; font-size: 14px; margin-bottom: 10px; line-height: 25px;">
                                                         Regards,<br>

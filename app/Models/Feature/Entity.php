@@ -80,8 +80,8 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public static function isNotifyFeature(string $feature)
+    public function isNotifyFeature()
     {
-        return (in_array($feature, Constants::$notifyFeatures) === true);
+        return (in_array($this->getName(), Constants::$notifyFeatures) === true);
     }
 }

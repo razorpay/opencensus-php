@@ -6,7 +6,7 @@ use RZP\Constants\MailTags;
 use RZP\Mail\Base\Mailable;
 use RZP\Mail\Base\Constants;
 
-class FeatureUpdate extends Mailable
+class FeatureEnabled extends Mailable
 {
     protected $data;
 
@@ -41,7 +41,7 @@ class FeatureUpdate extends Mailable
 
     protected function addHtmlView()
     {
-        $this->view('emails.merchant.features_updated');
+        $this->view('emails.merchant.feature_enabled');
 
         return $this;
     }
@@ -68,12 +68,12 @@ class FeatureUpdate extends Mailable
 
     protected function getSubject()
     {
-        return 'Features have been updated for Live mode';
+        return $this->data['feature'] . ' has been enabled for Live mode';
     }
 
     protected function getMailTag()
     {
-        return MailTags::FEATURES_UPDATED;
+        return MailTags::FEATURES_ENABLED;
     }
 
     protected function addHeaders()
@@ -82,7 +82,7 @@ class FeatureUpdate extends Mailable
         {
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader(MailTags::HEADER, MailTags::FEATURES_UPDATED);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::FEATURES_ENABLED);
         });
 
         return $this;
