@@ -101,6 +101,17 @@ class VirtualAccountTest extends TestCase
         });
     }
 
+    public function testCreateVirtualAccountWithIdenticalDescriptorAfterClosing()
+    {
+        $this->fixtures->merchant->setHandle('hand');
+
+        $virtualAccount = $this->createVirtualAccount(['descriptor' => 'samedesc']);
+
+        $this->closeVirtualAccount($virtualAccount['id']);
+
+        $this->createVirtualAccount(['descriptor' => 'samedesc']);
+    }
+
     public function testFetchVirtualAccount()
     {
         $response = $this->createVirtualAccount();
