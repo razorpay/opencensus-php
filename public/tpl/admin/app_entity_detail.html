@@ -380,6 +380,30 @@
           </select>
         </div>
       </div>
+      <div class="form-group" >
+        <label for="non_recurring" class="col-lg-3 control-label">Non recurring</label>
+        <div class="col-lg-9" >
+          <input type="checkbox" ng-true-value="1" ng-false-value="0" ng-model="terminal['type[non_recurring]']">
+        </div>
+      </div>
+      <div class="form-group" >
+        <label for="recurring_3ds" class="col-lg-3 control-label">Recurring 3DS</label>
+        <div class="col-lg-9" >
+          <input type="checkbox" ng-true-value="1" ng-false-value="0" ng-model="terminal['type[recurring_3ds]']">
+        </div>
+      </div>
+      <div class="form-group" >
+        <label for="recurring_non_3ds" class="col-lg-3 control-label">Recurring Non 3DS</label>
+        <div class="col-lg-9" >
+          <input type="checkbox" ng-true-value="1" ng-false-value="0" ng-model="terminal['type[recurring_non_3ds]']">
+        </div>
+      </div>
+      <div class="form-group" >
+      <label for="ivr" class="col-lg-3 control-label">IVR</label>
+        <div class="col-lg-9" >
+          <input type="checkbox" ng-true-value="1" ng-false-value="0" ng-model="terminal['type[ivr]']">
+        </div>
+      </div>
     </form>
   </div>
   <div class="modal-footer">
