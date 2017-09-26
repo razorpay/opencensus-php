@@ -285,9 +285,7 @@ class RawApiRequest
             {
                 $files = $this->input['file'];
 
-                $fileBody = [];
-
-                $this->params['body'] = array_merge($this->parseBody(), $this->parseFiles($files, $fileBody));
+                $this->params['body'] = array_merge($this->parseBody(), $this->parseFiles($files));
             }
             else
             {
@@ -322,6 +320,7 @@ class RawApiRequest
     {
         $fileBody = [];
 
+        // we use array flatten to send multipart request through guzzle
         $flattenedFiles = $this->arrayFlatten($files);
 
         foreach ($flattenedFiles as $key => $val)
