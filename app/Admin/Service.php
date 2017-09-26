@@ -72,8 +72,8 @@ class Service extends Base\Service
         {
             // This is password based login
             $requestConfig = [
-                'route_name'   => 'admin_authentication',
-                'query_params' => $input,
+                'route_name'    => 'admin_authentication',
+                'body'          => $input,
             ];
 
             $genericService = new Generic\Service;
