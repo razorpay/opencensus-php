@@ -2,12 +2,13 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Mail;
 use Illuminate\Http\UploadedFile;
 
 use RZP\Constants\Mode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Models\Feature\Constants;
+use RZP\Mail\Merchant\FeatureUpdate as FeatureUpdateEmail;
 
 class FeaturesTest extends TestCase
 {
@@ -548,5 +549,16 @@ class FeaturesTest extends TestCase
             filesize($url),
             null,
             true);
+    }
+
+    public function testFeatureEnabledEmailNotification()
+    {
+        Mail::fake();
+
+        $this->ba->appAuthLive();
+
+        $this->startTest();
+
+        Mail::assertSent(FeatureUpdateEmail::class);
     }
 }

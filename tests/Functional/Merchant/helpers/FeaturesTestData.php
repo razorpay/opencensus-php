@@ -500,5 +500,39 @@ return [
                 Constants::SETTLING_TO => 'Someone'
             ]
         ]
-    ]
+    ],
+    'testFeatureEnabledEmailNotification'   => [
+        'request'  => [
+            'content' => [
+                'names'       => ['dummy', 'marketplace', 'subscriptions'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ],
+            'url'     => '/features',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name'        => 'dummy',
+                    'entity_id'   => '10000000000000',
+                    'entity_type' => 'merchant'
+                ],
+                [
+                    'name'        => 'marketplace',
+                    'entity_id'   => '10000000000000',
+                    'entity_type' => 'merchant'
+                ],
+                [
+                    'name'        => 'subscriptions',
+                    'entity_id'   => '10000000000000',
+                    'entity_type' => 'merchant'
+                ]
+            ],
+        ],
+    ],
 ];

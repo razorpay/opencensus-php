@@ -2,11 +2,15 @@
 
 namespace RZP\Models\Feature;
 
+use Mail;
 use Config;
 
 use RZP\Models\Base;
+use RZP\Constants\Mode;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicEntity;
+use RZP\Mail\Merchant\FeatureUpdate;
 use RZP\Models\Merchant\SlackActions;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 
@@ -142,4 +146,71 @@ class Core extends Base\Core
 
         $this->logActionToSlack($this->merchant, SlackActions::PRODUCT_ACTIVATION, $data);
     }
+
+    public function notifyMerchantIfApplicable(Merchant\Entity $merchant, $features, $shouldSync)
+    {
+        $isLiveMode = $this->isLiveMode();
+
+        if (($shouldSync === true) or ($isLiveMode === true))
+        {
+            $notifyFeatures = $this->generateFeaturesDataToNotifyMerchant($features);
+
+            if (empty($notifyFeatures) === true)
+            {
+                $this->trace->info(
+                    TraceCode::FEATURE_UPDATED_MERCHANT_NOT_NOTIFIED,
+                    [
+                        PublicEntity::MERCHANT_ID => $merchant->getEntityId(),
+                        Entity::SHOULD_SYNC       => $shouldSync,
+                        Mode::LIVE                => $isLiveMode,
+                        Entity::NEW_FEATURE       => $features,
+                    ]);
+            }
+            else
+            {
+                $data['contact_email'] = $merchant->getEmail();
+
+                $data['contact_name'] = $merchant->getName();
+
+                $data['features'] = $notifyFeatures;
+
+                $featureUpdateEmail = new FeatureUpdate($data);
+
+                Mail::queue($featureUpdateEmail);
+
+                $this->notifyFeatureUpdatesToMerchant($data);
+            }
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::FEATURE_UPDATED_MERCHANT_NOT_NOTIFIED,
+                [
+                    PublicEntity::MERCHANT_ID => $merchant->getEntityId(),
+                    Entity::SHOULD_SYNC       => $shouldSync,
+                    Mode::LIVE                => $isLiveMode,
+                    Entity::NEW_FEATURE       => $features,
+                ]);
+        }
+    }
+
+    public function generateFeaturesDataToNotifyMerchant($features): array
+    {
+        $emailFeatures = [];
+
+        $visibleFeatures = Constants::$visibleFeaturesMap;
+
+        foreach ($features as $feature)
+        {
+            $name = $feature['name'];
+
+            if (Entity::isNotifyFeature($name) === true)
+            {
+                $emailFeatures[] = $visibleFeatures[$name]['display_name'];
+            }
+        }
+
+        return $emailFeatures;
+    }
+
 }

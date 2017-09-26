@@ -25,6 +25,12 @@ class Service extends Base\Service
             return $featureCore->create($item, $shouldSync);
         });
 
+        $merchantId = $input['entity_id'];
+
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $featureCore->notifyMerchantIfApplicable($merchant, $features, $shouldSync);
+
         return $features->toArray();
     }
 

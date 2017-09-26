@@ -79,4 +79,9 @@ class Entity extends Base\PublicEntity
             $input[self::NAME] = strtolower($input[self::NAME]);
         }
     }
+
+    public static function isNotifyFeature(string $feature)
+    {
+        return (in_array($feature, Constants::$notifyFeatures) === true);
+    }
 }
