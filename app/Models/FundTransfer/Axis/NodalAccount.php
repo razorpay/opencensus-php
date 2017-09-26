@@ -21,10 +21,6 @@ class NodalAccount extends NodalBase\NodalAccount
 {
     const SIGNED_URL_DURATION = '1440';
 
-    // To be changed
-    const IV = 'aai_wee';
-    const SECRET = 'kissi_ko_pata_nhi_chalega';
-
     const HEADINGS = [
         'Record Identifier',
         'Reference Number',
@@ -34,11 +30,9 @@ class NodalAccount extends NodalBase\NodalAccount
         'Cr Date',
     ];
 
-    const MODE_MAPPING = [
-        Mode::NEFT    => 'N',
-        Mode::RTGS    => 'R',
-        Mode::IMPS    => 'I',
-    ];
+    protected $secret = null;
+
+    protected $iv = null;
 
     protected $date = null;
 
@@ -55,6 +49,10 @@ class NodalAccount extends NodalBase\NodalAccount
         $this->date = Carbon::today(Timezone::IST)->format('n/j/y');
 
         $this->id = Base\UniqueIdEntity::generateUniqueId();
+
+        $this->secret = env('AXIS_NODAL_AES_SECRET');
+
+        $this->iv = env('AXIS_NODAL_AES_IV');
     }
 
     public function generateTransferFile(string $amount): array
@@ -86,8 +84,8 @@ class NodalAccount extends NodalBase\NodalAccount
                         ->columnFormat(['C3' => 'dd/mm/yy', 'E3' => 'dd/mm/yy', 'F3' => 'dd/mm/yy'])
                         ->encrypt(Type::AES_ENCRYPTION, [
                             AESEncryption::MODE   => AES::MODE_CBC,
-                            AESEncryption::IV     => self::IV,
-                            AESEncryption::SECRET => self::SECRET,])
+                            AESEncryption::IV     => $this->iv,
+                            AESEncryption::SECRET => $this->secret,])
                         ->save();
 
         $fileInstance = $file->get();

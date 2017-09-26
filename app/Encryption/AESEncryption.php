@@ -23,7 +23,11 @@ class AESEncryption extends Encryption
 
         $this->iv = $params[self::IV] ?? '';
 
-        $this->encryptor = new Base\AESCrypto($params[self::MODE], $params[self::SECRET], $this->iv);
+        $this->mode = $params[self::MODE];
+
+        $this->secret = $params[self::SECRET];
+
+        $this->encryptor = new Base\AESCrypto($this->mode, $this->secret, $this->iv);
     }
 
     public function encrypt(string $data): string
