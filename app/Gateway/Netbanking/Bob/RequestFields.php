@@ -12,5 +12,5 @@ class RequestFields
     const CALLBACK_URL     = 'RU';
     const PAYMENT_ID       = 'PRN';
 
-    const ENCRYPTED_DATA = 'encdata';
+    const ENCRYPTED_DATA   = 'encdata';
 }

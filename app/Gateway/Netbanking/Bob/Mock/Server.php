@@ -36,6 +36,8 @@ class Server extends Base\Mock\Server
 
     public function verify($input)
     {
+        $this->validateActionInput($input, 'verify');
+
         $id = $input[RequestFields::PAYMENT_ID];
 
         $content = [

@@ -12,5 +12,5 @@ class ResponseFields
     const CUSTOMER_ACCOUNT_NUMBER = 'DebtAccountNo';
     const PAYMENT_ID              = 'PRN';
 
-    const ENCRYPTED_DATA = 'encdata';
+    const ENCRYPTED_DATA          = 'encdata';
 }
