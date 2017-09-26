@@ -222,7 +222,7 @@ class RawApiRequest
      */
     protected function parseBody()
     {
-        $inputBody = Input::get('body', '');
+        $inputBody = $this->input['body'] ?? Input::get('body', '');
 
         if (is_array($inputBody)) {
             return $inputBody;
@@ -245,23 +245,10 @@ class RawApiRequest
         return $body;
     }
 
-    /**
-     * Sets the body and content type of the request as
-     * per the guzzle input format
-     * @return null
-     */
-    protected function prepareRequest()
+    protected function getFileBodyFromFileInput($fileFieldName, $file)
     {
-        // If we need to add the file to the body
-        if ($this->input['file'] instanceof \SplFileInfo)
+        if ($file instanceof \SplFileInfo)
         {
-            $file = $this->input['file'];
-
-            $this->params['body'] = $this->parseBody();
-
-            // Now that we have added all POST params, we add the file itself
-            // This contains the field name to be used for the file field
-            $fileFieldName = $this->input['file_name'];
             // This contains the original file name with extension
             $fileName = $file->getClientOriginalName();
 
@@ -277,18 +264,103 @@ class RawApiRequest
             // This is as per guzzle 5, will need to get changed for 6
             $postFile = new PostFile($fileFieldName, fopen($file, 'r'), $fileName);
 
-            $this->params['body'][$fileFieldName] = $postFile;
+            return $postFile;
+        }
+
+        return null;
+    }
+
+    /**
+     * Sets the body and content type of the request as
+     * per the guzzle input format
+     * @return null
+     */
+    protected function prepareRequest()
+    {
+        // If we need to add the file to the body
+        if ((is_array($this->input['file']) === true) or ($this->input['file'] instanceof \SplFileInfo))
+        {
+            // Incase the input contains an array of files
+            if (is_array($this->input['file']) === true)
+            {
+                $files = $this->input['file'];
+
+                $this->params['body'] = array_merge($this->parseBody(), $this->parseFiles($files));
+            }
+            else
+            {
+                $file = $this->input['file'];
+
+                $this->params['body'] = $this->parseBody();
+
+                // Now that we have added all POST params, we add the file itself
+                // This contains the field name to be used for the file field
+                $fileFieldName = $this->input['file_name'];
+
+                $postFile = $this->getFileBodyFromFileInput($fileFieldName, $file);
+
+                if (isset($postFile))
+                {
+                    $this->params['body'][$fileFieldName] = $postFile;
+                }
+            }
         }
         // We just pass the body as it is
         else
         {
             // Setting the body before the content type is important.
             // Why? Check setContentType function
-
             $this->params['body'] = $this->input['body'] ?? Input::get('body', '');
 
             $this->setContentType();
         }
+    }
+
+    protected function parseFiles($files)
+    {
+        $fileBody = [];
+
+        // we use array flatten to send multipart request through guzzle
+        $flattenedFiles = $this->arrayFlatten($files);
+
+        foreach ($flattenedFiles as $key => $val)
+        {
+            if ($val instanceof \SplFileInfo)
+            {
+                $fileBody[$key] = $this->getFileBodyFromFileInput($key, $val);
+            }
+        }
+
+        return $fileBody;
+    }
+
+    protected function arrayFlatten(array &$messages, array $subnode = null, $path = null)
+    {
+        if (null === $subnode)
+        {
+            $subnode = &$messages;
+        }
+
+        foreach ($subnode as $key => $value)
+        {
+            if (is_array($value))
+            {
+                $nodePath = $path ? $path.'['.$key.']' : $key;
+
+                $this->arrayFlatten($messages, $value, $nodePath);
+
+                if (null === $path)
+                {
+                    unset($messages[$key]);
+                }
+            }
+            elseif (null !== $path)
+            {
+                $messages[$path.'['.$key.']'] = $value;
+            }
+        }
+
+        return $messages;
     }
 
     /**

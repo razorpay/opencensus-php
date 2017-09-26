@@ -48,6 +48,7 @@ app
           live: 0,
         },
       };
+      $scope.showMerchantBatchUpload = false;
 
       admin.identity().then(function(adminData) {
         if (adminData.permissions.indexOf('view_all_group') !== -1) {
@@ -251,13 +252,13 @@ app
         // Tags will be a csv field
         var requestData = {
           features: features,
-          mode: mode
-        }
+          mode: mode,
+        };
         if (shouldSync === true) {
-          requestData['mode']  = 'live';
-          requestData['should_sync']  = 1;
+          requestData['mode'] = 'live';
+          requestData['should_sync'] = 1;
         } else {
-          requestData['should_sync']  = 0;
+          requestData['should_sync'] = 0;
         }
         var request = $http({
           url: '/admin/features/merchant/' + $scope.merchant.id,
@@ -275,10 +276,11 @@ app
                 true
               );
               // When shouldSync is true, requestData.mode will be live but mode can be test/live
-              $scope.merchant.details.allowedFeatures[requestData.mode] = data.data.all_features;
-              $scope.merchant.details.features[requestData.mode] = getFeatureNames(
-                data.data.assigned_features
-              );
+              $scope.merchant.details.allowedFeatures[requestData.mode] =
+                data.data.all_features;
+              $scope.merchant.details.features[
+                requestData.mode
+              ] = getFeatureNames(data.data.assigned_features);
               // If features were added to both, the response will have features for live
               // So fetch all test features again.
               if (shouldSync === true) {
@@ -286,7 +288,7 @@ app
               }
             } else {
               $scope.alerts.resetAlerts();
-              angular.forEach(data.errors, function (value) {
+              angular.forEach(data.errors, function(value) {
                 $scope.alerts.addAlert('danger', value);
               });
             }
@@ -1362,44 +1364,46 @@ app
         }, $.noop);
       };
 
-      $scope.openFeatureMerchant = function () {
-        var features = {}
-        features.test = []
-        features.live = []
+      $scope.openFeatureMerchant = function() {
+        var features = {};
+        features.test = [];
+        features.live = [];
         if ($scope.merchant.details.features) {
           features.test = $scope.merchant.details.features.test || [];
         }
-        features.test = features.test.map(function (f) {
+        features.test = features.test.map(function(f) {
           return f.name;
         });
         if ($scope.merchant.details.features) {
           features.live = $scope.merchant.details.features.live || [];
         }
-        features.live = features.live.map(function (f) {
+        features.live = features.live.map(function(f) {
           return f.name;
         });
         var allowedFeatures = {};
-        allowedFeatures.test = $scope.merchant.details.allowedFeatures.test || [];
-        allowedFeatures.live = $scope.merchant.details.allowedFeatures.live || [];
+        allowedFeatures.test =
+          $scope.merchant.details.allowedFeatures.test || [];
+        allowedFeatures.live =
+          $scope.merchant.details.allowedFeatures.live || [];
         // availableFeatures is a list of features which are not yet assigned to
         // the merchant. Used to populate the features dropdown
-        var availableFeatures = {}
-        availableFeatures.test = allowedFeatures.test.filter(function (f) {
+        var availableFeatures = {};
+        availableFeatures.test = allowedFeatures.test.filter(function(f) {
           return features.test.indexOf(f) === -1;
         });
-        availableFeatures.live = allowedFeatures.live.filter(function (f) {
+        availableFeatures.live = allowedFeatures.live.filter(function(f) {
           return features.live.indexOf(f) === -1;
         });
         var modalInstance = $modal.open({
           templateUrl: 'featureModalContent.html',
           controller: 'featureModalCtrl',
           resolve: {
-            current: function () {
+            current: function() {
               return [availableFeatures, features];
             },
           },
         });
-        modalInstance.result.then(function (data) {
+        modalInstance.result.then(function(data) {
           $scope.featureMerchant(data.features, data.mode, data.shouldSync);
         }, $.noop);
       };
@@ -1526,6 +1530,64 @@ app
             });
           }
         });
+      };
+      $scope.merchantUploadBatchFiles = function(files) {
+        var fileUploaded = false;
+        var fd = new FormData();
+        fd.append('route_name', 'merchant_batches');
+        fd.append(
+          'url_params',
+          JSON.stringify({
+            '{id}': $scope.merchant.id,
+          })
+        );
+        fd.append('body[type]', 'irctc');
+        if (files.hasOwnProperty('refund') === true) {
+          fd.append('file[data][refund]', files.refund);
+          fileUploaded = true;
+        }
+        if (files.hasOwnProperty('settlement') === true) {
+          fd.append('file[data][settlement]', files.settlement);
+          fileUploaded = true;
+        }
+
+        if (fileUploaded === false) {
+          $scope.alerts.addAlert('danger', 'Please upload atleast one file');
+          return false;
+        }
+
+        var request = $http({
+          method: 'post',
+          url: '/admin/generic',
+          headers: {
+            'Content-Type': undefined,
+          },
+          data: fd,
+          transformRequest: angular.identity,
+        });
+        request.success(function(data) {
+          if (data.success) {
+            $scope.alerts.addAlert(
+              'success',
+              'Uploaded Successfully ' + JSON.stringify(data.data),
+              true
+            );
+          } else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function(value) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        });
+      };
+      $scope.openMerchantBatchUpload = function() {
+        var modalInstance = $modal.open({
+          templateUrl: 'merchantBatchUploadContent.html',
+          controller: 'merchantBatchUploadCtrl',
+        });
+        modalInstance.result.then(function(files) {
+          $scope.merchantUploadBatchFiles(files);
+        }, $.noop);
       };
       $scope.openUploadScreenshot = function() {
         var currentId = $scope.merchant.id;
@@ -2105,13 +2167,13 @@ app
           url_params: {
             '{entityId}': $scope.merchant.id,
           },
-          mode: mode
+          mode: mode,
         };
         var request = $http.get('/admin/generic', {
           params: data,
         });
         request
-          .success(function (data) {
+          .success(function(data) {
             if (data.success) {
               // Full list of features which can be assigned to merchant
               $scope.merchant.details.allowedFeatures =
@@ -2124,20 +2186,26 @@ app
               $scope.merchant.details.features[mode] = getFeatureNames(
                 data.data.assigned_features
               );
+
+              Object.keys(data.data.assigned_features).forEach(function(key) {
+                if (data.data.assigned_features[key].name === 'irctc_report') {
+                  $scope.showMerchantBatchUpload = true;
+                }
+              });
             } else {
               $scope.alerts.resetAlerts(true);
-              angular.forEach(data.errors, function (value) {
+              angular.forEach(data.errors, function(value) {
                 $scope.alerts.addAlert('danger', value);
               });
             }
           })
-          .error(function () {
+          .error(function() {
             $scope.alerts.addAlert('danger', null);
           });
       };
 
       function getMerchantFeatures() {
-        admin.identity().then(function (adminData) {
+        admin.identity().then(function(adminData) {
           if (adminData.permissions.indexOf('view_merchant_features') !== -1) {
             $scope.getModeBasedFeatures('test');
             $scope.getModeBasedFeatures('live');
@@ -2168,7 +2236,7 @@ app
               '{entityId}': $scope.merchant.id,
               '{featureName}': featureName,
             },
-            mode: featureMode
+            mode: featureMode,
           },
         });
         request.success(function(data) {
@@ -2179,7 +2247,9 @@ app
               });
             }
             var features = $scope.merchant.details.features[featureMode];
-            $scope.merchant.details.features[featureMode] = features.filter(function(item) {
+            $scope.merchant.details.features[
+              featureMode
+            ] = features.filter(function(item) {
               return item.id !== data.data.id;
             });
           } else {
@@ -2741,14 +2811,35 @@ app
     'current',
     function($scope, $modalInstance, current) {
       $scope.features = current.shift();
-      $scope.assigned_features = {}
-      var assignedFeatures = current.shift()
+      $scope.assigned_features = {};
+      var assignedFeatures = current.shift();
       $scope.assigned_features.test = assignedFeatures.test.join(',');
       $scope.assigned_features.live = assignedFeatures.live.join(',');
       $scope.selectedFeatures = [];
-      $scope.featuremode = "test";
+      $scope.featuremode = 'test';
       $scope.ok = function(features, mode, shouldSync) {
-        $modalInstance.close({ features: features, mode: mode, shouldSync: shouldSync});
+        $modalInstance.close({
+          features: features,
+          mode: mode,
+          shouldSync: shouldSync,
+        });
+      };
+      $scope.cancel = function() {
+        $modalInstance.dismiss('cancel');
+      };
+    },
+  ])
+  .controller('merchantBatchUploadCtrl', [
+    '$scope',
+    '$modalInstance',
+    function($scope, $modalInstance) {
+      $scope.files = {};
+      $scope.onFileSelect = function($files, fileName) {
+        var file = $files[0];
+        $scope.files[fileName] = file;
+      };
+      $scope.ok = function() {
+        $modalInstance.close($scope.files);
       };
       $scope.cancel = function() {
         $modalInstance.dismiss('cancel');
