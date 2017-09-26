@@ -96,6 +96,9 @@ class EmiPaymentTest extends TestCase
         //ICICI Card
         $this->makeEmiPaymentOnCard('4076510000000033', 9, $yesterdayAtTen);
 
+        //Yes Bank
+        $this->makeEmiPaymentOnCard('5318491050009999', 9 ,$yesterdayAtTen);
+
         //ICICI Merchant subvention Card
         $this->makeEmiPaymentOnCard('4076510000000033', 9, $yesterdayAtTen, 0, null, null, true);
 
@@ -109,7 +112,7 @@ class EmiPaymentTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(count($content), 6);
+        $this->assertEquals(count($content), 7);
 
         $this->assertEquals(true, File::exists($this->zipFileName($content['KKBK'])));
         $this->assertEquals(true, File::exists($this->zipFileName($content['UTIB'])));
@@ -117,6 +120,7 @@ class EmiPaymentTest extends TestCase
         $this->assertEquals(true, File::exists($this->zipFileName($content['RATN'])));
         $this->assertEquals(true, File::exists($this->zipFileName($content['SCBL'])));
         $this->assertEquals(true, File::exists($content['ICIC']));
+        $this->assertEquals(true, File::exists($content['YESB']));
 
         $this->checkPasswordProtectedZip($this->zipFileName($content['KKBK']));
         $this->checkPasswordProtectedZip($this->zipFileName($content['UTIB']));
@@ -133,6 +137,8 @@ class EmiPaymentTest extends TestCase
         $this->deleteAlltheGenerateFiles($content);
 
         unlink($content['ICIC']);
+
+        unlink($content['YESB']);
     }
 
     private function zipFileName($filePath)

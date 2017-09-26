@@ -3,6 +3,7 @@
 namespace RZP\Models\Schedule;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Anchor
@@ -38,7 +39,7 @@ class Anchor
 
         if ($startTime === null)
         {
-            $startTime = Carbon::now('Asia/Kolkata');
+            $startTime = Carbon::now(Timezone::IST);
         }
 
         if ($period === Period::YEARLY)

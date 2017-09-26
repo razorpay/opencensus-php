@@ -3,12 +3,18 @@
 namespace RZP\Base;
 
 use Closure;
-use RZP\Constants\Entity;
-use RZP\Constants\Mode;
+use Illuminate;
 use RZP\Exception;
-use RZP\Models\Base\PublicEntity;
+use RZP\Constants\Mode;
+use RZP\Constants\Entity;
+use RZP\Models;
 
-class RepositoryManager extends \Illuminate\Support\Manager
+/**
+ * @property Models\Plan\Subscription\Repository    $subscription
+ * @property Models\Invoice\Repository              $invoice
+ * @property Models\Payment\Repository              $payment
+ */
+class RepositoryManager extends Illuminate\Support\Manager
 {
     public function __construct($app)
     {
@@ -105,7 +111,7 @@ class RepositoryManager extends \Illuminate\Support\Manager
         return $repo->reload($entity);
     }
 
-    public function loadRelations(PublicEntity $entity): PublicEntity
+    public function loadRelations(Models\Base\PublicEntity $entity): Models\Base\PublicEntity
     {
         $repo = $this->getRepositoryClassFromObject($entity);
 

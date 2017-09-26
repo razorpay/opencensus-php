@@ -308,12 +308,7 @@ class Validator extends Base\Validator
 
     protected function validateGateway($input)
     {
-        if (Payment\Gateway::isValidGateway($input['gateway']) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Not a valid gateway: ' . $input['gateway'],
-                Entity::GATEWAY);
-        }
+        Payment\Gateway::validateGateway($input['gateway']);
 
         unset(
             $input[Entity::TPV],

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment;
 
+use App;
 use Cache;
 use Carbon\Carbon;
 use Lib\PhoneBook;
@@ -58,6 +59,8 @@ class Validator extends Base\Validator
         'referer'                 => 'sometimes|string|max:2083',
         'user_agent'              => 'sometimes|string',
         '_'                       => 'sometimes|array',
+        'test_success'            => 'sometimes|boolean',
+        'subscription_card_change'=> 'sometimes|boolean',
     ];
 
     protected static $editRules = [
@@ -107,6 +110,7 @@ class Validator extends Base\Validator
         'email',
         'hold_parameters',
         'customer_id',
+        'test_success',
     ];
 
     protected function validateEmail(array $input)
@@ -131,6 +135,27 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Invalid payment method given: ' . $method);
+        }
+    }
+
+    protected function validateTestSuccess(array $input)
+    {
+        $app = App::getFacadeRoot();
+
+        if (isset($input['test_success']) === false)
+        {
+            return;
+        }
+
+        if (($app['rzp.mode'] !== Mode::TEST) or
+            ($app['basicauth']->isProxyAuth() === false) or
+            (isset($input[Entity::SUBSCRIPTION_ID]) === false) or
+            (isset($input[Entity::TOKEN]) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'test_success cannot be sent.',
+                'test_success',
+                $input['test_success']);
         }
     }
 

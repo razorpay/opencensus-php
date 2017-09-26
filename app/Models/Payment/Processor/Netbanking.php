@@ -290,12 +290,6 @@ class Netbanking
         return array_diff(self::getAllBanks(), $enabled);
     }
 
-    public static function getDisabledBanksForCategory(string $category2)
-    {
-        return isset(Category::DISABLED[Method::NETBANKING][$category2]) ?
-                Category::DISABLED[Method::NETBANKING][$category2] : [];
-    }
-
     public static function getEnabledBanks(array $disabled = [])
     {
         return array_diff(self::getAllBanks(), $disabled);
@@ -358,14 +352,6 @@ class Netbanking
             ($merchant->isTPVRequired() === true))
         {
             $banks = self::getSupportedBanksForTPV();
-        }
-
-        if ((isset($merchant) === true) and
-            (empty($merchant->getCategory2()) === false))
-        {
-            $disabledBanks = self::getDisabledBanksForCategory($merchant->getCategory2());
-
-            $banks = array_diff($banks, $disabledBanks);
         }
 
         return array_unique($banks);

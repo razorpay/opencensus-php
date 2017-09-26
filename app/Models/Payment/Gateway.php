@@ -566,6 +566,7 @@ class Gateway
         IFSC::RATN,
         IFSC::SCBL,
         IFSC::UTIB,
+        IFSC::YESB,
     ];
 
     public static $emiBanksUsingCardTerminals = [
@@ -575,6 +576,7 @@ class Gateway
         IFSC::UTIB,
         IFSC::SCBL,
         IFSC::ICIC,
+        IFSC::YESB,
     ];
 
     public static $emiBankToGatewayMap = [
@@ -668,11 +670,11 @@ class Gateway
     {
         if (self::isValidGateway($gateway) === false)
         {
-            throw new Exception\LogicException(
-                'Unknown gateway',
-                null,
+            throw new Exception\BadRequestValidationFailureException(
+                'Gateway is invalid',
+                'gateway',
                 [
-                    'gateway' => $gateway,
+                    'gateway' => $gateway
                 ]);
         }
     }

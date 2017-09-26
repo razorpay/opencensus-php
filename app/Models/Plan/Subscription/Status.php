@@ -87,33 +87,57 @@ class Status
         // self::EXPIRED   => Event::SUBSCRIPTION_EXPIRED,
     ];
 
-    public static $changeCardStatuses = [
+    public static $cardChangeStatuses = [
         self::ACTIVE,
         self::PENDING,
         self::HALTED,
     ];
 
-    public static $nonCancellableStatuses = [
-        self::EXPIRED,
+    public static $cronChargeableStatuses = [
+        self::AUTHENTICATED,
+        self::ACTIVE,
+        self::HALTED,
+    ];
+
+    public static $manualTestChargeableStatuses = [
+        self::AUTHENTICATED,
+        self::ACTIVE,
+        self::HALTED,
+        self::PENDING,
+    ];
+
+    public static $invoiceManualChargeableStatuses = [
+        self::ACTIVE,
+        self::PENDING,
+        self::HALTED,
         self::COMPLETED,
         self::CANCELLED
     ];
 
-    public static $nonChargeableStatuses = [
+    public static $terminalStatuses = [
         self::EXPIRED,
         self::CANCELLED,
         self::COMPLETED,
     ];
 
-    public static $cronChargeableStatuses = [
-        self::ACTIVE,
+    public static $latestInvoiceStatuses = [
         self::AUTHENTICATED,
-        self::HALTED
+        self::ACTIVE,
+        self::PENDING
     ];
 
-    public static $invoiceManualChargeableStatuses = [
+    public static $oldInvoiceStatuses = [
         self::ACTIVE,
+        self::PENDING,
         self::HALTED,
+        self::CANCELLED,
+        self::COMPLETED
+    ];
+
+    public static $failingStatuses = [
+        self::PENDING,
+        self::HALTED,
+        self::COMPLETED,
     ];
 
     public static function isStatusValid($status) : bool

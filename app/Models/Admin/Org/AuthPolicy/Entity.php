@@ -26,6 +26,9 @@ class Entity extends Base\PublicEntity
     const INACTIVITY_LOCK                   = 'inactivity_lock';
     const PASSWORD_EXPIRY                   = 'password_expiry';
 
+    // Not used by the Entity but by the Validator
+    const LOCKED_ACCOUNT                    = 'locked_account';
+
     protected $entity = 'auth_policy';
 
     public $incrementing = true;
@@ -111,21 +114,6 @@ class Entity extends Base\PublicEntity
         self::PASSWORD_EXPIRY                 => 'int',
     ];
 
-    protected $createRules = [
-        self::MIN_LENGTH,
-        self::MAX_LENGTH,
-        self::MAX_PASSWORD_RETAIN,
-        self::STRONG_PASSWORD
-    ];
-
-    protected $beforeLoginRules = [
-        self::MAX_FAILED_ATTEMPTS,
-    ];
-
-    protected $afterLoginRules = [
-        self::PASSWORD_EXPIRY
-    ];
-
     public function toArray()
     {
         return [
@@ -150,23 +138,5 @@ class Entity extends Base\PublicEntity
     public function getMaxPasswordToRetain()
     {
         return $this->getAttribute(self::MAX_PASSWORD_RETAIN);
-    }
-
-    public function rules($operation = 'create')
-    {
-        $rules = [];
-
-        $rulesKey = $operation . 'Rules';
-
-        $attributes = $this->toArray();
-
-        foreach ($this->{$rulesKey} as $rule)
-        {
-            $class = 'RZP\Models\Admin\Org\AuthPolicy\Rules\\' . studly_case($rule) . 'Rule';
-
-            $rules[] = new $class($attributes[$rule]);
-        }
-
-        return $rules;
     }
 }

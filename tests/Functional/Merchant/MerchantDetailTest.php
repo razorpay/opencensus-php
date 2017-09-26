@@ -3,12 +3,12 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use DB;
-use Mockery;
-use Carbon\Carbon;
-use RZP\Tests\Functional\Fixtures\Entity\Org;
+
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
+
 
 class MerchantDetailTest extends TestCase
 {
@@ -45,6 +45,21 @@ class MerchantDetailTest extends TestCase
         $merchantDetail = $this->fixtures->create('merchant_detail:valid_fields');
 
         $this->ba->proxyAuth('rzp_test_' .$merchantDetail['merchant_id']);
+
+        $this->startTest();
+    }
+
+    public function testSubmitAutoActivate()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace'], '10000000000000');
+
+        $merchantDetail = $this->fixtures->create('merchant_detail');
+
+        $merchantId = $merchantDetail['merchant_id'];
+
+        $this->fixtures->edit('merchant', $merchantId, ['linked_account_kyc' => 0, 'parent_id' => '10000000000000']);
+
+        $this->ba->proxyAuth('rzp_test_' . $merchantId);
 
         $this->startTest();
     }

@@ -4,25 +4,27 @@ namespace RZP\Models\Merchant;
 
 use Config;
 use ApiResponse;
-use RZP\Exception;
+
 use RZP\Models\Base;
 use RZP\Models\User;
-use RZP\Models\Feature;
+use RZP\Models\Batch;
 use RZP\Constants\Mode;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Jobs\IrctcBatch;
 use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Jobs\MerchantSync;
+use RZP\Models\Transaction;
 use RZP\Models\BankAccount;
 use RZP\Models\Admin\Action;
 use RZP\Jobs\DispatchRouter;
+use RZP\Models\Admin\AdminLead;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Admin\Permission;
 use RZP\Models\Schedule\Task as ScheduleTask;
-use RZP\Models\Admin\AdminLead;
-use RZP\Models\Transaction;
+
 
 class Core extends Base\Core
 {
@@ -188,13 +190,6 @@ class Core extends Base\Core
                 $merchant->getId(),
                 [Entity::GROUPS, Entity::ADMINS]);
         }
-
-        $this->trace->info(
-            TraceCode::MERCHANT_EDIT,
-            [
-                'merchant_id' => $merchant->getId(),
-                'input'       => $input,
-            ]);
 
         return $merchant;
     }
@@ -433,5 +428,41 @@ class Core extends Base\Core
         $job->delay(Repository::ES_JOB_DELAY);
 
         (new DispatchRouter)->dispatchOn($job, DispatchRouter::ES_V2);
+    }
+
+    public function createBatches(Entity $merchant, array $input): array
+    {
+        $merchant->getValidator()->validateInput('create_batch', $input);
+
+        $type = $input['type'];
+
+        $input = $input['data'];
+
+        $merchant->getValidator()->validateInput($type, $input);
+
+        $batches  = [];
+
+        foreach ($input as $key => $file)
+        {
+            $batchType =  $type . '_' . $key;
+
+            $params = [
+                Batch\Entity::MERCHANT_ID => $merchant->getId(),
+                Batch\Entity::FILE        => $file,
+                Batch\Entity::TYPE        => $batchType
+            ];
+
+            $batch = (new Batch\Core)->create($params);
+
+            $batches[$batchType] = $batch->getId();
+        }
+
+        $class = 'RZP\\Jobs\\' . studly_case($type) . 'Batch';
+
+        $job = new $class($this->mode, $batches);
+
+        (new DispatchRouter)->dispatchOn($job, DispatchRouter::BATCH);
+
+        return $batches;
     }
 }

@@ -788,3 +788,16 @@ WHERE payments.merchant_id = "87qTXzFTBLFN7i" AND
     axis.vpc_AuthorizeId IS NOT NULL AND
     payments.gateway = "axis_migs" AND
     payments.reference2 is NULL;
+
+## VA IMPS Refund Correction
+DELETE FROM refunds
+    WHERE id='8fjRYHRMgyMpzq';
+DELETE FROM transactions
+    WHERE entity_id='8fjRYHRMgyMpzq';
+UPDATE payments
+    SET
+        amount_refunded=0,
+        refund_status=null,
+        base_amount_refunded=0,
+        status='captured'
+    WHERE id='8e0eGW1TrJALOU';

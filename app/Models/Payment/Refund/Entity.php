@@ -9,6 +9,9 @@ use RZP\Models\Transaction\Channel;
 use RZP\Models\Base\Traits\NotesTrait;
 use Razorpay\Spine\DataTypes\Dictionary;
 
+/**
+ * @property Payment\Entity $payment
+ */
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
@@ -203,21 +206,6 @@ class Entity extends Base\PublicEntity
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
-    }
-
-    public function getFormattedAmount()
-    {
-        $currency = $this->getCurrency();
-
-        $currencySymbol = Currency\Currency::SYMBOL[$currency];
-
-        $denominationFactor = Currency\Currency::DENOMINATION_FACTOR[$currency];
-
-        $amount = $this->getAmount() / $denominationFactor;
-
-        $amount = sprintf($amount == intval($amount) ? '%d' : '%.2f', $amount);
-
-        return $currencySymbol . ' ' . $amount;
     }
 
     public function getPaymentId()

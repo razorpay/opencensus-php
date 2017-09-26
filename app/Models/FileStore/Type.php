@@ -4,7 +4,7 @@ namespace RZP\Models\FileStore;
 
 use RZP\Constants;
 use RZP\Exception;
-use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
+use RZP\Models\Feature\Constants as FeatureConstants;
 
 class Type
 {
@@ -61,6 +61,8 @@ class Type
     const KOTAK_EMI_FILE                    = 'kotak_emi_file';
     const RBL_EMI_FILE                      = 'rbl_emi_file';
     const SCBL_EMI_FILE                     = 'scbl_emi_file';
+    const YES_EMI_FILE_SFTP                 = 'yes_emi_file_sftp';
+    const YES_EMI_FILE_MAIL                 = 'yes_emi_file_mail';
     const ICICI_EMI_FILE_SFTP               = 'icici_emi_file_sftp';
     const ICICI_EMI_FILE_MAIL               = 'icici_emi_file_mail';
 
@@ -77,6 +79,10 @@ class Type
     const INVOICE_BUCKET_CONFIG                 = 'invoice_bucket_config';
     const ACTIVATION_BUCKET_CONFIG              = 'activation_bucket_config';
     const H2H_BUCKET_CONFIG                     = 'h2h_bucket_config';
+
+    // File contants required for merchant feature onboarding
+    const FEATURE_ONBOARDING                = FeatureConstants::ONBOARDING;
+    const MARKETPLACE_VENDOR_AGREEMENT      = FeatureConstants::MARKETPLACE . "." . FeatureConstants::VENDOR_AGREEMENT;
 
     /**
      * Map of types allowed for each entity.
@@ -107,6 +113,8 @@ class Type
             self::KOTAK_EMI_FILE,
             self::RBL_EMI_FILE,
             self::SCBL_EMI_FILE,
+            self::YES_EMI_FILE_MAIL,
+            self::YES_EMI_FILE_SFTP,
             self::ICICI_EMI_FILE_MAIL,
             self::ICICI_EMI_FILE_SFTP,
             self::PNB_NETBANKING_REFUND,
@@ -136,6 +144,10 @@ class Type
             self::FUND_TRANSFER_DEFAULT,
             self::FUND_TRANSFER_H2H,
         ],
+
+        Constants\Entity::FEATURE => [
+            self::MARKETPLACE_VENDOR_AGREEMENT
+        ],
     ];
 
     /**
@@ -149,6 +161,8 @@ class Type
         self::KOTAK_EMI_FILE,
         self::RBL_EMI_FILE,
         self::SCBL_EMI_FILE,
+        self::YES_EMI_FILE_MAIL,
+        self::YES_EMI_FILE_SFTP,
         self::ICICI_EMI_FILE_MAIL,
         self::ICICI_EMI_FILE_SFTP,
         self::KOTAK_NETBANKING_CLAIM,
@@ -193,6 +207,7 @@ class Type
             self::KOTAK_EMI_FILE,
             self::RBL_EMI_FILE,
             self::SCBL_EMI_FILE,
+            self::YES_EMI_FILE_MAIL,
             self::ICICI_EMI_FILE_MAIL,
             self::BATCH_INPUT,
             self::BATCH_OUTPUT,
@@ -217,6 +232,7 @@ class Type
         self::H2H_BUCKET_CONFIG => [
             self::FUND_TRANSFER_H2H,
             self::ICICI_EMI_FILE_SFTP,
+            self::YES_EMI_FILE_SFTP,
         ],
     ];
 
