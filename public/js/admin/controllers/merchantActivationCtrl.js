@@ -22,7 +22,7 @@ app.controller('MerchantActivationCtrl', [
 
     $scope.panVerified = false;
     getData();
-
+    getFileData();
     getOnboardingResponses();
 
     $scope.verifyPAN = function(signatories, pan_name, pan_number) {
@@ -92,7 +92,7 @@ app.controller('MerchantActivationCtrl', [
               $scope['onboarding'][key.humanize()] = value;
             });
           } else {
-            $scope.alerts.resetAlerts();
+            $scope.alerts.resetAlerts(true);
             angular.forEach(data.errors, function(value) {
               $scope.alerts.addAlert('danger', value);
             });
@@ -103,32 +103,65 @@ app.controller('MerchantActivationCtrl', [
         });
     }
 
-    function getData() {
-      var request = $http.get(
-        '/admin/merchant/' + $scope.merchant.id + '/details'
-      );
+    function getFileData() {
+      var data = {
+        route_name: 'merchant_activation_files',
+        url_params: {
+          '{id}': $scope.merchant.id,
+        },
+        account_id: $scope.merchant.id,
+      };
+      var request = $http.get('/admin/generic', {
+        params: data,
+      });
       request
         .success(function(data) {
           if (data.success) {
-            angular.forEach(data.data.merchant.steps_finished, function(
+            angular.forEach(data.data.files, function(value, key) {
+              $scope.files[key] = value;
+            });
+          } else {
+            $scope.alerts.resetAlerts(true);
+            angular.forEach(data.errors, function(value) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        })
+        .error(function() {
+          $scope.alerts.addAlert('danger');
+        });
+    }
+
+    function getData() {
+      var data = {
+        route_name: 'merchant_details_fetch',
+        account_id: $scope.merchant.id,
+        merchant_id: $scope.merchant.id,
+      };
+      var request = $http.get('/admin/generic', {
+        params: data,
+      });
+      request
+        .success(function(data) {
+          if (data.success) {
+            angular.forEach(data.data.merchant_details.steps_finished, function(
               value,
               key
             ) {
               $scope.check[value] = true;
             });
-            angular.forEach(data.data.merchant.merchant_details, function(
-              value,
-              key
-            ) {
+            angular.forEach(data.data.merchant_details, function(value, key) {
               $scope.data[key] = value;
             });
-            angular.forEach(data.data.activation.files, function(value, key) {
-              $scope.files[key] = value;
-            });
-            $scope.merchant = data.data.merchant;
+            $scope.merchant = data.data;
+            $scope.merchant.submitted = $scope.data['submitted'];
+            $scope.merchant.locked = $scope.data['locked'];
             $scope.locked = $scope.data['locked'];
           } else {
-            $scope.alerts.addAlert('danger');
+            $scope.alerts.resetAlerts(true);
+            angular.forEach(data.errors, function(value) {
+              $scope.alerts.addAlert('danger', value);
+            });
           }
         })
         .error(function() {

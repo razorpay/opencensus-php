@@ -9,6 +9,8 @@ import React, { Component } from 'react';
  * placeholder prop, the component will display it if there are no
  * resultant children
  *
+ * customClass: You can pass any customer class. Currently custom styles are put only for customClass = 'notes'
+ *
  * Usage:
  * <Definiton>
  *   <span>Contact Details</span>
@@ -19,7 +21,12 @@ import React, { Component } from 'react';
  */
 export default class Definition extends Component {
   render() {
-    const { allowEmptyTitle, children, placeholder } = this.props;
+    const {
+      allowEmptyTitle,
+      children,
+      placeholder,
+      customClass = '',
+    } = this.props;
 
     let definition = Array.isArray(children) ? [...children] : [children];
 
@@ -41,7 +48,7 @@ export default class Definition extends Component {
       body = definition.slice(1);
 
     return (
-      <dl class="rzp-definition">
+      <dl class={`rzp-definition ${customClass}`}>
         {heading &&
           <dt>
             {heading}

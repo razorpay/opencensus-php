@@ -35,10 +35,14 @@ class Service extends Base\Service
         $this->trace = $app['trace'];
     }
 
-    public function fetchCollectionForAutocomplete($mode, $entity)
+    public function fetchCollectionForAutocomplete(
+        string $mode,
+        string $entity,
+        array $params = [])
     {
         $error = null;
         $count = 100;
+
         $collection = [
             'entity' => 'collection',
             'count'  => 0,
@@ -54,22 +58,27 @@ class Service extends Base\Service
             $routeName = 'item_fetch_multiple';
         }
 
+        $genericService = new Generic\Service;
+
         for ($i = 0; $i < 5; $i++)
         {
-            // Using generic
-
-            $customerInput = [
-                'route_name' => $routeName,
-                'mode' => $mode,
-                'query_params' => [
-                    'skip' => $i * $count,
-                    'count' => $count
-                ]
+            $offsets = [
+                'skip'  => $i * $count,
+                'count' => $count,
             ];
 
-            $genericService = new Generic\Service;
+            $requestParams = [
+                'route_name'   => $routeName,
+                'mode'         => $mode,
+                'query_params' => array_merge($params, $offsets),
+            ];
 
-            list($error, $list) = $genericService->call('GET', $customerInput);
+            list($error, $list) = $genericService->call('GET', $requestParams);
+
+            if (!empty($error))
+            {
+                break;
+            }
 
             $collection['count'] = $collection['count'] + $list['count'];
             $collection['items'] = array_merge($collection['items'], $list['items']);

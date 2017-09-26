@@ -143,6 +143,12 @@ app.controller('EntitiesCtrl', [
     // len==1 means a text input, rest are drop-downs
     // This list is alphabetically sorted, take care to maintain that
     $scope.availableFilters = {
+      addon: {
+        deleted: booleanList,
+        invoice_id: ['Invoice Id'],
+        merchant_id: ['Merchant Id'],
+        subscription_id: ['Subscription Id'],
+      },
       adjustment: { merchant_id: ['Merchant Id'] },
       amex: {
         payment_id: ['Payment Id'],
@@ -348,6 +354,11 @@ app.controller('EntitiesCtrl', [
         customer_email: ['Customer Email'],
         customer_contact: ['Customer Contact'],
       },
+      item: {
+        active: booleanList,
+        type: ['Type'],
+        merchant_id: ['Merchant Id'],
+      },
       key: {
         merchant_id: ['Merchant Id'],
       },
@@ -469,6 +480,12 @@ app.controller('EntitiesCtrl', [
         payment_id: ['Payment Id'],
         received: booleanList,
       },
+      plan: {
+        interval: ['Interval'],
+        item_id: ['Item_id'],
+        merchant_id: ['Merchant Id'],
+        period: ['Period'],
+      },
       pricing: {
         plan_id: ['Plan Id'],
       },
@@ -502,6 +519,28 @@ app.controller('EntitiesCtrl', [
       settlement_details: {
         merchant_id: ['Merchant Id'],
         settlement_id: ['Settlement Id'],
+      },
+      subscription: {
+        auth_attempts: ['Auth Attempts'],
+        customer_email: ['Customer Email'],
+        customer_id: ['Customer Id'],
+        error_status: ['Error Status'],
+        merchant_id: ['Merchant Id'],
+        notes: ['Notes'],
+        plan_id: ['Plan Id'],
+        schedule_id: ['Schedule Id'],
+        status: [
+          'all',
+          'created',
+          'authenticated',
+          'active',
+          'pending',
+          'halted',
+          'cancelled',
+          'completed',
+          'expired',
+        ],
+        token_id: ['Token Id'],
       },
       terminal: {
         enabled: booleanList,
