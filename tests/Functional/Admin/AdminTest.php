@@ -713,12 +713,21 @@ class AdminTest extends TestCase
 
     public function testPasswordResetInvalidAuthType()
     {
+        // Password reset should not work on google auth
+
         $org = $this->fixtures->create('org', ['auth_type' => 'google_auth']);
 
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $org->getId(), 'email' => 'abc@razorpay.com']);
 
-        $this->ba->appAuth('rzp_test', '', $this->hostName);
+        $hostName = 'newtesting.newtesting.com';
+
+        $this->orgHostName = $this->fixtures->create('org_hostname', [
+            'org_id'        => $org->getId(),
+            'hostname'      => $hostName,
+        ]);
+
+        $this->ba->appAuth('rzp_test', '', $hostName);
 
         $this->startTest();
 

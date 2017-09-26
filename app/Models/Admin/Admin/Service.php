@@ -175,16 +175,16 @@ class Service extends Base\Service
 
     public function resetPassword(string $orgId, array $input)
     {
-        $validator = new Validator();
-
         $org = $this->repo->org->findByPublicId($orgId);
 
         $input[Org\Entity::AUTH_TYPE] = $org->getAuthType();
 
-        $validator->validateInput('reset', $input);
-
         // Get admin
         $admin = $this->getAdminFromEmail($orgId, $input['email']);
+
+        $validator = new Validator($admin);
+
+        $validator->validateInput('reset', $input);
 
         $key = $this->getCacheKeyForResetToken($org->getId(), $admin->getId());
 

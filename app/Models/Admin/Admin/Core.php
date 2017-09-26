@@ -93,7 +93,7 @@ class Core extends Base\Core
         bool $forgotPassword = true,
         $updateType = 'reset')
     {
-        $validator = new Validator();
+        $validator = new Validator($admin);
 
         $validator->validateInput($updateType, $input);
 
