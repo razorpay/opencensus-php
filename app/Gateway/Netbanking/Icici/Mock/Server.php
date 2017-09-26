@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Icici\Mock;
 
+use Razorpay\Api\Request;
 use RZP\Exception;
 use RZP\Gateway\Base;
 
@@ -70,9 +71,24 @@ class Server extends Base\Mock\Server
         return ($content[RequestFields::MODE] === Mode::STANDING_INSTRUCTIONS);
     }
 
-    public function getBankingType($input)
+    public function getBankingType($input) : string
     {
-        return ($input['PID'] === 'random_pid_corp') ? 'corporate' : 'retail';
+        switch ($input[RequestFields::PAYEE_ID])
+        {
+            case 'random_pid_corp':
+                $bankingType = 'corporate';
+                break;
+
+            case 'random_payee_id_rec':
+                $bankingType = 'recurring';
+                break;
+
+            default:
+                $bankingType = 'retail';
+                break;
+        }
+
+        return $bankingType;
     }
 
     public function verify($input)

@@ -207,7 +207,9 @@ class Core extends Base\Core
             // customer. We don't have a way to handle first recurring
             // with an existing recurring token.
             //
-            $tokens = (new Token\Core)->removeNetbankingRecurringTokens($tokens);
+
+            // TODO: Uncomment this when we use charge_at_will for global flow
+            // $tokens = (new Token\Core)->removeNetbankingRecurringTokens($tokens);
 
             $response['tokens'] = $tokens->toArrayPublic();
         }

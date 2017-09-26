@@ -159,7 +159,6 @@ class Entity extends Base\PublicEntity
         self::REFERENCE1,
         self::REFERENCE2,
         self::DISPUTED,
-        self::RECURRING_TYPE,
     ];
 
     protected $visible = [
@@ -294,7 +293,6 @@ class Entity extends Base\PublicEntity
         self::SUBSCRIPTION_ID,
         self::AMOUNT_TRANSFERRED,
         self::ACQUIRER_DATA,
-        self::RECURRING_TYPE,
     ];
 
     protected $appends = [self::PUBLIC_ID, self::CAPTURED, self::ACQUIRER_DATA];
@@ -350,6 +348,7 @@ class Entity extends Base\PublicEntity
         self::TERMINAL_ID          => null,
         self::TRANSFER_ID          => null,
         self::DISPUTED             => false,
+        self::RECURRING_TYPE       => null,
     ];
 
     protected $amounts = [
@@ -641,7 +640,7 @@ class Entity extends Base\PublicEntity
      *
      * @param $type
      */
-    public function valildateAndSetRecurringType($type)
+    public function setRecurringType($type)
     {
         RecurringType::validateRecurringType($type);
 
@@ -777,11 +776,6 @@ class Entity extends Base\PublicEntity
     public function setMetadataKey($key, $value)
     {
         $this->metadata[$key] = $value;
-    }
-    
-    public function isEmandate()
-    {
-        return ($this->getRecurringType() !== null);
     }
     
     public function getRecurringType()
@@ -1807,14 +1801,6 @@ class Entity extends Base\PublicEntity
         if (in_array($currentMerchantId, $merchantIds, true) === false)
         {
             unset($array[self::ACQUIRER_DATA]);
-        }
-    }
-
-    public function setPublicRecurringTypeAttribute(array & $array)
-    {
-        if (empty($array[self::RECURRING_TYPE]) === true)
-        {
-            unset($array[self::RECURRING_TYPE]);
         }
     }
 

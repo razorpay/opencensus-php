@@ -245,6 +245,36 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function createCustomerToken(int $recurring)
+    {
+        $this->ba->proxyAuth();
+
+        $request = [
+            'url'     => '/customers/cust_100000customer/tokens',
+            'method'  => 'post',
+            'content' => [
+                'method'     => 'netbanking',
+                'bank'       => 'ICIC',
+                'max_amount' => 100000,
+                'recurring'  => $recurring,
+            ]
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function getTokenById(string $id)
+    {
+        $this->ba->privateAuth();
+
+        $request = [
+            'url'     => '/customers/cust_100000customer/tokens/' . $id,
+            'method'  => 'get',
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function doAuthPayment($payment = null, $server = null)
     {
         if ($payment === null)

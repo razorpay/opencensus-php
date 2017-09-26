@@ -435,8 +435,9 @@ class NetbankingIciciEMandateTest extends TestCase
             });
 
         $token = $this->getLastEntity(Entity::TOKEN, true);
-        $this->assertEquals(Token::DEFAULT_MAX_AMOUNT, $token[Token::MAX_AMOUNT]);
-        $this->assertGreaterThan($token[Token::MAX_AMOUNT], $payment[Payment::AMOUNT]);
+        // TODO: Uncomment this line when we start accepting max amount as input
+        // $this->assertEquals(Token::DEFAULT_MAX_AMOUNT, $token[Token::MAX_AMOUNT]);
+        $this->assertGreaterThan(Token::DEFAULT_MAX_AMOUNT, $payment[Payment::AMOUNT]);
     }
 
     /**
@@ -536,7 +537,8 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEquals($netbanking[Netbanking::SI_TOKEN], $token[Token::GATEWAY_TOKEN]);
         $this->assertEquals($payment[Payment::TOKEN_ID], $token[Token::ID]);
         $this->assertEquals(true, $token[Token::RECURRING]);
-        $this->assertEquals(Token::DEFAULT_MAX_AMOUNT, $token[Token::MAX_AMOUNT]);
+        // TODO: Uncomment this line when we start accepting max amount as input
+        // $this->assertEquals(Token::DEFAULT_MAX_AMOUNT, $token[Token::MAX_AMOUNT]);
         $this->assertEquals(RecurringStatus::CONFIRMED, $token[Token::RECURRING_DETAILS][Token::RECURRING_STATUS]);
         $this->assertEquals(null, $token[Token::RECURRING_DETAILS][Token::RECURRING_FAILURE_REASON]);
         $this->assertEquals($usedCount, $token[Token::USED_COUNT]);
@@ -577,7 +579,7 @@ class NetbankingIciciEMandateTest extends TestCase
         // When recurring is false and recurring status is not set,
         // we don't get recurring, related items in the tokens array
         $this->assertArrayNotHasKey(Token::RECURRING, $token);
-        $this->assertArrayNotHasKey(Token::RECURRING_DETAILS, $token);
+        $this->assertNull($token[Token::RECURRING_DETAILS]);
 
         // SI success but payment status failed
         $this->assertEquals('N', $netbanking[Netbanking::SI_STATUS]);

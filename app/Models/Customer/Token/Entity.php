@@ -56,8 +56,7 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TOKEN2,
         self::RECURRING,
         self::EXPIRED_AT,
-        // TODO: uncomment when we start accepting token as input
-        // self::MAX_AMOUNT
+        self::MAX_AMOUNT
     ];
 
     protected $visible = [
@@ -97,6 +96,8 @@ class Entity extends Base\PublicEntity
         self::RECURRING_DETAILS,
         self::USED_AT,
         self::CREATED_AT,
+        // TODO: uncomment when we start accepting token as input
+        // self::MAX_AMOUNT,
     ];
 
     protected $defaults = [
@@ -118,6 +119,9 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::CARD,
         self::RECURRING,
+    ];
+
+    protected $appends = [
         self::RECURRING_DETAILS,
     ];
 
@@ -240,11 +244,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RECURRING_FAILURE_REASON);
     }
 
-    public function getRecurringDetails()
-    {
-        return $this->getAttribute(self::RECURRING_DETAILS);
-    }
-
     public function isLocal()
     {
         return ($this->getMerchantId() !== Account::SHARED_ACCOUNT);
@@ -267,7 +266,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::RECURRING, $recurring);
     }
 
-    public function validateAndSetRecurringStatus($recurringStatus)
+    public function setRecurringStatus($recurringStatus)
     {
         RecurringStatus::validateRecurringStatus($recurringStatus);
 
@@ -336,22 +335,16 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * If the token is not recurring and recurring status is not set, then
-     * we do not return recurring details. Else, we return recurring status
-     * and recurring failure reason as a key-value pair in recurring details
-     *
-     * @param array $array
+     * Appending recurring status and recurring failure reason when recurring = true or recurring status is set
      */
-    public function setPublicRecurringDetailsAttribute(array & $array)
+    public function getRecurringDetailsAttribute()
     {
-        if (($this->isRecurring() === false) and
-            (empty($this->getRecurringStatus()) === true))
+        $shouldNotAppendRecurringDetails = (($this->isRecurring() === false) and
+                                            (empty($this->getRecurringStatus()) === true));
+
+        if ($shouldNotAppendRecurringDetails === false)
         {
-            unset($array[self::RECURRING_DETAILS]);
-        }
-        else
-        {
-            $array[self::RECURRING_DETAILS] = [
+            return [
                 self::RECURRING_STATUS         => $this->getRecurringStatus(),
                 self::RECURRING_FAILURE_REASON => $this->getRecurringFailureReason(),
             ];

@@ -34,7 +34,9 @@ class Gateway extends Base\Gateway
     ];
 
     // Payment type recurring
-    const RECURRING = 'R';
+    const RECURRING         = 'R';
+
+    const RECURRING_BANKING = 'recurring';
 
     public function setGatewayParams($input, $mode, $terminal)
     {
@@ -240,6 +242,11 @@ class Gateway extends Base\Gateway
             ($terminal->isCorporate() === true))
         {
             $this->setBankingType(self::CORPORATE);
+        }
+        else if ((isset($terminal) === true) and
+                 ($terminal->isRecurring() === true))
+        {
+            $this->setBankingType(self::RECURRING_BANKING);
         }
 
         $this->setDomainType();
@@ -794,8 +801,17 @@ class Gateway extends Base\Gateway
         {
             return $this->getTestSecretCorporate();
         }
+        else if ($this->isRecurringBanking() === true)
+        {
+            return $this->config['test_hash_secret_rec'];
+        }
 
         return parent::getTestSecret();
+    }
+
+    protected function isRecurringBanking()
+    {
+        return ($this->bankingType === self::RECURRING_BANKING);
     }
 
     protected function getTestSecretCorporate()

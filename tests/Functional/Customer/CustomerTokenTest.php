@@ -2,9 +2,8 @@
 
 namespace RZP\Tests\Functional\CustomerToken;
 
-use Mockery;
+use RZP\Models\Customer\Token;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 
@@ -162,6 +161,76 @@ class CustomerTokenTest extends TestCase
         $this->ba->publicAuth();
 
         $this->startTest();
+    }
+
+    public function testFetchNbRecurringFalseRecurringStatusNullToken()
+    {
+        $token = $this->createCustomerToken(0);
+
+        // Public mode
+        $token = $this->getTokenById($token['id']);
+
+        // Recurring is false, and recurring status is null, and therefore recurring is not shown to the public
+        $this->assertArrayNotHasKey(Token\Entity::RECURRING, $token);
+
+        // We never display the keys below to the public
+        $this->assertArrayNotHasKey(Token\Entity::RECURRING_STATUS, $token);
+        $this->assertArrayNotHasKey(Token\Entity::RECURRING_FAILURE_REASON, $token);
+
+        // We don't append recurring status and recurring failure reason when they are null
+        $this->assertNull($token[Token\Entity::RECURRING_DETAILS]);
+    }
+
+    public function testFetchNbRecurringTrueRecurringStatusNullToken()
+    {
+        $token = $this->createCustomerToken(1);
+
+        // Public mode
+        $token = $this->getTokenById($token['id']);
+
+        $this->assertEquals(true, $token[Token\Entity::RECURRING]);
+
+        // We never display the keys below to the public
+        $this->assertArrayNotHasKey(Token\Entity::RECURRING_STATUS, $token);
+        $this->assertArrayNotHasKey(Token\Entity::RECURRING_FAILURE_REASON, $token);
+
+        // We append null values to the recurring details array because recurring = true
+        $this->assertNull($token[Token\Entity::RECURRING_DETAILS][Token\Entity::RECURRING_STATUS]);
+        $this->assertNull($token[Token\Entity::RECURRING_DETAILS][Token\Entity::RECURRING_FAILURE_REASON]);
+    }
+
+    public function testFetchNbRecurringFalseRecurringStatusRejected()
+    {
+        $token = $this->createCustomerToken(0);
+
+        $this->fixtures->edit('token', $token['id'], ['recurring_status' => 'rejected', 'recurring_failure_reason' => 'Registration failed']);
+
+        $token = $this->getTokenById($token['id']);
+
+        $this->assertEquals(false, $token[Token\Entity::RECURRING]);
+        $this->assertArrayNotHasKey(Token\Entity::RECURRING_STATUS, $token);
+        $this->assertArrayNotHasKey(Token\Entity::RECURRING_FAILURE_REASON, $token);
+
+        // recurring status and recurring failure reason are appended to the recurring details array
+        $this->assertEquals('rejected', $token[Token\Entity::RECURRING_DETAILS][Token\Entity::RECURRING_STATUS]);
+        $this->assertEquals('Registration failed', $token[Token\Entity::RECURRING_DETAILS][Token\Entity::RECURRING_FAILURE_REASON]);
+    }
+
+    public function testFetchNbRecurringTrueRecurringStatusConfirmed()
+    {
+        $token = $this->createCustomerToken(1);
+
+        $this->fixtures->edit('token', $token['id'], ['recurring_status' => 'confirmed']);
+
+        $token = $this->getTokenById($token['id']);
+
+        $this->assertEquals(true, $token[Token\Entity::RECURRING]);
+        $this->assertArrayNotHasKey(Token\Entity::RECURRING_STATUS, $token);
+        $this->assertArrayNotHasKey(Token\Entity::RECURRING_FAILURE_REASON, $token);
+
+        // recurring status and recurring failure reason are appended to the recurring details array
+        $this->assertEquals('confirmed', $token[Token\Entity::RECURRING_DETAILS][Token\Entity::RECURRING_STATUS]);
+        $this->assertEquals(null, $token[Token\Entity::RECURRING_DETAILS][Token\Entity::RECURRING_FAILURE_REASON]);
     }
 
     protected function mockSession()

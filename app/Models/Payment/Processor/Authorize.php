@@ -1430,7 +1430,7 @@ trait Authorize
             // TODO: Add support for when we allow recurring tokens for first payments
             $type = ($token->isRecurring() === true) ? Payment\RecurringType::AUTO : Payment\RecurringType::INITIAL;
 
-            $payment->valildateAndSetRecurringType($type);
+            $payment->setRecurringType($type);
         }
     }
 
@@ -2380,7 +2380,7 @@ trait Authorize
             return;
         }
 
-        $token->validateAndSetRecurringStatus($recurringStatus);
+        $token->setRecurringStatus($recurringStatus);
     }
 
     protected function createAndSetTerminalInGatewayToken(Payment\Entity $payment, Token\Entity $token)
