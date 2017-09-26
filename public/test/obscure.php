@@ -83,7 +83,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <td>
             <select name="bank">
                 <option value="HDFC">HDFC Bank</option>
-                <option value="CORP" selected>Corporation Bank</option>
+                <option value="CORP">Corporation Bank</option>
                 <option value="SBIN">SBI Bank</option>
                 <option value="ICIC">ICICI Bank</option>
                 <option value="AIRP">Airtel Payments Bank</option>
