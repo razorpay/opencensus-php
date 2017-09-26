@@ -263,8 +263,6 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        $this->action = Action::AUTHORIZE;
-
         $gatewayAttributes = $this->getContentToSave($payment);
 
         $gatewayAttributes[ResponseFields::BANK_REF_NUMBER] = $content[ResponseFields::BANK_REF_NUMBER];
@@ -283,8 +281,6 @@ class Gateway extends Base\Gateway
         {
             $gatewayPayment = $this->updateGatewayPaymentEntity($gatewayPayment, $gatewayAttributes);
         }
-
-        $this->action = Action::VERIFY;
 
         return $gatewayPayment;
     }
