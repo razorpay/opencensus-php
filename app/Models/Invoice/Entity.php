@@ -19,7 +19,9 @@ use RZP\Models\Plan\Subscription;
 use RZP\Exception\LogicException;
 use RZP\Models\Base\Traits\NotesTrait;
 
-
+/**
+ * @property Subscription\Entity $subscription
+ */
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
@@ -202,6 +204,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION              => null,
         self::NOTES                    => [],
         self::COMMENT                  => null,
+        self::TERMS                    => null,
         self::SHORT_URL                => null,
         self::VIEW_LESS                => 1,
         self::TYPE                     => Type::INVOICE,
@@ -342,6 +345,7 @@ class Entity extends Base\PublicEntity
         self::BILLING_END,
         self::TYPE,
         self::GROUP_TAXES_DISCOUNTS,
+        self::SUBSCRIPTION_STATUS,
         self::USER_ID,
         self::CREATED_AT,
     ];
@@ -362,6 +366,10 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::ORDER_ID,
         self::SUBSCRIPTION_ID,
+        // Later, we will come up with a proper structure to show
+        // fields based on proper auth structure.
+        // TODO: Remove this when the above is implemented
+        self::SUBSCRIPTION_STATUS,
     ];
 
     protected $casts = [
@@ -372,6 +380,8 @@ class Entity extends Base\PublicEntity
         self::AMOUNT                => 'int',
         self::AMOUNT_PAID           => 'int',
         self::AMOUNT_DUE            => 'int',
+        self::BILLING_START         => 'int',
+        self::BILLING_END           => 'int',
         self::GROUP_TAXES_DISCOUNTS => 'bool',
     ];
 
@@ -478,6 +488,16 @@ class Entity extends Base\PublicEntity
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
+    }
+
+    public function getBillingStart()
+    {
+        return $this->getAttribute(self::BILLING_START);
+    }
+
+    public function getBillingEnd()
+    {
+        return $this->getAttribute(self::BILLING_END);
     }
 
     public function getShortUrl()
@@ -835,6 +855,12 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::BILLING_END, $billingEnd);
     }
 
+    public function setBillingPeriod(array $billingPeriod)
+    {
+        $this->setBillingStart($billingPeriod['start']);
+        $this->setBillingEnd($billingPeriod['end']);
+    }
+
     public function setGrossAmount(int $amount)
     {
         $this->setAttribute(self::GROSS_AMOUNT, $amount);
@@ -1019,6 +1045,18 @@ class Entity extends Base\PublicEntity
         else
         {
             unset($array[self::USER_ID]);
+        }
+    }
+
+    public function setPublicSubscriptionStatusAttribute(array & $array)
+    {
+        $app = App::getFacadeRoot();
+
+        $basicAuth = $app['basicauth'];
+
+        if ($basicAuth->isProxyOrPrivilegeAuth() === false)
+        {
+            unset($array[self::SUBSCRIPTION_STATUS]);
         }
     }
 

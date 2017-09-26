@@ -3,7 +3,9 @@
 namespace RZP\Models\Base;
 
 use App;
+use RZP\Base;
 use RZP\Models\Merchant;
+use RZP\Base\RepositoryManager;
 
 class Service
 {
@@ -37,7 +39,7 @@ class Service
 
     /**
      * Repository manager instance
-     * @var Base\RepositoryManager
+     * @var RepositoryManager
      */
     protected $repo;
 

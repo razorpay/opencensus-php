@@ -33,7 +33,7 @@ class CreateBatchTable extends Migration
             $table->char(Batch::DOWNLOAD_FILE_URL, Batch::FILE_URL_LENGTH)
                   ->nullable();
 
-            $table->char(Batch::TYPE, Batch::ID_LENGTH);
+            $table->char(Batch::TYPE, 25);
 
             $table->char(Batch::STATUS, Batch::STATUS_LENGTH);
 

@@ -25,7 +25,6 @@ class GenerateEmailTemplates extends Command
     /**
      * Create a new command instance.
      *
-     * @return void
      */
     public function __construct()
     {
@@ -34,8 +33,6 @@ class GenerateEmailTemplates extends Command
 
     /**
      * Execute the console command.
-     *
-     * @return mixed
      */
     public function fire()
     {
@@ -71,6 +68,14 @@ class GenerateEmailTemplates extends Command
             'emails/invoice/merchant/captured',
 
             'emails/oauth/app_authorization',
+
+            'emails/subscription/charged',
+            'emails/subscription/cancelled',
+            'emails/subscription/pending',
+            'emails/subscription/halted',
+            'emails/subscription/completed',
+            'emails/subscription/card_changed',
+            'emails/subscription/authenticated',
         ];
 
         $view_directory = app_path().'/../resources/views/';
@@ -91,9 +96,9 @@ class GenerateEmailTemplates extends Command
 
             $emailTemplate = file_get_contents($view_directory.$template.".email");
 
-            $convertor = new CssToInlineStyles;
+            $converter = new CssToInlineStyles;
 
-            $msg = $convertor->convert($emailTemplate, $cssContent);
+            $msg = $converter->convert($emailTemplate, $cssContent);
 
             // We run decode because some entities '{' get converted by cssInliner
             // TODO: Find a better solution to this

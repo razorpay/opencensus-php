@@ -5,6 +5,8 @@ namespace RZP\Http\Controllers;
 use Request;
 use ApiResponse;
 use RZP\Constants\Entity as E;
+use RZP\Exception\BaseException;
+use View;
 
 class SubscriptionController extends Controller
 {
@@ -121,7 +123,16 @@ class SubscriptionController extends Controller
 
     public function postChargeSubscriptionInvoiceManually($invoiceId)
     {
-        $subscription = $this->service()->chargeSubscriptionInvoiceManually($invoiceId);
+        $invoice = $this->service()->chargeSubscriptionInvoiceManually($invoiceId);
+
+        return ApiResponse::json($invoice);
+    }
+
+    public function postTestChargeSubscription($subscriptionId)
+    {
+        $input = Request::input();
+
+        $subscription = $this->service()->chargeTestSubscription($subscriptionId, $input);
 
         return ApiResponse::json($subscription);
     }
@@ -140,6 +151,32 @@ class SubscriptionController extends Controller
         $subscription = $this->service()->cancelSubscription($subscriptionId, $input);
 
         return ApiResponse::json($subscription);
+    }
+
+    public function getSubscriptionView(string $subscriptionId)
+    {
+        $error = Request::get('error');
+
+        try
+        {
+            $data = $this->service()->getSubscriptionViewData($subscriptionId);
+        }
+        catch (BaseException $e)
+        {
+            $data = $e->getError()->toPublicArray();
+        }
+
+        if (empty($error) === false)
+        {
+            $data['error'] = $error;
+        }
+
+        $view = 'subscription.index';
+
+        $data['request_params'] = Request::all();
+
+        return View::make($view)
+            ->with('data', $data);
     }
 
     public function postCancelDueSubscriptions()

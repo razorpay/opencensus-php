@@ -122,6 +122,24 @@ class NetbankingCorporationGatewayTest extends TestCase
         $this->assertTestResponse($gatewayPayment, 'testAuthFailedVerifySuccessEntity');
     }
 
+    public function testAuthFailedVerifyFailed()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockFailedCallbackAndVerifyResponse();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doNetbankingCorporationAuthAndCapturePayment();
+            });
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertTestResponse($gatewayPayment, 'testAuthFailedVerifyFailedEntity');
+    }
+
     public function testPaymentVerify()
     {
         $payment = $this->doNetbankingCorporationAuthAndCapturePayment();
@@ -215,7 +233,7 @@ class NetbankingCorporationGatewayTest extends TestCase
         {
             if ($action === 'authorize')
             {
-                $content[Corporation\ResponseFields::STATUS] = Corporation\ResponseCodeMap::RESULT_REJECTED;
+                $content[Corporation\ResponseFields::STATUS] = Corporation\ResponseCodeMap::FAILURE_CODE;
 
                 unset($content[Corporation\ResponseFields::BANK_REF_NUMBER]);
             }
@@ -245,5 +263,23 @@ class NetbankingCorporationGatewayTest extends TestCase
 
             $gatewayPayment->saveOrFail();
         }
+
+    protected function mockFailedCallbackAndVerifyResponse()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content[Corporation\ResponseFields::STATUS] = Corporation\ResponseCodeMap::FAILURE_CODE;
+
+                unset($content[Corporation\ResponseFields::BANK_REF_NUMBER]);
+            }
+            else if ($action === 'verify')
+            {
+                $content = [
+                    Corporation\ResponseFields::VERIFY_RESULT => Corporation\ResponseCodeMap::RESULT_REJECTED
+                ];
+            }
+        });
     }
 }

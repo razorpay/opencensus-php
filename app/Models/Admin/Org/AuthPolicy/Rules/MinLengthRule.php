@@ -13,8 +13,10 @@ class MinLengthRule extends Base
         $this->minLength = $minLength;
     }
 
-    public function validate($admin, $password)
+    public function validate($admin, array $data)
     {
+        $password = $data['password'] ?? '';
+
         if (strlen($password) < $this->minLength)
         {
             throw new Exception\BadRequestValidationFailureException(

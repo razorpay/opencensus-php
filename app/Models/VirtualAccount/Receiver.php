@@ -21,7 +21,8 @@ class Receiver
     ];
 
     const ROOT_LENGTH               = 4;
-    const HANDLE_LENGTH             = 4;
+    // Handle length can be 3 also
+    // const HANDLE_LENGTH             = 4;
     const DESCRIPTOR_LENGTH         = 9;
     const ACCOUNT_NUMBER_LENGTH     = 17;
 
@@ -33,9 +34,13 @@ class Receiver
     const ACCOUNT_NUMBER_CHAR_SPACE       = '34679ACDEFGHJKLMNPQRTUVWXY';
     const MAX_ACCOUNT_GENERATION_ATTEMPTS = 10;
 
+    protected $app;
     protected $merchant;
     protected $name;
     protected $descriptor;
+    protected $trace;
+    protected $repo;
+    protected $mode;
 
     public function __construct(
         Merchant\Entity $merchant,
@@ -159,7 +164,7 @@ class Receiver
     {
         $handle = $this->getHandle($root);
 
-        $descriptor = $this->getDescriptor();
+        $descriptor = $this->getDescriptor($handle);
 
         $accountNumber = strtoupper($root . $handle . $descriptor);
 
@@ -225,14 +230,21 @@ class Receiver
     // If handle is not set, descriptor is completely random.
     // If handle is set, we use the given desriptor.
     //
-    protected function getDescriptor()
+    // Merchant handles can be 3 or 4 characters. Max is 17,
+    // so we pad with 17-4-n characters, i.e. 10 or 9.
+    //
+    protected function getDescriptor(string $handle)
     {
         $descriptor = $this->descriptor;
 
         if (($this->merchant->getHandle() === null) or
             ($descriptor === null))
         {
-            $descriptor = $this->padWithRandomDigits(self::DESCRIPTOR_LENGTH);
+            $totalLength = self::ACCOUNT_NUMBER_LENGTH;
+
+            $availableLength = $totalLength - self::ROOT_LENGTH - strlen($handle);
+
+            $descriptor = $this->padWithRandomDigits($availableLength);
         }
 
         return $descriptor;

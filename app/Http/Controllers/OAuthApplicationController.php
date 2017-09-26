@@ -99,9 +99,9 @@ class OAuthApplicationController extends Controller
     {
         if (isset($input[Application\Entity::LOGO]) === true)
         {
-            $logoInput = array_only($input, [Application\Entity::LOGO]);
+            $logoInput = ['logo' => Request::file([Application\Entity::LOGO])];
 
-            (new JitValidator)->rules(['logo' => 'sometimes|file'])
+            (new JitValidator)->rules(['logo' => 'sometimes|file|mimes:jpeg,jpg,png'])
                               ->input($logoInput)
                               ->validate();
 
