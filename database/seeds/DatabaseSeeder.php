@@ -1140,21 +1140,8 @@ class DatabaseSeeder extends Seeder
                 'gateway_secure_secret' => Crypt::encrypt('test_account_netbanking_bob_hash_secret'),
                 'created_at'            => time(),
                 'updated_at'            => time(),
-                )
-            );
-
-        DB::table(Table::TERMINAL)->insert(
-            array(
-                'id'                    => Terminal\Shared::NETBANKING_BOB_TERMINAL,
-                'merchant_id'           => Account::DEMO_ACCOUNT,
-                'gateway'               => Gateway::NETBANKING_HDFC,
-                'netbanking'            => '1',
-                'gateway_merchant_id'   => 'demo_merchant_netbanking_bob',
-                'gateway_secure_secret' => Crypt::encrypt('demo_account_netbanking_bob_hash_secret'),
-                'created_at'            => time(),
-                'updated_at'            => time(),
-                )
-            );
+            )
+        );
     }
 
     protected function createCybersourceTerminals()
