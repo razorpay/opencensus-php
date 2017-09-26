@@ -1330,6 +1330,7 @@ class Service extends Base\Service
             $requestConfig = [
                 'route_name'    => 'admin_get_app_auth',
                 'query_params'  => $params,
+                'mode'          => 'live'
             ];
 
             $genericService = new Generic\Service;
