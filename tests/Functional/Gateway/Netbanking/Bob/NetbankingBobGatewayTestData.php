@@ -57,7 +57,7 @@ return [
 
     'testPaymentFailedNetbankingEntity' => [
         'bank_payment_id' => null,
-        'received'        => false,
+        'received'        => true,
         'bank'            => 'BARB',
         'status'          => Constants::STATUS_FAILURE
     ],
@@ -71,7 +71,7 @@ return [
 
     'testAuthFailedVerifySuccessEntity' => [
         'bank_payment_id' => 'AB1234',
-        'received'        => false,
+        'received'        => true,
         'bank'            => 'BARB',
         'status'          => Constants::STATUS_SUCCESS
     ],
