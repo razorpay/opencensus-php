@@ -8,9 +8,6 @@ use RZP\Gateway\Base\Action;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
-    const COLUMN_SL_NO               = 'Sr.No';
-    const COLUMN_MERCHANT_CODE       = 'fldMerchCode';
-    const COLUMN_DATE                = 'TransDate';
     const COLUMN_PAYMENT_ID          = 'fldMerchRefNbr';
     const COLUMN_PAYMENT_AMOUNT      = 'Transaction Amount';
     const COLUMN_GATEWAY_PAYMENT_ID  = 'fldBankRefNbr';
@@ -26,9 +23,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         $status = [Bob\Constants::STATUS_SUCCESS];
 
         return $this->repo->netbanking
-                          ->findByPaymentIdActionAndStatus($paymentId,
-                                                           Action::AUTHORIZE,
-                                                           $status);
+                    ->findByPaymentIdActionAndStatus(
+                        $paymentId,
+                        Action::AUTHORIZE,
+                        $status
+                    );
     }
 
     protected function getNbAccountDetails($row)

@@ -83,6 +83,7 @@ class Orchestrator extends Base\Core
         self::NETBANKING_RBL      => ['internetbanking@rblbank.com'],
         self::NETBANKING_INDUSIND => [],
         self::NETBANKING_PNB      => [],
+        // TODO: Add the sender email once we get it
         self::NETBANKING_BOB      => [],
         self::JIOMONEY            => [],
         self::EBS                 => [],
