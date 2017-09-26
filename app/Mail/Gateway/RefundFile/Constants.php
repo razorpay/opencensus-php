@@ -56,7 +56,7 @@ class Constants extends Base\Constants
 
     const BODY_MAP = [
         Gateway::NETBANKING_HDFC     => 'Please forward the HDFC Netbanking refunds file to: Directpay.Refunds@hdfcbank.com',
-        Gateway::NETBANKING_BOB      => 'Please forward the Bank of Baroda Netbanking refunds file to: Directpay.Refunds@hdfcbank.com',
+        Gateway::NETBANKING_BOB      => 'Please find attached refunds information for Bank of Baroda',
         Gateway::NETBANKING_ICICI    => 'Please forward the ICICI Netbanking refunds file to UBPS operations team',
         Gateway::UPI_ICICI           => 'Please find attached refunds information for UPI',
         Gateway::WALLET_AIRTELMONEY  => 'Please find attached refunds information for AirtelMoney',

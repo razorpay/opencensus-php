@@ -79,7 +79,6 @@ class Service extends Base\Service
                 unset($gateways[IFSC::KKBK]);
                 unset($gateways[IFSC::UTIB]);
                 unset($gateways[IFSC::FDRL]);
-                unset($gateways[IFSC::BARB]);
                 unset($gateways[IFSC::RATN]);
 
                 // These banks refund files have been moved to gateway_file, so
