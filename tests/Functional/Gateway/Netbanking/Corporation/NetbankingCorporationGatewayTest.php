@@ -263,6 +263,7 @@ class NetbankingCorporationGatewayTest extends TestCase
 
             $gatewayPayment->saveOrFail();
         }
+    }
 
     protected function mockFailedCallbackAndVerifyResponse()
     {
