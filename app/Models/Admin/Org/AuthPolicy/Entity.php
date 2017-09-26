@@ -26,6 +26,9 @@ class Entity extends Base\PublicEntity
     const INACTIVITY_LOCK                   = 'inactivity_lock';
     const PASSWORD_EXPIRY                   = 'password_expiry';
 
+    // Not used by the Entity but by the Validator
+    const LOCKED_ACCOUNT                    = 'locked_account';
+
     protected $entity = 'auth_policy';
 
     public $incrementing = true;

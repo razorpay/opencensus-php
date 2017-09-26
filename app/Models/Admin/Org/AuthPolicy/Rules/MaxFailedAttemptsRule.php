@@ -17,12 +17,6 @@ class MaxFailedAttemptsRule extends Base
 
     public function validate($admin, array $data)
     {
-        if ($admin->isLocked() === true)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Your account has been locked');
-        }
-
         if ($admin->getFailedAttempts() >= $this->maxFailedAttempts)
         {
             $admin->lock();

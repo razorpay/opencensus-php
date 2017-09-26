@@ -26,6 +26,7 @@ class Validator extends Base\Validator
     ];
 
     protected $beforeLoginPolicyRules = [
+        Entity::LOCKED_ACCOUNT,
         Entity::MAX_FAILED_ATTEMPTS,
     ];
 
@@ -43,7 +44,16 @@ class Validator extends Base\Validator
         {
             $class = 'RZP\Models\Admin\Org\AuthPolicy\Rules\\' . studly_case($rule) . 'Rule';
 
-            $classOb = new $class($attributes[$rule]);
+            // In some cases like Locked Account Rule
+            // we won't need a value from the Policy Entity
+            if (isset($attributes[$rule]))
+            {
+                $classOb = new $class($attributes[$rule]);
+            }
+            else
+            {
+                $classOb = new $class();
+            }
 
             $classOb->validate($admin, $data);
         }
