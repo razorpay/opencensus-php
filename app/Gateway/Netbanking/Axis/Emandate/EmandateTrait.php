@@ -6,7 +6,9 @@
 
 namespace RZP\Gateway\Netbanking\Axis\Emandate;
 
+use Carbon\Carbon;
 use RZP\Constants\Mode;
+use RZP\Constants\Timezone;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Constants\HashAlgo;
@@ -14,10 +16,9 @@ use RZP\Gateway\Base\Action;
 use RZP\Models\Customer\Token;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
-use RZP\Gateway\Netbanking\Axis\Status;
 use RZP\Exception\GatewayErrorException;
-use RZP\Gateway\Netbanking\Axis\Constants;
 use RZP\Gateway\Netbanking\Base as Netbanking;
+use RZP\Gateway\Netbanking\Axis\Constants as AxisConstants;
 
 trait EmandateTrait
 {
@@ -40,7 +41,7 @@ trait EmandateTrait
         $this->repo->saveOrFail($gatewayEntity);
 
         // We check the status of the payment, and not the SI registration here
-        $this->checkResponseStatus($attributes, $content, Status::SUCCESS);
+        $this->checkResponseStatus($attributes, $content, StatusCode::SUCCESS);
 
         $acquirerData = $this->getEmandateAcquirerData($gatewayEntity);
 
@@ -51,7 +52,7 @@ trait EmandateTrait
     {
         $siStatus = $gatewayPayment->getSIStatus();
 
-        $recurringStatus = ($siStatus === Status::SUCCESS) ? Token\RecurringStatus::CONFIRMED : Token\RecurringStatus::REJECTED;
+        $recurringStatus = ($siStatus === StatusCode::SUCCESS) ? Token\RecurringStatus::CONFIRMED : Token\RecurringStatus::REJECTED;
 
         $recurringFailureReason = $gatewayPayment->getSIMessage();
 
@@ -88,13 +89,16 @@ trait EmandateTrait
             // TODO: Docs say this is not needed, but docs checksum says it is needed
             ResponseFields::REQUEST_ID      => $input[RequestFields::REQUEST_ID],
             ResponseFields::BANK_REF_NO     => 9999999999,
-            ResponseFields::STATUS_CODE     => Status::SUCCESS,
-            ResponseFields::REMARKS         => 'Random remarks',
+            ResponseFields::STATUS_CODE     => StatusCode::SUCCESS,
+            ResponseFields::REMARKS         => 'Recurring payment successful',
             ResponseFields::TRANS_REF_NO    => $input[RequestFields::REQUEST_ID], // TODO: Confirm this
-            ResponseFields::TRANS_EXEC_TIME => 1,
-            ResponseFields::PAYMENT_MODE    => 'netbanking', // TODO: check
-            ResponseFields::CHECKSUM        => $input[RequestFields::CHECKSUM]
+            ResponseFields::TRANS_EXEC_TIME => Carbon::now(Timezone::IST)->toDateTimeString(), // TODO: Confirm this
+            ResponseFields::PAYMENT_MODE    => Constants::PMD,
+            ResponseFields::CHECKSUM        => $input[RequestFields::CHECKSUM],
+            ResponseFields::MANDATE_NUMBER  => 8888888888,
         ];
+
+        // TODO: Encrypt this
 
         // for test cases
         $this->content($response, 'emandateauth');
@@ -111,17 +115,19 @@ trait EmandateTrait
      */
     protected function getRecurringPaymentData(array $input) : array
     {
+        $ppiArray = [$input['payment']['customer_id'], $input['payment']['merchant_id']];
+
         $data = [
-            RequestFields::VERSION         => 'Random Version',
+            RequestFields::VERSION         => Constants::VERSION,
             RequestFields::CORP_ID         => $this->getMerchantId(),
-            RequestFields::TYPE            => Constants::TYPE,
+            RequestFields::TYPE            => AxisConstants::TYPE,
             RequestFields::REQUEST_ID      => $input['payment']['id'],
             RequestFields::CUSTOMER_REF_NO => $input['token']->getId(),
             RequestFields::CURRENCY        => Currency::INR,
             RequestFields::AMOUNT          => $input['payment']['amount'] / 100,
             RequestFields::RETURN_URL      => $input['callbackUrl'],
-            RequestFields::PRE_POP_INFO    => 'Random PPI value',
-            RequestFields::RESERVE_FIELD_1 => Constants::NO_MODIFICATION
+            RequestFields::PRE_POP_INFO    => implode('|', $ppiArray),
+            RequestFields::RESERVE_FIELD_1 => AxisConstants::NO_MODIFICATION
         ];
 
         $data[RequestFields::CHECKSUM] = $this->getChecksum($data);
@@ -147,7 +153,7 @@ trait EmandateTrait
 
             // SI registration specific callback attributes
             Netbanking\Entity::SI_TOKEN        => $content[ResponseFields::CUSTOMER_REF_NO], // TODO: Confirm this
-            Netbanking\Entity::SI_STATUS       => $content[ResponseFields::STATUS_CODE],
+            Netbanking\Entity::SI_STATUS       => $content[ResponseFields::STATUS_CODE], // TODO: Confirm this
             Netbanking\Entity::SI_MSG          => $content[ResponseFields::REMARKS],
         ];
     }

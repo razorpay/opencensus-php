@@ -18,4 +18,9 @@ class ResponseFields
     const TRANS_EXEC_TIME = 'TET';
     const PAYMENT_MODE    = 'PMD';
     const CHECKSUM        = 'CKS';
+
+    /**
+     * For successful registration, mandate number will be sent, otherwise 0 will be sent
+     */
+    const MANDATE_NUMBER  = 'MDN';
 }
