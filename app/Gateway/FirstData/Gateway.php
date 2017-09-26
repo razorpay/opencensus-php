@@ -528,6 +528,9 @@ class Gateway extends Base\Gateway
     {
         $attributes = $this->getCommonResponseFields($response, $input);
 
+        $this->setFieldIfPresent($attributes, Entity::AUTH_CODE,
+            ApiResponseFields::PROCESSOR_APPROVAL_CODE, $response);
+
         return $attributes;
     }
 
@@ -693,11 +696,12 @@ class Gateway extends Base\Gateway
             // reason. Either way, this is equivalent to gateway success being false.
             $verify->gatewaySuccess = false;
 
-            $authTdate              = null;
-
-            $authGatewayPaymntId    = null;
-
-            $authGatewayStatus      = Status::FAILED;
+            $verifyContent = [
+                Entity::TDATE               => null,
+                Entity::GATEWAY_PAYMENT_ID  => null,
+                Entity::STATUS              => Status::FAILED,
+                Entity::AUTH_CODE           => null
+            ];
         }
         else
         {
@@ -739,13 +743,21 @@ class Gateway extends Base\Gateway
             //
             // As tdate, order_ID and state are structed under different
             // namespaces, their parsing logic is also distinct.
-            $authTdate = (string) $verifyAuthResponse->children('v1', true)->TransactionDetails->TDate;
+            $verifyContent = [
+                Entity::TDATE               => (string) $verifyAuthResponse->children('v1', true)
+                                                                           ->TransactionDetails->TDate,
+                Entity::GATEWAY_PAYMENT_ID  => (string) $verifyAuthResponse->children('v1', true)
+                                                                           ->TransactionDetails->OrderId,
+                Entity::STATUS              => (string) $verifyAuthResponse->children('a1', true)
+                                                                           ->TransactionState,
+                Entity::AUTH_CODE           => (string) $verifyAuthResponse->children('ipgapi', true)
+                                                                           ->IPGApiOrderResponse
+                                                                           ->ProcessorApprovalCode
+            ];
 
-            $authGatewayPaymntId = (string) $verifyAuthResponse->children('v1', true)->TransactionDetails->OrderId;
-
-            $authGatewayStatus = (string) $verifyAuthResponse->children('a1', true)->TransactionState;
-
-            $verify->gatewaySuccess = (in_array($authGatewayStatus, Status::SUCCESSFUL_AUTH_STATES, true) === true);
+            $verify->gatewaySuccess = (in_array($verifyContent[Entity::STATUS],
+                                                Status::SUCCESSFUL_AUTH_STATES,
+                                                true) === true);
         }
 
         $verify->apiSuccess = $this->getVerifyApiStatus($gatewayPayment, $input['payment']);
@@ -755,8 +767,7 @@ class Gateway extends Base\Gateway
             $verify->status = VerifyResult::STATUS_MISMATCH;
         }
 
-        $verify->payment = $this->saveVerifyContent($gatewayPayment, $authGatewayPaymntId,
-                                                    $authGatewayStatus, $authTdate);
+        $verify->payment = $this->saveVerifyContent($gatewayPayment, $verifyContent);
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
 
@@ -823,13 +834,9 @@ class Gateway extends Base\Gateway
         return $apiStatus;
     }
 
-    protected function saveVerifyContent(Entity $gatewayPayment, $gatewayPaymentId, string $status, $tdate)
+    protected function saveVerifyContent(Entity $gatewayPayment, array $verifyContent)
     {
-        $gatewayPayment->setStatus($status);
-
-        $gatewayPayment->setTdate($tdate);
-
-        $gatewayPayment->setGatewayPaymentId($gatewayPaymentId);
+        $gatewayPayment->fill($verifyContent);
 
         $this->repo->saveOrFail($gatewayPayment);
 

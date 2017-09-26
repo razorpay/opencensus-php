@@ -592,7 +592,7 @@ class FirstDataGatewayTest extends TestCase
 
     public function testAuthCodeMappingFromApprovalCode()
     {
-        $sampleAuthCode = '543210';
+        $sampleAuthCode = random_integer(6);
 
         $this->getOveriddenApprovalCode("Y:$sampleAuthCode:PPX: 233123");
 
@@ -600,6 +600,25 @@ class FirstDataGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('first_data', true);
 
-        $this->assertSame($sampleAuthCode, $gatewayPayment['auth_code']);
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($sampleAuthCode, $gatewayPayment['auth_code']);
+
+        $this->assertEquals($sampleAuthCode, $payment['reference2']);
+    }
+
+    public function testAuthCodeMapForVerifyPayment()
+    {
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->verifyPayment($payment['id']);
+
+        $gatewayPayment = $this->getLastEntity('first_data', true);
+
+        // The value is hardcoded in SoapWrapper,
+        // it also makes sure that the first TransactionValues is picked if there are many
+        $this->assertEquals('543210', $gatewayPayment['auth_code']);
     }
 }

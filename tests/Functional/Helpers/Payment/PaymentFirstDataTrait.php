@@ -93,7 +93,7 @@ trait PaymentFirstDataTrait
     {
         $this->mockServerContentFunction(function (& $content) use ($code)
         {
-            if (is_array($content))
+            if (is_array($content) === true)
             {
                 $content['approval_code'] = $code;
             }
