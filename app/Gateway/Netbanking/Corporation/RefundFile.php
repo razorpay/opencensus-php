@@ -20,6 +20,8 @@ class RefundFile extends Base\RefundFile
     // TODO: Remove the below data and use env to store them
     const POOLING_ACCOUNT_BR_CODE = '1234';
     const POOLING_ACCOUNT_NUMBER  = '234567';
+    const POOLING_ACCOUNT_TYPE    = 'CA';
+    const POOLING_ACCOUNT_SUBTYPE = '01';
 
     const FIXED_VALUE = '824603';
 
@@ -76,8 +78,8 @@ class RefundFile extends Base\RefundFile
                 Carbon::now(Timezone::IST)->timestamp,
                 Constants::REFUND_FILE_DEBIT,
                 '00000000120000',
-                Constants::REFUND_FILE_ACCOUNT_TYPE_1,
-                Constants::REFUND_FILE_ACCOUNT_SUB_TYPE,
+                self::POOLING_ACCOUNT_TYPE,
+                self::POOLING_ACCOUNT_SUBTYPE,
                 self::POOLING_ACCOUNT_NUMBER,
                 true
             )
