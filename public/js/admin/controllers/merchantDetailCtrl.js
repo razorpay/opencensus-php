@@ -1567,7 +1567,11 @@ app
         });
         request.success(function(data) {
           if (data.success) {
-            $scope.alerts.addAlert('success', 'Uploaded Successfully', true);
+            $scope.alerts.addAlert(
+              'success',
+              'Uploaded Successfully ' + JSON.stringify(data.data),
+              true
+            );
           } else {
             $scope.alerts.resetAlerts();
             angular.forEach(data.errors, function(value) {

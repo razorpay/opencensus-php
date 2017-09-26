@@ -278,7 +278,7 @@ class RawApiRequest
     protected function prepareRequest()
     {
         // If we need to add the file to the body
-        if (is_array($this->input['file']) === true or $this->input['file'] instanceof \SplFileInfo)
+        if ((is_array($this->input['file']) === true) or ($this->input['file'] instanceof \SplFileInfo))
         {
             // Incase the input contains an array of files
             if (is_array($this->input['file']) === true)
