@@ -5,7 +5,6 @@ namespace RZP\Tests\Functional\Merchant;
 use RZP\Models\Transaction;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class PricingTest extends TestCase

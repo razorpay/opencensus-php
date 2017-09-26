@@ -94,7 +94,7 @@ return [
         ],
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_BULK_CREATE,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_BULK_CREATE_EMPTY_RULES,
         ]
     ],
     'testDuplicateBulkPricingPlan' => [

@@ -8,7 +8,7 @@ use RZP\Models\Admin\Action;
 
 class Core extends Base\Core
 {
-    public function addPlanRule($input, $plan): Entity
+    public function addPlanRule($input, Plan $plan): Entity
     {
         $rule = (new Entity)->addPlanRule($input, $plan);
 
@@ -27,7 +27,7 @@ class Core extends Base\Core
      * Create a pricing plan from rule input
      * The $planName is sent separately
      */
-    public function createPlan($planName, $input): Plan
+    public function createPlan(string $planName, $input): Plan
     {
         $input[Entity::PLAN_NAME] = $planName;
 
@@ -67,7 +67,7 @@ class Core extends Base\Core
                 $plan->add($rule);
             }
 
-            $rules = $plan->all();
+            // $rules = $plan->all();
 
             // $rules to be injected in workflow here
         });

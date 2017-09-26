@@ -362,7 +362,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public static function validatePlanCountZero($plan)
+    public static function validatePlanCountZero(Plan $plan)
     {
         if ($plan->count() > 0)
         {
@@ -376,7 +376,7 @@ class Validator extends Base\Validator
         if (count($input['rules']) === 0)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PRICING_BULK_CREATE,
+                ErrorCode::BAD_REQUEST_PRICING_BULK_CREATE_EMPTY_RULES,
                 null,
                 $input);
         }
