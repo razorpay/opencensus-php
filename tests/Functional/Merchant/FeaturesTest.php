@@ -551,14 +551,55 @@ class FeaturesTest extends TestCase
             true);
     }
 
-    public function testFeatureEnabledEmailNotification()
+    public function testFeatureEnabledEmailNotificationOnLive()
     {
         Mail::fake();
 
-        $this->ba->appAuthLive();
-
-        $this->startTest();
+        $this->addNotifyFeatures(Mode::LIVE, false);
 
         Mail::assertSent(FeatureUpdateEmail::class);
+    }
+
+    public function testAddNonNotifyFeatures()
+    {
+        Mail::fake();
+
+        $this->addFeature(Mode::LIVE, true);
+
+        Mail::assertNotSent(FeatureUpdateEmail::class);
+    }
+
+    public function testFeatureEnabledEmailNotificationOnTest()
+    {
+        Mail::fake();
+
+        $this->addNotifyFeatures(Mode::TEST, false);
+
+        Mail::assertNotSent(FeatureUpdateEmail::class);
+    }
+
+    public function testFeatureEnabledEmailNotificationOnTestWithSync()
+    {
+        Mail::fake();
+
+        $this->addNotifyFeatures(Mode::TEST, true);
+
+        Mail::assertSent(FeatureUpdateEmail::class);
+    }
+
+    protected function addNotifyFeatures(string $mode, bool $shouldSync)
+    {
+        $authMethod = 'appAuth' . studly_case($mode);
+
+        $this->ba->$authMethod();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        if ($shouldSync === true)
+        {
+            $testData['request']['content']['should_sync'] = 1;
+        }
+
+        $this->startTest($testData);
     }
 }

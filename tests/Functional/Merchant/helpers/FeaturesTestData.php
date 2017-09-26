@@ -501,7 +501,8 @@ return [
             ]
         ]
     ],
-    'testFeatureEnabledEmailNotification'   => [
+
+    'addNotifyFeatures'             => [
         'request'  => [
             'content' => [
                 'names'       => ['dummy', 'marketplace', 'subscriptions'],

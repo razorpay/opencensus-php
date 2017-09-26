@@ -160,7 +160,7 @@ class Core extends Base\Core
                 $this->trace->info(
                     TraceCode::FEATURE_UPDATED_MERCHANT_NOT_NOTIFIED,
                     [
-                        PublicEntity::MERCHANT_ID => $merchant->getEntityId(),
+                        PublicEntity::MERCHANT_ID => $merchant->getId(),
                         Entity::SHOULD_SYNC       => $shouldSync,
                         Mode::LIVE                => $isLiveMode,
                         Entity::NEW_FEATURE       => $features,
@@ -177,8 +177,6 @@ class Core extends Base\Core
                 $featureUpdateEmail = new FeatureUpdate($data);
 
                 Mail::queue($featureUpdateEmail);
-
-                $this->notifyFeatureUpdatesToMerchant($data);
             }
         }
         else
@@ -186,7 +184,7 @@ class Core extends Base\Core
             $this->trace->info(
                 TraceCode::FEATURE_UPDATED_MERCHANT_NOT_NOTIFIED,
                 [
-                    PublicEntity::MERCHANT_ID => $merchant->getEntityId(),
+                    PublicEntity::MERCHANT_ID => $merchant->getId(),
                     Entity::SHOULD_SYNC       => $shouldSync,
                     Mode::LIVE                => $isLiveMode,
                     Entity::NEW_FEATURE       => $features,
