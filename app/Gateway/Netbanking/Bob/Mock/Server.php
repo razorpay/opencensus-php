@@ -40,13 +40,13 @@ class Server extends Base\Mock\Server
 
         $content = [
             ResponseFields::BANK_REF_NUMBER => self::BANK_REF_NUMBER,
-            ResponseFields::PAYMENT_ID => $id,
-            ResponseFields::STATUS => Constants::STATUS_SUCCESS,
+            ResponseFields::PAYMENT_ID      => $id,
+            ResponseFields::STATUS          => Constants::STATUS_SUCCESS,
         ];
 
         $this->content($content, 'verify');
 
-        $content = $this->prepareVerifyResponse($content);
+        $content = http_build_query($content, '', Constants::VERIFY_PAIR_SEPARATOR);
 
         return $this->makeResponse($content);
     }
@@ -54,11 +54,11 @@ class Server extends Base\Mock\Server
     protected function getAuthResponseContent($content)
     {
         $data = [
-            ResponseFields::AMOUNT => $content[RequestFields::AMOUNT],
-            ResponseFields::BILLER_NAME => $content[RequestFields::BILLER_NAME],
-            ResponseFields::PAYMENT_ID => $content[RequestFields::PAYMENT_ID],
-            ResponseFields::STATUS => Constants::STATUS_SUCCESS,
-            ResponseFields::BANK_REF_NUMBER => self::BANK_REF_NUMBER,
+            ResponseFields::AMOUNT                  => $content[RequestFields::AMOUNT],
+            ResponseFields::BILLER_NAME             => $content[RequestFields::BILLER_NAME],
+            ResponseFields::PAYMENT_ID              => $content[RequestFields::PAYMENT_ID],
+            ResponseFields::STATUS                  => Constants::STATUS_SUCCESS,
+            ResponseFields::BANK_REF_NUMBER         => self::BANK_REF_NUMBER,
             ResponseFields::CUSTOMER_ACCOUNT_NUMBER => self::CUSTOMER_ACCOUNT_NUMBER,
         ];
 
@@ -69,17 +69,5 @@ class Server extends Base\Mock\Server
         return [
             ResponseFields::ENCRYPTED_DATA => $encryptor->encryptData($data)
         ];
-    }
-
-    protected function prepareVerifyResponse($content)
-    {
-        $array = [];
-
-        foreach ($content as $key => $value)
-        {
-            $array[] = implode(Constants::VERIFY_KEY_VALUE_SEPARATOR, [$key, $value]);
-        }
-
-        return implode(Constants::VERIFY_PAIR_SEPARATOR, $array);
     }
 }

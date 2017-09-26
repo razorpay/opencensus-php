@@ -41,7 +41,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getAuthorizeRequest($input);
 
-        $contentToSave = $this->getAuthorizeNetbankingContentToSave($input['payment']);
+        $contentToSave = $this->getContentToSave($input['payment']);
 
         $this->createGatewayPaymentEntity($contentToSave);
 
@@ -54,24 +54,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getCallbackContent($input);
 
-        $content = $content + [NetbankingEntity::RECEIVED => true];
-
-        if (array_key_exists(ResponseFields::BANK_REF_NUMBER, $content) === true)
-        {
-            $content[ResponseFields::BANK_REF_NUMBER] = trim($content[ResponseFields::BANK_REF_NUMBER]);
-        }
-
-        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
-            $input['payment']['id'],
-            Action::AUTHORIZE
-        );
-
-        if ($this->isGatewaySuccess($content) === false)
-        {
-            $content[NetbankingEntity::RECEIVED] = false;
-        }
-
-        $this->updateGatewayPaymentEntity($gatewayPayment, $content);
+        $this->saveCallbackResponse($content, $input);
 
         $this->checkCallbackStatus($content);
 
@@ -123,7 +106,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getAuthorizeNetbankingContentToSave($payment)
+    protected function getContentToSave($payment)
     {
         return [
             RequestFields::MERCHANT_ID => $this->getMerchantId(),
@@ -161,13 +144,37 @@ class Gateway extends Base\Gateway
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
                 [
                     'payment_id' => $content[ResponseFields::PAYMENT_ID],
-                    'content' => $content
+                    'content'    => $content
                 ]
             );
 
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
+    }
+
+    protected function saveCallbackResponse(array $content, array $input)
+    {
+        $defaultArguments = [NetbankingEntity::RECEIVED => true];
+
+        if (array_key_exists(ResponseFields::BANK_REF_NUMBER, $content) === true)
+        {
+            $content[ResponseFields::BANK_REF_NUMBER] = trim($content[ResponseFields::BANK_REF_NUMBER]);
+        }
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+            $input['payment']['id'],
+            Action::AUTHORIZE
+        );
+
+        $content = $content + $defaultArguments;
+
+        if ($this->isGatewaySuccess($content) === false)
+        {
+            $content[NetbankingEntity::RECEIVED] = false;
+        }
+
+        $this->updateGatewayPaymentEntity($gatewayPayment, $content);
     }
 
     // -------------------- Callback helper methods end -----------------
@@ -263,7 +270,7 @@ class Gateway extends Base\Gateway
 
         $this->action = Action::AUTHORIZE;
 
-        $gatewayAttributes = $this->getAuthorizeNetbankingContentToSave($payment);
+        $gatewayAttributes = $this->getContentToSave($payment);
 
         $gatewayAttributes[ResponseFields::BANK_REF_NUMBER] = $content[ResponseFields::BANK_REF_NUMBER];
 

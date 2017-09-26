@@ -21,7 +21,7 @@ class AESCrypto extends Base\AESCrypto
     public function encryptData(array $data)
     {
 
-        $formattedData = $this->encodeData($data);
+        $formattedData = urldecode(http_build_query($data, '', self::PAIR_SEPARATOR));
 
         return base64_encode($this->encryptString($formattedData));
     }
@@ -31,18 +31,6 @@ class AESCrypto extends Base\AESCrypto
         $input = base64_decode($input);
 
         return $this->decodeData($this->decryptString($input));
-    }
-
-    protected function encodeData(array $data)
-    {
-        $formattedArray = [];
-
-        foreach ($data as $key => $value)
-        {
-            $formattedArray[] = $key . self::VALUE_SEPARATOR . $value;
-        }
-
-        return implode(self::PAIR_SEPARATOR, $formattedArray);
     }
 
     protected function decodeData(string $input)
