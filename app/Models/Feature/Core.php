@@ -160,9 +160,7 @@ class Core extends Base\Core
             $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
             $data['feature'] = studly_case($feature->getName());
-
             $data['contact_email'] = $merchant->getEmail();
-
             $data['contact_name'] = $merchant->getName();
 
             $this->trace->info(
@@ -177,7 +175,8 @@ class Core extends Base\Core
             $featureUpdateEmail = new FeatureEnabled($data);
 
             Mail::queue($featureUpdateEmail);
-        } else
+        }
+        else
         {
             $this->trace->info(
                 TraceCode::FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED,

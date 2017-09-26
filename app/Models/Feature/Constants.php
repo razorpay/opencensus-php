@@ -139,8 +139,8 @@ class Constants
 
     /*
      * $notifyFeatures should be a subset of the visible features.
-     * If any of these features are enabled or disabled on live mode,
-     * the user is notified through an email.
+     * If any of these features are enabled on live mode, the user
+     * will be notified through an email.
      */
     public static $notifyFeatures = [
         self::MARKETPLACE,
