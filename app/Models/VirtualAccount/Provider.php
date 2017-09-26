@@ -119,7 +119,7 @@ class Provider
     //
     // Unused right now because Kotak is making changes in their
     // format, and IMPS testing is ongoing, so we need to use
-    // Dashboard to make corrective requests occassionally.
+    // Dashboard to make corrective requests occasionally.
     //
     // TODO: Use in validateProvider when changes are stable
     public static function validateMode(string $provider, string $mode)
@@ -140,5 +140,7 @@ class Provider
                 return true;
             }
         }
+
+        return false;
     }
 }

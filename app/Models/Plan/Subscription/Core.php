@@ -222,6 +222,7 @@ class Core extends Base\Core
 
         return [
             'amount' => $authAmount,
+            'type'   => $subscription->getType(),
         ];
     }
 

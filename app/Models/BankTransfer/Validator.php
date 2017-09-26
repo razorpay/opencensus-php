@@ -59,9 +59,16 @@ class Validator extends Base\Validator
         // Refunds currently not permitted for IMPS payments
         if ($bankTransfer->getMode() === Mode::IMPS)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
-                $bankTransfer);
+            $ifsc = $bankTransfer->getPayerIfsc();
+
+            $bankCode = substr($ifsc, 0, 3);
+
+            if (BankCodes::hasIfscMapping($bankCode) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
+                    $bankTransfer);
+            }
         }
     }
 }

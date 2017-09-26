@@ -251,6 +251,11 @@ class Entity extends Base\PublicEntity
         return $this->setAttribute(self::MPIN, $mpin);
     }
 
+    public function setIfsc($ifsc)
+    {
+        return $this->setAttribute(self::IFSC_CODE, $ifsc);
+    }
+
     protected function setIfscCodeAttribute($code)
     {
         if ($code !== null)
