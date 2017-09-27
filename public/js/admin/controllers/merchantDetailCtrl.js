@@ -3184,6 +3184,7 @@ app
               'emi',
               'wallet',
               'upi',
+              'bank_transfer',
             ];
           } else {
             var errors = [];
