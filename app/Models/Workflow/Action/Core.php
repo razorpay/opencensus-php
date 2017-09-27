@@ -514,14 +514,7 @@ class Core extends Base\Core
 
         // The connection is being reset in here because after executing the App::call
         // If the connection is still set to test then this will fail cause workflow exists only in live mode.
-        if ($this->app->environment('testing') === false)
-        {
-            $mode = Mode::LIVE;
-        }
-        else
-        {
-            $mode = Mode::TEST;
-        }
+        $mode = $this->app['basicauth']->getLiveConnection();
 
         // Resetting connection so that workflow updates will not fail for test modes.
         \Database\DefaultConnection::set($mode);
