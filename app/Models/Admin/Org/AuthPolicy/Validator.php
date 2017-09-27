@@ -36,7 +36,8 @@ class Validator extends Base\Validator
 
     public function validate(Admin\Entity $admin, array $data, string $op)
     {
-        if ($admin->isSuperAdmin() === false)
+        // password create policy rules should be checked for everyone.
+        if ($admin->isSuperAdmin() === false or $op === 'passwordCreate')
         {
             $prop = $op . 'PolicyRules';
 
