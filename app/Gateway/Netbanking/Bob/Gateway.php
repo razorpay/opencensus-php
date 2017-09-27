@@ -8,6 +8,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\Entity as GatewayEntity;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
@@ -27,12 +28,10 @@ class Gateway extends Base\Gateway
 
     protected $map = [
         RequestFields::MERCHANT_ID              => NetbankingEntity::MERCHANT_CODE,
-        RequestFields::PAYMENT_ID               => NetbankingEntity::PAYMENT_ID,
         RequestFields::AMOUNT                   => NetbankingEntity::AMOUNT,
         ResponseFields::STATUS                  => NetbankingEntity::STATUS,
         ResponseFields::BANK_REF_NUMBER         => NetbankingEntity::BANK_PAYMENT_ID,
         ResponseFields::CUSTOMER_ACCOUNT_NUMBER => NetbankingEntity::ACCOUNT_NUMBER,
-        NetbankingEntity::RECEIVED              => NetbankingEntity::RECEIVED,
     ];
 
     public function authorize(array $input): array
@@ -155,8 +154,6 @@ class Gateway extends Base\Gateway
 
     protected function saveCallbackResponse(array $content, array $input)
     {
-        $defaultArguments = [NetbankingEntity::RECEIVED => true];
-
         if (array_key_exists(ResponseFields::BANK_REF_NUMBER, $content) === true)
         {
             $content[ResponseFields::BANK_REF_NUMBER] = trim($content[ResponseFields::BANK_REF_NUMBER]);
@@ -166,8 +163,6 @@ class Gateway extends Base\Gateway
             $input['payment']['id'],
             Action::AUTHORIZE
         );
-
-        $content = $content + $defaultArguments;
 
         $this->updateGatewayPaymentEntity($gatewayPayment, $content);
     }
@@ -301,6 +296,22 @@ class Gateway extends Base\Gateway
     protected function isStatusCodeSuccess($content)
     {
         return ($content[ResponseFields::STATUS] === Constants::STATUS_SUCCESS);
+    }
+
+    protected function updateGatewayPaymentEntity(
+        GatewayEntity $gatewayPayment,
+        array $content,
+        bool $mapped = true
+    )
+    {
+        $attr = $this->getMappedAttributes($content);
+
+        // To mark that we have received a response for this request
+        $attr[NetbankingEntity::RECEIVED] = 1;
+
+        $gatewayPayment->fill($attr);
+
+        $gatewayPayment->saveOrFail();
     }
 
     public function getEncryptor(): AESCrypto
