@@ -121,19 +121,23 @@ class Constants
     public static $visibleFeaturesMap = [
         self::NOFLASHCHECKOUT  => [
             'feature'      => self::NOFLASHCHECKOUT,
-            'display_name' => 'No Flash Checkout'
+            'display_name' => 'No Flash Checkout',
+            'documentation'=> ''
         ],
         self::MARKETPLACE      => [
             'feature'      => self::MARKETPLACE,
-            'display_name' => 'Marketplace'
+            'display_name' => 'Route',
+            'documentation'=> 'route'
         ],
         self::SUBSCRIPTIONS    => [
             'feature'      => self::SUBSCRIPTIONS,
-            'display_name' => 'Subscriptions'
+            'display_name' => 'Subscriptions',
+            'documentation'=> 'subscriptions'
         ],
         self::VIRTUAL_ACCOUNTS => [
             'feature'      => self::VIRTUAL_ACCOUNTS,
-            'display_name' => 'Virtual accounts'
+            'display_name' => 'Smart Collect',
+            'documentation'=> 'smart-collect'
         ],
     ];
 

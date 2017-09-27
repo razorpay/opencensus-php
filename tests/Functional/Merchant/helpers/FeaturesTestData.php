@@ -505,7 +505,7 @@ return [
     'addNotifyFeatures' => [
         'request'  => [
             'content' => [
-                'names'       => ['dummy', 'marketplace', 'subscriptions'],
+                'names'       => ['dummy', 'marketplace'],
                 'entity_type' => 'merchant',
                 'entity_id'   => '10000000000000'
             ],
@@ -525,11 +525,6 @@ return [
                 ],
                 [
                     'name'        => 'marketplace',
-                    'entity_id'   => '10000000000000',
-                    'entity_type' => 'merchant'
-                ],
-                [
-                    'name'        => 'subscriptions',
                     'entity_id'   => '10000000000000',
                     'entity_type' => 'merchant'
                 ]

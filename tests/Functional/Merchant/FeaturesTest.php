@@ -557,7 +557,16 @@ class FeaturesTest extends TestCase
 
         $this->addNotifyFeatures(Mode::LIVE, false);
 
-        Mail::assertSent(FeatureEnabledEmail::class);
+        Mail::assertSent(FeatureEnabledEmail::class, function ($mail)
+        {
+            $feature       = 'Route';
+            $this->assertEquals($feature, $mail->viewData['feature']);
+
+            $documentation = 'route';
+            $this->assertEquals($documentation, $mail->viewData['documentation']);
+
+            return true;
+        });
     }
 
     public function testFeatureEnabledEmailNotificationOnTest()
@@ -575,7 +584,16 @@ class FeaturesTest extends TestCase
 
         $this->addNotifyFeatures(Mode::TEST, true);
 
-        Mail::assertSent(FeatureEnabledEmail::class);
+        Mail::assertSent(FeatureEnabledEmail::class, function ($mail)
+        {
+            $feature       = 'Route';
+            $this->assertEquals($feature, $mail->viewData['feature']);
+
+            $documentation = 'route';
+            $this->assertEquals($documentation, $mail->viewData['documentation']);
+
+            return true;
+        });
     }
 
     public function testFeatureEnabledEmailNonNotify()

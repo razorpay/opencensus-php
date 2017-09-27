@@ -167,7 +167,8 @@ class Core extends Base\Core
             $featureName     = $feature->getName();
 
             $data['feature']       = $visibleFeatures[$featureName]['display_name'];
-            $data['contact_email'] = $merchant->getEmail();
+            $data['documentation'] = $visibleFeatures[$featureName]['documentation'];
+            $data['contact_email'] = 'pratik.kapasi@razorpay.com'; #$merchant->getEmail();
             $data['contact_name']  = $merchant->getName();
 
             $featureUpdateEmail = new FeatureEnabled($data);
