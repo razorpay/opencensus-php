@@ -9,12 +9,17 @@ use RZP\Models\Payment;
 
 class Validator extends Base\Validator
 {
+    /**
+     * @var Entity
+     */
+    protected $entity;
+
     const IFSC_LENGTH = 11;
 
     protected static $createRules = [
         Entity::PAYER_NAME     => 'sometimes|string|max:100',
-        Entity::PAYER_ACCOUNT  => 'required|string|max:20',
-        Entity::PAYER_IFSC     => 'required|string',
+        Entity::PAYER_ACCOUNT  => 'sometimes|string|max:20',
+        Entity::PAYER_IFSC     => 'sometimes|string',
         Entity::PAYEE_ACCOUNT  => 'required|string|max:20',
         Entity::PAYEE_IFSC     => 'required|string|size:'.self::IFSC_LENGTH,
         Entity::MODE           => 'required|custom',
@@ -49,6 +54,18 @@ class Validator extends Base\Validator
                 'IFSC is of invalid length',
                 Entity::PAYER_IFSC,
                 $input[Entity::PAYER_IFSC]);
+        }
+    }
+
+    public function validatePaymentForRefund(Payment\Entity $payment)
+    {
+        $bankTransfer = $payment->bankTransfer;
+
+        if (empty($bankTransfer->getPayerAccount()) === true)
+        {
+            throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
+                    $bankTransfer);
         }
     }
 

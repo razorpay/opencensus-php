@@ -801,3 +801,6 @@ UPDATE payments
         base_amount_refunded=0,
         status='captured'
     WHERE id='8e0eGW1TrJALOU';
+
+UPDATE billdesk SET RefundId = 'JSBI56715667791' WHERE id = 2124216;
+UPDATE billdesk SET RefundId = 'IUBI53988238411' WHERE id = 2110989;

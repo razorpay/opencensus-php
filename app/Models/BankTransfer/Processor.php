@@ -420,6 +420,16 @@ class Processor extends Base\Core
      */
     protected function createAndAssociatePayerBankAccount(Entity $bankTransfer)
     {
+        //
+        // In some situations, we don't have enough info to create a bank account at all
+        // It's fine, since we don't intend on allowing these payments to be refunded anyway.
+        //
+        if (($bankTransfer->getMode() === Mode::IMPS) and
+            (empty($bankTransfer->getPayerAccount()) === true))
+        {
+            return;
+        }
+
         $bankAccount = $this->createPayerBankAccount($bankTransfer);
 
         $bankTransfer->payerBankAccount()->associate($bankAccount);
