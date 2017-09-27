@@ -11,6 +11,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\FileStore;
 use RZP\Constants\MailTags;
+use RZP\Models\FundTransfer\Mode;
 use RZP\Models\FundTransfer\Base as NodalBase;
 use RZP\Mail\Settlement as SettlementMail;
 
@@ -36,9 +37,9 @@ class NodalAccount extends NodalBase\NodalAccount
     ];
 
     const MODE_MAPPING = [
-        self::NEFT    => 'N',
-        self::RTGS    => 'R',
-        self::IMPS    => 'I',
+        Mode::NEFT    => 'N',
+        Mode::RTGS    => 'R',
+        Mode::IMPS    => 'I',
     ];
 
     protected $date = null;

@@ -11,6 +11,7 @@ use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
 use RZP\Models\FundTransfer\Base as NodalBase;
 use RZP\Mail\Settlement\AxisSettlement;
+use RZP\Models\FundTransfer\Mode;
 
 class NodalAccount extends NodalBase\NodalAccount
 {
@@ -26,9 +27,9 @@ class NodalAccount extends NodalBase\NodalAccount
     ];
 
     const MODE_MAPPING = [
-        self::NEFT    => 'N',
-        self::RTGS    => 'R',
-        self::IMPS    => 'I',
+        Mode::NEFT    => 'N',
+        Mode::RTGS    => 'R',
+        Mode::IMPS    => 'I',
     ];
 
     protected $date = null;
