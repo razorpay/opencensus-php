@@ -346,4 +346,36 @@ return [
             'gateway_error_code'  => '3',
         ],
     ],
+
+    'testVerifyRefundOldRefund' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\LogicException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+            'description' => 'Unable to verify migs refund'
+        ],
+    ],
+
+    'testVerifyRefundFailedOnGatewayMultipleResponses' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\LogicException::class,
+            'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+            'description' => 'Unable to verify migs refund'
+        ],
+    ],
 ];
