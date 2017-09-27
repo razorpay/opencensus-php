@@ -244,7 +244,8 @@ class Netbanking
 
     protected static $defaultDisabled = [
         IFSC::AIRP,
-        IFSC::PUNB
+        IFSC::PUNB,
+        IFSC::BARB
     ];
 
     protected static $ebsTPV = [];
