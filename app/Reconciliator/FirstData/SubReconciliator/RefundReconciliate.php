@@ -6,6 +6,7 @@ use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Gateway\FirstData;
 use RZP\Models\Base\PublicEntity;
+use Razorpay\Spine\Exception\DbQueryException;
 
 class RefundReconciliate extends Base\RefundReconciliate
 {
@@ -28,7 +29,22 @@ class RefundReconciliate extends Base\RefundReconciliate
      */
     protected function getRefundId($row)
     {
-        $refund = $this->getGatewayRefundFromGatewayTxnId($row);
+        try
+        {
+            $refund = $this->getGatewayRefundFromGatewayTxnId($row);
+        }
+        catch (DbQueryException $ex)
+        {
+            $this->trace->error(
+                TraceCode::RECON_ALERT,
+                [
+                    'message'   => 'Refund not found. Skipping',
+                    'row'       => $row,
+                    'gateway'   => get_called_class()
+                ]);
+
+            return null;
+        }
 
         if ($refund->getAction() === FirstData\Action::REVERSE)
         {
