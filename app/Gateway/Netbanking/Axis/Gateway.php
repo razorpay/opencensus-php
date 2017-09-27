@@ -67,6 +67,12 @@ class Gateway extends Base\Gateway
                            ['gateway_response' => $input['gateway'],
                             'payment_id'       => $input['payment']['id']]);
 
+        // Only url, merchant id and secrets have to change.
+        if ($input['terminal']->isCorporate() === true)
+        {
+            $this->setCorporate();
+        }
+
         // Response parameters are different for callback received via browser redirect
         // as opposed to those received from server. This is being resolved using the param
         // received from server.
