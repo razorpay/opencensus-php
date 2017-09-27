@@ -35,6 +35,11 @@ class DailyFiles extends Base\DailyFiles
             'name' => basename($refundsData['local_file_path'])
         ];
 
+        $claimsFile = [
+            'url'  => $claimData['signed_url'],
+            'name' => basename($claimData['local_file_path']),
+        ];
+
         // Send the mail only when there is at least 1 claim or refund
         if ($amount['claims'] + $amount['refunds'] > 0)
         {
@@ -65,7 +70,9 @@ class DailyFiles extends Base\DailyFiles
             );
         }
 
-        return ['refunds' => $refundsData['local_file_path']];
+        return ['refunds' => $refundsData['local_file_path'],
+                'claims'  => $claimData['local_file_path'],
+        ];
     }
 
     protected function sendMail($amount, $claimsFile, $refundsFile, $count = [], $email = null)
