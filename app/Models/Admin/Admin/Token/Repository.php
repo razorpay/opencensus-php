@@ -34,11 +34,11 @@ class Repository extends Base\Repository
         $mode = $this->auth->getLiveConnection();
 
         $token =  $this->connection($mode)
-                    ->newQuery()
-                    ->with('admin')
-                    ->where(Entity::ID, '=', $principal)
-                    ->where(Entity::EXPIRES_AT, '>', $currentTimestamp)
-                    ->firstOrFailPublic();
+                       ->newQuery()
+                       ->with('admin')
+                       ->where(Entity::ID, '=', $principal)
+                       ->where(Entity::EXPIRES_AT, '>', $currentTimestamp)
+                       ->firstOrFailPublic();
 
         if (Hash::check($bearerToken, $token->getToken()) === true)
         {
