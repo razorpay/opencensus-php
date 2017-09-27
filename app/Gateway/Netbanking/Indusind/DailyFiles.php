@@ -45,7 +45,7 @@ class DailyFiles extends Base\DailyFiles
         {
             $this->sendMail(
                 $amount,
-                null,
+                $claimsFile,
                 $refundsFile,
                 $count,
                 $email
