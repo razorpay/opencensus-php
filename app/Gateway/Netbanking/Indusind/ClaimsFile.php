@@ -13,10 +13,6 @@ class ClaimsFile extends Base\RefundFile
 {
     protected static $fileToWriteName = 'PGClaimRazorpay';
 
-    /**
-     * Not generating a claims file because Indusind
-     * Only needs total count and total amount to be sent across
-     */
     public function generate($input)
     {
         list($totalAmount , $count, $data) =  $this->getClaimsData($input);
