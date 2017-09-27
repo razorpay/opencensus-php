@@ -11,10 +11,10 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\FileStore;
 use RZP\Constants\MailTags;
-use RZP\Models\FundTransfer\NodalBase;
+use RZP\Models\FundTransfer\Base as NodalBase;
 use RZP\Mail\Settlement as SettlementMail;
 
-class NodalAccount extends NodalBase\NodalBase
+class NodalAccount extends NodalBase\NodalAccount
 {
     // used in icici AES encrypter tool
     const ENCRYPTION_KEY = "1836204826394167";

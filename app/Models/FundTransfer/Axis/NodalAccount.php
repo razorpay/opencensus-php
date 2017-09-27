@@ -9,10 +9,10 @@ use PHPExcel_Shared_Date;
 use RZP\Models\Base;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
-use RZP\Models\FundTransfer\NodalBase;
+use RZP\Models\FundTransfer\Base as NodalBase;
 use RZP\Mail\Settlement\AxisSettlement;
 
-class NodalAccount extends NodalBase\NodalBase
+class NodalAccount extends NodalBase\NodalAccount
 {
     const SIGNED_URL_DURATION = '1440';
 
