@@ -171,6 +171,16 @@ export default class CreateVirtualAccount extends Component {
     } = this.props;
     const { virtualAccount } = this.state;
 
+    let descriptorLimit;
+
+    if (handle) {
+      if (handle.length === 3) {
+        descriptorLimit = 10;
+      } else if (handle.length === 4) {
+        descriptorLimit = 9;
+      }
+    }
+
     return (
       <div>
         <ModalHeader
@@ -241,11 +251,16 @@ export default class CreateVirtualAccount extends Component {
                         name="descriptor"
                         component="input"
                         class="form-control"
-                        placeholder="Accepts alphanumberic, upto 9 chars"
+                        placeholder={`Accepts alphanumberic, upto ${descriptorLimit} chars`}
                         normalize={value => value.toUpperCase()}
                         onChange={event => {
                           let value = event.target.value;
-                          if (/^[a-z0-9]{0,9}$/i.test(value)) {
+                          let regex = new RegExp(
+                            `^[a-z0-9]{0,${descriptorLimit}}$`,
+                            'i'
+                          );
+
+                          if (regex.test(value)) {
                             this.props.change('descriptor', value);
                           } else {
                             event.preventDefault();
