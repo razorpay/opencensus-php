@@ -103,7 +103,9 @@ class NodalAccount extends NodalBase\NodalBase
 
     protected function getRows(string $amount): array
     {
-        $this->mode = self::MODE_MAPPING[$this->getTransferMode($amount)];
+        $mode = $this->getTransferMode($amount);
+
+        $this->mode = self::MODE_MAPPING[$mode];
 
         $formattedAmount = (float) sprintf('%0.2f', $amount);
 

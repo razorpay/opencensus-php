@@ -73,7 +73,9 @@ class NodalAccount extends NodalBase\NodalBase
 
     protected function getPlainText($amount)
     {
-        $this->mode = self::MODE_MAPPING[$this->getTransferMode($amount)];
+        $mode = $this->getTransferMode($amount);
+
+        $this->mode = self::MODE_MAPPING[$mode];
 
         $values = [
             $this->mode,
