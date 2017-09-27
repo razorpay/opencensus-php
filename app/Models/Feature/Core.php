@@ -137,7 +137,8 @@ class Core extends Base\Core
 
         $merchantDetails = $merchant->merchantDetail;
 
-        $submitted = (($merchantDetails !== null) and ($merchantDetails->isSubmitted() === true)) ? "true"  : "false";
+        $submitted = (($merchantDetails !== null) and
+            ($merchantDetails->isSubmitted() === true)) ? "true"  : "false";
 
         $data = [
             'id'                         => $merchant->getId(),
@@ -150,7 +151,10 @@ class Core extends Base\Core
         $this->logActionToSlack($this->merchant, SlackActions::PRODUCT_ACTIVATION, $data);
     }
 
-    public function notifyMerchantIfApplicable(string $merchantId, Entity $feature, bool $shouldSync)
+    public function notifyMerchantIfApplicable(
+        string $merchantId,
+        Entity $feature,
+        bool $shouldSync)
     {
         $isLiveMode = $this->isLiveMode();
 
@@ -159,9 +163,16 @@ class Core extends Base\Core
         {
             $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
 
-            $data['feature'] = studly_case($feature->getName());
+            $visibleFeatures = Constants::$visibleFeaturesMap;
+            $featureName     = $feature->getName();
+
+            $data['feature']       = $visibleFeatures[$featureName]['display_name'];
             $data['contact_email'] = $merchant->getEmail();
-            $data['contact_name'] = $merchant->getName();
+            $data['contact_name']  = $merchant->getName();
+
+            $featureUpdateEmail = new FeatureEnabled($data);
+
+            Mail::queue($featureUpdateEmail);
 
             $this->trace->info(
                 TraceCode::FEATURE_ENABLED_MERCHANT_NOTIFIED,
@@ -171,10 +182,6 @@ class Core extends Base\Core
                     Mode::LIVE                => $isLiveMode,
                     Entity::NEW_FEATURE       => $feature,
                 ]);
-
-            $featureUpdateEmail = new FeatureEnabled($data);
-
-            Mail::queue($featureUpdateEmail);
         }
         else
         {

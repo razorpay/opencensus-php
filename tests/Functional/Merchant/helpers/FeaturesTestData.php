@@ -409,7 +409,7 @@ return [
         ]
     ],
 
-    'testGetOnboardingQuestions'    => [
+    'testGetOnboardingQuestions'  => [
         'request'  => [
             'content' => [
                 Constants::FEATURES => [
@@ -484,7 +484,7 @@ return [
             ],
         ]
     ],
-    'getOnboardingResponses'        => [
+    'getOnboardingResponses'      => [
         'request'  => [
             'content' => [],
             'url'     => '/feature/onboarding/' . Constants::MARKETPLACE . '/responses',
@@ -502,7 +502,7 @@ return [
         ]
     ],
 
-    'addNotifyFeatures'             => [
+    'addNotifyFeatures' => [
         'request'  => [
             'content' => [
                 'names'       => ['dummy', 'marketplace', 'subscriptions'],

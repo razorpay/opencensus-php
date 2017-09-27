@@ -560,15 +560,6 @@ class FeaturesTest extends TestCase
         Mail::assertSent(FeatureEnabledEmail::class);
     }
 
-    public function testAddNonNotifyFeatures()
-    {
-        Mail::fake();
-
-        $this->addFeature(Mode::LIVE, true);
-
-        Mail::assertNotSent(FeatureEnabledEmail::class);
-    }
-
     public function testFeatureEnabledEmailNotificationOnTest()
     {
         Mail::fake();
@@ -585,6 +576,15 @@ class FeaturesTest extends TestCase
         $this->addNotifyFeatures(Mode::TEST, true);
 
         Mail::assertSent(FeatureEnabledEmail::class);
+    }
+
+    public function testFeatureEnabledEmailNonNotify()
+    {
+        Mail::fake();
+
+        $this->addFeature(Mode::LIVE, true);
+
+        Mail::assertNotSent(FeatureEnabledEmail::class);
     }
 
     protected function addNotifyFeatures(string $mode, bool $shouldSync)

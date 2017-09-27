@@ -83,7 +83,7 @@ class MailTags
     const OAUTH_APP_AUTHORIZED             = 'oauth_app_authorized';
 
     // Merchant feature tags
-    const FEATURES_ENABLED                 = 'features_enabled';
+    const FEATURE_ENABLED                  = 'features_enabled';
 
     /**
      * Email tags that should respond to the mailgun failure webhook

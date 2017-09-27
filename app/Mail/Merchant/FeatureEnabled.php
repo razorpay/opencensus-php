@@ -59,8 +59,6 @@ class FeatureEnabled extends Mailable
     {
         $subject = $this->getSubject();
 
-        $this->data['subject'] = $subject;
-
         $this->with($this->data);
 
         return $this;
@@ -68,12 +66,12 @@ class FeatureEnabled extends Mailable
 
     protected function getSubject()
     {
-        return $this->data['feature'] . ' has been enabled for Live mode';
+        return $this->data['feature'] . ' enabled for Live mode';
     }
 
     protected function getMailTag()
     {
-        return MailTags::FEATURES_ENABLED;
+        return MailTags::FEATURE_ENABLED;
     }
 
     protected function addHeaders()
@@ -82,7 +80,7 @@ class FeatureEnabled extends Mailable
         {
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader(MailTags::HEADER, MailTags::FEATURES_ENABLED);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::FEATURE_ENABLED);
         });
 
         return $this;
