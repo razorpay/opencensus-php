@@ -70,12 +70,6 @@ class Gateway extends Base\Gateway
                            ['gateway_response' => $input['gateway'],
                             'payment_id'       => $input['payment']['id']]);
 
-        // Only url, merchant id and secrets have to change.
-        if ($input['terminal']->isCorporate() === true)
-        {
-            $this->setCorporate();
-        }
-
         // Response parameters are different for callback received via browser redirect
         // as opposed to those received from server. This is being resolved using the param
         // received from server.
@@ -90,6 +84,10 @@ class Gateway extends Base\Gateway
         {
             $content = $this->getDataFromEncryptedResponse($input['gateway'], $input);
         }
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK,
+                           ['content' => $content,
+                            'payment_id'       => $input['payment']['id']]);
 
         $this->assertPaymentId($input['payment']['id'],
              $content[RequestFields::MERCHANT_REFERENCE]);
@@ -121,6 +119,10 @@ class Gateway extends Base\Gateway
 
     public function sendPaymentVerifyRequest(Verify $verify)
     {
+        $this->setDomainType();
+
+        $this->handleCorporatePaymentVerify($verify);
+
         $content = $this->getPaymentVerifyData($verify);
 
         $request = $this->getStandardRequestArray($content ,'post', $this->getActionType());
@@ -140,6 +142,19 @@ class Gateway extends Base\Gateway
             ]);
 
         $verify->verifyResponseContent = $this->parseResponseXml($response->body);
+    }
+
+    public function handleCorporatePaymentVerify(Verify $verify)
+    {
+        // Corporate payment currently do not support verification
+        if ($this->isCorporateBanking() === true)
+        {
+            throw new Exception\PaymentVerificationException(
+                $verify->getDataToTrace(),
+                $verify,
+                Payment\Verify\Action::FINISH);
+
+        }
     }
 
     public function verifyPayment(Verify $verify)
@@ -344,6 +359,17 @@ class Gateway extends Base\Gateway
         if ((isset($attrs['status']) === false) or
             ($attrs['status'] !== Status::YES))
         {
+            // Check for and if pending throw that instead
+            if ($content[ResponseFields::FLAG] === Status::PENDING)
+            {
+                $this->trace->info(
+                    TraceCode::PAYMENT_CALLBACK_PENDING,
+                    ['content' => $content]);
+
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_PENDING_AUTHORIZATION);
+            }
+
             $this->trace->error(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
                 ['content' => $content]);
