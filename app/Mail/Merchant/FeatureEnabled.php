@@ -46,9 +46,16 @@ class FeatureEnabled extends Mailable
         return $this;
     }
 
+    protected function addTextView()
+    {
+        $this->text('emails.merchant.feature_enabled_text');
+
+        return $this;
+    }
+
     protected function addSubject()
     {
-        $subject = $this->getSubject();
+        $subject = $this->data['feature'] . ' enabled for Live mode';
 
         $this->subject($subject);
 
@@ -57,16 +64,9 @@ class FeatureEnabled extends Mailable
 
     protected function addMailData()
     {
-        $subject = $this->getSubject();
-
         $this->with($this->data);
 
         return $this;
-    }
-
-    protected function getSubject()
-    {
-        return $this->data['feature'] . ' enabled for Live mode';
     }
 
     protected function getMailTag()
