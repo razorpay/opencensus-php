@@ -107,6 +107,7 @@ export default class RefundModal extends Component {
       this.props.showNotification({
         type: 'error',
         message: errorMsg,
+        closeTimeout: 10000,
       });
 
       return;
