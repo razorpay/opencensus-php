@@ -7,6 +7,7 @@ use Config;
 
 use RZP\Models\Base;
 use RZP\Constants\Mode;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicEntity;
 use RZP\Mail\Merchant\FeatureEnabled;
@@ -173,11 +174,12 @@ class Core extends Base\Core
 
             $visibleFeatures = Constants::$visibleFeaturesMap;
             $featureName     = $feature->getName();
+            $merchantEmail   = $merchant->getEmail();
 
             $data['feature']       = $visibleFeatures[$featureName]['display_name'];
             $data['documentation'] = $visibleFeatures[$featureName]['documentation'];
-            $data['contact_email'] = $merchant->getEmail();
             $data['contact_name']  = $merchant->getName();
+            $data['contact_email'] = $merchantEmail;
 
             $featureUpdateEmail = new FeatureEnabled($data);
 
@@ -190,6 +192,7 @@ class Core extends Base\Core
                     Entity::SHOULD_SYNC       => $shouldSync,
                     Mode::LIVE                => $isLiveMode,
                     Entity::NEW_FEATURE       => $feature,
+                    Merchant\Entity::EMAIL    => $merchantEmail
                 ]);
         }
         else
