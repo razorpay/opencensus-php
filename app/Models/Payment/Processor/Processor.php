@@ -174,6 +174,13 @@ class Processor
                 Payment\Entity::METHOD);
         }
 
+        $ret = $this->preProcessPaymentInputs($input);
+
+        if ($ret !== null)
+        {
+            return $ret;
+        }
+
         $this->repo->transaction(function() use ($input)
         {
             $this->createPaymentEntity($input);
@@ -185,6 +192,38 @@ class Processor
         $this->checkSignature($input, $payment);
 
         return $this->authorize($payment, $input);
+    }
+
+    protected function preProcessPaymentInputs(array $input)
+    {
+        if (($input['method'] === Payment\Method::WALLET) and
+            ((empty($input['contact']) === true) or
+             (empty($input['email']) === true)))
+        {
+            $coproto = [
+                'type' => 'wallet',
+                'request' => [
+                    'url' => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
+                    'method' => 'POST',
+                    'content' => $input
+                ],
+                'version' => '1'
+            ];
+
+            if (empty($input['contact']) === true)
+            {
+                $coproto['missing'][] = 'contact';
+                unset($coproto['request']['content']['contact']);
+            }
+
+            if (empty($input['email']) === true)
+            {
+                $coproto['missing'][] = 'email';
+                unset($coproto['request']['content']['email']);
+            }
+
+            return $coproto;
+        }
     }
 
     public function processAndReturnFees(array & $input)

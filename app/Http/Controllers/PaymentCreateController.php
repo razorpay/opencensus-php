@@ -343,15 +343,18 @@ class PaymentCreateController extends Controller
                 return View::make('gateway.gatewayAsyncForm')
                            ->with('data', $data);
             }
+            else if ($data['type'] === 'wallet')
+            {
+                return View::make('gateway.gatewayWalletForm')
+                           ->with('data', $data);
+            }
             else
             {
                 assertTrue(false, 'Should not reach here');
             }
         }
-        else
-        {
-            return $data;
-        }
+
+        return $data;
     }
 
     protected function redirectToGatewayPostForm($data)
