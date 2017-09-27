@@ -409,7 +409,7 @@ return [
         ]
     ],
 
-    'testGetOnboardingQuestions'    => [
+    'testGetOnboardingQuestions'  => [
         'request'  => [
             'content' => [
                 Constants::FEATURES => [
@@ -484,7 +484,7 @@ return [
             ],
         ]
     ],
-    'getOnboardingResponses'        => [
+    'getOnboardingResponses'      => [
         'request'  => [
             'content' => [],
             'url'     => '/feature/onboarding/' . Constants::MARKETPLACE . '/responses',
@@ -500,5 +500,35 @@ return [
                 Constants::SETTLING_TO => 'Someone'
             ]
         ]
-    ]
+    ],
+
+    'addNotifyFeatures' => [
+        'request'  => [
+            'content' => [
+                'names'       => ['dummy', 'marketplace'],
+                'entity_type' => 'merchant',
+                'entity_id'   => '10000000000000'
+            ],
+            'url'     => '/features',
+            'method'  => 'POST',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'name'        => 'dummy',
+                    'entity_id'   => '10000000000000',
+                    'entity_type' => 'merchant'
+                ],
+                [
+                    'name'        => 'marketplace',
+                    'entity_id'   => '10000000000000',
+                    'entity_type' => 'merchant'
+                ]
+            ],
+        ],
+    ],
 ];

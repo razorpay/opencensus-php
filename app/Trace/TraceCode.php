@@ -867,9 +867,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTINGS_UPSERT_REQUEST                       = 'SETTINGS_UPSERT_REQUEST';
     const SETTINGS_DELETE_REQUEST                       = 'SETTINGS_DELETE_REQUEST';
 
-    // Feature Onboarding trace codes
+    // Merchant feature trace codes
     const FEATURE_ONBOARDING_RESPONSE_REQUEST           = 'FEATURE_ONBOARDING_RESPONSE_REQUEST';
     const FEATURE_ONBOARDING_RESPONSE_CREATION_FAILED   = 'FEATURE_ONBOARDING_RESPONSE_CREATION_FAILED';
+    const FEATURE_ENABLED_MERCHANT_NOTIFIED             = 'FEATURE_ENABLED_MERCHANT_NOTIFIED';
+    const FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED         = 'FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
