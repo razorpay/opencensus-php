@@ -9,9 +9,12 @@ import {
 } from 'merchant/modules/marketplace/transfer';
 import * as ModalActions from 'rzp/modules/modals';
 
+import { showNotification } from 'rzp/modules/notifications';
+
 @connect(state => state.transfer, {
   fetchTransfer,
   fetchReversals,
+  showNotification,
   ...ModalActions,
 })
 export default class TransferDetailsContainer extends Component {
@@ -51,7 +54,15 @@ export default class TransferDetailsContainer extends Component {
   };
 
   render() {
-    let { entity, loading, errors, reversals, onClose, onReverse } = this.props;
+    let {
+      entity,
+      loading,
+      errors,
+      reversals,
+      onClose,
+      onReverse,
+      showNotification,
+    } = this.props;
     let statusMsg = {};
 
     if (errors) {
@@ -71,6 +82,7 @@ export default class TransferDetailsContainer extends Component {
         onReverse={onReverse}
         openReversalModal={this.openReversalModal}
         onTransferUpdate={this.onTransferUpdate}
+        showNotification={showNotification}
       />
     );
   }
