@@ -151,6 +151,14 @@ class Core extends Base\Core
         $this->logActionToSlack($this->merchant, SlackActions::PRODUCT_ACTIVATION, $data);
     }
 
+    /**
+     * Sends an email to the merchant if a
+     * notifyFeature is enabled on Live mode
+     *
+     * @param string $merchantId
+     * @param Entity $feature
+     * @param bool   $shouldSync
+     */
     public function notifyMerchantIfApplicable(
         string $merchantId,
         Entity $feature,
