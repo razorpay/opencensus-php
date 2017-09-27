@@ -2,9 +2,11 @@
 
 Hi,
 
-{{$feature}} has been enabled on your account for live mode. You can access the product on your Razorpay dashboard from the left side menu.
+{{$feature}} has been enabled on your Razorpay account. You can now start using {{$feature}} for live transactions.
 
-In case you did not request this or would like to revoke the access, please visit your dashboard.
+Thanks for choosing Razorpay and welcome to the Future of Payments!
+
+If you have any queries, please reach out to us at support@razorpay.com
 
 Regards,
 Team Razorpay
