@@ -270,14 +270,8 @@ class Gateway extends Base\Gateway
         // Setting success status, since verification is success
         $gatewayAttributes[ResponseFields::STATUS] = Constants::STATUS_SUCCESS;
 
-        // If auth request faile before creating the gateway entity,
-        // and if we send a verify request for this payment, we need to handle this.
-        if ($gatewayPayment === null)
-        {
-            $gatewayPayment = $this->createGatewayPaymentEntity($gatewayAttributes, Action::AUTHORIZE);
-        }
         // Callback gave failure status, but verify is success
-        else if ($gatewayPayment[NetbankingEntity::STATUS] === Constants::STATUS_FAILURE)
+        if ($gatewayPayment[NetbankingEntity::STATUS] === Constants::STATUS_FAILURE)
         {
             $gatewayPayment = $this->updateGatewayPaymentEntity($gatewayPayment, $gatewayAttributes);
         }
