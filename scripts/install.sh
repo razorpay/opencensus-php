@@ -7,6 +7,7 @@ BASEDIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )/../" && pwd )
 API_INSTALL_DIR="/home/ubuntu/api"
 ALOHOMORA_BIN="$(which alohomora)"
 
+# TODO do this in a better way
 # Fix permissions
 echo  "Fix permissions for baseDir"
 cd "$BASEDIR" && sudo chmod 777 -R storage
@@ -15,6 +16,7 @@ cd "$BASEDIR" && sudo chmod 777 -R storage
 echo  "Install new version"
 cd $BASEDIR && rsync -avz --force --delete --progress --exclude-from=./.rsyncignore ./ "$API_INSTALL_DIR"
 
+# TODO remove this, as this is already done
 # Fix permissions
 echo  "Fix permissions"
 cd "$API_INSTALL_DIR" && sudo chmod 777 -R storage
