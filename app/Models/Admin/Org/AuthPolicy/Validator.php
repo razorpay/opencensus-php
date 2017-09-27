@@ -36,26 +36,30 @@ class Validator extends Base\Validator
 
     public function validate(Admin\Entity $admin, array $data, string $op)
     {
-        $prop = $op . 'PolicyRules';
-
-        $attributes = $this->entity->toArray();
-
-        foreach ($this->{$prop} as $rule)
+        // password create policy rules should be checked for everyone.
+        if ($admin->isSuperAdmin() === false or $op === 'passwordCreate')
         {
-            $class = 'RZP\Models\Admin\Org\AuthPolicy\Rules\\' . studly_case($rule) . 'Rule';
+            $prop = $op . 'PolicyRules';
 
-            // In some cases like Locked Account Rule
-            // we won't need a value from the Policy Entity
-            if (isset($attributes[$rule]))
-            {
-                $classOb = new $class($attributes[$rule]);
-            }
-            else
-            {
-                $classOb = new $class();
-            }
+            $attributes = $this->entity->toArray();
 
-            $classOb->validate($admin, $data);
+            foreach ($this->{$prop} as $rule)
+            {
+                $class = 'RZP\Models\Admin\Org\AuthPolicy\Rules\\' . studly_case($rule) . 'Rule';
+
+                // In some cases like Locked Account Rule
+                // we won't need a value from the Policy Entity
+                if (isset($attributes[$rule]))
+                {
+                    $classOb = new $class($attributes[$rule]);
+                }
+                else
+                {
+                    $classOb = new $class();
+                }
+
+                $classOb->validate($admin, $data);
+            }
         }
     }
 }
