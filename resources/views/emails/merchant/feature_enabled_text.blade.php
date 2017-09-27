@@ -1,9 +1,10 @@
+{{$feature}} has been enabled.
+
 Hi,
 
-We are writing to let you know that the feature {{$feature}} has been enabled on your account for the live mode.
+{{$feature}} has been enabled on your account for live mode. You can access the product on your Razorpay dashboard from the left side menu.
 
+In case you did not request this or would like to revoke the access, please visit your dashboard.
 
-You can contact us at contact@razorpay.com in case of any discrepancy.
-
---
+Regards,
 Team Razorpay
