@@ -15,11 +15,15 @@ class EmiFile extends Base\EmiFile
 {
     protected static $fileToWriteName = 'Yesb_Emi_File';
 
-    protected $emailIdsToSendTo = ['yesb.emi@razorpay.com'];
+    protected $emailIdsToSendTo = ['yesbcards.emi@razorpay.com'];
 
     protected $bankName  = 'Yesb';
 
     protected $type = FileStore\Type::YES_EMI_FILE_SFTP;
+
+    protected $totalAmount;
+
+    protected $totalTransactions;
 
     public function __construct()
     {
@@ -36,6 +40,10 @@ class EmiFile extends Base\EmiFile
     {
         $data = [];
 
+        $totalAmount = 0;
+
+        $totalTransactions = 0;
+
         foreach ($input as $emiPayment)
         {
             $emiPlan = $emiPayment->emiPlan;
@@ -43,6 +51,12 @@ class EmiFile extends Base\EmiFile
             $emiTenure = $emiPlan['duration'];
 
             $emiPercent = $emiPlan['rate']/100;
+
+            $principalAmount = $emiPayment->getAmount()/100;
+
+            $totalAmount = $totalAmount + $principalAmount;
+
+            $totalTransactions++;
 
             $notApplicable = 'NA';
 
@@ -59,7 +73,7 @@ class EmiFile extends Base\EmiFile
                 'Issuer'                       => 'YES',
                 'RRN'                          => $notApplicable,
                 'Auth Code'                    => $this->getAuthCode($emiPayment),
-                'Tx Amount'                    => $emiPayment->getAmount()/ 100,
+                'Tx Amount'                    => $principalAmount,
                 'EMI_Offer'                    => $emiTenure.' Months',
                 'Manufacturer'                 => $notApplicable,
                 'Merchant Name'                => $notApplicable,
@@ -93,6 +107,10 @@ class EmiFile extends Base\EmiFile
             ];
         }
 
+        $this->totalTransactions = $totalTransactions;
+
+        $this->totalAmount = $totalAmount;
+
         return $data;
     }
 
@@ -112,9 +130,9 @@ class EmiFile extends Base\EmiFile
 
     protected function getFileToWriteName(array $data)
     {
-        $date = Carbon::now(Timezone::IST)->format('dmY');
+        $date = Carbon::now(Timezone::IST)->format('d-m-Y');
 
-        static::$fileToWriteName = 'Razorpay_YESEMI_' . $date;
+        static::$fileToWriteName = 'MEMI_MANI_' . $date;
 
         $filePath = '';
 
@@ -139,5 +157,22 @@ class EmiFile extends Base\EmiFile
         $publicKey = trim(str_replace('\n', "\n", $publicKey));
 
         return [PGPEncryption::PUBLIC_KEY => $publicKey];
+    }
+
+    protected function sendEmiFile(array $fileData, $mailData = null)
+    {
+        $body = 'Emi File Uploaded <br />';
+        $body = $body . 'File Name : ' . static::$fileToWriteName . '<br />';
+        $body = $body . 'Total Amount : ' . $this->totalAmount . '<br />';
+        $body = $body . 'Transactions Count : ' . $this->totalTransactions;
+
+        $mailData = ['body'  =>  $body];
+
+        if ($this->transferMode === Base\EmiMode::SFTP)
+        {
+            $fileData = [];
+        }
+
+        parent::sendEmiFile($fileData, $mailData);
     }
 }
