@@ -672,6 +672,7 @@ return [
                 'email'                 => 'abc@razorpay.com',
                 'password'              => 'M!2#uWdx',
                 'password_confirmation' => 'M!2#uWdx',
+                'token'                 => 'dummytoken',
             ],
         ],
         'response'  => [

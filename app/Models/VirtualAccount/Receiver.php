@@ -34,9 +34,13 @@ class Receiver
     const ACCOUNT_NUMBER_CHAR_SPACE       = '34679ACDEFGHJKLMNPQRTUVWXY';
     const MAX_ACCOUNT_GENERATION_ATTEMPTS = 10;
 
+    protected $app;
     protected $merchant;
     protected $name;
     protected $descriptor;
+    protected $trace;
+    protected $repo;
+    protected $mode;
 
     public function __construct(
         Merchant\Entity $merchant,

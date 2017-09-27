@@ -20,6 +20,7 @@ use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Merchant;
+use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Payment\Processor\Netbanking;
@@ -29,6 +30,7 @@ use RZP\Models\Payment\Processor\Netbanking;
  * @property Invoice\Entity         $invoice
  * @property Merchant\Entity        $merchant
  * @property Card\Entity            $card
+ * @property BankTransfer\Entity    $bankTransfer
  */
 class Entity extends Base\PublicEntity
 {
