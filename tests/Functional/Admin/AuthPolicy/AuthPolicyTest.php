@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Admin\AuthPolicy;
 use Hash;
 use Carbon\Carbon;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Models\Admin\Role\Repository as RoleRepository;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
@@ -235,5 +236,29 @@ class AuthPolicyTest extends TestCase
         $url = sprintf($url, $org->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
+    }
+
+    public function testSuperAdminLockOnMaxFailedAttempts()
+    {
+        $this->ba->appAuth('rzp_test', '', $this->hostName);
+
+        $admin = $this->fixtures->create('admin', [
+            'email' => 'randomemail@rzp.com',
+            'org_id' => $this->org->getId(),
+            'failed_attempts' => 10
+        ]);
+
+        $superAdminRole = (new RoleRepository())->getSuperAdminRoleByOrgId($this->org->getId());
+
+        $admin->roles()->attach($superAdminRole);
+
+        $this->startTest();
+
+        $admin = (new Admin\Repository)->findOrFailPublic($admin->getId());
+
+        $this->assertNull($admin['last_login_at']);
+        // Super admins account will not be locked even failed attempts increase by default.
+        $this->assertEquals(false, $admin['locked']);
+        $this->assertEquals(11, $admin['failed_attempts']);
     }
 }
