@@ -29,7 +29,7 @@ class Service extends Base\Service
 
         $plan = $this->repo->pricing->getPricingPlanByIdOrFailPublic($id);
 
-        $rule = (new Pricing\Core)->addPlanRule($input, $plan);
+        $rule = (new Pricing\Core)->addPlanRule($plan, $input);
 
         $this->trace->info(
             TraceCode::PRICING_PLAN_RULE_ADD_SUCCESS,

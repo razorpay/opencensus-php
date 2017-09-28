@@ -8,7 +8,7 @@ use RZP\Models\Admin\Action;
 
 class Core extends Base\Core
 {
-    public function addPlanRule($input, Plan $plan): Entity
+    public function addPlanRule(Plan $plan, array $input): Entity
     {
         $rule = (new Entity)->addPlanRule($input, $plan);
 
@@ -27,7 +27,7 @@ class Core extends Base\Core
      * Create a pricing plan from rule input
      * The $planName is sent separately
      */
-    public function createPlan(string $planName, $input): Plan
+    public function createPlan(string $planName, array $input): Plan
     {
         $input[Entity::PLAN_NAME] = $planName;
 
@@ -46,7 +46,7 @@ class Core extends Base\Core
         return $this->createPlanFromRule($rule);
     }
 
-    public function createBulkPricing($input)
+    public function createBulkPricing(array $input)
     {
         (new Validator())->validateInput('createBulkPricing', $input);
 
@@ -62,7 +62,7 @@ class Core extends Base\Core
 
             foreach ($inputRules as $inputRule)
             {
-                $rule = $this->addPlanRule($inputRule, $plan);
+                $rule = $this->addPlanRule($plan, $inputRule);
 
                 $plan->add($rule);
             }
