@@ -6,6 +6,7 @@ use Mail;
 use Illuminate\Http\UploadedFile;
 
 use RZP\Constants\Mode;
+use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
@@ -23,9 +24,116 @@ class FeaturesTest extends TestCase
         $this->ba->appAuth();
     }
 
-    public function testAddFeatureToMerchant()
+    /**
+     * Adds dummy feature to the database which is linked to the mode passed as parameter.
+     *
+     */
+    private function addFeatures(
+        string $addToMode,
+        bool $shouldSync = false,
+        array $featureNames = ['dummy'])
     {
-        $this->startTest();
+        $authMethod = 'appAuth' . studly_case($addToMode);
+
+        $this->ba->$authMethod();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        if (empty($featureNames) === false)
+        {
+            $testData['request']['content']['names'] = $featureNames;
+        }
+
+        if ($shouldSync !== false)
+        {
+            $testData['request']['content']['should_sync'] = 1;
+        }
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * Deletes a feature from the database linked to mode received
+     *
+     * @param string $deleteFromMode
+     * @param bool   $shouldSync
+     */
+    private function deleteFeature(
+        string $deleteFromMode,
+        bool $shouldSync = false,
+        string $featureName = 'dummy')
+    {
+        $this->ba->adminAuth($deleteFromMode, null, 'org_100000razorpay');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        if ($featureName === null)
+        {
+            $testData['request']['url'] = '/features/10000000000000/' . $featureName;
+        }
+
+        if ($shouldSync === true)
+        {
+            $testData['request']['content']['should_sync'] = 1;
+        }
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * Performs a GET request based on the mode received and verifies the
+     * presence of the dummy feature
+     *
+     * @param string $mode
+     */
+    private function verifyFeaturePresence(
+        string $mode,
+        array $featureNames = ['dummy'])
+    {
+        $authMethod = 'appAuth' . studly_case($mode);
+
+        $this->ba->$authMethod();
+
+        $response = $this->startTest();
+
+        $assignedFeatures = array_map(function ($feature)
+        {
+            return $feature["name"];
+        }, $response["assigned_features"]);
+
+        $assignedFeaturesInResponse = array_intersect($assignedFeatures, $featureNames);
+
+        // Check if all the featureNames requested, are present in the assignedFeatures array
+        $this->assertTrue(count($assignedFeaturesInResponse) === count($featureNames));
+    }
+
+    /**
+     * Performs a GET request based on the mode received and verifies the
+     * absence of the dummy feature
+     *
+     * @param string $mode
+     * @param array $features
+     */
+    private function verifyFeatureAbsence(
+        string $mode,
+        array $featureNames = ['dummy'])
+    {
+        $authMethod = 'appAuth' . studly_case($mode);
+
+        $this->ba->$authMethod();
+
+        $request = $this->testData[__FUNCTION__]['request'];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $assignedFeatures = array_map(function ($feature)
+        {
+            return $feature["name"];
+        }, $response["assigned_features"]);
+
+        $assignedFeaturesInResponse = array_intersect($assignedFeatures, $featureNames);
+
+        $this->assertEquals(0, count($assignedFeaturesInResponse));
     }
 
     public function testAddInvalidFeatureToMerchant()
@@ -35,34 +143,9 @@ class FeaturesTest extends TestCase
 
     public function testAddDuplicateFeatureToMerchant()
     {
-        $this->testAddFeatureToMerchant();
+        $this->addFeatures(Mode::TEST);
 
         $this->startTest();
-    }
-
-    public function testDeleteFeatureFromMerchant()
-    {
-        $this->ba->adminAuth('test', null, 'org_100000razorpay');
-
-        $features = $this->fixtures->merchant->addFeatures(['dummy']);
-
-        $request = [
-            'url'       => '/features/10000000000000/dummy',
-            'method'    => 'delete',
-            'server' => [
-                'HTTP_X-Dashboard'                => 'true',
-                'HTTP_X-Dashboard-User-Email'     => 'user@rzp.dev',
-            ],
-        ];
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $resultData = [
-            "id"            => (string) $features->first()->getId(),
-            "deleted"       => true,
-        ];
-
-        $this->assertArraySelectiveEquals($resultData, $content);
     }
 
     public function testDeleteNonExistentFeatureFromMerchant()
@@ -83,26 +166,24 @@ class FeaturesTest extends TestCase
 
     public function testMultiRemoveFeature()
     {
-        $merch1 = $this->fixtures->create('feature', ['entity_id' => '10000000000001',
-                    'name' => 'dummy']);
-        $merch2 = $this->fixtures->create('feature', ['entity_id' => '10000000000002',
-                    'name' => 'dummy']);
-        $merch3 = $this->fixtures->create('feature', ['entity_id' => '10000000000003',
-                    'name' => 'dummy']);
-
-        $this->startTest();
-    }
-
-    public function testGetFeatureListForMerchant()
-    {
-        $this->testAddFeatureToMerchant();
-
-        $this->startTest();
-    }
-
-    public function testDummyFeatureRouteWithoutAccess()
-    {
-        $this->ba->privateAuth();
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '10000000000001',
+                'name' => 'dummy'
+            ]);
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '10000000000002',
+                'name' => 'dummy'
+            ]);
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '10000000000003',
+                'name' => 'dummy'
+            ]);
 
         $this->startTest();
     }
@@ -116,6 +197,13 @@ class FeaturesTest extends TestCase
         $this->startTest();
     }
 
+    public function testDummyFeatureRouteWithoutAccess()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     /**
      * Add a feature to test
      * Get the features from the live database
@@ -123,7 +211,7 @@ class FeaturesTest extends TestCase
      */
     public function testAddFeatureToTestVerifyAbsenceInLive()
     {
-        $this->addFeature(Mode::TEST);
+        $this->addFeatures(Mode::TEST);
 
         $this->verifyFeaturePresence(Mode::TEST);
 
@@ -137,7 +225,7 @@ class FeaturesTest extends TestCase
      */
     public function testAddFeatureToLiveVerifyAbsenceInTest()
     {
-        $this->addFeature(Mode::LIVE);
+        $this->addFeatures(Mode::LIVE);
 
         $this->verifyFeaturePresence(Mode::LIVE);
 
@@ -151,7 +239,7 @@ class FeaturesTest extends TestCase
      */
     public function testAddFeatureToTestSyncedToLive()
     {
-        $this->addFeature(Mode::TEST, true);
+        $this->addFeatures(Mode::TEST,true);
 
         $this->verifyFeaturePresence(Mode::TEST);
 
@@ -165,7 +253,7 @@ class FeaturesTest extends TestCase
      */
     public function testAddFeatureToLiveSyncedToTest()
     {
-        $this->addFeature(Mode::LIVE, true);
+        $this->addFeatures(Mode::LIVE, true);
 
         $this->verifyFeaturePresence(Mode::LIVE);
 
@@ -181,11 +269,11 @@ class FeaturesTest extends TestCase
      */
     public function testAddFeatureToTestAddFeatureToLiveSyncedToTest()
     {
-        $this->addFeature(Mode::TEST);
+        $this->addFeatures(Mode::TEST);
 
         $this->verifyFeaturePresence(Mode::TEST);
 
-        $this->addFeature(Mode::LIVE, true);
+        $this->addFeatures(Mode::LIVE, true);
 
         $this->verifyFeaturePresence(Mode::LIVE);
     }
@@ -199,11 +287,11 @@ class FeaturesTest extends TestCase
      */
     public function testAddFeatureToLiveAddFeatureToTestSyncedToLive()
     {
-        $this->addFeature(Mode::LIVE);
+        $this->addFeatures(Mode::LIVE);
 
         $this->verifyFeaturePresence(Mode::LIVE);
 
-        $this->addFeature(Mode::TEST, true);
+        $this->addFeatures(Mode::TEST, true);
 
         $this->verifyFeaturePresence(Mode::TEST);
     }
@@ -217,11 +305,11 @@ class FeaturesTest extends TestCase
      */
     public function testAddFeatureToLiveAddFeatureToLiveSyncedToTest()
     {
-        $this->addFeature(Mode::LIVE);
+        $this->addFeatures(Mode::LIVE);
 
         $this->verifyFeaturePresence(Mode::LIVE);
 
-        $this->addFeature(Mode::LIVE, true);
+        $this->addFeatures(Mode::LIVE, true);
 
         $this->verifyFeaturePresence(Mode::TEST);
     }
@@ -235,11 +323,11 @@ class FeaturesTest extends TestCase
      */
     public function testAddFeatureToTestAddFeatureToTestSyncedToLive()
     {
-        $this->addFeature(Mode::TEST);
+        $this->addFeatures(Mode::TEST);
 
         $this->verifyFeaturePresence(Mode::TEST);
 
-        $this->addFeature(Mode::TEST, true);
+        $this->addFeatures(Mode::TEST, true);
 
         $this->verifyFeaturePresence(Mode::LIVE);
     }
@@ -252,7 +340,7 @@ class FeaturesTest extends TestCase
      */
     public function testDeleteFeatureFromTestAndVerifyPresenceInLive()
     {
-        $this->addFeature(Mode::LIVE, true);
+        $this->addFeatures(Mode::LIVE, true);
 
         $this->verifyFeaturePresence(Mode::TEST);
 
@@ -273,7 +361,7 @@ class FeaturesTest extends TestCase
      */
     public function testDeleteFeatureFromLiveAndVerifyPresenceInTest()
     {
-        $this->addFeature( Mode::LIVE, true);
+        $this->addFeatures( Mode::LIVE, true);
 
         $this->verifyFeaturePresence(Mode::TEST);
 
@@ -295,7 +383,7 @@ class FeaturesTest extends TestCase
      */
     public function testDeleteFeatureFromTestSyncedToLive()
     {
-        $this->addFeature(Mode::LIVE, true);
+        $this->addFeatures(Mode::LIVE, true);
 
         $this->verifyFeaturePresence(Mode::TEST);
 
@@ -317,7 +405,7 @@ class FeaturesTest extends TestCase
      */
     public function testDeleteFeatureFromLiveSyncedToTest()
     {
-        $this->addFeature(Mode::LIVE, true);
+        $this->addFeatures(Mode::LIVE, true);
 
         $this->verifyFeaturePresence(Mode::TEST);
 
@@ -340,7 +428,7 @@ class FeaturesTest extends TestCase
      */
     public function testDeleteFeatureFromLiveDeleteFeatureFromTestSyncedToLive()
     {
-        $this->addFeature(Mode::LIVE, true);
+        $this->addFeatures(Mode::LIVE, true);
 
         $this->verifyFeaturePresence(Mode::TEST);
 
@@ -366,7 +454,7 @@ class FeaturesTest extends TestCase
      */
     public function testDeleteFeatureFromTestDeleteFeatureFromLiveSyncedToTest()
     {
-        $this->addFeature(Mode::LIVE, true);
+        $this->addFeatures(Mode::LIVE, true);
 
         $this->verifyFeaturePresence(Mode::TEST);
 
@@ -407,7 +495,9 @@ class FeaturesTest extends TestCase
         $this->addFeatureNonEditableByMerchantOnLive(Mode::TEST, true);
     }
 
-    protected function addFeatureNonEditableByMerchantOnLive(string $addToMode, bool $shouldSync = false)
+    protected function addFeatureNonEditableByMerchantOnLive(
+        string $addToMode,
+        bool $shouldSync = false)
     {
         $authMethod = 'appAuth' . studly_case($addToMode);
 
@@ -421,85 +511,6 @@ class FeaturesTest extends TestCase
         }
 
         $this->startTest($testData);
-    }
-
-    /**
-     * Adds dummy feature to the database which is linked to the mode passed as parameter.
-     *
-     * @param string $addToMode
-     * @param bool   $shouldSync
-     */
-    private function addFeature(string $addToMode, bool $shouldSync = false)
-    {
-        $authMethod = 'appAuth' . studly_case($addToMode);
-
-        $this->ba->$authMethod();
-
-        $testData = $this->testData[__FUNCTION__];
-
-        if ($shouldSync === true)
-        {
-            $testData['request']['content']['should_sync'] = 1;
-        }
-
-        $this->startTest($testData);
-    }
-
-    /**
-     * Deletes a feature from the database linked to mode received
-     *
-     * @param string $deleteFromMode
-     * @param bool   $shouldSync
-     */
-    private function deleteFeature(string $deleteFromMode, bool $shouldSync = false)
-    {
-        $this->ba->adminAuth($deleteFromMode, null, 'org_100000razorpay');
-
-        $testData = $this->testData[__FUNCTION__];
-
-        if ($shouldSync === true)
-        {
-            $testData['request']['content']['should_sync'] = 1;
-        }
-
-        $this->startTest($testData);
-    }
-
-    /**
-     * Performs a GET request based on the mode received and verifies the
-     * absence of the dummy feature
-     *
-     * @param string $feature
-     * @param string $mode
-     */
-    private function verifyFeatureAbsence($mode)
-    {
-        $authMethod = 'appAuth' . studly_case($mode);
-
-        $this->ba->$authMethod();
-
-        $request = $this->testData[__FUNCTION__]['request'];
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $assignedFeatures = $response['assigned_features'];
-
-        $this->assertEquals(0, count($assignedFeatures));
-    }
-
-    /**
-     * Performs a GET request based on the mode received and verifies the
-     * presence of the dummy feature
-     *
-     * @param string $mode
-     */
-    private function verifyFeaturePresence($mode)
-    {
-        $authMethod = 'appAuth' . studly_case($mode);
-
-        $this->ba->$authMethod();
-
-        $this->startTest();
     }
 
     public function testGetOnboardingQuestions()
@@ -600,7 +611,7 @@ class FeaturesTest extends TestCase
     {
         Mail::fake();
 
-        $this->addFeature(Mode::LIVE, true);
+        $this->addFeatures(Mode::LIVE, true);
 
         Mail::assertNotSent(FeatureEnabledEmail::class);
     }
