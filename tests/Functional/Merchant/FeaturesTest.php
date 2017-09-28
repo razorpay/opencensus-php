@@ -10,6 +10,9 @@ use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 
 class FeaturesTest extends TestCase
 {
@@ -45,6 +48,50 @@ class FeaturesTest extends TestCase
         }
 
         if ($shouldSync !== false)
+        {
+            $testData['request']['content']['should_sync'] = 1;
+        }
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * Adds features as merchants.
+     *
+     */
+    private function addFeatureAsMerchant(
+        string $addToMode,
+        string $featureName = 'noflashcheckout',
+        bool $expectBadRequestException = false,
+        bool $shouldSync = true)
+    {
+        $authMethod = 'proxyAuth' . studly_case($addToMode);
+
+        $this->ba->$authMethod();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['features'][$featureName] = '1';
+
+        if ($expectBadRequestException === true)
+        {
+            $testData['response'] = [
+                'content' => [
+                    'error' => [
+                        'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE
+                    ],
+                ],
+                'status_code' => 400,
+            ];
+
+            $testData['exception'] = [
+                'class' => 'RZP\Exception\BadRequestException',
+                'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
+            ];
+        }
+
+        if ($shouldSync === true)
         {
             $testData['request']['content']['should_sync'] = 1;
         }
@@ -477,40 +524,70 @@ class FeaturesTest extends TestCase
      * @param string $addToMode
      * @param bool   $shouldSync
      */
-    public function testAddFeatureNonEditableByMerchantOnLive()
+    public function testAddFeatureNonEditableByAdminOnLive()
     {
-        $this->addFeatureNonEditableByMerchantOnLive(Mode::LIVE, true);
+        $this->addFeatures(Mode::LIVE, true, ['subscriptions']);
+
+        $this->verifyFeaturePresence(Mode::TEST, ['subscriptions']);
+
+        $this->verifyFeaturePresence(Mode::LIVE, ['subscriptions']);
     }
 
     /**
-     * Adds subscriptions feature to the test database
+     * Adds subscriptions feature to the live database
      * Since the route is accessed by an admin, it should
      * allow even when should sync is sent as 1.
-     *
-     * @param string $addToMode
-     * @param bool   $shouldSync
      */
-    public function testAddFeatureNonEditableByMerchantOnTest()
+    public function testAddFeatureNonEditableByMerchantOnLiveSynced()
     {
-        $this->addFeatureNonEditableByMerchantOnLive(Mode::TEST, true);
+        $this->addFeatureAsMerchant(
+            Mode::LIVE,
+            'subscriptions',
+            true,
+            true);
+
+        $this->verifyFeatureAbsence(Mode::TEST, ['subscriptions']);
+
+        $this->verifyFeatureAbsence(Mode::LIVE, ['subscriptions']);
     }
 
-    protected function addFeatureNonEditableByMerchantOnLive(
-        string $addToMode,
-        bool $shouldSync = false)
+    public function testAddFeatureNonEditableByMerchantOnTestSynced()
     {
-        $authMethod = 'appAuth' . studly_case($addToMode);
+        $this->addFeatureAsMerchant(
+            Mode::TEST,
+            'subscriptions',
+            true,
+            true);
 
-        $this->ba->$authMethod();
+        $this->verifyFeatureAbsence(Mode::TEST, ['subscriptions']);
 
-        $testData = $this->testData[__FUNCTION__];
+        $this->verifyFeatureAbsence(Mode::LIVE, ['subscriptions']);
+    }
 
-        if ($shouldSync === true)
-        {
-            $testData['request']['content']['should_sync'] = 1;
-        }
+    public function testAddFeatureNonEditableByMerchantOnLiveNonSynced()
+    {
+        $this->addFeatureAsMerchant(
+            Mode::LIVE,
+            'subscriptions',
+            true,
+            false);
 
-        $this->startTest($testData);
+        $this->verifyFeatureAbsence(Mode::TEST, ['subscriptions']);
+
+        $this->verifyFeatureAbsence(Mode::LIVE, ['subscriptions']);
+    }
+
+    public function testAddFeatureNonEditableByMerchantOnTestNonSynced()
+    {
+        $this->addFeatureAsMerchant(
+            Mode::TEST,
+            'subscriptions',
+            false,
+            false);
+
+        $this->verifyFeaturePresence(Mode::TEST, ['subscriptions']);
+
+        $this->verifyFeatureAbsence(Mode::LIVE, ['subscriptions']);
     }
 
     public function testGetOnboardingQuestions()
@@ -631,4 +708,133 @@ class FeaturesTest extends TestCase
 
         $this->startTest($testData);
     }
+
+    public function testGetFeaturesAsMerchant()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of a visible merchant feature: noflashcheckout
+     */
+    public function testUpdateMerchantFeatures()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+
+        $this->verifyFeaturePresence(Mode::TEST, ['noflashcheckout']);
+    }
+
+    /**
+     * This function tests updating of a non visble merchant feature: dummy
+     */
+    public function testUpdateMerchantUnEditableFeatures()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of a merchant feature that can be updated on test but not live mode: marketplace
+     */
+    public function testAddMerchantUnEditableFeaturesOnLive()
+    {
+        $this->ba->proxyAuthLive();
+
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of a merchant feature that can be updated on test but not live mode: marketplace
+     */
+    public function testAddMerchantEditableFeaturesOnTest()
+    {
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of a merchant feature with should_sync parameter
+     */
+    public function testAddMerchantFeaturesWithSyncOnLive()
+    {
+        $this->addFeatureAsMerchant(
+            Mode::LIVE,
+            'noflashcheckout',
+            false,
+            true);
+
+        $this->verifyFeaturePresence(Mode::TEST, ['noflashcheckout']);
+
+        $this->verifyFeaturePresence(Mode::LIVE, ['noflashcheckout']);
+    }
+
+    /**
+     * This function tests updating of a merchant feature with should_sync parameter
+     */
+    public function testAddMerchantFeaturesWithSyncOnTest()
+    {
+        $this->addFeatureAsMerchant(
+            Mode::TEST,
+            'noflashcheckout',
+            false,
+            true);
+
+        $this->verifyFeaturePresence(Mode::TEST, ['noflashcheckout']);
+
+        $this->verifyFeaturePresence(Mode::LIVE, ['noflashcheckout']);
+    }
+
+    /**
+     * This function tests updating of a merchant feature that can
+     * be updated on test but not live mode: marketplace
+     */
+    public function testAddMerchantUneditableFeaturesWithSyncOnLive()
+    {
+        $this->addFeatureAsMerchant(
+            Mode::LIVE,
+            'subscriptions',
+            true,
+            true);
+    }
+
+    /**
+     * This function tests updating of a merchant feature that can be updated on test but not live mode: marketplace
+     */
+    public function testAddMerchantEditableFeaturesWithSyncOnTest()
+    {
+        $this->addFeatureAsMerchant(
+            Mode::TEST,
+            'subscriptions',
+            true,
+            true);
+    }
+
+    /**
+     * This function tests updating of a merchant feature that can be updated on test but not live mode: marketplace
+     */
+    public function testDeleteMerchantUnEditableFeatureFromLive()
+    {
+        $this->ba->proxyAuthLive();
+
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of a merchant feature that can be updated on test but not live mode: marketplace
+     */
+    public function testDeleteMerchantEditableFeatureFromTest()
+    {
+        $features = $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+    }
+
 }

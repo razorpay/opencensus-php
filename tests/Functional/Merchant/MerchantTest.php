@@ -635,7 +635,7 @@ class MerchantTest extends TestCase
     {
         Mail::fake();
 
-        $merchantDetail = $this->fixtures->create('merchant_detail',
+        $this->fixtures->create('merchant_detail',
                                                 [
                                                     'merchant_id' => '10000000000000',
                                                 ]);
@@ -674,7 +674,7 @@ class MerchantTest extends TestCase
     {
         $this->testAddBankAccount();
 
-        $content = $this->startTest();
+        $this->startTest();
     }
 
     public function testChangeBankAccount()
@@ -683,7 +683,7 @@ class MerchantTest extends TestCase
 
         $this->testAddBankAccount();
 
-        $content = $this->startTest();
+        $this->startTest();
 
         $bankAccounts = $this->getEntities(
                             'bank_account', ['deleted' => true, 'type' => 'merchant'], true);
@@ -744,7 +744,7 @@ class MerchantTest extends TestCase
     {
         $this->ba->appAuth();
 
-        $content = $this->startTest();
+        $this->startTest();
     }
 
     public function testSetEmptyBanks()
@@ -795,9 +795,9 @@ class MerchantTest extends TestCase
 
         $this->fixtures->merchant->enablePaytm();
 
-        $terminal = $this->fixtures->on('live')->create('terminal', $attributes);
+        $this->fixtures->on('live')->create('terminal', $attributes);
 
-        $content = $this->startTest();
+        $this->startTest();
     }
 
     public function testGetCheckoutRoute()
@@ -1213,7 +1213,7 @@ class MerchantTest extends TestCase
 
         $this->ba->appAuth();
 
-        $content = $this->startTest();
+        $this->startTest();
     }
 
     public function testPutEmiMethod()
@@ -1467,124 +1467,6 @@ class MerchantTest extends TestCase
         });
     }
 
-    public function testGetMerchantFeatures()
-    {
-        $this->ba->proxyAuth();
-
-        $this->startTest();
-    }
-
-    /**
-     * This function tests updating of a visible merchant feature: noflashcheckout
-     */
-    public function testUpdateMerchantFeatures()
-    {
-        $this->ba->proxyAuth();
-
-        $this->startTest();
-    }
-
-    /**
-     * This function tests updating of a non visble merchant feature: dummy
-     */
-    public function testUpdateMerchantUnEditableFeatures()
-    {
-        $this->ba->proxyAuth();
-
-        $this->startTest();
-    }
-
-    /**
-     * This function tests updating of a merchant feature that can be updated on test but not live mode: marketplace
-     */
-    public function testAddMerchantUnEditableFeaturesOnLive()
-    {
-        $this->ba->proxyAuthLive();
-
-        $this->startTest();
-    }
-
-    /**
-     * This function tests updating of a merchant feature that can be updated on test but not live mode: marketplace
-     */
-    public function testAddMerchantEditableFeaturesOnTest()
-    {
-        $this->ba->proxyAuthTest();
-
-        $this->startTest();
-    }
-
-    /**
-     * This function tests updating of a merchant feature with should_sync parameter
-     */
-    public function testAddMerchantFeaturesWithSyncOnLive()
-    {
-        $this->ba->proxyAuthLive();
-
-        $this->startTest();
-
-        $this->verifyFeaturePresence(Mode::TEST);
-
-        $this->verifyFeaturePresence(Mode::LIVE);
-    }
-
-    /**
-     * This function tests updating of a merchant feature with should_sync parameter
-     */
-    public function testAddMerchantFeaturesWithSyncOnTest()
-    {
-        $this->ba->proxyAuthTest();
-
-        $this->startTest();
-
-        $this->verifyFeaturePresence(Mode::TEST);
-
-        $this->verifyFeaturePresence(Mode::LIVE);
-    }
-
-    /**
-     * This function tests updating of a merchant feature that can
-     * be updated on test but not live mode: marketplace
-     */
-    public function testAddMerchantUneditableFeaturesWithSyncOnLive()
-    {
-        $this->ba->proxyAuthLive();
-
-        $this->startTest();
-    }
-
-    /**
-     * This function tests updating of a merchant feature that can be updated on test but not live mode: marketplace
-     */
-    public function testAddMerchantEditableFeaturesWithSyncOnTest()
-    {
-        $this->ba->proxyAuthTest();
-
-        $this->startTest();
-    }
-
-    /**
-     * This function tests updating of a merchant feature that can be updated on test but not live mode: marketplace
-     */
-    public function testDeleteMerchantUnEditableFeatureFromLive()
-    {
-        $this->ba->proxyAuthLive();
-
-        $this->startTest();
-    }
-
-    /**
-     * This function tests updating of a merchant feature that can be updated on test but not live mode: marketplace
-     */
-    public function testDeleteMerchantEditableFeatureFromTest()
-    {
-        $features = $this->fixtures->merchant->addFeatures(['marketplace']);
-
-        $this->ba->proxyAuthTest();
-
-        $this->startTest();
-    }
-
     public function testScheduleTaskMigration()
     {
         $this->ba->appAuth();
@@ -1644,20 +1526,5 @@ class MerchantTest extends TestCase
                 'created_at'  => 1493805150,
                 'updated_at'  => 1493805150
             ]);
-    }
-
-    /**
-     * Performs a GET request based on the mode received and verifies the
-     * presence of the dummy feature
-     *
-     * @param string $mode
-     */
-    private function verifyFeaturePresence($mode)
-    {
-        $authMethod = 'appAuth' . studly_case($mode);
-
-        $this->ba->$authMethod();
-
-        $this->startTest();
     }
 }
