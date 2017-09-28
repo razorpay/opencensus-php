@@ -71,7 +71,8 @@
         "orchestra/testbench": "3.*",
         "php-http/mock-client": "^0.3.3",
         "symfony/dom-crawler": "3.*",
-        "phpunit/phpunit": "^6.2"
+        "phpunit/phpunit": "^6.2",
+        "symfony/phpunit-bridge": "^3.3"
     },
     "autoload": {
         "classmap": [
