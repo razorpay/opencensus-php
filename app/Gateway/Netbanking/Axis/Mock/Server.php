@@ -13,6 +13,8 @@ use RZP\Gateway\Netbanking\Axis\ResponseFields;
 
 class Server extends Base\Mock\Server
 {
+    protected $bankingType = 'retail';
+
     public function authorize($input)
     {
         parent::authorize($input);
@@ -54,7 +56,29 @@ class Server extends Base\Mock\Server
 
     protected function getDecryptedData($input)
     {
-        $masterKey = $this->getGatewayInstance()->getSecret();
+        $data = $this->getDecryptedDataForBankingType($input);
+
+        // Since there is no way to identify based on parameter if the
+        // corporate netbanking was to be employed, this can be checked
+        // by trying to decrypt the payment using the corporate key
+        if (empty($data) === true)
+        {
+            $dataCorporate = $this->getDecryptedDataForBankingType($input, 'corporate');
+
+            if (empty($dataCorporate) === false)
+            {
+                $this->bankingType = 'corporate';
+
+                $data = $dataCorporate;
+            }
+        }
+
+        return $data;
+    }
+
+    protected function getDecryptedDataForBankingType($input, $bankingType = null)
+    {
+        $masterKey = $this->getGatewayInstance($bankingType)->getSecret();
 
         $crypto = new AESCrypto($masterKey);
 
@@ -85,10 +109,10 @@ class Server extends Base\Mock\Server
         // for test cases
         $this->content($response);
 
+        $masterKey = $this->getMasterKeyFromGateway();
+
         // Make sure this is correct, there is some lack of clarity here
         $query = http_build_query($response);
-
-        $masterKey = $this->getGatewayInstance()->getSecret();
 
         $crypto = new AESCrypto($masterKey);
 
@@ -97,6 +121,11 @@ class Server extends Base\Mock\Server
         $content[ResponseFields::ENCRYPTED_STRING] = $encryptedString;
 
         return $content;
+    }
+
+    protected function getMasterKeyFromGateway()
+    {
+        return $this->getGatewayInstance($this->bankingType)->getSecret();
     }
 
     protected function getVerifyXml($input)

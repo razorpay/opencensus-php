@@ -23,7 +23,7 @@ class Gateway extends Base\Gateway
 
     protected $bank = 'axis';
 
-    protected $type = 'retail';
+    protected $bankingType = self::RETAIL;
 
     protected $map = [
         RequestFields::AMOUNT             => 'amount',
@@ -31,15 +31,18 @@ class Gateway extends Base\Gateway
         RequestFields::ITEM_CODE          => 'reference1'
     ];
 
+    public function setGatewayParams($input, $mode, $terminal)
+    {
+        parent::setGatewayParams($input, $mode, $terminal);
+
+        $this->setGatewayBankingType($terminal);
+    }
+
     public function authorize(array $input)
     {
         parent::authorize($input);
 
-        // Only url, merchant id and secrets have to change.
-        if ($input['terminal']->isCorporate() === true)
-        {
-            $this->setCorporate();
-        }
+        $this->setDomainType();
 
         $content = $this->getPaymentRequestData($input);
 
@@ -56,7 +59,7 @@ class Gateway extends Base\Gateway
 
     protected function getActionType()
     {
-        return $this->type.'_'.$this->action;
+        return $this->getBankingType() . '_' . $this->getAction();
     }
 
     public function callback(array $input)
@@ -462,25 +465,15 @@ class Gateway extends Base\Gateway
         return Status::getAuthSuccessStatus();
     }
 
-    /*
-     *  Overriding parent class's method
-     */
-    protected function getUrlDomain()
-    {
-        $this->domainType = $this->type.'_'.$this->action.'_'.$this->mode;
-
-        return parent::getUrlDomain();
-    }
-
     public function getMerchantId()
     {
         if ($this->mode === Mode::TEST)
         {
-            if ($this->type === 'retail')
+            if ($this->isRetailBanking() === true)
             {
                 return $this->getTestMerchantId();
             }
-            else if ($this->type === 'corporate')
+            else if ($this->isCorporateBanking() === true)
             {
                 return $this->getTestMerchantIdCorporate();
             }
@@ -501,11 +494,11 @@ class Gateway extends Base\Gateway
     {
         assert ($this->mode === Mode::LIVE);
 
-        if ($this->type === 'retail')
+        if ($this->isRetailBanking() === true)
         {
             return $this->config['live_hash_secret'];
         }
-        else if ($this->type === 'corporate')
+        else if ($this->isCorporateBanking() === true)
         {
             return $this->config['live_hash_secret_corporate'];
         }
@@ -515,11 +508,11 @@ class Gateway extends Base\Gateway
     {
         assert ($this->mode === Mode::TEST);
 
-        if ($this->type === 'retail')
+        if ($this->isRetailBanking() === true)
         {
             return $this->config['test_hash_secret'];
         }
-        else if ($this->type === 'corporate')
+        else if ($this->isCorporateBanking() === true)
         {
             return $this->config['test_hash_secret_corporate'];
         }
@@ -528,5 +521,20 @@ class Gateway extends Base\Gateway
     public function getPaymentIdFromServerCallback($input)
     {
         return $input[ResponseFields::MERCHANT_REFERENCE];
+    }
+
+    protected function setGatewayBankingType($terminal)
+    {
+        // Default banking type is retail
+        if ((isset($terminal) === true) and
+            ($terminal->isCorporate() === true))
+        {
+            $this->setBankingType(self::CORPORATE);
+        }
+    }
+
+    protected function setDomainType()
+    {
+        $this->domainType = $this->getActionType() . '_' . $this->getMode();
     }
 }

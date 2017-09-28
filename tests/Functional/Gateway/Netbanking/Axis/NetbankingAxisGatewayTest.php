@@ -91,6 +91,32 @@ class NetbankingAxisGatewayTest extends TestCase
         $this->assertArraySelectiveEquals($data['request']['content'], $order);
     }
 
+    public function testCorporatePayment()
+    {
+        $this->fixtures->terminal->edit($this->terminal->getId(), ['corporate' => 1]);
+
+        $this->doAuthAndCapturePayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        // verify not possible
+        // $content = $this->verifyPayment($payment['id']);
+
+        // $this->assertTestResponse($payment, 'testPayment');
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentNetbankingEntity'], $gatewayPayment);
+
+        // Asserts that bank payment id exists in response and is an int
+        $this->assertEquals(9999999999, $gatewayPayment['bank_payment_id']);
+
+        assert($content['payment']['verified'] === 1);
+
+        $this->fixtures->terminal->edit($this->terminal->getId(), ['corporate' => 0]);
+    }
+
     public function testTpvVerifyPayment()
     {
         $this->testTpvPayment();
