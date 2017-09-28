@@ -103,6 +103,7 @@ return [
         // Refund Authorized Payment
         'payment_authorize_refund'          => 'payments/{id}/authorize_refund',
         'pricing_create_plan'               => 'pricing',
+        'pricing_create_plan_bulk'          => 'pricing/bulk',
         'merchant_get_pricing'              => 'merchants/{id}/pricing',
         'merchant_get_terminals'            => 'merchants/{id}/terminals',
         'merchant_details_fetch'            => 'merchants/details',
