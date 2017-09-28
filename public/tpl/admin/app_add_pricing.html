@@ -4,20 +4,21 @@
     <spinner class="inline"></spinner>
   </h1>
 </div>
-<div class="wrapper-md" ng-controller="PricingsCtrl">
+<div class="wrapper-md pricing-container" ng-controller="PricingsCtrl">
   <div class="panel panel-default">
     <div class="text-center">
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
     </div>
     <div class="panel-heading">
       <div class="form-horizontal row">
-        <label class="control-label col-md-1">Plan Name:</label>
-        <div class="col-md-4">
-          <input type="text" class="form-control" name="plan_name" ng-model="plan.name" placeholder="Plan Name" />
+        <label class="control-label required">Plan Name:</label>
+        <div class="pricing-name">
+          <input type="text" class="form-control" name="plan_name" ng-model="plan.name" placeholder="Plan Name"/>
         </div>
       </div>
     </div>
-    <div class="table-responsive">
+    <div class="table-responsive" style="margin-top:24px;">
+      <label class="control-label required">Pricing Rules:</label>
       <table class="table table-striped b-t b-light">
         <thead>
           <th>Feature</th>
@@ -65,7 +66,7 @@
               </a>
             </td>
           </tr>
-          <tr>
+          <tr class="highlight-row">
             <td>
               <select class="form-control" name="feature" ng-model="new_rule.feature" required>
                   <option value="payment">Payment</option>
@@ -155,12 +156,12 @@
             </td>
           </tr>
         </tbody>
-        <tfoot>
+        <tfoot class="highlight-row">
           <tr>
-            <td colspan="10">
+            <td colspan="13" style="border-top: 0;">
               <a href ng-click="addRule()">
-                <button class="btn btn-primary btn-rounded">
-                  <i class="fa fa-plus"></i> Add Rule
+                <button class="m-t btn btn-default btn-rounded">
+                  <i class="fa fa-plus"></i> Add This Rule
                 </button>
               </a>
             </td>
@@ -169,7 +170,11 @@
       </table>
     </div>
   </div>
-  <div>
-    <a href ng-click="savePlan()"><button class="btn btn-primary btn-rounded">Save Plan</button></a>
+  <div style="text-align: center;">
+    <button ng-click="savePlan()"
+            class="m-t btn btn-primary panel-btn-action"
+            ng-disabled="plan.rules.length == 0">
+      Save Plan
+    </button>
   </div>
 </div>
