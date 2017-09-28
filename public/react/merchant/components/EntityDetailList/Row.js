@@ -36,9 +36,9 @@ export default props => {
 
   // Calculate time Diff to show 'due in' text
   let timeDiff;
-  // issued_at in next_due invoice is charge_at of subscription. Check FE creation of next_due invoice. (Not api related)
-  if (item.status === 'next_due' && item.issued_at) {
-    timeDiff = item.issued_at - Math.round(new Date().getTime() / 1000);
+  // billing_start in next_due invoice is charge_at of subscription. Check FE creation of next_due invoice. (Not api related)
+  if (item.status === 'next_due' && item.billing_start) {
+    timeDiff = item.billing_start - Math.round(new Date().getTime() / 1000);
   }
 
   // Check if row is clickable
@@ -66,14 +66,9 @@ export default props => {
           <div class="row-element left">
             {loading
               ? <PlaceholderLoader style={{ width: '70%' }} />
-              : item.issued_at
+              : item.billing_start
                 ? <span class="label--primary">
-                    <Time
-                      value={`${mode === 'test'
-                        ? item.billing_start
-                        : item.issued_at}`}
-                      format="MMM DD, YYYY"
-                    />
+                    <Time value={item.billing_start} format="MMM DD, YYYY" />
                     {timeDiff > 0 &&
                       <span>
                         {' '}(due in {Math.ceil(timeDiff / (3600 * 24))} days)
