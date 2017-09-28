@@ -9,9 +9,9 @@
 ## Set up instructions for development
 
 * Instructions for setup via docker are available at README-docker.md
-*  Copy over `dashboard.razorpay.dev.conf` to `/etc/apache2/sites-available/`.
+*  Copy over `dashboard.razorpay.test.conf` to `/etc/apache2/sites-available/`.
 *  Edit the vhost to point to correct directory
-* `sudo a2ensite dashboard.razorpay.dev.conf`
+* `sudo a2ensite dashboard.razorpay.test.conf`
 * `sudo chmod -R o+wx storage/`
 * Copy over `environment/env.sample.php` to `environment/env.php`
 * Copy `environment/.env.example` to `environment/.env.dev` and edit it accordingly
@@ -29,8 +29,8 @@
     - [editorconfig](http://editorconfig.org/#download)
     - [prettier](https://github.com/prettier/prettier#editor-integration). The config is documented in `package.json`. We use `--single-quote` and enable semicolons.
 
-- Open <http://dashboard.razorpay.dev> and login as `test@razorpay.com/123456`.
-- To sign in as an admin, open <http://dashboard.razorpay.dev/admin> after setting OAUTH_MOCK=true in your .env.dev. (If you would like to use the oauth flow in dev environment then add an entry with you razorpay email to admins table in local database or change the code to use any email already in your database.)
+- Open <http://dashboard.razorpay.test> and login as `test@razorpay.com/123456`.
+- To sign in as an admin, open <http://dashboard.razorpay.test/admin> after setting OAUTH_MOCK=true in your .env.dev. (If you would like to use the oauth flow in dev environment then add an entry with you razorpay email to admins table in local database or change the code to use any email already in your database.)
 
 ## Setup instructions for testing
 
