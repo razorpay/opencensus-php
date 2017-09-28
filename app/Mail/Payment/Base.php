@@ -127,4 +127,9 @@ class Base extends Mailable
     {
         return false;
     }
+
+    public function isMerchantEmail()
+    {
+        return $this->isMerchantEmail;
+    }
 }

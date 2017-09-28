@@ -788,3 +788,20 @@ WHERE payments.merchant_id = "87qTXzFTBLFN7i" AND
     axis.vpc_AuthorizeId IS NOT NULL AND
     payments.gateway = "axis_migs" AND
     payments.reference2 is NULL;
+
+## VA IMPS Refund Correction
+DELETE FROM refunds
+    WHERE id='8fjRYHRMgyMpzq';
+DELETE FROM transactions
+    WHERE entity_id='8fjRYHRMgyMpzq';
+UPDATE payments
+    SET
+        amount_refunded=0,
+        refund_status=null,
+        base_amount_refunded=0,
+        status='captured'
+    WHERE id='8e0eGW1TrJALOU';
+
+UPDATE billdesk SET RefundId = 'JSBI56715667791' WHERE id = 2124216;
+UPDATE billdesk SET RefundId = 'IUBI53988238411' WHERE id = 2110989;
+UPDATE billdesk SET RefundId = 'JSBI56869209721' WHERE id = 2156652;

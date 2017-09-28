@@ -8,7 +8,6 @@ use SoapHeader;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use RZP\Exception;
-use Lib\PhoneBook;
 use SimpleXMLElement;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -20,8 +19,7 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Models\Payment\Processor\Wallet;
-
-use libphonenumber\PhoneNumberUtil;
+use RZP\Models\Payment\Verify\Action as VerifyAction;
 
 class Gateway extends Base\Gateway
 {
@@ -556,17 +554,19 @@ class Gateway extends Base\Gateway
 
     protected function sendSoapRequest(array $data, string $soapRoot, string $method)
     {
+        $context = [
+            'payment_id'  => $this->input['payment']['id'],
+            'gateway'     => $this->gateway,
+            'soap_method' => $method,
+            'request'     => [
+                'soap_root' => $soapRoot,
+                'data'      => $data
+            ],
+        ];
+
         $this->trace->info(
             TraceCode::GATEWAY_SOAP_REQUEST,
-            [
-                'payment_id'  => $this->input['payment']['id'],
-                'gateway'     => $this->gateway,
-                'soap_method' => $method,
-                'request'     => [
-                    'soap_root' => $soapRoot,
-                    'data'      => $data
-                ],
-            ]);
+            $context);
 
         try
         {
@@ -576,34 +576,36 @@ class Gateway extends Base\Gateway
         }
         catch (SoapFault $e)
         {
+            // Handle soapfaults gracefully
             if (isset($client) === true)
             {
-                $this->trace->error(
-                    TraceCode::GATEWAY_SOAP_FAULT,
-                    [
-                        'payment_id'    => $this->input['payment']['id'],
-                        'gateway'       => $this->gateway,
-                        'soap_method'   => $method,
-                        'soap_response' => $client->__getLastResponse()
-                    ]);
+                $context['soap_response'] = $client->__getLastResponse();
             }
+
+            $this->trace->error(TraceCode::GATEWAY_SOAP_FAULT, $context);
 
             $this->handleSoapFault($e, $method);
         }
+        catch (\Exception $e)
+        {
+            $context['error_message'] = $e->getMessage();
+
+            //
+            // Non SoapFaults can be handled differently
+            // We simply trace this at a warning level
+            //
+            $this->trace->warning(TraceCode::GATEWAY_SOAP_ERROR, $context);
+
+            // If the soap call fails during verify, we simply retry the verify call
+            if ($this->action === Action::VERIFY)
+            {
+                $verify = new Verify($this->gateway, $this->input);
+
+                throw new Exception\PaymentVerificationException($context, $verify, VerifyAction::RETRY);
+            }
+        }
 
         return json_decode(json_encode($response), true);
-    }
-
-    protected function getSoapHeaders()
-    {
-        $wsseNs = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd';
-
-        $headers = [
-            new SoapHeader($wsseNs, Constants::USER_ID, $this->getSoapUserId()),
-            new SoapHeader($wsseNs, Constants::PASSWORD, $this->getSoapPassword())
-        ];
-
-        return $headers;
     }
 
     protected function handleSoapFault(SoapFault $e, string $method)
@@ -617,6 +619,18 @@ class Gateway extends Base\Gateway
 
         throw new Exception\GatewayErrorException(
             ErrorCode::GATEWAY_ERROR_SOAP_ERROR, null, $errorMessage, [], $e);
+    }
+
+    protected function getSoapHeaders()
+    {
+        $wsseNs = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd';
+
+        $headers = [
+            new SoapHeader($wsseNs, Constants::USER_ID, $this->getSoapUserId()),
+            new SoapHeader($wsseNs, Constants::PASSWORD, $this->getSoapPassword())
+        ];
+
+        return $headers;
     }
 
     protected function checkGatewayResponse(string $status)

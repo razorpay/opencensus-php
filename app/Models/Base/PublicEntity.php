@@ -5,6 +5,8 @@ namespace RZP\Models\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
+use RZP\Models\Currency;
+
 class PublicEntity extends UniqueIdEntity
 {
     const ENTITY                = 'entity';
@@ -569,5 +571,20 @@ class PublicEntity extends UniqueIdEntity
         }
 
         return ($object instanceof self);
+    }
+
+    public function getFormattedAmount()
+    {
+        $currency = $this->getCurrency();
+
+        $currencySymbol = Currency\Currency::SYMBOL[$currency];
+
+        $denominationFactor = Currency\Currency::DENOMINATION_FACTOR[$currency];
+
+        $amount = $this->getAmount() / $denominationFactor;
+
+        $amount = sprintf($amount == intval($amount) ? '%d' : '%.2f', $amount);
+
+        return $currencySymbol . ' ' . $amount;
     }
 }

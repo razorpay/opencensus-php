@@ -3,29 +3,34 @@
 namespace RZP\Models\Payment;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use Lib\PhoneBook;
-
 use RZP\Exception;
-use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
+use Razorpay\Spine\DataTypes\Dictionary;
+
 use RZP\Models\Emi;
-use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Order;
 use RZP\Models\Currency;
 use RZP\Models\Customer;
-use RZP\Models\Order;
 use RZP\Models\Feature;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
-use RZP\Models\Payment\Processor\Netbanking;
-use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
+use RZP\Models\BankTransfer;
 use RZP\Models\Plan\Subscription;
-use Razorpay\Spine\DataTypes\Dictionary;
+use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Payment\Processor\Netbanking;
 
 /**
  * @property Subscription\Entity    $subscription
  * @property Invoice\Entity         $invoice
+ * @property Merchant\Entity        $merchant
+ * @property Card\Entity            $card
+ * @property BankTransfer\Entity    $bankTransfer
  */
 class Entity extends Base\PublicEntity
 {
@@ -1257,21 +1262,6 @@ class Entity extends Base\PublicEntity
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
-    }
-
-    public function getFormattedAmount()
-    {
-        $currency = $this->getCurrency();
-
-        $currencySymbol = Currency\Currency::SYMBOL[$currency];
-
-        $denominationFactor = Currency\Currency::DENOMINATION_FACTOR[$currency];
-
-        $amount = $this->getAmount() / $denominationFactor;
-
-        $amount = sprintf($amount == intval($amount) ? '%d' : '%.2f', $amount);
-
-        return $currencySymbol . ' ' . $amount;
     }
 
     public function getAmountPaidout()

@@ -667,7 +667,7 @@ class VerifyTest extends TestCase
             'method' => 'post'
         ];
 
-        $time = Carbon::now('Asia/Kolkata');
+        $time = Carbon::now(Timezone::IST);
 
         $time->addMinutes(15);
 
@@ -681,7 +681,7 @@ class VerifyTest extends TestCase
 
         $this->assertEquals(9, $newBucket);
 
-        $time = Carbon::now('Asia/Kolkata');
+        $time = Carbon::now(Timezone::IST);
 
         $time->addMinutes(30);
 
@@ -732,7 +732,7 @@ class VerifyTest extends TestCase
             'method' => 'post'
         ];
 
-        $time = Carbon::now('Asia/Kolkata');
+        $time = Carbon::now(Timezone::IST);
 
         $time->addMinutes(15);
 
@@ -746,7 +746,7 @@ class VerifyTest extends TestCase
 
         $this->assertEquals(0, $newBucket);
 
-        $time = Carbon::now('Asia/Kolkata');
+        $time = Carbon::now(Timezone::IST);
 
         $time->addMinutes(30);
 
@@ -806,7 +806,7 @@ class VerifyTest extends TestCase
             'method' => 'post'
         ];
 
-        $time = Carbon::now('Asia/Kolkata');
+        $time = Carbon::now(Timezone::IST);
 
         $time->addMinutes(14);
 

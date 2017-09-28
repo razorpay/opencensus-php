@@ -2,13 +2,19 @@
 
 namespace RZP\Models\BankTransfer;
 
-use Razorpay\IFSC\IFSC;
-
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
+use RZP\Models\BankAccount;
 use RZP\Models\VirtualAccount;
 
+/**
+ * @property Payment\Entity        $payment
+ * @property Merchant\Entity       $merchant
+ * @property VirtualAccount\Entity $virtualAccount
+ * @property BankAccount\Entity    $payerBankAccount
+ */
 class Entity extends Base\PublicEntity
 {
     const ID                 = 'id';

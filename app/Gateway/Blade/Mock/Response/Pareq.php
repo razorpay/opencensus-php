@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Blade\Mock\Response;
 
 use Carbon\Carbon;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Blade\Mock\CardNumber;
 
 class Pareq
@@ -30,7 +31,7 @@ class Pareq
             'Purchase'          => $content['Message']['PAReq']['Purchase'],
             'pan'               => CardNumber::getCardNumberFromAccId($accId),
             'TX' => [
-                'time'          => Carbon::createFromTimestamp(time(), 'Asia/Kolkata')->format('Ymd H:m:s'),
+                'time'          => Carbon::createFromTimestamp(time(), Timezone::IST)->format('Ymd H:m:s'),
                 'status'        => 'Y',
                 'cavv'          => 'AAABBJg0VhI0VniQEjRWAAAAAAA=',
                 'eci'           => '05',

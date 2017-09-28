@@ -7,9 +7,9 @@ use Carbon\Carbon;
 
 use RZP\Base;
 use RZP\Exception;
-use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
+
 use RZP\Models\Invoice;
-use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Plan\Cycle;
@@ -37,9 +37,7 @@ class Validator extends Base\Validator
         Entity::TOTAL_COUNT     => 'required_without:end_at|integer|min:1',
         Entity::START_AT        => 'sometimes|integer|custom|nullable',
         Entity::END_AT          => 'required_without:total_count|epoch',
-        // This is just for backward compatibility. Later, we are going to make `1` as
-        // default. Hence, making it compulsory for the merchant to send this as 0 now.
-        Entity::CUSTOMER_NOTIFY => 'required|in:0',
+        Entity::CUSTOMER_NOTIFY => 'sometimes|boolean',
         Entity::ADDONS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_ADDONS,
     ];
 
@@ -333,6 +331,18 @@ class Validator extends Base\Validator
                     'max_allowed'   => $maxAllowedTotalCount,
                     'input'         => $input,
                 ]);
+        }
+    }
+
+    public function validateSubscriptionViewable()
+    {
+        $subscription = $this->entity;
+
+        $id = $subscription->getPublicId();
+
+        if ($subscription->hasBeenAuthenticated() === false)
+        {
+            throw new BadRequestValidationFailureException("Subscription with id $id is not authenticated yet");
         }
     }
 }

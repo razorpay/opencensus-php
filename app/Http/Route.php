@@ -403,6 +403,10 @@ final class Route
         'subscription_cancel_due'                 => ['post',     'subscriptions/cancel/due',                       'SubscriptionController@postCancelDueSubscriptions'                 ],
         'subscription_create_addon'               => ['post',     'subscriptions/{subscriptionId}/addons',          'SubscriptionController@postAddonForSubscription'                   ],
         'subscription_fetch_due_addons'           => ['get',      'subscriptions/{subscriptionId}/addons/due',      'SubscriptionController@getDueAddonsForSubscription'                ],
+        'subscription_view_live'                  => ['get',      'l/subscriptions/{id}',                           'SubscriptionController@getSubscriptionView'                        ],
+        'subscription_view_test'                  => ['get',      't/subscriptions/{id}',                           'SubscriptionController@getSubscriptionView'                        ],
+        'subscription_view_live_post'             => ['post',     'l/subscriptions/{id}',                           'SubscriptionController@getSubscriptionView'                        ],
+        'subscription_view_test_post'             => ['post',     't/subscriptions/{id}',                           'SubscriptionController@getSubscriptionView'                        ],
         'addon_fetch'                             => ['get',      'addons/{addonId}',                               'SubscriptionController@getAddon'                                   ],
         'addon_fetch_multiple'                    => ['get',      'addons',                                         'SubscriptionController@getAddons'                                  ],
         'addon_delete'                            => ['delete',   'addons/{addonId}',                               'SubscriptionController@deleteAddon'                                ],
@@ -978,7 +982,6 @@ final class Route
         'admin_forgot_password',
         'admin_reset_password',
         'merchant_activation_update',
-        'merchant_activation_files',
         'admin_edit_app_auth',
         'currency_update_rates',
         'currency_fetch_rates',
@@ -1202,6 +1205,7 @@ final class Route
         'merchant_get_terminals',
         'merchant_invoice_add_bulk',
         'setl_retry',
+        'merchant_activation_files',
         'merchant_batches',
     ];
 
@@ -1334,6 +1338,7 @@ final class Route
         'settings_upsert'                  => Permission::EDIT_WALLET_CONFIG,
         'settings_delete'                  => Permission::EDIT_WALLET_CONFIG,
         'merchant_analytics'               => '*',
+        'merchant_activation_files'        => '*',
     ];
 
     public static $direct = [
@@ -1347,6 +1352,10 @@ final class Route
         'invoice_view_test',
         'invoice_view_live_post',
         'invoice_view_test_post',
+        'subscription_view_live',
+        'subscription_view_test',
+        'subscription_view_live_post',
+        'subscription_view_test_post',
         'sms_callback',
         'checkout_public',
         'mock_hdfc_3dsecure',

@@ -183,7 +183,7 @@ class SubscriptionCancelTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
-        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, 'Asia/Kolkata');
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, Timezone::IST);
 
         Carbon::setTestNow($chargeAt);
 
@@ -201,7 +201,7 @@ class SubscriptionCancelTest extends TestCase
         // Charge cron should not pick this up
         $this->assertEquals(0, $result['invoices_created']);
 
-        $cancelAt = Carbon::createFromTimestamp($subscription['cancel_at'] + 10, 'Asia/Kolkata');
+        $cancelAt = Carbon::createFromTimestamp($subscription['cancel_at'] + 10, Timezone::IST);
 
         Carbon::setTestNow($cancelAt);
 
@@ -232,7 +232,7 @@ class SubscriptionCancelTest extends TestCase
 
         foreach (range(1,5) as $i)
         {
-            $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'], 'Asia/Kolkata')
+            $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'], Timezone::IST)
                               ->addDay(1)
                               ->addMinute(1);
 
@@ -281,7 +281,7 @@ class SubscriptionCancelTest extends TestCase
 
         $subscription = $this->getLastEntity('subscription', true);
 
-        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, 'Asia/Kolkata');
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, Timezone::IST);
 
         Carbon::setTestNow($chargeAt);
 
@@ -294,9 +294,9 @@ class SubscriptionCancelTest extends TestCase
         $this->assertEquals($subscription['cancel_at'], $subscription['current_end']);
         $this->assertNotEquals($subscription['cancel_at'], $subscription['cancelled_at']);
 
-        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, 'Asia/Kolkata');
+        $chargeAt = Carbon::createFromTimestamp($subscription['charge_at'] + 1, Timezone::IST);
 
-        $cancelAt = Carbon::createFromTimestamp($subscription['cancel_at'] - 3600, 'Asia/Kolkata');
+        $cancelAt = Carbon::createFromTimestamp($subscription['cancel_at'] - 3600, Timezone::IST);
 
         Carbon::setTestNow($cancelAt);
 

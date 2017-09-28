@@ -82,7 +82,7 @@ class Anchor
         //
         $testDay = 1;
 
-        $date = Carbon::createFromDate($leapYear, $month, $testDay, 'Asia/Kolkata');
+        $date = Carbon::createFromDate($leapYear, $month, $testDay, Timezone::IST);
 
         if ($day > $date->daysInMonth)
         {

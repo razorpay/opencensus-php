@@ -4,6 +4,7 @@ namespace RZP\Models\Schedule;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Constants\Timezone;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
@@ -117,7 +118,7 @@ class Entity extends Base\PublicEntity
                 //
                 // For yearly, the default anchor is set to Jan 1st.
                 //
-                $janFirst = Carbon::createFromDate(2016, 1, 1, 'Asia/Kolkata');
+                $janFirst = Carbon::createFromDate(2016, 1, 1, Timezone::IST);
 
                 $anchor = Anchor::getAnchorForYearly($janFirst);
             }

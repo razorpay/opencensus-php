@@ -2481,9 +2481,18 @@ UPDATE line_items
 SET    type = 'invoice'
 WHERE  item_id IS NULL;
 
+## Sets default value for customer_notify
+ALTER TABLE subscriptions
+   MODIFY COLUMN customer_notify TINYINT(1) UNSIGNED DEFAULT 1;
+
 # Makes line_items.type column not null and default to 'invoice'
 ALTER TABLE line_items
     MODIFY COLUMN type VARCHAR(16) NOT NULL DEFAULT 'invoice';
+
+# Make adjustment morph to entity optionally
+ALTER TABLE adjustment
+    ADD COLUMN entity_type VARCHAR(100) AFTER merchant_id,
+    ADD COLUMN entity_id CHAR(14) AFTER entity_type;
 
 ALTER TABLE batches
     MODIFY COLUMN `type` CHAR(25);
