@@ -8,6 +8,7 @@ use Config;
 use RZP\Jobs\RequestJob;
 use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Notify as NotifyTrait;
 use RZP\Models\Merchant\SlackActions as SlackActions;
 use RZP\Mail\Admin\NotifyActivationSubmission as NotifyAdmin;
@@ -56,7 +57,7 @@ class Core extends Base\Core
 
     protected function activationZapierData(array $customer)
     {
-        $customer['date'] = Carbon::createFromTimeStamp(time(), "Asia/Kolkata")->format('j/m/Y');
+        $customer['date'] = Carbon::createFromTimeStamp(time(), Timezone::IST)->format('j/m/Y');
 
         if ($this->merchant->users->isNotEmpty() === true)
         {

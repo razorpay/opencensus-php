@@ -221,9 +221,9 @@ class ReconciliationGenerator
         }
         else
         {
-            $startTimestamp = Carbon::today("Asia/Kolkata")->getTimestamp();
+            $startTimestamp = Carbon::today(Timezone::IST)->getTimestamp();
 
-            $endTimestamp = Carbon::tomorrow("Asia/Kolkata")->getTimestamp() - 1;
+            $endTimestamp = Carbon::tomorrow(Timezone::IST)->getTimestamp() - 1;
         }
 
         return [$startTimestamp, $endTimestamp];

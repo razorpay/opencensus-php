@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Netbanking\Base;
@@ -226,7 +227,7 @@ class Gateway extends Base\Gateway
 
         // date has to be of format DDMMYYYY-24HHMMSS
         $date = Carbon::createFromTimestamp($input['payment'][Payment\Entity::CREATED_AT],
-                                           'Asia/Kolkata')
+                                           Timezone::IST)
                                            ->format('dmY-His');
 
         $paymentId = $input['payment']['id'];
