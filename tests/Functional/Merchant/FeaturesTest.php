@@ -6,13 +6,12 @@ use Mail;
 use Illuminate\Http\UploadedFile;
 
 use RZP\Constants\Mode;
-use RZP\Models\Feature\Constants;
-use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
 
 class FeaturesTest extends TestCase
 {
@@ -301,7 +300,8 @@ class FeaturesTest extends TestCase
     /**
      * Add a feature to the test database and sync it to live
      * Get the features from the live database
-     * Verify - Any feature added to test with the should_sync flag, should be synced to live
+     * Verify - Any feature added to test with the should_sync
+     * flag, should be synced to live
      */
     public function testAddFeatureToTestSyncedToLive()
     {
@@ -315,7 +315,8 @@ class FeaturesTest extends TestCase
     /**
      * Add a feature to the live database and sync it to test
      * Get the features from the test database
-     * Verify - Any feature added to live with the should_sync flag, should be synced to test
+     * Verify - Any feature added to live with the should_sync
+     * flag, should be synced to test
      */
     public function testAddFeatureToLiveSyncedToTest()
     {
@@ -330,8 +331,8 @@ class FeaturesTest extends TestCase
      * Add a feature to the test database
      * Add a feature to the live database and sync it to test
      * Get the features from the live database
-     * Verify - Any feature added to live with the should_sync flag, should not
-     * fail even if it is already present in test
+     * Verify - Any feature added to live with the should_sync flag,
+     * should not fail even if it is already present in test
      */
     public function testAddFeatureToTestAddFeatureToLiveSyncedToTest()
     {
@@ -348,8 +349,8 @@ class FeaturesTest extends TestCase
      * Add a feature to the live database
      * Add a feature to the test database and sync it to live
      * Get the features from the test database
-     * Verify - Any feature added to test with the should_sync flag, should not
-     * fail even if it is already present in live
+     * Verify - Any feature added to test with the should_sync flag,
+     * should not fail even if it is already present in live
      */
     public function testAddFeatureToLiveAddFeatureToTestSyncedToLive()
     {
@@ -675,6 +676,11 @@ class FeaturesTest extends TestCase
         Mail::assertNotSent(FeatureEnabledEmail::class);
     }
 
+    /*
+     * Test cases for feature routes accessible from the merchant
+     * dashboard begin from here.
+     */
+
     /**
      * Fetches the features using the route used by the
      * merchant dashboard
@@ -696,39 +702,6 @@ class FeaturesTest extends TestCase
         $this->startTest();
 
         $this->verifyFeaturePresence(Mode::TEST, ['noflashcheckout']);
-    }
-
-    /**
-     * This function tests updating of a non visble merchant feature: dummy
-     */
-    public function testUpdateMerchantUnEditableFeatures()
-    {
-        $this->ba->proxyAuth();
-
-        $this->startTest();
-    }
-
-    /**
-     * This function tests updating of a merchant feature that can be updated on test but not live mode: marketplace
-     */
-    public function testAddMerchantUnEditableFeaturesOnLive()
-    {
-        $this->updateFeatureAsMerchant(
-            'add',
-            Mode::LIVE,
-            'marketplace',
-            true,
-            false);
-    }
-
-    /**
-     * This function tests updating of a merchant feature that can be updated on test but not live mode: marketplace
-     */
-    public function testAddMerchantEditableFeaturesOnTest()
-    {
-        $this->ba->proxyAuthTest();
-
-        $this->startTest();
     }
 
     /**
@@ -766,131 +739,74 @@ class FeaturesTest extends TestCase
     }
 
     /**
-     * This function tests updating of a merchant feature that can
-     * be updated on test but not live mode: marketplace
+     * This function tests updating of a non visble merchant feature: dummy
      */
-    public function testAddMerchantUneditableFeaturesWithSyncOnLive()
+    public function testUpdateMerchantUnEditableFeatures()
     {
-        $this->updateFeatureAsMerchant(
-            'add',
-            Mode::LIVE,
-            'subscriptions',
-            true,
-            true);
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of a merchant feature that
+     * can be updated on test but not live mode: marketplace.
+     * This test also checks the format of the response received
+     * to the merchant.
+     */
+    public function testAddMerchantEditableFeaturesOnTest()
+    {
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
     }
 
     /**
      * This function tests updating of a merchant feature that can be
-     * updated on test but not live mode: marketplace
+     * updated by the merchant on test but not live mode: marketplace.
      */
-    public function testAddMerchantEditableFeaturesWithSyncOnTest()
+    public function testAddMerchantUnEditableFeatures()
     {
-        $this->updateFeatureAsMerchant(
-            'add',
-            Mode::TEST,
-            'subscriptions',
-            true,
-            true);
-    }
+        /*
+         * $input[0] - $action
+         * $input[1] - $addToMode
+         * $input[2] - $featureName
+         * $input[3] - $expectBadRequestException
+         * $input[4] - $shouldSync
+         */
 
-    /**
-     * This function tests updating of a merchant feature that can be
-     * updated on test but not live mode: marketplace
-     */
-    public function testDeleteMerchantUnEditableFeatureFromLive()
-    {
+        $inputs = [
+            ['add', Mode::LIVE, 'marketplace', true, false],
+            ['add', Mode::TEST, 'marketplace', true, true],
+            ['add', Mode::LIVE, 'marketplace', true, true],
+        ];
+
+        foreach($inputs as $input)
+        {
+            $this->updateFeatureAsMerchant(
+                $input[0],
+                $input[1],
+                $input[2],
+                $input[3],
+                $input[4]);
+        }
+
         $this->fixtures->merchant->addFeatures(['marketplace']);
 
-        $this->updateFeatureAsMerchant(
-            'remove',
-            Mode::LIVE,
-            'marketplace',
-            true,
-            false);
+        $inputs = [
+            ['remove', Mode::LIVE, 'marketplace', true, false],
+            ['remove', Mode::TEST, 'marketplace', true, true],
+            ['remove', Mode::LIVE, 'marketplace', true, true],
+        ];
+
+        foreach($inputs as $input)
+        {
+            $this->updateFeatureAsMerchant(
+                $input[0],
+                $input[1],
+                $input[2],
+                $input[3],
+                $input[4]);
+        }
     }
-
-    /**
-     * This function tests updating of a merchant feature that can be
-     * updated on test but not live mode: marketplace
-     */
-    public function testDeleteMerchantEditableFeatureFromTest()
-    {
-        $this->fixtures->merchant->addFeatures(['marketplace']);
-
-        $this->updateFeatureAsMerchant(
-            'remove',
-            Mode::TEST,
-            'marketplace',
-            true,
-            true);
-    }
-
-    /**
-     *
-     */
-    public function testAddFeatureNonEditableByMerchantOnLiveSynced()
-    {
-        $this->updateFeatureAsMerchant(
-            'add',
-            Mode::LIVE,
-            'subscriptions',
-            true,
-            true);
-
-        $this->verifyFeatureAbsence(Mode::TEST, ['subscriptions']);
-
-        $this->verifyFeatureAbsence(Mode::LIVE, ['subscriptions']);
-    }
-
-    /**
-     *
-     */
-    public function testAddFeatureNonEditableByMerchantOnTestSynced()
-    {
-        $this->updateFeatureAsMerchant(
-            'add',
-            Mode::TEST,
-            'subscriptions',
-            true,
-            true);
-
-        $this->verifyFeatureAbsence(Mode::TEST, ['subscriptions']);
-
-        $this->verifyFeatureAbsence(Mode::LIVE, ['subscriptions']);
-    }
-
-    /**
-     *
-     */
-    public function testAddFeatureNonEditableByMerchantOnLiveNonSynced()
-    {
-        $this->updateFeatureAsMerchant(
-            'add',
-            Mode::LIVE,
-            'subscriptions',
-            true,
-            false);
-
-        $this->verifyFeatureAbsence(Mode::TEST, ['subscriptions']);
-
-        $this->verifyFeatureAbsence(Mode::LIVE, ['subscriptions']);
-    }
-
-    /**
-     *
-     */
-    public function testAddFeatureNonEditableByMerchantOnTestNonSynced()
-    {
-        $this->updateFeatureAsMerchant(
-            'add',
-            Mode::TEST,
-            'subscriptions',
-            false,
-            false);
-
-        $this->verifyFeaturePresence(Mode::TEST, ['subscriptions']);
-
-        $this->verifyFeatureAbsence(Mode::LIVE, ['subscriptions']);
-    }
-
 }
