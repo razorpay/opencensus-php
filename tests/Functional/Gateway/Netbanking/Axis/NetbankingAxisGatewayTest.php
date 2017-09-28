@@ -130,10 +130,7 @@ class NetbankingAxisGatewayTest extends TestCase
             }
         );
 
-        // Initial pending reponse based entry
-        $gatewayPayment = $this->getLastEntity('netbanking', true);
-
-        $this->mockS2sCallForPaymentFromBank($gatewayPayment);
+        $this->mockS2sCallForPaymentFromBank();
 
         // Entry refreshed with the actual payment
         $gatewayPayment = $this->getLastEntity('netbanking', true);
@@ -672,8 +669,11 @@ class NetbankingAxisGatewayTest extends TestCase
 
     }
 
-    protected function mockS2sCallForPaymentFromBank($gatewayPayment)
+    protected function mockS2sCallForPaymentFromBank()
     {
+        // Initial pending reponse based entry
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
         $content = $this->server->getS2sResponseForPayment($gatewayPayment);
 
         $request = [

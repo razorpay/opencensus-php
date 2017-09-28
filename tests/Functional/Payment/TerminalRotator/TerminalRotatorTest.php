@@ -220,8 +220,6 @@ class TerminalRotatorTest extends TestCase
 
     public function testNetbankingRepeatOnSameTerminal()
     {
-        $this->markTestSkipped('Marking test skipped till code response is available');
-
         $data = $this->testData['testNetbankingRepeatOnSameTerminal'];
 
         $amount = 30000;
