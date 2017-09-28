@@ -27,10 +27,6 @@ class FeaturesTest extends TestCase
         $this->ba->appAuth();
     }
 
-    /**
-     * Adds dummy feature to the database which is linked to the mode passed as parameter.
-     *
-     */
     private function addFeatures(
         string $addToMode,
         bool $shouldSync = false,
@@ -55,10 +51,6 @@ class FeaturesTest extends TestCase
         $this->startTest($testData);
     }
 
-    /**
-     * Adds features as merchants.
-     *
-     */
     private function addFeatureAsMerchant(
         string $addToMode,
         string $featureName = 'noflashcheckout',
@@ -69,7 +61,7 @@ class FeaturesTest extends TestCase
 
         $this->ba->$authMethod();
 
-        $testData = $this->testData[__FUNCTION__];
+        $testData = $this->testData['updateFeatureAsMerchant'];
 
         $testData['request']['content']['features'][$featureName] = '1';
 
@@ -99,12 +91,6 @@ class FeaturesTest extends TestCase
         $this->startTest($testData);
     }
 
-    /**
-     * Deletes a feature from the database linked to mode received
-     *
-     * @param string $deleteFromMode
-     * @param bool   $shouldSync
-     */
     private function deleteFeature(
         string $deleteFromMode,
         bool $shouldSync = false,
@@ -117,6 +103,46 @@ class FeaturesTest extends TestCase
         if ($featureName === null)
         {
             $testData['request']['url'] = '/features/10000000000000/' . $featureName;
+        }
+
+        if ($shouldSync === true)
+        {
+            $testData['request']['content']['should_sync'] = 1;
+        }
+
+        $this->startTest($testData);
+    }
+
+    private function deleteFeatureAsMerchant(
+        string $deleteFromMode,
+        string $featureName = 'noflashcheckout',
+        bool $expectBadRequestException = false,
+        bool $shouldSync = true)
+    {
+        $authMethod = 'proxyAuth' . studly_case($deleteFromMode);
+
+        $this->ba->$authMethod();
+
+        $testData = $this->testData['updateFeatureAsMerchant'];
+
+        $testData['request']['content']['features'][$featureName] = '0';
+
+        if ($expectBadRequestException === true)
+        {
+            $testData['response'] = [
+                'content' => [
+                    'error' => [
+                        'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE
+                    ],
+                ],
+                'status_code' => 400,
+            ];
+
+            $testData['exception'] = [
+                'class' => 'RZP\Exception\BadRequestException',
+                'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
+            ];
         }
 
         if ($shouldSync === true)
@@ -820,9 +846,13 @@ class FeaturesTest extends TestCase
      */
     public function testDeleteMerchantUnEditableFeatureFromLive()
     {
-        $this->ba->proxyAuthLive();
+        $features = $this->fixtures->merchant->addFeatures(['marketplace']);
 
-        $this->startTest();
+        $this->deleteFeatureAsMerchant(
+            Mode::LIVE,
+            'marketplace',
+            true,
+            false);
     }
 
     /**
@@ -832,9 +862,11 @@ class FeaturesTest extends TestCase
     {
         $features = $this->fixtures->merchant->addFeatures(['marketplace']);
 
-        $this->ba->proxyAuthTest();
-
-        $this->startTest();
+        $this->deleteFeatureAsMerchant(
+            Mode::TEST,
+            'marketplace',
+            true,
+            true);
     }
 
 }

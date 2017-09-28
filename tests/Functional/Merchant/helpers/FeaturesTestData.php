@@ -40,6 +40,23 @@ return [
         ]
     ],
 
+    'updateFeatureAsMerchant' => [
+        'request' => [
+            'content' => [
+                'features'      => [ ],
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [ ]
+        ]
+    ],
+
     'verifyFeatureAbsence' => [
         'request' => [
             'url'    => '/features/10000000000000',
@@ -542,48 +559,6 @@ return [
             ],
             'status_code' => 200
         ]
-    ],
-
-    'addFeatureAsMerchant' => [
-        'request' => [
-            'content' => [
-                'features'      => [ ],
-            ],
-            'url' => '/merchants/10000000000000/features',
-            'method' => 'post',
-            'server' => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-        ],
-        'response' => [
-            'content' => [ ]
-        ]
-    ],
-
-    'testDeleteMerchantUnEditableFeatureFromLive' => [
-        'request' => [
-            'content' => [
-                'features' => [
-                    'marketplace' => '0'
-                ]
-            ],
-            'url' => '/merchants/10000000000000/features',
-            'method' => 'post'
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
-        ],
     ],
 
     'testDeleteMerchantEditableFeatureFromTest' => [
