@@ -80,7 +80,7 @@ class Org extends Base
 
         $this->fixtures->create('org_hostname', [
             'org_id'    => self::RZP_ORG,
-            'hostname'  => 'dashboard.razorpay.dev'
+            'hostname'  => 'dashboard.razorpay.in'
         ]);
 
         $this->fixtures->create('org_hostname', [
