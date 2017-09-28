@@ -11,6 +11,7 @@ use Lib\PhoneBook;
 
 use RZP\Error;
 use RZP\Exception;
+use RZP\Gateway\FirstData\Gateway;
 use RZP\Models\Upi;
 use RZP\Models\Emi;
 use RZP\Models\Risk;
