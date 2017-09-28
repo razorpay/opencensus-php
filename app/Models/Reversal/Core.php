@@ -6,7 +6,6 @@ use RZP\Exception;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base;
 use RZP\Models\Transfer;
-use RZP\Models\Dispute;
 use RZP\Models\Transaction;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -64,47 +63,6 @@ class Core extends Base\Core
         $this->repo->saveOrFail($reversal);
 
         $this->traceSuccess(TraceCode::TRANSFER_REVERSAL_SUCCESS, $reversal);
-
-        return $reversal;
-    }
-
-    /**
-     * Execute inside transaction
-     *
-     * Create a reversal for a Dispute,
-     * and a transaction that updates the Merchant balance
-     *
-     * @param  Dispute\Entity  $dispute
-     * @param  Merchant\Entity $merchant
-     * @param array            $input
-     *
-     * @return Entity
-     */
-    public function createForDispute(
-        Dispute\Entity $dispute,
-        Merchant\Entity $merchant,
-        array $input) : Entity
-    {
-        $this->trace->info(
-            TraceCode::DISPUTE_REVERSAL_REQUEST,
-            [
-                'dispute_id'  => $dispute->getId(),
-                'input'       => $input
-            ]);
-
-        $reversal = $this->create($input);
-
-        $reversal->merchant()->associate($merchant);
-
-        $txn = (new Transaction\Core)->createFromReversal($reversal);
-
-        $this->repo->saveOrFail($txn);
-
-        $reversal->entity()->associate($dispute);
-
-        $this->repo->saveOrFail($reversal);
-
-        $this->traceSuccess(TraceCode::DISPUTE_REVERSAL_SUCCESS, $reversal);
 
         return $reversal;
     }

@@ -70,4 +70,11 @@ trait TransactionTrait
         });
     }
 
+    protected function createTransactionOnAdjustment($adjustment)
+    {
+        return $this->transaction(function() use ($adjustment)
+        {
+            return (new TransactionCore)->createFromAdjustment($adjustment, false);
+        });
+    }
 }

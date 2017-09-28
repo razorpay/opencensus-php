@@ -4,12 +4,12 @@ namespace RZP\Models\Dispute;
 
 use DB;
 use Carbon\Carbon;
-use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Constants\Table;
 use RZP\Models\Reversal;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Adjustment;
 use RZP\Models\Transaction;
 use RZP\Models\Admin\Action;
@@ -19,6 +19,9 @@ use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 class Core extends Base\Core
 {
     use FileHandlerTrait;
+  
+    const DEBIT_ADJUSTMENT_DESCRIPTION = 'Debit disputed amount';
+    const CREDIT_ADJUSTMENT_DESCRIPTION = 'Credit to reverse a previous dispute debit';
 
     /**
      * @param Payment\Entity $payment
@@ -60,7 +63,7 @@ class Core extends Base\Core
         {
             if ($dispute->getDeductAtOnset() === true)
             {
-                $this->deductDisputedAmount($dispute);
+                $this->createNegativeAdjustmentAndUpdateDispute($dispute);
             }
 
             $this->repo->saveOrFail($dispute->payment);
@@ -233,23 +236,24 @@ class Core extends Base\Core
         if (($dispute->isLost() === true) and
             ($dispute->getAmountDeducted() === 0))
         {
-            $this->deductDisputedAmount($dispute);
+            $this->createNegativeAdjustmentAndUpdateDispute($dispute);
         }
 
         if ($this->shouldReverse($dispute) === true)
         {
-            $this->createReversalAndUpdateDispute($dispute);
+            $this->createPositiveAdjustmentAndUpdateDispute($dispute);
         }
     }
 
-    protected function createReversalAndUpdateDispute(Entity $dispute)
+    protected function createPositiveAdjustmentAndUpdateDispute(Entity $dispute)
     {
         $input = [
-            Entity::CURRENCY    => $dispute->getCurrency(),
-            Entity::AMOUNT      => $dispute->getAmountDeducted(),
+            Adjustment\Entity::CURRENCY    => $dispute->getCurrency(),
+            Adjustment\Entity::AMOUNT      => $dispute->getAmountDeducted(),
+            Adjustment\Entity::DESCRIPTION => self::CREDIT_ADJUSTMENT_DESCRIPTION,
         ];
 
-        (new Reversal\Core)->createForDispute($dispute, $dispute->merchant, $input);
+        (new Adjustment\Core)->createDisputeAdjustment($input, $dispute);
 
         $dispute->setAmountReversed($dispute->getAmountDeducted());
     }
@@ -261,12 +265,16 @@ class Core extends Base\Core
                 ($dispute->getAmountReversed() === 0));
     }
 
-    protected function deductDisputedAmount(Entity $dispute)
+    protected function createNegativeAdjustmentAndUpdateDispute(Entity $dispute)
     {
         $dispute->setAmountDeducted($dispute->getAmount());
 
-        $txn = (new Transaction\Core)->createFromDispute($dispute);
+        $input = [
+            Adjustment\Entity::CURRENCY    => $dispute->getCurrency(),
+            Adjustment\Entity::AMOUNT      => 0 - $dispute->getAmount(),
+            Adjustment\Entity::DESCRIPTION => self::DEBIT_ADJUSTMENT_DESCRIPTION,
+        ];
 
-        $this->repo->saveOrFail($txn);
+        (new Adjustment\Core)->createDisputeAdjustment($input, $dispute);
     }
 }

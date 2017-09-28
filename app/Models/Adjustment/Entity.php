@@ -18,6 +18,9 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_ID    = 'transaction_id';
     const SETTLEMENT_ID     = 'settlement_id';
 
+    // For report
+    const DISPUTE_ID        = 'dispute_id';
+
     protected static $sign = 'adj';
 
     protected $entity = 'adjustment';
