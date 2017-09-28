@@ -58,7 +58,7 @@
               </a>
             </td>
           </tr>
-          <tr ng-show="new_rule.percent_rate || new_rule.fixed_rate">
+          <tr ng-show="new_rule.percent_rate || new_rule.fixed_rate" class="highlight-row">
             <td>Preview Rule</td>
             <td>{{new_rule.feature || 'payment' | capitalize}}</td>
             <td>{{new_rule.payment_method || 'Any' | capitalize }}</td>
@@ -80,10 +80,10 @@
             <td>{{new_rule.fixed_rate/100 | rupee:"INR "}}</td>
             <td>{{new_rule.min_fee?(new_rule.min_fee/100 | rupee:"INR ") : "None"}}</td>
             <td>{{new_rule.max_fee?(new_rule.max_fee/100 | rupee:"INR ") : "None"}}</td>
-            <td>Preview Rule</td>
+            <td>--</td>
           </tr>
-          <tr>
-            <td>Add new Rule</td>
+          <tr class="highlight-row add-rule">
+            <td></td>
             <td>
               <select class="form-control" name="feature" ng-model="new_rule.feature" required>
                   <option value="payment">Payment</option>
