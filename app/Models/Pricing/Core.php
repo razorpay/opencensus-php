@@ -14,7 +14,7 @@ class Core extends Base\Core
 
         $rule = $rule->generateId();
 
-        $rule->getValidator()->validateRuleIsUnique($plan);
+        $rule->getValidator()->validateRuleDoesNotMatch($plan);
 
         $rule->setAuditAction(Action::CREATE_PRICING_PLAN_RULE);
 
@@ -48,21 +48,21 @@ class Core extends Base\Core
 
     public function createBulkPricing($input)
     {
-        (new Validator())->validatePlanInputHasRules($input);
+        (new Validator())->validateInput('createBulkPricing', $input);
 
         $planName = $input[Entity::PLAN_NAME];
 
-        $input = $input['rules'];
+        $inputRules = $input['rules'];
 
-        $this->repo->transactionOnLiveAndTest(function() use ($planName, $input)
+        $this->repo->transactionOnLiveAndTest(function() use ($planName, $inputRules)
         {
-            $plan = $this->createPlan($planName, $input[0]);
+            $plan = $this->createPlan($planName, $inputRules[0]);
 
-            array_shift($input);
+            array_shift($inputRules);
 
-            foreach ($input as $value)
+            foreach ($inputRules as $inputRule)
             {
-                $rule = $this->addPlanRule($value, $plan);
+                $rule = $this->addPlanRule($inputRule, $plan);
 
                 $plan->add($rule);
             }
@@ -75,7 +75,7 @@ class Core extends Base\Core
 
     public function createPlanFromRule(Entity $rule): Plan
     {
-        $plan = new Plan(array($rule));
+        $plan = new Plan([$rule]);
 
         return $plan;
     }

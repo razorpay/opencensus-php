@@ -47,7 +47,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $createPlanRules = [
-        Entity::PLAN_NAME => 'required|alpha_num|max:20'
+        Entity::PLAN_NAME   => 'required|alpha_num|max:20'
+    ];
+
+    protected static $createBulkPricingRules = [
+        Entity::PLAN_NAME   => 'required|alpha_num|max:50',
+        Entity::RULES       => 'required|array|min:1',
     ];
 
     protected function validateAddPlanRuleFeature($input)
@@ -280,7 +285,7 @@ class Validator extends Base\Validator
     /**
      * Check whether this new rule already exists
      */
-    public function validateRuleIsUnique($plan)
+    public function validateRuleDoesNotMatch(Plan $plan)
     {
         $rules = $plan->toArray();
 
@@ -368,17 +373,6 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PRICING_PLAN_WITH_SAME_NAME_EXISTS);
-        }
-    }
-
-    public function validatePlanInputHasRules($input)
-    {
-        if (count($input['rules']) === 0)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PRICING_BULK_CREATE_EMPTY_RULES,
-                null,
-                $input);
         }
     }
 
