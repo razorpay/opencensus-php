@@ -171,7 +171,7 @@ export default ({
                                 : 'Charge this now'}
                             </button>
                             <div style={{ color: 'red' }}>
-                              This charge is for test mode integrations.
+                              This is just for test mode integrations.
                             </div>
                             <a
                               href="https://razorpay.com/docs/subscriptions/routes/#subscription"
