@@ -881,7 +881,7 @@ UPDATE invoices
 #Create only 1 entry for tax in fee_breakup
 UPDATE fees_breakup set name='tax' where name='igst';
 
-UPDATE fees_breakup set name='tax' and percentage=percentage*2 where name='sgst';
+UPDATE fees_breakup set name='tax' and percentage=percentage*2 and amount=amount*2 where name='sgst';
 
 DELETE from fees_breakup where name='cgst';
 
