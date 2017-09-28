@@ -52,15 +52,14 @@ class Core extends Base\Core
             ->setEntityAndId($adj->getEntity(), $merchant->getId())
             ->handle((new \stdClass), $adj);
 
-        s($adjInput);
-
         if (isset($input[Entity::AMOUNT]) === true)
         {
             return $this->transaction([$this, 'createAdjInTransaction'], $adj, $merchant);
         }
         else
         {
-            $adjustment = $this->repo->transaction(function () use ($adj, $merchant, $adjInput) {
+            $adjustment = $this->repo->transaction(function () use ($adj, $merchant, $adjInput)
+            {
                 $adjustment = $this->createAdjInTransaction($adj, $merchant);
 
                 (new Merchant\Invoice\Core)->createAdjustmentInvoiceEntity($adj, $adjInput);

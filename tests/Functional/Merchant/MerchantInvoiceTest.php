@@ -271,16 +271,10 @@ class MerchantInvoiceTest extends TestCase
         // Check adjustment entity
         $data = $this->getLastEntity('adjustment', true);
 
-        s($data);
-
-        s($content);
-
         $this->assertArraySelectiveEquals($content, $data);
 
         // Check invoice entity
         $merchantInvoice = $this->getLastEntity('merchant_invoice', true);
-
-        s($merchantInvoice);
 
         $this->assertTestResponse($merchantInvoice);
 
