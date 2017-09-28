@@ -2,14 +2,14 @@
 
 namespace RZP\Models\Adjustment;
 
-use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
-use RZP\Models\Adjustment;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\Invoice as MerchantInvoice;
+use RZP\Trace\TraceCode;
+use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
-use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Invoice as MerchantInvoice;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Core extends Base\Core
 {
