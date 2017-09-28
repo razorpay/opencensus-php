@@ -65,6 +65,9 @@ return [
                 'HTTP_X-Dashboard'            => 'true',
                 'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
             ],
+        ],
+        'response' => [
+            'content' => [ ]
         ]
     ],
 
@@ -493,31 +496,6 @@ return [
         ],
     ],
 
-    'testAddMerchantUnEditableFeaturesOnLive' => [
-        'request' => [
-            'content' => [
-                'features' => [
-                    'marketplace' => '1'
-                ]
-            ],
-            'url' => '/merchants/10000000000000/features',
-            'method' => 'post'
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
-        ],
-    ],
-
     'testAddMerchantEditableFeaturesOnTest' => [
         'request' => [
             'content' => [
@@ -559,35 +537,5 @@ return [
             ],
             'status_code' => 200
         ]
-    ],
-
-    'testDeleteMerchantEditableFeatureFromTest' => [
-        'request' => [
-            'content' => [
-                'features' => [
-                    'marketplace' => '0',
-                ],
-                'should_sync'   => 1
-            ],
-            'url' => '/merchants/10000000000000/features',
-            'method' => 'post',
-            'server' => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class' => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
-        ],
     ],
 ];
