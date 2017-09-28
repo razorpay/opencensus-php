@@ -126,7 +126,7 @@ class Entity extends Base\PublicEntity
             self::MAX_FAILED_ATTEMPTS             => 10,
             self::ENFORCE_INITIAL_PASSWORD_CHANGE => true,
             self::MAX_PASSWORD_RETAIN             => 10,
-            self::PASSWORD_EXPIRY                 => 120,
+            self::PASSWORD_EXPIRY                 => 30,
         ];
     }
 
