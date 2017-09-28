@@ -49,7 +49,7 @@ return [
             'payee_ifsc'     => null,
             'payer_name'     => 'Name of account holder',
             'payer_account'  => '9876543210123456789',
-            'payer_ifsc'     => 'HDB987654321',
+            'payer_ifsc'     => 'HDB9876543210',
             'mode'           => 'imps',
             'transaction_id' => strtoupper(random_alphanum_string(22)),
             'time'           => 148415544000,

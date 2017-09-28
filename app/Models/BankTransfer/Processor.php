@@ -517,7 +517,10 @@ class Processor extends Base\Core
         if ((strlen($ifsc) !== BankAccount\Entity::IFSC_CODE_LENGTH) and
             ($bankTransfer->getMode() === Mode::IMPS))
         {
-            $bankCode = substr($ifsc, 0, 3);
+            //
+            // Last 10 characters are customer phone number
+            //
+            $bankCode = substr($ifsc, 0, -10);
 
             $ifsc = BankCodes::getIfscForBankCode($bankCode);
 
