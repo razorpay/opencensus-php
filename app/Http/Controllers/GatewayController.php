@@ -102,9 +102,7 @@ class GatewayController extends Controller
             case Gateway::WALLET_FREECHARGE:
             case Gateway::BILLDESK:
             case Gateway::NETBANKING_AXIS:
-            // test value sent for axis earlier
             case 'axis_corporate':
-            // "BID=500193224&Paid=Y&TRANDATETIME=28/08/2017+17:23:07&AMT=1.00&ITC=000000006211&PRN=8WQJtaPV8yFUvf"
 
                 // TODO : Remove before prod merge. temporary hack for testing.
                 if ($gateway === 'axis_corporate')

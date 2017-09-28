@@ -66,9 +66,6 @@ trait Callback
 
     public function s2sCallback($payment, array $gatewayInput)
     {
-        // TODO : Should not get triggered for corporate payments as
-        // payment actual processing is pending.
-
         // Return if payment is auto captured
         if ($payment->getAutoCaptured())
         {
@@ -148,15 +145,6 @@ trait Callback
      * This could be due to browser refresh by the customer or
      * s2s callback notification being delivered by the gateway before
      * browser hits the callback route etc.
-     *
-     * @TODO
-     * Another case that needs to be explicitly handled is the
-     * case of a payment authorizaion occurring due to
-     * a pending authorization corporate netbanking payment
-     * that was marked failed due to the pending status.
-     *
-     * Once a checker approval comes in callback will be fired
-     * which must be accepted and sent as success.
      */
     protected function processPaymentCallbackSecondTime($payment)
     {
