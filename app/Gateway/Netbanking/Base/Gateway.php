@@ -158,4 +158,9 @@ class Gateway extends \RZP\Gateway\Base\Gateway
                 'extra_data' => $extraData
             ]);
     }
+
+    protected function setCorporate()
+    {
+        $this->type = 'corporate';
+    }
 }

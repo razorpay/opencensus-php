@@ -320,9 +320,12 @@ return [
     ],
 
     'netbanking_axis' => [
-        'live_hash_secret' => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET'),
-        'test_hash_secret' => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET'),
-        'test_merchant_id' => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID'),
+        'live_hash_secret'           => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET'),
+        'live_hash_secret_corporate' => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET_CORPORATE'),
+        'test_hash_secret'           => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET'),
+        'test_hash_secret_corporate' => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET_CORPORATE'),
+        'test_merchant_id'           => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID'),
+        'test_merchant_id_corporate' => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID_CORPORATE'),
     ],
 
     'netbanking_airtel' => [

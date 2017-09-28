@@ -23,6 +23,8 @@ class Gateway extends Base\Gateway
 
     protected $bank = 'axis';
 
+    protected $type = 'retail';
+
     protected $map = [
         RequestFields::AMOUNT             => 'amount',
         RequestFields::MERCHANT_REFERENCE => 'payment_id',
@@ -33,17 +35,28 @@ class Gateway extends Base\Gateway
     {
         parent::authorize($input);
 
+        // Only url, merchant id and secrets have to change.
+        if ($input['terminal']->isCorporate() === true)
+        {
+            $this->setCorporate();
+        }
+
         $content = $this->getPaymentRequestData($input);
 
         $entityAttributes = $this->getEntityAttributes($input);
 
         $this->createGatewayPaymentEntity($entityAttributes);
 
-        $request = $this->getStandardRequestArray($content);
+        $request = $this->getStandardRequestArray($content, 'post', $this->getActionType());
 
         $this->traceGatewayPaymentRequest($request, $input);
 
         return $request;
+    }
+
+    protected function getActionType()
+    {
+        return $this->type.'_'.$this->action;
     }
 
     public function callback(array $input)
@@ -63,6 +76,10 @@ class Gateway extends Base\Gateway
             $input['payment']['id'], Action::AUTHORIZE);
 
         $attrs = $this->getCallbackAttributes($content);
+
+               $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK,
+                           ['content' => $content,
+                            'attrs'   => $attrs]);
 
         $gatewayEntity->fill($attrs);
 
@@ -435,7 +452,7 @@ class Gateway extends Base\Gateway
      */
     protected function getUrlDomain()
     {
-        $this->domainType = $this->action;
+        $this->domainType = $this->type.'_'.$this->action.'_'.$this->mode;
 
         return parent::getUrlDomain();
     }
@@ -444,7 +461,15 @@ class Gateway extends Base\Gateway
     {
         if ($this->mode === Mode::TEST)
         {
-            return $this->getTestMerchantId();
+            if ($this->type === 'retail')
+            {
+                return $this->getTestMerchantId();
+            }
+            else if ($this->type === 'corporate')
+            {
+                return $this->getTestMerchantIdCorporate();
+            }
+
         }
         else
         {
@@ -452,10 +477,36 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function getTestMerchantIdCorporate()
+    {
+        return $this->config['test_merchant_id_corporate'];
+    }
+
     protected function getLiveSecret()
     {
         assert ($this->mode === Mode::LIVE);
 
-        return $this->config['live_hash_secret'];
+        if ($this->type === 'retail')
+        {
+            return $this->config['live_hash_secret'];
+        }
+        else if ($this->type === 'corporate')
+        {
+            return $this->config['live_hash_secret_corporate'];
+        }
+    }
+
+    protected function getTestSecret()
+    {
+        assert ($this->mode === Mode::TEST);
+
+        if ($this->type === 'retail')
+        {
+            return $this->config['test_hash_secret'];
+        }
+        else if ($this->type === 'corporate')
+        {
+            return $this->config['test_hash_secret_corporate'];
+        }
     }
 }
