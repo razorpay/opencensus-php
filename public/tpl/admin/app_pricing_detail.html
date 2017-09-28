@@ -59,7 +59,7 @@
             </td>
           </tr>
           <tr ng-show="new_rule.percent_rate || new_rule.fixed_rate" class="highlight-row">
-            <td>Preview Rule</td>
+            <td><b>Preview Rule</b></td>
             <td>{{new_rule.feature || 'payment' | capitalize}}</td>
             <td>{{new_rule.payment_method || 'Any' | capitalize }}</td>
             <td>{{new_rule.payment_method_type || 'Any' | capitalize }}</td>
@@ -174,11 +174,24 @@
             <td>
               <input class="form-control" type="text" name="max_fee" ng-model="new_rule.max_fee" tooltip="Max fee allowed to be charged in paisa e.g. enter INR 2 as 200" placeholder="As Integer" />
             </td>
-            <td>
-              <a href ng-click="saveRule()"><button class="btn btn-primary btn-rounded">Save</button></a>
-            </td>
           </tr>
         </tbody>
+
+        <tfoot class="highlight-row">
+        <tr>
+          <td colspan="13" style="border-top: 0;">
+            <a href ng-click="saveRule()">
+              <button class="m-t btn btn-primary btn-rounded">
+                <i class="fa fa-plus"></i>
+                Save
+              </button>
+            </a>
+          </td>
+        </tr>
+        </tfoot>
+
+
+
       </table>
     </div>
   </div>

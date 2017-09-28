@@ -66,7 +66,30 @@
               </a>
             </td>
           </tr>
-          <tr class="highlight-row">
+          <tr ng-show="new_rule.percent_rate || new_rule.fixed_rate" class="highlight-row add-rule">
+            <td>{{new_rule.feature || 'payment' | capitalize}}</td>
+            <td>{{new_rule.payment_method || 'Any' | capitalize }}</td>
+            <td>{{new_rule.payment_method_type || 'Any' | capitalize }}</td>
+            <td>{{new_rule.payment_network || 'Any'}}</td>
+            <td>{{new_rule.payment_issuer || 'Any'}}</td>
+            <td>{{new_rule.international === "1" ? 'True' : 'False' }}</td>
+            <td>{{new_rule.amount_range_active == "1" ? 'True' : 'False' }}</td>
+            <td>
+              <span ng-show="new_rule.amount_range_active == '1'">
+                {{new_rule.amount_range_min}}-{{new_rule.amount_range_max}}
+              </span>
+              <span ng-show="new_rule.amount_range_active == '0'">
+                {{new_rule.amount_range_min}}-{{new_rule.amount_range_max}}
+              </span>
+            </td>
+            <td>{{new_rule.emi_duration ? new_rule.emi_duration : "None"}}
+            <td>{{new_rule.percent_rate/100}} %</td>
+            <td>{{new_rule.fixed_rate/100 | rupee:"INR "}}</td>
+            <td>{{new_rule.min_fee?(new_rule.min_fee/100 | rupee:"INR ") : "None"}}</td>
+            <td>{{new_rule.max_fee?(new_rule.max_fee/100 | rupee:"INR ") : "None"}}</td>
+            <td>--</td>
+          </tr>
+          <tr class="highlight-row add-rule">
             <td>
               <select class="form-control" name="feature" ng-model="new_rule.feature" required>
                   <option value="payment">Payment</option>
@@ -160,7 +183,7 @@
           <tr>
             <td colspan="13" style="border-top: 0;">
               <a href ng-click="addRule()">
-                <button class="m-t btn btn-default btn-rounded">
+                <button class="m-t btn btn-primary btn-rounded">
                   <i class="fa fa-plus"></i> Add This Rule
                 </button>
               </a>
