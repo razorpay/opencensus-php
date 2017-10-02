@@ -93,16 +93,11 @@ class Core extends Base\Core
         bool $forgotPassword = true,
         $updateType = 'reset')
     {
-        $validator = new Validator();
+        $validator = new Validator($admin);
 
         $validator->validateInput($updateType, $input);
 
         $admin->setAuditAction(Action::RESET_PASSWORD);
-
-        // Check if the pwd follows the auth policy guidelines
-        $authPolicy = new AuthPolicy\Service;
-
-        $authPolicy->validate($admin, $input['password']);
 
         // In case of forgotten passwords, oldPassword is not present.
         // In case of voluntary change of password, we would require

@@ -1007,6 +1007,12 @@ trait Refund
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
         }
+
+        // Some bank transfer payments cannot be refunded.
+        if ($payment->isBankTransfer() === true)
+        {
+            (new BankTransfer\Validator)->validatePaymentForRefund($payment);
+        }
     }
 
     protected function setPaymentAndRefundInfo($refund, $payment)

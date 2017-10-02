@@ -788,3 +788,42 @@ WHERE payments.merchant_id = "87qTXzFTBLFN7i" AND
     axis.vpc_AuthorizeId IS NOT NULL AND
     payments.gateway = "axis_migs" AND
     payments.reference2 is NULL;
+
+## VA IMPS Refund Correction
+DELETE FROM refunds
+    WHERE id='8fjRYHRMgyMpzq';
+DELETE FROM transactions
+    WHERE entity_id='8fjRYHRMgyMpzq';
+UPDATE payments
+    SET
+        amount_refunded=0,
+        refund_status=null,
+        base_amount_refunded=0,
+        status='captured'
+    WHERE id='8e0eGW1TrJALOU';
+
+UPDATE billdesk SET RefundId = 'JSBI56715667791' WHERE id = 2124216;
+UPDATE billdesk SET RefundId = 'IUBI53988238411' WHERE id = 2110989;
+UPDATE billdesk SET RefundId = 'JSBI56869209721' WHERE id = 2156652;
+
+# Data correction - ref: https://github.com/razorpay/api/issues/5318
+UPDATE merchant_details
+SET bank_account_type = 'current',
+    bank_beneficiary_address1 = 'Bangalore',
+    bank_beneficiary_city = 'Bangalore',
+    bank_beneficiary_state = 'KA',
+    bank_beneficiary_pin = '560001'
+WHERE merchant_id = '8fyopxXdbZ5Cwr';
+
+UPDATE merchant_details
+SET business_type = 9
+WHERE merchant_id = '8fxCRCWAH1F6gL';
+
+UPDATE merchant_details
+SET contact_name = 'yunus ansari',
+    contact_mobile = '8461939326'
+WHERE merchant_id = '8gEIgmsxQ7Dmpy';
+
+UPDATE merchant_details
+SET transaction_volume = 1
+WHERE merchant_id = '8gGZ0cZaLgHU1m';

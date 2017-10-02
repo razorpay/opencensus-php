@@ -6,8 +6,6 @@ use Razorpay\IFSC\IFSC;
 use RZP\Base;
 use RZP\Constants\Mode;
 use RZP\Exception;
-use RZP\Models\VirtualAccount\Provider;
-use RZP\Models\Merchant\Detail\Validator as MerchantDetailValidator;
 
 class Validator extends Base\Validator
 {
@@ -84,26 +82,8 @@ class Validator extends Base\Validator
      */
     protected function isSpecialIfscCode($ifsc, $mode)
     {
-        // https://razorpay.zendesk.com/agent/tickets/94340
-        $liveWhitelist = MerchantDetailValidator::IFSC_WHITELIST;
-
-        $testWhitelist = array_merge(
-            Provider::DEFAULT_DETAILS[Provider::DASHBOARD],
-            [Entity::SPECIAL_IFSC_CODE]
-        );
-
-        switch ($mode)
-        {
-            case Mode::TEST:
-            case null:
-                $list = $testWhitelist;
-                break;
-
-            case Mode::LIVE:
-                $list = $liveWhitelist;
-                break;
-        }
-
-        return in_array($ifsc, $list, true);
+        return ((($mode === Mode::TEST) or ($mode === null)) and
+                (($ifsc === Entity::SPECIAL_IFSC_CODE) or
+                 ($ifsc === 'RAZR0000001')));
     }
 }

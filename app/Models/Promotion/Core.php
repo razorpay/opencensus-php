@@ -108,7 +108,7 @@ class Core extends Base\Core
     {
        $anchor = null;
 
-       $currentTime = Carbon::now('Asia/Kolkata');
+       $currentTime = Carbon::now(Timezone::IST);
 
        $anchor = Anchor::getAnchor($period, $currentTime);
 

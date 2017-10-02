@@ -59,7 +59,7 @@ class NetbankingHdfcRefundFileTest extends TestCase
 
         Mail::assertSent(RefundFileMail::class, function ($mail) use ($file)
         {
-            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+            $today = Carbon::now(Timezone::IST)->format('d-m-Y');
 
             $expectedSubject = RefundFileMailConstants::SUBJECT_MAP[Gateway::NETBANKING_HDFC] . $today;
 

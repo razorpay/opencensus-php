@@ -167,6 +167,8 @@ class Server extends Base\Mock\Server
             'vpc_Version'           => '1',
         );
 
+        $this->content($content, 'refund');
+
         return $this->prepareResponse($content);
     }
 
@@ -199,6 +201,8 @@ class Server extends Base\Mock\Server
             'vpc_Version'           => '1',
         );
 
+        $this->content($content, 'reverse');
+
         return $this->prepareResponse($content);
     }
 
@@ -227,6 +231,8 @@ class Server extends Base\Mock\Server
             'vpc_DRExists'          => 'Y',
             'vpc_FoundMultipleDRs'  => 'N',
         );
+
+        $this->content($content, 'verify');
 
         return $this->prepareResponse($content);
     }

@@ -79,4 +79,15 @@ class Entity extends Base\PublicEntity
             $input[self::NAME] = strtolower($input[self::NAME]);
         }
     }
+
+    /**
+     * Returns true if a feature belongs to the list of features for
+     * which the merchant should be notified.
+     *
+     * @return bool
+     */
+    public function isNotifyFeature(): bool
+    {
+        return (in_array($this->getName(), Constants::$notifyFeatures) === true);
+    }
 }

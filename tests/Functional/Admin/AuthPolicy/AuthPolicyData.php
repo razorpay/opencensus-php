@@ -270,4 +270,27 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED,
         ],
     ],
+    'testSuperAdminLockOnMaxFailedAttempts' => [
+        'request' => [
+            'url' => '/admin/authenticate',
+            'method' => 'post',
+            'content' => [
+                'username'  => 'randomemail@rzp.com',
+                'password'  => 'test12345jk6'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Authentication failed',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED
+        ],
+    ],
 ];

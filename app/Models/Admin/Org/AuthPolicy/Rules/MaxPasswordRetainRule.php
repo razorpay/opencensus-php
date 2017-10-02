@@ -14,8 +14,10 @@ class MaxPasswordRetainRule extends Base
         $this->maxPasswordRetain = $maxPasswordRetain;
     }
 
-    public function validate($admin, $password)
+    public function validate($admin, array $data)
     {
+        $password = $data['password'] ?? '';
+
         $previousPasswords = $admin->getOldPasswords();
 
         foreach ($previousPasswords as $oldPassword)

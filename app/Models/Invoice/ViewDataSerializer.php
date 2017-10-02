@@ -8,9 +8,11 @@ use RZP\Constants\Timezone;
 
 use RZP\Models\Base;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Checkout;
+use RZP\Exception\BadRequestException;
 
 /**
  * This class is common source of invoice and related data to be sent
@@ -71,20 +73,14 @@ class ViewDataSerializer extends Base\Core
      */
     public function get(): array
     {
-        $invoiceData = $this->getFormattedInvoiceDataForView();
-
-        $keyId = $this->repo->key
-                            ->getKeysForMerchant($this->merchant->getId())
-                            ->first()
-                            ->getPublicKey($this->mode);
-
+        $invoiceData  = $this->getFormattedInvoiceDataForView();
+        $keyId        = $this->getMerchantKeyId();
         $merchantData = $this->getFormattedMerchantDataForView();
 
         $invoiceJsUrl = Config::get('app.cdn_v1_url') . '/invoice.js';
 
         return [
             'environment'   => $this->app->environment(),
-
             // Following is sent to view for showing warning(in hosted page and
             // emails) to avoid mis communication.
             'is_test_mode'  => ($this->mode === Mode::TEST),
@@ -211,5 +207,28 @@ class ViewDataSerializer extends Base\Core
         }
 
         return $merchantData;
+    }
+
+    protected function getMerchantKeyId(): string
+    {
+        $merchantId = $this->merchant->getId();
+
+        $keys = $this->repo->key->getKeysForMerchant($merchantId);
+
+        //
+        // Currently key is being used in the view to open checkout and we server
+        // bad request page if key is not available. Also, we restrict creation of
+        // invoices as well when no key but there are some old invoices when the
+        // restriction wasn't there during creation. So following check saves us
+        // from server error.
+        //
+        if ($keys->count() === 0)
+        {
+            throw new BadRequestException(ErrorCode::BAD_REQUEST_API_KEY_NOT_PRESENT);
+        }
+
+        $keyId = $keys->first()->getPublicKey($this->mode);
+
+        return $keyId;
     }
 }
