@@ -13,7 +13,7 @@ class LinkedAccount
     {
         return [
             Merchant\Entity::ID   => Merchant\Entity::generateUniqueId(),
-            Merchant\Entity::NAME => $entry[Header::BUSINESS_NAME]
+            Merchant\Entity::NAME => $entry[Header::BUSINESS_NAME],
         ];
     }
 
@@ -24,6 +24,9 @@ class LinkedAccount
             MerchantDetail\Entity::BANK_BRANCH_IFSC    => $entry[Header::BANK_BRANCH_IFSC],
             MerchantDetail\Entity::BANK_ACCOUNT_NUMBER => $entry[Header::BANK_ACCOUNT_NUMBER],
             MerchantDetail\Entity::BANK_ACCOUNT_TYPE   => $entry[Header::BANK_ACCOUNT_TYPE],
+            MerchantDetail\Entity::BUSINESS_NAME       => $entry[Header::BUSINESS_NAME],
+            MerchantDetail\Entity::BUSINESS_TYPE       => 1,
+            MerchantDetail\Entity::SUBMIT              => '1',
         ];
     }
 }
