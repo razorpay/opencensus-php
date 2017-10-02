@@ -13,15 +13,18 @@ class LinkedAccount extends Base
     {
         $input = Helper::getCreateAccountInput($entry);
 
-        $account = (new Merchant\Core)->createSubMerchant($input, $this->merchant);
+        $this->repo->transactionOnLiveAndTest(function () use ($input, $entry)
+        {
+            $account = (new Merchant\Core)->createSubMerchant($input, $this->merchant);
 
-        $detailInput = Helper::getAccountDetailInput($entry);
+            $detailInput = Helper::getAccountDetailInput($entry);
 
-        $response = (new MerchantDetail\Core)->saveMerchantDetails($detailInput, $account);
+            $response = (new MerchantDetail\Core)->saveMerchantDetails($detailInput, $account);
 
-        // Append account ID to output fields
-        $entry[Header::STATUS]     = $response['auto_activated'];
-        $entry[Header::ACCOUNT_ID] = Merchant\AccountEntity::getSignedId($account->getId());
+            // Append account ID to output fields
+            $entry[Header::STATUS]     = $response['auto_activated'];
+            $entry[Header::ACCOUNT_ID] = Merchant\AccountEntity::getSignedId($account->getId());
+        });
     }
 
     protected function sendProcessedMail()

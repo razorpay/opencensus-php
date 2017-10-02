@@ -53,4 +53,10 @@ class IrctcSettlement extends Base
 
         $this->batch->setProcessedAmount($processedAmount);
     }
+
+    protected function sendProcessedMail()
+    {
+        // Don't send an email
+        return;
+    }
 }
