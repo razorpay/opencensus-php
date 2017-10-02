@@ -261,10 +261,17 @@ class MerchantCreateTest extends TestCase
         // Gets last entity (Post queue processing) and asserts attributes
         $batch = $this->getLastEntity('batch', true);
 
-        sd($this->getEntities('merchant', [], true));
-
-        $this->assertEquals(4, $batch['success_count']);
+        $this->assertEquals(2, $batch['success_count']);
         $this->assertEquals(0, $batch['failure_count']);
+
+        $merchantDetail = $this->getLastEntity('merchant_detail', true);
+
+        $this->assertEquals('Test Bank Account 2', $merchantDetail['bank_account_name']);
+
+        $account = $this->getLastEntity('merchant', true);
+
+        $this->assertEquals('test 2', $account['name']);
+        $this->assertEquals(true, $account['activated']);
     }
 
     protected function startTest($testDataToReplace = [])
@@ -296,22 +303,6 @@ class MerchantCreateTest extends TestCase
                 Header::BANK_ACCOUNT_TYPE   => 'Current',
                 Header::BANK_ACCOUNT_NAME   => 'Test Bank Account 2',
                 Header::REFERENCE_ID        => 'REF002',
-            ],
-            [
-                Header::BUSINESS_NAME       => 'test 3',
-                Header::BANK_ACCOUNT_NUMBER => '111000',
-                Header::BANK_BRANCH_IFSC    => 'SBIN0007105',
-                Header::BANK_ACCOUNT_TYPE   => 'Current',
-                Header::BANK_ACCOUNT_NAME   => 'Test Bank Account 3',
-                Header::REFERENCE_ID        => 'REF003',
-            ],
-            [
-                Header::BUSINESS_NAME       => 'test 4',
-                Header::BANK_ACCOUNT_NUMBER => '111000',
-                Header::BANK_BRANCH_IFSC    => 'SBIN0007105',
-                Header::BANK_ACCOUNT_TYPE   => 'Current',
-                Header::BANK_ACCOUNT_NAME   => 'Test Bank Account 4',
-                Header::REFERENCE_ID        => 'REF003',
             ],
         ];
     }

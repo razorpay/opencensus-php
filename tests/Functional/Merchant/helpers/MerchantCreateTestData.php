@@ -291,7 +291,7 @@ return [
                 'entity'           => 'batch',
                 'type'             => 'linked_account',
                 'status'           => 'created',
-                'total_count'      => 4,
+                'total_count'      => 2,
                 'success_count'    => null,
                 'failure_count'    => null,
                 'attempts'         => 0,
