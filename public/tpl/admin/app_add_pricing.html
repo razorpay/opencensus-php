@@ -4,21 +4,20 @@
     <spinner class="inline"></spinner>
   </h1>
 </div>
-<div class="wrapper-md pricing-container" ng-controller="PricingsCtrl">
-  <div class="panel panel-default">
+<div class="wrapper-md">
+  <div class="panel panel-default" ng-controller="PricingsCtrl">
     <div class="text-center">
       <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
     </div>
     <div class="panel-heading">
       <div class="form-horizontal row">
-        <label class="control-label required">Plan Name:</label>
-        <div class="pricing-name">
-          <input type="text" class="form-control" name="plan_name" ng-model="plan.name" placeholder="Plan Name"/>
+        <label class="control-label col-md-1">Plan Name:</label>
+        <div class="col-md-4">
+          <input type="text" class="form-control" name="plan_name" ng-model="new_plan.plan_name" placeholder="Plan Name" />
         </div>
       </div>
     </div>
-    <div class="table-responsive" style="margin-top:24px;">
-      <label class="control-label required">Pricing Rules:</label>
+    <div class="table-responsive">
       <table class="table table-striped b-t b-light">
         <thead>
           <th>Feature</th>
@@ -34,72 +33,33 @@
           <th>Fixed Rate</th>
           <th>Minimum Fee</th>
           <th>Maximum Fee</th>
-          <th></th>
         </thead>
         <tbody>
-          <tr ng-repeat="rule in plan.rules"
-              ng-show="rule.percent_rate || rule.fixed_rate"
-              tooltip="Preview">
-            <td>{{rule.feature || 'payment' | capitalize}}</td>
-            <td>{{rule.payment_method || 'Any' | capitalize}}</td>
-            <td>{{rule.payment_method_type || 'Any' | capitalize }}</td>
-            <td>{{rule.payment_network || 'Any'}}</td>
-            <td>{{rule.payment_issuer || 'Any'}}</td>
-            <td>{{rule.international === "1" ? 'True' : 'False'}}</td>
-            <td>{{rule.amount_range_active === "1" ? 'True' : 'False'}}</td>
+          <tr ng-show="new_plan.percent_rate || new_plan.fixed_rate" tooltip="Preview">
+            <td>{{new_plan.feature || 'payment' | capitalize}}</td>
+            <td>{{new_plan.payment_method || 'Any' | capitalize}}</td>
+            <td>{{new_plan.payment_method_type || 'Any' | capitalize }}</td>
+            <td>{{new_plan.payment_network || 'Any'}}</td>
+            <td>{{new_plan.payment_issuer || 'Any'}}</td>
+            <td>{{new_plan.international === "1" ? 'True' : 'False'}}</td>
+            <td>{{new_plan.amount_range_active === "1" ? 'True' : 'False'}}</td>
             <td>
-              <span ng-show="rule.amount_range_active == '1'">
-                {{rule.amount_range}}
+              <span ng-show="new_plan.amount_range_active == '1'">
+                {{new_plan.amount_range}}
               </span>
-              <span ng-show="rule.amount_range_active == '0'">
+              <span ng-show="new_plan.amount_range_active == '0'">
                 None
               </span>
             </td>
-            <td>{{rule.emi_duration}}</td>
-            <td>{{rule.percent_rate/100}} %</td>
-            <td>{{rule.fixed_rate/100 | rupee:"INR "}}</td>
-            <td>{{rule.min_fee?(rule.min_fee/100 | rupee:"INR ") : "None"}}</td>
-            <td>{{rule.max_fee?(rule.max_fee/100 | rupee:"INR ") : "None"}}</td>
-            <td>
-              <a href ng-click="deleteRule($index)">
-                <i class="fa fa-trash text-danger"></i>
-              </a>
-            </td>
+            <td>{{rule.emi_duration}}<td>
+            <td>{{new_plan.percent_rate/100}} %</td>
+            <td>{{new_plan.fixed_rate/100 | rupee:"INR "}}</td>
+            <td>{{new_plan.min_fee?(new_plan.min_fee/100 | rupee:"INR ") : "None"}}</td>
+            <td>{{new_plan.max_fee?(new_plan.max_fee/100 | rupee:"INR ") : "None"}}</td>
           </tr>
           <tr>
-            <td colspan="14" class="empty-row"></td>
-          </tr>
-          <tr>
-            <td colspan="14" class="highlight-row">
-              <b>Preview Rule:</b>
-            </td>
-          </tr>
-          <tr ng-show="new_rule.percent_rate || new_rule.fixed_rate" class="highlight-row add-rule">
-            <td>{{new_rule.feature || 'payment' | capitalize}}</td>
-            <td>{{new_rule.payment_method || 'Any' | capitalize }}</td>
-            <td>{{new_rule.payment_method_type || 'Any' | capitalize }}</td>
-            <td>{{new_rule.payment_network || 'Any'}}</td>
-            <td>{{new_rule.payment_issuer || 'Any'}}</td>
-            <td>{{new_rule.international === "1" ? 'True' : 'False' }}</td>
-            <td>{{new_rule.amount_range_active == "1" ? 'True' : 'False' }}</td>
             <td>
-              <span ng-show="new_rule.amount_range_active == '1'">
-                {{new_rule.amount_range_min}}-{{new_rule.amount_range_max}}
-              </span>
-              <span ng-show="new_rule.amount_range_active == '0'">
-                {{new_rule.amount_range_min}}-{{new_rule.amount_range_max}}
-              </span>
-            </td>
-            <td>{{new_rule.emi_duration ? new_rule.emi_duration : "None"}}
-            <td>{{new_rule.percent_rate/100}} %</td>
-            <td>{{new_rule.fixed_rate/100 | rupee:"INR "}}</td>
-            <td>{{new_rule.min_fee?(new_rule.min_fee/100 | rupee:"INR ") : "None"}}</td>
-            <td>{{new_rule.max_fee?(new_rule.max_fee/100 | rupee:"INR ") : "None"}}</td>
-            <td></td>
-          </tr>
-          <tr class="highlight-row add-rule">
-            <td>
-              <select class="form-control" name="feature" ng-model="new_rule.feature" required>
+              <select class="form-control" name="feature" ng-model="new_plan.feature" required>
                   <option value="payment">Payment</option>
                   <option value="recurring">Recurring</option>
                   <option value="payout">Payout</option>
@@ -108,11 +68,12 @@
               </select>
             </td>
             <td>
-              <select class="form-control" name="payment_method" ng-model="new_rule.payment_method" required>
+              <select class="form-control" name="payment_method" ng-model="new_plan.payment_method" required>
                   <option value="card">Card</option>
                   <option value="netbanking">NetBanking</option>
                   <option value="wallet">Wallet</option>
                   <option value="emi">Emi</option>
+                  <option value="upi">UPI</option>
                   <option value="bank_transfer">Bank Transfer</option>
                   <optgroup label="Payout">
                     <option value="fund_transfer">Payout: Fund Transfer</option>
@@ -124,38 +85,38 @@
               </select>
             </td>
             <td>
-              <select class="form-control" name="payment_method_type" ng-model="new_rule.payment_method_type">
+              <select class="form-control" name="payment_method_type" ng-model="new_plan.payment_method_type">
                   <option value="credit">Credit</option>
                   <option value="debit">Debit</option>
                   <option value="">Both</option>
               </select>
             </td>
             <td>
-              <select class="form-control" name="payment_network" ng-model="new_rule.payment_network">
+              <select class="form-control" name="payment_network" ng-model="new_plan.payment_network">
                   <option ng-repeat="(networkId,networkName) in itemList" value="{{networkId}}">{{networkName}}</option>
               </select>
             </td>
             <td>
-              <select class="form-control" name="payment_issuer" ng-model="new_rule.payment_issuer">
+              <select class="form-control" name="payment_issuer" ng-model="new_plan.payment_issuer">
                   <option value="">All</option>
                   <option value="HDFC">HDFC</option>
                   <option value="ICIC">ICICI</option>
               </select>
             </td>
             <td>
-              <select class="form-control" name="international" ng-model="new_rule.international">
+              <select class="form-control" name="international" ng-model="new_plan.international">
                 <option value='0'>False</option>
                 <option value='1'>True</option>
               </select>
             </td>
             <td>
-              <select class="form-control" name="amount_range_active" ng-model="new_rule.amount_range_active">
+              <select class="form-control" name="amount_range_active" ng-model="new_plan.amount_range_active">
                 <option value='0'>False</option>
                 <option value='1'>True</option>
               </select>
             </td>
             <td>
-              <select class="form-control" name="amount_range" ng-model="new_rule.amount_range" ng-show="new_rule.amount_range_active">
+              <select class="form-control" name="amount_range" ng-model="new_plan.amount_range" ng-show="new_plan.amount_range_active">
                 <option value='0-100000'>0-100000</option>
                 <option value='100000-200000'>100000-200000</option>
                 <option value='0-200000'>0-200000</option>
@@ -174,39 +135,27 @@
               </select>
             </td>
             <td>
-              <input class="form-control" type="text" name="percent_rate" ng-model="new_rule.percent_rate" tooltip="Percent rate multiplied by 100 e.g. enter 2.89% as 289" placeholder="As integer" required/>
+              <input class="form-control" type="text" name="percent_rate" ng-model="new_plan.percent_rate" tooltip="Percent rate multiplied by 100 e.g. enter 2.89% as 289" placeholder="As integer" required/>
             </td>
             <td>
-              <input class="form-control" type="text" name="fixed_rate" ng-model="new_rule.fixed_rate" tooltip="Fixed rate in paisa e.g. enter INR 2 as 200" placeholder="As Integer" required/>
+              <input class="form-control" type="text" name="fixed_rate" ng-model="new_plan.fixed_rate" tooltip="Fixed rate in paisa e.g. enter INR 2 as 200" placeholder="As Integer" required/>
             </td>
             <td>
-              <input class="form-control" type="text" name="min_fee" ng-model="new_rule.min_fee" tooltip="Min fee to be charged in paisa e.g. enter INR 2 as 200" placeholder="As Integer" />
+              <input class="form-control" type="text" name="min_fee" ng-model="new_plan.min_fee" tooltip="Min fee to be charged in paisa e.g. enter INR 2 as 200" placeholder="As Integer" />
             </td>
             <td>
-              <input class="form-control" type="text" name="max_fee" ng-model="new_rule.max_fee" tooltip="Max fee allowed to be charged in paisa e.g. enter INR 2 as 200" placeholder="As Integer" />
+              <input class="form-control" type="text" name="max_fee" ng-model="new_plan.max_fee" tooltip="Max fee allowed to be charged in paisa e.g. enter INR 2 as 200" placeholder="As Integer" />
             </td>
-            <td></td>
           </tr>
         </tbody>
-        <tfoot class="highlight-row">
+        <tfoot>
           <tr>
-            <td colspan="14" style="border-top: 0;">
-              <a href ng-click="addRule()">
-                <button class="m-t btn btn-primary btn-rounded">
-                  <i class="fa fa-plus"></i> Insert this Rule
-                </button>
-              </a>
+            <td colspan="10">
+              <a href ng-click="savePlan()"><button class="btn btn-primary btn-rounded">Save and Add More Rules</button></a>
             </td>
           </tr>
         </tfoot>
       </table>
     </div>
-  </div>
-  <div style="text-align: center;">
-    <button ng-click="savePlan()"
-            class="m-t btn btn-primary panel-btn-action"
-            ng-disabled="plan.rules.length == 0">
-      Save Plan
-    </button>
   </div>
 </div>
