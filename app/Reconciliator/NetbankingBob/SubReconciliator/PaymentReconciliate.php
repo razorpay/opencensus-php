@@ -20,7 +20,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayPayment($paymentId)
     {
-        $status = [Bob\Constants::STATUS_SUCCESS];
+        $status = [Bob\Status::SUCCESS];
 
         return $this->repo->netbanking
                     ->findByPaymentIdActionAndStatus(
