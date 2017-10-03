@@ -80,7 +80,7 @@ class Gateway extends Base\Gateway
         $content = [
             RequestFields::MERCHANT_ID      => $this->getMerchantId(),
             RequestFields::BANK_FIXED_VALUE => Constants::BANK_FIXED_VALUE,
-            RequestFields::BILLER_NAME      => $this->input['merchant'][Merchant::NAME],
+            RequestFields::BILLER_NAME      => Constants::BILLER_NAME,
             RequestFields::AMOUNT           => $this->formatAmount($payment[Payment::AMOUNT]),
             RequestFields::CALLBACK_URL     => $input['callbackUrl'],
             RequestFields::PAYMENT_ID       => $payment[Payment::ID]
