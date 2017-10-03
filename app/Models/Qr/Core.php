@@ -7,7 +7,9 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use RZP\Models\Payment\Method;
 use Razorpay\Trace\Logger as Trace;
+use RZP\Models\VirtualAccount\Provider;
 
 class Core extends Base\Core
 {
@@ -46,19 +48,26 @@ class Core extends Base\Core
     {
         $qr = (new Entity)->build($input);
 
-        return $bankTransfer;
+        return $qr;
     }
 
     public function processPayment(array $input)
     {
+        $defaultInput = [
+            Entity::PROVIDER => Provider::BHARAT_QR,
+            Entity::METHOD   => Method::CARD,
+        ];
+
         $input = $this->getMappedAttributes($input);
+
+        $input = array_merge($defaultInput, $input);
 
         try
         {
             $qr = $this->create($input);
 
             $this->mutex->acquireAndRelease(
-                $input[Entity::PAYEE_ACCOUNT],
+                $input[Entity::MERCHANT_REFERENCE],
                 function() use ($qr)
                 {
                     (new Processor)->process($qr);
@@ -70,14 +79,8 @@ class Core extends Base\Core
         }
         catch (Exception\BadRequestValidationFailureException $ex)
         {
-            // Returning anything other than a 200 causes Kotak to retry here.
-            //
-            // However, validation failures are due to Kotak sending the request
-            // in wrong format, or (more frequently) the wrong request altogether.
-            // So retrying doesn't help us, and will cause unnecessary errors.
-            // Best to trace, and return false, to stop the request.
             $this->trace->traceException(
-                $ex, Trace::ERROR, TraceCode::BANK_TRANSFER_PROCESSING_FAILED, $input);
+                $ex, Trace::ERROR, TraceCode::QR_PAYMENT_PROCESSING_FAILED, $input);
 
             $valid = false;
         }

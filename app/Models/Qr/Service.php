@@ -28,7 +28,6 @@ class Service extends Base\Service
         return [
             'valid'          => $valid,
             'message'        => null,
-            'transaction_id' => $input[Entity::REQ_UTR],
         ];
     }
 }
