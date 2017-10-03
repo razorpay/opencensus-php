@@ -189,6 +189,11 @@ class Entity extends Base\PublicEntity
     {
         $ifsc = $this->getAttribute(self::IFSC_CODE);
 
+        if ($ifsc === null)
+        {
+            return null;
+        }
+
         if ($ifsc === self::SPECIAL_IFSC_CODE)
         {
             return 'Razorpay';

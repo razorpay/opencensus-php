@@ -4,6 +4,7 @@ namespace RZP\Models\BankTransfer;
 
 use RZP\Constants;
 use RZP\Models\Base;
+use Razorpay\IFSC\IFSC;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\BankAccount;
@@ -227,6 +228,18 @@ class Entity extends Base\PublicEntity
     public function getUtr()
     {
         return $this->getAttribute(self::UTR);
+    }
+
+    public function getPayerBankNameAttribute()
+    {
+        $ifsc = $this->getAttribute(self::PAYEE_IFSC);
+
+        if ($ifsc === null)
+        {
+            return null;
+        }
+
+        return IFSC::getBankName($ifsc);
     }
 
     public function getPayerName()
