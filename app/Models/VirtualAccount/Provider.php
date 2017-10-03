@@ -2,13 +2,17 @@
 
 namespace RZP\Models\VirtualAccount;
 
-use RZP\Models\BankAccount\Entity as BankAccount;
+use Config;
 use RZP\Constants\Mode;
+use RZP\Models\BankAccount\Entity as BankAccount;
+use RZP\Models\BharatQr\Entity as BharatQr;
 
 class Provider
 {
     const YESBANK   = 'yesbank';
     const KOTAK     = 'kotak';
+
+    const BHARAT_QR = 'bharat_qr';
 
     // Dashboard acts as a mock provider bank,
     // and is used to run tests.
@@ -75,6 +79,11 @@ class Provider
         self::DASHBOARD => [
             BankAccount::IFSC_CODE => 'RAZR0000001',
         ],
+        //Refer to NPCI docs for these values
+        self::BHARAT_QR => [
+            BharatQr::QR_STRING    => '000201',
+            BharatQr::METHOD       => 'QR',
+        ],
     ];
 
     const IP = [
@@ -97,6 +106,11 @@ class Provider
         return substr($ifsc, 0, 4);
     }
 
+    public static function getAcquirerCode(string $provider, string $network)
+    {
+        return Config::get('applications.' . $provider . '.' .  $network . '_' .  'code');
+    }
+
     // Checks if request is originating from known IP for the given provider
     public static function validateIp(string $provider, string $ip)
     {
@@ -116,12 +130,6 @@ class Provider
     }
 
     // Blocks test providers for making live requests
-    //
-    // Unused right now because Kotak is making changes in their
-    // format, and IMPS testing is ongoing, so we need to use
-    // Dashboard to make corrective requests occasionally.
-    //
-    // TODO: Use in validateProvider when changes are stable
     public static function validateMode(string $provider, string $mode)
     {
         $isLiveProvider = (in_array($provider, self::TEST_PROVIDERS, true) === false);
@@ -140,7 +148,5 @@ class Provider
                 return true;
             }
         }
-
-        return false;
     }
 }

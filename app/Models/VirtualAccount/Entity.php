@@ -4,17 +4,10 @@ namespace RZP\Models\VirtualAccount;
 
 use RZP\Models\Base;
 use RZP\Models\Customer;
-use RZP\Models\BankAccount;
-use RZP\Models\Merchant;
 use RZP\Constants\Entity as Constants;
 use RZP\Models\Base\Traits\NotesTrait;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-/**
- * @property Merchant\Entity     $merchant
- * @property Customer\Entity     $customer
- * @property BankAccount\Entity  $bankAccount
- */
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
@@ -32,6 +25,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT_REVERSED      = 'amount_reversed';
     const BANK_ACCOUNT_ID      = 'bank_account_id';
     const VPA                  = 'vpa';
+    const BHARAT_QR_ID         = 'bharat_qr_id';
     const CUSTOMER_ID          = 'customer_id';
     const NOTES                = 'notes';
 
@@ -98,11 +92,17 @@ class Entity extends Base\PublicEntity
 
     protected $entity = Constants::VIRTUAL_ACCOUNT;
 
+
     // ----------------------- Associations ------------------------------------
 
     public function bankAccount()
     {
         return $this->belongsTo('RZP\Models\BankAccount\Entity');
+    }
+
+    public function bharatQr()
+    {
+        return $this->belongsTo('RZP\Models\BharatQr\Entity');
     }
 
     public function customer()
@@ -149,6 +149,11 @@ class Entity extends Base\PublicEntity
     public function hasVpa()
     {
         return ($this->isAttributeNotNull(self::VPA));
+    }
+
+    public function hasBharatQr()
+    {
+        return ($this->isAttributeNotNull(self::BHARAT_QR_ID));
     }
 
     // ----------------------- Getters -----------------------------------------

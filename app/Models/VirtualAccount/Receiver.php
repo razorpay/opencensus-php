@@ -4,43 +4,39 @@ namespace RZP\Models\VirtualAccount;
 
 use App;
 use RZP\Exception;
+use RZP\Base\Luhn;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
+use RZP\Models\BharatQr\CRC16;
 use RZP\Models\BankAccount\Entity as BankAccount;
+use RZP\Models\BharatQr\Entity as BharatQr;
 
 class Receiver
 {
     const BANK_ACCOUNT      = 'bank_account';
+    const BHARAT_QR         = 'bharat_qr';
     // const VPA               = 'vpa';
 
     const TYPES = [
         self::BANK_ACCOUNT,
+        self::BHARAT_QR,
         // self::VPA,
     ];
 
     const ROOT_LENGTH               = 4;
-    // Handle length can be 3 also
-    // const HANDLE_LENGTH             = 4;
-    const DESCRIPTOR_LENGTH         = 9;
-    const ACCOUNT_NUMBER_LENGTH     = 17;
-
+    const HANDLE_LENGTH             = 4;
+    const DESCRIPTOR_LENGTH         = 10;
+    const ACCOUNT_NUMBER_LENGTH     = 18;
     // No 0s and Os
-    // No 1s and Is
-    // No 5s and Ss
-    // No 8s and Bs
-    // No 2s and Zs
-    const ACCOUNT_NUMBER_CHAR_SPACE       = '34679ACDEFGHJKLMNPQRTUVWXY';
+    const ACCOUNT_NUMBER_CHAR_SPACE       = '123456789ABCDEFGHIJKLMNPQRSTUVWXYZ';
+    const NUMBER_SPACE                    = '0123456789';
     const MAX_ACCOUNT_GENERATION_ATTEMPTS = 10;
 
-    protected $app;
     protected $merchant;
     protected $name;
     protected $descriptor;
-    protected $trace;
-    protected $repo;
-    protected $mode;
 
     public function __construct(
         Merchant\Entity $merchant,
@@ -70,6 +66,59 @@ class Receiver
         $invalidTypes = array_diff($receiverTypes, self::TYPES);
 
         return (empty($invalidTypes) === true);
+    }
+
+    public function buildBharatQr(Entity $virtualAccount)
+    {
+        $bharatQr = new BharatQr;
+
+        $provider = Provider::BHARAT_QR;
+
+        $visaIdentifier = $this->generateMerchantIdentifierForProvider($provider, 'visa');
+
+        $mastercardIdentifier = $this->generateMerchantIdentifierForProvider($provider, 'mastercard');
+
+        if (empty($virtualAccount->getAmountExpected()) === false)
+        {
+            $input[BharatQr::AMOUNT] = $virtualAccount->getAmountExpected();
+        }
+
+        $input[BharatQr::VISA_IDENTIFIER] = $visaIdentifier;
+
+        $input[BharatQr::MASTER_CARD_IDENTIFIER] = $mastercardIdentifier;
+
+        $defaultDetails = Provider::DEFAULT_DETAILS[$provider];
+
+        $input = array_merge($input, $defaultDetails);
+
+        $bharatQr = $bharatQr->build($input, 'addBharatQr');
+
+        $bharatQr->generateId();
+
+        $qrString = $this->buildDynamicQrString($bharatQr);
+
+        $bharatQr->setQrString($qrString);
+
+        $bharatQr->merchant()->associate($this->merchant);
+
+        $bharatQr->source()->associate($virtualAccount);
+
+        $this->repo->saveOrFail($bharatQr);
+
+        return $bharatQr;
+    }
+
+    protected function buildDynamicQrString($bharatQr)
+    {
+        $qrString = $bharatQr->getQrString();
+
+        $qrString .= $bharatQr->getDynamicTagString() .'6304';
+
+        $crc = (new CRC16)->calculateCrc($qrString);
+
+        $qrString .= $crc;
+
+        return $qrString;
     }
 
     public function buildBankAccount(Entity $virtualAccount)
@@ -115,6 +164,16 @@ class Receiver
         }
 
         return $provider;
+    }
+
+    //network could be visa , mastercard or rupay
+    protected function generateMerchantIdentifierForProvider(string $provider, string $network)
+    {
+        $acquirerCode = Provider::getAcquirerCode($provider, $network);
+
+        $identifier  = $acquirerCode . '0' . $this->padWithRandomNumbers(7);
+
+        return $identifier . Luhn::computeCheckDigit($identifier);
     }
 
     protected function generateAccountNumberForProvider(string $provider)
@@ -164,7 +223,7 @@ class Receiver
     {
         $handle = $this->getHandle($root);
 
-        $descriptor = $this->getDescriptor($handle);
+        $descriptor = $this->getDescriptor();
 
         $accountNumber = strtoupper($root . $handle . $descriptor);
 
@@ -230,21 +289,14 @@ class Receiver
     // If handle is not set, descriptor is completely random.
     // If handle is set, we use the given desriptor.
     //
-    // Merchant handles can be 3 or 4 characters. Max is 17,
-    // so we pad with 17-4-n characters, i.e. 10 or 9.
-    //
-    protected function getDescriptor(string $handle)
+    protected function getDescriptor()
     {
         $descriptor = $this->descriptor;
 
         if (($this->merchant->getHandle() === null) or
             ($descriptor === null))
         {
-            $totalLength = self::ACCOUNT_NUMBER_LENGTH;
-
-            $availableLength = $totalLength - self::ROOT_LENGTH - strlen($handle);
-
-            $descriptor = $this->padWithRandomDigits($availableLength);
+            $descriptor = $this->padWithRandomDigits(self::DESCRIPTOR_LENGTH);
         }
 
         return $descriptor;
@@ -253,6 +305,24 @@ class Receiver
     protected function getDefaultHandle(string $root)
     {
         return Provider::DEFAULT_HANDLE_MAPPING[$root];
+    }
+
+    protected function padWithRandomNumbers(int $desiredLength, $str = '')
+    {
+        $requiredLength = $desiredLength - strlen($str);
+
+        $pad = '';
+
+        $charSpace = str_split(self::NUMBER_SPACE);
+
+        while (strlen($pad) < $requiredLength)
+        {
+            $pad .= $charSpace[array_rand($charSpace)];
+        }
+
+        $str = $pad . $str;
+
+        return $str;
     }
 
     protected function padWithRandomDigits(int $desiredLength, $str = '')
