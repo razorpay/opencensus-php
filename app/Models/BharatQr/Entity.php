@@ -160,7 +160,7 @@ class Entity extends Base\PublicEntity
         return '54' . str_pad(strlen($amount), 2, '0', STR_PAD_LEFT) . $amount;
     }
 
-    protected function getFormattedAmount()
+    public function getFormattedAmount()
     {
         $amount = $this->getAmount();
 
