@@ -240,7 +240,7 @@ class RefundTest extends TestCase
 
     public function testRefundOfOldAuthorizedPaymentsContainingDisputed()
     {
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(6)->timestamp;
+        $createdAt = Carbon::today(Timezone::IST)->subDays(6)->timestamp;
 
         $this->fixtures->times(2)->create(
             'payment:authorized',

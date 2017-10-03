@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Base\JitValidator;
+use RZP\Constants\Timezone;
 use RZP\Models\Currency\Currency;
 
 class Validator extends JitValidator
@@ -111,7 +112,7 @@ class Validator extends JitValidator
 
     public static function validatePurchaseDate(array $response, array $input)
     {
-        $purchaseDate = Carbon::createFromTimestamp($input['payment']['created_at'], 'Asia/Kolkata')
+        $purchaseDate = Carbon::createFromTimestamp($input['payment']['created_at'], Timezone::IST)
             ->format('Ymd H:m:s');
 
         if ($response[PARes::PURCHASE][PARes::DATE] !== $purchaseDate)

@@ -25,7 +25,7 @@ class Promotion extends Base
 
     public function createRecurring(array $attributes = [])
     {
-        $currentTime = Carbon::now('Asia/Kolkata');
+        $currentTime = Carbon::now(Timezone::IST);
 
         $anchor = Anchor::getAnchor(Period::MONTHLY, $currentTime);
 

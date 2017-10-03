@@ -273,6 +273,18 @@ class DefaultPlan
                 'created_at'     => time(),
                 'updated_at'     => time()
             ],
+            [
+                'id'             => '1ZeroPricingR7',
+                'plan_id'        => '10ZeroPricingP',
+                'plan_name'      => 'ZeroPricingPlan',
+                'feature'        => 'transfer',
+                'payment_method' => 'customer',
+                'percent_rate'   => 0,
+                'fixed_rate'     => 0,
+                'expired_at'     => null,
+                'created_at'     => time(),
+                'updated_at'     => time()
+            ],
         ];
     }
 }

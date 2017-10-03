@@ -293,7 +293,7 @@ class Entity extends Base\PublicEntity
 
     protected function generateInvoiceCode($input)
     {
-        $id = $this->getAttribute(self::ID);
+        $id = $input[self::ID];
 
         $first8 = substr($id, 0, 8);
 

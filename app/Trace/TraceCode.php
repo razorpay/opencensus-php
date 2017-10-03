@@ -356,6 +356,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     //Adjustments
     const ADJUSTMENT_CREATE_REQUEST                     = 'ADJUSTMENT_CREATE_REQUEST';
     const FEE_ADJUSTMENT_CREATE_REQUEST                 = 'FEE_ADJUSTMENT_CREATE_REQUEST';
+    const DISPUTE_ADJUSTMENT_CREATE_REQUEST             = 'DISPUTE_ADJUSTMENT_CREATE_REQUEST';
     const ADJUSTMENT_CREATE_SUCCESS                     = 'ADJUSTMENT_CREATE_SUCCESS';
 
     const VERIFY_LOCKED_PAYMENTS                        = 'VERIFY_LOCKED_PAYMENTS';
@@ -834,6 +835,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DISPUTE_REVERSAL_REQUEST                      = 'DISPUTE_REVERSAL_REQUEST';
     const DISPUTE_REVERSAL_SUCCESS                      = 'DISPUTE_REVERSAL_SUCCESS';
     const DISPUTE_TRANSFER_SUCCESS                      = 'DISPUTE_TRANSFER_SUCCESS';
+    const DISPUTE_ADJUSTMENT_MIGRATE_REQUEST            = 'DISPUTE_ADJUSTMENT_MIGRATE_REQUEST';
+    const DISPUTE_ADJUSTMENT_MIGRATE_ERROR              = 'DISPUTE_ADJUSTMENT_MIGRATE_ERROR';
+
     const GRATIS_TO_POSTPAID_INPUT                      = 'GRATIS_TO_POSTPAID_INPUT';
     const GRATIS_TO_POSTPAID_FAILED                     = 'GRATIS_TO_POSTPAID_FAILED';
     const GRATIS_TO_POSTPAID_RESPONSE                   = 'GRATIS_TO_POSTPAID_RESPONSE';
@@ -867,9 +871,11 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SETTINGS_UPSERT_REQUEST                       = 'SETTINGS_UPSERT_REQUEST';
     const SETTINGS_DELETE_REQUEST                       = 'SETTINGS_DELETE_REQUEST';
 
-    // Feature Onboarding trace codes
+    // Merchant feature trace codes
     const FEATURE_ONBOARDING_RESPONSE_REQUEST           = 'FEATURE_ONBOARDING_RESPONSE_REQUEST';
     const FEATURE_ONBOARDING_RESPONSE_CREATION_FAILED   = 'FEATURE_ONBOARDING_RESPONSE_CREATION_FAILED';
+    const FEATURE_ENABLED_MERCHANT_NOTIFIED             = 'FEATURE_ENABLED_MERCHANT_NOTIFIED';
+    const FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED         = 'FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

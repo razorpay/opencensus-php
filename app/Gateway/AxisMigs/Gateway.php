@@ -437,7 +437,7 @@ class Gateway extends Base\Gateway
         }
 
         if (($content['vpc_FoundMultipleDRs'] === 'N') and
-            ($content['vpc_RefundedAmount'] === $input['refund']['base_amount']))
+            (((int) $content['vpc_RefundedAmount']) === $input['refund']['base_amount']))
         {
             return true;
         }

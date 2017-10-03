@@ -2,12 +2,13 @@
 
 namespace RZP\Tests\Functional\Merchant;
 
+use Mail;
 use Illuminate\Http\UploadedFile;
 
 use RZP\Constants\Mode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Models\Feature\Constants;
+use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
 
 class FeaturesTest extends TestCase
 {
@@ -548,5 +549,75 @@ class FeaturesTest extends TestCase
             filesize($url),
             null,
             true);
+    }
+
+    public function testFeatureEnabledEmailNotificationOnLive()
+    {
+        Mail::fake();
+
+        $this->addNotifyFeatures(Mode::LIVE, false);
+
+        Mail::assertSent(FeatureEnabledEmail::class, function ($mail)
+        {
+            $feature       = 'Route';
+            $this->assertEquals($feature, $mail->viewData['feature']);
+
+            $documentation = 'route';
+            $this->assertEquals($documentation, $mail->viewData['documentation']);
+
+            return true;
+        });
+    }
+
+    public function testFeatureEnabledEmailNotificationOnTest()
+    {
+        Mail::fake();
+
+        $this->addNotifyFeatures(Mode::TEST, false);
+
+        Mail::assertNotSent(FeatureEnabledEmail::class);
+    }
+
+    public function testFeatureEnabledEmailNotificationOnTestWithSync()
+    {
+        Mail::fake();
+
+        $this->addNotifyFeatures(Mode::TEST, true);
+
+        Mail::assertSent(FeatureEnabledEmail::class, function ($mail)
+        {
+            $feature       = 'Route';
+            $this->assertEquals($feature, $mail->viewData['feature']);
+
+            $documentation = 'route';
+            $this->assertEquals($documentation, $mail->viewData['documentation']);
+
+            return true;
+        });
+    }
+
+    public function testFeatureEnabledEmailNonNotify()
+    {
+        Mail::fake();
+
+        $this->addFeature(Mode::LIVE, true);
+
+        Mail::assertNotSent(FeatureEnabledEmail::class);
+    }
+
+    protected function addNotifyFeatures(string $mode, bool $shouldSync)
+    {
+        $authMethod = 'appAuth' . studly_case($mode);
+
+        $this->ba->$authMethod();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        if ($shouldSync === true)
+        {
+            $testData['request']['content']['should_sync'] = 1;
+        }
+
+        $this->startTest($testData);
     }
 }
