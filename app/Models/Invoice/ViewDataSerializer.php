@@ -4,14 +4,16 @@ namespace RZP\Models\Invoice;
 
 use Config;
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\LineItem;
 use RZP\Models\Merchant;
+use RZP\Constants\Timezone;
+use RZP\Constants\Entity as E;
 use RZP\Models\Merchant\Checkout;
+use RZP\Models\Plan\Subscription;
 use RZP\Exception\BadRequestException;
 
 /**
@@ -89,6 +91,28 @@ class ViewDataSerializer extends Base\Core
             'merchant'      => $merchantData,
             'invoice'       => $invoiceData,
         ];
+    }
+
+    /**
+     * Gets the view data long with few of subscription fields.
+     * ViewDataSerializer gets used in multiple places and elsewhere we don't
+     * need to load subscription relation of invoice. Only on hosted page (called
+     * from Controller action) this is needed.
+     *
+     * @return array
+     */
+    public function getWithSubscriptionIfApplicable(): array
+    {
+        $data = $this->get();
+
+        if ($this->invoice->isOfSubscription() === true)
+        {
+            $subscription = $this->invoice->subscription;
+
+            $data[E::INVOICE][E::SUBSCRIPTION][Subscription\Entity::STATUS] = $subscription->getStatus();
+        }
+
+        return $data;
     }
 
     protected function getFormattedInvoiceDataForView(): array
