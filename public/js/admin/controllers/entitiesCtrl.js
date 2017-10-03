@@ -139,6 +139,15 @@ app.controller('EntitiesCtrl', [
       'transfer',
       'bank_transfer',
     ];
+    var gatewayFileTargetList = [
+      'all',
+      'rbl',
+      'hdfc',
+      'axis',
+      'icici',
+      'kotak',
+      'federal',
+    ];
     // This is the list of available filters
     // len==1 means a text input, rest are drop-downs
     // This list is alphabetically sorted, take care to maintain that
@@ -313,6 +322,18 @@ app.controller('EntitiesCtrl', [
         method: methodList,
         gateway: gatewayList,
         bank: ['Bank'],
+      },
+      gateway_file: {
+        type: ['all', 'emi', 'refund', 'combined'],
+        status: [
+          'all',
+          'created',
+          'file_generated',
+          'file_sent',
+          'failed',
+          'acknowledged',
+        ],
+        target: gatewayFileTargetList,
       },
       hdfc: {
         auth: ['Auth Code'],
