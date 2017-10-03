@@ -14,7 +14,7 @@
       }
       form {
         width: 92%;
-        max-width: 410px;
+        max-width: 330px;
         margin: 20px auto 0px;
         background: #fff;
         border-radius: 4px;
@@ -28,8 +28,11 @@
         font-size: 22px;
       }
       main {
-        padding: 20px 20px 40px;
-        text-align: center;
+        padding: 20px;
+      }
+      label {
+        display: block;
+        margin: 20px 0 6px;
       }
       input {
         border: 1px solid #bbb;
@@ -37,26 +40,33 @@
         border-radius: 2px 0 0 2px;
         height: 40px;
         outline: none;
-        width: 160px;
+        width: 100%;
+        box-sizing: border-box;
+        -webkit-box-sizing: border-box;
         padding: 0 16px;
         font-family: inherit;
         color: #111;
-        letter-spacing: 2px;
-        font-size: 18px;
-        font-weight: bold;
-        vertical-align: bottom;
       }
       button {
+        display: block;
+        margin: 20px auto 0;
         height: 42px;
         border: 1px solid #3395FF;
         background: #3395FF;
         border-radius: 0 2px 2px 0;
         color: #fff;
-        vertical-align: bottom;
-        margin-left: -1px;
         padding: 0 20px;
         cursor: pointer;
         outline: none;
+      }
+      span {
+        position: absolute;
+        line-height: 42px;
+        margin-left: 16px;
+        pointer-events: none;
+      }
+      input[name=contact] {
+        padding-left: 58px;
       }
     </style>
   </head>
@@ -77,9 +87,28 @@
         <div>₹ {{ $data['request']['content']['amount']/100 }}</div>
       </header>
       <main>
-        Enter 10 digit Indian phone number associated with your {{ $data['request']['content']['wallet'] }} account
-        <br><br>
-        <input name='contact' autofocus type='tel' pattern='^\d{10}$' required><button>Submit</button>
+        Please enter your wallet details to proceed.
+        <label for='email'><b>Email</b></label>
+        <input
+          name='email'
+          autofocus
+          type='email'
+          required
+          placeholder='Enter Email'
+          value={{ $data['request']['content']['email'] ?? "" }}>
+        <label for='contact'>
+          <b>Contact</b>
+          (10 digit Indian number)
+        </label>
+        <span>+91 &ndash;</span>
+        <input
+          name='contact'
+          type='tel'
+          pattern='^\d{10}$'
+          required
+          placeholder='Enter Phone Number'
+          value={{ $data['request']['content']['contact'] ?? "" }}>
+        <button>Submit</button>
       </main>
     </form>
   </body>
