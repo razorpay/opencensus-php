@@ -187,9 +187,7 @@ class Gateway extends Base\Gateway
                 'response' => $response->body
             ]);
 
-        $content = $this->parseVerifyResponse($response->body);
-
-        $verify->verifyResponseContent = $content;
+        $verify->verifyResponseContent = $this->parseVerifyResponse($response->body);
     }
 
     protected function verifyPayment($verify)

@@ -23,6 +23,7 @@ class Reconciliator extends Base\RefundFile
     protected static $fileToWriteName = 'Bob_Netbanking_Reconciliation';
 
     protected $header1 = ['fileName.txt', 'Num of Txn', 'Total Amount of Txns'];
+
     protected $header2 = [
         'Sr.No',
         'fldMerchCode',
