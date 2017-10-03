@@ -45,7 +45,6 @@ class RefundFile extends Base\RefundFile
 
     protected function getRefundData(array $input)
     {
-
         $totalAmount = 0;
 
         $count = 0;
@@ -78,10 +77,7 @@ class RefundFile extends Base\RefundFile
 
     protected function getDataForRow($accountNumber, $amount, $particulars, $type = Constants::REFUND_CREDIT)
     {
-        $amt = number_format((float) ($amount / 100), 2, '.', '');
-
-        // Amount is of type NUMBER(14,2). i.e 14 digits before decimal point and 2 digits after decimal point.
-        $amt = str_pad($amt, 17, STR_PAD_LEFT, '0');
+        $amt = $this->getFormattedAmount($amount);
 
         $data = [
             str_pad($accountNumber, 16, ' '),
@@ -93,6 +89,14 @@ class RefundFile extends Base\RefundFile
         ];
 
         return $data;
+    }
+
+    protected function getFormattedAmount(int $amount): String
+    {
+        $amt = number_format((float) ($amount / 100), 2, '.', '');
+
+        // Amount is of type NUMBER(14,2). i.e 14 digits before decimal point and 2 digits after decimal point.
+        $amt = str_pad($amt, 17, STR_PAD_LEFT, '0');
     }
 
     protected function sendRefundEmail($fileData = [], array $email = [])
