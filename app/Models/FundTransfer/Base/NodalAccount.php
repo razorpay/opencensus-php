@@ -12,7 +12,7 @@ class NodalAccount extends Base\Core
     const MIN_RTGS_AMOUNT = 200000;
     const RTGS_CUTOFF_HOUR = 16;
 
-    protected function getTransferMode($amount)
+    protected function getTransferMode($amount): string
     {
         $currentHour = Carbon::now(Timezone::IST)->hour;
 

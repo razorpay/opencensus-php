@@ -40,7 +40,7 @@ class NodalAccount extends NodalBase\NodalAccount
 
     public function __construct()
     {
-        parent::__construct();
+        //parent::__construct();
 
         // Date format is DD/MM/YYYY in human representation
         $this->date = Carbon::today(Timezone::IST)->format('d/m/Y');
