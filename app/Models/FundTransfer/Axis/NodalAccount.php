@@ -4,6 +4,7 @@ namespace RZP\Models\FundTransfer\Axis;
 
 use Mail;
 use Carbon\Carbon;
+use phpseclib\Crypt\AES;
 use PHPExcel_Shared_Date;
 
 use RZP\Models\Base;
@@ -13,7 +14,6 @@ use RZP\Constants\Timezone;
 
 use RZP\Models\FundTransfer\Base as NodalBase;
 use RZP\Encryption\AESEncryption;
-use phpseclib\Crypt\AES;
 use RZP\Mail\Settlement\AxisSettlement;
 use RZP\Models\FundTransfer\Mode;
 

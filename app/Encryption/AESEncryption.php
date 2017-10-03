@@ -7,12 +7,14 @@ use RZP\Gateway\Base;
 
 class AESEncryption extends Encryption
 {
-    const SECRET = 'secret';
-    const IV = 'iv';
-    const MODE = 'mode';
+    const SECRET         = 'secret';
+    const IV             = 'iv';
+    const MODE           = 'mode';
 
     protected $secret;
+
     protected $iv;
+
     protected $mode;
 
     protected $encryptor;
