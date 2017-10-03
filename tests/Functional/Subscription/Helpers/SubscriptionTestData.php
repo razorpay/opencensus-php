@@ -532,6 +532,37 @@ return [
         ],
     ],
 
+    'testCreateSubscriptionWithBlankStartAt' => [
+        'request' => [
+            'url' => '/subscriptions',
+            'method' => 'post',
+            'content' => [
+                'plan_id'         => 'plan_1000000000plan',
+                'quantity'        => 1,
+                'total_count'     => 6, // Every two months
+                'customer_notify' => 1,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'plan_id'         => 'plan_1000000000plan',
+                'status'          => 'created',
+                'current_start'   => null,
+                'current_end'     => null,
+                'ended_at'        => null,
+                'quantity'        => 1,
+                'notes'           => [],
+                'charge_at'       => null,
+                'start_at'        => null,
+                'end_at'          => null,
+                'total_count'     => 6,
+                'paid_count'      => 0,
+                'auth_attempts'   => 0,
+                'customer_notify' => true,
+            ],
+        ],
+    ],
+
     'testCreateSubscriptionWeeklyIntervalWithStartAt' => [
         'request' => [
             'url' => '/subscriptions',
