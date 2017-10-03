@@ -13,7 +13,7 @@ class Constants extends Base\Constants
         Gateway::NETBANKING_HDFC     => ['Directpay.Refunds@hdfcbank.com', 'settlements@razorpay.com'],
         Gateway::NETBANKING_ICICI    => ['icici.netbanking.refunds@razorpay.com', 'settlements@razorpay.com'],
         Gateway::NETBANKING_FEDERAL  => ['settlements@razorpay.com'],
-        Gateway::NETBANKING_BOB      => ['settlements@razorpay.com'],
+        Gateway::NETBANKING_BOB      => ['bob.netbanking.refunds@razorpay.com'],
         Gateway::NETBANKING_RBL      => ['settlements@razorpay.com'],
         Gateway::NETBANKING_INDUSIND => ['settlements@razorpay.com'],
         Gateway::UPI_ICICI           => ['settlements@razorpay.com'],
