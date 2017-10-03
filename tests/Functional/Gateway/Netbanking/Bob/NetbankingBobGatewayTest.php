@@ -164,21 +164,17 @@ class NetbankingBobGatewayTest extends TestCase
     // Here we manually update these values with hardcoded ones to emulate this behaviour
     protected function updateAccountDetailsInNetbankingEntity(array $payments)
     {
-        foreach ($payments as $id)
+        foreach ($payments as $payment)
         {
-            $paymentId = Payment\Entity::verifyIdAndStripSign($id);
+            $paymentId = Payment\Entity::verifyIdAndStripSign($payment);
 
-            $repo = new NetbankingRepository();
+            $netbankingEntity = $this->getEntities('netbanking', ['payment_id' => $paymentId], true);
 
-            $gatewayPayment = $repo->findByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
-
-            $gatewayPayment->fill(
-                [
-                    NetbankingEntity::ACCOUNT_NUMBER     => self::CUSTOMER_ACCOUNT_NUMBER,
-                ]
+            $this->fixtures->base->editEntity(
+                'netbanking',
+                $netbankingEntity['items'][0]['id'],
+                [NetbankingEntity::ACCOUNT_NUMBER => self::CUSTOMER_ACCOUNT_NUMBER]
             );
-
-            $gatewayPayment->saveOrFail();
         }
     }
 }
