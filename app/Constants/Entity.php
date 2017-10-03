@@ -15,6 +15,7 @@ class Entity
     //
     // Core entities
     //
+    const QR                    = 'qr';
     const IIN                   = 'iin';
     const KEY                   = 'key';
     const P2P                   = 'p2p';
