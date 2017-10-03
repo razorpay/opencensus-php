@@ -58,12 +58,6 @@ class Provider
                 'RZRN',
             ],
         ],
-
-        //Refer to NPCI docs for these values
-        self::BHARAT_QR => [
-            BharatQr::QR_STRING    => '000201',
-            BharatQr::METHOD       => 'QR',
-        ],
     ];
 
     const DEFAULT_HANDLE_MAPPING = [
@@ -84,6 +78,12 @@ class Provider
         ],
         self::DASHBOARD => [
             BankAccount::IFSC_CODE => 'RAZR0000001',
+        ],
+
+        //Refer to NPCI docs for these values
+        self::BHARAT_QR => [
+            BharatQr::QR_STRING    => '000201',
+            BharatQr::METHOD       => 'QR',
         ],
     ];
 

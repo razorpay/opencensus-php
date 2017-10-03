@@ -3,10 +3,23 @@
 namespace RZP\Models\BharatQr;
 
 /**
- * Hash generator implementing the CRC-CCITT-16
+ * Hash generator implementing the CRC-16
  */
 class CRC16
 {
+    public function calculateCrc($data)
+    {
+        $ccittPoly = 4129;
+
+        $byteArray = unpack('C*', $data);
+
+        $expectedCRC = $this->calculateCrcMsb($byteArray, $ccittPoly, 65535);
+
+        $hex = dechex($expectedCRC);
+
+        return str_pad($hex, 4, "0", STR_PAD_LEFT);
+    }
+
     private function genCrc16TableMsb($poly)
     {
         $table = [];
@@ -35,19 +48,6 @@ class CRC16
         }
 
         return $table;
-    }
-
-    public function calculateCrc($data)
-    {
-        $ccittPoly = 4129;
-
-        $byteArray = unpack('C*', $data);
-
-        $expectedCRC = $this->calculateCrcMsb($byteArray, $ccittPoly, 65535);
-
-        $hex = dechex($expectedCRC);
-
-        return str_pad($hex, 4, "0", STR_PAD_LEFT);
     }
 
     private function calculateCrcMsb($data, $poly, $initialCrcValue)
