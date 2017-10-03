@@ -4,8 +4,8 @@ namespace RZP\Models\VirtualAccount;
 
 use Config;
 use RZP\Constants\Mode;
-use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Models\BharatQr\Entity as BharatQr;
+use RZP\Models\BankAccount\Entity as BankAccount;
 
 class Provider
 {
@@ -58,6 +58,12 @@ class Provider
                 'RZRN',
             ],
         ],
+
+        //Refer to NPCI docs for these values
+        self::BHARAT_QR => [
+            BharatQr::QR_STRING    => '000201',
+            BharatQr::METHOD       => 'QR',
+        ],
     ];
 
     const DEFAULT_HANDLE_MAPPING = [
@@ -78,11 +84,6 @@ class Provider
         ],
         self::DASHBOARD => [
             BankAccount::IFSC_CODE => 'RAZR0000001',
-        ],
-        //Refer to NPCI docs for these values
-        self::BHARAT_QR => [
-            BharatQr::QR_STRING    => '000201',
-            BharatQr::METHOD       => 'QR',
         ],
     ];
 
@@ -130,6 +131,12 @@ class Provider
     }
 
     // Blocks test providers for making live requests
+    //
+    // Unused right now because Kotak is making changes in their
+    // format, and IMPS testing is ongoing, so we need to use
+    // Dashboard to make corrective requests occasionally.
+    //
+    // TODO: Use in validateProvider when changes are stable
     public static function validateMode(string $provider, string $mode)
     {
         $isLiveProvider = (in_array($provider, self::TEST_PROVIDERS, true) === false);
@@ -148,5 +155,7 @@ class Provider
                 return true;
             }
         }
+
+        return false;
     }
 }
