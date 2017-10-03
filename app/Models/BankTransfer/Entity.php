@@ -62,6 +62,8 @@ class Entity extends Base\PublicEntity
     // This is used to generate the value for the UTR field.
     const REQ_UTR            = 'transaction_id';
 
+    const SPECIAL_IFSC_CODE  = 'RAZR0000001';
+
     protected $fillable = [
         self::PAYMENT_ID,
         self::PAYER_NAME,
@@ -237,6 +239,11 @@ class Entity extends Base\PublicEntity
         if ($ifsc === null)
         {
             return null;
+        }
+
+        if ($ifsc === self::SPECIAL_IFSC_CODE)
+        {
+            return 'Razorpay';
         }
 
         return IFSC::getBankName($ifsc);
