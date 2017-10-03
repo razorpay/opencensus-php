@@ -52,6 +52,9 @@ class CreateVirtualAccountsTable extends Migration
             $table->string(VirtualAccount::BANK_ACCOUNT_ID, VirtualAccount::ID_LENGTH)
                   ->nullable();
 
+            $table->string(VirtualAccount::BHARAT_QR_ID, VirtualAccount::ID_LENGTH)
+                  ->nullable();
+
             $table->string(VirtualAccount::VPA)
                   ->nullable();
 
@@ -82,6 +85,11 @@ class CreateVirtualAccountsTable extends Migration
                   ->on(Table::BANK_ACCOUNT)
                   ->on_delete('restrict');
 
+             $table->foreign(VirtualAccount::BHARAT_QR_ID)
+                  ->references('id')
+                  ->on(Table::BHARAT_QR)
+                  ->on_delete('restrict');
+
             $table->index(VirtualAccount::VPA);
             $table->index(VirtualAccount::DESCRIPTOR);
             $table->index(VirtualAccount::STATUS);
@@ -102,6 +110,8 @@ class CreateVirtualAccountsTable extends Migration
             $table->dropForeign(Table::VIRTUAL_ACCOUNT . '_' . VirtualAccount::CUSTOMER_ID . '_foreign');
 
             $table->dropForeign(Table::VIRTUAL_ACCOUNT . '_' . VirtualAccount::BANK_ACCOUNT_ID . '_foreign');
+
+            $table->dropForeign(Table::VIRTUAL_ACCOUNT . '_' . VirtualAccount::BHARAT_QR_ID . '_foreign');
 
             $table->dropForeign(Table::VIRTUAL_ACCOUNT . '_' . VirtualAccount::MERCHANT_ID . '_foreign');
         });
