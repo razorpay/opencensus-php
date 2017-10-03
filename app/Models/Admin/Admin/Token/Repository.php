@@ -31,11 +31,14 @@ class Repository extends Base\Repository
         // Current Timestamp
         $currentTimestamp = Carbon::now()->getTimestamp();
 
-        $token =  $this->newQuery()
-                    ->with('admin')
-                    ->where(Entity::ID, '=', $principal)
-                    ->where(Entity::EXPIRES_AT, '>', $currentTimestamp)
-                    ->firstOrFailPublic();
+        $mode = $this->auth->getLiveConnection();
+
+        $token =  $this->connection($mode)
+                       ->newQuery()
+                       ->with('admin')
+                       ->where(Entity::ID, '=', $principal)
+                       ->where(Entity::EXPIRES_AT, '>', $currentTimestamp)
+                       ->firstOrFailPublic();
 
         if (Hash::check($bearerToken, $token->getToken()) === true)
         {

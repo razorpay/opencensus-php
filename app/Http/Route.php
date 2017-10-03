@@ -606,8 +606,9 @@ final class Route
 
         // Dispute routes
         'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
-
         'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                          ],
+        'dispute_migrate_adjustments'             => ['post',     'disputes/migrate_old_adjustments',               'DisputeController@migrateOldAdjustments'                                          ],
+
         'merchant_payout'                         => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
 
         // Settings routes
@@ -1031,6 +1032,7 @@ final class Route
         'mock_generate_reconciliation',
         'payment_dispute_create',
         'dispute_edit',
+        'dispute_migrate_adjustments',
         'gratis_postpaid_transactions',
         'virtual_account_refund_excess',
         'risk_create',

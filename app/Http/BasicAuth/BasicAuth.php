@@ -1243,14 +1243,7 @@ class BasicAuth
 
     protected function fetchAdminToken($token)
     {
-        if ($this->app->environment('testing') === false)
-        {
-            $mode = Mode::LIVE;
-        }
-        else
-        {
-            $mode = Mode::TEST;
-        }
+        $mode = $this->getLiveConnection();
 
         // Admin token check should always be done in the
         // live mode (since we don't sync it in heimdall)
@@ -1437,6 +1430,22 @@ class BasicAuth
 
     public function fetchOrgByHostname($orgHostname)
     {
+        $mode = $this->getLiveConnection();
+
+        // Org Hostname check should always be done in the
+        // live mode (since we don't sync it in heimdall)
+        $org = $this->repo->org->connection($mode)->findOrFailByHostname($orgHostname);
+
+        return $org;
+    }
+
+    /**
+     * Some tables are only synced in live, so this will give connection of the live db based on test env.
+     *
+     * @return string
+     */
+    public function getLiveConnection()
+    {
         if ($this->app->environment('testing') === false)
         {
             $mode = Mode::LIVE;
@@ -1446,11 +1455,6 @@ class BasicAuth
             $mode = Mode::TEST;
         }
 
-        // Org Hostname check should always be done in the
-        // live mode (since we don't sync it in heimdall)
-        $org = $this->repo->org->connection($mode)->findOrFailByHostname($orgHostname);
-
-        return $org;
+        return $mode;
     }
-
 }

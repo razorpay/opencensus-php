@@ -11,6 +11,7 @@ use RZP\Models\Pricing;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Constants\Timezone;
 use RZP\Models\Merchant\Balance;
 
 class Repository extends Base\Repository
@@ -119,9 +120,9 @@ class Repository extends Base\Repository
     public function fetchRecentMerchants()
     {
         // 00:00 Today
-        $today = \Carbon\Carbon::today("Asia/Kolkata")->getTimestamp();
+        $today = \Carbon\Carbon::today(Timezone::IST)->getTimestamp();
 
-        $start = \Carbon\Carbon::today("Asia/Kolkata")->subWeeks(3);
+        $start = \Carbon\Carbon::today(Timezone::IST)->subWeeks(3);
 
         return $this->newQuery()->whereBetween(Entity::CREATED_AT, [$start, $today]);
     }

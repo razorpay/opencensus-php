@@ -2489,9 +2489,22 @@ ALTER TABLE subscriptions
 ALTER TABLE line_items
     MODIFY COLUMN type VARCHAR(16) NOT NULL DEFAULT 'invoice';
 
+# Make adjustment morph to entity optionally
+ALTER TABLE adjustment
+    ADD COLUMN entity_type VARCHAR(100) AFTER merchant_id,
+    ADD COLUMN entity_id CHAR(14) AFTER entity_type;
+
+INSERT INTO dispute_reasons
+    (id, network, gateway_code, gateway_description, code, description, created_at, updated_at)
+    VALUES
+        ('NotAvailable00', 'RZP', 'RZP00', 'Not Available', 'not_available', 'Not Available', 1506415644, 1506415644);
+
 ALTER TABLE batches
     MODIFY COLUMN `type` CHAR(25);
 
 # Marketplace auto-activate
 ALTER TABLE merchants
     ADD COLUMN linked_account_kyc TINYINT(1) NOT NULL DEFAULT 0 AFTER fee_model;
+
+ALTER TABLE merchants
+    MODIFY COLUMN invoice_code CHAR(12) NOT NULL AFTER category2;

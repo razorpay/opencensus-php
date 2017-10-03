@@ -225,9 +225,9 @@ final class FactoryData
             'amount' => $faker->randomNumber,
             'currency' => 'INR',
             'channel' => 'kotak',
-            'description' => $faker->string,
-            'transaction_id' => 'factory:\RZP\Models\Transaction\Entity',
-            'settlement_id' => 'factory:\RZP\Models\Settlement\Entity'
+            'description' => $faker->text,
+            'transaction_id' => 'factory:RZP\Models\Transaction\Entity',
+            'settlement_id' => 'factory:RZP\Models\Settlement\Entity'
         ]);
 
         $factory(\RZP\Gateway\Hdfc\Entity::class, [

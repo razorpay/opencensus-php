@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Transaction;
 
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Adjustment;
 use RZP\Models\Payment;
@@ -644,6 +645,7 @@ class Entity extends Base\PublicEntity
         $reportTxn['card_network'] = null;
         $reportTxn['card_issuer'] = null;
         $reportTxn['card_type'] = null;
+        $reportTxn[Adjustment\Entity::DISPUTE_ID] = null;
 
         // settled_at will by default have date and time (d/m/y h:m:s) in it
         // while we only want to provide date.
@@ -693,6 +695,11 @@ class Entity extends Base\PublicEntity
             $adjustment = $this->source;
 
             $reportTxn[Adjustment\Entity::DESCRIPTION] = $adjustment->getDescription();
+
+            if ($adjustment->getEntityType() === Constants\Entity::DISPUTE)
+            {
+                $reportTxn[Adjustment\Entity::DISPUTE_ID] = $adjustment->entity->getPublicId();
+            }
         }
         else if ($this->isTypeDispute() === true)
         {

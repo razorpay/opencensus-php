@@ -14,6 +14,7 @@ use RZP\Models\Invoice;
 use RZP\Models\Invoice\ViewDataSerializer;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
 
 class Notify
 {
@@ -504,7 +505,7 @@ class Notify
             // Convert timestamps to readable versions
             if ($this->isTimestamp($key, $value))
             {
-                $data[$key] = Carbon::createFromTimestamp($value, "Asia/Kolkata")->format('j M Y h:i a');
+                $data[$key] = Carbon::createFromTimestamp($value, Timezone::IST)->format('j M Y h:i a');
             }
         }
 

@@ -58,7 +58,13 @@ class DisputeTest extends TestCase
 
         $transaction = $this->getLastEntity('transaction', true);
 
-        $this->assertEquals('dispute', $transaction['type']);
+        $this->assertEquals('adjustment', $transaction['type']);
+
+        $this->assertEquals(100, $transaction['amount']);
+
+        $this->assertEquals(100, $transaction['debit']);
+
+        $this->assertEquals(0, $transaction['credit']);
 
         $dispute = $this->getLastEntity('dispute', true);
 
@@ -166,7 +172,13 @@ class DisputeTest extends TestCase
 
         $txn = $this->getLastEntity('transaction', true);
 
-        $this->assertEquals('dispute', $txn['type']);
+        $this->assertEquals('adjustment', $txn['type']);
+
+        $this->assertEquals(1000000, $txn['amount']);
+
+        $this->assertEquals(1000000, $txn['debit']);
+
+        $this->assertEquals(0, $txn['credit']);
     }
 
     public function testDisputeEditDoNotDeductOnLostIfDeducted()
@@ -175,11 +187,27 @@ class DisputeTest extends TestCase
 
         $txn = $this->getLastEntity('transaction', true);
 
-        $this->assertEquals('dispute', $txn['type']);
+        $this->assertEquals('adjustment', $txn['type']);
+
+        $this->assertEquals(1000000, $txn['amount']);
+
+        $this->assertEquals(1000000, $txn['debit']);
+
+        $this->assertEquals(0, $txn['credit']);
 
         $this->runRequestResponseFlow($data);
 
         $payment = $this->getLastEntity('payment', true);
+
+        $txn = $this->getLastEntity('transaction', true);
+
+        $this->assertEquals('adjustment', $txn['type']);
+
+        $this->assertEquals(1000000, $txn['amount']);
+
+        $this->assertEquals(1000000, $txn['debit']);
+
+        $this->assertEquals(0, $txn['credit']);
 
         $this->assertEquals(false, $payment['disputed']);
     }
@@ -218,7 +246,7 @@ class DisputeTest extends TestCase
 
         $content = $this->runRequestResponseFlow($testdata);
 
-        $reversal = $this->getLastEntity('reversal', true);
+        $adjustment = $this->getLastEntity('adjustment', true);
 
         $dispute = $this->getLastEntity('dispute', true);
 
@@ -230,9 +258,9 @@ class DisputeTest extends TestCase
         $this->assertEquals($testdata['request']['content']['status'], $content['status']);
         $this->assertEquals($input['amount'], $dispute['amount_deducted']);
         $this->assertEquals($dispute['amount_deducted'], $dispute['amount_reversed']);
-        $this->assertEquals($reversal['amount'], $dispute['amount_reversed']);
+        $this->assertEquals($adjustment['amount'], $dispute['amount_reversed']);
         $this->assertEquals($input['amount'], ($newMerchantBalance - $oldMerchantBalance));
-        $this->assertEquals('reversal', $txn['type']);
+        $this->assertEquals('adjustment', $txn['type']);
     }
 
     public function testDisputeReversalLostLogic()
@@ -254,7 +282,7 @@ class DisputeTest extends TestCase
         $this->assertEquals($testdata['request']['content']['status'], $content['status']);
         $this->assertEquals($input['amount'], $dispute['amount_deducted']);
         $this->assertEquals(0, $dispute['amount_reversed']);
-        $this->assertEquals('dispute', $txn['type']);
+        $this->assertEquals('adjustment', $txn['type']);
     }
 
     // ---------------------------- helper methods-------------------------------
