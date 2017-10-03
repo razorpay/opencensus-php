@@ -804,6 +804,7 @@ UPDATE payments
 
 UPDATE billdesk SET RefundId = 'JSBI56715667791' WHERE id = 2124216;
 UPDATE billdesk SET RefundId = 'IUBI53988238411' WHERE id = 2110989;
+
 UPDATE billdesk SET RefundId = 'JSBI56869209721' WHERE id = 2156652;
 
 # Data correction - ref: https://github.com/razorpay/api/issues/5318
@@ -835,3 +836,20 @@ where invoice_code is NULL or invoice_code = '';
 UPDATE merchant_invoice
 SET invoice_number = upper(concat(substr(`merchant_id`,1, 8), substr(`merchant_id`, -4), '0917'))
 WHERE month=9 AND invoice_number = '0917';
+
+# PR:5366 Extracting auth code from approval code
+UPDATE `first_data`
+    SET `auth_code` = SUBSTR(`approval_code`,3,6)
+WHERE
+    `action` IN ('authorize', 'purchase') AND
+    `approval_code` LIKE 'Y:%';
+
+UPDATE payments
+    JOIN first_data ON first_data.payment_id = payments.id
+    SET payments.reference2 = first_data.auth_code
+WHERE
+    first_data.action IN ('authorize', 'purchase') AND
+    (first_data.auth_code IS NOT NULL AND first_data.auth_code != '00') AND
+    payments.gateway = "first_data" AND
+    (payments.reference2 is NULL OR payments.reference2 = "00") AND
+    payments.status != 'failed';
