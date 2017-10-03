@@ -24,8 +24,8 @@ class Entity extends Base\Entity
     const ACCOUNT_NUMBER        = 'account_number';
     const ACCOUNT_TYPE          = 'account_type';
     const ACCOUNT_SUBTYPE       = 'account_subtype';
-    const ACCOUNT_BRANCHCODE    = 'account_branchcode';
-    //Credit Account number is the bank account to which money is transferred.
+    const ACCOUNT_BRANCHCODE    = 'account_branch_code';
+    // Credit Account number is the bank account to which money is transferred.
     const CREDIT_ACCOUNT_NUMBER = 'credit_account_number';
     const INT_PAYMENT_ID        = 'int_payment_id';
     const CAPS_PAYMENT_ID       = 'caps_payment_id';

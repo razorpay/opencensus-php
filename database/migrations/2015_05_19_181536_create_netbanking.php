@@ -38,7 +38,7 @@ class CreateNetbanking extends Migration
             $table->string('account_number')->nullable();
             $table->string('account_type')->nullable();
             $table->string('account_subtype')->nullable();
-            $table->string('account_branchcode')->nullable();
+            $table->string('account_branch_code')->nullable();
             $table->string('credit_account_number')->nullable();
 
             $table->char('refund_id', UniqueIdEntity::ID_LENGTH)->nullable();
