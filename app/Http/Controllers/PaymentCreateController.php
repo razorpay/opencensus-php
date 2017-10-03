@@ -353,8 +353,10 @@ class PaymentCreateController extends Controller
                 assertTrue(false, 'Should not reach here');
             }
         }
-
-        return $data;
+        else
+        {
+            return $data;
+        }
     }
 
     protected function redirectToGatewayPostForm($data)

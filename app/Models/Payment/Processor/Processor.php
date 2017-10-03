@@ -196,6 +196,8 @@ class Processor
 
     protected function preProcessPaymentInputs(array $input)
     {
+        $coproto = null;
+
         if (($input['method'] === Payment\Method::WALLET) and
             ((empty($input['contact']) === true) or
              (empty($input['email']) === true)))
@@ -221,9 +223,9 @@ class Processor
                 $coproto['missing'][] = 'email';
                 unset($coproto['request']['content']['email']);
             }
-
-            return $coproto;
         }
+
+        return $coproto;
     }
 
     public function processAndReturnFees(array & $input)
