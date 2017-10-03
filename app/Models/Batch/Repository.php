@@ -37,7 +37,7 @@ class Repository extends Base\Repository
         $status = [Status::CREATED, Status::PROCESSING];
 
         return $this->newQuery()
-                    ->whereIn(Entity::TYPE, Type::CRON_GROUP)
+                    ->whereIn(Entity::TYPE, Type::$cronGroup)
                     ->whereIn(Entity::STATUS, $status)
                     ->oldest()
                     ->limit($limit)

@@ -277,4 +277,28 @@ return [
             ],
         ],
     ],
+
+    'testCreateLinkedAccountBatch' => [
+        'request' => [
+            'url'     => '/batches',
+            'method'  => 'post',
+            'content' => [
+                'type' => 'linked_account',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'           => 'batch',
+                'type'             => 'linked_account',
+                'status'           => 'created',
+                'total_count'      => 2,
+                'success_count'    => null,
+                'failure_count'    => null,
+                'attempts'         => 0,
+                'amount'           => 0,
+                'processed_amount' => 0,
+                'processed_at'     => null,
+            ],
+        ],
+    ],
 ];

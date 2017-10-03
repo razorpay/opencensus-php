@@ -7,6 +7,8 @@ use RZP\Exception\BadRequestException;
 
 class Limit
 {
+    const DEFAULT_LIMIT = 1000;
+
     const PER_TYPE = [
         Type::REFUND           => 1000,
         Type::PAYMENT_LINK     => 5000,
@@ -36,15 +38,17 @@ class Limit
                 ]);
         }
 
-        if ($total > self::PER_TYPE[$type])
+        $limit = self::PER_TYPE[$type] ?? self::DEFAULT_LIMIT;
+
+        if ($total > $limit)
         {
-           throw new BadRequestException(
-               ErrorCode::BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT,
-               null,
-               [
-                   'type'  => $type,
-                   'total' => $total,
-               ]);
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT,
+                null,
+                [
+                    'type'  => $type,
+                    'total' => $total,
+                ]);
         }
     }
 }

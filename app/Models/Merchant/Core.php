@@ -56,7 +56,7 @@ class Core extends Base\Core
         return $merchant;
     }
 
-    public function createSubMerchant($input, $aggregatorMerchant)
+    public function createSubMerchant($input, $aggregatorMerchant): Entity
     {
         // We only check for email uniqueness if the email
         // address is provided
@@ -70,7 +70,7 @@ class Core extends Base\Core
             $input['email'] = $aggregatorMerchant->getEmail();
         }
 
-        $subMerchant = (new Merchant\Entity)->build($input);
+        $subMerchant = (new Entity)->build($input);
 
         $subMerchant->setAuditAction(Action::CREATE_SUBMERCHANT);
 
