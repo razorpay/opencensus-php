@@ -85,11 +85,6 @@ class CreateVirtualAccountsTable extends Migration
                   ->on(Table::BANK_ACCOUNT)
                   ->on_delete('restrict');
 
-             $table->foreign(VirtualAccount::BHARAT_QR_ID)
-                  ->references('id')
-                  ->on(Table::BHARAT_QR)
-                  ->on_delete('restrict');
-
             $table->index(VirtualAccount::VPA);
             $table->index(VirtualAccount::DESCRIPTOR);
             $table->index(VirtualAccount::STATUS);

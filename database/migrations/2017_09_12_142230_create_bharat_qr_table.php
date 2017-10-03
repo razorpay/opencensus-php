@@ -4,9 +4,10 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+use RZP\Models\Merchant;
 use RZP\Constants\Table;
 use RZP\Models\BharatQr\Entity as BharatQr;
-use RZP\Models\Merchant;
+use RZP\Models\VirtualAccount\Entity as VirtualAccount;
 
 class CreateBharatQrTable extends Migration
 {
@@ -57,6 +58,17 @@ class CreateBharatQrTable extends Migration
             $table->foreign(BharatQr::MERCHANT_ID)
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
+
+        });
+
+        // This needs to be done here because migrations are run in order of
+        // timestamps and bharat qr table gets created after credits.
+        Schema::table(Table::VIRTUAL_ACCOUNT, function(Blueprint $table)
+        {
+            $table->foreign(VirtualAccount::BHARAT_QR_ID)
+                  ->references('id')
+                  ->on(Table::BHARAT_QR)
                   ->on_delete('restrict');
         });
     }
