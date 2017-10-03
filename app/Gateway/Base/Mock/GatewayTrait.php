@@ -68,10 +68,8 @@ trait GatewayTrait
         }
         else if ($request['method'] === 'get')
         {
-            if (
-                (array_key_exists('content', $request) === true) and
-                (empty($request['content']) === false)
-            )
+            if ((array_key_exists('content', $request) === true) and
+                (empty($request['content']) === false))
             {
                 $input = $request['content'];
             }

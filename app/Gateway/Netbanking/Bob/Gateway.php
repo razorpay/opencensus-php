@@ -101,8 +101,7 @@ class Gateway extends Base\Gateway
                 'content'    => $content,
                 'payment_id' => $payment[Payment::ID],
                 'request'    => $request
-            ]
-        );
+            ]);
 
         return $request;
     }
@@ -167,8 +166,7 @@ class Gateway extends Base\Gateway
             [
                 'request' => $request,
                 'gateway' => $this->gateway
-            ]
-        );
+            ]);
 
         $response = $this->sendGatewayRequest($request);
 
