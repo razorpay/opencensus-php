@@ -78,6 +78,7 @@ class Validator extends Base\Validator
             return;
         }
 
+        // TODO: Replace this with $request->ip
         if($_SERVER['HTTP_HOST'] === 'dashboard.razorpay.com' OR $_SERVER['HTTP_HOST'] === 'betadashboard.razorpay.com')
         {
             $captchaResponse = $input['captcha'];
@@ -88,7 +89,7 @@ class Validator extends Base\Validator
                 $clientIpAddress = $_SERVER['REMOTE_ADDR'];
             }
 
-            $noCaptchaSecret = env('NOCAPTCHA_SECRET');
+            $noCaptchaSecret = config('razorpay.signup.nocaptcha_secret');
 
             $url = "https://www.google.com/recaptcha/api/siteverify?secret=".$noCaptchaSecret."&response=".$captchaResponse."&remoteip=".$clientIpAddress;
 
