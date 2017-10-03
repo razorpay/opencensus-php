@@ -7,6 +7,7 @@ use RZP\Gateway\Netbanking;
 use RZP\Gateway\Netbanking\Bob\RequestFields;
 use RZP\Gateway\Netbanking\Bob\ResponseFields;
 use RZP\Gateway\Netbanking\Bob\Constants;
+use RZP\Gateway\Netbanking\Bob\Status;
 
 class Server extends Base\Mock\Server
 {
@@ -43,7 +44,7 @@ class Server extends Base\Mock\Server
         $content = [
             ResponseFields::BANK_REF_NUMBER => self::BANK_REF_NUMBER,
             ResponseFields::PAYMENT_ID      => $id,
-            ResponseFields::STATUS          => Constants::STATUS_SUCCESS,
+            ResponseFields::STATUS          => Status::SUCCESS,
         ];
 
         $this->content($content, 'verify');
@@ -59,7 +60,7 @@ class Server extends Base\Mock\Server
             ResponseFields::AMOUNT                  => $content[RequestFields::AMOUNT],
             ResponseFields::BILLER_NAME             => $content[RequestFields::BILLER_NAME],
             ResponseFields::PAYMENT_ID              => $content[RequestFields::PAYMENT_ID],
-            ResponseFields::STATUS                  => Constants::STATUS_SUCCESS,
+            ResponseFields::STATUS                  => Status::SUCCESS,
             ResponseFields::BANK_REF_NUMBER         => self::BANK_REF_NUMBER,
             ResponseFields::CUSTOMER_ACCOUNT_NUMBER => self::CUSTOMER_ACCOUNT_NUMBER,
         ];

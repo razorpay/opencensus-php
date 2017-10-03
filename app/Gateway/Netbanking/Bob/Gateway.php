@@ -259,10 +259,10 @@ class Gateway extends Base\Gateway
         $gatewayAttributes[ResponseFields::BANK_REF_NUMBER] = $content[ResponseFields::BANK_REF_NUMBER];
 
         // Setting success status, since verification is success
-        $gatewayAttributes[ResponseFields::STATUS] = Constants::STATUS_SUCCESS;
+        $gatewayAttributes[ResponseFields::STATUS] = Status::SUCCESS;
 
         // Callback gave failure status, but verify is success
-        if ($gatewayPayment[NetbankingEntity::STATUS] === Constants::STATUS_FAILURE)
+        if ($gatewayPayment[NetbankingEntity::STATUS] === Status::FAILURE)
         {
             $gatewayPayment = $this->updateGatewayPaymentEntity($gatewayPayment, $gatewayAttributes);
         }
@@ -276,7 +276,7 @@ class Gateway extends Base\Gateway
 
     protected function isGatewaySuccess(array $content): bool
     {
-        return ($content[ResponseFields::STATUS] === Constants::STATUS_SUCCESS);
+        return ($content[ResponseFields::STATUS] === Status::SUCCESS);
     }
 
     protected function getMerchantId()
@@ -291,7 +291,7 @@ class Gateway extends Base\Gateway
 
     protected function isStatusCodeSuccess($content)
     {
-        return ($content[ResponseFields::STATUS] === Constants::STATUS_SUCCESS);
+        return ($content[ResponseFields::STATUS] === Status::SUCCESS);
     }
 
     protected function updateGatewayPaymentEntity(
@@ -316,6 +316,7 @@ class Gateway extends Base\Gateway
 
         assert($secret !== null);
 
+        // BoB uses secret's value for IV as well
         return (new AESCrypto(AES::MODE_CBC, $secret, $secret));
     }
 

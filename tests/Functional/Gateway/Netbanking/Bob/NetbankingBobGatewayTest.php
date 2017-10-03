@@ -5,8 +5,7 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Bob;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Base\Repository as NetbankingRepository;
 use RZP\Gateway\Netbanking\Base\Entity as NetbankingEntity;
-use RZP\Gateway\Netbanking\Bob\Constants;
-use RZP\Gateway\Netbanking\Bob\RequestFields;
+use RZP\Gateway\Netbanking\Bob\Status;
 use RZP\Gateway\Netbanking\Bob\ResponseFields;
 use RZP\Models\Payment;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -155,7 +154,7 @@ class NetbankingBobGatewayTest extends TestCase
         {
             if ($action === 'authorize')
             {
-                $content[ResponseFields::STATUS] = Constants::STATUS_FAILURE;
+                $content[ResponseFields::STATUS] = Status::FAILURE;
                 unset($content[ResponseFields::BANK_REF_NUMBER]);
             }
         });

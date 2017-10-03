@@ -3,7 +3,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
-use RZP\Gateway\Netbanking\Bob\Constants;
+use RZP\Gateway\Netbanking\Bob\Status;
 
 return [
     'testPayment' => [
@@ -59,21 +59,21 @@ return [
         'bank_payment_id' => null,
         'received'        => true,
         'bank'            => 'BARB',
-        'status'          => Constants::STATUS_FAILURE
+        'status'          => Status::FAILURE
     ],
 
     'testPaymentVerifySuccessEntity' => [
         'bank_payment_id' => 'AB1234',
         'received'        => true,
         'bank'            => 'BARB',
-        'status'          => Constants::STATUS_SUCCESS
+        'status'          => Status::SUCCESS
     ],
 
     'testAuthFailedVerifySuccessEntity' => [
         'bank_payment_id' => 'AB1234',
         'received'        => true,
         'bank'            => 'BARB',
-        'status'          => Constants::STATUS_SUCCESS
+        'status'          => Status::SUCCESS
     ],
 
     'testVerifyMismatch' => [

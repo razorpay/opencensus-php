@@ -78,7 +78,9 @@ trait GatewayTrait
             else
             {
                 $url = $request['url'];
+
                 $parts = parse_url($url);
+
                 if (isset($parts['query']))
                 {
                     parse_str($parts['query'], $input);
