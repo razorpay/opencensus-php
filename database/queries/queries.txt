@@ -2508,3 +2508,15 @@ ALTER TABLE merchants
 
 ALTER TABLE merchants
     MODIFY COLUMN invoice_code CHAR(12) NOT NULL AFTER category2;
+
+# Data correction for test bank_transfer payment made in live mode
+DELETE FROM payments
+    WHERE id='8i1eFM9BkOB8Ze';
+DELETE FROM transactions
+    WHERE entity_id='8i1eFM9BkOB8Ze';
+DELETE FROM refunds
+    WHERE id='8iQEuts9RhZTvI';
+DELETE FROM transactions
+    WHERE entity_id='8iQEuts9RhZTvI';
+DELETE FROM bank_transfers
+    WHERE payment_id='8i1eFM9BkOB8Ze';

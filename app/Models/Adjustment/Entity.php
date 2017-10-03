@@ -20,6 +20,7 @@ class Entity extends Base\PublicEntity
 
     // For report
     const DISPUTE_ID        = 'dispute_id';
+    const ENTITY            = 'entity';
 
     protected static $sign = 'adj';
 
