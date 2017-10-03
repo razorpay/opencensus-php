@@ -319,7 +319,7 @@ class Service extends Base\Service
             try
             {
                 $cmd = $s3->getCommand('GetObject', [
-                    'Bucket' => env('AWS_ACTIVATION_BUCKET'),
+                    'Bucket' => config('aws.activation_bucket'),
                     'Key'    => $id.'/'.$key.'.'.$extension
                 ]);
 
