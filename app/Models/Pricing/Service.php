@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Pricing;
 
-use RZP\Exception;
 use RZP\Models\Bank;
 use RZP\Models\Base;
 use RZP\Models\Card;

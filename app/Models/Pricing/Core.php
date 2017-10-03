@@ -31,7 +31,7 @@ class Core extends Base\Core
     {
         $input[Entity::PLAN_NAME] = $planName;
 
-        $rule = (new Pricing\Entity)->build($input);
+        $rule = (new Entity)->build($input);
 
         $rule = $rule->generateId();
 
@@ -52,7 +52,7 @@ class Core extends Base\Core
 
         $planName = $input[Entity::PLAN_NAME];
 
-        $inputRules = $input['rules'];
+        $inputRules = $input[Entity::RULES];
 
         $this->repo->transactionOnLiveAndTest(function() use ($planName, $inputRules)
         {
@@ -73,7 +73,7 @@ class Core extends Base\Core
         });
     }
 
-    public function createPlanFromRule(Entity $rule): Plan
+    protected function createPlanFromRule(Entity $rule): Plan
     {
         $plan = new Plan([$rule]);
 
