@@ -7,16 +7,22 @@ use Carbon\Carbon;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Models\BankTransfer;
+use RZP\Constants\Timezone;
 use RZP\Models\VirtualAccount\Provider;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
     const COLUMN_UTR           = 'txn_ref_no';
     const COLUMN_AMOUNT        = 'amount';
-    const COLUMN_PAYER_NAME    = 'send_cust_acname';
-    const COLUMN_PAYEE_ACCOUNT = 'e_coll_ac_no';
-    const COLUMN_PAYER_ACCOUNT = 'send_cust_ac_no';
-    const COLUMN_PAYER_IFSC    = 'snd_brn_ifsc';
+    const COLUMN_PAYER_NAME    = 'payer_name';
+    const COLUMN_PAYEE_ACCOUNT = 'payee_account';
+    const COLUMN_PAYER_ACCOUNT = 'payer_account';
+    const COLUMN_PAYER_IFSC    = 'payer_ifsc';
+    const COLUMN_MODE          = 'mode';
+    const COLUMN_DATE          = 'date';
+    const COLUMN_TIME          = 'time';
+
+    const TIME_FORMAT = 'd/m/Y H:i:s';
 
     /**
      * Identify the bank transfer using UTR, and thus find payment
@@ -58,7 +64,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                 return null;
             }
 
-            $bankTransfer = $this->createBankTransferPayment($row);
+            $this->createBankTransferPayment($row);
+
+            $bankTransfer = $this->repo
+                                 ->bank_transfer
+                                 ->findByUtr($utr);
         }
 
         return $bankTransfer->getPaymentId();
@@ -161,6 +171,20 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return false;
     }
 
+    protected function getPayeeIfsc()
+    {
+        return Provider::DEFAULT_DETAILS[Provider::KOTAK]['ifsc_code'];;
+    }
+
+    protected function getTimestamp(array $row)
+    {
+        $dateTime = $row[self::COLUMN_DATE] . ' ' .  $row[self::COLUMN_TIME];
+
+        $carbon = Carbon::createFromFormat(self::TIME_FORMAT, $dateTime, Timezone::IST);
+
+        return $carbon->getTimestamp();
+    }
+
     /**
      * An unexpected bank transfer is present in the MIS file.
      * one which is not present in the DB, because Kotak failed
@@ -170,7 +194,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * can handle it here by creating the payment now.
      *
      * @param  array  $row
-     * @return BankTransfer\Entity
      */
     protected function createBankTransferPayment(array $row)
     {
@@ -182,9 +205,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'gateway'       => get_called_class()
                 ]);
 
-        $payeeIfsc = Provider::DEFAULT_DETAILS[Provider::KOTAK]['ifsc_code'];
-        $time      = Carbon::now()->getTimestamp();
-
         $data = [
             BankTransfer\Entity::PAYER_NAME     => $row[self::COLUMN_PAYER_NAME],
             BankTransfer\Entity::PAYER_ACCOUNT  => $row[self::COLUMN_PAYER_ACCOUNT],
@@ -192,12 +212,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             BankTransfer\Entity::AMOUNT         => $row[self::COLUMN_AMOUNT],
             BankTransfer\Entity::REQ_UTR        => $row[self::COLUMN_UTR],
             BankTransfer\Entity::PAYEE_ACCOUNT  => $row[self::COLUMN_PAYEE_ACCOUNT],
-            BankTransfer\Entity::PAYEE_IFSC     => $payeeIfsc,
-            BankTransfer\Entity::TIME           => $time,
-            // Hack, until mode is added to the recon files
-            BankTransfer\Entity::MODE           => 'neft',
+            BankTransfer\Entity::PAYEE_IFSC     => $this->getPayeeIfsc(),
+            BankTransfer\Entity::TIME           => $this->getTimestamp($row),
+            BankTransfer\Entity::MODE           => strtolower($row[self::COLUMN_MODE]),
         ];
 
-        return (new BankTransfer\Core)->process($data);
+        (new BankTransfer\Core)->process($data);
     }
 }
