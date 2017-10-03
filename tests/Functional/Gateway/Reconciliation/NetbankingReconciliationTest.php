@@ -204,6 +204,10 @@ class NetbankingReconciliationTest extends TestCase
         $gatewayEntity = $this->getLastEntity('netbanking', true);
 
         $this->assertEquals(self::ACCOUNT_NUMBER, $gatewayEntity['account_number']);
+
+        $transactionEntity = $this->getLastEntity('transaction', true);
+
+        $this->assertTrue($transactionEntity['reconciled_at'] !== null);
     }
 
     protected function reconcile($gateway, $uploadedFile)
