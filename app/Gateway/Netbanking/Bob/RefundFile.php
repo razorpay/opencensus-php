@@ -96,7 +96,7 @@ class RefundFile extends Base\RefundFile
         $amt = number_format((float) ($amount / 100), 2, '.', '');
 
         // Amount is of type NUMBER(14,2). i.e 14 digits before decimal point and 2 digits after decimal point.
-        return str_pad($amt, 17, STR_PAD_LEFT, '0');
+        return str_pad($amt, 17, '0', STR_PAD_LEFT);
     }
 
     protected function sendRefundEmail($fileData = [], array $email = [])
