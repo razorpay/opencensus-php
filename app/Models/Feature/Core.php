@@ -207,5 +207,4 @@ class Core extends Base\Core
                 ]);
         }
     }
-
 }

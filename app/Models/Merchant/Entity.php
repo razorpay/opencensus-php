@@ -370,11 +370,11 @@ class Entity extends Base\PublicEntity
         return in_array($this->getAttribute(self::CATEGORY), $eduCategories);
     }
 
-    public function isFeatureEnabled($feature)
+    public function isFeatureEnabled($featureName)
     {
         $assignedFeatures = $this->getEnabledFeatures();
 
-        return (in_array($feature, $assignedFeatures, true) === true);
+        return (in_array($featureName, $assignedFeatures, true) === true);
     }
 
     /**

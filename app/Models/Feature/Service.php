@@ -194,11 +194,16 @@ class Service extends Base\Service
 
         try
         {
-            $this->processFiles($data);
+            $this->processFiles($data, $this->merchant);
 
             Accessor::for($this->merchant, Constants::ONBOARDING)
                     ->upsert($data)
                     ->save();
+
+            $this->repo->merchant_detail->updateFeatureActivationStatus(
+                $this->merchant,
+                $feature,
+                Merchant\Detail\Entity::PENDING);
 
             $saved = true;
         }
@@ -208,10 +213,57 @@ class Service extends Base\Service
                 $exception, Trace::CRITICAL, TraceCode::FEATURE_ONBOARDING_RESPONSE_CREATION_FAILED);
         }
 
-        (new Core)->notifyOnboardingResponseCreationOnSlack($feature);
+        if ($this->auth->isAdminAuth() === false)
+        {
+            (new Core)->notifyOnboardingResponseCreationOnSlack($feature);
+        }
+
 
         return $saved;
     }
+
+    public function updateOnboardingResponses(array $input, string $feature): bool
+    {
+        $merchantId = $input['merchant_id'];
+
+        $merchant = $this->repo->merchant->findByPublicId($merchantId);
+
+        unset($input['merchant_id']);
+
+        $data[$feature] = $input;
+
+        $saved = false;
+
+        $this->trace->info(
+            TraceCode::FEATURE_ONBOARDING_RESPONSE_REQUEST,
+            [$input, $feature, 'admin' => true]);
+
+        (new Validator)->validateInput(Constants::ONBOARDING, $data);
+
+        try
+        {
+            $this->processFiles($data, $merchant);
+
+            Accessor::for($merchant, Constants::ONBOARDING)
+                ->upsert($data)
+                ->save();
+
+            $this->repo->merchant_detail->updateFeatureActivationStatus(
+                $merchant,
+                $feature,
+                Merchant\Detail\Entity::PENDING);
+
+            $saved = true;
+        }
+        catch (\Throwable $exception)
+        {
+            $this->trace->traceException(
+                $exception, Trace::CRITICAL, TraceCode::FEATURE_ONBOARDING_RESPONSE_UPDATE_FAILED);
+        }
+
+        return $saved;
+    }
+
 
     /**
      * Returns the merchant responses to the onboarding questions of
@@ -221,11 +273,11 @@ class Service extends Base\Service
      *
      * @return Dictionary|string
      */
-    public function getOnboardingResponses(string $feature = null)
+    public function getOnboardingResponses(string $feature = 'all')
     {
         $settings = Accessor::for($this->merchant, Constants::ONBOARDING);
 
-        $settings = ($feature === null) ? $settings->all() : $settings->get($feature);
+        $settings = ($feature === 'all') ? $settings->all() : $settings->get($feature);
 
         $settings = $this->addFileUrlInResponseIfApplicable($settings);
 
@@ -255,13 +307,11 @@ class Service extends Base\Service
      *
      * @param $input
      */
-    protected function processFiles(& $input)
+    protected function processFiles(& $input, Merchant\Entity $merchant)
     {
         $featureName = Constants::MARKETPLACE;
 
         $question = Constants::VENDOR_AGREEMENT;
-
-        $merchant = $this->merchant;
 
         $merchantId = $merchant->getId();
 
@@ -344,6 +394,28 @@ class Service extends Base\Service
         $signedUrls = $accessor->id($fileStoreId)->merchantId($merchantId)->getSignedUrl();
 
         return $signedUrls[$fileStoreId];
+    }
+
+    public function getFeatureActivationRequests(string $status = null)
+    {
+        $merchantDetails = $this->repo->merchant_detail->getFeatureActivationRequestsFromStatus($status);
+
+        return $merchantDetails;
+    }
+
+    public function updateFeatureActivationStatus(string $featureName, array $input)
+    {
+        $status = $input['status'];
+
+        $merchantId = $input['merchant_id'];
+
+        $merchant = $this->repo->merchant->findByPublicId($merchantId);
+
+        return $this->repo->merchant_detail->updateFeatureActivationStatus(
+            $merchant,
+            $featureName,
+            $status
+        );
     }
 }
 

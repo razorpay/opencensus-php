@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Feature;
 
+use RZP\Models\Merchant\Detail as MerchantDetail;
+
 class Constants
 {
     const ENTITY_IDS               = 'entity_ids';
@@ -255,6 +257,12 @@ class Constants
             self::USE_CASE,
             self::EXPECTED_MONTHLY_REVENUE
         ]
+    ];
+
+    public static $onboardingStatuses = [
+        MerchantDetail\Entity::PENDING,
+        MerchantDetail\Entity::REJECTED,
+        MerchantDetail\Entity::APPROVED,
     ];
 
     /**

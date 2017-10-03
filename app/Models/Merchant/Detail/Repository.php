@@ -5,7 +5,9 @@ namespace RZP\Models\Merchant\Detail;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Models\Feature\Constants;
 
 class Repository extends Base\Repository
 {
@@ -64,5 +66,47 @@ class Repository extends Base\Repository
                     ->skip($skip)
                     ->take($count)
                     ->get();
+    }
+
+    public function getFeatureActivationRequestsFromStatus(string $status): Base\PublicCollection
+    {
+        return $this->newQueryWithConnection(Mode::LIVE)
+            ->select(
+                Entity::MERCHANT_ID,
+                Entity::CONTACT_NAME,
+                Entity::MARKETPLACE_ACTIVATION_STATUS,
+                Entity::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS,
+                Entity::SUBSCRIPTIONS_ACTIVATION_STATUS)
+            ->where(Entity::MARKETPLACE_ACTIVATION_STATUS, $status)
+            ->OrWhere(Entity::VIRTUAL_ACCOUNTS_ACTIVATION_STATUS, $status)
+            ->OrWhere(Entity::SUBSCRIPTIONS_ACTIVATION_STATUS, $status)
+            ->get();
+    }
+
+    public function updateFeatureActivationStatus(Merchant\Entity $merchant, string $featureName, string $status): bool
+    {
+        $attributeName = $featureName . '_activation_status';
+
+        $attributeName = constant(Entity::class . '::' . strtoupper($attributeName));
+
+        if (in_array($status, Constants::$onboardingStatuses) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_ONBOARDING_STATUS_NOT_RECOGNIZED,
+                $attributeName,
+                [$featureName, $status]);
+        }
+
+        if (($status === Entity::APPROVED) and ($merchant->isFeatureEnabled($featureName) === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CANNOT_APPROVE_MERCHANT_FEATURE_NOT_ASSIGNED,
+                $attributeName,
+                [$featureName, $status]);
+        }
+
+        return $this->newQueryWithConnection(Mode::LIVE)
+                    ->where(Entity::MERCHANT_ID, $merchant->getId())
+                    ->update([$attributeName => $status]);
     }
 }

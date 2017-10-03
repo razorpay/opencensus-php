@@ -631,10 +631,15 @@ final class Route
         'merchant_analytics'                      => ['post',     'merchant/analytics',                             'MerchantController@postAnalytics'                                  ],
 
         // Feature onboarding routes
-        'feature_onboarding_fetch_questions'      => ['get',      'feature/onboarding',                            'FeatureController@getOnboardingQuestions',                          ],
-        'feature_onboarding_create'               => ['post',     'feature/onboarding/{feature}',                  'FeatureController@postOnboardingResponses',                         ],
-        'feature_onboarding_fetch_responses'      => ['get',      'feature/onboarding/{feature}/responses',        'FeatureController@getOnboardingResponses',                          ],
-        'feature_onboarding_fetch_all_responses'  => ['get',      'feature/onboarding/responses',                  'FeatureController@getOnboardingResponses',                          ],
+        'feature_onboarding_fetch_questions'      => ['get',      'onboarding/features/all/questions',                            'FeatureController@getOnboardingQuestions',                          ],
+        'feature_onboarding_create'               => ['post',     'onboarding/features/{feature}/responses',                  'FeatureController@postOnboardingResponses',                         ],
+        'feature_onboarding_fetch_all_responses'  => ['get',      'onboarding/features/all/responses',                  'FeatureController@getOnboardingResponses',                          ],
+        'feature_onboarding_fetch_responses'      => ['get',      'onboarding/features/{feature}/responses',        'FeatureController@getOnboardingResponses',                          ],
+
+
+        'feature_onboarding_update'               => ['post',     'onboarding/features/admin/{feature}/responses',                  'FeatureController@updateOnboardingResponses',                         ],
+        'feature_onboarding_fetch_details'      => ['get', 'onboarding/features/all/responses/by/{status}', 'FeatureController@getFeatureActivationRequests'],
+        'feature_onboarding_update_status'      => ['post', 'onboarding/features/{feature}/update_status', 'FeatureController@updateFeatureActivationStatus'],
     ];
 
     public static $public = [
@@ -1211,6 +1216,9 @@ final class Route
         'setl_retry',
         'merchant_activation_files',
         'merchant_batches',
+        'feature_onboarding_fetch_details',
+        'feature_onboarding_update_status',
+        'feature_onboarding_update'
     ];
 
     public static $routePermission = [
@@ -1343,6 +1351,9 @@ final class Route
         'settings_delete'                  => Permission::EDIT_WALLET_CONFIG,
         'merchant_analytics'               => '*',
         'merchant_activation_files'        => '*',
+        'feature_onboarding_fetch_details' => '*',
+        'feature_onboarding_update_status' => '*',
+        'feature_onboarding_update'        => '*'
     ];
 
     public static $direct = [

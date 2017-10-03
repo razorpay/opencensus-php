@@ -68,6 +68,15 @@ class FeatureController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function updateOnboardingResponses(string $feature)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updateOnboardingResponses($input, $feature);
+
+        return ApiResponse::json($response);
+    }
+
     public function getOnboardingResponses(string $feature = null)
     {
         $response = $this->service()->getOnboardingResponses($feature);
@@ -75,4 +84,19 @@ class FeatureController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getFeatureActivationRequests(string $status)
+    {
+        $response = $this->service()->getFeatureActivationRequests($status);
+
+        return ApiResponse::json($response);
+    }
+
+    public function updateFeatureActivationStatus(string $featureName)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->updateFeatureActivationStatus($featureName, $input);
+
+        return ApiResponse::json($response);
+    }
 }
