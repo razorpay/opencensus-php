@@ -56,7 +56,7 @@
       <td class="middle">
         <h6>Payment Details</h6>
         <p class="title"><strong>{{$payment['amount']}}</strong></p>
-        <p class="sub-title">Payment ID: {{$payment['id']}}</p>
+        <p class="sub-title">Payment ID: {{$payment['public_id']}}</p>
         <p class="sub-title">Paid on {{$payment['captured_at']}}</p>
       </td>
       <td class="right"></td>
