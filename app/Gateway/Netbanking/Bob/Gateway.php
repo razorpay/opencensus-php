@@ -249,6 +249,12 @@ class Gateway extends Base\Gateway
         // Setting success status, since verification is success
         $gatewayAttributes[ResponseFields::STATUS] = Status::SUCCESS;
 
+        // Callback gave failure status, but verify is success
+        if ($gatewayPayment[NetbankingEntity::STATUS] === Status::FAILURE)
+        {
+            $gatewayPayment = $this->updateGatewayPaymentEntity($gatewayPayment, $gatewayAttributes);
+        }
+
         return $gatewayPayment;
     }
 
@@ -294,12 +300,11 @@ class Gateway extends Base\Gateway
 
     public function getEncryptor(): AESCrypto
     {
-        $secret = $this->getSecret();
+        $secret = $iv = $this->getSecret();
 
         assert($secret !== null);
 
-        // BoB uses secret's value for IV as well
-        return (new AESCrypto(AES::MODE_CBC, $secret, $secret));
+        return (new AESCrypto(AES::MODE_CBC, $secret, $iv));
     }
 
     public function formatAmount(int $amount): string
