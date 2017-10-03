@@ -14,9 +14,6 @@ class Reconciliator extends Base\RefundFile
     const PAYMENT_ENTITY = 'payment';
     const GATEWAY_ENTITY = 'gateway';
 
-    const HEADER_1 = 'fileName.txt|Num of Txn|Total Amount of Txns';
-    const HEADER_2 = 'Sr.No|fldMerchCode|TransDate|fldMerchRefNbr|Transaction Amount|fldBankRefNbr|AccountNo.';
-
     const BANK_REF_NUMBER = 'AB1234';
     const BANK_ACC_NUMBER = '309002069863';
 
