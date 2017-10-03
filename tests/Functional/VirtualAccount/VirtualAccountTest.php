@@ -39,6 +39,25 @@ class VirtualAccountTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $response);
     }
 
+    public function testCreateVirtualAccountWithBharatQr()
+    {
+        $input = [
+            'receiver_types' => 'bharat_qr',
+        ];
+
+         $response = $this->createVirtualAccount($input);
+
+        $expectedResponse = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($expectedResponse, $response);
+
+        $qrString = $response['receivers'][0]['qr_string'];
+
+        $tlvArray = $this->getTagMappedValues($qrString);
+
+        $this->assertEquals($tlvArray['54'], '100.00');
+    }
+
     public function testCreateVirtualAccountWithDescriptor()
     {
         $this->createVirtualAccount();
@@ -260,5 +279,31 @@ class VirtualAccountTest extends TestCase
                     Mockery::on($closure));
 
         $this->app->instance('webhook.inferno', $inferno);
+    }
+
+    protected function getTagMappedValues(string $qrString)
+    {
+        $tlvArray = [];
+
+        $length = strlen($qrString);
+
+        $index = 0;
+
+        while ($index < $length)
+        {
+            $tlvTag = substr($qrString, $index, 2);
+
+            $index += 2;
+
+            $tlvLength = (int) substr($qrString, $index, 2);
+
+            $index +=2;
+
+            $phpArray[$tlvTag] = substr($qrString, $index, $tlvLength);
+
+            $index += $tlvLength;
+        }
+
+        return $phpArray;
     }
 }

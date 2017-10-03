@@ -36,6 +36,7 @@ class Entity extends Base\PublicEntity
         self::METHOD,
         self::VISA_IDENTIFIER,
         self::MASTER_CARD_IDENTIFIER,
+        self::QR_STRING,
         self::CREATED_AT,
     ];
 
