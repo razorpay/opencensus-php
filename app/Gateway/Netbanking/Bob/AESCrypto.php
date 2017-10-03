@@ -20,7 +20,6 @@ class AESCrypto extends Base\AESCrypto
 
     public function encryptData(array $data)
     {
-
         $formattedData = urldecode(http_build_query($data, '', self::PAIR_SEPARATOR));
 
         return base64_encode($this->encryptString($formattedData));
