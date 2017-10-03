@@ -283,9 +283,9 @@ class MerchantInvoiceTest extends TestCase
             $merchantInvoice['month'],
             1,
             Timezone::IST
-            )->format('my');
+        )->format('my');
 
-         $this->assertEquals(substr($merchantInvoice[Invoice\Entity::INVOICE_NUMBER], -4), $dateString);
+        $this->assertEquals(substr($merchantInvoice[Invoice\Entity::INVOICE_NUMBER], -4), $dateString);
     }
 
     public function testInvoiceEntityCreateForGivenMerchant()
