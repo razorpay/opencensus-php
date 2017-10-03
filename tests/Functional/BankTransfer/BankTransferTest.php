@@ -48,6 +48,7 @@ class BankTransferTest extends TestCase
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals('Razorpay', $bankTransfer['payer_bank_name']);
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertNotNull($bankTransfer['payment_id']);
 
@@ -137,6 +138,7 @@ class BankTransferTest extends TestCase
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals('Razorpay', $bankTransfer['payer_bank_name']);
         $this->assertEquals('IMPS', $bankTransfer['mode']);
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertNotNull($bankTransfer['payment_id']);
@@ -195,6 +197,7 @@ class BankTransferTest extends TestCase
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals('Razorpay', $bankTransfer['payer_bank_name']);
         $this->assertEquals('IMPS', $bankTransfer['mode']);
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertNotNull($bankTransfer['payment_id']);
@@ -250,6 +253,7 @@ class BankTransferTest extends TestCase
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals('Razorpay', $bankTransfer['payer_bank_name']);
         $this->assertEmpty($bankTransfer['payer_account']);
         $this->assertEquals('IMPS', $bankTransfer['mode']);
         $this->assertEquals(true, $bankTransfer['expected']);
@@ -371,6 +375,7 @@ class BankTransferTest extends TestCase
         $bankAccount = $this->getLastEntity('bank_account', true);
         $this->assertEquals('HDFC0000001', $bankAccount['ifsc']);
         $this->assertEquals('9876543210123456789', $bankAccount['account_number']);
+        $this->assertEquals('HDFC Bank', $bankAccount['bank_name']);
 
         // Created bank transfer is an unexpected one
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
@@ -379,6 +384,7 @@ class BankTransferTest extends TestCase
         $this->assertEquals($bankAccount['id'], 'ba_'.$bankTransfer['payer_bank_account_id']);
         $this->assertEquals(false, $bankTransfer['expected']);
         $this->assertNotNull($bankTransfer['payment_id']);
+        $this->assertEquals('Razorpay', $bankTransfer['payer_bank_name']);
 
         // Invalid account forced creation of a temp acc for default merchant
         $virtualAccount =  $this->getLastEntity('virtual_account', true);
@@ -437,6 +443,7 @@ class BankTransferTest extends TestCase
         $bankTransfer =  $this->getLastEntity('bank_transfer', true);
         $this->assertEquals($accountNumber, $bankTransfer['payee_account']);
         $this->assertEquals($ifsc, $bankTransfer['payee_ifsc']);
+        $this->assertEquals('Razorpay', $bankTransfer['payer_bank_name']);
         $this->assertEquals(true, $bankTransfer['expected']);
         $this->assertEquals(false, $bankTransfer['notified']);
         $this->assertNotNull($bankTransfer['payment_id']);
