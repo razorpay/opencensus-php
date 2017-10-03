@@ -29,14 +29,6 @@ class Core extends Base\Core
 
         $adjInput = $input;
 
-        $amount = $adjInput[Entity::AMOUNT] ?? 0;
-
-        $tax =  $adjInput[MerchantInvoice\Entity::TAX] ?? 0;
-
-        $fees = $adjInput[Transfer\Entity::FEES] ?? 0;
-
-        $adjInput[Entity::AMOUNT] = $amount + $tax + $fees;
-
         if (isset($input[Entity::AMOUNT]) === true and
             isset($input[MerchantInvoice\Entity::TAX]) === true and
             isset($input[Transfer\Entity::FEES]) === true)
@@ -44,13 +36,23 @@ class Core extends Base\Core
             throw new Exception\BadRequestValidationFailureException('Either amount OR tax/fees should be passed');
         }
 
-        unset($adjInput[Transfer\Entity::FEES]);
+        $amount = $adjInput[Entity::AMOUNT] ?? 0;
+
+        $tax =  $adjInput[MerchantInvoice\Entity::TAX] ?? 0;
+
+        $fees = $adjInput['fees'] ?? 0;
+
+        $adjInput[Entity::AMOUNT] = $amount + $tax + $fees;
+
+        unset($adjInput['fees']);
+
+        unset($adjInput[MerchantInvoice\Entity::TAX]);
 
         $adj = (new Adjustment\Entity)->build($adjInput);
 
         $this->app['workflow']
-            ->setEntityAndId($adj->getEntity(), $merchant->getId())
-            ->handle((new \stdClass), $adj);
+             ->setEntityAndId($adj->getEntity(), $merchant->getId())
+             ->handle((new \stdClass), $adj);
 
         if (isset($input[Entity::AMOUNT]) === true)
         {
@@ -66,6 +68,7 @@ class Core extends Base\Core
 
                 return $adjustment;
             });
+
             return $adjustment;
         }
     }
