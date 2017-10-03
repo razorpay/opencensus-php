@@ -8,6 +8,7 @@ use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Exception\BaseException;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Validator extends Base\Validator
 {
@@ -211,6 +212,24 @@ class Validator extends Base\Validator
 
     protected function validateLinkedAccountEntries(array & $entries, array $params, Merchant\Entity $merchant)
     {
+        //
+        // Batch creation for linked account should only be allowed for
+        // marketplace merchant accounts.
+        //
+        if ($merchant->isMarketplace() === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Linked account creation not allowed for merchant',
+                null,
+                [
+                    Entity::MERCHANT_ID => $merchant->getId(),
+                ]);
+        }
 
+        //
+        // TODO:
+        // - Probably should rename these methods to validate<BatchType>Input() as
+        //   it now does more than validating just the input entries.
+        //
     }
 }
