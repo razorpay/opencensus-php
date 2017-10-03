@@ -203,13 +203,13 @@ class Processor
              (empty($input['email']) === true)))
         {
             $coproto = [
-                'type' => 'wallet',
+                'type'    => 'wallet',
                 'request' => [
-                    'url' => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
-                    'method' => 'POST',
-                    'content' => $input
+                    'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
+                    'method'  => 'POST',
+                    'content' => $input,
                 ],
-                'version' => '1'
+                'version' => '1',
             ];
 
             if (empty($input['contact']) === true)
