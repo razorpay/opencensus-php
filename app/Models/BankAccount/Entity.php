@@ -103,7 +103,6 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::IFSC,
-        self::IFSC_CODE,
         self::BANK_NAME,
         self::NAME,
         self::ACCOUNT_NUMBER,

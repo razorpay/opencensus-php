@@ -254,18 +254,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYER_NAME);
     }
 
-    public function getBankNameAttribute()
-    {
-        $ifsc = $this->getAttribute(self::IFSC_CODE);
-
-        if ($ifsc === self::SPECIAL_IFSC_CODE)
-        {
-            return 'Razorpay';
-        }
-
-        return IFSC::getBankName($ifsc);
-    }
-
     public function getPayeeAccount()
     {
         return $this->getAttribute(self::PAYEE_ACCOUNT);
