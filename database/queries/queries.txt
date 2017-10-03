@@ -2505,3 +2505,6 @@ ALTER TABLE batches
 # Marketplace auto-activate
 ALTER TABLE merchants
     ADD COLUMN linked_account_kyc TINYINT(1) NOT NULL DEFAULT 0 AFTER fee_model;
+
+ALTER TABLE merchants
+    MODIFY COLUMN invoice_code CHAR(12) NOT NULL AFTER category2;

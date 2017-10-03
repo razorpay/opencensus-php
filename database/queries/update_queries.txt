@@ -827,3 +827,11 @@ WHERE merchant_id = '8gEIgmsxQ7Dmpy';
 UPDATE merchant_details
 SET transaction_volume = 1
 WHERE merchant_id = '8gGZ0cZaLgHU1m';
+
+update merchants
+set invoice_code = upper(concat(substr(`id`,1, 8), substr(`id`, -4)))
+where invoice_code is NULL or invoice_code = '';
+
+UPDATE merchant_invoice
+SET invoice_number = upper(concat(substr(`merchant_id`,1, 8), substr(`merchant_id`, -4), '0917'))
+WHERE month=9 AND invoice_number = '0917';
