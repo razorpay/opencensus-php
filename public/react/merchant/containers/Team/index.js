@@ -35,64 +35,58 @@ export default class TeamContainer extends Component {
     );
 
     return (
-      <tabbed-container>
-        <header>
-          <NavLink to="/team">Manage Team</NavLink>
-
-          <HeaderAction>
-            <div class="btn-toolbar pull-right">
-              <a
-                class="btn btn-link"
-                href="https://docs.razorpay.com/v1/page/team-support"
-                target="_blank"
-              >
-                Documentation &nbsp;
-                <i class="icon icon-external-link" />
-              </a>
-            </div>
-          </HeaderAction>
-        </header>
-
-        <content>
-          <div class="content-wrapper content-sm">
-            <NewInvitation />
-
-            {otherUsers.length
-              ? <div>
-                  <div class="panel-heading">Team Members</div>
-                  <table class="table table-noborder">
-                    <tbody>
-                      {otherUsers.map(user => (
-                        <User
-                          key={user.id}
-                          user={user}
-                          form={`editUser_${user.id}`}
-                        />
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              : null}
-
-            {invitations.length
-              ? <div>
-                  <div class="panel-heading">Pending Invitations</div>
-                  <table class="table table-noborder">
-                    <tbody>
-                      {invitations.map(invite => (
-                        <Invitation
-                          key={invite.id}
-                          invite={invite}
-                          form={`editInvitation_${invite.id}`}
-                        />
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              : null}
+      <div>
+        <HeaderAction>
+          <div class="btn-toolbar pull-right">
+            <a
+              class="btn btn-link"
+              href="https://docs.razorpay.com/v1/page/team-support"
+              target="_blank"
+            >
+              Documentation &nbsp;
+              <i class="icon icon-external-link" />
+            </a>
           </div>
-        </content>
-      </tabbed-container>
+        </HeaderAction>
+
+        <div class="content-wrapper content-sm">
+          <NewInvitation />
+
+          {otherUsers.length
+            ? <div>
+                <div class="panel-heading">Team Members</div>
+                <table class="table table-noborder">
+                  <tbody>
+                    {otherUsers.map(user =>
+                      <User
+                        key={user.id}
+                        user={user}
+                        form={`editUser_${user.id}`}
+                      />
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            : null}
+
+          {invitations.length
+            ? <div>
+                <div class="panel-heading">Pending Invitations</div>
+                <table class="table table-noborder">
+                  <tbody>
+                    {invitations.map(invite =>
+                      <Invitation
+                        key={invite.id}
+                        invite={invite}
+                        form={`editInvitation_${invite.id}`}
+                      />
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            : null}
+        </div>
+      </div>
     );
   }
 }
