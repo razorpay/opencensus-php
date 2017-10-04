@@ -6,5 +6,5 @@ return [
     'mock'      =>  env('OAUTH_MOCK', false),
 
     // Used for CORS validation
-    'auth_url'  =>  env('AUTH_SERVICE_URL'),
+    'auth_service_url'  =>  env('AUTH_SERVICE_URL'),
 ];

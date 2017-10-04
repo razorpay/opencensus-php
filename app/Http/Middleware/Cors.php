@@ -16,7 +16,7 @@ class Cors
     public function handle($request, Closure $next)
     {
         $headers = [
-            'Access-Control-Allow-Origin'       => config('oauth.auth_url'),
+            'Access-Control-Allow-Origin'       => config('oauth.auth_service_url'),
             'Access-Control-Allow-Methods'      => 'POST, GET, OPTIONS',
             'Access-Control-Allow-Credentials'  => 'true',
             'Access-Control-Allow-Headers'      => 'X-Requested-With'
