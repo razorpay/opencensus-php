@@ -15,6 +15,7 @@ export default props => {
     subscriptionStatus,
     subscriptionType,
     authAttempts,
+    isInvoiceWithNoMoreAttempts,
     subscriptionchargeAt,
     onManualAttempt,
     isUpfront,
@@ -24,14 +25,14 @@ export default props => {
   let retryingText;
 
   // To be shown only for latest issued invoice. As per authAttempts condition calc in parent componen
-  if (item.status === 'issued' && authAttempts) {
-    if (subscriptionStatus === 'halted') {
+  if (item.status === 'issued') {
+    if (item.subscription_status === 'halted') {
       retryingText = 'Not retrying automatically. ';
     } else if (subscriptionStatus === 'pending') {
       let timeDiff =
         subscriptionchargeAt - Math.round(new Date().getTime() / 1000);
-      timeDiff = Math.ceil(timeDiff / (3600 * 24));
-      retryingText = `Retrying in ${timeDiff} days. `;
+      timeDiff = Math.ceil(timeDiff / 3600);
+      retryingText = `Retrying in ${timeDiff} hrs. `;
     }
   }
 
@@ -40,6 +41,22 @@ export default props => {
   // billing_start in next_due invoice is charge_at of subscription. Check FE creation of next_due invoice. (Not api related)
   if (item.status === 'next_due' && item.billing_start) {
     timeDiff = item.billing_start - Math.round(new Date().getTime() / 1000);
+  }
+
+  // Charge attempts failed text
+  let chargeAttemptsFailedText;
+
+  if (isInvoiceWithNoMoreAttempts) {
+    chargeAttemptsFailedText = <span>All charge attempts failed</span>;
+  } else if (false) {
+    chargeAttemptsFailedText = (
+      <span>
+        {authAttempts} {authAttempts > 1
+          ? 'charge attempts'
+          : 'charge attempt'}{' '}
+        failed.
+      </span>
+    );
   }
 
   // Check if row is clickable
@@ -107,14 +124,7 @@ export default props => {
           {item.id &&
           retryingText && [
             <span key="info" class="text-danger">
-              <i class="icon icon-info-circle" />{' '}
-              {
-                <span>
-                  {authAttempts}{' '}
-                  {authAttempts > 1 ? 'charge attempts' : 'charge attempt'}{' '}
-                  failed.
-                </span>
-              }
+              <i class="icon icon-info-circle" /> {chargeAttemptsFailedText}
             </span>,
             <span key="info-notice">
               {' '}{retryingText}

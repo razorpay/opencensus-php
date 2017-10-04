@@ -41,6 +41,16 @@ export default class EntityDetailList extends Component {
         item = items[index]; // 0th is latest item
       }
 
+      let isInvoiceWithNoMoreAttempts = false;
+      if (subscriptionStatus === 'halted') {
+        if (item.subscription_status === 'halted') {
+          if (index === limit - 1 || items[index + 1].status === 'paid') {
+            // look ahead invoice if paid
+            isInvoiceWithNoMoreAttempts = true;
+          }
+        }
+      }
+
       let isFirstInvoiceUpfront = false;
       let isFirstInvoiceRecurring = true;
 
@@ -85,6 +95,7 @@ export default class EntityDetailList extends Component {
           loading={loading}
           isUpfront={isUpfrontInvoice}
           authAttempts={isChargeAttemptFailed ? this.props.authAttempts : null}
+          isInvoiceWithNoMoreAttempts={isInvoiceWithNoMoreAttempts}
           subscriptionchargeAt={subscriptionchargeAt}
           onManualAttempt={onManualAttempt}
           subscriptionStatus={subscriptionStatus}
