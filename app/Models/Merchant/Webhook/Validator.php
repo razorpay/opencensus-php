@@ -17,7 +17,6 @@ class Validator extends Base\Validator
     protected static $createValidators = [
         'events',
         'url',
-        'public_ip',
     ];
 
     protected static $editRules = [
@@ -30,7 +29,6 @@ class Validator extends Base\Validator
     protected static $editValidators = [
         'events',
         'url',
-        'public_ip'
     ];
 
     // Refer: http://www-archive.mozilla.org/projects/netlib/PortBanning.html#portlist
@@ -42,15 +40,8 @@ class Validator extends Base\Validator
         993, 995, 2049, 4045, 6000
     ];
 
-    protected function validatePublicIp($input)
+    private function validatePublicIp($url)
     {
-        if (isset($input[Entity::URL]) === false)
-        {
-            return;
-        }
-
-        $url = $input[Entity::URL];
-
         if ($this->validatePublicIpAddress($url) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -105,6 +96,8 @@ class Validator extends Base\Validator
         {
             return;
         }
+
+        $this->validatePublicIp($input[Entity::URL]);
 
         $components = parse_url($input[Entity::URL]);
 
