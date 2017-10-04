@@ -1,9 +1,10 @@
 import { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-import { Field, reduxForm, FieldArray } from 'redux-form';
+import { Field, reduxForm, FieldArray, formValueSelector } from 'redux-form';
 import AsyncButton from 'react-async-button';
 import moment from 'moment';
 import DatePickerField from 'rzp/ui/Forms/DatePickerField';
+import ReduxDatetime from 'rzp/ui/ReduxDatetime';
 import InputField from 'rzp/ui/Forms/InputField';
 import ModalHeader from 'rzp/ui/ModalHeader';
 import Alert from 'rzp/ui/Forms/Alert';
@@ -13,6 +14,8 @@ import { required, phone, email } from 'rzp/utils/validators';
 import { showNotification } from 'rzp/modules/notifications';
 import ShowWhen from 'merchant/components/ShowWhen';
 import NotesFieldArray from 'merchant/components/NotesFieldArray';
+
+const selector = formValueSelector('newPaymentLink');
 
 function validate(values) {
   let errors = {};
@@ -45,7 +48,16 @@ function validate(values) {
   return errors;
 }
 
-@connect(state => state.session, { saveInvoice, showNotification })
+@connect(
+  state => {
+    return {
+      ...state.session,
+      expireBy: selector(state, 'expire_by'),
+      expireByDate: selector(state, 'expire_by_date'),
+    };
+  },
+  { saveInvoice, showNotification }
+)
 @reduxForm({
   form: 'newPaymentLink',
   initialValues: {
@@ -63,17 +75,69 @@ export default class CreatePaymentLink extends Component {
     this.state = {
       errors: null,
     };
+    this.setExpiryDate = this.setExpiryDate.bind(this);
   }
 
   componentWillMount() {
     if (this.props.invoice) {
-      this.props.initialize(this.props.invoice);
+      const expireBy = this.props.invoice.expire_by;
+
+      this.props.initialize({
+        ...this.props.invoice,
+        ...(expireBy && {
+          expire_by_date: moment(expireBy * 1000).startOf('day').unix(),
+          expire_by: expireBy * 1000,
+        }),
+      });
     }
   }
 
+  setExpiryDate(date) {
+    /*
+     * This gets executed when Expire By date is set/removed
+     * In the case of removal, `date` will be null
+     **/
+
+    // this.props.expireBy will contain the time that is stored in the
+    // backend
+    let expiryWithTime = this.props.expireBy;
+
+    if (date) {
+      if (expiryWithTime) {
+        // calculate time elapsed since the start of `expiryDateWithTime`
+        // and add the diff to selected date
+        expiryWithTime =
+          date * 1000 +
+          (expiryWithTime - moment(expiryWithTime).startOf('day').valueOf());
+      } else {
+        // if `expiryDateWithTime` is not set and somebody selects a date
+        // expiry time should be the EOD of the selected date (11:59 PM)
+        expiryWithTime = date * 1000 + 24 * 60 * 60 * 1000 - 1000;
+      }
+    } else {
+      // Remove time field when date field is unset
+      expiryWithTime = null;
+    }
+
+    this.props.change('expire_by', expiryWithTime);
+  }
+
   save = props => {
+    const params = { ...props };
+
+    if (params.expire_by) {
+      if (
+        typeof params.expire_by === 'number' ||
+        moment.isMoment(params.expire_by)
+      ) {
+        params.expire_by = window.parseInt(params.expire_by / 1000);
+      } else {
+        return this.setState({ errors: ['Invalid Expiry Date'] });
+      }
+    }
+
     return this.props
-      .saveInvoice(props)
+      .saveInvoice(params)
       .then(invoice => {
         this.props.onSave(invoice);
         this.props.closeModal();
@@ -187,16 +251,27 @@ export default class CreatePaymentLink extends Component {
                   </label>
                   <div class="col-md-4">
                     <Field
-                      name="expire_by"
+                      name="expire_by_date"
                       component={DatePickerField}
-                      endOfDayTimeStamp={true}
+                      startOfDayTimeStamp={true}
                       showClearDate={true}
                       isOutsideRange={day => {
                         let diff = moment().diff(day, 'hours') / 24;
                         return Math.floor(diff) > 0;
                       }}
+                      onDateChange={this.setExpiryDate}
                     />
                   </div>
+                  {this.props.expireBy &&
+                    <div class="col-md-4">
+                      <Field
+                        name="expire_by"
+                        disabled={!invoice || !invoice.expire_by_date}
+                        component={ReduxDatetime}
+                        dateFormat={false}
+                        timeFormat={true}
+                      />
+                    </div>}
                 </div>
               </div>}
 
