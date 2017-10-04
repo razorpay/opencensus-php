@@ -271,7 +271,6 @@ class FeaturesTest extends TestCase
 
     /**
      * Add a feature to test
-     * Get the features from the live database
      * Verify - Any feature added to test should not be added to live
      */
     public function testAddFeatureToTestVerifyAbsenceInLive()
@@ -285,7 +284,6 @@ class FeaturesTest extends TestCase
 
     /**
      * Add a feature to live
-     * Get the features from the test database
      * Verify - Any feature added to live should not be added to test
      */
     public function testAddFeatureToLiveVerifyAbsenceInTest()
@@ -299,7 +297,6 @@ class FeaturesTest extends TestCase
 
     /**
      * Add a feature to the test database and sync it to live
-     * Get the features from the live database
      * Verify - Any feature added to test with the should_sync
      * flag, should be synced to live
      */
@@ -314,7 +311,6 @@ class FeaturesTest extends TestCase
 
     /**
      * Add a feature to the live database and sync it to test
-     * Get the features from the test database
      * Verify - Any feature added to live with the should_sync
      * flag, should be synced to test
      */
@@ -330,7 +326,6 @@ class FeaturesTest extends TestCase
     /**
      * Add a feature to the test database
      * Add a feature to the live database and sync it to test
-     * Get the features from the live database
      * Verify - Any feature added to live with the should_sync flag,
      * should not fail even if it is already present in test
      */
@@ -348,7 +343,6 @@ class FeaturesTest extends TestCase
     /**
      * Add a feature to the live database
      * Add a feature to the test database and sync it to live
-     * Get the features from the test database
      * Verify - Any feature added to test with the should_sync flag,
      * should not fail even if it is already present in live
      */
@@ -366,9 +360,8 @@ class FeaturesTest extends TestCase
     /**
      * Add a feature to the live database
      * Add a feature to the live database and sync it to test
-     * Get the features from the test database
      * Verify - Any feature added to live with the should_sync flag, should not
-     * fail even if it is already present in live. It should add it to test
+     * fail even if it is already present in test
      */
     public function testAddFeatureToLiveAddFeatureToLiveSyncedToTest()
     {
@@ -382,11 +375,10 @@ class FeaturesTest extends TestCase
     }
 
     /**
-     * Add a feature to the live database
-     * Add a feature to the live database and sync it to test
-     * Get the features from the test database
+     * Add a feature to the test database
+     * Add a feature to the test database and sync it to live
      * Verify - Any feature added to live with the should_sync flag, should not
-     * fail even if it is already present in live. It should add it to test
+     * fail even if it is already present in live
      */
     public function testAddFeatureToTestAddFeatureToTestSyncedToLive()
     {
@@ -402,7 +394,6 @@ class FeaturesTest extends TestCase
     /**
      * Add a feature to live and sync it to test
      * Delete the feature from the test database
-     * Get the features from the live database
      * Verify - Any feature deleted from test should not be deleted from live
      */
     public function testDeleteFeatureFromTestAndVerifyPresenceInLive()
@@ -423,7 +414,6 @@ class FeaturesTest extends TestCase
     /**
      * Add a feature to live and sync it to test
      * Delete the feature from the live database
-     * Get the features from the test database
      * Verify - Any feature deleted from live should not be deleted from test
      */
     public function testDeleteFeatureFromLiveAndVerifyPresenceInTest()
@@ -444,7 +434,6 @@ class FeaturesTest extends TestCase
     /**
      * Add a feature to live and sync it to test
      * Delete the feature from the test database and sync it to live
-     * Get the features from the live as well as test
      * Verify - Any feature deleted from test and synced to live,
      * should be deleted from live as well
      */
@@ -466,7 +455,6 @@ class FeaturesTest extends TestCase
     /**
      * Add a feature to live and sync it to test
      * Delete the feature from the live database and sync it to test
-     * Get the features from the test as well as live
      * Verify - Any feature deleted from live and synced to test,
      * should be deleted from test as well
      */
@@ -489,7 +477,6 @@ class FeaturesTest extends TestCase
      * Add a feature to live and sync it to test
      * Delete the feature from the live database.
      * Delete the feature from the test database and sync it to live
-     * Get the features from the test as well as live
      * Verify - Deleting the feature from test with sync, should not
      * fail even if the feature does not exist on live
      */
@@ -514,10 +501,8 @@ class FeaturesTest extends TestCase
      * Add a feature to live and sync it to test
      * Delete the feature from the test database.
      * Delete the feature from the live database and sync it to test
-     * Get the features from the live as well as test
      * Verify - Deleting the feature from test with sync, should not
-     * fail even if the feature does not exist on test. Feature should be
-     * deleted from live
+     * fail even if the feature does not exist on test.
      */
     public function testDeleteFeatureFromTestDeleteFeatureFromLiveSyncedToTest()
     {
