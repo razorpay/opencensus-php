@@ -114,4 +114,18 @@ class IrctcRefund extends Base
         // Don't send an email
         return;
     }
+
+    protected function getFileName($ext)
+    {
+        $time = Carbon::now(Timezone::IST)->format('Ymd');
+
+        $prefix = 'deltarefund_RZRPAY_';
+
+        if ($this->mode === Mode::TEST)
+        {
+            $prefix = 'deltarefund_WUATRZRPAY_';
+        }
+
+        return $prefix . $time . '_V1' . $ext;
+    }
 }

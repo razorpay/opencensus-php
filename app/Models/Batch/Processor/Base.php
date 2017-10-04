@@ -333,12 +333,12 @@ class Base extends BaseModel\Core
         {
             case FileStore\Format::TXT:
                 $txt = $this->generateText($entries, '|');
-                $this->outputFileLocalPath = $this->createTxtFile($this->batch->getId() . '.' . $ext, $txt);
+                $this->outputFileLocalPath = $this->createTxtFile($this->getFileName($ext), $txt);
                 return;
 
             case FileStore\Format::CSV:
                 $txt = $this->generateText($entries, ',');
-                $this->outputFileLocalPath = $this->createTxtFile($this->batch->getId() . '.' . $ext, $txt);
+                $this->outputFileLocalPath = $this->createTxtFile($this->getFileName($ext), $txt);
                 return;
 
             case FileStore\Format::XLSX:
@@ -359,6 +359,11 @@ class Base extends BaseModel\Core
             default:
                 throw new LogicException("Extension not handled: {$ext}");
         }
+    }
+
+    protected function getFileName($ext)
+    {
+        return $this->batch->getId() . '.' . $ext;
     }
 
     protected function sendProcessedMail()
