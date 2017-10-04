@@ -3,6 +3,7 @@
 namespace RZP\Models\FundTransfer\Axis;
 
 use Mail;
+use Config;
 use Carbon\Carbon;
 use phpseclib\Crypt\AES;
 use PHPExcel_Shared_Date;
@@ -50,9 +51,9 @@ class NodalAccount extends NodalBase\NodalAccount
 
         $this->id = Base\UniqueIdEntity::generateUniqueId();
 
-        $this->secret = env('AXIS_NODAL_AES_SECRET');
+        $this->secret = Config::get('axis.secret');
 
-        $this->iv = env('AXIS_NODAL_AES_IV');
+        $this->iv = Config::get('axis.iv');
     }
 
     public function generateTransferFile(string $amount): array
