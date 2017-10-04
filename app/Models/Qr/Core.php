@@ -66,19 +66,15 @@ class Core extends Base\Core
         {
             $qr = $this->create($input);
 
-            $this->mutex->acquireAndRelease(
-                $input[Entity::MERCHANT_REFERENCE],
-                function() use ($qr)
-                {
+
                     (new Processor)->process($qr);
-                },
-                60,
-                ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+
 
             $valid = true;
         }
         catch (Exception\BadRequestValidationFailureException $ex)
         {
+            sd($ex->getMessage());
             $this->trace->traceException(
                 $ex, Trace::ERROR, TraceCode::QR_PAYMENT_PROCESSING_FAILED, $input);
 

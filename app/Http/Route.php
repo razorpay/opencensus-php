@@ -1051,6 +1051,7 @@ final class Route
         'settings_fetch',
         'settings_upsert',
         'settings_delete',
+        'qr_payment_process',
     ];
 
     public static $proxy = [
@@ -1381,7 +1382,6 @@ final class Route
         'upi_npci_request',
         'upi_zero_call',
         'mock_billdesk_payment',
-        'qr_payment_process',
     ];
 
     public static $internalApps = [

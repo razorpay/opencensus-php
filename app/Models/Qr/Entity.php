@@ -84,4 +84,14 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::MERCHANT_REFERENCE);
     }
+
+    public function getMethod()
+    {
+        return $this->getAttribute(self::METHOD);
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
 }

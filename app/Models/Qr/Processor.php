@@ -73,7 +73,7 @@ class Processor extends Base\Core
             $qr,
             $paymentProcessor)
         {
-            $paymentInput = $this->qrbankTransferPaymentArray($bankTransfer);
+            $paymentInput = $this->qrPaymentArray($qr);
 
             $res = $paymentProcessor->process($paymentInput);
 
@@ -131,11 +131,13 @@ class Processor extends Base\Core
 
     protected function getVirtualAccountFromQr(Entity $qr)
     {
-        $virtualAccountId = $qr->getMerchantReference();
+        $bharatQrId = $qr->getMerchantReference();
 
-        //TODO:: Discuss if to fail it or not. Not sure it will ever happen.
-        //Need to discuss with hitachi guys
-        $virtualAccount = $this->repo->findOrFailPublic($virtualAccountId);
+        $bharatQr = $this->repo->bharat_qr->findOrFailPublic($bharatQrId);
+
+        $virtualAccount = $this->repo
+                               ->virtual_account
+                               ->getActiveVirtualAccountFromBharatQrId($bharatQr->getId());
 
         return $virtualAccount;
     }
@@ -147,14 +149,12 @@ class Processor extends Base\Core
 
     protected function qrPaymentArray(Entity $qr): array
     {
-        $paymentArray = self::DEFAULT_BANK_TRANSFER_ARRAY;
-
         $paymentArray[Payment::CURRENCY] = Currency::INR;
         $paymentArray[Payment::METHOD]   = $qr->getMethod();
 
         //TODO :: Need to check amount format for hitachi side
         $paymentArray[Payment::AMOUNT]      = ($qr->getAmount()) * 100;
-        $paymentArray[Payment::DESCRIPTION] = $bankTransfer->getDescription() ?? "";
+        $paymentArray[Payment::DESCRIPTION] = "";
 
         if ($this->virtualAccount->hasCustomer() === true)
         {
