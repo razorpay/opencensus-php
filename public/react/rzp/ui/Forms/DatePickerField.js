@@ -23,6 +23,7 @@ export default class DatePickerField extends Component {
       input,
       name,
       endOfDayTimeStamp,
+      startOfDayTimeStamp,
       onDateChange,
       isOutsideRange,
       outputDateFormat,
@@ -42,12 +43,14 @@ export default class DatePickerField extends Component {
           date={date}
           focused={focused}
           initialVisibleMonth={() =>
-            (date ? moment(date, 'MM YYYY') : moment())}
+            date ? moment(date, 'MM YYYY') : moment()}
           isOutsideRange={isOutsideRange}
           onDateChange={date => {
             if (date) {
               if (endOfDayTimeStamp) {
                 date = date.endOf('day');
+              } else if (startOfDayTimeStamp) {
+                date = date.startOf('day');
               }
               date = outputDateFormat
                 ? date.format(outputDateFormat)
