@@ -51,9 +51,9 @@ class NodalAccount extends NodalBase\NodalAccount
 
         $this->id = Base\UniqueIdEntity::generateUniqueId();
 
-        $this->secret = Config::get('axis.secret');
+        $this->secret = Config::get('nodal.axis.secret');
 
-        $this->iv = Config::get('axis.iv');
+        $this->iv = Config::get('nodal.axis.iv');
     }
 
     public function generateTransferFile(string $amount): array
