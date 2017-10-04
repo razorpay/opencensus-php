@@ -10,9 +10,11 @@ use RZP\Trace\TraceCode;
 
 class Raven
 {
-    const SMS_ID = 'sms_id';
+    const SMS_ID          = 'sms_id';
 
     const REQUEST_TIMEOUT = 60;
+
+    const TEST_SMS_ID     = '10000000000sms';
 
     protected $baseUrl;
 
@@ -57,13 +59,13 @@ class Raven
         $this->proxy = $app['config']->get('gateway.proxy_address');
     }
 
-    public function sendOtp($input)
+    public function sendOtp(array $input): array
     {
         $response = null;
 
         if ($this->mode === Mode::TEST)
         {
-            $response['sms_id'] = '10000000000sms';
+            $response[self::SMS_ID] = self::TEST_SMS_ID;
         }
         else
         {
@@ -73,23 +75,14 @@ class Raven
         return $response;
     }
 
-    public function sendSms($input)
+    public function sendSms(array $input): array
     {
-        $response = null;
-
-        if ($this->mode === Mode::TEST)
-        {
-            $response['sms_id'] = '10000000000sms';
-        }
-        else
-        {
-            $response = $this->sendRequest(self::RAVEN_URLS['send-sms'], 'post', $input);
-        }
+        $response = $this->sendRequest(self::RAVEN_URLS['send-sms'], 'post', $input);
 
         return $response;
     }
 
-    public function verifyOtp($input)
+    public function verifyOtp(array $input): array
     {
         $response = null;
 
