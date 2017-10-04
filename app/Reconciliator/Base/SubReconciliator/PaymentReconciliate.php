@@ -41,6 +41,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     protected $cardRepo;
     protected $transactionRepo;
 
+    /**
+     * @var Payment\Entity;
+     */
     protected $payment;
     protected $paymentIin;
     protected $paymentTransaction;
@@ -409,7 +412,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     protected function persistReconciliationData($rowDetails)
     {
         // If the row is present in MIS file, it means it's captured on the gateway end.
-        $this->markGatewayCapturedAsTrue();
+        $this->persistPaymentData($rowDetails);
 
         $recordSuccess = $this->recordGatewayFeeAndServiceTax($rowDetails);
 
@@ -460,13 +463,19 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $accountDetails = $this->getNbAccountDetails($row);
 
+        $authCode = $this->getAuthCode($row);
+
+        $arn = $this->getArn($row);
+
         $rowDetails = [
             BaseReconciliate::PAYMENT_ID           => $paymentId,
             BaseReconciliate::GATEWAY_SERVICE_TAX  => $serviceTax,
             BaseReconciliate::GATEWAY_FEE          => $fee,
             BaseReconciliate::GATEWAY_SETTLED_AT   => $gatewaySettledAt,
             BaseReconciliate::REFERENCE_NUMBER     => $referenceNumber,
-            BaseReconciliate::GATEWAY_PAYMENT_DATE => $gatewayPaymentDate
+            BaseReconciliate::GATEWAY_PAYMENT_DATE => $gatewayPaymentDate,
+            BaseReconciliate::AUTH_CODE            => $authCode,
+            BaseReconciliate::ARN                  => $arn,
         ];
 
         // For wallets and netbanking, $cardDetails would be empty.
@@ -534,6 +543,34 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             //return null;
         }
     }
+
+    /**
+     * Update payment entity according to row details
+     * 1. Mark payment captured is was not already
+     * 2. Update AuthCode if found and was not updated before
+     * 3. Update ARN if found and was not updated before
+     *
+     * @param $rowDetails
+     */
+    protected function persistPaymentData($rowDetails)
+    {
+        if (empty($rowDetails[BaseReconciliate::ARN]) === false)
+        {
+            $this->setPaymentReference1($rowDetails[BaseReconciliate::ARN]);
+        }
+
+        if (empty($rowDetails[BaseReconciliate::AUTH_CODE]) === false)
+        {
+            $this->setPaymentReference2($rowDetails[BaseReconciliate::AUTH_CODE]);
+        }
+
+        // Finally mark payment captures
+        $this->markGatewayCapturedAsTrue();
+
+        $this->repo->saveOrFail($this->payment);
+    }
+
+
 
     /**
      * If IIN is missing, a new IIN is created with the card type (debit/credit)
@@ -1003,6 +1040,52 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         }
     }
 
+    protected function setPaymentReference1(string $reference1)
+    {
+        $dbReference1 = $this->payment->getReference1();
+
+        // Skip updating if pre saved value does not match upcoming
+        if (empty($dbReference1) === true)
+        {
+            $this->payment->setReference1($reference1);
+        }
+        else if ($dbReference1 !== $reference1)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code' => TraceCode::RECON_MISMATCH,
+                    'message'    => 'Reference1 is not same as in recon',
+                    'payment_id' => $this->payment->getId(),
+                    'db_value'   => $dbReference1,
+                    'incoming'   => $reference1
+                ]
+            );
+        }
+    }
+
+    protected function setPaymentReference2(string $reference2)
+    {
+        $dbReference2 = $this->payment->getReference2();
+
+        // '00' check for first_data
+        if ((empty($dbReference2) === true) or ($dbReference2 === '00'))
+        {
+            $this->payment->setReference2($reference2);
+        }
+        else if ($dbReference2 !== $reference2)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code' => TraceCode::RECON_MISMATCH,
+                    'message'    => 'Reference2 is not same as in recon',
+                    'payment_id' => $this->payment->getId(),
+                    'db_value'   => $dbReference2,
+                    'incoming'   => $reference2
+                ]
+            );
+        }
+    }
+
     protected function markGatewayCapturedAsTrue()
     {
         $currentGatewayCaptured = $this->payment->getGatewayCaptured();
@@ -1022,8 +1105,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             ]);
 
         $this->payment->setGatewayCaptured(true);
-
-        $this->repo->saveOrFail($this->payment);
     }
 
     protected function recordGatewayFeeAndServiceTax($rowDetails)
@@ -1337,6 +1418,28 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     protected function getNbAccountDetails($row)
     {
         return [];
+    }
+
+    /**
+     * If present AuthCode will be mapped to Reference2 of Payment
+     *
+     * @param $row
+     * @return null
+     */
+    protected function getAuthCode($row)
+    {
+        return null;
+    }
+
+    /**
+     * If present ARN will be mapped to Reference2 of Payment
+     *
+     * @param $row
+     * @return null
+     */
+    protected function getArn($row)
+    {
+        return null;
     }
 
     /**

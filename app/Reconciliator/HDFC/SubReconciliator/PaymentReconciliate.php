@@ -27,6 +27,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_IGST               = ['igst_amt', 'IGST AMT'];
     const COLUMN_SGST               = ['sgst_amt', 'SGST AMT'];
     const COLUMN_UTGST              = ['utgst_amt', 'UTGST_AMT'];
+    const COLUMN_ARN                = ['arn_no', 'ARN NO'];
+    const COLUMN_AUTH_CODE          = ['approv_code', 'APPROV CODE'];
 
     const COLUMN_TERMINAL_NUMBER    = ['terminal_number', 'TERMINAL NUMBER'];
 
@@ -70,7 +72,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         // The newer files have the actual
         // payment ID itself, like for FSS.
         //
-        if (UniqueIdEntity::verifyUniqueId($paymentId, false) === true)
+        if (UniqueIdEntity::verifyUniqueId($ref, false) === true)
         {
             $paymentId = $ref;
         }
@@ -474,6 +476,50 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         return null;
+    }
+
+    protected function getArn($row)
+    {
+        $columnArn = null;
+
+        foreach (self::COLUMN_ARN as $arn)
+        {
+            if (empty($row[$arn]) === false)
+            {
+                $columnArn = $row[$arn];
+
+                break;
+            }
+        }
+
+        if ((empty($columnArn) === true) or (strpos($columnArn, 'onus') !== false))
+        {
+            return null;
+        }
+
+        return trim(str_replace("'", '', $columnArn));
+    }
+
+    protected function getAuthCode($row)
+    {
+        $columnAuthCode = null;
+
+        foreach (self::COLUMN_AUTH_CODE as $ac)
+        {
+            if (empty($row[$ac]) === false)
+            {
+                $columnAuthCode = $row[$ac];
+
+                break;
+            }
+        }
+
+        if ((empty($columnAuthCode) === true))
+        {
+            return null;
+        }
+
+        return trim(str_replace("'", '', $columnAuthCode));
     }
 
     protected function isCybersource(array $row)

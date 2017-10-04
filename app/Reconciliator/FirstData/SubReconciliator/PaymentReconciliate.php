@@ -20,6 +20,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_PAYMENT_AMOUNT  = 'transaction_amt';
     const COLUMN_CARD_CATEGORY   = 'card_category';
     const COLUMN_CARD_TRIVIA     = 'card_type';
+    const COLUMN_AUTH_CODE       = 'auth_code';
+    const COLUMN_ARN             = 'arn_no';
 
     const INTERNATIONAL          = 'international';
     const ONUS                   = 'onus';
@@ -247,5 +249,45 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         return null;
+    }
+
+    protected function getAuthCode($row)
+    {
+        if (empty($row[self::COLUMN_AUTH_CODE]) === true)
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'message'           => 'Unable to get the auth_code.',
+                    'info_code'         => 'AUTH_CODE_ABSENT',
+                    'row'               => $row,
+                    'gateway'           => get_class()
+                ]
+            );
+
+            return null;
+        }
+
+        return $row[self::COLUMN_AUTH_CODE];
+    }
+
+    protected function getArn($row)
+    {
+        if (empty($row[self::COLUMN_ARN]) === true)
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'message'           => 'Unable to get the arn.',
+                    'info_code'         => 'ARN_ABSENT',
+                    'row'               => $row,
+                    'gateway'           => get_class()
+                ]
+            );
+
+            return null;
+        }
+
+        return $row[self::COLUMN_ARN];
     }
 }

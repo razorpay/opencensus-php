@@ -1,0 +1,107 @@
+<?php
+
+return [
+    'facades' => [
+        'first_data' => [
+            'super_mid'            => '78541547',
+            'mid'                  => '87001081',
+            'mid_type'             => 'ECOMM',
+            'trade_name'           => 'RENTOMOJO',
+            'legal_name'           => 'RAZORPAY SOFTWARE PRIVATE LTD',
+            'location'             => 'JAIPUR',
+            'mcc'                  => '7394',
+            'merchant_tariff'      => 'STANDARD ST',
+            'merchant_grade'       => 'EO',
+            'funding_type'         => 'NET DAILY',
+            'batch_no'             => null,
+            'batchdate'            => '10/22/2017',
+            'transaction_date'     => '10/22/2017 7:58:41 PM',
+            'post_date'            => '10/22/2017',
+            'card_number'          => '607909******3564',
+            'future_fund_date'     => null,
+            'card_category'        => 'Rupay Card',
+            'card_type'            => 'Rupay SMS',
+            'area_of_event'        => 'Rupay SMS',
+            'tid'                  => '87001081',
+            'terminal_capture'     => null,
+            'auth_code'            => '195841',
+            'orig_msg_type'        => 'TX',
+            'transaction_type'     => 'PURCHASE',
+            'transaction_amt'      => 12940,
+            'transaction_currency' => 'INR',
+            'amount'               => 12940,
+            'comm_amount'          => 129.40000000000001,
+            'net_amt'              => 12940,
+            'creditdebit'          => 'CREDIT',
+            'transaction_status'   => 'CLEARED',
+            'ft_no'                => '000065640855853',
+            'session_id_aspd'      => '8sHKxcggFRPqbO',
+            'flight_no'            => null,
+            'ticketnumber'         => null,
+            'trvlagencycode'       => null,
+            'travel_agency_name'   => null,
+            'arn_no'               => '729519152578',
+            'ret_ref_num'          => null,
+            'dcc_indicator'        => null,
+            'mc_conv_fee'          => '0',
+            'recurr_tran'          => null,
+            'custom_data'          => null,
+            'se_no'                => null,
+        ],
+
+        'hdfc' => [
+            'merchant_code'    => 'T69801',
+            'terminal_number'  => 70011863,
+            'rec_fmt'          => 'BAT ',
+            'bat_nbr'          => 15,
+            'card_type'        => 'VISA SIGN SUPERIA CHIP CR.CARD',
+            'card_number'      => '485499XXXXXX9495',
+            'trans_date'       => 43031,
+            'settle_date'      => 43032,
+            'approv_code'      => '\'006479',
+            'intnl_amt'        => 0,
+            'domestic_amt'     => 35,
+            'tran_id'          => '\'2325281332072961',
+            'upvalue'          => '\'2',
+            'merchant_trackid' => '\'8sgT9BJLSH4tHO',
+            'msf'              => 0.65000000000000002,
+            'serv_tax'         => 0,
+            'sb_cess'          => 0,
+            'kk_cess'          => 0,
+            'cgst_amt'         => 0,
+            'sgst_amt'         => 0,
+            'igst_amt'         => 0,
+            'utgst_amt'        => 0,
+            'net_amount'       => 34.350000000000001,
+            'debitcredit_type' => 'DC',
+            'udf1'             => '\' ',
+            'udf2'             => '\' ',
+            'udf3'             => '\' ',
+            'udf4'             => '\' ',
+            'udf5'             => '\' PaymentID',
+            'sequence_number'  => '\'729670245587',
+            'arn_no'           => '\'74332747297729603604154',
+            'invoice_number'   => '\'0',
+            'transaction_id'   => '\'9780002136',
+        ],
+    ],
+
+    'reconciliate' => [
+        'request' => [
+            'url'     => '/reconciliate',
+            'method'  => 'post',
+            'content' => [
+                'manual'            => 1,
+                'attachment-count'  => 1,
+                'gateway'           => null,
+            ]
+        ],
+        'response' => [
+            'content' => [
+                [
+                    'message' => 'All payments and refunds have been reconciled successfully!'
+                ]
+            ]
+        ]
+    ],
+];
