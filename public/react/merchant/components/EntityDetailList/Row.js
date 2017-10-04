@@ -15,7 +15,7 @@ export default props => {
     subscriptionStatus,
     subscriptionType,
     authAttempts,
-    isInvoiceWithNoMoreAttempts,
+    isInvoiceWithAttemptsFailed,
     subscriptionchargeAt,
     onManualAttempt,
     isUpfront,
@@ -46,9 +46,14 @@ export default props => {
   // Charge attempts failed text
   let chargeAttemptsFailedText;
 
-  if (isInvoiceWithNoMoreAttempts) {
-    chargeAttemptsFailedText = <span>All charge attempts failed</span>;
+  if (isInvoiceWithAttemptsFailed) {
+    if (item.subscription_status === 'halted') {
+      chargeAttemptsFailedText = <span>All charge attempts failed</span>;
+    } else if (subscriptionStatus === 'pending') {
+      chargeAttemptsFailedText = <span>Some charge attempts failed</span>;
+    }
   } else if (false) {
+    // For the latest invoice..?
     chargeAttemptsFailedText = (
       <span>
         {authAttempts} {authAttempts > 1
