@@ -116,7 +116,7 @@ class Validator extends Base\Validator
     protected function validateEmail(array $input)
     {
         $allowedPaymentMethods = [
-            'aeps',
+            Payment\Method::AEPS,
             Payment\Method::TRANSFER,
             Payment\Method::BANK_TRANSFER,
         ];
@@ -327,7 +327,7 @@ class Validator extends Base\Validator
     protected function validateContact($input)
     {
         $allowedPaymentMethods = [
-            'aeps',
+            Payment\Method::AEPS,
             Payment\Method::TRANSFER,
             Payment\Method::BANK_TRANSFER,
         ];
