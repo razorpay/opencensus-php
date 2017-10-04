@@ -201,8 +201,8 @@ class Processor
         $coproto = null;
 
         if (($payment->isWallet() === true) and
-            ((($payment->merchant->isContactOptional() === true) and
-              ($payment->getContact() === Payment\Entity::DUMMY_CONTACT)) or
+            ((($payment->merchant->isPhoneOptional() === true) and
+              ($payment->getContact() === Payment\Entity::DUMMY_PHONE)) or
              (($payment->merchant->isEmailOptional() === true) and
               ($payment->getEmail() === Payment\Entity::DUMMY_EMAIL))))
         {
@@ -216,7 +216,7 @@ class Processor
                 'version' => '1',
             ];
 
-            if ($payment->getContact() === Payment\Entity::DUMMY_CONTACT)
+            if ($payment->getContact() === Payment\Entity::DUMMY_PHONE)
             {
                 $coproto['missing'][] = 'contact';
                 unset($coproto['request']['content']['contact']);
