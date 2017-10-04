@@ -963,6 +963,8 @@ class Processor
     {
         $payment = new Payment\Entity;
 
+        $payment->generateId();
+
         $payment->merchant()->associate($this->merchant);
 
         $payment->build($input);
