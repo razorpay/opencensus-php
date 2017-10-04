@@ -561,6 +561,7 @@ final class Route
         'internal_dummy_account_test'             => ['get',      '/dummy/internal',                                'MerchantController@getDummyAccount'                                ],
         'admin_dummy_account_test'                => ['get',      '/dummy/admin',                                   'MerchantController@getDummyAccount'                                ],
 
+        'user_register'                           => ['post',     'users/register',                                 'UserController@registerUser'                                       ],
         'user_create'                             => ['post',     'users',                                          'UserController@createUser'                                         ],
         'user_login'                              => ['post',     'users/login',                                    'UserController@loginUser'                                          ],
         'user_confirm_by_data'                    => ['put',      'users/confirm_user_by_data',                     'UserController@confirmUserByData'                                  ],
@@ -999,6 +1000,7 @@ final class Route
         'schedule_migration',
         'schedule_update_next_run',
         'internal_dummy_account_test',
+        'user_register',
         'user_create',
         'user_confirm_by_data',
         'user_edit',

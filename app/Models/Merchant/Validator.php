@@ -22,7 +22,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $createRules = [
-        Entity::ID                          => 'required|alpha_num|size:14|unique:merchants',
+        Entity::ID                          => 'sometimes|alpha_num|size:14|unique:merchants',
         Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
         Entity::EMAIL                       => 'required|email',
         Entity::ORG_ID                      => 'sometimes|alpha_num|size:14',

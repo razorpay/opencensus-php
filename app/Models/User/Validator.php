@@ -9,14 +9,14 @@ use RZP\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::ID                    => 'required|max:14',
+        Entity::ID                    => 'sometimes|max:14',
         Entity::NAME                  => 'sometimes|string|max:200',
         Entity::EMAIL                 => 'required|email|unique:users,email',
         Entity::PASSWORD              => 'required|confirmed|numbers|letters',
         Entity::PASSWORD_CONFIRMATION => 'required',
         Entity::CONTACT_MOBILE        => 'sometimes|max:15',
         Entity::REMEMBER_TOKEN        => 'sometimes',
-        Entity::CONFIRM_TOKEN         => 'required',
+        Entity::CONFIRM_TOKEN         => 'sometimes',
     ];
 
     protected static $editRules = [

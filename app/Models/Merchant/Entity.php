@@ -131,7 +131,10 @@ class Entity extends Base\PublicEntity
 
     protected $revisionCreationsEnabled = true;
 
+    protected $generateIdOnCreate = true;
+
     protected static $generators = [
+        self::ID,
         self::TRANSACTION_REPORT_EMAIL,
         self::INVOICE_CODE,
     ];
@@ -293,7 +296,7 @@ class Entity extends Base\PublicEntity
 
     protected function generateInvoiceCode($input)
     {
-        $id = $input[self::ID];
+        $id = $this->getAttribute(self::ID);
 
         $first8 = substr($id, 0, 8);
 

@@ -56,9 +56,33 @@ class Entity extends Base\PublicEntity
         self::CONFIRM_TOKEN,
     ];
 
-    protected $generateIdOnCreate = false;
+    protected static $generators = [
+        self::ID,
+        self::CONFIRM_TOKEN,
+    ];
+
+    protected $generateIdOnCreate = true;
 
     protected $appends = [self::CONFIRMED];
+
+    /**
+     * Generates a one time use token of the given length
+     */
+    protected function generateOneTimeUseToken($length)
+    {
+        $bytes = random_bytes($length / 2);
+        $token = bin2hex($bytes);
+
+        return $token;
+    }
+
+    /**
+     * Generates confirmation token
+     */
+    protected function generateConfirmToken()
+    {
+        $this->setAttribute(self::CONFIRM_TOKEN, $this->generateOneTimeUseToken(32));
+    }
 
     public function merchants()
     {

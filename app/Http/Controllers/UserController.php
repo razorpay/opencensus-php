@@ -6,6 +6,15 @@ use ApiResponse;
 
 class UserController extends Controller
 {
+    public function registerUser()
+    {
+        $input = Request::all();
+
+        $data = $this->service()->register($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function createUser()
     {
         $input = Request::all();

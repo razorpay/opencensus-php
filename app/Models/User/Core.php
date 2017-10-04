@@ -38,6 +38,13 @@ class Core extends Base\Core
         return $user;
     }
 
+    public function getUserFromEmail(array $input)
+    {
+        $user = $this->repo->user->getUserFromEmail($input[Entity::EMAIL]);
+
+        return $user;
+    }
+
     public function confirm(Entity $user)
     {
         $user->setConfirmTokenNull();
