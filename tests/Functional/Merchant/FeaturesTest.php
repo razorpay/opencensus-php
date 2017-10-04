@@ -10,6 +10,7 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
 
@@ -552,15 +553,15 @@ class FeaturesTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        //$url = "storage/files/" . Constants::ONBOARDING .  "/" . Constants::VENDOR_AGREEMENT . ".pdf";
+        $url = storage_path("files/" . Constants::ONBOARDING .  "/" . Constants::VENDOR_AGREEMENT . ".pdf");
 
-        //$uploadedFile = $this->createUploadedFile($url);
+        $uploadedFile = $this->createUploadedFile($url);
 
         $testData = $this->testData[__FUNCTION__];
 
         $request = $testData['request'];
 
-        //$request['content'][Constants::VENDOR_AGREEMENT] = $uploadedFile;
+        $request['files'][Constants::VENDOR_AGREEMENT] = $uploadedFile;
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -582,17 +583,21 @@ class FeaturesTest extends TestCase
      *
      * @return UploadedFile
      */
-    protected function createUploadedFile(string $url): UploadedFile
+    protected function createUploadedFile(string $file): UploadedFile
     {
-        $mime = 'application/pdf';
+        $this->assertFileExists($file);
 
-        return new UploadedFile(
-            $url,
-            'file',
-            $mime,
-            filesize($url),
+        $mimeType = 'application/pdf';
+        $uploadedFile = new UploadedFile(
+            $file,
+            $file,
+            $mimeType,
+            filesize($file),
             null,
-            true);
+            true
+        );
+
+        return $uploadedFile;
     }
 
     /**
