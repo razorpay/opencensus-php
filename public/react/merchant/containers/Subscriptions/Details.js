@@ -225,8 +225,6 @@ export default class SubscriptionDetailsContainer extends Component {
       status: 'next_due',
       currency: 'INR',
       billing_start: chargeAt,
-      date: chargeAt,
-      issued_at: chargeAt,
       amount: planAmount + totalAddOnsAmount,
     };
   }
@@ -250,8 +248,10 @@ export default class SubscriptionDetailsContainer extends Component {
 
             this.props.closeModal();
 
-            // Fetch the list of invoices again
-            this.fetchInvoicesList(this.props.entity.id);
+            // Make all fetch calls
+            // this.fetchSubscriptionDetails(this.props.entity.id);
+            // this.fetchInvoicesList(this.props.entity.id);
+            this.postChargeAttempt();
 
             return response;
           })
@@ -265,8 +265,8 @@ export default class SubscriptionDetailsContainer extends Component {
     });
   };
 
-  // Refetch the details after success of test charge attempt
-  postTestChargeAttempt = () => {
+  // Refetch the details after success of test btn charge attempt / manual charge attemp
+  postChargeAttempt = () => {
     // Make all fetch calls
     this.fetchSubscriptionDetails(this.props.entity.id);
     this.fetchInvoicesList(this.props.entity.id);
@@ -283,7 +283,7 @@ export default class SubscriptionDetailsContainer extends Component {
         <TestPaymentModal
           subscriptionId={this.props.id}
           subscriptionStatus={this.props.entity.status}
-          postAction={this.postTestChargeAttempt}
+          postAction={this.postChargeAttempt}
         />
       ),
       size: 'small',
@@ -362,11 +362,19 @@ export default class SubscriptionDetailsContainer extends Component {
         invoicesList = { ...invoices };
         invoicesList.items = [...invoices.items]; // To avoid multiple additions when render is called multiple times
 
-        let nextDueInvoice = this.getUpcomingInvoiceDetails(
+        let chargeAt;
+        chargeAt =
           entity.status === 'created' &&
           (entity.type === 0 || entity.type === 2)
             ? entity.charge_at
-            : null,
+            : null;
+
+        if (entity.status === 'pending') {
+          chargeAt = null;
+        }
+
+        let nextDueInvoice = this.getUpcomingInvoiceDetails(
+          chargeAt,
           plan.item ? plan.item.amount * entity.quantity : 0,
           this.state.addons
         );
@@ -391,6 +399,10 @@ export default class SubscriptionDetailsContainer extends Component {
             (entity.type === 0 || entity.type === 2)
               ? entity.charge_at
               : null;
+
+          if (entity.status === 'pending') {
+            chargeAt = null;
+          }
 
           invoiceData = this.getUpcomingInvoiceDetails(
             chargeAt,

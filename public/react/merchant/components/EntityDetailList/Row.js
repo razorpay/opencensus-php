@@ -13,6 +13,7 @@ export default props => {
     loading,
     activeSecEntityId,
     subscriptionStatus,
+    subscriptionType,
     authAttempts,
     subscriptionchargeAt,
     onManualAttempt,
@@ -123,13 +124,12 @@ export default props => {
             do {
               if (
                 item.status === 'issued' &&
-                [
-                  'active',
-                  'pending',
-                  'halted',
-                  'completed',
-                  'cancelled',
-                ].indexOf(subscriptionStatus) > -1
+                (['active', 'pending', 'halted', 'completed'].indexOf(
+                  subscriptionStatus
+                ) > -1 ||
+                  (subscriptionStatus === 'cancelled' &&
+                    (index > 1 ||
+                      (subscriptionType !== 3 && subscriptionType !== 1))))
               ) {
                 <AsyncButton
                   class="btn-link no-padding"

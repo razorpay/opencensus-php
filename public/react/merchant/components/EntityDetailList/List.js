@@ -22,9 +22,9 @@ export default class EntityDetailList extends Component {
       goToLink,
       activeSecEntityId,
       onManualAttempt,
-      subscriptionType,
       subscriptionchargeAt,
       subscriptionStatus,
+      subscriptionType,
       mode,
     } = this.props;
     let list = [];
@@ -88,6 +88,7 @@ export default class EntityDetailList extends Component {
           subscriptionchargeAt={subscriptionchargeAt}
           onManualAttempt={onManualAttempt}
           subscriptionStatus={subscriptionStatus}
+          subscriptionType={subscriptionType}
           mode={mode}
         />
       );
