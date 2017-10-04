@@ -39,7 +39,7 @@ return [
         'status'          => 'S',
     ],
 
-    'testAuthorizeFailed' => [
+    'testAuthorizationFailure' => [
         'response' => [
             'content'     => [
                 'error' => [
@@ -69,7 +69,7 @@ return [
         'status'          => Status::SUCCESS
     ],
 
-    'testAuthFailedVerifySuccessEntity' => [
+    'testAuthFailedEntity' => [
         'bank_payment_id' => 'AB1234',
         'received'        => true,
         'bank'            => 'BARB',

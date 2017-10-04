@@ -177,7 +177,9 @@ class Gateway extends Base\Gateway
                 'gateway'  => $this->gateway
             ]);
 
-        $verify->verifyResponseContent = $this->parseVerifyResponse($response->body);
+        $content = $this->parseVerifyResponse($response->body);
+
+        $verify->verifyResponseContent = $this->getMappedAttributes($content);
     }
 
     protected function verifyPayment($verify)
@@ -196,8 +198,6 @@ class Gateway extends Base\Gateway
         }
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
-
-        $this->saveVerifyContentIfNeeded($gatewayPayment, $verify);
     }
 
     protected function getVerifyRequestData($verify)
@@ -236,28 +236,6 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function saveVerifyContentIfNeeded($gatewayPayment, $verify)
-    {
-        $payment = $verify->payment;
-
-        $content = $verify->verifyResponseContent;
-
-        $gatewayAttributes = $this->getContentToSave($payment);
-
-        $gatewayAttributes[ResponseFields::BANK_REF_NUMBER] = $content[ResponseFields::BANK_REF_NUMBER];
-
-        // Setting success status, since verification is success
-        $gatewayAttributes[ResponseFields::STATUS] = Status::SUCCESS;
-
-        // Callback gave failure status, but verify is success
-        if ($gatewayPayment[NetbankingEntity::STATUS] === Status::FAILURE)
-        {
-            $gatewayPayment = $this->updateGatewayPaymentEntity($gatewayPayment, $gatewayAttributes);
-        }
-
-        return $gatewayPayment;
-    }
-
     // -------------------- Verify helper methods end -------------------
 
     // -------------------- General helper methods ----------------------
@@ -279,7 +257,7 @@ class Gateway extends Base\Gateway
 
     protected function isStatusCodeSuccess($content)
     {
-        return ($content[ResponseFields::STATUS] === Status::SUCCESS);
+        return ($content[NetbankingEntity::STATUS] === Status::SUCCESS);
     }
 
     protected function updateGatewayPaymentEntity(

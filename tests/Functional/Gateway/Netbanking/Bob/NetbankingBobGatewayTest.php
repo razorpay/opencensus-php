@@ -51,7 +51,7 @@ class NetbankingBobGatewayTest extends TestCase
         $this->assertTestResponse($gatewayPayment, 'testPaymentNetbankingEntity');
     }
 
-    public function testAuthorizeFailed()
+    public function testAuthorizationFailure()
     {
         $data = $this->testData[__FUNCTION__];
 
@@ -83,24 +83,17 @@ class NetbankingBobGatewayTest extends TestCase
         $this->assertTestResponse($gatewayPayment, 'testPaymentVerifySuccessEntity');
     }
 
-    public function testAuthFailedVerifySuccess()
+    public function testAuthorizeFailedPayment()
     {
-        $this->testAuthorizeFailed();
-
-        $data = $this->testData['testVerifyMismatch'];
+        $this->testAuthorizationFailure();
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->runRequestResponseFlow(
-            $data,
-            function() use ($payment)
-            {
-                $this->verifyPayment($payment['id']);
-            });
+        $this->authorizeFailedPayment($payment['id']);
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertTestResponse($gatewayPayment, 'testAuthFailedVerifySuccessEntity');
+        $this->assertTestResponse($gatewayPayment, 'testAuthFailedEntity');
     }
 
     public function testRefundExcelFile()
