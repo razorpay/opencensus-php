@@ -53,6 +53,8 @@ function validate(values) {
     return {
       ...state.session,
       expireBy: selector(state, 'expire_by'),
+      // `expireByDate` is the expiry date wihtout any info about the time
+      // (start of the day)
       expireByDate: selector(state, 'expire_by_date'),
     };
   },
@@ -112,7 +114,8 @@ export default class CreatePaymentLink extends Component {
       } else {
         // if `expiryDateWithTime` is not set and somebody selects a date
         // expiry time should be the EOD of the selected date (11:59 PM)
-        expiryWithTime = date * 1000 + 24 * 60 * 60 * 1000 - 1000;
+        // `date` will always be the start of the day
+        expiryWithTime = (date + 24 * 60 * 60 - 1) * 1000;
       }
     } else {
       // Remove time field when date field is unset
