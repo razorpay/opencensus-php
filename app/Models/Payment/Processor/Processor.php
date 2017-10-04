@@ -812,8 +812,13 @@ class Processor
 
     }
 
-    protected function createPaymentEntity(array $input, $payment): Payment\Entity
+    protected function createPaymentEntity(array $input, Payment\Entity $payment = null): Payment\Entity
     {
+        if ($payment == null)
+        {
+            $payment = $this->buildPaymentEntity($input);
+        }
+
         $this->tracePaymentNewRequest($input);
 
         // $this->segment->trackPayment($payment, TraceCode::PAYMENT_NEW_REQUEST);
