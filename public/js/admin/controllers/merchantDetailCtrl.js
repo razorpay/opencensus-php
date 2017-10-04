@@ -1048,6 +1048,7 @@ app
         delete bankAccount.mpin_set;
         delete bankAccount.ifsc;
         delete bankAccount.name;
+        delete bankAccount.bank_name;
 
         var data = {
           route_name: 'merchant_add_bank_account',
