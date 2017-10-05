@@ -18,6 +18,10 @@ use RZP\Models\Gateway\File\Processor\Base as BaseProcessor;
 
 class Base extends BaseProcessor
 {
+    /**
+     * Banks for which we need to fetch only the payments which have been successfully
+     * reconciled while fetching for generating claim file
+     */
     const RECONCILED_PAYMENTS_REQUIRED_TARGETS = [
         Constants::KOTAK,
         Constants::RBL
@@ -38,7 +42,7 @@ class Base extends BaseProcessor
 
         if ($this->shouldFetchReconciledPayments() === true)
         {
-            $claims = $this->fetchReconciledPayments($statuses);
+            $claims = $this->fetchReconciledPayments($begin, $end, $statuses);
         }
         else
         {
@@ -48,10 +52,10 @@ class Base extends BaseProcessor
         return $claims;
     }
 
-    protected function fetchReconciledPayments(array $statuses)
+    protected function fetchReconciledPayments(int $begin, int $end, array $statuses)
     {
-        $begin = Carbon::createFromTimestamp($this->gatewayFile->getBegin())->addDay()->timestamp;
-        $end = Carbon::createFromTimestamp($this->gatewayFile->getEnd())->addDay()->timestamp;
+        $begin = Carbon::createFromTimestamp($begin)->addDay()->timestamp;
+        $end = Carbon::createFromTimestamp($end)->addDay()->timestamp;
         $tpv = $this->gatewayFile->getTpv();
 
         if ($tpv === null)
@@ -85,14 +89,6 @@ class Base extends BaseProcessor
     protected function shouldNotReportFailure(string $code): bool
     {
         return ($code === ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND);
-    }
-
-    protected function getComment(string $code): string
-    {
-        if ($code === ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND)
-        {
-            return 'Valid data not available for file processing';
-        }
     }
 
     public function checkIfValidDataAvailable(PublicCollection $claims)
@@ -185,22 +181,5 @@ class Base extends BaseProcessor
     public function sendFile()
     {
         return;
-    }
-
-    protected function canRetry(): bool
-    {
-        if ($this->gatewayFile->isAcknowledged() === true)
-        {
-            return false;
-        }
-
-        if ($this->gatewayFile->isFailed() === true)
-        {
-            $errorCode = $this->gatewayFile->getErrorCode();
-
-            return ($errorCode !== ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND);
-        }
-
-        return true;
     }
 }

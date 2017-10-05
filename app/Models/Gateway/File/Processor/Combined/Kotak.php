@@ -16,47 +16,41 @@ class Kotak extends Base
             'total'   => 0,
         ];
 
-        $refundData = [];
+        $refundsFile = [];
 
-        $claimData = [];
+        $claimsFile = [];
 
         if (isset($this->data['refunds']) === true)
         {
-            $refundData['total_amount'] = array_reduce($this->data['refunds'], function ($sum, $item)
+            $amount['refunds'] = array_reduce($this->data['refunds'], function ($sum, $item)
             {
                 $sum += ($item['refund']['amount'] / 100);
 
                 return $sum;
             });
 
-            $refundFileData = $this->getFileData(FileStore\Type::KOTAK_NETBANKING_REFUND);
-
-            $refundData = array_merge($refundData, $refundFileData);
+            $refundsFile = $this->getFileData(FileStore\Type::KOTAK_NETBANKING_REFUND);
         }
 
         if (isset($this->data['claims']) === true)
         {
-            $claimData['total_amount'] = array_reduce($this->data['claims'], function ($sum, $item)
+            $amount['claims'] = array_reduce($this->data['claims'], function ($sum, $item)
             {
                 $sum += ($item['payment']->getAmount() / 100);
 
                 return $sum;
             });
 
-            $claimsFileData = $this->getFileData(FileStore\Type::KOTAK_NETBANKING_CLAIM);
-
-            $claimData = array_merge($claimData, $claimsFileData);
+            $claimsFile = $this->getFileData(FileStore\Type::KOTAK_NETBANKING_CLAIM);
         }
 
-        $amount['claims'] = $claimData['total_amount'];
-        $amount['refunds'] = $refundData['total_amount'];
-        $amount['total'] = $claimData['total_amount'] - $refundData['total_amount'];
+        $amount['total'] = $amount['claims'] - $refundData['refunds'];
 
         return [
             'bankName'    => 'Kotak',
             'amount'      => $amount,
-            'claimsFile'  => $claimData,
-            'refundsFile' => $refundData,
+            'claimsFile'  => $claimsFile,
+            'refundsFile' => $refundsFile,
             'emails'      => $this->gatewayFile->getRecipients()
         ];
     }

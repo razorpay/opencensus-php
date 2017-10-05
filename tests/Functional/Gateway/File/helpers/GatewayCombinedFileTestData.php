@@ -56,7 +56,7 @@ return [
                 'items' => [
                     [
                         'status'              => 'acknowledged',
-                        'comments'            => 'Valid data not available for file processing',
+                        'comments'            => 'No data present for gateway file processing in the given time period',
                         'scheduled'           => true,
                         'partially_processed' => false,
                         'attempts'            => 1,
@@ -90,7 +90,7 @@ return [
                 'items' => [
                     [
                         'status'              => 'acknowledged',
-                        'comments'            => 'File not generated as claims amount is lesser than refunds amount.',
+                        'comments'            => 'Combined file not sent as claims is lesser than refunds',
                         'scheduled'           => true,
                         'partially_processed' => false,
                         'attempts'            => 1,

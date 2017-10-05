@@ -17,6 +17,15 @@ use RZP\Models\Gateway\File\Processor\Base as BaseProcessor;
 
 class Base extends BaseProcessor
 {
+    /**
+     * Error codes for which we don't want to report the failure and mark the processing
+     * as failed, as no futher actions can be taken here
+     */
+    const SUPPRESSED_ERROR_CODES = [
+        ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND,
+        ErrorCode::SERVER_ERROR_GATEWAY_FILE_CLAIMS_LESSER_THAN_REFUNDS
+    ];
+
     public function fetchEntities(): PublicCollection
     {
         $entities = new PublicCollection;
@@ -143,50 +152,8 @@ class Base extends BaseProcessor
     protected function shouldNotReportFailure(string $code): bool
     {
         return (in_array($code,
-                [
-                    ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND,
-                    ErrorCode::SERVER_ERROR_GATEWAY_FILE_CLAIMS_LESSER_THAN_REFUNDS
-                ],
+                self::SUPPRESSED_ERROR_CODES,
                 true) === true);
-    }
-
-    protected function getComment(string $code): string
-    {
-        if ($code === ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND)
-        {
-            return 'Valid data not available for file processing';
-        }
-        else if ($code === ErrorCode::SERVER_ERROR_GATEWAY_FILE_CLAIMS_LESSER_THAN_REFUNDS)
-        {
-            return 'File not generated as claims amount is lesser than refunds amount.';
-        }
-    }
-
-    /**
-     * For combined files, the gateway_file entity is retriable if it is not acknowledged
-     * or if the previous failure was NOT due to below reasons
-     * - No claims / refunds available for file generation
-     * - Total claims is less than total refunds
-     *
-     * @return bool Whether the file can be processed again
-     */
-    protected function canRetry(): bool
-    {
-        if ($this->gatewayFile->isAcknowledged() === true)
-        {
-            return false;
-        }
-
-        if ($this->gatewayFile->isFailed() === true)
-        {
-            $failureCode = $this->gatewayFile->getErrorCode();
-
-            return (in_array($failureCode,
-                    [ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND,
-                        ErrorCode::SERVER_ERROR_GATEWAY_FILE_CLAIMS_LESSER_THAN_REFUNDS], true) === false);
-        }
-
-        return true;
     }
 
     protected function getFileData(string $type)

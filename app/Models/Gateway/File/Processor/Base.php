@@ -87,7 +87,7 @@ abstract class Base extends Core
         if ($this->shouldNotReportFailure($e->getCode()) === true)
         {
             $this->acknowledge($this->gatewayFile, [
-                File\Entity::COMMENTS => $this->getComment($e->getCode()),
+                File\Entity::COMMENTS => $e->getMessage(),
             ]);
 
             return;
@@ -140,7 +140,17 @@ abstract class Base extends Core
         return false;
     }
 
-    abstract protected function canRetry(): bool;
+    /**
+     * Checks if the given gateway file can be retried or not. Currently
+     * we consider that if the refund gateway_file entity is in acknowledged state
+     * then it cannot be retried further.
+     *
+     * @return bool Whether gateway_file entity can be processed again or not
+     */
+    protected function canRetry(): bool
+    {
+        return ($this->gatewayFile->isAcknowledged() !== true);
+    }
 
     /**
      * If the processing fails due to some known reason like no data found for file
@@ -149,8 +159,6 @@ abstract class Base extends Core
      * @return bool
      */
     abstract protected function shouldNotReportFailure(string $code): bool;
-
-    abstract protected function getComment(string $code): string;
 
     abstract public function fetchEntities(): PublicCollection;
 

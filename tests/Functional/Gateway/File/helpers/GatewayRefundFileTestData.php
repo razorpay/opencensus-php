@@ -258,7 +258,7 @@ return [
                         'partially_processed' => false,
                         'attempts'            => 1,
                         'sender'              => 'refunds@razorpay.com',
-                        'comments'            => 'Valid data not available for file processing',
+                        'comments'            => 'No data present for gateway file processing in the given time period',
                         'type'                => 'refund',
                         'target'              => 'hdfc',
                         'entity'              => 'gateway_file',

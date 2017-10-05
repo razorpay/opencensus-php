@@ -186,14 +186,6 @@ class Base extends BaseProcessor
         return ($code === ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND);
     }
 
-    protected function getComment(string $code): string
-    {
-        if ($code === ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND)
-        {
-            return 'Valid data not available for file processing';
-        }
-    }
-
     /**
      * Checks if the given gateway file can be retried or not. Currently
      * we consider that if the refund gateway_file entity is in acknowledged state
@@ -203,22 +195,7 @@ class Base extends BaseProcessor
      *
      * @return bool Whether gateway_file entity can be processed again or not
      */
-    protected function canRetry(): bool
-    {
-        if ($this->gatewayFile->isAcknowledged() === true)
-        {
-            return false;
-        }
 
-        if ($this->gatewayFile->isFailed() === true)
-        {
-            $errorCode = $this->gatewayFile->getErrorCode();
-
-            return ($errorCode !== ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND);
-        }
-
-        return true;
-    }
 
     protected function getFileToWriteNameWithoutExt()
     {

@@ -17,7 +17,6 @@ class Axis extends Base
     const EXTENSION     = FileStore\Format::TXT;
     const FILE_TYPE     = FileStore\Type::AXIS_NETBANKING_CLAIMS;
     const GATEWAY       = Payment\Gateway::NETBANKING_AXIS;
-    const DATE_FORMAT   = 'Ymd';
 
     const HEADERS = [
         'PayeeId', // pid
@@ -36,7 +35,7 @@ class Axis extends Base
         foreach ($this->data as $row)
         {
             $date = Carbon::createFromTimestamp(
-                    $row['payment']['created_at'], 'Asia/Kolkata')
+                    $row['payment']['created_at'], Timezone::IST)
                     ->format('Y-m-d');
 
             $formattedData[] = [

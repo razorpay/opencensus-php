@@ -22,8 +22,6 @@ class Federal extends Base
             'total'   => 0
         ];
 
-        $claimsFile = [];
-
         $refundsFile= [];
 
         if (isset($this->data['refunds']) === true)
@@ -62,7 +60,6 @@ class Federal extends Base
             'bankName'    => 'Federal',
             'amount'      => $amount,
             'count'       => $count,
-            'claimsFile'  => $claimsFile,
             'refundsFile' => $refundsFile,
             'date'        => $date,
             'emails'      => $this->gatewayFile->getRecipients(),
