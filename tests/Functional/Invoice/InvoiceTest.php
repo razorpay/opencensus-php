@@ -36,6 +36,8 @@ class InvoiceTest extends TestCase
                 'business_registered_address' => '#1205, Rzp, Outer Ring Road, Bangalore',
             ]);
 
+        $this->fixtures->create('user', ['id' => '1000000000user']);
+
         $this->ba->privateAuth();
     }
 

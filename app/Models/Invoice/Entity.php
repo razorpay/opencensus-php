@@ -8,6 +8,7 @@ use RZP\Constants\Timezone;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
+use RZP\Models\User;
 use RZP\Models\Item;
 use RZP\Models\Order;
 use RZP\Models\Payment;
@@ -146,6 +147,7 @@ class Entity extends Base\PublicEntity
 
     const ORDER                    = 'order';
     const PAYMENTS                 = 'payments';
+    const USER                     = 'user';
 
     // ------------------------ Other constants ----------------------
 
@@ -347,6 +349,7 @@ class Entity extends Base\PublicEntity
         self::GROUP_TAXES_DISCOUNTS,
         self::SUBSCRIPTION_STATUS,
         self::USER_ID,
+        self::USER,
         self::CREATED_AT,
     ];
 
@@ -1205,6 +1208,11 @@ class Entity extends Base\PublicEntity
     public function files()
     {
         return $this->morphMany('RZP\Models\FileStore\Entity', 'entity');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User\Entity::class);
     }
 
     /**
