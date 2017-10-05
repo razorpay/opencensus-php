@@ -162,6 +162,13 @@ export default props => {
                   />
 
                   <NestedEntityDetailRow label="Notes" value={invoice.notes} />
+
+                  <EntityDetailRow label="Created By">
+                    <Definition>
+                      {'User Name'}
+                      {'something@somethingelse.com'}
+                    </Definition>
+                  </EntityDetailRow>
                 </div>
               </div>
             </div>
