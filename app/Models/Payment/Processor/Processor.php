@@ -743,7 +743,28 @@ class Processor
             $this->segment->trackPayment($this->payment, $eventCode, ['action' => $action]);
         }
 
-        return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
+        // Wrapping all gateway call, We can take actions on Exception here.
+        try
+        {
+            return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
+        }
+        catch (Exception\GatewayErrorException $ex)
+        {
+            $error = $ex->getError();
+
+            /*
+             * If error is because of invalid terminal and terminal
+             * used is direct, we can disable the terminal
+             */
+            if (($error->isInvalidTerminalError() === true) and
+                ($terminal->isShared() === false))
+            {
+                $this->disableTerminal($terminal);
+            }
+
+            throw $ex;
+        }
+
     }
 
     protected function createPaymentEntity(array $input): Payment\Entity
@@ -1546,5 +1567,20 @@ class Processor
         }
 
         return true;
+    }
+
+    protected function disableTerminal(Terminal\Entity $terminal)
+    {
+        $this->trace->error(
+            TraceCode::TERMINAL_AUTO_DISABLE,
+            [
+                'merchant_id'           => $terminal->getMerchantId(),
+                'terminal_id'           => $terminal->getId(),
+            ]
+        );
+
+        $terminal->setEnabled(false);
+
+        $this->repo->saveOrFail($terminal);
     }
 }
