@@ -22,7 +22,6 @@ use RZP\Constants\TLD;
 use RZP\Http\BasicAuth;
 use RZP\Models\Pricing;
 use RZP\Constants\Mode;
-use RZP\Constants\Entity;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
 use RZP\Models\Feature;
@@ -40,7 +39,6 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Analytics;
-use RZP\Gateway\FirstData\Gateway;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Listeners\ApiEventSubscriber;
@@ -3307,7 +3305,7 @@ trait Authorize
         $cardId = $payment->getCardId();
 
         if (($cardId !== null) and
-            ($gateway === Entity::FIRST_DATA))
+            ($gateway === Payment\Gateway::FIRST_DATA))
         {
             $card = $payment->card;
 
