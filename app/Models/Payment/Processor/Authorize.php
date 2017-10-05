@@ -3316,7 +3316,7 @@ trait Authorize
             $type = $card->getType();
 
             if (($issuer === Card\Issuer::ICIC) and
-                ($type === Gateway::DEBIT))
+                ($type === Card\Type::DEBIT))
             {
                 return false;
             }
