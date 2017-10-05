@@ -3,48 +3,72 @@
 namespace RZP\Models\BharatQr;
 
 /**
- * Hash generator implementing the CRC-16
+ * Hash generator implementing the CRC-16 to ISO/IEC 3309
  */
 class CRC16
 {
-    public function calculateCrc($data)
+    //Maximum value for 16 bit unsigned
+    const MAX_VALUE_UNSIGNED = 65535;
+
+    //Maximum value for 16 bit signed
+    const MAX_VALUE_SIGNED = 32767;
+
+    const CRC_LENGTH = 4;
+
+    public function calculateCrc(string $data)
     {
+        //This polynomial is ISO  3309 CRC
+        //computation
         $ccittPoly = 4129;
 
         $byteArray = unpack('C*', $data);
 
-        $expectedCRC = $this->calculateCrcMsb($byteArray, $ccittPoly, 65535);
+        $expectedCRC = $this->calculateCrcMsb($byteArray, $ccittPoly, self::MAX_VALUE);
 
         $hex = dechex($expectedCRC);
 
-        return str_pad($hex, 4, "0", STR_PAD_LEFT);
+        return str_pad($hex, self::CRC_LENGTH, "0", STR_PAD_LEFT);
     }
 
+    //As CRC algorithm is based on XOR of
+    //most signifant bit of data with the poly
+    //and keep moving the stream. So we store all the
+    //possible values in lookup table
     private function genCrc16TableMsb($poly)
     {
         $table = [];
-        for ($x = 0; $x < 256; $x++)
+
+        //Table will have value for every number
+        //represented by a byte
+        for ($number = 0; $number < 256; $number++)
         {
-            $w = $x << 8;
+            //This is shifted by 8 but divident is 16 bits
+            //in our case and we are using 8 bit register.
+            $finalNum = $number << 8;
+
             for ($i = 0; $i < 8; $i++)
             {
-                if (($w & 0x8000) != 0)
+                if (($finalNum & 0x8000) !== 0)
                 {
-                    $w = $w << 1 ^ $poly;
-                } else
+                    $finalNum = $finalNum << 1 ^ $poly;
+                }
+                else
                 {
-                    $w <<= 1;
+                    $finalNum <<= 1;
                 }
             }
 
-            $w = $w & 65535;
+            //In php this will be 32 bit
+            //We need to convert it to 16 bit digned
 
-            if ($w > 32767)
+            $finalNum = $finalNum & self::MAX_VALUE_UNSIGNED;
+
+            if ($finalNum > MAX_VALUE_SIGNED)
             {
-                $w -= 65536;
+                $finalNum -= 65536;
             }
 
-            $table[$x] = $w;
+            $table[$number] = $finalNum;
         }
 
         return $table;
@@ -52,6 +76,8 @@ class CRC16
 
     private function calculateCrcMsb($data, $poly, $initialCrcValue)
     {
+        //Starting point is at maximum value of
+        // 16 bit number
         $crc = $initialCrcValue;
 
         $crcTable = $this->genCrc16TableMsb($poly);
@@ -63,6 +89,6 @@ class CRC16
 
         $crc &= 0xFFFF;
 
-        return($crc);
+        return $crc;
     }
 }

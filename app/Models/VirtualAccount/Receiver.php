@@ -326,7 +326,7 @@ class Receiver
         return Provider::DEFAULT_HANDLE_MAPPING[$root];
     }
 
-    protected function padWithRandomNumbers(int $desiredLength, $str = '')
+    protected function padWithRandomNumbers(int $desiredLength, string $str = '')
     {
         $requiredLength = $desiredLength - strlen($str);
 

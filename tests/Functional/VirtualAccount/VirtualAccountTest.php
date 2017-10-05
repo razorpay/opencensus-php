@@ -45,7 +45,7 @@ class VirtualAccountTest extends TestCase
             'receiver_types' => 'bharat_qr',
         ];
 
-         $response = $this->createVirtualAccount($input);
+        $response = $this->createVirtualAccount($input);
 
         $expectedResponse = $this->testData[__FUNCTION__];
 

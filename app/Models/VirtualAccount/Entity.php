@@ -152,7 +152,6 @@ class Entity extends Base\PublicEntity
         return ($this->isAttributeNotNull(self::BHARAT_QR_ID));
     }
 
-
     public function hasCustomer()
     {
         return ($this->isAttributeNotNull(self::CUSTOMER_ID));
