@@ -20,10 +20,10 @@ use RZP\Models\Gateway\File\Processor\Base as BaseProcessor;
 
 class Base extends BaseProcessor
 {
-    const FILE_METADATA = [];
-    const COMPRESSION_REQUIRED = true;
+    const FILE_METADATA            = [];
+    const COMPRESSION_REQUIRED     = true;
     const EMI_FILE_PASSWORD_LENGTH = 7;
-    const EXTENSION = FileStore\Format::XLSX;
+    const EXTENSION                = FileStore\Format::XLSX;
 
     public function fetchEntities(): PublicCollection
     {
@@ -60,7 +60,7 @@ class Base extends BaseProcessor
 
     public function createFile()
     {
-        if ($this->isEmiFileGenerated() === true)
+        if ($this->isFileGenerated() === true)
         {
             return;
         }
@@ -229,46 +229,6 @@ class Base extends BaseProcessor
     protected function shouldNotReportFailure(string $code): bool
     {
         return ($code === ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND);
-    }
-
-    protected function getComment(string $code): string
-    {
-        if ($code === ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND)
-        {
-            return 'Valid data not available for file processing';
-        }
-    }
-
-    protected function canRetry(): bool
-    {
-        if ($this->gatewayFile->isAcknowledged() === true)
-        {
-            return false;
-        }
-
-        if ($this->gatewayFile->isFailed() === true)
-        {
-            $errorCode = $this->gatewayFile->getErrorCode();
-
-            return ($errorCode !== ErrorCode::SERVER_ERROR_GATEWAY_FILE_NO_DATA_FOUND);
-        }
-
-        return true;
-    }
-
-    protected function isEmiFileGenerated(): bool
-    {
-        if ($this->gatewayFile->isFileGenerated() === true)
-        {
-            $emiFile = $this->gatewayFile
-                               ->files()
-                               ->where(FileStore\Entity::TYPE, static::FILE_TYPE)
-                               ->first();
-
-            return $emiFile !== null;
-        }
-
-        return false;
     }
 
     protected function getFileToWriteName()
