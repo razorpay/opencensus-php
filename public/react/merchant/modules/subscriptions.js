@@ -136,7 +136,7 @@ let entityInitialState = {
     item: {},
   },
   invoices: {
-    loading: false,
+    loading: true,
     items: [],
   },
   customer: {},

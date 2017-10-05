@@ -293,9 +293,10 @@ export default class SubscriptionDetailsContainer extends Component {
   // Check if next due invoice is valid for current subscription
   checkNextDueInvoiceValidity(subsStatus, subsType) {
     return (
-      ['authenticated', 'active', 'halted', 'pending'].indexOf(subsStatus) >
+      (['authenticated', 'active', 'halted', 'pending'].indexOf(subsStatus) >
         -1 ||
-      (subsStatus === 'created' && (subsType === 0 || subsType === 2))
+        (subsStatus === 'created' && (subsType === 0 || subsType === 2))) &&
+      this.props.invoices.items.length < this.props.entity.total_count
     );
   }
 
@@ -389,7 +390,8 @@ export default class SubscriptionDetailsContainer extends Component {
       let isValidInvoice = true;
       if (
         this.props.invoice_id === 'inv_upcoming' &&
-        Object.keys(entity).length // Helps to simulate the loader for 'inv_upcoming' invoice
+        Object.keys(entity).length && // Helps to simulate the loader for 'inv_upcoming' invoice
+        !invoices.loading // To display upcoming invioce rightly
       ) {
         // inv_upcoming exists only for these subscriptions status only
         if (this.checkNextDueInvoiceValidity(entity.status, entity.type)) {
