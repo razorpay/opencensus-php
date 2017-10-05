@@ -47,7 +47,6 @@ Route::group(['middleware' => ['web']], function () {
     Route::group(['middleware' => 'auth:user', 'prefix' => 'user'], function()
     {
         Route::post('/pre_signup', 'MerchantController@postSignup');
-        Route::get('/pre_signup', 'MerchantController@getSignup');
         Route::get('/keepalive', 'UserController@getKeepAlive');
         Route::get('/logout', 'UserController@getLogout');
         // This returns all the needed information

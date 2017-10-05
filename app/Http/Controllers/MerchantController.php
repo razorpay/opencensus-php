@@ -5,6 +5,7 @@ use App;
 use Auth;
 use Input;
 use App\Api;
+use App\Generic;
 use App\Merchant;
 use App\MerchantDetails;
 use App\Http\AppResponse;
@@ -227,17 +228,6 @@ class MerchantController extends Controller
         $input = Input::all();
 
         list($error, $data) = (new Merchant\Service)->savePreSignupDetails($id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getSignup()
-    {
-        $id = Auth::user()->currentMerchant()->id;
-
-        $error = $data = [];
-
-        $data = (new Merchant\Service)->getPreSignupDetails($id);
 
         return AppResponse::jsonResponse($error, $data);
     }

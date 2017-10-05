@@ -54,18 +54,6 @@ class UserController extends Controller
         return view('merchant.tmpgetIndex', $data);
     }
 
-    private function getPreSignupData($user)
-    {
-        $merchant = (new UserHelper)->getCurrentMerchant($user);
-
-        if ($merchant)
-        {
-            return (new Merchant\Service)->getPreSignupDetails($merchant->id);
-        }
-
-        return [];
-    }
-
     /**
      * Returns an empty success to keep the user session active..
      *
