@@ -96,6 +96,8 @@ class UserController extends Controller
                 ];
 
                 Auth::attempt($credentials, false, true);
+
+                (new Merchant\Service)->tagMerchant(['newui' => 'true']);
             }
         }
         catch (User\RecoverableException $e)
