@@ -33,7 +33,7 @@ class Gateway extends Base\Gateway
     const SERVICES                   = 'SERVICES';
 
     const CHECKSUM_ATTRIBUTE         = ConnectResponseFields::RESPONSE_HASH;
-
+    
     protected $gateway = Constants\Entity::FIRST_DATA;
 
     const TRACE_CODE_MAPPING = [
@@ -51,6 +51,12 @@ class Gateway extends Base\Gateway
         {
             $input[ApiRequestFields::V1_RECURRING_TYPE] = Codes::STANDING_INSTRUCTION;
 
+            return $this->purchase($input);
+        }
+
+        if (($input['card']['issuer'] === Card\Issuer::ICIC) and
+            ($input['card']['type'] === self::DEBIT))
+        {
             return $this->purchase($input);
         }
 
@@ -72,6 +78,13 @@ class Gateway extends Base\Gateway
         parent::action($input, Action::PURCHASE);
 
         $requestContent = $this->getPurchaseRequestArray($input);
+
+        if (isset($input[ApiRequestFields::V1_RECURRING_TYPE]))
+        {
+            $recurring = $input[ApiRequestFields::V1_RECURRING_TYPE];
+
+            $requestContent[ApiRequestFields::V1_TRANSACTION][ApiRequestFields::V1_RECURRING_TYPE] = $recurring;
+        }
 
         $this->trace->info(TraceCode::GATEWAY_PURCHASE_REQUEST, $requestContent);
 
