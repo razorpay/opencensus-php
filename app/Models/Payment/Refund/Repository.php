@@ -32,7 +32,8 @@ class Repository extends Base\Repository
         Entity::BATCH_ID        => 'sometimes|alpha_dash|min:14|max:20',
         Entity::NOTES           => 'sometimes|notes_fetch',
         Entity::STATUS          => 'sometimes|string|max:30',
-        Payment\Entity::GATEWAY => 'sometimes|string|max:30'
+        Payment\Entity::GATEWAY => 'sometimes|string|max:30',
+        Payment\Entity::METHOD  => 'sometimes|string|max:30',
     );
 
     protected $signedIds = [
@@ -50,6 +51,19 @@ class Repository extends Base\Repository
         $this->joinQueryPayment($query);
 
         $query->where(Payment\Entity::GATEWAY, '=', $gateway);
+
+        $query->select($query->getModel()->getTable().'.*');
+    }
+
+    protected function addQueryParamMethod($query, $params)
+    {
+        $method = $params[Payment\Entity::METHOD];
+
+        Payment\Method::validateMethod($method);
+
+        $this->joinQueryPayment($query);
+
+        $query->where(Payment\Entity::METHOD, '=', $method);
 
         $query->select($query->getModel()->getTable().'.*');
     }

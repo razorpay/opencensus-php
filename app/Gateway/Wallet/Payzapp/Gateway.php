@@ -365,7 +365,7 @@ class Gateway extends Base\Gateway
     {
         // We have to initiate a manual refund for this payment
         // Last request was timed out
-        if ($input['refund']['id'] === '8PSYErwdew9tza')
+        if ($input['refund']['id'] === '8Y60wKPC3AfjHM')
         {
             return false;
         }
