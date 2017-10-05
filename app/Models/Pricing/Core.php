@@ -35,10 +35,6 @@ class Core extends Base\Core
 
         $rule = $rule->generateId();
 
-        $plan = $this->repo->pricing->getPricingPlanByName($input[Entity::PLAN_NAME]);
-
-        Pricing\Validator::validatePlanCountZero($plan);
-
         $rule->setAuditAction(Action::CREATE_MERCHANT_PRICING_PLAN);
 
         $this->repo->saveOrFail($rule);
@@ -48,11 +44,18 @@ class Core extends Base\Core
 
     public function createBulkPricing(array $input)
     {
-        (new Validator())->validateInput('createBulkPricing', $input);
+        $validator = new Validator();
+
+        $validator->validateInput('createBulkPricing', $input);
 
         $planName = $input[Entity::PLAN_NAME];
 
         $inputRules = $input[Entity::RULES];
+
+        // Validate plan name is unique
+        $plan = $this->repo->pricing->getPricingPlanByName($planName);
+
+        $validator->validatePlanCountZero($plan);
 
         $this->repo->transactionOnLiveAndTest(function() use ($planName, $inputRules)
         {

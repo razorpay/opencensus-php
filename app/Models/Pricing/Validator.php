@@ -367,7 +367,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public static function validatePlanCountZero(Plan $plan)
+    public function validatePlanCountZero(Plan $plan)
     {
         if ($plan->count() > 0)
         {
