@@ -33,7 +33,7 @@ class Gateway extends Base\Gateway
     const SERVICES                   = 'SERVICES';
 
     const CHECKSUM_ATTRIBUTE         = ConnectResponseFields::RESPONSE_HASH;
-    
+
     protected $gateway = Constants\Entity::FIRST_DATA;
 
     const TRACE_CODE_MAPPING = [
@@ -49,15 +49,7 @@ class Gateway extends Base\Gateway
 
         if ($this->isSecondRecurringPayment($input) === true)
         {
-            $input[ApiRequestFields::V1_RECURRING_TYPE] = Codes::STANDING_INSTRUCTION;
-
-            return $this->purchase($input);
-        }
-
-        if (($input['card']['issuer'] === Card\Issuer::ICIC) and
-            ($input['card']['type'] === self::DEBIT))
-        {
-            return $this->purchase($input);
+            return $this->secondRecurring($input);
         }
 
         $requestContent = $this->getPreAuthRequestContentArray($input);
@@ -73,18 +65,11 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function purchase(array $input)
+    protected function secondRecurring(array $input)
     {
         parent::action($input, Action::PURCHASE);
 
         $requestContent = $this->getPurchaseRequestArray($input);
-
-        if (isset($input[ApiRequestFields::V1_RECURRING_TYPE]))
-        {
-            $recurring = $input[ApiRequestFields::V1_RECURRING_TYPE];
-
-            $requestContent[ApiRequestFields::V1_TRANSACTION][ApiRequestFields::V1_RECURRING_TYPE] = $recurring;
-        }
 
         $this->trace->info(TraceCode::GATEWAY_PURCHASE_REQUEST, $requestContent);
 
@@ -1179,6 +1164,8 @@ class Gateway extends Base\Gateway
         $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_STORE_ID] = $this->getStoreId();
 
         $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = TxnType::SALE;
+
+        $body[ApiRequestFields::V1_RECURRING_TYPE] = Codes::STANDING_INSTRUCTION;
 
         $this->setPaymentRequestArray($body, $input, TxnType::SALE);
 
