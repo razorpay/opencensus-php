@@ -359,6 +359,8 @@ class Generator extends Base\Core
                                     $partialPayment);
 
         $this->invoice->order()->associate($order);
+
+        assertTrue($this->invoice->getAmount() === $order->getAmount());
     }
 
     /**
