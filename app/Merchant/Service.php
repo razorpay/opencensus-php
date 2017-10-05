@@ -950,8 +950,6 @@ class Service extends Base\Service
 
         $currentMerchant = $this->currentUser->currentMerchant();
 
-        $currentMerchant = Merchant\Entity::find($currentMerchant->id);
-
         $merchantTags = $this->getMerchantTags($currentMerchant->id);
 
         $allTags = [];
