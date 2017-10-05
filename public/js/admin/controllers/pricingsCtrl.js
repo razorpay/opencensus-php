@@ -128,7 +128,7 @@ app.controller('PricingsCtrl', [
       });
 
       var params = {
-        route_name: 'pricing_create_plan_bulk',
+        route_name: 'pricing_create_plan',
         body: payload,
       };
 
