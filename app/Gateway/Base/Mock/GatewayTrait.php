@@ -68,6 +68,8 @@ trait GatewayTrait
         }
         else if ($request['method'] === 'get')
         {
+            // We can either pass the query params in URL or via the request's
+            // content field.
             if (isset($request['content']) === true)
             {
                 $input = $request['content'];
