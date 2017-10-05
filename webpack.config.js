@@ -53,8 +53,7 @@ module.exports = {
 
   plugins: [
     new webpack.optimize.CommonsChunkPlugin({
-      name: 'vendor',
-      minChunks: Infinity,
+      names: ['vendor'],
     }),
   ].concat(htmlPlugins),
 
