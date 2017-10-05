@@ -1,0 +1,17 @@
+`
+var cdnUrl = _.htmlWebpackPlugin.options.vars.cdnUrl;
+var filename = _.htmlWebpackPlugin.options.vars.filename;
+`
+
+@include('partials/header')
+
+<link rel='stylesheet' href="`=cdnUrl`/admin.css" type='text/css' />
+</head>
+<body>
+  <div id="react-root" class="react-root"></div>
+</body>
+</html>
+<script src="`=cdnUrl`/`=filename(_, 'vendor')`"></script>
+<script src="`=cdnUrl`/`=filename(_, 'admin')`"></script>
+
+@include('partials/footer')
