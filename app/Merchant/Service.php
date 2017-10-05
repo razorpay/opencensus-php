@@ -908,8 +908,6 @@ class Service extends Base\Service
     {
         $data = [];
 
-        $merchant = Merchant\Entity::findorfail($merchantId);
-
         $referrer = $this->getReferrerAttribute($merchantId);
 
         if (($referrer === null) or
