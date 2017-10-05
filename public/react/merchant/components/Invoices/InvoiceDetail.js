@@ -141,7 +141,7 @@ export default props => {
                     {getCustomerDetail(invoice)}
                   </EntityDetailRow>
                   <EntityDetailRow
-                    label="Created at"
+                    label="Created At"
                     value={() => <Time value={invoice.date} />}
                   />
                   <EntityDetailRow
