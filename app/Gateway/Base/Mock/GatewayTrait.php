@@ -68,7 +68,7 @@ trait GatewayTrait
         }
         else if ($request['method'] === 'get')
         {
-            if (isset($request['content']) === false)
+            if (isset($request['content']) === true)
             {
                 $input = $request['content'];
             }
