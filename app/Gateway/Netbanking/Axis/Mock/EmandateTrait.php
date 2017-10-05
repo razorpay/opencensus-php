@@ -18,6 +18,8 @@ trait EmandateTrait
 
         $data = $this->getGatewayInstance()->getDecryptedData($input[RequestFields::DATA]);
 
+        $this->validateActionInput($data, 'emandateauth');
+
         $response = $this->createEmandateResponse($data);
 
         $callbackUrl = $data[RequestFields::RETURN_URL] . '?' . http_build_query($response);
@@ -49,7 +51,7 @@ trait EmandateTrait
         // TODO: Encrypt this
 
         // for test cases
-        $this->content($response, 'emandateauth');
+        $this->content($data, 'emandateauth');
 
         return $data;
     }
