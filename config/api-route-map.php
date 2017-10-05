@@ -588,6 +588,9 @@ return [
             'routeName' => 'post_keys'
         ],
 
+        // User Signup
+        'user_register'                     => 'users/register',
+
         // Admin Routes
         // Pricing
         'pricing_get_merchant_plans'        => 'pricing/merchants',

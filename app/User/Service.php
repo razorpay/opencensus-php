@@ -100,115 +100,28 @@ class Service extends Base\Service
      *
      * @param  array  $input [description]
      */
-    public function register(array $input)
+    public function register($input)
     {
-        $data = [];
-        $error = null;
-        $referer = $this->getRef($input);
+        unset($input['captcha']);
 
-        $invitationToken = Input::get('invitation', null);
-        $invitation = $user = null;
+        unset($input['business_name']);
 
-        // If we have an invitation token, the user may have created an account
-        // in the meantime. $user will be equal to the user with the same email
-        // as the invited user
-        if ($invitationToken)
+        $registerUser = [
+            'route_name' => 'user_register',
+            'body'       => $input
+        ];
+
+        $genericService = new Generic\Service;
+
+        list($error, $data) = $genericService->call('POST', $registerUser);
+
+        if (empty($error) === false)
         {
-            list($invitation, $user) = $this->getInvitationAndUserFromToken($invitationToken);
-            // Since input would be lacking an email in case registration is via
-            // the invitation
-            $input['email'] = $invitation['email'];
-        }
-
-        $heimdallInvitationToken = Input::get('merchant_invitation');
-
-        $adminId = NULL;
-
-        if ($heimdallInvitationToken)
-        {
-            // Check if this token is valid or not
-
-            $heimdallInvitationTokenInput = [
-                'route_name' => 'admin_lead_verify',
-
-                'url_params' => [
-                    '{token}' => $heimdallInvitationToken
-                ]
-            ];
-
-            $genericService = new Generic\Service;
-
-            list($tokenError, $tokenData) = $genericService->call('GET', $heimdallInvitationTokenInput);
-
-            if (empty($tokenError) and isset($tokenData['id']))
-            {
-                $adminId = $tokenData['admin_id'];
-
-                // Update sign up field against admin lead
-                $tokenSignUpUpdate = [
-                    'route_name' => 'merchant_admin_lead_put',
-
-                    'url_params' => [
-                        '{orgId}' => $tokenData['org_id'],
-                        '{id}'    => $tokenData['id'],
-                    ],
-
-                    'body' => [
-                        'signed_up' => 1
-                    ]
-                ];
-
-                list($signupTokenError, $signupTokenData) = $genericService->call('PUT', $tokenSignUpUpdate);
-            }
-        }
-
-        // $user would not be null in a very rare edge case here
-        // Which is two subsequent invitations without either being
-        // accepted. Once the second one is accepted, this block
-        // is ignored and the $user found above will be used
-        if (! $user)
-        {
-            $user = $this->buildUserEntity($input);
-
-            $userApiData = $this->getUserApiData($user);
-
-            try
-            {
-                $this->createUserOnApi($userApiData);
-            }
-            catch (\Exception $e)
-            {
-                $error[] = 'Error on creating User';
-            }
-        }
-
-        // These two branches are exclusive
-        // You cannot accept an invite and create a merchant account
-        // at the same time
-        if ($invitationToken)
-        {
-            $this->attachUserToInvite($user, $invitation);
-
-            $data['login'] = true;
-        }
-        else
-        {
-            // See HACKING.md in the root of the repo for a detailed note
-            $data = [
-                'business_name'  =>  $input['business_name'],
-                'contact_mobile' =>  Input::get('contact_mobile', null)
-            ];
-
-            list($error, $data) = $this->createMerchantFromUser($user, $data, $referer);
-
-            (new Merchant\Service)->createMerchantOnApi($data['id'], $adminId);
-
-            if ($referer)
-            {
-                (new Merchant\Service)->addMerchantTagsOnAPI($data['id'], ['ref-'.$referer]);
-            }
-
-            $this->attachMerchantUserOnApi($user->id, $data['id'], 'owner');
+            throw new \Razorpay\Api\Errors\BadRequestError(
+                $error[0],
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
         }
 
         return [$error, $data];
