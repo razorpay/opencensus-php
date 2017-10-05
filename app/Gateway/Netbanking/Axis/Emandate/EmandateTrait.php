@@ -52,7 +52,9 @@ trait EmandateTrait
     {
         $siStatus = $gatewayPayment->getSIStatus();
 
-        $recurringStatus = ($siStatus === StatusCode::SUCCESS) ? Token\RecurringStatus::CONFIRMED : Token\RecurringStatus::REJECTED;
+        $recurringStatus = ($siStatus === StatusCode::SUCCESS) ?
+                            (Token\RecurringStatus::CONFIRMED) :
+                            (Token\RecurringStatus::REJECTED);
 
         $recurringFailureReason = $gatewayPayment->getSIMessage();
 
@@ -115,7 +117,15 @@ trait EmandateTrait
      */
     protected function getRecurringPaymentData(array $input) : array
     {
-        $ppiArray = [$input['payment']['customer_id'], $input['payment']['merchant_id']];
+        $ppiArray = [
+            $input['payment']['id'],
+            'max',
+            Constants::FREQUENCY_ADHOC,
+            '123123123',
+            Carbon::now(Timezone::IST)->format('dmy'),
+            Carbon::now(Timezone::IST)->addYears(30)->format('dmy'),
+            $this->formatAmount($input['payment']['amount']),
+        ];
 
         $data = [
             RequestFields::VERSION         => Constants::VERSION,
@@ -124,7 +134,7 @@ trait EmandateTrait
             RequestFields::REQUEST_ID      => $input['payment']['id'],
             RequestFields::CUSTOMER_REF_NO => $input['token']->getId(),
             RequestFields::CURRENCY        => Currency::INR,
-            RequestFields::AMOUNT          => $input['payment']['amount'] / 100,
+            RequestFields::AMOUNT          => $this->formatAmount($input['payment']['amount']),
             RequestFields::RETURN_URL      => $input['callbackUrl'],
             RequestFields::PRE_POP_INFO    => implode('|', $ppiArray),
             RequestFields::RESERVE_FIELD_1 => AxisConstants::NO_MODIFICATION

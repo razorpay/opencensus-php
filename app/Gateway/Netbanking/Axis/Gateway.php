@@ -188,7 +188,7 @@ class Gateway extends Base\Gateway
             RequestFields::VERIFY_ITC      => $this->getVerifyItc($verify),
             RequestFields::VERIFY_PRN      => $input['payment']['id'],
             RequestFields::VERIFY_DATE     => $date,
-            RequestFields::VERIFY_AMT      => $input['payment']['amount'] / 100,
+            RequestFields::VERIFY_AMT      => $this->formatAmount($input['payment']['amount']),
         ];
 
         return $data;
@@ -285,7 +285,7 @@ class Gateway extends Base\Gateway
         return [
             RequestFields::MERCHANT_REFERENCE => $input['payment']['id'],
             RequestFields::ITEM_CODE          => $this->getMerchantId(),
-            RequestFields::AMOUNT             => $input['payment']['amount'] / 100
+            RequestFields::AMOUNT             => $this->formatAmount($input['payment']['amount']),
         ];
     }
 
@@ -544,5 +544,15 @@ class Gateway extends Base\Gateway
         assert ($this->mode === Mode::LIVE);
 
         return $this->config['live_hash_secret'];
+    }
+
+    /**
+     * Formats amount to 2 decimal places
+     * @param  int $amount amount in paise (100)
+     * @return string amount formatted to 2 decimal places in INR (1.00)
+     */
+    protected function formatAmount(int $amount): string
+    {
+        return number_format($amount / 100, 2, '.', '');
     }
 }

@@ -71,7 +71,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <td>
             <select name="method">
                 <option value="netbanking">Net Banking</option>
-                <option value="card" selected>Card</option>
+                <option value="card">Card</option>
                 <option value="wallet">Wallet</option>
                 <option value="emi">Emi</option>
                 <option value="upi">UPI</option>
@@ -90,7 +90,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
                 <option value="FDRL">Federal Bank</option>
                 <option value="RATN">RBL Bank</option>
                 <option value="CITI">CITI Bank</option>
-                <option value="UTIB">Axis Bank</option>
+                <option value="UTIB" selected>Axis Bank</option>
                 <option value="YESB">Yes Bank</option>
                 <option value="KKBK">Kotak Bank</option>
                 <option value="VIJB">Vijaya Bank</option>
@@ -194,7 +194,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
     </tr>
     <tr>
         <td colspan='40'><label for="recurring">Recurring:</label></td>
-        <td><input type="checkbox" name="recurring" value="1" id="recurring"></td>
+        <td><input type="checkbox" name="recurring" checked value="1" id="recurring"></td>
     </tr>
     <tr>
         <td colspan="100" align="center">
