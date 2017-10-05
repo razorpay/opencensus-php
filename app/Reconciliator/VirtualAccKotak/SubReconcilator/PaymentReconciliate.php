@@ -55,20 +55,22 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         // Bank Transfer will not be found in two cases:
         // 1) Payment was made to a reserved acc, in which case we can ignore it
-        // 2) Kotak did not inform us of the payment via API, in which case we
-        //    create a payment now
+        // 2) Kotak did not inform us of the payment via API, in which
+        //    case we raise an alert, and handle it some other way.
         if ($bankTransfer === null)
         {
-            if ($this->isPaymentToReservedAccount($row) === true)
+            if ($this->isPaymentToReservedAccount($row) === false)
             {
-                return null;
+                $this->messenger->raiseReconAlert(
+                    [
+                        'trace_code'    => TraceCode::RECON_ALERT,
+                        'message'       => 'Unexpected bank transfer',
+                        'row'           => $row,
+                        'gateway'       => get_called_class()
+                    ]);
             }
 
-            $this->createBankTransferPayment($row);
-
-            $bankTransfer = $this->repo
-                                 ->bank_transfer
-                                 ->findByUtr($utr);
+            return null;
         }
 
         return $bankTransfer->getPaymentId();
@@ -169,54 +171,5 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         return false;
-    }
-
-    protected function getPayeeIfsc()
-    {
-        return Provider::DEFAULT_DETAILS[Provider::KOTAK]['ifsc_code'];;
-    }
-
-    protected function getTimestamp(array $row)
-    {
-        $dateTime = $row[self::COLUMN_DATE] . ' ' .  $row[self::COLUMN_TIME];
-
-        $carbon = Carbon::createFromFormat(self::TIME_FORMAT, $dateTime, Timezone::IST);
-
-        return $carbon->getTimestamp();
-    }
-
-    /**
-     * An unexpected bank transfer is present in the MIS file.
-     * one which is not present in the DB, because Kotak failed
-     * to hit the bank_transfer_process API for a payment.
-     *
-     * This is a problem, as Kotak ought to be retrying, but we
-     * can handle it here by creating the payment now.
-     *
-     * @param  array  $row
-     */
-    protected function createBankTransferPayment(array $row)
-    {
-        $this->messenger->raiseReconAlert(
-                [
-                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
-                    'message'       => 'Unexpected bank transfer',
-                    'row'           => $row,
-                    'gateway'       => get_called_class()
-                ]);
-
-        $data = [
-            BankTransfer\Entity::PAYER_NAME     => $row[self::COLUMN_PAYER_NAME],
-            BankTransfer\Entity::PAYER_ACCOUNT  => $row[self::COLUMN_PAYER_ACCOUNT],
-            BankTransfer\Entity::PAYER_IFSC     => $row[self::COLUMN_PAYER_IFSC],
-            BankTransfer\Entity::AMOUNT         => $row[self::COLUMN_AMOUNT],
-            BankTransfer\Entity::REQ_UTR        => $row[self::COLUMN_UTR],
-            BankTransfer\Entity::PAYEE_ACCOUNT  => $row[self::COLUMN_PAYEE_ACCOUNT],
-            BankTransfer\Entity::PAYEE_IFSC     => $this->getPayeeIfsc(),
-            BankTransfer\Entity::TIME           => $this->getTimestamp($row),
-            BankTransfer\Entity::MODE           => strtolower($row[self::COLUMN_MODE]),
-        ];
-
-        (new BankTransfer\Core)->process($data);
     }
 }
