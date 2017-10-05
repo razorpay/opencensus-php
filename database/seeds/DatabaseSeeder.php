@@ -204,6 +204,17 @@ class DatabaseSeeder extends Seeder
                 )
             );
 
+            DB::table(Table::FEATURE)->insert(
+                array(
+                    'id'            => 'feature_303030',
+                    'name'          => 'e_mandate',
+                    'entity_id'     => '10000000000000',
+                    'entity_type'   => 'merchant',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime
+                )
+            );
+
             DB::table(Table::MERCHANT_DETAIL)->insert(
                 array(
                     'merchant_id'   => Account::NODAL_ACCOUNT,
