@@ -73,27 +73,6 @@ class Service extends Base\Service
     }
 
     /**
-     * Gets the email for a given invitation token
-     * Throws a recoverable exception otherwise
-     * @param  string $token invitation token
-     * @return string $email
-     */
-    protected function getInvitationAndUserFromToken($token)
-    {
-        list($error, $invitation) = (new Invitation\Service)->getInvitationByTokenFromApi($token);
-
-        if (empty($error) === false)
-        {
-            // This error is a string
-            throw new RecoverableException($error[0]);
-        }
-
-        $user = User\Entity::where('email', $invitation['email'])->first();
-
-        return [$invitation, $user];
-    }
-
-    /**
      * Main registration method. Contains most business logic for deciding what to
      * register and as what (user|merchant) and with what details. See
      * HACKING.md for a bit more details.

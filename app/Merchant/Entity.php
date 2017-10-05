@@ -300,20 +300,17 @@ class Entity extends Base\Entity
     public static function getTransactionAggregations($mode, $sort, $filterTimestamp, $type, $merchantId)
     {
         $data = \DB::table('transactions')
-                    ->join('merchants', 'transactions.merchant_id', '=', 'merchants.id')
                     ->select(
                         \DB::raw(
                             'transactions.merchant_id,
                             SUM(transactions.amount) as total_amount,
-                            SUM(transactions.count) as total_count,
-                            merchants.name as merchant_name'
+                            SUM(transactions.count) as total_count'
                         )
                     )
                     ->where('transactions.mode', '=', $mode)
                     ->where('transactions.type', '=', $type)
                     ->where('transactions.created_at', '>=', $filterTimestamp)
                     ->where('transactions.merchant_id', '=', $merchantId)
-                    ->groupBy('transactions.merchant_id')
                     ->orderBy($sort, 'DESC')
                     ->get();
 
@@ -323,13 +320,11 @@ class Entity extends Base\Entity
     public static function getAllTransactionAggregations($mode, $sort, $count, $filterTimestamp, $type)
     {
         $data = \DB::table('transactions')
-                    ->join('merchants', 'transactions.merchant_id', '=', 'merchants.id')
                     ->select(
                         \DB::raw(
                             'transactions.merchant_id,
                             SUM(transactions.amount) as total_amount,
-                            SUM(transactions.count) as total_count,
-                            merchants.name as merchant_name'
+                            SUM(transactions.count) as total_count'
                         )
                     )
                     ->where('transactions.mode', '=', $mode)
