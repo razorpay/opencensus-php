@@ -4,18 +4,30 @@ import Form from 'ui/Form';
 
 export default class Table extends Component {
   state = {
-    items: this.props.items,
+    items: this.props.items || [],
+    pending: false,
   };
 
-  fetch = ({ route, query_params } = this.props) => {
+  fetch = ({ route, queryParams } = this.props) => {
+    this.setState({
+      pending: true,
+    });
     this.props
       .fetch({
         route,
-        query_params,
+        queryParams,
       })
       .then(({ data }) => {
         this.setState({
           items: data,
+        });
+      })
+      .catch(e => {
+        console.log(e);
+      })
+      .then(() => {
+        this.setState({
+          pending: false,
         });
       });
   };
@@ -29,53 +41,37 @@ export default class Table extends Component {
   }
 
   render() {
-    let { items } = this.state;
+    let { fields, route, queryParams, model, ...props } = this.props;
+    let { items, pending } = this.state;
 
     return (
-      <div>
-        {(items &&
-          ((items.length &&
-            makeTable(this.props.fields, items, this.props.form)) || (
-              <div class="">No Items</div>
-            ))) || <div class="loading" />}
-        {this.props.children &&
-          items &&
-          items.length &&
-          React.Children.map(this.props.children, child =>
-            React.cloneElement(child, { items })
-          )}
+      <div {...props}>
+        {(pending && <div class="table-pending" />) ||
+          ((items.length && (
+            <div class="table box table-striped">
+              <div class="tr thead">
+                {fields.map((field, index) => (
+                  <div class="th" key={index}>
+                    {field[0]}
+                  </div>
+                ))}
+              </div>
+              {items.map((item, index) => {
+                return (
+                  <Form class="tr" key={index}>
+                    {fields.map((field, index) => (
+                      <div class="td" key={index}>
+                        {field[1](item)}
+                      </div>
+                    ))}
+                  </Form>
+                );
+              })}
+            </div>
+          )) || <div class="table-empty" />)}
       </div>
     );
   }
-}
-
-function makeTable(fields, items, formProps) {
-  return (
-    <div class="table pure-table pure-table-bordered pure-table-striped">
-      <div class="tr thead">
-        {fields.map((field, index) => {
-          return (
-            <div class="th" key={index}>
-              {field[0]}
-            </div>
-          );
-        })}
-      </div>
-      {items.map((item, index) => {
-        return (
-          <Form {...formProps} class="tr pure-form" key={index}>
-            {fields.map((field, index) => {
-              return (
-                <div class="td" key={index}>
-                  {field[1](item)}
-                </div>
-              );
-            })}
-          </Form>
-        );
-      })}
-    </div>
-  );
 }
 
 export function AdminTable(props) {

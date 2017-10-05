@@ -1,18 +1,35 @@
 import React, { Component } from 'react';
 
+function focusNext(e) {
+  e.target.nextElementSibling.focus();
+}
+
+function clickPrev(e) {
+  e.target.previousElementSibling.click();
+}
+
 export default function Field(props) {
   return (
-    <div class="pure-control-group">
-      <label for={props.name}>{props.label}</label>
+    <div class="field">
+      <label onClick={focusNext}>{props.label}</label>
       <input {...props} />
     </div>
   );
 }
 
-export function Select(props) {
+export function CheckField(props) {
   return (
-    <div class="pure-control-group">
-      <label for={props.name}>{props.label}</label>
+    <div class="field">
+      <input {...props} type="checkbox" />
+      <label onClick={clickPrev}>{props.label}</label>
+    </div>
+  );
+}
+
+export function SelectField(props) {
+  return (
+    <div class="field select-field">
+      <label onClick={focusNext}>{props.label}</label>
       <select
         defaultValue={props.defaultValue}
         required={props.required}

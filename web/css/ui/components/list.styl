@@ -1,0 +1,22 @@
+.list-container
+  header
+    padding: 20px
+    font-size: 20px
+  .filters
+    padding: 10px 5px
+    display: flex
+    background: #fafbfc
+    border-top: 1px solid #eee
+    border-bottom: @border-top
+    button
+      margin-left: auto
+
+.table-empty
+  text-align: center
+  &:after
+    content: 'No items to display.'
+
+.table-pending
+  text-align: center
+  &:after
+    content: 'Loading...'
