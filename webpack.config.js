@@ -1,135 +1,80 @@
-'use strict';
-
-const path = require('path');
 const webpack = require('webpack');
-const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
-const BabiliPlugin = require('babili-webpack-plugin');
+const isProd = require('process').env.NODE_ENV === 'production';
 
-const commonConfig = {
-  context: process.cwd() + '/public/react',
-  resolve: {
-    alias: {
-      moment: 'moment/min/moment.min.js',
-      react: path.resolve(__dirname, 'node_modules/react'),
-      'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
+// generated bladefiles
+const htmlPlugins = require('./web/webpack/html')(
+  {
+    'merchant.jst': 'merchantIndex',
+    'admin.jst': 'adminIndex',
+  },
+  {
+    // template locals
+    cdnUrl: isProd ? 'https://cdn.razorpay.com/dashboard' : '/dist',
+
+    filename: function(_, name) {
+      return _.webpackConfig.output.filename
+        .replace('[name]', name)
+        .replace('[hash]', _.webpack.hash);
     },
-    modules: [
-      path.resolve(__dirname, 'node_modules'),
-      'web_modules',
-      path.resolve(__dirname, 'public/react'),
-    ],
-    extensions: ['.js', '.jsx', '.styl', '.jst'],
+  }
+);
+
+module.exports = {
+  entry: {
+    vendor: ['react', 'react-dom', 'react-router-dom', 'mobx', 'mobx-react'],
+    merchant: './web/merchant.js',
+    admin: './web/admin.js',
   },
 
-  module: {},
+  output: {
+    path: __dirname + '/public/dist',
+    filename: isProd ? '[name]-[hash].js' : '[name].js',
+  },
+
+  resolve: {
+    modules: ['node_modules', 'web/modules'],
+  },
+
+  resolveLoader: {
+    alias: {
+      'dot-loader': __dirname + '/web/webpack/dot-loader.js',
+    },
+  },
+
   stats: {
+    assets: false,
     children: false,
+    version: false,
+    hash: false,
+    timings: false,
+    chunks: false,
+    chunkModules: false,
   },
-};
 
-// ------------------------------------
-// Bundle Output
-// ------------------------------------
-commonConfig.output = {
-  publicPath: '/dist/',
-  path: path.resolve(__dirname, 'public/dist'),
-};
+  plugins: [
+    new webpack.optimize.CommonsChunkPlugin({
+      name: 'vendor',
+      minChunks: Infinity,
+    }),
+  ].concat(htmlPlugins),
 
-// ------------------------------------
-// Plugins
-// ------------------------------------
-commonConfig.plugins = [
-  new CaseSensitivePathsPlugin(),
-
-  new webpack.ProvidePlugin({
-    React: 'react',
-    $: 'jquery',
-  }),
-];
-
-module.exports = env => {
-  const isProd = env === 'production' ? true : false;
-  commonConfig.output.filename = isProd ? '[name]_[chunkhash].js' : '[name].js';
-
-  // ------------------------------------
-  // Loaders
-  // ------------------------------------
-  commonConfig.module.rules = [
-    {
-      test: /\.(js|jsx)$/,
-      include: path.resolve(__dirname, 'public/react'),
-      use: [
-        {
+  module: {
+    rules: [
+      {
+        test: /\.jst$/,
+        loader: 'dot-loader',
+      },
+      {
+        test: /\.js$/,
+        exclude: /^node_modules/,
+        use: {
           loader: 'babel-loader',
           options: {
-            cacheDirectory: true,
-            plugins: [
-              'react-html-attrs',
-              'transform-runtime',
-              'transform-decorators-legacy',
-            ],
-            presets: [
-              ['es2015', { loose: true, modules: false }],
-              'react',
-              'stage-0',
-            ],
+            presets: ['env', 'react', 'stage-0'],
+            plugins: ['transform-decorators-legacy', 'react-html-attrs'],
           },
         },
-      ],
-    },
-    {
-      test: /\.(woff|woff2|eot|ttf)$/,
-      use: [
-        {
-          loader: 'file-loader',
-          options: {
-            publicPath: process.env.WERCKER ? '/dashboard/dist/' : '/dist/',
-          },
-        },
-      ],
-    },
-    {
-      test: /\.(png|svg)$/,
-      use: [
-        {
-          loader: 'file-loader',
-        },
-      ],
-    },
-    {
-      test: /\.jst$/,
-      use: [
-        {
-          loader: 'dot-tpl-loader',
-        },
-      ],
-    },
-  ];
-
-  // Production specific plugins
-  if (isProd) {
-    commonConfig.plugins.push(
-      new webpack.DefinePlugin({
-        'process.env': {
-          NODE_ENV: JSON.stringify('production'),
-        },
-      }),
-      new BabiliPlugin({
-        mangle: { topLevel: true },
-      }),
-      new webpack.optimize.UglifyJsPlugin({
-        compress: {
-          warnings: false,
-        },
-        output: {
-          comments: false,
-        },
-      })
-    );
-  }
-
-  return [
-    require('./webpack.merchant.js')(commonConfig, isProd),
-    require('./webpack.admin.js')(commonConfig, isProd),
-  ];
+      },
+    ],
+  },
 };

@@ -90,7 +90,7 @@ class AdminController extends Controller
      */
     public function getIndex()
     {
-        return view('admin.tmpgetIndex');
+        return view('adminIndex');
     }
 
     protected function getGoogleOAuthUrl()

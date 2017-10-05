@@ -51,7 +51,7 @@ class UserController extends Controller
         $data['cdnDashboardUrl'] = \Config::get('app.cdn_dashboard_url');
 
         // $data is used to run diferent pieces of JS
-        return view('merchant.tmpgetIndex', $data);
+        return view('merchantIndex', $data);
     }
 
     private function getPreSignupData($user)

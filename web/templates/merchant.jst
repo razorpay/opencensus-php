@@ -1,0 +1,33 @@
+`
+var cdnUrl = _.htmlWebpackPlugin.options.vars.cdnUrl;
+var filename = _.htmlWebpackPlugin.options.vars.filename;
+`
+
+@include('partials/header')
+
+@unless ($isConfirmed and $isPreSignupComplete)
+  <link rel='stylesheet' href="`=cdnUrl`/style.css" type='text/css' />
+@endunless
+<link rel='stylesheet' href="`=cdnUrl`/merchant.css" type='text/css' />
+</head>
+<body>
+  <div id="react-root" class="react-root"></div>
+</body>
+</html>
+
+@if ($isConfirmed and $isPreSignupComplete)
+  <script type="text/javascript">
+    window.rzp_user = {!! $user !!};
+    window.rzp_org = {!! $org !!};
+  </script>
+
+  <script src="`=cdnUrl`/`=filename(_, 'vendor')`"></script>
+  <script src="`=cdnUrl`/`=filename(_, 'merchant')`"></script>
+
+@else
+
+  <script src="`=cdnUrl`/signup.js"></script>
+
+@endif
+
+@include('partials/footer')
