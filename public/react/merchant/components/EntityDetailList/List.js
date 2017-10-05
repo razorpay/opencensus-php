@@ -15,6 +15,12 @@ export default class EntityDetailList extends Component {
     this.state = { curLimit: props.moreAfterlimit };
   }
 
+  countHaltedInvoices(items) {
+    return items.reduce((sum, item) => {
+      return sum + (item.subscription_status === 'halted' ? 1 : 0);
+    }, 0);
+  }
+
   getRowList() {
     const {
       loading,
@@ -34,6 +40,7 @@ export default class EntityDetailList extends Component {
       limit = items.length < this.state.curLimit ? items.length : limit;
     }
 
+    let totalHaltedInvoiceToCheck = this.countHaltedInvoices(items);
     let isChargeAttemptFailed = false;
     for (let index = 0; index < limit; index++) {
       let item = {};
@@ -41,14 +48,17 @@ export default class EntityDetailList extends Component {
         item = items[index]; // 0th is latest item
       }
 
-      let isInvoiceWithAttemptsFailed = false;
-      if (
-        item.subscription_status === 'halted' ||
-        (item.status === 'issued' && subscriptionStatus === 'pending')
-      ) {
-        if (index === limit - 1 || items[index + 1].status === 'paid') {
-          // look ahead invoice if paid
-          isInvoiceWithAttemptsFailed = true;
+      let isInvoiceWithAttemptsFailed = 0;
+
+      if (item.subscription_status === 'halted' && item.status === 'issued') {
+        isInvoiceWithAttemptsFailed =
+          index < items.length - 1 && items[index + 1].status === 'paid'
+            ? 1
+            : 2;
+      } else if (totalHaltedInvoiceToCheck) {
+        if (item.subscription_status === 'halted') {
+          isInvoiceWithAttemptsFailed = totalHaltedInvoiceToCheck === 1 ? 1 : 2;
+          totalHaltedInvoiceToCheck--;
         }
       }
 

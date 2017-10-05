@@ -22,17 +22,41 @@ export default props => {
     mode,
   } = props;
 
-  let retryingText;
+  let chargeAttemptsFailedText; // Charge attempts failed text
+  let retryingInfo; // Whether further retries
 
-  // To be shown only for latest issued invoice. As per authAttempts condition calc in parent componen
+  // For invoice in issued state, if it's subscription_status = halted then analyse whether 1st invoice or further invoices
   if (item.status === 'issued') {
+    // For subscriptions in pending status
+    if (subscriptionStatus === 'pending') {
+      if (!item.subscription_status) {
+        // Retrying info for pending state subscription
+        let timeDiff =
+          subscriptionchargeAt - Math.round(new Date().getTime() / 1000);
+        timeDiff = Math.ceil(timeDiff / 3600);
+        retryingInfo = `Retrying in ${timeDiff} hrs. `;
+      }
+      if (item.subscription_status !== 'halted') {
+        chargeAttemptsFailedText = (
+          <span>
+            {authAttempts}{' '}
+            {authAttempts > 1 ? 'charge attempts' : 'charge attempt'} failed.
+          </span>
+        );
+      }
+    }
+
     if (item.subscription_status === 'halted') {
-      retryingText = 'Not retrying automatically. ';
-    } else if (subscriptionStatus === 'pending') {
-      let timeDiff =
-        subscriptionchargeAt - Math.round(new Date().getTime() / 1000);
-      timeDiff = Math.ceil(timeDiff / 3600);
-      retryingText = `Retrying in ${timeDiff} hrs. `;
+      if (isInvoiceWithAttemptsFailed === 2) {
+        // To handle situation where such invoices were created in halted state but now invoice is pending (,active, complete, etc)
+        chargeAttemptsFailedText = 'No auto-charge attempted. ';
+      } else if (isInvoiceWithAttemptsFailed === 1) {
+        // retryingInfo = 'Not retrying automatically';
+        // To handle situation where such invoices were created in halted state but now invoice is pending (,active, complete, etc)
+        chargeAttemptsFailedText = (
+          <span>All auto-charge attempts failed. </span>
+        );
+      }
     }
   }
 
@@ -41,27 +65,6 @@ export default props => {
   // billing_start in next_due invoice is charge_at of subscription. Check FE creation of next_due invoice. (Not api related)
   if (item.status === 'next_due' && item.billing_start) {
     timeDiff = item.billing_start - Math.round(new Date().getTime() / 1000);
-  }
-
-  // Charge attempts failed text
-  let chargeAttemptsFailedText;
-
-  if (isInvoiceWithAttemptsFailed) {
-    if (item.subscription_status === 'halted') {
-      chargeAttemptsFailedText = <span>All charge attempts failed</span>;
-    } else if (subscriptionStatus === 'pending') {
-      chargeAttemptsFailedText = <span>Some charge attempts failed</span>;
-    }
-  } else if (false) {
-    // For the latest invoice..?
-    chargeAttemptsFailedText = (
-      <span>
-        {authAttempts} {authAttempts > 1
-          ? 'charge attempts'
-          : 'charge attempt'}{' '}
-        failed.
-      </span>
-    );
   }
 
   // Check if row is clickable
@@ -127,12 +130,12 @@ export default props => {
 
         <div class="detail-row">
           {item.id &&
-          retryingText && [
-            <span key="info" class="text-danger">
+          (chargeAttemptsFailedText || retryingInfo) && [
+            <span key="retrying-attempts" class="text-danger">
               <i class="icon icon-info-circle" /> {chargeAttemptsFailedText}
             </span>,
-            <span key="info-notice">
-              {' '}{retryingText}
+            <span key="retrying-info">
+              {' '}{retryingInfo}
             </span>,
           ]}
           {
