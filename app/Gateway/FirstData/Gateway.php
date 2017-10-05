@@ -48,7 +48,9 @@ class Gateway extends Base\Gateway
 
         if ($this->isSecondRecurringPayment($input) === true)
         {
-            return $this->secondRecurring($input);
+            $input[ApiRequestFields::V1_RECURRING_TYPE] = Codes::STANDING_INSTRUCTION;
+
+            return $this->purchase($input);
         }
 
         $requestContent = $this->getPreAuthRequestContentArray($input);
@@ -64,7 +66,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function secondRecurring(array $input)
+    protected function purchase(array $input)
     {
         parent::action($input, Action::PURCHASE);
 
@@ -1161,8 +1163,6 @@ class Gateway extends Base\Gateway
         $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_STORE_ID] = $this->getStoreId();
 
         $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = TxnType::SALE;
-
-        $body[ApiRequestFields::V1_RECURRING_TYPE] = Codes::STANDING_INSTRUCTION;
 
         $this->setPaymentRequestArray($body, $input, TxnType::SALE);
 
