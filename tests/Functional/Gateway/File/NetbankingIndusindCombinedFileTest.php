@@ -45,16 +45,28 @@ class NetbankingIndusindCombinedFileTest extends TestCase
         $this->assertNull($content[File\Entity::FAILED_AT]);
         $this->assertNull($content[File\Entity::ACKNOWLEDGED_AT]);
 
-        $file = $this->getLastEntity('file_store', true);
+        $files = $this->getEntities('file_store', [
+            'count' => 2
+        ], true);
 
         $time = Carbon::now(Timezone::IST)->format('dmY');
 
         $expectedFilesContent = [
-            'type' => 'indusind_netbanking_refund',
-            'location' => 'PGReconRAZORPAY' . $time . 'test.txt'
+            'entity' => 'collection',
+            'count' => 2,
+            'items' => [
+                [
+                    'type' => 'indusind_netbanking_claim',
+                    'location' => 'PGClaimRazorpay' . $time . 'test.txt'
+                ],
+                [
+                    'type' => 'indusind_netbanking_refund',
+                    'location' => 'PGReconRAZORPAY' . $time . 'test.txt',
+                ],
+            ]
         ];
 
-        $this->assertArraySelectiveEquals($expectedFilesContent, $file);
+        $this->assertArraySelectiveEquals($expectedFilesContent, $files);
 
         Mail::assertSent(DailyFileMail::class, function ($mail)
         {
@@ -69,7 +81,7 @@ class NetbankingIndusindCombinedFileTest extends TestCase
 
             $this->checkRefundsFile($mail->viewData['refundsFile']);
 
-            $this->assertCount(1, $mail->attachments);
+            $this->assertCount(2, $mail->attachments);
 
             return true;
         });

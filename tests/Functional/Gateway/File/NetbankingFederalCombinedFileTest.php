@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Functional\Gateway\File;
+namespace RZP\Tests\Functional\Gateway\File;
 
 use Mail;
 use Carbon\Carbon;

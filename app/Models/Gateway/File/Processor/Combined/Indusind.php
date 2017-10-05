@@ -49,6 +49,8 @@ class Indusind extends Base
             });
 
             $count['claims'] = count($this->data['claims']);
+
+            $claimsFile = $this->getFileData(FileStore\Type::INDUSIND_NETBANKING_CLAIM);
         }
 
         $amount['total'] = $amount['claims'] - $amount['refunds'];

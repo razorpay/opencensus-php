@@ -18,6 +18,11 @@ use RZP\Models\Gateway\File\Processor\Base as BaseProcessor;
 
 class Base extends BaseProcessor
 {
+    const RECONCILED_PAYMENTS_REQUIRED_TARGETS = [
+        Constants::KOTAK,
+        Constants::RBL
+    ];
+
     public function fetchEntities(): PublicCollection
     {
         $statuses = [
@@ -74,7 +79,7 @@ class Base extends BaseProcessor
     {
         $target = $this->gatewayFile->getTarget();
 
-        return (in_array($target, [Constants::KOTAK, Constants::RBL], true) === true);
+        return (in_array($target, self::RECONCILED_PAYMENTS_REQUIRED_TARGETS, true) === true);
     }
 
     protected function shouldNotReportFailure(string $code): bool
