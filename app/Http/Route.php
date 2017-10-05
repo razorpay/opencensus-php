@@ -249,6 +249,7 @@ final class Route
         'adj_add_reverse'                         => ['post',     'adjustments/reversal',                           'AdjustmentController@postReverseAdjustments'                       ],
         'adj_add_bulk'                            => ['post',     'adjustments/bulk',                               'AdjustmentController@postMultipleAdjustments'                      ],
         'adj_add_fee'                             => ['post',     'adjustments/fees',                               'AdjustmentController@postFeesAdjustment'                           ],
+        'adjustments_split_for_dispute'           => ['post',     'adjustments/split_adjustments',                  'AdjustmentController@splitAdjustments'                             ],
         'mock_hdfc_enroll'                        => ['post',     'gateway/mock_hdfc/enroll',                       'MockGatewayController@enroll'                                      ],
         'mock_hdfc_payment'                       => ['post',     'gateway/mock_hdfc/payment',                      'MockGatewayController@payment'                                     ],
         'mock_hdfc_auth_enrolled'                 => ['post',     'gateway/mock_hdfc/auth_enrolled',                'MockGatewayController@authEnrolled'                                ],
@@ -607,7 +608,7 @@ final class Route
         // Dispute routes
         'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
         'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                          ],
-        'dispute_migrate_adjustments'             => ['post',     'disputes/migrate_old_adjustments',               'DisputeController@migrateOldAdjustments'                                          ],
+        'dispute_migrate_adjustments'             => ['post',     'disputes/migrate_old_adjustments',               'DisputeController@migrateOldAdjustments'                           ],
 
         'merchant_payout'                         => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
 
@@ -1033,6 +1034,7 @@ final class Route
         'payment_dispute_create',
         'dispute_edit',
         'dispute_migrate_adjustments',
+        'adjustments_split_for_dispute',
         'gratis_postpaid_transactions',
         'virtual_account_refund_excess',
         'risk_create',

@@ -276,6 +276,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SETTLEMENT_ID);
     }
 
+    public function getReconciledAt()
+    {
+        return $this->getAttribute(self::RECONCILED_AT);
+    }
+
 /* ----------------------------- Accessors -----------------------------------*/
 
     protected function getApiFeeAttribute()

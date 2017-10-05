@@ -160,4 +160,9 @@ class Service extends Base\Service
 
         return $response;
     }
+
+    public function splitAdjustments($file): array
+    {
+        return $this->core()->splitAdjustments($file);
+    }
 }

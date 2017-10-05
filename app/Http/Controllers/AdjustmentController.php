@@ -2,8 +2,9 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
 use Request;
+use ApiResponse;
+use RZP\Exception;
 
 class AdjustmentController extends Controller
 {
@@ -55,6 +56,22 @@ class AdjustmentController extends Controller
         $input = Request::all();
 
         $data = $this->service()->addMultipleAdjustment($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function splitAdjustments()
+    {
+        if (Request::hasFile('file') === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Input does not contain the excel file to be processed'
+            );
+        }
+
+        $file = Request::file('file');
+
+        $data = $this->service()->splitAdjustments($file);
 
         return ApiResponse::json($data);
     }
