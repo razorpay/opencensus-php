@@ -14,7 +14,7 @@ class Url
 
     const VERIFY_RETAIL           = 'AXISPaymentsVerification/Web/Applications/Query.aspx';
 
-    const AUTHORIZE_EMANDATE      = '/payment';
+    const AUTHORIZE_EMANDATE      = '/input';
 
     const VERIFY_EMANDATE         = '/enquiry';
 }
