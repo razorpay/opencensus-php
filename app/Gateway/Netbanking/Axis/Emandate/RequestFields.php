@@ -19,4 +19,6 @@ class RequestFields
     const RESERVE_FIELD_4 = 'RE4';
     const RESERVE_FIELD_5 = 'RE5';
     const CHECKSUM        = 'CKS';
+
+    const DATA            = 'i';
 }

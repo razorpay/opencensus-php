@@ -13,6 +13,10 @@ class Validator extends Base\Validator
         RequestFields::RETURN_URL               => 'required|string|url'
     ];
 
+    protected static $emandateauthrequestRules = [
+        Emandate\RequestFields::DATA            => 'required|string',
+    ];
+
     protected static $emandateauthRules = [
         Emandate\RequestFields::VERSION         => 'required|string',
         Emandate\RequestFields::CORP_ID         => 'required|string',

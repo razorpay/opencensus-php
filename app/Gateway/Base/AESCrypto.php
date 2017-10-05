@@ -17,6 +17,11 @@ class AESCrypto
         $this->aes->setIV($initializationVector);
     }
 
+    public function setKeyLength(int $length)
+    {
+        $this->aes->setKeyLength($length);
+    }
+
     public function encryptString(string $string)
     {
         return $this->aes->encrypt($string);

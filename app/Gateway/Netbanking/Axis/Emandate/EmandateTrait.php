@@ -6,19 +6,22 @@
 
 namespace RZP\Gateway\Netbanking\Axis\Emandate;
 
-use Carbon\Carbon;
+use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
 use RZP\Constants\Timezone;
-use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
-use RZP\Constants\HashAlgo;
+use RZP\Exception\GatewayErrorException;
 use RZP\Gateway\Base\Action;
-use RZP\Models\Customer\Token;
+use RZP\Gateway\Base\AESCrypto;
+use RZP\Gateway\Netbanking\Axis\Constants as AxisConstants;
+use RZP\Gateway\Netbanking\Base as Netbanking;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
-use RZP\Exception\GatewayErrorException;
-use RZP\Gateway\Netbanking\Base as Netbanking;
-use RZP\Gateway\Netbanking\Axis\Constants as AxisConstants;
+use RZP\Models\Customer\Token;
+use RZP\Models\Payment;
+
+use Carbon\Carbon;
+use phpseclib\Crypt\AES;
 
 trait EmandateTrait
 {
@@ -68,46 +71,6 @@ trait EmandateTrait
         ];
     }
 
-    protected function handleEmandateFlow(array $input) : string
-    {
-        $this->validateActionInput($input, 'emandateauth');
-
-        $response = $this->createEmandateResponse($input);
-
-        $callbackUrl = $input[RequestFields::RETURN_URL] . '?' . http_build_query($response);
-
-        return $callbackUrl;
-    }
-
-    protected function createEmandateResponse(array $input) : array
-    {
-        $data = [
-            ResponseFields::VERSION         => $input[RequestFields::VERSION],
-            ResponseFields::CORP_ID         => $input[RequestFields::CORP_ID],
-            ResponseFields::TYPE            => $input[RequestFields::TYPE],
-            ResponseFields::CUSTOMER_REF_NO => $input[RequestFields::CUSTOMER_REF_NO],
-            ResponseFields::CURRENCY        => $input[RequestFields::CURRENCY],
-            ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT],
-            // TODO: Docs say this is not needed, but docs checksum says it is needed
-            ResponseFields::REQUEST_ID      => $input[RequestFields::REQUEST_ID],
-            ResponseFields::BANK_REF_NO     => 9999999999,
-            ResponseFields::STATUS_CODE     => StatusCode::SUCCESS,
-            ResponseFields::REMARKS         => 'Recurring payment successful',
-            ResponseFields::TRANS_REF_NO    => $input[RequestFields::REQUEST_ID], // TODO: Confirm this
-            ResponseFields::TRANS_EXEC_TIME => Carbon::now(Timezone::IST)->toDateTimeString(), // TODO: Confirm this
-            ResponseFields::PAYMENT_MODE    => Constants::PMD,
-            ResponseFields::CHECKSUM        => $input[RequestFields::CHECKSUM],
-            ResponseFields::MANDATE_NUMBER  => 8888888888,
-        ];
-
-        // TODO: Encrypt this
-
-        // for test cases
-        $this->content($response, 'emandateauth');
-
-        return $data;
-    }
-
     /**
      * This method creates the recurring payment request data
      * We pass the token ID as customer reference number
@@ -122,8 +85,8 @@ trait EmandateTrait
             'max',
             Constants::FREQUENCY_ADHOC,
             '123123123',
-            Carbon::now(Timezone::IST)->format('dmy'),
-            Carbon::now(Timezone::IST)->addYears(30)->format('dmy'),
+            Carbon::now(Timezone::IST)->format('m/d/y'),
+            Carbon::now(Timezone::IST)->addYears(30)->format('m/d/y'),
             $this->formatAmount($input['payment']['amount']),
         ];
 
@@ -142,7 +105,38 @@ trait EmandateTrait
 
         $data[RequestFields::CHECKSUM] = $this->getChecksum($data);
 
-        return $data;
+        $content = [
+            RequestFields::DATA => $this->getEncryptedData($data)
+        ];
+
+        return $content;
+    }
+
+    public function getEncryptedData(array $data): string
+    {
+        return base64_encode(
+            $this->getEncryptor()->encryptString(
+                urldecode(http_build_query($data))
+            )
+        );
+    }
+
+    public function getDecryptedData(string $input): array
+    {
+        $decrypted = $this->getEncryptor()->decryptString(base64_decode($input));
+
+        parse_str($decrypted, $output);
+
+        return $output;
+    }
+
+    public function getEncryptor()
+    {
+        $aes = new AESCrypto(AES::MODE_CBC, $this->getRecSecret(true));
+
+        $aes->setKeyLength(256);
+
+        return $aes;
     }
 
     protected function getEmandateEntityAttributes(array $input) : array
@@ -209,14 +203,12 @@ trait EmandateTrait
         $arrayToBeHashed = [
             $data[RequestFields::CORP_ID],
             $data[RequestFields::REQUEST_ID],
-            $data[RequestFields::CURRENCY],
+            $data[RequestFields::CUSTOMER_REF_NO],
             $data[RequestFields::AMOUNT],
             $this->getRecSecret(),
         ];
 
-        //
         // Amount is not part of the hash for verify
-        //
         if ($this->action === Action::VERIFY)
         {
             unset($arrayToBeHashed[3]);

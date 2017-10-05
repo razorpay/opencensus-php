@@ -9,7 +9,7 @@ use RZP\Gateway\Netbanking\Axis\Emandate;
 use RZP\Gateway\Netbanking\Axis\AESCrypto;
 use RZP\Gateway\Netbanking\Axis\RequestFields;
 use RZP\Gateway\Netbanking\Axis\ResponseFields;
-use RZP\Gateway\Netbanking\Axis\Emandate\EmandateTrait;
+// use RZP\Gateway\Netbanking\Axis\Emandate\EmandateTrait;
 
 class Server extends Base\Mock\Server
 {
@@ -19,14 +19,14 @@ class Server extends Base\Mock\Server
     {
         parent::authorize($input);
 
-        if (isset($input[Emandate\RequestFields::CUSTOMER_REF_NO]) === true)
+        if (isset($input[Emandate\RequestFields::DATA]) === true)
         {
             return $this->handleEmandateFlow($input);
         }
 
         $this->validateAuthorizeInput($input);
 
-        $decryptedData = $this->getDecryptedData($input);
+        $decryptedData = $this->getDecryptedMockAuthData($input);
 
         $decryptedData = $this->setTestData($decryptedData);
 
@@ -59,7 +59,7 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($response);
     }
 
-    protected function getDecryptedData($input)
+    protected function getDecryptedMockAuthData($input)
     {
         $masterKey = $this->getGatewayInstance()->getSecret();
 
