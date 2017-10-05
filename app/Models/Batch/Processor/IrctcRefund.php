@@ -4,6 +4,7 @@ namespace RZP\Models\Batch\Processor;
 
 use Carbon\Carbon;
 
+use RZP\Constants\Mode;
 use RZP\Models\Batch;
 use RZP\Models\Payment;
 use RZP\Constants\Timezone;
@@ -109,12 +110,6 @@ class IrctcRefund extends Base
         $this->batch->setProcessedAmount($processedAmount);
     }
 
-    protected function sendProcessedMail()
-    {
-        // Don't send an email
-        return;
-    }
-
     protected function getFileName($ext)
     {
         $time = Carbon::now(Timezone::IST)->format('Ymd');
@@ -126,6 +121,13 @@ class IrctcRefund extends Base
             $prefix = 'deltarefund_WUATRZRPAY_';
         }
 
-        return $prefix . $time . '_V1' . $ext;
+        $name = $prefix . $time . '_V1';
+
+        if (empty($ext) === false)
+        {
+            $name = $name . '.' . $ext;
+        }
+
+        return $name;
     }
 }

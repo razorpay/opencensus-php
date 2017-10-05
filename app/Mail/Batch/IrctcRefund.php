@@ -16,4 +16,14 @@ class IrctcRefund extends Base
     protected static $subjectLine = "Razorpay | IRCTC Refunds File";
 
     protected static $body        = 'Please upload IRCTC refund file on portal';
+
+
+    protected function addRecipients()
+    {
+        $emails =  ['irctc.refunds@razorpay.com'];
+
+        $this->to($emails);
+
+        return $this;
+    }
 }
