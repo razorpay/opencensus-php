@@ -20,6 +20,7 @@
     "react-time": "^4.2.0"
   },
   "dependencies": {
+    "axios": "^0.16.2",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-plugin-react-html-attrs": "^2.0.0",
@@ -40,9 +41,9 @@
     "webpack": "^3.6.0"
   },
   "scripts": {
-    "start": "./node_modules/.bin/webpack -w & ./node_modules/.bin/stylus -w ./web/css/*.styl --out public/dist",
+    "start": "webpack -w & stylus -w ./web/css/*.styl --out public/dist",
     "precommit": "lint-staged",
-    "prettier": "./node_modules/.bin/prettier"
+    "prettier": "prettier"
   },
   "lint-staged": {
     "*.js": [
