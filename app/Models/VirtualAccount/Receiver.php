@@ -3,13 +3,13 @@
 namespace RZP\Models\VirtualAccount;
 
 use App;
+use Lib\CRC16;
 use RZP\Exception;
 use RZP\Base\Luhn;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\lib\CRC16;
 use RZP\Models\BharatQr\Entity as BharatQr;
 use RZP\Models\BankAccount\Entity as BankAccount;
 
