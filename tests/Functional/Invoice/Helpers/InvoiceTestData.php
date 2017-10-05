@@ -29,7 +29,6 @@ return [
                         'amount'        => 100000,
                     ]
                 ],
-                'user_id'  => '1000000000user',
             ],
         ],
         'response' => [
@@ -91,7 +90,6 @@ return [
                 'currency' => 'INR',
                 'date' => null,
                 'type' => 'ecod',
-                'user_id'  => '1000000000user',
             ],
         ],
         'response' => [

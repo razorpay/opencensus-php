@@ -879,6 +879,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT, $amount);
     }
 
+    public function setUserId(string $userId)
+    {
+        $this->setAttribute(self::USER_ID, $userId);
+    }
+
     /**
      * Sets all amounts field to null.
      * Used when all line items of draft invoice are removed.
