@@ -44,7 +44,7 @@ class Kotak extends Base
             $claimsFile = $this->getFileData(FileStore\Type::KOTAK_NETBANKING_CLAIM);
         }
 
-        $amount['total'] = $amount['claims'] - $refundData['refunds'];
+        $amount['total'] = $amount['claims'] - $amount['refunds'];
 
         return [
             'bankName'    => 'Kotak',
