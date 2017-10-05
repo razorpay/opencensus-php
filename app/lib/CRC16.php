@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\BharatQr;
+namespace Lib;
 
 /**
  * Hash generator implementing the CRC-16 to ISO/IEC 3309
