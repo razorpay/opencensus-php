@@ -248,6 +248,135 @@ class HdfcGatewayTest extends TestCase
         $this->verifyPayment($payment['razorpay_payment_id']);
     }
 
+    public function testVerifyRefundDeniedByRiskOnGateway()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->hdfcPaymentFailedDueToDeniedByRisk();
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->clearMockFunction();
+
+        $this->mockServerContentFunction(function (& $content, $action = null) use ($refund)
+        {
+            if ($action === 'verify')
+            {
+                $refundId = explode('_', $refund['id'], 2)[1];
+
+                $content['result']       = 'FAILURE(SUSPECT)';
+                $content['trackid']      = $refundId;
+                $content['amt']          = $refund['amount'] / 100;
+                $content['authRespCode'] = 'J';
+                $content['udf2']         = '';
+                $content['udf5']         = 'TrackID';
+            }
+
+            if ($action === 'refund')
+            {
+                $content['result'] = 'DENIED BY RISK';
+            }
+
+            return $content;
+        });
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($refund)
+        {
+            $this->retryFailedRefund($refund['id']);
+        });
+    }
+
+    public function testVerifyRefundFailedOnGateway()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->hdfcPaymentFailedDueToDeniedByRisk();
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->clearMockFunction();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content = [
+                    'error_code_tag' => 'GW00201',
+                    'error_service_tag' => 'null',
+                    'result' => '!ERROR!-GW00201-Transaction not found.',
+                ];
+            }
+
+            return $content;
+        });
+
+        $response = $this->retryFailedRefund($refund['id']);
+
+        $refund = $this->getEntityById('refund', $refund['id'], true);
+
+        $this->assertEquals(2, $refund['attempts']);
+        $this->assertEquals('processed', $refund['status']);
+    }
+
+    public function testVerifyRefundSuccessfulOnGateway()
+    {
+        $payment = $this->doAuthAndCapturePayment();
+
+        $this->mockServerContentFunction(function (& $content, $action = null)
+        {
+            throw new Exception\GatewayTimeoutException('Timed out');
+        });
+
+        $this->refundPayment($payment['id']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals('failed', $refund['status']);
+        $this->assertEquals(1, $refund['attempts']);
+
+        $this->clearMockFunction();
+
+        $this->mockServerContentFunction(function (& $content, $action = null) use ($refund)
+        {
+            if ($action === 'verify')
+            {
+                $refundId = explode('_', $refund['id'], 2)[1];
+
+                $content['result']   = 'FAILURE(SUSPECT)';
+                $content['auth']     = '123456';
+                $content['ref']      = '725070182254';
+                $content['postdate'] = '0000';
+                $content['tranid']   = '6996066201872501';
+                $content['trackid']  = $refundId;
+                $content['amt']      = $refund['amount'] / 100;
+                $content['payid']    = '8152480571771510';
+                $content['udf2']     = '';
+                $content['udf5']     = 'TrackID';
+            }
+
+            return $content;
+        });
+
+        $response = $this->retryFailedRefund($refund['id']);
+
+        $refund = $this->getEntityById('refund', $refund['id'], true);
+
+        $this->assertEquals(2, $refund['attempts']);
+        $this->assertEquals('processed', $refund['status']);
+    }
+
     public function testRupayPaymentAuthError()
     {
         $testData = [

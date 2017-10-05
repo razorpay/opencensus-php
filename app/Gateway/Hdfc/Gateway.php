@@ -236,7 +236,7 @@ class Gateway extends Base\Gateway
     protected $inquiryResponse = [
         'type' => 'inquiry',
         'fields' => ['result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid', 'amt',
-            'udf1', 'udf2', 'udf3', 'udf4', 'udf5'],
+            'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'authRespCode'],
         'data' => [],
         'xml' => '',
         'error' => null];
