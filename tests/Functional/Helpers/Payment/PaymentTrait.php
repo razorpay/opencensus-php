@@ -3,7 +3,6 @@
 namespace RZP\Tests\Functional\Helpers\Payment;
 
 use RZP\Http\BasicAuth\BasicAuth;
-use RZP\Exception\BaseException;
 use RZP\Exception;
 use Mockery;
 use Requests;
