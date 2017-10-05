@@ -11,7 +11,6 @@ use Lib\PhoneBook;
 
 use RZP\Error;
 use RZP\Exception;
-use RZP\Gateway\FirstData\Gateway;
 use RZP\Models\Upi;
 use RZP\Models\Emi;
 use RZP\Models\Risk;
@@ -41,6 +40,7 @@ use RZP\Models\Customer\Token;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Plan\Subscription;
 use RZP\Models\Payment\Analytics;
+use RZP\Gateway\FirstData\Gateway;
 use Razorpay\Trace\Logger as Trace;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Listeners\ApiEventSubscriber;
@@ -3304,9 +3304,10 @@ trait Authorize
         $gateway = $payment->getGateway();
 
         // Additional check for ICICI debit cards on First data terminal
-        $cardId = $payment->hasCard();
+        $cardId = $payment->getCardId();
 
-        if ($cardId !== null and $gateway === Entity::FIRST_DATA)
+        if (($cardId !== null) and
+            ($gateway === Entity::FIRST_DATA))
         {
             $card = $payment->card;
 
@@ -3314,7 +3315,8 @@ trait Authorize
 
             $type = $card->getType();
 
-            if ($issuer === Card\Issuer::ICIC and $type === 'debit')
+            if (($issuer === Card\Issuer::ICIC) and
+                ($type === Gateway::DEBIT))
             {
                 return false;
             }
