@@ -35,7 +35,7 @@ return [
                         ]
                 ],
             ],
-            'url' => '/pricing/bulk',
+            'url' => '/pricing',
             'method' => 'POST'
         ],
         'response' => [
@@ -81,7 +81,7 @@ return [
                 'plan_name' => 'TestUploadPlan2',
                 'rules'     => [],
             ],
-            'url'           => '/pricing/bulk',
+            'url'           => '/pricing',
             'method'        => 'POST'
         ],
         'response' => [
@@ -126,7 +126,7 @@ return [
                     ],
                 ],
             ],
-            'url' => '/pricing/bulk',
+            'url' => '/pricing',
             'method' => 'POST'
         ],
         'response' => [
@@ -162,7 +162,7 @@ return [
                         ],
                 ],
             ],
-            'url' => '/pricing/bulk',
+            'url' => '/pricing',
             'method' => 'POST'
         ],
         'response' => [
@@ -208,7 +208,7 @@ return [
                     ],
                 ],
             ],
-            'url' => '/pricing/bulk/',
+            'url' => '/pricing/',
             'method' => 'POST'
         ],
         'response' => [

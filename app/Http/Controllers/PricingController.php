@@ -7,11 +7,11 @@ use Request;
 
 class PricingController extends Controller
 {
-    public function postBulkPricingPlan()
+    public function postCreatePricingPlan()
     {
         $input = Request::all();
 
-        $data = $this->service()->createBulkPricingPlan($input);
+        $data = $this->service()->createPricingPlan($input);
 
         return ApiResponse::json($data);
     }

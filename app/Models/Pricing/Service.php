@@ -11,9 +11,9 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public function createBulkPricingPlan($input)
+    public function createPricingPlan($input)
     {
-        (new Pricing\Core())->createBulkPricing($input);
+        (new Pricing\Core())->createPricing($input);
 
         $plan = $this->repo->pricing->getPricingPlanByName($input[Entity::PLAN_NAME]);
 

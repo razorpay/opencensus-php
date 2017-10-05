@@ -42,7 +42,7 @@ class Core extends Base\Core
         return $this->createPlanFromRule($rule);
     }
 
-    public function createBulkPricing(array $input)
+    public function createPricing(array $input)
     {
         $validator = new Validator();
 
