@@ -3,6 +3,7 @@ import { NavLink, Route } from 'react-router-dom';
 import ModalContainer from 'store/modal';
 
 import MerchantList from 'admin/merchants';
+import PlanList from 'admin/plans';
 
 export default class App extends Component {
   state = {
@@ -15,6 +16,7 @@ export default class App extends Component {
       <div id="app-container">
         <main>
           <Route path="/merchants" component={MerchantList} />
+          <Route path="/plans" component={PlanList} />
         </main>
         <header />
         <aside>

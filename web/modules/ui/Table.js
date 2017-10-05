@@ -19,7 +19,7 @@ export default class Table extends Component {
       })
       .then(({ data }) => {
         this.setState({
-          items: data,
+          items: data.data.items,
         });
       })
       .catch(e => {
@@ -41,32 +41,34 @@ export default class Table extends Component {
   }
 
   render() {
-    let { fields, route, queryParams, model, ...props } = this.props;
+    let { fetch, fields, route, queryParams, model, ...props } = this.props;
     let { items, pending } = this.state;
 
     return (
       <div {...props}>
         {(pending && <div class="table-pending" />) ||
           ((items.length && (
-            <div class="table box table-striped">
-              <div class="tr thead">
-                {fields.map((field, index) => (
-                  <div class="th" key={index}>
-                    {field[0]}
-                  </div>
-                ))}
+            <div class="box">
+              <div class="table table-striped">
+                <div class="tr thead">
+                  {fields.map((field, index) => (
+                    <div class="th" key={index}>
+                      {field[0]}
+                    </div>
+                  ))}
+                </div>
+                {items.map((item, index) => {
+                  return (
+                    <div class="tr" key={index}>
+                      {fields.map((field, index) => (
+                        <div class="td" key={index}>
+                          {field[1](item)}
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })}
               </div>
-              {items.map((item, index) => {
-                return (
-                  <Form class="tr" key={index}>
-                    {fields.map((field, index) => (
-                      <div class="td" key={index}>
-                        {field[1](item)}
-                      </div>
-                    ))}
-                  </Form>
-                );
-              })}
             </div>
           )) || <div class="table-empty" />)}
       </div>

@@ -20,3 +20,26 @@
   text-align: center
   &:after
     content: 'Loading...'
+
+.table-striped
+  .tr:nth-child(2n)
+    background: #f6f9fa
+    .td
+      border-top: 1px solid #eee
+      border-bottom: @border-top
+
+.table
+  display: table
+  width: 100%
+
+.tr
+  display: table-row
+  width: 100%
+
+.th
+  font-weight: bold
+  padding: 16px 12px
+
+.td, .th
+  display: table-cell
+  padding: 12px
