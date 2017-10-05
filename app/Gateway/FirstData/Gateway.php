@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\FirstData;
 
-use function Aws\or_chain;
 use Carbon\Carbon;
 use RZP\Constants\Timezone;
 use Requests_Hooks;
@@ -1044,7 +1043,7 @@ class Gateway extends Base\Gateway
         $requestHash = $this->getRequestHash($txnDateTime, $chargeTotal, $currencyCode);
 
         $txnType = TxnType::AUTH;
-        
+
         if ((Payment\Gateway::supportsAuthAndCapture($this->gateway, $method) === false) or
             (($input['card'][Card\Entity::ISSUER] === Card\Issuer::ICIC) and
              ($input['card'][Card\Entity::TYPE] === Card\Type::DEBIT)))
