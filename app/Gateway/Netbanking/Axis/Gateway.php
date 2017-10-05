@@ -553,6 +553,6 @@ class Gateway extends Base\Gateway
      */
     protected function formatAmount(int $amount): string
     {
-        return number_format($amount / 100, 2, '.', '');
+        return $amount / 100;
     }
 }
