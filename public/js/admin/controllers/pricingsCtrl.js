@@ -49,6 +49,23 @@ app.controller('PricingsCtrl', [
       return data;
     }
 
+    $scope.plan = {
+      name: '',
+      rules: [],
+    };
+
+    $scope.addRule = function addRule() {
+      var new_rule = $scope.new_rule;
+
+      $scope.new_rule = getDefaultRule();
+
+      $scope.plan.rules.push(new_rule);
+    };
+
+    $scope.deleteRule = function deleteRule($index) {
+      $scope.plan.rules.splice($index, 1);
+    };
+
     $scope.new_plan = $scope.new_rule = getDefaultRule();
 
     var getNetworkList = function(method) {
@@ -104,11 +121,15 @@ app.controller('PricingsCtrl', [
     };
 
     $scope.savePlan = function() {
-      var data = getPayload($scope.new_plan);
+      var payload = { plan_name: $scope.plan.name, rules: [] };
+
+      angular.forEach($scope.plan.rules, function(rule) {
+        payload.rules.push(getPayload(rule));
+      });
 
       var params = {
-        route_name: 'pricing_create_plan',
-        body: data,
+        route_name: 'pricing_create_plan_bulk',
+        body: payload,
       };
 
       var request = $http({
