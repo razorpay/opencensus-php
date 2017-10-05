@@ -124,7 +124,7 @@ export default class Invoice extends GenericEntity {
 
       // Convert [{key: key1, value: value1}, {key: key2, value: value2}] into single Object like {key1: value}
       return notes.reduce((prev, curr) => {
-        prev[curr.key] = curr.value;
+        prev[curr.key] = curr.value || '';
         return prev;
       }, {});
     }

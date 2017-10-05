@@ -21,12 +21,12 @@ export const fetchItems = params => {
   };
 };
 
-export const fetchItemsForAutocomplete = () => {
+export const fetchItemsForAutocomplete = data => {
   let item = new Item();
 
   return {
     type: ITEMS_AUTOCOMPLETE_FETCH,
-    payload: item.fetchForAutocomplete(),
+    payload: item.fetchForAutocomplete(data),
   };
 };
 

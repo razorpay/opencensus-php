@@ -80,7 +80,7 @@ const CreateTransferBtn = ({ onClick, text = 'Create Transfer' }) =>
 export default ({ payment, transfers, onCreateTransfer }) => {
   const amountTransferred = payment.amount_transferred;
 
-  if (amountTransferred === 0) {
+  if (!transfers.items.length && !transfers.loading) {
     return (
       <div>
         <p>
@@ -100,7 +100,10 @@ export default ({ payment, transfers, onCreateTransfer }) => {
             <NumTransfers transfers={transfers} /> created
           </span>
           <span>
-            <Amount value={amountTransferred} /> Transferred
+            {transfers.loading
+              ? <LoaderDots />
+              : <Amount value={amountTransferred} />}
+            <span style={{ marginLeft: '4px' }}>Net Transferred</span>
           </span>
         </Definition>
       </div>

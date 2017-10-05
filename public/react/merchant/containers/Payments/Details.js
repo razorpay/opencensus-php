@@ -48,9 +48,7 @@ export default class PaymentDetailsContainer extends Component {
         this.props.fetchCardDetails(payment);
       }
 
-      if (this.props.payment.amount_transferred !== 0) {
-        this.props.fetchTransfers(payment);
-      }
+      this.props.fetchTransfers(payment);
     });
   };
 

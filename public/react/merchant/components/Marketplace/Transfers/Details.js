@@ -146,6 +146,10 @@ export default class TransferDetails extends Component {
           ...this.state,
           editView: false,
         };
+        this.props.showNotification({
+          type: 'success',
+          message: 'Transfer schedule changed successfully',
+        });
         this.setState(initialState);
       })
       .catch(({ errors }) => {

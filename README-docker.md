@@ -6,9 +6,9 @@
 
 * Setup Razorpay API locally. Check [Razorpay API Docker](https://github.com/razorpay/api/blob/master/readme-docker.md)
 * Once set up, ensure `Docker for mac` is running.
-* Add an entry in `/etc/hosts` for dashboard.razorpay.dev to point to localhost
+* Add an entry in `/etc/hosts` for dashboard.razorpay.test to point to localhost
 ```
-127.0.0.1   dashboard.razorpay.dev  dashboard.razorpay.dev
+127.0.0.1   dashboard.razorpay.test  dashboard.razorpay.test
 ```
 
 #### Setup Dashboard/Building Container
@@ -24,7 +24,7 @@ local file-system, spin up `mysql:5.6` container and establish connection
 to run the app locally.
 
 You should be able to access the app at:
-`http://dashboard.razorpay.dev:38080/`
+`http://dashboard.razorpay.test:38080/`
 
 #### Shutting down/Pausing the container
 
@@ -93,7 +93,7 @@ mysql>update admins set email = 'someemail@razorpay.com', name = 'Some Name', us
 
 ```
 
-* Login to the dashboard `http://dashboard.razorpay.dev:38080/admin`
+* Login to the dashboard `http://dashboard.razorpay.test:38080/admin`
 
 #### Containerization Issues
 

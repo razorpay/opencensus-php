@@ -131,7 +131,7 @@ export default class AddWebhook extends Component {
                 <WebhookEventCheckbox eventName="invoice.paid" />
                 <WebhookEventCheckbox eventName="order.paid" />
 
-                <ShowWhen featureEnabled="subscriptions">
+                <ShowWhen apiFeatureEnabled="subscriptions">
                   <div>
                     <WebhookEventCheckbox eventName="subscription.activated" />
                     <WebhookEventCheckbox eventName="subscription.charged" />

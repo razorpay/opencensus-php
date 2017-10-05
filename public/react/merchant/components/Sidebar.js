@@ -101,6 +101,7 @@ export default class Sidebar extends Component {
                     icon="icon icon-notes text-warning"
                     to={routes.invoices}
                     featureEnabled="Invoice"
+                    apiFeatureEnabled="subscriptions"
                     notMyRole="sellerapp"
                   />
                   <MainNavLink

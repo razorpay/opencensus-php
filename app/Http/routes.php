@@ -108,7 +108,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/user', 'AdminController@getAdmin');
         Route::get('/admin/user/logout', 'AdminController@getLogout');
         Route::get('/admin/user/keepalive', 'AdminController@getKeepAlive');
-        Route::get('/admin/merchant/{id}/details', 'AdminController@getMerchantDetails');
 
         Route::post('/admin/features/{entityType}/{entityId}', 'AdminController@addEntityFeatures');
 
@@ -138,7 +137,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/settlements/reconcile', 'AdminController@postReconcileSettlement');
         Route::post('/admin/{mode}/reconciliate', 'AdminController@postReconciliate');
 
-        Route::group(['middleware'  =>  ['admin', 'superadmin', 'admin_access']], function()
+        Route::group(['middleware'  =>  ['superadmin']], function()
         {
             // This is the RAW API route which processes api calls
             Route::post('/api/{path?}', 'AdminController@passThrough')

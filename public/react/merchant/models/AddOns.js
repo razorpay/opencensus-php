@@ -15,7 +15,7 @@ export default class AddOns extends GenericEntity {
     if (prop === 'notes') {
       let notes = this.notes || [];
       return notes.reduce((prev, curr) => {
-        prev[curr.key] = curr.value;
+        prev[curr.key] = curr.value || '';
         return prev;
       }, {});
     }

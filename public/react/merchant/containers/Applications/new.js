@@ -89,7 +89,6 @@ class NewApplicationForm extends Component {
       `/authorize?response_type=code&client_id=${this.state.details
         .client_details.dev
         .id}&redirect_uri=http://localhost&scope=read_only&state=current_state`;
-
     window.open(popupUrl, 'PopupPreview');
   };
 
@@ -165,9 +164,7 @@ class NewApplicationForm extends Component {
             <i class="icon icon-arrow-back" />
             <span> Back</span>
           </Link>
-          <strong>
-            {' '}/ {this.state.edit ? 'Edit' : 'Create'} Application
-          </strong>
+          <strong> / {this.state.edit ? 'Edit' : 'Create'} Application</strong>
         </div>
         <form
           class="form-horizontal"
@@ -206,16 +203,18 @@ class NewApplicationForm extends Component {
                 <div class="upload-inner" style={{ padding: '0' }}>
                   <label htmlFor="logo-upload">
                     {this.state.details.logo_url === null ||
-                    typeof this.state.details.logo_url === 'undefined'
-                      ? <span style={{ fontWeight: 'normal' }}>
-                          <i class="fa fa-folder-open" />
-                          Upload App Icon
-                        </span>
-                      : <img
-                          class="media-object"
-                          style={{ width: '100%' }}
-                          src={this.state.details.logo_url}
-                        />}
+                    typeof this.state.details.logo_url === 'undefined' ? (
+                      <span style={{ fontWeight: 'normal' }}>
+                        <i class="fa fa-folder-open" />
+                        Upload App Icon
+                      </span>
+                    ) : (
+                      <img
+                        class="media-object"
+                        style={{ width: '100%' }}
+                        src={this.state.details.logo_url}
+                      />
+                    )}
                     <input
                       name="file"
                       id="logo-upload"
@@ -230,13 +229,11 @@ class NewApplicationForm extends Component {
               </div>
               <small class="col-md-8 help-block">
                 <i class="icon icon-info-circle" />
-                <span>
-                  {INFO.icon}
-                </span>
+                <span>{INFO.icon}</span>
               </small>
             </div>
 
-            {this.state.edit &&
+            {this.state.edit && (
               <div class="edit-details">
                 <div class="col-md-offset-2 col-md-10">
                   <h5 class="form-header text-left">Development</h5>
@@ -263,13 +260,14 @@ class NewApplicationForm extends Component {
                       class="form-control copy-field"
                       placeholder="Client Secret"
                     />
-                    {!this.state.showDevSecret &&
+                    {!this.state.showDevSecret && (
                       <button
                         class="btn btn-default btn-show-secret"
                         onClick={this.showDevSecret}
                       >
                         <i class="fa fa-eye" />
-                      </button>}
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -287,9 +285,7 @@ class NewApplicationForm extends Component {
                   <div class="clearfix" />
                   <small class="col-md-offset-2 col-md-10 help-block">
                     <i class="icon icon-info-circle" />
-                    <span>
-                      {INFO.dev}
-                    </span>
+                    <span>{INFO.dev}</span>
                   </small>
                 </div>
 
@@ -318,13 +314,14 @@ class NewApplicationForm extends Component {
                       class="form-control copy-field"
                       placeholder="Client Secret"
                     />
-                    {!this.state.showProdSecret &&
+                    {!this.state.showProdSecret && (
                       <button
                         class="btn btn-default btn-show-secret"
                         onClick={this.showProdSecret}
                       >
                         <i class="fa fa-eye" />
-                      </button>}
+                      </button>
+                    )}
                   </div>
                 </div>
 
@@ -342,12 +339,11 @@ class NewApplicationForm extends Component {
                   <div class="clearfix" />
                   <small class="col-md-offset-2 col-md-10 help-block">
                     <i class="icon icon-info-circle" />
-                    <span>
-                      {INFO.prod}
-                    </span>
+                    <span>{INFO.prod}</span>
                   </small>
                 </div>
-              </div>}
+              </div>
+            )}
 
             <div class="form-group">
               <div class="col-md-offset-3 col-md-9">
@@ -361,13 +357,14 @@ class NewApplicationForm extends Component {
                     )}
                   />
 
-                  {this.state.edit &&
+                  {this.state.edit && (
                     <AsyncButton
                       type="button"
                       class="btn btn-default pull-right"
                       text="Preview OAuth Page"
                       onClick={this.openPreviewPage}
-                    />}
+                    />
+                  )}
                 </div>
               </div>
             </div>

@@ -228,7 +228,11 @@ export default class OnBoarding extends Component {
                         text="Apply Now"
                         pendingText="Applying..."
                         onClick={handleSubmit(this.onSubmitClick)}
-                        disabled={invalid}
+                        disabled={
+                          invalid ||
+                          (formType === 'marketplace' &&
+                            !this.state.uploadedFile)
+                        }
                       />
                     </div>
                   : <div class="alert alert-info">

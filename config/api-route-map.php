@@ -110,8 +110,13 @@ return [
         // Retry Settlements
         'setl_retry'                        => 'settlements/retry',
 
+        // Merchant Batches
+        'merchant_batches'                  => 'merchant/{id}/batches',
+
         // Update GSTIN for given invoice
         'merchant_invoice_update_gstin'     => 'merchants/{id}/invoice/gstin',
+
+        'merchant_activation_files'         => 'merchant/activation/{id}/files',
     ],
 
     // auth

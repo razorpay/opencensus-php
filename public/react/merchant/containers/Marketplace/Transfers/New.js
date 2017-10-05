@@ -281,8 +281,8 @@ export default class TransferNew extends Component {
                       prefix="INR"
                       class="form-control"
                       validate={required('Transfer amount is required')}
-                      placeholder="199.99"
-                      type="number"
+                      placeholder="000.00"
+                      type="text"
                     />
                     <span class="help-block label--secondary">
                       <i class="icon icon-info-outline" />
@@ -292,15 +292,23 @@ export default class TransferNew extends Component {
               />
 
               <FormItem
-                label={_ => <Label text="Internal Notes" />}
-                field={_ =>
-                  <FieldArray name="notes" component={NotesFieldArray} />}
-              />
-
-              <FormItem
                 label={_ => <Label text="Settlement schedule" />}
                 field={_ =>
                   <div>
+                    <Field
+                      component={RadioButton}
+                      name="onHold"
+                      htmlValue="false"
+                      checked={this.props.onHold === 'false'}
+                      label={_ =>
+                        <div>
+                          <span>Settle Now</span>
+                          <div className="text-fade">
+                            This transfer will be settled in next available
+                            settlement slot.
+                          </div>
+                        </div>}
+                    />
                     <Field
                       component={RadioButton}
                       name="onHold"
@@ -338,21 +346,13 @@ export default class TransferNew extends Component {
                           </div>
                         </div>}
                     />
-                    <Field
-                      component={RadioButton}
-                      name="onHold"
-                      htmlValue="false"
-                      checked={this.props.onHold === 'false'}
-                      label={_ =>
-                        <div>
-                          <span>Settle Now</span>
-                          <div className="text-fade">
-                            This transfer will be settled in next available
-                            settlement slot.
-                          </div>
-                        </div>}
-                    />
                   </div>}
+              />
+
+              <FormItem
+                label={_ => <Label text="Internal Notes" />}
+                field={_ =>
+                  <FieldArray name="notes" component={NotesFieldArray} />}
               />
 
               <Alert type="error" message={this.state.errors} />
