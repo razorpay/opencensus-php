@@ -95,7 +95,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::QR_STRING);
     }
 
-    public function setQrString($qr)
+    public function setQrString(string $qr)
     {
         $this->setAttribute(self::QR_STRING, $qr);
     }
@@ -130,14 +130,14 @@ class Entity extends Base\PublicEntity
     {
         $masterCardIdentifier = $this->getMasterCardIdentifier();
 
-        return '04' . strlen($masterCardIdentifier) . $this->getMasterCardIdentifier();
+        return '04' . strlen($masterCardIdentifier) . $masterCardIdentifier;
     }
 
     protected function getVisaTag()
     {
         $visaIdentifier = $this->getVisaIdentifier();
 
-        return '02' . strlen($visaIdentifier) . $this->getVisaIdentifier();
+        return '02' . strlen($visaIdentifier) . $visaIdentifier;
     }
 
     protected function getAdditionalDetailsTag()

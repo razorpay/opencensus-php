@@ -3,13 +3,13 @@
 namespace RZP\Models\VirtualAccount;
 
 use App;
+use Lib\CRC16;
 use RZP\Exception;
 use RZP\Base\Luhn;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
-use RZP\Models\BharatQr\CRC16;
 use RZP\Models\BharatQr\Entity as BharatQr;
 use RZP\Models\BankAccount\Entity as BankAccount;
 
@@ -326,7 +326,7 @@ class Receiver
         return Provider::DEFAULT_HANDLE_MAPPING[$root];
     }
 
-    protected function padWithRandomNumbers(int $desiredLength, $str = '')
+    protected function padWithRandomNumbers(int $desiredLength, string $str = '')
     {
         $requiredLength = $desiredLength - strlen($str);
 

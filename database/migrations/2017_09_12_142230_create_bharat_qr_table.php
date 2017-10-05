@@ -63,7 +63,7 @@ class CreateBharatQrTable extends Migration
         });
 
         // This needs to be done here because migrations are run in order of
-        // timestamps and bharat qr table gets created after credits.
+        // timestamps and bharat qr table gets created after virtualaccount.
         Schema::table(Table::VIRTUAL_ACCOUNT, function(Blueprint $table)
         {
             $table->foreign(VirtualAccount::BHARAT_QR_ID)
@@ -82,7 +82,7 @@ class CreateBharatQrTable extends Migration
     {
         Schema::table(Table::BHARAT_QR, function($table)
         {
-            $table->dropForeign(Table::BHARAT_QR.'_'.BharatQr::MERCHANT_ID.'_foreign');
+            $table->dropForeign(Table::BHARAT_QR . '_' . BharatQr::MERCHANT_ID . '_foreign');
         });
 
         Schema::drop(Table::BHARAT_QR);
