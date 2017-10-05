@@ -1089,7 +1089,7 @@ angular
         },
         gatewayNBMap: {
           netbanking_hdfc: 'HDFC Netbanking',
-          netbanking_corp: 'Corporation Netbanking',
+          netbanking_corporation: 'Corporation Netbanking',
           netbanking_kotak: 'Kotak Netbanking',
           netbanking_icici: 'ICICI Netbanking',
           netbanking_axis: 'Axis Netbanking',
