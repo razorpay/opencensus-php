@@ -15,7 +15,6 @@ use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\AESCrypto;
 use RZP\Gateway\Netbanking\Axis\Constants as AxisConstants;
 use RZP\Gateway\Netbanking\Base as Netbanking;
-use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment;
@@ -52,7 +51,7 @@ trait EmandateTrait
         return $this->getCallbackResponseData($input, $acquirerData);
     }
 
-    protected function getEmandateAcquirerData(Base\Entity $gatewayPayment) : array
+    protected function getEmandateAcquirerData(Netbanking\Entity $gatewayPayment) : array
     {
         $siStatus = $gatewayPayment->getSIStatus();
 
