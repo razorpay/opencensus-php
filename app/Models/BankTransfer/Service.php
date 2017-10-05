@@ -91,6 +91,34 @@ class Service extends Base\Service
     }
 
     /**
+     * Manual insertion of a bank transfer on behalf of another provider.
+     *
+     * @param array $input
+     *
+     * @return array
+     */
+    public function insert(string $provider, array $input): array
+    {
+        $this->trace->info(
+            TraceCode::BANK_TRANSFER_MANUAL_PROCESS_REQUEST,
+            [
+                'provider' => $provider,
+                'input'    => $input,
+            ]
+        );
+
+        Provider::validateLiveProvider($provider);
+
+        $valid = $this->core->process($input, $provider);
+
+        return [
+            'valid'          => $valid,
+            'message'        => null,
+            'transaction_id' => $input[Entity::REQ_UTR],
+        ];
+    }
+
+    /**
      * This is used by the payment_bank_transfer_fetch route. Bank transfer
      * public entity contains payer bank account info for use by the merchant.
      *
