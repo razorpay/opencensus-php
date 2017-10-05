@@ -19,6 +19,7 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 
 use Carbon\Carbon;
 use phpseclib\Crypt\AES;
@@ -104,6 +105,15 @@ trait EmandateTrait
         ];
 
         $data[RequestFields::CHECKSUM] = $this->getChecksum($data);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'gateway'         => $this->gateway,
+                'payment_id'      => $input['payment']['id'],
+                'data_before_enc' => $data
+            ]
+        );
 
         $content = [
             RequestFields::DATA => $this->getEncryptedData($data)
