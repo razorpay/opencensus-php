@@ -671,7 +671,7 @@ class Entity extends Base\PublicEntity
 
     public function hasCustomer(): bool
     {
-        return ($this->getAttribute(self::CUSTOMER_ID) !== null);
+        return $this->isAttributeNotNull(self::CUSTOMER_ID);
     }
 
     public function hasCustomerBillingAddress(): bool
@@ -784,17 +784,12 @@ class Entity extends Base\PublicEntity
         $this->setCustomerName(null);
         $this->setCustomerContact(null);
         $this->setCustomerEmail(null);
-        $this->setCustomerBillingAddressId(null);
+        $this->setCustomerBillingAddrId(null);
     }
 
     public function setCustomerName($customerName)
     {
         $this->setAttribute(self::CUSTOMER_NAME, $customerName);
-    }
-
-    public function setCustomerBillingAddressId(string $billingAddressId = null)
-    {
-        $this->setAttribute(self::CUSTOMER_BILLING_ADDR_ID, $billingAddressId);
     }
 
     public function setCustomerEmail($customerEmail)
@@ -805,6 +800,11 @@ class Entity extends Base\PublicEntity
     public function setCustomerContact($customerContact)
     {
         $this->setAttribute(self::CUSTOMER_CONTACT, $customerContact);
+    }
+
+    public function setCustomerBillingAddrId(string $billingAddressId = null)
+    {
+        $this->setAttribute(self::CUSTOMER_BILLING_ADDR_ID, $billingAddressId);
     }
 
     public function setSmsStatus($status)

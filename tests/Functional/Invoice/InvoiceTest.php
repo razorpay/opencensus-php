@@ -69,11 +69,9 @@ class InvoiceTest extends TestCase
         $this->assertEquals('cust_100000customer', $response['customer_id']);
     }
 
-    public function testCreateInvoiceWithExistingCustomerAndNewDetails()
+    public function testCreateInvoiceWithCustomerIdAndDetails()
     {
         $this->startTest();
-
-        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testCreateInvoiceAndPay()
@@ -248,24 +246,6 @@ class InvoiceTest extends TestCase
         $this->assertEquals('1', $address['primary']);
         $this->assertEquals($response['customer_id'], $address['entity_id']);
         $this->assertEquals('customer', $address['entity_type']);
-    }
-
-    public function testCreateInvoiceWithExistingCustomerAndNewAddress()
-    {
-        // Have one new customer address created which we will use in test data
-        $input = [
-            'id'      => '10000000000002',
-            'line1'   => 'Line 1',
-            'line2'   => 'Line 2',
-            'zipcode' => '560076',
-            'type'    => 'billing_address',
-        ];
-
-        $this->fixtures->create('address', $input);
-
-        $this->startTest();
-
-        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testCreateInvoiceWithSmsNotifyFalseAndEmailNotifyTrue()
@@ -551,8 +531,7 @@ class InvoiceTest extends TestCase
                 'name'    => 'test 2',
                 'email'   => 'test2@razorpay.com',
                 'contact' => null,
-            ]
-        );
+            ]);
 
         $this->startTest();
 
@@ -568,15 +547,55 @@ class InvoiceTest extends TestCase
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
-    public function testUpdateDraftInvoiceWithCustomerIdAndNewDetails()
+    public function testUpdateDraftInvoiceWithCustomerIdAndDetails()
     {
         $this->createDraftInvoice();
 
-        $this->fixtures->create('customer', ['id' => '100002customer']);
+        $this->startTest();
+    }
+
+    public function testUpdateDraftInvoiceWithCustomerBillingAddressId()
+    {
+        $this->fixtures->create(
+            'address',
+            [
+                'id'      => '1000000address',
+                'type'    => 'billing_address',
+                'primary' => false,
+            ]);
+
+        $this->createDraftInvoice();
 
         $this->startTest();
+    }
 
-        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
+    public function testUpdateDraftInvoiceWithInvalidCustomerBillingAddressId()
+    {
+        //
+        // Creates a different customer and it's billing_address and that follows
+        // attempt to update invoice's customer's biling address with this id(of
+        // another customer) which should fail.
+        //
+        $this->fixtures->create(
+            'customer',
+            [
+                'id'      => '100001customer',
+                'name'    => 'test 2',
+                'email'   => 'test2@razorpay.com',
+                'contact' => null,
+            ]);
+
+        $this->fixtures->create(
+            'address',
+            [
+                'id'        => '1000001address',
+                'entity_id' => '100001customer',
+                'type'      => 'billing_address',
+            ]);
+
+        $this->createDraftInvoice();
+
+        $this->startTest();
     }
 
     public function testUpdateDraftInvoiceUnsetCustomer()
@@ -586,19 +605,6 @@ class InvoiceTest extends TestCase
         $this->startTest();
 
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
-    }
-
-    public function testUpdateDraftInvoiceUnsetCustomerAndNewDetails()
-    {
-        $this->createDraftInvoice();
-
-        $response = $this->startTest();
-
-        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
-
-        $customer = $this->getLastEntity('customer', true);
-
-        $this->assertEquals($customer['id'], $response['customer_id']);
     }
 
     public function testUpdateIssuedInvoice()

@@ -447,25 +447,37 @@ class Generator extends Base\Core
     {
         $this->invoice->getValidator()->validateInput('editCustomerDetails', $details);
 
-        // Verifies billing_address_id sign and strips the same.
         if (isset($details[Customer\Entity::BILLING_ADDRESS_ID]))
         {
-            Address\Entity::verifyIdAndStripSign($details[Customer\Entity::BILLING_ADDRESS_ID]);
+            $billingAddressId = array_pull($details, Customer\Entity::BILLING_ADDRESS_ID);
+
+            $this->associateCustomerBillingAddressById($billingAddressId);
         }
 
-        //
-        // Gets list of editable customer detail attributes, FOREACHS over them
-        // and calls invoice's setter to update it's copy.
-        //
-        $attributes = Validator::getEditCustomerDetailsKeys();
-
-        foreach ($attributes as $key)
+        foreach ($details as $attribute => $value)
         {
-            if (array_key_exists($key, $details) === false) { continue; }
+            $setter = 'setCustomer' . studly_case($attribute);
 
-            $setter = 'setCustomer' . studly_case($key);
-
-            $this->invoice->$setter($details[$key]);
+            $this->invoice->$setter($value);
         }
+    }
+
+    protected function associateCustomerBillingAddressById(string $id = null)
+    {
+        if ($id === null)
+        {
+            $this->invoice->customerBillingAddress()->dissociate();
+
+            return;
+        }
+
+        $address = $this->repo
+                        ->address
+                        ->findByPublicIdEntityAndTypeOrFail(
+                            $id,
+                            $this->invoice->customer,
+                            Address\Type::BILLING_ADDRESS);
+
+        $this->invoice->customerBillingAddress()->associate($address);
     }
 }

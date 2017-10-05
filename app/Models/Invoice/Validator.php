@@ -160,6 +160,12 @@ class Validator extends Base\Validator
         Entity::CALLBACK_METHOD     => 'required_with:callback_url|sometimes|string|in:get|nullable',
     ];
 
+    /**
+     * Rule used when in update request one sends customer dict to update invoice's
+     * copy of customer details.
+     *
+     * @var array
+     */
     protected static $editCustomerDetailsRules = [
         Customer\Entity::NAME               => 'sometimes|regex:(^[a-zA-Z. 0-9\']+$)|max:50|nullable',
         Customer\Entity::EMAIL              => 'sometimes|email',
@@ -185,16 +191,13 @@ class Validator extends Base\Validator
 
     protected static $createValidators =[
         Entity::AMOUNT,
+        Entity::CUSTOMER_ID,
     ];
 
     protected static $editDraftValidators = [
         Entity::AMOUNT,
+        Entity::CUSTOMER_ID,
     ];
-
-    public static function getEditCustomerDetailsKeys(): array
-    {
-        return array_keys(self::$editCustomerDetailsRules);
-    }
 
     public function validateAmount(array $input)
     {
@@ -206,6 +209,24 @@ class Validator extends Base\Validator
         $this->checkIfAmountIsExpectedInInput($input);
 
         $this->validateMaxAllowedAmount($input[Entity::AMOUNT]);
+    }
+
+    /**
+     * Validates that only one of customer_id or customer key is sent
+     * in request input.
+     *
+     * @param array $input
+     *
+     * @throws BadRequestValidationFailureException
+     */
+    public function validateCustomerId(array $input)
+    {
+        if ((array_key_exists(Entity::CUSTOMER_ID, $input) === true) and
+            (array_key_exists(Entity::CUSTOMER, $input) === true))
+        {
+            throw new BadRequestValidationFailureException(
+                'Either of customer_id or customer must be sent in input');
+        }
     }
 
     /**
