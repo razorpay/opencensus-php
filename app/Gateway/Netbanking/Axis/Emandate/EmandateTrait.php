@@ -29,6 +29,8 @@ trait EmandateTrait
     {
         $content = $input['gateway'];
 
+        $content = $this->getDecryptedData($content[ResponseFields::DATA]);
+
         $this->assertPaymentId($input['payment']['id'],
             $content[ResponseFields::TRANS_REF_NO]);
 

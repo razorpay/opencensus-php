@@ -19,6 +19,8 @@ class ResponseFields
     const PAYMENT_MODE    = 'PMD';
     const CHECKSUM        = 'CKS';
 
+    const DATA            = 'i';
+
     /**
      * For successful registration, mandate number will be sent, otherwise 0 will be sent
      */

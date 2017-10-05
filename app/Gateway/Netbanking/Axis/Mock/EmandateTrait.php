@@ -53,6 +53,10 @@ trait EmandateTrait
         // for test cases
         $this->content($data, 'emandateauth');
 
-        return $data;
+        $content = [
+            ResponseFields::DATA => $this->getGatewayInstance()->getEncryptedData($data)
+        ];
+
+        return $content;
     }
 }
