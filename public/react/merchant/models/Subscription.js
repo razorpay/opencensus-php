@@ -33,6 +33,7 @@ export default class Subscription extends GenericEntity {
         route_name: 'invoice_fetch_multiple',
         query_params: JSON.stringify({
           subscription_id: subs_id,
+          count: 100, // Fetch limited will cause bugs in FE calculations like recurring count, etc.
         }),
       },
     });
