@@ -31,9 +31,6 @@ class Service extends Base\Service
 
         $this->verifyMerchantIsLiveForLiveRequest();
 
-        // @TODO: Change/Update this when more methods are added for Virtual Accounts
-        //$this->verifyBankTransferEnabled();
-
         $customer = $this->getCustomerIfGiven($input);
 
         $this->setDefaultReceiverTypesIfNeeded($input);
@@ -242,6 +239,8 @@ class Service extends Base\Service
 
         foreach ($receiverTypes as $receiverType)
         {
+            $this->validateReceiverEnabled($receiverType);
+
             $func = 'build' . studly_case($receiverType);
 
             $receiver = $receiverHelper->$func($virtualAccount);
@@ -249,6 +248,19 @@ class Service extends Base\Service
             $association = camel_case($receiverType);
 
             $virtualAccount->$association()->associate($receiver);
+        }
+    }
+
+    protected function validateReceiverEnabled(string $receiver)
+    {
+        switch ($receiver)
+        {
+            case Receiver::BANK_ACCOUNT:
+                $this->verifyBankTransferEnabled();
+                break;
+
+            default:
+                return;
         }
     }
 
