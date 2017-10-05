@@ -325,17 +325,6 @@ class Generator extends Base\Core
                 'long_url'       => $longUrl,
             ]);
 
-        //
-        // TODO: Currently, since we are not exposing the invoice
-        // to the customer at all, should we NOT generate
-        // a short_url at all? We can start exposing it when
-        // we start exposing the invoices to the customer.
-        // This might create issues because the merchant, when
-        // he sees a short_url, he might send the link to the
-        // customer and the customer might try paying it.
-        // We will have to make changes in the invoice
-        // template to remove the pay link.
-        //
         $this->invoice->setShortUrl($shortenedUrl);
     }
 
@@ -400,7 +389,6 @@ class Generator extends Base\Core
 
     protected function associateCustomerWithInvoiceById(string $id = null)
     {
-        // If customer_id = null, remove customer and unset invoice's copy of attributes
         if (empty($id) === true)
         {
             $this->invoice->unsetCustomerDetails();
@@ -408,7 +396,6 @@ class Generator extends Base\Core
             return;
         }
 
-        // Else, find customer with given id, associate and set invoice's copy of attributes
         $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
         $this->invoice->associateAndSetCustomerDetails($customer);
@@ -416,21 +403,12 @@ class Generator extends Base\Core
 
     protected function associateCustomerWithInvoiceByDetails(array $details)
     {
-        // If invoice has customer associated already just override the invoice's copy of attributes
         if ($this->invoice->hasCustomer() === true)
         {
             $this->overrideCustomerOfInvoiceWithDetails($details);
         }
-        // Else, create customer with the given input details, associate and set invoice's copy
         else
         {
-            //
-            // TODO:
-            // - In case customer exists with given contact & email
-            //   (the unique check), we don't create anything here and probably
-            //   miss out name, billing_address and other attributes. They will
-            //   have to basically send those with another update request. :(
-            //
             $customer = (new Customer\Core)->createLocalCustomer($details, $this->merchant, false);
 
             $this->invoice->associateAndSetCustomerDetails($customer);
