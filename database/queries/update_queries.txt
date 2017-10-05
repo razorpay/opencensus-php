@@ -875,3 +875,6 @@ WHERE
 
 UPDATE merchant_banks
     SET bank_transfer=1;
+
+UPDATE invoices
+    SET user_id = NULL WHERE id = '8K7Wt4J7XF559F' LIMIT 1;
