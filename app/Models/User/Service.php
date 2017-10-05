@@ -48,8 +48,6 @@ class Service extends Base\Service
 
             if (isset($tokenData['id']) === true)
             {
-                $adminId = $tokenData['admin_id'];
-
                 $tokenSignUpInput = [
                     'signed_up' => 1
                 ];
@@ -115,9 +113,9 @@ class Service extends Base\Service
                 $tagInputData = [
                     'tags' => ['ref-'.$referer],
                 ];
-            }
 
-            (new Merchant\Service)->addTags($merchantData['id'], $tagInputData);
+                (new Merchant\Service)->addTags($merchantData['id'], $tagInputData);
+            }
 
             $userMerchantMappingInputData = [
                 'action' => 'attach',
