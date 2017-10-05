@@ -273,4 +273,57 @@ class Service extends Base\Service
             }
         }
     }
+
+    private function getMerchantReferrer()
+    {
+        $tagNames = $this->merchant->tagNames();
+
+        foreach ($tagNames as $tagName)
+        {
+            $tagName = strtolower($tagName);
+
+            if (substr($tagName, 0, 4) === 'ref-')
+            {
+                return substr($tagName, 4);
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Will get pre signup details from merchant details.
+     *
+     * @return array
+     */
+    public function getPreSignupDetails()
+    {
+        // Referrer merchant doesn't need to complete presignup details.
+        $referrerMerchant = $this->getMerchantReferrer();
+
+        $presignupDetails = [];
+
+        // Referrer Merchant check for presignup details.
+        if (empty($referrerMerchant) === true or
+            Merchant\Entity::verifyUniqueId($referrerMerchant, false) === 0)
+        {
+            $merchantDetails = $this->fetchMerchantDetails();
+
+            $presignupFields = Constants::PRE_SIGNUP_FIELDS;
+
+            foreach ($presignupFields as $key)
+            {
+                if (empty($merchantDetails[$key]) === false)
+                {
+                    $presignupDetails[$key] = $merchantDetails[$key];
+                }
+                else
+                {
+                    $presignupDetails[$key] = null;
+                }
+            }
+        }
+
+        return $presignupDetails;
+    }
 }

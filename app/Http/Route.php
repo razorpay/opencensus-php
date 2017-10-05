@@ -119,6 +119,7 @@ final class Route
         'merchant_edit_config_logo'               => ['post',     'account/config/logo',                            'MerchantController@postMerchantConfigLogo'                         ],
         'merchant_delete_config_logo'             => ['delete',   'account/config/logo',                            'MerchantController@deleteMerchantConfigLogo'                       ],
         'merchant_sub_create'                     => ['post',     'submerchants',                                   'MerchantController@postCreateSubMerchant'                          ],
+        'merchant_pre_signup_details'             => ['get',      'pre_signup',                                     'MerchantController@getPreSignupDetails'                            ],
         'merchant_fetch_config'                   => ['get',      'account/config',                                 'MerchantController@getAccountConfig'                               ],
         'merchant_edit_email'                     => ['put',      'merchants/{id}/email',                           'MerchantController@putMerchantEmail'                               ],
         'merchant_fetch_multiple'                 => ['get',      'merchants',                                      'MerchantController@getMerchants'                                   ],
@@ -1129,6 +1130,7 @@ final class Route
         'feature_onboarding_create',
         'feature_onboarding_fetch_responses',
         'feature_onboarding_fetch_all_responses',
+        'merchant_pre_signup_details',
     ];
 
     // These will run on internal auth with the assurance

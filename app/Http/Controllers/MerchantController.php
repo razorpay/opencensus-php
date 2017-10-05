@@ -822,4 +822,11 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function getPreSignupDetails()
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->getPreSignupDetails();
+
+        return $response;
+    }
 }

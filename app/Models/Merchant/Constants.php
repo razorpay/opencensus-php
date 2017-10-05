@@ -92,4 +92,14 @@ final class Constants
         Detail\Entity::ADDRESS_PROOF_URL    => 'address_proof',
         Detail\Entity::PROMOTER_PAN_URL     => 'promoter_pan_proof',
     ];
+
+    const PRE_SIGNUP_FIELDS = [
+        Detail\Entity::BUSINESS_TYPE,
+        Detail\Entity::TRANSACTION_VOLUME,
+        Detail\Entity::ROLE,
+        Detail\Entity::DEPARTMENT,
+        Detail\Entity::CONTACT_NAME,
+        Detail\Entity::BUSINESS_NAME,
+        Detail\Entity::CONTACT_MOBILE,
+    ];
 }
