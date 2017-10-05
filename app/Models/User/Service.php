@@ -113,13 +113,7 @@ class Service extends Base\Service
             if ($referer)
             {
                 $tagInputData = [
-                    'tags' => ['ref-'.$referer, 'newui']
-                ];
-            }
-            else
-            {
-                $tagInputData = [
-                    'tags' => ['newui']
+                    'tags' => ['ref-'.$referer],
                 ];
             }
 
