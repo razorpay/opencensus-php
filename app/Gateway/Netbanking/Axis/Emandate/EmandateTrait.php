@@ -143,9 +143,7 @@ trait EmandateTrait
 
     public function getEncryptor()
     {
-        $aes = new AESCrypto(AES::MODE_CBC, $this->getRecSecret(true));
-
-        $aes->setKeyLength(256);
+        $aes = new AESCrypto(AES::MODE_ECB, $this->getRecSecret(true));
 
         return $aes;
     }
