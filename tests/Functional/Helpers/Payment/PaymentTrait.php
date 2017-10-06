@@ -400,6 +400,24 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function getWalletFormViaCreateRoute($payment)
+    {
+        $request = [
+            'method'  => 'POST',
+            'url'     => '/payments',
+            'content' => $payment
+        ];
+
+        $this->ba->publicAuth();
+
+        $response = $this->makeRequestParent($request);
+
+        $response->assertViewIs('gateway.gatewayWalletForm');
+        $response->assertHeader('content-type', 'text/html; charset=UTF-8');
+
+        return $this->getFormRequestFromResponse($response->getContent(), 'http://localhost');
+    }
+
     protected function makeOtpCallback($url)
     {
         $request = [
@@ -1013,6 +1031,8 @@ trait PaymentTrait
         $payment = $this->getDefaultPaymentArray();
         $payment['method'] = 'wallet';
         $payment['wallet'] = $wallet;
+
+        unset($payment['card'], $payment['bank']);
 
         return $payment;
     }

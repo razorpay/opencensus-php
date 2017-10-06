@@ -174,9 +174,18 @@ class Processor
                 Payment\Entity::METHOD);
         }
 
-        $this->repo->transaction(function() use ($input)
+        $payment = $this->buildPaymentEntity($input);
+
+        $ret = $this->preProcessPaymentInputs($input, $payment);
+
+        if ($ret !== null)
         {
-            $this->createPaymentEntity($input);
+            return $ret;
+        }
+
+        $this->repo->transaction(function() use ($input, $payment)
+        {
+            $this->createPaymentEntity($input, $payment);
         });
 
         $payment = $this->payment;
@@ -185,6 +194,42 @@ class Processor
         $this->checkSignature($input, $payment);
 
         return $this->authorize($payment, $input);
+    }
+
+    protected function preProcessPaymentInputs(array $input, $payment)
+    {
+        $coproto = null;
+
+        if (($payment->isWallet() === true) and
+            ((($payment->merchant->isPhoneOptional() === true) and
+              ($payment->getContact() === Payment\Entity::DUMMY_PHONE)) or
+             (($payment->merchant->isEmailOptional() === true) and
+              ($payment->getEmail() === Payment\Entity::DUMMY_EMAIL))))
+        {
+            $coproto = [
+                'type'    => 'wallet',
+                'request' => [
+                    'url'     => $this->route->getUrlWithPublicAuthInQueryParam('payment_create'),
+                    'method'  => 'POST',
+                    'content' => $input,
+                ],
+                'version' => '1',
+            ];
+
+            if ($payment->getContact() === Payment\Entity::DUMMY_PHONE)
+            {
+                $coproto['missing'][] = 'contact';
+                unset($coproto['request']['content']['contact']);
+            }
+
+            if ($payment->getEmail() === Payment\Entity::DUMMY_EMAIL)
+            {
+                $coproto['missing'][] = 'email';
+                unset($coproto['request']['content']['email']);
+            }
+        }
+
+        return $coproto;
     }
 
     public function processAndReturnFees(array & $input)
@@ -205,7 +250,7 @@ class Processor
         // of pre-calculating fees and returning it.
         // It's not going to be saved in the database.
         //
-        $payment = $this->createDummyPaymentEntity($input);
+        $payment = $this->buildPaymentEntity($input);
 
         // Performing dummy set of processing for the same
         $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
@@ -767,19 +812,16 @@ class Processor
 
     }
 
-    protected function createPaymentEntity(array $input): Payment\Entity
+    protected function createPaymentEntity(array $input, Payment\Entity $payment = null): Payment\Entity
     {
-        $payment = new Payment\Entity;
-
-        $payment->generateId();
-
         $this->tracePaymentNewRequest($input);
 
-        $payment->merchant()->associate($this->merchant);
+        if ($payment == null)
+        {
+            $payment = $this->buildPaymentEntity($input);
+        }
 
         // $this->segment->trackPayment($payment, TraceCode::PAYMENT_NEW_REQUEST);
-
-        $payment->build($input);
 
         if ($this->merchant->isFeeBearerCustomer())
         {
@@ -917,9 +959,11 @@ class Processor
         $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($subscriptionInvoice->getOrderId());
     }
 
-    protected function createDummyPaymentEntity(array $input): Payment\Entity
+    protected function buildPaymentEntity(array $input): Payment\Entity
     {
         $payment = new Payment\Entity;
+
+        $payment->generateId();
 
         $payment->merchant()->associate($this->merchant);
 
