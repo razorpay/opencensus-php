@@ -2520,3 +2520,7 @@ DELETE FROM transactions
     WHERE entity_id='8iQEuts9RhZTvI';
 DELETE FROM bank_transfers
     WHERE payment_id='8i1eFM9BkOB8Ze';
+
+# Makes invoices.user_id refer to users.id
+ALTER TABLE invoices
+    ADD CONSTRAINT invoices_user_id_foreign FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT;

@@ -16,15 +16,6 @@ class PricingController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postUploadPricingPlan()
-    {
-        $input = Request::all();
-
-        $data = $this->service()->uploadPricingPlan($input);
-
-        return ApiResponse::json($data);
-    }
-
     public function getPricingPlan($id)
     {
         $data = $this->service()->getPricingPlanById($id);
