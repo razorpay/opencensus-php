@@ -362,10 +362,53 @@ class Service extends Base\Service
             (new User\Validator)->validateInput('pre_signup', $userEditData);
 
             (new User\Service)->edit($user->id, $userEditData);
+
+            // Dump data to zapier.
+
+            $zapierData = $this->getZapierData($this->merchant, $input);
+
+            (new Core)->postFormSubmissionToZapier($zapierData);
         }
 
         $preSignupDetails = $this->getPreSignupDetails();
 
         return $preSignupDetails;
+    }
+
+    private function getZapierData($merchant, $input)
+    {
+        // This is the same format we'll set in the google spreadsheet
+        $timestamp = Carbon::createFromTimeStamp(time(), "Asia/Kolkata")
+            ->format('j/m/Y');
+
+        $userName = $input['contact_name'] ?? '';
+
+        $phoneNumber = $input['contact_mobile'] ?? '';
+
+        $businessType = isset($input['business_type']) ?
+            Merchant\Detail\BusinessType::getType($input['business_type']) : '';
+
+        $transactionVolume = isset($input['transaction_volume']) ?
+            Merchant\Detail\TransactionVolume::getVolume($input['transaction_volume']) : '';
+
+        $role = isset($input['role']) ? Merchant\Detail\Role::getType($input['role']) : '';
+
+        $department = isset($input['department']) ? Merchant\Detail\Department::getType($input['department']) : '';
+
+        $referrer = $merchant->referrer ?? '';
+
+        return [
+            Entity::ID                 => $merchant->id,
+            Merchant\Entity::EMAIL     => $merchant->email,
+            Constants::INDIVIDUAL      => $userName,
+            Merchant\Entity::NAME      => $merchant->name,
+            Constants::REF             => $referrer,
+            Constants::TIMESTAMP       => $timestamp,
+            Constants::CONTACT         => $phoneNumber,
+            Entity::BUSINESS_TYPE      => $businessType,
+            Entity::TRANSACTION_VOLUME => $transactionVolume,
+            Entity::ROLE               => $role,
+            Entity::DEPARTMENT         => $department,
+        ];
     }
 }

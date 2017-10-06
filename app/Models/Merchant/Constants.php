@@ -7,6 +7,11 @@ namespace RZP\Models\Merchant;
  */
 final class Constants
 {
+    const INDIVIDUAL                              = 'individual';
+    const CONTACT                                 = 'contact';
+    const TIMESTAMP                               = 'timestamp';
+    const REF                                     = 'ref';
+
     /**
      * Step Map gives information on attributes filled by merchant Step wise.
      * this is used to let merchant know what all the steps are finished and
