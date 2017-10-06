@@ -5,6 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
+use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\BharatQr\Entity as BharatQr;
 use RZP\Models\Qr\Entity as Qr;
 
@@ -23,6 +24,9 @@ class CreateQrTable extends Migration
 
             $table->char(Qr::ID, BharatQr::ID_LENGTH)
                   ->primary();
+
+            $table->char(Qr::PAYMENT_ID, BharatQr::ID_LENGTH)
+                  ->nullable();
 
             $table->char(Qr::BHARAT_QR_ID, Qr::ID_LENGTH)
                   ->nullable();
@@ -84,6 +88,12 @@ class CreateQrTable extends Migration
                   ->references(BharatQr::ID)
                   ->on(Table::BHARAT_QR)
                   ->on_delete('restrict');
+
+            $table->foreign(Qr::PAYMENT_ID)
+                  ->references(Payment::ID)
+                  ->on(Table::PAYMENT)
+                  ->on_delete('restrict');
+
         });
     }
 
@@ -96,7 +106,9 @@ class CreateQrTable extends Migration
     {
         Schema::table(Table::Qr, function($table)
         {
-            $table->dropForeign(Table::QR.'_'.Qr::BHARAT_QR_ID.'_foreign');
+            $table->dropForeign(Table::QR . '_' . Qr::BHARAT_QR_ID . '_foreign');
+
+            $table->dropForeign(Table::Payment . '_' . Qr::PAYMENT_ID . '_foreign');
         });
 
         Schema::drop(Table::Qr);

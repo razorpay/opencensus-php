@@ -10,6 +10,7 @@ class Entity extends Base\PublicEntity
     use SoftDeletes;
 
     const ID                    = 'id';
+    const PAYMENT_ID            = 'payment_id';
     const BHARAT_QR_ID          = 'bharat_qr_id';
     const GATEWAY_MERCHANT_ID   = 'gateway_merchant_id';
     //card or upi
@@ -75,6 +76,11 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
+    public function payment()
+    {
+        return $this->belongsTo('RZP\Models\Payment\Entity', self::PAYMENT_ID, self::ID);
+    }
+
     public function setReceived($received)
     {
         $this->setAttribute($received);
@@ -93,5 +99,10 @@ class Entity extends Base\PublicEntity
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getCardNumber()
+    {
+        return $this->getAttribute(self::CARD_NUMBER);
     }
 }

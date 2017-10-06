@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Qr;
 
+use RZP\Base\Luhn;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
@@ -14,6 +15,8 @@ use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
 class Processor extends Base\Core
 {
+    const RANDOM_CARD_PADDING = '12345';
+
     protected $virtualAccount;
     protected $provider;
     protected $merchant;
@@ -147,6 +150,25 @@ class Processor extends Base\Core
         //Need to create card entity
     }
 
+    protected function getLuhnValidCardNumberFromQr(Entity $qr)
+    {
+        $maskedCardNumber = $qr->getCardNumber();
+
+        $firstSix = substr($maskedCardNumber, 0, 6);
+
+        $lastFour = substr($maskedCardNumber, 12, 4);
+
+        $part1 = $firstSix . self::RANDOM_CARD_PADDING;
+
+        $part2 = $lastFour;
+
+        $checksum = Luhn::computeCheckDigitWithPart($part1, $part2);
+
+        $finalCardNumber =  $firstSix . self::RANDOM_CARD_PADDING . $checksum . $lastFour ;
+
+        return $finalCardNumber;
+    }
+
     protected function qrPaymentArray(Entity $qr): array
     {
         $paymentArray[Payment::CURRENCY] = Currency::INR;
@@ -155,6 +177,16 @@ class Processor extends Base\Core
         //TODO :: Need to check amount format for hitachi side
         $paymentArray[Payment::AMOUNT]      = ($qr->getAmount()) * 100;
         $paymentArray[Payment::DESCRIPTION] = "";
+
+        $paymentArray['card']['number'] = $this->getLuhnValidCardNumberFromQr($qr);
+
+        $paymentArray['card']['cvv'] = '123';
+
+        $paymentArray['card']['name'] = 'random';
+
+        $paymentArray['card']['expiry_month'] = '11';
+
+        $paymentArray['card']['expiry_year'] = '2037';
 
         if ($this->virtualAccount->hasCustomer() === true)
         {

@@ -124,6 +124,22 @@ class Luhn
      * @param $partialNumber
      * @return string
      */
+    public static function computeCheckDigitWithPart($part1, $part2, $base = 10)
+    {
+        $checkDigit = self::checksum($part1 . '0' . $part2, $base);
+
+        // For 0, it should be zero. For others, it should be base - digit.
+        $checkDigit = ($base - $checkDigit) % $base;
+
+        $checkDigit = self::BASE[$checkDigit];
+
+        return $checkDigit;
+    }
+
+    /**
+     * @param $partialNumber
+     * @return string
+     */
     public static function computeCheckDigit($partialNumber, $base = 10)
     {
         $checkDigit = self::checksum($partialNumber . '0', $base);
