@@ -253,7 +253,6 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::BILLING_START,
         self::BILLING_END,
-        self::USER_ID,
         self::EXPIRE_BY,
         self::CALLBACK_URL,
         self::CALLBACK_METHOD,
@@ -1039,20 +1038,6 @@ class Entity extends Base\PublicEntity
         else
         {
             unset($array[Entity::SUBSCRIPTION_ID]);
-        }
-    }
-
-    protected function setPublicUserIdAttribute(array & $array)
-    {
-        $type = $this->getAttribute(self::TYPE);
-
-        if ($type === Type::ECOD)
-        {
-            $array[self::USER_ID] = $this->getAttribute(self::USER_ID);
-        }
-        else
-        {
-            unset($array[self::USER_ID]);
         }
     }
 
