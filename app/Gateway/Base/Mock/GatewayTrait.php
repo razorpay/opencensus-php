@@ -70,7 +70,8 @@ trait GatewayTrait
         {
             // We can either pass the query params in URL or via the request's
             // content field.
-            if (isset($request['content']) === true)
+            if (isset($request['content']) === true and
+                empty($request['content']) === false)
             {
                 $input = $request['content'];
             }
