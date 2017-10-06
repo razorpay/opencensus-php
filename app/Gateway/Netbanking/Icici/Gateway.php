@@ -78,6 +78,8 @@ class Gateway extends Base\Gateway
 
         $this->checkCallbackStatus($attrs, $content);
 
+        $this->assertAmount($input, $content);
+
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
         return $this->getCallbackResponseData($input, $acquirerData);
@@ -346,6 +348,18 @@ class Gateway extends Base\Gateway
             Base\Entity::STATUS          => $content[ResponseFields::PAID],
             Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_PAYMENT_ID]
         ];
+    }
+
+    protected function assertAmount($input, $content)
+    {
+        $actualAmount = number_format($content['AMT'], 2, '.', '');
+        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+
+        if ($actualAmount !== $expectedAmount)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_AMOUNT_TAMPERED);
+        }
     }
 
     protected function checkCallbackStatus(array $attrs, array $content)
