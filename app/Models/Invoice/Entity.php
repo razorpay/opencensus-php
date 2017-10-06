@@ -253,7 +253,6 @@ class Entity extends Base\PublicEntity
         self::TYPE,
         self::BILLING_START,
         self::BILLING_END,
-        self::USER_ID,
         self::EXPIRE_BY,
         self::CALLBACK_URL,
         self::CALLBACK_METHOD,
@@ -879,6 +878,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT, $amount);
     }
 
+    public function setUserId(string $userId)
+    {
+        $this->setAttribute(self::USER_ID, $userId);
+    }
+
     /**
      * Sets all amounts field to null.
      * Used when all line items of draft invoice are removed.
@@ -1034,20 +1038,6 @@ class Entity extends Base\PublicEntity
         else
         {
             unset($array[Entity::SUBSCRIPTION_ID]);
-        }
-    }
-
-    protected function setPublicUserIdAttribute(array & $array)
-    {
-        $type = $this->getAttribute(self::TYPE);
-
-        if ($type === Type::ECOD)
-        {
-            $array[self::USER_ID] = $this->getAttribute(self::USER_ID);
-        }
-        else
-        {
-            unset($array[self::USER_ID]);
         }
     }
 
