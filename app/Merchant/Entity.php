@@ -164,14 +164,6 @@ class Entity extends Base\Entity
     }
 
     /**
-     * Get the primary owner of the merchant.
-     */
-    public function primaryOwner()
-    {
-        return $this->owners()->first();
-    }
-
-    /**
      * Get all of the users that belong to the merchant.
      * @return \Illuminate\Database\Eloquent\Collection
      */

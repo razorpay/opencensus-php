@@ -497,41 +497,6 @@ class Service extends Base\Service
         ];
     }
 
-    public function getZapierData($merchant, $input)
-    {
-        // This is the same format we'll set in the google spreadsheet
-        $timestamp = Carbon::createFromTimeStamp(time(), "Asia/Kolkata")
-            ->format('j/m/Y');
-
-        $userName = $input['contact_name'] ?? '';
-
-        $phoneNumber = $input['contact_mobile'] ?? '';
-
-        $businessType = isset($input['business_type']) ? MerchantDetails\BusinessType::getType($input['business_type']) : '';
-
-        $transactionVolume = isset($input['transaction_volume']) ? MerchantDetails\TransactionVolume::getVolume($input['transaction_volume']) : '';
-
-        $role = isset($input['role']) ? MerchantDetails\Role::getType($input['role']) : '';
-
-        $department = isset($input['department']) ? MerchantDetails\Department::getType($input['department']) : '';
-
-        $referrer = $merchant->referrer ?? '';
-
-        return [
-            'id'                    => $merchant->id,
-            'email'                 => $merchant->email,
-            'individual'            => $userName,
-            'name'                  => $merchant->name,
-            'ref'                   => $referrer,
-            'timestamp'             => $timestamp,
-            'contact'               => $phoneNumber,
-            'business_type'         => $businessType,
-            'transaction_volume'    => $transactionVolume,
-            'role'                  => $role,
-            'department'            => $department
-        ];
-    }
-
     /**
      * This method needs to be public because it's called
      * on a Queue
@@ -548,14 +513,6 @@ class Service extends Base\Service
         ];
 
         Requests::post($url, $headers, $data, $options);
-
-        $job->delete();
-    }
-
-    public function postToZapier($job, $data)
-    {
-        $url = Config::get('razorpay.zapier.signups');
-        Requests::post($url, [], $data);
 
         $job->delete();
     }

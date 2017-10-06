@@ -831,55 +831,27 @@ class Service extends Base\Service
         return [$error, null];
     }
 
-    public function savePreSignupDetails($merchantId, $input)
+    public function savePreSignupDetails($input)
     {
-        $error = (new MerchantDetails\Entity)->edit($input, 'preSignup');
+        $savePreSignupDetails = [
+            'route_name' => 'merchant_edit_pre_signup_details',
+            'body'       => $input
+        ];
 
-        $merchantDetails = [];
+        $genericService = new Generic\Service;
 
-        if (empty($error))
+        list($error, $data) = $genericService->call('PUT', $savePreSignupDetails);
+
+        if (empty($error) === false)
         {
-            list($error, $merchantDetails) = (new MerchantDetails\Service)->saveDetailsOnAPI($input, $merchantId);
-
-            if (empty($input['business_name']) === false)
-            {
-                $merchant = Merchant\Entity::findOrFail($merchantId);
-
-                $merchant->edit(['name' => $input['business_name']], 'changeName');
-
-                $merchant->saveOrFail();
-
-                (new Admin\Service)->editName($merchantId, ['name' => $input['business_name']]);
-
-                $user = $merchant->primaryOwner();
-
-                //
-                // We need to handle for non-existence of keys in $input as those
-                // are all optional for MerchantDetails edit.
-                //
-                $userEditData['contact_mobile'] = $input['contact_mobile'] ?? null;
-                $userEditData['name']           = $input['contact_name'] ?? null;
-
-                $userEditData = array_filter($userEditData);
-
-                $user->edit($userEditData, 'preSignup');
-
-                $user->saveOrFail();
-
-                (new User\Service)->editUserOnApi($userEditData, $user->id);
-
-                $zapierData = (new User\Service)->getZapierData($merchant, $input);
-
-                if (!config('razorpay.zapier.mock'))
-                {
-                    Queue::push('App\User\Service@postToZapier', $zapierData);
-                }
-            }
+            throw new \Razorpay\Api\Errors\BadRequestError(
+                $error[0],
+                \Razorpay\Api\Errors\ErrorCode::BAD_REQUEST_ERROR,
+                400
+            );
         }
 
-        $presignupDetails = (new MerchantDetails\Service)->getPresignupDetails($merchantId, $merchantDetails);
-
-        return [ $error, $presignupDetails];
+        return [$error, $data];
     }
 
     public function getReferrerAttribute($merchantId)

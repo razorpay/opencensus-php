@@ -223,11 +223,9 @@ class MerchantController extends Controller
 
     public function postSignup()
     {
-        $id = Auth::user()->currentMerchant()->id;
-
         $input = Input::all();
 
-        list($error, $data) = (new Merchant\Service)->savePreSignupDetails($id, $input);
+        list($error, $data) = (new Merchant\Service)->savePreSignupDetails($input);
 
         return AppResponse::jsonResponse($error, $data);
     }
