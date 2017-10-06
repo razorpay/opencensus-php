@@ -2,6 +2,8 @@
 
 namespace RZP\Models\BankTransfer;
 
+use App;
+
 use RZP\Models\Base;
 use RZP\Constants\Mode as RzpMode;
 use RZP\Trace\TraceCode;
@@ -151,7 +153,9 @@ class Processor extends Base\Core
 
             $this->repo->saveOrFail($bankTransfer);
 
-            $this->updateVirtualAccount($bankTransfer);
+            $this->virtualAccount->updateWithBankTransfer($bankTransfer);
+
+            $this->repo->saveOrFail($this->virtualAccount);
 
             return $payment;
         });
@@ -294,19 +298,32 @@ class Processor extends Base\Core
     }
 
     /**
-     * For unexpected payments, we use the demo page merchant. This merchant only
-     * exists on prod. For other envs, we use the test merchant, i.e. '10000000000000'.
+     * Set default merchant for future processing.
+     * Use default merchant for this env.
      */
     protected function setDefaultMerchant()
     {
+        $defaultMerchantId = self::getDefaultMerchantId();
+
+        $this->merchant = $this->repo->merchant->findByPublicId($defaultMerchantId);
+    }
+
+    /**
+     * For unexpected payments, we use the demo page merchant. This merchant only
+     * exists on prod. For other envs, we use the test merchant, i.e. '10000000000000'.
+     */
+    public static function getDefaultMerchantId()
+    {
         $defaultMerchantId = Merchant\Account::DEMO_PAGE_ACCOUNT;
 
-        if ($this->env !== 'production')
+        $env = App::getFacadeRoot()['env'];
+
+        if ($env !== 'production')
         {
             $defaultMerchantId = Merchant\Account::TEST_ACCOUNT;
         }
 
-        $this->merchant = $this->repo->merchant->findByPublicId($defaultMerchantId);
+        return $defaultMerchantId;
     }
 
     /**
@@ -322,21 +339,6 @@ class Processor extends Base\Core
         $virtualAccount = (new VirtualAccount\Core)->create($data, $this->merchant);
 
         $this->virtualAccount = $virtualAccount;
-    }
-
-    /**
-     * Post-processing, VA amount fields are to be updated.
-     * Status change is done inside incrementAmountPaid.
-     *
-     * @param Entity $bankTransfer
-     */
-    protected function updateVirtualAccount(Entity $bankTransfer)
-    {
-        $this->virtualAccount->incrementAmountPaid($bankTransfer->getAmount());
-
-        $this->virtualAccount->incrementAmountReceived($bankTransfer->getAmount());
-
-        $this->repo->saveOrFail($this->virtualAccount);
     }
 
     /**

@@ -47,7 +47,16 @@ class BankTransferController extends Controller
     {
         $input = Request::all();
 
-        $response = $this->service()->insertBankTransfer($provider, $input);
+        $response = $this->service()->insert($provider, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function reassignBankTransfer(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service()->reassign($id, $input);
 
         return ApiResponse::json($response);
     }

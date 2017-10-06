@@ -93,6 +93,7 @@ class Service extends Base\Service
     /**
      * Manual insertion of a bank transfer on behalf of another provider.
      *
+     * @param string $provider
      * @param array $input
      *
      * @return array
@@ -116,6 +117,32 @@ class Service extends Base\Service
             'message'        => null,
             'transaction_id' => $input[Entity::REQ_UTR],
         ];
+    }
+
+    /**
+     * Reassigns a bank_transfer payment, earlier made to the
+     * default merchant, to another, given merchant and given VA.
+     *
+     * @param string $id
+     * @param array $input
+     *
+     * @return array
+     */
+    public function reassign(string $id, array $input): array
+    {
+        $this->trace->info(
+            TraceCode::BANK_TRANSFER_REASSIGN_REQUEST,
+            [
+                'id'    => $id,
+                'input' => $input,
+            ]
+        );
+
+        $bankTransfer = $this->repo->bank_transfer->findOrFailPublic($id);
+
+        $bankTransfer = $this->core->reassign($bankTransfer, $input);
+
+        return $bankTransfer->toArrayPublic();
     }
 
     /**
