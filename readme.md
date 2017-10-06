@@ -34,7 +34,6 @@
 
 ### ( OSX )
 *  Copy the contents of `api.razorpay.com.conf` to `httpd-vhosts.conf` and update the directory location where your project lies.
-*  In `/etc/hosts`, add `api.razorpay.in` to the list of domains that loopback to your own machine.
 * Follow Common Instructions
 * Follow Common Test Setup Instructions
 * Install coreutils `brew install coreutils --with-default-names`
