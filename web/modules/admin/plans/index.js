@@ -1,16 +1,17 @@
 import React, { Component } from 'react';
 import Form from 'ui/Form';
-import { AdminTable as Table } from 'ui/Table';
+import Table from 'ui/Table';
 import Field, { SelectField, CheckField } from 'ui/Field';
-
-var defaultState = {
-  filters: {},
-};
+import Collection from 'util/collection';
+import { adminFetch } from 'util/fetch';
 
 export default class MerchantList extends Component {
-  state = defaultState;
+  collection = new Collection({
+    fetchRoute: 'pricing_get_merchant_plans',
+    fetchFn: adminFetch,
+  });
 
-  onSubmit = filters => this.setState({ filters });
+  onSubmit = filters => this.collection.filters.set(filters);
 
   render() {
     return (
@@ -23,7 +24,7 @@ export default class MerchantList extends Component {
         </div>
         <Table
           route="pricing_get_merchant_plans"
-          queryParams={this.state.filters}
+          model={this.collection}
           fields={pricingFields}
         />
       </div>

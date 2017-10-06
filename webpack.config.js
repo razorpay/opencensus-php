@@ -1,5 +1,6 @@
 const webpack = require('webpack');
 const isProd = require('process').env.NODE_ENV === 'production';
+const path = require('path');
 
 // generated bladefiles
 const htmlPlugins = require('./web/webpack/html')(
@@ -21,7 +22,6 @@ const htmlPlugins = require('./web/webpack/html')(
 
 module.exports = {
   entry: {
-    vendor: ['react', 'react-dom', 'react-router-dom', 'mobx', 'mobx-react'],
     merchant: './web/merchant.js',
     admin: './web/admin.js',
   },
@@ -51,12 +51,7 @@ module.exports = {
     chunkModules: false,
   },
 
-  plugins: [
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'vendor',
-      minChunks: Infinity,
-    }),
-  ].concat(htmlPlugins),
+  plugins: htmlPlugins.concat([]),
 
   module: {
     rules: [

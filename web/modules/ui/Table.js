@@ -1,54 +1,25 @@
 import React, { Component } from 'react';
-import { adminFetch } from 'util/fetch';
+import { observer } from 'mobx-react';
 import Form from 'ui/Form';
 
+@observer
 export default class Table extends Component {
-  state = {
-    items: this.props.items || [],
-    pending: false,
-  };
-
-  fetch = ({ route, queryParams } = this.props) => {
-    this.setState({
-      pending: true,
-    });
-    this.props
-      .fetch({
-        route,
-        queryParams,
-      })
-      .then(({ data }) => {
-        this.setState({
-          items: data.data.items,
-        });
-      })
-      .catch(e => {
-        console.log(e);
-      })
-      .then(() => {
-        this.setState({
-          pending: false,
-        });
-      });
-  };
-
-  componentWillMount() {
-    this.fetch();
-  }
-
-  componentWillReceiveProps(props) {
-    this.fetch(props);
-  }
-
   render() {
-    let { fetch, fields, route, queryParams, model, ...props } = this.props;
-    let { items, pending } = this.state;
+    let { fields, model } = this.props;
+    let { pending, items, filters } = model;
+
+    pending = pending.get();
+    filters = filters.get();
 
     return (
-      <div {...props}>
+      <div>
         {(pending && <div class="table-pending" />) ||
           ((items.length && (
             <div class="box">
+              <div class="table-info">
+                {items.length} Results ({filters.skip + 1} &ndash;{' '}
+                {filters.skip + items.length})
+              </div>
               <div class="table table-striped">
                 <div class="tr thead">
                   {fields.map((field, index) => (
@@ -74,8 +45,4 @@ export default class Table extends Component {
       </div>
     );
   }
-}
-
-export function AdminTable(props) {
-  return <Table fetch={adminFetch} {...props} />;
 }
