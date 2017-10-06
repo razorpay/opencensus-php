@@ -1169,12 +1169,6 @@ trait PaymentTrait
         $method = $form->getMethod();
         $values = $form->getValues();
 
-        //
-        // Adding this hack to convert ['notes[description]' => 'abc']
-        // notation to nested array notation as ['notes' => ['description' => 'abc']
-        //
-        parse_str(http_build_query($values), $values);
-
         return array($uri, $method, $values);
     }
 

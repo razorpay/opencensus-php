@@ -44,6 +44,7 @@
         box-sizing: border-box;
         -webkit-box-sizing: border-box;
         padding: 0 16px;
+        font-size: 14px;
         font-family: inherit;
         color: #111;
       }

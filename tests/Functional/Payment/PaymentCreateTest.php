@@ -108,11 +108,11 @@ class PaymentCreateTest extends TestCase
 
         $payment = $this->getDefaultWalletPaymentArray('payumoney');
 
-        unset($payment['email'], $payment['contact']);
+        unset($payment['email'], $payment['contact'], $payment['notes']);
 
         $response = $this->getWalletFormViaCreateRoute($payment);
         $content = $response['content'];
-        $content['contact'] = '9999999999';
+        $content['contact'] = '+919999999998';
         $content['email'] = 'test@razorpay.com';
 
         $payment = $this->doAuthPayment($content, ['CONTENT_TYPE' => 'application/x-www-form-urlencoded']);
