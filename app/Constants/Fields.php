@@ -4,6 +4,11 @@ namespace RZP\Constants;
 
 final class Fields
 {
+    //
+    // TODO: To decide if this is correct place for below listed fields.
+    // Usage: Base/Fetch.php and Base/AdminFetch.php
+    //
+
     /*
      * Common Fields used in Fetch Entity API
      */

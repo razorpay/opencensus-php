@@ -17,7 +17,9 @@ use RZP\Exception\BadRequestValidationFailureException;
 
 /**
  * Trait RepositoryFetch
+ *
  * @package RZP\Base
+ *
  * @property Fetch $entityFetch
  */
 trait RepositoryFetch
@@ -123,14 +125,8 @@ trait RepositoryFetch
      */
     public function fetch(array $params, string $merchantId = null): PublicCollection
     {
-        if ($this->hasEntityFetch())
-        {
-            $this->entityFetch->processFetchParams($params);
-        }
-        else
-        {
-            $this->processFetchParams($params);
-        }
+        // Process params (sanitization, validation, modification, etc.)
+        $this->processFetchParams($params);
 
         $expands = $this->getExpandsForQueryFromInput($params);
 
@@ -138,18 +134,11 @@ trait RepositoryFetch
 
         $this->addCommonQueryParamMerchantId($query, $merchantId);
 
-        // Splits the params into mysqlParams and esParams. Check methods doc on
-        // how that happens.
         $this->setEsRepoIfExist();
 
-        if ($this->hasEntityFetch())
-        {
-            list($mysqlParams, $esParams) = $this->entityFetch->groupMysqlAndEsParams($params);
-        }
-        else
-        {
-            list($mysqlParams, $esParams) = $this->getMysqlAndEsParams($params);
-        }
+        // Splits the params into mysqlParams and esParams. Check methods doc on
+        // how that happens.
+        list($mysqlParams, $esParams) = $this->getMysqlAndEsParams($params);
 
         // If we find that there are es params then we do es search.
         // Currently (as commented in getMysqlAndEsParams method) we raise bad
@@ -187,6 +176,11 @@ trait RepositoryFetch
      */
     protected function getMysqlAndEsParams(array $params): array
     {
+        if ($this->hasEntityFetch())
+        {
+            return $this->entityFetch->groupMysqlAndEsParams($params);
+        }
+
         if ($this->esRepo === null)
         {
             return [$params, []];
@@ -436,6 +430,11 @@ trait RepositoryFetch
      */
     protected function processFetchParams(array & $params)
     {
+        if ($this->hasEntityFetch())
+        {
+            return $this->entityFetch->processFetchParams($params);
+        }
+
         $params = $this->unsetEmptyParams($params);
 
         $this->addDefaultParams($params);
@@ -510,6 +509,7 @@ trait RepositoryFetch
      */
     protected function getFetchParamRulesForCurrentAuth(): array
     {
+        // Assign the default rules
         $rules = $this->fetchParamRules;
 
         // TODO: Check for uniqueness. Privileged auth should override proxy auth and so on.
@@ -568,7 +568,7 @@ trait RepositoryFetch
 
     protected function validateAdditional(array $params)
     {
-        //
+        ;
     }
 
     public function setMerchantIdRequiredForMultipleFetch($required)

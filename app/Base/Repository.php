@@ -771,8 +771,6 @@ class Repository extends \Razorpay\Spine\Repository
 
     private function hasEntityFetch()
     {
-        return ((empty($this->entityFetch) === false) and
-                ($this->entityFetch instanceof Fetch) and
-                ($this->entityFetch->isEnabled()));
+        return ((empty($this->entityFetch) === false) and ($this->entityFetch->isEnabled() === true));
     }
 }

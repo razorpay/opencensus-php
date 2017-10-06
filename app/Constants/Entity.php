@@ -3,13 +3,13 @@
 namespace RZP\Constants;
 
 use App;
-
-use RZP\Base\Fetch;
-use RZP\Exception;
-use RZP\Gateway;
-use RZP\Trace\TraceCode;
-use RZP\Models;
 use Trace;
+
+use RZP\Models;
+use RZP\Gateway;
+use RZP\Exception;
+use RZP\Base\Fetch;
+use RZP\Trace\TraceCode;
 
 class Entity
 {
@@ -386,6 +386,7 @@ class Entity
 
     /**
      * @param string $entity
+     *
      * @return null|Fetch
      */
     public static function getEntityFetch(string $entity)
