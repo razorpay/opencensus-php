@@ -15,7 +15,7 @@ class GoogleOauthMockServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        if (env('OAUTH_MOCK') === true)
+        if (config('oauth.mock') === true)
         {
             require __DIR__.'/../selenium/init.php';
         }

@@ -64,7 +64,7 @@ class AdminController extends Controller
 
         $code = Input::get('code');
 
-        if (! empty($code) || env('OAUTH_MOCK'))
+        if (! empty($code) || config('oauth.mock'))
         {
             $oauth = $this->triggerGoogleOAuth($code, $org);
 
@@ -105,7 +105,7 @@ class AdminController extends Controller
         $googleService = OAuthFacade::consumer('Google');
 
         // if code is provided get user data and sign in
-        if ($code !== null or (env('OAUTH_MOCK') === true))
+        if ($code !== null or (config('oauth.mock') === true))
         {
             $error = (new Admin\Service)->loginWithGoogle($code, $googleService, $org['id']);
 
