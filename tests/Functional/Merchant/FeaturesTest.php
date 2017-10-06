@@ -6,7 +6,11 @@ use Mail;
 use Illuminate\Http\UploadedFile;
 
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
 use RZP\Tests\Functional\TestCase;
+use RZP\Error\PublicErrorDescription;
+use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
 
@@ -23,9 +27,179 @@ class FeaturesTest extends TestCase
         $this->ba->appAuth();
     }
 
-    public function testAddFeatureToMerchant()
+    /**
+     * Adds a feature as an admin based on
+     * the params received
+     *
+     * @param string $addToMode
+     * @param bool   $shouldSync
+     * @param array  $featureNames
+     */
+    private function addFeatures(
+        string $addToMode,
+        bool $shouldSync = false,
+        array $featureNames = ['dummy'])
     {
-        $this->startTest();
+        $authMethod = 'appAuth' . studly_case($addToMode);
+
+        $this->ba->$authMethod();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        if (empty($featureNames) === false)
+        {
+            $testData['request']['content']['names'] = $featureNames;
+        }
+
+        if ($shouldSync !== false)
+        {
+            $testData['request']['content']['should_sync'] = 1;
+        }
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * Deletes a feature as an admin based on
+     * the params received
+     *
+     * @param string $deleteFromMode
+     * @param bool   $shouldSync
+     * @param string $featureName
+     */
+    private function deleteFeature(
+        string $deleteFromMode,
+        bool $shouldSync = false,
+        string $featureName = 'dummy')
+    {
+        $this->ba->adminAuth($deleteFromMode, null, 'org_100000razorpay');
+
+        $testData = $this->testData[__FUNCTION__];
+
+        if ($featureName === null)
+        {
+            $testData['request']['url'] = '/features/10000000000000/' . $featureName;
+        }
+
+        if ($shouldSync === true)
+        {
+            $testData['request']['content']['should_sync'] = 1;
+        }
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * Simulates merchant behavior based on the
+     * params received
+     *
+     * @param string $action
+     * @param string $addToMode
+     * @param string $featureName
+     * @param bool   $expectBadRequestException
+     * @param bool   $shouldSync
+     */
+    private function updateFeatureAsMerchant(
+        string $action,
+        string $addToMode,
+        string $featureName = 'noflashcheckout',
+        bool $expectBadRequestException = false,
+        bool $shouldSync = true)
+    {
+        $authMethod = 'proxyAuth' . studly_case($addToMode);
+
+        $this->ba->$authMethod();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        if ($action === 'add')
+        {
+            $testData['request']['content']['features'][$featureName] = '1';
+        }
+        else
+        {
+            $testData['request']['content']['features'][$featureName] = '0';
+        }
+
+        if ($expectBadRequestException === true)
+        {
+            $testData['response'] = [
+                'content' => [
+                    'error' => [
+                        'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE
+                    ],
+                ],
+                'status_code' => 400,
+            ];
+
+            $testData['exception'] = [
+                'class' => 'RZP\Exception\BadRequestException',
+                'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_UNEDITABLE_IN_LIVE,
+            ];
+        }
+
+        if ($shouldSync === true)
+        {
+            $testData['request']['content']['should_sync'] = 1;
+        }
+
+        $this->startTest($testData);
+    }
+
+    /**
+     * Performs a GET request based on the mode received and verifies the
+     * presence of the features received as arguments
+     *
+     * @param string $mode
+     * @param array  $featureNames
+     */
+    private function verifyFeaturePresence(
+        string $mode,
+        array $featureNames = ['dummy'])
+    {
+        $authMethod = 'appAuth' . studly_case($mode);
+
+        $this->ba->$authMethod();
+
+        $response = $this->startTest();
+
+        $assignedFeatures = array_map(function ($feature)
+            {
+                return $feature["name"];
+            }, $response["assigned_features"]);
+
+        $assignedFeaturesInResponse = array_intersect($assignedFeatures, $featureNames);
+
+        // Check if all the featureNames requested, are present in the assignedFeatures array
+        $this->assertTrue(count($assignedFeaturesInResponse) === count($featureNames));
+    }
+
+    /**
+     * Performs a GET request based on the mode received and verifies the
+     * absence of the features received as arguments
+     *
+     * @param string $mode
+     * @param array  $featureNames
+     */
+    private function verifyFeatureAbsence(
+        string $mode,
+        array $featureNames = ['dummy'])
+    {
+        $authMethod = 'appAuth' . studly_case($mode);
+
+        $this->ba->$authMethod();
+
+        $response = $this->startTest();
+
+        $assignedFeatures = array_map(function ($feature)
+            {
+                return $feature["name"];
+            }, $response["assigned_features"]);
+
+        $assignedFeaturesInResponse = array_intersect($assignedFeatures, $featureNames);
+
+        $this->assertEquals(0, count($assignedFeaturesInResponse));
     }
 
     public function testAddInvalidFeatureToMerchant()
@@ -35,34 +209,9 @@ class FeaturesTest extends TestCase
 
     public function testAddDuplicateFeatureToMerchant()
     {
-        $this->testAddFeatureToMerchant();
+        $this->addFeatures(Mode::TEST);
 
         $this->startTest();
-    }
-
-    public function testDeleteFeatureFromMerchant()
-    {
-        $this->ba->adminAuth('test', null, 'org_100000razorpay');
-
-        $features = $this->fixtures->merchant->addFeatures(['dummy']);
-
-        $request = [
-            'url'       => '/features/10000000000000/dummy',
-            'method'    => 'delete',
-            'server' => [
-                'HTTP_X-Dashboard'                => 'true',
-                'HTTP_X-Dashboard-User-Email'     => 'user@rzp.dev',
-            ],
-        ];
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $resultData = [
-            "id"            => (string) $features->first()->getId(),
-            "deleted"       => true,
-        ];
-
-        $this->assertArraySelectiveEquals($resultData, $content);
     }
 
     public function testDeleteNonExistentFeatureFromMerchant()
@@ -83,26 +232,24 @@ class FeaturesTest extends TestCase
 
     public function testMultiRemoveFeature()
     {
-        $merch1 = $this->fixtures->create('feature', ['entity_id' => '10000000000001',
-                    'name' => 'dummy']);
-        $merch2 = $this->fixtures->create('feature', ['entity_id' => '10000000000002',
-                    'name' => 'dummy']);
-        $merch3 = $this->fixtures->create('feature', ['entity_id' => '10000000000003',
-                    'name' => 'dummy']);
-
-        $this->startTest();
-    }
-
-    public function testGetFeatureListForMerchant()
-    {
-        $this->testAddFeatureToMerchant();
-
-        $this->startTest();
-    }
-
-    public function testDummyFeatureRouteWithoutAccess()
-    {
-        $this->ba->privateAuth();
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '10000000000001',
+                'name' => 'dummy'
+            ]);
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '10000000000002',
+                'name' => 'dummy'
+            ]);
+        $this->fixtures->create(
+            'feature',
+            [
+                'entity_id' => '10000000000003',
+                'name' => 'dummy'
+            ]);
 
         $this->startTest();
     }
@@ -116,14 +263,20 @@ class FeaturesTest extends TestCase
         $this->startTest();
     }
 
+    public function testDummyFeatureRouteWithoutAccess()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     /**
      * Add a feature to test
-     * Get the features from the live database
      * Verify - Any feature added to test should not be added to live
      */
     public function testAddFeatureToTestVerifyAbsenceInLive()
     {
-        $this->addFeature(Mode::TEST);
+        $this->addFeatures(Mode::TEST);
 
         $this->verifyFeaturePresence(Mode::TEST);
 
@@ -132,12 +285,11 @@ class FeaturesTest extends TestCase
 
     /**
      * Add a feature to live
-     * Get the features from the test database
      * Verify - Any feature added to live should not be added to test
      */
     public function testAddFeatureToLiveVerifyAbsenceInTest()
     {
-        $this->addFeature(Mode::LIVE);
+        $this->addFeatures(Mode::LIVE);
 
         $this->verifyFeaturePresence(Mode::LIVE);
 
@@ -146,12 +298,12 @@ class FeaturesTest extends TestCase
 
     /**
      * Add a feature to the test database and sync it to live
-     * Get the features from the live database
-     * Verify - Any feature added to test with the should_sync flag, should be synced to live
+     * Verify - Any feature added to test with the should_sync
+     * flag, should be synced to live
      */
     public function testAddFeatureToTestSyncedToLive()
     {
-        $this->addFeature(Mode::TEST, true);
+        $this->addFeatures(Mode::TEST,true);
 
         $this->verifyFeaturePresence(Mode::TEST);
 
@@ -160,12 +312,12 @@ class FeaturesTest extends TestCase
 
     /**
      * Add a feature to the live database and sync it to test
-     * Get the features from the test database
-     * Verify - Any feature added to live with the should_sync flag, should be synced to test
+     * Verify - Any feature added to live with the should_sync
+     * flag, should be synced to test
      */
     public function testAddFeatureToLiveSyncedToTest()
     {
-        $this->addFeature(Mode::LIVE, true);
+        $this->addFeatures(Mode::LIVE, true);
 
         $this->verifyFeaturePresence(Mode::LIVE);
 
@@ -175,17 +327,16 @@ class FeaturesTest extends TestCase
     /**
      * Add a feature to the test database
      * Add a feature to the live database and sync it to test
-     * Get the features from the live database
-     * Verify - Any feature added to live with the should_sync flag, should not
-     * fail even if it is already present in test
+     * Verify - Any feature added to live with the should_sync flag,
+     * should not fail even if it is already present in test
      */
     public function testAddFeatureToTestAddFeatureToLiveSyncedToTest()
     {
-        $this->addFeature(Mode::TEST);
+        $this->addFeatures(Mode::TEST);
 
         $this->verifyFeaturePresence(Mode::TEST);
 
-        $this->addFeature(Mode::LIVE, true);
+        $this->addFeatures(Mode::LIVE, true);
 
         $this->verifyFeaturePresence(Mode::LIVE);
     }
@@ -193,17 +344,16 @@ class FeaturesTest extends TestCase
     /**
      * Add a feature to the live database
      * Add a feature to the test database and sync it to live
-     * Get the features from the test database
-     * Verify - Any feature added to test with the should_sync flag, should not
-     * fail even if it is already present in live
+     * Verify - Any feature added to test with the should_sync flag,
+     * should not fail even if it is already present in live
      */
     public function testAddFeatureToLiveAddFeatureToTestSyncedToLive()
     {
-        $this->addFeature(Mode::LIVE);
+        $this->addFeatures(Mode::LIVE);
 
         $this->verifyFeaturePresence(Mode::LIVE);
 
-        $this->addFeature(Mode::TEST, true);
+        $this->addFeatures(Mode::TEST, true);
 
         $this->verifyFeaturePresence(Mode::TEST);
     }
@@ -211,35 +361,33 @@ class FeaturesTest extends TestCase
     /**
      * Add a feature to the live database
      * Add a feature to the live database and sync it to test
-     * Get the features from the test database
      * Verify - Any feature added to live with the should_sync flag, should not
-     * fail even if it is already present in live. It should add it to test
+     * fail even if it is already present in test
      */
     public function testAddFeatureToLiveAddFeatureToLiveSyncedToTest()
     {
-        $this->addFeature(Mode::LIVE);
+        $this->addFeatures(Mode::LIVE);
 
         $this->verifyFeaturePresence(Mode::LIVE);
 
-        $this->addFeature(Mode::LIVE, true);
+        $this->addFeatures(Mode::LIVE, true);
 
         $this->verifyFeaturePresence(Mode::TEST);
     }
 
     /**
-     * Add a feature to the live database
-     * Add a feature to the live database and sync it to test
-     * Get the features from the test database
+     * Add a feature to the test database
+     * Add a feature to the test database and sync it to live
      * Verify - Any feature added to live with the should_sync flag, should not
-     * fail even if it is already present in live. It should add it to test
+     * fail even if it is already present in live
      */
     public function testAddFeatureToTestAddFeatureToTestSyncedToLive()
     {
-        $this->addFeature(Mode::TEST);
+        $this->addFeatures(Mode::TEST);
 
         $this->verifyFeaturePresence(Mode::TEST);
 
-        $this->addFeature(Mode::TEST, true);
+        $this->addFeatures(Mode::TEST, true);
 
         $this->verifyFeaturePresence(Mode::LIVE);
     }
@@ -247,12 +395,11 @@ class FeaturesTest extends TestCase
     /**
      * Add a feature to live and sync it to test
      * Delete the feature from the test database
-     * Get the features from the live database
      * Verify - Any feature deleted from test should not be deleted from live
      */
     public function testDeleteFeatureFromTestAndVerifyPresenceInLive()
     {
-        $this->addFeature(Mode::LIVE, true);
+        $this->addFeatures(Mode::LIVE, true);
 
         $this->verifyFeaturePresence(Mode::TEST);
 
@@ -268,12 +415,11 @@ class FeaturesTest extends TestCase
     /**
      * Add a feature to live and sync it to test
      * Delete the feature from the live database
-     * Get the features from the test database
      * Verify - Any feature deleted from live should not be deleted from test
      */
     public function testDeleteFeatureFromLiveAndVerifyPresenceInTest()
     {
-        $this->addFeature( Mode::LIVE, true);
+        $this->addFeatures( Mode::LIVE, true);
 
         $this->verifyFeaturePresence(Mode::TEST);
 
@@ -289,13 +435,12 @@ class FeaturesTest extends TestCase
     /**
      * Add a feature to live and sync it to test
      * Delete the feature from the test database and sync it to live
-     * Get the features from the live as well as test
      * Verify - Any feature deleted from test and synced to live,
      * should be deleted from live as well
      */
     public function testDeleteFeatureFromTestSyncedToLive()
     {
-        $this->addFeature(Mode::LIVE, true);
+        $this->addFeatures(Mode::LIVE, true);
 
         $this->verifyFeaturePresence(Mode::TEST);
 
@@ -311,13 +456,12 @@ class FeaturesTest extends TestCase
     /**
      * Add a feature to live and sync it to test
      * Delete the feature from the live database and sync it to test
-     * Get the features from the test as well as live
      * Verify - Any feature deleted from live and synced to test,
      * should be deleted from test as well
      */
     public function testDeleteFeatureFromLiveSyncedToTest()
     {
-        $this->addFeature(Mode::LIVE, true);
+        $this->addFeatures(Mode::LIVE, true);
 
         $this->verifyFeaturePresence(Mode::TEST);
 
@@ -334,13 +478,12 @@ class FeaturesTest extends TestCase
      * Add a feature to live and sync it to test
      * Delete the feature from the live database.
      * Delete the feature from the test database and sync it to live
-     * Get the features from the test as well as live
      * Verify - Deleting the feature from test with sync, should not
      * fail even if the feature does not exist on live
      */
     public function testDeleteFeatureFromLiveDeleteFeatureFromTestSyncedToLive()
     {
-        $this->addFeature(Mode::LIVE, true);
+        $this->addFeatures(Mode::LIVE, true);
 
         $this->verifyFeaturePresence(Mode::TEST);
 
@@ -359,14 +502,12 @@ class FeaturesTest extends TestCase
      * Add a feature to live and sync it to test
      * Delete the feature from the test database.
      * Delete the feature from the live database and sync it to test
-     * Get the features from the live as well as test
      * Verify - Deleting the feature from test with sync, should not
-     * fail even if the feature does not exist on test. Feature should be
-     * deleted from live
+     * fail even if the feature does not exist on test.
      */
     public function testDeleteFeatureFromTestDeleteFeatureFromLiveSyncedToTest()
     {
-        $this->addFeature(Mode::LIVE, true);
+        $this->addFeatures(Mode::LIVE, true);
 
         $this->verifyFeaturePresence(Mode::TEST);
 
@@ -385,123 +526,19 @@ class FeaturesTest extends TestCase
      * Adds subscriptions feature to the live database
      * Since the route is accessed by an admin, it should
      * allow even when should sync is sent as 1.
-     *
-     * @param string $addToMode
-     * @param bool   $shouldSync
      */
-    public function testAddFeatureNonEditableByMerchantOnLive()
+    public function testAddFeatureNonEditableByAdminOnLive()
     {
-        $this->addFeatureNonEditableByMerchantOnLive(Mode::LIVE, true);
+        $this->addFeatures(Mode::LIVE, true, ['subscriptions']);
+
+        $this->verifyFeaturePresence(Mode::TEST, ['subscriptions']);
+
+        $this->verifyFeaturePresence(Mode::LIVE, ['subscriptions']);
     }
 
     /**
-     * Adds subscriptions feature to the test database
-     * Since the route is accessed by an admin, it should
-     * allow even when should sync is sent as 1.
-     *
-     * @param string $addToMode
-     * @param bool   $shouldSync
+     * Fetch all onboarding questions
      */
-    public function testAddFeatureNonEditableByMerchantOnTest()
-    {
-        $this->addFeatureNonEditableByMerchantOnLive(Mode::TEST, true);
-    }
-
-    protected function addFeatureNonEditableByMerchantOnLive(string $addToMode, bool $shouldSync = false)
-    {
-        $authMethod = 'appAuth' . studly_case($addToMode);
-
-        $this->ba->$authMethod();
-
-        $testData = $this->testData[__FUNCTION__];
-
-        if ($shouldSync === true)
-        {
-            $testData['request']['content']['should_sync'] = 1;
-        }
-
-        $this->startTest($testData);
-    }
-
-    /**
-     * Adds dummy feature to the database which is linked to the mode passed as parameter.
-     *
-     * @param string $addToMode
-     * @param bool   $shouldSync
-     */
-    private function addFeature(string $addToMode, bool $shouldSync = false)
-    {
-        $authMethod = 'appAuth' . studly_case($addToMode);
-
-        $this->ba->$authMethod();
-
-        $testData = $this->testData[__FUNCTION__];
-
-        if ($shouldSync === true)
-        {
-            $testData['request']['content']['should_sync'] = 1;
-        }
-
-        $this->startTest($testData);
-    }
-
-    /**
-     * Deletes a feature from the database linked to mode received
-     *
-     * @param string $deleteFromMode
-     * @param bool   $shouldSync
-     */
-    private function deleteFeature(string $deleteFromMode, bool $shouldSync = false)
-    {
-        $this->ba->adminAuth($deleteFromMode, null, 'org_100000razorpay');
-
-        $testData = $this->testData[__FUNCTION__];
-
-        if ($shouldSync === true)
-        {
-            $testData['request']['content']['should_sync'] = 1;
-        }
-
-        $this->startTest($testData);
-    }
-
-    /**
-     * Performs a GET request based on the mode received and verifies the
-     * absence of the dummy feature
-     *
-     * @param string $feature
-     * @param string $mode
-     */
-    private function verifyFeatureAbsence($mode)
-    {
-        $authMethod = 'appAuth' . studly_case($mode);
-
-        $this->ba->$authMethod();
-
-        $request = $this->testData[__FUNCTION__]['request'];
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $assignedFeatures = $response['assigned_features'];
-
-        $this->assertEquals(0, count($assignedFeatures));
-    }
-
-    /**
-     * Performs a GET request based on the mode received and verifies the
-     * presence of the dummy feature
-     *
-     * @param string $mode
-     */
-    private function verifyFeaturePresence($mode)
-    {
-        $authMethod = 'appAuth' . studly_case($mode);
-
-        $this->ba->$authMethod();
-
-        $this->startTest();
-    }
-
     public function testGetOnboardingQuestions()
     {
         $this->ba->proxyAuth();
@@ -509,19 +546,22 @@ class FeaturesTest extends TestCase
         $this->startTest();
     }
 
+    /**
+     * Post a request for product activation
+     */
     public function testpostOnboardingResponses()
     {
         $this->ba->proxyAuth();
 
-        //$url = "storage/files/" . Constants::ONBOARDING .  "/" . Constants::VENDOR_AGREEMENT . ".pdf";
+        $url = storage_path("files/" . Constants::ONBOARDING .  "/" . Constants::VENDOR_AGREEMENT . ".pdf");
 
-        //$uploadedFile = $this->createUploadedFile($url);
+        $uploadedFile = $this->createUploadedFile($url);
 
         $testData = $this->testData[__FUNCTION__];
 
         $request = $testData['request'];
 
-        //$request['content'][Constants::VENDOR_AGREEMENT] = $uploadedFile;
+        $request['files'][Constants::VENDOR_AGREEMENT] = $uploadedFile;
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -538,24 +578,36 @@ class FeaturesTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $response);
     }
 
-    protected function createUploadedFile(string $url): UploadedFile
+    /**
+     * @param string $url
+     *
+     * @return UploadedFile
+     */
+    protected function createUploadedFile(string $file): UploadedFile
     {
-        $mime = 'application/pdf';
+        $this->assertFileExists($file);
 
-        return new UploadedFile(
-            $url,
-            'file',
-            $mime,
-            filesize($url),
+        $mimeType = 'application/pdf';
+        $uploadedFile = new UploadedFile(
+            $file,
+            $file,
+            $mimeType,
+            filesize($file),
             null,
-            true);
+            true
+        );
+
+        return $uploadedFile;
     }
 
+    /**
+     * Enable a notifyFeature on Live mode
+     */
     public function testFeatureEnabledEmailNotificationOnLive()
     {
         Mail::fake();
 
-        $this->addNotifyFeatures(Mode::LIVE, false);
+        $this->addFeatures(Mode::LIVE, false, ['dummy', 'marketplace']);
 
         Mail::assertSent(FeatureEnabledEmail::class, function ($mail)
         {
@@ -569,20 +621,26 @@ class FeaturesTest extends TestCase
         });
     }
 
+    /**
+     * Enable a notifyFeature on Test mode
+     */
     public function testFeatureEnabledEmailNotificationOnTest()
     {
         Mail::fake();
 
-        $this->addNotifyFeatures(Mode::TEST, false);
+        $this->addFeatures(Mode::TEST, false, ['dummy', 'marketplace']);
 
         Mail::assertNotSent(FeatureEnabledEmail::class);
     }
 
+    /**
+     * Enable a notifyFeature on Test mode with shouldSync flag
+     */
     public function testFeatureEnabledEmailNotificationOnTestWithSync()
     {
         Mail::fake();
 
-        $this->addNotifyFeatures(Mode::TEST, true);
+        $this->addFeatures(Mode::TEST, true, ['dummy', 'marketplace']);
 
         Mail::assertSent(FeatureEnabledEmail::class, function ($mail)
         {
@@ -596,28 +654,149 @@ class FeaturesTest extends TestCase
         });
     }
 
+    /**
+     * Enable a non-notifyFeature on Live mode
+     */
     public function testFeatureEnabledEmailNonNotify()
     {
         Mail::fake();
 
-        $this->addFeature(Mode::LIVE, true);
+        $this->addFeatures(Mode::LIVE, true);
 
         Mail::assertNotSent(FeatureEnabledEmail::class);
     }
 
-    protected function addNotifyFeatures(string $mode, bool $shouldSync)
+    /*
+     * Test cases for feature routes accessible from the merchant
+     * dashboard begin from here.
+     */
+
+    /**
+     * Fetches the features using the route used by the
+     * merchant dashboard
+     */
+    public function testGetFeaturesAsMerchant()
     {
-        $authMethod = 'appAuth' . studly_case($mode);
+        $this->ba->proxyAuth();
 
-        $this->ba->$authMethod();
+        $this->startTest();
+    }
 
-        $testData = $this->testData[__FUNCTION__];
+    /**
+     * This function tests updating of a visible merchant feature: noflashcheckout
+     */
+    public function testUpdateMerchantFeatures()
+    {
+        $this->ba->proxyAuth();
 
-        if ($shouldSync === true)
+        $this->startTest();
+
+        $this->verifyFeaturePresence(Mode::TEST, ['noflashcheckout']);
+    }
+
+    /**
+     * This function tests updating of a merchant feature with should_sync parameter
+     */
+    public function testAddMerchantFeaturesWithSyncOnLive()
+    {
+        $this->updateFeatureAsMerchant(
+            'add',
+            Mode::LIVE,
+            'noflashcheckout',
+            false,
+            true);
+
+        $this->verifyFeaturePresence(Mode::TEST, ['noflashcheckout']);
+
+        $this->verifyFeaturePresence(Mode::LIVE, ['noflashcheckout']);
+    }
+
+    /**
+     * This function tests updating of a merchant feature with should_sync parameter
+     */
+    public function testAddMerchantFeaturesWithSyncOnTest()
+    {
+        $this->updateFeatureAsMerchant(
+            'add',
+            Mode::TEST,
+            'noflashcheckout',
+            false,
+            true);
+
+        $this->verifyFeaturePresence(Mode::TEST, ['noflashcheckout']);
+
+        $this->verifyFeaturePresence(Mode::LIVE, ['noflashcheckout']);
+    }
+
+    /**
+     * This function tests updating of a non visble merchant feature: dummy
+     */
+    public function testUpdateMerchantUnEditableFeatures()
+    {
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of a merchant feature that
+     * can be updated on test but not live mode: marketplace.
+     * This test also checks the format of the response received
+     * to the merchant.
+     */
+    public function testAddMerchantEditableFeaturesOnTest()
+    {
+        $this->ba->proxyAuthTest();
+
+        $this->startTest();
+    }
+
+    /**
+     * This function tests updating of a merchant feature that can be
+     * updated by the merchant on test but not live mode: marketplace.
+     */
+    public function testAddMerchantUnEditableFeatures()
+    {
+        /*
+         * $input[0] - $action
+         * $input[1] - $addToMode
+         * $input[2] - $featureName
+         * $input[3] - $expectBadRequestException
+         * $input[4] - $shouldSync
+         */
+
+        $inputs = [
+            ['add', Mode::LIVE, 'marketplace', true, false],
+            ['add', Mode::TEST, 'marketplace', true, true],
+            ['add', Mode::LIVE, 'marketplace', true, true],
+        ];
+
+        foreach($inputs as $input)
         {
-            $testData['request']['content']['should_sync'] = 1;
+            $this->updateFeatureAsMerchant(
+                $input[0],
+                $input[1],
+                $input[2],
+                $input[3],
+                $input[4]);
         }
 
-        $this->startTest($testData);
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $inputs = [
+            ['remove', Mode::LIVE, 'marketplace', true, false],
+            ['remove', Mode::TEST, 'marketplace', true, true],
+            ['remove', Mode::LIVE, 'marketplace', true, true],
+        ];
+
+        foreach($inputs as $input)
+        {
+            $this->updateFeatureAsMerchant(
+                $input[0],
+                $input[1],
+                $input[2],
+                $input[3],
+                $input[4]);
+        }
     }
 }

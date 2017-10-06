@@ -6,34 +6,100 @@ use RZP\Error\PublicErrorDescription;
 use RZP\Models\Feature\Constants;
 
 return [
-    'testAddFeatureToMerchant' => [
+    'addFeatures' => [
         'request'  => [
+            'url'     => '/features',
+            'method'  => 'post',
+            'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
             'content' => [
-                'names'       => ['dummy', 's2s'],
+                'names'       => ['dummy'],
                 'entity_type' => 'merchant',
                 'entity_id'   => '10000000000000'
-            ],
-            'url'     => '/features',
-            'method'  => 'POST',
+            ]
+        ],
+        'response' => [
+            'content' => [ ]
+        ]
+    ],
+
+    'deleteFeature' => [
+        'request'  => [
+            'url'     => "/features/10000000000000/dummy",
+            'method'  => 'delete',
             'server'  => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+            'content' => [ ]
+        ],
+        'response' => [
+            'content' => [ ]
+        ]
+    ],
+
+    'updateFeatureAsMerchant' => [
+        'request' => [
+            'content' => [
+                'features'      => [ ],
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [ ]
+        ]
+    ],
+
+    'verifyFeatureAbsence' => [
+        'request' => [
+            'url'    => '/features/10000000000000',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [ ]
+        ]
+    ],
+
+    'verifyFeaturePresence' => [
+        'request'  => [
+            'url'    => '/features/10000000000000',
+            'method' => 'get',
+            'server' => [
                 'HTTP_X-Dashboard'            => 'true',
                 'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
             ],
         ],
         'response' => [
             'content' => [
-                [
-                    'name'        => 'dummy',
-                    'entity_id'   => '10000000000000',
-                    'entity_type' => 'merchant'
-                ],
-                [
-                    'name'        => 's2s',
-                    'entity_id'   => '10000000000000',
-                    'entity_type' => 'merchant'
+                'all_features'      => [
+                    'dummy',
+                    'webhooks',
+                    'aggregator',
+                    'tokens',
+                    's2swallet',
+                    's2supi',
+                    's2saeps',
+                    'setl_report',
+                    'noflashcheckout',
+                    'recurring',
+                    's2s',
+                    'invoice',
+                    'nozeropricing',
+                    'reverse',
                 ]
-            ],
-        ],
+            ]
+        ]
     ],
 
     'testAddInvalidFeatureToMerchant' => [
@@ -91,6 +157,30 @@ return [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_FEATURE_ALREADY_ASSIGNED,
         ],
+    ],
+
+    'testDeleteNonExistentFeatureFromMerchant' => [
+        'request'   => [
+            'url'    => '/features/10000000000000/xxxxx',
+            'method' => 'delete',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_NO_RECORDS_FOUND
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
+        ]
     ],
 
     'testMultiAssignFeature' => [
@@ -163,11 +253,11 @@ return [
         ]
     ],
 
-    'testGetFeatureListForMerchant' => [
+    'testDummyFeatureRouteWithAccess' => [
         'request'  => [
             'content' => [
             ],
-            'url'     => '/features/10000000000000',
+            'url'     => '/dummy',
             'method'  => 'GET',
             'server'  => [
                 'HTTP_X-Dashboard'            => 'true',
@@ -176,56 +266,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'assigned_features' => [
-                    [
-                        'name'        => 'dummy',
-                        'entity_id'   => '10000000000000',
-                        'entity_type' => 'merchant'
-                    ],
-                    [
-                        'name'        => 's2s',
-                        'entity_id'   => '10000000000000',
-                        'entity_type' => 'merchant'
-                    ],
-                ],
-                'all_features'      => [
-                    'dummy',
-                    'webhooks',
-                    'aggregator',
-                    'tokens',
-                    's2swallet',
-                    's2supi',
-                    's2saeps',
-                    'setl_report',
-                    'noflashcheckout',
-                    'recurring',
-                    's2s',
-                    'invoice',
-                    'nozeropricing',
-                    'reverse',
-                ]
-            ]
-        ]
-    ],
-
-    'testDeleteFeatureFromMerchant' => [
-        'request'  => [
-            'content' => [
-            ],
-            'url'     => '/features/10000000000000/dummy',
-            'method'  => 'DELETE',
-            'server'  => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
             ],
         ],
-        'response' => [
-            'content' => [
-                'name'        => 'dummy',
-                'entity_id'   => '10000000000000',
-                'entity_type' => 'merchant'
-            ]
-        ]
     ],
 
     'testDummyFeatureRouteWithoutAccess' => [
@@ -248,165 +290,6 @@ return [
             ],
             'status_code' => 400,
         ],
-    ],
-
-    'testDummyFeatureRouteWithAccess' => [
-        'request'  => [
-            'content' => [
-            ],
-            'url'     => '/dummy',
-            'method'  => 'GET',
-            'server'  => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-        ],
-        'response' => [
-            'content' => [
-            ],
-        ],
-    ],
-
-    'testDeleteNonExistentFeatureFromMerchant' => [
-        'request'   => [
-            'url'    => '/features/10000000000000/xxxxx',
-            'method' => 'delete',
-            'server' => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-        ],
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_NO_RECORDS_FOUND
-                ]
-            ],
-            'status_code' => 400
-        ],
-        'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
-        ]
-    ],
-
-    'addFeature' => [
-        'request'  => [
-            'url'     => '/features',
-            'method'  => 'post',
-            'server'  => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-            'content' => [
-                'names'       => ['dummy'],
-                'entity_type' => 'merchant',
-                'entity_id'   => '10000000000000'
-            ]
-        ],
-        'response' => [
-            'content' => [
-                [
-                    'name'        => 'dummy',
-                    'entity_id'   => '10000000000000',
-                    'entity_type' => 'merchant'
-                ]
-            ]
-        ]
-    ],
-
-    'addFeatureNonEditableByMerchantOnLive' => [
-        'request'  => [
-            'url'     => '/features',
-            'method'  => 'post',
-            'server'  => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-            'content' => [
-                'names'       => ['subscriptions'],
-                'entity_type' => 'merchant',
-                'entity_id'   => '10000000000000'
-            ]
-        ],
-        'response' => [
-            'content' => [
-                [
-                    'name'        => 'subscriptions',
-                    'entity_id'   => '10000000000000',
-                    'entity_type' => 'merchant'
-                ]
-            ]
-        ]
-    ],
-
-    'deleteFeature' => [
-        'request'  => [
-            'url'     => "/features/10000000000000/dummy",
-            'method'  => 'delete',
-            'server'  => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-            'content' => [
-                'names'       => ['dummy'],
-                'entity_type' => 'merchant',
-                'entity_id'   => '10000000000000'
-            ]
-        ],
-        'response' => [
-            'content' => []
-        ]
-    ],
-
-    'verifyFeatureAbsence' => [
-        'request' => [
-            'url'    => '/features/10000000000000',
-            'method' => 'get',
-            'server' => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-        ]
-    ],
-
-    'verifyFeaturePresence' => [
-        'request'  => [
-            'url'    => '/features/10000000000000',
-            'method' => 'get',
-            'server' => [
-                'HTTP_X-Dashboard'            => 'true',
-                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'assigned_features' => [
-                    [
-                        'name'        => 'dummy',
-                        'entity_id'   => '10000000000000',
-                        'entity_type' => 'merchant'
-                    ]
-                ],
-                'all_features'      => [
-                    'dummy',
-                    'webhooks',
-                    'aggregator',
-                    'tokens',
-                    's2swallet',
-                    's2supi',
-                    's2saeps',
-                    'setl_report',
-                    'noflashcheckout',
-                    'recurring',
-                    's2s',
-                    'invoice',
-                    'nozeropricing',
-                    'reverse',
-                ]
-            ]
-        ]
     ],
 
     'testGetOnboardingQuestions'  => [
@@ -484,6 +367,7 @@ return [
             ],
         ]
     ],
+
     'getOnboardingResponses'      => [
         'request'  => [
             'content' => [],
@@ -530,5 +414,128 @@ return [
                 ]
             ],
         ],
+    ],
+
+    'testGetFeaturesAsMerchant' => [
+        'request' => [
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'get'
+        ],
+        'response' => [
+            'content' => [
+                'features' => [
+                    [
+                        'feature'      => 'noflashcheckout',
+                        'value'        => false,
+                        'display_name' => 'No Flash Checkout'
+                    ],
+                    [
+                        'feature'      => 'marketplace',
+                        'value'        => false,
+                        'display_name' => 'Route'
+                    ],
+                    [
+                        'feature'      => 'subscriptions',
+                        'value'        => false,
+                        'display_name' => 'Subscriptions'
+                    ],
+                    [
+                        'feature'      => 'virtual_accounts',
+                        'value'        => false,
+                        'display_name' => 'Smart Collect'
+                    ],
+                ]
+            ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testUpdateMerchantFeatures' => [
+        'request' => [
+            'content' => [
+                'features' => [
+                    'noflashcheckout' => '1',
+                ],
+                'optout_reason' => 'some reason'
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [ ],
+            'status_code' => 200
+        ]
+    ],
+
+    'testUpdateMerchantUnEditableFeatures' => [
+        'request' => [
+            'content' => [
+                'features' => [
+                    'dummy' => '1'
+                ]
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
+        ],
+    ],
+
+    'testAddMerchantEditableFeaturesOnTest' => [
+        'request' => [
+            'content' => [
+                'features' => [
+                    'marketplace' => '1',
+                ]
+            ],
+            'url' => '/merchants/10000000000000/features',
+            'method' => 'post',
+            'server' => [
+                'HTTP_X-Dashboard'            => 'true',
+                'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'features' => [
+                    [
+                        'feature'      => 'noflashcheckout',
+                        'value'        => false,
+                        'display_name' => 'No Flash Checkout'
+                    ],
+                    [
+                        'feature'      => 'marketplace',
+                        'value'        => true,
+                        'display_name' => 'Route'
+                    ],
+                    [
+                        'feature'      => 'subscriptions',
+                        'value'        => false,
+                        'display_name' => 'Subscriptions'
+                    ],
+                    [
+                        'feature'      => 'virtual_accounts',
+                        'value'        => false,
+                        'display_name' => 'Smart Collect'
+                    ],
+                ]
+            ],
+            'status_code' => 200
+        ]
     ],
 ];

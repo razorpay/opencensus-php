@@ -322,7 +322,7 @@ class Service extends Base\Service
 
             $settingKey = $featureName . "." . $question;
 
-            $extension = $file->extension();
+            $extension = $file->extension() ?? "";
 
             $fileName = 'api/' . $merchantId . '/' . $settingKey;
 
