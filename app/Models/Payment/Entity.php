@@ -3,13 +3,14 @@
 namespace RZP\Models\Payment;
 
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
 use Lib\PhoneBook;
-
 use RZP\Exception;
-use RZP\Models\Base;
+use RZP\Trace\TraceCode;
+use RZP\Constants\Timezone;
+use Razorpay\Spine\DataTypes\Dictionary;
+
 use RZP\Models\Emi;
-use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Currency;
 use RZP\Models\Customer;
@@ -18,14 +19,15 @@ use RZP\Models\Feature;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
-use RZP\Models\Payment\Processor\Netbanking;
-use RZP\Trace\TraceCode;
+use RZP\Models\Terminal;
 use RZP\Models\Plan\Subscription;
-use Razorpay\Spine\DataTypes\Dictionary;
+use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Payment\Processor\Netbanking;
 
 /**
  * @property Subscription\Entity    $subscription
  * @property Invoice\Entity         $invoice
+ * @property Terminal\Entity        $terminal
  */
 class Entity extends Base\PublicEntity
 {
@@ -109,7 +111,7 @@ class Entity extends Base\PublicEntity
     // Query params
     const TRANSFERRED           = 'transferred';
 
-    // Tells us whether this payment is a initial or renew recurring type
+    // Tells us whether this payment is a initial or auto recurring type
     const RECURRING_TYPE        = 'recurring_type';
 
     // constants and defaults
@@ -777,7 +779,7 @@ class Entity extends Base\PublicEntity
     {
         $this->metadata[$key] = $value;
     }
-    
+
     public function getRecurringType()
     {
         return $this->getAttribute(self::RECURRING_TYPE);
@@ -1523,6 +1525,26 @@ class Entity extends Base\PublicEntity
         return ($existingGatewayTokens->count() === 1);
     }
 
+    public function isEmandatePayment()
+    {
+        $token = $this->getGlobalOrLocalTokenEntity();
+
+        //
+        // It's not an e-mandate payment if
+        // - Token not set
+        // - Payment not netbanking
+        // - Payment not recurring
+        //
+        if (($token === null) or
+            ($this->isNetbanking() === false) or
+            ($this->isRecurring() === false))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     public function getConvertCurrency()
     {
         return $this->getAttribute(self::CONVERT_CURRENCY);
@@ -1650,6 +1672,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SUBSCRIPTION_ID);
     }
 
+    /**
+     * @return Customer\Token\Entity
+     */
     public function getGlobalOrLocalTokenEntity()
     {
         $token = null;

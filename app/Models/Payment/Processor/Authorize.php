@@ -954,7 +954,8 @@ trait Authorize
         }
     }
 
-    protected function validateRecurringForNetbanking(Payment\Entity $payment, Token\Entity $token = null, array $input)
+    protected function validateRecurringForNetbanking(
+        Payment\Entity $payment, Token\Entity $token = null, array $input)
     {
         if ($token === null)
         {
@@ -979,7 +980,7 @@ trait Authorize
         $this->verifyFeatureForMerchant($payment->merchant, Feature\Constants::E_MANDATE);
 
         //
-        // This is broken still. We should not be accepting any token
+        // TODO: This is broken still. We should not be accepting any token
         // in private auth also for first recurring. But, in private auth,
         // it could be second recurring also, where we accept a token.
         //
@@ -1418,38 +1419,21 @@ trait Authorize
         $payment->setInternational();
 
         $this->processEmandatePayments($payment);
+
     }
 
     protected function processEmandatePayments(Payment\Entity $payment)
     {
         $token = $payment->getGlobalOrLocalTokenEntity();
 
-        if ($this->isEmandatePayment($token, $payment) === true)
+        if ($payment->isEmandatePayment() === true)
         {
-            // True => debit, False => registration
+            // True => auto, False => initial
             // TODO: Add support for when we allow recurring tokens for first payments
             $type = ($token->isRecurring() === true) ? Payment\RecurringType::AUTO : Payment\RecurringType::INITIAL;
 
             $payment->setRecurringType($type);
         }
-    }
-
-    protected function isEmandatePayment(Token\Entity $token = null, Payment\Entity $payment)
-    {
-        //
-        // It's not an e-mandate payment if
-        // - Token not set
-        // - Payment not netbanking
-        // - Payment not recurring
-        //
-        if (($token === null) or
-            ($payment->isNetbanking() === false) or
-            ($payment->isRecurring() === false))
-        {
-            return false;
-        }
-
-        return true;
     }
 
     protected function addTestSuccessFlagToGatewayInput(array $input, array & $gatewayInput)
@@ -2156,190 +2140,103 @@ trait Authorize
 
         if ($payment->isRecurring() === true)
         {
+            $this->updateTokenOnAuthorizedForRecurring($payment, $token, $data);
+        }
 
-            //
-            // For subscriptions, we always create and set terminal in
-            // gateway token, irrespective of whether the token is already
-            // recurring or not.
-            // If an existing recurring token is used for another subscription,
-            // we create another gateway token, since these two subscriptions
-            // can have different terminals.
-            // In case of charge-at-will, we don't have any way to know whether
-            // it's a different subscription that is being done with an existing
-            // recurring token. We cannot use public_auth check since we can
-            // get the request from private_auth also.
-            //
-
-            //
-            // This is just in case. Payment recurring is anyway only
-            // allowed on cards and netbanking.
-            //
-            if (($payment->isCard() === false) and
-                ($payment->isNetbanking() === false))
-            {
-                return;
-            }
-
-            //
-            // For netbanking payments, we create a new token for every
-            // single new first recurring payment.
-            // For existing recurring nb tokens, we do not update it.
-            //
-            if (($payment->isNetbanking() === true) and
-                ($token->isRecurring() === true))
-            {
-                return;
-            }
-
-            if ($this->shouldSetTokenRecurring($payment, $data) === true)
-            {
-                $token->setRecurring(true);
-            }
-
-            //
-            // Currently we require the recurring details to be
-            // updated only for netbanking.
-            // No details need to be updated for credit cards.
-            //
-            if ($payment->isNetbanking() === true)
-            {
-                $this->updateTokenRecurringDetails($token, $data);
-            }
-
-            //
-            // For First Data second recurring payments we do not update the token's terminal
-            //
-            if ($this->shouldSetTokenTerminal($token, $payment) === true)
-            {
-                // TODO: Refactor this later
-                $token->terminal()->associate($payment->terminal);
-            }
-
-            $this->createAndSetTerminalInGatewayToken($payment, $token);
+        if (($token->isRecurring() === false) and
+            ($token->getRecurringStatus() === null))
+        {
+            $token->setRecurringStatus(Token\RecurringStatus::NOT_APPLICABLE);
         }
 
         $this->repo->saveOrFail($token);
     }
 
-    public static function shouldSetTokenTerminal(Token\Entity $token, Payment\Entity $payment)
+    protected function updateTokenOnAuthorizedForRecurring(
+        Payment\Entity $payment, Token\Entity $token, array $data)
     {
-        $gateway = $payment->getGateway();
+        //
+        // For subscriptions, we always create and set terminal in
+        // gateway token, irrespective of whether the token is already
+        // recurring or not.
+        // If an existing recurring token is used for another subscription,
+        // we create another gateway token, since these two subscriptions
+        // can have different terminals.
+        // In case of charge-at-will, we don't have any way to know whether
+        // it's a different subscription that is being done with an existing
+        // recurring token. We cannot use public_auth check since we can
+        // get the request from private_auth also.
+        //
 
-        $gatewayInArray = in_array($gateway, Payment\Gateway::$shouldNotSetNon3DSTerminalsInTokenGateways, true);
+        //
+        // This is just in case. Payment recurring is anyway only
+        // allowed on cards and netbanking.
+        //
+        if (($payment->isCard() === false) and
+            ($payment->isNetbanking() === false))
+        {
+            return;
+        }
 
-        $shouldNotSetTokenTerminal = ((($gatewayInArray) === true) and (empty($token->getTerminalId()) === false));
+        //
+        // For netbanking payments, we create a new token for every
+        // single new first recurring payment.
+        // For existing recurring nb tokens, we do not update it.
+        // TODO: Remove this when we allow using the same token again
+        // for another recurring payment.
+        //
+        if (($payment->isNetbanking() === true) and
+            ($token->isRecurring() === true))
+        {
+            return;
+        }
 
-        return $shouldNotSetTokenTerminal === false;
-    }
-
-    protected function shouldSetTokenRecurring(Payment\Entity $payment, array $data)
-    {
         if ($payment->isCard() === true)
         {
-            return true;
+            $token->setRecurring(true);
+            // TODO: Back fill the data for all the other recurring card tokens!
+            $token->setRecurringStatus(Token\RecurringStatus::CONFIRMED);
         }
-
-        if ($payment->isNetbanking() === true)
+        else if ($payment->isNetbanking() === true)
         {
-            //
-            // The idea is that for netbanking payments, we first check if the
-            // recurring status is set, and if it is, we ensure that it is confirmed
-            // before updating recurring to true. Or else we log a critical level trace.
-            //
-            if ((empty($data[Token\Entity::RECURRING_STATUS]) === false) and
-                ($data[Token\Entity::RECURRING_STATUS] === Token\RecurringStatus::CONFIRMED))
-            {
-                return true;
-            }
+            $this->updateTokenOnAuthorizedForNetbankingRecurring($token, $data);
         }
-
-        return false;
-    }
-
-    protected function updateTokenRecurringDetails(Token\Entity $token, array $gatewayData)
-    {
-        //
-        // We update the token details and not gateway token details
-        // because the merchant is exposed to only the token.
-        // If we have two gateway tokens and a single token, which
-        // gateway token's details do we return back?
-        // On the other hand, if we have two gateway tokens for
-        // the same token and we store the recurring details in the
-        // token entity, we will end up overriding the recurring_status
-        // and other details. So, we need to ensure that we don't reuse
-        // the same token.
-        // Anyway, currently, we don't reuse the same token for NB.
-        // The customer always gets a new token if they want to
-        // subscribe to another subscription.
-        // If we don't use the same token again, there's no issue
-        // since there will always be only one terminal.
-        // Gateway Tokens purpose was to handle multiple terminals
-        // for same token only.
-        //
-
-        $this->updateRecurringStatus($token, $gatewayData);
-
-        if ($token->getRecurringStatus() !== null)
-        {
-            $this->updateRecurringFailureReason($token, $gatewayData);
-
-            $this->updateGatewayTokenForRecurring($token, $gatewayData);
-        }
-    }
-
-    protected function updateGatewayTokenForRecurring(Token\Entity $token, array $gatewayData)
-    {
-        $recurringStatus = $token->getRecurringStatus();
-
-        if ($recurringStatus === Token\RecurringStatus::CONFIRMED)
-        {
-            //
-            // Not all netbanking recurring have a gateway token.
-            // However, if a second recurring payment is attempted without a gateway token,
-            // we throw an exception or handle the case appropriately in the child gateway class.
-            //
-            if (empty($gatewayData[Token\Entity::GATEWAY_TOKEN]) === false)
-            {
-                $gatewayToken = $gatewayData[Token\Entity::GATEWAY_TOKEN];
-
-                $token->setGatewayToken($gatewayToken);
-            }
-        }
-    }
-
-    protected function updateRecurringFailureReason(Token\Entity $token, array $gatewayData)
-    {
-        $recurringStatus = $token->getRecurringStatus();
 
         //
-        // We update the recurring failure reason of the token
-        // only if the gateway returned a rejected response
+        // For First Data second recurring payments
+        // we do not update the token's terminal
         //
-        if ($recurringStatus === Token\RecurringStatus::REJECTED)
+        if ($this->shouldSetTokenTerminal($token, $payment) === true)
         {
-            if (empty($gatewayData[Token\Entity::RECURRING_FAILURE_REASON]) === true)
-            {
-                //
-                // If it's rejected, there must always be a reason.
-                //
-
-                $this->trace->critical(
-                    TraceCode::GATEWAY_RECURRING_REJECTED_WITHOUT_REASON,
-                    [
-                        'token'        => $token->toArray(),
-                        'gateway_data' => $gatewayData
-                    ]);
-
-                return;
-            }
-
-            $recurringFailureReason = $gatewayData[Token\Entity::RECURRING_FAILURE_REASON];
-
-            $token->setRecurringFailureReason($recurringFailureReason);
+            // TODO: Refactor this later
+            $token->terminal()->associate($payment->terminal);
         }
+
+        $this->createAndSetTerminalInGatewayToken($payment, $token);
     }
 
-    protected function updateRecurringStatus(Token\Entity $token, array $gatewayData)
+    /**
+     * We update the token details and not gateway token details
+     * because the merchant is exposed to only the token.
+     * If we have two gateway tokens and a single token, which
+     * gateway token's details do we return back?
+     * On the other hand, if we have two gateway tokens for
+     * the same token and we store the recurring details in the
+     * token entity, we will end up overriding the recurring_status
+     * and other details. So, we need to ensure that we don't reuse
+     * the same token.
+     * Anyway, currently, we don't reuse the same token for NB.
+     * The customer always gets a new token if they want to
+     * subscribe to another subscription.
+     * If we don't use the same token again, there's no issue
+     * since there will always be only one terminal.
+     * Gateway Tokens purpose was to handle multiple terminals
+     * for same token only.
+     *
+     * @param Token\Entity $token
+     * @param array        $gatewayData
+     */
+    protected function updateTokenOnAuthorizedForNetbankingRecurring(Token\Entity $token, array $gatewayData)
     {
         //
         // This should trace a critical error because this method is called
@@ -2363,9 +2260,13 @@ trait Authorize
             return;
         }
 
-        $recurringStatus = $gatewayData[Token\Entity::RECURRING_STATUS];
+        if (empty($gatewayData[Token\Entity::RECURRING_STATUS]) === false)
+        {
+            $gatewayRecurringStatus = $gatewayData[Token\Entity::RECURRING_STATUS];
 
-        if (empty($recurringStatus) === true)
+            $token->setRecurringStatus($gatewayRecurringStatus);
+        }
+        else
         {
             //
             // The recurring status should always be set for token update.
@@ -2380,7 +2281,63 @@ trait Authorize
             return;
         }
 
-        $token->setRecurringStatus($recurringStatus);
+        if ($gatewayRecurringStatus === Token\RecurringStatus::CONFIRMED)
+        {
+            $token->setRecurring(true);
+            $this->updateGatewayTokenForRecurring($token, $gatewayData);
+        }
+        else if ($gatewayRecurringStatus === Token\RecurringStatus::REJECTED)
+        {
+            if (empty($gatewayData[Token\Entity::RECURRING_FAILURE_REASON]) === true)
+            {
+                //
+                // If it's rejected, there must always be a reason.
+                //
+
+                $this->trace->critical(
+                    TraceCode::GATEWAY_RECURRING_REJECTED_WITHOUT_REASON,
+                    [
+                        'token'        => $token->toArray(),
+                        'gateway_data' => $gatewayData
+                    ]);
+
+                return;
+            }
+
+            $token->setRecurringFailureReason($gatewayData[Token\Entity::RECURRING_FAILURE_REASON]);
+        }
+    }
+
+    protected function shouldSetTokenTerminal(Token\Entity $token, Payment\Entity $payment)
+    {
+        $gateway = $payment->getGateway();
+
+        $gatewayInArray = in_array($gateway, Payment\Gateway::$shouldNotSetNon3DSTerminalsInTokenGateways, true);
+
+        $shouldNotSetTokenTerminal = (($gatewayInArray === true) and
+                                      (empty($token->getTerminalId()) === false));
+
+        return ($shouldNotSetTokenTerminal === false);
+    }
+
+    protected function updateGatewayTokenForRecurring(Token\Entity $token, array $gatewayData)
+    {
+        $recurringStatus = $token->getRecurringStatus();
+
+        if ($recurringStatus === Token\RecurringStatus::CONFIRMED)
+        {
+            //
+            // Not all netbanking recurring have a gateway token.
+            // However, if a second recurring payment is attempted without a gateway token,
+            // we throw an exception or handle the case appropriately in the child gateway class.
+            //
+            if (empty($gatewayData[Token\Entity::GATEWAY_TOKEN]) === false)
+            {
+                $gatewayToken = $gatewayData[Token\Entity::GATEWAY_TOKEN];
+
+                $token->setGatewayToken($gatewayToken);
+            }
+        }
     }
 
     protected function createAndSetTerminalInGatewayToken(Payment\Entity $payment, Token\Entity $token)

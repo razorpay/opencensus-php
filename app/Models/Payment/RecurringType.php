@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Payment;
 
-use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
 use RZP\Exception\InvalidArgumentException;
 
 class RecurringType
@@ -21,7 +19,7 @@ class RecurringType
         if (self::isRecurringTypeValid($type) === false)
         {
             throw new InvalidArgumentException(
-                null,
+                'Invalid recurring type',
                 [
                     'field'          => Entity::RECURRING_TYPE,
                     'recurring_type' => $type

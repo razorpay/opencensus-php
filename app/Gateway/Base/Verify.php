@@ -13,7 +13,7 @@ class Verify
 
     /**
      * Used If the transaction happens via a wallet.
-     * */
+     */
     public $wallet;
 
     public $verifyRequest;

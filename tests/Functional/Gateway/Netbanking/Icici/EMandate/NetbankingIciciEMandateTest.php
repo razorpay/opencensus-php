@@ -132,8 +132,8 @@ class NetbankingIciciEMandateTest extends TestCase
 
         $this->assertEquals(1, $token[Token::USED_COUNT]);
         $this->assertEquals(true, $token[Token::RECURRING]);
-        $this->assertEquals(RecurringStatus::CONFIRMED, $token[Token::RECURRING_DETAILS][Token::RECURRING_STATUS]);
-        $this->assertEquals(null, $token[Token::RECURRING_DETAILS][Token::RECURRING_FAILURE_REASON]);
+        $this->assertEquals(RecurringStatus::CONFIRMED, $token[Token::RECURRING_DETAILS][Token::RECURRING_STATUS_SHORT]);
+        $this->assertEquals(null, $token[Token::RECURRING_DETAILS][Token::RECURRING_FAILURE_REASON_SHORT]);
     }
 
     /**
@@ -319,8 +319,8 @@ class NetbankingIciciEMandateTest extends TestCase
         // We successfully created a token that can be used for recurring
         $token = $this->getLastEntity(Entity::TOKEN, true);
         $this->assertEquals(true, $token[Token::RECURRING]);
-        $this->assertEquals(RecurringStatus::CONFIRMED, $token[Token::RECURRING_DETAILS][Token::RECURRING_STATUS]);
-        $this->assertEquals(null, $token[Token::RECURRING_DETAILS][Token::RECURRING_FAILURE_REASON]);
+        $this->assertEquals(RecurringStatus::CONFIRMED, $token[Token::RECURRING_DETAILS][Token::RECURRING_STATUS_SHORT]);
+        $this->assertEquals(null, $token[Token::RECURRING_DETAILS][Token::RECURRING_FAILURE_REASON_SHORT]);
 
         $payment = $this->getLastEntity(Entity::PAYMENT, true);
         $netbanking = $this->getLastEntity(Entity::NETBANKING, true);
@@ -448,7 +448,13 @@ class NetbankingIciciEMandateTest extends TestCase
     {
         $timestamp = Carbon::now()->timestamp;
 
-        $token = $this->fixtures->create(Entity::TOKEN, [Token::USED_AT => $timestamp, Token::RECURRING => true, Token::USED_COUNT => 1]);
+        $token = $this->fixtures->create(
+            Entity::TOKEN,
+            [
+                Token::USED_AT => $timestamp,
+                Token::RECURRING => true,
+                Token::USED_COUNT => 1
+            ]);
 
         $payment = $this->payment;
         $payment[Payment::TOKEN] = 'token_' . $token[Token::ID];
@@ -479,8 +485,8 @@ class NetbankingIciciEMandateTest extends TestCase
 
         // We are making a SI debit request with a valid token, but without a gateway token
         $this->assertEquals(true, $token[Token::RECURRING]);
-        $this->assertEquals(RecurringStatus::CONFIRMED, $token[Token::RECURRING_DETAILS][Token::RECURRING_STATUS]);
-        $this->assertEquals(null, $token[Token::RECURRING_DETAILS][Token::RECURRING_FAILURE_REASON]);
+        $this->assertEquals(RecurringStatus::CONFIRMED, $token[Token::RECURRING_DETAILS][Token::RECURRING_STATUS_SHORT]);
+        $this->assertEquals(null, $token[Token::RECURRING_DETAILS][Token::RECURRING_FAILURE_REASON_SHORT]);
 
         // Registration succeeded
         $this->assertNotNull($netbanking[Netbanking::SI_TOKEN]);
@@ -539,8 +545,8 @@ class NetbankingIciciEMandateTest extends TestCase
         $this->assertEquals(true, $token[Token::RECURRING]);
         // TODO: Uncomment this line when we start accepting max amount as input
         // $this->assertEquals(Token::DEFAULT_MAX_AMOUNT, $token[Token::MAX_AMOUNT]);
-        $this->assertEquals(RecurringStatus::CONFIRMED, $token[Token::RECURRING_DETAILS][Token::RECURRING_STATUS]);
-        $this->assertEquals(null, $token[Token::RECURRING_DETAILS][Token::RECURRING_FAILURE_REASON]);
+        $this->assertEquals(RecurringStatus::CONFIRMED, $token[Token::RECURRING_DETAILS][Token::RECURRING_STATUS_SHORT]);
+        $this->assertEquals(null, $token[Token::RECURRING_DETAILS][Token::RECURRING_FAILURE_REASON_SHORT]);
         $this->assertEquals($usedCount, $token[Token::USED_COUNT]);
         // TODO: The token received is an older one for some reason.
         // The used_at does not get updated. Need to fix this!
@@ -578,8 +584,8 @@ class NetbankingIciciEMandateTest extends TestCase
 
         // When recurring is false and recurring status is not set,
         // we don't get recurring, related items in the tokens array
-        $this->assertArrayNotHasKey(Token::RECURRING, $token);
-        $this->assertNull($token[Token::RECURRING_DETAILS]);
+        $this->assertFalse($token[Token::RECURRING]);
+        $this->assertNotNull($token[Token::RECURRING_DETAILS]);
 
         // SI success but payment status failed
         $this->assertEquals('N', $netbanking[Netbanking::SI_STATUS]);
@@ -603,10 +609,10 @@ class NetbankingIciciEMandateTest extends TestCase
         // Recurring remains in false, recurring status = rejected and gateway token
         $this->assertEquals($payment[Payment::TOKEN_ID], $token[Token::ID]);
         $this->assertEquals(false, $token[Token::RECURRING]);
-        $this->assertEquals(RecurringStatus::REJECTED, $token[Token::RECURRING_DETAILS][Token::RECURRING_STATUS]);
+        $this->assertEquals(RecurringStatus::REJECTED, $token[Token::RECURRING_DETAILS][Token::RECURRING_STATUS_SHORT]);
         // We update gateway token only if token recurring status is confirmed
         $this->assertEquals(null, $token[Token::GATEWAY_TOKEN]);
-        $this->assertEquals($netbanking[Netbanking::SI_MSG], $token[Token::RECURRING_DETAILS][Token::RECURRING_FAILURE_REASON]);
+        $this->assertEquals($netbanking[Netbanking::SI_MSG], $token[Token::RECURRING_DETAILS][Token::RECURRING_FAILURE_REASON_SHORT]);
 
         // Assert GatewayToken entity
         $this->assertEquals($token[Token::ID], 'token_' . $gatewayToken[GatewayToken::TOKEN_ID]);
@@ -665,8 +671,8 @@ class NetbankingIciciEMandateTest extends TestCase
         // Asserting that the payment was attempted with a valid token
         $this->assertNotNull($token2[Token::GATEWAY_TOKEN]);
         $this->assertEquals(true, $token2[Token::RECURRING]);
-        $this->assertEquals(RecurringStatus::CONFIRMED, $token2[Token::RECURRING_DETAILS][Token::RECURRING_STATUS]);
-        $this->assertEquals(null, $token2[Token::RECURRING_DETAILS][Token::RECURRING_FAILURE_REASON]);
+        $this->assertEquals(RecurringStatus::CONFIRMED, $token2[Token::RECURRING_DETAILS][Token::RECURRING_STATUS_SHORT]);
+        $this->assertEquals(null, $token2[Token::RECURRING_DETAILS][Token::RECURRING_FAILURE_REASON_SHORT]);
 
         // Reference ID sent across will sent be back
         $this->assertNotNull($netbanking[Netbanking::SI_TOKEN]);
@@ -692,8 +698,8 @@ class NetbankingIciciEMandateTest extends TestCase
 
         // Since recurring status is not set, the token entity will not contain recurring fields
         $this->assertEquals(false, $token[Token::RECURRING]);
-        $this->assertEquals(RecurringStatus::REJECTED, $token[Token::RECURRING_DETAILS][Token::RECURRING_STATUS]);
-        $this->assertEquals('Failure', $token[Token::RECURRING_DETAILS][Token::RECURRING_FAILURE_REASON]);
+        $this->assertEquals(RecurringStatus::REJECTED, $token[Token::RECURRING_DETAILS][Token::RECURRING_STATUS_SHORT]);
+        $this->assertEquals('Failure', $token[Token::RECURRING_DETAILS][Token::RECURRING_FAILURE_REASON_SHORT]);
 
         $this->assertNotNull($netbanking[Netbanking::SI_TOKEN]);
         $this->assertEquals('C', $netbanking[Netbanking::SI_STATUS]);

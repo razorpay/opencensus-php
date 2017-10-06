@@ -411,7 +411,7 @@ class Gateway extends Base\Gateway
         }
 
         // We check that the recurring type of the payment is registration and not debit
-        if ($verify->input['payment']['recurring_type'] === Payment\RecurringType::INITIAL)
+        if ($verify->input['payment'][Payment\Entity::RECURRING_TYPE] === Payment\RecurringType::INITIAL)
         {
             $requestData[RequestFields::SI] = Status::Y;
             $requestData[RequestFields::SI_AUTO_PAY_AMOUNT] = $verify->input['token']->getMaxAmount() / 100;
@@ -459,7 +459,7 @@ class Gateway extends Base\Gateway
      * @param array $input
      * @return array
      */
-    protected function getEMandateRequestData(array $input) : array
+    protected function getEMandateRequestData(array $input): array
     {
         $date = Carbon::now(Timezone::IST)->format('Y-m-d');
 
@@ -491,7 +491,7 @@ class Gateway extends Base\Gateway
      * @param array $input
      * @return bool
      */
-    protected function isEMandateRegistrationRequired(array $input) : bool
+    protected function isEMandateRegistrationRequired(array $input): bool
     {
         $paymentRecurring = $input['payment']['recurring'];
         $terminalRecurring = $input['terminal']->is3DSRecurring();
@@ -676,7 +676,7 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($gatewayPayment);
     }
 
-    protected function getVerifyAttributesFromPaymentAndContent(Base\Entity $gatewayPayment = null, array $content)
+    protected function getVerifyAttributesFromPaymentAndContent(Base\Entity $gatewayPayment, array $content)
     {
         $attributes = [];
 
@@ -857,11 +857,10 @@ class Gateway extends Base\Gateway
     {
         $siStatus = $gatewayPayment->getSIStatus();
 
-        // This null check is used in the test cases
         $recurringStatus = Status::SI_STATUS_TO_RECURRING_STATUS_MAP[$siStatus] ?? Token\RecurringStatus::REJECTED;
 
-        // TODO: We should have a mapping here with our internal error codes.
-        // We cannot show the message as it is.
+        // TODO: Get the failure reason mapping and
+        // display the correct failure reason here
         $recurringFailureReason = Status::getSiMessage($siStatus);
 
         $recurringData = [

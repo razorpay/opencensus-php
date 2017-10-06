@@ -141,7 +141,8 @@ class Core extends Base\Core
         if ($merchant->isFeatureEnabled(Constants::E_MANDATE) === true)
         {
             $eMandateBanks = Payment\Gateway::$eMandateBanks;
-            $data['emandate_banks'] = $this->getBankNames($eMandateBanks);
+            // TODO: Figure out the key to expose here!
+            // $data['emandate_banks'] = $this->getBankNames($eMandateBanks);
         }
 
         return $data;

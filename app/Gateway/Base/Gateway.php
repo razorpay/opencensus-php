@@ -401,8 +401,7 @@ class Gateway
                 [
                     'actual'    => $actual,
                     'generated' => $generated
-                ]
-            );
+                ]);
 
             throw new Exception\RuntimeException('Failed checksum verification');
         }

@@ -250,7 +250,7 @@ class Validator extends Base\Validator
     {
         $this->validateInput('addPlanRule', $input);
 
-        // The plan should already have at leats one rule
+        // The plan should already have at least one rule
         if ($plan->count() === 0)
         {
             throw new Exception\LogicException(

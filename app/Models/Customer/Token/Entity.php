@@ -3,6 +3,7 @@
 namespace RZP\Models\Customer\Token;
 
 use RZP\Models\Base;
+use RZP\Models\Payment;
 use RZP\Models\Merchant\Account;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -33,6 +34,14 @@ class Entity extends Base\PublicEntity
     const CREATED_AT                = 'created_at';
     const UPDATED_AT                = 'updated_at';
     const DELETED_AT                = 'deleted_at';
+
+    //
+    // These keys will be under recurring_details
+    // Having recurring prepended to status and
+    // failure_reason is redundant.
+    //
+    const RECURRING_STATUS_SHORT            = 'status';
+    const RECURRING_FAILURE_REASON_SHORT    = 'failure_reason';
 
     /**
      * We use this to set the max amount of the token entity.
@@ -118,7 +127,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::CARD,
-        self::RECURRING,
+        // TODO: Remove this after deciding on how to expose
+        self::RECURRING_DETAILS
     ];
 
     protected $appends = [
@@ -293,13 +303,6 @@ class Entity extends Base\PublicEntity
         $this->increment(self::USED_COUNT);
     }
 
-    public function scopeCustomerId($query, $customerId)
-    {
-        $customerIdColumn = $this->getAttributeWithTableName(Entity::CUSTOMER_ID);
-
-        $query->where($customerIdColumn, '=', $customerId);
-    }
-
     protected function setUsedAtAttribute($time)
     {
         $usedAt = $this->getAttribute(self::USED_AT);
@@ -319,35 +322,22 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * If the token is not recurring enabled, and
-     * recurring status is empty, we don't return recurring
-     * variables associated with the token entity.
-     *
-     * @param array $array
-     */
-    protected function setPublicRecurringAttribute(array & $array)
-    {
-        if (($this->isRecurring() === false) and
-            (empty($this->getRecurringStatus()) === true))
-        {
-            unset($array[self::RECURRING]);
-        }
-    }
-
-    /**
-     * Appending recurring status and recurring failure reason when recurring = true or recurring status is set
+     * Appending recurring status and recurring
+     * failure reason when recurring status is set
      */
     public function getRecurringDetailsAttribute()
     {
-        $shouldNotAppendRecurringDetails = (($this->isRecurring() === false) and
-                                            (empty($this->getRecurringStatus()) === true));
+        return [
+            self::RECURRING_STATUS_SHORT            => $this->getRecurringStatus(),
+            self::RECURRING_FAILURE_REASON_SHORT    => $this->getRecurringFailureReason()
+        ];
+    }
 
-        if ($shouldNotAppendRecurringDetails === false)
+    public function setPublicRecurringDetailsAttribute(array & $array)
+    {
+        if ($this->getMethod() === Payment\Method::CARD)
         {
-            return [
-                self::RECURRING_STATUS         => $this->getRecurringStatus(),
-                self::RECURRING_FAILURE_REASON => $this->getRecurringFailureReason(),
-            ];
+            unset($array[self::RECURRING_DETAILS]);
         }
     }
 
