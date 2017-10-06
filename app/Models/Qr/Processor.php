@@ -9,7 +9,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Method;
 use RZP\Models\VirtualAccount;
 use RZP\Models\Currency\Currency;
-use RZP\Models\Payment\Entity as Payment;
+use RZP\Models\Payment;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Payment\Processor\Processor as PaymentProcessor;
 
@@ -86,9 +86,7 @@ class Processor extends Base\Core
 
             $qr->payment()->associate($payment);
 
-            $payment->setGateway(Payment\Gateway::BHARAT_QR);
-
-            $qr->merchant()->associate($this->merchant);
+            $payment->setGatewayViaQr(Payment\Gateway::BHARAT_QR);
 
             $qr->virtualAccount()->associate($this->virtualAccount);
 
@@ -96,13 +94,25 @@ class Processor extends Base\Core
 
             $this->repo->saveOrFail($qr);
 
-            $this->updateVirtualAccount((int) 100 * $qr->getAmount());
+            $this->updateVirtualAccount((int) (100 * $qr->getAmount()));
 
-            if ($bankTransfer->isExpected() === true)
-            {
-                $paymentProcessor->autoCapturePayment($payment);
-            }
+            $paymentProcessor->autoCapturePayment($payment);
         });
+    }
+
+     /**
+     * Post-processing, VA amount fields are to be updated.
+     * Status change is done inside incrementAmountPaid.
+     *
+     * @param Entity $bankTransfer
+     */
+    protected function updateVirtualAccount(int $amount)
+    {
+        $this->virtualAccount->incrementAmountPaid($amount);
+
+        $this->virtualAccount->incrementAmountReceived($amount);
+
+        $this->repo->saveOrFail($this->virtualAccount);
     }
 
 
@@ -171,12 +181,12 @@ class Processor extends Base\Core
 
     protected function qrPaymentArray(Entity $qr): array
     {
-        $paymentArray[Payment::CURRENCY] = Currency::INR;
-        $paymentArray[Payment::METHOD]   = $qr->getMethod();
+        $paymentArray[Payment\Entity::CURRENCY] = Currency::INR;
+        $paymentArray[Payment\Entity::METHOD]   = $qr->getMethod();
 
         //TODO :: Need to check amount format for hitachi side
-        $paymentArray[Payment::AMOUNT]      = ($qr->getAmount()) * 100;
-        $paymentArray[Payment::DESCRIPTION] = "";
+        $paymentArray[Payment\Entity::AMOUNT]      = ($qr->getAmount()) * 100;
+        $paymentArray[Payment\Entity::DESCRIPTION] = "";
 
         $paymentArray['card']['number'] = $this->getLuhnValidCardNumberFromQr($qr);
 
@@ -192,9 +202,9 @@ class Processor extends Base\Core
         {
             $customer = $this->virtualAccount->customer;
 
-            $paymentArray[Payment::CUSTOMER_ID] = $customer->getPublicId();
-            $paymentArray[Payment::CONTACT]     = $customer->getContact();
-            $paymentArray[Payment::EMAIL]       = $customer->getEmail();
+            $paymentArray[Payment\Entity::CUSTOMER_ID] = $customer->getPublicId();
+            $paymentArray[Payment\Entity::CONTACT]     = $customer->getContact();
+            $paymentArray[Payment\Entity::EMAIL]       = $customer->getEmail();
         }
 
         return $paymentArray;

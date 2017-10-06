@@ -582,6 +582,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_PAIDOUT, $amount);
     }
 
+    public function setGatewayViaQr($gateway)
+    {
+        $this->setGateway($gateway);
+    }
+
     /**
      * This should be kept as protected so the gateway is only
      * set via associateTerminal function

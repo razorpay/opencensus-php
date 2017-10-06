@@ -11,7 +11,7 @@ class Entity extends Base\PublicEntity
 
     const ID                    = 'id';
     const PAYMENT_ID            = 'payment_id';
-    const BHARAT_QR_ID          = 'bharat_qr_id';
+    const VIRTUAL_ACCOUNT_ID    = 'virtual_account_id';
     const GATEWAY_MERCHANT_ID   = 'gateway_merchant_id';
     //card or upi
     const METHOD                = 'method';
@@ -79,6 +79,11 @@ class Entity extends Base\PublicEntity
     public function payment()
     {
         return $this->belongsTo('RZP\Models\Payment\Entity', self::PAYMENT_ID, self::ID);
+    }
+
+    public function virtualAccount()
+    {
+        return $this->belongsTo('RZP\Models\virtualAccount\Entity', self::VIRTUAL_ACCOUNT_ID, self::ID);
     }
 
     public function setReceived($received)

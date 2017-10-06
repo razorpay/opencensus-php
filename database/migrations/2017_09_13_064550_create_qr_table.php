@@ -7,6 +7,7 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\BharatQr\Entity as BharatQr;
+use RZP\Models\VirtualAccount\Entity as VirtualAccount;
 use RZP\Models\Qr\Entity as Qr;
 
 class CreateQrTable extends Migration
@@ -28,7 +29,7 @@ class CreateQrTable extends Migration
             $table->char(Qr::PAYMENT_ID, BharatQr::ID_LENGTH)
                   ->nullable();
 
-            $table->char(Qr::BHARAT_QR_ID, Qr::ID_LENGTH)
+            $table->char(Qr::VIRTUAL_ACCOUNT_ID, Qr::ID_LENGTH)
                   ->nullable();
 
             $table->string(Qr::GATEWAY_MERCHANT_ID);
@@ -84,9 +85,9 @@ class CreateQrTable extends Migration
 
             $table->integer(Qr::UPDATED_AT);
 
-            $table->foreign(Qr::BHARAT_QR_ID)
-                  ->references(BharatQr::ID)
-                  ->on(Table::BHARAT_QR)
+            $table->foreign(Qr::VIRTUAL_ACCOUNT_ID)
+                  ->references(VirtualAccount::ID)
+                  ->on(Table::VIRTUAL_ACCOUNT)
                   ->on_delete('restrict');
 
             $table->foreign(Qr::PAYMENT_ID)
@@ -106,7 +107,7 @@ class CreateQrTable extends Migration
     {
         Schema::table(Table::Qr, function($table)
         {
-            $table->dropForeign(Table::QR . '_' . Qr::BHARAT_QR_ID . '_foreign');
+            $table->dropForeign(Table::QR . '_' . Qr::VIRTUAL_ACCOUNT_ID . '_foreign');
 
             $table->dropForeign(Table::Payment . '_' . Qr::PAYMENT_ID . '_foreign');
         });
