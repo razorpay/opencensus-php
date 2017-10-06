@@ -141,7 +141,7 @@ export default props => {
                     {getCustomerDetail(invoice)}
                   </EntityDetailRow>
                   <EntityDetailRow
-                    label="Created at"
+                    label="Created At"
                     value={() => <Time value={invoice.date} />}
                   />
                   <EntityDetailRow
@@ -162,6 +162,14 @@ export default props => {
                   />
 
                   <NestedEntityDetailRow label="Notes" value={invoice.notes} />
+
+                  {!!invoice.user &&
+                    <EntityDetailRow label="Created By">
+                      <Definition>
+                        {invoice.user.name}
+                        {invoice.user.email}
+                      </Definition>
+                    </EntityDetailRow>}
                 </div>
               </div>
             </div>
