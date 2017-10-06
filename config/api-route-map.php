@@ -538,7 +538,8 @@ return [
             'url'       => 'feature/onboarding/{feature}/responses',
             'routeName' => 'feature_onboarding_fetch_responses'
         ],
-        'merchant_pre_signup_details' => 'pre_signup',
+        'merchant_pre_signup_details'           => 'pre_signup',
+        'merchant_edit_pre_signup_details'      => 'pre_signup',
     ],
 
     // auth
