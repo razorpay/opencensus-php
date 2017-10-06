@@ -561,27 +561,13 @@ class Service extends Base\Service
     }
 
     /**
-     * TODO: Cleanup this method
      * @param  array  $input [description]
-     * @return [type]        [description]
      */
     public function login(array $input)
     {
-        $error = (new Validator)->validateInput('login', $input)->messages();
-
         $res = null;
 
-        if (empty($error) === false)
-        {
-            return [['Email or password is invalid.'], null];
-        }
-
-        $credentials = [
-            'email'     => $input['email'],
-            'password'  => $input['password']
-        ];
-
-        list($error, $genericUser) = $this->loginOnApi($credentials);
+        list($error, $genericUser) = $this->loginOnApi($input);
 
         if (empty($error) === false)
         {
@@ -595,7 +581,7 @@ class Service extends Base\Service
         if (empty($error))
         {
             $res = [
-                'id'    =>  $genericUser->id,
+                'id' => $genericUser->id,
             ];
         }
 
@@ -967,21 +953,20 @@ class Service extends Base\Service
 
     public function loginOnApi(array $input)
     {
-        $error = [];
+        $loginOnApi = [
+            'route_name' => 'user_login',
+            'body' => $input
+        ];
+
+        $genericService = new Generic\Service;
 
         $genericUser = null;
 
-        $this->setApiCredentials();
+        list($error, $data) = $genericService->call('POST', $loginOnApi);
 
-        try
+        if (empty($error) === true)
         {
-            $response = $this->api->user->login($input)->toArray();
-
-            $genericUser = (new Helper)->createdGenericUser($response);
-        }
-        catch(\Razorpay\Api\Errors\Error $e)
-        {
-            $error[] = $e->getMessage();
+            $genericUser = (new Helper)->createdGenericUser($data);
         }
 
         return [$error, $genericUser];

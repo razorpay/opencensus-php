@@ -591,6 +591,8 @@ return [
 
         // User Signup
         'user_register'                     => 'users/register',
+        // User Login
+        'user_login'                        => 'users/login',
 
         // Admin Routes
         // Pricing
