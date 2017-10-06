@@ -139,6 +139,16 @@ class Validator extends Base\Validator
         Entity::SUBMIT                          => 'sometimes|boolean',
     ];
 
+    protected static $preSignupRules = [
+        Entity::BUSINESS_TYPE                   => 'sometimes|numeric|digits_between:1,10',
+        Entity::TRANSACTION_VOLUME              => 'sometimes|numeric|digits_between:1,4',
+        Entity::ROLE                            => 'sometimes|numeric|digits_between:1,6',
+        Entity::DEPARTMENT                      => 'sometimes|numeric|digits_between:1,6',
+        Entity::BUSINESS_NAME                   => 'sometimes|max:255',
+        Entity::CONTACT_NAME                    => 'sometimes|alpha_space|max:255',
+        Entity::CONTACT_MOBILE                  => 'sometimes|numeric|digits_between:8,11',
+    ];
+
     public function validateTransactionReportEmail($attribute, $value)
     {
         $emails = explode(',', $value);

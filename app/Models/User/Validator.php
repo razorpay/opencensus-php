@@ -46,6 +46,11 @@ class Validator extends Base\Validator
         Entity::EMAIL                 => 'sometimes|email',
     ];
 
+    protected static $preSignupRules = [
+        Entity::NAME                  => 'sometimes|alpha_space|max:200',
+        Entity::CONTACT_MOBILE        => 'sometimes|numeric|digits_between:8,11',
+    ];
+
     protected function validateAction(string $attribute, string $action)
     {
         if (Action::exists($action) === false)

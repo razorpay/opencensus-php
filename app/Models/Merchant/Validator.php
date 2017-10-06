@@ -70,6 +70,10 @@ class Validator extends Base\Validator
         Entity::EMAIL                       => 'required|email|unique:merchants'
     ];
 
+    protected static $editNameRules = [
+        Entity::NAME                        => 'required|min:4|alpha_space_num|max:200',
+    ];
+
     protected static $editConfigRules = [
         Entity::BRAND_COLOR                 => 'sometimes|regex:(^[0-9a-fA-F]{6}$)',
         Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array',
@@ -183,7 +187,8 @@ class Validator extends Base\Validator
 
         $shouldSync = (bool) ($input[Feature\Entity::SHOULD_SYNC] ?? false);
 
-        $uneditableFeatures = array_values(array_intersect($requestedFeatures, Feature\Constants::$featuresUneditableOnLive));
+        $uneditableFeatures = array_values(array_intersect($requestedFeatures,
+            Feature\Constants::$featuresUneditableOnLive));
 
         if (($shouldSync === true) and (count($uneditableFeatures) > 0))
         {

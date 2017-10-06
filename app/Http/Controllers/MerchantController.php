@@ -829,4 +829,11 @@ class MerchantController extends Controller
 
         return $response;
     }
+
+    public function putPreSignupDetails()
+    {
+        $response = $this->service(E::MERCHANT_DETAIL)->editPreSignupDetails();
+
+        return $response;
+    }
 }
