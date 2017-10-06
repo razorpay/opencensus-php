@@ -125,132 +125,89 @@ class Core extends Base\Core
                     'payment_ids' => $adjustment[Dispute\Entity::PAYMENT_ID]
                 ]);
 
-            $paymentIds = explode(',', trim($adjustment[Dispute\Entity::PAYMENT_ID]));
-
-            $data = [];
-
-            $amount = 0;
-
             $count = 1;
 
-            if (($adjustment[Entity::AMOUNT] >= 0) === true)
+            list($valid, $failed, $failedIds, $data) = $this->verifyAmountsToSplit($adjustment);
+
+            if ($valid === false)
             {
-                $this->trace->info(
-                    TraceCode::ADJUSTMENT_SPLIT_ERROR,
-                    [
-                        'id'     => $adjId,
-                        'reason' => 'Positive amount not expected'
-                    ]);
-
-                $failed++;
-
-                $failedIds[] = $adjId;
-
                 continue;
             }
-
-            foreach ($paymentIds as $paymentId)
+            try
             {
-                $paymentId = trim($paymentId);
+                $this->repo->transaction(function () use ($data, $count, $adjustment)
+                {
 
-                $payment = $this->repo->payment->findOrFail($paymentId);
+                    $originalAmount = $adjustment[Entity::AMOUNT];
 
-                $amount += $payment[Payment\Entity::AMOUNT];
+                    $txn = $this->repo->transaction->findOrFail($adjustment[Entity::TRANSACTION_ID]);
 
-                $data[$paymentId] = $payment[Payment\Entity::AMOUNT];
+                    $setlDetails = $this->repo->settlement_details->fetch([
+                        Settlement\Details\Entity::SETTLEMENT_ID => $txn->getSettlementId(),
+                        Settlement\Details\Entity::COMPONENT     => $txn->getType()
+                    ])->first();
+
+                    $setlDetails->update([Settlement\Details\Entity::COUNT => count($data)]);
+
+                    $balance = 0;
+
+                    $adjId = $adjustment[Entity::ID];
+
+                    $txnId = $txn->getId();
+
+                    foreach ($data as $id => $amount)
+                    {
+                        if ($count === 1)
+                        {
+                            $adj = $this->repo->adjustment->findOrFail($adjId);
+
+                            $adj->update([Entity::AMOUNT => 0 - $amount]);
+
+                            $this->updateTransactionAmountAndBalance($txn, $amount, $originalAmount);
+
+                            $balance = $txn->getBalance();
+
+                            $count++;
+                        }
+                        else
+                        {
+                            $newAdjId = $this->getNextId($adjId);
+
+                            $newAdj = $this->insertSplitAdjustment($newAdjId, $amount, $adjustment);
+
+                            $adjId = $newAdjId;
+
+                            $newTxnId = $this->getNextId($txnId);
+
+                            $newTxn = $this->insertSplitTransaction($newTxnId, $newAdjId, $amount, $adjustment, $balance, $txn);
+
+                            $txnId = $newTxnId;
+
+                            $balance -= $amount;
+
+                            $newAdj->transaction()->associate($newTxn);
+
+                            $this->repo->adjustment->saveOrFail($newAdj);
+                        }
+                    }
+                });
+
+                $succeeded++;
             }
-
-            if ($amount !== (int) abs($adjustment[Entity::AMOUNT]))
+            catch (\Exception $ex)
             {
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::ADJUSTMENT_SPLIT_ERROR,
+                    [
+                        'id'          => $adjustment[Entity::ID],
+                        'payment_ids' => $adjustment[Dispute\Entity::PAYMENT_ID]
+                    ]);
 
                 $failed++;
 
-                $failedIds[] = $adjId;
-
-                $this->trace->debug(
-                    TraceCode::ADJUSTMENT_SPLIT_ERROR,
-                    [
-                        'id' => $adjId,
-                    ]);
-            }
-            else
-            {
-                try
-                {
-                    $this->repo->transaction(function () use ($data, $count, $adjustment)
-                    {
-
-                        $originalAmount = $adjustment[Entity::AMOUNT];
-
-                        $txn = $this->repo->transaction->findOrFail($adjustment[Entity::TRANSACTION_ID]);
-
-                        $setlDetails = $this->repo->settlement_details->fetch([
-                            Settlement\Details\Entity::SETTLEMENT_ID => $txn->getSettlementId(),
-                            Settlement\Details\Entity::COMPONENT     => $txn->getType()
-                        ])->first();
-
-                        $setlDetails->update([Settlement\Details\Entity::COUNT => count($data)]);
-
-                        $balance = 0;
-
-                        $adjId = $adjustment[Entity::ID];
-
-                        $txnId = $txn->getId();
-
-                        foreach ($data as $id => $amount)
-                        {
-                            if ($count === 1)
-                            {
-                                $adj = $this->repo->adjustment->findOrFail($adjId);
-
-                                $adj->update([Entity::AMOUNT => 0 - $amount]);
-
-                                $this->updateTransactionAmountAndBalance($txn, $amount, $originalAmount);
-
-                                $balance = $txn->getBalance();
-
-                                $count++;
-                            }
-                            else
-                            {
-                                $newAdjId = $this->getNextId($adjId);
-
-                                $newAdj = $this->insertSplitAdjustment($newAdjId, $amount, $adjustment);
-
-                                $adjId = $newAdjId;
-
-                                $newTxnId = $this->getNextId($txnId);
-
-                                $newTxn = $this->insertSplitTransaction($newTxnId, $newAdjId, $amount, $adjustment, $balance, $txn);
-
-                                $txnId = $newTxnId;
-
-                                $balance -= $amount;
-
-                                $newAdj->transaction()->associate($newTxn);
-
-                                $this->repo->adjustment->saveOrFail($newAdj);
-                            }
-                        }
-                    });
-
-                    $succeeded++;
-                }
-                catch (\Exception $ex)
-                {
-                    $this->trace->traceException(
-                        $ex,
-                        Trace::ERROR,
-                        TraceCode::ADJUSTMENT_SPLIT_ERROR,
-                        [
-                            'id'          => $adjustment[Entity::ID],
-                            'payment_ids' => $adjustment[Dispute\Entity::PAYMENT_ID]
-                        ]);
-
-                    $failed++;
-
-                    $failedIds[] = $adjustment[Entity::ID];
-                }
+                $failedIds[] = $adjustment[Entity::ID];
             }
 
             $processed++;
@@ -262,6 +219,66 @@ class Core extends Base\Core
             'total'   => $processed,
             'failed'  => $failedIds
         ];
+    }
+
+    protected function verifyAmountsToSplit(array $adjustment): array
+    {
+        $paymentIds = explode(',', trim($adjustment[Dispute\Entity::PAYMENT_ID]));
+
+        $data = [];
+
+        $amount = 0;
+
+        $failed = 0;
+
+        $failedIds = [];
+
+        $adjId = $adjustment[Entity::ID];
+
+        if (($adjustment[Entity::AMOUNT] >= 0) === true)
+        {
+            $this->trace->info(
+                TraceCode::ADJUSTMENT_SPLIT_ERROR,
+                [
+                    'id'     => $adjId,
+                    'reason' => 'Positive amount not expected'
+                ]);
+
+            $failed++;
+
+            $failedIds[] = $adjId;
+
+            return [false, $failed, $failedIds, []];
+        }
+
+        foreach ($paymentIds as $paymentId)
+        {
+            $paymentId = trim($paymentId);
+
+            $payment = $this->repo->payment->findOrFail($paymentId);
+
+            $amount += $payment[Payment\Entity::AMOUNT];
+
+            $data[$paymentId] = $payment[Payment\Entity::AMOUNT];
+        }
+
+        if ($amount !== (int) abs($adjustment[Entity::AMOUNT]))
+        {
+
+            $failed++;
+
+            $failedIds[] = $adjId;
+
+            $this->trace->debug(
+                TraceCode::ADJUSTMENT_SPLIT_ERROR,
+                [
+                    'id' => $adjId,
+                ]);
+
+            return [false, $failed, $failedIds, []];
+        }
+
+        return [true, $failed, $failedIds, $data];
     }
 
     protected function createAdjInTransaction($adj, $merchant): Entity
