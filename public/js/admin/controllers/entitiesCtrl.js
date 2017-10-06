@@ -515,6 +515,7 @@ app.controller('EntitiesCtrl', [
         batch_id: ['Batch Id'],
         gateway: gatewayList,
         merchant_id: ['Merchant Id'],
+        method: methodList,
         payment_id: ['Payment Id'],
         status: ['all', 'created', 'failed', 'processed'],
         transaction_id: ['Transaction Id'],
