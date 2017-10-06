@@ -1132,6 +1132,7 @@ final class Route
         'feature_onboarding_fetch_responses',
         'feature_onboarding_fetch_all_responses',
         'merchant_pre_signup_details',
+        'merchant_edit_pre_signup_details',
     ];
 
     // These will run on internal auth with the assurance

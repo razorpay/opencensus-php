@@ -832,7 +832,9 @@ class MerchantController extends Controller
 
     public function putPreSignupDetails()
     {
-        $response = $this->service(E::MERCHANT_DETAIL)->editPreSignupDetails();
+        $input = Request::all();
+
+        $response = $this->service(E::MERCHANT_DETAIL)->editPreSignupDetails($input);
 
         return $response;
     }
