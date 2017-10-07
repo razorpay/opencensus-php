@@ -6,6 +6,7 @@ use App;
 use Mail;
 use Crypt;
 use Config;
+use Route;
 use Carbon\Carbon;
 use Lib\PhoneBook;
 
@@ -3284,6 +3285,11 @@ trait Authorize
     {
         // No gateway for bank transfer, everything is internal
         if ($payment->isBankTransfer() === true)
+        {
+            return false;
+        }
+
+        if (Route::currentRouteName() === 'qr_payment_process')
         {
             return false;
         }

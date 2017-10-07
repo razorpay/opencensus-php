@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Processor;
 
 use App;
+use Route;
 use Carbon\Carbon;
 use RZP\Base\RepositoryManager;
 use RZP\Constants\Mode;
@@ -1541,6 +1542,11 @@ class Processor
     protected function shouldHitGateway(Payment\Entity $payment)
     {
         if ($payment->isBankTransfer() === true)
+        {
+            return false;
+        }
+
+        if (Route::currentRouteName() === 'qr_payment_process')
         {
             return false;
         }
