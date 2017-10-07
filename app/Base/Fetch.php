@@ -10,7 +10,6 @@ use RZP\Constants\Fields;
 use RZP\Http\BasicAuth\Type;
 use RZP\Models\Payment\Status;
 use RZP\Models\Payment\Method;
-use RZP\Exception\LogicException;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -27,7 +26,7 @@ class Fetch
     const TYPE_ARRAY    = 'array';
     const TYPE_OBJECT   = 'object';
 
-    const DEFAULT       = 'default';
+    const DEFAULTS      = 'defaults';
     const EXPAND        = 'expand';
     const EXPAND_EACH   = 'expand.*';
     const FROM          = 'from';
@@ -186,7 +185,7 @@ class Fetch
 
     protected function validateAdditional(array $param)
     {
-        ;
+        //
     }
 
     protected function addDefaultParams(array & $params)
@@ -244,7 +243,7 @@ class Fetch
 
     protected function addDefaultParamCountByAuth(array & $params)
     {
-        if (array_key_exists(self::COUNT, $params) === false)
+        if (array_key_exists(self::COUNT, $params) === true)
         {
             return;
         }
@@ -305,13 +304,22 @@ class Fetch
         }
 
         // Build cascaded rules and accesses
-        $rules    = array_get(static::RULES, self::DEFAULT, []);
-        $accesses = array_get(static::ACCESSES, self::DEFAULT, [])
+        $rules    = array_get(static::RULES, self::DEFAULTS, []);
+        $accesses = array_get(static::ACCESSES, self::DEFAULTS, []);
+
+        if ($this->auth->isPublicAuth() === false)
+        {
+            $privateRules    = array_get(static::RULES, Type::PRIVATE_AUTH, []);
+            $privateAccesses = array_get(static::ACCESSES, Type::PRIVATE_AUTH, []);
+
+            $rules    = array_merge($rules, $privateRules);
+            $accesses = array_merge($accesses, $privateAccesses);
+        }
 
         if ($this->auth->isProxyOrPrivilegeAuth() === true)
         {
             $proxyRules    = array_get(static::RULES, Type::PROXY_AUTH, []);
-            $proxyAccesses = array_get(static::ACCESSES, Type::PROXY_AUTH, [])
+            $proxyAccesses = array_get(static::ACCESSES, Type::PROXY_AUTH, []);
 
             $rules    = array_merge($rules, $proxyRules);
             $accesses = array_merge($accesses, $proxyAccesses);
@@ -319,20 +327,20 @@ class Fetch
 
         if ($this->auth->isPrivilegeAuth() === true)
         {
-            $proxyRules    = array_get(static::RULES, Type::PRIVILEGE_AUTH, []);
-            $proxyAccesses = array_get(static::ACCESSES, Type::PRIVILEGE_AUTH, [])
+            $privilegeRules    = array_get(static::RULES, Type::PRIVILEGE_AUTH, []);
+            $privilegeAccesses = array_get(static::ACCESSES, Type::PRIVILEGE_AUTH, []);
 
-            $rules    = array_merge($rules, $proxyRules);
-            $accesses = array_merge($accesses, $proxyAccesses);
+            $rules    = array_merge($rules, $privilegeRules);
+            $accesses = array_merge($accesses, $privilegeAccesses);
         }
 
         if ($this->auth->isAdminAuth() === true)
         {
-            $proxyRules    = array_get(static::RULES, Type::ADMIN_AUTH, []);
-            $proxyAccesses = array_get(static::ACCESSES, Type::ADMIN_AUTH, [])
+            $adminRules    = array_get(static::RULES, Type::ADMIN_AUTH, []);
+            $adminAccesses = array_get(static::ACCESSES, Type::ADMIN_AUTH, []);
 
-            $rules    = array_merge($rules, $proxyRules);
-            $accesses = array_merge($accesses, $proxyAccesses);
+            $rules    = array_merge($rules, $adminRules);
+            $accesses = array_merge($accesses, $adminAccesses);
         }
 
         // Merge build rules and accesses into the top level defaults
@@ -435,6 +443,15 @@ class Fetch
         }
     }
 
+    public function validateCustom($func, $attribute, $value, $parameters)
+    {
+        // Function name should start from 'validate'
+
+        assert (strpos($func, 'validate') === 0);
+
+        $this->$func($attribute, $value, $parameters);
+    }
+
     /**
      *
      * Current:
@@ -470,34 +487,35 @@ class Fetch
         return [
             Fields::MERCHANT_ID => [
                 self::LABEL     => 'Merchant Id',
-                self::TYPE      => self::STRING
+                self::TYPE      => self::TYPE_STRING
             ],
             Fields::GATEWAY => [
                 self::LABEL     => 'Gateway',
-                self::TYPE      => self::ARRAY,
+                self::TYPE      => self::TYPE_ARRAY,
                 self::VALUES    => $gatewayList
             ],
             Fields::PAYMENT_STATUS => [
                 self::LABEL     => 'Status',
-                self::TYPE      => self::ARRAY,
+                self::TYPE      => self::TYPE_ARRAY,
                 self::VALUES    => $statusList
+            ],
             Fields::PAYMENT_ID => [
                 self::LABEL     => 'Payment Id',
-                self::TYPE      => self::STRING,
+                self::TYPE      => self::TYPE_STRING,
             ],
             Fields::METHOD => [
                 self::LABEL     => 'Method',
-                self::TYPE      => self::OBJECT,
+                self::TYPE      => self::TYPE_OBJECT,
                 self::VALUES    => $methodList
             ],
             Fields::WALLET => [
                 self::LABEL     => 'Wallet',
-                self::TYPE      => self::OBJECT,
+                self::TYPE      => self::TYPE_OBJECT,
                 self::VALUES    => $walletList
             ],
             Fields::UPI => [
                 self::LABEL     => 'UPI',
-                self::TYPE      => self::OBJECT,
+                self::TYPE      => self::TYPE_OBJECT,
                 self::VALUES    => $upiList
             ]
         ];

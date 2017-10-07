@@ -3,12 +3,12 @@
 namespace RZP\Models\Payment;
 
 use RZP\Models\Card;
-use RZP\Http\BasicAuth\Type;
+use RZP\Http\BasicAuth\Type as AuthType;
 
 class Fetch extends \RZP\Base\Fetch
 {
     const RULES = [
-        self::RULE_DEFAULT => [
+        self::DEFAULTS => [
             self::EXPAND_EACH          => 'string|in:card,',
             Entity::EMAIL              => 'sometimes|email',
             Entity::ORDER_ID           => 'sometimes|string|size:20',
@@ -37,21 +37,21 @@ class Fetch extends \RZP\Base\Fetch
             Entity::LATE_AUTHORIZED    => 'sometimes|in:0,1',
             Entity::AMOUNT             => 'sometimes|integer',
             Entity::TERMINAL_ID        => 'sometimes|alpha_num|size:14',
-        ],
+        ]
     ];
 
     const ACCESSES = [
-        Type::PRIVATE_AUTH => [
+        AuthType::PRIVATE_AUTH => [
             Entity::EMAIL,
             Entity::ORDER_ID,
             Entity::TRANSFERRED,
         ],
-        Type::PROXY_AUTH => [
+        AuthType::PROXY_AUTH => [
             Entity::STATUS,
             Entity::NOTES,
             Entity::INVOICE_ID,
         ],
-        Type::PRIVILEGE_AUTH => [
+        AuthType::PRIVILEGE_AUTH => [
             Entity::VERIFIED,
             Entity::REFUND_STATUS,
             Entity::TWO_FACTOR_AUTH,
@@ -84,4 +84,6 @@ class Fetch extends \RZP\Base\Fetch
     const ES_FIELDS = [
         Entity::NOTES,
     ];
+
+    protected $enabled = false;
 }
