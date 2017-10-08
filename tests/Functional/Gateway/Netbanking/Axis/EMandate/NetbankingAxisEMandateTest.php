@@ -2,13 +2,15 @@
 
 namespace RZP\Tests\Functional\Gateway\Netbanking\Axis\EMandate;
 
- use Carbon\Carbon;
- use RZP\Constants\Timezone;
- use RZP\Tests\Functional\TestCase;
- use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Constants\Entity;
+use RZP\Constants\Timezone;
+use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
- class NetbankingAxisEMandateTest extends TestCase
- {
+use Carbon\Carbon;
+
+class NetbankingAxisEMandateTest extends TestCase
+{
     use PaymentTrait;
 
     public function setUp()
@@ -26,7 +28,8 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Axis\EMandate;
         $this->fixtures->merchant->addFeatures(['charge_at_will', 'e_mandate']);
 
         $this->payment = $this->getNetbankingRecurringPaymentArray('UTIB');
-        unset($this->payment['card']);
+
+        unset($this->payment[Entity::CARD]);
 
         $this->mockTokenex();
     }
@@ -74,4 +77,4 @@ namespace RZP\Tests\Functional\Gateway\Netbanking\Axis\EMandate;
         $this->assertEquals($payment['token_id'], $token['id']);
         $this->assertEquals($netbanking['si_token'], $token['gateway_token']);
     }
- }
+}
