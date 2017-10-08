@@ -46,11 +46,24 @@ trait EmandateTrait
         $this->repo->saveOrFail($gatewayEntity);
 
         // We check the status of the payment, and not the SI registration here
-        $this->checkResponseStatus($attributes, $content, StatusCode::SUCCESS);
+        $this->checkEmandatePaymentResponseStatus($content);
 
         $acquirerData = $this->getEmandateAcquirerData($gatewayEntity);
 
         return $this->getCallbackResponseData($input, $acquirerData);
+    }
+
+    protected function checkEmandatePaymentResponseStatus(array $content)
+    {
+        if ($content[ResponseFields::STATUS_CODE] !== ResponseCodeMap::SUCCESS)
+        {
+            $this->trace->error(
+                TraceCode::PAYMENT_CALLBACK_FAILURE,
+                ['content' => $content]);
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
     }
 
     protected function getEmandateAcquirerData(Netbanking\Entity $gatewayPayment) : array
@@ -102,7 +115,11 @@ trait EmandateTrait
             RequestFields::AMOUNT          => $this->formatAmount($input['payment']['amount']),
             RequestFields::RETURN_URL      => $input['callbackUrl'],
             RequestFields::PRE_POP_INFO    => implode('|', $ppiArray),
-            RequestFields::RESERVE_FIELD_1 => AxisConstants::NO_MODIFICATION
+            RequestFields::RESERVE_FIELD_1 => AxisConstants::NO_MODIFICATION,
+            RequestFields::RESERVE_FIELD_2 => AxisConstants::NO_MODIFICATION,
+            RequestFields::RESERVE_FIELD_3 => AxisConstants::NO_MODIFICATION,
+            RequestFields::RESERVE_FIELD_4 => AxisConstants::NO_MODIFICATION,
+            RequestFields::RESERVE_FIELD_5 => AxisConstants::NO_MODIFICATION,
         ];
 
         $data[RequestFields::CHECKSUM] = $this->getChecksum($data);
@@ -165,7 +182,7 @@ trait EmandateTrait
             Netbanking\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_REF_NO],
 
             // SI registration specific callback attributes
-            Netbanking\Entity::SI_TOKEN        => $content[ResponseFields::CUSTOMER_REF_NO], // TODO: Confirm this
+            Netbanking\Entity::SI_TOKEN        => $content[ResponseFields::MANDATE_NUMBER], // TODO: Confirm this
             Netbanking\Entity::SI_STATUS       => $content[ResponseFields::STATUS_CODE], // TODO: Confirm this
             Netbanking\Entity::SI_MSG          => $content[ResponseFields::REMARKS],
         ];
