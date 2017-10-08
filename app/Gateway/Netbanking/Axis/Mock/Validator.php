@@ -28,6 +28,10 @@ class Validator extends Base\Validator
         Emandate\RequestFields::RETURN_URL      => 'required|string|url',
         Emandate\RequestFields::PRE_POP_INFO    => 'required|string',
         Emandate\RequestFields::RESERVE_FIELD_1 => 'required|string|in:MN',
+        Emandate\RequestFields::RESERVE_FIELD_2 => 'required|string',
+        Emandate\RequestFields::RESERVE_FIELD_3 => 'required|string',
+        Emandate\RequestFields::RESERVE_FIELD_4 => 'required|string',
+        Emandate\RequestFields::RESERVE_FIELD_5 => 'required|string',
         Emandate\RequestFields::CHECKSUM        => 'required|string',
     ];
 
