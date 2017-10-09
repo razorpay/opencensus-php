@@ -58,7 +58,13 @@ class Core extends Base\Core
                 'input'       => $input
             ]);
 
-        return (new Creator)->create($input, $plan, $customer);
+        $subscription = (new Creator)->create($input, $plan, $customer);
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_CREATED,
+            $subscription->toArrayPublic());
+
+        return $subscription;
     }
 
     public function retry(Entity $subscription, array $options = [])
