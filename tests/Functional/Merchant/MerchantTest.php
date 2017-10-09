@@ -395,6 +395,12 @@ class MerchantTest extends TestCase
             'hostname'  => 'dashboard.razorpay.com'
         ]);
 
+        $this->fixtures->create('merchant_detail', [
+            'merchant_id' => '1cXSLlUU8V9sXl',
+            'submitted'   => false,
+            'locked'      => false
+        ]);
+
         $activatedAt = time();
 
         $content = $this->startTest();
