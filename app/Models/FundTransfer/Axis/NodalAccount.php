@@ -53,7 +53,7 @@ class NodalAccount extends NodalBase\NodalAccount
 
         $this->secret = Config::get('nodal.axis.secret');
 
-        $this->iv = Config::get('nodal.axis.iv');
+        $this->iv = base64_decode(Config::get('nodal.axis.iv'));
     }
 
     public function generateTransferFile(string $amount): array
