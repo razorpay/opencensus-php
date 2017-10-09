@@ -244,6 +244,36 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function createCustomerToken(int $recurring)
+    {
+        $this->ba->proxyAuth();
+
+        $request = [
+            'url'     => '/customers/cust_100000customer/tokens',
+            'method'  => 'post',
+            'content' => [
+                'method'     => 'netbanking',
+                'bank'       => 'ICIC',
+                'max_amount' => 100000,
+                'recurring'  => $recurring,
+            ]
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function getTokenById(string $id)
+    {
+        $this->ba->privateAuth();
+
+        $request = [
+            'url'     => '/customers/cust_100000customer/tokens/' . $id,
+            'method'  => 'get',
+        ];
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function doAuthPayment($payment = null, $server = null)
     {
         if ($payment === null)
@@ -943,6 +973,19 @@ trait PaymentTrait
     protected function getDefaultRecurringPaymentArray()
     {
         $payment = $this->getDefaultPaymentArray();
+
+        $payment['recurring'] = true;
+
+        $payment['customer_id'] = 'cust_100000customer';
+
+        return $payment;
+    }
+
+    protected function getNetbankingRecurringPaymentArray($bank = 'HDFC')
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray($bank);
+
+        $payment['amount'] = 2000;
 
         $payment['recurring'] = true;
 

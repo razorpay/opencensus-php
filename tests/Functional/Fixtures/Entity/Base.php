@@ -194,7 +194,6 @@ class Base
         $this->eloquentUnguard();
 
         $entityClass = E::getEntityClass($entity);
-
         $entity = Factory::create($entityClass, $attributes);
 
         $this->eloquentReguard();

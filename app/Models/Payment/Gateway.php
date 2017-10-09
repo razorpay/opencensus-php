@@ -2,16 +2,17 @@
 
 namespace RZP\Models\Payment;
 
-use RZP\Constants\Mode;
 use RZP\Exception;
+use Razorpay\IFSC\IFSC as BaseIFSC;
+
+use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Settlement;
 use RZP\Models\Card\Network;
-use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Wallet;
-use RZP\Models\Settlement;
-use RZP\Models\Payment;
-use Razorpay\IFSC\IFSC as BaseIFSC;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class Gateway
 {
@@ -449,6 +450,11 @@ class Gateway
         Gateway::FIRST_DATA,
         Gateway::AXIS_MIGS,
         Gateway::HDFC,
+        Gateway::NETBANKING_ICICI
+    ];
+
+    public static $eMandateBanks = [
+        IFSC::ICIC
     ];
 
     /**
@@ -585,6 +591,10 @@ class Gateway
         Gateway::AXIS_MIGS
     ];
 
+    public static $shouldNotSetNon3DSTerminalsInTokenGateways = [
+        Gateway::FIRST_DATA,
+    ];
+
     public static function getAcquirerName(string $acquirer)
     {
         $code = self::$acquirerToCodeMap[$acquirer];
@@ -619,6 +629,18 @@ class Gateway
     public static function isRecurringGateway($gateway)
     {
         return in_array($gateway, self::$recurringGateways, true);
+    }
+
+    /**
+     * @param string $bank
+     *
+     * @return bool
+     */
+    public static function isRecurringSupportedOnBank(string $bank) : bool
+    {
+        $gateway = self::$netbankingToGatewayMap[$bank];
+
+        return self::isRecurringGateway($gateway);
     }
 
     public static function getChannel($gateway)

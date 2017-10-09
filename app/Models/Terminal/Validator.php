@@ -238,6 +238,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY                    => 'required|in:netbanking_icici',
         Entity::GATEWAY_MERCHANT_ID        => 'required|string',
         Entity::GATEWAY_MERCHANT_ID2       => 'required|string',
+        Entity::TYPE                       => 'sometimes|array',
     ];
 
     protected static $walletJiomoneyTerminalRules = [

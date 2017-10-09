@@ -200,8 +200,17 @@ class Core extends Base\Core
             $response['device_token'] = $appToken->getDeviceToken();
         }
 
-        if (($tokens !== null) and ($tokens->count() > 0))
+        if ($tokens->isNotEmpty() === true)
         {
+            //
+            // Currently, we do not expose netbanking recurring tokens to the
+            // customer. We don't have a way to handle first recurring
+            // with an existing recurring token.
+            //
+
+            // TODO: Uncomment this when we use charge_at_will for global flow
+            // $tokens = (new Token\Core)->removeNetbankingRecurringTokens($tokens);
+
             $response['tokens'] = $tokens->toArrayPublic();
         }
 

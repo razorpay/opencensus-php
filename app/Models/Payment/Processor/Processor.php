@@ -85,10 +85,12 @@ class Processor
      */
     protected $merchant;
     protected $trace;
+
     /**
      * @var Payment\Entity
      */
     protected $payment;
+
     /**
      * @var Terminal\Entity
      */
