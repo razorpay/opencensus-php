@@ -45,7 +45,9 @@ class EncryptionTest extends TestCase
 
         $encryptedData = $pgpEncryption->encrypt($dataToEncrypt);
 
-        $decryptedData = $pgpEncryption->decrypt($encryptedData);
+        $readableHexData = bin2hex($encryptedData);
+
+        $decryptedData = $pgpEncryption->decrypt(hex2bin($readableHexData));
 
         $this->assertEquals($dataToEncrypt, $decryptedData);
     }
