@@ -421,13 +421,21 @@ class Entity extends Base\PublicEntity
     {
         // Allowing only for akbar travels and shared merchant account
         $allowedMerchantIds = [
-            '62UtF084z3H6RT', '6o1ohA0HNz3B2S', '6z1Uc42LAxBGpl',
-            '10000000000000', Merchant\Account::SHARED_ACCOUNT,
+            '62UtF084z3H6RT',
+            '6o1ohA0HNz3B2S',
+            '6z1Uc42LAxBGpl',
+            Merchant\Account::TEST_ACCOUNT,
+            Merchant\Account::SHARED_ACCOUNT,
         ];
 
         $cardMerchant = $this->getMerchantId();
 
-        if (in_array($cardMerchant, $allowedMerchantIds, true) === false)
+        // Allowing for Admin and App Auth(Priviledge)
+        $app = \App::getFacadeRoot();
+        $auth = $app['basicauth'];
+
+        if (($auth->isPrivilegeAuth() === false) and
+            (in_array($cardMerchant, $allowedMerchantIds, true) === false))
         {
             unset($array[self::IIN]);
         }
