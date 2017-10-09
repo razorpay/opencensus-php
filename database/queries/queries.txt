@@ -2507,6 +2507,6 @@ ALTER TABLE merchants
     ADD COLUMN linked_account_kyc TINYINT(1) NOT NULL DEFAULT 0 AFTER fee_model;
 
 ALTER TABLE merchant_details
-	ADD marketplace_activation_status ENUM('pending', 'rejected', 'approved') DEFAULT NULL AFTER locked,
-	ADD virtual_accounts_activation_status ENUM('pending', 'rejected', 'approved') DEFAULT NULL AFTER marketplace_activation_status,
-	ADD subscriptions_activation_status ENUM('pending', 'rejected', 'approved') DEFAULT NULL AFTER virtual_accounts_activation_status;
+	ADD marketplace_activation_status VARCHAR(30) DEFAULT NULL AFTER locked,
+	ADD virtual_accounts_activation_status VARCHAR(30) DEFAULT NULL AFTER marketplace_activation_status,
+	ADD subscriptions_activation_status VARCHAR(30) DEFAULT NULL AFTER virtual_accounts_activation_status;
