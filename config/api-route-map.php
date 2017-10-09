@@ -4,6 +4,14 @@
 // and resolve (on the backend) automagically.
 
 return [
+    // NoAuth
+    // For routes which are being hit without authentication, entry should be in
+    // both noauth and also the respective auth
+    'noauth' => [
+        // Confirm User
+        'user_confirm_by_data',
+    ],
+
     // auth
     'admin' => [
         'org_create'                        => 'orgs',
@@ -595,6 +603,8 @@ return [
         'user_register'                     => 'users/register',
         // User Login
         'user_login'                        => 'users/login',
+        // Confirm User
+        'user_confirm_by_data'              => 'users/confirm_user_by_data',
 
         // Admin Routes
         // Pricing

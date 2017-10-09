@@ -36,9 +36,17 @@ app.controller('ConfirmCtrl', [
 
     $scope.alerts.resetAlerts();
 
+    var data = {
+      route_name: 'user_confirm_by_data',
+      body: {
+        confirm_token: token,
+      },
+    };
+
     var request = $http({
-      method: 'get',
-      url: '/user/confirm/' + token,
+      method: 'put',
+      url: '/generic',
+      data: data,
     });
 
     request

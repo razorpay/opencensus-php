@@ -54,6 +54,11 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/details', 'UserController@getUserDetailsV2');
     });
 
+    Route::group(['middleware' => ['generic.noauth']], function()
+    {
+        Route::any('/generic', 'GenericController@handle');
+    });
+
     Route::group(['middleware'  =>  ['auth:user', 'verified']], function()
     {
         Route::any('/user/generic', 'GenericController@handle');
