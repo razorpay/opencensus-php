@@ -711,7 +711,7 @@ class Service extends Base\Service
     {
         $formattedMethods = (new Methods\Core)->getFormattedMethods($this->merchant);
 
-        // licious has dependency on this field in their android app
+        // Licious has dependency on this field in their android app
         if ($this->merchant->getId() === '5yZ76HWrvL9g2l')
         {
             $formattedMethods['http_status_code'] = 200;

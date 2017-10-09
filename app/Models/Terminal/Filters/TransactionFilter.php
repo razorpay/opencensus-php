@@ -122,7 +122,9 @@ class TransactionFilter extends Terminal\Filter
         // for cybersource, check get the terminal based on recurring type
         if ($payment->isRecurring() === true)
         {
-            if (Gateway::isRecurringGateway($terminal->getGateway()) === false)
+            $recurring = Gateway::isRecurringGateway($terminal->getGateway());
+
+            if ($recurring === false)
             {
                 return false;
             }
