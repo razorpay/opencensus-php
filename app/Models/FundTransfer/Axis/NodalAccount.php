@@ -3,13 +3,18 @@
 namespace RZP\Models\FundTransfer\Axis;
 
 use Mail;
+use Config;
 use Carbon\Carbon;
+use phpseclib\Crypt\AES;
 use PHPExcel_Shared_Date;
 
 use RZP\Models\Base;
+use RZP\Encryption\Type;
 use RZP\Models\FileStore;
 use RZP\Constants\Timezone;
+
 use RZP\Models\FundTransfer\Base as NodalBase;
+use RZP\Encryption\AESEncryption;
 use RZP\Mail\Settlement\AxisSettlement;
 use RZP\Models\FundTransfer\Mode;
 
@@ -32,6 +37,10 @@ class NodalAccount extends NodalBase\NodalAccount
         Mode::IMPS    => 'I',
     ];
 
+    protected $secret = null;
+
+    protected $iv = null;
+
     protected $date = null;
 
     protected $data = null;
@@ -47,6 +56,10 @@ class NodalAccount extends NodalBase\NodalAccount
         $this->date = Carbon::today(Timezone::IST)->format('n/j/y');
 
         $this->id = Base\UniqueIdEntity::generateUniqueId();
+
+        $this->secret = Config::get('nodal.axis.secret');
+
+        $this->iv = base64_decode(Config::get('nodal.axis.iv'));
     }
 
     public function generateTransferFile(string $amount): array
@@ -76,6 +89,10 @@ class NodalAccount extends NodalBase\NodalAccount
                         ->metadata($metadata)
                         ->headers(false)
                         ->columnFormat(['C3' => 'dd/mm/yy', 'E3' => 'dd/mm/yy', 'F3' => 'dd/mm/yy'])
+                        ->encrypt(Type::AES_ENCRYPTION, [
+                            AESEncryption::MODE   => AES::MODE_CBC,
+                            AESEncryption::IV     => $this->iv,
+                            AESEncryption::SECRET => $this->secret,])
                         ->save();
 
         $fileInstance = $file->get();
