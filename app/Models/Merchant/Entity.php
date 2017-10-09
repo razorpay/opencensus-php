@@ -210,6 +210,7 @@ class Entity extends Base\PublicEntity
         self::BRAND_COLOR,
         self::HANDLE,
         self::RISK_RATING,
+        self::RISK_THRESHOLD,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::SUSPENDED_AT,
