@@ -196,6 +196,8 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_BOOST_INVALID                        = 'TERMINAL_BOOST_INVALID';
     const TERMINAL_USED_BEFORE                          = 'TERMINAL_USED_BEFORE';
 
+    const REQUEST_THROTTLED                             = 'REQUEST_THROTTLED';
+
     const CARD_NETWORK_INVALID                          = 'CARD_NETWORK_INVALID';
 
     const CUSTOMER_EDIT                                 = 'CUSTOMER_EDIT';

@@ -6,8 +6,8 @@ use App;
 use RZP\Constants\Mode;
 use RZP\Http\BasicAuth\Type;
 use RZP\Http\BasicAuth\BasicAuth;
+use RZP\Exception\ThrottleException;
 use GrahamCampbell\Throttle\Facades\Throttle as ThrottleFacade;
-use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 
 class Throttle
 {
@@ -36,7 +36,7 @@ class Throttle
         $limit = $limits[$auth] ?? $limits['default'];
 
         // Who is making the request
-        $identifier =  $this->getIdentifier($auth);
+        $identifier =  $this->getIdentifier($auth, $mode);
 
         if (empty($identifier) === false)
         {
@@ -47,28 +47,40 @@ class Throttle
 
             $time = $this->config['time_interval'];
 
-            if (ThrottleFacade::get($throttleData, $limit, $time)->attempt() === false)
+            $throttle = ThrottleFacade::get($throttleData, $limit, $time);
+
+            if ($throttle->attempt() === false)
             {
-                throw new TooManyRequestsHttpException(
-                    $time * 60, 'Rate limit exceeded.');
+                $traceData = [
+                    'ip'    => $this->request->ip(),
+                    'route' => $this->request->route()->getName(),
+                    'limit' => $limit,
+                    'count' => $throttle->count(),
+                ];
+
+                throw new ThrottleException($time * 60, $traceData);
             }
         }
     }
 
-    protected function getIdentifier($auth)
+    protected function getIdentifier(string $auth, string $mode)
     {
         $routeName = $this->request->route()->getName();
+
+        $identifier = $mode;
 
         switch ($auth)
         {
             case Type::ADMIN_AUTH:
-                return $routeName . $this->request->header(BasicAuth::ADMIN_TOKEN_HEADER);
+                $resource = $routeName . $this->request->header(BasicAuth::ADMIN_TOKEN_HEADER);
+                break;
 
             /**
              * Primary rate-limiting where we rate-limit
              */
             case Type::PRIVATE_AUTH:
-                return $this->getKeyId();
+                $resource = $this->getKeyId();
+                break;
 
             /**
              * Most direct auth IPs will be
@@ -76,10 +88,12 @@ class Throttle
              * model for that
              */
             case Type::DIRECT_AUTH:
-                return $this->request->route()->getName();
+                $resource = $routeName;
+                break;
 
             case Type::DEVICE_AUTH:
-                return $this->request->getPassword();
+                $resource = $this->request->getPassword();
+                break;
 
             /**
              * Proxy auth requests are shared
@@ -87,7 +101,8 @@ class Throttle
              * against one dashboard instance
              */
             case Type::PROXY_AUTH:
-                return $this->getKeyId();
+                $resource = $this->getKeyId();
+                break;
 
             /**
              * Rate Limit public auth on every route
@@ -99,8 +114,13 @@ class Throttle
              * checkout_public
              */
             case Type::PUBLIC_AUTH:
-                return $this->request->route()->getName();
+                $resource = $this->request->route()->getName();
+                break;
         }
+
+        $identifier .= $resource;
+
+        return $identifier;
     }
 
     protected function getKeyId()

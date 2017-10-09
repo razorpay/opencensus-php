@@ -10,6 +10,7 @@ use ApiResponse;
 use RZP\Http\Route;
 use RZP\Http\OAuth;
 use RZP\Http\Throttle;
+use RZP\Http\BasicAuth\Type;
 use RZP\Http\BasicAuth\BasicAuth;
 
 class Authenticate
@@ -108,6 +109,8 @@ class Authenticate
         if ((in_array($route, Route::$internal, true) === true) or
             (in_array($route, Route::$admin, true) === true))
         {
+            $this->throttleRequests($route, Type::ADMIN_AUTH);
+
             $ret = $this->ba->appAuth();
         }
         else if (in_array($route, Route::$private, true) === true)
@@ -219,8 +222,16 @@ class Authenticate
      *
      * @param string $auth
      */
-    private function throttleRequests(string $auth)
+    private function throttleRequests(string $route, string $auth)
     {
+        //
+        // Not so global at the moment
+        //
+        if (in_array($route, Route::$throttledRoutes, true) === false)
+        {
+            return;
+        }
+
         $throttle = new Throttle($this->app);
 
         $throttle->process($auth);

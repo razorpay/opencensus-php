@@ -843,6 +843,8 @@ final class Route
     ];
 
     public static $internal = [
+        'dummy_route',
+        'admin_fetch_all_entities',
         'admin_fetch_entity_multiple',
         'admin_fetch_terminal_by_id',
         'admin_fetch_entity_by_id',
@@ -1371,7 +1373,6 @@ final class Route
         'upi_read_async',
         'upi_get_key_list',
         'account',
-        'dummy_route',
         'invoice_view_live',
         'invoice_view_test',
         'invoice_view_live_post',
@@ -1508,6 +1509,17 @@ final class Route
         'merchant_public_get_banks',
         'merchant_methods',
         'merchant_methods_downtime',
+    ];
+
+    /**
+     * This will not be needed once we have rate limiting on all routes.
+     * Adding now to test throttling on just a few routes at a time.
+     *
+     * @var array
+     */
+    public static $throttledRoutes = [
+        'dummy_route',
+        'payment_verify_multiple',
     ];
 
     /**
