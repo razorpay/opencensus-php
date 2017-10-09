@@ -6,54 +6,68 @@ use RZP\Error\PublicErrorCode;
 return [
     'testFetchForPrivateAuth' => [
         'request' => [
-            'url' => '/invoices',
-            'method' => 'GET',
+            'url'     => '/invoices',
+            'method'  => 'GET',
             'content' => [
-                'type' => 'invoice'
+                'type' => 'invoice',
             ]
         ],
         'response' => [
             'content' => [
-                'count' => 1
-            ]
-        ]
+                'count'  => 1,
+                'entity' => 'collection',
+                'items'  => [
+                    [
+                        'id' => 'inv_1000000invoice',
+                    ],
+                ],
+            ],
+        ],
     ],
 
     'testFindForPrivateAuth' => [
         'request' => [
-            'url' => '/invoices/',
-            'method' => 'GET',
+            'url'     => '/invoices/inv_1000000invoice',
+            'method'  => 'GET',
             'content' => [
-                'type' => 'invoice'
+                'type' => 'invoice',
             ]
         ],
         'response' => [
             'content' => [
-                'type' => 'invoice'
-            ]
-        ]
+                'entity' => 'invoice',
+                'id'     => 'inv_1000000invoice',
+                'type'   => 'invoice',
+            ],
+        ],
     ],
 
     'testFetchRuleCascadingForAdminAuth' => [
         'request' => [
-            'url' => '/admin/invoice',
-            'method' => 'GET',
+            'url'     => '/admin/invoice',
+            'method'  => 'GET',
             'content' => []
         ],
         'response' => [
             'content' => [
-                'count' => 1
-            ]
-        ]
+                'count'  => 1,
+                'entity' => 'collection',
+                'items'  => [
+                    [
+                        'id' => 'inv_1000000invoice',
+                    ],
+                ],
+            ],
+        ],
     ],
 
     'testFetchRulesForProxyAuthWithExtraFields' => [
         'request' => [
-            'url' => '/invoices',
-            'method' => 'GET',
+            'url'     => '/invoices',
+            'method'  => 'GET',
             'content' => [
-                'order_id' => 'xyz'
-            ]
+                'order_id' => 'xyz',
+            ],
         ],
         'response' => [
             'content' => [
@@ -64,18 +78,18 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => \RZP\Exception\ExtraFieldsException::class,
+            'class'               => \RZP\Exception\ExtraFieldsException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
         ],
     ],
 
     'testFetchRulesForProxyAuthWithInvalidField' => [
         'request' => [
-            'url' => '/invoices',
-            'method' => 'GET',
+            'url'     => '/invoices',
+            'method'  => 'GET',
             'content' => [
-                'type' => 'xyz'
-            ]
+                'type' => 'xyz',
+            ],
         ],
         'response' => [
             'content' => [
@@ -86,56 +100,68 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => \RZP\Exception\BadRequestValidationFailureException::class,
+            'class'               => \RZP\Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
     'testFetchWithExpandsForProxyAuth' => [
         'request' => [
-            'url' => '/invoices',
-            'method' => 'GET',
+            'url'     => '/invoices',
+            'method'  => 'GET',
             'content' => [
-                'expand' => ['payments']
-            ]
-        ],
-        'response' => [
-            'content' => [
-                'count' => 1,
-                'items' => [
-                    [
-                        'payments' => [
-                            'count' => 1
-                        ]
-                    ]
-                ]
-            ]
-        ]
-    ],
-
-    'testFindWithExpandsForProxyAuth' => [
-        'request' => [
-            'url' => '/invoices/',
-            'method' => 'get',
-            'content' => [
-                'expand' => ['payments']
+                'expand' => [
+                    'payments',
+                ],
             ],
         ],
         'response' => [
             'content' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
+                    [
+                        'entity'   => 'invoice',
+                        'id'       => 'inv_1000000invoice',
+                        'payments' => [
+                            'count' => 1,
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testFindWithExpandsForProxyAuth' => [
+        'request' => [
+            'url'     => '/invoices/inv_1000000invoice',
+            'method'  => 'get',
+            'content' => [
+                'expand' => [
+                    'payments',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'   => 'invoice',
+                'id'       => 'inv_1000000invoice',
                 'payments' => [
-                    'count' => 1
-                ]
+                    'count' => 1,
+                ],
             ],
         ],
     ],
 
     'testFindForProxyAuthWithInvalidExpands' => [
         'request' => [
-            'url' => '/invoices/',
-            'method' => 'get',
+            'url'     => '/invoices/inv_1000000invoice',
+            'method'  => 'get',
             'content' => [
-                'expand' => ['payments', 'fake']
+                'expand' => [
+                    'payments',
+                    'fake',
+                ],
             ],
         ],
         'response' => [
@@ -147,7 +173,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],

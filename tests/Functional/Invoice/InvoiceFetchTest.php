@@ -6,9 +6,8 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 /**
- * Tests that retreieving of invoive is working fine.
+ * Covers Base/Fetch implementation
  */
-
 class InvoiceFetchTest extends TestCase
 {
     use InvoiceTestTrait;
@@ -26,6 +25,7 @@ class InvoiceFetchTest extends TestCase
         $this->ba->privateAuth();
 
         $this->createDraftInvoice();
+        $this->createDraftInvoice(['id' => '1000001invoice', 'type' => 'link']);
 
         $this->startTest();
     }
@@ -35,8 +35,6 @@ class InvoiceFetchTest extends TestCase
         $this->ba->privateAuth();
 
         $invoice = $this->createDraftInvoice();
-
-        $this->testData[__FUNCTION__]['request']['url'] .= $invoice->getPublicId();
 
         $this->startTest();
     }
@@ -68,9 +66,9 @@ class InvoiceFetchTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $invoice = $this->createDraftInvoice();
+        $this->createDraftInvoice();
 
-        $this->fixtures->create('payment', ['invoice_id' => $invoice->getId()]);
+        $this->fixtures->create('payment', ['invoice_id' => '1000000invoice']);
 
         $this->startTest();
     }
@@ -79,11 +77,9 @@ class InvoiceFetchTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $invoice = $this->createDraftInvoice();
+        $this->createDraftInvoice();
 
-        $this->fixtures->create('payment', ['invoice_id' => $invoice->getId()]);
-
-        $this->testData[__FUNCTION__]['request']['url'] .= $invoice->getPublicId();
+        $this->fixtures->create('payment', ['invoice_id' => '1000000invoice']);
 
         $this->startTest();
     }
@@ -92,9 +88,7 @@ class InvoiceFetchTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $invoice = $this->createDraftInvoice();
-
-        $this->testData[__FUNCTION__]['request']['url'] .= $invoice->getPublicId();
+        $this->createDraftInvoice();
 
         $this->startTest();
     }

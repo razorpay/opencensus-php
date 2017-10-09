@@ -3,11 +3,17 @@
 namespace RZP\Tests\Functional\Payment;
 
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 
+/**
+ * Covers Base/Fetch implementation. Currently it's not enabled for Payment
+ * model but this asserts that existing flow is working fine as well. Later
+ * when Payment model is enabled for new flow this will be still there.
+ *
+ */
 class PaymentFetchTest extends TestCase
 {
-    use PaymentTrait;
+    use RequestResponseFlowTrait;
 
     public function setUp()
     {
@@ -38,9 +44,10 @@ class PaymentFetchTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $this->fixtures->create('payment',
+        $this->fixtures->create(
+            'payment',
             [
-                'email' => $testData['request']['content']['email']
+                'email' => $testData['request']['content']['email'],
             ]);
 
         $this->startTest();
@@ -54,7 +61,9 @@ class PaymentFetchTest extends TestCase
 
         $this->fixtures->create('payment', ['order_id' => $order->getId()]);
 
-        $this->testData[__FUNCTION__]['request']['content']['order_id'] = $order->getPublicId();
+        $testData = & $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = $order->getPublicId();
 
         $this->startTest();
     }
@@ -67,7 +76,7 @@ class PaymentFetchTest extends TestCase
 
         $payment = $this->fixtures->create('payment', ['card_id' => $card->getId()]);
 
-        $testData = &$this->testData[__FUNCTION__];
+        $testData = & $this->testData[__FUNCTION__];
 
         $testData['request']['content']['email'] = $payment->getEmail();
 
@@ -87,7 +96,7 @@ class PaymentFetchTest extends TestCase
         $this->startTest();
     }
 
-    public function testFetchWithExpandsForPrivateAuthWithInvalidExpand()
+    public function testFindWithExpandsForPrivateAuthWithInvalidExpand()
     {
         $this->ba->privateAuth();
 
@@ -97,5 +106,4 @@ class PaymentFetchTest extends TestCase
 
         $this->startTest();
     }
-
 }

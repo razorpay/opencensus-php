@@ -6,25 +6,26 @@ use RZP\Error\PublicErrorCode;
 return [
     'testFetchRuleCascadingForAdminAuth' => [
         'request' => [
-            'url' => '/admin/payment',
-            'method' => 'get',
+            'url'     => '/admin/payment',
+            'method'  => 'get',
             'content' => [
-                'amount' => 1000000
+                'amount' => 1000000,
             ],
         ],
         'response' => [
             'content' => [
-                'count' => 1,
+                'entity' => 'collection',
+                'count'  => 1,
             ],
         ],
     ],
 
     'testFetchRulesForPrivateWithExtraFieldsError' => [
         'request' => [
-            'url' => '/payments',
-            'method' => 'get',
+            'url'     => '/payments',
+            'method'  => 'get',
             'content' => [
-                'email' => 'test@example.com'
+                'email' => 'test@example.com',
             ],
         ],
         'response' => [
@@ -36,32 +37,33 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\ExtraFieldsException',
+            'class'               => 'RZP\Exception\ExtraFieldsException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
         ],
     ],
 
     'testFetchRulesCascadingForProxyAuth' => [
         'request' => [
-            'url' => '/payments',
-            'method' => 'get',
+            'url'     => '/payments',
+            'method'  => 'get',
             'content' => [
-                'email' => 'test@example.com'
+                'email' => 'test@example.com',
             ],
         ],
         'response' => [
             'content' => [
-                'count' => 1,
+                'entity' => 'collection',
+                'count'  => 1,
             ],
         ],
     ],
 
     'testErrorFetchRulesForProxyAuth' => [
         'request' => [
-            'url' => '/payments',
-            'method' => 'get',
+            'url'     => '/payments',
+            'method'  => 'get',
             'content' => [
-                'amount' => 1000000
+                'amount' => 1000000,
             ],
         ],
         'response' => [
@@ -73,17 +75,17 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\ExtraFieldsException',
+            'class'               => 'RZP\Exception\ExtraFieldsException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
         ],
     ],
 
     'testFetchRulesWithSignedIdForPrivateAuth' => [
         'request' => [
-            'url' => '/payments',
-            'method' => 'get',
+            'url'     => '/payments',
+            'method'  => 'get',
             'content' => [
-                'order_id' => ''
+                'order_id' => '',
             ],
         ],
         'response' => [
@@ -95,49 +97,59 @@ return [
 
     'testFetchWithExpandsForProxyAuth' => [
         'request' => [
-            'url' => '/payments',
-            'method' => 'get',
+            'url'     => '/payments',
+            'method'  => 'get',
             'content' => [
-                'expand'  => ['card'],
+                'expand'  => [
+                    'card',
+                ],
             ],
         ],
         'response' => [
             'content' => [
-                'count' => 1,
-                'items' => [
+                'entity' => 'collection',
+                'count'  => 1,
+                'items'  => [
                     [
+                        'entity' => 'payment',
                         'card' => [
                             'name' => 'Test Name'
-                        ]
-                    ]
-                ]
+                        ],
+                    ],
+                ],
             ],
         ],
     ],
 
     'testFindWithExpandsForPrivateAuth' => [
         'request' => [
-            'url' => '/payments/',
-            'method' => 'get',
+            'url'     => '/payments/',
+            'method'  => 'get',
             'content' => [
-                'expand' => ['card']
+                'expand' => [
+                    'card',
+                ],
             ],
         ],
         'response' => [
             'content' => [
-                'card' => [
+                'entity' => 'payment',
+                'card'   => [
                     'name' => 'Test Name'
-                ]
+                ],
             ],
         ],
     ],
 
-    'testFetchWithExpandsForPrivateAuthWithInvalidExpand' => [
+    'testFindWithExpandsForPrivateAuthWithInvalidExpand' => [
         'request' => [
-            'url' => '/payments/',
-            'method' => 'get',
+            'url'     => '/payments/',
+            'method'  => 'get',
             'content' => [
-                'expand' => ['card','fake']
+                'expand' => [
+                    'card',
+                    'fake',
+                ],
             ],
         ],
         'response' => [
@@ -149,7 +161,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
