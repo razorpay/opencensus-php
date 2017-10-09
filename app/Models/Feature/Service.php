@@ -245,8 +245,6 @@ class Service extends Base\Service
      */
     public function updateOnboardingResponses(array $input, string $feature): bool
     {
-        // TODO: Delete old file if file has been received.
-
         $merchantId = $input['merchant_id'];
 
         $merchant = $this->repo->merchant->findByPublicId($merchantId);
@@ -265,6 +263,7 @@ class Service extends Base\Service
 
         try
         {
+            // The file gets overwritten, so no need to delete the old one
             $this->processFiles($data, $merchant);
 
             Accessor::for($merchant, Constants::ONBOARDING)
