@@ -214,7 +214,7 @@ class Gateway extends Base\Gateway
 
         $this->checkCallbackStatus($attrs, $callbackData);
 
-        $this->assertAmount($input, $content);
+        $this->assertAmount($input, $callbackData);
 
         $acquirerData = $this->getAcquirerData($input, $gatewayPayment);
 
