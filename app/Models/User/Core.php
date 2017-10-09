@@ -2,17 +2,24 @@
 
 namespace RZP\Models\User;
 
+use Config;
+
 use Carbon\Carbon;
-use RZP\Constants\Timezone;
+use Illuminate\Hashing\BcryptHasher;
+use Illuminate\Foundation\Bus\DispatchesJobs;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use Illuminate\Hashing\BcryptHasher;
+use RZP\Jobs\RequestJob;
+use RZP\Constants\Timezone;
 
 class Core extends Base\Core
 {
+    use DispatchesJobs;
+
     public function create(array $input)
     {
         $user = (new Entity)->build($input);
@@ -119,7 +126,7 @@ class Core extends Base\Core
         $userArray = $user->toArrayPublic();
 
         $merchants = $user->merchants
-                          ->where(Merchant\Entity::SUSPENDED_AT, NULL)
+                          ->where(Merchant\Entity::SUSPENDED_AT, null)
                           ->callOnEveryItem('toArrayUser');
 
         $invitations = $user->invitations
@@ -194,5 +201,24 @@ class Core extends Base\Core
         $this->repo->sync($user, 'merchants', [$merchantId => $mappingParams], false);
 
         return $user->toArrayPublic();
+    }
+
+    public function postSortingHatData($data)
+    {
+        $url = Config::get('app.sorting_hat.url');
+
+        $request  = [
+            'method'    => 'post',
+            'url'       => $url,
+            'headers'   => [],
+            'content'   => json_encode($data),
+            'options'   => [
+                'timeout'   => 30
+            ]
+        ];
+
+        $job = new RequestJob($request);
+
+        $this->dispatch($job);
     }
 }

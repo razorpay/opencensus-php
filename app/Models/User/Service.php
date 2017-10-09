@@ -4,6 +4,7 @@ namespace RZP\Models\User;
 
 use Mail;
 use Hash;
+use Config;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Invitation;
@@ -14,7 +15,7 @@ class Service extends Base\Service
 {
     public function register(array $input): array
     {
-        $referer = $input['ref'] ?? null;
+        $referrer = $input['ref'] ?? null;
 
         $invitationToken = $input['invitation'] ?? null;
 
@@ -108,10 +109,10 @@ class Service extends Base\Service
 
             $merchantData = (new Merchant\Service)->create($merchantInputData);
 
-            if ($referer)
+            if ($referrer)
             {
                 $tagInputData = [
-                    'tags' => ['ref-'.$referer],
+                    'tags' => ['ref-'.$referrer],
                 ];
 
                 (new Merchant\Service)->addTags($merchantData['id'], $tagInputData);
@@ -126,9 +127,62 @@ class Service extends Base\Service
             $this->updateUserMerchantMapping($user['id'], $userMerchantMappingInputData);
 
             $this->sendConfirmationMail($user['id']);
+
+            $this->postSortingHat($user, $merchantData, $referrer);
         }
 
         return $user;
+    }
+
+    /**
+     * Posts data to sorting Hat.
+     * @param array  $user
+     * @param array  $merchantData
+     * @param string $referer
+     */
+    private function postSortingHat(array $user, array $merchantData, string $referrer)
+    {
+        $sortingData = $this->getSortingHatData($user, $merchantData, $referrer);
+
+        if (Config::get('slack.enable') === true)
+        {
+            (new Core)->postSortingHatData($sortingData);
+        }
+
+        return [
+            'id'    => $merchantData['id'],
+            'name'  => $merchantData['name'],
+            'email' => $user['email'],
+        ];
+    }
+
+    private function getSortingHatData(array $user, array $merchantData, string $referrer)
+    {
+        $phoneNumber = $user[Entity::CONTACT_MOBILE];
+
+        $orgHostName = $this->auth->getOrgHostName();
+
+        $merchantLink = "https://{$orgHostName}/admin#/app/merchants/{$merchantData['id']}/detail";
+
+        $message = "[New Signup]($merchantLink) as {$user[Entity::NAME]}";
+
+        if (empty($referrer) === false)
+        {
+            $message .= " | REF: $referrer";
+        }
+
+        if (empty($phoneNumber) === false)
+        {
+            $message .= " | [Call - {$phoneNumber}](tel:$phoneNumber)";
+        }
+
+        return [
+            'id'            => $merchantData['id'],
+            'email'         => $user[Entity::EMAIL],
+            'name'          => $merchantData['name'],
+            'message'       => $message,
+            'token'         => Config::get('app.sorting_hat.token')
+        ];
     }
 
     private function sendConfirmationMail($userId)

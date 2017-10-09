@@ -280,5 +280,10 @@ return array(
 
     'gateway_priority' => [
         'store_type' => env('GATEWAY_PRIORITY_STORE_TYPE')
+    ],
+
+    'sorting_hat' => [
+        'token' => env('SORTING_HAT_TOKEN', ''),
+        'url'   => env('SORTING_HAT_URL', 'https://sorting-hat-slack.herokuapp.com/')
     ]
 );
