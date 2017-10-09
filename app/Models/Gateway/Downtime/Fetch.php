@@ -2,9 +2,10 @@
 
 namespace RZP\Models\Gateway\Downtime;
 
+use RZP\Base\Fetch as BaseFetch;
 use RZP\Http\BasicAuth\Type as AuthType;
 
-class Fetch extends \RZP\Base\Fetch
+class Fetch extends BaseFetch
 {
     const RULES = [
         self::DEFAULTS => [
@@ -15,7 +16,7 @@ class Fetch extends \RZP\Base\Fetch
             Entity::END     => 'sometimes|integer',
             Entity::PARTIAL => 'sometimes|bool',
             Entity::SOURCE  => 'sometimes|string|max:30',
-        ]
+        ],
     ];
 
     const ACCESSES = [
@@ -26,7 +27,7 @@ class Fetch extends \RZP\Base\Fetch
             Entity::BEGIN,
             Entity::END,
             Entity::PARTIAL,
-            Entity::SOURCE
-        ]
+            Entity::SOURCE,
+        ],
     ];
 }

@@ -2,9 +2,10 @@
 
 namespace RZP\Models\Invoice;
 
+use RZP\Base\Fetch as BaseFetch;
 use RZP\Http\BasicAuth\Type as AuthType;
 
-class Fetch extends \RZP\Base\Fetch
+class Fetch extends BaseFetch
 {
     const RULES = [
         self::DEFAULTS => [
@@ -25,8 +26,8 @@ class Fetch extends \RZP\Base\Fetch
             EsRepository::SEARCH_HITS => 'sometimes|boolean',
             Entity::MERCHANT_ID       => 'sometimes|alpha_num',
             Entity::ORDER_ID          => 'sometimes|string|max:20',
-            self::EXPAND_EACH         => 'string|in:payments,payments.card',
-        ]
+            self::EXPAND_EACH         => 'string|in:payments,payments.card,user',
+        ],
     ];
 
     const ACCESSES = [

@@ -22,11 +22,11 @@ class AdminFetch
     {
         return [
             Entity::ADJUSTMENT => [
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
 
             Entity::AMEX => [
-                'payment_id' => Fields::PAYMENT_ID,
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
                 'received' => [
                     Fetch::LABEL  => 'Received',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
@@ -46,11 +46,11 @@ class AdminFetch
                     Fetch::LABEL  => 'Device Token',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
 
             Entity::AXIS_GENIUS => [
-                'payment_id' => Fields::PAYMENT_ID,
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
                 'received' => [
                     Fetch::LABEL  => 'Received',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
@@ -62,7 +62,7 @@ class AdminFetch
             ],
 
             Entity::AXIS_MIGS => [
-                'payment_id' => Fields::PAYMENT_ID,
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
                 'received' => [
                     Fetch::LABEL  => 'Received',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
@@ -104,7 +104,7 @@ class AdminFetch
                     Fetch::LABEL  => 'Entity Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'type' => [
                     Fetch::LABEL  => 'Type',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
@@ -116,8 +116,8 @@ class AdminFetch
             ],
 
             Entity::BANK_TRANSFER => [
-                'merchant_id' => Fields::MERCHANT_ID,
-                'payment_id' => Fields::PAYMENT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
                 'utr' => [
                     Fetch::LABEL  => 'UTR',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
@@ -159,7 +159,7 @@ class AdminFetch
             ],
 
             Entity::BATCH => [
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'status' => [
                     Fetch::LABEL  => 'Status',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
@@ -202,7 +202,7 @@ class AdminFetch
                     Fetch::LABEL  => 'Bank Reference No',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
-                'payment_id' => Fields::PAYMENT_ID,
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
                 'received' => [
                     Fetch::LABEL  => 'Received',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
@@ -238,7 +238,7 @@ class AdminFetch
                     Fetch::LABEL  => 'Last4',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'network' => [
                     Fetch::LABEL  => 'Network',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
@@ -253,7 +253,7 @@ class AdminFetch
                         'Discover',
                     ],
                 ],
-                'status' => Fields::PAYMENT_STATUS,
+                'status' => Fetch::FIELD_PAYMENT_STATUS,
                 'vault' => [
                     Fetch::LABEL  => 'Vault',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
@@ -265,7 +265,7 @@ class AdminFetch
             ],
 
             Entity::CREDITS => [
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'type' => [
                     Fetch::LABEL  => 'Type',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
@@ -277,7 +277,7 @@ class AdminFetch
             ],
 
             Entity::CUSTOMER => [
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'email' => [
                     Fetch::LABEL  => 'Email',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
@@ -293,7 +293,7 @@ class AdminFetch
             ],
 
             Entity::CUSTOMER_BALANCE => [
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'customer_id' => [
                     Fetch::LABEL  => 'Customer ID',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
@@ -305,7 +305,7 @@ class AdminFetch
                     Fetch::LABEL  => 'Payment/Refund Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'customer_id' => [
                     Fetch::LABEL  => 'Customer ID',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
@@ -321,7 +321,7 @@ class AdminFetch
             ],
 
             Entity::CYBERSOURCE => [
-                'payment_id' => Fields::PAYMENT_ID,
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
                 'received' => [
                     Fetch::LABEL  => 'Received',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
@@ -337,7 +337,7 @@ class AdminFetch
             ],
 
             Entity::EBS => [
-                'payment_id' => Fields::PAYMENT_ID,
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
             ],
 
             Entity::FEE_BREAKUP => [
@@ -352,7 +352,7 @@ class AdminFetch
             ],
 
             Entity::FIRST_DATA => [
-                'payment_id' => Fields::PAYMENT_ID,
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
                 'action' => [
                     Fetch::LABEL  => 'Action',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
@@ -365,12 +365,12 @@ class AdminFetch
                     Fetch::LABEL  => 'Refund ID',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
-                'gateway_payment_id' => Fields::PAYMENT_ID,
+                'gateway_payment_id' => Fetch::FIELD_PAYMENT_ID,
                 'tdate' => [
                     Fetch::LABEL  => 'Tdate',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
-                'caps_payment_id' => Fields::PAYMENT_ID,
+                'caps_payment_id' => Fetch::FIELD_PAYMENT_ID,
                 'gateway_transaction_id' => [
                     Fetch::LABEL  => 'Gateway Transaction ID',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
@@ -378,8 +378,8 @@ class AdminFetch
             ],
 
             Entity::DISPUTE => [
-                'merchant_id' => Fields::MERCHANT_ID,
-                'payment_id' => Fields::PAYMENT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
                 'status' => [
                     Fetch::LABEL  => 'Status',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
@@ -460,7 +460,7 @@ class AdminFetch
                     Fetch::LABEL  => 'Source Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'status' => [
                     Fetch::LABEL  => 'Status',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
@@ -477,8 +477,8 @@ class AdminFetch
             ],
 
             Entity::GATEWAY_DOWNTIME => [
-                'method' => Fields::METHOD,
-                'gateway' => Fields::GATEWAY,
+                'method' => Fetch::FIELD_METHOD,
+                'gateway' => Fetch::FIELD_GATEWAY,
                 'bank' => [
                     Fetch::LABEL  => 'Bank',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
@@ -494,7 +494,7 @@ class AdminFetch
                     Fetch::LABEL  => 'Gateway Transaction Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
-                'payment_id' => Fields::PAYMENT_ID,
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
                 'refund_id' => [
                     Fetch::LABEL  => 'Refund Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
@@ -546,7 +546,7 @@ class AdminFetch
             ],
 
             Entity::INVOICE => [
-                'payment_id' => Fields::PAYMENT_ID,
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
                 'receipt' => [
                     Fetch::LABEL  => 'Receipt',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
@@ -575,7 +575,7 @@ class AdminFetch
                         'invoice',
                     ],
                 ],
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'order_id' => [
                     Fetch::LABEL  => 'Order Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
@@ -595,7 +595,7 @@ class AdminFetch
             ],
 
             Entity::KEY => [
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
 
             Entity::MERCHANT => [
@@ -777,11 +777,11 @@ class AdminFetch
                     Fetch::LABEL  => 'Sbibuddy',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
                 ],
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
 
             Entity::MERCHANT_INVOICE => [
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'invoice_number' => [
                     Fetch::LABEL  => 'Invoice No.',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
@@ -801,7 +801,7 @@ class AdminFetch
             ],
 
             Entity::MOBIKWIK => [
-                'payment_id' => Fields::PAYMENT_ID,
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
                 'received' => [
                     Fetch::LABEL  => 'Received',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
@@ -809,10 +809,10 @@ class AdminFetch
             ],
 
             Entity::NETBANKING => [
-                'bank_payment_id' => Fields::PAYMENT_ID,
-                'caps_payment_id' => Fields::PAYMENT_ID,
-                'int_payment_id' => Fields::PAYMENT_ID,
-                'payment_id' => Fields::PAYMENT_ID,
+                'bank_payment_id' => Fetch::FIELD_PAYMENT_ID,
+                'caps_payment_id' => Fetch::FIELD_PAYMENT_ID,
+                'int_payment_id' => Fetch::FIELD_PAYMENT_ID,
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
                 'received' => [
                     Fetch::LABEL  => 'Received',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
@@ -820,7 +820,7 @@ class AdminFetch
             ],
 
             Entity::OFFER => [
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
 
             Entity::ORDER => [
@@ -832,7 +832,7 @@ class AdminFetch
                     Fetch::LABEL  => 'Authorized',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
                 ],
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'receipt' => [
                     Fetch::LABEL  => 'Receipt',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
@@ -853,8 +853,8 @@ class AdminFetch
                     Fetch::LABEL  => 'Checkout Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
-                'payment_id' => Fields::PAYMENT_ID,
-                'merchant_id' => Fields::MERCHANT_ID,
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
 
             Entity::PAYMENT => [
@@ -886,7 +886,7 @@ class AdminFetch
                     Fetch::LABEL  => 'Contact Email',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
-                'gateway' => Fields::GATEWAY,
+                'gateway' => Fetch::FIELD_GATEWAY,
                 'global_token_id' => [
                     Fetch::LABEL  => 'Global Token Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
@@ -907,8 +907,8 @@ class AdminFetch
                     Fetch::LABEL  => 'Card Last 4',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
-                'merchant_id' => Fields::MERCHANT_ID,
-                'method' => Fields::METHOD,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'method' => Fetch::FIELD_METHOD,
                 'notes' => [
                     Fetch::LABEL  => 'Notes',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
@@ -930,7 +930,7 @@ class AdminFetch
                     Fetch::LABEL  => 'Save',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
                 ],
-                'status' => Fields::PAYMENT_STATUS,
+                'status' => Fetch::FIELD_PAYMENT_STATUS,
                 'terminal_id' => [
                     Fetch::LABEL  => 'Terminal ID',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
@@ -953,11 +953,11 @@ class AdminFetch
                         '2',
                     ],
                 ],
-                'wallet' => Fields::WALLET,
+                'wallet' => Fetch::FIELD_WALLET,
             ],
 
             Entity::PAYOUT => [
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'customer_id' => [
                     Fetch::LABEL  => 'Customer Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
@@ -976,7 +976,7 @@ class AdminFetch
             ],
 
             Entity::PAYTM => [
-                'payment_id' => Fields::PAYMENT_ID,
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
                 'received' => [
                     Fetch::LABEL  => 'Received',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
@@ -999,9 +999,9 @@ class AdminFetch
                     Fetch::LABEL  => 'Batch Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
-                'gateway' => Fields::GATEWAY,
-                'merchant_id' => Fields::MERCHANT_ID,
-                'payment_id' => Fields::PAYMENT_ID,
+                'gateway' => Fetch::FIELD_GATEWAY,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
                 'status' => [
                     Fetch::LABEL  => 'Status',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
@@ -1018,7 +1018,7 @@ class AdminFetch
             ],
 
             Entity::REVERSAL => [
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'transfer_id' => [
                     Fetch::LABEL  => 'Transfer Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
@@ -1045,8 +1045,8 @@ class AdminFetch
                         'internal',
                     ],
                 ],
-                'merchant_id' => Fields::MERCHANT_ID,
-                'payment_id' => Fields::PAYMENT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
             ],
 
             Entity::SETTLEMENT => [
@@ -1054,7 +1054,7 @@ class AdminFetch
                     Fetch::LABEL  => 'Batch Fund Transfer Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'status' => [
                     Fetch::LABEL  => 'Status',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
@@ -1075,7 +1075,7 @@ class AdminFetch
             ],
 
             Entity::SETTLEMENT_DETAILS => [
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'settlement_id' => [
                     Fetch::LABEL  => 'Settlement Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
@@ -1087,12 +1087,12 @@ class AdminFetch
                     Fetch::LABEL  => 'Enabled',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
                 ],
-                'gateway' => Fields::GATEWAY,
+                'gateway' => Fetch::FIELD_GATEWAY,
                 'category' => [
                     Fetch::LABEL  => 'Category',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'shared' => [
                     Fetch::LABEL  => 'Shared',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
@@ -1129,7 +1129,7 @@ class AdminFetch
                     Fetch::LABEL  => 'Payment/Refund/Settlement Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'reconciled' => [
                     Fetch::LABEL  => 'Reconciled',
                     Fetch::TYPE   => Fetch::TYPE_BOOLEAN
@@ -1170,7 +1170,7 @@ class AdminFetch
                     Fetch::LABEL  => 'Recipient Merchant/Customer Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
 
             Entity::TOKEN => [
@@ -1186,8 +1186,8 @@ class AdminFetch
                     Fetch::LABEL  => 'Customer Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
-                'merchant_id'   => Fields::MERCHANT_ID,
-                'method'        => Fields::METHOD,
+                'merchant_id'   => Fetch::FIELD_MERCHANT_ID,
+                'method'        => Fetch::FIELD_METHOD,
                 'terminal_id' => [
                     Fetch::LABEL  => 'Terminal Id',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
@@ -1196,12 +1196,12 @@ class AdminFetch
                     Fetch::LABEL  => 'Token',
                     Fetch::TYPE   => Fetch::TYPE_STRING,
                 ],
-                'wallet' => Fields::WALLET
+                'wallet' => Fetch::FIELD_WALLET
             ],
 
             Entity::UPI => [
-                'payment_id' => Fields::PAYMENT_ID,
-                'bank' => Fields::UPI
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
+                'bank' => Fetch::FIELD_UPI
             ],
 
             Entity::USER => [
@@ -1212,7 +1212,7 @@ class AdminFetch
             ],
 
             Entity::VIRTUAL_ACCOUNT => [
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
                 'status' => [
                     Fetch::LABEL  => 'Status',
                     Fetch::TYPE   => Fetch::TYPE_ARRAY,
@@ -1229,16 +1229,16 @@ class AdminFetch
             ],
 
             Entity::WALLET => [
-                'payment_id' => Fields::PAYMENT_ID,
-                'wallet' => Fields::WALLET
+                'payment_id' => Fetch::FIELD_PAYMENT_ID,
+                'wallet' => Fetch::FIELD_WALLET
             ],
 
             Entity::WEBHOOK => [
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
 
             Entity::SCHEDULE => [
-                'merchant_id' => Fields::MERCHANT_ID,
+                'merchant_id' => Fetch::FIELD_MERCHANT_ID,
             ],
         ];
     }

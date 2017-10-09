@@ -14,7 +14,7 @@ class FetchTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/FetchTestData.php';
+        $this->testDataFilePath = __DIR__ . '/FetchTestData.php';
 
         parent::setUp();
 

@@ -4,35 +4,42 @@ namespace RZP\Base;
 
 use App;
 
+use RZP\Http\BasicAuth;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Constants\Entity;
-use RZP\Constants\Fields;
-use RZP\Http\BasicAuth\Type;
-use RZP\Models\Payment\Status;
-use RZP\Models\Payment\Method;
-use RZP\Models\Payment\Processor\Upi;
-use RZP\Models\Payment\Processor\Wallet;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Fetch
 {
-    const LABEL         = 'label';
-    const TYPE          = 'type';
-    const VALUES        = 'values';
+    const DEFAULTS             = 'defaults';
+    const EXPAND               = 'expand';
+    const EXPAND_EACH          = 'expand.*';
+    const FROM                 = 'from';
+    const TO                   = 'to';
+    const COUNT                = 'count';
+    const SKIP                 = 'skip';
 
-    const TYPE_STRING   = 'string';
-    const TYPE_NUMBER   = 'number';
-    const TYPE_BOOLEAN  = 'boolean';
-    const TYPE_ARRAY    = 'array';
-    const TYPE_OBJECT   = 'object';
+    //
+    // Different constants used in AdminFetch response to dashboard
+    //
+    const LABEL                = 'label';
+    const TYPE                 = 'type';
+    const VALUES               = 'values';
 
-    const DEFAULTS      = 'defaults';
-    const EXPAND        = 'expand';
-    const EXPAND_EACH   = 'expand.*';
-    const FROM          = 'from';
-    const TO            = 'to';
-    const COUNT         = 'count';
-    const SKIP          = 'skip';
+    const TYPE_STRING          = 'string';
+    const TYPE_NUMBER          = 'number';
+    const TYPE_BOOLEAN         = 'boolean';
+    const TYPE_ARRAY           = 'array';
+    const TYPE_OBJECT          = 'object';
+
+    const FIELD_MERCHANT_ID    = 'merchant_id';
+    const FIELD_GATEWAY        = 'gateway';
+    const FIELD_PAYMENT_ID     = 'payment_id';
+    const FIELD_PAYMENT_STATUS = 'payment_status';
+    const FIELD_METHOD         = 'method';
+    const FIELD_WALLET         = 'wallet';
+    const FIELD_UPI            = 'upi';
 
     /**
      * Validation rules for all fields in Entity, is an multi-dimensional array
@@ -102,7 +109,7 @@ class Fetch
     ];
 
     /**
-     * @var \RZP\Http\BasicAuth\BasicAuth
+     * @var BasicAuth\BasicAuth
      */
     protected $auth;
 
@@ -296,7 +303,7 @@ class Fetch
      *
      * @return array
      */
-    protected function getAllFetchRules()
+    protected function getAllFetchRules(): array
     {
         if ($this->rules !== null)
         {
@@ -309,8 +316,8 @@ class Fetch
 
         if ($this->auth->isPublicAuth() === false)
         {
-            $privateRules    = array_get(static::RULES, Type::PRIVATE_AUTH, []);
-            $privateAccesses = array_get(static::ACCESSES, Type::PRIVATE_AUTH, []);
+            $privateRules    = array_get(static::RULES, BasicAuth\Type::PRIVATE_AUTH, []);
+            $privateAccesses = array_get(static::ACCESSES, BasicAuth\Type::PRIVATE_AUTH, []);
 
             $rules    = array_merge($rules, $privateRules);
             $accesses = array_merge($accesses, $privateAccesses);
@@ -318,8 +325,8 @@ class Fetch
 
         if ($this->auth->isProxyOrPrivilegeAuth() === true)
         {
-            $proxyRules    = array_get(static::RULES, Type::PROXY_AUTH, []);
-            $proxyAccesses = array_get(static::ACCESSES, Type::PROXY_AUTH, []);
+            $proxyRules    = array_get(static::RULES, BasicAuth\Type::PROXY_AUTH, []);
+            $proxyAccesses = array_get(static::ACCESSES, BasicAuth\Type::PROXY_AUTH, []);
 
             $rules    = array_merge($rules, $proxyRules);
             $accesses = array_merge($accesses, $proxyAccesses);
@@ -327,8 +334,8 @@ class Fetch
 
         if ($this->auth->isPrivilegeAuth() === true)
         {
-            $privilegeRules    = array_get(static::RULES, Type::PRIVILEGE_AUTH, []);
-            $privilegeAccesses = array_get(static::ACCESSES, Type::PRIVILEGE_AUTH, []);
+            $privilegeRules    = array_get(static::RULES, BasicAuth\Type::PRIVILEGE_AUTH, []);
+            $privilegeAccesses = array_get(static::ACCESSES, BasicAuth\Type::PRIVILEGE_AUTH, []);
 
             $rules    = array_merge($rules, $privilegeRules);
             $accesses = array_merge($accesses, $privilegeAccesses);
@@ -336,8 +343,8 @@ class Fetch
 
         if ($this->auth->isAdminAuth() === true)
         {
-            $adminRules    = array_get(static::RULES, Type::ADMIN_AUTH, []);
-            $adminAccesses = array_get(static::ACCESSES, Type::ADMIN_AUTH, []);
+            $adminRules    = array_get(static::RULES, BasicAuth\Type::ADMIN_AUTH, []);
+            $adminAccesses = array_get(static::ACCESSES, BasicAuth\Type::ADMIN_AUTH, []);
 
             $rules    = array_merge($rules, $adminRules);
             $accesses = array_merge($accesses, $adminAccesses);
@@ -358,7 +365,14 @@ class Fetch
         return $this->rules;
     }
 
-    protected function getModifiedDefaultFetchRulesForCurrentAuth()
+    /**
+     * Modifies some of the default rules (e.g. count etc.) based on current
+     * authentication level. E.g. for privileged authentication max count allowed
+     * is 1000.
+     *
+     * @return array
+     */
+    protected function getModifiedDefaultFetchRulesForCurrentAuth(): array
     {
         $maxAllowedCount = ($this->auth->isPrivilegeAuth() === true) ? 1000 : 100;
 
@@ -445,9 +459,7 @@ class Fetch
 
     public function validateCustom($func, $attribute, $value, $parameters)
     {
-        // Function name should start from 'validate'
-
-        assert (strpos($func, 'validate') === 0);
+        assertTrue(strpos($func, 'validate') === 0);
 
         $this->$func($attribute, $value, $parameters);
     }
@@ -476,49 +488,48 @@ class Fetch
      *
      * @return array
      */
-    public static function getCommonFields()
+    public static function getCommonFields(): array
     {
         $gatewayList = config('gateway.available');
-        $statusList  = Status::getStatusList();
-        $methodList  = Method::getMethodsNamesMap();
-        $walletList  = Wallet::getWalletNetworkNamesMap();
-        $upiList     = Upi::getFullBankNamesMap();
+        $statusList  = Payment\Status::getStatusList();
+        $methodList  = Payment\Method::getMethodsNamesMap();
+        $walletList  = Payment\Processor\Wallet::getWalletNetworkNamesMap();
+        $upiList     = Payment\Processor\Upi::getFullBankNamesMap();
 
         return [
-            Fields::MERCHANT_ID => [
+            self::FIELD_MERCHANT_ID => [
                 self::LABEL     => 'Merchant Id',
                 self::TYPE      => self::TYPE_STRING
             ],
-            Fields::GATEWAY => [
+            self::FIELD_GATEWAY => [
                 self::LABEL     => 'Gateway',
                 self::TYPE      => self::TYPE_ARRAY,
                 self::VALUES    => $gatewayList
             ],
-            Fields::PAYMENT_STATUS => [
+            self::FIELD_PAYMENT_STATUS => [
                 self::LABEL     => 'Status',
                 self::TYPE      => self::TYPE_ARRAY,
                 self::VALUES    => $statusList
             ],
-            Fields::PAYMENT_ID => [
+            self::FIELD_PAYMENT_ID => [
                 self::LABEL     => 'Payment Id',
                 self::TYPE      => self::TYPE_STRING,
             ],
-            Fields::METHOD => [
+            self::FIELD_METHOD => [
                 self::LABEL     => 'Method',
                 self::TYPE      => self::TYPE_OBJECT,
                 self::VALUES    => $methodList
             ],
-            Fields::WALLET => [
+            self::FIELD_WALLET => [
                 self::LABEL     => 'Wallet',
                 self::TYPE      => self::TYPE_OBJECT,
                 self::VALUES    => $walletList
             ],
-            Fields::UPI => [
+            self::FIELD_UPI => [
                 self::LABEL     => 'UPI',
                 self::TYPE      => self::TYPE_OBJECT,
                 self::VALUES    => $upiList
             ]
         ];
     }
-
 }
