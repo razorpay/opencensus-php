@@ -301,7 +301,7 @@ return [
                     Constants::VIRTUAL_ACCOUNTS
                 ]
             ],
-            'url'     => '/onboarding/features/all/questions',
+            'url'     => '/onboarding/features',
             'method'  => 'GET',
             'server'  => [
                 'HTTP_X-Dashboard'            => 'true',
@@ -310,42 +310,44 @@ return [
         ],
         'response' => [
             'content' => [
-                Constants::MARKETPLACE      => [
-                    Constants::USE_CASE         => [
-                        Constants::RESPONSE_TYPE => 'textarea',
-                        Constants::MANDATORY     => true
+                'questions' => [
+                    Constants::MARKETPLACE      => [
+                        Constants::USE_CASE         => [
+                            Constants::RESPONSE_TYPE => 'textarea',
+                            Constants::MANDATORY     => true
+                        ],
+                        Constants::SETTLING_TO      => [
+                            Constants::RESPONSE_TYPE => 'radio',
+                            Constants::MANDATORY     => true
+                        ],
+                        Constants::VENDOR_AGREEMENT => [
+                            Constants::RESPONSE_TYPE => 'file',
+                            Constants::MANDATORY     => false
+                        ]
                     ],
-                    Constants::SETTLING_TO      => [
-                        Constants::RESPONSE_TYPE => 'radio',
-                        Constants::MANDATORY     => true
+                    Constants::SUBSCRIPTIONS    => [
+                        Constants::BUSINESS_MODEL  => [
+                            Constants::RESPONSE_TYPE => 'textarea',
+                            Constants::MANDATORY     => true
+                        ],
+                        Constants::SAMPLE_PLANS    => [
+                            Constants::RESPONSE_TYPE => 'textarea',
+                            Constants::MANDATORY     => true
+                        ],
+                        Constants::WEBSITE_DETAILS => [
+                            Constants::RESPONSE_TYPE => 'text',
+                            Constants::MANDATORY     => true
+                        ]
                     ],
-                    Constants::VENDOR_AGREEMENT => [
-                        Constants::RESPONSE_TYPE => 'file',
-                        Constants::MANDATORY     => false
-                    ]
-                ],
-                Constants::SUBSCRIPTIONS    => [
-                    Constants::BUSINESS_MODEL  => [
-                        Constants::RESPONSE_TYPE => 'textarea',
-                        Constants::MANDATORY     => true
-                    ],
-                    Constants::SAMPLE_PLANS    => [
-                        Constants::RESPONSE_TYPE => 'textarea',
-                        Constants::MANDATORY     => true
-                    ],
-                    Constants::WEBSITE_DETAILS => [
-                        Constants::RESPONSE_TYPE => 'text',
-                        Constants::MANDATORY     => true
-                    ]
-                ],
-                Constants::VIRTUAL_ACCOUNTS => [
-                    Constants::USE_CASE                 => [
-                        Constants::RESPONSE_TYPE => 'textarea',
-                        Constants::MANDATORY     => true
-                    ],
-                    Constants::EXPECTED_MONTHLY_REVENUE => [
-                        Constants::RESPONSE_TYPE => 'number',
-                        Constants::MANDATORY     => true
+                    Constants::VIRTUAL_ACCOUNTS => [
+                        Constants::USE_CASE                 => [
+                            Constants::RESPONSE_TYPE => 'textarea',
+                            Constants::MANDATORY     => true
+                        ],
+                        Constants::EXPECTED_MONTHLY_REVENUE => [
+                            Constants::RESPONSE_TYPE => 'number',
+                            Constants::MANDATORY     => true
+                        ]
                     ]
                 ]
             ],
@@ -371,7 +373,7 @@ return [
     'getOnboardingResponses'      => [
         'request'  => [
             'content' => [],
-            'url'     => '/onboarding/features/' . Constants::MARKETPLACE . '/responses',
+            'url'     => '/onboarding/features/' . Constants::MARKETPLACE,
             'method'  => 'GET',
             'server'  => [
                 'HTTP_X-Dashboard'            => 'true',
@@ -499,7 +501,7 @@ return [
     'testUpdateOnboardingResponses' => [
         'request'  => [
             'content' => [],
-            'url'     => '/onboarding/features/' . Constants::MARKETPLACE . '/responses',
+            'url'     => '/onboarding/features/' . Constants::MARKETPLACE,
             'method'  => 'GET',
             'server'  => [
                 'HTTP_X-Dashboard'            => 'true',
@@ -513,6 +515,7 @@ return [
             ]
         ]
     ],
+
     'createMarketplaceOnboardingResponse'  => [
         'request'  => [
             'content' => [
@@ -527,6 +530,7 @@ return [
             ],
         ]
     ],
+
     'updateMarketplaceOnboardingResponse'  => [
         'request'  => [
             'content' => [

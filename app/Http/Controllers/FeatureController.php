@@ -50,11 +50,13 @@ class FeatureController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getOnboardingQuestions()
+    public function getOnboardingDetails()
     {
         $input = Request::all();
 
-        $response = $this->service()->getOnboardingQuestions($input);
+        $response['questions'] = $this->service()->getOnboardingQuestions($input);
+
+        $response['responses'] = $this->service()->getOnboardingResponses();
 
         return ApiResponse::json($response);
     }
@@ -77,7 +79,7 @@ class FeatureController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function getOnboardingResponses(string $feature = null)
+    public function getOnboardingResponses(string $feature)
     {
         $response = $this->service()->getOnboardingResponses($feature);
 

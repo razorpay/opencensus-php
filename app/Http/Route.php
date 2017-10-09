@@ -631,10 +631,9 @@ final class Route
         'merchant_analytics'                      => ['post',     'merchant/analytics',                             'MerchantController@postAnalytics'                                  ],
 
         // Feature onboarding routes
-        'feature_onboarding_fetch_questions'      => ['get',      'onboarding/features/all/questions',                            'FeatureController@getOnboardingQuestions',                          ],
+        'feature_onboarding_details'              => ['get',      'onboarding/features',                            'FeatureController@getOnboardingDetails',                          ],
         'feature_onboarding_create'               => ['post',     'onboarding/features/{feature}',                  'FeatureController@postOnboardingResponses',                         ],
-        'feature_onboarding_fetch_all_responses'  => ['get',      'onboarding/features/all/responses',                  'FeatureController@getOnboardingResponses',                          ],
-        'feature_onboarding_fetch_responses'      => ['get',      'onboarding/features/{feature}/responses',        'FeatureController@getOnboardingResponses',                          ],
+        'feature_onboarding_fetch_responses'      => ['get',      'onboarding/features/{feature}',        'FeatureController@getOnboardingResponses',                          ],
 
 
         'feature_onboarding_update'               => ['post',     'onboarding/features/admin/{feature}/responses',                  'FeatureController@updateOnboardingResponses',                         ],
@@ -1128,10 +1127,9 @@ final class Route
         'oauth_application_update',
         'merchant_analytics',
         'reports_refund_irctc',
-        'feature_onboarding_fetch_questions',
+        'feature_onboarding_details',
         'feature_onboarding_create',
         'feature_onboarding_fetch_responses',
-        'feature_onboarding_fetch_all_responses',
     ];
 
     // These will run on internal auth with the assurance
