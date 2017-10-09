@@ -31,6 +31,12 @@ class NodalAccount extends NodalBase\NodalAccount
         'Cr Date',
     ];
 
+    const MODE_MAPPING = [
+        Mode::NEFT    => 'N',
+        Mode::RTGS    => 'R',
+        Mode::IMPS    => 'I',
+    ];
+
     protected $secret = null;
 
     protected $iv = null;
