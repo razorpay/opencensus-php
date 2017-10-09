@@ -7,10 +7,12 @@
 <h2>Welcome to {{ $org['business_name'] }}</h2>
 
 <div>
-    <p>To activate your account, please click <a href = "{{ URL::to('/#/access/confirm/'. $token) }}" >here</a>.</p>
+    <p>To activate your account, please click
+        <a href = "{{ $org['hostname'] . '/#/access/confirm/'. $token }}" >here</a>.</p>
 
     <p>Alternatively, open the following link in your browser:<br/>
-        <a href = "{{ 'https://' .$org['hostname'] .'/#/access/confirm/'. $token }}" >{{ 'https://' .$org['hostname'] .'/#/access/confirm/'. $token }}</a>
+        <a href = "{{ 'https://' .$org['hostname'] .'/#/access/confirm/'. $token }}" >
+            {{ 'https://' .$org['hostname'] .'/#/access/confirm/'. $token }}</a>
 </div>
 
 <div>
@@ -22,7 +24,8 @@
 
     @if ($org['custom_code'] === 'rzp')
         <a href="https://razorpay.com" target="_blank">
-            <img style="width:200px; height:auto;" src="<?php echo $message->embed(public_path().'/img/logo_black.png'); ?>">
+            <img style="width:200px; height:auto;"
+                 src="<?php echo $message->embed(public_path().'/img/logo_black.png'); ?>">
         </a>
     @elseif ($org['login_logo_url'] !== '')
         <a href="{{ 'https://' .$org['hostname'] }}" target="_blank">
