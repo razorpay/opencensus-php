@@ -509,17 +509,6 @@ class Service extends Base\Service
         }
     }
 
-    public function lockMerchant($id)
-    {
-        $error = $merchantDetails = [];
-
-        $params = ['locked' => true];
-
-        list($error, $merchantDetails) = (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
-
-        return $error;
-    }
-
     public function postMerchantTerminal($id, $input)
     {
         $error = (new Merchant\Validator)->validateInput('terminal', $input)->messages();
@@ -740,8 +729,6 @@ class Service extends Base\Service
     {
         $merchant->activated = 1;
         $merchant->save();
-
-        $this->lockMerchant($merchant->id);
 
         return array();
     }
