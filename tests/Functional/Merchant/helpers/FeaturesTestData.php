@@ -550,8 +550,8 @@ return [
     'updateMarketplaceOnboardingResponseStatus'  => [
         'request'  => [
             'content' => [ ],
-            'url'     => '/onboarding/features/' . Constants::MARKETPLACE . '/update_status',
-            'method'  => 'POST',
+            'url'     => '/onboarding/features/' . Constants::MARKETPLACE . '/status',
+            'method'  => 'PUT',
             'server'  => [
                 'HTTP_X-Dashboard'            => 'true',
                 'HTTP_X-Dashboard-User-Email' => 'user@rzp.dev',
