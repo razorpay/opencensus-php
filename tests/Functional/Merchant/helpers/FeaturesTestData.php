@@ -359,7 +359,7 @@ return [
                 Constants::USE_CASE    => 'Some default use case',
                 Constants::SETTLING_TO => 'Someone'
             ],
-            'url'     => '/onboarding/features/' . Constants::MARKETPLACE . '/responses',
+            'url'     => '/onboarding/features/' . Constants::MARKETPLACE,
             'method'  => 'POST',
             'server'  => [
                 'HTTP_X-Dashboard'            => 'true',
@@ -519,7 +519,7 @@ return [
                 Constants::USE_CASE    => 'Some default use case',
                 Constants::SETTLING_TO => 'Someone'
             ],
-            'url'     => '/onboarding/features/' . Constants::MARKETPLACE . '/responses',
+            'url'     => '/onboarding/features/' . Constants::MARKETPLACE,
             'method'  => 'POST',
             'server'  => [
                 'HTTP_X-Dashboard'            => 'true',
