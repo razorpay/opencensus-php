@@ -23,7 +23,7 @@ class CRC16
 
         $byteArray = unpack('C*', $data);
 
-        $expectedCRC = $this->calculateCrcMsb($byteArray, $ccittPoly, self::MAX_VALUE);
+        $expectedCRC = $this->calculateCrcMsb($byteArray, $ccittPoly, self::MAX_VALUE_SIGNED);
 
         $hex = dechex($expectedCRC);
 
@@ -63,7 +63,7 @@ class CRC16
 
             $finalNum = $finalNum & self::MAX_VALUE_UNSIGNED;
 
-            if ($finalNum > MAX_VALUE_SIGNED)
+            if ($finalNum > self::MAX_VALUE_SIGNED)
             {
                 $finalNum -= 65536;
             }
