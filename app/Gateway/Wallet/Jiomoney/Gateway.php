@@ -110,13 +110,14 @@ class Gateway extends Base\Gateway
 
         $this->verifySecureHash($input['gateway']);
 
-        $this->assertPaymentId($input['payment']['id'], $input['gateway'][ResponseFields::PAYMENT_ID]);
-
         if (($input['gateway'][ResponseFields::STATUS_CODE] !== StatusCode::SUCCESS) and
             ($input['gateway'][ResponseFields::RESPONSE_CODE] !== ResponseCode::SUCCESS))
         {
             return $this->callbackAuthFailureFlow($input);
         }
+
+        $this->assertPaymentId($input['payment']['id'], $input['gateway'][ResponseFields::PAYMENT_ID]);
+        $this->assertAmount($input['payment']['amount'], (int) ($input['gateway']['amount'] * 100));
 
         $this->callbackAuthSuccessFlow($input);
 

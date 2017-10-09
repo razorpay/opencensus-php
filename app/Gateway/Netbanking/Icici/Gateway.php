@@ -646,14 +646,9 @@ class Gateway extends Base\Gateway
 
     protected function assertAmount($input, $content)
     {
-        $actualAmount = number_format($content['AMT'], 2, '.', '');
-        $expectedAmount = number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $actualAmount = (int) ($content['AMT'] * 100);
 
-        if ($actualAmount !== $expectedAmount)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_AMOUNT_TAMPERED);
-        }
+        parent::assertAmount($input['payment']['amount'], $actualAmount);
     }
 
     protected function checkCallbackStatus(array $attrs, array $content)

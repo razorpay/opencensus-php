@@ -99,7 +99,7 @@ return [
     'testPaymentRefund' => [
         'action'           => 'refund',
         'received'         => true,
-        'TxnAmount'        => '5.00',
+        'TxnAmount'        => '500',
         'BankID'           => null,
         'CurrencyType'     => 'INR',
         'ItemCode'         => null,
@@ -125,7 +125,7 @@ return [
     'testPaymentMultiplePartialRefund' => [
         'action'           => 'refund',
         'received'         => true,
-        'TxnAmount'        => '5.00',
+        'TxnAmount'        => '500',
         'BankID'           => null,
         'CurrencyType'     => 'INR',
         'ItemCode'         => null,
@@ -151,7 +151,7 @@ return [
     'testPaymentPartialRefund' => [
         'action'           => 'refund',
         'received'         => true,
-        'TxnAmount'        => '5.00',
+        'TxnAmount'        => '500',
         'BankID'           => null,
         'CurrencyType'     => 'INR',
         'ItemCode'         => null,
