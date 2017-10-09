@@ -113,7 +113,10 @@ class Gateway extends Base\Gateway
         $this->mockApprovalCodeIfNeeded($input['gateway']);
 
         $this->assertPaymentId($input['payment']['id'], $input['gateway'][ConnectResponseFields::ORDER_ID]);
-        $this->assertAmount($input['payment']['amount'], (int) ($input['gateway']['chargetotal'] * 100));
+
+        $this->assertAmount(
+            $input['payment']['amount'],
+            (int) ($input['gateway'][ConnectResponseFields::CHARGE_TOTAL] * 100));
 
         $attributes = $this->getCallbackFields($input['gateway']);
 
