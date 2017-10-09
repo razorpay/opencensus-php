@@ -156,14 +156,6 @@ class Entity extends Base\Entity
     }
 
     /**
-     * Get the owners of the merchant.
-     */
-    public function owners()
-    {
-        return $this->users()->where('role','owner')->get();
-    }
-
-    /**
      * Get all of the users that belong to the merchant.
      * @return \Illuminate\Database\Eloquent\Collection
      */
@@ -172,36 +164,6 @@ class Entity extends Base\Entity
         return $this->belongsToMany(
             User\Entity::class, 'merchant_users', 'merchant_id', 'user_id'
         )->withPivot('role');
-    }
-
-    /**
-     * Get all of the pending invitations for the merchant.
-     */
-    public function invitations()
-    {
-        return $this->hasMany(Invitation\Entity::class)
-                    ->orderBy('created_at', 'desc');
-    }
-
-    /**
-     * Invite a user to the merchants by e-mail address.
-     *
-     * @param  string  $email
-     * @return App\Merchant\Entity
-     */
-    public function inviteUserByEmailWithRole($email, $role)
-    {
-        // First try to find if a user account exists for the user
-        $invitedUser = (new User\Entity)->where('email', $email)->first();
-
-        $invitation = $this->invitations()->create([
-            'user_id' => $invitedUser ? $invitedUser->id : null,
-            'email' => $email,
-            'token' => str_random(40),
-            'role' => $role,
-        ]);
-
-        return $invitation;
     }
 
     /**
@@ -251,32 +213,6 @@ class Entity extends Base\Entity
         return $this->hasMany(
             __NAMESPACE__.'\Transaction'
         );
-    }
-
-    public function hasInvitiationForEmail($email)
-    {
-        return $this->invitations()
-                    ->where('email', $email)
-                    ->exists();
-    }
-
-    public function hasUserForEmail($email)
-    {
-        return $this->users()
-                    ->where('email', $email)
-                    ->exists();
-    }
-
-    /**
-     * Gets a merchant, if there is any using the
-     * given email address
-     * @param  string $email
-     * @return Entity
-     */
-    public static function getMerchantFromEmail($email)
-    {
-        $data = static::whereEmail($email)->first();
-        return $data;
     }
 
     public static function getAggregations($data, $mode)

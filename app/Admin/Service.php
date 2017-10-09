@@ -479,19 +479,11 @@ class Service extends Base\Service
 
         try
         {
-            $existingMerchant = Merchant\Entity::getMerchantFromEmail($input[Merchant\Entity::EMAIL]);
-
-            if ($existingMerchant !== null)
-            {
-                $error[] = "Merchant already exists with this email id.";
-                return [$error, $data];
-            }
-
             $data = $this->api->merchant->fetch($id)->editEmail($input)->toArray();
 
             // Only when it is changed we update on the dashboard side as well
             list($e,) = (new Merchant\Service)->changeEmail($id, $input);
-            $this->logActionToSlack($id, Actions::EMAIL_EDITED, $input);
+
             $error = $e;
         }
 

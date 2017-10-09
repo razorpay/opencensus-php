@@ -51,41 +51,6 @@ class Service extends Base\Service
         }
     }
 
-    /**
-     * Get the invitation entity from the token
-     *
-     * @param string $invitationToken
-     * @return string $email
-     */
-    public function getInvitationFromToken($invitationToken)
-    {
-        $error = array();
-
-        $invitation = (new Invitation\Entity)->where('token', $invitationToken)->first();
-
-        if ($invitation)
-        {
-            return array($error, $invitation);
-        }
-
-        $error = [static::INVALID_INVITE];
-
-        return array($error, null);
-    }
-
-    protected function sendInvitationEmail($invitation)
-    {
-        $mailer = new MiscMailer();
-
-        $mailer->sendMemberInvitationEmail($invitation, $this->loggedInUser->toArray())
-               ->queueAndDeliver();
-    }
-
-    public function getInvitationById(string $inviteId)
-    {
-        return Entity::find($inviteId);
-    }
-
     public function getInvitationByTokenFromApi(string $token)
     {
         $error = $response = [];

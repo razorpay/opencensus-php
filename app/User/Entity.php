@@ -91,14 +91,6 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
     }
 
     /**
-     * Get all of the pending invitations for the user.
-     */
-    public function invitations()
-    {
-        return $this->hasMany(Invitation\Entity::class);
-    }
-
-    /**
      * Join the merchant with the given ID and role.
      *
      * @param  string  $merchantId
@@ -201,22 +193,6 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
         Session::put('current_merchant_id', null);
 
         return $this->currentMerchant();
-    }
-
-    /**
-     * Determine if the given merchant is owned by the user.
-     *
-     * @param  \App\Merchant\Entity  $merchant
-     * @return bool
-     */
-    public function ownsMerchant($merchant)
-    {
-        $merchant = $this->merchants()
-                         ->where('merchant_id', $merchant['id'])
-                         ->where('role','owner')
-                         ->first();
-
-        return is_null($merchant) ? false : true;
     }
 
     public function changePassword($input)
