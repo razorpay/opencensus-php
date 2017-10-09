@@ -636,7 +636,7 @@ final class Route
         'feature_onboarding_fetch_responses'      => ['get',      'onboarding/features/{feature}',        'FeatureController@getOnboardingResponses',                          ],
 
 
-        'feature_onboarding_update'               => ['post',     'onboarding/features/admin/{feature}/responses',                  'FeatureController@updateOnboardingResponses',                         ],
+        'feature_onboarding_update'               => ['put',     'onboarding/features/{feature}',                  'FeatureController@updateOnboardingResponses',                         ],
         'feature_onboarding_fetch_details'      => ['get', 'onboarding/features/all/responses/by/{status}', 'FeatureController@getFeatureActivationRequests'],
         'feature_onboarding_update_status'      => ['put', 'onboarding/features/{feature}/status', 'FeatureController@updateFeatureActivationStatus'],
     ];
