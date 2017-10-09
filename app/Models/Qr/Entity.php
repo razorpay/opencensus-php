@@ -2,13 +2,10 @@
 
 namespace RZP\Models\Qr;
 
-use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    use SoftDeletes;
-
     const ID                    = 'id';
     const PAYMENT_ID            = 'payment_id';
     const VIRTUAL_ACCOUNT_ID    = 'virtual_account_id';
@@ -63,10 +60,17 @@ class Entity extends Base\PublicEntity
     protected $visible = [
         self::ID,
         self::AMOUNT,
+        self::PAYMENT_ID,
+        self::VIRTUAL_ACCOUNT_ID,
+        self::GATEWAY_MERCHANT_ID,
+        self::METHOD,
+        self::VPA,
         self::RRN,
         self::CARD_NUMBER,
         self::CARD_NETWORK,
         self::PROVIDER,
+        self::TRANSACTION_TIME,
+        self::TRANSACTION_DATE,
         self::PROVIDER_REFERENCE_ID,
         self::MERCHANT_REFERENCE,
         self::RRN,

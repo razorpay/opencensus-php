@@ -90,8 +90,6 @@ class Processor extends Base\Core
 
             $qr->virtualAccount()->associate($this->virtualAccount);
 
-            $this->createAndAssociateCard($qr);
-
             $this->repo->saveOrFail($qr);
 
             $this->updateVirtualAccount((int) (100 * $qr->getAmount()));
@@ -146,18 +144,13 @@ class Processor extends Base\Core
     {
         $bharatQrId = $qr->getMerchantReference();
 
-        $bharatQr = $this->repo->bharat_qr->findOrFailPublic($bharatQrId);
+        $bharatQr = $this->repo->bharat_qr->findByPublicId($bharatQrId);
 
         $virtualAccount = $this->repo
                                ->virtual_account
                                ->getActiveVirtualAccountFromBharatQrId($bharatQr->getId());
 
         return $virtualAccount;
-    }
-
-    protected function createAndAssociateCard(Entity $qr)
-    {
-        //Need to create card entity
     }
 
     protected function getLuhnValidCardNumberFromQr(Entity $qr)

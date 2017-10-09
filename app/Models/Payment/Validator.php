@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment;
 
 use App;
+use Route;
 use Cache;
 use Carbon\Carbon;
 use Lib\PhoneBook;
@@ -115,6 +116,11 @@ class Validator extends Base\Validator
 
     protected function validateEmail(array $input)
     {
+        if (Route::currentRouteName() === 'qr_payment_process')
+        {
+            return;
+        }
+
         $allowedPaymentMethods = [
             'aeps',
             Payment\Method::TRANSFER,
@@ -326,6 +332,11 @@ class Validator extends Base\Validator
 
     protected function validateContact($input)
     {
+        if (Route::currentRouteName() === 'qr_payment_process')
+        {
+            return;
+        }
+
         $allowedPaymentMethods = [
             'aeps',
             Payment\Method::TRANSFER,

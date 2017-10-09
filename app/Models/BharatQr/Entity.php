@@ -16,9 +16,7 @@ class Entity extends Base\PublicEntity
     const METHOD                    = 'method';
     const QR_STRING                 = 'qr_string';
 
-    protected static $sign      = 'bhqr';
-
-    protected $primaryKey = self::ID;
+    protected static $sign = 'bhqr';
 
     protected $entity = 'bharat_qr';
 
