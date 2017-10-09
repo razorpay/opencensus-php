@@ -272,6 +272,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::LOCKED) === true);
     }
 
+    public function enableLock()
+    {
+        $this->setAttribute(self::LOCKED, 1);
+    }
+
     public function isSubmitted()
     {
         return ($this->getAttribute(self::SUBMITTED) === true);

@@ -89,6 +89,12 @@ class Activate extends Base\Core
 
         $this->repo->saveOrFail($merchant);
 
+        $merchantDetail = $merchant->merchantDetail;
+
+        $merchantDetail->enableLock();
+
+        $this->repo->saveOrFail($merchantDetail);
+
         $this->trace->info(
             TraceCode::MERCHANT_ACCOUNT_ACTIVATED,
             ['merchant_id' => $merchant->getId()]);
