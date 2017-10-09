@@ -1,4 +1,5 @@
 import { observable } from 'mobx';
+import { notifyError } from 'common/modal';
 
 const defaultFilters = {
   count: 20,
@@ -27,9 +28,12 @@ export default class Collection {
 
     return promise
       .then(({ data }) => {
+        if (!data.success) {
+          throw data.errors[0];
+        }
         this.items.replace(data.data.items);
       })
-      .catch(e => console.error(e))
+      .catch(e => notifyError(e))
       .then(_ => {
         this.pending.set(false);
       });

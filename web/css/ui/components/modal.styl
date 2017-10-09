@@ -1,5 +1,9 @@
 #fixed-container
   position: fixed
+  top: 0
+  right: 0
+  width: 0
+  height: 0
 
 #slider-container
   position: fixed
@@ -48,6 +52,11 @@
   box-shadow: 0 2px 8px 2px rgba(0,0,0,.1)
   padding: 30px
   transition: .3s
+  header
+    margin: -30px -30px 30px
+    padding: 16px 20px
+    border-bottom: 2px solid #eee
+    font-size: 20px
 
 .modal-close, .slider-close
   position: absolute
@@ -63,3 +72,36 @@
 
 .slider-close
   right: 100%
+
+#toast-container
+  position: absolute
+  right: 20px
+  top: 20px
+  display: flex
+  flex-direction: column
+
+.toast
+  white-space: nowrap
+  margin-left: auto
+  display: inline-block
+  max-width: 500px
+  text-overflow: ellipsis
+  overflow: hidden
+  margin-top: 15px
+  padding: 12px 20px
+  background: white
+  transition: .2s
+  box-shadow: 0 2px 8px 2px rgba(0,0,0,.1)
+  border-radius: 3px
+  &.toast-enter, &.toast-exit
+    opacity: 0
+    transform: translateY(-4px) scale(.99)
+  &.success
+    background: #E9F3E6
+    color: #627207
+  &.error
+    background: #FDEBDF
+    color: #94191B
+    &:before
+      content: 'Error: '
+      font-weight: bold

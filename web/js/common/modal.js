@@ -15,6 +15,19 @@ class ModalStore {
 
   openSlider = slider => this.sliders.push(slider);
   closeSlider = _ => this.sliders.clear();
+
+  notify = toast => {
+    var len = this.toasts.push(toast);
+    toast = this.toasts[len - 1];
+    setTimeout(_ => {
+      this.toasts.remove(toast);
+    }, toast.duration || 5000);
+  };
+
+  notifyDone = _ =>
+    this.notify({ message: 'Done!', duration: 1500, className: 'success' });
+  notifySuccess = message => this.notify({ message, className: 'success' });
+  notifyError = message => this.notify({ message, className: 'error' });
 }
 
 const store = new ModalStore();
@@ -50,9 +63,15 @@ export default class ModalContainer extends Component {
         </TransitionGroup>
 
         <TransitionGroup id="toast-container">
-          {/* toasts are removed FIFO, hence the key */}
-          {store.toasts.map((s, index) => (
-            <Toast {...s} key={numToasts - index} />
+          {store.toasts.map(({ className, message }, index) => (
+            <CSSTransition
+              key={index}
+              class={'toast ' + className}
+              classNames="toast"
+              timeout={animObj}
+            >
+              <div>{message}</div>
+            </CSSTransition>
           ))}
         </TransitionGroup>
       </div>
@@ -90,10 +109,13 @@ const Slider = ({ slider }) => (
   </div>
 );
 
-const Toast = ({ component, ...props }) => (
-  <CSSTransition class="toast" classNames="toast" timeout={animObj} {...props}>
-    {component}
-  </CSSTransition>
-);
-
-export const { openModal, closeModal, openSlider, closeSlider } = store;
+export const {
+  openModal,
+  closeModal,
+  openSlider,
+  closeSlider,
+  notify,
+  notifyError,
+  notifySuccess,
+  notifyDone,
+} = store;

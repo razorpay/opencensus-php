@@ -7,10 +7,14 @@ export default class Form extends Component {
   };
 
   render() {
-    let { children, onSubmit, onSuccess, ...props } = this.props;
+    let { children, onSubmit, className, ...props } = this.props;
+
+    if (this.state.pending) {
+      className = ['pending'].concat(className || '').join(' ');
+    }
 
     return (
-      <form onSubmit={::this.onSubmit} {...props}>
+      <form onSubmit={::this.onSubmit} {...props} class={className}>
         {children}
       </form>
     );
@@ -18,33 +22,21 @@ export default class Form extends Component {
 
   onSubmit(e) {
     e.preventDefault();
-    var data = this.serialize(e.target);
 
-    if (this.props.onSubmit) {
-      return this.props.onSubmit(data);
-    }
-
-    if (!e.target.action) {
-      return false;
-    }
-
-    this.setState({
-      pending: true,
-    });
-
-    fetch({
-      route: e.target.getAttribute('action'),
-      data,
-    })
-      .then(this.props.onSuccess)
-      .catch(({ response }) => {
-        console.error(response.data);
-      })
-      .then(() => {
-        this.setState({
-          pending: false,
-        });
+    if (!this.state.pending) {
+      this.setState({
+        pending: true,
       });
+
+      this.props
+        .onSubmit(this.serialize(e.target))
+        .catch(e => notifyError(e.message))
+        .then(() => {
+          this.setState({
+            pending: false,
+          });
+        });
+    }
   }
 
   serialize(form) {
@@ -72,4 +64,15 @@ export default class Form extends Component {
       {}
     );
   }
+}
+
+export function postForm(form) {
+  var el = document.createElement('input');
+  el.name = '_token';
+  el.value = document.querySelector('[name=csrf-token]').content;
+  form.appendChild(el);
+  form.action = '/api/' + form.getAttribute('action');
+  form.enctype = 'multipart/form-data';
+  form.target = '_blank';
+  form.submit();
 }
