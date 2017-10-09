@@ -70,6 +70,7 @@ class SubscriptionCardsTest extends TestCase
         $this->assertGreaterThanOrEqual(1, $response['customer']['tokens']['count']);
         $this->assertEquals($customer['id'], $response['customer']['customer_id']);
         $this->assertEquals(2000, $response['subscription']['amount']);
+        $this->assertEquals(1, $response['subscription']['type']);
         $this->assertTrue($response['options']['remember_customer']);
     }
 
@@ -99,6 +100,7 @@ class SubscriptionCardsTest extends TestCase
         $this->assertGreaterThanOrEqual(1, $response['customer']['tokens']['count']);
         $this->assertArrayNotHasKey('customer_id', $response['customer']);
         $this->assertEquals(2000, $response['subscription']['amount']);
+        $this->assertEquals(1, $response['subscription']['type']);
         $this->assertTrue($response['options']['remember_customer']);
     }
 
@@ -119,6 +121,7 @@ class SubscriptionCardsTest extends TestCase
         $this->assertEquals(1, $response['customer']['tokens']['count']);
         $this->assertEquals('token_10000custgcard', $response['customer']['tokens']['items'][0]['id']);
         $this->assertEquals(2000, $response['subscription']['amount']);
+        $this->assertEquals(1, $response['subscription']['type']);
     }
 
     public function testPreferencesCardChangeGlobalCustomerNoAppToken()
@@ -135,6 +138,7 @@ class SubscriptionCardsTest extends TestCase
 
         $this->assertArrayNotHasKey('customer', $response);
         $this->assertEquals(2000, $response['subscription']['amount']);
+        $this->assertEquals(1, $response['subscription']['type']);
         $this->assertTrue($response['options']['remember_customer']);
     }
 
@@ -955,13 +959,6 @@ class SubscriptionCardsTest extends TestCase
         $response = $this->startTest($requestContent);
 
         return $response;
-    }
-
-    protected function mockSession($appToken = 'capp_1000000custapp')
-    {
-        $data = [ 'test_app_token' => $appToken ];
-
-        $this->session($data);
     }
 
     protected function resetSession()

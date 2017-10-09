@@ -2,17 +2,14 @@
 
 namespace RZP\Models\Merchant;
 
-use RZP\Models\Base\UniqueIdEntity;
-use RZP\Models\FileStore\Storage\AwsS3\Handler;
-use RZP\Models\FileStore\Utility;
-use RZP\Models\Merchant;
+use Config;
 use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\Base;
-use Config;
-use Trace;
-use AWS;
+use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\FileStore\Storage\AwsS3\Handler;
 
 class Logo extends Base\Core
 {

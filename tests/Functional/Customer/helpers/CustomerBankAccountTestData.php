@@ -32,6 +32,7 @@ return [
                 'ifsc'             => 'ICIC0001206',
                 'name'             => 'Test R4zorpay',
                 'account_number'   => '0002020000304030434',
+                'bank_name'        => 'ICICI Bank'
             ]
         ]
     ],

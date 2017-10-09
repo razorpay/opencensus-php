@@ -140,7 +140,7 @@ trait ReconciliationTrait
         $settlementCount = 2,
         $setlAttemptTimestamp = null): Creator
     {
-        $timestamp = $setlAttemptTimestamp ?: Carbon::today("Asia/Kolkata")->timestamp;
+        $timestamp = $setlAttemptTimestamp ?: Carbon::today(Timezone::IST)->timestamp;
 
         // Create merchant
         $merchant = $this->fixtures->create('merchant');

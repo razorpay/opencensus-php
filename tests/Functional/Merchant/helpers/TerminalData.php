@@ -516,4 +516,21 @@ return [
             ]
         ],
     ],
+
+    'testTerminalCheckAutoDisable' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::GATEWAY_ERROR,
+                    'description' => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
+            'gateway_error_code'  => 'GW00154',
+        ],
+    ],
 ];

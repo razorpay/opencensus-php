@@ -208,6 +208,8 @@ class Service extends Base\Service
                 $exception, Trace::CRITICAL, TraceCode::FEATURE_ONBOARDING_RESPONSE_CREATION_FAILED);
         }
 
+        (new Core)->notifyOnboardingResponseCreationOnSlack($feature);
+
         return $saved;
     }
 

@@ -2562,7 +2562,18 @@ trait Authorize
             return;
         }
 
+        $oldStatus = $subscription->getStatus();
+
         $this->captureSubscriptionPayment($subscription, $payment);
+
+        $options = [
+            Subscription\Event::PAYMENT => $payment,
+        ];
+
+        (new Subscription\Core)->triggerSubscriptionAlreadyAuthenticatedNotification(
+                                                                            $subscription,
+                                                                            $oldStatus,
+                                                                            $options);
     }
 
     /**
@@ -2622,6 +2633,8 @@ trait Authorize
     {
         $this->updateSubscriptionToken($subscription, $payment);
 
+        $core = (new Subscription\Core);
+
         //
         // We would have charged the last invoice also.
         // This becomes more or less the same as normal retry success.
@@ -2631,6 +2644,14 @@ trait Authorize
         {
             $this->captureSubscriptionPayment($subscription, $payment);
 
+            $options = [
+                Subscription\Event::PAYMENT         => $payment,
+                Subscription\Event::INVOICE_CHARGED => true,
+                Subscription\Event::REACTIVATED     => true,
+            ];
+
+            $core->triggerSubscriptionNotification($subscription, Subscription\Event::CARD_CHANGED, $options);
+
             return;
         }
 
@@ -2638,6 +2659,11 @@ trait Authorize
         // We need this to fire a webhook later.
         //
         $activated = false;
+
+        $notifyOptions = [
+            Subscription\Event::PAYMENT         => $payment,
+            Subscription\Event::INVOICE_CHARGED => false,
+        ];
 
         $oldStatus = $subscription->getStatus();
 
@@ -2654,15 +2680,19 @@ trait Authorize
             $subscription->resetErrorFields();
 
             $activated = true;
+
+            $notifyOptions[Subscription\Event::REACTIVATED] = true;
         }
 
         $this->refundAuthorizedPayment($payment);
 
         $this->repo->saveOrFail($subscription);
 
+        $core->triggerSubscriptionNotification($subscription, Subscription\Event::CARD_CHANGED, $notifyOptions);
+
         if ($activated === true)
         {
-            (new Subscription\Core)->fireWebhookForStatusUpdate($subscription, Subscription\Status::ACTIVE, $payment);
+            $core->fireWebhookForStatusUpdate($subscription, Subscription\Status::ACTIVE, $payment);
         }
     }
 
@@ -2737,6 +2767,8 @@ trait Authorize
         }
 
         $this->autoRefundAuthTransactionIfApplicable($payment, $subscription);
+
+        (new Subscription\Core)->triggerSubscriptionAuthenticatedNotification($payment, $subscription);
     }
 
     protected function autoRefundAuthTransactionIfApplicable(Payment\Entity $payment, Subscription\Entity $subscription)
@@ -2972,35 +3004,33 @@ trait Authorize
     protected function notifyAuthorized(bool $wasFailed)
     {
         // Trigger notification events for authorization
-        $notifier = new Notify($this->payment);
 
-        $hasInvoiceAndNotSubscription = (
-            ($this->payment->hasInvoice() === true) and
-            ($this->payment->hasSubscription() === false));
-
-        if ($wasFailed)
+        if ($this->payment->hasSubscription() === true)
         {
+            return;
+        }
+
+        $event = Payment\Event::AUTHORIZED;
+
+        if ($wasFailed === true)
+        {
+            $event = Payment\Event::FAILED_TO_AUTHORIZED;
+
             $currentTime = Carbon::now()->getTimestamp();
 
-            // If a payment has been authorized 15 minutes after the creation, we do not send a notification.
-
+            // If a payment has been authorized 15 minutes after the creation, we do notsend a notification.
             if (($this->payment->getCreatedAt() - $currentTime) > self::FAILED_TO_AUTHORIZED_NOTIFY_DURATION)
             {
                 return;
             }
-
-            $trigger = $hasInvoiceAndNotSubscription ?
-                        Payment\Event::INVOICE_PAYMENT_AUTHORIZED :
-                        Payment\Event::FAILED_TO_AUTHORIZED;
         }
-        else
+
+        if ($this->payment->hasInvoice() === true)
         {
-            $trigger = $hasInvoiceAndNotSubscription ?
-                            Payment\Event::INVOICE_PAYMENT_AUTHORIZED :
-                            Payment\Event::AUTHORIZED;
+            $event = Payment\Event::INVOICE_PAYMENT_AUTHORIZED;
         }
 
-        $notifier->trigger($trigger);
+        (new Notify($this->payment))->trigger($event);
     }
 
     protected function notifyIfCardSaved()
@@ -3645,16 +3675,35 @@ trait Authorize
             return false;
         }
 
+        $gateway = $payment->getGateway();
+
+        // Additional check for ICICI debit cards on First data terminal
+        $cardId = $payment->getCardId();
+
+        if (($cardId !== null) and
+            ($gateway === Payment\Gateway::FIRST_DATA))
+        {
+            $card = $payment->card;
+
+            $issuer = $card->getIssuer();
+
+            $type = $card->getType();
+
+            if (($issuer === Card\Issuer::ICIC) and
+                ($type === Card\Type::DEBIT))
+            {
+                return false;
+            }
+        }
+
         // We handle dual and null terminal mode as the default case
         // In the default case, we check if the card network supports
         // purchase or auth+capture. Example. FSS uses Auth and capture
         // for MC and VISA and purchases for RUPAY, DICL, and MAESTRO
-        $gateway = $payment->getGateway();
-
         $networkCode = null;
 
         // If payment method is wallet or net banking.
-        if ($payment->hasCard())
+        if ($cardId !== null)
         {
             $networkCode = $payment->card->getNetworkCode();
         }

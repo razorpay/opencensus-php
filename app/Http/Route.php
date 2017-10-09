@@ -202,7 +202,6 @@ final class Route
         'merchant_activation_migrate'             => ['post',     'merchant/activation/migrate',                    'MerchantController@postMerchantDetailMigrate'                      ],
         'merchant_batches'                        => ['post',     'merchant/{id}/batches',                          'MerchantController@createBatches'                                  ],
         'pricing_create_plan'                     => ['post',     'pricing',                                        'PricingController@postCreatePricingPlan'                           ],
-        'pricing_upload_plan'                     => ['post',     'pricing/upload',                                 'PricingController@postUploadPricingPlan'                           ],
         'pricing_get_plans'                       => ['get',      'pricing',                                        'PricingController@getPricingPlans'                                 ],
         'pricing_get_merchant_plans'              => ['get',      'pricing/merchants',                              'PricingController@getMerchantPricingPlans'                         ],
         'pricing_get_gateway_plans'               => ['get',      'pricing/gateways',                               'PricingController@getGatewayPricingPlans'                          ],
@@ -404,6 +403,10 @@ final class Route
         'subscription_cancel_due'                 => ['post',     'subscriptions/cancel/due',                       'SubscriptionController@postCancelDueSubscriptions'                 ],
         'subscription_create_addon'               => ['post',     'subscriptions/{subscriptionId}/addons',          'SubscriptionController@postAddonForSubscription'                   ],
         'subscription_fetch_due_addons'           => ['get',      'subscriptions/{subscriptionId}/addons/due',      'SubscriptionController@getDueAddonsForSubscription'                ],
+        'subscription_view_live'                  => ['get',      'l/subscriptions/{id}',                           'SubscriptionController@getSubscriptionView'                        ],
+        'subscription_view_test'                  => ['get',      't/subscriptions/{id}',                           'SubscriptionController@getSubscriptionView'                        ],
+        'subscription_view_live_post'             => ['post',     'l/subscriptions/{id}',                           'SubscriptionController@getSubscriptionView'                        ],
+        'subscription_view_test_post'             => ['post',     't/subscriptions/{id}',                           'SubscriptionController@getSubscriptionView'                        ],
         'addon_fetch'                             => ['get',      'addons/{addonId}',                               'SubscriptionController@getAddon'                                   ],
         'addon_fetch_multiple'                    => ['get',      'addons',                                         'SubscriptionController@getAddons'                                  ],
         'addon_delete'                            => ['delete',   'addons/{addonId}',                               'SubscriptionController@deleteAddon'                                ],
@@ -602,8 +605,9 @@ final class Route
 
         // Dispute routes
         'payment_dispute_create'                  => ['post',     'payments/{paymentId}/disputes',                  'DisputeController@create'                                          ],
-
         'dispute_edit'                            => ['patch',    'disputes/{id}',                                  'DisputeController@update'                                          ],
+        'dispute_migrate_adjustments'             => ['post',     'disputes/migrate_old_adjustments',               'DisputeController@migrateOldAdjustments'                                          ],
+
         'merchant_payout'                         => ['post',     'merchant/payout',                                'PayoutController@postMerchantPayout'                               ],
 
         // Settings routes
@@ -873,7 +877,6 @@ final class Route
         'get_config_keys',
         'key_fetch_by_id',
         'key_fetch_multiple',
-        'pricing_upload_plan',
         'pricing_get_plans',
         'pricing_get_merchant_plans',
         'pricing_get_gateway_plans',
@@ -980,7 +983,6 @@ final class Route
         'admin_forgot_password',
         'admin_reset_password',
         'merchant_activation_update',
-        'merchant_activation_files',
         'admin_edit_app_auth',
         'currency_update_rates',
         'currency_fetch_rates',
@@ -1028,6 +1030,7 @@ final class Route
         'mock_generate_reconciliation',
         'payment_dispute_create',
         'dispute_edit',
+        'dispute_migrate_adjustments',
         'gratis_postpaid_transactions',
         'virtual_account_refund_excess',
         'risk_create',
@@ -1204,6 +1207,7 @@ final class Route
         'merchant_get_terminals',
         'merchant_invoice_add_bulk',
         'setl_retry',
+        'merchant_activation_files',
         'merchant_batches',
     ];
 
@@ -1336,6 +1340,7 @@ final class Route
         'settings_upsert'                  => Permission::EDIT_WALLET_CONFIG,
         'settings_delete'                  => Permission::EDIT_WALLET_CONFIG,
         'merchant_analytics'               => '*',
+        'merchant_activation_files'        => '*',
     ];
 
     public static $direct = [
@@ -1349,6 +1354,10 @@ final class Route
         'invoice_view_test',
         'invoice_view_live_post',
         'invoice_view_test_post',
+        'subscription_view_live',
+        'subscription_view_test',
+        'subscription_view_live_post',
+        'subscription_view_test_post',
         'sms_callback',
         'checkout_public',
         'mock_hdfc_3dsecure',

@@ -17,7 +17,7 @@ class IrctcSettlement extends Base
         $paymentProcessor = (new PaymentProcessor($payment->merchant));
 
         $params = [
-            Payment\Entity::AMOUNT => $payment->getAmount(),
+            Payment\Entity::AMOUNT   => $payment->getAmount(),
             Payment\Entity::CURRENCY => $payment->getCurrency()
         ];
 
@@ -52,5 +52,11 @@ class IrctcSettlement extends Base
         }
 
         $this->batch->setProcessedAmount($processedAmount);
+    }
+
+    protected function sendProcessedMail()
+    {
+        // Don't send an email
+        return;
     }
 }

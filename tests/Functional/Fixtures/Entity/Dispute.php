@@ -37,9 +37,29 @@ class Dispute extends Base
         // Create a transaction only when there's a deduction required
         if ($dispute->getDeductAtOnset() === true)
         {
-            $txn = $this->createTransactionOnDispute($dispute);
+            $txn = $this->fixtures->create(
+                'transaction',
+                [
+                    'merchant_id' => $dispute->getMerchantId(),
+                    'amount'      => $dispute->getAmount(),
+                    'debit'       => $dispute->getAmount(),
+                    'credit'      => 0
+                ]
+            );
 
             $txn->setAttribute(Transaction::SETTLED_AT, $dispute->getCreatedAt());
+            $txn->setAttribute(Transaction::TYPE, 'adjustment');
+
+            $adj = $this->fixtures->create(
+                'adjustment',
+                [
+                    'transaction_id' => $txn->getId(),
+                    'entity_type'    => 'dispute',
+                    'entity_id'      => $dispute->getId(),
+                    'amount'         => 0 - $dispute->getAmount(),
+                ]);
+
+            $txn->setAttribute(Transaction::ENTITY_ID, $adj->getId());
 
             $txn->saveOrFail();
         }

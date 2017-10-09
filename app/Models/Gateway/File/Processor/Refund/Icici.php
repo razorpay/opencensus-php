@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Models\Payment;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\FileStore;
+use RZP\Constants\Timezone;
 use RZP\Models\Gateway\File\Processor;
 
 class Icici extends Processor\Base
@@ -26,7 +27,7 @@ class Icici extends Processor\Base
         foreach ($this->data as $index => $row)
         {
             $date = Carbon::createFromTimestamp(
-                $row['payment']['created_at'], 'Asia/Kolkata')->format('jS F Y');
+                $row['payment']['created_at'], Timezone::IST)->format('jS F Y');
 
             $formattedData[] = [
                 'Sr No'                 => $index + 1,
@@ -61,7 +62,7 @@ class Icici extends Processor\Base
             return $carry;
         });
 
-        $today = Carbon::now('Asia/Kolkata')->format('jS F Y');
+        $today = Carbon::now(Timezone::IST)->format('jS F Y');
 
         $mailData = [
             'file_name'  => $file->getLocation(),

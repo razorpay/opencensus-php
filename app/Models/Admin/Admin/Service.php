@@ -65,7 +65,8 @@ class Service extends Base\Service
         try
         {
             $authPolicy = new AuthPolicy\Service;
-            $authPolicy->validateLogin($admin, $input['password']);
+
+            $authPolicy->validateBeforeLogin($admin);
         }
         catch (Exception\RecoverableException $ex)
         {
@@ -76,7 +77,7 @@ class Service extends Base\Service
         {
             $data = $this->generateLoginToken($admin);
 
-            $authPolicy->validateLogin($admin, $input['password'], 'after');
+            $authPolicy->validateAfterLogin($admin);
 
             $this->fireAdminAction($admin, Action::LOGIN);
 
@@ -174,16 +175,16 @@ class Service extends Base\Service
 
     public function resetPassword(string $orgId, array $input)
     {
-        $validator = new Validator();
-
         $org = $this->repo->org->findByPublicId($orgId);
 
         $input[Org\Entity::AUTH_TYPE] = $org->getAuthType();
 
-        $validator->validateInput('reset', $input);
-
         // Get admin
         $admin = $this->getAdminFromEmail($orgId, $input['email']);
+
+        $validator = new Validator($admin);
+
+        $validator->validateInput('reset', $input);
 
         $key = $this->getCacheKeyForResetToken($org->getId(), $admin->getId());
 

@@ -13,9 +13,13 @@ use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Models\Invitation;
+use RZP\Models\Merchant\Detail;
 use Conner\Tagging\Taggable;
 use RZP\Exception\LogicException;
 
+/**
+ * @property Detail\Entity $merchantDetail
+ */
 class Entity extends Base\PublicEntity
 {
     use Taggable;
@@ -289,7 +293,7 @@ class Entity extends Base\PublicEntity
 
     protected function generateInvoiceCode($input)
     {
-        $id = $this->getAttribute(self::ID);
+        $id = $input[self::ID];
 
         $first8 = substr($id, 0, 8);
 

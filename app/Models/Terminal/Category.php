@@ -88,20 +88,6 @@ class Category
 
 
     /**
-     * IFSC of banks to be disabled for netbanking of a category
-     * This information can be moved to the categories if there
-     * are enough cases of this nature.
-     **/
-    const DISABLED = [
-        Method::NETBANKING => [
-            self::CRYPTOCURRENCY => [
-                IFSC::HDFC,
-                IFSC::ICIC,
-            ],
-        ],
-    ];
-
-    /**
      * By default Check for the name that is mentioned as is.
      * On Adding a new Key, a default should mandatorily be present
      * If it is renamed, then the new name that is mentioned will be

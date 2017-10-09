@@ -123,20 +123,35 @@ class Constants
     public static $visibleFeaturesMap = [
         self::NOFLASHCHECKOUT  => [
             'feature'      => self::NOFLASHCHECKOUT,
-            'display_name' => 'No Flash Checkout'
+            'display_name' => 'No Flash Checkout',
+            'documentation'=> ''
         ],
         self::MARKETPLACE      => [
             'feature'      => self::MARKETPLACE,
-            'display_name' => 'Marketplace'
+            'display_name' => 'Route',
+            'documentation'=> 'route'
         ],
         self::SUBSCRIPTIONS    => [
             'feature'      => self::SUBSCRIPTIONS,
-            'display_name' => 'Subscriptions'
+            'display_name' => 'Subscriptions',
+            'documentation'=> 'subscriptions'
         ],
         self::VIRTUAL_ACCOUNTS => [
             'feature'      => self::VIRTUAL_ACCOUNTS,
-            'display_name' => 'Virtual accounts'
+            'display_name' => 'Smart Collect',
+            'documentation'=> 'smart-collect'
         ],
+    ];
+
+    /*
+     * $notifyFeatures should be a subset of the visible features.
+     * If any of these features are enabled on live mode, the user
+     * will be notified through an email.
+     */
+    public static $notifyFeatures = [
+        self::MARKETPLACE,
+        self::SUBSCRIPTIONS,
+        self::VIRTUAL_ACCOUNTS
     ];
 
     /**

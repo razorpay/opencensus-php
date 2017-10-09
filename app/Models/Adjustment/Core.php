@@ -2,14 +2,15 @@
 
 namespace RZP\Models\Adjustment;
 
-use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Models\Base;
-use RZP\Models\Adjustment;
+use RZP\Models\Dispute;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\Invoice as MerchantInvoice;
+use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
-use RZP\Trace\TraceCode;
+use RZP\Models\Merchant\Invoice as MerchantInvoice;
+use RZP\Exception\BadRequestValidationFailureException;
 
 class Core extends Base\Core
 {
@@ -69,6 +70,24 @@ class Core extends Base\Core
 
             return $adjustment;
         });
+
+        return $adjustment;
+    }
+
+    public function createDisputeAdjustment(array $input, Dispute\Entity $dispute): Entity
+    {
+        $this->trace->info(
+            TraceCode::DISPUTE_ADJUSTMENT_CREATE_REQUEST,
+            [
+                'input'       => $input,
+                'merchant_id' => $dispute->getMerchantId()
+            ]);
+
+        $adjustment = $this->createAdjustment($input, $dispute->merchant);
+
+        $adjustment->entity()->associate($dispute);
+
+        $this->repo->saveOrFail($adjustment);
 
         return $adjustment;
     }

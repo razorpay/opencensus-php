@@ -4,10 +4,17 @@ namespace RZP\Models\VirtualAccount;
 
 use RZP\Models\Base;
 use RZP\Models\Customer;
+use RZP\Models\BankAccount;
+use RZP\Models\Merchant;
 use RZP\Constants\Entity as Constants;
 use RZP\Models\Base\Traits\NotesTrait;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property Merchant\Entity     $merchant
+ * @property Customer\Entity     $customer
+ * @property BankAccount\Entity  $bankAccount
+ */
 class Entity extends Base\PublicEntity
 {
     use SoftDeletes;

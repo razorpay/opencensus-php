@@ -197,6 +197,7 @@ class Core extends Base\Core
             $methods->setOlamoney(true);
             $methods->setFreecharge(true);
             $methods->setAirtelmoney(true);
+            $methods->setBankTransfer(true);
             // Initializing Disabled bank with empty array
             $methods->setDisabledBanks([]);
         }
@@ -208,7 +209,7 @@ class Core extends Base\Core
             //
             $methods->setNetbanking(false);
             $methods->setCreditCard(false);
-            $methods->setCreditCard(false);
+            $methods->setDebitCard(false);
             $methods->setUpi(false);
         }
 

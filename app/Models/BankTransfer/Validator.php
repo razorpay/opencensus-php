@@ -9,12 +9,17 @@ use RZP\Models\Payment;
 
 class Validator extends Base\Validator
 {
+    /**
+     * @var Entity
+     */
+    protected $entity;
+
     const IFSC_LENGTH = 11;
 
     protected static $createRules = [
         Entity::PAYER_NAME     => 'sometimes|string|max:100',
-        Entity::PAYER_ACCOUNT  => 'required|string|max:20',
-        Entity::PAYER_IFSC     => 'required|string',
+        Entity::PAYER_ACCOUNT  => 'sometimes|string|max:20',
+        Entity::PAYER_IFSC     => 'sometimes|string',
         Entity::PAYEE_ACCOUNT  => 'required|string|max:20',
         Entity::PAYEE_IFSC     => 'required|string|size:'.self::IFSC_LENGTH,
         Entity::MODE           => 'required|custom',
@@ -52,6 +57,18 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validatePaymentForRefund(Payment\Entity $payment)
+    {
+        $bankTransfer = $payment->bankTransfer;
+
+        if (empty($bankTransfer->getPayerAccount()) === true)
+        {
+            throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
+                    $bankTransfer);
+        }
+    }
+
     public function validateRefundIsAllowed()
     {
         $bankTransfer = $this->entity;
@@ -59,9 +76,16 @@ class Validator extends Base\Validator
         // Refunds currently not permitted for IMPS payments
         if ($bankTransfer->getMode() === Mode::IMPS)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
-                $bankTransfer);
+            $ifsc = $bankTransfer->getPayerIfsc();
+
+            $bankCode = substr($ifsc, 0, 3);
+
+            if (BankCodes::hasIfscMapping($bankCode) === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
+                    $bankTransfer);
+            }
         }
     }
 }

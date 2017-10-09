@@ -8,19 +8,26 @@ use RZP\Constants\Timezone;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
+
 use RZP\Models\Base;
 use RZP\Models\Plan;
+use RZP\Models\Item;
 use RZP\Models\Invoice;
-use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Models\Customer;
 use RZP\Models\Schedule\Task;
+use RZP\Models\Customer\Token;
 use RZP\Models\Schedule\Anchor;
 use RZP\Models\Base\Traits\NotesTrait;
 
 /**
- * @property Task\Entity        $task
- * @property Merchant\Entity    $merchant
+ * @property Invoice\Entity     $invoice
  * @property Customer\Entity    $customer
+ * @property Plan\Entity        $plan
+ * @property Item\Entity        $item
+ * @property Merchant\Entity    $merchant
+ * @property Token\Entity       $token
+ * @property Task\Entity        $task
  */
 class Entity extends Base\PublicEntity
 {
@@ -73,6 +80,11 @@ class Entity extends Base\PublicEntity
     const CUSTOMER_EMAIL = 'customer_email';
 
     /**
+     * Used in mails for card update links
+     */
+    const HOSTED_URL = 'hosted_url';
+
+    /**
      * We throw exceptions in the following cases
      * - In preferences, if the subscription has been authenticated and card_change = false in the input.
      * - In preferences, if card_change = true in the input and it's not card change status.
@@ -107,6 +119,7 @@ class Entity extends Base\PublicEntity
         self::TOKEN_ID              => null,
         self::START_AT              => null,
         self::END_AT                => null,
+        self::CUSTOMER_NOTIFY       => true,
     ];
 
     protected static $generators = [
@@ -172,7 +185,6 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         // self::TOKEN_ID,
         self::PLAN_ID,
-        self::CHARGE_AT,
         // Later, we will come up with a proper structure to show
         // fields based on proper auth structure.
         // TODO: Remove this when the above is implemented
@@ -221,6 +233,26 @@ class Entity extends Base\PublicEntity
     public function getChargeAt()
     {
         return $this->getAttribute(self::CHARGE_AT);
+    }
+
+    public function getChargeAtAttribute()
+    {
+        $chargeAt = null;
+
+        //
+        // If start_at is null, it means that subscription is still in
+        // created state and is of type `immediate`. If the type is immediate,
+        // charge_at should be null, since we don't know when to charge.
+        // But, task sets a default value to `next_run_at` via modifier.
+        //
+        if (($this->isCancelled() === false) and
+            ($this->isCompleted() === false) and
+            ($this->getStartAt() !== null))
+        {
+            $chargeAt = $this->task->getNextRunAt();
+        }
+
+        return $chargeAt;
     }
 
     public function getStartAt()
@@ -299,9 +331,19 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CANCELLED_AT);
     }
 
+    public function getCancelAt()
+    {
+        return $this->getAttribute(self::CANCEL_AT);
+    }
+
     public function getEndedAt()
     {
         return $this->getAttribute(self::ENDED_AT);
+    }
+
+    public function getCustomerNotify()
+    {
+        return $this->getAttribute(self::CUSTOMER_NOTIFY);
     }
 
     public function getAuthAttempts()
@@ -447,8 +489,8 @@ class Entity extends Base\PublicEntity
      * -         AND
      * - Subscription is not in terminal/halted state
      *
-     * @param  Invoice\Entity $invoice [description]
-     * @return [type]                  [description]
+     * @param  Invoice\Entity $invoice Invoice being charged
+     * @return boolean                 Flag to indicate that subscriptions fields are to be updated
      */
     public function shouldUpdateWithInvoiceCharge(Invoice\Entity $invoice)
     {
@@ -478,7 +520,7 @@ class Entity extends Base\PublicEntity
      * @param  Invoice\Entity $invoice
      * @return boolean
      */
-    protected function isLatestInvoiceForSubscription(Invoice\Entity $invoice)
+    public function isLatestInvoiceForSubscription(Invoice\Entity $invoice)
     {
         $isLatest = false;
 
@@ -517,6 +559,20 @@ class Entity extends Base\PublicEntity
         $hasGlobalCustomer = $localCustomer->hasGlobalCustomer();
 
         return ($hasGlobalCustomer === false);
+    }
+
+    /**
+     * Returns the path component of Dashboard view url.
+     *
+     * For subscription (New): #/app/subscriptions/{public-id}
+     *
+     * @return string
+     */
+    public function getDashboardPath(): string
+    {
+        $path = '#/app/subscriptions/' . $this->getPublicId();
+
+        return $path;
     }
 
     // --------------------- END GETTERS ---------------------
@@ -763,26 +819,6 @@ class Entity extends Base\PublicEntity
         $customerId = $this->getAttribute(self::CUSTOMER_ID);
 
         $array[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
-    }
-
-    public function setPublicChargeAtAttribute(array & $array)
-    {
-        $chargeAt = null;
-
-        //
-        // If start_at is null, it means that subscription is still in
-        // created state and is of type `immediate`. If the type is immediate,
-        // charge_at should be null, since we don't know when to charge.
-        // But, task sets a default value to `next_run_at` via modifier.
-        //
-        if (($this->isCancelled() === false) and
-            ($this->isCompleted() === false) and
-            ($this->getStartAt() !== null))
-        {
-            $chargeAt = $this->task->getNextRunAt();
-        }
-
-        $array[self::CHARGE_AT] = $chargeAt;
     }
 
     // public function setPublicTokenIdAttribute(array & $array)

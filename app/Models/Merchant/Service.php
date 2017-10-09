@@ -137,6 +137,13 @@ class Service extends Base\Service
 
     public function edit($id, array $input)
     {
+        $this->trace->info(
+            TraceCode::MERCHANT_EDIT,
+            [
+                'merchant_id' => $id,
+                'input'       => $input,
+            ]);
+
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         if (empty($input[Entity::GROUPS]) === false)
@@ -324,6 +331,13 @@ class Service extends Base\Service
 
     public function assignPricingPlan($id, $input)
     {
+        $this->trace->info(
+            TraceCode::MERCHANT_PRICING_PLAN_ASSIGN_REQUEST,
+            [
+                'merchant_id' => $id,
+                'input'       => $input
+            ]);
+
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         if (isset($input['pricing_plan_id']) === false)
@@ -458,6 +472,12 @@ class Service extends Base\Service
 
     public function activate($id)
     {
+        $this->trace->info(
+            TraceCode::MERCHANT_ACTIVATE_REQUEST,
+            [
+                'merchant_id' => $id,
+            ]);
+
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $act = new Activate($this->app);
@@ -500,6 +520,12 @@ class Service extends Base\Service
 
     public function liveEnable($id)
     {
+        $this->trace->info(
+            TraceCode::MERCHANT_LIVE_ENABLE_REQUEST,
+            [
+                'merchant_id' => $id,
+            ]);
+
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         if ($merchant->isActivated() === false)
@@ -538,6 +564,11 @@ class Service extends Base\Service
 
     public function liveDisable($id)
     {
+        $this->trace->info(
+            TraceCode::MERCHANT_LIVE_DISABLE_REQUEST,
+            [
+                'merchant_id' => $id,
+            ]);
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         if ($merchant->isActivated() === false)
@@ -570,6 +601,13 @@ class Service extends Base\Service
 
     public function action($id, array $input)
     {
+        $this->trace->info(
+            TraceCode::MERCHANT_EDIT_ACTION,
+            [
+                'merchant_id' => $id,
+                'input'       => $input,
+            ]);
+
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         $merchant = (new Merchant\Core)->action($merchant, $input);

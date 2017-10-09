@@ -65,6 +65,20 @@ class Error extends Support\Fluent
         $this->attributes[$key] = $value;
     }
 
+
+    public function isInvalidTerminalError()
+    {
+        $terminalRelatedErrors = [
+            ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL,
+            ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_ID,
+            ErrorCode::GATEWAY_ERROR_INVALID_TERMINAL_SECRET,
+        ];
+
+        $internalCode = $this->getInternalErrorCode();
+
+        return in_array($internalCode, $terminalRelatedErrors, true);
+    }
+
     protected function setInternalErrorCode($code)
     {
         self::checkErrorCode($code);

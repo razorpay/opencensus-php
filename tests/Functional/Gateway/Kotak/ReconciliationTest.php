@@ -304,7 +304,7 @@ class ReconciliationTest extends TestCase
         Carbon::setTestNow($currentTime);
 
         $txtFile2 = $this->createSettlementsAndSettlementFile(
-            2, Carbon::today("Asia/Kolkata")->subDays(5)->timestamp);
+            2, Carbon::today(Timezone::IST)->subDays(5)->timestamp);
 
         $request = [
             'url' => '/settlements/reconcile/test',

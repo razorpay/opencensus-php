@@ -114,6 +114,14 @@ class Validator extends Base\Validator
         Entity::PASSWORD
     ];
 
+    protected static $changeValidators = [
+        Entity::PASSWORD
+    ];
+
+    protected static $resetValidators = [
+        Entity::PASSWORD
+    ];
+
     public $isOrgSpecificValidationSupported = true;
 
     public function validateCredentials(array $input)
@@ -140,7 +148,7 @@ class Validator extends Base\Validator
         {
             $admin = $this->entity;
 
-            (new AuthPolicy\Service)->validate($admin, $input[Entity::PASSWORD]);
+            (new AuthPolicy\Service)->validatePasswordCreate($admin, ['password' => $input[Entity::PASSWORD]]);
         }
     }
 

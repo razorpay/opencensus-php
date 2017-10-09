@@ -47,7 +47,7 @@ class Repository extends Base\Repository
         Entity::SUBSCRIPTION_ID   => 'sometimes|string|min:14|max:18',
         EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
         EsRepository::SEARCH_HITS => 'sometimes|boolean',
-        self::EXPAND . '.*'       => 'string|in:payments,payments.card',
+        self::EXPAND . '.*'       => 'string|in:payments,payments.card,user',
     ];
 
     protected $appFetchParamRules = [

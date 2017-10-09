@@ -23,10 +23,10 @@ trait Capture
     /**
      * Captures a previous auth payment
      *
-     * @param  string  $id  Id of payment to be captured
-     * @param  array $input
+     * @param Payment\Entity $payment to be captured
+     * @param  array         $input
      *
-     * @return Payment\Entity   Payment\Entity object
+     * @return Payment\Entity Payment\Entity object
      */
     public function capture(Payment\Entity $payment, array $input = array())
     {
@@ -500,8 +500,6 @@ trait Capture
      * Fires multiple events after payment is captured:
      * - api.order.paid
      * - api.invoice.paid
-     *
-     * @return null
      */
     protected function triggerPaymentCapturedEvents()
     {
@@ -514,14 +512,20 @@ trait Capture
 
     /**
      * Triggers notifications after payment is captured.
-     *
-     * @return null
      */
     protected function notifyPaymentCaptured()
     {
-        $hasInvoice = $this->payment->hasInvoice();
+        if ($this->payment->hasSubscription() === true)
+        {
+            return;
+        }
 
-        $event = $hasInvoice ? Payment\Event::INVOICE_PAYMENT_CAPTURED : Payment\Event::CAPTURED;
+        $event = Payment\Event::CAPTURED;
+
+        if ($this->payment->hasInvoice() === true)
+        {
+            $event = Payment\Event::INVOICE_PAYMENT_CAPTURED;
+        }
 
         (new Notify($this->payment))->trigger($event);
     }

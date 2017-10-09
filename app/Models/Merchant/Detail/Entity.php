@@ -3,7 +3,15 @@
 namespace RZP\Models\Merchant\Detail;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 
+/**
+ * Class Entity
+ *
+ * @property Merchant\Entity $merchant
+ *
+ * @package RZP\Models\Merchant\Detail
+ */
 class Entity extends Base\PublicEntity
 {
     const MERCHANT_ID                       =      'merchant_id';

@@ -273,6 +273,9 @@ class Generator extends Base\Core
         //
         $invoice->generateId();
 
+        // Capture dashboard user id from dashboard headers if applies
+        $this->setInvoiceUserIdFromDashboardHeadersIfAvailable($invoice);
+
         $this->invoice = $invoice;
     }
 
@@ -294,6 +297,16 @@ class Generator extends Base\Core
         $this->createAndAssociateOrderForInvoice();
 
         $this->setShortUrl();
+    }
+
+    protected function setInvoiceUserIdFromDashboardHeadersIfAvailable(Entity $invoice)
+    {
+        $headers = $this->app['basicauth']->getDashboardHeaders();
+
+        if (array_key_exists(Entity::USER_ID, $headers) === true)
+        {
+            $invoice->setUserId($headers[Entity::USER_ID]);
+        }
     }
 
     protected function setShortUrl()
@@ -359,6 +372,8 @@ class Generator extends Base\Core
                                     $partialPayment);
 
         $this->invoice->order()->associate($order);
+
+        assertTrue($this->invoice->getAmount() === $order->getAmount());
     }
 
     /**

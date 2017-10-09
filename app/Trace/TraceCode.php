@@ -189,6 +189,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const TERMINAL_EDIT                                 = 'TERMINAL_EDIT';
     const TERMINAL_ENABLE                               = 'TERMINAL_ENABLE';
     const TERMINAL_DISABLE                              = 'TERMINAL_DISABLE';
+    const TERMINAL_AUTO_DISABLE                         = 'TERMINAL_AUTO_DISABLE';
     const TERMINAL_FAIL_SORT                            = 'TERMINAL_FAIL_SORT';
     const TERMINAL_BOOST_INVALID                        = 'TERMINAL_BOOST_INVALID';
     const TERMINAL_USED_BEFORE                          = 'TERMINAL_USED_BEFORE';
@@ -230,6 +231,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const INVOICE_BATCH_ISSUE_JOB_HANDLED               = 'INVOICE_BATCH_ISSUE_JOB_HANDLED';
     const INVOICE_BATCH_ISSUE_JOB_ERROR                 = 'INVOICE_BATCH_ISSUE_JOB_ERROR';
 
+    const SUBSCRIPTION_VIEW_DATA_SERIALIZER_RESPONSE    = 'SUBSCRIPTION_VIEW_DATA_SERIALIZER_RESPONSE';
     const SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_RECEIVED    = 'SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_RECEIVED';
     const SUBSCRIPTION_PAYMENT_FAILED                   = 'SUBSCRIPTION_PAYMENT_FAILED';
     const SUBSCRIPTION_PAYMENT_CAPTURE_FAILED           = 'SUBSCRIPTION_PAYMENT_CAPTURE_FAILED';
@@ -262,6 +264,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_SENT        = 'SUBSCRIPTION_CHARGE_QUEUE_PAYLOAD_SENT';
     const SUBSCRIPTION_TEST_CHARGE_REQUEST              = 'SUBSCRIPTION_TEST_CHARGE_REQUEST';
     const SUBSCRIPTION_CREATE_REQUEST                   = 'SUBSCRIPTION_CREATE_REQUEST';
+    const SUBSCRIPTION_NOTIFY_FAILED                    = 'SUBSCRIPTION_NOTIFY_FAILED';
     const PLAN_CREATE_REQUEST                           = 'PLAN_CREATE_REQUEST';
     const ADDON_CREATE_REQUEST                          = 'ADDON_CREATE_REQUEST';
     const ADDON_DELETE_REQUEST                          = 'ADDON_DELETE_REQUEST';
@@ -360,6 +363,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     //Adjustments
     const ADJUSTMENT_CREATE_REQUEST                     = 'ADJUSTMENT_CREATE_REQUEST';
     const FEE_ADJUSTMENT_CREATE_REQUEST                 = 'FEE_ADJUSTMENT_CREATE_REQUEST';
+    const DISPUTE_ADJUSTMENT_CREATE_REQUEST             = 'DISPUTE_ADJUSTMENT_CREATE_REQUEST';
     const ADJUSTMENT_CREATE_SUCCESS                     = 'ADJUSTMENT_CREATE_SUCCESS';
 
     const VERIFY_LOCKED_PAYMENTS                        = 'VERIFY_LOCKED_PAYMENTS';
@@ -458,6 +462,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const GATEWAY_CHECKSUM_VERIFY_REQUEST           = 'GATEWAY_CHECKSUM_VERIFY_REQUEST';
     const GATEWAY_CHECKSUM_VERIFY_FAILED            = 'GATEWAY_CHECKSUM_VERIFY_FAILED';
     const GATEWAY_SOAP_REQUEST                      = 'GATEWAY_SOAP_REQUEST';
+    const GATEWAY_SOAP_ERROR                        = 'GATEWAY_SOAP_ERROR';
     const GATEWAY_SOAP_FAULT                        = 'GATEWAY_SOAP_FAULT';
     const GATEWAY_REQUEST_TIMEOUT                   = 'GATEWAY_REQUEST_TIMEOUT';
     const GATEWAY_INVALID_PARES_SIGNATURE_ERROR     = 'GATEWAY_INVALID_PARES_SIGNATURE_ERROR';
@@ -539,6 +544,7 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const BANK_TRANSFER_NOTIFY_REQUEST              = 'BANK_TRANSFER_NOTIFY_REQUEST';
     const BANK_TRANSFER_UNEXPECTED_NOTIFY           = 'BANK_TRANSFER_UNEXPECTED_NOTIFY';
     const BANK_TRANSFER_PROVIDER_VALIDATION_FAILED  = 'BANK_TRANSFER_PROVIDER_VALIDATION_FAILED';
+    const BANK_TRANSFER_IFSC_CODE_MISSING           = 'BANK_TRANSFER_IFSC_CODE_MISSING';
 
     const MERCHANT_BENEFICIARY_FILE_GENERATE        = 'MERCHANT_BENEFICIARY_FILE_GENERATE';
     const MERCHANT_REPORT_GENERATION                = 'MERCHANT_REPORT_GENERATION';
@@ -549,9 +555,14 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const MERCHANT_LINKED_ACCOUNT_ACTIVATED         = 'MERCHANT_LINKED_ACCOUNT_ACTIVATED';
     const MERCHANT_TERMINALS                        = 'MERCHANT_TERMINALS';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
+    const MERCHANT_EDIT_ACTION                      = 'MERCHANT_EDIT_ACTION';
     const MERCHANT_ORG_NOT_GIVEN                    = 'MERCHANT_ORG_NOT_GIVEN';
     const MERCHANT_SAVE_ACTIVATION_DETAILS          = 'MERCHANT_SAVE_ACTIVATION_DETAILS';
     const MERCHANT_TAGS_ADD                         = 'MERCHANT_TAGS_ADD';
+    const MERCHANT_PRICING_PLAN_ASSIGN_REQUEST      = 'MERCHANT_PRICING_PLAN_ASSIGN_REQUEST';
+    const MERCHANT_ACTIVATE_REQUEST                 = 'MERCHANT_ACTIVATE_REQUEST';
+    const MERCHANT_LIVE_ENABLE_REQUEST              = 'MERCHANT_LIVE_ENABLE_REQUEST';
+    const MERCHANT_LIVE_DISABLE_REQUEST             = 'MERCHANT_LIVE_DISABLE_REQUEST';
 
     const MERCHANT_BALANCE_DEBIT_FAILURE            = 'MERCHANT_BALANCE_DEBIT_FAILURE';
 
@@ -831,6 +842,9 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     const DISPUTE_REVERSAL_REQUEST                      = 'DISPUTE_REVERSAL_REQUEST';
     const DISPUTE_REVERSAL_SUCCESS                      = 'DISPUTE_REVERSAL_SUCCESS';
     const DISPUTE_TRANSFER_SUCCESS                      = 'DISPUTE_TRANSFER_SUCCESS';
+    const DISPUTE_ADJUSTMENT_MIGRATE_REQUEST            = 'DISPUTE_ADJUSTMENT_MIGRATE_REQUEST';
+    const DISPUTE_ADJUSTMENT_MIGRATE_ERROR              = 'DISPUTE_ADJUSTMENT_MIGRATE_ERROR';
+
     const GRATIS_TO_POSTPAID_INPUT                      = 'GRATIS_TO_POSTPAID_INPUT';
     const GRATIS_TO_POSTPAID_FAILED                     = 'GRATIS_TO_POSTPAID_FAILED';
     const GRATIS_TO_POSTPAID_RESPONSE                   = 'GRATIS_TO_POSTPAID_RESPONSE';
@@ -863,10 +877,12 @@ class TraceCode extends \Razorpay\Trace\TraceCode
     // Trace code for \Models\Settings
     const SETTINGS_UPSERT_REQUEST                       = 'SETTINGS_UPSERT_REQUEST';
     const SETTINGS_DELETE_REQUEST                       = 'SETTINGS_DELETE_REQUEST';
-  
-    // Feature Onboarding trace codes
+
+    // Merchant feature trace codes
     const FEATURE_ONBOARDING_RESPONSE_REQUEST           = 'FEATURE_ONBOARDING_RESPONSE_REQUEST';
     const FEATURE_ONBOARDING_RESPONSE_CREATION_FAILED   = 'FEATURE_ONBOARDING_RESPONSE_CREATION_FAILED';
+    const FEATURE_ENABLED_MERCHANT_NOTIFIED             = 'FEATURE_ENABLED_MERCHANT_NOTIFIED';
+    const FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED         = 'FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

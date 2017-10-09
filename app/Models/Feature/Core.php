@@ -2,14 +2,22 @@
 
 namespace RZP\Models\Feature;
 
+use Mail;
 use Config;
 
 use RZP\Models\Base;
+use RZP\Constants\Mode;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\PublicEntity;
+use RZP\Mail\Merchant\FeatureEnabled;
+use RZP\Models\Merchant\SlackActions;
+use RZP\Models\Merchant\Notify as NotifyTrait;
 
 class Core extends Base\Core
 {
+    use NotifyTrait;
+
     /**
      * Create feature
      *
@@ -42,7 +50,11 @@ class Core extends Base\Core
             $assignedFeatureNames,
             $shouldSync);
 
-        $this->notifyOnSlack($feature);
+        $this->notifyFeatureUpdateOnSlack($feature);
+
+        $merchantId = $input['entity_id'];
+
+        $this->notifyMerchantIfApplicable($merchantId, $feature, $shouldSync);
 
         return $feature;
     }
@@ -74,7 +86,7 @@ class Core extends Base\Core
 
         $this->repo->feature->deleteAndSyncIfApplicableOrFail($feature, $shouldSync);
 
-        $this->notifyOnSlack($feature, true);
+        $this->notifyFeatureUpdateOnSlack($feature, true);
     }
 
     /**
@@ -83,7 +95,7 @@ class Core extends Base\Core
      * @param Entity $feature
      * @param bool   $featureDeleted
      */
-    protected function notifyOnSlack(Entity $feature, bool $featureDeleted = false)
+    protected function notifyFeatureUpdateOnSlack(Entity $feature, bool $featureDeleted = false)
     {
         $message = $feature->getDashboardEntityLinkForSlack($feature->getName());
 
@@ -110,4 +122,90 @@ class Core extends Base\Core
             ]
         );
     }
+
+    /**
+     * Notifies slack about the new onboarding responses submitted
+     *
+     * @param string $productName
+     */
+    public function notifyOnboardingResponseCreationOnSlack(string $productName)
+    {
+        $merchant = $this->merchant;
+
+        $isLive = ($merchant->isLive() === true) ? "true" : "false";
+
+        $isActivated = ($merchant->isActivated() === true) ? "true" : "false";
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        $submitted = (($merchantDetails !== null) and
+            ($merchantDetails->isSubmitted() === true)) ? "true"  : "false";
+
+        $data = [
+            'id'                         => $merchant->getId(),
+            'activated'                  => $isActivated,
+            'activation_form_submitted'  => $submitted,
+            'live'                       => $isLive,
+            'product'                    => $productName
+        ];
+
+        $this->logActionToSlack($this->merchant, SlackActions::PRODUCT_ACTIVATION, $data);
+    }
+
+    /**
+     * Sends an email to the merchant if a
+     * notifyFeature is enabled on Live mode
+     *
+     * @param string $merchantId
+     * @param Entity $feature
+     * @param bool   $shouldSync
+     */
+    public function notifyMerchantIfApplicable(
+        string $merchantId,
+        Entity $feature,
+        bool $shouldSync)
+    {
+        $isLiveMode = $this->isLiveMode();
+
+        if (($feature->isNotifyFeature() === true) and
+            (($shouldSync === true) or ($isLiveMode === true)))
+        {
+            $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+            $visibleFeatures = Constants::$visibleFeaturesMap;
+            $featureName     = $feature->getName();
+            $merchantEmail   = $merchant->getEmail();
+
+            $data['feature']       = $visibleFeatures[$featureName]['display_name'];
+            $data['documentation'] = $visibleFeatures[$featureName]['documentation'];
+            $data['contact_name']  = $merchant->getName();
+            $data['contact_email'] = $merchantEmail;
+
+            $featureUpdateEmail = new FeatureEnabled($data);
+
+            Mail::queue($featureUpdateEmail);
+
+            $this->trace->info(
+                TraceCode::FEATURE_ENABLED_MERCHANT_NOTIFIED,
+                [
+                    PublicEntity::MERCHANT_ID => $merchantId,
+                    Entity::SHOULD_SYNC       => $shouldSync,
+                    Mode::LIVE                => $isLiveMode,
+                    Entity::NEW_FEATURE       => $feature,
+                    Merchant\Entity::EMAIL    => $merchantEmail
+                ]);
+        }
+        else
+        {
+            $this->trace->info(
+                TraceCode::FEATURE_ENABLED_MERCHANT_NOT_NOTIFIED,
+                [
+                    PublicEntity::MERCHANT_ID => $merchantId,
+                    Entity::SHOULD_SYNC       => $shouldSync,
+                    Mode::LIVE                => $isLiveMode,
+                    Entity::NEW_FEATURE       => $feature,
+                ]);
+        }
+    }
+
 }

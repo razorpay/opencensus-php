@@ -35,6 +35,28 @@ trait SubscriptionTrait
         return $paymentRequest;
     }
 
+    public function getSubscriptionCardChangeRequest($subscription)
+    {
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+
+        $paymentRequest['subscription_card_change'] = true;
+
+        // If subscription is pending, preferences route will ask checkout to make a payment
+        // corresponding to the amount of the latest invoice. Just mocked here via plan.
+        //
+        // TODO This function won't work if you're trying to change card on a subscription
+        // that went to pending state on the very first charge, which was immediate+addon.
+        // Because here we're only using plan amount and not other addons.
+        if ($subscription['status'] === 'pending')
+        {
+            $plan = $this->getLastEntity('plan', true);
+
+            $paymentRequest['amount'] = $plan['item']['amount'];
+        }
+
+        return $paymentRequest;
+    }
+
     public function makeSubscriptionChargeCronRequest()
     {
         $request = [
@@ -116,7 +138,8 @@ trait SubscriptionTrait
         $subscriptionAttributes = [],
         $addons = false,
         $emptyResponseContent = false,
-        $createCustomer = true)
+        $createCustomer = true,
+        $customerNotify = true)
     {
         $this->fixtures->create('customer');
 
@@ -143,6 +166,11 @@ trait SubscriptionTrait
         {
             $requestContent['request']['content']['customer_id'] = null;
             unset($requestContent['response']['content']['customer_id']);
+        }
+
+        if ($customerNotify === false)
+        {
+            $requestContent['request']['content']['customer_notify'] = 0;
         }
 
         if (empty($subscriptionAttributes) === false)
@@ -210,6 +238,41 @@ trait SubscriptionTrait
 
         // Charge amount is addon amount
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, $item['amount']);
+
+        $recurringPayment = $this->doAuthPayment($paymentRequest);
+    }
+
+    protected function doAuthTxnForSubscriptionImmediateWithAddOn()
+    {
+        // Subscription is created without start_at and with add_on
+        $subscription = $this->createSubscription(false, [], [], true);
+        $this->assertEquals('created', $subscription['status']);
+
+        $addon = $this->getLastEntity('addon', true);
+        $this->assertEquals($subscription['id'], $addon['subscription_id']);
+        $item = $this->getLastEntity('item', true);
+        $this->assertEquals($item['id'], $addon['item_id']);
+
+        $plan = $this->getLastEntity('plan', true);
+
+        $firstChargeAmount = $item['amount'] + $plan['item']['amount'];
+
+        // Charge amount is addon amount plus plan amount
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, $firstChargeAmount);
+
+        $recurringPayment = $this->doAuthPayment($paymentRequest);
+    }
+
+    protected function doAuthTxnForSubscriptionImmediateWithoutAddOn()
+    {
+        // Subscription is created without start_at and with add_on
+        $subscription = $this->createSubscription(false, [], [], false);
+        $this->assertEquals('created', $subscription['status']);
+
+        $plan = $this->getLastEntity('plan', true);
+
+        // Charge amount is addon amount plus plan amount
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription, $plan['item']['amount']);
 
         $recurringPayment = $this->doAuthPayment($paymentRequest);
     }
@@ -388,6 +451,103 @@ trait SubscriptionTrait
         $response = $this->fixtures->plan->create($planAttributes);
     }
 
+    protected function failSubscriptionFirstCharge()
+    {
+        $this->doAuthTxnForNewSubscription();
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('authenticated', $subscription['status']);
+        $oldSubcription = $subscription;
+
+        $this->failCharge();
+
+        $result = $this->chargeSubscriptionsViaCron($subscription['charge_at']);
+        $this->assertEquals(1, $result['invoices_created']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('pending', $subscription['status']);
+        $this->assertEquals(0, $subscription['paid_count']);
+        $this->assertEquals(1, $subscription['auth_attempts']);
+        // Billing period was updated even though charge failed
+        $this->assertEquals($oldSubcription['charge_at'], $subscription['current_start']);
+        $this->assertEquals($oldSubcription['charge_at']+(24*60*60), $subscription['charge_at']);
+        $oldSubcription = $subscription;
+
+        $invoice = $this->getLastEntity('invoice', true);
+        $this->assertEquals('issued', $invoice['status']);
+        $this->assertNull($invoice['subscription_status']);
+        $this->assertEquals($subscription['current_start'], $invoice['billing_start']);
+        $this->assertEquals($subscription['current_end'], $invoice['billing_end']);
+        $this->assertInvoiceCount(1, $subscription['id']);
+
+        $this->clearMock();
+
+        return $subscription;
+    }
+
+    protected function failSubscriptionTillHalted()
+    {
+        $subscription = $this->failSubscriptionFirstCharge();
+        $oldSubcription = $subscription;
+
+        $invoice = $this->getLastEntity('invoice', true);
+        $oldInvoice = $invoice;
+
+        $this->failCharge();
+
+        $result = $this->retrySubscriptionsViaCron($subscription['charge_at']);
+        $this->assertEquals(1, $result['queued']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('pending', $subscription['status']);
+        $this->assertEquals(0, $subscription['paid_count']);
+        $this->assertEquals(2, $subscription['auth_attempts']);
+        $this->assertEquals($oldSubcription['current_start'], $subscription['current_start']);
+        $this->assertEquals($oldSubcription['charge_at']+(24*60*60), $subscription['charge_at']);
+        $oldSubcription = $subscription;
+
+        // No new invoices created
+        $this->assertInvoiceCount(1, $subscription['id']);
+        // Existing invoice not updated
+        $this->assertArraySelectiveEquals($oldInvoice, $invoice);
+
+        $result = $this->retrySubscriptionsViaCron($subscription['charge_at']);
+        $this->assertEquals(1, $result['queued']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('pending', $subscription['status']);
+        $this->assertEquals(0, $subscription['paid_count']);
+        $this->assertEquals(3, $subscription['auth_attempts']);
+        $this->assertEquals($oldSubcription['current_start'], $subscription['current_start']);
+        $this->assertEquals($oldSubcription['charge_at']+(24*60*60), $subscription['charge_at']);
+        $oldSubcription = $subscription;
+
+        $this->assertInvoiceCount(1, $subscription['id']);
+
+        $result = $this->retrySubscriptionsViaCron($subscription['charge_at']);
+        $this->assertEquals(1, $result['queued']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('halted', $subscription['status']);
+        $this->assertEquals(0, $subscription['paid_count']);
+        $this->assertEquals(4, $subscription['auth_attempts']);
+        $this->assertEquals($oldSubcription['current_start'], $subscription['current_start']);
+        // Charge at has moved to next plan period
+        $this->assertEquals($oldSubcription['current_end'], $subscription['charge_at']);
+        $oldSubcription = $subscription;
+
+        $this->assertInvoiceCount(1, $subscription['id']);
+        $invoice = $this->getLastEntity('invoice', true);
+        $this->assertEquals('halted', $invoice['subscription_status']);
+
+        $result = $this->retrySubscriptionsViaCron($subscription['charge_at']);
+        // Nothing happens
+        $this->assertEquals(0, $result['queued']);
+
+        $this->clearMock();
+
+        return $subscription;
+    }
+
     protected function makeCancelRequest(string $subscriptionId, $futureCancellation = null)
     {
         $testData = $this->testData['testSubscriptionCancel'];
@@ -403,5 +563,12 @@ trait SubscriptionTrait
         $this->ba->privateAuth();
 
         return $this->startTest($testData);
+    }
+
+    protected function mockSession($appToken = 'capp_1000000custapp')
+    {
+        $data = [ 'test_app_token' => $appToken ];
+
+        $this->session($data);
     }
 }

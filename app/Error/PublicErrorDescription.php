@@ -203,11 +203,10 @@ class PublicErrorDescription
     const BAD_REQUEST_UNAUTHORIZED_OAUTH_TOKEN_INVALID                          = 'The OAuth token used in the request was invalid or had expired';
     const BAD_REQUEST_UNAUTHORIZED_OAUTH_SCOPE_INVALID                          = 'The OAuth token used does not have sufficient permissions for this request';
     const BAD_REQUEST_PRICING_ID_REQURED                                        = 'Pricing plan id is required';
-    const BAD_REQUEST_PRICING_PLAN_ALREADY_EXISTS                               = 'Pricing plan name already exists. Are you trying a pricing plan rule instead?';
     const BAD_REQUEST_PRICING_RATE_NOT_DEFINED                                  = 'One of percent_rate and fixed_rate must be present';
     const BAD_REQUEST_PRICING_GATEWAY_REQUIRED                                  = 'This plan has a gateway set. Please provide it in input';
     const BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED                              = 'The new rule matches with an active existing rule';
-    const BAD_REQUEST_PRICING_PLAN_WITH_SAME_NAME_EXISTS                        = 'Pricing plan name already exists. Are you trying a pricing plan rule instead?';
+    const BAD_REQUEST_PRICING_PLAN_WITH_SAME_NAME_EXISTS                        = 'Pricing plan name already exists. Please try another name';
     const BAD_REQUEST_PRICING_NOT_DEFINED_FOR_MERCHANT                          = 'The merchant does not have pricing assigned';
     const BAD_REQUEST_PRICING_FIELD_NOT_REQUIRED_FOR_NB                         = 'The field should be null for net-banking';
     const BAD_REQUEST_PRICING_RULE_FOR_AMEX_NOT_PRESENT                         = 'Amex pricing rule not present for merchant';
@@ -261,6 +260,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED                     = 'Payment processing failed due to 3dsecure or OTP authentication failure';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK                      = 'Payment processing failed by bank due to risk';
     const BAD_REQUEST_PAYMENT_DECLINED_BY_GATEWAY_DUE_TO_RISK                   = 'Payment processing failed by gateway due to risk';
+    const BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_BLOCKED_CARD              = 'Payment processing failed because cardholder\'s card was blocked';
     const BAD_REQUEST_PAYMENT_CARD_NOT_ENROLLED_FOR_3DSECURE                    = 'Payment processing failed because card is not enrolled for the required 3dsecure authentication';
     const BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED             = 'Payment processing failed because OTP validation attempts limit exceeded';
     const BAD_REQUEST_PAYMENT_OTP_INCORRECT                                     = 'Payment processing failed because of incorrect OTP';
