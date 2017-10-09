@@ -272,7 +272,7 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::LOCKED) === true);
     }
 
-    public function setLocked($locked)
+    public function setLocked(bool $locked)
     {
         $this->setAttribute(self::LOCKED, $locked);
     }
