@@ -39,7 +39,7 @@ class FeaturesTest extends TestCase
     private function addFeatures(
         string $addToMode,
         bool $shouldSync = false,
-        array $featureNames = ['dummy'])
+        array $featureNames = ['dummy'], string $merchant_id = null)
     {
         $authMethod = 'appAuth' . studly_case($addToMode);
 
@@ -55,6 +55,11 @@ class FeaturesTest extends TestCase
         if ($shouldSync !== false)
         {
             $testData['request']['content']['should_sync'] = 1;
+        }
+
+        if ($merchant_id !== null)
+        {
+            $testData['request']['content']['entity_id'] = $merchant_id;
         }
 
         $this->startTest($testData);
@@ -833,16 +838,13 @@ class FeaturesTest extends TestCase
 
         $this->createMarketplaceOnboardingResponse();
 
-
+        $this->addFeatures('live', true, [Constants::MARKETPLACE], '10000000001017');
 
         $this->ba->adminAuth('live', null, 'org_100000razorpay');
 
-        $this->addFeatures('live', true, [Constants::MARKETPLACE]);
-        
         $this->updateMarketplaceOnboardingResponseStatus('approved');
 
-//        s
-//        $this->verifyMarketplaceOnboardingResponseApproval();
+        $this->verifyMarketplaceOnboardingResponseApproval();
     }
 
     public function testUpdateOnboardingRequestStatus()
@@ -928,13 +930,7 @@ class FeaturesTest extends TestCase
 
     public function verifyMarketplaceOnboardingResponseApproval()
     {
-        $testData = $this->testData[__FUNCTION__];
-
-        $request = $testData['request'];
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $this->assertTrue($response);
+        $this->startTest();
     }
 
     public function updateMarketplaceOnboardingResponseStatus(string $status)

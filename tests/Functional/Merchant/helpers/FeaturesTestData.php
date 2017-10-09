@@ -613,8 +613,7 @@ return [
         'response' => [
             'content' => [
                 [
-                    "merchant_id"                        => "10000000000000",
-                    "contact_name"                       => "Test Account",
+                    "merchant_id"                        => "10000000001017",
                     "marketplace_activation_status"      => "approved"
                 ]
             ]
