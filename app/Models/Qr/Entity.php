@@ -78,6 +78,10 @@ class Entity extends Base\PublicEntity
         self::STATUS_CODE,
     ];
 
+    protected $casts = [
+        self::AMOUNT => 'int',
+    ];
+
     protected $generateIdOnCreate = true;
 
     public function payment()

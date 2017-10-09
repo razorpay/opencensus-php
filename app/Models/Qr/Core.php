@@ -56,9 +56,13 @@ class Core extends Base\Core
         $defaultInput = [
             Entity::PROVIDER => Provider::BHARAT_QR,
             Entity::METHOD   => Method::CARD,
+            Entity::RECEIVED => true,
         ];
 
         $input = $this->getMappedAttributes($input);
+
+        //As the amount sent by hitachi notification is string with format 1.00
+        $input[Entity::AMOUNT] = (int) ($input[Entity::AMOUNT] * 100);
 
         $input = array_merge($defaultInput, $input);
 

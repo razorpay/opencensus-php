@@ -8,7 +8,7 @@ class Validator extends Base\Validator
 {
     protected static $createRules = [
         Entity::METHOD                => 'required|string|in:upi,card',
-        Entity::AMOUNT                => 'required|string',
+        Entity::AMOUNT                => 'required|integer',
         Entity::VPA                   => 'sometimes|string',
         Entity::CARD_NUMBER           => 'sometimes|string',
         Entity::CARD_NETWORK          => 'sometimes|string',
@@ -24,5 +24,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_MERCHANT_ID   => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_ID   => 'sometimes|string',
         Entity::GATEWAY_TERMINAL_DESC => 'sometimes|string',
+        Entity::RECEIVED              => 'sometimes|bool',
     ];
 }
+
