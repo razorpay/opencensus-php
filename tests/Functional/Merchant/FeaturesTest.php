@@ -8,11 +8,11 @@ use Illuminate\Http\UploadedFile;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
+use RZP\Models\Feature\Constants;
 use RZP\Tests\Functional\TestCase;
 use RZP\Error\PublicErrorDescription;
-use RZP\Models\Feature\Constants;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Mail\Merchant\FeatureEnabled as FeatureEnabledEmail;
 
 class FeaturesTest extends TestCase
@@ -555,7 +555,7 @@ class FeaturesTest extends TestCase
     /**
      * Post a request for product activation
      */
-    public function testpostOnboardingResponses()
+    public function testPostOnboardingResponses()
     {
         $this->createMerchantDetailsOnLive();
 
@@ -808,87 +808,83 @@ class FeaturesTest extends TestCase
 
     public function testUpdateOnboardingResponses()
     {
-        $this->createMerchantDetailsOnLive();
+        $merchantId = $this->createMerchantDetailsOnLive();
 
-        $this->createMarketplaceOnboardingResponse();
+        $this->createMarketplaceOnboardingResponse($merchantId);
 
         $this->ba->adminAuth('test', null, 'org_100000razorpay');
 
         $this->updateMarketplaceOnboardingResponse();
 
-//        $this->ba->proxyAuthLive();
-        $id = '10000000001017';
-        $this->ba->proxyAuth('rzp_live_' . $id);
+        $this->ba->proxyAuth('rzp_live_' . $merchantId);
 
         $this->startTest();
     }
 
-//    public function testResendOnboardingResponses()
-//    {
-//        $this->createMerchantDetailsOnLive();
-//
-//        $this->createMarketplaceOnboardingResponse();
-//
-//        $this->createMarketplaceOnboardingResponse(true);
-//    }
+    public function testResendOnboardingResponses()
+    {
+        $merchantId = $this->createMerchantDetailsOnLive();
+
+        $this->createMarketplaceOnboardingResponse($merchantId);
+
+        $this->createMarketplaceOnboardingResponse($merchantId, true);
+    }
 
     public function testGetAllOnboardingResponsesByStatus()
     {
-        $this->createMerchantDetailsOnLive();
+        $merchantId = $this->createMerchantDetailsOnLive();
 
-        $this->createMarketplaceOnboardingResponse();
+        $this->createMarketplaceOnboardingResponse($merchantId);
 
-        $this->addFeatures('live', true, [Constants::MARKETPLACE], '10000000001017');
+        $this->addFeatures('live', true, [Constants::MARKETPLACE], $merchantId);
 
         $this->ba->adminAuth('live', null, 'org_100000razorpay');
 
-        $this->updateMarketplaceOnboardingResponseStatus('approved');
+        $this->updateMarketplaceOnboardingResponseStatus($merchantId, 'approved');
 
         $this->verifyMarketplaceOnboardingResponseApproval();
     }
 
     public function testUpdateOnboardingRequestStatus()
     {
-        $this->createMerchantDetailsOnLive();
+        $merchantId = $this->createMerchantDetailsOnLive();
 
-        $this->createMarketplaceOnboardingResponse();
-
-        $this->ba->adminAuth('live', null, 'org_100000razorpay');
-
-        $this->updateMarketplaceOnboardingResponseStatus('rejected');
-
-        $this->addFeatures(Mode::LIVE, false, [Constants::MARKETPLACE], '10000000001017');
+        $this->createMarketplaceOnboardingResponse($merchantId);
 
         $this->ba->adminAuth('live', null, 'org_100000razorpay');
 
-        $this->updateMarketplaceOnboardingResponseStatus('approved');
+        $this->updateMarketplaceOnboardingResponseStatus($merchantId, 'rejected');
+
+        $this->addFeatures(Mode::LIVE, false, [Constants::MARKETPLACE], $merchantId);
+
+        $this->ba->adminAuth('live', null, 'org_100000razorpay');
+
+        $this->updateMarketplaceOnboardingResponseStatus($merchantId, 'approved');
     }
 
     public function testApproveOnboardingRequestWithoutEnablingFeature()
     {
-        $this->createMerchantDetailsOnLive();
+        $merchantId = $this->createMerchantDetailsOnLive();
 
-        $this->createMarketplaceOnboardingResponse();
-
-        $this->ba->adminAuth('live', null, 'org_100000razorpay');
-
-        $this->updateMarketplaceOnboardingResponseStatus('rejected');
-
-        $this->updateMarketplaceOnboardingResponseStatus('pending');
-
-        $this->addFeatures(Mode::LIVE, false, [Constants::MARKETPLACE], '10000000001017');
+        $this->createMarketplaceOnboardingResponse($merchantId);
 
         $this->ba->adminAuth('live', null, 'org_100000razorpay');
 
-        $this->updateMarketplaceOnboardingResponseStatus('approved');
+        $this->updateMarketplaceOnboardingResponseStatus($merchantId, 'rejected');
+
+        $this->updateMarketplaceOnboardingResponseStatus($merchantId, 'pending');
+
+        $this->addFeatures(Mode::LIVE, false, [Constants::MARKETPLACE], $merchantId);
+
+        $this->ba->adminAuth('live', null, 'org_100000razorpay');
+
+        $this->updateMarketplaceOnboardingResponseStatus($merchantId, 'approved');
 
     }
 
-    public function createMarketplaceOnboardingResponse(bool $expectError = false)
+    public function createMarketplaceOnboardingResponse(string $merchantId, bool $expectError = false)
     {
-        $id = '10000000001017';
-
-        $this->ba->proxyAuth('rzp_live_' . $id);
+        $this->ba->proxyAuth('rzp_live_' . $merchantId);
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -939,9 +935,11 @@ class FeaturesTest extends TestCase
         $this->startTest();
     }
 
-    public function updateMarketplaceOnboardingResponseStatus(string $status)
+    public function updateMarketplaceOnboardingResponseStatus(string $merchantId, string $status)
     {
         $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['merchant_id'] = $merchantId;
 
         $testData['request']['content']['status'] = $status;
 
@@ -954,17 +952,19 @@ class FeaturesTest extends TestCase
 
     private function createMerchantDetailsOnLive()
     {
-        $id = '10000000001017';
+        $merchantId = '10000000001017';
 
-        $attributes = ['id' => $id, 'org_id' => Org::RZP_ORG];
+        $attributes = ['id' => $merchantId, 'org_id' => Org::RZP_ORG];
 
-        $detailsAttributes = ['merchant_id' => $id];
+        $detailsAttributes = ['merchant_id' => $merchantId];
 
-        $merchant = $this->fixtures->on('live')->create('merchant', $attributes);
+        $this->fixtures->on('live')->create('merchant', $attributes);
 
         $this->fixtures->on('live')->create('merchant_detail:sane', $detailsAttributes);
 
-        $this->ba->proxyAuth('rzp_live_' . $id);
+        $this->ba->proxyAuth('rzp_live_' . $merchantId);
+
+        return $merchantId;
     }
 
 }

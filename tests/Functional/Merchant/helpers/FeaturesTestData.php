@@ -353,7 +353,7 @@ return [
     ],
 
     // Files will be added and verified from the main test function
-    'testpostOnboardingResponses' => [
+    'testPostOnboardingResponses' => [
         'request' => [
             'content' => [
                 Constants::USE_CASE    => 'Some default use case',
@@ -542,11 +542,10 @@ return [
             ],
         ]
     ],
+
     'updateMarketplaceOnboardingResponseStatus'  => [
         'request'  => [
-            'content' => [
-                'merchant_id'          => '10000000001017'
-            ],
+            'content' => [ ],
             'url'     => '/onboarding/features/' . Constants::MARKETPLACE . '/update_status',
             'method'  => 'POST',
             'server'  => [

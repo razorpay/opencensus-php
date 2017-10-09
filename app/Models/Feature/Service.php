@@ -3,6 +3,8 @@
 namespace RZP\Models\Feature;
 
 use RZP\Models\Base;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
@@ -179,10 +181,22 @@ class Service extends Base\Service
      * @param string $feature
      *
      * @return bool
+     * @throws Exception\BadRequestException
      */
     public function postOnboardingResponses(array $input, string $feature): bool
     {
-        // TODO: Prevent the merchant from re-submitting
+        // Prevent the merchant from re-submitting
+        $data = Accessor::for($this->merchant, Constants::ONBOARDING)
+                    ->get($feature)
+                    ->toArray();
+
+        if (count($data) > 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CANNOT_RESEND_FEATURE_ONBOARDING_RESPONSES,
+                $feature,
+                ['feature' => $feature, 'data' => $data]);
+        }
 
         $data[$feature] = $input;
 
@@ -221,9 +235,16 @@ class Service extends Base\Service
         return $saved;
     }
 
+    /**
+     * Updates the merchant responses to the onboarding questions
+     *
+     * @param array  $input
+     * @param string $feature
+     *
+     * @return bool
+     */
     public function updateOnboardingResponses(array $input, string $feature): bool
     {
-
         // TODO: Delete old file if file has been received.
 
         $merchantId = $input['merchant_id'];
@@ -265,7 +286,6 @@ class Service extends Base\Service
 
         return $saved;
     }
-//update `merchant_details` set `marketplace_activation_status` = 'pending', `updated_at` = 1507130751 where `merchant_id` = '10000000000000'
 
     /**
      * Returns the merchant responses to the onboarding questions of
@@ -286,6 +306,13 @@ class Service extends Base\Service
         return $settings;
     }
 
+    /**
+     * Adds the vendor_agreement file URL to the response if the feature is marketplace
+     *
+     * @param $settings
+     *
+     * @return mixed
+     */
     protected function addFileUrlInResponseIfApplicable($settings)
     {
         if (isset($settings[Constants::MARKETPLACE][Constants::VENDOR_AGREEMENT]) === true)
@@ -389,6 +416,12 @@ class Service extends Base\Service
         return $featureParams;
     }
 
+    /**
+     * @param string $fileStoreId
+     * @param string $merchantId
+     *
+     * @return mixed
+     */
     protected function getSignedUrl(string $fileStoreId, string $merchantId)
     {
         $accessor = new FileStore\Accessor;
@@ -398,6 +431,13 @@ class Service extends Base\Service
         return $signedUrls[$fileStoreId];
     }
 
+    /**
+     * Returns the feature activation requests based on the status
+     *
+     * @param string|null $status
+     *
+     * @return mixed
+     */
     public function getFeatureActivationRequests(string $status = null)
     {
         $merchantDetails = $this->repo->merchant_detail->getFeatureActivationRequestsFromStatus($status);
@@ -405,6 +445,12 @@ class Service extends Base\Service
         return $merchantDetails;
     }
 
+    /**
+     * @param string $featureName
+     * @param array  $input
+     *
+     * @return bool
+     */
     public function updateFeatureActivationStatus(string $featureName, array $input): bool
     {
         $status = $input['status'];
