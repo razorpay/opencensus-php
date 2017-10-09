@@ -60,7 +60,7 @@ return [
                         'partially_processed' => false,
                         'attempts'            => 1,
                         'sender'              => 'emifiles@razorpay.com',
-                        'comments'            => 'Valid data not available for file processing',
+                        'comments'            => 'No data present for gateway file processing in the given time period',
                         'type'                => 'emi',
                         'target'              => 'axis',
                         'entity'              => 'gateway_file',
