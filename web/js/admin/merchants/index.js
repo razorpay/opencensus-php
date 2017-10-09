@@ -1,18 +1,22 @@
 import React, { Component } from 'react';
 import Form from 'ui/Form';
-import { AdminTable as Table } from 'ui/Table';
+import Table from 'ui/Table';
 import Field, { SelectField, CheckField } from 'ui/Field';
+import Collection from 'util/collection';
+import { adminFetch } from 'util/fetch';
 
-var defaultState = {
-  filters: {
-    account_status: 'activated',
-  },
+const defaultFilters = {
+  account_status: 'activated',
 };
 
 export default class MerchantList extends Component {
-  state = defaultState;
+  collection = new Collection({
+    fetchRoute: 'admin_fetch_merchants_new',
+    fetchFn: adminFetch,
+    filters: defaultFilters,
+  });
 
-  onSubmit = filters => this.setState({ filters });
+  onSubmit = filters => this.collection.filters.set(filters);
 
   render() {
     return (
@@ -24,7 +28,7 @@ export default class MerchantList extends Component {
             <SelectField
               name="account_status"
               label="Status"
-              defaultValue={defaultState.filters.account_status}
+              defaultValue={defaultFilters.account_status}
             >
               <option value="">All</option>
               <option value="activated">Activated</option>
@@ -34,11 +38,20 @@ export default class MerchantList extends Component {
             <button>Apply</button>
           </Form>
         </div>
-        <Table
-          route="admin_fetch_merchants_new"
-          queryParams={this.state.filters}
-        />
+        <Table model={this.collection} fields={fields} />
       </div>
     );
   }
 }
+
+const fields = [
+  ['Merchant ID', item => item.id],
+  ['Name', item => item.name],
+  ['Email', item => item.email],
+  ['Referrer', item => item.referrer],
+  ['Marketplace Owner', item => item.parent_id],
+  ['Status', item => item.count],
+  ['Registered At', item => item.created_at],
+  ['Submitted At', item => item.merchant_detail.submitted_at],
+  ['Tags', item => item.tag_list.join()],
+];

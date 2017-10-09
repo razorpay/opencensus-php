@@ -11,6 +11,7 @@ var filename = _.htmlWebpackPlugin.options.vars.filename;
   <div id="react-root" class="react-root"></div>
 </body>
 </html>
+<script src="`=cdnUrl`/`=filename(_, 'vendor')`"></script>
 <script src="`=cdnUrl`/`=filename(_, 'admin')`"></script>
 
 @include('partials/footer')

@@ -22,6 +22,7 @@ const htmlPlugins = require('./web/webpack/html')(
 
 module.exports = {
   entry: {
+    vendor: ['react', 'react-dom', 'react-router-dom', 'mobx', 'mobx-react'],
     merchant: './web/merchant.js',
     admin: './web/admin.js',
   },
@@ -32,7 +33,7 @@ module.exports = {
   },
 
   resolve: {
-    modules: ['node_modules', 'web/modules'],
+    modules: ['node_modules', 'web/js'],
   },
 
   resolveLoader: {
@@ -51,7 +52,21 @@ module.exports = {
     chunkModules: false,
   },
 
-  plugins: htmlPlugins.concat([]),
+  plugins: htmlPlugins.concat([
+    new webpack.NamedModulesPlugin(),
+    new webpack.NamedChunksPlugin(chunk => {
+      if (chunk.name) {
+        return chunk.name;
+      }
+      return chunk
+        .mapModules(m => path.relative(m.context, m.request))
+        .join('_');
+    }),
+    new webpack.optimize.CommonsChunkPlugin({
+      name: 'vendor',
+      minChunks: Infinity,
+    }),
+  ]),
 
   module: {
     rules: [

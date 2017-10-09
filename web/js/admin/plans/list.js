@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import Form from 'ui/Form';
 import Table from 'ui/Table';
-import Field, { SelectField, CheckField } from 'ui/Field';
+import Field from 'ui/Field';
 import Collection from 'util/collection';
 import { adminFetch } from 'util/fetch';
 
-export default class MerchantList extends Component {
+export default class PlanList extends Component {
   collection = new Collection({
     fetchRoute: 'pricing_get_merchant_plans',
     fetchFn: adminFetch,
@@ -22,11 +22,7 @@ export default class MerchantList extends Component {
             <Field name="q" label="Search" />
           </Form>
         </div>
-        <Table
-          route="pricing_get_merchant_plans"
-          model={this.collection}
-          fields={pricingFields}
-        />
+        <Table model={this.collection} fields={pricingFields} />
       </div>
     );
   }

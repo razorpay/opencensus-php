@@ -10,7 +10,7 @@ export default class Form extends Component {
     let { children, onSubmit, onSuccess, ...props } = this.props;
 
     return (
-      <form onSubmit={this::this.onSubmit} {...props}>
+      <form onSubmit={::this.onSubmit} {...props}>
         {children}
       </form>
     );

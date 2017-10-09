@@ -1,0 +1,65 @@
+#fixed-container
+  position: fixed
+
+#slider-container
+  position: fixed
+  top: 48px
+  right: 0
+  bottom: 0
+  transition: .2s
+  &.slider-enter, &.slider-exit
+    opacity: 0
+    .slider
+      transform: translateX(100%)
+  &.slider-enter-active
+    opacity: 1
+    .slider
+      transform: none
+
+.slider
+  background: #fff
+  height: 100%
+  padding: 20px
+  transition: .2s
+
+#modal-container
+  background: rgba(0,0,0,.5)
+  position: fixed
+  top: 0
+  left: 0
+  width: 100%
+  height: 100%
+  display: flex
+  transition: .2s
+  &.modal-enter, &.modal-exit
+    opacity: 0
+    .modal
+      transform: scale(.92) translateY(12px)
+  &.modal-enter-active
+    opacity: 1
+    .modal
+      transform: none
+
+.modal
+  position: relative
+  margin: auto
+  background: #fff
+  border-radius: 3px
+  box-shadow: 0 2px 8px 2px rgba(0,0,0,.1)
+  padding: 30px
+  transition: .3s
+
+.modal-close, .slider-close
+  position: absolute
+  right: 0
+  top: 0
+  font-size: 36px
+  padding: 10px
+  cursor: pointer
+  transition: .2s
+  color: #777
+  &:hover
+    color: #333
+
+.slider-close
+  right: 100%

@@ -40,7 +40,7 @@
     "webpack": "^3.6.0"
   },
   "scripts": {
-    "start": "webpack -w & stylus -w ./web/css/*.styl --out public/dist",
+    "start": "stylus -w ./web/css/*.styl --out public/dist & webpack -w; kill -9 $!",
     "precommit": "lint-staged",
     "prettier": "prettier"
   },

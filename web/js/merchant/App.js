@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import ModalContainer, { openModal, closeModal } from 'store/modal';
+import ModalContainer, { openModal, closeModal } from 'common/modal';
 
 export default class App extends Component {
   state = {
@@ -10,12 +10,11 @@ export default class App extends Component {
   render() {
     return (
       <div id="app-container">
-        <ModalContainer />
         <aside />
         <main onClick={() => openModal({ component: <span>*</span> })}>
           Add
         </main>
-        <main onClick={closeModal}>Remove</main>
+        <ModalContainer />
       </div>
     );
   }
