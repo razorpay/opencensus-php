@@ -12,13 +12,13 @@ class AccountVerification extends Base\Mailable
 
     protected $token;
 
-    public function __construct($user, array $org)
+    public function __construct($user, $org)
     {
         parent::__construct();
 
         $this->user = $user->toArrayPublic();
 
-        $this->token = $user->getConfirmationToken();
+        $this->token = $user->getConfirmToken();
 
         $this->org = $org;
     }
@@ -66,7 +66,7 @@ class AccountVerification extends Base\Mailable
 
     protected function addHtmlView()
     {
-        $this->view('emails.admin.invite_merchant');
+        $this->view('emails.user.account_verification');
 
         return $this;
     }

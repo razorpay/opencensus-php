@@ -2,6 +2,7 @@
 
 namespace RZP\Models\User;
 
+use Mail;
 use Hash;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -124,7 +125,7 @@ class Service extends Base\Service
 
             $this->updateUserMerchantMapping($user['id'], $userMerchantMappingInputData);
 
-            $this->sendConfirmationMail($user);
+            $this->sendConfirmationMail($user['id']);
         }
 
         return $user;
@@ -137,11 +138,15 @@ class Service extends Base\Service
         // Only send the confirmation email if the user isn't already confirmed
         if ($user->getConfirmedAttribute() === false)
         {
-            $user->token = $user->getConfirmToken();
-
             $orgId = $this->auth->getOrgId();
 
-            $this->repo->org->findByPublicId($orgId);
+            $org = $this->repo->org->findByPublicId($orgId)->toArrayPublic();
+
+            $org['hostname'] = $this->auth->getOrgHostName();
+
+            $confirmationMail = new User\AccountVerification($user, $org);
+
+            Mail::queue($confirmationMail);
         }
     }
 
