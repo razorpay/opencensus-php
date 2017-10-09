@@ -1038,13 +1038,13 @@ class Gateway extends Base\Gateway
 
         $currencyCode = Currency::ISO_NUMERIC_CODES[$currency];
 
-        $method = $input['card'][Card\Entity::NETWORK_CODE];
+        $networkCode = $input['card'][Card\Entity::NETWORK_CODE];
 
         $requestHash = $this->getRequestHash($txnDateTime, $chargeTotal, $currencyCode);
 
         $txnType = TxnType::AUTH;
 
-        if ((Payment\Gateway::supportsAuthAndCapture($this->gateway, $method) === false) or
+        if ((Payment\Gateway::supportsAuthAndCapture($this->gateway, $networkCode) === false) or
             (($input['card'][Card\Entity::ISSUER] === Card\Issuer::ICIC) and
              ($input['card'][Card\Entity::TYPE] === Card\Type::DEBIT)))
         {

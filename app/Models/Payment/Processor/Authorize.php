@@ -3327,7 +3327,7 @@ trait Authorize
         $networkCode = null;
 
         // If payment method is wallet or net banking.
-        if ($cardId != null)
+        if ($cardId !== null)
         {
             $networkCode = $payment->card->getNetworkCode();
         }
