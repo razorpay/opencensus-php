@@ -434,12 +434,14 @@ class Service extends Base\Service
     /**
      * Returns the feature activation requests based on the status
      *
-     * @param string|null $status
+     * @param array $input
      *
      * @return mixed
      */
-    public function getFeatureActivationRequests(string $status = null)
+    public function getFeatureActivationRequests(array $input)
     {
+        $status = $input['status'];
+
         $merchantDetails = $this->repo->merchant_detail->getFeatureActivationRequestsFromStatus($status);
 
         return $merchantDetails;

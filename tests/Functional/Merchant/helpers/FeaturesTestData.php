@@ -605,8 +605,10 @@ return [
 
     'verifyMarketplaceOnboardingResponseApproval' => [
         'request'  => [
-            'content' => [],
-            'url'     => '/onboarding/features/all/responses/by/approved',
+            'content' => [
+                'status' => 'approved'
+            ],
+            'url'     => '/onboarding/features/responses',
             'method'  => 'GET',
             'server'  => [
                 'HTTP_X-Dashboard'            => 'true',
