@@ -43,7 +43,7 @@ class CustomerErrorDescription
     const BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD                                    = 'Payment declined';
 
     const BAD_REQUEST_SUBSCRIPTION_CUSTOMER_ID_SENT_IN_INPUT                    = 'Payment failed';
-    const BAD_REQUEST_SUBSCRIPTION_SAVE_CARD_DISABLED                           = 'Payment failed';
+    const BAD_REQUEST_SUBSCRIPTION_SAVE_CARD_DISABLED                           = 'Please contact the merchant for further assistance.';
     const BAD_REQUEST_GLOBAL_CUSTOMER_MISMATCH                                  = 'Payment failed. Please login.';
     const BAD_REQUEST_APP_TOKEN_ABSENT                                          = 'Payment failed. Please login.';
     const BAD_REQUEST_APP_TOKEN_NOT_GLOBAL                                      = 'Payment failed. Please login.';

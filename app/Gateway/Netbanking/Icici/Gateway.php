@@ -832,7 +832,7 @@ class Gateway extends Base\Gateway
             case $this->config['live_merchant_id2_tpv']:
                 return $this->config['live_hash_secret_tpv'];
 
-            case $this->config['live_merchant_id2_corp'];
+            case $this->config['live_merchant_id2_corp']:
                 return $this->config['live_hash_secret_corp'];
         }
     }
